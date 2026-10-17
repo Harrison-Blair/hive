@@ -18,8 +18,6 @@
 
 # Repo config
 !.gitignore
-!.fledge/config.toml
-!.github/**
 
 # Test fixtures
 !**/testdata/**
