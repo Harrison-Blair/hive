@@ -116,17 +116,21 @@ func TestSendErrorMapping(t *testing.T) {
 
 func TestSendAgentNotFoundInspectsExited(t *testing.T) {
 	home := testHome(t)
-	writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
+	sleep := startSleep(t)
+	record := liveRecord("worker-hive-1", "worker-hive-1")
+	record.TerminalID = "term_a"
+	writeRecord(t, home, record)
 	fake := newFakeHerdr(t)
 	fake.failure("agent.prompt", "agent_not_found", "agent target w1:p1 not found")
-	fake.failure("pane.get", "pane_not_found", "pane w1:p1 not found")
+	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoShellJSON("w1:p1", sleep.pid, processEntry(sleep.pid, "bash", "bash"))+`}`)
 	envelope := Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: "x"})
 	if envelope.Outcome != "failed" || !strings.Contains(toString(envelope.Error), "agent exited") {
 		t.Fatalf("envelope = %#v", envelope)
 	}
-	record := readAgent(t, home, "worker-hive-1")
-	if record.Status != records.AgentExited {
-		t.Fatalf("record status = %q; want exited", record.Status)
+	stored := readAgent(t, home, "worker-hive-1")
+	if stored.Status != records.AgentExited {
+		t.Fatalf("record status = %q; want exited", stored.Status)
 	}
 }
 

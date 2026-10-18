@@ -33,15 +33,19 @@ func (i inspection) messageForSend() string {
 }
 
 // inspectAgent decides whether an agent that herdr no longer names left the
-// pane or still runs there.
+// pane or still runs there. Only positive shell evidence in the recorded
+// terminal permits the exited result.
 func inspectAgent(ctx context.Context, home string, record records.Agent, logger *slog.Logger) inspection {
 	pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
 	if err != nil {
 		var serverError *herdr.Error
 		if isServerError(err, &serverError) && serverError.Code == herdr.CodePaneNotFound {
-			return markInspection(home, record, records.AgentExited, "pane "+record.PaneID+" not found", logger)
+			return markInspection(home, record, records.AgentUnresolved, "pane "+record.PaneID+" not found: record unresolved", logger)
 		}
 		return markInspection(home, record, records.AgentUnresolved, "pane get: "+err.Error(), logger)
+	}
+	if record.TerminalID != "" && pane.TerminalID != record.TerminalID {
+		return markInspection(home, record, records.AgentUnresolved, "pane "+record.PaneID+" holds another terminal: record unresolved", logger)
 	}
 	if pane.AgentStatus != "" && pane.AgentStatus != "unknown" {
 		return markInspection(home, record, records.AgentUnresolved, "pane "+record.PaneID+" holds agent status "+pane.AgentStatus, logger)
@@ -60,7 +64,6 @@ func inspectAgent(ctx context.Context, home string, record records.Agent, logger
 				return markInspection(home, record, records.AgentUnresolved, "the recorded agent process still runs in pane "+record.PaneID, logger)
 			}
 		}
-		return markInspection(home, record, records.AgentExited, "pane "+record.PaneID+" holds no recorded agent process", logger)
 	}
 	profile, err := harness.Lookup(record.Harness)
 	if err == nil {
@@ -74,7 +77,28 @@ func inspectAgent(ctx context.Context, home string, record records.Agent, logger
 			}
 		}
 	}
-	return markInspection(home, record, records.AgentExited, "pane "+record.PaneID+" holds no agent process", logger)
+	if shellProof(info) {
+		return markInspection(home, record, records.AgentExited, "pane "+record.PaneID+" holds a proved shell", logger)
+	}
+	return markInspection(home, record, records.AgentUnresolved, "pane "+record.PaneID+" holds no proved shell", logger)
+}
+
+// shellProof accepts exactly one foreground entry that is the actual shell of
+// the pane and is alive. A process name alone is not proof.
+func shellProof(info herdr.PaneProcessInfo) bool {
+	if info.ShellPID == nil || len(info.ForegroundProcesses) != 1 {
+		return false
+	}
+	entry := info.ForegroundProcesses[0]
+	if entry.PID != *info.ShellPID {
+		return false
+	}
+	start, err := process.Start(int64(entry.PID))
+	if err != nil {
+		return false
+	}
+	alive, err := process.Alive(int64(entry.PID), start)
+	return err == nil && alive
 }
 
 func markInspection(home string, record records.Agent, status, detail string, logger *slog.Logger) inspection {

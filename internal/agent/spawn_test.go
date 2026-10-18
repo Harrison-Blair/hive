@@ -239,12 +239,14 @@ func TestSpawnStartTransportErrorIsUnresolved(t *testing.T) {
 
 func TestSpawnWaitNotRunningInspectsExited(t *testing.T) {
 	home := testHome(t)
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.failure("agent.wait", "agent_not_running", "agent is no longer running in the target pane")
 	fake.failure("agent.get", "agent_not_found", "agent target w1:p1 not found")
-	fake.failure("pane.get", "pane_not_found", "pane w1:p1 not found")
+	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoShellJSON("w1:p1", sleep.pid, processEntry(sleep.pid, "bash", "bash"))+`}`)
 	envelope := Spawn(context.Background(), home, baseSpawnOptions("t10-coord"))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("outcome = %q; want failed", envelope.Outcome)

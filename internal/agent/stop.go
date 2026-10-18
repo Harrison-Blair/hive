@@ -12,6 +12,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // StopResult is the post-close topology and the known effects of one stop.
@@ -102,8 +103,14 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		return stopUnresolved(home, logger, record, effects, message)
 	}
 
-	stopped, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentStopped, "", "stopped")
+	stopped, effect, updateErr := stopRecord(home, record)
 	if updateErr != nil {
+		if errors.Is(updateErr, errRecordChanged) || errors.Is(updateErr, errStopIdentityChanged) {
+			message := "agent record changed: no close"
+			envelope := stopEnvelope("failed", "identity", effects, message, chooseRecord(stopped, record))
+			logStop(logger, envelope, record.Key)
+			return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
+		}
 		envelope := stopEnvelope("failed", "agent", effects, updateErr.Error(), record)
 		logStop(logger, envelope, record.Key)
 		return StopResult{Agent: record}, envelope
@@ -155,6 +162,65 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	envelope.Result = result
 	logStop(logger, envelope, record.Key)
 	return result, envelope
+}
+
+var errStopIdentityChanged = errors.New("agent stop identity changed")
+
+// stopRecord makes the final stopped transition under one held store handle.
+// It refuses when the checked ownership tuple changed since the external reads.
+func stopRecord(home string, expected records.Agent) (records.Agent, output.Effect, error) {
+	effect := output.Effect{Resource: "agent", Path: statePath("agents", expected.Key), Action: "stopped"}
+	registry, err := store.Open(home)
+	if err != nil {
+		return expected, output.Effect{}, err
+	}
+	var updated records.Agent
+	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		var current records.Agent
+		if err := locked.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
+			return err
+		}
+		if err := checkCurrentRecord(locked, current, expected, records.AgentLive); err != nil {
+			updated = current
+			return err
+		}
+		if !sameStopIdentity(current, expected) {
+			updated = current
+			return errStopIdentityChanged
+		}
+		current.Status = records.AgentStopped
+		current.LastError = ""
+		current.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
+		if err := locked.WriteIn([]string{"agents"}, current.Key, current); err != nil {
+			updated = current
+			return err
+		}
+		updated = current
+		return nil
+	})
+	if err != nil {
+		return updated, output.Effect{}, err
+	}
+	return updated, effect, nil
+}
+
+func sameStopIdentity(current, expected records.Agent) bool {
+	if current.Harness != expected.Harness {
+		return false
+	}
+	if expected.TerminalID != "" && current.TerminalID != expected.TerminalID {
+		return false
+	}
+	if expected.WorkspaceID != "" && current.WorkspaceID != expected.WorkspaceID {
+		return false
+	}
+	if expected.TabID != "" && current.TabID != expected.TabID {
+		return false
+	}
+	if current.ProcessPID != expected.ProcessPID || current.ProcessName != expected.ProcessName || current.ProcessStart != expected.ProcessStart {
+		return false
+	}
+	return current.AgentSessionRef == expected.AgentSessionRef
 }
 
 func checkProcessIdentity(record records.Agent, info herdr.PaneProcessInfo, session *herdr.AgentSessionInfo) string {

@@ -136,13 +136,29 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	if cwd == "" {
 		cwd = paneInfo.ForegroundCwd
 	}
+	startSession := started.Agent.AgentSession
+	if startSession != nil && paneInfo.AgentSession != nil && sessionRef(startSession) != sessionRef(paneInfo.AgentSession) {
+		message := "the agent session references differ"
+		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
+		effects = appendEffect(effects, effect)
+		envelope := spawnEnvelope("partial", "pane", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+		if updateErr != nil {
+			envelope.Error = message + "; " + updateErr.Error()
+		}
+		logSpawn(logger, envelope, options, record.Key)
+		return envelope
+	}
+	firstSession := startSession
+	if firstSession == nil {
+		firstSession = paneInfo.AgentSession
+	}
 	updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
 		current.TerminalID = paneInfo.TerminalID
 		current.WorkspaceID = paneInfo.WorkspaceID
 		current.TabID = paneInfo.TabID
 		current.Cwd = cwd
-		if paneInfo.AgentSession != nil {
-			current.AgentSessionRef = sessionRef(paneInfo.AgentSession)
+		if firstSession != nil {
+			current.AgentSessionRef = sessionRef(firstSession)
 		}
 	}, "updated")
 	effects = appendEffect(effects, effect)

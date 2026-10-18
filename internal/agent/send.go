@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
@@ -48,7 +49,7 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	if options.TimeoutSet {
 		timeout = options.Timeout
 	}
-	if options.Wait && timeout <= 0 {
+	if options.Wait && !promptTimeoutFits(timeout) {
 		return failed("validate", fmt.Sprintf("invalid --timeout: %d", timeout))
 	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
@@ -93,6 +94,17 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 	logger.Debug("agent prompt end", "command", "agent send", "agent_id", record.Key, "outcome", envelope.Outcome, "status", reply.AgentStatus)
 	return envelope
+}
+
+func promptTimeoutFits(seconds int) bool {
+	if seconds <= 0 {
+		return false
+	}
+	if uint64(seconds) > math.MaxUint64/1000 {
+		return false
+	}
+	const maxDeadlineSeconds = int64((math.MaxInt64 - 5*time.Second) / time.Second)
+	return int64(seconds) <= maxDeadlineSeconds
 }
 
 func sendFailure(ctx context.Context, home string, logger *slog.Logger, record records.Agent, promptErr error) output.Envelope {
