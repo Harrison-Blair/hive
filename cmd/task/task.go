@@ -2,6 +2,8 @@
 package task
 
 import (
+	"os"
+
 	"github.com/Harrison-Blair/hive/cmd/task/assign"
 	"github.com/Harrison-Blair/hive/cmd/task/cancel"
 	"github.com/Harrison-Blair/hive/cmd/task/complete"
@@ -20,6 +22,7 @@ func New() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	command.PersistentFlags().String("agent", "", "acting agent name")
+	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
 	command.AddCommand(
 		create.New(),
 		assign.New(),

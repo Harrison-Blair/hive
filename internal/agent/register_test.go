@@ -17,6 +17,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+const testTaskID = "1-task"
+
 func seedProject(t *testing.T, home, id string) {
 	t.Helper()
 	st, err := store.Open(home)
@@ -25,6 +27,10 @@ func seedProject(t *testing.T, home, id string) {
 	}
 	record := records.Project{ID: id, Path: "/tmp/" + id, Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z"}
 	if err := st.WriteIn([]string{"projects"}, id, record); err != nil {
+		t.Fatal(err)
+	}
+	task := records.Task{ID: testTaskID, Project: id, Title: "Task", ControllingRole: "manager-" + id, DependsOn: []string{}, CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z"}
+	if err := st.WriteIn([]string{"tasks"}, testTaskID, task); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -89,7 +95,7 @@ func TestRegisterRoleRules(t *testing.T) {
 		{"worker without task", RegisterOptions{Role: "worker", Project: "hive", PaneID: "w1:p1"}, "worker requires --project and --task"},
 		{"verifier without task", RegisterOptions{Role: "verifier", Project: "hive", PaneID: "w1:p1"}, "verifier requires --project and --task"},
 		{"coordinator with project", RegisterOptions{Role: "coordinator", Project: "hive", PaneID: "w1:p1"}, "coordinator takes no --project or --task"},
-		{"supervisor with task", RegisterOptions{Role: "supervisor", Task: "T1", PaneID: "w1:p1"}, "supervisor takes no --project or --task"},
+		{"supervisor with task", RegisterOptions{Role: "supervisor", Task: testTaskID, PaneID: "w1:p1"}, "supervisor takes no --project or --task"},
 		{"no pane", RegisterOptions{Role: "coordinator"}, "no pane: run inside herdr or pass --pane"},
 	}
 	for _, test := range cases {
@@ -231,15 +237,15 @@ func TestRegisterExplicitSingletonWritesRecordAndClaim(t *testing.T) {
 func TestRegisterDuplicateLiveNameAndBusyPane(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
-	first := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "w", NameSet: true, PaneID: "w1:p1"})
+	first := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "w", NameSet: true, PaneID: "w1:p1"})
 	if first.Outcome != "ok" {
 		t.Fatal(first.Error)
 	}
-	duplicate := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "w", NameSet: true, PaneID: "w1:p2"})
+	duplicate := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "w", NameSet: true, PaneID: "w1:p2"})
 	if duplicate.Outcome != "failed" || duplicate.Error != "agent exists: w" {
 		t.Fatalf("duplicate name = %#v; want agent exists", duplicate)
 	}
-	busy := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "other", NameSet: true, PaneID: "w1:p1"})
+	busy := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "other", NameSet: true, PaneID: "w1:p1"})
 	if busy.Outcome != "failed" || busy.Error != "pane busy: w1:p1 holds w" {
 		t.Fatalf("busy pane = %#v; want pane busy", busy)
 	}
@@ -258,7 +264,7 @@ func TestRegisterGeneratedNamesAreUniqueUnderParallelLoad(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: fmt.Sprintf("w%d:p1", i)})
+			envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, PaneID: fmt.Sprintf("w%d:p1", i)})
 			if envelope.Outcome != "ok" {
 				errs <- fmt.Sprintf("%v", envelope.Error)
 			}
@@ -432,7 +438,7 @@ func TestRegisterGeneratedNameCounterFailureKeepsGap(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
 	seam := &seamWriter{writeCollection: "agents", writeErr: errors.New("seam agent failure")}
-	options := RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p1"}
+	options := RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, PaneID: "w1:p1"}
 	envelope := runRegisterLocked(t, home, seam, options)
 	if envelope.Outcome != "partial" || envelope.Phase != "agent" {
 		t.Fatalf("Register() = %#v; want partial agent", envelope)
@@ -456,7 +462,7 @@ func TestRegisterGeneratedNameCounterFailureKeepsGap(t *testing.T) {
 func TestRegisterExplicitWorkerUsesNoCounter(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
-	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "fixed", NameSet: true, PaneID: "w1:p1"})
+	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "fixed", NameSet: true, PaneID: "w1:p1"})
 	if envelope.Outcome != "ok" {
 		t.Fatal(envelope.Error)
 	}
@@ -470,11 +476,11 @@ func TestRegisterExplicitWorkerUsesNoCounter(t *testing.T) {
 func TestRegisterGeneratedNameCollisionWritesNothing(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
-	explicit := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "worker-hive-1", NameSet: true, PaneID: "w1:p1"})
+	explicit := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "worker-hive-1", NameSet: true, PaneID: "w1:p1"})
 	if explicit.Outcome != "ok" {
 		t.Fatal(explicit.Error)
 	}
-	options := RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p2"}
+	options := RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, PaneID: "w1:p2"}
 	envelope := Register(home, options)
 	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
 		t.Fatalf("Register() = %#v; want failed with no effect before the counter", envelope)
@@ -500,12 +506,12 @@ func TestRegisterGeneratedNameCollisionWritesNothing(t *testing.T) {
 func TestRegisterBusyPaneRefusalWritesNothing(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
-	first := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "busy", NameSet: true, PaneID: "w1:p1"})
+	first := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "busy", NameSet: true, PaneID: "w1:p1"})
 	if first.Outcome != "ok" {
 		t.Fatal(first.Error)
 	}
 	before := agentKeys(t, home)
-	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p1"})
+	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, PaneID: "w1:p1"})
 	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
 		t.Fatalf("Register() = %#v; want failed with no effect on a busy pane", envelope)
 	}
@@ -522,7 +528,7 @@ func TestRegisterRejectsLiveNameAcrossRoles(t *testing.T) {
 	t.Run("worker then coordinator", func(t *testing.T) {
 		home := t.TempDir()
 		seedProject(t, home, "hive")
-		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "shared", NameSet: true, PaneID: "w1:p1"})
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "shared", NameSet: true, PaneID: "w1:p1"})
 		if worker.Outcome != "ok" {
 			t.Fatal(worker.Error)
 		}
@@ -541,7 +547,7 @@ func TestRegisterRejectsLiveNameAcrossRoles(t *testing.T) {
 		if coordinator.Outcome != "ok" {
 			t.Fatal(coordinator.Error)
 		}
-		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "shared", NameSet: true, PaneID: "w1:p2"})
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "shared", NameSet: true, PaneID: "w1:p2"})
 		if worker.Outcome != "failed" || len(worker.Effects) != 0 {
 			t.Fatalf("Register() = %#v; want refused live-name collision", worker)
 		}
@@ -578,7 +584,7 @@ func TestRegisterRejectsClaimAliasBothOrders(t *testing.T) {
 	t.Run("worker then coordinator", func(t *testing.T) {
 		home := t.TempDir()
 		seedProject(t, home, "hive")
-		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "coordinator", NameSet: true, PaneID: "w1:p1"})
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "coordinator", NameSet: true, PaneID: "w1:p1"})
 		if worker.Outcome != "ok" {
 			t.Fatal(worker.Error)
 		}
@@ -597,7 +603,7 @@ func TestRegisterRejectsClaimAliasBothOrders(t *testing.T) {
 		if coordinator.Outcome != "ok" {
 			t.Fatal(coordinator.Error)
 		}
-		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "coordinator", NameSet: true, PaneID: "w1:p2"})
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "coordinator", NameSet: true, PaneID: "w1:p2"})
 		if worker.Outcome != "failed" || len(worker.Effects) != 0 {
 			t.Fatalf("Register() = %#v; want refused claim-key alias", worker)
 		}
@@ -871,7 +877,7 @@ func TestRegisterRejectsCrossClaimAndGenerationKeyCollisions(t *testing.T) {
 		if envelope := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w1:p1"}); envelope.Outcome != "ok" {
 			t.Fatal(envelope.Error)
 		}
-		envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "coordinator-g1", NameSet: true, PaneID: "w1:p2"})
+		envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, Name: "coordinator-g1", NameSet: true, PaneID: "w1:p2"})
 		if envelope.Outcome != "failed" {
 			t.Fatalf("Register() = %#v; want generation key collision", envelope)
 		}
@@ -879,4 +885,89 @@ func TestRegisterRejectsCrossClaimAndGenerationKeyCollisions(t *testing.T) {
 			t.Fatalf("keys = %v; want old coordinator only", keys)
 		}
 	})
+}
+
+func agentStateFiles(t *testing.T, home string) []string {
+	t.Helper()
+	root := filepath.Join(home, ".hive", "state")
+	var names []string
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		names = append(names, filepath.ToSlash(rel))
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+	return names
+}
+
+func TestRegisterTaskNeedsATaskOfTheProject(t *testing.T) {
+	cases := []struct {
+		name    string
+		project string
+		task    string
+		want    string
+	}{
+		{"unknown task", "hive", "9-missing", "task not found in hive: 9-missing"},
+		{"another project", "other", testTaskID, "task not found in other: 1-task"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			home := t.TempDir()
+			seedProject(t, home, "hive")
+			st, err := store.Open(home)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if test.project == "other" {
+				project := records.Project{ID: "other", Path: "/tmp/other", Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z"}
+				if err := st.WriteIn([]string{"projects"}, "other", project); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before := agentStateFiles(t, home)
+			envelope := Register(home, RegisterOptions{Role: "worker", Project: test.project, Task: test.task, PaneID: "w1:p1"})
+			if envelope.Outcome != "failed" || envelope.Error != test.want {
+				t.Fatalf("Register() = %#v; want %q", envelope, test.want)
+			}
+			if len(envelope.Effects) != 0 {
+				t.Fatalf("effects = %#v; want none", envelope.Effects)
+			}
+			after := agentStateFiles(t, home)
+			if !reflect.DeepEqual(before, after) {
+				t.Fatalf("failed registration changed state: before %v after %v", before, after)
+			}
+			var agents []json.RawMessage
+			agents, err = st.ListIn([]string{"agents"}, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(agents) != 0 {
+				t.Fatalf("agents = %d; want none", len(agents))
+			}
+		})
+	}
+}
+
+func TestRegisterTaskOfTheProjectSucceeds(t *testing.T) {
+	home := t.TempDir()
+	seedProject(t, home, "hive")
+	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: testTaskID, PaneID: "w1:p1"})
+	if envelope.Outcome != "ok" || envelope.Error != nil {
+		t.Fatalf("Register() = %#v; want success", envelope)
+	}
+	record := readAgent(t, home, "worker-hive-1")
+	if record.Task != testTaskID || record.Project != "hive" {
+		t.Fatalf("record = %#v; want the project task", record)
+	}
 }
