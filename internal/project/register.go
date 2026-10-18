@@ -14,6 +14,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+const invalidIDRule = "an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
+
 // RegisterOptions holds the values for one project registration.
 type RegisterOptions struct {
 	Path       string
@@ -48,10 +50,7 @@ func Register(home string, options RegisterOptions) output.Envelope {
 		id = strings.ToLower(filepath.Base(path))
 	}
 	if !records.ValidID(id) {
-		if hasControl(id) {
-			id = fmt.Sprintf("%q", id)
-		}
-		return failed("validate", fmt.Sprintf("invalid project id: %s", id))
+		return failed("validate", invalidIDMessage(id))
 	}
 
 	registry, err := store.Open(home)
@@ -146,6 +145,13 @@ func invalidBase(base string) bool {
 		}
 	}
 	return false
+}
+
+func invalidIDMessage(id string) string {
+	if hasControl(id) {
+		id = fmt.Sprintf("%q", id)
+	}
+	return fmt.Sprintf("invalid project id: %s: %s", id, invalidIDRule)
 }
 
 func hasControl(value string) bool {

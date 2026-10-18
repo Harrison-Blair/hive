@@ -2,7 +2,6 @@ package project
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -13,10 +12,7 @@ import (
 // Show returns one project record.
 func Show(home, id string) output.Envelope {
 	if !records.ValidID(id) {
-		if hasControl(id) {
-			id = fmt.Sprintf("%q", id)
-		}
-		return failed("validate", fmt.Sprintf("invalid project id: %s", id))
+		return failed("validate", invalidIDMessage(id))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
