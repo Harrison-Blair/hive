@@ -229,4 +229,11 @@ go test -race ./...
 
 ## Changes
 
-None.
+- 2026-10-17, untrusted inputs. These rules add to AC1, AC2, AC3, and AC4. V1, V3, and V5 prove them with tests that their `-run` patterns select.
+  - An empty `HIVE_HOME` counts as unset. An empty `--home` value or an empty `PATH` is a usage error with exit status 2.
+  - A relative `--home`, `HIVE_HOME`, or `PATH` resolves against the working directory. Hive does not trim spaces around a value. The conflict check compares resolved paths.
+  - A `--base` value that is empty, starts with `-`, or holds a space or a control character fails with `invalid base branch: <value>`. A `PATH` with a control character fails with `invalid path: <value>` before any file access. Hive prints such a value with `%q`.
+  - `project show` applies the ID rule before it reads a file. An ID that fails the rule gives `invalid project id: <id>`.
+  - The store refuses a kind, an ID, or a counter name that is empty or holds `/` or `..`. The temporary file of an atomic write starts with `.`. `List` reads only files with the name `<id>.json` where `<id>` passes the ID rule.
+  - A directory, a symbolic link, an empty file, or a JSON array in place of a record gives `record invalid: <path>`. The reader does not follow a symbolic link. A record of exactly 1 MiB is valid.
+  - One function in the store reads a record file, and one function writes one. The write function can call the atomic helper of `atomic.go`. No other code in the package opens a record file. V5 adds one block with the command `grep -nE 'os\.(Open|OpenFile|ReadFile|WriteFile|Create|CreateTemp)\(' internal/lib/store/*.go` and its output.

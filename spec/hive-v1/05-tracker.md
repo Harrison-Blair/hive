@@ -85,8 +85,8 @@ flowchart TD
 
 | Task | Title | Wave | Tier | Depends on | Status | Verified by | Landed |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | ready | | |
-| [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | ready | | |
+| [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | in progress | | |
+| [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | in progress | | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, CP1 | blocked | | |
@@ -119,10 +119,10 @@ flowchart TD
 
 | Tier | Use | Bootstrap choice |
 | --- | --- | --- |
-| strong | Core design, concurrency, the herdr client, the supervisor, the playbooks | The strongest Claude model that the user has |
-| decent | Ordinary command and library work | A mid Claude model |
-| small | A move, a profile, a small command | The small Claude model |
-| verifier | Each task | Codex with `gpt-6.1-sol`, so that the verifier is from another model family |
+| strong | Core design, concurrency, the herdr client, the supervisor, the playbooks | pi with `openai-codex/gpt-6-luna` at the thinking level `xhigh` |
+| decent | Ordinary command and library work | pi with `openai-codex/gpt-6-luna` at the thinking level `xhigh` |
+| small | A move, a profile, a small command | pi with `openai-codex/gpt-6-luna` at the thinking level `xhigh` |
+| verifier | Each task | Claude Code with `claude-opus-5-5` for a strong or decent task. pi with `opencode-go/deepseek-v4.1-flash` for a small task. The verifier and the worker are from different model families. |
 
 ## Checkpoints
 
