@@ -516,6 +516,34 @@ func TestConsumeRefusesCrossRoleStoredRecord(t *testing.T) {
 	}
 }
 
+func TestConsumeLockedKeepsTheRecordPathWithoutHome(t *testing.T) {
+	home := t.TempDir()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := records.Inbox{Seq: 1, Role: "supervisor", Kind: records.InboxMessage, Text: "cross-role"}
+	if err := st.WriteIn([]string{"inbox", "coordinator"}, "1", record); err != nil {
+		t.Fatal(err)
+	}
+	var envelope output.Envelope
+	err = st.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		envelope = consumeLocked(locked, "coordinator", markRead)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("consumeLocked() = %#v; want failed with no effect", envelope)
+	}
+	path := ".hive/state/inbox/coordinator/1.json"
+	message, _ := envelope.Error.(string)
+	if !strings.Contains(message, path) {
+		t.Fatalf("error = %q; want the record path %s", message, path)
+	}
+}
+
 func TestConsumeRefusesSequencePathMismatch(t *testing.T) {
 	home := t.TempDir()
 	st, err := store.Open(home)

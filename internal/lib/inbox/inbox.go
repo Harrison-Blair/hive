@@ -228,7 +228,7 @@ func listLocked(lister recordLister, key string, all bool, home ...string) ([]re
 		if i < len(names) {
 			name = names[i]
 		}
-		path := recordErrorPath(lister, base, key, name)
+		path := recordErrorPath(base, key, name)
 		var record records.Inbox
 		if err := json.Unmarshal(data, &record); err != nil {
 			return nil, fmt.Errorf("record invalid: %s: %w", path, err)
@@ -253,19 +253,9 @@ func listLocked(lister recordLister, key string, all bool, home ...string) ([]re
 	return found, nil
 }
 
-func recordErrorPath(lister recordLister, home, key, name string) string {
+func recordErrorPath(home, key, name string) string {
 	if home != "" {
 		return filepath.ToSlash(filepath.Join(home, ".hive", "state", "inbox", key, name))
-	}
-	id := strings.TrimSuffix(name, ".json")
-	if id != "" {
-		_, err := lister.ListIn([]string{"inbox", key, id}, nil)
-		if err != nil {
-			const prefix = "store path invalid: "
-			if message := err.Error(); strings.HasPrefix(message, prefix) {
-				return filepath.ToSlash(strings.TrimPrefix(message, prefix))
-			}
-		}
 	}
 	return filepath.ToSlash(filepath.Join(".hive", "state", "inbox", key, name))
 }
