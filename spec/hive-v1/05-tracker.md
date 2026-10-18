@@ -85,7 +85,7 @@ flowchart TD
 
 | Task | Title | Wave | Tier | Depends on | Status | Verified by | Landed |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | evidence | | |
+| [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, CP1 | blocked | | |
@@ -132,6 +132,23 @@ of the form `NAME=<...>` means: copy the value from the output of the command
 before it. The user then writes the critique into the field. A critique that
 changes the design goes into the design file first, then into the briefs that
 it affects, with the date. The checkpoint then passes.
+
+The dated clarification below changes these steps.
+
+### Dated procedure clarification: autonomous completion
+
+2026-10-18. The user gave this instruction:
+
+```text
+I go to sleep, forget the user presentation demo gates, just complete all of the tasks okay?
+```
+
+This clarification changes the checkpoint procedure:
+
+- Routine progress goes in this tracker and in `handoff.md`. Do not wait for a user verdict.
+- An automated independent check replaces the user presentation approval for each checkpoint.
+- Keep each checkpoint script and each acceptance criterion.
+- A checkpoint passes only after its automated independent check passes. Until then, it stays open, and its blocked tasks stay blocked. CP1 stays open. T03 to T07 stay blocked.
 
 ### CP1 home live
 
@@ -377,6 +394,8 @@ before it is open. Commit on `dev` as `docs(tracker): land <task-id>` and push
 `dev`. The branch stays.
 
 ### Pass a checkpoint
+
+The dated clarification under Checkpoints changes this procedure.
 
 1. When each input of the checkpoint has the status landed, or skipped where the table allows it, run its script.
 2. Write the critique into the field of the checkpoint, with the date.
