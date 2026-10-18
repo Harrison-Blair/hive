@@ -2430,3 +2430,166 @@ func TestVerifierRolloverWithinOneSecond(t *testing.T) {
  cancelFollow(t,cancel,errs)
 }
 ```
+
+## Current verdict: 2026-10-18, t06-verify-02
+
+Overall verdict: **PASS** for worker commit `ce9b992bf3cc868eb687471d72a910ca3cb2ae5c`.
+The FAIL sections above remain as history. This section gives the current verdict.
+
+| Item | Value |
+| --- | --- |
+| Task | T06-logs-command |
+| Pass | t06-verify-02 |
+| Agent | verifier, pi, openai-codex/gpt-6.1-sol:high |
+| Branch | task/T06-logs-command |
+| Base | 840255d3f598ad18239eccd7a2eb2e93547ca1fb |
+| Tested worker HEAD | ce9b992bf3cc868eb687471d72a910ca3cb2ae5c |
+| Fix source commits | dc7964cb09cfd923e4d56c20b0d0b74233e7dcc8, ce2196159897d3615a55b18b5feaec98a1cd1842 |
+| Start check | Clean branch, exact HEAD, remote branch at the same HEAD |
+| Report | /home/penguin/source/hive/.hive/tmp/coordinator/reports/t06-verify-02.md |
+
+| Item | Proves | Verdict | Current evidence |
+| --- | --- | --- | --- |
+| V1 | AC1 | PASS | Uncached reader and filter tests pass. The fixed-size cap tests reject the doubled cap. |
+| V2 | AC3 | PASS | Uncached follow race tests pass. Offset, partial line, rollover, cutoff, numbering, and cancellation checks pass. |
+| V3 | AC1, AC2, AC3 | PASS | The transcript and existing live probes pass. F2 to F5 no longer occur. |
+| V4 | AC4 | PASS | Formatting output is empty. Vet, lint, and the full uncached race test pass. |
+
+### Finding dispositions
+
+| Finding | Disposition | Evidence |
+| --- | --- | --- |
+| F1 | Fixed | Fixtures use independent literals 1048575, 1048576, and 1048577. A 2097152-byte cap causes assertion failures. |
+| F2 | Fixed | Initial read and follow use the same inclusive cutoff. Live same-day and later-day cutoffs print only `at` and `after`. |
+| F3 | Fixed | Physical line 3 reports `:3`. Partial-line and rollover probes keep absolute numbering and reset for the new daily file. |
+| F4 | Fixed | Controls in the level, component, message, other values, and keys stay escaped. One event prints one physical line in key order. |
+| F5 | Fixed | Unreadable, directory, and symbolic-link JSON reads give empty stdout, one plain stderr line, and status 1. No envelope appears. |
+
+The current tests fail against isolated pre-fix production source. Each red run fails on an assertion, not a build error.
+The later-day test also fails against `dc7964cb`, before the `ce219615` fix.
+The same tests pass against the tested worker HEAD.
+
+### Commands and bounded results
+
+Commands ran from the task worktree. Only named isolated checks use `go -C`.
+
+```sh
+go test -count=1 ./internal/logs/ -run 'TestRead|TestFilter|TestSince' -v
+go test -race -count=1 ./internal/logs/ -run TestFollow -v
+go test -count=1 ./cmd/ -run TestLogsJSON -v
+go test -count=1 ./internal/logs/ -run TestTextLine -v
+```
+
+```text
+V1: PASS, exit 0. All fixed-size cap subtests pass.
+V2: PASS, exit 0. All eight follow tests pass.
+JSON command tests: PASS, exit 0. All three error types and raw JSON pass.
+Text control test: PASS, exit 0.
+```
+
+The source-copy cap mutation changes `const maxLineBytes = 1 << 20` to `const maxLineBytes = 2097152`.
+The actual task source never changes.
+The mutated copy runs the complete V1 pattern with `-race -count=1`.
+
+```text
+read_test.go:134: malformed prefix length = 1048577; want the first 200 bytes
+read_test.go:202: size 1048577 malformed = false; want true
+read_test.go:205: size 1048577 raw prefix = 1048577 bytes; want 200
+FAIL, exit 1. No build failure.
+Original cap: PASS, exit 0.
+```
+
+Pre-fix source at `c9016cf0` runs the current regression tests in the isolated copy.
+The copy replaces only production reader, follower, renderer, and command files.
+
+```text
+TestFollowAppliesCutoff: first message = "appended before"; want at
+TestFollowAppliesCutoffAfterToday: first message = "before"; want at
+TestFollowUsesAbsoluteLineNumbers: line = 1; want 3
+TestTextLineEscapesControlsInFieldsAndKeys: rendered line has a physical control
+TestLogsJSONReadErrorsUsePlainDiagnostics: stdout contains a failure envelope; want empty
+Each selected run: FAIL, exit 1, with assertion failures.
+dc7964cb later-day run: first message = "before"; want at. FAIL, exit 1.
+Current source: each selected regression run PASS, exit 0.
+```
+
+All eight existing mutation classes cause assertion failures in the isolated copy:
+cap, date order, cutoff equality, filter match, follow offset, partial snapshot, rollover, and cancellation result.
+Each original-source counterpart passes. No mutation affects the task worktree.
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run --allow-serial-runners ./...
+go test -race -count=1 ./...
+```
+
+```text
+gofmt: empty output, exit 0
+vet: empty output, exit 0
+lint: 0 issues, exit 0
+full race test: all packages pass, exit 0
+```
+
+### Existing checklist
+
+| Check | Verdict | Evidence |
+| --- | --- | --- |
+| H01 Three daily files in date order | PASS | Reader test and date-order mutation |
+| H02 Fixed 1 MiB boundary and following event | PASS | Literal fixtures, cap mutation, live over-cap probe |
+| H03 Inclusive cutoff | PASS | Initial-read test and equality mutation |
+| H04 Previous-day cutoff reads two files | PASS | Previous-day reader test |
+| H05 Each filter matches and misses | PASS | Test cases and live CLI probes |
+| H06 Warn keeps warn and error | PASS | Level tests and live CLI probe |
+| H07 Last N matches | PASS | V3 limit 2 and live warn limit 1 |
+| H08 Malformed text and 200-byte prefix | PASS | V3 and live over-cap text |
+| H09 Malformed JSON continues with correct number | PASS | Live line 3 and isolated partial/rollover numbering |
+| H10 Follow within one second | PASS | Worker test and live newline latency 300.168 ms |
+| H11 Line between snapshot and follow appears once | PASS | Uncached offset test and mutation |
+| H12 Snapshot partial line stays | PASS | Uncached test, mutation, and live split line |
+| H13 Two writes wait for newline and print once | PASS | Uncached test and live no-duplicate check |
+| H14 Old file drains before rollover within one second | PASS | Isolated deadline probe: 400.375 ms |
+| H15 SIGINT child status 0 | PASS | Preserve-status timeout and direct child wait |
+| H16 Raw JSON without envelopes | PASS | Exact raw bytes and all three JSON read errors |
+| H17 Bounded line storage and long-line drain | PASS | ReadSlice review, cap tests, live 5 MiB line |
+| H18 Reader does not write logs | PASS | Production opens are read-only. Live hash and modification time stay equal. |
+| H19 Required public API | PASS | Required names, public fields, and method signatures stay unchanged. |
+| H20 No dependency change | PASS | Empty go.mod and go.sum diff |
+| H21 Owned files only | PASS | Complete base-to-worker diff and imports checked |
+
+The V3 transcript uses the unique ignored binary instead of the existing `./hive`.
+It gives two text lines, parsed event JSON, no error-level line, and the required malformed outputs.
+The timeout uses `--preserve-status`. The direct child also returns status 0 after SIGINT.
+The live same-day and later-day follow probes drop `before` and keep `at` and `after`.
+
+The existing path probes pass for unreadable files, empty and non-empty directories, symbolic links, FIFO, and socket.
+The symbolic-link cases include valid, missing, directory, `/dev/zero`, and chained targets.
+Missing and empty daily files pass. Invalid JSON, null, array, number, cap sizes, and 5 MiB inputs continue safely.
+A valid event with 10000 extra keys retains its raw JSON.
+
+### Scope, design, and limits
+
+The checked source paths are `cmd/root.go`, `cmd/logs/logs.go`, `cmd/logs_root_test.go`, and all nine files under `internal/logs/`.
+The remaining changed paths are V1 to V4 and the historical VERIFIED record.
+The root change only imports and registers `logs`. No unrelated architecture or dependency change appears.
+The internal package imports only the standard library. It does not import Cobra or `cmd`.
+The command uses the existing home and status helpers. The package map covers each production file.
+
+Design decision: private `Offset` metadata carries the cutoff and complete-line count without mutable reader state.
+Recommendation: T08 must pass the value from `Read` directly to `Follow`.
+A manually constructed offset does not carry the private metadata.
+
+Only the local-user and cooperating-writer boundary applies.
+Hostile replacement between `Lstat` and `Open` remains deferred for T01.
+The unreadable-file checks ran as a non-root user.
+No unrelated new probe class ran. No required check remains uncompleted.
+
+One initial verifier assertion incorrectly expected empty output from `project list` without its transcript redirection.
+The command returned status 0 and `no projects`. The corrected check follows the transcript and passes.
+This setup error does not indicate a source failure. Its compact capture remains in the report directory.
+
+The current section is compact. The prior 2432-line FAIL record stays unchanged under the append-only brief.
+Captures and reproduction programs remain in the unique ignored report directory.
+I removed both unique marked homes, the binary, and the isolated source copy.
+No real runtime, existing binary, source, credential, tracker, baseline, global setting, or prior report changed.
+I append only this dated section to the tracked verdict. The commit that adds it is the verification commit.
