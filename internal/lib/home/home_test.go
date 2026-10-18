@@ -155,6 +155,25 @@ func TestResolveDoesNotTrimHomeValues(t *testing.T) {
 	}
 }
 
+func TestResolveMarkerMustBeRegularFile(t *testing.T) {
+	root := t.TempDir()
+	markerDir := filepath.Join(root, ".hive")
+	if err := os.Mkdir(markerDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(root, "target")
+	if err := os.WriteFile(target, []byte("home"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(markerDir, "README.md")); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Resolve("", false, "", root)
+	if got != "" || err == nil || err.Error() != "not a hive home: no marker above "+root {
+		t.Fatalf("Resolve() = %q, %v; want no marker because README.md is a symlink", got, err)
+	}
+}
+
 func TestResolveReturnsAbsolutePathWithoutSymlinks(t *testing.T) {
 	root := makeHome(t, t.TempDir(), "home")
 	alias := filepath.Join(filepath.Dir(root), "alias")
