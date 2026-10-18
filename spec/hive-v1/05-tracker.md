@@ -93,14 +93,14 @@ flowchart TD
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
 | [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | in progress | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | in progress | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | in progress | | |
-| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
+| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | ready | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
-| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | blocked | | |
+| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | ready | | |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | blocked | | |
@@ -656,6 +656,43 @@ It accepts no unverified source and passes no checkpoint.
   worktree, branch, or report.
 - CP2 to CP5 stay open. This receipt claims no future source or checkpoint
   pass.
+
+### Dated landing receipt: roles and inbox
+
+2026-10-18. This section records the T04 landing. It accepts no T05 or T07
+source and passes no checkpoint.
+
+- T04 is `landed`. The verified tip is `4ef23d20`. The verdict report is
+  `t04-verify-03.md`, with `END VERIFIER T04-roles-and-inbox t04-verify-03`
+  and PASS for V1 to V4. The tested worker is `c33f5896`.
+- The merge is `19e41ee6` with subject `merge(T04): land roles and inbox`.
+  Its parents are `21ea1e65` and `4ef23d20`. The branch is
+  `task/T04-roles-and-inbox`. The push changes only `dev` without force.
+- The T04 owned source and evidence equal the verified tip. The shared files
+  `cmd/root.go` and `internal/lib/records/doc.go` are an explicit union with
+  the current `dev`. The union keeps the T03 `task` registration and task
+  doc-map line. It adds the agent and inbox imports, registrations, and
+  doc-map line. No logic refactor, new source, or test occurs in the merge.
+- The full uncached gate passes after the merge. The format list is empty.
+  Vet and lint pass with `0 issues.`. The race tests pass.
+- The worktree archive is `.hive/tmp/coordinator/archives/T04-4ef23d20/`.
+  It holds 292 entries and 239 files. The original, copy, and after manifests
+  are equal. All 179 tracked blobs and modes match. The ignored worker reports
+  and captures stay in the archive.
+- The no-force removal reply names the T04 path and workspace `wA8` with
+  `forced:false`. The path is absent. The branch, the remote branch, and the
+  archive stay.
+- T08 and T11 move from `blocked` to `ready`. T04, T03, and T06 hold the
+  `landed` status. T09 stays `blocked` on T05. T10 stays `blocked` on T05 and T09.
+- The independent T05 check `t05-verify-02.md` returns FAIL. The independent
+  T07 check `t07-verify-01.md` returns FAIL. Their fix passes run in isolated
+  worktrees. This receipt accepts and merges neither source.
+- The later-text fix `21ea1e65` stays. The independent installed-text recheck
+  is pending. The T14, T09, and T10 task text from that pass stays unchanged.
+  The T04 task text does not change.
+- Pending: an independent integration and records check. The native Hive full
+  Pi flow needs T09, T10, T12, and T18. No runtime record exists. CP2 to CP5
+  stay open.
 
 ### CP1 home live
 
