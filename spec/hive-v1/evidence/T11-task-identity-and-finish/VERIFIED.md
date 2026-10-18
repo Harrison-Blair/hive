@@ -473,3 +473,148 @@ UNCOMPLETED: F06 correction and fresh independent source acceptance.
 Recommendation: return only F06 for a bounded fix. Preserve every closed ID and the accepted finish contract.
 
 END VERIFIER T11-task-identity-and-finish t11-verify-03
+
+# T11 independent source verification 04
+
+Date: 2026-10-18.
+Pass: `t11-verify-04`.
+Verdict: **PASS** for V1 to V4. T11-IO-F06 closes. All previously closed findings remain closed.
+Route: external Pi, `openai-codex/gpt-6.1-sol:high`.
+Observed provider, model, and reasoning: `openai-codex`, `gpt-6.1-sol`, `high`.
+Session: `01a14ed7-0f46-76f5-8acb-57c1350cbc03`.
+
+## Exact identities and scope
+
+| Item | Full SHA |
+| --- | --- |
+| Frozen worker and sole verdict parent | `ab1e60ec918546cd395573a87b24172820234219` |
+| Fix03 test-first snapshot | `7b8e009489a4156bf7ddf0641fa2c1833e8b9ec6` |
+| Fix03 production | `395156d1dcaa27c80da7c5f078f18c5f73765bba` |
+| First fix03 evidence | `72d8b28ce6b2d5dbc5ac6749b11bd0f89ccdd38b` |
+| Evidence-only correction | `ab1e60ec918546cd395573a87b24172820234219` |
+| Previous verdict | `065521261194cc5b9c13f62c0bfd1e49c0b4f5cf` |
+| Previous worker | `59b2b4125562bf075e50ab5d020e34d7310dab04` |
+| Previous production | `94ebe8dba0e814d4779df4aa751ee88d32bf5119` |
+| Activation base | `eded8f9cb09208bfdc81334870e86479e746c183` |
+
+Branch: `task/T11-task-identity-and-finish`.
+Initial local, tracking, and direct remote tips equal the frozen worker. The initial worktree is clean.
+I read the complete prior verdicts, first secondary report, worker reports, requirements, and old evidence.
+This includes root `t11-verify-03.md` and worktree `t11-fix-03.md` through their end markers.
+The exact fix03 brief has SHA256 `9fa9d22e53806127a0a4387d3add8116945caeae104cc200ef78eddaed9ae696`.
+Its worktree path is `.hive/tmp/worker/t11-fix-03-captures-1792323124-1339246/brief.txt`.
+No stale draft controls this check. No agent or model child starts.
+
+Full report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t11-verify-04.md`.
+Captures: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t11-verify-04-captures/`.
+The report and delivery receipt record the exact verdict and final task tips.
+Exact probes, scripts, raw outputs, synthetic logs, patches, and hashes remain in the captures.
+
+The fix range changes two production condition lines, 208 test lines, and new 87-line FIX-03 evidence with one correction.
+I inspected every changed line. The complete activation map has 35 paths: 15 source, 11 test, and nine evidence paths.
+All other source and tests match the previous verdict blobs, including `transition.go` and its actor plumbing.
+Old unchanged-source comparisons agree. No merge, dependency, baseline, common, output, store, or logger source change occurs.
+No root/source08/09 merge, finish field, journal, rollback, replay, or new framework exists.
+
+## Results and finding dispositions
+
+| Item | Result | Basis |
+| --- | --- | --- |
+| V1 / AC1 | PASS | Selected claims, paths, identity routes, and task registration pass. |
+| V2 / AC2 | PASS | Held group, prefixes, retries, caps, actor logs, and output checks pass. |
+| V3 / AC2, AC3 | PASS | Required transcript, home guard, inbox defaults, and real CLI matrices pass. |
+| V4 / AC4 | PASS | Full actual-worktree uncached gate and TestSTE pass. |
+
+| ID | Disposition | Independent result |
+| --- | --- | --- |
+| P-F01 | CLOSED | Selected claim/key/holder/role/project/generation agreement remains required. |
+| T11-IO-F04 | CLOSED | Static filename mismatches refuse on all routes and preserve unread records. |
+| P-F02 | CLOSED | Key/name/pane/history complete retains stored attribution. Self-verification aliases refuse. |
+| P-F03 | CLOSED | Actual advanced partial retries refuse without writes and name all inspection commands. |
+| T11-IO-F01 | CLOSED | Invalid explicit send checks before store access and creates no state directory. |
+| T11-IO-F02 | CLOSED | Default refusals log actual errors without an invented role or body. |
+| T11-IO-F03 | CLOSED | Direct and command logs keep resolved keys, actual effects, phases, IDs, roles, and stream errors. |
+| T11-IO-F05 | CLOSED | Fresh-worker rework reports the current worker on short/error stdout. |
+| T-W01 | CLOSED | Control-character quoting and old task-byte preservation remain and pass. |
+| T11-IO-F06 | CLOSED | Failed stdout before home resolution creates nothing and prints no fabricated finish report. |
+
+Both production `LogOutputFailure` calls require `homeUsed != "" && tracker.err != nil`.
+Only the resolved-home callback sets `homeUsed`. Pre-callback failure returns the original `common.Run` status.
+No fallback logger, second resolution, fake phase/effect, empty finish report, or second JSON object appears.
+The exact prior home driver replays 18 cases with only the fixed no-creation expectation and summary changed.
+The worker's exact script replays 36 cases with execution bindings only.
+Complete, verify pass, and verify fail use real `/dev/full`, actual error writers, and actual short writers.
+Every case exits 1 and creates no `.hive`, log, state directory, marker, or command effect.
+Working-output controls keep one failed/home envelope and empty effects. Invalid explicit home stays safe.
+Empty explicit home keeps exit 2, one usage line, zero envelope attempts, and no creation.
+Owned unmarked CWDs are outside every marked home. Child home/pane environment values are unset.
+Every actual command uses an absolute hashed binary. Each failing JSON driver attempts one envelope.
+
+Valid-home text/JSON stream failures still log `probe stdout error`, `short write`, or the actual `/dev/full` error.
+Known effects/phase, resolved IDs, controlling role effects, and all inspection commands remain exact.
+Twelve success-plus-output-failure cases and six partial-output cases pass across all three operations.
+Partial callbacks retain nil Go errors. No replay or replacement envelope occurs.
+All 72 injected actor cases and all 72 actual default-file cases pass without an optional actor pointer.
+Literal actor keys, actual prefixes/phases, project/task IDs, role, privacy, optional output, and per-call isolation pass.
+Default-log comparisons exclude time and normalize only owned unique filesystem names. Raw logs remain exact.
+
+All 56 old tests remain. Changed test files now contain 109 test functions, with no weaker old assertion or skip.
+One held handle checks identity/role/project/task/claims/FSM/full notification before all writes.
+The order stays task, counter, inbox record, then finished. Ordinary/held inbox wrappers keep no nested lock.
+All 12 actual storage prefixes, byte caps, same/changed-reason retries, finished refusal, fresh rework, and cancellation pass.
+ASCII 4090 fits and 4091 refuses. UTF-8 2045 two-byte characters fit and 2046 refuse before writes.
+The related reader waits for finish. Competing finishes produce one group and one notification.
+Ten race repetitions pass. Lock-acquiring output writers pass for finish, consume, and all.
+No output, Git, socket, process, external call, or long wait enters the finish lock.
+Default role routes, no-inbox roles, explicit sender/role behavior, static types, and numeric ordering pass.
+Consumed IDs remain 1 and 3, never 2. All-mode failures preserve unread marks and claim no consumption.
+Retained primary/secondary/fix CLI scripts pass. Thirty command-log audits pass.
+Only already recorded expectation corrections apply. The extra script retains its stale historical observation sentence.
+Actual binary SHA256: `a20ad855b5699d3f81a9a79dc3d98f5471d164ae5b08980ddbed8d8f9b1ababf`.
+Real Cobra driver SHA256: `d997036556e4fdbba9352978ead2f4b5734b46f8371ab3da8ca0ad0bae16dafc`.
+
+## Red sensitivity and gate
+
+Exact `7b8e0094` with old wrappers gives 12 assertion-red creation cases. Frozen source passes all 22 new leaf cases.
+One mutation removes only the complete guard. Four complete cases fail. Eight verify cases stay green.
+Exact restored source passes. All 252 original tracked-copy hashes then equal the frozen worktree.
+No red result uses a compile failure. Exact snapshot hashes, mutation patch, and raw outputs remain.
+
+The full actual-worktree gate ran once at final frozen Go source, with short outside-home `TMPDIR=/tmp/tv4-a3msgzvd`.
+
+```text
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run --allow-serial-runners ./...
+0 issues.
+exit 0
+$ go test -race -count=1 ./...
+exit 0
+$ go test -count=1 -run TestSTE .
+exit 0
+```
+
+The format command prints nothing. Complete package outputs remain in `gate-*.out`.
+Dependencies, baseline, and ratchet source equal activation exactly. No baseline rises.
+The fix03 diff check is clean. Historical V3 whitespace and the complete historical check output remain byte-exact.
+Focused docs/STE checks follow this append after source/dependency/baseline equality. No identical full gate repeats.
+
+## Freeze, cleanup, and limits
+
+All 252 tracked hashes match before this append. Old source, reports, V/FIX evidence, and retained inputs remain exact.
+The old VERIFIED prefix has 35894 bytes and SHA256 `dd47c39e601d2406d33bafd07601f13ed50ea063f9ddb9fec08fe2dec9268505`.
+This append preserves those exact bytes.
+The no-follow manifest records 3746 entries in the sole owned obsolete root `/tmp/tv4-a3msgzvd`.
+Compact synthetic logs/records and hashes remain. The receipt records that root absent.
+Read-only checks find every named fix03 cleanup root absent, including final `/tmp/t11f3h`.
+All owned synchronous children returned and were reaped. No other pass's leftover was deleted.
+No worktree runtime root, preexisting data, credential, other agent, worktree, attribution, or global harness setting changed.
+No tracker, handoff, root source, landing, or future checkpoint acceptance occurs. This is no root freeze claim.
+The boundary remains local users, cooperating writers, and static types.
+Hostile Lstat/Open replacement stays deferred to T01. Malicious callbacks and unbounded input remain deferred.
+UNCOMPLETED: landing and future checkpoints.
+Recommendation: retain the task PASS for the coordinator's separate landing procedure.
+
+END VERIFIER T11-task-identity-and-finish t11-verify-04
