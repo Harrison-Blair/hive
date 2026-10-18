@@ -92,11 +92,11 @@ flowchart TD
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
 | [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | in progress | | |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | in progress | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | in progress | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | ready | | |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | in progress | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
@@ -625,6 +625,32 @@ unverified source.
   is not a dispatch and not a source acceptance.
 - The historical R01, R02, and B01 corrections stay as the independent
   `t03-verify-01.md` and `spec-verdict.json` record them. Do not redo them.
+
+### Dated landing and fix receipt: lifecycle, store, and later contracts
+
+2026-10-18. This section records the current task, source, and contract state.
+It accepts no unverified source and passes no checkpoint.
+
+- T03 is `landed`. The verified tip is `e467682e`. The merge is `47da8abb`. The
+  source equality check and the full uncached gate pass. The worktree archive is
+  `.hive/tmp/coordinator/archives/T03-e467682e/`. The no-force removal reply
+  names the T03 path and workspace `wA7`. The branch stays.
+- T22 remains `landed`. The walk follow-up merge is `16bbd00f` for tip
+  `ccfe0020`. The T22 candidate closes S05-D01. The combined store comes from
+  the T22 candidate. The worktree archive is
+  `.hive/tmp/coordinator/archives/T22-ccfe0020/`. The no-force removal reply
+  names the T22 path and workspace `wAC`. The branch stays.
+- The docs correction is `a01167c`. It fixes C01 to C07 and the R01 receipt.
+  The independent installed-text recheck is pending.
+- T04 is `in progress`. Fix pass `t04-fix-02` has verdict `64fdb038`. Four
+  IDs stay open: P-F02, P-F06, I-F03, and I-F04. No source acceptance.
+- T05 is `in progress`. Prerequisite sync `5a7e1264` merges `47da8abb` into
+  `task/T05-herdr-client-and-doctor`. The old FAIL verdict stays. The sync gate
+  passes. Independent source verification is pending.
+- T07 is `in progress`. Agent `t07-impl-01` runs in `wAA`. Do not touch its
+  worktree, branch, or report.
+- CP2 to CP5 stay open. This receipt claims no future source or checkpoint
+  pass.
 
 ### CP1 home live
 
