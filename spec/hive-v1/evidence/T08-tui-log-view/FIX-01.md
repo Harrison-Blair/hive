@@ -14,9 +14,11 @@
 | Activation base | `eded8f9cb09208bfdc81334870e86479e746c183` |
 | Imported dependency | `66d6cd7f1e84fdc964dd757848f0392c78ea1a48` |
 | Dependency merge | `f8260e7a9e7dd5e89c23cf51c4389960dad08bf3` |
-| Test commit | `a24faa51eb24970e5964bf0064a372ce0d4c4d24` |
-| Source commit | `4df092fc27fdbe5ab9712fc237078485a77edfdb` |
+| First test commit | `a24faa51eb24970e5964bf0064a372ce0d4c4d24` |
+| First source commit | `4df092fc27fdbe5ab9712fc237078485a77edfdb` |
 | Lint test commit | `f43bd731294f713671e522e3839306d12f8a3334` |
+| File-writer test commit | `6ef97095793b7ceeaa4cf60bb0df33e6928e4543` |
+| Final source commit | `5a1c0317e205cb88828d3bcc17db5442878148e6` |
 | Date | 2026-10-18 |
 | Result | New hard findings 0. A fresh verifier owns source acceptance and `VERIFIED.md`. |
 
@@ -51,7 +53,8 @@ This delivery keeps the full new runtime inventory and all preexisting runtime e
 The fenced blocks keep the decisive lines and the exact exit status.
 The captures keep the exact raw output for every command.
 The lint test commit changes only one test variable name.
-The product source and the binary are the same at the source commit and the lint test commit.
+The file-writer commits add one test and one output wrapper.
+The final evidence commit changes one Markdown file only. The Go tree equals the gated tree.
 
 ## Findings and dispositions
 
@@ -130,11 +133,11 @@ Quit still works in the persistent error state.
 
 ## V2 Ordered follower and stream lifecycle
 
-The red run uses the new tests on the start source. The green run uses the same tests on the source commit.
+The red run uses the new tests on the start source. The green run uses the same tests on the final source commit.
 
 ```sh
 commit f8260e7a
-TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=180s ./internal/tui -run '^(TestInitDoesNotConsumeFollowerEvents|TestRunHomeReportsOutputFailure|TestRunHomeFiniteEOFStops|TestRunHomeReportsInputFailure|TestNewRejects)' -v
+TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=180s ./internal/tui -run '^(TestInitDoesNotConsumeFollowerEvents|TestRunHomeReportsOutputFailure|TestRunHomeReportsFileWriterFailure|TestRunHomeFiniteEOFStops|TestRunHomeReportsInputFailure|TestNewRejects)' -v
 echo "exit $?"
 ```
 
@@ -142,15 +145,21 @@ echo "exit $?"
 === RUN   TestInitDoesNotConsumeFollowerEvents
     fix_test.go:105: events=2; want 3 before the timeout
 --- FAIL: TestInitDoesNotConsumeFollowerEvents (3.72s)
+=== RUN   TestRunHomeReportsOutputFailure
 === RUN   TestRunHomeReportsOutputFailure/short=false
     fix_test.go:143: RunHome returned nil for short=false; want an output error
 === RUN   TestRunHomeReportsOutputFailure/short=true
     fix_test.go:143: RunHome returned nil for short=true; want an output error
 --- FAIL: TestRunHomeReportsOutputFailure (0.01s)
+    --- FAIL: TestRunHomeReportsOutputFailure/short=false (0.01s)
+    --- FAIL: TestRunHomeReportsOutputFailure/short=true (0.01s)
 === RUN   TestRunHomeReportsInputFailure
 --- PASS: TestRunHomeReportsInputFailure (0.00s)
+=== RUN   TestRunHomeReportsFileWriterFailure
+    fix_test.go:187: RunHome returned nil for a full file writer; want an output error
+--- FAIL: TestRunHomeReportsFileWriterFailure (0.01s)
 === RUN   TestRunHomeFiniteEOFStops
-    fix_test.go:185: RunHome did not stop on finite input EOF
+    fix_test.go:204: RunHome did not stop on finite input EOF
 --- FAIL: TestRunHomeFiniteEOFStops (2.00s)
 === RUN   TestNewRejectsLinkedDailyLogWithoutWrite
 --- PASS: TestNewRejectsLinkedDailyLogWithoutWrite (0.00s)
@@ -158,6 +167,8 @@ echo "exit $?"
 --- PASS: TestNewRejectsDailyFIFOWithoutBlocking (0.00s)
 === RUN   TestNewRejectsLinkedLogDirectoryWithoutWrite
 --- PASS: TestNewRejectsLinkedLogDirectoryWithoutWrite (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	5.749s
 FAIL
 exit 1
 ```
@@ -167,27 +178,29 @@ The three H03 constructor tests pass on the red source because the merge already
 Their red run uses the frozen source08 tree with the old logger. The report records that run.
 
 ```sh
-commit f43bd731
-TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=180s ./internal/tui -run '^(TestInitDoesNotConsumeFollowerEvents|TestRunHomeReportsOutputFailure|TestRunHomeFiniteEOFStops|TestRunHomeReportsInputFailure|TestNewRejects)' -v
+commit 5a1c0317
+TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=180s ./internal/tui -run '^(TestInitDoesNotConsumeFollowerEvents|TestRunHomeReportsOutputFailure|TestRunHomeReportsFileWriterFailure|TestRunHomeFiniteEOFStops|TestRunHomeReportsInputFailure|TestNewRejects)' -v
 echo "exit $?"
 ```
 
 ```text
---- PASS: TestInitDoesNotConsumeFollowerEvents (0.74s)
+--- PASS: TestInitDoesNotConsumeFollowerEvents (0.72s)
 --- PASS: TestRunHomeReportsOutputFailure (0.01s)
-    --- PASS: TestRunHomeReportsOutputFailure/short=false (0.00s)
-    --- PASS: TestRunHomeReportsOutputFailure/short=true (0.00s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=false (0.01s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=true (0.01s)
 --- PASS: TestRunHomeReportsInputFailure (0.00s)
+--- PASS: TestRunHomeReportsFileWriterFailure (0.01s)
 --- PASS: TestRunHomeFiniteEOFStops (0.50s)
 --- PASS: TestNewRejectsLinkedDailyLogWithoutWrite (0.00s)
 --- PASS: TestNewRejectsDailyFIFOWithoutBlocking (0.00s)
 --- PASS: TestNewRejectsLinkedLogDirectoryWithoutWrite (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	2.265s
+ok  	github.com/Harrison-Blair/hive/internal/tui	2.253s
 exit 0
 ```
 
 The exact green output is in `t08-fix-01-captures/v2/V2-green.txt`.
+The output guard keeps the fault for a custom writer and for a real `/dev/full` file writer.
 The existing key, filter, level, follow, daily-file, and stop tests also pass in the full gate.
 The report records the first-review probe replay and the mutation checks.
 
@@ -214,7 +227,7 @@ exit 1
 ```
 
 ```sh
-commit f43bd731
+commit 5a1c0317
 TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=180s ./internal/tui -run '^TestHVLogging(BadDailyLinkNoWrite|BadDailyFIFOBounded|LinkedLogDirectoryError)$' -v
 echo "exit $?"
 ```
@@ -241,7 +254,7 @@ The test run uses the actual worktree. The CLI run uses one absolute binary and 
 The fixture home is outside every marked home. No V3 command uses this worktree as its home.
 
 ```sh
-commit f43bd731
+commit 5a1c0317
 TMPDIR=/tmp/t8f01-go go test -race -count=1 -timeout=120s ./internal/tui -run '^TestRun(Quits|ResolvesFixtureHome)$' -v
 echo "exit $?"
 ```
@@ -254,21 +267,21 @@ exit 0
 ```
 
 ```sh
-commit f43bd731
-go build -o /tmp/t8f01-cli/hive2 .
-sha256sum /tmp/t8f01-cli/hive2
-mkdir -p /tmp/t8f01-go/cli-fix01b/.hive/logs
-printf 'home\n' > /tmp/t8f01-go/cli-fix01b/.hive/README.md
-printf '{"time":"2026-10-18T07:12:18-04:00","level":"INFO","component":"cli","msg":"fix fixture event"}\n' > /tmp/t8f01-go/cli-fix01b/.hive/logs/2026-10-18.jsonl
-printf q | /tmp/t8f01-cli/hive2 --home /tmp/t8f01-go/cli-fix01b
+commit 5a1c0317
+go build -o /tmp/t8f01-cli/hive3 .
+sha256sum /tmp/t8f01-cli/hive3
+mkdir -p /tmp/t8f01-go/cli-fix01c/.hive/logs
+printf 'home\n' > /tmp/t8f01-go/cli-fix01c/.hive/README.md
+printf '{"time":"2026-10-18T07:16:17-04:00","level":"INFO","component":"cli","msg":"fix fixture event"}\n' > /tmp/t8f01-go/cli-fix01c/.hive/logs/2026-10-18.jsonl
+printf q | /tmp/t8f01-cli/hive3 --home /tmp/t8f01-go/cli-fix01c
 echo "exit $?"
-/tmp/t8f01-cli/hive2 --json --home /tmp/t8f01-go/cli-fix01b
+/tmp/t8f01-cli/hive3 --json --home /tmp/t8f01-go/cli-fix01c
 echo "exit $?"
 ```
 
 ```text
-406845208d14bd6d5d7fb5d057f9d240039dda8584d93946841e9461148a8ce6  /tmp/t8f01-cli/hive2
-hive /tmp/t8f01-go/cli-fix01b  supervisor: down  agents: 0  inbox: 0 unread
+fbf7764622694e500fe55c8ab8029aa25bba73dfa5f6e0ab6637bb5a76fc8a01  /tmp/t8f01-cli/hive3
+hive /tmp/t8f01-go/cli-fix01c  supervisor: down  agents: 0  inbox: 0 unread
 INFO cli fix fixture event
 ...
 level: debug  text: -  follow: on
@@ -279,7 +292,7 @@ exit 1
 
 The q run has status 0. It shows the fixture home and the fixture event. It writes no extra envelope. Its stderr is empty.
 The bare `--json` run has status 1. It writes one failed envelope with phase `validate` and the exact error `TUI requires text output`. Its stderr is empty.
-The synthetic daily file SHA256 is `2886897baf32e4c244499d517b3a6c8096d7c1f1964b7def50de793d18a9b009`.
+The synthetic daily file SHA256 is `695b598a41cd95233bb543f7c6f4e8efd7eefca9eb6a957453017959dcfab7a8`.
 The fixture marker SHA256 is `9a3e246041d3c27dc3645f79cb0d1eb41c277965614655d17119ed7498b956ec`.
 The raw stdout, stderr, status, binary hash, and fixture hash are in `t08-fix-01-captures/v3/`.
 The cleanup removes only the owned binary and fixture after this evidence is compact.
@@ -290,7 +303,7 @@ The gate runs from the actual worktree root. The Go `TMPDIR` is outside every ma
 The test run does not use the Go test cache. The test run uses `-count=1`.
 
 ```sh
-commit f43bd731
+commit 5a1c0317
 TMPDIR=/tmp/t8f01-go gofmt -l $(git ls-files -co --exclude-standard '*.go')
 echo "exit $?"
 TMPDIR=/tmp/t8f01-go go vet ./...
@@ -310,28 +323,52 @@ vet: no output
 exit 0
 0 issues.
 exit 0
-ok  	github.com/Harrison-Blair/hive	3.261s
-ok  	github.com/Harrison-Blair/hive/cmd	1.075s
-ok  	github.com/Harrison-Blair/hive/cmd/handoff/write	1.251s
-ok  	github.com/Harrison-Blair/hive/cmd/memory/write	1.225s
-ok  	github.com/Harrison-Blair/hive/cmd/version	1.014s
-ok  	github.com/Harrison-Blair/hive/internal/agent	1.208s
-ok  	github.com/Harrison-Blair/hive/internal/doctor	3.039s
-ok  	github.com/Harrison-Blair/hive/internal/handoff	1.135s
-ok  	github.com/Harrison-Blair/hive/internal/inbox	1.010s
-ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	6.497s
+ok  	github.com/Harrison-Blair/hive	3.233s
+ok  	github.com/Harrison-Blair/hive/cmd	1.089s
+?   	github.com/Harrison-Blair/hive/cmd/agent	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/register	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/common	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/doctor	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/handoff	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/handoff/write	1.215s
+?   	github.com/Harrison-Blair/hive/cmd/inbox	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/logs	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/memory	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/memory/write	1.219s
+?   	github.com/Harrison-Blair/hive/cmd/project	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/register	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/assign	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/cancel	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/complete	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/create	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/verify	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/version	1.020s
+ok  	github.com/Harrison-Blair/hive/internal/agent	1.251s
+ok  	github.com/Harrison-Blair/hive/internal/doctor	3.043s
+ok  	github.com/Harrison-Blair/hive/internal/handoff	1.138s
+ok  	github.com/Harrison-Blair/hive/internal/inbox	1.018s
+ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	6.516s
 ok  	github.com/Harrison-Blair/hive/internal/lib/home	1.023s
-ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	1.224s
-ok  	github.com/Harrison-Blair/hive/internal/lib/log	1.062s
-ok  	github.com/Harrison-Blair/hive/internal/lib/run	3.481s
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	1.244s
+ok  	github.com/Harrison-Blair/hive/internal/lib/log	1.067s
+?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
+?   	github.com/Harrison-Blair/hive/internal/lib/records	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/lib/run	3.485s
 ok  	github.com/Harrison-Blair/hive/internal/lib/scope	1.142s
-ok  	github.com/Harrison-Blair/hive/internal/lib/store	17.332s
-ok  	github.com/Harrison-Blair/hive/internal/lib/version	1.003s
-ok  	github.com/Harrison-Blair/hive/internal/logs	5.517s
-ok  	github.com/Harrison-Blair/hive/internal/memory	2.146s
-ok  	github.com/Harrison-Blair/hive/internal/project	1.011s
-ok  	github.com/Harrison-Blair/hive/internal/task	1.161s
-ok  	github.com/Harrison-Blair/hive/internal/tui	6.664s
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	17.331s
+ok  	github.com/Harrison-Blair/hive/internal/lib/version	1.004s
+ok  	github.com/Harrison-Blair/hive/internal/logs	5.511s
+ok  	github.com/Harrison-Blair/hive/internal/memory	2.152s
+ok  	github.com/Harrison-Blair/hive/internal/project	1.010s
+ok  	github.com/Harrison-Blair/hive/internal/task	1.162s
+ok  	github.com/Harrison-Blair/hive/internal/tui	6.688s
 exit 0
 --- PASS: TestSTERatchet (0.15s)
 PASS
@@ -341,8 +378,10 @@ exit 0
 
 The full raw gate output is in `t08-fix-01-captures/v4/`.
 The STE baseline stays exact. New prose passes both glossaries with hard count 0.
-The evidence commit changes one Markdown file only. The Go tree equals the gated tree.
 The four gate commands pass. The format list is empty.
+The final evidence commit changes one Markdown file only. The Go tree equals the gated tree.
+The new diff has no trailing whitespace. `git diff --check 223f3937..HEAD` exits 0.
+The old literal terminal-whitespace bytes in the frozen V1 and V2 files stay as history.
 
 ## Sensitivity and probe replay
 
