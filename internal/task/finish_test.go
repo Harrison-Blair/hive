@@ -484,3 +484,42 @@ func TestCompleteFinishConcurrentAttempts(t *testing.T) {
 		t.Fatal("worker is not finished")
 	}
 }
+
+func TestCompleteFinishConcurrentInboxReaders(t *testing.T) {
+	home, task := newSeed(t, "assigned")
+	const readers, reads = 4, 10
+	var wg sync.WaitGroup
+	errs := make(chan error, readers)
+	for range readers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range reads {
+				if _, err := inbox.All(home, "manager-one"); err != nil {
+					errs <- err
+					return
+				}
+			}
+		}()
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+		if envelope.Outcome != "ok" {
+			errs <- errors.New("the finish did not complete")
+		}
+	}()
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Fatal(err)
+	}
+	if got := readTask(t, home, task.ID); got.Status != "completed" {
+		t.Fatalf("task status = %q; want completed", got.Status)
+	}
+	inboxRecords := finishInbox(t, home, "manager-one")
+	if len(inboxRecords) != 1 || inboxRecords[0].Kind != records.InboxCompleted || inboxRecords[0].ReadAt != "" {
+		t.Fatalf("inbox = %#v; want one coherent completed record", inboxRecords)
+	}
+}
