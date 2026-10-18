@@ -87,6 +87,7 @@ Codex, so this task blocks CP3.
 - Use one unique fixture home with the marker `.hive/README.md` and one absolute
   tested binary. Record the binary SHA256. Discover the exact installed Codex
   model first. Record the requested model and the actual model.
+- Set the state directory of the child harness to a path inside `$FIX`, with the harness's own variable. For Pi use `PI_CODING_AGENT_SESSION_DIR=$FIX/pi-sessions`. Record the SHA256 of the real state directory of the harness before and after the run. The fixture cleanup removes only `$FIX`.
 - Command, from a pane of the hive session, with a new workspace for the check. The name gets a suffix from `date +%s`. herdr names are unique for the session, and T16 to T19 run in parallel.
 
 ```sh
@@ -102,7 +103,7 @@ herdr workspace create --cwd "$FIX" --label "$NAME" --no-focus
 echo "exit $?"
 "$BIN" --home "$FIX" agent send --agent "$NAME" --wait --timeout 120 'Run the shell command echo $HERDR_PANE_ID and reply with its output and the word pong.'
 echo "exit $?"
-herdr agent read "$NAME" --source visible
+herdr pane read <root pane of the new workspace> --source visible
 "$BIN" --home "$FIX" agent stop --agent "$NAME"
 echo "exit $?"
 "$BIN" --home "$FIX" agent show "$NAME"
@@ -110,7 +111,7 @@ herdr workspace list
 rm -rf "$FIX"
 ```
 
-- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send reports the settled status and exits 0. A separate pane read shows the reply with the pane ID of the root pane and the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start, the requested model, and the actual model. A wrong or absent model leaves AC2 `BLOCKED`.
+- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send reports the settled status and exits 0. A separate pane read shows the reply with the pane ID of the root pane and the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start, the requested model, and the actual model. A wrong or absent model leaves AC2 `BLOCKED`. The real state directory of the harness has the same SHA256 before and after the run.
 - A spawn that ends `partial` with `agent blocked` goes into the evidence as a separate run. The worker answers the dialog in the pane by hand, stops the agent, and runs the check again from the spawn. Only a run with the outcome `ok` proves AC2.
 - When a run fails before the stop, the worker closes the workspace of the check with `herdr workspace close <workspace>`.
 
@@ -132,3 +133,7 @@ model discovery.
 2026-10-18. Add the D10 settled-status wording. The send reports the settled
 status and exits 0. A separate pane read shows the reply. The send does not
 print the reply text.
+2026-10-18. Correct the V2 live transcript from the T18 verification report
+`t18-verify-01.md`, blocker B01 and observation N03. Read the output from the
+pane. Set the state directory of the child harness inside `$FIX` and record the
+SHA256 of that directory before and after the run.
