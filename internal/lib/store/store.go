@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
@@ -169,10 +170,23 @@ func (s *Store) withLock(fn func() error) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = lock.Close() }()
-	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
-		return err
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, syscall.EWOULDBLOCK) && !errors.Is(err, syscall.EAGAIN) {
+			_ = lock.Close()
+			return err
+		}
+		if !time.Now().Before(deadline) {
+			_ = lock.Close()
+			return ErrLockTimeout
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
+	defer func() { _ = lock.Close() }()
 	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN) //nolint:errcheck
 	return fn()
 }

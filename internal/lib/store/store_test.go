@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -101,6 +102,14 @@ func TestStoreProcessHelper(t *testing.T) {
 				}
 				record["count"]++
 				return json.Marshal(record)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		case "grouped-counter":
+			err := store.WithLock(context.Background(), func(locked *LockedStore) error {
+				_, err := locked.Next("shared")
+				return err
 			})
 			if err != nil {
 				t.Fatal(err)
