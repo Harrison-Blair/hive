@@ -237,3 +237,4 @@ go test -race ./...
   - The store refuses a kind, an ID, or a counter name that is empty or holds `/` or `..`. The temporary file of an atomic write starts with `.`. `List` reads only files with the name `<id>.json` where `<id>` passes the ID rule.
   - A directory, a symbolic link, an empty file, or a JSON array in place of a record gives `record invalid: <path>`. The reader does not follow a symbolic link. A record of exactly 1 MiB is valid.
   - One function in the store reads a record file, and one function writes one. The write function can call the atomic helper of `atomic.go`. No other code in the package opens a record file. V5 adds one block with the command `grep -nE 'os\.(Open|OpenFile|ReadFile|WriteFile|Create|CreateTemp)\(' internal/lib/store/*.go` and its output.
+- 2026-10-17, implementation choices. The record reader is `readRecordFile`. The record writer is `writeRecordFile`.
