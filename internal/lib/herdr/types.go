@@ -18,6 +18,7 @@ type AgentInfo struct {
 	StateLabels    map[string]string `json:"state_labels,omitempty"`
 	Tokens         map[string]string `json:"tokens,omitempty"`
 	StateChangeSeq uint64            `json:"state_change_seq,omitempty"`
+	AgentSession   *AgentSessionInfo `json:"agent_session,omitempty"`
 }
 
 // PaneInfo is one terminal area in a tab.
@@ -37,6 +38,7 @@ type PaneInfo struct {
 	ForegroundCwd string            `json:"foreground_cwd,omitempty"`
 	StateLabels   map[string]string `json:"state_labels,omitempty"`
 	Tokens        map[string]string `json:"tokens,omitempty"`
+	AgentSession  *AgentSessionInfo `json:"agent_session,omitempty"`
 }
 
 // TabInfo is one tab in a workspace.

@@ -43,6 +43,9 @@ type RegisterOptions struct {
 	QuietAfterMin int
 	QuietAfterSet bool
 	PID           int64
+	// Spawned marks the first record write of a spawn. Manual registration
+	// leaves it false. No CLI flag sets it.
+	Spawned bool
 }
 
 // RegisterResult is the record and optional claim of one registration.
@@ -391,6 +394,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		Generation:    generation,
 		StartedAt:     startedAt,
 		UpdatedAt:     now,
+		Spawned:       options.Spawned,
 	}
 	action := "created"
 	if replaceOrphan {
