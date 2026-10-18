@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
 
 const maxBodyBytes = 4096
@@ -193,9 +194,11 @@ func addAttr(event map[string]any, groups []string, attr slog.Attr, truncated *b
 	}
 	value := attr.Value.Any()
 	if attr.Key == "body" {
-		if body, ok := value.(string); ok && len(body) > maxBodyBytes {
-			value = body[:maxBodyBytes]
-			*truncated = true
+		if body, ok := value.(string); ok {
+			if capped, cut := capBody(body); cut {
+				value = capped
+				*truncated = true
+			}
 		}
 	}
 	key := attr.Key
@@ -203,4 +206,39 @@ func addAttr(event map[string]any, groups []string, attr slog.Attr, truncated *b
 		key = fmt.Sprintf("%s.%s", strings.Join(groups, "."), attr.Key)
 	}
 	event[key] = value
+}
+
+// capBody returns the largest complete-character prefix of text that stays
+// within maxBodyBytes after the encoding/json replacement of each invalid byte
+// with U+FFFD. It returns the text unchanged when the decoded sequence fits.
+func capBody(text string) (string, bool) {
+	decoded := 0
+	end := 0
+	for end < len(text) {
+		r, size := utf8.DecodeRuneInString(text[end:])
+		width := size
+		if r == utf8.RuneError && size == 1 {
+			width = len("\uFFFD")
+		}
+		if decoded+width > maxBodyBytes {
+			break
+		}
+		decoded += width
+		end += size
+	}
+	if end == len(text) {
+		return text, false
+	}
+	var builder strings.Builder
+	builder.Grow(decoded)
+	for index := 0; index < end; {
+		r, size := utf8.DecodeRuneInString(text[index:end])
+		if r == utf8.RuneError && size == 1 {
+			builder.WriteString("\uFFFD")
+		} else {
+			builder.WriteString(text[index : index+size])
+		}
+		index += size
+	}
+	return builder.String(), true
 }
