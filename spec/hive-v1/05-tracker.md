@@ -88,12 +88,12 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | evidence | | |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | evidence | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | in progress | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | in progress | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | evidence | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | ready | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05 | blocked | | |
@@ -502,6 +502,54 @@ and the remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The B01
 independent check is still pending. Do not claim equal references.
 - This section removes no earlier source or checkpoint PASS. No other
 prerequisite changes. T08 stays `blocked` on T04.
+
+### Dated landing receipt: cap and home follow-ups
+
+2026-10-18. This section records the cap and home landings, the status
+changes, and the T22 punctuation deviation. It accepts only the verified
+changes.
+
+- The cap branch `task/T22-write-cap` has worker tip `a05e617e` and verified
+tip `30ef7e2d`. The independent report `t22-write-cap-verify-01.md` gives V1 to
+V5 PASS and shared G1 CLOSED. Its last line is `END T22 WRITE CAP VERIFY 01.`
+That final period differs from the planned marker without a period. The report
+stays unchanged. The period is a record deviation only.
+- The merger landed `task/T22-write-cap` into `dev` at verified tip `30ef7e2d`.
+The merge commit is `d6f28d83`. The subject is `merge(T22): land the store write
+cap`. The first parent is `7ae3fb8a`. The second parent is `30ef7e2d`.
+- The home branch `task/T01-static-home` has source `72c7ac48` and verified tip
+`938d8737`. The independent report `t01-home-and-wave2-verify-01.md` gives A
+SOURCE PASS. The tip adds only `STATIC-HOME-VERIFIED.md` after the tested worker
+`e4cc4a81`.
+- The merger landed `task/T01-static-home` into `dev` at verified tip
+`938d8737`. The merge commit is `a8d6547c`. The subject is `merge(T01): land the
+static home follow-up`. The first parent is `d6f28d83`. The second parent is
+`938d8737`.
+- The combined gate passes at `a8d6547c`. `gofmt -l` prints nothing. `go vet
+./...` exits 0. `golangci-lint run ./...` reports `0 issues.` `go test -race
+-count=1 ./...` passes each package.
+- Each cap source and evidence path in `dev` equals its `30ef7e2d` object. Each
+home path in `dev` equals its `938d8737` object. Only the verified task diff
+enters each merge.
+- T22 returns to `landed`. The verifier is `openai-codex/gpt-6.1-sol` and the
+date is `2026-10-18`. The earlier landing receipt, merge `0d0c9d4e`, first
+verification `0217df27`, branch `task/T22-store-operations`, and archive
+`.hive/tmp/coordinator/archives/T22-0217df27/` stay.
+- The T01 row keeps `landed`, verifier `openai-codex/gpt-6.1-sol`, and date
+`2026-10-18`. The accepted follow-up landing is the `a8d6547c` merge. The T01
+and T02 historical attribution does not change.
+- T03 moves from `evidence` to `in progress` to prepare a fix. The
+independent `t03-verify-01.md` returned FAIL on T03 F1 to F4. The source is not
+verified.
+- T04 moves from `evidence` to `in progress` to prepare a fix. The
+independent `t04-verify-01.md` and `t04-inbox-verify-01.md` returned FAIL. The
+source is not verified. The historical reports stay.
+- T07 moves from `blocked` to `ready`. T22 has the status landed and CP1 passed.
+- T05 stays `evidence`. Its primary review returned FAIL at `b361a0c8`. A
+separate secondary review continues. No combined source verdict changes its
+status.
+- No other task status, checkpoint, dependency, or model route changes. CP2
+through CP5 stay open.
 
 ### CP1 home live
 
