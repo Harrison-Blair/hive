@@ -5,7 +5,7 @@
 | Task ID | T05-herdr-client-and-doctor |
 | Wave | 2 |
 | Tier | strong |
-| Depends on | T01, CP1 |
+| Depends on | T01, T22, CP1 |
 | Blocks | T09, T10 |
 | Branch | `task/T05-herdr-client-and-doctor` |
 | Worktree | `projects/hive/worktrees/T05-herdr-client-and-doctor/` |
@@ -46,6 +46,17 @@ API authority.
 | `internal/lib/herdr/types.go` | New. `AgentInfo`, `PaneInfo`, `TabInfo`, `WorkspaceInfo`, and `WorktreeInfo` with the fields that hive reads. |
 | `internal/lib/run/run.go` | New. The bounded process runner. |
 
+## Store use
+
+Use `store.WalkRecords(ctx, fn)` for the state-store check. The function receives
+each record. It returns the first read error. Do not walk `.hive/state` with
+`os.ReadDir`. Do not open a record file directly.
+
+Method matrix: `Store.Read` and `Store.ReadIn` take no lock. A standalone list
+takes no lock. A related read uses one `WithLock` callback. Each standalone
+mutation uses bounded acquisition. A `LockedStore` method never acquires another
+lock. `WalkRecords` uses one `WithLock` callback.
+
 ## Requirements
 
 ### AC1 Client
@@ -53,7 +64,7 @@ API authority.
 - The socket path is `HERDR_SOCKET_PATH`. Without the variable, each call fails with `herdr socket: HERDR_SOCKET_PATH is not set`. There is no other source.
 - `Call(ctx, method, params, result, opts...)` opens one connection, writes one request line with a string `id`, the `method`, and `params`, reads one response line, and closes. `params` is never null. An empty object goes as `{}`.
 - Each call has a deadline. The default is 10 seconds. `herdr.WithDeadline(d)` sets the deadline of one call. A wait method passes its server `timeout_ms` plus 5 seconds. An earlier deadline of the context wins.
-- A request ID is `<prefix>-<n>`. The prefix is 8 random hex characters that the process draws once. `n` counts from 1 in the process. Thus IDs from parallel hive processes do not collide in the shared log.
+- A request ID is `<prefix>-<n>`. The prefix is 8 random hex characters that the process draws once. `n` comes from one counter that each caller in the process shares. Two in-process callers share the prefix and get unique complete IDs. Two child processes get distinct prefixes. Thus IDs from parallel hive processes do not collide in the shared log.
 - The encoded request line, with its newline, has at most 1,048,576 bytes. A longer line fails with `request too large` before any write.
 - A reply above 1 MiB fails with `reply too large`. A reply whose `id` differs from the request `id`, or that has both `result` and `error`, or neither, fails with `bad reply: <reason>`. `result` stays unchanged on a failure.
 - A response with `error` returns a `*herdr.Error` with `Code` and `Message`. `errors.As` finds it.
@@ -84,7 +95,8 @@ API authority.
 
 - Each line prints `ok`, `warn`, or `fail`, the check name, and a detail. A required check that fails prints `fail`. A check that is not required and fails prints `warn`.
 - The exit status is 1 only when a required check fails. With `--json`, `result` holds the list of checks with `name`, `status`, `required`, and `detail`.
-- Each check uses the runner or the client. No check runs longer than its bound.
+- Each check uses the runner or the herdr package. No check runs longer than its bound.
+- The state-store check uses one `store.WalkRecords` call. A held lock gives `store lock timeout`. A bad record gives its path. A linked collection or record gives its path and the walk does not descend it. A static symbol link at the state root, an ancestor, the lock, or a leaf fails before the read. The check makes no write.
 
 ### AC4 Version envelope
 
@@ -100,7 +112,7 @@ API authority.
 | --- | --- | --- |
 | AC1 | The client sends one request for each connection, checks the protocol first, maps errors, bounds requests and replies, checks each reply, and logs. | V1, V2 |
 | AC2 | The runner bounds time and output for the whole process group and reports exit codes. | V3 |
-| AC3 | `doctor` prints each check with the correct status, and the exit status follows the required checks. | V4, V5 |
+| AC3 | `doctor` prints each check with the correct status, the state-store walk rejects a linked path, and the exit status follows the required checks. | V4, V5 |
 | AC4 | `hive version --json` prints the envelope. | V5 |
 | AC5 | The gate passes. | V6 |
 
@@ -110,7 +122,7 @@ API authority.
 
 - Proves: AC1.
 - Command: `go test -race ./internal/lib/herdr/ -v`, red and green.
-- Expected: the tests start a fake herdr server on a Unix socket in a temporary directory. The server records each method that it receives. Cases: a success envelope, an error envelope with the code, and a reply above 1 MiB. Three bad replies fail: another `id`, both `result` and `error`, and neither. A server that never answers fails at the deadline. A server that answers after 1.5 seconds fails with a 1-second deadline and passes with `WithDeadline(3*time.Second)`. A pong with protocol 21 fails, and the server then receives no `workspace.list`. A request of 1,048,576 bytes with non-ASCII text passes the local check, and one byte more fails with `request too large`. Two clients in one test get different ID prefixes. An unset `HERDR_SOCKET_PATH` fails with the message of AC1.
+- Expected: the tests start a fake herdr server on a Unix socket in a temporary directory. The server records each method that it receives. Cases: a success envelope, an error envelope with the code, and a reply above 1 MiB. Three bad replies fail: another `id`, both `result` and `error`, and neither. A server that never answers fails at the deadline. A server that answers after 1.5 seconds fails with a 1-second deadline and passes with `WithDeadline(3*time.Second)`. A pong with protocol 21 fails, and the server then receives no `workspace.list`. A request of 1,048,576 bytes with non-ASCII text passes the local check, and one byte more fails with `request too large`. Two in-process callers share one prefix and get unique complete IDs. Two child processes get distinct prefixes. An unset `HERDR_SOCKET_PATH` fails with the message of AC1.
 
 ### V2 Live ping
 
@@ -135,19 +147,19 @@ grep '"method":"ping"' .hive/logs/"$(date +%F)".jsonl | tail -n 2
 
 - Proves: AC3.
 - Command: `go test ./internal/doctor/ -v`, red and green.
-- Expected: with a fake socket and a temporary home, each check line has the expected status. With `HERDR_SOCKET_PATH` unset, the herdr check is `fail` and the exit status is 1. With a path to no file, the herdr check is `fail` with the path in the detail. Without `HERDR_ENV`, the pane check is `warn` and the exit status is 0. With no `gh` on `PATH`, the gh check is `warn` and the exit status is 0.
+- Expected: with a fake socket and a unique temporary home, each check line has the expected status. With `HERDR_SOCKET_PATH` unset, the herdr check is `fail` and the exit status is 1. With a path to no file, the herdr check is `fail` with the path in the detail. Without `HERDR_ENV`, the pane check is `warn` and the exit status is 0. With no `gh` on `PATH`, the gh check is `warn` and the exit status is 0. A held store lock gives a `fail` state-store line with `store lock timeout`. A linked collection or record gives its path.
 
 ### V5 Doctor and version transcript
 
 - Proves: AC3, AC4.
-- Setup: `go build .`
+- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Export `HIVE_TMP=<absolute fixture path>`. Do not remove the worktree `.hive` directories.
 - Command:
 
 ```sh
-./hive --home "$PWD" doctor; echo "exit $?"
-HERDR_SOCKET_PATH=/tmp/none.sock ./hive --home "$PWD" doctor; echo "exit $?"
-env -u HERDR_SOCKET_PATH ./hive --home "$PWD" doctor; echo "exit $?"
-./hive --home "$PWD" --json version; echo "exit $?"
+./hive --home "$HIVE_TMP" doctor; echo "exit $?"
+HERDR_SOCKET_PATH=/tmp/none.sock ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
+env -u HERDR_SOCKET_PATH ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
+./hive --home "$HIVE_TMP" --json version; echo "exit $?"
 ```
 
 - Expected: the first run prints eight groups of lines and exit 0, or exit 1 with a `fail` line that explains why. The second run prints `fail herdr socket` with `/tmp/none.sock` and exit 1. The third prints `fail herdr socket` with `HERDR_SOCKET_PATH is not set` and exit 1. The fourth prints the envelope and exit 0.

@@ -24,7 +24,7 @@ A checkpoint has the status open, passed, or changes requested.
 | Wave | Tasks | Starts after |
 | --- | --- | --- |
 | 1 | T01, T02 | The commit of the plan to `dev` |
-| 2 | T03, T04, T05, T06, T07 | CP1 |
+| 2 | T22, T03, T04, T05, T06, T07 | CP1 and the installed spec |
 | 3 | T08, T09, T10, T11 | The prerequisites of each task |
 | 4 | T12, T13, T14, T15, T16, T17, T18, T19 | CP2 |
 | 5 | T20, T21 | CP3 |
@@ -39,11 +39,12 @@ header of a brief also lists each task that the brief builds on directly.
 flowchart TD
     T01["T01 home and register"] --> CP1{{"CP1 home live"}}
     T02["T02 version lib"] --> CP1
-    CP1 --> T03["T03 task lifecycle"]
-    CP1 --> T04["T04 roles and inbox"]
-    CP1 --> T05["T05 herdr client and doctor"]
+    CP1 --> T22["T22 store operations"]
     CP1 --> T06["T06 logs command"]
-    CP1 --> T07["T07 memory and handoff"]
+    T22 --> T03["T03 task lifecycle"]
+    T22 --> T04["T04 roles and inbox"]
+    T22 --> T05["T05 herdr client and doctor"]
+    T22 --> T07["T07 memory and handoff"]
     T04 --> T08["T08 TUI log view"]
     T06 --> T08
     T03 --> T09["T09 worktree create and remove"]
@@ -87,11 +88,12 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, CP1 | blocked | | |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, CP1 | blocked | | |
-| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | blocked | | |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, CP1 | blocked | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | ready | | |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
+| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | ready | | |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05 | blocked | | |
@@ -107,13 +109,13 @@ flowchart TD
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
 
-| Checkpoint | After | Blocks | Status | Date |
-| --- | --- | --- | --- | --- |
-| CP1 home live | T01, T02 | wave 2 | open | |
-| CP2 worktree and spawn live | T09, T10 | wave 4 | open | |
-| CP3 messaging and close-down live | T13, T14, T15, T16 | wave 5 | open | |
-| CP4 TUI live | T08 | CP5 | open | |
-| CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | |
+| Checkpoint | After | Blocks | Status | Date | Verdict by |
+| --- | --- | --- | --- | --- | --- |
+| CP1 home live | T01, T02 | wave 2 | passed | 2026-10-18 | runner `cp1-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp1-verify-01.md` |
+| CP2 worktree and spawn live | T09, T10 | wave 4 | open | | |
+| CP3 messaging and close-down live | T13, T14, T15, T16 | wave 5 | open | | |
+| CP4 TUI live | T08 | CP5 | open | | |
+| CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | | |
 
 ## Tiers
 
@@ -123,6 +125,9 @@ flowchart TD
 | decent | Ordinary command and library work | pi with `openai-codex/gpt-6-luna` at the thinking level `xhigh` |
 | small | A move, a profile, a small command | pi with `openai-codex/gpt-6-luna` at the thinking level `xhigh` |
 | verifier | Each task | Claude Code with `claude-opus-5-5` for a strong or decent task. pi with `opencode-go/deepseek-v4.1-flash` for a small task. The verifier and the worker are from different model families. |
+
+The dated wave 2 route clarification under Checkpoints replaces this bootstrap
+choice for wave 2. It does not change the tier of a task.
 
 ## Checkpoints
 
@@ -148,7 +153,20 @@ This clarification changes the checkpoint procedure:
 - Routine progress goes in this tracker and in `handoff.md`. Do not wait for a user verdict.
 - An automated independent check replaces the user presentation approval for each checkpoint.
 - Keep each checkpoint script and each acceptance criterion.
-- A checkpoint passes only after its automated independent check passes. Until then, it stays open, and its blocked tasks stay blocked. CP1 stays open. T03 to T07 stay blocked.
+- A checkpoint passes only after its automated independent check passes. Until then, it stays open, and its blocked tasks stay blocked.
+
+### Dated procedure clarification: wave 2 install and routes
+
+2026-10-18. This clarification records the current wave 2 state and routes.
+
+- The corrected spec install precedes code dispatch. The install is one commit on `dev` and follows the corrected plan below `.hive/tmp/coordinator/plans/remaining-v1-r2/`.
+- CP1 passed on 2026-10-18. The runner report is `.hive/tmp/coordinator/reports/cp1-run-01.md`. The independent verdict is `.hive/tmp/coordinator/reports/cp1-verify-01.md` from `pi/openai-codex/gpt-6.1-sol:high`. Do not rerun CP1.
+- T22 and T06 are ready. T03, T04, T05, and T07 stay blocked on T22.
+- Each implementation uses `pi opencode-go/deepseek-v4-flash`. Each independent verifier and each independent spec check uses `pi openai-codex/gpt-6.1-sol:high`. This route replaces the bootstrap choice for wave 2.
+- Do not reuse an agent for a later pass. Start at most three external agents beside the coordinator.
+- A fresh independent agent checks each concrete implementation brief and each concrete verifier brief before dispatch. The check reports `pass` or `fail` with item IDs. It is not an approval.
+- A task worktree branches from a `dev` commit that contains the installed spec and each landed prerequisite. Require the CP1 PASS report separately.
+- A pending independent check of the installed spec is not an approval. Do not dispatch code until that check passes.
 
 ### CP1 home live
 
@@ -169,6 +187,8 @@ envelope, the error line for the false home with exit status 1, and JSON log
 events with `component`, `command`, and `duration_ms`.
 
 Critique:
+
+Automated. The independent verdict is `cp1-verify-01.md` from `pi/openai-codex/gpt-6.1-sol:high`. The runner report is `cp1-run-01.md`. No user presentation approval applies.
 
 ### CP2 worktree and spawn live
 
@@ -358,7 +378,7 @@ The merger sets the status to evidence and starts the verifier in the same
 pane after the worker stops. The verifier is from another model family.
 
 1. Read `AGENTS.md`, the brief, `evidence/README.md`, and each `V<n>.md`.
-2. Remove the runtime data of the worktree, so that each run starts clean: `rm -rf .hive/state .hive/logs .hive/tmp` from the root of the worktree. Then run `go build .`.
+2. Prepare an isolated home for each transcript and probe. Make a unique temporary directory. Create its marker `.hive/README.md` explicitly. Pass its absolute path with `--home`. Make a unique temporary project where a test needs Git. Do not remove the worktree `.hive/state`, `.hive/logs`, or `.hive/tmp`. The worker report lives in `.hive/tmp`, so keep it. Remove only the unique fixture that the pass made. Then run `go build .`.
 3. Run each verification item again. Compare the output with the expected output of the brief.
 4. Write `VERIFIED.md`, commit it on the task branch, and push the branch.
 5. On a fail, the merger starts the worker again in the same pane with the fail remarks. The worker corrects, the verifier runs again.
@@ -410,7 +430,7 @@ each task, so that two tasks can edit them in parallel:
 
 | File | Rule |
 | --- | --- |
-| `cmd/root.go` | One `AddCommand` line for each command. |
+| `cmd/root.go` | One `AddCommand` line for each command, plus the import lines that the registrations need. T04 and T07 each register two commands. |
 | `doc.go` of a shared package | One map line for each new file. |
 | `internal/lib/harness/registry.go` | One registry line for each profile. |
 | `internal/doctor/checks.go` | One check line for each check. |

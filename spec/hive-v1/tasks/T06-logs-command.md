@@ -59,7 +59,7 @@ its `--json` output is JSON lines, the one exception to the envelope rule.
 - `--follow` prints the matches, then continues from the offset after the last byte that the reader consumed. A line that arrives between the first print and the first poll prints too.
 - The follower checks the file size every 500 milliseconds and prints each new line that matches. It keeps an incomplete line until its newline arrives.
 - At midnight the follower reads the rest of the old file. Then it moves to the new daily file within one second after its first line.
-- `SIGINT` ends the command with exit status 0.
+- `SIGINT` ends the command with exit status 0. The transcript measures the child status, not the wrapper status. GNU `timeout` returns 124 by default, so use `timeout --preserve-status --kill-after=2s -s INT 2`, or inspect the child wait status directly.
 
 ### AC4 Gate
 
@@ -91,21 +91,21 @@ its `--json` output is JSON lines, the one exception to the envelope rule.
 ### V3 Command transcript
 
 - Proves: AC1, AC2, AC3.
-- Setup: `go build .`
+- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Export `HIVE_TMP=<absolute fixture path>`. Do not append malformed data to a real daily log. Make a unique malformed fixture in `$HIVE_TMP`.
 - Command:
 
 ```sh
-./hive --home "$PWD" project list >/dev/null
-./hive --home "$PWD" logs --limit 2
-./hive --home "$PWD" logs --component cli --json | tail -n 1 | python3 -m json.tool
-./hive --home "$PWD" logs --level error
-printf 'not json\n' >> .hive/logs/"$(date +%F)".jsonl
-./hive --home "$PWD" logs --limit 1
-./hive --home "$PWD" logs --limit 1 --json
-timeout -s INT 2 ./hive --home "$PWD" logs --follow --limit 1; echo "exit $?"
+./hive --home "$HIVE_TMP" project list >/dev/null
+./hive --home "$HIVE_TMP" logs --limit 2
+./hive --home "$HIVE_TMP" logs --component cli --json | tail -n 1 | python3 -m json.tool
+./hive --home "$HIVE_TMP" logs --level error
+printf 'not json\n' >> "$HIVE_TMP"/.hive/logs/"$(date +%F)".jsonl
+./hive --home "$HIVE_TMP" logs --limit 1
+./hive --home "$HIVE_TMP" logs --limit 1 --json
+timeout --preserve-status --kill-after=2s -s INT 2 ./hive --home "$HIVE_TMP" logs --follow --limit 1; echo "exit $?"
 ```
 
-- Expected: two text lines in the format of AC2, one parsed JSON event, and no line for the error level. Then one `?` line with `not json`. Then one JSON line on stdout and one `malformed line` diagnostic on stderr. The follow prints one line, waits, and ends with exit 0 on the signal.
+- Expected: two text lines in the format of AC2, one parsed JSON event, and no line for the error level. Then one `?` line with `not json`. Then one JSON line on stdout and one `malformed line` diagnostic on stderr. The follow prints one line, waits, and ends with exit 0 on the signal. The measured status is the child status, not GNU timeout status 124.
 
 ### V4 Gate
 

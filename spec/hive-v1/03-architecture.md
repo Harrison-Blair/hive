@@ -59,9 +59,9 @@ Rules:
 - `<project-id>` is the lowercase basename of the repository, or the `--id`
   value. It matches `^[a-z0-9]+(-[a-z0-9]+)*$` and has at most 18 characters,
   so that each agent name fits the herdr limit of 32 characters. `<task-id>`
-  is a number and a short name, such as `12-spawn-worker`, with one counter
-  for the home. Thus a task ID is unique across projects. Display names are
-  labels only.
+  is a number, a hyphen, and a slug of at most 40 characters, such as
+  `12-spawn-worker`, with one counter for the home. Thus a task ID is unique
+  across projects. Display names are labels only.
 - A registered repository stays at its path. Hive never moves it.
 - Each worktree is a linked Git worktree of the registered repository. Git
   commands for it use the registered repository path.
@@ -188,6 +188,38 @@ When the supervisor exits, the TUI and `hive doctor` show it, and the
 coordinator starts it again at its next startup. Nothing restarts it in a loop.
 
 ## State store and tasks
+
+### Dated decision: store operations (2026-10-18)
+
+The approved trust boundary is a local user and a cooperating writer. A hostile
+file replacement between `Lstat` and `Open` stays deferred.
+
+The store uses one method matrix:
+
+- `Store.Read` and `Store.ReadIn` do not acquire the lock.
+- `Store.List` and `Store.ListIn` do not acquire the lock. A standalone list sees
+  one directory snapshot.
+- A read of related records uses one `WithLock` callback and its handle.
+- Each standalone mutation uses the bounded acquisition path. This rule covers
+  the legacy `Write`, `Update`, and `Next`.
+- A `LockedStore` method uses the held lock and never acquires another lock.
+
+Acquisition defaults to two seconds. A context deadline can shorten or extend the
+wait. A cancellation returns the context error. An acquisition failure changes no
+record. No caller holds the lock for a model wait, a Git wait, a network wait, or
+a stdin wait.
+
+Before a read, list, or create, the store checks the state root, each collection
+ancestor, the lock, and the selected record path with `Lstat`. A symbolic link or
+a wrong type fails before the open. `WalkRecords` rejects a linked collection or
+record with its path and does not descend the link. The atomic temporary name
+starts with a dot and contains `.tmp-`. `StoredRecord.Name` includes the `.json`
+suffix. A colon name such as `counters/inbox:coordinator.json` remains visible.
+
+A multi-record operation writes in a safe order and names the last write as its
+commit marker. A completed write stays after a later error. The command reports
+`partial`, the actual failed phase, and each completed effect. No journal and no
+rollback exist. A later reader can see the completed prefix of a failed group.
 
 - One store under `.hive/state/`, one `flock` lock, one JSON file for each
   record: `projects/`, `tasks/`, `briefs/`, `agents/`, `claims/`,
