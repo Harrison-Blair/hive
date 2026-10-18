@@ -94,6 +94,11 @@ type requestEnvelope struct {
 // Call opens one connection, writes one request line, reads one reply line, and
 // closes the connection.
 func Call(ctx context.Context, method string, params, result any, opts ...Option) error {
+	return call(ctx, method, params, result, nil, opts...)
+}
+
+// call is Call with a private result check that runs after a successful reply.
+func call(ctx context.Context, method string, params, result any, check func() error, opts ...Option) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -159,6 +164,11 @@ func Call(ctx context.Context, method string, params, result any, opts ...Option
 	logEvent(options.logger, "herdr reply", requestID, method, started, reply)
 	if err := settleReply(requestID, reply, result); err != nil {
 		return fail(err)
+	}
+	if check != nil {
+		if err := check(); err != nil {
+			return fail(err)
+		}
 	}
 	return nil
 }
@@ -271,13 +281,6 @@ func settleReply(requestID string, reply []byte, result any) error {
 	if result == nil {
 		return nil
 	}
-	if isJSONNull(envelope.Result) {
-		// A null result changes only nil-able destinations. Keep that behavior.
-		if err := json.Unmarshal(envelope.Result, result); err != nil {
-			return fmt.Errorf("bad reply: %s", plainError(err))
-		}
-		return nil
-	}
 	return decodeResult(envelope.Result, result)
 }
 
@@ -316,6 +319,10 @@ func decodeResult(raw json.RawMessage, result any) error {
 		return errors.New("bad reply: nil result destination")
 	}
 	temporary := reflect.New(value.Elem().Type())
+	if isJSONNull(raw) {
+		// A null decode keeps a plain struct unchanged and sets a map or slice to nil.
+		temporary.Elem().Set(value.Elem())
+	}
 	if err := json.Unmarshal(raw, temporary.Interface()); err != nil {
 		return fmt.Errorf("bad reply: %s", plainError(err))
 	}

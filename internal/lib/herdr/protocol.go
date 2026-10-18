@@ -26,16 +26,18 @@ func Ping(ctx context.Context, opts ...Option) (int, error) {
 		Version  string `json:"version"`
 		Protocol int    `json:"protocol"`
 	}
-	if err := Call(ctx, "ping", struct{}{}, &result, opts...); err != nil {
-		return 0, err
-	}
-	if result.Type != "pong" {
-		return 0, fmt.Errorf("bad reply: result type %q, want pong", result.Type)
-	}
-	if result.Protocol != Protocol {
-		return result.Protocol, fmt.Errorf("herdr protocol %d, hive needs %d", result.Protocol, Protocol)
-	}
-	return result.Protocol, nil
+	protocol := 0
+	err := call(ctx, "ping", struct{}{}, &result, func() error {
+		if result.Type != "pong" {
+			return fmt.Errorf("bad reply: result type %q, want pong", result.Type)
+		}
+		protocol = result.Protocol
+		if result.Protocol != Protocol {
+			return fmt.Errorf("herdr protocol %d, hive needs %d", result.Protocol, Protocol)
+		}
+		return nil
+	}, opts...)
+	return protocol, err
 }
 
 func ensureProtocol(ctx context.Context, options callOptions) error {
