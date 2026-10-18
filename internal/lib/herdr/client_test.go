@@ -553,6 +553,40 @@ type decodeNested struct {
 	Child *decodeChild `json:"child"`
 }
 
+type requiredCount struct {
+	Value int
+	Valid bool
+}
+
+func (value *requiredCount) UnmarshalJSON(data []byte) error {
+	*value = requiredCount{}
+	if string(data) == "null" {
+		return errors.New("count is required")
+	}
+	if err := json.Unmarshal(data, &value.Value); err != nil {
+		return err
+	}
+	value.Valid = true
+	return nil
+}
+
+type nullCount struct {
+	Value int
+	Valid bool
+}
+
+func (value *nullCount) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*value = nullCount{}
+		return nil
+	}
+	if err := json.Unmarshal(data, &value.Value); err != nil {
+		return err
+	}
+	value.Valid = true
+	return nil
+}
+
 func callResult(t *testing.T, resultJSON string, destination any) error {
 	t.Helper()
 	server := startServer(t, func(request testRequest) ([]byte, time.Duration, bool) {
@@ -613,7 +647,29 @@ func TestResultUnchangedOnDecodeError(t *testing.T) {
 	})
 }
 
+func TestNullResultPreservesCallerOnDecodeError(t *testing.T) {
+	destination := requiredCount{Value: 7, Valid: true}
+	err := callResult(t, `null`, &destination)
+	if err == nil || !strings.Contains(err.Error(), "count is required") {
+		t.Fatalf("Call() error = %v, want the count error", err)
+	}
+	want := requiredCount{Value: 7, Valid: true}
+	if destination != want {
+		t.Fatalf("destination = %+v, want %+v unchanged", destination, want)
+	}
+}
+
 func TestNullResultKeepsExistingSemantics(t *testing.T) {
+	t.Run("ordinary decoder", func(t *testing.T) {
+		destination := nullCount{Value: 7, Valid: true}
+		if err := callResult(t, `null`, &destination); err != nil {
+			t.Fatalf("Call() error = %v, want success", err)
+		}
+		want := nullCount{}
+		if destination != want {
+			t.Fatalf("ordinary decoder = %+v, want %+v", destination, want)
+		}
+	})
 	t.Run("struct", func(t *testing.T) {
 		destination := decodeChild{Keep: "before", Count: 7}
 		if err := callResult(t, `null`, &destination); err != nil {

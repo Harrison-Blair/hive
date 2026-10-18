@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
 func TestPingChecksProtocol(t *testing.T) {
@@ -33,6 +36,65 @@ func TestPingRejectsOtherProtocol(t *testing.T) {
 	}
 	if protocol != 21 {
 		t.Fatalf("Ping() protocol = %d, want 21", protocol)
+	}
+}
+
+func TestPingLogsResultErrors(t *testing.T) {
+	cases := []struct {
+		name         string
+		result       string
+		wantError    string
+		wantProtocol int
+	}{
+		{
+			name:         "protocol mismatch",
+			result:       `{"type":"pong","protocol":21}`,
+			wantError:    "herdr protocol 21, hive needs 22",
+			wantProtocol: 21,
+		},
+		{
+			name:         "wrong type",
+			result:       `{"type":"not-pong","protocol":22}`,
+			wantError:    `bad reply: result type "not-pong", want pong`,
+			wantProtocol: 0,
+		},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			server := startServer(t, func(request testRequest) ([]byte, time.Duration, bool) {
+				return resultReply(request, testCase.result), 0, false
+			})
+			t.Setenv("HERDR_SOCKET_PATH", server.path)
+			home := t.TempDir()
+			writer, err := hivelog.NewWriter(home, "herdr", time.Now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			protocol, pingErr := Ping(context.Background(), WithLogger(slog.New(writer)))
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if pingErr == nil || pingErr.Error() != testCase.wantError {
+				t.Fatalf("Ping() error = %v, want %q", pingErr, testCase.wantError)
+			}
+			if protocol != testCase.wantProtocol {
+				t.Fatalf("Ping() protocol = %d, want %d", protocol, testCase.wantProtocol)
+			}
+			events := readLogEvents(t, home)
+			request := findEvent(events, "herdr request", func(event map[string]any) bool {
+				return event["method"] == "ping"
+			})
+			event := findEvent(events, "herdr error", func(event map[string]any) bool {
+				return event["method"] == "ping"
+			})
+			if event == nil {
+				t.Fatalf("events = %v, want a ping error", events)
+			}
+			assertCorrelatedError(t, event, request, "ping")
+			if text, _ := event["error"].(string); text != pingErr.Error() {
+				t.Fatalf("error = %q, want %q", text, pingErr.Error())
+			}
+		})
 	}
 }
 
