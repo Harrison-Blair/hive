@@ -23,8 +23,6 @@ var ErrTimeout = errors.New("process timeout")
 const (
 	defaultDeadline = 30 * time.Second
 	maxStream       = 1 << 20
-	normalGrace     = 2 * time.Second
-	timeoutGrace    = 200 * time.Millisecond
 )
 
 // Result is the bounded output of one process.
@@ -68,13 +66,12 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdoutRead, stdoutWrite, err := os.Pipe()
 	if err != nil {
-		return nil, fmt.Errorf("run %s: %s", name, err)
+		return nil, diagnostic("run", name, err)
 	}
 	stderrRead, stderrWrite, err := os.Pipe()
 	if err != nil {
-		_ = stdoutRead.Close()
-		_ = stdoutWrite.Close()
-		return nil, fmt.Errorf("run %s: %s", name, err)
+		closeAll(stdoutRead, stdoutWrite)
+		return nil, diagnostic("run", name, err)
 	}
 	cmd.Stdout = stdoutWrite
 	cmd.Stderr = stderrWrite
@@ -82,7 +79,7 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	if err := cmd.Start(); err != nil {
 		closeAll(stdoutRead, stdoutWrite, stderrRead, stderrWrite)
 		logProcessEnd(logger, command, -1, started, err)
-		return nil, fmt.Errorf("start %s: %s", name, err)
+		return nil, diagnostic("start", name, err)
 	}
 	_ = stdoutWrite.Close()
 	_ = stderrWrite.Close()
@@ -103,31 +100,31 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 		waitCh <- cmd.Wait()
 	}()
 
+	stopGroup := func() {
+		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+	}
+
 	var waitErr error
-	timedOut := false
+	stopped := false
 	select {
 	case waitErr = <-waitCh:
 	case <-runCtx.Done():
-		timedOut = true
-		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		stopped = true
+		stopGroup()
 		waitErr = <-waitCh
 	}
 
-	grace := normalGrace
-	if timedOut {
-		grace = timeoutGrace
-	}
-	stdout := collect(stdoutCh, stdoutRead, grace)
-	stderr := collect(stderrCh, stderrRead, grace)
+	stdout, stderr, stoppedDuringDrain := awaitStreams(runCtx, stopGroup, stdoutCh, stderrCh, stdoutRead, stderrRead)
 	_ = stdoutRead.Close()
 	_ = stderrRead.Close()
+	if stoppedDuringDrain {
+		stopped = true
+	}
 
-	if timedOut {
-		logProcessEnd(logger, command, -1, started, ErrTimeout)
-		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
-			return nil, ErrTimeout
-		}
-		return nil, runCtx.Err()
+	if stopped {
+		runErr := runResultError(runCtx)
+		logProcessEnd(logger, command, -1, started, runErr)
+		return nil, runErr
 	}
 
 	exitCode := 0
@@ -135,7 +132,7 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 		var exitError *exec.ExitError
 		if !errors.As(waitErr, &exitError) {
 			logProcessEnd(logger, command, -1, started, waitErr)
-			return nil, fmt.Errorf("wait %s: %s", name, waitErr)
+			return nil, diagnostic("wait", name, waitErr)
 		}
 		exitCode = exitError.ExitCode()
 	}
@@ -148,16 +145,63 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	}, nil
 }
 
-func collect(ch <-chan streamResult, file *os.File, grace time.Duration) streamResult {
-	timer := time.NewTimer(grace)
-	defer timer.Stop()
-	select {
-	case result := <-ch:
-		return result
-	case <-timer.C:
-		_ = file.Close()
-		return <-ch
+func awaitStreams(ctx context.Context, stop func(), stdoutCh, stderrCh <-chan streamResult, stdoutRead, stderrRead *os.File) (streamResult, streamResult, bool) {
+	var stdout, stderr streamResult
+	stdoutPending, stderrPending := true, true
+	stopped := false
+	for stdoutPending || stderrPending {
+		var outCh, errCh <-chan streamResult
+		if stdoutPending {
+			outCh = stdoutCh
+		}
+		if stderrPending {
+			errCh = stderrCh
+		}
+		if stopped {
+			select {
+			case result := <-outCh:
+				stdout, stdoutPending = result, false
+			case result := <-errCh:
+				stderr, stderrPending = result, false
+			}
+			continue
+		}
+		select {
+		case result := <-outCh:
+			stdout, stdoutPending = result, false
+		case result := <-errCh:
+			stderr, stderrPending = result, false
+		case <-ctx.Done():
+			stopped = true
+			stop()
+			_ = stdoutRead.Close()
+			_ = stderrRead.Close()
+		}
 	}
+	return stdout, stderr, stopped
+}
+
+func runResultError(ctx context.Context) error {
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		return ErrTimeout
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return ErrTimeout
+}
+
+func diagnostic(verb, name string, err error) error {
+	return errors.New(oneLine(fmt.Sprintf("%s %s: %s", verb, name, err)))
+}
+
+func oneLine(text string) string {
+	return strings.Map(func(value rune) rune {
+		if value < 0x20 || value == 0x7f {
+			return '?'
+		}
+		return value
+	}, text)
 }
 
 func readStream(reader io.Reader, limit int) ([]byte, bool, error) {
@@ -204,7 +248,7 @@ func logProcessEnd(logger *slog.Logger, command string, exitCode int, started ti
 		"duration_ms", time.Since(started).Milliseconds(),
 	}
 	if runErr != nil {
-		attributes = append(attributes, "error", runErr.Error())
+		attributes = append(attributes, "error", oneLine(runErr.Error()))
 	}
 	logger.Debug("process end", attributes...)
 }
