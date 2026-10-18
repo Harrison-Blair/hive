@@ -88,11 +88,11 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | verified | openai-codex/gpt-6.1-sol | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | in progress | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | verified | openai-codex/gpt-6.1-sol | |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
@@ -282,6 +282,37 @@ check.
 - Recommendation: T01 owns a static `.hive` type check in `home.Resolve` and the
 logger start path. T22 keeps its store root check.
 - T22 and T06 code is not verified and not landed. T03, T04, T05, and T07 stay
+`blocked` on T22. No other status, dependency, or model route changes.
+
+### Dated verification receipt: wave 2 T22 and T06
+
+2026-10-18. This section records the independent verification of T22 and T06. It
+changes only the status of these tasks.
+
+- T22 moves from `in progress` to `verified`. Branch `task/T22-store-operations`
+has base `840255d3`. The tested worker commit is `a3fea5a4`. The verification
+commit is `0217df27`. Its parent is `a3fea5a4`. Its only change is
+`spec/hive-v1/evidence/T22-store-operations/VERIFIED.md`.
+- T06 moves from `in progress` to `verified`. Branch `task/T06-logs-command` has
+base `840255d3`. The tested worker commit is `ce9b992b`. The verification
+commit is `b8006a86`. Its parent is `ce9b992b`. Its only change is
+`spec/hive-v1/evidence/T06-logs-command/VERIFIED.md`.
+- Each verifier ran `pi openai-codex/gpt-6.1-sol:high`. These are the actual
+provider, model, and level from the `PI_*` values. The route matches the dated
+wave 2 route.
+- The T22 report is `.hive/tmp/coordinator/reports/t22-verify-02.md`. Its last
+line is `END VERIFIER T22-store-operations t22-verify-02`. V1 to V5 are PASS.
+- The T06 report is `.hive/tmp/coordinator/reports/t06-verify-02.md`. Its last
+line is `END VERIFIER T06-logs-command t06-verify-02`. V1 to V4 are PASS.
+- Each `VERIFIED.md` keeps its earlier FAIL sections as history. The latest
+dated section in each file is PASS.
+- Both remote task branches equal their local verification commits. Both task
+worktrees are clean.
+- The coordinator copied the worker fix reports to
+`.hive/tmp/coordinator/reports/t22-fix-01-archive.md` and
+`.hive/tmp/coordinator/reports/t06-fix-01-archive.md`. Each copy equals its
+source.
+- T22 and T06 stay `verified` and not landed. T03, T04, T05, and T07 stay
 `blocked` on T22. No other status, dependency, or model route changes.
 
 ### CP1 home live
