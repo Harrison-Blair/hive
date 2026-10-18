@@ -186,4 +186,108 @@ func TestMerge(t *testing.T) {
 			t.Fatalf("Land() returned after %v, want the merge deadline", elapsed)
 		}
 	})
+
+	t.Run("an expired caller deadline still cleans the repository", func(t *testing.T) {
+		repo := newRepo(t)
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		hook := filepath.Join(repo, ".git", "hooks", "pre-merge-commit")
+		if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
+			t.Fatalf("mkdir hooks: %v", err)
+		}
+		if err := os.WriteFile(hook, []byte("#!/bin/sh\nsleep 5\n"), 0o755); err != nil {
+			t.Fatalf("write hook: %v", err)
+		}
+		home := newHome(t)
+		writeProject(t, home, testProject(repo))
+		writeTask(t, home, testTask("1-a", "task/1-a"))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+		defer cancel()
+		envelope := Land(ctx, home, Options{Task: "1-a", Mode: "merge"})
+		if envelope.Outcome != "failed" {
+			t.Fatalf("Land() = %+v, want failed", envelope)
+		}
+		if status := strings.TrimSpace(runGit(t, repo, "status", "--porcelain")); status != "" {
+			t.Fatalf("Land() = %+v, status = %q, want a clean repository", envelope, status)
+		}
+	})
+
+	t.Run("a pre-push hook sees the recorded merge commit", func(t *testing.T) {
+		repo := newRepo(t)
+		bare := newBare(t)
+		runGit(t, repo, "remote", "add", "origin", bare)
+		runGit(t, repo, "push", "-q", "-u", "origin", "main")
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home := newHome(t)
+		writeProject(t, home, testProject(repo))
+		writeTask(t, home, testTask("1-a", "task/1-a"))
+		record := filepath.Join(home, ".hive", "state", "tasks", "1-a.json")
+		script := "#!/bin/sh\n" +
+			"if ! grep -q '\"commit\":\"[0-9a-f]' \"" + record + "\"; then\n" +
+			"  echo delivery-not-recorded-before-push >&2\n" +
+			"  exit 1\n" +
+			"fi\n"
+		hook := filepath.Join(repo, ".git", "hooks", "pre-push")
+		if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
+			t.Fatalf("mkdir hooks: %v", err)
+		}
+		if err := os.WriteFile(hook, []byte(script), 0o755); err != nil {
+			t.Fatalf("write hook: %v", err)
+		}
+
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		if envelope.Outcome != "ok" {
+			t.Fatalf("Land() = %+v, want ok", envelope)
+		}
+		result, ok := envelope.Result.(Result)
+		if !ok || !result.Pushed {
+			t.Fatalf("result = %#v, want a push", envelope.Result)
+		}
+	})
+
+	t.Run("a retry without citations keeps the recorded grant and evidence", func(t *testing.T) {
+		repo := newRepo(t)
+		runGit(t, repo, "remote", "add", "origin", filepath.Join(t.TempDir(), "missing.git"))
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home := newHome(t)
+		writeProject(t, home, testProject(repo))
+		writeTask(t, home, testTask("1-a", "task/1-a"))
+
+		first := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "grant-1", Evidence: "ev-1"})
+		if first.Outcome != "partial" {
+			t.Fatalf("Land() = %+v, want partial", first)
+		}
+		record := loadTask(t, home, "1-a")
+		if record.Delivery == nil || record.Delivery.Grant != "grant-1" || record.Delivery.Evidence != "ev-1" {
+			t.Fatalf("delivery = %+v, want the recorded citations", record.Delivery)
+		}
+
+		bare := newBare(t)
+		runGit(t, repo, "remote", "set-url", "origin", bare)
+		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		if retry.Outcome != "ok" {
+			t.Fatalf("retry = %+v, want ok", retry)
+		}
+		record = loadTask(t, home, "1-a")
+		if record.Delivery == nil || record.Delivery.Grant != "grant-1" || record.Delivery.Evidence != "ev-1" {
+			t.Fatalf("delivery = %+v, want the kept citations", record.Delivery)
+		}
+	})
+
+	t.Run("a delivery record failure keeps the merge effect", func(t *testing.T) {
+		repo := newRepo(t)
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home := newHome(t)
+		writeProject(t, home, testProject(repo))
+		writeTask(t, home, testTask("1-a", "task/1-a"))
+		huge := strings.Repeat("\x01", 100000)
+
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: huge, Evidence: huge})
+		if envelope.Outcome != "failed" || envelope.Phase != "record" {
+			t.Fatalf("Land() = %+v, want a failed record", envelope)
+		}
+		if !hasEffect(envelope, "merge", "merged") {
+			t.Fatalf("effects = %+v, want the merge effect", envelope.Effects)
+		}
+	})
 }

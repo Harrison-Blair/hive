@@ -24,6 +24,9 @@ const (
 	pushTimeout = 120 * time.Second
 	// ghTimeout bounds one gh command.
 	ghTimeout = 60 * time.Second
+	// cleanupTimeout bounds the merge cleanup after a failed merge. It uses
+	// a fresh context so an expired caller context cannot prevent the abort.
+	cleanupTimeout = 30 * time.Second
 	// maxLogText caps one log message.
 	maxLogText = 4096
 )
@@ -177,12 +180,28 @@ func storeDelivery(registry *store.Store, taskID, projectID string, delivery rec
 	return updated, err
 }
 
+// resumeDelivery returns the delivery of a retry. A retry without a citation
+// flag keeps the recorded grant and evidence values and updates at.
+func resumeDelivery(recorded records.Delivery, mode, target string, options Options) records.Delivery {
+	delivery := recorded
+	delivery.Mode = mode
+	delivery.Target = target
+	if options.Grant != "" {
+		delivery.Grant = options.Grant
+	}
+	if options.Evidence != "" {
+		delivery.Evidence = options.Evidence
+	}
+	delivery.At = now()
+	return delivery
+}
+
 // deliveryEnvelope writes the delivery and builds the result envelope.
 func deliveryEnvelope(registry *store.Store, logger *slog.Logger, task records.Task, project records.Project, delivery records.Delivery, outcome, phase, message, note string, effects []output.Effect) output.Envelope {
 	updated, err := storeDelivery(registry, task.ID, project.ID, delivery)
 	if err != nil {
 		logFailure(logger, project.ID, task.ID, "record", err.Error())
-		return failedEnvelope("record", "persist delivery: "+oneLine(err.Error()))
+		return failedEnvelopeWithEffects("record", "persist delivery: "+oneLine(err.Error()), effects)
 	}
 	result := Result{
 		Task:   updated,

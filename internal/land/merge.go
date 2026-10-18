@@ -18,18 +18,23 @@ func landMerge(ctx context.Context, registry *store.Store, logger *slog.Logger, 
 	repo := project.Path
 	base := project.Base
 	branch := task.Worktree.Branch
+	retry := task.Delivery != nil && task.Delivery.Commit != ""
+	delivery := records.Delivery{Mode: "merge", Target: base, Grant: options.Grant, Evidence: options.Evidence}
+	if retry {
+		delivery = resumeDelivery(*task.Delivery, "merge", base, options)
+	}
+	effects := []output.Effect{}
+	// fail reports a failure after an effect. A completed effect stays visible
+	// in the envelope and the record.
 	fail := func(phase, message string) output.Envelope {
 		logFailure(logger, project.ID, task.ID, phase, message)
-		return failedEnvelope(phase, message)
+		if len(effects) == 0 {
+			return failedEnvelope(phase, message)
+		}
+		delivery.At = now()
+		return deliveryEnvelope(registry, logger, task, project, delivery, "partial", phase, message, "", effects)
 	}
-	retry := task.Delivery != nil && task.Delivery.Commit != ""
-	commit := ""
-	pushed := false
-	effects := []output.Effect{}
-	if retry {
-		commit = task.Delivery.Commit
-		pushed = task.Delivery.Pushed
-	} else {
+	if !retry {
 		current, err := gitx.CurrentBranch(ctx, repo)
 		if err != nil {
 			return fail("precondition", "read current branch: "+oneLine(err.Error()))
@@ -48,28 +53,36 @@ func landMerge(ctx context.Context, registry *store.Store, logger *slog.Logger, 
 		result, mergeErr := gitx.MergeNoFF(mergeCtx, repo, branch)
 		cancel()
 		if mergeErr != nil {
-			return mergeFailure(ctx, logger, project, task, oneLine(mergeErr.Error()))
+			return cleanupMerge(ctx, logger, project, task, oneLine(mergeErr.Error()))
 		}
 		if result.ExitCode != 0 {
-			return mergeFailure(ctx, logger, project, task, gitOutput(result))
+			return cleanupMerge(ctx, logger, project, task, gitOutput(result))
 		}
-		commit, err = gitx.Tip(ctx, repo, "HEAD")
+		commit, err := gitx.Tip(ctx, repo, "HEAD")
 		if err != nil {
 			return fail("merge", "read merge commit: "+oneLine(err.Error()))
 		}
 		effects = append(effects, output.Effect{Resource: "merge", Path: commit, Action: "merged"})
 		logEffect(logger, project.ID, task.ID, "merge", commit, "merged")
+		delivery.Commit = commit
+		delivery.Pushed = false
+		delivery.At = now()
+		if _, err := storeDelivery(registry, task.ID, project.ID, delivery); err != nil {
+			logFailure(logger, project.ID, task.ID, "record", err.Error())
+			return failedEnvelopeWithEffects("record", "persist delivery: "+oneLine(err.Error()), effects)
+		}
 	}
 
-	if pushed {
-		return deliveryEnvelope(registry, logger, task, project, *task.Delivery, "ok", "complete", "", "", effects)
+	if delivery.Pushed {
+		return deliveryEnvelope(registry, logger, task, project, delivery, "ok", "complete", "", "", effects)
 	}
 	hasOrigin, err := gitx.HasRemote(ctx, repo, "origin")
 	if err != nil {
 		return fail("push", "read remotes: "+oneLine(err.Error()))
 	}
 	if !hasOrigin {
-		delivery := records.Delivery{Mode: "merge", Target: base, Grant: options.Grant, Commit: commit, Pushed: false, Evidence: options.Evidence, At: now()}
+		delivery.Pushed = false
+		delivery.At = now()
 		return deliveryEnvelope(registry, logger, task, project, delivery, "ok", "complete", "", "no origin remote: the merge is local", effects)
 	}
 	pushCtx, cancel := context.WithTimeout(ctx, bound(options.PushTimeout, pushTimeout))
@@ -82,43 +95,78 @@ func landMerge(ctx context.Context, registry *store.Store, logger *slog.Logger, 
 		} else {
 			message = "push failed: " + gitOutput(pushResult)
 		}
-		delivery := records.Delivery{Mode: "merge", Target: base, Grant: options.Grant, Commit: commit, Pushed: false, Evidence: options.Evidence, At: now()}
+		delivery.Pushed = false
+		delivery.At = now()
 		return deliveryEnvelope(registry, logger, task, project, delivery, "partial", "push", message, "", effects)
 	}
 	effects = append(effects, output.Effect{Resource: "push", Path: base, Action: "pushed"})
 	logEffect(logger, project.ID, task.ID, "push", base, "pushed")
-	delivery := records.Delivery{Mode: "merge", Target: base, Grant: options.Grant, Commit: commit, Pushed: true, Evidence: options.Evidence, At: now()}
+	delivery.Pushed = true
+	delivery.At = now()
 	return deliveryEnvelope(registry, logger, task, project, delivery, "ok", "complete", "", "", effects)
+}
+
+// cleanupMerge aborts an unfinished merge with a fresh bounded context. The
+// caller context can be expired when the merge deadline fires, so the cleanup
+// must not depend on it.
+func cleanupMerge(ctx context.Context, logger *slog.Logger, project records.Project, task records.Task, gitText string) output.Envelope {
+	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), cleanupTimeout)
+	defer cancel()
+	return mergeFailure(cleanupCtx, logger, project, task, gitText)
 }
 
 // mergeFailure aborts an unfinished merge and reports the merge error.
 func mergeFailure(ctx context.Context, logger *slog.Logger, project records.Project, task records.Task, gitText string) output.Envelope {
 	repo := project.Path
 	inProgress, inProgressErr := gitx.MergeInProgress(ctx, repo)
-	if inProgressErr != nil || !inProgress {
-		logFailure(logger, project.ID, task.ID, "merge", gitText)
-		return failedEnvelope("merge", gitText)
-	}
-	files, filesErr := conflictFiles(ctx, repo)
-	if filesErr == nil && len(files) > 0 {
+	if inProgressErr == nil && inProgress {
+		files, filesErr := conflictFiles(ctx, repo)
+		if filesErr == nil && len(files) > 0 {
+			abortResult, abortErr := gitx.MergeAbort(ctx, repo)
+			if abortErr != nil || abortResult.ExitCode != 0 {
+				message := "merge conflict: " + strings.Join(files, ", ") + "; merge abort failed: " + abortText(abortErr, abortResult)
+				logFailure(logger, project.ID, task.ID, "merge", message)
+				return failedEnvelopeWithEffects("merge", message, []output.Effect{{Resource: "merge", Action: "in progress"}})
+			}
+			message := "merge conflict: " + strings.Join(files, ", ")
+			logFailure(logger, project.ID, task.ID, "merge", message)
+			return failedEnvelope("merge", message)
+		}
 		abortResult, abortErr := gitx.MergeAbort(ctx, repo)
 		if abortErr != nil || abortResult.ExitCode != 0 {
-			message := "merge conflict: " + strings.Join(files, ", ") + "; merge abort failed: " + abortText(abortErr, abortResult)
+			message := gitText + "; merge abort failed: " + abortText(abortErr, abortResult)
 			logFailure(logger, project.ID, task.ID, "merge", message)
 			return failedEnvelopeWithEffects("merge", message, []output.Effect{{Resource: "merge", Action: "in progress"}})
 		}
-		message := "merge conflict: " + strings.Join(files, ", ")
-		logFailure(logger, project.ID, task.ID, "merge", message)
-		return failedEnvelope("merge", message)
 	}
-	abortResult, abortErr := gitx.MergeAbort(ctx, repo)
-	if abortErr != nil || abortResult.ExitCode != 0 {
-		message := gitText + "; merge abort failed: " + abortText(abortErr, abortResult)
+	if message, ok := restoreWorktree(ctx, repo); !ok {
 		logFailure(logger, project.ID, task.ID, "merge", message)
 		return failedEnvelopeWithEffects("merge", message, []output.Effect{{Resource: "merge", Action: "in progress"}})
 	}
 	logFailure(logger, project.ID, task.ID, "merge", gitText)
 	return failedEnvelope("merge", gitText)
+}
+
+// restoreWorktree resets a checkout that a killed merge left staged. The
+// merge preconditions require a clean repository, so any remaining change is
+// from the merge. It reports a failure message when the repository stays
+// dirty.
+func restoreWorktree(ctx context.Context, repo string) (string, bool) {
+	dirty, err := gitx.IsDirty(ctx, repo)
+	if err != nil {
+		return "merge cleanup: " + oneLine(err.Error()), false
+	}
+	if !dirty {
+		return "", true
+	}
+	result, err := run.Command(ctx, repo, "git", "reset", "--hard", "HEAD")
+	if err != nil {
+		return "merge cleanup: " + oneLine(err.Error()), false
+	}
+	if result.ExitCode != 0 {
+		return "merge cleanup: " + gitOutput(result), false
+	}
+	return "", true
 }
 
 // conflictFiles lists the unmerged paths of one checkout.

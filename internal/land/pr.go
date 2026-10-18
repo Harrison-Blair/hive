@@ -21,55 +21,71 @@ func landPR(ctx context.Context, registry *store.Store, logger *slog.Logger, hom
 	repo := project.Path
 	base := project.Base
 	branch := task.Worktree.Branch
+	retry := task.Delivery != nil && task.Delivery.Commit != ""
+	delivery := records.Delivery{Mode: "pr", Target: base, Grant: options.Grant, Evidence: options.Evidence}
+	if retry {
+		delivery = resumeDelivery(*task.Delivery, "pr", base, options)
+	}
+	effects := []output.Effect{}
+	// fail reports a failure after an effect. A completed effect stays visible
+	// in the envelope and the record.
 	fail := func(phase, message string) output.Envelope {
 		logFailure(logger, project.ID, task.ID, phase, message)
-		return failedEnvelope(phase, message)
-	}
-	retry := task.Delivery != nil && task.Delivery.Commit != ""
-	commit := ""
-	pushed := false
-	prURL := ""
-	effects := []output.Effect{}
-	if retry {
-		commit = task.Delivery.Commit
-		pushed = task.Delivery.Pushed
-		prURL = task.Delivery.PRURL
+		if len(effects) == 0 {
+			return failedEnvelope(phase, message)
+		}
+		delivery.At = now()
+		return deliveryEnvelope(registry, logger, task, project, delivery, "partial", phase, message, "", effects)
 	}
 
-	if !pushed {
+	if !delivery.Pushed {
+		if !retry {
+			tip, err := gitx.Tip(ctx, repo, branch)
+			if err != nil {
+				return fail("push", "read branch tip: "+oneLine(err.Error()))
+			}
+			delivery.Commit = tip
+		}
 		pushCtx, cancel := context.WithTimeout(ctx, bound(options.PushTimeout, pushTimeout))
-		pushResult, pushErr := gitx.Push(pushCtx, repo, "origin", "-u", branch)
+		var pushResult *run.Result
+		var pushErr error
+		if retry {
+			pushResult, pushErr = gitx.Push(pushCtx, repo, "origin", delivery.Commit+":refs/heads/"+branch)
+		} else {
+			pushResult, pushErr = gitx.Push(pushCtx, repo, "origin", "-u", branch)
+		}
 		cancel()
 		if pushErr != nil || pushResult.ExitCode != 0 {
-			if commit == "" {
-				commit, _ = gitx.Tip(ctx, repo, branch)
+			if delivery.Commit == "" {
+				delivery.Commit, _ = gitx.Tip(ctx, repo, branch)
 			}
+			delivery.Pushed = false
 			var message string
 			if pushErr != nil {
 				message = "push failed: " + oneLine(pushErr.Error())
 			} else {
 				message = "push failed: " + gitOutput(pushResult)
 			}
-			delivery := records.Delivery{Mode: "pr", Target: base, Grant: options.Grant, Commit: commit, Pushed: false, Evidence: options.Evidence, At: now()}
+			delivery.At = now()
 			return deliveryEnvelope(registry, logger, task, project, delivery, "partial", "push", message, "", effects)
 		}
-		var err error
-		commit, err = gitx.Tip(ctx, repo, branch)
-		if err != nil {
-			return fail("push", "read branch tip: "+oneLine(err.Error()))
-		}
-		pushed = true
+		delivery.Pushed = true
 		effects = append(effects, output.Effect{Resource: "push", Path: branch, Action: "pushed"})
 		logEffect(logger, project.ID, task.ID, "push", branch, "pushed")
-	}
-
-	if prURL == "" && retry {
-		url, found, _ := prView(ctx, repo, branch)
-		if found {
-			prURL = url
+		delivery.At = now()
+		if _, err := storeDelivery(registry, task.ID, project.ID, delivery); err != nil {
+			logFailure(logger, project.ID, task.ID, "record", err.Error())
+			return failedEnvelopeWithEffects("record", "persist delivery: "+oneLine(err.Error()), effects)
 		}
 	}
-	if prURL == "" {
+
+	if delivery.PRURL == "" && retry {
+		url, found, _ := prView(ctx, repo, branch)
+		if found {
+			delivery.PRURL = url
+		}
+	}
+	if delivery.PRURL == "" {
 		body, err := briefBody(home, task.ID, options.Evidence)
 		if err != nil {
 			return fail("brief", err.Error())
@@ -93,15 +109,16 @@ func landPR(ctx context.Context, registry *store.Store, logger *slog.Logger, hom
 			} else {
 				message = "gh pr create failed: " + gitOutput(ghResult)
 			}
-			delivery := records.Delivery{Mode: "pr", Target: base, Grant: options.Grant, Commit: commit, Pushed: pushed, Evidence: options.Evidence, At: now()}
+			delivery.PRURL = ""
+			delivery.At = now()
 			return deliveryEnvelope(registry, logger, task, project, delivery, "partial", "pull request", message, "", effects)
 		}
-		prURL = firstURL(ghResult.Stdout)
-		effects = append(effects, output.Effect{Resource: "pull request", Path: prURL, Action: "created"})
-		logEffect(logger, project.ID, task.ID, "pull request", prURL, "created")
+		delivery.PRURL = firstURL(ghResult.Stdout)
+		effects = append(effects, output.Effect{Resource: "pull request", Path: delivery.PRURL, Action: "created"})
+		logEffect(logger, project.ID, task.ID, "pull request", delivery.PRURL, "created")
 	}
 
-	delivery := records.Delivery{Mode: "pr", Target: base, Grant: options.Grant, Commit: commit, Pushed: pushed, PRURL: prURL, Evidence: options.Evidence, At: now()}
+	delivery.At = now()
 	return deliveryEnvelope(registry, logger, task, project, delivery, "ok", "complete", "", "", effects)
 }
 
