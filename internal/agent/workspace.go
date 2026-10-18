@@ -80,6 +80,9 @@ func reuseManagerWorkspace(ctx context.Context, home, projectDir, label string, 
 	if paneErr != nil {
 		return managerChoice{}, recordedRootRefusal(recorded.ID), false
 	}
+	if pane.PaneID != recorded.RootPane {
+		return managerChoice{}, recordedRootRefusal(recorded.ID), false
+	}
 	if !sameDirectory(paneCwd(pane), projectDir) {
 		if clearErr := clearProjectWorkspace(home, project.ID); clearErr != nil {
 			return managerChoice{}, "clear project workspace: " + clearErr.Error(), false

@@ -226,6 +226,32 @@ func TestManagerWorkspaceMovedRoot(t *testing.T) {
 	}
 }
 
+func TestManagerWorkspaceMovedRootBackToFirstTab(t *testing.T) {
+	home := testHome(t)
+	dir := projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p9", "term_w5", "w5", "w5:t1", dir, "")+`}`)
+	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
+	scriptManagerAgent(t, fake, sleep, "w5:p9", "w5", "manager-demo-g1", dir)
+	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
+	if envelope.Outcome != "failed" {
+		t.Fatalf("envelope = %#v; want failed", envelope)
+	}
+	if !strings.Contains(toString(envelope.Error), "workspace w5 has no recorded root pane: pass --pane <shell pane>") {
+		t.Fatalf("error = %v", envelope.Error)
+	}
+	if len(fake.recorded("agent.start")) != 0 || len(fake.recorded("workspace.close")) != 0 {
+		t.Fatalf("moved root sent a request")
+	}
+	project := readProjectWorkspaceRecord(t, home, "demo")
+	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p1" || !project.Workspace.CreatedByHive {
+		t.Fatalf("project workspace = %#v; want unchanged w5", project.Workspace)
+	}
+}
+
 func TestManagerWorkspaceUserTabStays(t *testing.T) {
 	home := testHome(t)
 	dir := projectDirectory(t, home, "demo")
