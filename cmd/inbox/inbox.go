@@ -2,10 +2,13 @@ package inbox
 
 import (
 	"io"
+	"log/slog"
+	"time"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	inboxlogic "github.com/Harrison-Blair/hive/internal/inbox"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -22,12 +25,19 @@ func New() *cobra.Command {
 	command.AddCommand(newSend())
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		role, _ := cmd.Flags().GetString("role")
+		roleFlag := cmd.Flags().Lookup("role")
+		roleSet := roleFlag != nil && roleFlag.Changed
 		all, _ := cmd.Flags().GetBool("all")
 		var envelope output.Envelope
 		original := cmd.OutOrStdout()
 		tracker := &trackingWriter{writer: original}
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
+			if !roleSet {
+				envelope = output.Envelope{Outcome: "failed", Phase: "validate", Effects: []output.Effect{}, Error: "pass --role", Result: nil}
+				logInboxCommandError(home, role, "pass --role")
+				return envelope, "", nil
+			}
 			envelope = inboxlogic.Read(home, role, all)
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
@@ -69,8 +79,20 @@ type trackingWriter struct {
 
 func (w *trackingWriter) Write(data []byte) (int, error) {
 	n, err := w.writer.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
 	if err != nil && w.err == nil {
 		w.err = err
 	}
 	return n, err
+}
+
+func logInboxCommandError(home, role, message string) {
+	writer, err := hivelog.NewWriter(home, "inbox", time.Now)
+	if err != nil {
+		return
+	}
+	defer func() { _ = writer.Close() }()
+	slog.New(writer).Debug("inbox operation failed", "role", role, "phase", "validate", "error", message)
 }

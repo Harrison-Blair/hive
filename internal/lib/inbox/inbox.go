@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -13,7 +14,9 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -56,11 +59,15 @@ type recordLister interface {
 // Append writes one inbox record.
 func Append(home string, options AppendOptions) output.Envelope {
 	if err := validateAppend(options); err != nil {
-		return failed("validate", err.Error())
+		envelope := failed("validate", err.Error())
+		logAppend(home, options, envelope)
+		return envelope
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		envelope := failed("store", err.Error())
+		logAppend(home, options, envelope)
+		return envelope
 	}
 	var envelope output.Envelope
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
@@ -68,8 +75,9 @@ func Append(home string, options AppendOptions) output.Envelope {
 		return nil
 	})
 	if err != nil {
-		return failed("store", err.Error())
+		envelope = failed("store", err.Error())
 	}
+	logAppend(home, options, envelope)
 	return envelope
 }
 
@@ -109,25 +117,34 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 // Consume marks each unread record of key and returns the marked records.
 func Consume(home, key string) output.Envelope {
 	if err := checkKey(key); err != nil {
-		return failed("validate", err.Error())
+		envelope := failed("validate", err.Error())
+		logConsume(home, key, envelope)
+		return envelope
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		envelope := failed("store", err.Error())
+		logConsume(home, key, envelope)
+		return envelope
 	}
 	var envelope output.Envelope
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		envelope = consumeLocked(locked, key, markRead)
+		envelope = consumeLocked(locked, key, markRead, home)
 		return nil
 	})
 	if err != nil {
-		return failed("store", err.Error())
+		envelope = failed("store", err.Error())
 	}
+	logConsume(home, key, envelope)
 	return envelope
 }
 
-func consumeLocked(locked *store.LockedStore, key string, mark MarkFunc) output.Envelope {
-	unread, err := listLocked(locked, key, false)
+func consumeLocked(locked *store.LockedStore, key string, mark MarkFunc, home ...string) output.Envelope {
+	base := ""
+	if len(home) != 0 {
+		base = home[0]
+	}
+	unread, err := listLocked(locked, key, false, base)
 	if err != nil {
 		return failed("consume", err.Error())
 	}
@@ -177,7 +194,7 @@ func Unread(home, key string) ([]records.Inbox, error) {
 	if err != nil {
 		return nil, err
 	}
-	return listLocked(registry, key, false)
+	return listLocked(registry, key, false, home)
 }
 
 // All returns each record of key in sequence order.
@@ -189,19 +206,43 @@ func All(home, key string) ([]records.Inbox, error) {
 	if err != nil {
 		return nil, err
 	}
-	return listLocked(registry, key, true)
+	return listLocked(registry, key, true, home)
 }
 
-func listLocked(lister recordLister, key string, all bool) ([]records.Inbox, error) {
-	raw, err := lister.ListIn([]string{"inbox", key}, nil)
+func listLocked(lister recordLister, key string, all bool, home ...string) ([]records.Inbox, error) {
+	base := ""
+	if len(home) != 0 {
+		base = home[0]
+	}
+	names := []string{}
+	raw, err := lister.ListIn([]string{"inbox", key}, func(filename string) bool {
+		names = append(names, filename)
+		return true
+	})
 	if err != nil {
 		return nil, err
 	}
 	found := make([]records.Inbox, 0, len(raw))
-	for _, data := range raw {
+	for i, data := range raw {
+		name := ""
+		if i < len(names) {
+			name = names[i]
+		}
+		path := recordErrorPath(lister, base, key, name)
 		var record records.Inbox
 		if err := json.Unmarshal(data, &record); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("record invalid: %s: %w", path, err)
+		}
+		id := strings.TrimSuffix(name, ".json")
+		seq, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("record invalid: %s: the sequence name is not numeric", path)
+		}
+		if record.Seq != seq {
+			return nil, fmt.Errorf("record invalid: %s: sequence %d does not match the record path", path, record.Seq)
+		}
+		if record.Role != key {
+			return nil, fmt.Errorf("record invalid: %s: role %q does not match inbox %q", path, record.Role, key)
 		}
 		if !all && record.ReadAt != "" {
 			continue
@@ -210,6 +251,23 @@ func listLocked(lister recordLister, key string, all bool) ([]records.Inbox, err
 	}
 	sort.Slice(found, func(i, j int) bool { return found[i].Seq < found[j].Seq })
 	return found, nil
+}
+
+func recordErrorPath(lister recordLister, home, key, name string) string {
+	if home != "" {
+		return filepath.ToSlash(filepath.Join(home, ".hive", "state", "inbox", key, name))
+	}
+	id := strings.TrimSuffix(name, ".json")
+	if id != "" {
+		_, err := lister.ListIn([]string{"inbox", key, id}, nil)
+		if err != nil {
+			const prefix = "store path invalid: "
+			if message := err.Error(); strings.HasPrefix(message, prefix) {
+				return filepath.ToSlash(strings.TrimPrefix(message, prefix))
+			}
+		}
+	}
+	return filepath.ToSlash(filepath.Join(".hive", "state", "inbox", key, name))
 }
 
 // UnreadCount returns the number of unread records of key.
@@ -226,21 +284,34 @@ func UnreadCountAll(home string) (map[string]int, error) {
 	if _, err := store.Open(home); err != nil {
 		return nil, err
 	}
-	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox"))
+	root := filepath.Join(home, ".hive", "state", "inbox")
+	info, err := os.Lstat(root)
 	if errors.Is(err, os.ErrNotExist) {
 		return map[string]int{}, nil
 	}
 	if err != nil {
 		return nil, err
 	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return nil, fmt.Errorf("store path invalid: %s", root)
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return nil, err
+	}
 	counts := map[string]int{}
 	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
 		key := entry.Name()
 		if checkKey(key) != nil {
 			continue
+		}
+		rolePath := filepath.Join(root, key)
+		roleInfo, err := os.Lstat(rolePath)
+		if err != nil {
+			return nil, err
+		}
+		if roleInfo.Mode()&os.ModeSymlink != 0 || !roleInfo.IsDir() {
+			return nil, fmt.Errorf("store path invalid: %s", rolePath)
 		}
 		count, err := UnreadCount(home, key)
 		if err != nil {
@@ -302,6 +373,9 @@ func validateAppend(options AppendOptions) error {
 }
 
 func displayValue(value string) string {
+	if !utf8.ValidString(value) {
+		return strconv.Quote(value)
+	}
 	if strings.ContainsAny(value, "\n\r\t") {
 		return strconv.Quote(value)
 	}
@@ -311,6 +385,72 @@ func displayValue(value string) string {
 		}
 	}
 	return value
+}
+
+func logInboxEvent(home, message string, attrs ...any) {
+	writer, err := hivelog.NewWriter(home, "inbox", time.Now)
+	if err != nil {
+		return
+	}
+	defer func() { _ = writer.Close() }()
+	slog.New(writer).Debug(message, attrs...)
+}
+
+func logAppend(home string, options AppendOptions, envelope output.Envelope) {
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
+	}
+	attrs := []any{"role", options.Role, "agent", options.Agent, "agent_id", options.Agent, "kind", kind}
+	sequence := uint64(0)
+	for _, effect := range envelope.Effects {
+		switch effect.Resource {
+		case "counter":
+			logInboxEvent(home, "inbox counter updated", append(attrs, "path", effect.Path)...)
+		case "inbox":
+			sequence = effectSequence(effect.Path)
+			logInboxEvent(home, "inbox record appended", append(attrs, "sequence", sequence)...)
+		}
+	}
+	if envelope.Error == nil {
+		return
+	}
+	errorAttrs := append([]any{}, attrs...)
+	if sequence != 0 {
+		errorAttrs = append(errorAttrs, "sequence", sequence)
+	}
+	errorAttrs = append(errorAttrs, "phase", envelope.Phase, "error", fmt.Sprint(envelope.Error))
+	logInboxEvent(home, "inbox operation failed", errorAttrs...)
+}
+
+func logConsume(home, key string, envelope output.Envelope) {
+	attrs := []any{"role", key}
+	sequence := uint64(0)
+	for _, effect := range envelope.Effects {
+		if effect.Resource != "inbox" || effect.Action != "consumed" {
+			continue
+		}
+		sequence = effectSequence(effect.Path)
+		logInboxEvent(home, "inbox record consumed", append(attrs, "sequence", sequence)...)
+	}
+	if envelope.Error == nil {
+		return
+	}
+	errorAttrs := append([]any{}, attrs...)
+	if sequence != 0 {
+		errorAttrs = append(errorAttrs, "sequence", sequence)
+	}
+	errorAttrs = append(errorAttrs, "phase", envelope.Phase, "error", fmt.Sprint(envelope.Error))
+	logInboxEvent(home, "inbox operation failed", errorAttrs...)
+}
+
+func effectSequence(path string) uint64 {
+	id := strings.TrimSuffix(filepath.Base(path), ".json")
+	seq, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return seq
 }
 
 func counterEffect(key string) output.Effect {

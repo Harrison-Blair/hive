@@ -464,7 +464,9 @@ func TestRegisterExplicitWorkerUsesNoCounter(t *testing.T) {
 	}
 }
 
-func TestRegisterGeneratedNameCollisionKeepsTheCounterEffect(t *testing.T) {
+// The corrected T04 contract refuses the generated name before the counter
+// write. A retry therefore sees the same collision and still writes nothing.
+func TestRegisterGeneratedNameCollisionWritesNothing(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "hive")
 	explicit := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "worker-hive-1", NameSet: true, PaneID: "w1:p1"})
@@ -473,31 +475,268 @@ func TestRegisterGeneratedNameCollisionKeepsTheCounterEffect(t *testing.T) {
 	}
 	options := RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p2"}
 	envelope := Register(home, options)
-	if envelope.Outcome != "partial" || envelope.Phase != "agent" {
-		t.Fatalf("Register() = %#v; want partial agent after the counter", envelope)
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Register() = %#v; want failed with no effect before the counter", envelope)
 	}
-	if len(envelope.Effects) != 1 || envelope.Effects[0].Resource != "counter" || envelope.Effects[0].Action != "updated" {
-		t.Fatalf("effects = %#v; want one counter effect", envelope.Effects)
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "counters", "agent.json")); !os.IsNotExist(err) {
+		t.Fatalf("refused registration wrote the agent counter: %v", err)
 	}
 	if keys := agentKeys(t, home); len(keys) != 1 {
 		t.Fatalf("keys = %v; want the explicit worker only", keys)
 	}
 	retry := Register(home, options)
-	if retry.Outcome != "ok" {
-		t.Fatal(retry.Error)
+	if retry.Outcome != "failed" || len(retry.Effects) != 0 {
+		t.Fatalf("retry = %#v; want the same collision with no effect", retry)
 	}
-	keys := agentKeys(t, home)
-	if len(keys) != 2 {
-		t.Fatalf("retry keys = %v; want two workers", keys)
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "counters", "agent.json")); !os.IsNotExist(err) {
+		t.Fatalf("retry wrote the agent counter: %v", err)
 	}
-	foundRetry := false
-	for _, key := range keys {
-		if key == "worker-hive-2" {
-			foundRetry = true
+	if keys := agentKeys(t, home); len(keys) != 1 {
+		t.Fatalf("retry keys = %v; want the explicit worker only", keys)
+	}
+}
+
+func TestRegisterBusyPaneRefusalWritesNothing(t *testing.T) {
+	home := t.TempDir()
+	seedProject(t, home, "hive")
+	first := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "busy", NameSet: true, PaneID: "w1:p1"})
+	if first.Outcome != "ok" {
+		t.Fatal(first.Error)
+	}
+	before := agentKeys(t, home)
+	envelope := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p1"})
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Register() = %#v; want failed with no effect on a busy pane", envelope)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "counters", "agent.json")); !os.IsNotExist(err) {
+		t.Fatalf("busy-pane refusal wrote the agent counter: %v", err)
+	}
+	after := agentKeys(t, home)
+	if strings.Join(before, ",") != strings.Join(after, ",") {
+		t.Fatalf("agent keys = %v; want unchanged %v", after, before)
+	}
+}
+
+func TestRegisterRejectsLiveNameAcrossRoles(t *testing.T) {
+	t.Run("worker then coordinator", func(t *testing.T) {
+		home := t.TempDir()
+		seedProject(t, home, "hive")
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "shared", NameSet: true, PaneID: "w1:p1"})
+		if worker.Outcome != "ok" {
+			t.Fatal(worker.Error)
+		}
+		coordinator := Register(home, RegisterOptions{Role: "coordinator", Name: "shared", NameSet: true, PaneID: "w1:p2"})
+		if coordinator.Outcome != "failed" || len(coordinator.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused live-name collision", coordinator)
+		}
+		if _, err := os.Stat(filepath.Join(home, ".hive", "state", "claims", "coordinator.json")); !os.IsNotExist(err) {
+			t.Fatalf("collision wrote a coordinator claim: %v", err)
+		}
+	})
+	t.Run("coordinator then worker", func(t *testing.T) {
+		home := t.TempDir()
+		seedProject(t, home, "hive")
+		coordinator := Register(home, RegisterOptions{Role: "coordinator", Name: "shared", NameSet: true, PaneID: "w1:p1"})
+		if coordinator.Outcome != "ok" {
+			t.Fatal(coordinator.Error)
+		}
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "shared", NameSet: true, PaneID: "w1:p2"})
+		if worker.Outcome != "failed" || len(worker.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused live-name collision", worker)
+		}
+	})
+	t.Run("singleton name matches a record key", func(t *testing.T) {
+		home := t.TempDir()
+		if first := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w1:p1"}); first.Outcome != "ok" {
+			t.Fatal(first.Error)
+		}
+		supervisor := Register(home, RegisterOptions{Role: "supervisor", Name: "coordinator-g1", NameSet: true, PaneID: "w1:p2"})
+		if supervisor.Outcome != "failed" || len(supervisor.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused record-key name collision", supervisor)
+		}
+	})
+	t.Run("coordinator generation then supervisor", func(t *testing.T) {
+		home := t.TempDir()
+		if first := Register(home, RegisterOptions{Role: "coordinator", Name: "shared", NameSet: true, PaneID: "w1:p1"}); first.Outcome != "ok" {
+			t.Fatal(first.Error)
+		}
+		if second := Register(home, RegisterOptions{Role: "coordinator", Name: "shared", NameSet: true, PaneID: "w1:p2"}); second.Outcome != "ok" {
+			t.Fatal(second.Error)
+		}
+		supervisor := Register(home, RegisterOptions{Role: "supervisor", Name: "shared", NameSet: true, PaneID: "w1:p3"})
+		if supervisor.Outcome != "failed" || len(supervisor.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused live-name collision", supervisor)
+		}
+		if _, err := os.Stat(filepath.Join(home, ".hive", "state", "claims", "supervisor.json")); !os.IsNotExist(err) {
+			t.Fatalf("collision wrote a supervisor claim: %v", err)
+		}
+	})
+}
+
+func TestRegisterRejectsClaimAliasBothOrders(t *testing.T) {
+	t.Run("worker then coordinator", func(t *testing.T) {
+		home := t.TempDir()
+		seedProject(t, home, "hive")
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "coordinator", NameSet: true, PaneID: "w1:p1"})
+		if worker.Outcome != "ok" {
+			t.Fatal(worker.Error)
+		}
+		coordinator := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "w1:p2"})
+		if coordinator.Outcome != "failed" || len(coordinator.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused claim-key alias", coordinator)
+		}
+		if _, err := os.Stat(filepath.Join(home, ".hive", "state", "claims", "coordinator.json")); !os.IsNotExist(err) {
+			t.Fatalf("collision wrote a coordinator claim: %v", err)
+		}
+	})
+	t.Run("coordinator then worker", func(t *testing.T) {
+		home := t.TempDir()
+		seedProject(t, home, "hive")
+		coordinator := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "w1:p1"})
+		if coordinator.Outcome != "ok" {
+			t.Fatal(coordinator.Error)
+		}
+		worker := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "coordinator", NameSet: true, PaneID: "w1:p2"})
+		if worker.Outcome != "failed" || len(worker.Effects) != 0 {
+			t.Fatalf("Register() = %#v; want refused claim-key alias", worker)
+		}
+	})
+}
+
+func TestRegisterOrphanRetryRequiresSamePane(t *testing.T) {
+	home := t.TempDir()
+	options := RegisterOptions{Role: "coordinator", PaneID: "intended-pane"}
+	seam := &seamWriter{writeCollection: "claims", writeErr: errors.New("seam claim failure")}
+	first := runRegisterLocked(t, home, seam, options)
+	if first.Outcome != "partial" || first.Phase != "claim" {
+		t.Fatalf("first registration = %#v; want partial claim", first)
+	}
+	before, err := os.ReadFile(filepath.Join(home, ".hive", "state", "agents", "coordinator-g1.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	options.PaneID = "different-pane"
+	retry := Register(home, options)
+	if retry.Outcome != "failed" || len(retry.Effects) != 0 {
+		t.Fatalf("retry = %#v; want refused different pane with no effect", retry)
+	}
+	after, err := os.ReadFile(filepath.Join(home, ".hive", "state", "agents", "coordinator-g1.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(before) != string(after) {
+		t.Fatal("refused retry changed the orphan record")
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "claims", "coordinator.json")); !os.IsNotExist(err) {
+		t.Fatalf("refused retry wrote a claim: %v", err)
+	}
+}
+
+func TestRegisterErrorsEscapeControlInput(t *testing.T) {
+	cases := []struct {
+		label string
+		want  string
+		get   func(string) output.Envelope
+	}{
+		{"role", "invalid role", func(home string) output.Envelope {
+			return Register(home, RegisterOptions{Role: "a\nb", PaneID: "w1:p1"})
+		}},
+		{"name", "invalid agent name", func(home string) output.Envelope {
+			return Register(home, RegisterOptions{Role: "coordinator", Name: "a\nb", NameSet: true, PaneID: "w1:p1"})
+		}},
+		{"project", "project not found", func(home string) output.Envelope {
+			return Register(home, RegisterOptions{Role: "manager", Project: "a\nb", PaneID: "w1:p1"})
+		}},
+		{"show", "agent not found", func(home string) output.Envelope {
+			return Show(home, "a\nb")
+		}},
+	}
+	for _, test := range cases {
+		t.Run(test.label, func(t *testing.T) {
+			envelope := test.get(t.TempDir())
+			if envelope.Outcome != "failed" {
+				t.Fatalf("envelope = %#v; want failed", envelope)
+			}
+			message, _ := envelope.Error.(string)
+			if !strings.Contains(message, test.want) {
+				t.Fatalf("error = %q; want text %q", message, test.want)
+			}
+			if strings.ContainsAny(message, "\n\r\x1b") {
+				t.Fatalf("error = %q; want one line without terminal controls", message)
+			}
+		})
+	}
+}
+
+func readAgentLogEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	dir := filepath.Join(home, ".hive", "logs")
+	entries, err := os.ReadDir(dir)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	var events []map[string]any
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".jsonl") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line == "" {
+				continue
+			}
+			var event map[string]any
+			if err := json.Unmarshal([]byte(line), &event); err != nil {
+				t.Fatalf("log line is not JSON: %v; line %q", err, line)
+			}
+			events = append(events, event)
 		}
 	}
-	if !foundRetry {
-		t.Fatalf("retry keys = %v; want worker-hive-2 after the gap", keys)
+	return events
+}
+
+func findAgentLogEvent(events []map[string]any, message string) map[string]any {
+	for _, event := range events {
+		if event["msg"] == message {
+			return event
+		}
+	}
+	return nil
+}
+
+func TestRegisterLogsTransitionsAndErrors(t *testing.T) {
+	home := t.TempDir()
+	if envelope := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w1:p1"}); envelope.Outcome != "ok" {
+		t.Fatal(envelope.Error)
+	}
+	events := readAgentLogEvents(t, home)
+	recordEvent := findAgentLogEvent(events, "agent record written")
+	if recordEvent == nil || recordEvent["agent_id"] != "coordinator-g1" || recordEvent["role"] != "coordinator" {
+		t.Fatalf("record event = %#v; want agent_id coordinator-g1 and role coordinator", recordEvent)
+	}
+	claimEvent := findAgentLogEvent(events, "agent claim written")
+	if claimEvent == nil || claimEvent["agent_id"] != "coordinator-g1" {
+		t.Fatalf("claim event = %#v; want agent_id coordinator-g1", claimEvent)
+	}
+
+	errorHome := t.TempDir()
+	if envelope := Register(errorHome, RegisterOptions{Role: "boss", PaneID: "w1:p1"}); envelope.Outcome != "failed" {
+		t.Fatalf("invalid role = %#v; want failed", envelope)
+	}
+	errorEvents := readAgentLogEvents(t, errorHome)
+	failureEvent := findAgentLogEvent(errorEvents, "agent registration failed")
+	if failureEvent == nil {
+		t.Fatalf("events = %#v; want an agent registration failure event", errorEvents)
+	}
+	message, _ := failureEvent["error"].(string)
+	if !strings.Contains(message, "invalid role: boss") || failureEvent["role"] != "boss" {
+		t.Fatalf("failure event = %#v; want role boss and the error text", failureEvent)
 	}
 }
 

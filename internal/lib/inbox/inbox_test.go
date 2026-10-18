@@ -206,7 +206,7 @@ func TestParallelConsumersGetDisjointRecords(t *testing.T) {
 }
 
 func TestInvalidKeysFailBeforeFileOperation(t *testing.T) {
-	for _, key := range []string{"../x", "A", ""} {
+	for _, key := range []string{"../x", "A", "", strings.Repeat("a", 42)} {
 		t.Run(key, func(t *testing.T) {
 			home := t.TempDir()
 			envelope := Append(home, AppendOptions{Role: key, Text: "hello"})
@@ -229,17 +229,50 @@ func TestInvalidKeysFailBeforeFileOperation(t *testing.T) {
 	}
 }
 
+func TestKeyLengthBoundaries(t *testing.T) {
+	accepted := strings.Repeat("a", 41)
+	if envelope := Append(t.TempDir(), AppendOptions{Role: accepted, Text: "hello"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v; want the literal 41-byte key accepted", envelope)
+	}
+	refused := strings.Repeat("a", 42)
+	home := t.TempDir()
+	envelope := Append(home, AppendOptions{Role: refused, Text: "hello"})
+	if envelope.Outcome != "failed" {
+		t.Fatalf("Append() = %#v; want the literal 42-byte key refused", envelope)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
+		t.Fatalf("42-byte key created state: %v", err)
+	}
+}
+
 func TestTextByteBoundaries(t *testing.T) {
-	for _, size := range []int{4095, 4096, 4097} {
-		t.Run(strconv.Itoa(size), func(t *testing.T) {
+	cases := []struct {
+		name string
+		text string
+		want bool
+	}{
+		{"4095-ascii", strings.Repeat("a", 4095), true},
+		{"4096-ascii", strings.Repeat("a", 4096), true},
+		{"4097-ascii", strings.Repeat("a", 4097), false},
+		{"4096-utf8", strings.Repeat("\u00e9", 2048), true},
+		{"4097-utf8", "a" + strings.Repeat("\u00e9", 2048), false},
+		{"8192-ascii", strings.Repeat("a", 8192), false},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
 			home := t.TempDir()
-			envelope := Append(home, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: strings.Repeat("a", size)})
-			if size <= MaxTextBytes {
+			envelope := Append(home, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: test.text})
+			if test.want {
 				if envelope.Outcome != "ok" {
-					t.Fatalf("Append() = %#v; want %d bytes accepted", envelope, size)
+					t.Fatalf("Append() = %#v; want %d bytes accepted", envelope, len(test.text))
 				}
-			} else if envelope.Outcome != "failed" {
-				t.Fatalf("Append() = %#v; want %d bytes refused", envelope, size)
+				return
+			}
+			if envelope.Outcome != "failed" {
+				t.Fatalf("Append() = %#v; want %d bytes refused", envelope, len(test.text))
+			}
+			if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
+				t.Fatalf("refused text created state: %v", err)
 			}
 		})
 	}
@@ -434,6 +467,212 @@ func TestAppendCounterFailureHasNoEffect(t *testing.T) {
 	envelope := runAppendLocked(t, home, seam, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "hello"})
 	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
 		t.Fatalf("appendLocked() = %#v; want failed with no effect", envelope)
+	}
+}
+
+func TestConsumeMarksReadAtAndPreservesOtherFields(t *testing.T) {
+	home := t.TempDir()
+	appendMessage(t, home, "coordinator", "hello")
+	before := readInbox(t, home, "coordinator", 1)
+	envelope := Consume(home, "coordinator")
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Consume() = %#v", envelope)
+	}
+	after := readInbox(t, home, "coordinator", 1)
+	if after.ReadAt == "" {
+		t.Fatal("record 1 read_at is empty; want a completed mark")
+	}
+	if after.Seq != before.Seq || after.Role != before.Role || after.Kind != before.Kind ||
+		after.Task != before.Task || after.Agent != before.Agent || after.Text != before.Text ||
+		after.CreatedAt != before.CreatedAt || after.NudgedAt != before.NudgedAt {
+		t.Fatalf("mark changed a field other than read_at: before %#v after %#v", before, after)
+	}
+}
+
+func TestConsumeRefusesCrossRoleStoredRecord(t *testing.T) {
+	home := t.TempDir()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"coordinator", "supervisor"} {
+		record := records.Inbox{Seq: 1, Role: "supervisor", Kind: records.InboxMessage, Agent: "worker-x", Text: key}
+		if err := st.WriteIn([]string{"inbox", key}, "1", record); err != nil {
+			t.Fatal(err)
+		}
+	}
+	envelope := Consume(home, "coordinator")
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Consume() = %#v; want failed with no effect", envelope)
+	}
+	message, _ := envelope.Error.(string)
+	if !strings.Contains(message, ".hive/state/inbox/coordinator/1.json") {
+		t.Fatalf("error = %q; want the selected record path", message)
+	}
+	for _, key := range []string{"coordinator", "supervisor"} {
+		if record := readInbox(t, home, key, 1); record.ReadAt != "" {
+			t.Fatalf("%s record read_at = %q; want no mark", key, record.ReadAt)
+		}
+	}
+}
+
+func TestConsumeRefusesSequencePathMismatch(t *testing.T) {
+	home := t.TempDir()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Text: "mismatch"}
+	if err := st.WriteIn([]string{"inbox", "coordinator"}, "2", record); err != nil {
+		t.Fatal(err)
+	}
+	envelope := Consume(home, "coordinator")
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Consume() = %#v; want failed with no effect", envelope)
+	}
+	message, _ := envelope.Error.(string)
+	if !strings.Contains(message, ".hive/state/inbox/coordinator/2.json") {
+		t.Fatalf("error = %q; want the mismatched record path", message)
+	}
+	if record := readInbox(t, home, "coordinator", 2); record.ReadAt != "" {
+		t.Fatalf("mismatched record read_at = %q; want no mark", record.ReadAt)
+	}
+}
+
+func TestConsumeDecodeErrorKeepsRecordPath(t *testing.T) {
+	home := t.TempDir()
+	path := filepath.Join(home, ".hive", "state", "inbox", "coordinator", "1.json")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(`{"seq":"wrong","role":"coordinator"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	envelope := Consume(home, "coordinator")
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Consume() = %#v; want failed with no effect", envelope)
+	}
+	message, _ := envelope.Error.(string)
+	if !strings.Contains(message, path) {
+		t.Fatalf("error = %q; want the record path %s", message, path)
+	}
+}
+
+func TestUnreadCountAllRejectsLinkedCollections(t *testing.T) {
+	t.Run("root", func(t *testing.T) {
+		home := t.TempDir()
+		if _, err := store.Open(home); err != nil {
+			t.Fatal(err)
+		}
+		target := filepath.Join(home, "target-inbox")
+		if err := os.MkdirAll(target, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		root := filepath.Join(home, ".hive", "state", "inbox")
+		if err := os.Symlink(target, root); err != nil {
+			t.Fatal(err)
+		}
+		counts, err := UnreadCountAll(home)
+		if err == nil || counts != nil || !strings.Contains(err.Error(), root) {
+			t.Fatalf("UnreadCountAll() = %#v, %v; want a path error for %s", counts, err, root)
+		}
+	})
+	t.Run("role", func(t *testing.T) {
+		home := t.TempDir()
+		if _, err := store.Open(home); err != nil {
+			t.Fatal(err)
+		}
+		target := filepath.Join(home, "target-role")
+		if err := os.MkdirAll(target, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		role := filepath.Join(home, ".hive", "state", "inbox", "coordinator")
+		if err := os.MkdirAll(filepath.Dir(role), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(target, role); err != nil {
+			t.Fatal(err)
+		}
+		counts, err := UnreadCountAll(home)
+		if err == nil || counts != nil || !strings.Contains(err.Error(), role) {
+			t.Fatalf("UnreadCountAll() = %#v, %v; want a path error for %s", counts, err, role)
+		}
+	})
+}
+
+func readInboxLogEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	dir := filepath.Join(home, ".hive", "logs")
+	entries, err := os.ReadDir(dir)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	var events []map[string]any
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".jsonl") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line == "" {
+				continue
+			}
+			var event map[string]any
+			if err := json.Unmarshal([]byte(line), &event); err != nil {
+				t.Fatalf("log line is not JSON: %v; line %q", err, line)
+			}
+			events = append(events, event)
+		}
+	}
+	return events
+}
+
+func findInboxLogEvent(events []map[string]any, message string) map[string]any {
+	for _, event := range events {
+		if event["msg"] == message {
+			return event
+		}
+	}
+	return nil
+}
+
+func TestInboxLogsTransitionsAndErrors(t *testing.T) {
+	home := t.TempDir()
+	appendMessage(t, home, "coordinator", "secret message text")
+	if envelope := Consume(home, "coordinator"); envelope.Outcome != "ok" {
+		t.Fatalf("Consume() = %#v", envelope)
+	}
+	if envelope := Append(home, AppendOptions{Role: "../x", Text: "secret message text"}); envelope.Outcome != "failed" {
+		t.Fatalf("invalid key Append() = %#v", envelope)
+	}
+	events := readInboxLogEvents(t, home)
+	appendEvent := findInboxLogEvent(events, "inbox record appended")
+	if appendEvent == nil || appendEvent["role"] != "coordinator" || appendEvent["sequence"] != float64(1) || appendEvent["agent"] != "worker-x" {
+		t.Fatalf("append event = %#v; want role, sequence 1, and agent", appendEvent)
+	}
+	consumeEvent := findInboxLogEvent(events, "inbox record consumed")
+	if consumeEvent == nil || consumeEvent["role"] != "coordinator" || consumeEvent["sequence"] != float64(1) {
+		t.Fatalf("consume event = %#v; want role and sequence 1", consumeEvent)
+	}
+	failureEvent := findInboxLogEvent(events, "inbox operation failed")
+	if failureEvent == nil {
+		t.Fatalf("events = %#v; want an inbox failure event", events)
+	}
+	message, _ := failureEvent["error"].(string)
+	if !strings.Contains(message, "invalid inbox key") {
+		t.Fatalf("failure event = %#v; want the invalid key error", failureEvent)
+	}
+	for _, event := range events {
+		data, _ := json.Marshal(event)
+		if strings.Contains(string(data), "secret message text") {
+			t.Fatalf("log event contains message text: %s", data)
+		}
 	}
 }
 

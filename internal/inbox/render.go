@@ -3,7 +3,10 @@ package inbox
 import (
 	"fmt"
 	"io"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"unicode"
 
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -17,9 +20,18 @@ func ReadText(envelope output.Envelope) string {
 	}
 	lines := make([]string, 0, len(result.Records))
 	for _, record := range result.Records {
-		lines = append(lines, fmt.Sprintf("%d\t%s\t%s\t%s\t%s", record.Seq, record.Kind, record.Agent, record.CreatedAt, record.Text))
+		lines = append(lines, fmt.Sprintf("%d\t%s\t%s\t%s\t%s", record.Seq, renderValue(record.Kind), renderValue(record.Agent), renderValue(record.CreatedAt), renderValue(record.Text)))
 	}
 	return strings.Join(lines, "\n") + "\n"
+}
+
+func renderValue(value string) string {
+	for _, r := range value {
+		if unicode.IsControl(r) {
+			return strconv.Quote(value)
+		}
+	}
+	return value
 }
 
 // SendText renders the effects of one append.
@@ -34,15 +46,19 @@ func SendText(envelope output.Envelope) string {
 	return strings.Join(lines, "\n") + "\n"
 }
 
-// Consumed returns the sequence IDs that a read marked.
+// Consumed returns the sequence IDs of completed consume effects.
 func Consumed(envelope output.Envelope) []uint64 {
-	result, ok := envelope.Result.(inboxlib.Result)
-	if !ok {
-		return nil
-	}
-	ids := make([]uint64, 0, len(result.Records))
-	for _, record := range result.Records {
-		ids = append(ids, record.Seq)
+	ids := make([]uint64, 0, len(envelope.Effects))
+	for _, effect := range envelope.Effects {
+		if effect.Resource != "inbox" || effect.Action != "consumed" {
+			continue
+		}
+		id := strings.TrimSuffix(filepath.Base(effect.Path), ".json")
+		seq, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			continue
+		}
+		ids = append(ids, seq)
 	}
 	return ids
 }
