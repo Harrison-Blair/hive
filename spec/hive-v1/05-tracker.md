@@ -88,11 +88,11 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | evidence | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | evidence | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | in progress | | |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
@@ -231,6 +231,56 @@ SHA256 `c162692fb75b351e577328942aafc610e06dce9593d5c82a18e3b02af3de35ec`. Each
 archive equals its source.
 - The state receipt is `.hive/tmp/coordinator/state/wave2-evidence-01.json`.
 Independent verification stays pending for both tasks.
+- T22 and T06 code is not verified and not landed. T03, T04, T05, and T07 stay
+`blocked` on T22. No other status, dependency, or model route changes.
+
+### Dated repair receipt: wave 2 T22 and T06
+
+2026-10-18. This section records the independent verification results. It
+changes only the status of these tasks and adds one home check.
+
+- T22 moves from `evidence` to `in progress` for repair. The verifier pass
+`t22-verify-01.md` returned FAIL at verification commit `3c14453c`. The checked
+worker commit is `d9b644f7`. The path check `t22-path-verify-01.md` returned
+FAIL on the same worker commit.
+- T22 F1: temporary-name filtering hides directories and links (AC2, AC3). The
+walk skips a directory named `.probe.tmp-123`. It also skips a linked collection
+in silence.
+- T22 F2: the fixed-size tests use the implementation constant. A 2 MiB mutation
+keeps the V2 suite green. `generic_test.go:188` to `207` gives the reason.
+- T22 path F01: a static `.hive` ancestor link escapes containment. `store.Open`
+creates an external state root through the link.
+- T22 path F02: `store.Open` accepts a static linked state root. Later operations
+reject the same root.
+- T06 moves from `evidence` to `in progress` for repair. The verifier pass
+`t06-verify-01.md` returned FAIL at verification commit `c9016cf0`. The checked
+worker commit is `1c556c33`.
+- T06 F1: the line-cap tests use the implementation constant `maxLineBytes`.
+- T06 F2: follow does not apply the cutoff to new events.
+- T06 F3: follow diagnostics use a relative line number.
+- T06 F4: a component newline splits one text event into two physical lines.
+- T06 F5: JSON read errors print an envelope on stdout. The brief requires one
+plain diagnostic on stderr.
+- The coordinator copied the exact tracked `VERIFIED.md` from each worktree. T22
+archive `.hive/tmp/coordinator/reports/t22-verify-01-archive.md` has 25467 bytes
+and SHA256 `7c2d54f583a17c013ce09409786a0269bd0238d3d4e3b4b7cad3a2749325a464`.
+T06 archive `.hive/tmp/coordinator/reports/t06-verify-01-archive.md` has 75031
+bytes and SHA256
+`ca9a28c9ef062589a2e2160f53cf264095e336adb90b6bf28285b41337cb42b5`. Each archive
+equals its source.
+- Repair agents `hive-t22-fix-01` and `hive-t06-fix-01` run with `pi
+opencode-go/deepseek-v4-flash:medium`. Both panes report the status `working` at
+2026-10-18 01:30 EDT. Uncommitted test edits exist in each worktree. No repair
+commit exists.
+- A bounded static-link check finds a home gap before logger start. With `H/.hive`
+as a link to an external directory that holds a regular `README.md`, `hive
+--home H project list` exits 0. That command writes `logs/2026-10-18.jsonl` and
+`state/` below the external directory. `home.Resolve` accepts the link because
+`os.Lstat` follows the `.hive` parent. `cmd/common` then calls `log.Open`, and
+the store opens the same way. Both call `os.MkdirAll` below `.hive` with no type
+check.
+- Recommendation: T01 owns a static `.hive` type check in `home.Resolve` and the
+logger start path. T22 keeps its store root check.
 - T22 and T06 code is not verified and not landed. T03, T04, T05, and T07 stay
 `blocked` on T22. No other status, dependency, or model route changes.
 
