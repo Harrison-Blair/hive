@@ -106,7 +106,7 @@ flowchart TD
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 3f607ba |
-| [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | ready | | |
+| [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
@@ -1620,6 +1620,27 @@ checkpoint.
   The real Pi session file count is 145 before and after.
 - The V1 stop cases map to `TestStopWorkspace` in V3. V3 proves AC4. V1 proves
   AC1 and AC2. The stop tests in V1 stay in V3.
+- CP3, CP4, and CP5 stay open.
+
+### Dated landing: T17
+
+2026-10-18. This section records the T17 landing. It passes no checkpoint.
+
+- T17 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T17 base tip is `d6beac0`. The verified T17 tip is `0be4705`.
+- The T17 merge commit is `cb95422`. Its subject is
+  `merge(T17): land the opencode profile`. Its first parent is `d6beac0`. Its
+  second parent is `0be4705`. The merge had no conflict.
+- The combined gate ran on the uncommitted T17 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T17 push moved `origin/dev` from `d6beac0` to `cb95422`.
+- The T17 verifier report is
+  `.hive/tmp/coordinator/reports/t17-verify-01.md`. It passes.
+- OpenCode starts a default free model when no credential is present. The V2
+  fixture copied a credential, so the actual model equals the request. The
+  request is `opencode-go/deepseek-v4.1-flash`.
 - CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
