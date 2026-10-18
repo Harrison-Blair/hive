@@ -101,21 +101,21 @@ flowchart TD
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
-| [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
-| [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | blocked | | |
-| [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | blocked | | |
-| [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | blocked | | |
-| [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | blocked | | |
-| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | blocked | | |
-| [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | blocked | | |
+| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | ready | | |
+| [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | ready | | |
+| [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
+| [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
+| [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | ready | | |
+| [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | ready | | |
+| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | ready | | |
+| [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
 
 | Checkpoint | After | Blocks | Status | Date | Verdict by |
 | --- | --- | --- | --- | --- | --- |
 | CP1 home live | T01, T02 | wave 2 | passed | 2026-10-18 | runner `cp1-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp1-verify-01.md` |
-| CP2 worktree and spawn live | T09, T10 | wave 4 | open | | |
+| CP2 worktree and spawn live | T09, T10 | wave 4 | passed | 2026-10-18 | runner `cp2-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp2-verify-01.md` |
 | CP3 messaging and close-down live | T12, T13, T14, T15, T16, T18 | wave 5 | open | | |
 | CP4 TUI live | T08 | CP5 | open | | |
 | CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | | |
@@ -1461,6 +1461,45 @@ changes no task status and no checkpoint.
 - T12 to T19 stay `blocked` on CP2.
 - CP1 stays passed without a rerun. CP2 stays open. CP3, CP4, and CP5 stay
   open.
+
+### Dated checkpoint receipt: CP2
+
+2026-10-18. This section records the CP2 pass and opens wave 4. It changes only
+this receipt, the CP2 row, and the T12 to T19 rows.
+
+- CP2 is `passed`. The date is `2026-10-18`. The verdict is
+  `pi/openai-codex/gpt-6.1-sol:high`.
+- The runner report is `.hive/tmp/coordinator/reports/cp2-run-01.md`. Its
+  verdict is `pass`.
+- The independent report is `.hive/tmp/coordinator/reports/cp2-verify-01.md`.
+  Its verdict is `pass`. Its route is `pi/openai-codex/gpt-6.1-sol:high`.
+- The actual harness is Claude Code `2.1.302`. The requested model and the
+  actual model are both `claude-haiku-5-5`.
+- The tested `dev` commit is
+  `65c5300f1114ee1d7c362a335e15418607645bff`. The tested binary SHA256 is
+  `cbfe9c51a3dd2823b485e9f18820f5d8116333cb3a780edc06dae26799d02f68`.
+- Both reports bind that commit and that binary. The `dev` tree was clean.
+- The runner used task workspace `w35` and repository workspace `w34`.
+- The independent verification used task workspace `w37` and repository
+  workspace `w36`.
+- The runner stopped both native children. PIDs `297719` and `301675` are
+  absent. Workspaces `w35` and `w34` are absent.
+- The independent verification stopped both native children. PIDs `315948`
+  and `316502` are absent. Workspaces `w37` and `w36` are absent.
+- Each successful pass removed its fixture home, its fixture Git repository,
+  its worktree, its private authentication, and its private config.
+- The real configuration hashes did not change. No real home file changed.
+- The independent report keeps one earlier blocked pass fixture. The cleanup
+  statement above covers only the successful passes.
+- The three-external-agent limit counts the agents that a pass starts. It does
+  not count the user's pre-existing agents.
+- Three user agents stayed protected: Claude Code for project `agents` in
+  `w2Y:p1`, Codex for `stenographer` in `w32:p1`, and Pi for `ror-notes` in
+  `w33:p1`.
+- No pass stopped or changed those three agents.
+- T12, T13, T14, T15, T16, T17, T18, and T19 move from `blocked` to `ready`.
+- T20 and T21 stay `blocked` on CP3. CP1 stays passed without a rerun. CP3,
+  CP4, and CP5 stay open.
 
 ### CP1 home live
 
