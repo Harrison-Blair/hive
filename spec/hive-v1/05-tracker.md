@@ -105,7 +105,7 @@ flowchart TD
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | in progress | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
-| [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | ready | | |
+| [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 3f607ba |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | ready | | |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
@@ -1571,6 +1571,27 @@ checkpoint.
 - The T10 V4 trust entry for `/tmp/t10fx03.WIPUhYHp` stays in
   `~/.claude.json`.
 - CP1 and CP2 stay passed. CP3, CP4, and CP5 stay open.
+
+### Dated landing: T16
+
+2026-10-18. This section records the T16 landing. It passes no checkpoint.
+
+- T16 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T16 base tip is `4463286`. The verified T16 tip is `43cc723`.
+- The T16 merge commit is `3f607ba`. Its subject is
+  `merge(T16): land the codex profile`. Its first parent is `4463286`. Its
+  second parent is `43cc723`. The merge had no conflict.
+- The combined gate ran on the uncommitted T16 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T16 push moved `origin/dev` from `4463286` to `3f607ba`.
+- The T16 verifier report is
+  `.hive/tmp/coordinator/reports/t16-verify-01.md`. It passes.
+- The T16 hash definition: a separate app-server writes the real `~/.codex`.
+  The evidence hashes the child-writable paths. It excludes the runtime files
+  of that app-server. The verifier accepts this definition.
+- CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
 
