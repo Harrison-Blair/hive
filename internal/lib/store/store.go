@@ -588,6 +588,9 @@ func readRecordFile(path string) ([]byte, error) {
 }
 
 func writeRecordFile(path string, data []byte) error {
+	if len(data) > maxRecordSize {
+		return fmt.Errorf("record too large: %s", path)
+	}
 	if !validObject(data) {
 		return fmt.Errorf("record invalid: %s", path)
 	}
