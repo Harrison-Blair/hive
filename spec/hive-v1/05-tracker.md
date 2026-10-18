@@ -97,8 +97,8 @@ flowchart TD
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | in progress | | |
-| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | evidence | | |
+| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
+| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
@@ -1161,6 +1161,77 @@ T10 source and passes no checkpoint.
 - The final 12580 historical handoff bytes keep SHA256
   `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
 - Pending: an independent root integration and records check of this landing.
+
+### Dated landing receipt: wave 3 T09 and T08
+
+2026-10-18. This section records the T09 and T08 landing and the T11 records
+correction R01. It passes no checkpoint.
+
+- T09 is `landed`. The verifier is `openai-codex/gpt-6.1-sol` and the landing
+  date is `2026-10-18`. The accepted tip is `a83db9e0`. The independent
+  verdict `t09-verify-03` gives PASS for V1 to V4. Its last line is
+  `END VERIFIER T09-worktree-create-and-remove t09-verify-03`. F07 stays a
+  historical design observation.
+- T08 is `landed`. The verifier is `openai-codex/gpt-6.1-sol` and the landing
+  date is `2026-10-18`. The accepted tip is `c159223d`. The independent
+  verdict `t08-verify-03` gives PASS for V1 to V4. Its last line is
+  `END VERIFIER T08-tui-log-view t08-verify-03`. H04 stays an explicit and
+  irreversible historical limit. The missing old runtime bytes stay missing.
+- The merge order is T09, then T08. The T09 merge is `a5cfd700`. Its parents
+  are `c8201295` and `a83db9e0`. The T08 merge is `cd90451e`. Its parents are
+  `a5cfd700` and `c159223d`. Each merge used `--no-ff`. Each push reached
+  `origin/dev` without force.
+- The T09 incoming set has 29 paths: 22 source and test paths and seven
+  evidence paths. The T08 incoming set has 20 paths: 11 source and test paths,
+  two dependency files, and seven evidence paths. The T09 tracker delivery is
+  separate from its incoming set.
+- The shared path `cmd/root.go` took one mechanical union. The resolution keeps
+  the T08 bare resolved-home TUI entry, the T09 worktree registration, the T05
+  doctor, and each old command. No other conflict occurred.
+- Each merged source tree passed the full uncached actual-root gate. The format
+  list was empty. Vet exited 0. Lint reported `0 issues.`. The race tests
+  passed. TestSTE passed. The baseline, `AGENTS.md`, and the glossary stayed
+  exact. The T08 dependency files equal the accepted tip.
+- The combined binary has SHA256
+  `d139f5488b7381e44862b2e07c8e2f7b28e52614e114232ce5f5488b2f87cfa2`. Its
+  metadata records revision `cd90451e` and `vcs.modified=false`. It served the
+  T09 CLI modes, the native T09 flow, the T08 input and output cases, the later
+  log-path probe, and the T11 finish, home, and output script replays. Each
+  domain call used a unique marked fixture home or repository.
+- The native T09 flow used native workspaces and default shells only. It leaves
+  the PRIMARY workspace open. Cleanup closed only the proven owned PRIMARY ID
+  with `close_group=false`. Both owned IDs were absent after the close.
+- The T09 CLI statuses were `0, 0, 1, 1, 0`. The T08 cases gave closed-pipe
+  EOF 0, regular-file EOF 0, `q` 0, Ctrl-C 0, raw PTY `q` 0 with restored
+  attributes, `/dev/full` 1, and bare `--json` 1 with the exact
+  `failed` and `validate` envelope.
+- The archives are `.hive/tmp/coordinator/archives/T09-a83db9e0/` and
+  `T08-c159223d/`. T09 holds 2293 payload entries: 1182 files and 1111
+  directories. T08 holds 1265: 770 files and 495 directories. Neither has a
+  link or a special file. The manifest pairs are equal. All 283 and 275
+  accepted tracked blobs and modes match.
+- The root report copies are `t09-impl-01-archive.md`, `t09-fix-01-archive.md`,
+  `t09-fix-02-archive.md`, `t08-impl-01-archive.md`, `t08-fix-01-archive.md`,
+  and `t08-fix-02-archive.md`. Each copy equals its worktree source.
+- Each removal names `forced:false`. The T09 workspace `wAF` and the T08
+  workspace `wAE` are absent. Both paths are absent. The local, named tracking,
+  and direct remote task branches stay at the accepted tips.
+- Records R01: the new report
+  `.hive/tmp/coordinator/reports/t11-land-01-r01-correction.md` gives the
+  original hashes and the corrected observation. The original T11 landing
+  report, state record, dated receipt, and handoff section 4k stay as
+  superseded history.
+- T11 stays `landed` and its source integration PASS stays accepted. The T10
+  docs PASS and the closed F01 stay accepted. T10 stays `blocked` until the
+  preparation status below.
+- CP1 stays passed without a rerun. CP2 to CP5 stay open. The graph keeps 27
+  nodes and 46 edges.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. No reference moved. The two
+  values differ.
+- Pending: the combined root integration and records check, and an independent
+  check of this R01 correction.
 
 ### CP1 home live
 
