@@ -189,6 +189,10 @@ func claimKeyFor(role, project string) string {
 	}
 }
 
+func taskRegistrationError(project, task string) string {
+	return fmt.Sprintf("task not found in %s: %s", displayValue(project), displayValue(task))
+}
+
 func registerLocked(locked *store.LockedStore, writer lockedWriter, options RegisterOptions) output.Envelope {
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	quietAfter := defaultQuietAfterMin
@@ -197,6 +201,24 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	}
 	claimKey := claimKeyFor(options.Role, options.Project)
 	singleton := claimKey != ""
+
+	if options.Task != "" {
+		message := taskRegistrationError(options.Project, options.Task)
+		if !records.ValidTaskID(options.Task) {
+			return failed("validate", message)
+		}
+		var task records.Task
+		err := writer.ReadIn([]string{"tasks"}, options.Task, &task)
+		if errors.Is(err, os.ErrNotExist) {
+			return failed("validate", message)
+		}
+		if err != nil {
+			return failed("store", err.Error())
+		}
+		if task.Project != options.Project {
+			return failed("validate", message)
+		}
+	}
 
 	effects := []output.Effect{}
 	counterEffect := output.Effect{Resource: "counter", Path: ".hive/state/counters/agent.json", Action: "updated"}

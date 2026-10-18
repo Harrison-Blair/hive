@@ -925,13 +925,15 @@ func TestRegisterTaskNeedsATaskOfTheProject(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			home := t.TempDir()
 			seedProject(t, home, "hive")
-			seedProject(t, home, "other")
 			st, err := store.Open(home)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if test.project == "other" {
-				// The task remains in project hive.
+				project := records.Project{ID: "other", Path: "/tmp/other", Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z"}
+				if err := st.WriteIn([]string{"projects"}, "other", project); err != nil {
+					t.Fatal(err)
+				}
 			}
 			before := agentStateFiles(t, home)
 			envelope := Register(home, RegisterOptions{Role: "worker", Project: test.project, Task: test.task, PaneID: "w1:p1"})
