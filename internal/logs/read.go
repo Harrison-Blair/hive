@@ -54,6 +54,11 @@ func NewReader(home string) *Reader {
 	return &Reader{home: home, now: time.Now}
 }
 
+// NewReaderWithClock makes a reader for one home with a fixed clock.
+func NewReaderWithClock(home string, now func() time.Time) *Reader {
+	return &Reader{home: home, now: now}
+}
+
 // Read returns the events at or after the cutoff and the end offset. A zero
 // cutoff reads today and keeps each event. It reads each daily file from the
 // cutoff date to today in date order and skips the dates without a file.
