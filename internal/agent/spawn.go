@@ -122,6 +122,15 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	logArgv(logger, record.Key, started.Argv)
 
 	session := &sessionTrack{first: started.Agent.AgentSession}
+	updated, effect, updateErr := persistSession(home, record, session.first)
+	effects = appendEffect(effects, effect)
+	if updateErr != nil {
+		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
+		logSpawn(logger, envelope, options, record.Key)
+		return envelope
+	}
+	record = updated
+
 	paneInfo, paneErr := herdr.PaneGet(ctx, paneID, herdr.WithLogger(logger))
 	if paneErr != nil {
 		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "pane", "pane get: "+paneErr.Error())
@@ -130,10 +139,8 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	if cwd == "" {
 		cwd = paneInfo.ForegroundCwd
 	}
-	if reason := session.observe(paneInfo.AgentSession); reason != "" {
-		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "pane", reason)
-	}
-	updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+	paneReason := session.observe(paneInfo.AgentSession)
+	updated, effect, updateErr = mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
 		current.TerminalID = paneInfo.TerminalID
 		current.WorkspaceID = paneInfo.WorkspaceID
 		current.TabID = paneInfo.TabID
@@ -147,6 +154,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		return envelope
 	}
 	record = updated
+	if paneReason != "" {
+		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "pane", paneReason)
+	}
 
 	waitInfo, waitErr := herdr.AgentWait(ctx, herdr.AgentWaitParams{
 		Target:    paneID,
@@ -154,7 +164,10 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		TimeoutMS: uint64(profile.ReadyTimeout() / time.Millisecond),
 	}, herdr.WithDeadline(profile.ReadyTimeout()+5*time.Second), herdr.WithLogger(logger))
 
-	sessionReason := session.observe(waitInfo.AgentSession)
+	var sessionReason string
+	if waitErr == nil {
+		sessionReason = session.observe(waitInfo.AgentSession)
+	}
 	if sessionReason == "" && waitErr == nil {
 		updated, effect, updateErr := persistSession(home, record, session.first)
 		effects = appendEffect(effects, effect)
