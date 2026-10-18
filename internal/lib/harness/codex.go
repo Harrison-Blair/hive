@@ -10,9 +10,12 @@ import "time"
 // always passes --no-daemon, so the Codex process of the pane runs the tool
 // commands with the values of that pane. See reference/herdr/environment.md.
 //
-// Two dialogs can block the first start in a new directory:
+// Three dialogs can block the first start in a new directory:
 //   - The trust dialog for the directory contents. Hive reports "blocked" and
 //     does not answer the dialog. The user accepts the dialog in the pane.
+//   - The hook trust dialog for new or changed hooks. Hive reports "blocked"
+//     and does not answer the dialog. The user reviews or trusts the hooks in
+//     the pane.
 //   - The login dialog for a provider with no credential. Hive reports
 //     "blocked" and does not answer the dialog. The user logs in in the pane.
 //
