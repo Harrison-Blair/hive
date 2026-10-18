@@ -36,6 +36,9 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		}
 		return failedEnvelope("read", err.Error())
 	}
+	if err := checkBriefDir(home); err != nil {
+		return failedEnvelope("brief", err.Error())
+	}
 	brief, err := readBrief(briefPath(home, id), nil, briefDeadline)
 	if err != nil {
 		return failedEnvelope("brief", err.Error())

@@ -111,6 +111,9 @@ func Create(home string, options CreateOptions) output.Envelope {
 // createLocked runs the validation reads, the counter, the brief write, and
 // the task write under one lock. It reports each completed effect.
 func createLocked(locked *store.LockedStore, home string, plan createPlan) output.Envelope {
+	if err := checkBriefDir(home); err != nil {
+		return failedEnvelope("brief", err.Error())
+	}
 	var project records.Project
 	if err := locked.ReadIn([]string{"projects"}, plan.project, &project); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -294,6 +297,9 @@ func readBounded(reader io.Reader, deadline time.Duration) ([]byte, error) {
 
 // writeBrief writes one brief atomically. It is the only writer of a brief path.
 func writeBrief(home, id string, data []byte) error {
+	if err := checkBriefDir(home); err != nil {
+		return err
+	}
 	path := briefPath(home, id)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("write brief: %v", err)
@@ -328,6 +334,27 @@ func writeBrief(home, id string, data []byte) error {
 	}
 	if err := os.Rename(temp, path); err != nil {
 		return fmt.Errorf("write brief: %v", err)
+	}
+	return nil
+}
+
+// checkBriefDir rejects a static symbolic link or a wrong type in the
+// computed brief ancestors. A missing directory is valid because writeBrief
+// creates it.
+func checkBriefDir(home string) error {
+	current := home
+	for _, name := range []string{".hive", "state", briefDirName} {
+		current = filepath.Join(current, name)
+		info, err := os.Lstat(current)
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("brief path invalid: %s", quoteIfControl(current))
+		}
+		if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+			return fmt.Errorf("brief path invalid: %s", quoteIfControl(current))
+		}
 	}
 	return nil
 }
