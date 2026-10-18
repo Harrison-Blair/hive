@@ -65,7 +65,7 @@ func (r *Reader) Read(ctx context.Context, since time.Time) ([]Event, Offset, er
 		cutoff = since
 		first = startOfDay(since.Local())
 	}
-	offset := Offset{Path: r.pathFor(today)}
+	offset := Offset{Path: r.pathFor(today), cutoff: cutoff}
 	var events []Event
 	for day := first; !day.After(today); day = day.AddDate(0, 0, 1) {
 		if err := ctx.Err(); err != nil {
@@ -79,7 +79,6 @@ func (r *Reader) Read(ctx context.Context, since time.Time) ([]Event, Offset, er
 		events = append(events, fileEvents...)
 		if day.Equal(today) {
 			offset.Path = path
-			offset.cutoff = cutoff
 			offset.line = lines
 			if exists {
 				offset.Byte = consumed

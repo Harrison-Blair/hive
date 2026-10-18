@@ -186,8 +186,44 @@ func TestFollowMovesToNextDailyFile(t *testing.T) {
 func TestFollowAppliesCutoff(t *testing.T) {
 	today := localNoon(time.Now())
 	reader, home := newTestReader(t, today)
-	cutoff := today.Add(-time.Hour)
+	cutoff := today.Add(time.Hour)
 	writeDaily(t, home, today, eventLine(t, cutoff.Add(-time.Second), map[string]any{"msg": "before"}))
+
+	events, offset, err := reader.Read(context.Background(), cutoff)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("initial events = %d; want 0", len(events))
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	followed, errors := reader.Follow(ctx, offset)
+
+	appendDaily(t, home, today, eventLine(t, cutoff.Add(-time.Second), map[string]any{"msg": "appended before"})+"\n")
+	appendDaily(t, home, today, eventLine(t, cutoff, map[string]any{"msg": "at"})+"\n")
+	appendDaily(t, home, today, eventLine(t, cutoff.Add(time.Second), map[string]any{"msg": "after"})+"\n")
+
+	if got := eventMessage(nextEvent(t, followed, 2*time.Second)); got != "at" {
+		t.Fatalf("first message = %q; want at", got)
+	}
+	if got := eventMessage(nextEvent(t, followed, 2*time.Second)); got != "after" {
+		t.Fatalf("second message = %q; want after", got)
+	}
+	select {
+	case event := <-followed:
+		t.Fatalf("unexpected event %q", eventMessage(event))
+	case <-time.After(600 * time.Millisecond):
+	}
+	cancelFollow(t, cancel, errors)
+}
+
+func TestFollowAppliesCutoffAfterToday(t *testing.T) {
+	today := localNoon(time.Now())
+	reader, home := newTestReader(t, today)
+	cutoff := localNoon(today.AddDate(0, 0, 1))
+	writeDaily(t, home, today, eventLine(t, cutoff.Add(-2*time.Second), map[string]any{"msg": "before"}))
 
 	events, offset, err := reader.Read(context.Background(), cutoff)
 	if err != nil {
