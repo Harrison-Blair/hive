@@ -204,6 +204,12 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 	if !records.ValidTaskID(options.Task) {
 		return fail("validate", "task not found: "+quoteIfControl(options.Task))
 	}
+	// One fresh actor belongs to this invocation. The finish group writes it
+	// for the logs. The optional caller output receives the same record after
+	// the group.
+	var resolved records.Agent
+	callerOutput := options.ResolvedActor
+	options.ResolvedActor = &resolved
 	registry, err := store.Open(home)
 	if err != nil {
 		return fail("store", err.Error())
@@ -223,9 +229,12 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 	if lockErr != nil {
 		return fail("store", lockErr.Error())
 	}
+	if callerOutput != nil && resolved.Key != "" {
+		*callerOutput = resolved
+	}
 	actorID := options.Agent
-	if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
-		actorID = options.ResolvedActor.Key
+	if resolved.Key != "" {
+		actorID = resolved.Key
 	}
 	if task, ok := envelope.Result.(records.Task); ok && hasEffect(envelope.Effects, "task") {
 		log.transition(logCommand, task.Project, task.ID, actorID, prior, task.Status)
