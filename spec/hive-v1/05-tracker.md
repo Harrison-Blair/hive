@@ -99,7 +99,7 @@ flowchart TD
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | in progress | | |
+| [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
@@ -1406,6 +1406,61 @@ changes no task status and no checkpoint.
 - Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
   and the direct remote `main` stay
   `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The two values differ.
+
+### Dated landing receipt: T10 agent spawn core
+
+2026-10-18. This section records the T10 landing. It passes no checkpoint.
+
+- T10 is `landed`. The verifier is `openai-codex/gpt-6.1-sol`. The landing
+  date is `2026-10-18`.
+- The tested worker commit is `2de9f59`. The verification commit is
+  `6559d11`. The local and remote T10 tips equal `6559d11`.
+- The independent report is
+  `.hive/tmp/coordinator/reports/t10-fix03-verify-01.md`. Its route is
+  `openai-codex/gpt-6.1-sol:high`. It gives PASS for V1 to V5 and for the
+  four F02 outcomes. The committed
+  `spec/hive-v1/evidence/T10-agent-spawn-core/VERIFIED.md` records that pass
+  and closes F02.
+- The T10 branch carries the T01 body-bound helper merge `dca0df1`. That
+  merge adds `internal/lib/log/body_bound_test.go`, changes
+  `internal/lib/log/log.go`, and adds two T01 evidence paths.
+- The activation base is `7833070`. The merge base is `b4ab63ca`. The
+  incoming set has 52 paths: 38 Go source and test paths, and 14 evidence
+  paths. No path changed on both sides. `git merge-tree --write-tree` gave
+  clean tree `2df34312`.
+- The merge is `3765268`. Its subject is `merge(T10): land agent spawn core`.
+  Its first parent is `7833070`. Its second parent is `6559d11`. The
+  conflict-free merge produced tree `2df34312`.
+- The combined gate ran on the uncommitted merge. `gofmt -l` prints nothing.
+  `go vet ./...` exits 0. `golangci-lint run ./...` reports `0 issues.`. The
+  serialized race suite `go test -race -p=1 -count=1 ./...` exits 0.
+- The non-force push moved `origin/dev` from `7833070` to `3765268`.
+- The archive is `.hive/tmp/coordinator/archives/T10-6559d11/`. Its policy
+  excludes the `.git` pointer file from the payload and keeps the pointer
+  bytes in `_manifests/`. The payload holds 446 entries: 85 directories and
+  361 files. It holds no link and no special entry. The payload file bytes
+  total `4379286`.
+- The archive command is
+  `( cd "$SRC" && tar --exclude='./.git' -cf - . ) | ( cd "$ARCH" && tar -xf - )`.
+- The source and archive manifests are equal with SHA256
+  `4cb8540df9a435202f75368be5829ecc29069cac12a79855d0a1c3128ac7a116`.
+  Each manifest line gives the type, mode, size, SHA256, and path.
+- The archive keeps the exact `.git` pointer bytes at
+  `_manifests/git-pointer.txt`. The pointer is a regular file of 70 bytes
+  and mode `664`. Its SHA256 is
+  `e882f53e121dd3cc0d7fe24070ac9cd4bd95677dc4a2ed792d714e48d75e9873`.
+- The verifier report copy equals its worktree source with SHA256
+  `5a28142728f3f9228a3c3dd8ababcee681868c89c6032b44a3b4d603c827a1ec`.
+- All 360 accepted tracked blobs equal `6559d11`. Each blob holds Git mode
+  `100644`. Each on-disk file mode is `664` and each directory mode is
+  `775`. No executable-bit difference exists.
+- The no-force removal names workspace `w20`, pane `w20:p1`, tab `w20:t1`,
+  and terminal `term_65e207393ca711c`. The path, workspace, pane, terminal,
+  and Git worktree admin entry are absent. The task branch stays at `6559d11`
+  on the local, tracking, and direct remote refs.
+- T12 to T19 stay `blocked` on CP2.
+- CP1 stays passed without a rerun. CP2 stays open. CP3, CP4, and CP5 stay
+  open.
 
 ### CP1 home live
 
