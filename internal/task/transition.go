@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -27,6 +28,7 @@ type TransitionOptions struct {
 	Agent  string
 	Fail   bool
 	Reason string
+	Logger *slog.Logger
 }
 
 // transitions maps a status and a command to the next status. The key
@@ -41,8 +43,9 @@ var transitions = map[string]map[string]string{
 
 // transition checks the status machine and changes one record under the lock.
 // A failure changes nothing.
-func transition(locked *store.LockedStore, command string, options TransitionOptions) (records.Task, error) {
+func transition(locked *store.LockedStore, command string, options TransitionOptions) (records.Task, string, error) {
 	var result records.Task
+	var prior string
 	err := locked.UpdateIn([]string{tasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
 		if len(raw) == 0 {
 			return nil, fmt.Errorf("task not found: %s", options.Task)
@@ -51,6 +54,8 @@ func transition(locked *store.LockedStore, command string, options TransitionOpt
 		if err := json.Unmarshal(raw, &record); err != nil {
 			return nil, fmt.Errorf("record invalid: %s", taskRelPath(options.Task))
 		}
+		prior = record.Status
+		result = record
 		if err := applyTransition(&record, command, options); err != nil {
 			return nil, err
 		}
@@ -58,7 +63,7 @@ func transition(locked *store.LockedStore, command string, options TransitionOpt
 		result = record
 		return json.Marshal(record)
 	})
-	return result, err
+	return result, prior, err
 }
 
 // applyTransition changes one record for one command.
@@ -113,18 +118,26 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 
 // runTransition runs one transition command under one lock.
 func runTransition(home, command string, options TransitionOptions) output.Envelope {
+	log := openOperationLog(home, options.Logger)
+	defer log.close()
+	logCommand := "task " + command
+	fail := func(phase, message string) output.Envelope {
+		log.failure(logCommand, "", options.Task, options.Agent, phase, message)
+		return failedEnvelope(phase, message)
+	}
 	if !records.ValidTaskID(options.Task) {
-		return failedEnvelope("validate", "task not found: "+options.Task)
+		return fail("validate", "task not found: "+options.Task)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failedEnvelope("store", err.Error())
+		return fail("store", err.Error())
 	}
 	var envelope output.Envelope
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		record, innerErr := transition(locked, command, options)
+		record, prior, innerErr := transition(locked, command, options)
 		if innerErr != nil {
 			envelope = failedEnvelope("transition", innerErr.Error())
+			log.failure(logCommand, record.Project, options.Task, options.Agent, "transition", innerErr.Error())
 			return nil
 		}
 		envelope = output.Envelope{
@@ -134,10 +147,11 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 			Error:   nil,
 			Result:  record,
 		}
+		log.transition(logCommand, record.Project, record.ID, options.Agent, prior, record.Status)
 		return nil
 	})
 	if lockErr != nil {
-		return failedEnvelope("store", lockErr.Error())
+		return fail("store", lockErr.Error())
 	}
 	return envelope
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -45,6 +46,7 @@ type CreateOptions struct {
 	BriefSet   bool
 	Input      io.Reader
 	Deadline   time.Duration
+	Logger     *slog.Logger
 }
 
 // createPlan holds the validated values that the locked part uses.
@@ -59,19 +61,25 @@ type createPlan struct {
 
 // Create makes one task, its brief, and its counter effect.
 func Create(home string, options CreateOptions) output.Envelope {
+	log := openOperationLog(home, options.Logger)
+	defer log.close()
+	fail := func(phase, message string) output.Envelope {
+		log.failure("task create", options.Project, "", "", phase, message)
+		return failedEnvelope(phase, message)
+	}
 	if options.Project == "" {
-		return failedEnvelope("validate", "project requires a value")
+		return fail("validate", "project requires a value")
 	}
 	slug := options.Slug
 	if !options.SlugSet {
 		slug = slugify(options.Title)
 	}
 	if err := checkSlug(slug); err != nil {
-		return failedEnvelope("validate", err.Error())
+		return fail("validate", err.Error())
 	}
 	deps, err := parseDeps(options.DependsOn)
 	if err != nil {
-		return failedEnvelope("validate", err.Error())
+		return fail("validate", err.Error())
 	}
 	brief := []byte(options.Title)
 	if options.BriefSet {
@@ -81,13 +89,13 @@ func Create(home string, options CreateOptions) output.Envelope {
 		}
 		brief, err = readBrief(options.BriefPath, options.Input, deadline)
 		if err != nil {
-			return failedEnvelope("brief", err.Error())
+			return fail("brief", err.Error())
 		}
 	}
 
 	registry, err := store.Open(home)
 	if err != nil {
-		return failedEnvelope("store", err.Error())
+		return fail("store", err.Error())
 	}
 	plan := createPlan{
 		project: options.Project,
@@ -99,54 +107,59 @@ func Create(home string, options CreateOptions) output.Envelope {
 	}
 	var envelope output.Envelope
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		envelope = createLocked(locked, home, plan)
+		envelope = createLocked(locked, home, plan, log)
 		return nil
 	})
 	if lockErr != nil {
-		return failedEnvelope("store", lockErr.Error())
+		return fail("store", lockErr.Error())
 	}
 	return envelope
 }
 
 // createLocked runs the validation reads, the counter, the brief write, and
 // the task write under one lock. It reports each completed effect.
-func createLocked(locked *store.LockedStore, home string, plan createPlan) output.Envelope {
+func createLocked(locked *store.LockedStore, home string, plan createPlan, log operationLog) output.Envelope {
+	fail := func(phase, message, taskID string) output.Envelope {
+		log.failure("task create", plan.project, taskID, "", phase, message)
+		return failedEnvelope(phase, message)
+	}
 	if err := checkBriefDir(home); err != nil {
-		return failedEnvelope("brief", err.Error())
+		return fail("brief", err.Error(), "")
 	}
 	var project records.Project
 	if err := locked.ReadIn([]string{"projects"}, plan.project, &project); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return failedEnvelope("project", "project not found: "+plan.project)
+			return fail("project", "project not found: "+plan.project, "")
 		}
-		return failedEnvelope("project", err.Error())
+		return fail("project", err.Error(), "")
 	}
 	for _, dep := range plan.deps {
 		var dependency records.Task
 		if err := locked.ReadIn([]string{tasksCollection}, dep, &dependency); err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				return failedEnvelope("dependency", "dependency not found: "+dep)
+				return fail("dependency", "dependency not found: "+dep, "")
 			}
-			return failedEnvelope("dependency", err.Error())
+			return fail("dependency", err.Error(), "")
 		}
 		if dependency.Project != project.ID {
-			return failedEnvelope("dependency", fmt.Sprintf("dependency not in project %s: %s", project.ID, dep))
+			return fail("dependency", fmt.Sprintf("dependency not in project %s: %s", project.ID, dep), "")
 		}
 	}
 	nextValue, err := peekCounter(locked, "task")
 	if err != nil {
-		return failedEnvelope("counter", err.Error())
+		return fail("counter", err.Error(), "")
 	}
 	prospectiveID := fmt.Sprintf("%d-%s", nextValue, plan.slug)
 	if err := checkCycle(locked, prospectiveID, plan.deps); err != nil {
-		return failedEnvelope("dependency", err.Error())
+		return fail("dependency", err.Error(), "")
 	}
 
 	number, err := locked.Next("task")
 	if err != nil {
-		return failedEnvelope("counter", err.Error())
+		return fail("counter", err.Error(), "")
 	}
 	id := fmt.Sprintf("%d-%s", number, plan.slug)
+	log.effect("task create", project.ID, id, "counter", counterRelPath("task"), "updated")
 	envelope := output.Envelope{
 		Outcome: "ok",
 		Phase:   "complete",
@@ -174,8 +187,10 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan) outpu
 		envelope.Outcome = "partial"
 		envelope.Phase = "brief"
 		envelope.Error = err.Error()
+		log.failure("task create", project.ID, id, "", "brief", err.Error())
 		return envelope
 	}
+	log.effect("task create", project.ID, id, "brief", briefRelPath(id), "created")
 	envelope.Effects = append(envelope.Effects, output.Effect{
 		Resource: "brief",
 		Path:     briefRelPath(id),
@@ -185,14 +200,17 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan) outpu
 		envelope.Outcome = "partial"
 		envelope.Phase = "task"
 		envelope.Error = err.Error()
+		log.failure("task create", project.ID, id, "", "task", err.Error())
 		return envelope
 	}
+	log.effect("task create", project.ID, id, "task", taskRelPath(id), "created")
 	envelope.Effects = append(envelope.Effects, output.Effect{
 		Resource: "task",
 		Path:     taskRelPath(id),
 		Action:   "created",
 	})
 	envelope.Result = record
+	log.transition("task create", project.ID, id, "", "", record.Status)
 	return envelope
 }
 

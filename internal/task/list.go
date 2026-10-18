@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,23 +19,30 @@ type ListOptions struct {
 	Project string
 	Status  string
 	Ready   bool
+	Logger  *slog.Logger
 }
 
 // List returns task records in project and number order. A plain list takes no
 // lock. The ready query uses one lock for the list and each dependency read.
 func List(home string, options ListOptions) output.Envelope {
+	log := openOperationLog(home, options.Logger)
+	defer log.close()
+	fail := func(phase, message string) output.Envelope {
+		log.failure("task list", options.Project, "", "", phase, message)
+		return failedEnvelope(phase, message)
+	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failedEnvelope("store", err.Error())
+		return fail("store", err.Error())
 	}
 	if !options.Ready {
 		raw, err := registry.ListIn([]string{tasksCollection}, nil)
 		if err != nil {
-			return failedEnvelope("store", err.Error())
+			return fail("store", err.Error())
 		}
 		tasks, err := decodeTasks(raw)
 		if err != nil {
-			return failedEnvelope("store", err.Error())
+			return fail("store", err.Error())
 		}
 		return listEnvelope(tasks, options)
 	}
@@ -42,12 +50,12 @@ func List(home string, options ListOptions) output.Envelope {
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		raw, err := locked.ListIn([]string{tasksCollection}, nil)
 		if err != nil {
-			envelope = failedEnvelope("store", err.Error())
+			envelope = fail("store", err.Error())
 			return nil
 		}
 		tasks, err := decodeTasks(raw)
 		if err != nil {
-			envelope = failedEnvelope("store", err.Error())
+			envelope = fail("store", err.Error())
 			return nil
 		}
 		candidates := filterTasks(tasks, options)
@@ -65,7 +73,7 @@ func List(home string, options ListOptions) output.Envelope {
 		return nil
 	})
 	if lockErr != nil {
-		return failedEnvelope("store", lockErr.Error())
+		return fail("store", lockErr.Error())
 	}
 	return envelope
 }
