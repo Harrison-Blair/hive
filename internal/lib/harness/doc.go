@@ -2,5 +2,5 @@
 //
 // harness.go owns the Profile interface, the bounds check, and the lookup.
 // registry.go owns the profile registry. claude.go owns the Claude Code profile.
-// pi.go owns the Pi profile.
+// codex.go owns the Codex profile. pi.go owns the Pi profile.
 package harness
