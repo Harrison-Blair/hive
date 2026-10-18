@@ -64,7 +64,7 @@ func ResolveHeld(locked Reader, agentFlag, paneID string) (records.Agent, error)
 func resolveFlag(agents []records.Agent, claims map[string]records.Claim, flag string) (records.Agent, error) {
 	if claim, ok := claims[flag]; ok {
 		for _, record := range agents {
-			if record.Key == claim.Agent && validRecord(record, claims) {
+			if record.Key == claim.Agent && matchesSelectedClaim(record, claim, claims) {
 				return record, nil
 			}
 		}
@@ -129,6 +129,27 @@ func validRecord(record records.Agent, claims map[string]records.Claim) bool {
 	return claim.Key == key && claim.Agent == record.Key && claim.Generation == record.Generation
 }
 
+// matchesSelectedClaim checks the claim that the caller selected by name. The
+// holder record must agree with the selected claim key, the holder key, the
+// role, the project, and the generation. A valid claim of another role does
+// not make the selected alias valid.
+func matchesSelectedClaim(record records.Agent, selected records.Claim, claims map[string]records.Claim) bool {
+	if record.Status != records.AgentLive {
+		return false
+	}
+	if selected.Key != claimKey(record.Role, record.Project) {
+		return false
+	}
+	if selected.Agent != record.Key || selected.Generation != record.Generation {
+		return false
+	}
+	own, ok := claims[selected.Key]
+	if !ok {
+		return false
+	}
+	return own.Key == selected.Key && own.Agent == record.Key && own.Generation == record.Generation
+}
+
 func hasPane(history []string, paneID string) bool {
 	for _, candidate := range history {
 		if candidate == paneID {
@@ -161,15 +182,19 @@ func claimKey(role, project string) string {
 }
 
 func loadAgents(source Reader) ([]records.Agent, error) {
-	raw, err := source.ListIn([]string{"agents"}, nil)
+	names := make([]string, 0)
+	raw, err := source.ListIn([]string{"agents"}, collectNames(&names))
 	if err != nil {
 		return nil, err
 	}
 	found := make([]records.Agent, 0, len(raw))
-	for _, data := range raw {
+	for i, data := range raw {
 		var record records.Agent
 		if err := json.Unmarshal(data, &record); err != nil {
 			return nil, err
+		}
+		if selectedID(names, i) != record.Key {
+			continue
 		}
 		found = append(found, record)
 	}
@@ -177,19 +202,41 @@ func loadAgents(source Reader) ([]records.Agent, error) {
 }
 
 func loadClaims(source Reader) ([]records.Claim, error) {
-	raw, err := source.ListIn([]string{"claims"}, nil)
+	names := make([]string, 0)
+	raw, err := source.ListIn([]string{"claims"}, collectNames(&names))
 	if err != nil {
 		return nil, err
 	}
 	found := make([]records.Claim, 0, len(raw))
-	for _, data := range raw {
+	for i, data := range raw {
 		var claim records.Claim
 		if err := json.Unmarshal(data, &claim); err != nil {
 			return nil, err
 		}
+		if selectedID(names, i) != claim.Key {
+			continue
+		}
 		found = append(found, claim)
 	}
 	return found, nil
+}
+
+// collectNames returns an include function that retains each selected file
+// name. The store lists and reads a collection in file name order.
+func collectNames(names *[]string) func(filename string) bool {
+	return func(filename string) bool {
+		*names = append(*names, filename)
+		return true
+	}
+}
+
+// selectedID returns the record ID of one selected path. An absent name gives
+// an empty ID, which no valid record key matches.
+func selectedID(names []string, index int) string {
+	if index >= len(names) {
+		return ""
+	}
+	return strings.TrimSuffix(names[index], ".json")
 }
 
 // FindHeld returns one agent record by key, name, or claim key. It does not

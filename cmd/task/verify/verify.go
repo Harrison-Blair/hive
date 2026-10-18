@@ -7,6 +7,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
 	"github.com/spf13/cobra"
 )
@@ -29,18 +30,31 @@ func New() *cobra.Command {
 		fail, _ := cmd.Flags().GetBool("fail")
 		reason, _ := cmd.Flags().GetString("reason")
 		var envelope output.Envelope
+		var homeUsed string
+		var resolved records.Agent
 		original := cmd.OutOrStdout()
 		tracker := &trackingWriter{writer: original}
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "task verify", func(home string) (output.Envelope, string, error) {
-			envelope = tasklib.Verify(home, tasklib.TransitionOptions{
-				Task: taskID, Agent: agent, PaneID: pane, Fail: fail, Reason: reason,
-			})
+			homeUsed = home
+			options := tasklib.TransitionOptions{
+				Task: taskID, Agent: agent, PaneID: pane, Fail: fail, Reason: reason, ResolvedActor: &resolved,
+			}
+			envelope = tasklib.Verify(home, options)
 			return envelope, tasklib.TransitionText(envelope), nil
 		})
 		cmd.SetOut(original)
 		if tracker.err != nil {
-			_, _ = fmt.Fprint(cmd.ErrOrStderr(), tasklib.FailureReport(envelope, taskID, agent))
+			actor := agent
+			if resolved.Key != "" {
+				actor = resolved.Key
+			}
+			project := ""
+			if task, ok := envelope.Result.(records.Task); ok {
+				project = task.Project
+			}
+			tasklib.LogOutputFailure(homeUsed, "task verify", project, taskID, actor, tracker.err)
+			_, _ = fmt.Fprint(cmd.ErrOrStderr(), tasklib.FailureReport(envelope, taskID, actor))
 			return &common.StatusError{Status: 1}
 		}
 		return err

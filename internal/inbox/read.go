@@ -68,9 +68,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 	if lockErr != nil {
 		return failedRead("store", lockErr.Error())
 	}
-	if key != "" {
-		inboxlib.LogConsume(home, key, envelope)
-	}
+	inboxlib.LogConsume(home, key, envelope)
 	return envelope
 }
 

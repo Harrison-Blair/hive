@@ -447,7 +447,10 @@ func logAppend(home string, options AppendOptions, envelope output.Envelope) {
 }
 
 func logConsume(home, key string, envelope output.Envelope) {
-	attrs := []any{"role", key}
+	attrs := []any{}
+	if key != "" {
+		attrs = append(attrs, "role", key)
+	}
 	senders := map[uint64]string{}
 	if result, ok := envelope.Result.(Result); ok {
 		for _, record := range result.Records {

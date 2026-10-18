@@ -12,6 +12,11 @@ import (
 
 // Send appends one inbox record and defaults the sender from the caller.
 func Send(home string, options inboxlib.AppendOptions, paneID string) output.Envelope {
+	if err := inboxlib.ValidateAppend(options); err != nil {
+		envelope := failedRead("validate", err.Error())
+		inboxlib.LogAppend(home, options, envelope)
+		return envelope
+	}
 	registry, err := store.Open(home)
 	if err != nil {
 		return failedRead("store", err.Error())
@@ -29,6 +34,10 @@ func Send(home string, options inboxlib.AppendOptions, paneID string) output.Env
 				return nil
 			}
 			options.Agent = caller.Name
+		}
+		if err := inboxlib.ValidateAppend(options); err != nil {
+			envelope = failedRead("validate", err.Error())
+			return nil
 		}
 		envelope = inboxlib.AppendHeld(locked, options)
 		return nil
