@@ -587,6 +587,49 @@ func (value *nullCount) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type referenceChild struct {
+	Count int
+}
+
+type referenceState struct {
+	Value  *int
+	Child  *referenceChild
+	List   []*int
+	Lookup map[string]*int
+	Valid  bool
+}
+
+func (value *referenceState) UnmarshalJSON(data []byte) error {
+	if value.Value == nil {
+		value.Value = new(int)
+	}
+	*value.Value = 0
+	if value.Child == nil {
+		value.Child = &referenceChild{}
+	}
+	value.Child.Count = 0
+	if len(value.List) > 0 {
+		*value.List[0] = 0
+		value.List[0] = nil
+	} else {
+		value.List = append(value.List, new(int))
+	}
+	if value.Lookup == nil {
+		value.Lookup = map[string]*int{}
+	}
+	delete(value.Lookup, "item")
+	value.Lookup["new"] = value.Value
+	value.Valid = false
+	if string(data) == "null" {
+		return errors.New("count is required")
+	}
+	if err := json.Unmarshal(data, value.Value); err != nil {
+		return err
+	}
+	value.Valid = true
+	return nil
+}
+
 func callResult(t *testing.T, resultJSON string, destination any) error {
 	t.Helper()
 	server := startServer(t, func(request testRequest) ([]byte, time.Duration, bool) {
@@ -659,6 +702,39 @@ func TestNullResultPreservesCallerOnDecodeError(t *testing.T) {
 	}
 }
 
+func TestNullResultPreservesReferencedStateOnDecodeError(t *testing.T) {
+	count := 7
+	child := &referenceChild{Count: 3}
+	item := 4
+	list := []*int{&item}
+	lookup := map[string]*int{"item": &item}
+	destination := referenceState{Value: &count, Child: child, List: list, Lookup: lookup, Valid: true}
+	listPointer := reflect.ValueOf(list).Pointer()
+	mapPointer := reflect.ValueOf(lookup).Pointer()
+	err := callResult(t, `null`, &destination)
+	if err == nil || !strings.Contains(err.Error(), "count is required") {
+		t.Fatalf("Call() error = %v, want the count error", err)
+	}
+	if destination.Value != &count || *destination.Value != 7 {
+		t.Fatalf("value = %v count = %d, want original pointer and 7", destination.Value, *destination.Value)
+	}
+	if destination.Child != child || destination.Child.Count != 3 {
+		t.Fatalf("child = %+v, want original pointer and count 3", destination.Child)
+	}
+	if len(destination.List) != 1 || destination.List[0] != &item || *destination.List[0] != 4 || reflect.ValueOf(destination.List).Pointer() != listPointer {
+		t.Fatalf("list = %v, want the original slice and element", destination.List)
+	}
+	if len(destination.Lookup) != 1 || destination.Lookup["item"] != &item || *destination.Lookup["item"] != 4 || reflect.ValueOf(destination.Lookup).Pointer() != mapPointer {
+		t.Fatalf("lookup = %v, want the original map and entry", destination.Lookup)
+	}
+	if _, found := destination.Lookup["new"]; found {
+		t.Fatalf("lookup = %v, want no new entry", destination.Lookup)
+	}
+	if !destination.Valid {
+		t.Fatal("valid = false, want true")
+	}
+}
+
 func TestNullResultKeepsExistingSemantics(t *testing.T) {
 	t.Run("ordinary decoder", func(t *testing.T) {
 		destination := nullCount{Value: 7, Valid: true}
@@ -698,6 +774,19 @@ func TestNullResultKeepsExistingSemantics(t *testing.T) {
 			t.Fatalf("slice = %v, want nil", destination)
 		}
 	})
+}
+
+func TestReferencedResultAssignedOnSuccess(t *testing.T) {
+	count := 7
+	child := &referenceChild{Count: 3}
+	item := 4
+	destination := referenceState{Value: &count, Child: child, List: []*int{&item}, Lookup: map[string]*int{"item": &item}, Valid: true}
+	if err := callResult(t, `9`, &destination); err != nil {
+		t.Fatalf("Call() error = %v", err)
+	}
+	if *destination.Value != 9 || !destination.Valid {
+		t.Fatalf("value = %d valid = %v, want 9 and true", *destination.Value, destination.Valid)
+	}
 }
 
 func TestParamsNeverNull(t *testing.T) {
