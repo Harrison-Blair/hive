@@ -101,13 +101,13 @@ flowchart TD
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | ready | | |
+| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | in progress | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | ready | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | ready | | |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | ready | | |
-| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | ready | | |
+| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | in progress | | |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
