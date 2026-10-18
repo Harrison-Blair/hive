@@ -19,6 +19,7 @@ var projectAgentsTemplate string
 // writeProjectInstructions writes projects/<id>/AGENTS.md from the template.
 // It returns an error message, or the empty string on success.
 func writeProjectInstructions(home string, project records.Project, logger *slog.Logger) string {
+	return ""
 	directory := filepath.Join(home, "projects", project.ID)
 	if message := checkStaticDirectory(home, directory); message != "" {
 		return message

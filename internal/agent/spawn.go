@@ -295,6 +295,12 @@ func choosePane(ctx context.Context, home string, options SpawnOptions, logger *
 		return paneChoice{PaneID: options.PaneID}, ""
 	}
 	switch options.Role {
+	case "manager":
+		choice, message := resolveManagerWorkspace(ctx, home, options, logger)
+		if message != "" {
+			return paneChoice{}, message
+		}
+		return paneChoice{PaneID: choice.PaneID, Manager: &choice}, ""
 	default:
 		return paneChoice{}, "pane required: pass --pane"
 	}
