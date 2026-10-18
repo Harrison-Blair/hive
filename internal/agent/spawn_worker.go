@@ -20,13 +20,15 @@ import (
 // taskChoice is the task, the worktree, and the pane of one worker or verifier
 // spawn. It also holds the topology that this invocation made.
 type taskChoice struct {
-	PaneID           string
-	Task             records.Task
-	Project          records.Project
-	Worktree         records.Worktree
-	Branch           string
-	CreatedWorkspace bool
-	CreatedTab       bool
+	PaneID                string
+	Task                  records.Task
+	Project               records.Project
+	Worktree              records.Worktree
+	Branch                string
+	CreatedWorkspace      bool
+	CreatedTab            bool
+	CreatedWorkspaceTabs  uint
+	CreatedWorkspacePanes uint
 }
 
 // resolveTaskPane checks the task and the pane of one worker or verifier
@@ -174,6 +176,8 @@ func resolveVerifierTopology(ctx context.Context, home string, choice taskChoice
 	choice.Worktree.TabID = opened.Tab.TabID
 	choice.Worktree.RootPane = opened.RootPane.PaneID
 	choice.CreatedWorkspace = !opened.AlreadyOpen
+	choice.CreatedWorkspaceTabs = opened.Workspace.TabCount
+	choice.CreatedWorkspacePanes = opened.Workspace.PaneCount
 	choice.Branch = opened.Worktree.Branch
 	if err := writeTaskWorktree(home, choice.Task.ID, choice.Worktree); err != nil {
 		choice.cleanup(ctx, home, logger)
@@ -301,7 +305,8 @@ func (choice *taskChoice) cleanup(ctx context.Context, home string, logger *slog
 		return
 	}
 	if choice.CreatedWorkspace {
-		if _, err := herdr.WorkspaceGet(ctx, choice.Worktree.WorkspaceID, herdr.WithLogger(logger)); err == nil {
+		current, err := herdr.WorkspaceGet(ctx, choice.Worktree.WorkspaceID, herdr.WithLogger(logger))
+		if err == nil && current.TabCount == choice.CreatedWorkspaceTabs && current.PaneCount == choice.CreatedWorkspacePanes {
 			if err := herdr.WorkspaceClose(ctx, choice.Worktree.WorkspaceID, false, herdr.WithLogger(logger)); err != nil {
 				logTaskCleanup(logger, choice, "workspace", err.Error())
 			}
@@ -390,6 +395,8 @@ func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, recor
 		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch)
 	}
 	params := herdr.AgentPromptParams{Target: choice.PaneID, Text: prompt}
+	baseline, baselineErr := herdr.AgentGet(ctx, choice.PaneID, herdr.WithLogger(logger))
+	baselineOK := baselineErr == nil
 	delivered := false
 	for attempt := 0; attempt < promptAttempts && !delivered; attempt++ {
 		_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
@@ -403,7 +410,7 @@ func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, recor
 			envelope.Error = err.Error() + "; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
 			return envelope
 		}
-		delivered = promptProbe(ctx, choice.PaneID, logger)
+		delivered = promptStarted(ctx, choice.PaneID, baseline, baselineOK, logger)
 	}
 	if !delivered {
 		envelope.Outcome = "partial"
@@ -418,32 +425,36 @@ func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, recor
 // promptAttempts bounds the send of one prompt that starts no turn.
 const promptAttempts = 5
 
-// promptConfirmWindow bounds one wait for a started turn.
-const promptConfirmWindow = 3 * time.Second
-
-// promptPollInterval is the agent read interval of one confirmation.
-const promptPollInterval = 250 * time.Millisecond
-
 // promptReadyTimeout bounds the wait for one interactive agent.
 const promptReadyTimeout = 60 * time.Second
 
-// promptProbe reports whether a prompt started a turn. A test replaces it.
-var promptProbe = func(ctx context.Context, paneID string, logger *slog.Logger) bool {
-	deadline := time.Now().Add(promptConfirmWindow)
-	for {
-		info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
-		if err == nil && (info.AgentStatus == "working" || info.AgentStatus == "blocked") {
-			return true
-		}
-		if ctx.Err() != nil || time.Now().After(deadline) {
-			return false
-		}
-		select {
-		case <-ctx.Done():
-			return false
-		case <-time.After(promptPollInterval):
-		}
+// promptStarted reports whether one prompt started a turn. A status that a
+// started or a completed turn can hold accepts delivery. A state change from
+// before the prompt also accepts delivery. A failed read cannot prove that the
+// prompt was lost, so it accepts delivery as well. The caller resends only
+// when the agent is unchanged.
+func promptStarted(ctx context.Context, paneID string, baseline herdr.AgentInfo, baselineOK bool, logger *slog.Logger) bool {
+	info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+	if err != nil {
+		return true
 	}
+	if promptStatusStarted(info.AgentStatus) {
+		return true
+	}
+	if baselineOK && (info.StateChangeSeq != baseline.StateChangeSeq || info.Revision != baseline.Revision) {
+		return true
+	}
+	return !baselineOK
+}
+
+// promptStatusStarted reports a status that a started or a completed turn can
+// hold.
+func promptStatusStarted(status string) bool {
+	switch status {
+	case "working", "blocked", "done", "idle":
+		return true
+	}
+	return false
 }
 
 // waitAgentInteractive waits until herdr reports an interactive agent.

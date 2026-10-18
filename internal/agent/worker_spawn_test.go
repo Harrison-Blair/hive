@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -196,7 +195,9 @@ func scriptWorkerSuccess(fake *fakeHerdr, sleep sleepProcess, paneID, workspaceI
 	fake.result("agent.wait", workerAgentInfoJSON(paneID, workspaceID, tabID, "idle", name))
 	fake.result("agent.get", workerAgentInfoJSON(paneID, workspaceID, tabID, "idle", name))
 	fake.result("pane.process_info", workerProcessJSON(paneID, sleep))
+	fake.result("agent.get", workerAgentInfoJSON(paneID, workspaceID, tabID, "idle", name))
 	fake.result("agent.prompt", workerAgentPromptedJSON(paneID, workspaceID, tabID, name))
+	fake.result("agent.get", workerAgentInfoJSON(paneID, workspaceID, tabID, "working", name))
 }
 
 // workspaceRoot returns the repository root from one worktree path. The tests
@@ -269,7 +270,9 @@ func TestWorkerSpawnAssignsAndPromptsDone(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "done", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "done", "worker-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "done", "worker-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
@@ -521,6 +524,7 @@ func TestWorkerSpawnPromptFailureIsPartial(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.failure("agent.prompt", "agent_prompt_stalled", "the prompt did not settle")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
@@ -582,7 +586,9 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "idle", "verifier-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "idle", "verifier-1"))
 	fake.result("pane.process_info", workerProcessJSON("w6:p1", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "idle", "verifier-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w6:p1", "w6", "w6:t1", "verifier-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "working", "verifier-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
@@ -639,7 +645,9 @@ func TestVerifierSpawnMakesTab(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p2", "w5", "w5:t2", "idle", "verifier-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p2", "w5", "w5:t2", "idle", "verifier-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p2", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p2", "w5", "w5:t2", "idle", "verifier-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p2", "w5", "w5:t2", "verifier-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p2", "w5", "w5:t2", "working", "verifier-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
@@ -812,9 +820,11 @@ func TestWorkerSpawnWaitsForInteractiveAgent(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.failure("agent.prompt", "agent_not_ready", "agent worker-1 is not an active named agent")
 	fake.result("agent.get", workerAgentInteractiveJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
@@ -837,15 +847,18 @@ func TestWorkerSpawnResendsLostPrompt(t *testing.T) {
 	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "worker-1")
+	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
+	fake.result("workspace.get", workerWorkspaceGetJSON("w5", "1-worker-demo", repo, worktree))
+	fake.result("agent.start", workerAgentStartJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
+	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
+	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "unknown", "worker-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
-	original := promptProbe
-	t.Cleanup(func() { promptProbe = original })
-	calls := 0
-	promptProbe = func(context.Context, string, *slog.Logger) bool {
-		calls++
-		return calls > 1
-	}
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "unknown", "worker-1"))
+	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
