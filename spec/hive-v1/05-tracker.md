@@ -88,11 +88,11 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | evidence | | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | in progress | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | evidence | | |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
@@ -208,6 +208,31 @@ not evidence of code success. Test, evidence, and verification status stay pendi
 openai-codex/gpt-6.1-sol:high`. The audit adds evidence to the T02 record. It
 does not replace the original verdict. The T02 row keeps its landing date
 `2026-10-17` and its original verifier `opencode-go/deepseek-v4.1-flash`.
+
+### Dated evidence receipt: wave 2 T22 and T06
+
+2026-10-18. This section records the worker evidence for T22 and T06. It
+changes only the status of these tasks.
+
+- T22 moves from `in progress` to `evidence`. Branch `task/T22-store-operations`
+starts at base `840255d3` and ends at `d9b644f7`. Worktree
+`projects/hive/worktrees/T22-store-operations` stays. Pane `wA4:p1` uses terminal
+`term_65e161d77e9db10` and route `pi opencode-go/deepseek-v4-flash:medium`.
+- T06 moves from `in progress` to `evidence`. Branch `task/T06-logs-command`
+starts at base `840255d3` and ends at `1c556c33`. Worktree
+`projects/hive/worktrees/T06-logs-command` stays. Pane `wA5:p1` uses terminal
+`term_65e161da1896e11` and the same route.
+- Evidence `V1` to `V5` exists on the T22 branch. Evidence `V1` to `V4` exists
+on the T06 branch. Each file has a commit. No `VERIFIED.md` exists for either
+task.
+- The coordinator archived the worker reports. T22 archive SHA256
+`0d97e7cc418ad7e7706105712824383bb16df02f78ad98e7c1572527422fafcc`. T06 archive
+SHA256 `c162692fb75b351e577328942aafc610e06dce9593d5c82a18e3b02af3de35ec`. Each
+archive equals its source.
+- The state receipt is `.hive/tmp/coordinator/state/wave2-evidence-01.json`.
+Independent verification stays pending for both tasks.
+- T22 and T06 code is not verified and not landed. T03, T04, T05, and T07 stay
+`blocked` on T22. No other status, dependency, or model route changes.
 
 ### CP1 home live
 
