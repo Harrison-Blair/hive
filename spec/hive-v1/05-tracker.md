@@ -102,7 +102,7 @@ flowchart TD
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | landed | openai-codex/gpt-6.1-sol | 941f144 |
-| [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | ready | | |
+| [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | in progress | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | ready | | |
