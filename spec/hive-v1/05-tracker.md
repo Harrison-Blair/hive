@@ -89,9 +89,9 @@ flowchart TD
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
 | [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | ready | | |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | ready | | |
-| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | ready | | |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | in progress | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | in progress | | |
+| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | in progress | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | ready | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
@@ -352,6 +352,84 @@ and date `2026-10-18`.
 landed and CP1 passed.
 - T08 stays `blocked` on T04.
 - No other status, dependency, or model route changes.
+
+### Dated dispatch receipt: wave 2 next track
+
+2026-10-18. This section records the dispatch of T03 and T04. It records the
+preparation of T05 and T07. It corrects three old record items. It changes only
+the T03, T04, and T05 status. It accepts no task source.
+
+- The independent root code integration check passes at `af3e5f69`.
+  `.hive/tmp/coordinator/reports/t01-home-and-wave2-verify-01.md` gives PASS in
+  its `B integration` section and ends with `END T01 HOME AND WAVE2 VERIFY 01`.
+  That pass covers the root integration. It is not a source acceptance.
+- `.hive/tmp/coordinator/reports/wave2-next-preflight-01.md` gives one contract
+  PASS for each of the four payloads `t03-impl-01`, `t04-impl-01`,
+  `t05-impl-01`, and `t07-impl-01`. Its last line is
+  `END WAVE2 NEXT PREFLIGHT 01`. A contract PASS checks a brief only. Do not read
+  it as a source PASS.
+- The coordinator saved the four checked payloads below
+  `.hive/tmp/coordinator/briefs/` with exact bytes:
+  - `t03-impl-01.md` has 12242 bytes and SHA256
+    `b83c479d47556c4029dfd4d7f707925979f9e054b4a0d8607ec43fd39d5d5737`.
+  - `t04-impl-01.md` has 17247 bytes and SHA256
+    `e6d6d2fddb5b4511573fc2d112ef3d1877b44391372972f24abf126dc5b6957e`.
+  - `t05-impl-01.md` has 12053 bytes and SHA256
+    `4c2d1d383e72057e0b05a5a0f5a7034b86a97fc8ebd93fb2626f4bd2495489f4`.
+  - `t07-impl-01.md` has 13409 bytes and SHA256
+    `67e71c864906827a96a348f69aec3ba6fb6b7146faf83c5a358ce59394e2741c`.
+- T03 moves from `ready` to `in progress`. Branch `task/T03-task-lifecycle` and
+  worktree `projects/hive/worktrees/T03-task-lifecycle` have base `84da9819`.
+  Agent `hive-t03-impl-01` runs with the route
+  `pi opencode-go/deepseek-v4-flash:medium` in workspace `wA7`, pane `wA7:p1`.
+- T04 moves from `ready` to `in progress`. Branch `task/T04-roles-and-inbox` and
+  worktree `projects/hive/worktrees/T04-roles-and-inbox` have base `84da9819`.
+  Agent `hive-t04-impl-01` runs with the same route in workspace `wA8`, pane
+  `wA8:p1`.
+- T05 moves from `ready` to `in progress` for preparation only. Branch
+  `task/T05-herdr-client-and-doctor` and worktree
+  `projects/hive/worktrees/T05-herdr-client-and-doctor` have base `84da9819`.
+  Workspace `wA9` and pane `wA9:p1` exist. No agent runs in that pane.
+  `implementation_allowed` is true. `implementation_started` is false. Agent
+  `hive-t05-impl-01` is pending.
+- T07 stays `ready`. Branch `task/T07-memory-and-handoff` and worktree
+  `projects/hive/worktrees/T07-memory-and-handoff` have base `84da9819`.
+  Workspace `wAA` and pane `wAA:p1` exist. No agent runs in that pane. The
+  coordinator prepares the task and queues it. The task does not run.
+- Each implementation route is `pi opencode-go/deepseek-v4-flash:medium`. The
+  observed thinking level is `high`. The brief names `medium`. The two values
+  agree with the dated wave 2 route. Each future verifier uses a fresh
+  `pi openai-codex/gpt-6.1-sol:high` agent.
+- `herdr agent list` reports the status `working` for `hive-t03-impl-01` and
+  `hive-t04-impl-01`. This observation is not evidence of source success. Test,
+  evidence, and verification status stay pending.
+
+### Dated correction receipt: wave 2 records R01, R02, and B01
+
+2026-10-18. This section corrects three record items. It keeps each original
+report. It changes no task status and no dependency.
+
+- R01: `wave2-repair-prep-01.md` and its state record said that the final 12580
+  bytes differ from the historical section. The two selections are equal. The
+  final 12580 bytes equal the bytes after the historical marker. Each selection
+  has SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`. The
+  historical text did not change.
+- R02: the absent saved brief did not prove that no check ran. The coordinator
+  records a fresh no-tools `pi openai-codex/gpt-6.1-sol:high` check before the
+  past dispatch. Its results were T22 PASS, T06 PASS, and ROOT PASS. No
+  independent inspection of that in-memory check occurred. The field
+  `checked_repair_brief_found: false` stays as a dated file-discovery snapshot.
+- The four new saved briefs above are current evidence. They do not change the
+  old transcript.
+- B01: `wave2-land-01.md:20` and its state record gave remote `main` as local
+  `main`. The actual local `main` is
+  `3692162633f896b8fee6197469adba91f666a00c`. `origin/main` and the direct
+  remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. Each value
+  stayed unchanged. The local `main` reflog shows its last change on
+  2026-08-20. Do not move a `main` reference to make an old record true.
+- The combined records verdict stays FAIL on B01. The code integration verdict
+  is PASS. Keep the two verdicts separate.
 
 ### CP1 home live
 
