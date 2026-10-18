@@ -7,9 +7,11 @@ import "time"
 // OpenCode takes the model as one value of the form "provider/model". The slash
 // stays inside the one argument, so the profile passes "--model" and the model.
 //
-// One dialog can block the first start in a new directory:
-//   - The login dialog for a provider with no credential. Hive reports
-//     "blocked" and does not answer the dialog. The user logs in in the pane.
+// No dialog blocks the first start of the installed OpenCode. A new directory
+// has no trust dialog. A provider with no credential does not show a login
+// dialog: OpenCode starts with a default free model in place of the requested
+// one. Hive reports "blocked" and does not answer a dialog when one appears.
+// The user answers in the pane.
 //
 // Both timeouts are two times the measured start of the live check. The
 // measured start is below the 120000 ms floor, so the profile gives the floor
