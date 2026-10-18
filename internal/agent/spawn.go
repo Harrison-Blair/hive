@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -443,7 +444,7 @@ func captureIdentity(profile harness.Profile, record records.Agent, info herdr.P
 	}
 	candidates := []herdr.PaneProcessInfoProcess{}
 	for _, entry := range info.ForegroundProcesses {
-		if names[entry.Name] {
+		if names[entry.Name] || names[entryArgvName(entry, true)] || names[entryArgvName(entry, false)] {
 			candidates = append(candidates, entry)
 		}
 	}
@@ -486,6 +487,23 @@ func captureIdentity(profile harness.Profile, record records.Agent, info herdr.P
 		return identity{}, reason
 	}
 	return identity{pid: int64(candidate.PID), name: candidate.Name, start: before, session: session}, ""
+}
+
+// entryArgvName returns the base name of the argv0 value of one process entry
+// when useArgv0 is true, and the base name of argv[0] when it is false. A
+// wrapper launcher replaces itself, so the process name differs from the
+// executable in argv. The empty string is not a profile name.
+func entryArgvName(entry herdr.PaneProcessInfoProcess, useArgv0 bool) string {
+	if useArgv0 {
+		if entry.Argv0 == nil {
+			return ""
+		}
+		return filepath.Base(*entry.Argv0)
+	}
+	if len(entry.Argv) == 0 {
+		return ""
+	}
+	return filepath.Base(entry.Argv[0])
 }
 
 func mergeSessions(record records.Agent, sources ...*herdr.AgentSessionInfo) (*herdr.AgentSessionInfo, string) {
