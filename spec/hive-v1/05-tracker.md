@@ -97,10 +97,10 @@ flowchart TD
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | evidence | | |
-| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | ready | | |
+| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | in progress | | |
+| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | in progress | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
-| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | evidence | | |
+| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | in progress | | |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | blocked | | |
@@ -946,6 +946,79 @@ checkpoint.
   `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
 - The final 12580 historical handoff bytes keep SHA256
   `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
+
+### Dated landing receipt: T01 shared log path guards
+
+2026-10-18. This section records the T01 bounded shared logger follow-up
+landing. It accepts no T08, T09, or T11 source. It passes no checkpoint.
+
+- T01 stays `landed`. The bounded follow-up is `t01-log-guard-01`. The
+  independent verifier `t01-log-guard-verify-01` gives PASS through
+  `END T01 LOG GUARD VERIFY 01`. The actual verifier route is external pi
+  `openai-codex/gpt-6.1-sol:high`. The worker requested `pi
+  opencode-go/deepseek-v4-flash:medium`. The effective level is `high`. No model
+  child started.
+- The exact base is `ff5e8c44d9b7d1fb510a568e9a248d84cab0b906`. The test commit
+  is `b775c963`. The source commit is `d5639e11`. The evidence commit is
+  `9be9b41e`. The verifier tip is `66d6cd7f`. Its sole parent is `9be9b41e`.
+  Local, tracking, and direct remote task branch values equal `66d6cd7f`.
+- The incoming set has four paths. `internal/lib/log/log.go` has blob
+  `fbcc1259` and mode `100644`. `internal/lib/log/log_path_guard_test.go` has
+  blob `073402a4` and mode `100644`.
+  `spec/hive-v1/evidence/T01-home-and-register/LOG-PATH-FOLLOWUP.md` has blob
+  `4b5a84e3` and mode `100644`.
+  `spec/hive-v1/evidence/T01-home-and-register/LOG-PATH-VERIFIED.md` has blob
+  `ff2849b6` and mode `100644`. No shared path, command, or dependency changes.
+- The merge is `4524e6570c2d1a16c0771b02171435ec56fdd358`. Its subject is
+  `merge(T01): land shared log path guards`. Its parents are `ff5e8c44` and
+  `66d6cd7f`. The push moves `origin/dev` from `ff5e8c44` to `4524e657` without
+  force.
+- The full uncached gate passes at tree
+  `fca446f55b5f77be532107037cc17bf7f3d3b5a7`. The format list is empty. Vet
+  exits 0. Lint reports `0 issues.`. The race tests pass. TestSTE passes. New
+  prose has zero hard findings. The baseline is exact.
+- The archive is `.hive/tmp/coordinator/archives/T01-log-guards-66d6cd7f/`.
+  It holds 1330 entries: 692 files, 638 directories, no link, and no special
+  file. The original and copy manifests are equal. Their common SHA256 is
+  `3a6832995b9ab117212a2f3944d5eaaa088e77c3e6f79d71e3c64d9529e61746`. All 262
+  tracked blobs and modes equal the incoming tree. Ignored runtime, evidence,
+  and report paths stay in the archive.
+- The root report copies are `.hive/tmp/coordinator/reports/t01-log-guard-01.md`
+  with SHA256
+  `b4fdcede227627a1c25863cca1db233aae8717fb27613942c7db9953a0514f52` and
+  `.hive/tmp/coordinator/reports/t01-log-guard-verify-01.md` with SHA256
+  `000c4d3a0a921a4c6de91133a26e896578684fc9a9e1ed9d3f80487acbc91a59`.
+  Each copy equals its worktree source.
+- The no-force removal reply names the T01 path and workspace `wAH` with
+  `forced:false`. The path and workspace are absent. The local branch, the
+  tracking branch, the direct remote branch, and the archive stay.
+- T08 is `in progress` for a fix. The first full verifier report
+  `t08-verify-01.md` gives FAIL at evidence commit `223f3937`. The header area
+  report `t08-header-verify-01.md` also gives FAIL. Neither report accepts
+  source. The observed task tip is `223f3937`.
+- T11 is `in progress` with an active fix. The first full verifier report
+  `t11-verify-01.md` gives FAIL at verdict commit `4d052b28`. The area report
+  `t11-inbox-output-verify-01.md` also gives FAIL. Neither report accepts
+  source. The observed fix tip is `0124ab63`.
+- T09 is `in progress` after a real source start. The source worker activated
+  `ff5e8c44` from prepared base `ec7977fd` with `git merge --ff-only`. The
+  retained activation capture is `t09-impl-01.md`. The observed task tip is
+  `161d637e`. The worker report ends with
+  `END WORKER T09-worktree-create-and-remove t09-impl-01`. No independent
+  verification or landing exists.
+- The T05 root integration and records PASS at `ff5e8c44` stays accepted. The
+  own `wAG` checker stopped. Workspace `wAG` and pane `wAG:p1` are absent. The
+  old absent pane `w9X:p2` stays as a historical environment limit.
+- CP1 stays passed without a rerun. CP2 to CP5 stay open. T10 stays `blocked`
+  on T09. No other task status or dependency changes. This receipt claims no
+  checkpoint pass.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+- The final 12580 historical handoff bytes keep SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
+- Pending: an independent root integration and records check of this merge.
+  The T01 source acceptance is separate from that check.
 
 ### CP1 home live
 
