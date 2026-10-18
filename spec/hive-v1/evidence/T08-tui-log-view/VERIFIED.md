@@ -209,3 +209,166 @@ Hostile `Lstat`/`Open` replacement and hostile or unbounded writers remain defer
 Uncompleted: all source corrections and any new independent verification after correction.
 
 END VERIFIER T08-tui-log-view t08-verify-01
+
+## Independent fix verification 02
+
+Date: 2026-10-18.
+Pass: `t08-verify-02`.
+Verifier: external Pi, `openai-codex/gpt-6.1-sol:high`.
+Actual provider, model, and reasoning match that route. No agent or model child started.
+
+**Verdict: FAIL. P03 and the later-path part of H03 remain open.**
+This append preserves the entire 11518-byte old verdict prefix.
+Its SHA256 remains `71f3ea8e02f475699331020213dcc78562b0b2c964c54e03aaf9b3751a42c843`.
+No old worker evidence or report changes. No landing or checkpoint acceptance applies.
+
+| Identity | Exact value |
+| --- | --- |
+| Frozen worker and sole verdict parent | `e341019bb7d318409dad4fcddae61467d35c9748` |
+| Last production | `5a1c0317e205cb88828d3bcc17db5442878148e6` |
+| First verdict | `223f3937d5b8c63690e41309da48d7c5f6f3e792` |
+| Original worker | `e26d08bdda4eb3aad5986796c35edb7a7d8c8175` |
+| Activation base | `eded8f9cb09208bfdc81334870e86479e746c183` |
+| Accepted logger | `66d6cd7f1e84fdc964dd757848f0392c78ea1a48` |
+| Dependency merge | `f8260e7a9e7dd5e89c23cf51c4389960dad08bf3` |
+| Test-first | `a24faa51eb24970e5964bf0064a372ce0d4c4d24` |
+| Real-file-output test | `6ef97095793b7ceeaa4cf60bb0df33e6928e4543` |
+| Branch | `task/T08-tui-log-view` |
+
+| Item | Result | Basis |
+| --- | --- | --- |
+| V1 | PASS | Counts, PID bounds, persistent errors, read-only state, safe header, and quit controls pass. |
+| V2 | FAIL | Normal keys, follow, order, and constructor refusal pass. Later H03 refusal can remain invisible. |
+| V3 | FAIL | q, Ctrl-C, output faults, PTY, and JSON refusal pass. Closed-pipe EOF still hangs. |
+| V4 | PASS | Full actual-worktree uncached gate and TestSTE pass. |
+| P01 | CLOSED | One production follower consumer. Literal A/B order and visibility pass repeatedly. |
+| P02 | CLOSED | Actual errors, nil-error short writes, and real file-output errors return promptly. |
+| P03 | OPEN | The adapter exempts nonterminal Fd inputs. Actual closed-pipe EOF does not stop the CLI. |
+| H01 | CLOSED | Oversized values refuse before lookup. Valid and dead controls pass. |
+| H02 | CLOSED | The first error remains. Unchanged ticks add no repeated error-read events. |
+| H03 | PARTIAL, OPEN | Constructor guards pass. Later directory and rotation refusals can lack an error view. |
+| H04 | HISTORICAL LIMIT | Fresh preservation passes. It cannot restore the old runtime bytes. |
+
+### Scope and sensitivity
+
+The complete report is `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t08-verify-02.md`.
+Its adjacent `t08-verify-02-captures/` directory retains raw outputs, probes, logs, patches, inventories, and hashes.
+I read both complete first-review reports and both worker reports through their final markers.
+I read the current task, all old evidence, FIX-01, the exact saved brief, T06 contracts, and installed Bubble Tea source.
+The saved brief retains SHA256 `44050b7304af32a8fe56f431f99a006cb4394b6e6ef2637e6b875f110eaef2cc`.
+
+The activation range has 16 paths. The full new range has 37 paths: 30 imports and seven manual T08 paths.
+The report and `scope-results.json` retain separate full maps.
+The mechanical dependency merge and ordered parents match exactly.
+All 29 nonshared imported blobs and modes equal `66d6cd7f`.
+The shared root keeps original T08 RunE, T05 doctor, and all older registrations.
+No source09/11 import or manual logger, T05, tracker, or imported-evidence edit appears.
+Dependencies, baseline, T06 behavior, and the fixed-clock constructor stay exact.
+I inspected all new assertions and changed old assertions. The worker kept every old assertion without weaker checks or skips.
+
+The exact test-first and file-writer test trees compile and fail on behavior assertions with pre-fix production.
+The frozen final tree passes those worker tests.
+The exact first-review probe reproduces reverse order and stream failures on old production.
+The corrected adaptation keeps literal expected order, starts actual Init, and asserts actual View visibility and order.
+Ten repetitions pass. A competing-consumer mutation makes the independent and worker tests fail on assertions.
+Four further relevant mutations cover output faults, string EOF, PID bounds, and persistent error reads.
+All five produce assertion-red exit 1 and exact-restoration green exit 0.
+Two initial driver setup errors remain retained. Neither counts as red evidence.
+
+### P03: finite Fd input remains open
+
+Location: `internal/tui/tui.go:280-335,430-435`.
+`guardReader` exempts every Fd input. The actual CLI pipe is an `*os.File`.
+Its EOF never closes `inputEnded`. Bubble Tea ends the reader, not the program.
+The initial owned CLI case and three repetitions remain active past two seconds on an empty closed pipe.
+The parent stops and reaps only each owned child. Cleanup status -9 is not a product exit code.
+`pipe-eof.*` and `pipe-repeat*` retain the commands, output, deadlines, statuses, and reap records.
+
+An empty regular file settles with exit 1 and an explicit cancel-reader epoll error on this platform.
+It does not hang. It does not prove successful finite EOF completion.
+String-reader EOF succeeds in about 500 milliseconds. Input errors remain explicit.
+Recommendation: handle finite nonterminal Fd input without breaking terminal identity or cancellation.
+Do not add an arbitrary blocked-reader timeout.
+
+### H03: later refusal can remain invisible
+
+Constructor daily-link, FIFO, and linked-log-directory cases pass with unchanged external targets and bounded explicit errors.
+The imported logger also passes first-open, rotation, retry, and old-handle safeguards.
+The remaining issue concerns the T08-local reporting of later logger refusal.
+
+`late-log.txt` and `probes/late_log_test.go` retain six narrow real-model cases.
+A cooperating writer installs the static obstruction after New and before the next action.
+No hostile replacement occurs during a check/open interval.
+First-open daily links and FIFOs yield explicit follower errors in about 0.52 seconds.
+A first-open linked log directory leaves `no events today` visible without an error after 1.2 seconds.
+Next-day daily-link, FIFO, and linked-directory cases also lack an explicit error view after 1.2 seconds.
+All external sentinels and directory entries stay unchanged. No FIFO blocks.
+The rotation test changes the level. Its blank body does not prove loss of old events.
+
+Location: `internal/tui/tui.go:238-251` and the logger/error boundary.
+`slog` drops the Handle refusal. The unchanged follower can keep waiting without an error message.
+Recommendation: show the later static refusal through a bounded T08-local error view.
+Keep T06 and the accepted logger exact. Add no fallback, generic read lock, event suppression, or deletion.
+
+### Combined behavior, actual CLI, and gate
+
+The independently repeated old checklist passes for healthy behavior.
+Actual private Offset, incomplete LF, midnight, missing-file start, and 101-event bursts remain correct.
+Healthy 500 ms ticks, follow-off ingestion, g/G, four-level filtering, rendered substring matching, and editing keys remain correct.
+Safe bodies, control rendering, malformed caps, truncation errors, header counts, unread/nudged behavior, and privacy remain correct.
+State hashes stay exact. No consume, nudge, record mutation, or generic read lock appears.
+Twenty alternating q/Ctrl-C entries and ten Stop/command checks settle. Goroutines measure 3 before and 3 after.
+Both quit keys work in persistent header-error state.
+
+The actual frozen binary SHA256 is `680b7a321fcd546c98f77148e583ef5757049d7fcbf4b1874f13fd785cd1c7cf`.
+Each actual domain CLI call gives explicit `--home` and a unique marked fixture home.
+q and Ctrl-C exit 0, show that home, and add no envelope. Stderr is empty.
+Bare JSON exits 1 with one failed envelope, phase `validate`, error `TUI requires text output`.
+Custom output faults and actual `/dev/full` output return errors. The CLI file-output child exits 1 promptly.
+The owned PTY enters raw mode. Byte `71` without newline causes exit 0 in about 31 milliseconds.
+Its complete terminal attributes restore exactly. The parent reaps the child and closes both PTY descriptors.
+This proves the changed adapter behavior, not CP4 or arbitrary terminal-size behavior.
+
+The full actual-worktree gate passes with short outside-home `TMPDIR=/tmp/t8v2.au1ato6x`:
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run --allow-serial-runners ./...
+go test -race -count=1 -timeout=120s ./...
+go test -run TestSTE -count=1 -v .
+```
+
+Format output is empty. Every command exits 0. Lint reports `0 issues.`.
+Fresh actual-worktree V1 to V3 selections and bare-command tests also pass for their tested inputs.
+The independent finite-pipe and late-error probes remain separate failures.
+The baseline stays exact. New prose adds zero hard STE findings.
+The verdict child changes evidence only. Focused docs checks and Go/source/dependency/baseline equality accompany delivery.
+
+### H04 and preservation
+
+The original cleanup names `.hive/logs`, `.hive/state`, and subdirectory `.hive/tmp/t08-impl-01`.
+It does not prove deletion of every `.hive/tmp` entry. New broad wording does not enlarge that historic loss claim.
+Original daily bytes remain absent without a pre-deletion content inventory. No recovery claim applies.
+The old report, V1 to V4, literal terminal whitespace, and FAILED verdict prefix stay exact.
+
+The fresh worker inventory keeps every preexisting path. The marker and original report retain separate hashes.
+That inventory records type, mode, and size, not full content hashes for its own changing scratch files.
+Fresh compliance does not restore historic H04 bytes.
+My own no-follow runtime inventories match exactly. All 274 tracked hashes stayed exact before this append.
+All 330 retained worker artifacts, both worker reports, and 4243 frozen completed root records stay exact.
+I excluded concurrent T09/T11 records from that completed-record freeze.
+
+Compact evidence existed before cleanup. A no-follow manifest lists 1130 owned temporary entries.
+The obsolete root, copies, fixtures, binaries, and Go temporary data are absent.
+All owned children exited or reached their finite deadline. The parent reaped each child. No helper remains.
+I removed no preexisting worktree runtime root, report, log, state, archive, credential, branch, workspace, or other agent resource.
+No global harness configuration, credential content, or historical attribution changed.
+The separate root report gives logger source integration PASS and records FAIL for a historical phase label.
+
+Uncompleted: P03 correction, later H03 error reporting, and fresh independent source acceptance.
+Only the local-user and cooperating-writer boundary applies.
+Hostile Lstat/Open replacement, malicious callbacks, and unbounded input remain deferred.
+No CP4 or future checkpoint pass applies.
+
+END VERIFIER T08-tui-log-view t08-verify-02
