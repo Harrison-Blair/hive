@@ -1367,6 +1367,46 @@ landing. It passes no checkpoint and changes no task status.
   and the direct remote `main` stay
   `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
 
+### Dated route correction: implementer route 04
+
+2026-10-18. This correction records the approved implementer route on the new
+machine. It changes no task status and no checkpoint.
+
+- The requested route `opencode-go/deepseek-v4-flash:medium` is absent from the
+  local Pi catalog on this machine. The approved replacement is
+  `opencode-go/deepseek-v4.1-flash`. The request is `:medium`. The effective
+  level is `high`.
+- The replacement covers the implementer slots: the CP3 producer, and the CP5
+  manager and coding worker. Record the requested level and the effective level
+  for each slot.
+- This route correction covers no Claude smoke check. CP2, CP3, and CP5 keep
+  their installed smoke model.
+- This correction replaces the later-wave route text in the dated clarification
+  "later-wave contracts and routes 03". That section stays as a record. The CP3
+  and CP5 instruction text now names the replacement route.
+- A wrong route or an absent model still reports `BLOCKED`.
+
+### Dated machine-switch receipt: new machine 01
+
+2026-10-18. This receipt records the machine switch and the fresh runtime. It
+changes no task status and no checkpoint.
+
+- The coordinator runs on the machine `raft`. The home is
+  `/home/penguin/source/hive`. `dev` is at `5f266f5`, clean, and equal to
+  `origin/dev`.
+- The landed tasks are T01 to T09, T11, and T22. T10 stays in progress. Branch
+  `task/T10-agent-spawn-core` is at `3a0f006`. Finding F02 stays open.
+- The fresh runtime records: project `hive` registered with base `dev`, and the
+  coordinator registered in pane `w2T:p1` at generation 1.
+- The installed version of `golangci-lint` is 2.15.0. The full gate passes with
+  serialized test packages.
+- The implementer route correction above applies to T10 and to each later
+  implementer slot.
+- CP1 stays passed without a rerun. CP2, CP3, CP4, and CP5 stay open.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The two values differ.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -1511,8 +1551,9 @@ At the end, remove only the two tabs that the run made for the manager and the
 supervisor. Keep the coordinator tab and the hive workspace. Capture the tab
 list before and after.
 
-Use PiFlash as the producer and PiSol as the verifier. Record the exact requested
-model and the actual effective model.
+Use PiFlash at `opencode-go/deepseek-v4.1-flash` with request `:medium` and
+effective `high` as the producer. Use PiSol as the verifier. Record the exact
+requested model and the actual effective model.
 
 A real settled manager runs in pane A. Register it. Send the bounded manager
 brief. The manager receives nudges and sends acknowledgments. It reports its
@@ -1589,8 +1630,8 @@ command. Record the exact routes:
 
 | Role | Harness and model |
 | --- | --- |
-| Manager | `pi opencode-go/deepseek-v4-flash:medium` |
-| Coding worker | `pi opencode-go/deepseek-v4-flash:medium` |
+| Manager | `pi opencode-go/deepseek-v4.1-flash:medium` |
+| Coding worker | `pi opencode-go/deepseek-v4.1-flash:medium` |
 | Source verifier | `pi openai-codex/gpt-6.1-sol:high` |
 
 Record the requested model and the actual effective model separately. Pi 0.87.1
@@ -1751,8 +1792,8 @@ printf '%s\n' "$SUP_WRAP" "python3 \"$SUP_SHELL_WRAP\" \"\$?\"" > "$SUP_RUN/pane
 RUN_START=$(date +%s)
 "$BIN" --home "$PWD" doctor
 "$BIN" --home "$PWD" agent spawn --role manager --project hive --harness pi \
-  --model opencode-go/deepseek-v4-flash:medium --name manager-hive
-"$BIN" --home "$PWD" agent send --agent manager-hive "Create one task that adds reference/dogfood/cp5.md with the date of this run. Run it with a PiFlash worker at opencode-go/deepseek-v4-flash:medium. Verify it with a PiSol verifier at openai-codex/gpt-6.1-sol:high. Land it with mode merge under the new dated grant. Send the coordinator an explicit landing message. Remove the clean merged worktree without force. Write your handoff."
+  --model opencode-go/deepseek-v4.1-flash:medium --name manager-hive
+"$BIN" --home "$PWD" agent send --agent manager-hive "Create one task that adds reference/dogfood/cp5.md with the date of this run. Run it with a PiFlash worker at opencode-go/deepseek-v4.1-flash:medium. Verify it with a PiSol verifier at openai-codex/gpt-6.1-sol:high. Land it with mode merge under the new dated grant. Send the coordinator an explicit landing message. Remove the clean merged worktree without force. Write your handoff."
 ```
 
 In pane B, run the two lines in `$SUP_RUN/pane-b-command.txt`. The first line
