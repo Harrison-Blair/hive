@@ -216,8 +216,11 @@ func assertGone(t *testing.T, pid int) {
 	t.Helper()
 	deadline := time.Now().Add(time.Second)
 	for {
-		err := syscall.Kill(pid, 0)
-		if errors.Is(err, syscall.ESRCH) {
+		process, err := os.FindProcess(pid)
+		if err != nil {
+			return
+		}
+		if err := process.Signal(syscall.Signal(0)); err != nil {
 			return
 		}
 		if time.Now().After(deadline) {
