@@ -1255,6 +1255,48 @@ source and starts no agent.
 - Pending: a fresh independent combined root check, a checked concrete T10
   brief, and the later T10 source work.
 
+### Dated correction receipt: wave 3 record literals
+
+2026-10-18. This section corrects two literal records. It edits no source,
+passes no checkpoint, and starts no T10 source.
+
+- REC-01: the original `t11-land-01-r01-correction.md` names `c1206395` as the
+  final tree. That object name does not resolve. The actual tree of `c8201295`
+  is `120639545a8ba30d3978ec92f605e2d948474931`. The substantive stale-agent
+  correction stays valid.
+- REC-02: the original `wave3-land-01.md` says 296 nonincoming T08 entries.
+  The exact count is 295. The partition is 19 nonshared incoming entries, one
+  shared root entry, and 295 nonincoming entries. The total is 315.
+- The Git path sets give these facts. The T08 common base is `66d6cd7f`. The
+  base to tip path set has 20 paths. 19 paths equal the accepted T08 tip.
+  `cmd/root.go` holds the shared union. All 295 nonincoming paths equal the
+  first merge parent. The merged tree has 315 entries.
+- The original `wave3-land-01.md`, `t11-land-01-r01-correction.md`, old state
+  records, reports, raw captures, archives, and handoff sections stay
+  verbatim. The new report and state record hold the original full hashes.
+- The new report is `.hive/tmp/coordinator/reports/wave3-records-fix-01.md`.
+  The new state record is
+  `.hive/tmp/coordinator/state/wave3-records-fix-01.json`. The captures
+  directory is
+  `.hive/tmp/coordinator/reports/wave3-records-fix-01-captures/`.
+- T08, T09, and T11 stay landed. The accepted T08 tip is `c159223d`, the
+  accepted T09 tip is `a83db9e0`, and the T11 source PASS stays accepted. The
+  T08, T09, and T11 merge trees, gates, archives, and removals do not change.
+- T10 stays `in progress` for preparation only. `implementation_allowed` is
+  false and `implementation_started` is false. The task blob stays
+  `5db0e34783fbfa1f73aca232e7e0f8008dff02fd`. The prepared branch and worktree
+  point at this final `dev` commit. Workspace `wB4`, pane `wB4:p1`, terminal
+  `term_65e1cd29b3f1a30`, and the shell stay.
+- A separate read-only logger-body investigation continues in its own
+  temporary directory. This pass records no outcome and infers no cause.
+- CP1 stays passed. CP2 to CP5 stay open. The graph keeps 27 nodes and 46
+  edges. The source status and the existing bounds do not change.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The two values differ.
+- Pending: the independent records check of this correction. The independent
+  source PASS and the T10 preparation PASS remain the accepted source facts.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
