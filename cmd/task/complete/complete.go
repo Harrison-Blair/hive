@@ -37,7 +37,7 @@ func New() *cobra.Command {
 			return envelope, tasklib.TransitionText(envelope), nil
 		})
 		cmd.SetOut(original)
-		if tracker.err != nil {
+		if homeUsed != "" && tracker.err != nil {
 			actor := agent
 			if resolved.Key != "" {
 				actor = resolved.Key
