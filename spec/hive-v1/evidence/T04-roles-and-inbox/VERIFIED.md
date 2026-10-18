@@ -415,3 +415,207 @@ S05-D01 remains a separate T22 store-walker follow-up. It changes no T04 accepta
 The open P-F02, P-F06, I-F03, and I-F04 fixes remain uncompleted.
 Later integration and landing remain uncompleted.
 Recommendation: return these bounded findings to the worker. Do not accept T04 yet.
+
+
+## 2026-10-18 — t04-verify-03 — current verdict PASS
+
+| Item | Value |
+| --- | --- |
+| Role | Fresh independent source verifier |
+| Route | pi `openai-codex/gpt-6.1-sol:high` |
+| Tested worker HEAD | `c33f58965302f0934294b2586e0055cd528746fa` |
+| Source tip | `0b896f66c3868a75fc5bff1dc168ffa297dd054d` |
+| Original base | `84da9819b31be83dbe71c36d620eadf3749e1f9f` |
+| Original worker | `7a6250f3f20d2a4fb497c9aa4540628651cb79ae` |
+| First primary verdict | `3769d5651f8b475c65fd395bf267398f83efe49d` |
+| First fix initial HEAD | `42a177b43f3d0f5a1b2bcccfd5c2b8d8ec7a004c` |
+| Second verdict and second fix initial HEAD | `64fdb038bd7d35fbecc4d89046893cb9a2dddd2d` |
+| Prerequisite | `c6a4d91d82042f8861a2aa4b722944272117fa23` |
+| Branch | `task/T04-roles-and-inbox` |
+| Overall | **PASS** |
+
+This verdict covers both earlier finding sets and both fix passes.
+Both earlier verdicts retain their exact bytes and attribution.
+The root report records the separate verdict commit and remote tip after delivery.
+This verdict does not perform integration or landing.
+
+### V verdicts
+
+| Item | Proves | Verdict | Actual result |
+| --- | --- | --- | --- |
+| V1 | AC1, AC2 | PASS | All register and claim tests pass. Independent failure-prefix, identity, namespace, and concurrency checks pass. |
+| V2 | AC4 | PASS | All inbox tests pass. Independent byte bounds, identity, counts, partial marks, and output checks pass. |
+| V3 | AC1 to AC4 | PASS | All 12 specified steps pass. Both prior CLI checklists and all four residual findings pass. |
+| V4 | AC5 | PASS | Empty format output. Vet, lint, and the full uncached race gate pass from the task worktree root. |
+
+### Every finding disposition
+
+`P-Fnn` identifies primary `T04-Fnn`.
+`I-Fnn` identifies secondary `T04-INBOX-Fnn`.
+No new finding class applies.
+
+| ID | Disposition | Current evidence |
+| --- | --- | --- |
+| P-F01 | CLOSED | Generated collision and busy-pane refusal preserve counter and record bytes with no effect. Checks precede `Next`. |
+| P-F02 | CLOSED | Live names, record keys, and claim aliases refuse in both orders. The custom-name-before-claim and record-key-before-name cases refuse without writes. Same-claim replacements and matching orphans still succeed. |
+| P-F03 | CLOSED | Logical and custom singleton lookups require matching claim and holder under one lock. An unclaimed orphan does not hold the role. Direct generation-key inspection remains separate. |
+| P-F04 | CLOSED | A changed orphan pane refuses with unchanged bytes and no effect. A matching retry updates the intended generation. |
+| P-F05 | CLOSED | Role, name, project, and show controls produce one escaped physical error line. |
+| P-F06 | CLOSED | Registration and claim events carry applicable IDs. Show and List errors now log. Checked failed writes fabricate no success. |
+| P-F07 | CLOSED | Literal 4095/4096/4097 byte assertions detect both cap mutants. Restored 4096 passes. |
+| I-F01 | CLOSED | Short nil-error stdout gives status 1 and actual consumed IDs. Marks stay. Output occurs outside the lock. |
+| I-F02 | CLOSED | Failed `--all` output claims no consumption and preserves record bytes. |
+| I-F03 | CLOSED | Cross-role, sequence mismatch, scalar, and noncanonical-name records refuse with paths before any mark. Both `01.json` and `1.json` retain exact bytes. No wrong record prints. |
+| I-F04 | CLOSED | Append and mark events carry the sender. Actual mark `agent` and `agent_id` equal `worker-x`. All, Unread, and count errors log. No message body appears. |
+| I-F05 | CLOSED | Every rendered inbox string escapes terminal controls. Raw stored and JSON text stay intact. |
+| I-F06 | CLOSED | Absent role says `pass --role`. Explicit empty and invalid keys retain the invalid-key error. |
+| I-F07 | CLOSED | Independent ASCII and UTF-8 4095/4096/4097 byte cases and 41/42 key cases pass. Their mutants fail. |
+| I-F08 | CLOSED | Lock-free counts reject static linked and wrong-type roots or valid role collections with paths and no partial map. |
+
+### Four residual cases
+
+The actual CLI now refuses custom-name-before-claim in both orders with `agent exists: supervisor`.
+The prospective record-key alias refuses with `agent exists: leader-g1`.
+Each refusal exits 1, reports no effect, and preserves all state bytes.
+Normal and same-claim generation replacements remain successful.
+
+The static `01.json` and already-read `1.json` fixture now refuses two consumes and `--all`.
+The error names `01.json` and says `the sequence name is not canonical`.
+Both files retain their full bytes. No `OTHER-1` record prints and no consumed effect appears.
+This closes the reproduced ParseUint/FormatUint defect, not a broader hostile-store guarantee.
+
+Actual `agent show unknown` logs `agent show failed` with its name and error.
+Actual invalid `inbox --all` logs `inbox operation failed` with phase `read`.
+The actual mark event retains role `coordinator`, sequence 1, and sender `worker-x` in both sender fields.
+No event contains `BODY-MUST-NOT-LOG`.
+Added All, Unread, UnreadCount, and UnreadCountAll checks cover scalar records and wrong-type collections.
+All 12 preserve bytes, retain paths, and log errors.
+Existing Show and List error checks retain their applicable name, role, and project fields.
+
+### Actual runs
+
+```sh
+go test -race -count=1 ./internal/agent/ -v
+go test -race -count=1 ./internal/lib/inbox/ -v
+go test -race -count=1 ./cmd/ ./internal/inbox/ -v
+```
+
+```text
+ok  	github.com/Harrison-Blair/hive/internal/agent	1.230s
+exit=0
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	1.198s
+exit=0
+ok  	github.com/Harrison-Blair/hive/cmd	1.027s
+ok  	github.com/Harrison-Blair/hive/internal/inbox	1.004s
+exit=0
+```
+
+The primary CLI checklist passes all 193 assertions.
+The secondary driver completes all 49 probes.
+The worker residual driver passes all 47 checks on the independently built binary.
+All eight independent residual assertions pass.
+Both prior independent Go probe sets pass. Ten uncached concurrency repetitions pass.
+The follow-up driver retains long names, reverse aliases, raw controls, and ten simultaneous worker pairs.
+The checklist retains numeric order through maximum uint64, disjoint consumes, and 50 process appends.
+It retains all singleton failure prefixes, safe gaps, matching retries, and old generations.
+It retains lock-free reads, bounded mutation locks, known partial-mark prefixes, nil Go-error routing, and no replay.
+Output follows completed marks outside the lock. Static invalid inputs produce no unintended mark.
+
+### Assertion strength
+
+All added Go probes, mutations, and historical replays run only in isolated Git archives.
+The actual worktree source stays frozen.
+
+| Check | Observed red | Restored green |
+| --- | --- | --- |
+| First fix replay | Six production files from `42a177b4` fail current behavioral assertions | Exact worker passes the same package selection |
+| Second fix replay | Four production files from `64fdb038` fail namespace, selected-path, reader-log, and sender assertions | Exact worker passes the same selection |
+| Second fix CLI replay | Six independent residual assertions fail on the historical binary | All eight pass on the frozen worker binary |
+| Added reader error logs | All 12 assertions fail on second-verdict source | All 12 pass on exact worker source |
+| Cap 4097 and cap 8192 | Literal ASCII and UTF-8 refusal assertions fail | Cap 4096 passes |
+| Key cap 42 | Literal 42-character refusal fails | Original cap passes |
+| Empty mark | `read_at` and partial-prefix assertions fail | Exact mark source passes |
+| Live instead of stale | Generation status assertion fails | Exact stale source passes |
+| Injection-only CLI checks | Without injection, error and prefix assertions fail | Deterministic mark failures at positions 1, 2, 3 pass in text and JSON |
+
+Every red result is an assertion failure, not a compile failure.
+The corrected generated-name collision test strengthens its incorrect historical expectation.
+No unrelated test weakens or skips an assertion.
+
+### V3 transcript and V4 gate
+
+All 12 installed transcript steps pass with an explicit absolute marked fixture home.
+The actual binary builds from the frozen task worktree root.
+The list shows generation 1 stale and generation 2 live. Show returns generation 2 on `w1:p2`.
+The first consume prints `hello`. The second prints zero bytes.
+JSON `--all` contains one record with `read_at` set.
+The four specified refusals exit 1 with their required diagnostics.
+`v3-transcript.txt` retains every command, output, and status.
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race -count=1 ./...
+```
+
+```text
+gofmt_exit=0
+vet_exit=0
+0 issues.
+lint_exit=0
+race_exit=0
+```
+
+The gate runs serially from the actual task worktree root.
+The format command prints no path. Every package passes. Store takes 17.293s.
+The STE baseline stays unchanged.
+
+### Scope, source freeze, and delivery
+
+Initial HEAD, branch, clean status, and direct remote match the required worker.
+Route metadata records `openai-codex`, `gpt-6.1-sol`, and `high` at `2026-10-18T08:07:07.895Z`.
+The session ID is `01a14e0c-db61-76a2-b039-0e21e2f4281b`.
+I selected only route metadata from the session file.
+I read the required instructions, glossaries, installed task, all V files, complete prior verdicts, and both probe sets.
+The complete worker report ends with `END WORKER T04-roles-and-inbox t04-fix-02`.
+I read its captures and inspected the whole task range and both fix ranges.
+The root report lists every changed path for each range.
+
+| Range to exact tested worker | Changed paths | Diff SHA256 |
+| --- | --- | --- |
+| `84da9819` | 47 | `5e9660cdb1855936aaa5466d67a7f618166cfb524ff30681a6997b019e30617a` |
+| `42a177b4` | 17 | `5a8a4e934549b4feee89363266b2c1f9ba04fbd05862b4e5ac6cc59cfd37b6ef` |
+| `64fdb038` | 13 | `ee5018ac8d46dad1f9582791e3975cf50b20a6299abc1dd824daf019fd891847` |
+
+The prerequisite is an ancestor. The CP1 PASS and cap/home landing reports retain their final markers.
+I did not rerun CP1. All two home paths and 14 store paths equal `c6a4d91d`.
+The full gate rechecks their installed tests.
+Later root T03/T22 merges and T05 synchronization require no merge into this frozen source.
+No T04 production path calls WalkRecords.
+
+All 179 tracked paths match exact worker objects before this append.
+Every other tracked path remains exact at commit time.
+The old 22034-byte prefix keeps SHA256 `717f4aef7db83274d529a214fa790bec1cb6fed844bd72fab315ac437b81b81a`.
+Source, module files, and the STE baseline remain unchanged.
+Each isolated source copy restores every original tracked path before removal.
+Only this append enters the evidence-only verdict commit.
+
+Cleanup removes the primary scratch with 65 marked homes, both worker-source binaries, and both isolated source copies.
+Other drivers remove their own marked fixtures. Cleanup also removes the historical binary.
+Necessary captures and probe definitions remain.
+A copied binary initially lacked execute mode. I corrected only that mode and reran both affected drivers.
+The separate setup-error captures count as no product result.
+All earlier work, reports, logs, credentials, worktrees, and attribution remain unchanged.
+No credential inspection, global configuration change, herdr call, agent start, merge, or worktree removal occurs.
+The push changes only the named task branch without force. No main reference changes.
+No co-author or session trailer applies.
+
+Root report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t04-verify-03.md`.
+Captures: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t04-verify-03-captures/`.
+Only the approved local-user and cooperating-writer boundary applies.
+Hostile replacement between Lstat and Open remains deferred for T01.
+The public held-handle inbox API remains assigned to T11 and is not a T04 finding.
+S05-D01 remains a separate T22 follow-up. No bypass or store edit occurs.
+No owned acceptance check remains uncompleted. Later integration and landing remain uncompleted.
+Recommendation: accept this exact bounded T04 source for the coordinator's next delivery step.
