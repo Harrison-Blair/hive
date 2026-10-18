@@ -13,7 +13,6 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
-	"github.com/Harrison-Blair/hive/internal/lib/output"
 	loglib "github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/spf13/cobra"
 )
@@ -66,7 +65,7 @@ func run(cmd *cobra.Command, opts *options) error {
 	flagSet := flag != nil && flag.Changed
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fail(cmd, jsonOutput, "home", err, 1)
+		return fail(cmd, jsonOutput, err, 1)
 	}
 	resolvedHome, err := home.Resolve(homeFlag, flagSet, os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
@@ -74,7 +73,7 @@ func run(cmd *cobra.Command, opts *options) error {
 		if errors.As(err, &usage) {
 			return common.Usage(cmd, usage.Error())
 		}
-		return fail(cmd, jsonOutput, "home", err, 1)
+		return fail(cmd, jsonOutput, err, 1)
 	}
 	if opts.limit < 0 {
 		return common.Usage(cmd, "--limit must be zero or more")
@@ -99,7 +98,7 @@ func run(cmd *cobra.Command, opts *options) error {
 		if ctx.Err() != nil {
 			return nil
 		}
-		return fail(cmd, jsonOutput, "read", err, 1)
+		return fail(cmd, jsonOutput, err, 1)
 	}
 	printer := &printer{
 		out:    cmd.OutOrStdout(),
@@ -230,12 +229,11 @@ func parseSince(value string, now time.Time) (time.Time, error) {
 	return parsed, nil
 }
 
-func fail(cmd *cobra.Command, jsonOutput bool, phase string, err error, status int) error {
+func fail(cmd *cobra.Command, jsonOutput bool, err error, status int) error {
+	prefix := "hive: "
 	if jsonOutput {
-		envelope := output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: err.Error(), Result: nil}
-		_ = output.Render(cmd.OutOrStdout(), cmd.ErrOrStderr(), true, envelope, "")
-	} else {
-		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", err)
+		prefix = "hive logs: "
 	}
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "%s%v\n", prefix, err)
 	return &common.StatusError{Status: status}
 }

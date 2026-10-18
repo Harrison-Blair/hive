@@ -38,6 +38,9 @@ func (e Event) Line() int { return e.line }
 type Offset struct {
 	Path string
 	Byte int64
+
+	cutoff time.Time
+	line   int
 }
 
 // Reader reads the daily log files of one home.
@@ -69,13 +72,15 @@ func (r *Reader) Read(ctx context.Context, since time.Time) ([]Event, Offset, er
 			return events, offset, err
 		}
 		path := r.pathFor(day)
-		fileEvents, consumed, exists, err := r.readFile(ctx, path, cutoff)
+		fileEvents, consumed, lines, exists, err := r.readFile(ctx, path, cutoff)
 		if err != nil {
 			return events, offset, err
 		}
 		events = append(events, fileEvents...)
 		if day.Equal(today) {
 			offset.Path = path
+			offset.cutoff = cutoff
+			offset.line = lines
 			if exists {
 				offset.Byte = consumed
 			}
@@ -84,20 +89,20 @@ func (r *Reader) Read(ctx context.Context, since time.Time) ([]Event, Offset, er
 	return events, offset, nil
 }
 
-func (r *Reader) readFile(ctx context.Context, path string, cutoff time.Time) ([]Event, int64, bool, error) {
+func (r *Reader) readFile(ctx context.Context, path string, cutoff time.Time) ([]Event, int64, int, bool, error) {
 	info, err := os.Lstat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, 0, false, nil
+			return nil, 0, 0, false, nil
 		}
-		return nil, 0, false, err
+		return nil, 0, 0, true, err
 	}
 	if !info.Mode().IsRegular() {
-		return nil, 0, true, fmt.Errorf("log is not a regular file: %s", path)
+		return nil, 0, 0, true, fmt.Errorf("log is not a regular file: %s", path)
 	}
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, 0, true, err
+		return nil, 0, 0, true, err
 	}
 	defer func() { _ = file.Close() }()
 
@@ -107,11 +112,11 @@ func (r *Reader) readFile(ctx context.Context, path string, cutoff time.Time) ([
 	lineNumber := 0
 	for {
 		if err := ctx.Err(); err != nil {
-			return events, consumed, true, err
+			return events, consumed, lineNumber, true, err
 		}
 		raw, total, complete, malformed, err := readBoundedLine(reader)
 		if err != nil {
-			return events, consumed, true, err
+			return events, consumed, lineNumber, true, err
 		}
 		if !complete {
 			break
@@ -119,15 +124,22 @@ func (r *Reader) readFile(ctx context.Context, path string, cutoff time.Time) ([
 		consumed += int64(total)
 		lineNumber++
 		event := makeEvent(raw, malformed, path, lineNumber)
-		if !event.Malformed() && !cutoff.IsZero() {
-			when, ok := eventTime(event.Fields)
-			if !ok || when.Before(cutoff) {
-				continue
-			}
+		if !eventAfterCutoff(event, cutoff) {
+			continue
 		}
 		events = append(events, event)
 	}
-	return events, consumed, true, nil
+	return events, consumed, lineNumber, true, nil
+}
+
+// eventAfterCutoff reports whether an event is at or after the cutoff. A zero
+// cutoff keeps each event. A malformed event has no time and is always kept.
+func eventAfterCutoff(event Event, cutoff time.Time) bool {
+	if cutoff.IsZero() || event.Malformed() {
+		return true
+	}
+	when, ok := eventTime(event.Fields)
+	return ok && !when.Before(cutoff)
 }
 
 func makeEvent(raw []byte, malformed bool, path string, line int) Event {

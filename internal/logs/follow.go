@@ -12,9 +12,10 @@ import (
 
 const followPollInterval = 500 * time.Millisecond
 
-// Follow sends each new event after the offset. It polls the file every 500
-// milliseconds, keeps a partial line until its newline arrives, and moves to
-// the next daily file after it reads the rest of the old file.
+// Follow sends each new event at or after the cutoff of the initial read. It
+// polls the file every 500 milliseconds, keeps a partial line until its newline
+// arrives, and moves to the next daily file after it reads the rest of the old
+// file.
 func (r *Reader) Follow(ctx context.Context, from Offset) (<-chan Event, <-chan error) {
 	events := make(chan Event)
 	errs := make(chan error, 1)
@@ -30,12 +31,13 @@ func (r *Reader) Follow(ctx context.Context, from Offset) (<-chan Event, <-chan 
 		if offset < 0 {
 			offset = 0
 		}
-		lineNumber := 0
+		lineNumber := from.line
+		cutoff := from.cutoff
 		ticker := time.NewTicker(followPollInterval)
 		defer ticker.Stop()
 
 		for {
-			nextOffset, nextLine, pending, err := r.pollFile(ctx, path, offset, lineNumber, events)
+			nextOffset, nextLine, pending, err := r.pollFile(ctx, path, offset, lineNumber, cutoff, events)
 			if err != nil {
 				if errors.Is(err, context.Canceled) {
 					errs <- nil
@@ -73,7 +75,7 @@ func (r *Reader) Follow(ctx context.Context, from Offset) (<-chan Event, <-chan 
 	return events, errs
 }
 
-func (r *Reader) pollFile(ctx context.Context, path string, offset int64, lineNumber int, out chan<- Event) (int64, int, bool, error) {
+func (r *Reader) pollFile(ctx context.Context, path string, offset int64, lineNumber int, cutoff time.Time, out chan<- Event) (int64, int, bool, error) {
 	info, err := os.Lstat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -117,6 +119,9 @@ func (r *Reader) pollFile(ctx context.Context, path string, offset int64, lineNu
 		offset += int64(total)
 		lineNumber++
 		event := makeEvent(raw, malformed, path, lineNumber)
+		if !eventAfterCutoff(event, cutoff) {
+			continue
+		}
 		select {
 		case out <- event:
 		case <-ctx.Done():

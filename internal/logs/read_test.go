@@ -3,6 +3,7 @@ package logs
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -114,7 +115,8 @@ func TestReadSkipsMissingDailyFile(t *testing.T) {
 func TestReadLineCap(t *testing.T) {
 	today := localNoon(time.Now())
 	reader, home := newTestReader(t, today)
-	long := strings.Repeat("x", maxLineBytes+1)
+	const overCap = 1048577
+	long := strings.Repeat("x", overCap)
 	valid := eventLine(t, today, map[string]any{"msg": "after long line"})
 	writeDaily(t, home, today, long, valid)
 
@@ -142,15 +144,16 @@ func TestReadLineCap(t *testing.T) {
 func TestReadAcceptsLineAtCap(t *testing.T) {
 	today := localNoon(time.Now())
 	reader, home := newTestReader(t, today)
+	const atCap = 1048576
 	head := `{"time":"` + today.Format(time.RFC3339Nano) + `","msg":"`
 	tail := `"}`
-	padding := maxLineBytes - len(head) - len(tail)
+	padding := atCap - len(head) - len(tail)
 	if padding < 0 {
 		t.Fatal("test line head is too long")
 	}
 	line := head + strings.Repeat("x", padding) + tail
-	if len(line) != maxLineBytes {
-		t.Fatalf("test line length = %d; want %d", len(line), maxLineBytes)
+	if len(line) != atCap {
+		t.Fatalf("test line length = %d; want %d", len(line), atCap)
 	}
 	writeDaily(t, home, today, line, eventLine(t, today, map[string]any{"msg": "after cap"}))
 
@@ -160,6 +163,51 @@ func TestReadAcceptsLineAtCap(t *testing.T) {
 	}
 	if len(events) != 2 || events[0].Malformed() || events[1].Malformed() {
 		t.Fatalf("events = %#v; want two valid lines at and after the cap", events)
+	}
+}
+
+func TestReadFixedLineCapBoundary(t *testing.T) {
+	const (
+		underCap = 1048575
+		atCap    = 1048576
+		overCap  = 1048577
+	)
+	today := localNoon(time.Now())
+	for _, size := range []int{underCap, atCap, overCap} {
+		t.Run(fmt.Sprintf("%d-byte line", size), func(t *testing.T) {
+			reader, home := newTestReader(t, today)
+			head := `{"time":"` + today.Format(time.RFC3339Nano) + `","msg":"`
+			tail := `"}`
+			padding := size - len(head) - len(tail)
+			if padding < 0 {
+				t.Fatalf("line header = %d bytes; want less than %d", len(head)+len(tail), size)
+			}
+			raw := head + strings.Repeat("x", padding) + tail
+			if len(raw) != size {
+				t.Fatalf("fixture length = %d; want %d", len(raw), size)
+			}
+			message := fmt.Sprintf("after %d", size)
+			valid := eventLine(t, today, map[string]any{"msg": message})
+			writeDaily(t, home, today, raw, valid)
+
+			events, _, err := reader.Read(context.Background(), time.Time{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(events) != 2 {
+				t.Fatalf("events = %d; want 2", len(events))
+			}
+			wantMalformed := size > atCap
+			if events[0].Malformed() != wantMalformed {
+				t.Errorf("size %d malformed = %v; want %v", size, events[0].Malformed(), wantMalformed)
+			}
+			if wantMalformed && len(events[0].Raw) != 200 {
+				t.Errorf("size %d raw prefix = %d bytes; want 200", size, len(events[0].Raw))
+			}
+			if events[1].Malformed() || eventMessage(events[1]) != message {
+				t.Errorf("event after size %d = %#v; want valid", size, events[1])
+			}
+		})
 	}
 }
 

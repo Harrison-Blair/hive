@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // TextLine renders one valid event for a person. It gives the local time with
@@ -18,7 +19,7 @@ func TextLine(event Event) string {
 		if builder.Len() != 0 {
 			builder.WriteByte(' ')
 		}
-		builder.WriteString(value)
+		builder.WriteString(sanitize(value))
 	}
 	if when, ok := eventTime(event.Fields); ok {
 		appendPart(when.Local().Format("2006-01-02T15:04:05.000-07:00"))
@@ -97,6 +98,29 @@ func formatValue(value any) string {
 }
 
 func sanitize(text string) string {
-	text = strings.ReplaceAll(text, "\n", `\n`)
-	return strings.ReplaceAll(text, "\r", `\r`)
+	var builder strings.Builder
+	for index := 0; index < len(text); {
+		r, size := utf8.DecodeRuneInString(text[index:])
+		if r == utf8.RuneError && size == 1 {
+			builder.WriteByte(text[index])
+			index++
+			continue
+		}
+		switch r {
+		case '\n':
+			builder.WriteString(`\n`)
+		case '\r':
+			builder.WriteString(`\r`)
+		case '\t':
+			builder.WriteString(`\t`)
+		default:
+			if r < 0x20 || r == 0x7f || (r >= 0x80 && r <= 0x9f) {
+				_, _ = fmt.Fprintf(&builder, `\u%04x`, r)
+			} else {
+				builder.WriteRune(r)
+			}
+		}
+		index += size
+	}
+	return builder.String()
 }
