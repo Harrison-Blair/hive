@@ -25,6 +25,7 @@ var steFiles = []string{
 	"spec/hive-v1/05-tracker.md",
 	"spec/hive-v1/tasks/*.md",
 	"spec/hive-v1/evidence/README.md",
+	"internal/agent/templates/project-agents.md",
 }
 
 const (

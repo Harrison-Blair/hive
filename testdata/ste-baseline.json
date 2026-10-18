@@ -25,5 +25,6 @@
   "spec/hive-v1/tasks/T19-cursor-profile.md": 0,
   "spec/hive-v1/tasks/T20-recovery.md": 0,
   "spec/hive-v1/tasks/T21-role-playbooks.md": 0,
-  "spec/hive-v1/tasks/T22-store-operations.md": 0
+  "spec/hive-v1/tasks/T22-store-operations.md": 0,
+  "internal/agent/templates/project-agents.md": 0
 }

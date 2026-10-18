@@ -41,6 +41,7 @@ type SpawnOptions struct {
 	NameSet       bool
 	PaneID        string
 	PaneSet       bool
+	Adopt         string
 	QuietAfterMin int
 	QuietAfterSet bool
 	ExtraArgs     []string
@@ -57,10 +58,6 @@ type SpawnResult struct {
 func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelope {
 	if ctx == nil {
 		ctx = context.Background()
-	}
-	paneID, paneError := choosePane(options)
-	if paneError != "" {
-		return failed("validate", paneError)
 	}
 	profile, err := harness.Lookup(options.Harness)
 	if err != nil {
@@ -79,6 +76,28 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	defer func() { _ = writer.Close() }()
 	logger := slog.New(writer)
 
+	choice, paneError := choosePane(ctx, home, options, logger)
+	if paneError != "" {
+		return failed("validate", paneError)
+	}
+	paneID := choice.PaneID
+	manager := choice.Manager
+	if options.Role == "manager" {
+		project, projectMessage := readProjectRecord(home, options.Project)
+		if projectMessage != "" {
+			if manager != nil {
+				manager.cleanup(ctx, home, logger)
+			}
+			return failed("validate", projectMessage)
+		}
+		if instructionMessage := writeProjectInstructions(home, project, logger); instructionMessage != "" {
+			if manager != nil {
+				manager.cleanup(ctx, home, logger)
+			}
+			return failed("instructions", instructionMessage)
+		}
+	}
+
 	registered := Register(home, RegisterOptions{
 		Role:          options.Role,
 		Project:       options.Project,
@@ -94,6 +113,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		Spawned:       true,
 	})
 	if registered.Outcome != "ok" {
+		if manager != nil {
+			manager.cleanup(ctx, home, logger)
+		}
 		logSpawn(logger, registered, options, "")
 		return registered
 	}
@@ -116,7 +138,11 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
 	}, herdr.WithLogger(logger))
 	if startErr != nil {
-		return spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr)
+		override := ""
+		if isHerdrCode(startErr, "agent_pane_busy") {
+			override = "first tab busy: stop the agent or pass --pane"
+		}
+		return spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr, override)
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
 	logArgv(logger, record.Key, started.Argv)
@@ -258,13 +284,19 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	return envelope
 }
 
-func choosePane(options SpawnOptions) (string, string) {
+// paneChoice is the pane of one spawn and, for a manager, its workspace.
+type paneChoice struct {
+	PaneID  string
+	Manager *managerChoice
+}
+
+func choosePane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (paneChoice, string) {
 	if options.PaneSet && options.PaneID != "" {
-		return options.PaneID, ""
+		return paneChoice{PaneID: options.PaneID}, ""
 	}
 	switch options.Role {
 	default:
-		return "", "pane required: pass --pane"
+		return paneChoice{}, "pane required: pass --pane"
 	}
 }
 
@@ -288,23 +320,27 @@ func validateExtraArgs(args []string) string {
 	return ""
 }
 
-func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, startErr error) output.Envelope {
+func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, startErr error, override string) output.Envelope {
+	message := startErr.Error()
+	if override != "" {
+		message = override
+	}
 	var serverError *herdr.Error
 	if errors.As(startErr, &serverError) {
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentExited, startErr.Error(), "exited")
+		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentExited, message, "exited")
 		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("failed", "start", effects, startErr.Error(), SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+		envelope := spawnEnvelope("failed", "start", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
 		if updateErr != nil {
-			envelope.Error = startErr.Error() + "; " + updateErr.Error()
+			envelope.Error = message + "; " + updateErr.Error()
 		}
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
-	updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, startErr.Error(), "unresolved")
+	updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
 	effects = appendEffect(effects, effect)
-	envelope := spawnEnvelope("partial", "start", effects, "agent start: "+startErr.Error(), SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+	envelope := spawnEnvelope("partial", "start", effects, "agent start: "+message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
 	if updateErr != nil {
-		envelope.Error = "agent start: " + startErr.Error() + "; " + updateErr.Error()
+		envelope.Error = "agent start: " + message + "; " + updateErr.Error()
 	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope

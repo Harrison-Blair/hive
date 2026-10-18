@@ -18,6 +18,7 @@ func New() *cobra.Command {
 	command.Flags().String("role", "", "agent role")
 	command.Flags().String("harness", "", "harness kind")
 	command.Flags().String("pane", "", "herdr pane ID")
+	command.Flags().String("adopt", "", "adopt an existing workspace")
 	command.Flags().String("model", "", "model name")
 	command.Flags().String("project", "", "project ID")
 	command.Flags().String("task", "", "task ID")
@@ -28,6 +29,7 @@ func New() *cobra.Command {
 		role, _ := cmd.Flags().GetString("role")
 		harness, _ := cmd.Flags().GetString("harness")
 		pane, _ := cmd.Flags().GetString("pane")
+		adopt, _ := cmd.Flags().GetString("adopt")
 		model, _ := cmd.Flags().GetString("model")
 		project, _ := cmd.Flags().GetString("project")
 		task, _ := cmd.Flags().GetString("task")
@@ -45,6 +47,7 @@ func New() *cobra.Command {
 				NameSet:       cmd.Flags().Lookup("name").Changed,
 				PaneID:        pane,
 				PaneSet:       cmd.Flags().Lookup("pane").Changed,
+				Adopt:         adopt,
 				QuietAfterMin: quiet,
 				QuietAfterSet: cmd.Flags().Lookup("quiet-after").Changed,
 				ExtraArgs:     extra,
