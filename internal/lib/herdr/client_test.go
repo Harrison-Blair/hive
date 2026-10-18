@@ -984,3 +984,34 @@ func assertCorrelatedError(t *testing.T, event, request map[string]any, method s
 		}
 	}
 }
+
+func TestResultAssignedOnSuccessfulDecode(t *testing.T) {
+	t.Run("map", func(t *testing.T) {
+		destination := map[string]any{"keep": "before"}
+		if err := callResult(t, `{"keep":"after","count":9}`, &destination); err != nil {
+			t.Fatalf("Call() error = %v", err)
+		}
+		if destination["keep"] != "after" || destination["count"] != float64(9) {
+			t.Fatalf("map = %v, want the decoded result", destination)
+		}
+	})
+	t.Run("slice", func(t *testing.T) {
+		destination := []int{1, 2}
+		if err := callResult(t, `[3,4]`, &destination); err != nil {
+			t.Fatalf("Call() error = %v", err)
+		}
+		if !reflect.DeepEqual(destination, []int{3, 4}) {
+			t.Fatalf("slice = %v, want [3 4]", destination)
+		}
+	})
+	t.Run("nested pointer", func(t *testing.T) {
+		destination := decodeNested{Keep: "before", Child: &decodeChild{Keep: "child-before", Count: 3}}
+		if err := callResult(t, `{"keep":"after","child":{"keep":"child-after","count":4}}`, &destination); err != nil {
+			t.Fatalf("Call() error = %v", err)
+		}
+		want := decodeNested{Keep: "after", Child: &decodeChild{Keep: "child-after", Count: 4}}
+		if !reflect.DeepEqual(destination, want) {
+			t.Fatalf("nested = %+v, want %+v", destination, want)
+		}
+	})
+}
