@@ -532,6 +532,119 @@ func TestExistingInvalidFileLogsNoParsedValues(t *testing.T) {
 	}
 }
 
+func TestExistingMismatchKeepsExactUserTextAndSafeLog(t *testing.T) {
+	home := t.TempDir()
+	memoryDir := filepath.Join(home, "memory")
+	if err := os.MkdirAll(memoryDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	sentinel := "T07FIX02HOMENAME"
+	description := "T07FIX02HOMEDESCRIPTION"
+	body := "T07FIX02HOMEBODY"
+	badPath := filepath.Join(memoryDir, "bad.md")
+	bad := []byte("---\nname: " + sentinel + "\ndescription: " + description + "\n---\n" + body + "\n")
+	if err := writeFileFixture(t, badPath, bad); err != nil {
+		t.Fatal(err)
+	}
+	oldIndex := []byte("old index\n")
+	if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
+		t.Fatal(err)
+	}
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	envelope := Write(home, WriteOptions{
+		Scope:    "home",
+		Name:     "new",
+		Input:    strings.NewReader(memoryContent("new", "New fact.", "New body.")),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	want := "memory file invalid: " + badPath + ": frontmatter: name " + sentinel + " differs from bad"
+	if envelope.Outcome != "failed" || envelope.Phase != "scan" || envelope.Error != want || len(envelope.Effects) != 0 {
+		t.Fatalf("Write() = %#v; want user error %q", envelope, want)
+	}
+	text := log.String()
+	for _, value := range []string{sentinel, description, body} {
+		if strings.Contains(text, value) {
+			t.Fatalf("log = %q; must not contain %q", text, value)
+		}
+	}
+	if !strings.Contains(text, `"error":"memory file invalid: `+badPath+`: frontmatter: name differs"`) {
+		t.Fatalf("log = %q; want safe existing-file error", text)
+	}
+	if strings.Contains(text, `"project_id"`) {
+		t.Fatalf("log = %q; home event must not carry project_id", text)
+	}
+	gotBad, err := os.ReadFile(badPath)
+	if err != nil || !bytes.Equal(gotBad, bad) {
+		t.Fatalf("bad bytes = %q, %v; want original", gotBad, err)
+	}
+	gotIndex, err := os.ReadFile(filepath.Join(memoryDir, "MEMORY.md"))
+	if err != nil || !bytes.Equal(gotIndex, oldIndex) {
+		t.Fatalf("index = %q, %v; want old index", gotIndex, err)
+	}
+	if _, err := os.Stat(filepath.Join(memoryDir, "new.md")); !os.IsNotExist(err) {
+		t.Fatalf("new memory exists after mismatch: stat error = %v", err)
+	}
+}
+
+func TestProjectExistingMismatchKeepsExactUserTextAndSafeLog(t *testing.T) {
+	home := t.TempDir()
+	registerLogProject(t, home, "demo")
+	memoryDir := filepath.Join(home, "projects", "demo", "memory")
+	if err := os.MkdirAll(memoryDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	sentinel := "T07FIX02PROJECTNAME"
+	description := "T07FIX02PROJECTDESCRIPTION"
+	body := "T07FIX02PROJECTBODY"
+	badPath := filepath.Join(memoryDir, "bad.md")
+	bad := []byte("---\nname: " + sentinel + "\ndescription: " + description + "\n---\n" + body + "\n")
+	if err := writeFileFixture(t, badPath, bad); err != nil {
+		t.Fatal(err)
+	}
+	oldIndex := []byte("old project index\n")
+	if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
+		t.Fatal(err)
+	}
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	envelope := Write(home, WriteOptions{
+		Scope:    "project:demo",
+		Name:     "new",
+		Input:    strings.NewReader(memoryContent("new", "New fact.", "New body.")),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	want := "memory file invalid: " + badPath + ": frontmatter: name " + sentinel + " differs from bad"
+	if envelope.Outcome != "failed" || envelope.Phase != "scan" || envelope.Error != want || len(envelope.Effects) != 0 {
+		t.Fatalf("Write() = %#v; want user error %q", envelope, want)
+	}
+	text := log.String()
+	for _, value := range []string{sentinel, description, body} {
+		if strings.Contains(text, value) {
+			t.Fatalf("log = %q; must not contain %q", text, value)
+		}
+	}
+	if !strings.Contains(text, `"error":"memory file invalid: `+badPath+`: frontmatter: name differs"`) {
+		t.Fatalf("log = %q; want safe existing-file error", text)
+	}
+	if !strings.Contains(text, `"project_id":"demo"`) {
+		t.Fatalf("log = %q; want project_id demo", text)
+	}
+	gotBad, err := os.ReadFile(badPath)
+	if err != nil || !bytes.Equal(gotBad, bad) {
+		t.Fatalf("bad bytes = %q, %v; want original", gotBad, err)
+	}
+	gotIndex, err := os.ReadFile(filepath.Join(memoryDir, "MEMORY.md"))
+	if err != nil || !bytes.Equal(gotIndex, oldIndex) {
+		t.Fatalf("index = %q, %v; want old index", gotIndex, err)
+	}
+	if _, err := os.Stat(filepath.Join(memoryDir, "new.md")); !os.IsNotExist(err) {
+		t.Fatalf("new memory exists after mismatch: stat error = %v", err)
+	}
+}
+
 func TestWriteLogsProjectID(t *testing.T) {
 	home := t.TempDir()
 	registerLogProject(t, home, "demo")

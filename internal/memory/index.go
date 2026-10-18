@@ -2,7 +2,6 @@ package memory
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,6 +13,31 @@ const (
 	maxMemoryFileSize = 1 << 20
 	indexName         = "MEMORY.md"
 )
+
+// memoryFileError keeps the path and the cause of one invalid memory file.
+// It returns safe text for logs and exact text for the user.
+type memoryFileError struct {
+	path string
+	err  error
+}
+
+func (e *memoryFileError) Error() string { return e.LogCategory() }
+
+func (e *memoryFileError) Unwrap() error { return e.err }
+
+// UserMessage returns the exact text for command output.
+func (e *memoryFileError) UserMessage() string {
+	return "memory file invalid: " + e.path + ": " + userErrorText(e.err)
+}
+
+// LogCategory returns the safe text for one log event.
+func (e *memoryFileError) LogCategory() string {
+	return "memory file invalid: " + e.path + ": " + logErrorText(e.err)
+}
+
+func invalidMemoryFile(path string, err error) error {
+	return &memoryFileError{path: path, err: err}
+}
 
 type indexEntry struct {
 	Name        string
@@ -64,12 +88,12 @@ func scanMemoryFiles(dir string) ([]indexEntry, error) {
 		path := filepath.Join(dir, name)
 		data, err := readMemoryFile(path)
 		if err != nil {
-			return nil, fmt.Errorf("memory file invalid: %s: %v", path, err)
+			return nil, invalidMemoryFile(path, err)
 		}
 		base := strings.TrimSuffix(name, ".md")
 		values, err := parseMemory(data, base)
 		if err != nil {
-			return nil, fmt.Errorf("memory file invalid: %s: %v", path, err)
+			return nil, invalidMemoryFile(path, err)
 		}
 		found = append(found, indexEntry{Name: base, Description: values["description"]})
 	}
