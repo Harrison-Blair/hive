@@ -12,7 +12,10 @@ type frontmatterError struct {
 	message  string
 }
 
-func (e *frontmatterError) Error() string { return e.message }
+func (e *frontmatterError) Error() string { return e.category }
+
+// UserMessage returns the exact user text for one frontmatter error.
+func (e *frontmatterError) UserMessage() string { return e.message }
 
 // LogCategory returns the safe log text for one frontmatter error.
 func (e *frontmatterError) LogCategory() string { return e.category }

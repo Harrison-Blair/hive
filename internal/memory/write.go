@@ -193,7 +193,7 @@ func failed(phase, message string) output.Envelope {
 
 func failEnvelope(logger *slog.Logger, command, scope, phase string, err error) output.Envelope {
 	logFailure(logger, command, scope, phase, err)
-	return failed(phase, err.Error())
+	return failed(phase, userErrorText(err))
 }
 
 func logEffect(logger *slog.Logger, command, scope string, effect output.Effect) {
@@ -209,8 +209,20 @@ func logEffect(logger *slog.Logger, command, scope string, effect output.Effect)
 	)
 }
 
+type userMessaged interface {
+	UserMessage() string
+}
+
 type logCategorized interface {
 	LogCategory() string
+}
+
+func userErrorText(err error) string {
+	var messaged userMessaged
+	if errors.As(err, &messaged) {
+		return messaged.UserMessage()
+	}
+	return err.Error()
 }
 
 func logErrorText(err error) string {

@@ -86,8 +86,11 @@ func TestParseFrontmatterErrors(t *testing.T) {
 
 func TestParseMemoryNameDiffers(t *testing.T) {
 	_, err := parseMemory([]byte("---\nname: other\ndescription: A fact.\n---\n"), "fact")
-	if err == nil || err.Error() != "frontmatter: name other differs from fact" {
+	if err == nil || userErrorText(err) != "frontmatter: name other differs from fact" {
 		t.Fatalf("parseMemory() error = %v; want name difference", err)
+	}
+	if err == nil || err.Error() != "frontmatter: name differs" {
+		t.Fatalf("parseMemory() log error = %v; want safe category", err)
 	}
 }
 
