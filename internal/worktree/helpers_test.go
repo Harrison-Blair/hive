@@ -87,7 +87,11 @@ type fakeHerdr struct {
 
 func startFakeHerdr(t *testing.T, handler func(fakeRequest) fakeReply) *fakeHerdr {
 	t.Helper()
-	dir := t.TempDir()
+	dir, err := os.MkdirTemp("", "t09sock-")
+	if err != nil {
+		t.Fatalf("temp dir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 	path := filepath.Join(dir, "herdr.sock")
 	listener, err := net.Listen("unix", path)
 	if err != nil {
