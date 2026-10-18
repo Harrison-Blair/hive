@@ -1086,6 +1086,32 @@ status at `2026-10-18T11:57:01Z`. It starts no source and passes no checkpoint.
 - Pending: a fresh independent check of this installed text. The T01 record
   acceptance stays pending. No future source or checkpoint acceptance applies.
 
+### Dated correction receipt: T10 ownership map F01
+
+2026-10-18. This section corrects F01 in the T10 ownership row. It accepts no
+T10 source and passes no checkpoint.
+
+- The independent check `wave3-coordination-docs-verify-01` gives FAIL on F01
+  only. Its last line is `END WAVE3 COORDINATION DOCS VERIFY 01`.
+- F01: the ownership row for T10 replaced two exact process paths with one code
+  span, `internal/lib/process/process.go,process_test.go`. The T10 task names
+  two separate files. The map thus disagreed with the task.
+- This receipt restores the two separate path literals:
+  `internal/lib/process/process.go` and
+  `internal/lib/process/process_test.go`. It also restores the original row
+  title `T10 agent spawn core`.
+- The row keeps the authorized shared path `internal/agent/register.go` and the
+  narrow collision row for that file. No other ownership path or title changes.
+- The T10 task text stays byte-exact with blob
+  `5db0e34783fbfa1f73aca232e7e0f8008dff02fd`. The T01 R01 correction and the
+  T10 field and spawn-intent rules stay exact. Prior accepted source and
+  evidence stay exact.
+- The tracker-only correction is a sole child of
+  `724600534805be112925560932921ddb1e2a1fc2`.
+- T10 stays `blocked` on T09. This pass starts no T10 source. A fresh
+  independent check of the literal map is pending.
+- CP1 stays passed without a rerun. CP2 to CP5 stay open.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -1774,7 +1800,7 @@ edit permission.
 | T07 memory and handoff | `cmd/memory/memory.go`, `cmd/memory/write/write.go`, `cmd/handoff/handoff.go`, `cmd/handoff/write/write.go`, `internal/memory/doc.go`, `internal/memory/write.go`, `internal/memory/index.go`, `internal/memory/frontmatter.go`, `internal/handoff/write.go`, `internal/lib/scope/scope.go`, `internal/lib/scope/input.go` | `cmd/root.go` |
 | T08 TUI log view | `internal/logs/read_clock_test.go`, `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go`, `internal/logs/read.go` |
 | T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
-| T10 agent spawn | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go,process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/agent/register.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
+| T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/agent/register.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
 | T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
 | T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go` |
 | T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
