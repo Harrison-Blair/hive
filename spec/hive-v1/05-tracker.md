@@ -103,7 +103,7 @@ flowchart TD
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | landed | openai-codex/gpt-6.1-sol | 941f144 |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 82f2e30 |
-| [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
+| [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | landed | openai-codex/gpt-6.1-sol | 9a1aa92 |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 3f607ba |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
@@ -1641,6 +1641,39 @@ checkpoint.
 - OpenCode starts a default free model when no credential is present. The V2
   fixture copied a credential, so the actual model equals the request. The
   request is `opencode-go/deepseek-v4.1-flash`.
+- CP3, CP4, and CP5 stay open.
+
+### Dated landing: T14
+
+2026-10-18. This section records the T14 landing. It passes no checkpoint.
+
+- T14 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T14 base tip is `ce4fe00`. The verified T14 tip is `aa329cd`.
+- The T14 merge commit is `9a1aa92`. Its subject is
+  `merge(T14): land the worker spawn`. Its first parent is `ce4fe00`. Its
+  second parent is `aa329cd`. The merge had no conflict.
+- The combined gate ran on the uncommitted T14 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T14 push moved `origin/dev` from `ce4fe00` to `9a1aa92`.
+- The T14 verifier reports are
+  `.hive/tmp/coordinator/reports/t14-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t14-verify-02.md`. Report 01 fails on F01,
+  F02, and F03. Report 02 passes each finding after the `aa329cd` fix.
+- The `spawn.go` dispatch for the worker path is an accepted addition. It
+  adds a task-choice field, one dispatch call, and the worker and verifier
+  role cases. It keeps each pre-existing line.
+- The production prompt observer submits one prompt for a completed turn. The
+  old behavior resubmitted a finished turn. The tests no longer replace the
+  production observer. F01 and F02 close.
+- The topology cleanup guard compares the tab count and the pane count.
+  Cleanup keeps a workspace that gains a user tab. Cleanup closes a workspace
+  that keeps the created topology. F03 closes.
+- V3 uses Pi. The task brief names Claude. The no-pane worktree path gives a
+  Claude child no private configuration, and T13 proved the Claude pane path.
+  The requested model is `opencode-go/deepseek-v4.1-flash:medium`. Pi records
+  `deepseek-v4.1-flash` at level `high`.
 - CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
