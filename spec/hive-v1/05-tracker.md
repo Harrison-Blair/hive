@@ -88,12 +88,12 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | in progress | | |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | in progress | | |
-| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | in progress | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | evidence | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | evidence | | |
+| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | evidence | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | ready | | |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05 | blocked | | |
@@ -430,6 +430,78 @@ report. It changes no task status and no dependency.
   2026-08-20. Do not move a `main` reference to make an old record true.
 - The combined records verdict stays FAIL on B01. The code integration verdict
   is PASS. Keep the two verdicts separate.
+
+### Dated evidence receipt: wave 2 boundary spec
+
+2026-10-18. This section records the wave 2 source reports, two necessary
+contract corrections, and the T22 write-cap fix. It changes only the T22,
+T03, T04, T05, and T07 status.
+
+- T03 source work is complete at
+`638c40e339abb329912d7c09b06d609ddc1c69b3` on `task/T03-task-lifecycle`. The
+local and remote branch agree. The report archive is
+`.hive/tmp/coordinator/reports/t03-impl-01-archive.md`, 8143 bytes, SHA256
+`be567dc7afd8be4cc34a601a6a7fbde01dea1d9baf3c17260ca603f49c828cac`. It ends
+with `END WORKER T03-task-lifecycle t03-impl-01`. `V1.md` to `V4.md` exist on
+the branch. T03 moves from `in progress` to `evidence`.
+- T04 source work is complete at
+`7a6250f3f20d2a4fb497c9aa4540628651cb79ae` on `task/T04-roles-and-inbox`. The
+local and remote branch agree. The report archive is
+`.hive/tmp/coordinator/reports/t04-impl-01-archive.md`, 7428 bytes, SHA256
+`0767d618e1b33b3c399662b72f8ae6ca69c2c12751a8dd0466638feffec73784`. It ends
+with `END WORKER T04-roles-and-inbox t04-impl-01`. `V1.md` to `V4.md` exist on
+the branch. T04 moves from `in progress` to `evidence`.
+- T05 source work is complete at
+`30bd4fc4a5a504ca5ea1a79dc2023202c117ef7e` on
+`task/T05-herdr-client-and-doctor`. The local and remote branch agree. The report
+archive is `.hive/tmp/coordinator/reports/t05-impl-01-archive.md`, 9073 bytes,
+SHA256 `585bd0129b91a8e375920a90fe3f8e04c34f9919892cc45419adeed8a47d6c35`. It
+ends with `END WORKER T05-herdr-client-and-doctor t05-impl-01`. `V1.md` to
+`V6.md` exist on the branch. T05 moves from `in progress` to `evidence`.
+- Each source worker finished and stopped. No independent source review ran for
+T03, T04, or T05. Branch evidence is not a source acceptance.
+- T03 found a store gap. `Create` and `Verify` returned `ok` for two 2 MiB
+fields. The records were 2097510 and 2097511 bytes. `Show` and `List` then
+failed with `record too large`. This is a successful-write and read-limit
+inconsistency. It does not ask for a title limit. A Linux argument limit of
+131072 bytes does not bound the entire encoded record. Multiple escaped fields
+can go above 1 MiB.
+- Necessary correction D1: a task record has an optional `cancel_reason` string
+with `omitempty`. The `cancel --reason` value goes there. An absent or empty
+reason omits the field. The field does not replace `verification`. No other
+schema change occurs. The source chose this field before this text. This is not
+source acceptance.
+- Necessary correction D2: `writeRecordFile` rejects an encoded record above
+1048576 bytes before `atomicWrite` creates or replaces a record. The error is
+`record too large: <path>`, as the reader gives. An encoded record of exactly
+1048576 bytes, with the final newline, is valid. A rejected write keeps the old
+bytes and makes no new record. The legacy, generic, and locked write and update
+paths use the check. The store adds no title limit, no journal, no rollback, no
+public API, and no dependency. A multi-write caller reports its earlier effects.
+The reader and lock contracts do not change.
+- T22 moves from `landed` to `in progress` for this fix. The fix branch is
+`task/T22-write-cap`. The fix worktree is
+`projects/hive/worktrees/T22-write-cap`. It starts from the installed-doc commit
+of this pass. The old values stay: status `landed`, verifier
+`openai-codex/gpt-6.1-sol`, date `2026-10-18`, merge `0d0c9d4e`, first
+verification `0217df27`, branch `task/T22-store-operations`, and archive
+`.hive/tmp/coordinator/archives/T22-0217df27/`. The first landing receipt and
+its attribution stay.
+- T07 moves from `ready` to `blocked` while T22 is in progress. T03, T04, and T05
+cannot land until the T22 store follow-up passes. Their own work is complete.
+- D4 correction: the earlier R02 receipt gave the no-tools model argument as
+`pi openai-codex/gpt-6.1-sol:high`. The coordinator requested
+`pi openai-codex/gpt-6.1-sol:medium` in session 62283. That check gave T22 PASS,
+T06 PASS, and ROOT PASS. The runtime thinking level was not captured
+independently in that no-tools pass. The original report
+`wave2-next-track-01.md` keeps its bytes. Future source verifiers still use
+`:high`.
+- B01 correction: the local `main` and the remote `main` stay different values.
+The local `main` is `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+and the remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The B01
+independent check is still pending. Do not claim equal references.
+- This section removes no earlier source or checkpoint PASS. No other
+prerequisite changes. T08 stays `blocked` on T04.
 
 ### CP1 home live
 
