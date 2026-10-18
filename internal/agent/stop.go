@@ -158,10 +158,40 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		}
 	}
 	logger.Debug("agent stop topology", "command", "agent stop", "agent_id", record.Key, "topology", result.Topology)
+	if record.Role == "manager" && record.Project != "" {
+		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)
+		effects = appendEffect(effects, workspaceEffect)
+		if workspaceErr != nil {
+			envelope := stopEnvelope("partial", "workspace", effects, workspaceErr.Error(), result.Agent)
+			envelope.Result = result
+			logStop(logger, envelope, record.Key)
+			return result, envelope
+		}
+	}
 	envelope := stopEnvelope("ok", "complete", effects, nil, result.Agent)
 	envelope.Result = result
 	logStop(logger, envelope, record.Key)
 	return result, envelope
+}
+
+// recordStoppedWorkspace updates the project record from the post-close
+// topology of one manager stop.
+func recordStoppedWorkspace(home string, record records.Agent, result StopResult) (output.Effect, error) {
+	switch result.Topology {
+	case "closed":
+		if err := clearProjectWorkspace(home, record.Project); err != nil {
+			return output.Effect{}, err
+		}
+		return output.Effect{Resource: "workspace", Path: record.WorkspaceID, Action: "closed"}, nil
+	case "surviving":
+		other := 0
+		if result.Workspace != nil {
+			other = int(result.Workspace.PaneCount)
+		}
+		return output.Effect{Resource: "workspace", Path: record.WorkspaceID, Action: fmt.Sprintf("kept: %d other panes", other)}, nil
+	default:
+		return output.Effect{}, nil
+	}
 }
 
 var errStopIdentityChanged = errors.New("agent stop identity changed")

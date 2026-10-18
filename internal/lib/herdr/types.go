@@ -36,6 +36,7 @@ type PaneInfo struct {
 	Title         string            `json:"title,omitempty"`
 	Cwd           string            `json:"cwd,omitempty"`
 	ForegroundCwd string            `json:"foreground_cwd,omitempty"`
+	RestoreError  *string           `json:"restore_error,omitempty"`
 	StateLabels   map[string]string `json:"state_labels,omitempty"`
 	Tokens        map[string]string `json:"tokens,omitempty"`
 	AgentSession  *AgentSessionInfo `json:"agent_session,omitempty"`

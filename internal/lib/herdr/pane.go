@@ -44,6 +44,7 @@ type paneInfoWire struct {
 	Title         *string           `json:"title"`
 	Cwd           *string           `json:"cwd"`
 	ForegroundCwd *string           `json:"foreground_cwd"`
+	RestoreError  *string           `json:"restore_error"`
 	StateLabels   map[string]string `json:"state_labels"`
 	Tokens        map[string]string `json:"tokens"`
 	AgentSession  json.RawMessage   `json:"agent_session"`
@@ -66,6 +67,39 @@ func PaneGet(ctx context.Context, paneID string, opts ...Option) (PaneInfo, erro
 		return PaneInfo{}, fmt.Errorf("bad reply: %s", err)
 	}
 	return pane, nil
+}
+
+// PaneList lists each pane in one workspace.
+func PaneList(ctx context.Context, workspaceID string, opts ...Option) ([]PaneInfo, error) {
+	var result struct {
+		Type  *string         `json:"type"`
+		Panes json.RawMessage `json:"panes"`
+	}
+	params := struct {
+		WorkspaceID string `json:"workspace_id,omitempty"`
+	}{WorkspaceID: workspaceID}
+	if err := Call(ctx, "pane.list", params, &result, opts...); err != nil {
+		return nil, err
+	}
+	if result.Type == nil || *result.Type != "pane_list" {
+		return nil, fmt.Errorf("bad reply: result type %q, want pane_list", stringValue(result.Type))
+	}
+	if isAbsentOrNull(result.Panes) {
+		return nil, fmt.Errorf("bad reply: pane_list panes is missing")
+	}
+	var items []json.RawMessage
+	if err := json.Unmarshal(result.Panes, &items); err != nil {
+		return nil, fmt.Errorf("bad reply: pane_list panes: %s", err)
+	}
+	panes := make([]PaneInfo, 0, len(items))
+	for index, item := range items {
+		pane, err := decodePaneInfo(item)
+		if err != nil {
+			return nil, fmt.Errorf("bad reply: panes[%d]: %s", index, err)
+		}
+		panes = append(panes, pane)
+	}
+	return panes, nil
 }
 
 // PaneClose closes one pane.
@@ -166,6 +200,7 @@ func decodePaneInfo(raw json.RawMessage) (PaneInfo, error) {
 	if wire.ForegroundCwd != nil {
 		info.ForegroundCwd = *wire.ForegroundCwd
 	}
+	info.RestoreError = wire.RestoreError
 	return info, nil
 }
 
