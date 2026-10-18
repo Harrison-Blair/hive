@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -286,6 +287,149 @@ func TestHeaderPersistentErrorDoesNotLogEachTick(t *testing.T) {
 				quitMessage(t, cmd)
 			}
 		})
+	}
+}
+
+func TestRunHomeFiniteFDPipeStops(t *testing.T) {
+	home := newTestHome(t)
+	readEnd, writeEnd, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := writeEnd.Close(); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = readEnd.Close() }()
+	done := make(chan error, 1)
+	go func() { done <- RunHome(home, readEnd, io.Discard) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("RunHome on a finite pipe: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("RunHome did not stop on a finite pipe EOF")
+	}
+}
+
+func TestRunHomeFiniteFDFileStops(t *testing.T) {
+	home := newTestHome(t)
+	file, err := os.CreateTemp(t.TempDir(), "stdin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = file.Close() }()
+	done := make(chan error, 1)
+	go func() { done <- RunHome(home, file, io.Discard) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("RunHome on a finite regular file: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("RunHome did not stop on a finite regular file EOF")
+	}
+}
+
+func TestActionLogRefusalShowsError(t *testing.T) {
+	cases := []struct {
+		name        string
+		obstruction string
+		rotation    bool
+		want        string
+	}{
+		{"first-open/daily-link", "daily-link", false, "not a regular file"},
+		{"first-open/daily-fifo", "daily-fifo", false, "not a regular file"},
+		{"first-open/linked-log-dir", "linked-log-dir", false, "not a native directory"},
+		{"rotation/daily-link", "daily-link", true, "not a regular file"},
+		{"rotation/daily-fifo", "daily-fifo", true, "not a regular file"},
+		{"rotation/linked-log-dir", "linked-log-dir", true, "not a native directory"},
+	}
+	for _, item := range cases {
+		t.Run(item.name, func(t *testing.T) {
+			home := newTestHome(t)
+			day := time.Date(2043, 7, 9, 12, 0, 0, 0, time.Local)
+			clock := fixedClock(t, day)
+			if item.rotation {
+				writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "retained old line"))
+			}
+			m := newTestModel(t, home, clock)
+			if item.rotation {
+				m, _ = raise(t, m, key('l', "l"))
+				clock.set(day.AddDate(0, 0, 1))
+			}
+			external := t.TempDir()
+			sentinel := filepath.Join(external, "sentinel")
+			original := []byte("owned sentinel must stay exact\n")
+			if err := os.WriteFile(sentinel, original, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			path := dailyPath(home, clock.now())
+			switch item.obstruction {
+			case "daily-link":
+				if err := os.Symlink(sentinel, path); err != nil {
+					t.Fatal(err)
+				}
+			case "daily-fifo":
+				if err := exec.Command("mkfifo", path).Run(); err != nil {
+					t.Skipf("mkfifo is not available: %v", err)
+				}
+			case "linked-log-dir":
+				dir := filepath.Join(home, ".hive", "logs")
+				if err := os.Rename(dir, dir+"-owned-prior"); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(external, dir); err != nil {
+					t.Fatal(err)
+				}
+			}
+			start := time.Now()
+			m, _ = raise(t, m, key('l', "l"))
+			if elapsed := time.Since(start); elapsed > 2*time.Second {
+				t.Fatalf("the action blocked for %v on a static obstruction", elapsed)
+			}
+			requireView(t, m, "error:", item.want)
+			rejectView(t, m, "no events today")
+			data, err := os.ReadFile(sentinel)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(data, original) {
+				t.Fatalf("the external target changed from %d to %d bytes", len(original), len(data))
+			}
+			entries, err := os.ReadDir(external)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(entries) != 1 {
+				t.Fatalf("the external directory changed to %d entries", len(entries))
+			}
+		})
+	}
+}
+
+func TestHealthyActionLogIsWrittenOnce(t *testing.T) {
+	home := newTestHome(t)
+	day := time.Date(2043, 7, 10, 12, 0, 0, 0, time.Local)
+	clock := fixedClock(t, day)
+	m := newTestModel(t, home, clock)
+	before := countLogLines(t, home)
+	m, _ = raise(t, m, key('l', "l"))
+	after := countLogLines(t, home)
+	if after != before+1 {
+		t.Fatalf("healthy action log lines went from %d to %d; want one event", before, after)
+	}
+	data, err := os.ReadFile(dailyPath(home, day))
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	var event map[string]any
+	if err := json.Unmarshal([]byte(lines[len(lines)-1]), &event); err != nil {
+		t.Fatal(err)
+	}
+	if event["msg"] != "tui action" || event["action"] != "level" || event["component"] != "tui" {
+		t.Fatalf("healthy action event fields = %v", event)
 	}
 }
 
