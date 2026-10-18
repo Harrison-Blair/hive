@@ -68,3 +68,28 @@ func TestPersonalPathsAreIgnored(t *testing.T) {
 		}
 	}
 }
+
+// TestSourcePathsUnderIgnoredNames checks that the ignore rules for the home
+// directories match only at the root of the home. A source package that has
+// the name of one of them, such as cmd/memory, must stay tracked.
+func TestSourcePathsUnderIgnoredNames(t *testing.T) {
+	skipWithoutGit(t)
+	for _, path := range []string{
+		"cmd/memory/memory.go",
+		"internal/memory/memory.go",
+		"cmd/plans/x.go",
+		"internal/overrides/x.go",
+		"internal/projects/x.go",
+	} {
+		// check-ignore exits 1 when the path is not ignored and 0 when it is.
+		err := exec.Command("git", "check-ignore", "-q", path).Run()
+		if err == nil {
+			t.Errorf("git ignores %s; anchor the rule for its directory name to the root", path)
+			continue
+		}
+		var exit *exec.ExitError
+		if !errors.As(err, &exit) || exit.ExitCode() != 1 {
+			t.Errorf("git check-ignore %s: %v", path, err)
+		}
+	}
+}
