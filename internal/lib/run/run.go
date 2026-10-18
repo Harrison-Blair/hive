@@ -66,20 +66,25 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	stdoutRead, stdoutWrite, err := os.Pipe()
 	if err != nil {
-		return nil, diagnostic("run", name, err)
+		runErr := diagnostic("run", name, err)
+		logProcessEnd(logger, command, -1, started, runErr)
+		return nil, runErr
 	}
 	stderrRead, stderrWrite, err := os.Pipe()
 	if err != nil {
 		closeAll(stdoutRead, stdoutWrite)
-		return nil, diagnostic("run", name, err)
+		runErr := diagnostic("run", name, err)
+		logProcessEnd(logger, command, -1, started, runErr)
+		return nil, runErr
 	}
 	cmd.Stdout = stdoutWrite
 	cmd.Stderr = stderrWrite
 
 	if err := cmd.Start(); err != nil {
 		closeAll(stdoutRead, stdoutWrite, stderrRead, stderrWrite)
-		logProcessEnd(logger, command, -1, started, err)
-		return nil, diagnostic("start", name, err)
+		runErr := diagnostic("start", name, err)
+		logProcessEnd(logger, command, -1, started, runErr)
+		return nil, runErr
 	}
 	_ = stdoutWrite.Close()
 	_ = stderrWrite.Close()
@@ -131,8 +136,9 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	if waitErr != nil {
 		var exitError *exec.ExitError
 		if !errors.As(waitErr, &exitError) {
-			logProcessEnd(logger, command, -1, started, waitErr)
-			return nil, diagnostic("wait", name, waitErr)
+			runErr := diagnostic("wait", name, waitErr)
+			logProcessEnd(logger, command, -1, started, runErr)
+			return nil, runErr
 		}
 		exitCode = exitError.ExitCode()
 	}
