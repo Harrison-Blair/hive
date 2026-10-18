@@ -35,7 +35,15 @@ type Verification struct {
 }
 
 // Worktree holds the worktree fields of a task. T09 fills them.
-type Worktree struct{}
+type Worktree struct {
+	WorkspaceID string `json:"workspace_id"`
+	TabID       string `json:"tab_id"`
+	RootPane    string `json:"root_pane"`
+	Path        string `json:"path"`
+	Branch      string `json:"branch"`
+	CreatedAt   string `json:"created_at"`
+	RemovedAt   string `json:"removed_at"`
+}
 
 // Delivery holds the delivery fields of a task. T12 fills them.
 type Delivery struct{}

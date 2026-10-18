@@ -52,15 +52,15 @@ type TabInfo struct {
 
 // WorkspaceInfo is the top-level container that holds tabs.
 type WorkspaceInfo struct {
-	WorkspaceID string        `json:"workspace_id"`
-	Number      uint          `json:"number"`
-	Label       string        `json:"label"`
-	Focused     bool          `json:"focused"`
-	PaneCount   uint          `json:"pane_count"`
-	TabCount    uint          `json:"tab_count"`
-	ActiveTabID string        `json:"active_tab_id"`
-	AgentStatus string        `json:"agent_status"`
-	Worktree    *WorktreeInfo `json:"worktree,omitempty"`
+	WorkspaceID string                 `json:"workspace_id"`
+	Number      uint                   `json:"number"`
+	Label       string                 `json:"label"`
+	Focused     bool                   `json:"focused"`
+	PaneCount   uint                   `json:"pane_count"`
+	TabCount    uint                   `json:"tab_count"`
+	ActiveTabID string                 `json:"active_tab_id"`
+	AgentStatus string                 `json:"agent_status"`
+	Worktree    *WorkspaceWorktreeInfo `json:"worktree,omitempty"`
 }
 
 // WorktreeInfo is a Git worktree that herdr knows.
