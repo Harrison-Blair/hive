@@ -3,52 +3,57 @@
 | Item | Value |
 | --- | --- |
 | Task | T10-agent-spawn-core |
-| Pass | `t10-verify-02` |
+| Pass | `t10-verify-03` |
 | Date | 2026-10-18 |
-| Entry | `892d643889d303db064afc21e01df2a018805589` |
-| Final Go source | `d55e9de6ec441313884f29e80188f5fd96cb22a4` |
+| Entry | `4227c9583b799111b6402d36b6a550126ad88184` |
+| Final Go source | `0eacb8532bc552d650c50aa9dae396bdd11ab43e` |
 | Task blob | `5db0e34783fbfa1f73aca232e7e0f8008dff02fd` |
 | Agent | verifier, Pi, `openai-codex/gpt-6.1-sol:high` |
 | Verdict | **FAIL** |
 
 The current source fails independent verification on `T10-O-F02`.
 The other five findings are CLOSED.
-The full current finding results and runs are in [FIX01-VERIFIED.md](FIX01-VERIFIED.md).
+The full current finding results and runs are in [FIX02-VERIFIED.md](FIX02-VERIFIED.md).
+FIX01-VERIFIED remains exact historical evidence.
 No source fix occurred in this verifier pass.
 
 | Item | Proves | Result | Remark |
 | --- | --- | --- | --- |
 | V1 | AC1 | PASS | Profile suite and independent literal checks |
-| V2 | AC2 | FAIL | Later missing sessions pass, and partial paths lose the earliest session |
+| V2 | AC2 | FAIL | Start-session durability, lost pane topology, and false absence after wait timeout |
 | V3 | AC3, AC4 | PASS | Production send/stop, real store, identity changes, and CLI checks |
 | V4 | AC2, AC3, AC4 native flow | PASS, product smoke only | Fresh final-Go Claude spawn, prompt, and stop |
 | V5 | AC5 | PASS | One full actual-worktree gate |
 
 ## Current open finding
 
-`T10-O-F02` requires ordered first-session persistence and comparison.
-Production spawn returns `ok/live` when a later absent session has another matching source.
-Some unresolved partial paths also lose the earliest observed session reference.
-The independent matrix records nine assertion failures with the known started-agent effect intact.
-Controls pass for optional absence before the first present session.
+The exact nine formerly failing endpoint session cases now pass.
+The earliest session survives in each final record and result. No close occurs.
+The retained v02 matrix and all 16 FIX02 cases pass.
 
-Recommendation: persist the first present reference before the next external read.
-Check each later observation, including absence after that first reference.
-Keep the earliest reference and known effects on partial outcomes.
+Required independent literal checks still fail:
+- A first start reference is not durable before the next pane read.
+- Two session-failure paths lose successful pane topology.
+- A wait timeout falsely becomes an absent-session observation despite independent matching identity evidence.
+
+Recommendation: persist the first reference before the next external read.
+Keep successful pane topology on a session partial path.
+Observe session absence only after a successful typed reply.
 A source fix and fresh independent verification remain uncompleted.
 
 ## Records and limits
 
-Report: `.hive/tmp/coordinator/reports/t10-verify-02.md`.
-Captures: `.hive/tmp/coordinator/reports/t10-verify-02-captures/`.
+Report: `.hive/tmp/coordinator/reports/t10-verify-03.md`.
+Captures: `.hive/tmp/coordinator/reports/t10-verify-03-captures/`.
 The prior verdict exact bytes remain in `VERIFIED-old.md` in those captures.
-Prior verdict SHA256: `fe4c4cea543bad41def8483502e2e3de1a921545177875a06a46fad59416952b`.
-The original four reports and all old captures remain unchanged.
+Prior verdict SHA256: `9b21c4417946daeea76f2b1abd48f36f95babab5decddb42818b214c58b18900`.
+All prior reports and captures remain unchanged.
 The complete fix-worker report and supplied completion attestation establish an ended worker, not source acceptance.
 No live secondary completion barrier remains.
 
-The exact fix pre-fix replay fails assertions for the five behavior findings.
-The inherited final tests pass. Five current mutations fail assertions and pass after exact restoration.
+The exact FIX02 pre-fix replay fails assertions in the nine formerly open cases.
+The inherited final tests pass. Two current session mutations fail assertions and pass after exact restoration.
+The accepted FIX01 replay and prior mutations received an artifact audit only.
 The fresh native child uses installed Claude Code `2.1.302` and `claude-haiku-5-5` for a product smoke only.
 The separate pane read shows a distinct `● pong` reply.
 Both owned child PIDs and tabs are absent. The source pane retains its original shell.
@@ -63,4 +68,4 @@ The local-user/cooperating-writer boundary applies.
 Hostile file replacement between `Lstat` and `Open` stays deferred for T01.
 No Root landing, main change, worktree removal, CP2 PASS, or CP4 PASS follows from this verdict.
 
-END T10 VERIFY 02
+END T10 VERIFY 03
