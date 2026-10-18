@@ -1297,6 +1297,39 @@ passes no checkpoint, and starts no T10 source.
 - Pending: the independent records check of this correction. The independent
   source PASS and the T10 preparation PASS remain the accepted source facts.
 
+### Dated follow-up receipt: T08 viewing Escape fix
+
+2026-10-18. This section records the T08 viewing-Escape landing. It changes no
+other task status and no checkpoint.
+
+- The user set task verification now and a broader review later. Opus5.5
+  verified this Escape fix through Claude Code with
+  `--dangerously-skip-permissions`. The implementation used PiFlash. PiSol
+  checks stay in use.
+- The verifier `t08-escape-verify-01` gives PASS for the narrow fix at
+  `25f20261`. Its report is
+  `.hive/tmp/coordinator/reports/t08-escape-verify-01.md` in the source
+  worktree. The tracked verdict is `ESCAPE-VERIFIED.md`.
+- This receipt replaces the older rule that all source checks use Pi only
+  where the current user instruction applies.
+- The accepted tip is `d087123c`. The merge is `1dea4c56` with subject
+  `merge(T08): land viewing Escape fix`. Its parents are `b4ab63ca` and
+  `d087123c`. The push moved `origin/dev` from `b4ab63ca` to `1dea4c56`
+  without force.
+- T08 stays landed. The T08 row keeps its original attribution and history.
+  This receipt cites the follow-up verifier separately.
+- The full gate passed at the merged tree. The archive is
+  `.hive/tmp/coordinator/archives/T08-escape-d087123c/`. The source worktree is
+  gone. The task branch stays at `d087123c` on the local, tracking, and direct
+  remote references.
+- CP4 stays open. The actual-home replay and the independent CP4 acceptance
+  stay pending. The combined Root integration acceptance stays pending a fresh
+  checker.
+- T10 stays `in progress`. CP2 stays open. The graph and each earlier receipt
+  stay unchanged.
+- The H04 historical missing-data record stays. This landing does not restore
+  it.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
