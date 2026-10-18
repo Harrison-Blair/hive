@@ -2,6 +2,7 @@ package memory
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
@@ -12,6 +13,8 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	storelib "github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func TestNewMemoryWritesFileAndIndex(t *testing.T) {
@@ -403,6 +406,207 @@ func TestWriteLogsEffectsWithoutContent(t *testing.T) {
 	}
 	if strings.Contains(text, "Secret") {
 		t.Fatalf("log = %q; must not contain memory content", text)
+	}
+}
+
+func TestInvalidSeparatorStdinStopsWrite(t *testing.T) {
+	cases := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"missing name", "---\nname:fact\ndescription: D.\n---\nBody.\n", "frontmatter: missing name"},
+		{"missing description", "---\nname: fact\ndescription:D.\n---\nBody.\n", "frontmatter: missing description"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			home := t.TempDir()
+			memoryDir := filepath.Join(home, "memory")
+			if err := os.MkdirAll(memoryDir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			oldIndex := []byte("old index\n")
+			if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
+				t.Fatal(err)
+			}
+			envelope := writeTestMemory(t, home, "fact", tc.input)
+			if envelope.Outcome != "failed" || envelope.Phase != "frontmatter" || envelope.Error != tc.want {
+				t.Fatalf("Write() = %#v; want %q", envelope, tc.want)
+			}
+			if _, err := os.Stat(filepath.Join(memoryDir, "fact.md")); !os.IsNotExist(err) {
+				t.Fatalf("fact exists after invalid separator: stat error = %v", err)
+			}
+			gotIndex, err := os.ReadFile(filepath.Join(memoryDir, "MEMORY.md"))
+			if err != nil || !bytes.Equal(gotIndex, oldIndex) {
+				t.Fatalf("index = %q, %v; want old index", gotIndex, err)
+			}
+		})
+	}
+}
+
+func TestExistingInvalidSeparatorStopsWrite(t *testing.T) {
+	home := t.TempDir()
+	memoryDir := filepath.Join(home, "memory")
+	if err := os.MkdirAll(memoryDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	badPath := filepath.Join(memoryDir, "bad.md")
+	if err := writeFileFixture(t, badPath, []byte("---\nname:bad\ndescription:D.\n---\nBad body.\n")); err != nil {
+		t.Fatal(err)
+	}
+	oldIndex := []byte("old index\n")
+	if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
+		t.Fatal(err)
+	}
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	want := "memory file invalid: " + badPath + ": frontmatter: missing name"
+	if envelope.Outcome != "failed" || envelope.Phase != "scan" || envelope.Error != want {
+		t.Fatalf("Write() = %#v; want %q", envelope, want)
+	}
+	if _, err := os.Stat(filepath.Join(memoryDir, "new.md")); !os.IsNotExist(err) {
+		t.Fatalf("new memory exists after invalid existing file: stat error = %v", err)
+	}
+	gotIndex, err := os.ReadFile(filepath.Join(memoryDir, "MEMORY.md"))
+	if err != nil || !bytes.Equal(gotIndex, oldIndex) {
+		t.Fatalf("index = %q, %v; want old index", gotIndex, err)
+	}
+}
+
+func TestWriteLogsSafeFrontmatterCategory(t *testing.T) {
+	home := t.TempDir()
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	sentinel := "T07FIX01SYNTHETICNAME"
+	bodySentinel := "T07FIX01SYNTHETICBODY"
+	input := memoryContent(sentinel, "Description.", bodySentinel)
+	envelope := Write(home, WriteOptions{
+		Scope:    "home",
+		Name:     "fact",
+		Input:    strings.NewReader(input),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	want := "frontmatter: name " + sentinel + " differs from fact"
+	if envelope.Outcome != "failed" || envelope.Phase != "frontmatter" || envelope.Error != want {
+		t.Fatalf("Write() = %#v; want user error %q", envelope, want)
+	}
+	text := log.String()
+	if strings.Contains(text, sentinel) || strings.Contains(text, bodySentinel) {
+		t.Fatalf("log = %q; must not contain parsed values or content", text)
+	}
+	if !strings.Contains(text, `"msg":"error"`) || !strings.Contains(text, `"phase":"frontmatter"`) || !strings.Contains(text, `"error":"frontmatter: name differs"`) {
+		t.Fatalf("log = %q; want safe frontmatter error event", text)
+	}
+}
+
+func TestExistingInvalidFileLogsNoParsedValues(t *testing.T) {
+	home := t.TempDir()
+	memoryDir := filepath.Join(home, "memory")
+	if err := os.MkdirAll(memoryDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	sentinel := "T07FIX01EXISTINGSYNTHETICNAME"
+	bodySentinel := "T07FIX01EXISTINGSYNTHETICBODY"
+	badPath := filepath.Join(memoryDir, "bad.md")
+	if err := writeFileFixture(t, badPath, []byte("---\nname: "+sentinel+"\ndescription: D.\n---\n"+bodySentinel+"\n")); err != nil {
+		t.Fatal(err)
+	}
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	envelope := Write(home, WriteOptions{
+		Scope:    "home",
+		Name:     "new",
+		Input:    strings.NewReader(memoryContent("new", "New fact.", "New body.")),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	if envelope.Outcome != "failed" || envelope.Phase != "scan" || !strings.HasPrefix(envelope.Error.(string), "memory file invalid: "+badPath+": ") {
+		t.Fatalf("Write() = %#v; want memory file invalid", envelope)
+	}
+	text := log.String()
+	if strings.Contains(text, sentinel) || strings.Contains(text, bodySentinel) {
+		t.Fatalf("log = %q; must not contain parsed values or content", text)
+	}
+	if !strings.Contains(text, `"msg":"error"`) || !strings.Contains(text, `"phase":"scan"`) || !strings.Contains(text, "memory file invalid: ") {
+		t.Fatalf("log = %q; want safe memory file error event", text)
+	}
+}
+
+func TestWriteLogsProjectID(t *testing.T) {
+	home := t.TempDir()
+	registerLogProject(t, home, "demo")
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	envelope := Write(home, WriteOptions{
+		Scope:    "project:demo",
+		Name:     "fact",
+		Input:    strings.NewReader(memoryContent("fact", "A fact.", "Body.")),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Write() = %#v; want success", envelope)
+	}
+	failure := Write(home, WriteOptions{
+		Scope:    "project:demo",
+		Name:     "other",
+		Input:    strings.NewReader("---\nname: other\n---\n"),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	if failure.Outcome != "failed" || failure.Phase != "frontmatter" {
+		t.Fatalf("Write() = %#v; want frontmatter failure", failure)
+	}
+	partial := Write(home, WriteOptions{
+		Scope:      "project:demo",
+		Name:       "third",
+		Input:      strings.NewReader(memoryContent("third", "Third fact.", "Body.")),
+		Deadline:   time.Second,
+		Logger:     logger,
+		IndexWrite: func(string, []byte) error { return errors.New("injected index failure") },
+	})
+	if partial.Outcome != "partial" || partial.Phase != "index" {
+		t.Fatalf("Write() = %#v; want partial index", partial)
+	}
+	projectEvents := 0
+	for _, event := range logEvents(t, log.String()) {
+		if event["scope"] != "project:demo" {
+			continue
+		}
+		projectEvents++
+		if event["project_id"] != "demo" {
+			t.Fatalf("event = %#v; want project_id demo", event)
+		}
+	}
+	if projectEvents < 4 {
+		t.Fatalf("project events = %d; want memory, index, frontmatter, and index error events", projectEvents)
+	}
+}
+
+func logEvents(t *testing.T, text string) []map[string]string {
+	t.Helper()
+	events := []map[string]string{}
+	for _, line := range strings.Split(strings.TrimSpace(text), "\n") {
+		if line == "" {
+			continue
+		}
+		var event map[string]string
+		if err := json.Unmarshal([]byte(line), &event); err != nil {
+			t.Fatalf("log line = %q: %v", line, err)
+		}
+		events = append(events, event)
+	}
+	return events
+}
+
+func registerLogProject(t *testing.T, home, id string) {
+	t.Helper()
+	registry, err := storelib.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.Write("projects", id, records.Project{ID: id, Path: home, Base: "dev"}); err != nil {
+		t.Fatal(err)
 	}
 }
 

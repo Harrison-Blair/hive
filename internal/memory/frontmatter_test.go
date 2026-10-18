@@ -29,6 +29,36 @@ func TestParseFrontmatterKeepsColonInValue(t *testing.T) {
 	}
 }
 
+func TestParseFrontmatterRequiresColonSpace(t *testing.T) {
+	cases := []struct {
+		name string
+		data string
+		want string
+	}{
+		{"missing name", "---\nname:fact\ndescription: D.\n---\n", "frontmatter: missing name"},
+		{"missing description", "---\nname: fact\ndescription:D.\n---\n", "frontmatter: missing description"},
+		{"both", "---\nname:fact\ndescription:D.\n---\n", "frontmatter: missing name"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := parseFrontmatter([]byte(tc.data))
+			if err == nil || err.Error() != tc.want {
+				t.Fatalf("parseFrontmatter() error = %v; want %q", err, tc.want)
+			}
+		})
+	}
+}
+
+func TestParseFrontmatterTrimsAfterColonSpace(t *testing.T) {
+	values, err := parseFrontmatter([]byte("---\nname:  fact  \ndescription: \t A fact. \t\nextra: ignored\n---\n"))
+	if err != nil {
+		t.Fatalf("parseFrontmatter() error = %v; want success", err)
+	}
+	if values["name"] != "fact" || values["description"] != "A fact." {
+		t.Fatalf("values = %#v; want trimmed values", values)
+	}
+}
+
 func TestParseFrontmatterErrors(t *testing.T) {
 	cases := []struct {
 		name string

@@ -45,6 +45,7 @@ func Write(home string, options WriteOptions) output.Envelope {
 	if err != nil {
 		return failEnvelope(options.Logger, "memory write", options.Scope, "scope", err)
 	}
+	options.Logger = logWithProject(options.Logger, resolved.ProjectID)
 	if !memoryNamePattern.MatchString(options.Name) {
 		return failEnvelope(options.Logger, "memory write", options.Scope, "validate", fmt.Errorf("invalid memory name: %s", displayValue(options.Name)))
 	}
@@ -208,6 +209,25 @@ func logEffect(logger *slog.Logger, command, scope string, effect output.Effect)
 	)
 }
 
+type logCategorized interface {
+	LogCategory() string
+}
+
+func logErrorText(err error) string {
+	var categorized logCategorized
+	if errors.As(err, &categorized) {
+		return categorized.LogCategory()
+	}
+	return displayValue(err.Error())
+}
+
+func logWithProject(logger *slog.Logger, projectID string) *slog.Logger {
+	if logger == nil || projectID == "" {
+		return logger
+	}
+	return logger.With("project_id", projectID)
+}
+
 func logFailure(logger *slog.Logger, command, scope, phase string, err error) {
 	if logger == nil {
 		return
@@ -216,6 +236,6 @@ func logFailure(logger *slog.Logger, command, scope, phase string, err error) {
 		"command", command,
 		"scope", scope,
 		"phase", phase,
-		"error", displayValue(err.Error()),
+		"error", logErrorText(err),
 	)
 }

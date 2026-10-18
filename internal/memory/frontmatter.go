@@ -1,14 +1,23 @@
 package memory
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
 
-var errNoFrontmatter = errors.New("frontmatter: no block")
+type frontmatterError struct {
+	category string
+	message  string
+}
+
+func (e *frontmatterError) Error() string { return e.message }
+
+// LogCategory returns the safe log text for one frontmatter error.
+func (e *frontmatterError) LogCategory() string { return e.category }
+
+var errNoFrontmatter = &frontmatterError{category: "frontmatter: no block", message: "frontmatter: no block"}
 
 // parseFrontmatter parses one memory frontmatter block.
 func parseFrontmatter(data []byte) (map[string]string, error) {
@@ -39,11 +48,11 @@ func parseFrontmatter(data []byte) (map[string]string, error) {
 	for _, key := range []string{"name", "description"} {
 		switch {
 		case counts[key] == 0:
-			return nil, fmt.Errorf("frontmatter: missing %s", key)
+			return nil, newFrontmatterError("frontmatter: missing "+key, "frontmatter: missing "+key)
 		case counts[key] > 1:
-			return nil, fmt.Errorf("frontmatter: duplicate %s", key)
+			return nil, newFrontmatterError("frontmatter: duplicate "+key, "frontmatter: duplicate "+key)
 		case values[key] == "":
-			return nil, fmt.Errorf("frontmatter: empty %s", key)
+			return nil, newFrontmatterError("frontmatter: empty "+key, "frontmatter: empty "+key)
 		}
 	}
 	return values, nil
@@ -56,16 +65,18 @@ func parseMemory(data []byte, name string) (map[string]string, error) {
 		return nil, err
 	}
 	if values["name"] != name {
-		return nil, fmt.Errorf("frontmatter: name %s differs from %s", displayValue(values["name"]), displayValue(name))
+		message := fmt.Sprintf("frontmatter: name %s differs from %s", displayValue(values["name"]), displayValue(name))
+		return nil, newFrontmatterError("frontmatter: name differs", message)
 	}
 	return values, nil
 }
 
+func newFrontmatterError(category, message string) error {
+	return &frontmatterError{category: category, message: message}
+}
+
 func splitFrontmatterLine(line string) (string, string, bool) {
 	key, value, ok := strings.Cut(line, ": ")
-	if !ok {
-		key, value, ok = strings.Cut(line, ":")
-	}
 	if !ok {
 		return "", "", false
 	}

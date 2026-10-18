@@ -20,8 +20,9 @@ const (
 
 // Scope is one resolved memory or handoff location.
 type Scope struct {
-	Value string
-	Dir   string
+	Value     string
+	ProjectID string
+	Dir       string
 }
 
 // DefaultDeadline is the stdin read deadline for the memory and handoff commands.
@@ -57,7 +58,7 @@ func Resolve(home, value string) (Scope, error) {
 	if err := CheckDir(home, dir); err != nil {
 		return Scope{}, err
 	}
-	return Scope{Value: value, Dir: dir}, nil
+	return Scope{Value: value, ProjectID: id, Dir: dir}, nil
 }
 
 // CheckDir checks one directory path in the home.

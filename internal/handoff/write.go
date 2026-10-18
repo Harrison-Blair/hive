@@ -31,6 +31,7 @@ func Write(home string, options WriteOptions) output.Envelope {
 	if err != nil {
 		return failEnvelope(options.Logger, options.Scope, "scope", err)
 	}
+	options.Logger = logWithProject(options.Logger, resolved.ProjectID)
 	content, err := scopelib.ReadInput(options.Input, 1<<20, options.Deadline)
 	if err != nil {
 		return failEnvelope(options.Logger, options.Scope, "input", err)
@@ -103,6 +104,13 @@ func logEffect(logger *slog.Logger, scope string, effect output.Effect) {
 		"path", effect.Path,
 		"action", effect.Action,
 	)
+}
+
+func logWithProject(logger *slog.Logger, projectID string) *slog.Logger {
+	if logger == nil || projectID == "" {
+		return logger
+	}
+	return logger.With("project_id", projectID)
 }
 
 func logFailure(logger *slog.Logger, scope, phase, message string) {

@@ -2,7 +2,9 @@ package handoff
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +12,8 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	storelib "github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func TestHandoffWriteCreatesAndReplaces(t *testing.T) {
@@ -193,6 +197,69 @@ type unexpectedContent struct {
 
 func (e *unexpectedContent) Error() string {
 	return "partial handoff content: " + e.got
+}
+
+func TestHandoffLogsProjectID(t *testing.T) {
+	home := t.TempDir()
+	registry, err := storelib.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.Write("projects", "demo", records.Project{ID: "demo", Path: home, Base: "dev"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(home, "projects", "demo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	var log bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	success := Write(home, WriteOptions{
+		Scope:    "project:demo",
+		Input:    strings.NewReader("Project handoff.\n"),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	if success.Outcome != "ok" {
+		t.Fatalf("Write() = %#v; want success", success)
+	}
+	failure := Write(home, WriteOptions{
+		Scope:    "project:demo",
+		Input:    strings.NewReader(""),
+		Deadline: time.Second,
+		Logger:   logger,
+	})
+	if failure.Outcome != "failed" || failure.Phase != "input" {
+		t.Fatalf("Write() = %#v; want input failure", failure)
+	}
+	projectEvents := 0
+	for _, event := range handoffLogEvents(t, log.String()) {
+		if event["scope"] != "project:demo" {
+			continue
+		}
+		projectEvents++
+		if event["project_id"] != "demo" {
+			t.Fatalf("event = %#v; want project_id demo", event)
+		}
+	}
+	if projectEvents != 2 {
+		t.Fatalf("project events = %d; want handoff effect and input error", projectEvents)
+	}
+}
+
+func handoffLogEvents(t *testing.T, text string) []map[string]string {
+	t.Helper()
+	events := []map[string]string{}
+	for _, line := range strings.Split(strings.TrimSpace(text), "\n") {
+		if line == "" {
+			continue
+		}
+		var event map[string]string
+		if err := json.Unmarshal([]byte(line), &event); err != nil {
+			t.Fatalf("log line = %q: %v", line, err)
+		}
+		events = append(events, event)
+	}
+	return events
 }
 
 func writeHandoff(t *testing.T, home, content string) output.Envelope {

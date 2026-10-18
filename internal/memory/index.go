@@ -2,7 +2,6 @@ package memory
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +17,22 @@ const (
 type indexEntry struct {
 	Name        string
 	Description string
+}
+
+type memoryFileError struct {
+	path string
+	err  error
+}
+
+func (e *memoryFileError) Error() string {
+	return "memory file invalid: " + e.path + ": " + e.err.Error()
+}
+
+func (e *memoryFileError) Unwrap() error { return e.err }
+
+// LogCategory returns the safe log text for one invalid memory file.
+func (e *memoryFileError) LogCategory() string {
+	return "memory file invalid: " + e.path + ": " + logErrorText(e.err)
 }
 
 // readMemoryFile reads one memory file with the 1 MiB bound.
@@ -64,12 +79,12 @@ func scanMemoryFiles(dir string) ([]indexEntry, error) {
 		path := filepath.Join(dir, name)
 		data, err := readMemoryFile(path)
 		if err != nil {
-			return nil, fmt.Errorf("memory file invalid: %s: %v", path, err)
+			return nil, &memoryFileError{path: path, err: err}
 		}
 		base := strings.TrimSuffix(name, ".md")
 		values, err := parseMemory(data, base)
 		if err != nil {
-			return nil, fmt.Errorf("memory file invalid: %s: %v", path, err)
+			return nil, &memoryFileError{path: path, err: err}
 		}
 		found = append(found, indexEntry{Name: base, Description: values["description"]})
 	}
