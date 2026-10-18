@@ -6,8 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/lib/identity"
+	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -44,10 +47,10 @@ var transitions = map[string]map[string]string{
 
 // transition checks the status machine and changes one record under the lock.
 // A failure changes nothing.
-func transition(locked *store.LockedStore, command string, options TransitionOptions) (records.Task, string, error) {
+func transition(writer transitionWriter, command string, options TransitionOptions) (records.Task, string, error) {
 	var result records.Task
 	var prior string
-	err := locked.UpdateIn([]string{tasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
+	err := writer.UpdateIn([]string{tasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
 		if len(raw) == 0 {
 			return nil, fmt.Errorf("task not found: %s", quoteIfControl(options.Task))
 		}
@@ -57,6 +60,15 @@ func transition(locked *store.LockedStore, command string, options TransitionOpt
 		}
 		prior = record.Status
 		result = record
+		if command == "assign" && options.Agent != "" {
+			known, found, err := identity.FindHeld(writer, options.Agent)
+			if err != nil {
+				return nil, err
+			}
+			if found && known.Finished {
+				return nil, fmt.Errorf("agent finished: %s: use a fresh agent", quoteIfControl(known.Name))
+			}
+		}
 		if err := applyTransition(&record, command, options); err != nil {
 			return nil, err
 		}
@@ -176,7 +188,142 @@ type finishWriter interface {
 	Next(name string) (uint64, error)
 }
 
+// runFinish runs one complete or verify command under one lock.
+func runFinish(home, command string, options TransitionOptions) output.Envelope {
+	log := openOperationLog(home, options.Logger)
+	defer log.close()
+	logCommand := "task " + command
+	fail := func(phase, message string) output.Envelope {
+		log.failure(logCommand, "", options.Task, options.Agent, phase, message)
+		return failedEnvelope(phase, message)
+	}
+	if !records.ValidTaskID(options.Task) {
+		return fail("validate", "task not found: "+quoteIfControl(options.Task))
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return fail("store", err.Error())
+	}
+	var envelope output.Envelope
+	prior := ""
+	project := ""
+	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		var current records.Task
+		if err := locked.ReadIn([]string{tasksCollection}, options.Task, &current); err == nil {
+			prior = current.Status
+			project = current.Project
+		}
+		envelope = finishLocked(locked, command, options)
+		return nil
+	})
+	if lockErr != nil {
+		return fail("store", lockErr.Error())
+	}
+	if task, ok := envelope.Result.(records.Task); ok && envelope.Outcome == "ok" {
+		log.transition(logCommand, task.Project, task.ID, options.Agent, prior, task.Status)
+	} else if envelope.Error != nil {
+		log.failure(logCommand, project, options.Task, options.Agent, envelope.Phase, fmt.Sprint(envelope.Error))
+	}
+	return envelope
+}
+
 // finishLocked performs the finish group under one held handle.
 func finishLocked(writer finishWriter, command string, options TransitionOptions) output.Envelope {
-	return failedEnvelope("stub", "finish not implemented")
+	var task records.Task
+	if err := writer.ReadIn([]string{tasksCollection}, options.Task, &task); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return failedEnvelope("transition", "task not found: "+quoteIfControl(options.Task))
+		}
+		return failedEnvelope("store", err.Error())
+	}
+	caller, err := identity.ResolveHeld(writer, options.Agent, options.PaneID)
+	if err != nil {
+		return failedEnvelope("identity", err.Error())
+	}
+	if caller.Finished {
+		return failedEnvelope("finished", advancedFinishMessage(task, caller))
+	}
+	if command == "complete" {
+		if !sameAgent(caller, task.ActingAgent) || caller.Role != "worker" || caller.Project != task.Project || caller.Task != task.ID {
+			return failedEnvelope("identity", "not the acting agent: "+quoteIfControl(caller.Name))
+		}
+	} else {
+		if sameAgent(caller, task.ActingAgent) {
+			return failedEnvelope("identity", errSelfVerify.Error())
+		}
+		if caller.Role != "verifier" || caller.Project != task.Project || caller.Task != task.ID {
+			return failedEnvelope("identity", "not a verifier of "+task.ID+": "+quoteIfControl(caller.Name))
+		}
+		if options.Fail && options.Reason == "" {
+			return failedEnvelope("transition", errReasonNeeded.Error())
+		}
+	}
+	notification, err := finishNotification(command, task, caller, options)
+	if err != nil {
+		return failedEnvelope("validate", err.Error())
+	}
+	transitionOptions := options
+	transitionOptions.Agent = caller.Name
+	transitionOptions.PaneID = ""
+	result, _, err := transition(writer, command, transitionOptions)
+	if err != nil {
+		return failedEnvelope("task", err.Error())
+	}
+	effects := []output.Effect{{Resource: "task", Path: statePath("tasks", result.ID), Action: "updated"}}
+	appended := inbox.AppendHeld(writer, notification)
+	if appended.Outcome != "ok" {
+		effects = append(effects, appended.Effects...)
+		return output.Envelope{Outcome: "partial", Phase: appended.Phase, Effects: effects, Error: appended.Error, Result: result}
+	}
+	effects = append(effects, appended.Effects...)
+	if err := markFinished(writer, caller.Key); err != nil {
+		return output.Envelope{Outcome: "partial", Phase: "finished", Effects: effects, Error: "write finished agent: " + err.Error(), Result: result}
+	}
+	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", caller.Key), Action: "updated"})
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
+}
+
+func finishNotification(command string, task records.Task, caller records.Agent, options TransitionOptions) (inbox.AppendOptions, error) {
+	kind := records.InboxCompleted
+	text := "completed"
+	if command == "verify" {
+		kind = records.InboxVerified
+		text = "verified"
+		if options.Fail {
+			text = "fail: " + options.Reason
+		}
+	}
+	notification := inbox.AppendOptions{
+		Role:  task.ControllingRole,
+		Kind:  kind,
+		Task:  task.ID,
+		Agent: caller.Name,
+		Text:  text,
+	}
+	return notification, inbox.ValidateAppend(notification)
+}
+
+func sameAgent(record records.Agent, name string) bool {
+	return name != "" && (record.Name == name || record.Key == name)
+}
+
+func advancedFinishMessage(task records.Task, caller records.Agent) string {
+	return fmt.Sprintf("agent finished: %s: run task show %s, agent show %s, and inbox --role %s",
+		quoteIfControl(caller.Name), task.ID, quoteIfControl(caller.Name), task.ControllingRole)
+}
+
+func statePath(collection, id string) string {
+	return ".hive/state/" + collection + "/" + id + ".json"
+}
+
+func markFinished(writer finishWriter, key string) error {
+	return writer.UpdateIn([]string{"agents"}, key, func(raw json.RawMessage) (json.RawMessage, error) {
+		var record records.Agent
+		if err := json.Unmarshal(raw, &record); err != nil {
+			return nil, err
+		}
+		record.Finished = true
+		record.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
+		return json.Marshal(record)
+	})
 }
