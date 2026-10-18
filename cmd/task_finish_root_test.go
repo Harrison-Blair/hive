@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -139,4 +141,136 @@ func recordsAgentFinished(t *testing.T, registry *store.Store, key string) bool 
 		t.Fatal(err)
 	}
 	return record.Finished
+}
+
+func TestTaskCompleteLogsResolvedActorAndEffects(t *testing.T) {
+	home, taskID := seedFinishCLI(t, "assigned")
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 {
+		t.Fatalf("status = %d; stdout %q, stderr %q; want 0", status, stdout.String(), stderr.String())
+	}
+	events := taskLogEvents(t, home)
+	if countEvents(events, "task transition", map[string]string{
+		"command": "task complete", "task_id": taskID, "project_id": "one",
+		"agent_id": "worker-1", "from_status": "assigned", "to_status": "completed",
+	}) != 1 {
+		t.Fatalf("log events = %#v; want one pane-resolved transition", events)
+	}
+	for _, resource := range []string{"task", "counter", "inbox", "agent"} {
+		if countEvents(events, "task effect", map[string]string{
+			"command": "task complete", "task_id": taskID, "project_id": "one",
+			"agent_id": "worker-1", "resource": resource,
+		}) != 1 {
+			t.Fatalf("log events = %#v; want one %s effect", events, resource)
+		}
+	}
+	for _, resource := range []string{"counter", "inbox"} {
+		if countEvents(events, "task effect", map[string]string{
+			"command": "task complete", "task_id": taskID, "role": "manager-one", "resource": resource,
+		}) != 1 {
+			t.Fatalf("log events = %#v; want the controlling role on the %s effect", events, resource)
+		}
+	}
+}
+
+func TestTaskCompletePartialLogsExactPrefix(t *testing.T) {
+	home, taskID := seedFinishCLI(t, "assigned")
+	if err := os.MkdirAll(filepath.Join(home, ".hive", "state", "inbox", "manager-one", "1.json"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 1 {
+		t.Fatalf("status = %d; stdout %q, stderr %q; want 1", status, stdout.String(), stderr.String())
+	}
+	events := taskLogEvents(t, home)
+	for _, resource := range []string{"task", "counter"} {
+		if countEvents(events, "task effect", map[string]string{
+			"command": "task complete", "task_id": taskID, "resource": resource, "agent_id": "worker-1",
+		}) != 1 {
+			t.Fatalf("log events = %#v; want one retained %s effect", events, resource)
+		}
+	}
+	for _, resource := range []string{"inbox", "agent"} {
+		if countEvents(events, "task effect", map[string]string{
+			"command": "task complete", "task_id": taskID, "resource": resource,
+		}) != 0 {
+			t.Fatalf("log events = %#v; want no %s effect", events, resource)
+		}
+	}
+	if countEvents(events, "task error", map[string]string{
+		"command": "task complete", "task_id": taskID, "agent_id": "worker-1", "phase": "record",
+	}) != 1 {
+		t.Fatalf("log events = %#v; want one record error", events)
+	}
+}
+
+func TestTaskCompleteShortStdoutLogsStreamError(t *testing.T) {
+	home, taskID := seedFinishCLI(t, "assigned")
+	var stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &shortWriter{}, &stderr)
+	if status != 1 {
+		t.Fatalf("status = %d; want 1", status)
+	}
+	events := taskLogEvents(t, home)
+	if countEvents(events, "task output error", map[string]string{
+		"command": "task complete", "task_id": taskID, "agent_id": "worker-1", "phase": "output",
+	}) != 1 {
+		t.Fatalf("log events = %#v; want one stream error", events)
+	}
+}
+
+func TestVerifyFailLogsNoReasonText(t *testing.T) {
+	home, taskID := seedFinishCLI(t, "completed")
+	const reason = "reason-sentinel-8a91"
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "task", "verify", "--task", taskID, "--fail", "--reason", reason, "--pane", "w1:p2"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 {
+		t.Fatalf("status = %d; stdout %q, stderr %q; want 0", status, stdout.String(), stderr.String())
+	}
+	data, err := os.ReadFile(dailyLogPath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), reason) {
+		t.Fatalf("log holds the reason text: %s", data)
+	}
+}
+
+func TestTaskCompleteShortStdoutReportsOperationActor(t *testing.T) {
+	home, taskID := seedFinishCLI(t, "assigned")
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var task records.Task
+	if err := registry.ReadIn([]string{"tasks"}, taskID, &task); err != nil {
+		t.Fatal(err)
+	}
+	task.ActingAgent = "worker-3"
+	task.Verification = &records.Verification{Agent: "verifier-old", Result: "fail", Reason: "old", At: "2026-01-01T00:00:00Z"}
+	if err := registry.WriteIn([]string{"tasks"}, taskID, task); err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"agents"}, "worker-3", records.Agent{
+		Key: "worker-3", Name: "worker-3", Role: "worker", Project: "one", Task: taskID,
+		Status: records.AgentLive, PaneID: "w1:p3", Generation: 1,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p3"}, strings.NewReader(""), &shortWriter{}, &stderr)
+	if status != 1 {
+		t.Fatalf("status = %d; want 1", status)
+	}
+	if !strings.Contains(stderr.String(), "inspect: hive agent show worker-3") {
+		t.Fatalf("stderr = %q; want the current operation actor", stderr.String())
+	}
+	if strings.Contains(stderr.String(), "verifier-old") {
+		t.Fatalf("stderr = %q; want no prior verifier", stderr.String())
+	}
+	if !recordsAgentFinished(t, registry, "worker-3") {
+		t.Fatal("the current worker is not finished")
+	}
 }

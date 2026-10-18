@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 func showLines(t *testing.T, home, id string) []string {
@@ -123,14 +125,21 @@ func TestShowInvalidIDErrorStaysOneLine(t *testing.T) {
 
 func TestWrongActorErrorStaysOneLine(t *testing.T) {
 	home, task := newSeed(t, "assigned")
+	seedAgent(t, home, records.Agent{
+		Key: "worker-key", Name: "bad\nactor", Role: "worker", Project: "one", Task: task.ID,
+		Status: records.AgentLive, PaneID: "w1:p9", Generation: 1,
+	})
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
+	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-key"})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Complete() = %#v; want failed", envelope)
 	}
 	message := assertOneLineError(t, "Complete", envelope.Error)
 	if !strings.HasPrefix(message, "not the acting agent: ") {
 		t.Fatalf("Complete() error = %q; want a wrong actor message", message)
+	}
+	if !strings.Contains(message, `"bad\nactor"`) {
+		t.Fatalf("Complete() error = %q; want the quoted control-bearing record name", message)
 	}
 	if after := taskRecordBytes(t, home, task.ID); string(after) != string(before) {
 		t.Fatal("wrong actor changed the task record")

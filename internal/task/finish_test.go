@@ -523,3 +523,120 @@ func TestCompleteFinishConcurrentInboxReaders(t *testing.T) {
 		t.Fatalf("inbox = %#v; want one coherent completed record", inboxRecords)
 	}
 }
+
+func TestCompleteFinishResolvedAliasRoutes(t *testing.T) {
+	routes := []struct {
+		name    string
+		agent   string
+		pane    string
+		history bool
+	}{
+		{"key", "worker-key", "", false},
+		{"name", "worker-name", "", false},
+		{"pane", "", "w1:p7", false},
+		{"history", "", "w1:p0", true},
+	}
+	for _, route := range routes {
+		t.Run(route.name, func(t *testing.T) {
+			home, task := newSeed(t, "assigned")
+			record := records.Agent{
+				Key: "worker-key", Name: "worker-name", Role: "worker", Project: "one", Task: task.ID,
+				Status: records.AgentLive, PaneID: "w1:p7", Generation: 1,
+			}
+			if route.history {
+				record.PaneHistory = []string{"w1:p0"}
+			}
+			seedAgent(t, home, record)
+			task.ActingAgent = "worker-key"
+			seedTask(t, home, task)
+			envelope := runFinishLocked(t, home, "complete", TransitionOptions{Task: task.ID, Agent: route.agent, PaneID: route.pane}, nil)
+			if envelope.Outcome != "ok" || envelope.Error != nil {
+				t.Fatalf("complete through %s = %#v; want ok", route.name, envelope)
+			}
+			if got := readTask(t, home, task.ID); got.Status != "completed" || got.ActingAgent != "worker-key" {
+				t.Fatalf("task = %#v; want completed with the stored acting agent", got)
+			}
+			if !readFinishAgent(t, home, "worker-key").Finished {
+				t.Fatal("the resolved worker is not finished")
+			}
+			inboxRecords := finishInbox(t, home, "manager-one")
+			if len(inboxRecords) != 1 || inboxRecords[0].Agent != "worker-name" || inboxRecords[0].Text != "completed" {
+				t.Fatalf("inbox = %#v; want the stored name in the notification", inboxRecords)
+			}
+		})
+	}
+}
+
+func TestVerifyFinishResolvedAliasRoutes(t *testing.T) {
+	for _, route := range []struct {
+		name  string
+		agent string
+		pane  string
+	}{
+		{"key", "verifier-key", ""},
+		{"name", "verifier-name", ""},
+		{"pane", "", "w1:p8"},
+	} {
+		t.Run(route.name, func(t *testing.T) {
+			home, task := newSeed(t, "completed")
+			seedAgent(t, home, records.Agent{
+				Key: "verifier-key", Name: "verifier-name", Role: "verifier", Project: "one", Task: task.ID,
+				Status: records.AgentLive, PaneID: "w1:p8", Generation: 1,
+			})
+			envelope := runFinishLocked(t, home, "verify", TransitionOptions{Task: task.ID, Agent: route.agent, PaneID: route.pane}, nil)
+			if envelope.Outcome != "ok" || envelope.Error != nil {
+				t.Fatalf("verify through %s = %#v; want ok", route.name, envelope)
+			}
+			got := readTask(t, home, task.ID)
+			if got.Status != "verified" || got.Verification == nil || got.Verification.Agent != "verifier-name" {
+				t.Fatalf("task = %#v; want the stored verifier name", got)
+			}
+			if !readFinishAgent(t, home, "verifier-key").Finished {
+				t.Fatal("the resolved verifier is not finished")
+			}
+		})
+	}
+}
+
+func TestAdvancedPartialRetriesIncludeInspection(t *testing.T) {
+	cases := []struct {
+		name    string
+		status  string
+		command string
+		agent   string
+		fail    bool
+		reason  string
+	}{
+		{"complete", "completed", "complete", "worker-1", false, ""},
+		{"verify pass", "verified", "verify", "verifier-1", false, ""},
+		{"verify fail", "assigned", "verify", "verifier-1", true, "changed reason"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			home, task := newSeed(t, test.status)
+			before := taskRecordBytes(t, home, task.ID)
+			envelope := runFinishLocked(t, home, test.command, TransitionOptions{Task: task.ID, Agent: test.agent, Fail: test.fail, Reason: test.reason}, nil)
+			if envelope.Outcome != "failed" || envelope.Phase != "task" || len(envelope.Effects) != 0 {
+				t.Fatalf("retry = %#v; want a no-effect task refusal", envelope)
+			}
+			message, _ := envelope.Error.(string)
+			for _, want := range []string{"invalid transition:", "task show", "agent show", "inbox"} {
+				if !strings.Contains(message, want) {
+					t.Fatalf("error = %q; want %q", message, want)
+				}
+			}
+			if after := taskRecordBytes(t, home, task.ID); string(after) != string(before) {
+				t.Fatal("advanced retry changed the task record")
+			}
+			if value, ok := finishCounter(t, home, "manager-one"); ok {
+				t.Fatalf("counter = %d; want no counter write", value)
+			}
+			if got := len(finishInbox(t, home, "manager-one")); got != 0 {
+				t.Fatalf("inbox records = %d; want none", got)
+			}
+			if readFinishAgent(t, home, test.agent).Finished {
+				t.Fatal("advanced retry marked the caller finished")
+			}
+		})
+	}
+}

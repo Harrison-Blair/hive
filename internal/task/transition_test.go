@@ -150,7 +150,17 @@ func TestTransitionTable(t *testing.T) {
 					t.Fatalf("%s on %s = %#v; want a failure", command.key, status, envelope)
 				}
 				want := fmt.Sprintf("invalid transition: %s -> %s", status, command.message)
-				if envelope.Error != want {
+				message, _ := envelope.Error.(string)
+				if !strings.HasPrefix(message, want) {
+					t.Fatalf("error = %v; want the prefix %q", envelope.Error, want)
+				}
+				if (command.key == "complete" || strings.HasPrefix(command.key, "verify")) && status != "created" {
+					for _, inspected := range []string{"task show", "agent show", "inbox"} {
+						if !strings.Contains(message, inspected) {
+							t.Fatalf("error = %q; want %q", message, inspected)
+						}
+					}
+				} else if message != want {
 					t.Fatalf("error = %v; want %q", envelope.Error, want)
 				}
 				if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {

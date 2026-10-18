@@ -3,6 +3,8 @@ package identity
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -170,5 +172,102 @@ func TestResolveDoesNotReadTheEnvironment(t *testing.T) {
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
 	if _, err := resolveHeld(t, home, "", ""); !errors.Is(err, ErrCallerUnknown) {
 		t.Fatalf("ResolveHeld(empty pane) error = %v; want caller unknown", err)
+	}
+}
+
+// renameRecord moves one state record to a different file name.
+func renameRecord(t *testing.T, home, collection, oldName, newName string) {
+	t.Helper()
+	dir := filepath.Join(home, ".hive", "state", collection)
+	if err := os.Rename(filepath.Join(dir, oldName+".json"), filepath.Join(dir, newName+".json")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func managerFixture(t *testing.T, home string) {
+	t.Helper()
+	writeAgent(t, home, records.Agent{
+		Key: "manager-one-g7", Name: "manager-one", Role: "manager", Project: "one",
+		Status: records.AgentLive, PaneID: "w1:p1", Generation: 7,
+	})
+	writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g7", Generation: 7})
+}
+
+func TestResolveRejectsSelectedClaimAlias(t *testing.T) {
+	t.Run("other project holder", func(t *testing.T) {
+		home := t.TempDir()
+		writeAgent(t, home, records.Agent{
+			Key: "manager-two-g7", Name: "manager-two", Role: "manager", Project: "two",
+			Status: records.AgentLive, PaneID: "w2:p2", Generation: 7,
+		})
+		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-two-g7", Generation: 7})
+		writeClaim(t, home, records.Claim{Key: "manager-two", Agent: "manager-two-g7", Generation: 7})
+		if _, err := resolveHeld(t, home, "manager-one", ""); err == nil || err.Error() != "agent not found: manager-one" {
+			t.Fatalf("ResolveHeld(manager-one) error = %v; want agent not found", err)
+		}
+		if record, err := resolveHeld(t, home, "", "w2:p2"); err != nil || record.Key != "manager-two-g7" {
+			t.Fatalf("ResolveHeld(manager-two pane) = %#v, %v; want the legitimate holder", record, err)
+		}
+	})
+	t.Run("worker holder", func(t *testing.T) {
+		home := t.TempDir()
+		writeAgent(t, home, liveWorker("worker-key", "worker-name", "w1:p1", 1))
+		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "worker-key", Generation: 1})
+		if _, err := resolveHeld(t, home, "manager-one", ""); err == nil || err.Error() != "agent not found: manager-one" {
+			t.Fatalf("ResolveHeld(manager-one) error = %v; want agent not found", err)
+		}
+	})
+}
+
+func TestResolveRejectsPathKeyMismatch(t *testing.T) {
+	routes := []struct {
+		name  string
+		agent string
+		pane  string
+	}{
+		{"claim key", "manager-one", ""},
+		{"holder key", "manager-one-g7", ""},
+		{"pane", "", "w1:p1"},
+		{"history", "", "w1:p0"},
+	}
+	mismatches := []struct {
+		name       string
+		collection string
+		oldName    string
+		newName    string
+	}{
+		{"holder", "agents", "manager-one-g7", "wrong-holder"},
+		{"claim", "claims", "manager-one", "wrong-claim"},
+	}
+	for _, mismatch := range mismatches {
+		for _, route := range routes {
+			t.Run(mismatch.name+"/"+route.name, func(t *testing.T) {
+				home := t.TempDir()
+				managerFixture(t, home)
+				if route.name == "history" {
+					writeAgent(t, home, records.Agent{
+						Key: "manager-one-g7", Name: "manager-one", Role: "manager", Project: "one",
+						Status: records.AgentLive, PaneID: "w1:p1", PaneHistory: []string{"w1:p0"}, Generation: 7,
+					})
+				}
+				renameRecord(t, home, mismatch.collection, mismatch.oldName, mismatch.newName)
+				if _, err := resolveHeld(t, home, route.agent, route.pane); err == nil {
+					t.Fatalf("ResolveHeld(%q, %q) accepted a %s path mismatch", route.agent, route.pane, mismatch.name)
+				}
+			})
+		}
+	}
+}
+
+func TestResolveThroughWholeHomeAlias(t *testing.T) {
+	home := t.TempDir()
+	managerFixture(t, home)
+	alias := filepath.Join(t.TempDir(), "home-alias")
+	if err := os.Symlink(home, alias); err != nil {
+		t.Fatal(err)
+	}
+	record, err := resolveHeld(t, alias, "manager-one", "")
+	if err != nil || record.Key != "manager-one-g7" {
+		t.Fatalf("ResolveHeld(alias) = %#v, %v; want the manager record", record, err)
 	}
 }
