@@ -737,6 +737,57 @@ source and passes no checkpoint.
 - The final 12580 historical handoff bytes keep SHA256
   `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
 
+### Dated fix receipt: typed completion records and wave 3 clarifications
+
+2026-10-18. This section records pass `wave3-spec-fix-01`. It changes no Go
+source and passes no checkpoint.
+
+- The CP5 completion checker now requires an integer child status and an
+  integer shell status. A Boolean does not pass. It requires a positive integer
+  child PID in both records. It requires a finite numeric value in each record
+  time field.
+- The final shell continuation check continues only when both statuses are the
+  literal `0`. Any other value reports `BLOCKED` and keeps the run resources. The child status and the shell status stay separate in the
+  printed output.
+- The exact prior recipe accepted `false` as a shell status and ran `doctor`
+  and pane cleanup. The corrected recipe reports `BLOCKED` for `false`, `true`,
+  a string, and a missing value in either status. It also reports `BLOCKED` for
+  a NaN, an Infinity, or a Boolean timestamp, and for a static malformed record.
+  The normal child 0 and shell 0 record continues. A nonzero child or shell
+  status stays `BLOCKED`.
+- T06 owns the reader behavior of `internal/logs/read.go`. T08 adds only
+  `NewReaderWithClock(home string, now func() time.Time) *Reader`, which sets the
+  existing private clock. The constructor exists for the real-reader fixed-clock
+  rollover tests. `NewReader` keeps `time.Now`. The TUI passes the same resolved
+  home and the actual `Offset` from `Read` to `Follow`. T08 adds no reader
+  logic, nil-clock fallback, clock framework, or command registration.
+- Bare `hive --json` writes one failed envelope with phase `validate` and error
+  `TUI requires text output`. It exits 1 before the TUI starts. A successful
+  default TUI writes no extra envelope text. T08 reuses the existing
+  `common.Run` home resolution and render rules and owns no `cmd/common` or
+  `internal/lib/output` path.
+- T11 checks the full generated inbox notification before the first task
+  write. It uses the existing `validateAppend` check and the literal 4096-byte
+  text bound. A `fail: ` reason of 4090 ASCII bytes fits. A reason of 4091
+  bytes refuses with `failed` and no effects. Multibyte text counts bytes. The
+  finish path never truncates the text. The T03 cancel and assign reason
+  behavior does not change. This adds no general reason cap, journal, field, or
+  rollback.
+- The T05 and T07 branches changed during this pass. At start they held
+  `b58cb881` and `7a104948`. Before this commit they hold `46b88c08` and
+  `5d73a926`. This pass does not change them. T08 and T11 stay `ready` with
+  preparation only. Their worktrees come from `a21f6be1`. No source agent
+  started for T08 or T11. This receipt claims no dispatch.
+- The requested route is `pi opencode-go/deepseek-v4-flash:medium`. The actual
+  effective thinking level is `high`. The two values are separate.
+- A fresh independent docs check remains. This receipt claims no installed-text,
+  source, or checkpoint PASS.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+- The final 12580 historical handoff bytes keep SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -1158,11 +1209,23 @@ STATUS_PAIR=
 while [ "$(date +%s)" -le "$DEADLINE" ]; do
   if [ -s "$SUP_EXIT" ] && [ -s "$SUP_SHELL" ]; then
     if STATUS_PAIR=$(python3 - "$SUP_EXIT" "$SUP_STARTED" "$SUP_SHELL" "$RUN_ID" "$BIN" "$SHA" "$PWD" "$RUN_START" "$SUP_WRAP" "$SUP_SHELL_WRAP" <<'PY'
-import json, os, sys
+import json, math, os, sys
 exit_path, started_path, shell_path, run_id, binary, sha, home, run_start, wrapper, shell_writer = sys.argv[1:]
 def load(path):
     with open(path, encoding="utf-8") as handle:
-        return json.load(handle)
+        value = json.load(handle)
+    if not isinstance(value, dict):
+        raise ValueError("completion record is not an object")
+    return value
+def integer(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+def finite_number(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(value)
+    except (OverflowError, ValueError):
+        return False
 try:
     record = load(exit_path)
     started = load(started_path)
@@ -1179,13 +1242,19 @@ if record.get("home") != home:
     sys.exit(1)
 if started.get("run_id") != run_id or started.get("wrapper") != wrapper:
     sys.exit(1)
-if record.get("child_pid") != started.get("child_pid"):
+child_pid = record.get("child_pid")
+started_pid = started.get("child_pid")
+if not integer(child_pid) or child_pid <= 0:
     sys.exit(1)
-if not isinstance(record.get("child_returncode"), int):
+if not integer(started_pid) or started_pid <= 0:
+    sys.exit(1)
+if child_pid != started_pid:
+    sys.exit(1)
+if not integer(record.get("child_returncode")):
     sys.exit(1)
 started_at = started.get("started_at")
 exited_at = record.get("child_exited_at")
-if not isinstance(started_at, (int, float)) or not isinstance(exited_at, (int, float)):
+if not finite_number(started_at) or not finite_number(exited_at):
     sys.exit(1)
 if started_at < float(run_start) or exited_at < started_at:
     sys.exit(1)
@@ -1201,10 +1270,10 @@ if shell.get("binary") != binary or shell.get("binary_sha256") != sha:
     sys.exit(1)
 if shell.get("home") != home:
     sys.exit(1)
-if not isinstance(shell.get("shell_returncode"), int):
+if not integer(shell.get("shell_returncode")):
     sys.exit(1)
 shell_at = shell.get("shell_exited_at")
-if not isinstance(shell_at, (int, float)) or shell_at < exited_at:
+if not finite_number(shell_at) or shell_at < exited_at:
     sys.exit(1)
 if os.path.getmtime(shell_path) < float(run_start):
     sys.exit(1)
@@ -1223,11 +1292,17 @@ if [ "$RECORD_OK" -ne 1 ]; then
   exit 1
 fi
 set -- $STATUS_PAIR
+if [ "$#" -ne 2 ]; then
+  echo "supervisor completion status is unreadable: keep $SUP_RUN and report BLOCKED"
+  exit 1
+fi
 CHILD_STATUS=$1
 SHELL_STATUS=$2
 echo "supervisor child status $CHILD_STATUS"
 echo "pane B shell status $SHELL_STATUS"
-if [ "$CHILD_STATUS" -ne 0 ] || [ "$SHELL_STATUS" -ne 0 ]; then
+if [ "$CHILD_STATUS" = "0" ] && [ "$SHELL_STATUS" = "0" ]; then
+  :
+else
   echo "supervisor completion is not a success: keep $SUP_RUN and report BLOCKED"
   exit 1
 fi
@@ -1240,7 +1315,11 @@ fi
 
 The child record has `child_returncode`. The shell record has
 `shell_returncode`. The barrier reads both records and keeps the two values
-separate. The final `doctor` runs only after both fresh records match. It
+separate. Each status must be an integer, not a Boolean. The child PID must be a
+positive integer in both records. Each record time must be a finite number. The
+final continuation check runs only when both statuses are the literal `0`. A
+failed read, parse, type check, or status check reports `BLOCKED` and keeps the
+run resources. The final `doctor` runs only after both fresh records match. It
 reports the stale supervisor claim. Close only a pane that this run made. Keep
 pane A, pane C, every user pane, the real artifact, tracked evidence, logs,
 records, state, grants, and `main` references.
@@ -1364,6 +1443,7 @@ line for each task, so that two tasks can edit them in parallel:
 | --- | --- |
 | `cmd/root.go` | One `AddCommand` line for each command, plus the import lines that the registrations need. T04 and T07 each register two commands. T08 changes the root TUI entry and adds no command. |
 | `doc.go` of a shared package | One map line for each new file. |
+| `internal/logs/read.go` | T06 owns the reader. T08 adds only `NewReaderWithClock` for the existing private clock. Keep each other line. |
 | `internal/lib/harness/registry.go` | One registry line for each profile. |
 | `internal/doctor/checks.go` | One check line for each check. |
 | `internal/agent/spawn.go` | One case line for each role in the pane-choice switch. |
@@ -1394,7 +1474,7 @@ edit permission.
 | T04 roles and inbox | `cmd/agent/agent.go`, `cmd/agent/register/register.go`, `cmd/agent/list/list.go`, `cmd/agent/show/show.go`, `cmd/inbox/inbox.go`, `cmd/inbox/send/send.go`, `internal/agent/doc.go`, `internal/agent/register.go`, `internal/agent/list.go`, `internal/agent/show.go`, `internal/agent/render.go`, `internal/inbox/doc.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/inbox/render.go`, `internal/lib/inbox/inbox.go`, `internal/lib/records/agent.go`, `internal/lib/records/claim.go`, `internal/lib/records/inbox.go` | `cmd/root.go`, `internal/lib/records/doc.go` |
 | T05 herdr interface and doctor | `cmd/doctor/doctor.go`, `internal/doctor/doc.go`, `internal/doctor/checks.go`, `internal/doctor/run.go`, `internal/doctor/render.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/client.go`, `internal/lib/herdr/protocol.go`, `internal/lib/herdr/errors.go`, `internal/lib/herdr/types.go`, `internal/lib/run/run.go` | `cmd/root.go`, `cmd/version/version.go` |
 | T07 memory and handoff | `cmd/memory/memory.go`, `cmd/memory/write/write.go`, `cmd/handoff/handoff.go`, `cmd/handoff/write/write.go`, `internal/memory/doc.go`, `internal/memory/write.go`, `internal/memory/index.go`, `internal/memory/frontmatter.go`, `internal/handoff/write.go`, `internal/lib/scope/scope.go`, `internal/lib/scope/input.go` | `cmd/root.go` |
-| T08 TUI log view | `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go` |
+| T08 TUI log view | `internal/logs/read_clock_test.go`, `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go`, `internal/logs/read.go` |
 | T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
 | T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
 | T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
@@ -1422,6 +1502,7 @@ edit permission.
 | `internal/lib/inbox/inbox.go` held-handle API | T11 | The finish group appends the inbox record under its held handle. T04 keeps the public wrappers. |
 | `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/transition.go`, `internal/task/render.go` finish path | T11 | The durable group and the narrow output failure. T03 keeps the status table and the assign command. |
 | `internal/task/assign.go` finished guard | T11 | A narrow refusal for a known finished agent. T03 stays independent of the agent record. |
+| `NewReaderWithClock` | T08 | A narrow fixed-clock constructor in `internal/logs/read.go`. T06 owns the reader behavior and `NewReader`. The TUI rollover test uses the real reader. |
 | Post-close stop result | T10 | `closed`, `surviving`, or `unknown` topology plus the known effects. |
 | Real branch source | T14 | `gitx.CurrentBranch` or a typed `WorktreeInfo` result that holds a branch. A workspace branch field does not exist. |
 | `WorkspaceWorktreeInfo` | T09 | The typed workspace metadata in `internal/lib/herdr/workspace.go`. It has no branch field. `WorktreeInfo` stays for the worktree methods. T09 lands before T10. |
@@ -1434,6 +1515,7 @@ edit permission.
 | File | Tasks | Rule |
 | --- | --- | --- |
 | `cmd/root.go` | T01, T03, T04, T05, T06, T07, T08, T09, T12, T15 | Keep each registration line. T04 and T07 add two lines each. T08 changes the TUI entry and adds no command. |
+| `internal/logs/read.go` | T06, T08 | T06 owns the reader. T08 adds only `NewReaderWithClock` for the existing private clock. Keep each other line. |
 | `internal/lib/herdr/doc.go` | T05, T09, T10, T13, T14, T15 | One map line for each new file. Keep each line. |
 | `internal/lib/herdr/types.go` | T05, T09, T10 | T05 owns the file. T09 changes only `WorkspaceInfo.Worktree` to `*WorkspaceWorktreeInfo`. T10 adds only the optional `agent_session` field to `AgentInfo` and `PaneInfo`. Keep each other field. |
 | `internal/lib/records/agent.go` | T04, T10, T11, T15 | One field line for each task, at the end of the struct. |

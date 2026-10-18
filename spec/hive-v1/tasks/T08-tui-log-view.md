@@ -16,8 +16,10 @@
 Bare `hive` opens the TUI. Its first increment is a live view of the log with a
 header that shows the state of the home. The TUI is a client of the same files
 and records as the CLI. It has no logic of its own. It reuses the reader and
-the filter of T06 and the record readers of T04. The root command passes the
-resolved home to the TUI, so `--home` selects the home that the TUI shows.
+the filter of T06 and the record readers of T04. T06 owns the reader behavior.
+T08 adds only the fixed-clock constructor that its rollover test needs. The root
+command passes the resolved home to the TUI, so `--home` selects the home that
+the TUI shows.
 
 ## User flows
 
@@ -38,7 +40,9 @@ resolved home to the TUI, so `--home` selects the home that the TUI shows.
 | `internal/tui/header.go` | New. The header line from the store: supervisor state, live agents, unread count. |
 | `internal/tui/logview.go` | New. The viewport, the text filter, the level filter, the follow flag, the two key modes, and the keys. |
 | `internal/tui/tick.go` | New. The 500-millisecond tick that reads new lines through the reader of T06 and refreshes the header. |
-| `go.mod`, `go.sum` | Add Bubbles and Lip Gloss. The commit message states the reason: viewport and text input. |
+| `internal/logs/read.go` | Shared with T06. Add `NewReaderWithClock(home string, now func() time.Time) *Reader`. It sets the existing private clock field. Keep each reader behavior unchanged. |
+| `internal/logs/read_clock_test.go` | New. Test the fixed-clock constructor. This is the usual adjacent test file. |
+| `go.mod`, `go.sum` | Add `charm.land/bubbles/v2` and `charm.land/lipgloss/v2` at versions compatible with the existing `charm.land/bubbletea/v2` v2.1.0. The commit message states the reason: viewport and text input. |
 
 ## Requirements
 
@@ -52,7 +56,7 @@ resolved home to the TUI, so `--home` selects the home that the TUI shows.
 ### AC2 Log body
 
 - The body shows the events of today from the reader of T06, rendered with the same text format, in a viewport.
-- Each tick reads the new lines through the reader of T06. With follow on, the viewport stays at the end.
+- Each tick reads the new lines through the reader of T06. The tick keeps the `Offset` that `Read` returns and gives that same value to `Follow`. It does not replace the offset path or the byte position. With follow on, the viewport stays at the end.
 - The reader of T06 handles the change of the daily file at midnight. The lines of the earlier day stay in the viewport. The first event of the new file appears after the next tick.
 - When the file of today does not exist, the body shows `no events today`. The tick waits for the file and shows its first lines when it appears.
 - The view has two key modes: viewing and editing.
@@ -60,6 +64,7 @@ resolved home to the TUI, so `--home` selects the home that the TUI shows.
 - In editing mode, a printable key adds its character to the text input. Enter applies the text as a substring filter on the rendered line. Enter then returns to viewing mode.
 - In editing mode, Escape clears the input and the applied filter. Escape then returns to viewing mode. Ctrl-C quits. No other key of viewing mode acts in editing mode.
 - A status line shows the level filter, the text filter, and the follow state.
+- Bare `hive --json` writes one failed envelope with phase `validate` and error `TUI requires text output`, then exits 1 before the TUI starts. The default successful TUI writes no extra envelope text. The entry reuses the existing `common.Run` home resolution and the existing render rules. T08 does not own `cmd/common` or `internal/lib/output`.
 
 ### AC3 Model tests
 
@@ -103,9 +108,11 @@ go test ./internal/tui/ -run TestRunQuits -v
 go build .
 printf q | ./hive --home "$PWD"
 echo "exit $?"
+./hive --json --home "$PWD"
+echo "exit $?"
 ```
 
-- Expected: the test passes and its output holds the home path of the test. The command exits with 0.
+- Expected: the test passes and its output holds the home path of the test. The default command exits with 0 and prints no extra envelope text. The `--json` command prints one failed envelope with phase `validate` and error `TUI requires text output`, and exits 1 before the TUI starts.
 
 ### V4 Gate
 
@@ -119,4 +126,9 @@ echo "exit $?"
 
 ## Changes
 
-None.
+2026-10-18. Add the shared `NewReaderWithClock` constructor in
+`internal/logs/read.go` and its adjacent fixed-clock test. State the same
+resolved home and the actual `Read` offset as requirements. State the bare
+`--json` refusal and the dependency versions for the actual
+`charm.land/bubbletea/v2` module. T06 keeps the reader behavior. T08 adds no
+command registration.
