@@ -376,3 +376,170 @@ The nonconforming nil-error short writer stays outside T09 acceptance.
 Uncompleted: R01 and complete F06 correction, fresh acceptance, landing, CP2, and later checkpoints.
 
 END VERIFIER T09-worktree-create-and-remove t09-verify-02
+
+
+## Repeat independent verification: t09-verify-03
+
+| Item | Value |
+| --- | --- |
+| Checked worker, evidence, and sole verdict parent | `79360a6460c369af2eb4d0aa92be0ad83e25b46b` |
+| FIX02 source/tests | `1cde6665cf559ea568bee7e200e74c65a179d6b5` |
+| Previous verdict and FIX02 source parent | `bd865cb33b295759a78b03d2fa3fcfc6c10fbe45` |
+| Previous checked worker | `2d9c96d8116140bc1a151dea9b8c9d2874a39ecc` |
+| Activated base | `ff5e8c44d9b7d1fb510a568e9a248d84cab0b906` |
+| Date | 2026-10-18 |
+| Agent | verifier, external Pi, `openai-codex/gpt-6.1-sol:high` |
+| Actual route | `openai-codex`, `gpt-6.1-sol`, reasoning `high` |
+| Verdict | PASS |
+
+| Item | Proves | Result | Remark |
+| --- | --- | --- | --- |
+| V1 | AC1 | PASS | Original, first-review, fix, repeat, and actual CLI checks pass. |
+| V2 | AC2, AC3 | PASS | Removal, Git, current-topology, and retained guard checks pass. |
+| V3 | AC1, AC2 | PASS | Fresh native CLI and owned cleanup pass. |
+| V4 | AC4 | PASS | One actual-worktree uncached gate passes. |
+
+This pass decides T09 source acceptance at frozen `79360a64`.
+It gives no later root integration, landing, CP2, or checkpoint acceptance.
+The complete report is root `.hive/tmp/coordinator/reports/t09-verify-03.md`.
+Exact scripts, patches, raw outputs, records, logs, hashes, and receipts stay in `t09-verify-03-captures/` beside that report.
+I read the complete prior reports through their END markers and final delivery receipts.
+I read current T09, all evidence, tracker flow, architecture grouping rules, T03/T05, and the required instructions and glossaries.
+I read the herdr README before protocol 22 and schema use. I started no agent or model child.
+Historical payloads remain audit data. The current task and current brief control acceptance.
+
+### Findings and checklist
+
+R01 is CLOSED. Create keeps current `w99` and returns `partial/project` with the successful task prefix and all actual effects.
+A changed physical project owner stays. Old observed `w7` never attaches to that new owner.
+Physical repository aliases, unchanged metadata, desired `w7`, and unrelated current fields retain normal success.
+Remove keeps current `w3/w3:t2/w3:p4` and returns `partial/task` after actual `w2` close and Git removal.
+Unchanged or fully cleared topology, unrelated fields, and physical worktree aliases retain success.
+One short latest-record handle checks current owned metadata. The task-then-project order and completed prefixes stay.
+The initial related-read handle releases before Git/socket work. Ten fresh held-request runs pass for each command.
+No long external wait or output callback holds the lock. No stale full-record replacement, journal, rollback, marker, or retry occurs.
+
+F06 is CLOSED. Both commands receive an actual 9000-byte euro diagnostic through the accepted socket helper.
+Only the external peer is fake. Git, store, socket helper, and product remain real.
+Independent decoding finds 4095 valid UTF-8 bytes and `truncated: true` in both command error logs.
+Applicable task/project IDs stay. The separate output diagnostic retains all 9000 bytes. No error event disappears.
+Literal 4096/4097 ASCII and multibyte controls pass. The split-character input retains 4095 valid bytes.
+Expectations use literal bounds, not the implementation constant. Shared logger/socket/runner and privacy behavior remain exact.
+
+| Finding or check | Disposition |
+| --- | --- |
+| F01 | CLOSED. Task-write fault keeps all known effects, `w7`, result ID, branch, and worktree. |
+| F02 | CLOSED. A plain file grants no worktree or branch claim. |
+| F03 | CLOSED. Repository-only observation persists unique PRIMARY independently. |
+| F04 | CLOSED. Original error and branch/path/list/ambiguity observations stay explicit. No invented ID or cleanup. |
+| F05 | CLOSED. Both commands check task/project keys before external work. Invalid and different valid keys refuse. |
+| F07 | Group shape PASS. Historical design observation only. |
+| F08 | CLOSED. Linked registered sources refuse independently, with and without force, at the permitted task path. |
+| F09 | CLOSED. Physical task path and exact task branch bind authority. Outside paths and precious branches refuse, even with force. |
+| F10 | CLOSED. Real present/missing refs and fatal non-repository errors remain distinct. |
+| Create parameters and errors | PASS. Exact cwd/path/branch/base/label/root pane and both focus values. No workspace selector. |
+| Typed and unknown create effects | PASS. Known observations only. No invented candidate, retry, rollback, or unowned close. |
+| Latest unrelated fields and identity conflicts | PASS. Status/title/actor/verification/dependencies/reason fields survive. Conflicting current records stay. |
+| Removal guards | PASS. Status/cancel/verify, linked target, common directory, nested repository, dirty, and merged checks stay. |
+| Force | PASS. It skips only dirty and merged guards. |
+| Close routes | PASS. Open/closed/not-found/group-root and explicit `close_group=false`. No product `worktree.remove` or PRIMARY close. |
+| Unknown close and Git failure | PASS. Unknown stops Git. Known close plus Git failure keeps partial/worktree, actual close effect, and Git output. |
+| Normal removal | PASS. Physical path absent. Live topology clears. Branch/path/history stay with `removed_at`. |
+| Git and regressions | PASS. Direct argv, deadlines, nonzero ExitCode, root command union, T03/T05, and store. |
+
+### Red, green, mutations, and CLI
+
+The independent red copy is exact `bd865cb3` plus only the saved new `fix02_test.go`.
+Test SHA256: `93eb1724d00f7b8589e7e3f67b3e8c31febfd3618ba00340be098ddc9b60c362`.
+Old create SHA256: `2d26277c825c1c1a31e63b798c85db459b088945ed091913f03fa882c143a25e`.
+Old remove SHA256: `5cdf536735a72de798b631f6a84e817bcb8acce7dbfd0ba1d960774041bd3aec`.
+
+```sh
+go test -race -count=1 -timeout=180s ./internal/worktree ./internal/lib/gitx -run TestFix02 -v
+```
+
+```text
+base bd865cb3 plus exact new test: exit 1
+frozen 79360a64: exit 0
+```
+
+These lines summarize `fix02-base-red.txt` and `fix02-frozen-green.txt`.
+All three R01 variants and both Unicode commands fail assertions on old production. The boundary test detects invalid UTF-8.
+No compile failure, panic, or Go timeout counts as red.
+Five focused mutations detect workspace conflict, owner conflict, physical alias refusal, topology conflict, and UTF-8 bound defects.
+Each mutation restores exact hashes. Restored green passes. No unrelated mutation class repeats.
+The worker's first UTF-8 mutation is an INVALID compile failure. Its corrected assertion-red counts and stays visible.
+The exact original historical worker stub setup remains unavailable. This pass invents no development chronology.
+
+Exact first-review create/remove probes run separately because both define `auditFixture`. Their assertions and fixtures stay exact.
+The exact repeat probe passes. Original V1/V2 and FIX01 regressions pass.
+The unchanged CLI probe has SHA256 `a78e75a6a6f98272b04e996a8788009db276d13c73ed457ced0b1543387437e3`.
+Its text, JSON, task-fault, unknown, and concurrent statuses are `0, 0, 1, 1, 0`.
+Task-fault retains all four effects and result `w7`. Actual CLI cancellation completes during the held request and survives create.
+The real Git branch and worktree remain after fault and unknown outcomes. No rollback occurs.
+
+### Native V3 and full gate
+
+```text
+binary: /tmp/t93t.dz5o0uk_/hive-frozen
+SHA256: 7fde808d74c6228d78640eb4b72964ef1c83f195e8c7e13965bf987fd86f8277
+build: vcs.modified=false, revision 79360a6460c369af2eb4d0aa92be0ad83e25b46b
+home: /tmp/t93n.cq78iodu
+PRIMARY: wA0
+linked/root pane: wB1 / wB1:p1
+create exit 0
+remove-created exit 1
+cancel exit 0
+remove-cancelled exit 0
+```
+
+The driver uses one unique marked home/repository and the absolute frozen binary. Native herdr answers `0.9.5`, protocol `22`.
+Only native workspaces and default shells start. The path is absent after no-force removal. Branch and task history stay.
+The product leaves PRIMARY `wA0` open. Cleanup proves ownership and closes only `wA0` with `close_group=false`.
+The close succeeds. Parsed lists prove both owned IDs absent before fixture deletion.
+Before and final sets contain `w9X`, `wAE`, and `wAF`. User panes `w9X:p4/p5` stay.
+All 42 native external events carry applicable task/project IDs. Drivers bound calls and reap subprocesses.
+
+The full gate runs once in the actual worktree at final Go source, with short outside-home `TMPDIR=/tmp/t93g.npbm8_3s`.
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run --allow-serial-runners ./...
+go test -race -count=1 ./...
+go test -run TestSTE -count=1 .
+```
+
+```text
+format: empty output, exit 0
+vet: exit 0
+lint: 0 issues., exit 0
+race: every package passes, exit 0
+TestSTE: PASS, exit 0
+```
+
+These lines summarize `gate-*.txt` and `gate-results.json`. The captures retain complete command output.
+Evidence-only checks compare tested Go/source, dependencies, AGENTS, and baseline bytes afterward.
+Both-glossary new prose has zero hard findings. No baseline or dependency change occurs.
+
+### Scope, preservation, and limits
+
+The 29-path activation map and exact four-path FIX02 map remain separate in captures.
+I read every changed line in `create.go`, `remove.go`, new adjacent `fix02_test.go`, and new `FIX-02.md`.
+All other 279 prior-verdict blobs/modes and all 254 unchanged accepted-base blobs/modes stay exact.
+All 283 tracked files received a freeze before probes. All 2116 historical artifact hashes remain exact.
+The old 18820-byte VERIFIED prefix stays exact, with SHA256 `dea14ee34975198dab978774c2d8ea5da3804ddda28299d8c4f02a80ee8aed1a`.
+The fix02 preservation check passes for 1630 files and 493 capture hashes. Its 13 removed roots remain absent.
+The dispatched fix02 brief retains its final newline and SHA256 `77b9fa6b0d7debcb55905d0a60913254f07f0a2adcce465fa70c80f2cdedc12f`.
+The stripped variant has SHA256 `8137685eea5036fadd601010a6d30f793f2dc48b1951ddd89c5bd20096eecde9`.
+The original worker report stays. Correction: this T09 pass did not edit root, but the independent T11 landing did change root.
+No root freeze claim applies. Other tasks and root can advance independently.
+The no-follow cleanup manifest lists 1520 entries in six owned obsolete roots. Only those roots were removed.
+Worktree runtime roots, logs, state, old reports, worktrees, credentials, and other agents stay.
+No credential content, global configuration change, user pane input, unowned close, or unowned signal occurs.
+The sole new commit appends only this file to `79360a64`. Final delivery receipts stay in captures.
+Hostile Lstat/Open, malicious peers beyond T05, and the pre-T20 live/unresolved-agent removal guard remain deferred.
+The nonconforming nil-error short writer remains outside T09 acceptance.
+Uncompleted: exact original historical stub chronology, later root integration, landing, CP2, and later checkpoints.
+
+END VERIFIER T09-worktree-create-and-remove t09-verify-03
