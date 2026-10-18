@@ -84,11 +84,14 @@ func (s *Supervisor) applyStatuses(ctx context.Context) error {
 		if info.AgentStatus == "" || info.AgentStatus == record.AgentStatus {
 			continue
 		}
-		if err := s.storeAgentStatus(ctx, record, info.AgentStatus); err != nil {
+		if err := s.applyStatus(ctx, herdr.Event{Event: "rebuild"}, record, info.AgentStatus); err != nil {
 			return err
 		}
 	}
-	return nil
+	if err := s.snapshot(ctx); err != nil {
+		return err
+	}
+	return s.settleQuiet(ctx)
 }
 
 func sameSet(current map[string]bool, panes []string) bool {

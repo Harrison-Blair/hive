@@ -60,6 +60,19 @@ func (c *fakeClock) fire() {
 	}
 }
 
+// timerCount returns the number of timers that are still running.
+func (c *fakeClock) timerCount() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	count := 0
+	for _, timer := range c.timers {
+		if !timer.stopped {
+			count++
+		}
+	}
+	return count
+}
+
 func (t *fakeTimer) C() <-chan time.Time { return t.ch }
 func (t *fakeTimer) Stop() bool {
 	t.stopped = true
@@ -113,6 +126,10 @@ type fakeOps struct {
 	stops     []records.Agent
 	getPanes  []string
 	stopFn    func(records.Agent) (agent.StopResult, output.Envelope)
+	// getAgentFn runs after each GetAgent reply. promptFn runs after each
+	// Prompt request. Both let a test act at a chosen point of one run.
+	getAgentFn func(paneID string)
+	promptFn   func(herdr.AgentPromptParams) error
 }
 
 func newFakeOps() *fakeOps {
@@ -134,6 +151,10 @@ func (o *fakeOps) GetAgent(_ context.Context, paneID string) (herdr.AgentInfo, e
 	info, ok := o.agent[paneID]
 	if !ok {
 		return herdr.AgentInfo{}, &herdr.Error{Code: herdr.CodeAgentNotFound, Message: "no agent"}
+	}
+	fn := o.getAgentFn
+	if fn != nil {
+		fn(paneID)
 	}
 	return info, nil
 }
@@ -159,9 +180,16 @@ func (o *fakeOps) ListAgents(context.Context) ([]herdr.AgentInfo, error) {
 
 func (o *fakeOps) Prompt(_ context.Context, params herdr.AgentPromptParams) (herdr.AgentInfo, error) {
 	o.mu.Lock()
-	defer o.mu.Unlock()
 	o.prompts = append(o.prompts, params)
-	return herdr.AgentInfo{}, o.promptErr
+	fn := o.promptFn
+	err := o.promptErr
+	o.mu.Unlock()
+	if fn != nil {
+		if fnErr := fn(params); fnErr != nil {
+			return herdr.AgentInfo{}, fnErr
+		}
+	}
+	return herdr.AgentInfo{}, err
 }
 
 func (o *fakeOps) Stop(_ context.Context, _ string, record records.Agent) (agent.StopResult, output.Envelope) {

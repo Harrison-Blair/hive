@@ -166,6 +166,10 @@ func (s *Supervisor) run(ctx context.Context) (Result, output.Envelope) {
 	defer s.quiet.close()
 
 	if err := s.refresh(ctx); err != nil {
+		s.closeStream()
+		if ctx.Err() != nil {
+			return s.signalExit()
+		}
 		return s.exitFailure(ctx, err)
 	}
 	err := s.loop(ctx)
@@ -178,6 +182,11 @@ func (s *Supervisor) run(ctx context.Context) (Result, output.Envelope) {
 	if err != nil {
 		return s.exitFailure(ctx, err)
 	}
+	return s.signalExit()
+}
+
+// signalExit is the clean exit of a cancelled or signalled run.
+func (s *Supervisor) signalExit() (Result, output.Envelope) {
 	s.logger.Debug("supervisor stop", "command", "supervise", "generation", s.generation, "reason", "signal")
 	return Result{Generation: s.generation, Reason: "signal"}, output.Envelope{
 		Outcome: "ok",
@@ -192,14 +201,18 @@ func (s *Supervisor) exitFailure(ctx context.Context, err error) (Result, output
 	reason := err.Error()
 	var storage *storageError
 	outcome := "failed"
+	effects := []output.Effect{}
 	if errors.As(err, &storage) {
 		outcome = storage.envelope.Outcome
+		if storage.envelope.Effects != nil {
+			effects = storage.envelope.Effects
+		}
 	}
 	s.failure("run", reason)
 	return Result{Generation: s.generation, Reason: reason}, output.Envelope{
 		Outcome: outcome,
 		Phase:   "run",
-		Effects: []output.Effect{},
+		Effects: effects,
 		Error:   reason,
 		Result:  Result{Generation: s.generation, Reason: reason},
 	}
@@ -356,31 +369,33 @@ func (s *Supervisor) liveByPane(paneID string) (records.Agent, bool) {
 	return records.Agent{}, false
 }
 
-// liveByField returns the live record that matches one topology field.
-func (s *Supervisor) liveByField(field, value string) (records.Agent, bool) {
+// liveAllByField returns each live record that matches one topology field.
+func (s *Supervisor) liveAllByField(field, value string) []records.Agent {
+	var found []records.Agent
 	if value == "" {
-		return records.Agent{}, false
+		return found
 	}
-	for _, record := range s.agents {
+	for _, key := range sortedKeys(s.agents) {
+		record := s.agents[key]
 		if record.Status != records.AgentLive {
 			continue
 		}
 		switch field {
 		case "pane_id":
 			if record.PaneID == value {
-				return record, true
+				found = append(found, record)
 			}
 		case "tab_id":
 			if record.TabID == value {
-				return record, true
+				found = append(found, record)
 			}
 		case "workspace_id":
 			if record.WorkspaceID == value {
-				return record, true
+				found = append(found, record)
 			}
 		}
 	}
-	return records.Agent{}, false
+	return found
 }
 
 // controllingRole returns the inbox role that receives the notifications of one

@@ -176,21 +176,21 @@ func (s *Supervisor) markNudged(ctx context.Context, role string, expected recor
 }
 
 // hasCompletedRecord reports whether the task of one record has a completed
-// inbox record.
-func (s *Supervisor) hasCompletedRecord(ctx context.Context, record records.Agent) bool {
+// inbox record. A store read failure is returned, not treated as no record.
+func (s *Supervisor) hasCompletedRecord(ctx context.Context, record records.Agent) (bool, error) {
 	role := controllingRole(record)
 	if role == "" || record.Task == "" {
-		return false
+		return false, nil
 	}
 	registry, err := store.Open(s.options.Home)
 	if err != nil {
-		return false
+		return false, err
 	}
 	found := false
-	_ = registry.WithLock(ctx, func(locked *store.LockedStore) error {
+	err = registry.WithLock(ctx, func(locked *store.LockedStore) error {
 		all, err := inbox.AllHeld(locked, role)
 		if err != nil {
-			return nil
+			return err
 		}
 		for _, item := range all {
 			if item.Task == record.Task && (item.Kind == records.InboxCompleted || item.Kind == records.InboxVerified) {
@@ -200,5 +200,8 @@ func (s *Supervisor) hasCompletedRecord(ctx context.Context, record records.Agen
 		}
 		return nil
 	})
-	return found
+	if err != nil {
+		return false, err
+	}
+	return found, nil
 }

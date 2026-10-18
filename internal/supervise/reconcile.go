@@ -29,12 +29,45 @@ func (s *Supervisor) refresh(ctx context.Context) error {
 	return s.evaluate(ctx)
 }
 
-// evaluate applies the stop rule and the nudge rule over the current records.
+// evaluate starts the quiet timers, then applies the stop rule and the nudge
+// rule over the current records.
 func (s *Supervisor) evaluate(ctx context.Context) error {
+	if err := s.settleQuiet(ctx); err != nil {
+		return err
+	}
 	if err := s.stopRule(ctx); err != nil {
 		return err
 	}
 	return s.nudgeRule(ctx)
+}
+
+// settleQuiet starts the quiet timer of each settled live agent that has no
+// completed record and no running timer.
+func (s *Supervisor) settleQuiet(ctx context.Context) error {
+	for _, key := range sortedKeys(s.agents) {
+		record := s.agents[key]
+		if record.Key == s.ownKey || record.Status != records.AgentLive {
+			continue
+		}
+		if record.Finished {
+			continue
+		}
+		if record.AgentStatus != "idle" && record.AgentStatus != "done" {
+			continue
+		}
+		if s.quietDone[key] || s.quiet.running(key) {
+			continue
+		}
+		completed, err := s.hasCompletedRecord(ctx, record)
+		if err != nil {
+			return err
+		}
+		if completed {
+			continue
+		}
+		s.quiet.start(record.Key, quietAfter(record))
+	}
+	return nil
 }
 
 // stopRule stops each finished agent that is settled.
@@ -90,8 +123,15 @@ func (s *Supervisor) reconcileRecord(ctx context.Context, record records.Agent) 
 		if record.TerminalID != "" && info.TerminalID != record.TerminalID {
 			return s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "pane holds another terminal")
 		}
-		if record.TerminalID == "" || info.AgentStatus != record.AgentStatus {
-			return s.adoptAgent(ctx, record, info.TerminalID, info.AgentStatus)
+		if record.TerminalID == "" && info.TerminalID != "" {
+			if err := s.adoptAgent(ctx, record, info.TerminalID); err != nil {
+				return err
+			}
+		}
+		if info.AgentStatus != "" && info.AgentStatus != record.AgentStatus {
+			// A status the supervisor learns from a read produces the same
+			// record as a pushed event, so a queued push is not lost.
+			return s.applyStatus(ctx, herdr.Event{Event: "reconcile"}, record, info.AgentStatus)
 		}
 		return nil
 	}
@@ -148,8 +188,8 @@ func (s *Supervisor) notifyLifecycle(ctx context.Context, record records.Agent, 
 	})
 }
 
-// adoptAgent stores the terminal ID and status of a matching agent reply.
-func (s *Supervisor) adoptAgent(ctx context.Context, record records.Agent, terminalID, status string) error {
+// adoptAgent stores the terminal ID of a matching agent reply.
+func (s *Supervisor) adoptAgent(ctx context.Context, record records.Agent, terminalID string) error {
 	registry, err := store.Open(s.options.Home)
 	if err != nil {
 		return err
@@ -168,9 +208,6 @@ func (s *Supervisor) adoptAgent(ctx context.Context, record records.Agent, termi
 		}
 		if terminalID != "" {
 			current.TerminalID = terminalID
-		}
-		if status != "" {
-			current.AgentStatus = status
 		}
 		current.UpdatedAt = now
 		if err := locked.WriteIn([]string{"agents"}, current.Key, current); err != nil {

@@ -81,6 +81,12 @@ func (m *quietManager) start(key string, after time.Duration) {
 	}()
 }
 
+// running reports whether one agent already has a quiet timer.
+func (m *quietManager) running(key string) bool {
+	_, ok := m.timers[key]
+	return ok
+}
+
 // cancel stops the quiet timer of one agent.
 func (m *quietManager) cancel(key string) {
 	entry, ok := m.timers[key]

@@ -39,12 +39,22 @@ func TestSubscriptionEntriesPerPaneAndPlain(t *testing.T) {
 	if status != 2 {
 		t.Fatalf("status entries = %d; want two", status)
 	}
-	for _, kind := range plainSubscriptions {
+	// The expected plain selectors are literal and independent of the
+	// production list.
+	wantPlain := []string{
+		"pane.agent_detected",
+		"pane.exited",
+		"pane.closed",
+		"tab.closed",
+		"workspace.closed",
+		"pane.moved",
+	}
+	for _, kind := range wantPlain {
 		if !plain[kind] {
 			t.Fatalf("plain entry %q is missing", kind)
 		}
 	}
-	if len(plain) != len(plainSubscriptions) {
+	if len(plain) != len(wantPlain) {
 		t.Fatalf("plain entries = %v; want six", plain)
 	}
 }

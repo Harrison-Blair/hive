@@ -72,7 +72,14 @@ func (s *Supervisor) onStatusChanged(ctx context.Context, event herdr.Event, dat
 		s.logEvent(event, "status unchanged")
 		return nil
 	}
-	switch data.AgentStatus {
+	return s.applyStatus(ctx, event, record, data.AgentStatus)
+}
+
+// applyStatus applies one observed agent status to one record. The status
+// event handler and the reconcile both use it, so a status the supervisor
+// learns from a read produces the same notification as a pushed event.
+func (s *Supervisor) applyStatus(ctx context.Context, event herdr.Event, record records.Agent, status string) error {
+	switch status {
 	case "blocked":
 		role := controllingRole(record)
 		if role == "" {
@@ -86,23 +93,28 @@ func (s *Supervisor) onStatusChanged(ctx context.Context, event herdr.Event, dat
 			agent:       record.Name,
 			text:        "blocked",
 			agentKey:    record.Key,
-			agentStatus: "blocked",
+			agentStatus: status,
 		})
 	case "idle", "done":
-		delete(s.quietDone, record.Key)
 		if record.Finished {
 			return s.stopAgent(ctx, event, record)
 		}
-		if !s.hasCompletedRecord(ctx, record) {
+		completed, err := s.hasCompletedRecord(ctx, record)
+		if err != nil {
+			return err
+		}
+		// One idle period gives one quiet timer. A working transition
+		// clears the guard and starts the next period.
+		if !completed && !s.quietDone[record.Key] && !s.quiet.running(record.Key) {
 			s.quiet.start(record.Key, quietAfter(record))
 		}
-		return s.storeAgentStatus(ctx, record, data.AgentStatus)
+		return s.storeAgentStatus(ctx, record, status)
 	case "working":
 		delete(s.quietDone, record.Key)
 		s.quiet.cancel(record.Key)
-		return s.storeAgentStatus(ctx, record, data.AgentStatus)
+		return s.storeAgentStatus(ctx, record, status)
 	default:
-		s.logEvent(event, "ignored status "+data.AgentStatus)
+		s.logEvent(event, "ignored status "+status)
 		return nil
 	}
 }
@@ -136,25 +148,30 @@ func (s *Supervisor) onTopologyClosed(ctx context.Context, event herdr.Event, fi
 	if value == "" {
 		return nil
 	}
-	record, found := s.liveByField(field, value)
-	if !found {
+	found := s.liveAllByField(field, value)
+	if len(found) == 0 {
 		s.logEvent(event, "no live record for closed "+field)
 		return nil
 	}
-	role := controllingRole(record)
-	if role == "" {
-		s.logEvent(event, "no controlling role")
-		return nil
+	for _, record := range found {
+		role := controllingRole(record)
+		if role == "" {
+			s.logEvent(event, "no controlling role")
+			continue
+		}
+		if err := s.notify(ctx, event, notification{
+			role:      role,
+			kind:      records.InboxUnresolved,
+			task:      record.Task,
+			agent:     record.Name,
+			text:      "unresolved",
+			agentKey:  record.Key,
+			lifecycle: records.AgentUnresolved,
+		}); err != nil {
+			return err
+		}
 	}
-	return s.notify(ctx, event, notification{
-		role:      role,
-		kind:      records.InboxUnresolved,
-		task:      record.Task,
-		agent:     record.Name,
-		text:      "unresolved",
-		agentKey:  record.Key,
-		lifecycle: records.AgentUnresolved,
-	})
+	return nil
 }
 
 func (s *Supervisor) onPaneMoved(ctx context.Context, event herdr.Event, data eventData) error {
