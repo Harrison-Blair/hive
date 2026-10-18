@@ -96,7 +96,7 @@ flowchart TD
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | in progress | | |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | in progress | | |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | ready | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
@@ -784,6 +784,55 @@ source and passes no checkpoint.
   source, or checkpoint PASS.
 - Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
   and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+- The final 12580 historical handoff bytes keep SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
+
+### Dated landing receipt: memory and handoff
+
+2026-10-18. This section records the T07 landing. It accepts no T05 source and
+passes no checkpoint.
+
+- T07 is `landed`. The verified tip is `5d73a926`. The tested worker is
+  `7a104948`. The verdict report is `t07-verify-03.md`, with
+  `END VERIFIER T07-memory-and-handoff t07-verify-03` and PASS for V1 to V4.
+  The verdict commit has one parent, `7a104948`. Its only change is an append
+  to `spec/hive-v1/evidence/T07-memory-and-handoff/VERIFIED.md`.
+- The merge is `87da8c9b` with subject `merge(T07): land memory and handoff`.
+  Its parents are `4837f1e7` and `5d73a926`. The branch is
+  `task/T07-memory-and-handoff`. The push changes only `dev` without force.
+- The T07 owned source and evidence equal the verified tip. The shared file
+  `cmd/root.go` is an explicit union with the current `dev`. The union keeps
+  the `version`, `project`, `logs`, `task`, `agent`, and `inbox` registrations.
+  It adds the `memory` and `handoff` imports and registrations. No logic
+  refactor, new source, or test occurs in the merge.
+- The full uncached gate passes after the merge. The format list is empty.
+  Vet and lint pass with `0 issues.`. The race tests pass.
+- The worktree archive is `.hive/tmp/coordinator/archives/T07-5d73a926/`.
+  It holds 354 entries and 304 files. The original, copy, and after manifests
+  are equal. All 175 tracked blobs and modes match. The ignored worker reports
+  and captures stay in the archive.
+- The no-force removal reply names the T07 path and workspace `wAA` with
+  `forced:false`. The path is absent. The branch, the remote branch, and the
+  archive stay.
+- The tracker commit subject is `docs(tracker): land memory and handoff`.
+  Its parent is the merge.
+- The root report copies are `t07-impl-01-archive.md`,
+  `t07-fix-01-archive.md`, `t07-fix-01-cleanup-receipt-archive.md`, and
+  `t07-fix-02-archive.md`. Each copy equals its worktree source.
+- T08 and T11 stay `ready` with preparation only. No source work starts in
+  this pass. T05 stays `in progress`. T09 and T10 stay `blocked`.
+- The C07 fix and the T08 and T11 task text from `wave3-spec-fix-01` stay.
+  Their fresh independent installed-doc check is pending. This receipt claims
+  no installed-text pass.
+- A T05 verifier pass `t05-verify-04` has capture activity but no completed
+  verdict report at this pass. This receipt records an observation only. It
+  accepts and merges no T05 source.
+- Pending: an independent integration and records check of this merge. The
+  native Hive full Pi flow needs T09, T10, T12, and T18. No runtime record
+  exists. CP2 to CP5 stay open.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`.
+  `origin/main` and the direct remote `main` stay
   `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
 - The final 12580 historical handoff bytes keep SHA256
   `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
