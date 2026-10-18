@@ -381,31 +381,70 @@ func finishVerifierSpawn(ctx context.Context, home string, choice *taskChoice, r
 
 // promptTaskAgent sends the first prompt of one task agent without a wait. A
 // launch that is still pending gives agent_not_ready. The function waits for
-// the interactive agent and sends the prompt again.
+// the interactive agent and sends the prompt again. A Pi launch can accept a
+// prompt before its input loop is ready. The function checks that a turn
+// started and sends the prompt again when it did not.
 func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	prompt := verifierPrompt(home, choice.Task.ID)
 	if record.Role != "verifier" {
 		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch)
 	}
 	params := herdr.AgentPromptParams{Target: choice.PaneID, Text: prompt}
-	_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
-	if err != nil && isHerdrCode(err, "agent_not_ready") {
-		if waitErr := waitAgentInteractive(ctx, choice.PaneID, logger); waitErr == nil {
-			_, err = herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+	delivered := false
+	for attempt := 0; attempt < promptAttempts && !delivered; attempt++ {
+		_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+		if err != nil {
+			if isHerdrCode(err, "agent_not_ready") {
+				_ = waitAgentInteractive(ctx, choice.PaneID, logger)
+				continue
+			}
+			envelope.Outcome = "partial"
+			envelope.Phase = "prompt"
+			envelope.Error = err.Error() + "; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
+			return envelope
 		}
+		delivered = promptProbe(ctx, choice.PaneID, logger)
 	}
-	if err != nil {
+	if !delivered {
 		envelope.Outcome = "partial"
 		envelope.Phase = "prompt"
-		envelope.Error = err.Error() + "; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
+		envelope.Error = "prompt did not start a turn; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
 		return envelope
 	}
 	envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
 	return envelope
 }
 
+// promptAttempts bounds the send of one prompt that starts no turn.
+const promptAttempts = 5
+
+// promptConfirmWindow bounds one wait for a started turn.
+const promptConfirmWindow = 3 * time.Second
+
+// promptPollInterval is the agent read interval of one confirmation.
+const promptPollInterval = 250 * time.Millisecond
+
 // promptReadyTimeout bounds the wait for one interactive agent.
 const promptReadyTimeout = 60 * time.Second
+
+// promptProbe reports whether a prompt started a turn. A test replaces it.
+var promptProbe = func(ctx context.Context, paneID string, logger *slog.Logger) bool {
+	deadline := time.Now().Add(promptConfirmWindow)
+	for {
+		info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+		if err == nil && (info.AgentStatus == "working" || info.AgentStatus == "blocked") {
+			return true
+		}
+		if ctx.Err() != nil || time.Now().After(deadline) {
+			return false
+		}
+		select {
+		case <-ctx.Done():
+			return false
+		case <-time.After(promptPollInterval):
+		}
+	}
+}
 
 // waitAgentInteractive waits until herdr reports an interactive agent.
 func waitAgentInteractive(ctx context.Context, paneID string, logger *slog.Logger) error {

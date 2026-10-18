@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -814,6 +815,37 @@ func TestWorkerSpawnWaitsForInteractiveAgent(t *testing.T) {
 	fake.failure("agent.prompt", "agent_not_ready", "agent worker-1 is not an active named agent")
 	fake.result("agent.get", workerAgentInteractiveJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if len(fake.recorded("agent.prompt")) != 2 {
+		t.Fatalf("agent.prompt requests = %d; want 2", len(fake.recorded("agent.prompt")))
+	}
+	if task := readTaskRecord(t, home, "1-worker-demo"); task.Status != "assigned" {
+		t.Fatalf("task = %#v; want assigned", task)
+	}
+}
+
+func TestWorkerSpawnResendsLostPrompt(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "worker-1")
+	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	original := promptProbe
+	t.Cleanup(func() { promptProbe = original })
+	calls := 0
+	promptProbe = func(context.Context, string, *slog.Logger) bool {
+		calls++
+		return calls > 1
+	}
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,

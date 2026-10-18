@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"context"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -96,4 +98,10 @@ func TestBriefPromptShellSafe(t *testing.T) {
 			t.Fatalf("script args = %q; want %q", out, want)
 		}
 	}
+}
+
+// init keeps the tests on the fake server. The tests that need a probe set
+// their own function.
+func init() {
+	promptProbe = func(context.Context, string, *slog.Logger) bool { return true }
 }
