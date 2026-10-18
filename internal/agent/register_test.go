@@ -464,6 +464,43 @@ func TestRegisterExplicitWorkerUsesNoCounter(t *testing.T) {
 	}
 }
 
+func TestRegisterGeneratedNameCollisionKeepsTheCounterEffect(t *testing.T) {
+	home := t.TempDir()
+	seedProject(t, home, "hive")
+	explicit := Register(home, RegisterOptions{Role: "worker", Project: "hive", Task: "T1", Name: "worker-hive-1", NameSet: true, PaneID: "w1:p1"})
+	if explicit.Outcome != "ok" {
+		t.Fatal(explicit.Error)
+	}
+	options := RegisterOptions{Role: "worker", Project: "hive", Task: "T1", PaneID: "w1:p2"}
+	envelope := Register(home, options)
+	if envelope.Outcome != "partial" || envelope.Phase != "agent" {
+		t.Fatalf("Register() = %#v; want partial agent after the counter", envelope)
+	}
+	if len(envelope.Effects) != 1 || envelope.Effects[0].Resource != "counter" || envelope.Effects[0].Action != "updated" {
+		t.Fatalf("effects = %#v; want one counter effect", envelope.Effects)
+	}
+	if keys := agentKeys(t, home); len(keys) != 1 {
+		t.Fatalf("keys = %v; want the explicit worker only", keys)
+	}
+	retry := Register(home, options)
+	if retry.Outcome != "ok" {
+		t.Fatal(retry.Error)
+	}
+	keys := agentKeys(t, home)
+	if len(keys) != 2 {
+		t.Fatalf("retry keys = %v; want two workers", keys)
+	}
+	foundRetry := false
+	for _, key := range keys {
+		if key == "worker-hive-2" {
+			foundRetry = true
+		}
+	}
+	if !foundRetry {
+		t.Fatalf("retry keys = %v; want worker-hive-2 after the gap", keys)
+	}
+}
+
 func TestRegisterRejectsCrossClaimAndGenerationKeyCollisions(t *testing.T) {
 	t.Run("cross claim", func(t *testing.T) {
 		home := t.TempDir()
