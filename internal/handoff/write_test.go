@@ -166,7 +166,9 @@ func TestHandoffConcurrentReplacement(t *testing.T) {
 		envelope := writeHandoff(t, home, newContent)
 		if envelope.Outcome != "ok" {
 			close(done)
-			<-errCh
+			if readErr := <-errCh; readErr != nil {
+				t.Fatalf("Write() at %d = %#v; reader error = %v", i, envelope, readErr)
+			}
 			t.Fatalf("Write() at %d = %#v", i, envelope)
 		}
 	}
