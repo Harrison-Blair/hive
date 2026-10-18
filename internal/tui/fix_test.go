@@ -172,6 +172,25 @@ func TestRunHomeReportsInputFailure(t *testing.T) {
 	}
 }
 
+func TestRunHomeReportsFileWriterFailure(t *testing.T) {
+	file, err := os.OpenFile("/dev/full", os.O_WRONLY, 0)
+	if err != nil {
+		t.Skipf("/dev/full is not available: %v", err)
+	}
+	defer func() { _ = file.Close() }()
+	home := newTestHome(t)
+	done := make(chan error, 1)
+	go func() { done <- RunHome(home, strings.NewReader("q"), file) }()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("RunHome returned nil for a full file writer; want an output error")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("RunHome did not settle after a file writer failure")
+	}
+}
+
 func TestRunHomeFiniteEOFStops(t *testing.T) {
 	home := newTestHome(t)
 	done := make(chan error, 1)
