@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -272,5 +275,210 @@ func TestTaskCompleteShortStdoutReportsOperationActor(t *testing.T) {
 	}
 	if !recordsAgentFinished(t, registry, "worker-3") {
 		t.Fatal("the current worker is not finished")
+	}
+}
+
+// countingErrorWriter counts each attempt to write one JSON envelope.
+type countingErrorWriter struct{ attempts int }
+
+func (w *countingErrorWriter) Write([]byte) (int, error) {
+	w.attempts++
+	return 0, errors.New("probe stdout error")
+}
+
+// countingShortWriter counts each short write of one JSON envelope.
+type countingShortWriter struct{ attempts int }
+
+func (w *countingShortWriter) Write(data []byte) (int, error) {
+	w.attempts++
+	if len(data) == 0 {
+		return 0, nil
+	}
+	return len(data) - 1, nil
+}
+
+var finishOperations = []struct {
+	name   string
+	args   []string
+	status string
+	actor  string
+	pane   string
+}{
+	{"complete", []string{"task", "complete", "--task", "1-step"}, "assigned", "worker-1", "w1:p1"},
+	{"verify", []string{"task", "verify", "--task", "1-step"}, "completed", "verifier-1", "w1:p2"},
+	{"verify-fail", []string{"task", "verify", "--task", "1-step", "--fail", "--reason", "probe-home-guard"}, "completed", "verifier-1", "w1:p2"},
+}
+
+func assertUnmarkedFixture(t *testing.T, dir string) {
+	t.Helper()
+	for path := dir; ; path = filepath.Dir(path) {
+		if _, err := os.Lstat(filepath.Join(path, ".hive", "README.md")); err == nil {
+			t.Fatalf("fixture %s is below marked home %s", dir, path)
+		}
+		parent := filepath.Dir(path)
+		if parent == path {
+			return
+		}
+	}
+}
+
+func assertNoHiveRoot(t *testing.T, dir string) {
+	t.Helper()
+	if _, err := os.Lstat(filepath.Join(dir, ".hive")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("%s/.hive exists or cannot be checked: %v", dir, err)
+	}
+}
+
+func TestTaskFinishOutputFailureBeforeHomeResolutionCreatesNothing(t *testing.T) {
+	writers := []struct {
+		name string
+		make func() (io.Writer, func() int)
+	}{
+		{"error", func() (io.Writer, func() int) {
+			w := &countingErrorWriter{}
+			return w, func() int { return w.attempts }
+		}},
+		{"short", func() (io.Writer, func() int) {
+			w := &countingShortWriter{}
+			return w, func() int { return w.attempts }
+		}},
+	}
+	for _, homeMode := range []string{"missing", "invalid"} {
+		t.Run(homeMode, func(t *testing.T) {
+			for _, operation := range finishOperations {
+				for _, writer := range writers {
+					t.Run(operation.name+"/"+writer.name, func(t *testing.T) {
+						cwd := t.TempDir()
+						assertUnmarkedFixture(t, cwd)
+						t.Chdir(cwd)
+						t.Setenv("HIVE_HOME", "")
+						t.Setenv("HERDR_PANE_ID", "")
+						args := []string{"--json"}
+						invalidHome := ""
+						if homeMode == "invalid" {
+							invalidHome = t.TempDir()
+							assertUnmarkedFixture(t, invalidHome)
+							args = append(args, "--home", invalidHome)
+						}
+						args = append(args, operation.args...)
+						out, attempts := writer.make()
+						var stderr bytes.Buffer
+						status := executeWithStreams(args, strings.NewReader(""), out, &stderr)
+						if status != 1 {
+							t.Fatalf("status = %d; stderr = %q; want 1", status, stderr.String())
+						}
+						if got := attempts(); got != 1 {
+							t.Fatalf("JSON writer attempts = %d; want one envelope attempt", got)
+						}
+						assertNoHiveRoot(t, cwd)
+						if invalidHome != "" {
+							assertNoHiveRoot(t, invalidHome)
+						}
+						if got := strings.TrimSpace(stderr.String()); got != "" {
+							t.Fatalf("stderr = %q; want no finish report before home resolution", got)
+						}
+					})
+				}
+			}
+		})
+	}
+}
+
+func TestTaskFinishHomeFailureWithWorkingOutputKeepsFailedEnvelope(t *testing.T) {
+	for _, homeMode := range []string{"missing", "invalid"} {
+		t.Run(homeMode, func(t *testing.T) {
+			for _, operation := range finishOperations {
+				t.Run(operation.name, func(t *testing.T) {
+					cwd := t.TempDir()
+					assertUnmarkedFixture(t, cwd)
+					t.Chdir(cwd)
+					t.Setenv("HIVE_HOME", "")
+					t.Setenv("HERDR_PANE_ID", "")
+					args := []string{"--json"}
+					invalidHome := ""
+					if homeMode == "invalid" {
+						invalidHome = t.TempDir()
+						assertUnmarkedFixture(t, invalidHome)
+						args = append(args, "--home", invalidHome)
+					}
+					args = append(args, operation.args...)
+					var stdout, stderr bytes.Buffer
+					status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr)
+					if status != 1 {
+						t.Fatalf("status = %d; stdout = %q, stderr = %q; want 1", status, stdout.String(), stderr.String())
+					}
+					var envelope map[string]any
+					if err := json.Unmarshal(stdout.Bytes(), &envelope); err != nil {
+						t.Fatalf("stdout = %q; want one JSON envelope: %v", stdout.String(), err)
+					}
+					if envelope["outcome"] != "failed" || envelope["phase"] != "home" {
+						t.Fatalf("envelope = %#v; want failed/home", envelope)
+					}
+					if effects, ok := envelope["effects"].([]any); !ok || len(effects) != 0 {
+						t.Fatalf("effects = %#v; want an empty list", envelope["effects"])
+					}
+					message, _ := envelope["error"].(string)
+					if !strings.Contains(message, "hive home") {
+						t.Fatalf("error = %q; want the home refusal", message)
+					}
+					if got := strings.TrimSpace(stderr.String()); got != "" {
+						t.Fatalf("stderr = %q; want no finish report", got)
+					}
+					assertNoHiveRoot(t, cwd)
+					if invalidHome != "" {
+						assertNoHiveRoot(t, invalidHome)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestTaskFinishEmptyHomeFlagWithFailingStdoutKeepsUsageStatus(t *testing.T) {
+	cwd := t.TempDir()
+	assertUnmarkedFixture(t, cwd)
+	t.Chdir(cwd)
+	t.Setenv("HIVE_HOME", "")
+	t.Setenv("HERDR_PANE_ID", "")
+	out := &countingErrorWriter{}
+	var stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", "", "--json", "task", "complete", "--task", "1-step"}, strings.NewReader(""), out, &stderr)
+	if status != 2 {
+		t.Fatalf("status = %d; stderr = %q; want 2", status, stderr.String())
+	}
+	if out.attempts != 0 {
+		t.Fatalf("JSON writer attempts = %d; want no envelope", out.attempts)
+	}
+	if !strings.Contains(stderr.String(), "--home requires a path") || strings.Count(stderr.String(), "\n") != 1 {
+		t.Fatalf("stderr = %q; want one usage line", stderr.String())
+	}
+	assertNoHiveRoot(t, cwd)
+}
+
+func TestTaskFinishValidHomeOutputFailureLogsResolvedActor(t *testing.T) {
+	for _, operation := range finishOperations {
+		t.Run(operation.name, func(t *testing.T) {
+			home, _ := seedFinishCLI(t, operation.status)
+			out := &countingShortWriter{}
+			var stderr bytes.Buffer
+			args := append([]string{"--home", home, "--json"}, operation.args...)
+			args = append(args, "--pane", operation.pane)
+			status := executeWithStreams(args, strings.NewReader(""), out, &stderr)
+			if status != 1 {
+				t.Fatalf("status = %d; stderr = %q; want 1", status, stderr.String())
+			}
+			if out.attempts != 1 {
+				t.Fatalf("JSON writer attempts = %d; want one envelope attempt", out.attempts)
+			}
+			events := taskLogEvents(t, home)
+			if countEvents(events, "task output error", map[string]string{
+				"task_id": "1-step", "agent_id": operation.actor, "phase": "output",
+			}) != 1 {
+				t.Fatalf("log events = %#v; want one stream error with the resolved actor", events)
+			}
+			if !strings.Contains(stderr.String(), "inspect: hive task show 1-step") {
+				t.Fatalf("stderr = %q; want the failure report after a resolved home", stderr.String())
+			}
+		})
 	}
 }
