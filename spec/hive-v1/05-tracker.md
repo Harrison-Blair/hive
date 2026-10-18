@@ -101,13 +101,13 @@ flowchart TD
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | in progress | | |
+| [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | landed | openai-codex/gpt-6.1-sol | 941f144 |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | ready | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | ready | | |
 | [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | ready | | |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | ready | | |
-| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | in progress | | |
+| [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
@@ -1526,6 +1526,51 @@ tables below. It accepts no source and no checkpoint.
   `internal/agent/supervisor.go`, `internal/agent/register.go`, and
   `internal/agent/doc.go` to T15. The shared-file collisions table gains the
   matching rows.
+
+### Dated landing: T12 and T18
+
+2026-10-18. This section records the T12 and T18 landings. It passes no
+checkpoint.
+
+- T12 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T12 base tip is `da26a52`. The verified T12 tip is `dd1611b`.
+- The T12 merge commit is `941f144`. Its subject is
+  `merge(T12): land the land command`. Its first parent is `da26a52`. Its
+  second parent is `dd1611b`. The merge had no conflict.
+- The combined gate ran on the uncommitted T12 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T12 push moved `origin/dev` from `da26a52` to `941f144`.
+- The T12 verifier reports are
+  `.hive/tmp/coordinator/reports/t12-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t12-verify-02.md`. Report 01 fails. Report
+  02 passes and closes each finding.
+- T18 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T18 base tip is `941f144`. The verified T18 tip is `ca26ea5`.
+- The T18 merge commit is `8078742`. Its subject is
+  `merge(T18): land the pi profile`. Its first parent is `941f144`. Its
+  second parent is `ca26ea5`. The merge had no conflict.
+- The combined gate ran on the uncommitted T18 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T18 push moved `origin/dev` from `941f144` to `8078742`.
+- The T18 verifier reports are
+  `.hive/tmp/coordinator/reports/t18-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t18-verify-02.md`. Report 02 passes the
+  corrected V2 evidence, the pane check, V1, V3, and the gate. It records
+  blocker B01. One Run 1 fixture session stays. The coordinator then removed
+  that session. This removal closes B01.
+- The `commandDeadline` seam stays. T12 changes only `run.Command` to honor
+  the caller context deadline. This landing selects no design decision for
+  the seam.
+- The installed Pi is `1.3.0`. The T18 brief names `0.87.1`.
+- The T18 V2 rerun isolates each fixture session under
+  `PI_CODING_AGENT_SESSION_DIR`.
+- The T10 V4 trust entry for `/tmp/t10fx03.WIPUhYHp` stays in
+  `~/.claude.json`.
+- CP1 and CP2 stay passed. CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
 
