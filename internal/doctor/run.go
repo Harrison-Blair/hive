@@ -3,6 +3,8 @@ package doctor
 import (
 	"context"
 	"log/slog"
+
+	"github.com/Harrison-Blair/hive/internal/lib/run"
 )
 
 // Run runs each check in order.
@@ -10,6 +12,7 @@ func Run(ctx context.Context, home string, logger *slog.Logger) Result {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	ctx = run.WithLogger(ctx, logger)
 	checks := []Check{
 		checkHerdrSocket(ctx, logger),
 		checkHerdrPane(),
