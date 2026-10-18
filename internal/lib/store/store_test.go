@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -101,6 +102,14 @@ func TestStoreProcessHelper(t *testing.T) {
 				}
 				record["count"]++
 				return json.Marshal(record)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		case "grouped-counter":
+			err := store.WithLock(context.Background(), func(locked *LockedStore) error {
+				_, err := locked.Next("shared")
+				return err
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -228,7 +237,7 @@ func TestReadRejectsOversizedInvalidAndNonRegularRecords(t *testing.T) {
 		t.Fatal(err)
 	}
 	large := filepath.Join(dir, "large.json")
-	if err := os.WriteFile(large, []byte(`{"padding":"`+strings.Repeat("x", maxRecordSize)+`"}`), 0o644); err != nil {
+	if err := os.WriteFile(large, recordOfSize(t, sizeAboveLimit), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	truncated := filepath.Join(dir, "truncated.json")
@@ -276,10 +285,9 @@ func TestReadAcceptsRecordOfExactlyOneMiB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefix, suffix := `{"padding":"`, `"}`
-	data := prefix + strings.Repeat("x", maxRecordSize-len(prefix)-len(suffix)) + suffix
-	if len(data) != maxRecordSize {
-		t.Fatalf("fixture size = %d; want %d", len(data), maxRecordSize)
+	data := recordOfSize(t, sizeAtLimit)
+	if len(data) != sizeAtLimit {
+		t.Fatalf("fixture size = %d; want %d", len(data), sizeAtLimit)
 	}
 	path := filepath.Join(home, ".hive", "state", "projects", "exact.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
