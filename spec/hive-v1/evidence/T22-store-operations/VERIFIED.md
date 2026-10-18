@@ -687,3 +687,175 @@ FAIL temp-directory: expected exit 0, no write
 exit 0
 FAIL temp-link: expected exit 1, no write, one plain error
 ```
+
+## 2026-10-18 — current verdict — t22-verify-02
+
+This section gives the current verdict. The earlier FAIL evidence remains unchanged as history.
+
+| Item | Value |
+| --- | --- |
+| Role | Fresh independent verifier |
+| Agent | pi, `openai-codex/gpt-6.1-sol:high` |
+| Branch | `task/T22-store-operations` |
+| Base | `840255d3f598ad18239eccd7a2eb2e93547ca1fb` |
+| Tested worker HEAD | `a3fea5a4304a29e1c24fd8e93b3da30ccf5aa5ad` |
+| Fix source commit | `d8155e5c78a21c0f02e275b8d9c3de1919954ae1` |
+| Overall verdict | **PASS** |
+
+The initial worktree was clean on the exact branch and worker HEAD.
+The explicit remote branch check returned the same worker HEAD before tests started.
+I read the task, V1–V5, current fix report, both earlier summaries/findings, and complete base-to-worker diff.
+The fix report marker matched. Actual tests and observable behavior supplied the acceptance evidence.
+
+| Item | Proves | Current verdict | Basis |
+| --- | --- | --- | --- |
+| V1 | AC1 | PASS | Fresh race tests, all handle methods, cancellation, release, bounded wait, and error identity. |
+| V2 | AC2 | PASS | Literal size fixtures, detected cap mutation, name checks, and both static filesystem checklists. |
+| V3 | AC3, AC4 | PASS | Related reads, completed prefixes, four-process counters, legacy behavior, and corrected walk behavior. |
+| V4 | AC2 | PASS | One bounded record reader, one record writer, one temporary maker, flock in lock.go. |
+| V5 | AC5 | PASS | Empty gofmt list, vet, lint, and uncached full race gate. |
+
+### Finding dispositions
+
+| Earlier finding | Current disposition | Evidence |
+| --- | --- | --- |
+| Primary F1: temporary-name filter | CLOSED | Matching directories descend. Matching links fail with their paths. Only regular atomic temporary files skip. |
+| Primary F2: derived size fixtures | CLOSED | Literal 1048575/1048576/1048577 fixtures pass. A 2097152 cap fails generic and legacy assertions. |
+| Path F01: linked `.hive` ancestor | CLOSED | Open rejects before external creation. Later legacy/generic access, lock, walk, and counter calls refuse the static ancestor. |
+| Path F02: linked state at Open | CLOSED | Open rejects linked and wrong-type roots. Later operations retain the same type rule. |
+
+The original post-Open replaced-root refusal remains in `TestReadInPathTypes/state_root_symlink`.
+The test first opens a valid home, replaces its empty root, and requires refusal.
+A directory at `.hive/state/lock` refuses acquisition and runs no callback.
+A nested directory named `lock` descends through the public walker.
+
+### V1, V2, and V3 runs
+
+```sh
+go test -race -count=1 ./internal/lib/store/ -run 'TestWithLock' -v
+go test -race -count=1 ./internal/lib/store/ -run 'TestStoreNames|TestReadIn|TestWriteIn|TestListIn' -v
+go test -race -count=1 ./internal/lib/store/ -run 'TestGrouped|TestLegacy|TestWalk|TestCollectWalkNodes|TestOpenRejects|TestOperationsRecheck' -v
+```
+
+```text
+V1: PASS, exit 0, 11.618s
+V2: PASS, exit 0, 1.121s
+V3 and path fixes: PASS, exit 0, 2.098s
+```
+
+Ten separate `-race -count=1` process-counter runs passed.
+Each required 200 increments from four OS processes using `LockedStore.Next`.
+The independent API executable checked every held, released, and nil handle method.
+It also checked UpdateIn errors, include selection, and completed prefixes under a later lock.
+Ten deterministic rounds showed unlocked mixtures and equal grouped versions.
+Waiting cancellation and standalone lists under a held lock passed.
+
+### Both prior checklists
+
+| Check group | Current result |
+| --- | --- |
+| Lock/general checklist | PASS: all 23 earlier items, including corrected walk filtering and fixed-size test strength. |
+| Filesystem checklist | PASS: safe/unsafe names, depth, missing paths, static types, external preservation, sizes, JSON, lists, walks, legacy behavior, and held-lock access. |
+| General input matrix | PASS: 166 commands, zero failures. |
+| Lock-type supplement | PASS: 12 commands, record bytes unchanged. |
+| Fresh exported-API filesystem tests | PASS: 25 static path/type combinations plus names/depth/missing, JSON/sizes/filtering, walk, and held-lock groups. |
+
+Static checks cover `.hive`, state root, collection ancestor, lock, and record leaf.
+They cover links, dangling links, wrong files/directories, FIFO, and socket where each type is invalid.
+External bytes stay unchanged. Dangling targets remain absent. No external state appears.
+The size probes accept 1048575 and 1048576 bytes. They reject 1048577 and 5000000 bytes.
+Oversize updates run no callback and preserve bytes.
+Other probes cover malformed/non-object JSON, 10000 extra keys, selected files, and 500-record lists.
+Unprivileged permission checks cover unreadable files, unwritable parents, and untraversable directories.
+Each matrix subprocess has a five-second bound. Rejected cases print one plain error without a stack trace.
+Static snapshots check unchanged files. The unreadable-file snapshot uses metadata. The untraversable case checks its error only.
+
+One initial ignored verifier assertion incorrectly required rejection of a real directory with a `.json` suffix.
+The prior checklist permits that directory to descend.
+I corrected only the ignored assertion. The final exported-API race run passed, exit 0.
+The artifact retains the initial assertion error. No worker source changed.
+
+### Isolated regression and mutation checks
+
+Current tests with pre-fix `store.go` and `lock.go` from `d9b644f7` compiled and failed intended assertions.
+Exit 1. Exact selected evidence:
+
+```text
+open_path_test.go:19: Open() = &{/tmp/TestOpenRejectsLinkedHiveAncestor1350681167/001}, <nil>; want store path invalid for /tmp/TestOpenRejectsLinkedHiveAncestor1350681167/001/.hive
+walk_test.go:166: WalkRecords() paths = []; want [".probe.tmp-123/one.json"]
+walk_test.go:185: WalkRecords() error = <nil>; want store path invalid for /tmp/TestWalkTemporaryPatternChecksTypeFirstlinked_collection_fails2565940013/001/.hive/state/.probe.tmp-123
+```
+
+The same run failed linked-state Open, wrong-type Open, and later linked-ancestor access assertions.
+The preserved post-Open root refusal test passed on pre-fix source.
+The historical red source `3b6c1323` also compiled and failed behavior assertions, exit 1.
+
+The cap mutation changed 1048576 to 2097152 only in an isolated source copy.
+Command within that copy:
+
+```sh
+go test -race -count=1 ./internal/lib/store -run 'TestReadInSizeBoundary|TestReadAcceptsRecordOfExactlyOneMiB|TestReadRejectsOversizedInvalidAndNonRegularRecords' -v
+```
+
+```text
+generic_test.go:223: ReadIn("above") error = <nil>; want record too large
+store_test.go:276: Read() error = <nil>; want "record too large: /tmp/TestReadRejectsOversizedInvalidAndNonRegularRecords3973075267/001/.hive/state/projects/large.json"
+FAIL, exit 1
+```
+
+Three existing mutation classes also failed assertions in copies:
+
+- Zero default wait: `returned after 20.698µs; want about two seconds`.
+- Shared flock: `counter = 56; want 200`.
+- Broad dot-file exclusion: the walk loses expected `counters/.other.json`.
+
+No mutation changed actual task source.
+
+### V4 source and architecture check
+
+```sh
+grep -nE 'os\.(Open|OpenFile|ReadFile|WriteFile|Create|CreateTemp)\(' internal/lib/store/*.go
+grep -n 'syscall.Flock' internal/lib/store/*.go
+grep -n 'io.LimitReader' internal/lib/store/*.go
+```
+
+The combined equivalent search passed. I also traced each API through the source.
+`readRecordFile` is the sole record reader and reads at most 1048577 bytes.
+`writeRecordFile` uses unchanged `atomicWrite`, the sole temporary maker.
+The temporary name starts with `.` and contains `.tmp-`.
+The lock open and production flock calls stay in `lock.go`.
+All changed source paths and imports obey task scope and architecture.
+Only `doc.go`, `store.go`, `lock.go`, and adjacent store tests change.
+No dependency, baseline, tracker, task, home, or logger source change appears.
+
+### Observable CLI and V5 gate
+
+A fresh ignored binary used only unique marked fixture homes with absolute `--home` paths.
+`project list` printed `no projects` with exit 0 for an empty registry.
+An array project record produced one `hive: record invalid: <fixture path>` line with exit 1.
+Both checks preserved state bytes. Only fixture logs could change.
+The API executable emitted `.probe.tmp-123/one.json` for the matching directory, exit 0.
+It refused the matching link with its path, exit 1.
+
+| Gate command | Result |
+| --- | --- |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | Empty output, exit 0. Empty output separately required. |
+| `go vet ./...` | Exit 0. |
+| `golangci-lint run --allow-serial-runners ./...` | `0 issues.`, exit 0. |
+| `go test -race -count=1 ./...` | PASS, exit 0. Store: 15.080s. |
+
+### Limits and delivery
+
+No required in-scope check remains uncompleted.
+The approved boundary remains a local user and a cooperating writer.
+Hostile replacement between Lstat and Open remains deferred for T01.
+Home.Resolve/logger behavior remains a separate source follow-up, outside T22 acceptance.
+No unrelated probe class, credential inspection, global configuration change, or historical attribution change occurred.
+Only this current verdict section forms the verification commit.
+The source check before commit found 46 source/module files equal to the tested worker HEAD.
+Cleanup removed only this pass's disposable fixtures, binaries, and source copies.
+The coordinator owns the next delivery decision. This pass does not merge or update the tracker.
+
+Root report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-verify-02.md`.
+Compact captures and probe sources: the sibling `t22-verify-02-artifacts/` directory.
+The report records the verification commit, push, source check, and completed cleanup.
