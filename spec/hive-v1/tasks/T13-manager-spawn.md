@@ -127,6 +127,9 @@ passes `--adopt` with its ID.
 - Proves: AC1, AC2, AC3, AC4.
 - Use one unique fixture home with the marker `.hive/README.md`, one unique
   fixture repository, and one absolute tested binary. Record the binary SHA256.
+  The harness is Pi, because the no-pane workspace path gives a Claude child no
+  private configuration, and CP2 already proves the Claude manager smoke.
+  Record the requested model and the effective model.
 - Command, from a pane of the hive session:
 
 ```sh
@@ -140,7 +143,7 @@ REPO="$FIX/repo-mgr"
 git init -q "$REPO"
 "$BIN" --home "$FIX" project register "$REPO"
 herdr workspace list
-"$BIN" --home "$FIX" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness claude --model {{T13_SMOKE_MODEL}}
+"$BIN" --home "$FIX" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness pi --model opencode-go/deepseek-v4.1-flash:medium
 echo "exit $?"
 herdr workspace list
 herdr tab list --workspace <workspace ID from the spawn output>
@@ -151,7 +154,7 @@ herdr workspace list
 rm -rf "$FIX"
 ```
 
-- Expected: both commands exit with 0. The second list shows `hive:repo-mgr`, and the tab list shows one tab with the agent status of the manager. The file starts with the generated line. The last list is the same as the first list. The fixture cleanup removes only `$FIX`.
+- Expected: both commands exit with 0. The second list shows `hive:repo-mgr`, and the tab list shows one tab with the agent status of the manager. The file starts with the generated line. The last list is the same as the first list. The fixture cleanup removes only `$FIX`. The evidence records the requested and effective model and removes the child session file the run creates under the real Pi state.
 
 ### V5 Gate
 
@@ -174,3 +177,8 @@ transcript with a unique fixture home and an absolute tested binary.
 `RestoreError` as a `*string`. `paneInfoWire` gains `restore_error`, and the
 decode gives nil for an absent value or null and fails on another type. Keep
 each other field and the AC2 refusal.
+2026-10-18. The T13 preflight (`t13-preflight-01.md`) showed that the no-pane
+workspace path gives a Claude child no private configuration. Run the live
+manager smoke on Pi at `opencode-go/deepseek-v4.1-flash:medium`. Record the
+requested and effective model, and remove the child session file that the run
+makes under the real Pi state.
