@@ -270,6 +270,9 @@ func TestCallDeadlineWithSilentServer(t *testing.T) {
 
 func TestCallSlowReply(t *testing.T) {
 	server := startServer(t, func(request testRequest) ([]byte, time.Duration, bool) {
+		if request.Method == "ping" {
+			return resultReply(request, `{"type":"pong","version":"0.9.5","protocol":22}`), 0, false
+		}
 		return resultReply(request, `{"type":"ok"}`), 1500 * time.Millisecond, false
 	})
 	t.Setenv("HERDR_SOCKET_PATH", server.path)
