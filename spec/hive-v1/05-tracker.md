@@ -99,7 +99,7 @@ flowchart TD
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
+| [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | in progress | | |
 | [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
@@ -1232,6 +1232,28 @@ correction R01. It passes no checkpoint.
   values differ.
 - Pending: the combined root integration and records check, and an independent
   check of this R01 correction.
+
+### Dated preparation receipt: T10 agent spawn core
+
+2026-10-18. This section prepares T10 for a later source start. It starts no
+source and starts no agent.
+
+- T10 moves from `blocked` to `in progress` for preparation only. Its
+  prerequisite T09 landed.
+- `implementation_allowed` is false. It stays false until a fresh independent
+  combined root integration and records check passes, and the concrete T10
+  implementation brief passes its own check.
+- `implementation_started` is false. No source edit, test, commit, or model
+  child exists for T10.
+- The preparation branch is `task/T10-agent-spawn-core`. The worktree is
+  `projects/hive/worktrees/T10-agent-spawn-core/`. The base is the final `dev`
+  commit of this pass.
+- The new branch has no source commit. It points at the prepared `dev` commit.
+  The root pane of its workspace holds a shell only.
+- T12 and each later blocked task stay blocked. CP1 stays passed without a
+  rerun. CP2 to CP5 stay open. The graph keeps 27 nodes and 46 edges.
+- Pending: a fresh independent combined root check, a checked concrete T10
+  brief, and the later T10 source work.
 
 ### CP1 home live
 
