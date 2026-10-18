@@ -164,6 +164,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.layout()
 		return m, nil
 	case tickMsg:
+		m.drainEvents()
 		m.refreshHeader()
 		if m.follow && m.errText == "" {
 			m.viewport.GotoBottom()
@@ -207,6 +208,21 @@ func (m *Model) bodyHeight() int {
 		return 1
 	}
 	return height
+}
+
+func (m *Model) drainEvents() {
+	for m.eventCh != nil {
+		select {
+		case event, ok := <-m.eventCh:
+			if !ok {
+				m.eventCh = nil
+				return
+			}
+			m.appendEvent(event)
+		default:
+			return
+		}
+	}
 }
 
 func (m *Model) layout() {

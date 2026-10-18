@@ -303,6 +303,21 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	quitMessage(t, cmd)
 }
 
+func TestFollowReadsAppendedLineOnTick(t *testing.T) {
+	home := newTestHome(t)
+	day := time.Date(2026, 4, 19, 12, 0, 0, 0, time.Local)
+	clock := fixedClock(t, day)
+	path := dailyPath(home, day)
+	writeEvents(t, path, eventJSON(t, day, "INFO", "first"))
+	m := newTestModel(t, home, clock)
+	requireView(t, m, "first")
+
+	appendEvent(t, path, eventJSON(t, day, "INFO", "second on tick"))
+	time.Sleep(700 * time.Millisecond)
+	m, _ = raise(t, m, tickMsg{})
+	requireView(t, m, "second on tick")
+}
+
 func TestFollowControlsViewport(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 7, 12, 0, 0, 0, time.Local)
