@@ -1054,3 +1054,242 @@ Hostile replacement between `Lstat` and `Open` remains deferred for T01.
 No required in-scope check remains uncompleted.
 T03 F1–F4, later integration, and landing remain uncompleted.
 Recommendation: accept this bounded T22 fix only.
+
+## 2026-10-18 — current verdict — t22-walk-types-verify-01
+
+The bounded T22 follow-up verdict is **PASS**.
+Each current verdict applies only to the exact tested worker below.
+All earlier verdict bytes and attribution remain unchanged.
+
+| Item | Value |
+| --- | --- |
+| Pass | `t22-walk-types-verify-01` |
+| Role | Fresh independent source verifier |
+| Route | pi, `openai-codex/gpt-6.1-sol:high` |
+| Route evidence | `PI_PROVIDER=openai-codex`, `PI_MODEL=gpt-6.1-sol`, `PI_REASONING_LEVEL=high` |
+| Branch | `task/T22-walk-types` |
+| Base | `c6a4d91d82042f8861a2aa4b722944272117fa23` |
+| Tested worker | `c1e32c2b9dd6f056b81f1591f4945768ae4a6656` |
+| Source fix | `7325682dbab74eabe08db7ce9d4f0bfb0d488440` |
+| Verdict commit | Separate evidence-only child of the tested worker. The root report records its exact hash. |
+| Overall | **PASS** |
+
+The initial worktree was clean at the required worker commit.
+The remote task branch matched that commit.
+I read the original task, V1–V5, complete historical verdicts, prior checklists, and the worker report.
+The worker report ends with `END WORKER T22-walk-types t22-walk-types-01`.
+The T05 dependency report ends with `END T05 RUNNER VERIFY 01`.
+Only its S05-D01 finding belongs to this pass.
+
+### Full-range source inspection
+
+I inspected the complete base-to-worker diff, not only the evidence commit.
+The full range changes these four files:
+
+- `internal/lib/store/store.go`
+- `internal/lib/store/walk_special_linux_test.go`
+- `spec/hive-v1/evidence/T22-store-operations/V3.md`
+- `spec/hive-v1/evidence/T22-store-operations/V5.md`
+
+The V3 and V5 changes preserve their exact historical prefixes.
+The production change marks special walk nodes before name filtering.
+The walker refuses each marked node before record access.
+A `.json` special leaf gives `record invalid: <path>`.
+Another special node gives `store path invalid: <path>`.
+The errors contain the complete fixture path.
+
+The existing cap guard, bounded reader, home source, and lock source remain exact.
+Only the walk change differs from the previously accepted cap version of `store.go`.
+No doctor source, separate walker, journal, schema, API, dependency, or body limit changes.
+The STE baseline does not change.
+
+### Separate verification items
+
+| Item | Proves | Verdict | Fresh evidence |
+| --- | --- | --- | --- |
+| V1 | AC1 | PASS | Lock race tests, 11.618s. Held, nil, and released handles pass the independent API checks. |
+| V2 | AC2 | PASS | Names, static paths, literal reader/writer sizes, lists, and write rejection tests, 3.298s. |
+| V3 | AC3, AC4 | PASS | Grouped, legacy, walk, and path tests, 2.101s. Actual FIFO/socket assertions pass. |
+| V4 | AC2 | PASS | Fresh searches and call tracing show one reader, one writer, one temporary maker, and lock-owned flock. |
+| V5 | AC5 | PASS | Empty format output, vet, lint, and full uncached race gate pass. |
+
+Commands from the actual task worktree root:
+
+```sh
+go test -race -count=1 ./internal/lib/store/ -run 'TestWithLock' -v
+go test -race -count=1 ./internal/lib/store/ -run 'TestStoreNames|TestReadIn|TestWriteIn|TestListIn|TestWriteLimit' -v
+go test -race -count=1 ./internal/lib/store/ -run 'TestGrouped|TestLegacy|TestWalk|TestCollectWalkNodes|TestOpenRejects|TestOperationsRecheck' -v
+go test -race -count=1 ./internal/lib/store/ -v
+go test -race -count=10 ./internal/lib/store/ -run '^TestGroupedCounterProcesses$' -v
+```
+
+```text
+V1: PASS, exit 0, 11.618s
+V2: PASS, exit 0, 3.298s
+V3: PASS, exit 0, 2.101s
+Full store: PASS, exit 0, 17.226s
+Ten four-process counter rounds: PASS, exit 0, 11.427s
+```
+
+### Earlier findings and checklist
+
+| Finding | Disposition | Current evidence |
+| --- | --- | --- |
+| Primary F1, temporary-name filtering | CLOSED, rechecked | Matching directories descend. Matching links fail. Regular atomic temporary files skip. |
+| Primary F2, derived reader-size fixtures | CLOSED, rechecked | Literal 1048575/1048576/1048577 expectations detect the isolated 2097152 cap. |
+| Path F01, linked `.hive` ancestor | CLOSED, rechecked | Open and later APIs refuse the static ancestor without external creation. |
+| Path F02, linked state root at Open | CLOSED, rechecked | Open and later APIs refuse the same wrong types. |
+| Shared G1, writer cap | CLOSED, rechecked | All writer tests and the prior 48-case literal matrix pass. The guard-removal mutation fails assertions. |
+| Secondary S05-D01 | CLOSED | Independent original/candidate doctor CLI comparison below proves the dependency fix. |
+
+Every old checklist item received a fresh test or source check.
+Unchanged items remain explicit below.
+
+| Old item | Current result and basis |
+| --- | --- |
+| 1, default wait and later deadline | PASS, unchanged. Fresh V1. |
+| 2, cancellation and timeout errors | PASS, unchanged. V1 and ten waiting-cancellation API rounds. |
+| 3, failed acquisition preserves records | PASS, unchanged. V1 and independent held-lock checks. |
+| 4, callback error and panic release | PASS, unchanged. Fresh V1. |
+| 5, nil and released handles | PASS, unchanged. Every method in the independent API executable. |
+| 6, nested lock and usable outer lock | PASS, unchanged. Fresh V1. |
+| 7, lock-free reads/lists and bounded mutations | PASS, unchanged. V1 and independent API/filesystem checks. |
+| 8, long task ID | PASS, unchanged. Generic tests, 40-character slug, and 200-byte ID checks. |
+| 9, nested inbox | PASS, unchanged. Physical-path and held-handle checks. |
+| 10, include and name filter | PASS, unchanged. Independent selection and name-order assertions. |
+| 11, invalid names | PASS, unchanged. Fresh generic tests and the 166-command matrix. |
+| 12, invalid types, JSON, and excessive size | PASS. Fresh static matrix, JSON tests, and special-node tests. |
+| 13, exact 1 MiB | PASS, unchanged. Fixed literal reader and writer boundaries. |
+| 14, static ancestors, leaves, and lock | PASS, unchanged. Fresh 25-case filesystem matrix and 12-command lock supplement. |
+| 15, related reads | PASS, unchanged. 200-round grouped test and ten deterministic API rounds. |
+| 16, completed prefix after error | PASS, unchanged. Grouped tests and a later locked API read. |
+| 17, four OS processes | PASS, unchanged. Ten fresh rounds require exactly 200 increments each. |
+| 18, legacy compatibility | PASS, unchanged. Long-ID list exclusion, long reads, colon counters, and unsafe names. |
+| 19, walk types and names | PASS. All old walk assertions plus actual FIFO/socket rejection. |
+| 20, suffixed StoredRecord.Name | PASS, unchanged. Fixed expected paths and independent walk assertions. |
+| 21, reader/writer and flock | PASS, unchanged. Fresh V4 searches and source tracing. |
+| 22, dependencies | PASS, unchanged. No module change in the full range. |
+| 23, owned files | PASS. Only the four full-range paths above change. |
+
+The reused general matrix executes 166 commands with zero failures.
+The reused lock supplement executes 12 rejected commands with unchanged record bytes.
+The exported-API filesystem suite passes 25 static path/type cases and its other existing groups.
+Permission checks run as the unprivileged local user.
+External bytes stay unchanged. Dangling targets stay absent.
+The unreadable-file snapshot uses metadata. The untraversable case checks its error only.
+Every matrix subprocess has a five-second limit.
+The prior 48-case writer matrix passes in 6.262s.
+These are fresh executions, not readings of old green captures.
+
+### Assertion-red and restored-green checks
+
+All source substitutions occur only in the owned isolated candidate copy.
+Actual worktree source remains frozen.
+Current new tests with original `c6a4d91d` store source compile and fail six intended assertions.
+Root, nested, and atomic-looking non-JSON FIFO/socket cases return nil instead of the required path error.
+Both `.json` leaf cases already fail safely on that original source.
+The regular skipped-name case also remains green.
+
+```text
+walk_special_linux_test.go:47: WalkRecords() error = <nil>; want store path invalid for /tmp/TestWalkSpecialNodesroot_fifo97632096/001/.hive/state/fifo
+--- FAIL: TestWalkSpecialNodes/root_fifo (0.00s)
+FAIL github.com/Harrison-Blair/hive/internal/lib/store 0.007s
+exit 1
+```
+
+Restoration of the exact candidate makes the same tests pass in 1.007s, exit 0.
+The test command uses `-race -count=1 -timeout 20s`.
+Actual fixtures use `Mkfifo` and Unix sockets.
+Source tracing shows no open or read of those special nodes.
+
+The existing cap, zero-wait, shared-flock, broad-dot-skip, and writer-guard mutation classes each fail behavior assertions.
+Each isolated restoration passes the same selected tests.
+No compile-only failure counts as red evidence.
+One initial filesystem replay failed internal-import setup outside the copied module.
+The unchanged probe passes after placement inside that module.
+The setup failure remains in the captures and supplies no acceptance evidence.
+
+### S05-D01 through the actual doctor CLI
+
+The isolated T05 source is exactly `e98f833173c31c830f42a5aea6c3b574a634435b` before the overlay.
+All 173 tracked paths match that Git identity.
+Only candidate `internal/lib/store/store.go` overlays the copy.
+The final comparison still finds exactly that one changed path.
+
+| Identity | SHA256 |
+| --- | --- |
+| Original T05 store | `261ce4b5a1ca9fafbfac017a420f0f7d26ef03f0af5ac98ffa46ece17b50a32d` |
+| Candidate store overlay | `ad8d9dcbfdb2b24ef9951f8225e4253fbbaa15309a4d28e1cc925f1cda317f71` |
+
+Both versions build unique absolute binaries.
+Actual commands run from the task worktree root with absolute marked fixture homes:
+
+```sh
+<absolute-binary> --home <absolute-marked-fixture-home> doctor --json
+```
+
+| Actual fixture, each with FIFO and socket | Original state-store output | Candidate state-store output |
+| --- | --- | --- |
+| `.hive/state/tasks` | `ok`, `0 records` | `fail`, `store path invalid: <full path>` |
+| `.hive/state/inbox/coordinator/tasks` | `ok`, `0 records` | `fail`, `store path invalid: <full path>` |
+| `.hive/state/.tasks.json.tmp-123` | `ok`, `0 records` | `fail`, `store path invalid: <full path>` |
+| `.hive/state/tasks/one.json` | `fail`, `record invalid: <full path>` | `fail`, `record invalid: <full path>` |
+
+All sixteen CLI invocations return in 0.0042–0.0053 seconds, below the five-second bound.
+Each emits one JSON envelope without stderr.
+Each exits 1 because the isolated environment has no herdr socket.
+That independent check failure does not replace the state-store assertion.
+The assertion compares the required status and complete literal fixture path.
+The original FIFO output fails the candidate assertion. The candidate output passes it.
+State metadata, including the special nodes, remains unchanged.
+Only fixture logs can change.
+
+The command environment has a private HOME and a PATH with only Git and the shell.
+No `gh auth status`, model process, real socket, workspace, or credential access occurs.
+An initial harness expectation incorrectly treated JSON `result` as an object.
+The actual CLI returns a list. The corrected harness checks that unchanged CLI output.
+The initial shape observation remains in the captures.
+T05 combined source verification stays **PENDING**.
+This probe accepts no T05 source and closes only S05-D01.
+
+The task binary also prints `no projects`, exit 0, on a marked empty home.
+Its invalid-record CLI probe prints one `hive: record invalid: <path>` line, exit 1.
+The CLI state checks preserve domain record bytes.
+
+### V4 and full uncached gate
+
+The prescribed V4 searches pass.
+`readRecordFile` alone reads record bytes, with Lstat and a 1048577-byte read bound.
+`writeRecordFile` alone calls the unchanged `atomicWrite` after the existing size guard.
+`atomicWrite` alone creates record temporary files.
+The lock open and production flock calls remain in `lock.go`.
+
+| Actual command from the task worktree root | Actual result |
+| --- | --- |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | Exit 0. No file names and zero format-output bytes. |
+| `go vet ./...` | Exit 0. |
+| `golangci-lint run ./...` | Exit 0. `0 issues.` |
+| `go test -race -count=1 ./...` | Exit 0. Every package passes. Store: 17.278s. |
+
+### Source freeze, cleanup, and limits
+
+Before this append, all 151 tracked paths match the tested worker byte for byte.
+The old verdict has 44882 bytes and SHA256 `aeac0de81bc8b3d361b52bfd3c08e384e36b0c81716c6d14600a52184e6513ee`.
+This append preserves that exact prefix.
+Only this dated section enters the separate verdict commit.
+The root report records that commit and the named-branch push.
+No force-push, merge, main change, tracker change, or worktree removal occurs.
+
+Cleanup removes only owned copies, fixture homes, matrix fixtures, and unique binaries.
+Captures retain scripts, actual outputs, hashes, and cleanup records.
+All earlier reports, logs, runtime records, credentials, worktrees, and agents remain.
+No global configuration or STE baseline changes.
+No required in-scope step remains uncompleted.
+T05 combined verification, later integration, and landing remain uncompleted.
+The approved boundary remains a local user and a cooperating writer.
+Hostile replacement between `Lstat` and `Open` remains deferred for T01.
+No new hostile-race probe class applies.
+Recommendation: accept only this bounded T22 fix and its S05-D01 dependency closure.
+
+Report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-walk-types-verify-01.md`.
+Captures: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-walk-types-verify-01-captures/`.
