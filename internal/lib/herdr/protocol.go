@@ -10,7 +10,7 @@ import (
 const Protocol = 22
 
 type protocolGate struct {
-	done bool
+	done chan struct{}
 	err  error
 }
 
@@ -44,21 +44,32 @@ func ensureProtocol(ctx context.Context, options callOptions) error {
 		return err
 	}
 	gateMu.Lock()
-	defer gateMu.Unlock()
-	gate := gates[path]
-	if gate == nil {
-		gate = &protocolGate{}
+	gate, found := gates[path]
+	if !found {
+		gate = &protocolGate{done: make(chan struct{})}
 		gates[path] = gate
+		gateMu.Unlock()
+		err := handshake(ctx, options)
+		gateMu.Lock()
+		gate.err = err
+		close(gate.done)
+		gateMu.Unlock()
+		return err
 	}
-	if gate.done {
+	gateMu.Unlock()
+	select {
+	case <-gate.done:
 		return gate.err
+	case <-ctx.Done():
+		return ctx.Err()
 	}
+}
+
+func handshake(ctx context.Context, options callOptions) error {
 	pingOptions := []Option{WithDeadline(options.deadline)}
 	if options.logger != nil {
 		pingOptions = append(pingOptions, WithLogger(options.logger))
 	}
-	_, err = Ping(ctx, pingOptions...)
-	gate.err = err
-	gate.done = true
+	_, err := Ping(ctx, pingOptions...)
 	return err
 }

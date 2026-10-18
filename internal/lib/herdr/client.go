@@ -14,9 +14,11 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
@@ -26,6 +28,7 @@ const (
 	DefaultDeadline = 10 * time.Second
 	maxRequestLine  = 1 << 20
 	maxReplyLine    = 1 << 20
+	maxErrorText    = 4096
 )
 
 var errRequestTooLarge = errors.New("request too large")
@@ -83,9 +86,9 @@ func nextRequestID() string {
 }
 
 type requestEnvelope struct {
-	ID     string `json:"id"`
-	Method string `json:"method"`
-	Params any    `json:"params"`
+	ID     string          `json:"id"`
+	Method string          `json:"method"`
+	Params json.RawMessage `json:"params"`
 }
 
 // Call opens one connection, writes one request line, reads one reply line, and
@@ -97,30 +100,39 @@ func Call(ctx context.Context, method string, params, result any, opts ...Option
 	options := newCallOptions(opts)
 	callCtx, cancel := context.WithTimeout(ctx, options.deadline)
 	defer cancel()
-	path, err := socketPath()
-	if err != nil {
+	requestID := nextRequestID()
+	started := time.Now()
+	fail := func(err error) error {
+		logCallError(options.logger, requestID, method, started, err)
 		return err
 	}
-	requestID := nextRequestID()
-	if params == nil {
-		params = struct{}{}
-	}
-	line, err := json.Marshal(requestEnvelope{ID: requestID, Method: method, Params: params})
+	path, err := socketPath()
 	if err != nil {
-		return fmt.Errorf("herdr request: %s", err)
+		return fail(err)
+	}
+	paramsJSON, err := json.Marshal(params)
+	if err != nil {
+		return fail(fmt.Errorf("herdr request: %s", plainError(err)))
+	}
+	if bytes.Equal(bytes.TrimSpace(paramsJSON), []byte("null")) {
+		paramsJSON = []byte("{}")
+	}
+	line, err := json.Marshal(requestEnvelope{ID: requestID, Method: method, Params: json.RawMessage(paramsJSON)})
+	if err != nil {
+		return fail(fmt.Errorf("herdr request: %s", plainError(err)))
 	}
 	line = append(line, '\n')
 	if len(line) > maxRequestLine {
-		return errRequestTooLarge
+		return fail(errRequestTooLarge)
 	}
 	if method != "ping" {
 		if err := ensureProtocol(callCtx, options); err != nil {
-			return err
+			return fail(err)
 		}
 	}
 	conn, err := dial(callCtx, path)
 	if err != nil {
-		return err
+		return fail(err)
 	}
 	defer func() { _ = conn.Close() }()
 	if deadline, ok := callCtx.Deadline(); ok {
@@ -136,17 +148,19 @@ func Call(ctx context.Context, method string, params, result any, opts ...Option
 		}
 	}()
 
-	started := time.Now()
 	logEvent(options.logger, "herdr request", requestID, method, started, line)
 	if err := writeLine(conn, line); err != nil {
-		return callFailure(callCtx, fmt.Errorf("herdr %s: write request: %s", method, plainError(err)))
+		return fail(callFailure(callCtx, fmt.Errorf("herdr %s: write request: %s", method, plainError(err))))
 	}
 	reply, err := readReply(bufio.NewReader(conn), maxReplyLine)
 	if err != nil {
-		return callFailure(callCtx, err)
+		return fail(callFailure(callCtx, err))
 	}
 	logEvent(options.logger, "herdr reply", requestID, method, started, reply)
-	return settleReply(requestID, reply, result)
+	if err := settleReply(requestID, reply, result); err != nil {
+		return fail(err)
+	}
+	return nil
 }
 
 func socketPath() (string, error) {
@@ -226,30 +240,86 @@ func readReply(reader *bufio.Reader, limit int) ([]byte, error) {
 
 func settleReply(requestID string, reply []byte, result any) error {
 	var envelope struct {
-		ID     string           `json:"id"`
-		Result *json.RawMessage `json:"result"`
-		Error  *Error           `json:"error"`
+		ID     string          `json:"id"`
+		Result json.RawMessage `json:"result"`
+		Error  json.RawMessage `json:"error"`
 	}
 	if err := json.Unmarshal(reply, &envelope); err != nil {
-		return fmt.Errorf("bad reply: %s", err)
+		return fmt.Errorf("bad reply: %s", plainError(err))
 	}
 	if envelope.ID != requestID {
 		return fmt.Errorf("bad reply: id %q, want %q", envelope.ID, requestID)
 	}
+	hasResult := envelope.Result != nil
+	hasError := envelope.Error != nil
 	switch {
-	case envelope.Result != nil && envelope.Error != nil:
+	case hasResult && hasError:
 		return errors.New("bad reply: has result and error")
-	case envelope.Result == nil && envelope.Error == nil:
+	case !hasResult && !hasError:
 		return errors.New("bad reply: has no result or error")
 	}
-	if envelope.Error != nil {
-		return envelope.Error
-	}
-	if result != nil {
-		if err := json.Unmarshal(*envelope.Result, result); err != nil {
-			return fmt.Errorf("bad reply: %s", err)
+	if hasError {
+		if isJSONNull(envelope.Error) {
+			return errors.New("bad reply: error is null")
 		}
+		var serverError Error
+		if err := json.Unmarshal(envelope.Error, &serverError); err != nil {
+			return fmt.Errorf("bad reply: %s", plainError(err))
+		}
+		return &serverError
 	}
+	if result == nil {
+		return nil
+	}
+	if isJSONNull(envelope.Result) {
+		// A null result changes only nil-able destinations. Keep that behavior.
+		if err := json.Unmarshal(envelope.Result, result); err != nil {
+			return fmt.Errorf("bad reply: %s", plainError(err))
+		}
+		return nil
+	}
+	return decodeResult(envelope.Result, result)
+}
+
+func isJSONNull(raw json.RawMessage) bool {
+	return bytes.Equal(bytes.TrimSpace(raw), []byte("null"))
+}
+
+func decodeResult(raw json.RawMessage, result any) error {
+	value := reflect.ValueOf(result)
+	if !value.IsValid() {
+		return nil
+	}
+	if value.Kind() == reflect.Map {
+		if value.IsNil() {
+			return errors.New("bad reply: nil map result destination")
+		}
+		temporary := reflect.MakeMap(value.Type())
+		if err := json.Unmarshal(raw, temporary.Interface()); err != nil {
+			return fmt.Errorf("bad reply: %s", plainError(err))
+		}
+		value.Clear()
+		iter := temporary.MapRange()
+		for iter.Next() {
+			value.SetMapIndex(iter.Key(), iter.Value())
+		}
+		return nil
+	}
+	if value.Kind() != reflect.Pointer {
+		// The encoding package reports an invalid destination and changes nothing.
+		if err := json.Unmarshal(raw, result); err != nil {
+			return fmt.Errorf("bad reply: %s", plainError(err))
+		}
+		return nil
+	}
+	if value.IsNil() {
+		return errors.New("bad reply: nil result destination")
+	}
+	temporary := reflect.New(value.Elem().Type())
+	if err := json.Unmarshal(raw, temporary.Interface()); err != nil {
+		return fmt.Errorf("bad reply: %s", plainError(err))
+	}
+	value.Elem().Set(temporary.Elem())
 	return nil
 }
 
@@ -278,9 +348,39 @@ func logEvent(logger *slog.Logger, message, requestID, method string, started ti
 	)
 }
 
+func logCallError(logger *slog.Logger, requestID, method string, started time.Time, err error) {
+	if logger == nil || err == nil {
+		return
+	}
+	text := plainError(err)
+	truncated := false
+	if len(text) > maxErrorText {
+		text = text[:maxErrorText]
+		for len(text) > 0 && !utf8.ValidString(text) {
+			text = text[:len(text)-1]
+		}
+		truncated = true
+	}
+	attributes := []any{
+		"request_id", requestID,
+		"method", method,
+		"duration_ms", time.Since(started).Milliseconds(),
+		"error", text,
+	}
+	if truncated {
+		attributes = append(attributes, "truncated", true)
+	}
+	logger.Debug("herdr error", attributes...)
+}
+
 func plainError(err error) string {
 	if err == nil {
 		return ""
 	}
-	return strings.ReplaceAll(err.Error(), "\n", " ")
+	return strings.Map(func(value rune) rune {
+		if value < 0x20 || value == 0x7f {
+			return ' '
+		}
+		return value
+	}, err.Error())
 }
