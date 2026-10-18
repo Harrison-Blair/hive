@@ -201,19 +201,16 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 	}
 	if !namePattern.MatchString(name) {
-		if len(effects) > 0 {
-			return output.Envelope{Outcome: "partial", Phase: "agent", Effects: effects, Error: "invalid agent name: " + name, Result: nil}
-		}
-		return failed("validate", "invalid agent name: "+name)
+		return lockedFailure(effects, "validate", "invalid agent name: "+name)
 	}
 
 	agentRecords, err := loadAgents(writer)
 	if err != nil {
-		return failed("store", err.Error())
+		return lockedFailure(effects, "store", err.Error())
 	}
 	claims, err := loadClaims(writer)
 	if err != nil {
-		return failed("store", err.Error())
+		return lockedFailure(effects, "store", err.Error())
 	}
 	agentByKey := make(map[string]records.Agent, len(agentRecords))
 	for _, record := range agentRecords {
@@ -239,7 +236,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 
 	for _, record := range agentRecords {
 		if !singleton && record.Name == name && record.Status == records.AgentLive {
-			return failed("agent", "agent exists: "+name)
+			return lockedFailure(effects, "agent", "agent exists: "+name)
 		}
 		if record.Status != records.AgentLive && record.Status != records.AgentUnresolved {
 			continue
@@ -249,7 +246,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 		allowed := singleton && (record.Key == previousHolderKey || record.Key == recordKey)
 		if !allowed {
-			return failed("agent", "pane busy: "+options.PaneID+" holds "+record.Name)
+			return lockedFailure(effects, "agent", "pane busy: "+options.PaneID+" holds "+record.Name)
 		}
 	}
 
@@ -261,12 +258,12 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			existing.Project == options.Project && existing.Task == options.Task &&
 			existing.Generation == generation
 		if !replaceOrphan {
-			return failed("agent", "agent exists: "+recordKey)
+			return lockedFailure(effects, "agent", "agent exists: "+recordKey)
 		}
 	}
 	for _, claim := range claims {
 		if claim.Key != claimKey && claim.Agent == recordKey {
-			return failed("agent", "agent exists: "+recordKey)
+			return lockedFailure(effects, "agent", "agent exists: "+recordKey)
 		}
 	}
 
@@ -282,7 +279,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 				return json.Marshal(record)
 			})
 			if err != nil {
-				return failed("agent", "write stale agent: "+err.Error())
+				return lockedFailure(effects, "agent", "write stale agent: "+err.Error())
 			}
 			effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", holder.Key), Action: "stale"})
 		}
@@ -317,10 +314,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		action = "updated"
 	}
 	if err := writer.WriteIn([]string{"agents"}, recordKey, record); err != nil {
-		if len(effects) > 0 {
-			return output.Envelope{Outcome: "partial", Phase: "agent", Effects: effects, Error: "write agent: " + err.Error(), Result: nil}
-		}
-		return failed("agent", "write agent: "+err.Error())
+		return lockedFailure(effects, "agent", "write agent: "+err.Error())
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", recordKey), Action: action})
 
@@ -382,6 +376,16 @@ func loadClaims(writer lockedWriter) ([]records.Claim, error) {
 
 func statePath(collection, id string) string {
 	return filepath.ToSlash(filepath.Join(".hive", "state", collection, id+".json"))
+}
+
+func lockedFailure(effects []output.Effect, phase, message string) output.Envelope {
+	if len(effects) == 0 {
+		return failed(phase, message)
+	}
+	if effects[0].Resource == "counter" {
+		phase = "agent"
+	}
+	return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: message, Result: nil}
 }
 
 func failed(phase, message string) output.Envelope {
