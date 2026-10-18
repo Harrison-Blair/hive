@@ -12,7 +12,7 @@ func atomicWrite(path string, data []byte) error {
 		return err
 	}
 	temp := file.Name()
-	defer os.Remove(temp)
+	defer func() { _ = os.Remove(temp) }()
 	if err := file.Chmod(0o644); err != nil {
 		_ = file.Close()
 		return err

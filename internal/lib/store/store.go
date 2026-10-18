@@ -169,7 +169,7 @@ func (s *Store) withLock(fn func() error) error {
 	if err != nil {
 		return err
 	}
-	defer lock.Close()
+	defer func() { _ = lock.Close() }()
 	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func readRecordFile(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	data, err := io.ReadAll(io.LimitReader(file, maxRecordSize+1))
 	if err != nil {
 		return nil, err
