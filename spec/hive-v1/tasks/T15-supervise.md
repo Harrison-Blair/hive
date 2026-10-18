@@ -51,14 +51,15 @@ its pane and its `terminal_id`, never by its herdr name.
 | `internal/lib/herdr/doc.go` | Add the map line. |
 | `internal/lib/records/claim.go` | Add `pid_start`, the start time of the process from `/proc/<pid>/stat`. |
 | `internal/lib/records/inbox.go` | Add `nudged_generation`. |
-| `internal/lib/process/process.go` | New. `Alive(pid, start)` reads `/proc/<pid>/stat` and compares the start time. `doctor` and `supervise` share it. |
+| `internal/lib/records/agent.go` | Add `agent_status`, the last observed harness status. It is separate from the lifecycle `status`. |
+| `internal/lib/inbox/inbox.go` | Shared with T11. Consume the held-handle append API. Do not add a second append or a nested lock. |
 | `internal/doctor/checks.go` | Change the supervisor check: the claim exists and its `pid` with its `pid_start` is a running process. |
 
 ## Requirements
 
 ### AC1 Singleton
 
-- The start takes the store lock, reads the `supervisor` claim, and checks it with `process.Alive(pid, pid_start)`. A live claim fails the start with `supervisor live: pid <n>`. Otherwise the start registers the role `supervisor` with the own pid and start time in the same mutation, which increments the generation. Two starts at the same time give exactly one supervisor.
+- The start takes the store lock, reads the `supervisor` claim, and checks it with `process.Alive(pid, pid_start)` from the T10 package. A live claim fails the start with `supervisor live: pid <n>`. Otherwise the start registers the role `supervisor` with the own pid and start time in the same mutation, which increments the generation. Two starts at the same time give exactly one supervisor.
 - A claim whose pid names a process with another start time is stale. The pid belongs to a new process.
 - The process stays in the foreground. On `SIGINT` or `SIGTERM` it closes the subscription and exits with 0. When the subscription connection ends, it exits with 1. Nothing restarts it in a loop.
 - With `--json` the process prints one envelope at exit, with the outcome and the exit reason. Without `--json` it prints one line at the start and one line at each record it writes.
@@ -67,24 +68,28 @@ its pane and its `terminal_id`, never by its herdr name.
 
 | Input | Condition | Action |
 | --- | --- | --- |
-| Status changed to `blocked` | The pane holds a `live` record with another stored status | Append `blocked` to the controlling role. Store the status. |
+| Status changed to `blocked` | The pane holds a `live` record with another stored status | Increment the inbox counter. Append `blocked` to the controlling role. Store `blocked`. |
 | Status changed to `idle` or `done` | The record has `finished` true | Run the stop function of T10. The record becomes `stopped`. |
 | Status changed to `idle` or `done` | `finished` false, and no `completed` record for the task since the last `working` | Start the quiet timer of the agent. Store the status. |
-| Status changed to `working` | A quiet timer runs | Cancel the timer. Store the status. |
-| Quiet timer ends | The stored status is still `idle` or `done` | Append `quiet` to the controlling role. Once for each idle period. |
-| `pane_agent_detected` with `released` true and `final_status` `unknown` | The pane holds a `live` record | Set the record `exited`. Append `exited` to the controlling role. |
-| `pane_exited`, `pane_closed`, `tab_closed`, or `workspace_closed` | The closed pane, tab, or workspace holds a `live` record | Set the record `unresolved`. Append `unresolved` to the controlling role. |
+| Status changed to `working` | Any | Cancel a quiet timer. Store the status. |
+| Quiet timer ends | The stored status is still `idle` or `done` | Increment the inbox counter. Append `quiet`. Store the status. Once for each idle period. |
+| `pane_agent_detected` with `released` true and `final_status` `unknown` | The pane holds a `live` record | Increment the inbox counter. Append `exited`. Set the record `exited` and store that lifecycle status. |
+| `pane_exited`, `pane_closed`, `tab_closed`, or `workspace_closed` | The closed pane, tab, or workspace holds a `live` record | Increment the inbox counter. Append `unresolved`. Set the record `unresolved` and store that lifecycle status. |
 | `pane_moved` | `previous_pane_id` is the pane of a `live` record | Set `pane_id`, `workspace_id`, and `tab_id` from `pane`. Append the old pane ID to `pane_history`. Rebuild the subscription. |
 | A status push with the stored status | Any | Log only. herdr pushes the event also on a metadata change. |
 
+- A notification group uses one held handle. The order is the inbox counter, the inbox record, then the final status. It uses this order for `blocked`, `quiet`, `exited`, and `unresolved`. For `exited` and `unresolved`, the final status write also sets the lifecycle status. A working transition stores the status and writes no inbox record.
+- Run each stop request and each subscription change outside the store lock. Read the records under one grouped read before the call.
+- A first counter failure gives `failed` with no effects. A record failure gives `partial` with the counter gap. A final-status failure gives `partial` with the counter and the record. For `exited`, `unresolved`, and `quiet`, these failures apply to each group. A status-only `working` write failure gives `failed` with no other effect, because it writes no counter and no record. Every storage failure closes the subscription, exits 1, and stops queued processing. Do not process a later event against the failed state and do not run an internal recovery loop.
+- An explicit restart reconciles the current state only. A gap can lose transition history. A committed inbox prefix can duplicate a notification after restart. A restart starts a new quiet window. Normal uninterrupted delivery stays once for each observed period.
 - `done` means idle in a tab that nobody saw yet. Each rule treats it as `idle`.
 - The controlling role of a worker or a verifier is `manager-<project>`. The controlling role of a manager is `coordinator`. A coordinator or a supervisor record has no controlling role, so the supervisor logs the event only.
 - The quiet period is `quiet_after_min` of the record, else 10 minutes. The supervisor has no flag for it.
 - A long `working` status is never an event.
 - An agent that exits to its shell gives `pane_agent_detected` with `released` true and no `pane_exited`. Only that evidence gives `exited`. A closed pane or workspace with a `live` record gives `unresolved`, because the supervisor cannot tell an exit from a loss. The stop function of T10 sets the record `stopped` before it closes the pane, so the close events of a stop match no `live` record.
 - The supervisor also evaluates the stop rule and the nudge rule at its start and on each change in the store. A `finished` mark on a record with the stored status `idle` or `done` leads to the stop without a new event.
-- The subscription is one `events.subscribe` request with one `{"type":"pane.agent_status_changed","pane_id":"<pane>"}` entry for each watched pane, and the plain entries `pane.agent_detected`, `pane.exited`, `pane.closed`, `tab.closed`, `workspace.closed`, and `pane.moved`. The watched panes are the panes of the `live` records. The envelope of a status change is `{"event":"pane.agent_status_changed","pane_id":...,"agent_status":...}`. The other events use the plain envelope with `data.type`.
-- herdr has no method that changes a subscription. When the watched set changes, the supervisor opens a new connection with the new list, then closes the old one. A new `live` record, a record that leaves `live`, a `pane_moved`, or a `pane_id` change through the store, such as `hive agent resolve` of T20, changes the set. After each rebuild the supervisor calls `agent.get` on each watched pane and applies the status as a push, so no change in the gap is lost.
+- The subscription is one `events.subscribe` request with one `{"type":"pane.agent_status_changed","pane_id":"<pane>"}` entry for each watched pane, and the plain entries `pane.agent_detected`, `pane.exited`, `pane.closed`, `tab.closed`, `workspace.closed`, and `pane.moved`. The watched panes are the panes of the `live` records. The dotted status frame is exactly `{"event":"pane.agent_status_changed","data":{"pane_id":"w1:p2","workspace_id":"w1","agent_status":"working"}}`. The other events use the plain envelope with `data.type`. Do not add a sequence field.
+- herdr has no method that changes a subscription. When the watched set changes, the supervisor opens a new connection with the new list, then closes the old one. A new `live` record, a record that leaves `live`, a `pane_moved`, or a `pane_id` change through the store, such as `hive agent resolve` of T20, changes the set. After each rebuild the supervisor calls `agent.get` on each watched pane and applies the current status. It does not reconstruct a transition during the gap.
 - The subscription connection has no deadline. Each other request, the stop function of T10 included, uses the default deadline of the client of T05.
 - Each event and each rebuild is a log event.
 
@@ -92,18 +97,21 @@ its pane and its `terminal_id`, never by its herdr name.
 
 - The supervisor learns about a new inbox record from the inotify watch of `.hive/state/inbox/`, including new role directories, within one second. The watch of `.hive/state/agents/` gives the record changes.
 - An unread record needs a nudge when its `nudged_at` is empty. It also needs one when its `nudged_generation` differs from the `generation` of the live record of its role. A restarted role gets the nudge again.
-- The agent of that role must have the stored status `idle` or `done`. Then the supervisor sends one `agent.prompt` with `target` equal to the pane ID, one line, and no wait. The line is `hive: <n> new inbox record(s), run: hive --home <home> inbox`. It sets `nudged_at` and `nudged_generation` on each record.
+- The agent of that role must have the stored status `idle` or `done`. Then the supervisor sends one `agent.prompt` with `target` equal to the pane ID, one line, and no wait. The line is `hive: <n> new inbox record(s), run: hive --home <home> inbox`.
+- Run the prompt outside the store lock. After the prompt succeeds, take the lock again. Recheck the same claim holder and generation. Then set `nudged_at` and `nudged_generation` in one atomic write for each record.
 - When the agent is `working` or `blocked`, the supervisor waits and nudges at its next transition to `idle` or `done`.
 - When the role has no live agent, the records stay unread without a nudge.
 - A failed prompt, such as `agent_prompt_stalled`, `agent_blocked`, or `agent_not_ready`, is a log event. The records stay without `nudged_at`. The next transition to `idle` or `done` retries.
+- A successful prompt followed by a failed mark gives `partial` with the prompt effect. The records stay unread. An explicit retry can send a second prompt. Do not promise rollback of terminal input.
 
 ### AC4 Reconcile
 
 - At the start and after each rebuild, the supervisor reconciles each record with the status `live`, except the own supervisor record.
+- The stop uses the T10 identity check. A pane and terminal match is not an ownership check.
 - For a record with a pane, it calls `agent.get` with the pane ID. A reply with the `terminal_id` of the record gives the stored status. A record without `terminal_id`, such as a registration by hand, takes the `terminal_id` of the reply. A reply with another `terminal_id` makes the record `unresolved`, because another agent holds the pane.
 - On `agent_not_found` it calls `pane.get`. A pane with the status `unknown`, no `agent`, and no `restore_error` makes the record `exited`. A pane that does not exist, or a pane with `restore_error`, makes the record `unresolved`.
 - A record of the role `supervisor` with a `generation` other than the own claim becomes `stopped`. The supervisor makes no herdr call for it, because the claim was free.
-- Each `exited` or `unresolved` result appends its kind to the controlling role. A live herdr agent without a record is a log event.
+- Each `exited` or `unresolved` result uses the notification order: increment the inbox counter, append its kind to the controlling role, then write the lifecycle status. A live herdr agent without a record is a log event.
 - The supervisor then starts the quiet timers for the settled agents and evaluates the stop rule and the nudge rule.
 
 ### AC5 Doctor
@@ -119,8 +127,8 @@ its pane and its `terminal_id`, never by its herdr name.
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | Exactly one supervisor runs for a home, and the process exits as the requirements give. | V1, V6 |
-| AC2 | Each row of the event table produces its record, its stop, or its rebuild, and only once for each period. | V2, V5, V6 |
-| AC3 | A nudge goes to a settled role once for each generation, waits for a working role, and retries after a failure. | V3, V5, V6 |
+| AC2 | Each row of the event table produces its counter, record, status, stop, or rebuild, and only once for each period. A storage failure stops the process. | V2, V5, V6 |
+| AC3 | A nudge goes to a settled role once for each generation, waits for a working role, and retries after a failure. A failed mark can repeat the prompt on an explicit retry. | V3, V5, V6 |
 | AC4 | The reconcile marks each record by the state of its pane and the own claim. | V4 |
 | AC5 | `doctor` shows the live state of the supervisor. | V6 |
 | AC6 | The gate passes. | V7 |
@@ -137,13 +145,13 @@ its pane and its `terminal_id`, never by its herdr name.
 
 - Proves: AC2.
 - Command: `go test -race ./internal/supervise/ -run 'TestEvents|TestSubscription' -v`, red and green.
-- Expected: a fake herdr server pushes the literal frames of `reference/herdr/events.md` over a subscription. A fake clock drives the quiet timer. Each row of the table has a case, and the once-only rules have a case with a repeated event. Cases: `done` as idle, a repeated push with the stored status, and `pane_agent_detected` with `released` true. More cases: `workspace_closed` over a live record, and `pane_moved` with the record update and `pane_history`. The subscribe request has one `pane.agent_status_changed` entry for each live pane and the six plain entries. A new live record, a `pane_moved`, and a `pane_id` change in a record file each open a new connection. Each of these closes the old connection and calls `agent.get` for each watched pane. A `finished` mark written to a record with the stored status `idle` leads to the stop without an event.
+- Expected: a fake herdr server pushes the literal frames of `reference/herdr/events.md` over a subscription. The status frame is the literal dotted frame with the nested `data` object and `workspace_id`. The plain frames carry `data.type`. No frame carries a sequence field. A fake clock drives the quiet timer. Each row of the table has a case, and the once-only rules have a case with a repeated event. Cases: `done` as idle, a repeated push with the stored status, and `pane_agent_detected` with `released` true. More cases: `workspace_closed` over a live record, and `pane_moved` with the record update and `pane_history`. A `blocked`, `working`, `blocked` cycle stores three transitions and writes two blocked records. The first counter failure gives `failed` with no effects for `blocked`, `quiet`, `exited`, and `unresolved`. A record failure gives `partial` with the counter gap. A final-status failure gives `partial` with the counter and the record. For `exited` and `unresolved`, the lifecycle status stays unchanged after a final-status failure. A status-only `working` write failure gives `failed` with no other effect. Every storage failure closes the subscription, exits 1, and stops queued processing. A successful prompt before a disk failure keeps the prompt effect and the unread record. A restart after a status failure reconciles the current state and can write a second blocked record. A subscription gap does not reconstruct a transition. The subscribe request has one `pane.agent_status_changed` entry for each live pane and the six plain entries. A new live record, a `pane_moved`, and a `pane_id` change in a record file each open a new connection. Each of these closes the old connection and calls `agent.get` for each watched pane. A `finished` mark written to a record with the stored status `idle` leads to the stop without an event. The stop uses the T10 process identity and closes nothing on a mismatch.
 
 ### V3 Nudge tests
 
 - Proves: AC3.
 - Command: `go test -race ./internal/supervise/ -run TestNudge -v`, red and green.
-- Expected: an appended record and an idle manager give one prompt with the line and the pane as the target. A `done` manager gets the prompt. A working manager and a blocked manager give no prompt until the idle event. A new generation of the manager gets the prompt again for the same record. A scripted `agent_prompt_stalled` and a scripted `agent_blocked` leave `nudged_at` empty, and the next idle event retries. A role without a live agent gets no prompt.
+- Expected: an appended record and an idle manager give one prompt with the line and the pane as the target. A `done` manager gets the prompt. A working manager and a blocked manager give no prompt until the idle event. A new generation of the manager gets the prompt again for the same record. A scripted `agent_prompt_stalled` and a scripted `agent_blocked` leave `nudged_at` empty, and the next idle event retries. A role without a live agent gets no prompt. The prompt request runs before the mark write. A prompt success and mark failure gives `partial` with the prompt effect and an unread record. A later explicit retry sends a second prompt.
 
 ### V4 Reconcile tests
 
@@ -160,43 +168,58 @@ its pane and its `terminal_id`, never by its herdr name.
 ### V6 Live transcript
 
 - Proves: AC1, AC2, AC3, AC5.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Record the binary SHA256.
+- Create one absolute fixture wrapper at `$FIX/bin/hive` that executes `$BIN`.
+  Record the wrapper path and the binary SHA256. Each child command uses the
+  wrapper and the fixture home.
 - Command, from a pane of the hive session, with two new tabs in the own workspace of the worker:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-sup projects/repo-sup .hive/tmp/supervise.out
-git init -q .hive/tmp/repo-sup && git -C .hive/tmp/repo-sup commit -q --allow-empty -m init
-./hive --home "$PWD" project register .hive/tmp/repo-sup
-./hive --home "$PWD" task create --project repo-sup --title "supervise demo"
-herdr tab create --workspace "$HERDR_WORKSPACE_ID"
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+mkdir -p "$FIX/bin"
+WRAP="$FIX/bin/hive"
+printf '#!/bin/sh\nexec "%s" "$@"\n' "$BIN" > "$WRAP"
+chmod +x "$WRAP"
+echo "$WRAP"
+REPO="$FIX/repo-sup"
+git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
+"$BIN" --home "$FIX" project register "$REPO"
+"$BIN" --home "$FIX" task create --project repo-sup --title "supervise demo"
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 M_PANE=<root pane ID from the output>
-herdr tab create --workspace "$HERDR_WORKSPACE_ID"
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 W_PANE=<root pane ID from the output>
 M="t15-check-m-$(date +%s)"
 W="t15-check-w-$(date +%s)"
-./hive --home "$PWD" agent spawn --pane "$M_PANE" --role manager --project repo-sup --name "$M" --harness claude --model <small model>
-./hive --home "$PWD" agent spawn --pane "$W_PANE" --role worker --project repo-sup --task 1-supervise-demo --name "$W" --harness claude --model <small model>
-./hive --home "$PWD" task assign --task 1-supervise-demo --agent "$W"
-./hive --home "$PWD" supervise > .hive/tmp/supervise.out 2>&1 &
+"$BIN" --home "$FIX" agent spawn --pane "$M_PANE" --role manager --project repo-sup --name "$M" --harness claude --model {{T15_SMOKE_MODEL}}
+"$BIN" --home "$FIX" agent spawn --pane "$W_PANE" --role worker --project repo-sup --task 1-supervise-demo --name "$W" --harness claude --model {{T15_SMOKE_MODEL}}
+"$BIN" --home "$FIX" task assign --task 1-supervise-demo --agent "$W"
+"$BIN" --home "$FIX" supervise > "$FIX/supervise.out" 2>&1 &
 SUP=$!
 sleep 2
-./hive --home "$PWD" doctor
-./hive --home "$PWD" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: hive --home '$PWD' task complete --task 1-supervise-demo"
+"$BIN" --home "$FIX" doctor
+"$BIN" --home "$FIX" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: '$WRAP' --home '$FIX' task complete --task 1-supervise-demo"
 sleep 5
-./hive --home "$PWD" agent list --all
-./hive --home "$PWD" inbox --role manager-repo-sup
+"$BIN" --home "$FIX" agent list --all
+"$BIN" --home "$FIX" inbox --role manager-repo-sup
 herdr pane read "$M_PANE" --lines 20
-./hive --home "$PWD" agent stop --agent "$M"
+"$BIN" --home "$FIX" agent stop --agent "$M"
 kill -INT "$SUP"
 wait "$SUP"
 echo "exit $?"
-cat .hive/tmp/supervise.out
-./hive --home "$PWD" doctor
+cat "$FIX/supervise.out"
+"$BIN" --home "$FIX" doctor
 herdr tab list --workspace "$HERDR_WORKSPACE_ID"
-rm -rf .hive/tmp/repo-sup projects/repo-sup .hive/tmp/supervise.out
+rm -rf "$FIX"
 ```
 
-- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The second `doctor` shows `warn supervisor down`. The tab list shows neither new tab, because each stop closed the only pane of its tab.
+- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The worker completion command uses the absolute wrapper, and the wrapper executes the tested binary. The second `doctor` shows `warn supervisor down`. The tab list shows neither new tab, because each stop closed the only pane of its tab. The fixture cleanup removes only `$FIX`.
 
 ### V7 Gate
 
@@ -212,4 +235,9 @@ rm -rf .hive/tmp/repo-sup projects/repo-sup .hive/tmp/supervise.out
 
 ## Changes
 
-None.
+2026-10-18. Move the process reader to T10. Add the counter, record, status
+order for each notification group, the storage-failure exit, the restart limits,
+the quiet-window rule, and the nudge check outside the lock. Add `agent_status`.
+Replace the live transcript with a unique fixture home and an absolute tested
+binary. Correct the `exited` and `unresolved` order, the dotted status frame,
+the final lifecycle status, and the fixture wrapper binding.

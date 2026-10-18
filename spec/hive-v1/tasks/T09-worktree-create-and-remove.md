@@ -6,7 +6,7 @@
 | Wave | 3 |
 | Tier | decent |
 | Depends on | T03, T05 |
-| Blocks | CP2, T12, T14 |
+| Blocks | CP2, T10, T12, T14 |
 | Branch | `task/T09-worktree-create-and-remove` |
 | Worktree | `projects/hive/worktrees/T09-worktree-create-and-remove/` |
 | Evidence | `evidence/T09-worktree-create-and-remove/` |
@@ -111,29 +111,36 @@ the repository workspace and records it on the project. Hive never closes it.
 ### V3 Live transcript
 
 - Proves: AC1, AC2.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Record the binary SHA256.
 - Command, from a pane of the hive session:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-live projects/repo-live
-git init -q .hive/tmp/repo-live
-git -C .hive/tmp/repo-live commit -q --allow-empty -m init
-./hive --home "$PWD" project register .hive/tmp/repo-live --base "$(git -C .hive/tmp/repo-live branch --show-current)"
-./hive --home "$PWD" task create --project repo-live --title "live demo"
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+REPO="$FIX/repo-live"
+git init -q "$REPO"
+git -C "$REPO" commit -q --allow-empty -m init
+"$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
+"$BIN" --home "$FIX" task create --project repo-live --title "live demo"
 herdr workspace list
-./hive --home "$PWD" worktree create --task 1-live-demo
+"$BIN" --home "$FIX" worktree create --task 1-live-demo
 herdr workspace list
-./hive --home "$PWD" worktree remove --task 1-live-demo
+"$BIN" --home "$FIX" worktree remove --task 1-live-demo
 echo "exit $?"
-./hive --home "$PWD" task cancel --task 1-live-demo
-./hive --home "$PWD" worktree remove --task 1-live-demo
+"$BIN" --home "$FIX" task cancel --task 1-live-demo
+"$BIN" --home "$FIX" worktree remove --task 1-live-demo
 herdr workspace list
-git -C .hive/tmp/repo-live branch
+git -C "$REPO" branch
 herdr workspace close <repository workspace ID from the create output>
-rm -rf .hive/tmp/repo-live projects/repo-live
+rm -rf "$FIX"
 ```
 
-- Expected: the second list shows `1-live-demo` and the repository workspace, and the create output names the repository workspace. The first remove fails with `task is created`. The second remove succeeds. The third list no longer shows `1-live-demo`. The branch list shows `task/1-live-demo`. After the close, the workspace list is the same as the first list.
+- Expected: the second list shows `1-live-demo` and the repository workspace, and the create output names the repository workspace. The first remove fails with `task is created`. The second remove succeeds. The third list no longer shows `1-live-demo`. The branch list shows `task/1-live-demo`. After the close, the workspace list is the same as the first list. The fixture cleanup removes only `$FIX`.
 
 ### V4 Gate
 
@@ -149,4 +156,6 @@ rm -rf .hive/tmp/repo-live projects/repo-live
 
 ## Changes
 
-None.
+2026-10-18. Add T10 to the blocks of T09, because `WorkspaceGet` lands in T09.
+Replace the live transcript with a unique fixture home, a unique fixture
+repository, and an absolute tested binary. Keep the behavioral criteria.

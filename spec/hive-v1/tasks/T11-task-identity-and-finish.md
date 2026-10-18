@@ -32,9 +32,12 @@ the mark and the record.
 | Path | Purpose of the edit |
 | --- | --- |
 | `internal/lib/identity/identity.go` | New. Resolve the caller from `--agent`, else from the pane ID and the agent records. |
-| `internal/task/complete.go` | Use the identity. Mark the agent finished. Write the inbox record. |
-| `internal/task/verify.go` | Use the identity. Check the verifier record. Mark the verifier finished. Write the inbox record. |
-| `internal/task/show.go`, `render.go` | Show the acting agent and its status. |
+| `internal/task/complete.go`, `verify.go` | Use the identity. Run the four-write finish group under one held handle. |
+| `internal/task/transition.go` | Shared with T03. Add the finish group under the existing held handle. T03 keeps the status table. |
+| `internal/task/assign.go` | Narrow known-finished-agent refusal. T03 owns the other assignment rules. |
+| `internal/task/show.go`, `render.go` | Show the acting agent and its status. Extend the render row once for the output failure. |
+| `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go` | Narrow writer-failure handling after the durable group. |
+| `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | Add the held-handle append and consume API. Keep the public wrappers. Do not acquire a nested lock. |
 | `internal/inbox/read.go`, `send.go` | Default the role and the sender from the identity. |
 | `cmd/task/task.go`, `cmd/inbox/inbox.go` | Pass the pane ID from the environment. |
 | `internal/agent/register.go` | Check that `--task` names a task record of the project. T04 defers this check to this task. |
@@ -46,17 +49,22 @@ the mark and the record.
 
 - `identity.Resolve(agentFlag, paneID, store)` returns one agent record. With `agentFlag` it returns that record or fails with `agent not found: <name>`.
 - Without the flag, it keeps each record with the status `live` whose `pane_id` equals the pane ID, or whose `pane_history` holds the pane ID. One match is the caller. No match fails with `caller unknown: pass --agent`. Two or more matches fail with `caller ambiguous: <names>`.
-- A record of a singleton role is a match only when its `generation` equals the generation of the claim of its role.
+- The explicit flag route and the pane route use the same held-handle lookup. The flag route does not use a weaker live-record check.
+- A record of a singleton role is a match only when its `generation` equals the generation of the claim of its role. A record that names a claim must agree with the claim key, the holder record key, the role, and the generation. A cross-claim record with an equal generation does not match.
 - The command reads `HERDR_PANE_ID` and passes it. The library does not read the environment.
 - `hive agent register` with `--task` for a worker or a verifier needs a task record with the same project as `--project`. Otherwise it fails with `task not found in <project>: <id>` and writes no record.
 - A process in a moved pane keeps the old value in `HERDR_PANE_ID`. The supervisor of T15 writes the old pane ID into `pane_history` when it sees the move. The lookup through `pane_history` keeps the identity of that process.
 
 ### AC2 Complete and verify
 
-- `task complete` resolves the caller. It must be the acting agent. On success it sets `finished` true on the agent record. It appends an inbox record of the kind `completed` to the controlling role, with the task and the agent.
-- `task verify` resolves the caller. The caller must be a record with the role `verifier`, the project of the task, and the task. Another caller fails with `not a verifier of <task>: <name>`. The rule of T03 that refuses the acting agent stays.
-- On success `task verify` sets `finished` true on the verifier record and appends `verified` with the result. On `--fail` the text starts with `fail: <reason>`.
-- The task transition, the agent record, and the inbox record change in one store mutation. A refused transition changes none of the three records.
+- `task complete` resolves the caller. It must be the acting agent. `task verify` needs a record with the role `verifier`, the project of the task, and the task. Another caller fails with `not a verifier of <task>: <name>`. The rule of T03 that refuses the acting agent stays.
+- One held handle checks the caller identity and the role. It checks the project, the task, the claim key, the holder record key, and the generation. It checks the allowed transition. All checks run before any write.
+- The durable order is the task transition, the inbox counter, the inbox record, then the finished mark. The finished mark is last. The inbox record is `completed`, `verified`, or `fail: <reason>`.
+- A first task-write failure gives `failed` and no effects. A later failure gives `partial` with the exact completed prefix, the actual phase, the actual new effects, and a nil partial Go error. A counter gap can remain. Do not claim a rollback.
+- A successful durable group with a failed stdout exits 1. A working stderr names the known effects and the inspection commands. The command does not replay the transition.
+- A retry uses normal validation only. It does not infer an old operation from the task status or the reason. After `verify --fail` moves the task to `assigned`, the same verify command refuses with no writes, also when the reason changes. A fresh worker assignment and its `complete` are a separate operation.
+- `assign` refuses a known agent record with `finished` true with `agent finished: <name>: use a fresh agent`. The refusal changes no flag and adds no multi-record assignment. Fresh-agent and unknown-agent assignment behavior does not change.
+- No `finish_seq`, `finish_key`, journal, automatic rollback, or automatic completion exists.
 
 ### AC3 Inbox defaults
 
@@ -72,7 +80,7 @@ the mark and the record.
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | The identity resolves from the flag, then from one live record by pane, and fails as the requirements give. A registration with `--task` needs a task of the project. | V1 |
-| AC2 | `complete` and `verify` check the caller, mark it finished, and write the inbox record in one mutation. | V2, V3 |
+| AC2 | `complete` and `verify` check the caller and the transition under one held handle. They write the four-record group in order. They report the exact prefix and refuse an advanced task without writes. | V2, V3 |
 | AC3 | `inbox` and `inbox send` default the role and the sender from the caller. | V3 |
 | AC4 | The gate passes. | V4 |
 
@@ -82,41 +90,48 @@ the mark and the record.
 
 - Proves: AC1.
 - Command: `go test ./internal/lib/identity/ ./internal/agent/ -run 'TestResolve|TestRegisterTask' -v`, red and green.
-- Expected: the flag case, the pane case, the `pane_history` case, and the unknown case. A stale record with the same pane does not match. Two live records with the same pane fail with `caller ambiguous`. A singleton record with an old generation does not match. A registration with a task of another project, or with an unknown task, fails and writes no record. A registration with a task of the project succeeds.
+- Expected: the flag case, the pane case, the `pane_history` case, and the unknown case. A stale record with the same pane does not match. Two live records with the same pane fail with `caller ambiguous`. A singleton record with an old generation does not match. A cross-claim record with an equal generation does not match. The flag route and the pane route apply the same claim key, holder key, role, and generation check. A registration with a task of another project, or with an unknown task, fails and writes no record. A registration with a task of the project succeeds.
 
 ### V2 Complete and verify tests
 
 - Proves: AC2.
 - Command: `go test ./internal/task/ -run 'TestCompleteFinish|TestVerifyFinish' -v`, red and green.
-- Expected: after `complete`, the agent record has `finished` true and the inbox of `manager-<project>` has one `completed` record. After `verify`, the verifier record has `finished` true and the inbox has a `verified` record. After `verify --fail`, the text starts with `fail:`. A worker of another task, a manager, and a verifier of another task each fail. The task, the agent records, and the inbox do not change. A refused transition, such as `complete` on a `created` task, changes none of the three records.
+- Expected: after `complete`, the agent record has `finished` true and the inbox of `manager-<project>` has one `completed` record. After `verify`, the verifier record has `finished` true and the inbox has a `verified` record. After `verify --fail`, the text starts with `fail:`. A worker of another task, a manager, and a verifier of another task each fail. The task, the agent records, and the inbox do not change. A refused transition, such as `complete` on a `created` task, changes none of the three records. Each write failure for `complete`, successful `verify`, and `verify --fail` gives the exact prefix and phase. The first task-write failure gives `failed` with no effects. A counter failure gives `partial` with the task effect. An inbox-record failure gives `partial` with the task and counter effects. A finished-mark failure gives `partial` with the task, counter, and inbox effects. A failed stdout after the group exits 1, names the effects and the inspection commands, and does not replay. A changed reason after `verify --fail` does not change the refusal. A later assignment with a fresh worker and its `complete` is a separate operation. A same-agent rework fails with the finished-agent message. A cancel after a failure moves the task to `cancelled`, and a later finish refuses without writes. An advanced-task refusal names `task show`, `agent show`, and `inbox`.
 
 ### V3 Command transcript
 
 - Proves: AC2, AC3.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Record the binary SHA256.
 - Command:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-one
-git init -q .hive/tmp/repo-one
-./hive --home "$PWD" project register .hive/tmp/repo-one
-./hive --home "$PWD" task create --project repo-one --title "step"
-./hive --home "$PWD" agent register --role manager --project repo-one --pane w9:p1
-./hive --home "$PWD" agent register --role worker --project repo-one --task 1-step --pane w9:p2
-./hive --home "$PWD" agent register --role verifier --project repo-one --task 1-step --pane w9:p3
-./hive --home "$PWD" task assign --task 1-step --agent worker-repo-one-1
-HERDR_PANE_ID=w9:p2 ./hive --home "$PWD" inbox send --to manager-repo-one "hello"
-HERDR_PANE_ID=w9:p2 ./hive --home "$PWD" inbox
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+REPO="$FIX/repo-one"
+git init -q "$REPO"
+"$BIN" --home "$FIX" project register "$REPO"
+"$BIN" --home "$FIX" task create --project repo-one --title "step"
+"$BIN" --home "$FIX" agent register --role manager --project repo-one --pane w9:p1
+"$BIN" --home "$FIX" agent register --role worker --project repo-one --task 1-step --pane w9:p2
+"$BIN" --home "$FIX" agent register --role verifier --project repo-one --task 1-step --pane w9:p3
+"$BIN" --home "$FIX" task assign --task 1-step --agent worker-repo-one-1
+HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" inbox send --to manager-repo-one "hello"
+HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" inbox
 echo "exit $?"
-HERDR_PANE_ID=w9:p2 ./hive --home "$PWD" task complete --task 1-step
-HERDR_PANE_ID=w9:p3 ./hive --home "$PWD" task verify --task 1-step
-HERDR_PANE_ID=w9:p1 ./hive --home "$PWD" inbox
-./hive --home "$PWD" agent show worker-repo-one-1
-./hive --home "$PWD" agent show verifier-repo-one-2
-rm -rf .hive/tmp/repo-one
+HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" task complete --task 1-step
+HERDR_PANE_ID=w9:p3 "$BIN" --home "$FIX" task verify --task 1-step
+HERDR_PANE_ID=w9:p1 "$BIN" --home "$FIX" inbox
+"$BIN" --home "$FIX" agent show worker-repo-one-1
+"$BIN" --home "$FIX" agent show verifier-repo-one-2
+rm -rf "$FIX"
 ```
 
-- Expected: the `message` record has the agent `worker-repo-one-1`. The inbox call of the worker fails with `role has no inbox: worker` and exit status 1. The complete and the verify succeed without `--agent`. The inbox of the manager prints the `message`, the `completed`, and the `verified` records. Both agent records show `finished: true`.
+- Expected: the `message` record has the agent `worker-repo-one-1`. The inbox call of the worker fails with `role has no inbox: worker` and exit status 1. The complete and the verify succeed without `--agent`. The inbox of the manager prints the `message`, the `completed`, and the `verified` records. Both agent records show `finished: true`. The fixture cleanup removes only `$FIX`.
 
 ### V4 Gate
 
@@ -131,4 +146,8 @@ rm -rf .hive/tmp/repo-one
 
 ## Changes
 
-None.
+2026-10-18. Install the one held-handle finish group, the exact durable order,
+the partial-prefix rules, the normal-validation retry, the advanced-task
+refusal, the output failure, and the narrow finished-agent refusal. Add the
+held-handle inbox API. Replace the command transcript with a unique fixture home
+and an absolute tested binary.

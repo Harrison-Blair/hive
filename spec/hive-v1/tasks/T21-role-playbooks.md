@@ -51,6 +51,12 @@ path of the playbook file, and the agent reads it from there.
 | `testdata/ste-baseline.json` | Add one entry with 0 for each new file. |
 | `skills_test.go` | New. Each hive command in a skill or a template exists in the command tree. |
 
+This source table is the named exception to the common rule that a task does not
+edit a skill, `AGENTS.md`, or a global setting. T21 may edit only the named skill
+files, the relative `.claude/skills` link, `.gitignore`, `AGENTS.md`, `ste_test.go`,
+and `testdata/ste-baseline.json`. It does not change a global setting or the
+`agnostic-skill` files.
+
 ## Requirements
 
 ### AC1 Skills
@@ -72,7 +78,8 @@ path of the playbook file, and the agent reads it from there.
 ### AC2 Discovery
 
 - Codex discovers `.agents/skills/` itself. Claude Code discovers `.claude/skills/`. The task adds one tracked directory symbolic link `.claude/skills/<name>` for each skill, with the relative target `../../.agents/skills/<name>`.
-- The `agnostic-skill` procedure asks for an absolute link target. A tracked link must work in each clone of this repository, so this task uses a relative target. This brief states that exception. The worker does not change the `agnostic-skill` files.
+- The `agnostic-skill` procedure asks for an absolute link target. A tracked link must work in each clone of this repository, so this task uses a relative target. This brief states that exception. The worker does not change the `agnostic-skill` files or a global setting.
+- The discovery test checks the real Claude Code path and the real Codex path. The Claude Code session uses `.claude/skills/<name>`. The Codex session uses `.agents/skills/<name>`. The content review stays separate in V5.
 - T14 writes the first sentence of the worker prompt and the verifier prompt: `Read <home>/.agents/skills/hive-worker/SKILL.md first.`, or the verifier path. This task gives the skill directories the names that those paths use.
 - The project instructions template names `<home>/.agents/skills/hive-manager/SKILL.md` as an absolute path and tells the manager to read it.
 
@@ -80,7 +87,9 @@ path of the playbook file, and the agent reads it from there.
 
 - The project instructions template has this order: the generated-file line, the role gate, the absolute path of the manager skill, and the delegate rule. The delegate rule sends each source change to a worker.
 - The presets template has three headings: strong, decent, small. Each has one prose paragraph that says what kind of task it serves and one ordered list of harness and model choices.
-- Hive writes the presets document to `overrides/presets.md` at the first manager spawn when the file is absent. The check for the file and the write run under the store lock. An existing file keeps each byte, also when two first spawns run at the same time. A write error other than "file exists" fails the spawn with the error.
+- Hive writes the presets document to `overrides/presets.md` at a manager spawn when the file is absent. The rule covers a home used before T21. The check for the file and the write run under the store lock. An existing file keeps each byte, also when two first spawns run at the same time.
+- A failed first write does not become an existing-file success. A partial temporary file does not become an existing-file success. A write error other than "file exists" fails the spawn with the error.
+- Before the write, check the static type of the home overrides directory, each ancestor, and the destination. Reject a symbolic link and a wrong type.
 
 ### AC4 Command check
 
@@ -113,7 +122,7 @@ path of the playbook file, and the agent reads it from there.
 
 - Proves: AC3.
 - Command: `go test ./internal/agent/ -run 'TestPresets|TestProjectInstructions' -v`, red and green.
-- Expected: the first spawn writes `overrides/presets.md` with the three headings. A second spawn with a changed file does not replace it. Two first spawns at the same time leave one file with the bytes of the first writer. A file that exists before the first spawn keeps each byte. The rendered instructions have the generated-file line first, the role gate, the absolute path of the manager skill, and the delegate rule.
+- Expected: the first spawn writes `overrides/presets.md` with the three headings. A second spawn with a changed file does not replace it. Two first spawns at the same time leave one file with the bytes of the first writer. A file that exists before the first spawn keeps each byte. A failed first write and a partial temporary file do not become an existing-file success. A linked overrides directory, a linked destination, and a wrong type fail. A home used before T21 gets the file at its next manager spawn. The rendered instructions have the generated-file line first, the role gate, the absolute path of the manager skill, and the delegate rule.
 
 ### V3 Prompt paths
 
@@ -125,7 +134,7 @@ path of the playbook file, and the agent reads it from there.
 
 - Proves: AC2.
 - Command: three sessions. First, a new Claude Code session in the worktree: type `/hive-coordinator`, `/hive-manager`, `/hive-worker`, and `/hive-verifier`. Second, a new Codex session in the worktree: type `$hive-coordinator`, `$hive-manager`, `$hive-worker`, and `$hive-verifier`. Third, a new Claude Code session in a scratch repository under `.hive/tmp/` with no hive files. Give it the worker prompt of T14 with the home of the worktree, and record what it reads.
-- Expected: each of the eight skill calls shows the frontmatter and the first lines of the skill. The third session reads the playbook from the absolute path. The evidence records the first lines of each session with `herdr pane read`.
+- Expected: each of the eight skill calls shows the frontmatter and the first lines of the skill. The Claude Code session finds the skills through the relative `.claude/skills` link. The Codex session finds `.agents/skills` itself. The third session reads the playbook from the absolute path. The evidence records the first lines of each session with `herdr pane read`.
 
 ### V5 Content review
 
@@ -146,4 +155,8 @@ path of the playbook file, and the agent reads it from there.
 
 ## Changes
 
-None.
+2026-10-18. State the relative `.claude/skills` link exception. Keep the
+`agnostic-skill` files and global settings unchanged. Add the absent-file rule
+for a home used before T21, the failed-write rule, and the static type checks.
+Keep the real Claude Code and Codex discovery check in V4 and the content review
+in V5.

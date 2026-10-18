@@ -1,0 +1,128 @@
+package task
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+)
+
+// CreateText renders the effects of task creation and the new ID.
+func CreateText(envelope output.Envelope) string {
+	if record, ok := envelope.Result.(records.Task); ok && envelope.Error == nil {
+		return fmt.Sprintf("id: %s\nbrief: %s\n", record.ID, briefRelPath(record.ID))
+	}
+	return effectsText(envelope.Effects)
+}
+
+// ListText renders a task list.
+func ListText(envelope output.Envelope) string {
+	tasks, ok := envelope.Result.([]records.Task)
+	if !ok || envelope.Error != nil {
+		return ""
+	}
+	if len(tasks) == 0 {
+		return "no tasks\n"
+	}
+	lines := make([]string, 0, len(tasks))
+	for _, task := range tasks {
+		lines = append(lines, fmt.Sprintf("%s\t%s\t%s\t%s",
+			task.ID, task.Status, oneLine(task.ActingAgent), oneLine(task.Title)))
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// ShowText renders one task record and its brief path.
+func ShowText(envelope output.Envelope) string {
+	result, ok := envelope.Result.(ShowResult)
+	if !ok || envelope.Error != nil {
+		return ""
+	}
+	task := result.Task
+	lines := []string{
+		"id: " + task.ID,
+		"project: " + oneLine(task.Project),
+		"title: " + oneLine(task.Title),
+		"controlling_role: " + oneLine(task.ControllingRole),
+		"acting_agent: " + oneLine(task.ActingAgent),
+		"status: " + task.Status,
+		"depends_on: " + strings.Join(task.DependsOn, ","),
+		"verification: " + verificationText(task.Verification),
+		"worktree: " + worktreeText(task.Worktree),
+		"delivery: " + deliveryText(task.Delivery),
+		"cancel_reason: " + oneLine(task.CancelReason),
+		"created_at: " + task.CreatedAt,
+		"updated_at: " + task.UpdatedAt,
+		"brief: " + briefRelPath(task.ID),
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// ShowBriefText returns the brief text of one show result.
+func ShowBriefText(envelope output.Envelope) string {
+	result, ok := envelope.Result.(ShowResult)
+	if !ok || envelope.Error != nil {
+		return ""
+	}
+	return result.Brief
+}
+
+// TransitionText renders one transition result.
+func TransitionText(envelope output.Envelope) string {
+	record, ok := envelope.Result.(records.Task)
+	if !ok || envelope.Error != nil {
+		return ""
+	}
+	return fmt.Sprintf("id: %s\nstatus: %s\n", record.ID, record.Status)
+}
+
+// effectsText renders each completed effect.
+func effectsText(effects []output.Effect) string {
+	lines := make([]string, 0, len(effects))
+	for _, effect := range effects {
+		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// verificationText renders the last verification of a task.
+func verificationText(verification *records.Verification) string {
+	if verification == nil {
+		return "-"
+	}
+	text := fmt.Sprintf("%s by %s at %s", verification.Result, oneLine(verification.Agent), verification.At)
+	if verification.Reason != "" {
+		text += ": " + oneLine(verification.Reason)
+	}
+	return text
+}
+
+// worktreeText renders the worktree record.
+func worktreeText(worktree *records.Worktree) string {
+	if worktree == nil {
+		return "-"
+	}
+	return jsonText(worktree)
+}
+
+// deliveryText renders the delivery record.
+func deliveryText(delivery *records.Delivery) string {
+	if delivery == nil {
+		return "-"
+	}
+	return jsonText(delivery)
+}
+
+// jsonText renders one value as compact JSON.
+func jsonText(value any) string {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return "-"
+	}
+	return string(data)
+}

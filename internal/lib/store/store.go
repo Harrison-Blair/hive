@@ -289,6 +289,12 @@ func (l *LockedStore) walkRecords(ctx context.Context, fn func(StoredRecord) err
 			}
 			return fmt.Errorf("store path invalid: %s", node.path)
 		}
+		if node.special {
+			if strings.HasSuffix(node.name, ".json") {
+				return fmt.Errorf("record invalid: %s", node.path)
+			}
+			return fmt.Errorf("store path invalid: %s", node.path)
+		}
 		if node.dir || !strings.HasSuffix(node.name, ".json") {
 			continue
 		}
@@ -315,6 +321,7 @@ type walkNode struct {
 	collection []string
 	dir        bool
 	link       bool
+	special    bool
 }
 
 func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, error) {
@@ -353,7 +360,10 @@ func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, e
 			continue
 		case info.Mode().IsRegular() && strings.HasPrefix(name, ".") && strings.Contains(name, ".tmp-"):
 			continue
+		case info.Mode().IsRegular():
+			nodes = append(nodes, node)
 		default:
+			node.special = true
 			nodes = append(nodes, node)
 		}
 	}

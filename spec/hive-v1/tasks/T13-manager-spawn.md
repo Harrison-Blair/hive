@@ -55,8 +55,9 @@ passes `--adopt` with its ID.
 
 ### AC1 Workspace
 
-- With `--role manager` and no `--pane`, hive reads `workspace` from the project record. With an ID, hive calls `workspace.get`. The workspace must exist with the label `hive:<project>`, and the `cwd` of its recorded root pane must equal the project directory after symbolic link resolution. Then hive reuses it.
+- With `--role manager` and no `--pane`, hive reads `workspace` from the project record. With an ID, hive calls `workspace.get` for the workspace and `pane.get` for the recorded root pane. The workspace must exist with the label `hive:<project>`. The `cwd` of the recorded root pane must equal the project directory after symbolic link resolution. Then hive reuses it.
 - The recorded workspace can be gone, or its label or its directory can differ. Then hive clears `workspace` on the project record and continues as without an ID. It logs the reason.
+- A workspace that exists with the label and directory but has no recorded root keeps its metadata. Hive refuses with `workspace <id> has no recorded root pane: pass --pane <shell pane>`. A moved root that returns a different current pane ID gets the same refusal. Hive does not select a shell by itself and does not close a user tab.
 - Without an ID, hive lists the workspaces and keeps those with the label `hive:<project>`. One match or more has no owner. Hive fails with `workspace <id> has the label hive:<project> but hive did not make it: close it or pass --adopt <id>`. The message names the first match. No match means hive makes one.
 - `--adopt WORKSPACE` takes a workspace without an owner. The workspace must exist with the label, and its first tab must hold exactly one pane whose `cwd` is the project directory. Otherwise the spawn fails with `first tab has <n> panes: pass --pane` or `workspace cwd mismatch`. Hive records the workspace with `created_by_hive` false and the pane as `root_pane`.
 - Hive makes the directory `<home>/projects/<project>` when it does not exist. The request is `workspace.create` with `cwd` equal to that directory, `label` equal to `hive:<project>`, and `focus` false.
@@ -73,15 +74,18 @@ passes `--adopt` with its ID.
 ### AC3 Instructions
 
 - Before the start, hive writes `projects/<project>/AGENTS.md` from the embedded template, with the project ID, the home path, and the repository path filled in. It replaces the file on each spawn. The first line says that hive generates the file.
+- Before the write, hive checks the static type of the project directory, each ancestor, and the instruction destination. It rejects a symbolic link and a non-regular destination.
 - The template gives the manager role gate, the commands of the manager, and the rule to delegate each source change to a worker. T21 refines it.
 
 ### AC4 Stop
 
-- `hive agent stop --agent NAME` runs the stop function of T10. For a manager record, hive then updates the project record from the result.
-- When the `pane_count` of the workspace was 1, herdr closed the workspace with the pane. Hive clears `workspace` on the project record and adds the effect `workspace closed`.
-- When the `pane_count` was above 1, the workspace stays with the other panes. Hive keeps `workspace` on the project record and adds the effect `workspace kept: <n> other panes`. The next manager spawn reuses the workspace when its first tab holds a shell.
+- `hive agent stop --agent NAME` runs the stop function of T10. For a manager record, hive then updates the project record from the post-close result.
+- A `closed` result clears `workspace` on the project record and adds the effect `workspace closed`.
+- A `surviving` result keeps `workspace` on the project record and adds the effect `workspace kept: <n> other panes`. The next manager spawn reuses the workspace when its first tab holds a shell.
+- An `unknown` result keeps `workspace` on the project record and reports the known `pane closed` effect. Do not infer closure from an old pane count.
+- A project-record write failure after the close is `partial` with the known effects.
 - Hive sends no `workspace.close` on a stop, and it never passes `close_group` true.
-- A stop whose result is `unresolved` keeps `workspace` on the project record. `hive agent resolve` of T20 settles the record.
+- The stop function checks the process identity. A pane and terminal match is not an ownership check.
 
 ### AC5 Gate
 
@@ -103,7 +107,7 @@ passes `--adopt` with its ID.
 
 - Proves: AC1, AC2.
 - Command: `go test ./internal/agent/ -run 'TestManagerWorkspace|TestFirstTab' -v`, red and green.
-- Expected: a fake herdr server scripts each case, and the test checks each request parameter and each error. Reuse cases: a recorded workspace with the label and the directory, a recorded workspace that is gone, and a recorded workspace with another directory. Cases without an owner: one match and two matches without `--adopt`, `--adopt` with one pane, and `--adopt` with two panes. Create cases: an empty list, a cwd mismatch with a close, and a record failure after the create with a close. Pane cases: a reordered tab list, a root pane with `restore_error`, a root pane with an agent, and `agent_pane_busy`.
+- Expected: a fake herdr server scripts each case, and the test checks each request parameter and each error. Reuse cases: a recorded workspace with the label and the directory, a recorded workspace that is gone, and a recorded workspace with another directory. More reuse cases: a workspace with no recorded root, a moved root with a new pane ID, and a user tab that stays. Cases without an owner: one match and two matches without `--adopt`, `--adopt` with one pane, and `--adopt` with two panes. Create cases: an empty list, a cwd mismatch with a close, and a record failure after the create with a close. Pane cases: a reordered tab list, a root pane with `restore_error`, a root pane with an agent, and `agent_pane_busy`. A `closed` stop clears the workspace. A `surviving` stop with a user tab keeps it. An `unknown` stop keeps the metadata. A project-record failure after the close is `partial`.
 
 ### V2 Instructions tests
 
@@ -115,31 +119,38 @@ passes `--adopt` with its ID.
 
 - Proves: AC4.
 - Command: `go test ./internal/agent/ -run TestStopWorkspace -v`, red and green.
-- Expected: a fake herdr server. A stop with a `pane_count` of 1 closes the pane, clears `workspace` on the project record, and has the effect `workspace closed`. A stop with a `pane_count` of 2 closes the pane, keeps `workspace`, and has the effect `workspace kept: 1 other panes`. Neither case sends `workspace.close`. An `unresolved` result keeps `workspace`.
+- Expected: a fake herdr server. A stop with a post-close `closed` result clears `workspace` on the project record and has the effect `workspace closed`. A stop with a post-close `surviving` result keeps `workspace` and has the effect `workspace kept: 1 other panes`. Neither case sends `workspace.close`. An `unknown` result keeps `workspace` and reports the `pane closed` effect. A project-record failure after the close is `partial`.
 
 ### V4 Live transcript
 
 - Proves: AC1, AC2, AC3, AC4.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Record the binary SHA256.
 - Command, from a pane of the hive session:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-mgr projects/repo-mgr
-git init -q .hive/tmp/repo-mgr
-./hive --home "$PWD" project register .hive/tmp/repo-mgr
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+REPO="$FIX/repo-mgr"
+git init -q "$REPO"
+"$BIN" --home "$FIX" project register "$REPO"
 herdr workspace list
-./hive --home "$PWD" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness claude --model <small model>
+"$BIN" --home "$FIX" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness claude --model {{T13_SMOKE_MODEL}}
 echo "exit $?"
 herdr workspace list
 herdr tab list --workspace <workspace ID from the spawn output>
-head -n 3 projects/repo-mgr/AGENTS.md
-./hive --home "$PWD" agent stop --agent <name from the spawn output>
+head -n 3 "$FIX/projects/repo-mgr/AGENTS.md"
+"$BIN" --home "$FIX" agent stop --agent <name from the spawn output>
 echo "exit $?"
 herdr workspace list
-rm -rf .hive/tmp/repo-mgr projects/repo-mgr
+rm -rf "$FIX"
 ```
 
-- Expected: both commands exit with 0. The second list shows `hive:repo-mgr`, and the tab list shows one tab with the agent status of the manager. The file starts with the generated line. The last list is the same as the first list.
+- Expected: both commands exit with 0. The second list shows `hive:repo-mgr`, and the tab list shows one tab with the agent status of the manager. The file starts with the generated line. The last list is the same as the first list. The fixture cleanup removes only `$FIX`.
 
 ### V5 Gate
 
@@ -154,4 +165,7 @@ rm -rf .hive/tmp/repo-mgr projects/repo-mgr
 
 ## Changes
 
-None.
+2026-10-18. Keep the workspace metadata when the recorded root is missing or
+moved. Add the explicit `--pane` refusal. Add the static path checks. Replace the
+pane-count stop result with the T10 post-close result. Replace the live
+transcript with a unique fixture home and an absolute tested binary.
