@@ -8,5 +8,5 @@
 // tab.go owns tab.list; tab_create.go owns tab.create. worktree.go owns
 // worktree.create and worktree.open. agent.go owns the
 // agent methods and the typed session. pane.go owns the pane, pane.list, the
-// process, and the close methods.
+// process, and the close methods. events.go owns the events.subscribe stream.
 package herdr

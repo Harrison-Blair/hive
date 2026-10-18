@@ -6,5 +6,6 @@ type Claim struct {
 	Agent      string `json:"agent"`
 	Generation uint64 `json:"generation"`
 	PID        int64  `json:"pid"`
+	PIDStart   uint64 `json:"pid_start"`
 	ClaimedAt  string `json:"claimed_at"`
 }

@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/process"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/run"
 	storelib "github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -151,15 +153,19 @@ func checkSupervisor(home string) Check {
 	if err != nil {
 		return newCheck("supervisor", false, false, err.Error())
 	}
-	var claim json.RawMessage
+	var claim records.Claim
 	err = store.ReadIn([]string{"claims"}, "supervisor", &claim)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return newCheck("supervisor", false, false, "no supervisor claim")
+			return newCheck("supervisor", false, false, "supervisor down")
 		}
 		return newCheck("supervisor", false, false, err.Error())
 	}
-	return newCheck("supervisor", false, true, "supervisor claim present")
+	alive, aliveErr := process.Alive(claim.PID, claim.PIDStart)
+	if aliveErr != nil || !alive {
+		return newCheck("supervisor", false, false, "supervisor down")
+	}
+	return newCheck("supervisor", false, true, fmt.Sprintf("supervisor live: pid %d", claim.PID))
 }
 
 func checkHarness(ctx context.Context, name string) Check {
