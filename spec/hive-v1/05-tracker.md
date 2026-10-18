@@ -269,9 +269,9 @@ bytes and SHA256
 `ca9a28c9ef062589a2e2160f53cf264095e336adb90b6bf28285b41337cb42b5`. Each archive
 equals its source.
 - Repair agents `hive-t22-fix-01` and `hive-t06-fix-01` run with `pi
-opencode-go/deepseek-v4-flash:medium`. Both panes report the status `working` at
-2026-10-18 01:30 EDT. Uncommitted test edits exist in each worktree. No repair
-commit exists.
+opencode-go/deepseek-v4-flash:medium`. Both panes reported the status `working`
+at 2026-10-18 01:30 EDT. Repair commits `d8155e5c` and `dc7964cb` exist at
+01:32 EDT. No repair report or repair verification exists.
 - A bounded static-link check finds a home gap before logger start. With `H/.hive`
 as a link to an external directory that holds a regular `README.md`, `hive
 --home H project list` exits 0. That command writes `logs/2026-10-18.jsonl` and
