@@ -1,0 +1,7 @@
+// Package herdr is the typed client of the herdr socket API.
+//
+// client.go owns the socket path, the request, the reply, the caps, and the
+// request IDs. protocol.go owns protocol 22 and the ping gate. errors.go owns
+// the server error type and the codes that hive handles. types.go owns the data
+// types that hive reads.
+package herdr
