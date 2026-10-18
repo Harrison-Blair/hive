@@ -115,7 +115,7 @@ func TestInitDoesNotConsumeFollowerEvents(t *testing.T) {
 	}
 }
 
-var fixtureOutputError = errors.New("fix fixture output failure")
+var errFixtureOutput = errors.New("fix fixture output failure")
 
 type fixtureWriter struct {
 	short bool
@@ -127,7 +127,7 @@ func (w *fixtureWriter) Write(data []byte) (int, error) {
 	if w.short {
 		return 0, nil
 	}
-	return 0, fixtureOutputError
+	return 0, errFixtureOutput
 }
 
 func TestRunHomeReportsOutputFailure(t *testing.T) {
