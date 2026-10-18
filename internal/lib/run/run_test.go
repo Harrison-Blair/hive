@@ -229,3 +229,168 @@ func assertGone(t *testing.T, pid int) {
 		time.Sleep(10 * time.Millisecond)
 	}
 }
+
+func readRunLogEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var events []map[string]any
+	for _, entry := range entries {
+		data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line == "" {
+				continue
+			}
+			var event map[string]any
+			if err := json.Unmarshal([]byte(line), &event); err != nil {
+				t.Fatalf("log line %q: %v", line, err)
+			}
+			events = append(events, event)
+		}
+	}
+	return events
+}
+
+func TestCommandDeadlineWithInheritedPipeChild(t *testing.T) {
+	dir := t.TempDir()
+	childFile := filepath.Join(dir, "child.pid")
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	started := time.Now()
+	_, err := Command(ctx, dir, "sh", "-c", `sleep 30 & echo $! > "$1"; exit 0`, "sh", childFile)
+	elapsed := time.Since(started)
+	if !errors.Is(err, ErrTimeout) {
+		t.Fatalf("Command() error = %v, want ErrTimeout", err)
+	}
+	if elapsed > 2*time.Second {
+		t.Fatalf("Command() returned after %v, want two seconds or less", elapsed)
+	}
+	assertGone(t, readPID(t, childFile))
+}
+
+func TestCommandCancellationWithInheritedPipeChild(t *testing.T) {
+	dir := t.TempDir()
+	childFile := filepath.Join(dir, "child.pid")
+	ctx, cancel := context.WithCancel(context.Background())
+	timer := time.AfterFunc(100*time.Millisecond, cancel)
+	defer timer.Stop()
+	defer cancel()
+	started := time.Now()
+	_, err := Command(ctx, dir, "sh", "-c", `sleep 30 & echo $! > "$1"; exit 0`, "sh", childFile)
+	elapsed := time.Since(started)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("Command() error = %v, want context.Canceled", err)
+	}
+	if errors.Is(err, ErrTimeout) {
+		t.Fatalf("Command() error = %v, want a cancellation and not a timeout", err)
+	}
+	if elapsed > 2*time.Second {
+		t.Fatalf("Command() returned after %v, want two seconds or less", elapsed)
+	}
+	assertGone(t, readPID(t, childFile))
+}
+
+func hasControlByte(text string) bool {
+	for _, value := range text {
+		if value < 0x20 || value == 0x7f {
+			return true
+		}
+	}
+	return false
+}
+
+func TestCommandErrorStaysOneLine(t *testing.T) {
+	cases := []struct {
+		name   string
+		dir    string
+		binary string
+	}{
+		{name: "name newline", binary: "no\nsuch"},
+		{name: "name return", binary: "no\rsuch"},
+		{name: "dir newline", dir: filepath.Join(t.TempDir(), "no\nsuch"), binary: "true"},
+		{name: "dir return", dir: filepath.Join(t.TempDir(), "no\rsuch"), binary: "true"},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			_, err := Command(context.Background(), testCase.dir, testCase.binary)
+			if err == nil {
+				t.Fatal("Command() error = nil, want a start error")
+			}
+			if strings.ContainsAny(err.Error(), "\n\r") {
+				t.Fatalf("error = %q, want one physical line", err)
+			}
+			if hasControlByte(err.Error()) {
+				t.Fatalf("error = %q, want no control character", err)
+			}
+		})
+	}
+}
+
+func TestCommandCancellationLogsReturnedError(t *testing.T) {
+	home := t.TempDir()
+	writer, err := hivelog.NewWriter(home, "run", time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger := slog.New(writer)
+	ctx := WithLogger(context.Background(), logger)
+	ctx, cancel := context.WithCancel(ctx)
+	timer := time.AfterFunc(100*time.Millisecond, cancel)
+	defer timer.Stop()
+	defer cancel()
+	_, commandErr := Command(ctx, "", "sleep", "5")
+	if !errors.Is(commandErr, context.Canceled) {
+		t.Fatalf("Command() error = %v, want context.Canceled", commandErr)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	var end map[string]any
+	for _, event := range readRunLogEvents(t, home) {
+		if event["msg"] == "process end" {
+			end = event
+		}
+	}
+	if end == nil {
+		t.Fatal("log has no process end event")
+	}
+	if got, _ := end["error"].(string); got != commandErr.Error() {
+		t.Fatalf("logged error = %q, want the returned error %q", got, commandErr.Error())
+	}
+}
+
+func TestCommandTimeoutLogsReturnedError(t *testing.T) {
+	home := t.TempDir()
+	writer, err := hivelog.NewWriter(home, "run", time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger := slog.New(writer)
+	ctx := WithLogger(context.Background(), logger)
+	ctx, cancel := context.WithTimeout(ctx, 100*time.Millisecond)
+	defer cancel()
+	_, commandErr := Command(ctx, "", "sleep", "5")
+	if !errors.Is(commandErr, ErrTimeout) {
+		t.Fatalf("Command() error = %v, want ErrTimeout", commandErr)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	var end map[string]any
+	for _, event := range readRunLogEvents(t, home) {
+		if event["msg"] == "process end" {
+			end = event
+		}
+	}
+	if end == nil {
+		t.Fatal("log has no process end event")
+	}
+	if got, _ := end["error"].(string); got != commandErr.Error() {
+		t.Fatalf("logged error = %q, want the returned error %q", got, commandErr.Error())
+	}
+}

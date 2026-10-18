@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
 	"os/exec"
@@ -12,6 +13,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
 func newHome(t *testing.T) string {
@@ -376,5 +379,76 @@ func TestResultJSONFields(t *testing.T) {
 		if _, ok := decoded[0][key]; !ok {
 			t.Fatalf("check JSON has no %q: %s", key, data)
 		}
+	}
+}
+
+func readDoctorLogEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var events []map[string]any
+	for _, entry := range entries {
+		data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line == "" {
+				continue
+			}
+			var event map[string]any
+			if err := json.Unmarshal([]byte(line), &event); err != nil {
+				t.Fatalf("log line %q: %v", line, err)
+			}
+			events = append(events, event)
+		}
+	}
+	return events
+}
+
+func TestRunLogsProcessEvents(t *testing.T) {
+	home := newHome(t)
+	t.Setenv("HERDR_SOCKET_PATH", startHerdr(t, 22))
+	t.Setenv("PATH", pathWithGitOnly(t))
+	writer, err := hivelog.NewWriter(home, "doctor", time.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger := slog.New(writer)
+	result := Run(context.Background(), home, logger)
+	if result.Failed() {
+		t.Fatalf("result = %+v, want no failed required check", result)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	starts := 0
+	ends := 0
+	failedEnd := false
+	commands := map[string]int{}
+	for _, event := range readDoctorLogEvents(t, home) {
+		switch event["msg"] {
+		case "process start":
+			starts++
+			if command, ok := event["command"].(string); ok {
+				commands[command]++
+			}
+		case "process end":
+			ends++
+			if _, ok := event["error"]; ok {
+				failedEnd = true
+			}
+		}
+	}
+	if starts != 7 || ends != 7 {
+		t.Fatalf("process events = %d starts and %d ends, want 7 and 7", starts, ends)
+	}
+	if commands["git --version"] != 1 {
+		t.Fatalf("commands = %v, want one git --version", commands)
+	}
+	if !failedEnd {
+		t.Fatal("log has no failed process end event")
 	}
 }

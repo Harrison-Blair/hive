@@ -2,8 +2,10 @@ package herdr
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -105,5 +107,54 @@ func TestCallWithMethodPingDoesNotGate(t *testing.T) {
 	}
 	if got := server.Methods(); len(got) != 1 || got[0] != "ping" {
 		t.Fatalf("methods = %v, want one ping", got)
+	}
+}
+
+func TestProtocolGateWaiterHonorsOwnDeadline(t *testing.T) {
+	release := make(chan struct{})
+	var releaseOnce sync.Once
+	defer releaseOnce.Do(func() { close(release) })
+	server := startServer(t, func(request testRequest) ([]byte, time.Duration, bool) {
+		if request.Method == "ping" {
+			<-release
+			return resultReply(request, `{"type":"pong","version":"0.9.5","protocol":22}`), 0, false
+		}
+		return resultReply(request, `{"type":"ok"}`), 0, false
+	})
+	t.Setenv("HERDR_SOCKET_PATH", server.path)
+
+	firstDone := make(chan error, 1)
+	go func() {
+		firstDone <- Call(context.Background(), "workspace.list", map[string]any{}, &struct{}{}, WithDeadline(5*time.Second))
+	}()
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		methods := server.Methods()
+		if len(methods) > 0 && methods[0] == "ping" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("first call did not send ping: %v", methods)
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+
+	started := time.Now()
+	err := Call(context.Background(), "workspace.list", map[string]any{}, &struct{}{}, WithDeadline(50*time.Millisecond))
+	elapsed := time.Since(started)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("second Call() error = %v, want context.DeadlineExceeded", err)
+	}
+	if elapsed > 200*time.Millisecond {
+		t.Fatalf("second call took %v, want at most 200ms", elapsed)
+	}
+
+	releaseOnce.Do(func() { close(release) })
+	if err := <-firstDone; err != nil {
+		t.Fatalf("first Call() error = %v, want success", err)
+	}
+	want := []string{"ping", "workspace.list"}
+	if got := server.Methods(); fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Fatalf("methods = %v, want %v", got, want)
 	}
 }
