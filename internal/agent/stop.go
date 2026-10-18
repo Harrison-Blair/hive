@@ -158,16 +158,6 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		}
 	}
 	logger.Debug("agent stop topology", "command", "agent stop", "agent_id", record.Key, "topology", result.Topology)
-	if record.Role == "manager" && record.Project != "" {
-		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)
-		effects = appendEffect(effects, workspaceEffect)
-		if workspaceErr != nil {
-			envelope := stopEnvelope("partial", "workspace", effects, workspaceErr.Error(), result.Agent)
-			envelope.Result = result
-			logStop(logger, envelope, record.Key)
-			return result, envelope
-		}
-	}
 	envelope := stopEnvelope("ok", "complete", effects, nil, result.Agent)
 	envelope.Result = result
 	logStop(logger, envelope, record.Key)
