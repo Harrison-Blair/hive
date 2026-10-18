@@ -121,45 +121,24 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
 	logArgv(logger, record.Key, started.Argv)
 
+	session := &sessionTrack{first: started.Agent.AgentSession}
 	paneInfo, paneErr := herdr.PaneGet(ctx, paneID, herdr.WithLogger(logger))
 	if paneErr != nil {
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, "pane get: "+paneErr.Error(), "unresolved")
-		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("partial", "pane", effects, "pane get: "+paneErr.Error(), SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
-		logSpawn(logger, envelope, options, record.Key)
-		if updateErr != nil {
-			envelope.Error = "pane get: " + paneErr.Error() + "; " + updateErr.Error()
-		}
-		return envelope
+		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "pane", "pane get: "+paneErr.Error())
 	}
 	cwd := paneInfo.Cwd
 	if cwd == "" {
 		cwd = paneInfo.ForegroundCwd
 	}
-	startSession := started.Agent.AgentSession
-	if startSession != nil && paneInfo.AgentSession != nil && sessionRef(startSession) != sessionRef(paneInfo.AgentSession) {
-		message := "the agent session references differ"
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
-		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("partial", "pane", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
-		if updateErr != nil {
-			envelope.Error = message + "; " + updateErr.Error()
-		}
-		logSpawn(logger, envelope, options, record.Key)
-		return envelope
-	}
-	firstSession := startSession
-	if firstSession == nil {
-		firstSession = paneInfo.AgentSession
+	if reason := session.observe(paneInfo.AgentSession); reason != "" {
+		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "pane", reason)
 	}
 	updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
 		current.TerminalID = paneInfo.TerminalID
 		current.WorkspaceID = paneInfo.WorkspaceID
 		current.TabID = paneInfo.TabID
 		current.Cwd = cwd
-		if firstSession != nil {
-			current.AgentSessionRef = sessionRef(firstSession)
-		}
+		setSessionRef(current, session.first)
 	}, "updated")
 	effects = appendEffect(effects, effect)
 	if updateErr != nil {
@@ -175,6 +154,18 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		TimeoutMS: uint64(profile.ReadyTimeout() / time.Millisecond),
 	}, herdr.WithDeadline(profile.ReadyTimeout()+5*time.Second), herdr.WithLogger(logger))
 
+	sessionReason := session.observe(waitInfo.AgentSession)
+	if sessionReason == "" && waitErr == nil {
+		updated, effect, updateErr := persistSession(home, record, session.first)
+		effects = appendEffect(effects, effect)
+		if updateErr != nil {
+			envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
+			logSpawn(logger, envelope, options, record.Key)
+			return envelope
+		}
+		record = updated
+	}
+
 	getInfo, getErr := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
 	if getErr != nil {
 		logger.Debug("agent reply has no name", "command", "agent spawn", "agent_id", record.Key, "pane_id", paneID, "error", getErr.Error())
@@ -185,8 +176,22 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 
 	if waitErr != nil {
-		return spawnWaitFailure(ctx, home, logger, options, record, result.Claim, effects, profile, waitInfo, waitErr, getInfo, getErr)
+		return spawnWaitFailure(ctx, home, logger, options, record, result.Claim, effects, profile, waitInfo, waitErr, getInfo, getErr, session, sessionReason)
 	}
+	if sessionReason == "" && getErr == nil {
+		sessionReason = session.observe(getInfo.AgentSession)
+	}
+	if sessionReason != "" {
+		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "wait", sessionReason)
+	}
+	updated, effect, updateErr = persistSession(home, record, session.first)
+	effects = appendEffect(effects, effect)
+	if updateErr != nil {
+		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
+		logSpawn(logger, envelope, options, record.Key)
+		return envelope
+	}
+	record = updated
 	status := waitInfo.AgentStatus
 	if status != "idle" && status != "done" && status != "blocked" {
 		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, "unexpected agent status: "+status, "unresolved")
@@ -201,14 +206,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	processInfo, processErr := herdr.PaneProcessInfoGet(ctx, paneID, herdr.WithLogger(logger))
 	identity, identityError := captureIdentity(profile, record, processInfo, processErr, waitInfo.AgentSession, getInfo.AgentSession)
 	if identityError != "" {
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, "agent process identity unresolved: "+identityError, "unresolved")
-		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("partial", "process", effects, "agent process identity unresolved: "+identityError, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
-		if updateErr != nil {
-			envelope.Error = "agent process identity unresolved: " + identityError + "; " + updateErr.Error()
-		}
-		logSpawn(logger, envelope, options, record.Key)
-		return envelope
+		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "process", "agent process identity unresolved: "+identityError)
 	}
 	updated, effect, updateErr = mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
 		current.ProcessPID = identity.pid
@@ -299,15 +297,18 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 	return envelope
 }
 
-func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, profile harness.Profile, waitInfo herdr.AgentInfo, waitErr error, getInfo herdr.AgentInfo, getErr error) output.Envelope {
+func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, profile harness.Profile, waitInfo herdr.AgentInfo, waitErr error, getInfo herdr.AgentInfo, getErr error, session *sessionTrack, sessionReason string) output.Envelope {
 	var serverError *herdr.Error
 	if errors.As(waitErr, &serverError) {
 		switch serverError.Code {
 		case herdr.CodeTimeout:
 			message := fmt.Sprintf("agent not ready after %d s", int(profile.ReadyTimeout()/time.Second))
+			if sessionReason == "" && getErr == nil {
+				sessionReason = session.observe(getInfo.AgentSession)
+			}
 			processInfo, processErr := herdr.PaneProcessInfoGet(ctx, record.PaneID, herdr.WithLogger(logger))
 			identity, identityError := captureIdentity(profile, record, processInfo, processErr, waitInfo.AgentSession, getInfo.AgentSession)
-			if getErr == nil && identityError == "" {
+			if getErr == nil && identityError == "" && sessionReason == "" {
 				updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
 					current.ProcessPID = identity.pid
 					current.ProcessName = identity.name
@@ -328,10 +329,12 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 			reason := "independent ownership proof failed"
 			if identityError != "" {
 				reason = "agent process identity unresolved: " + identityError
+			} else if sessionReason != "" {
+				reason = "agent process identity unresolved: " + sessionReason
 			} else if getErr != nil {
 				reason = "agent get: " + getErr.Error()
 			}
-			return spawnUnresolved(home, logger, options, record, claim, effects, reason)
+			return spawnUnresolved(home, logger, options, record, claim, effects, session.first, "wait", reason)
 		case herdr.CodeAgentNotRunning, herdr.CodeAgentNotFound:
 			inspection := inspectAgent(ctx, home, record, logger)
 			effects = appendEffect(effects, inspection.effect)
@@ -340,13 +343,17 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 			return envelope
 		}
 	}
-	return spawnUnresolved(home, logger, options, record, claim, effects, "agent wait: "+waitErr.Error())
+	return spawnUnresolved(home, logger, options, record, claim, effects, session.first, "wait", "agent wait: "+waitErr.Error())
 }
 
-func spawnUnresolved(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, message string) output.Envelope {
-	updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
+func spawnUnresolved(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, first *herdr.AgentSessionInfo, phase, message string) output.Envelope {
+	updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+		current.Status = records.AgentUnresolved
+		current.LastError = message
+		setSessionRef(current, first)
+	}, "unresolved")
 	effects = appendEffect(effects, effect)
-	envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+	envelope := spawnEnvelope("partial", phase, effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
 	if updateErr != nil {
 		envelope.Error = message + "; " + updateErr.Error()
 	}
@@ -440,6 +447,44 @@ func mergeSessions(record records.Agent, sources ...*herdr.AgentSessionInfo) (*h
 		return nil, "the recorded agent session differs"
 	}
 	return found, ""
+}
+
+// sessionTrack keeps the earliest present session reference of one spawn.
+type sessionTrack struct {
+	first *herdr.AgentSessionInfo
+}
+
+// observe records one session reference in start, pane, wait, get order.
+func (track *sessionTrack) observe(observed *herdr.AgentSessionInfo) string {
+	if observed == nil {
+		if track.first != nil {
+			return "the agent session is missing"
+		}
+		return ""
+	}
+	if track.first == nil {
+		track.first = observed
+		return ""
+	}
+	if sessionRef(track.first) != sessionRef(observed) {
+		return "the agent session references differ"
+	}
+	return ""
+}
+
+func persistSession(home string, record records.Agent, first *herdr.AgentSessionInfo) (records.Agent, output.Effect, error) {
+	if first == nil || record.AgentSessionRef == sessionRef(first) {
+		return record, output.Effect{}, nil
+	}
+	return mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+		setSessionRef(current, first)
+	}, "updated")
+}
+
+func setSessionRef(record *records.Agent, session *herdr.AgentSessionInfo) {
+	if session != nil {
+		record.AgentSessionRef = sessionRef(session)
+	}
 }
 
 func sessionRef(session *herdr.AgentSessionInfo) string {
