@@ -67,8 +67,9 @@ func TestRegisterRejectsInvalidIDs(t *testing.T) {
 			if strings.ContainsAny(id, "\n\r\t") {
 				wantID = quote(id)
 			}
-			if envelope.Outcome != "failed" || envelope.Error != "invalid project id: "+wantID {
-				t.Fatalf("Register() = %#v; want invalid project id", envelope)
+			want := "invalid project id: " + wantID + ": an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
+			if envelope.Outcome != "failed" || envelope.Error != want {
+				t.Fatalf("Register() = %#v; want %q", envelope, want)
 			}
 			if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
 				t.Fatalf("invalid ID created state: stat error = %v", err)

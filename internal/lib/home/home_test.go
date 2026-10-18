@@ -163,6 +163,19 @@ func TestResolveDoesNotTrimHomeValues(t *testing.T) {
 	}
 }
 
+func TestResolveDoesNotTrimEnvHomeValue(t *testing.T) {
+	root := t.TempDir()
+	cwd := filepath.Join(root, "cwd")
+	if err := os.Mkdir(cwd, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	path := makeHome(t, cwd, " env home ")
+	got, err := Resolve("", false, " env home ", cwd)
+	if err != nil || got != path {
+		t.Fatalf("Resolve() = %q, %v; want environment path with spaces %q", got, err, path)
+	}
+}
+
 func TestResolveMarkerMustBeRegularFile(t *testing.T) {
 	root := t.TempDir()
 	markerDir := filepath.Join(root, ".hive")

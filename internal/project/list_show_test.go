@@ -54,8 +54,9 @@ func TestShowReturnsOneProject(t *testing.T) {
 func TestRegisterShowRejectsInvalidIDBeforeStoreAccess(t *testing.T) {
 	home := t.TempDir()
 	envelope := Show(home, "bad_id")
-	if envelope.Error != "invalid project id: bad_id" {
-		t.Fatalf("error = %v; want invalid ID", envelope.Error)
+	want := "invalid project id: bad_id: an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
+	if envelope.Error != want {
+		t.Fatalf("error = %v; want %q", envelope.Error, want)
 	}
 	if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
 		t.Fatalf("invalid ID caused store access: stat error = %v", err)
@@ -65,8 +66,9 @@ func TestRegisterShowRejectsInvalidIDBeforeStoreAccess(t *testing.T) {
 func TestRegisterShowEscapesControlCharactersInInvalidID(t *testing.T) {
 	home := t.TempDir()
 	envelope := Show(home, "bad\nid")
-	if envelope.Error != `invalid project id: "bad\nid"` {
-		t.Fatalf("error = %v; want one-line quoted invalid ID", envelope.Error)
+	want := `invalid project id: "bad\nid": an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters`
+	if envelope.Error != want {
+		t.Fatalf("error = %v; want %q", envelope.Error, want)
 	}
 	if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
 		t.Fatalf("invalid ID caused store access: stat error = %v", err)
