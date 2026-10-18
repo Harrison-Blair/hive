@@ -565,3 +565,589 @@ Full report and separate verdict commit receipt:
 `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-02.md`
 
 END VERIFIER T07-memory-and-handoff t07-verify-02
+
+## 2026-10-18: t07-verify-03
+
+| Item | Value |
+| --- | --- |
+| Role | Fresh independent source verifier, both areas |
+| Actual route | `pi openai-codex/gpt-6.1-sol:high` |
+| Actual provider/model/level | `openai-codex` / `gpt-6.1-sol` / `high` |
+| Session | `01a14e40-f207-767a-83a1-88025b81e5fc` |
+| Exact tested final worker | `7a1049489c1efc94a46ca69620d00f762f2f8eb7`, clean |
+| Last source commit | `b47a5c39a2da081a9bd41a8ddf9cf1d7d99faa2f` |
+| Second fix initial | `6bbc2a8fbe8063629a51698e12bba0e120c7eed4` |
+| First fix initial | `07bb763a8bbb685fc3b358bbd16f7aa2ee54716f` |
+| Original worker | `26b095f0b17b4fa509abe84263f0a22ad4dea515` |
+| Base | `c6a4d91d82042f8861a2aa4b722944272117fa23` |
+| Whole-task verdict | **PASS** |
+| Verdict identity | Evidence-only child of the exact final worker. The separate report records its full commit after push. |
+
+| Item | Proves | Verdict | Disposition |
+| --- | --- | --- | --- |
+| V1 | AC1, AC2 | **PASS** | Worker tests and both established memory checklists pass, including exact existing-file user errors. |
+| V2 | AC3 | **PASS** | Worker tests and the established handoff checklist pass. |
+| V3 | AC2, AC3 | **PASS** | Required transcript and all 60 extended actual CLI invocations pass. |
+| V4 | AC4 | **PASS** | Full uncached gate passes from the actual task worktree root. |
+| Cleanup | Operational completion | **PASS within the accepted provenance limit** | All old listed scratch stays absent. I removed all new manifest-listed scratch. |
+
+Recommendation: accept source at the exact tested worker for the separate landing procedure.
+No source implementation or task landing ran in this pass.
+
+### Reads, prerequisites, and full-range inspection
+
+I read all three complete prior verdict reports, all old tracked verdict bytes, and all current V files.
+I read the original and current task, every worker report, and the exact cleanup receipt and captures.
+The latest worker report ends with `END WORKER T07-memory-and-handoff t07-fix-02`.
+The current task equals the original task byte for byte.
+CP1 PASS remains accepted. I read its report and did not repeat CP1.
+The installed-spec CAP/HOME LANDING PASS stays accepted within its stated limits.
+Its later-contract C01 to C07 do not change T07.
+Both cap and home merge commits are ancestors. The task tracker records T22 landed.
+All listed T07 prerequisites pass.
+
+I inspected the full base-to-final-worker diff: 26 files, 4304 insertions, and one deletion.
+The final source change touches only `internal/memory/index.go` and the adjacent tests in `internal/memory/write_test.go`.
+The exact final worker then appends only V1, V3, and V4 evidence.
+Every old assertion stays unchanged.
+The second fix changes no store, scope, input, handoff, atomic helper, command, schema, dependency, shared API, or lock contract.
+Full-range changed files:
+
+```text
+cmd/handoff/handoff.go
+cmd/handoff/write/write.go
+cmd/handoff/write/write_cli_test.go
+cmd/memory/memory.go
+cmd/memory/write/write.go
+cmd/memory/write/write_cli_test.go
+cmd/root.go
+internal/handoff/write.go
+internal/handoff/write_test.go
+internal/lib/scope/doc.go
+internal/lib/scope/input.go
+internal/lib/scope/scope.go
+internal/lib/scope/scope_test.go
+internal/memory/doc.go
+internal/memory/frontmatter.go
+internal/memory/frontmatter_test.go
+internal/memory/index.go
+internal/memory/index_test.go
+internal/memory/write.go
+internal/memory/write_process_test.go
+internal/memory/write_test.go
+spec/hive-v1/evidence/T07-memory-and-handoff/V1.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V2.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V3.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V4.md
+spec/hive-v1/evidence/T07-memory-and-handoff/VERIFIED.md
+```
+
+The local wrapper keeps the cause instead of flattening it with `%v`.
+Its `UserMessage` preserves exact user text. Its `LogCategory` and `Error` preserve safe log text.
+Both existing-file scan error routes use the wrapper.
+Recommendation: retain this bounded wrapper and the existing package structure.
+One lock still contains all existing reads, the fact write, index construction, and the index write.
+Both commands use the bounded stdin helper. Handoff uses the same atomic writer as memory and index.
+The callback and CLI wrapper return nil Go errors for partial outcomes.
+No internal package imports Cobra or a command package.
+
+### Finding dispositions
+
+| ID | Prior area | Disposition |
+| --- | --- | --- |
+| M-F01 | Primary memory | **CLOSED**. Invalid nonempty separators refuse from stdin and existing files without changing old facts or index. |
+| H-F01 | Secondary memory logging | **CLOSED**. Both routes preserve exact user errors and exclude parsed values from real logs. |
+| H-F01-R1 | H-F01 fix regression | **CLOSED**. Exact existing-file mismatch text passes at home and project scope, in text and JSON. |
+| H-F02 | Secondary memory and handoff logging | **CLOSED**. Applicable checked project events carry identity. Home events add no project field. |
+
+Required existing-file user text is `memory file invalid: <absolute bad.md>: frontmatter: name <sentinel> differs from bad`.
+The actual logs instead contain `memory file invalid: <absolute bad.md>: frontmatter: name differs`.
+The stdin user error remains exact. Its log keeps `frontmatter: name differs`.
+No parsed name, description, body, or handoff sentinel reaches the checked logs.
+Actual error and effect events retain category, phase, command, scope, and applicable project metadata.
+Every event reflects an actual effect or error.
+
+### Capture authority and complete run register
+
+All capture names below resolve under:
+
+`/home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-03-captures/`
+
+`base-worker.diff`, `changed-files.txt`, and `call-sites.txt` retain the full-range inspection map.
+The worktree stayed frozen. All probes, mutants, and fault hooks ran only in isolated copies.
+Every Go run below uses `-race -count=1`, except the separately named TestSTE run.
+
+| Capture | Actual command or check | Status |
+| --- | --- | --- |
+| `V1.txt` | `go test -race -count=1 ./internal/memory/ ./internal/lib/scope/ -v` from the actual worktree | Exit 0 |
+| `V2.txt` | `go test -race -count=1 ./internal/handoff/ -v` from the actual worktree | Exit 0 |
+| `historical-mismatch-red.txt` | Exact retained mismatch probe on `6bbc2a8f` | Exit 1, exact user assertion |
+| `historical-M-red.txt` | Retained separator probe on `07bb763a` | Exit 1, stdin and existing-file assertions |
+| `historical-H-red.txt` | Retained content-log and project-identity probes on `07bb763a` | Exit 1, content leak and three missing project fields |
+| `independent-green.txt` | Both complete retained probe packages on `7a104948` | Exit 0, exact mismatch included |
+| `rename-fault-green.txt` | `TestRenameFaultOldBytes`, external fault enabled in a separate build | Exit 0 |
+| `mutant-lock-red.txt` | Existing-file scan before acquisition, `TestExistingReadsUnderLock` | Exit 1, early open and missed cooperating change |
+| `mutant-existing-cap-red.txt` | 2 MiB existing cap, fixed 1048577-byte case | Exit 1, accepted oversized file |
+| `mutant-partial-red.txt` | Index failure reports `ok`, `TestPartialAndHeldLock` | Exit 1, exact created and updated partial envelopes |
+| `mutant-sort-red.txt` | Reverse sort, `TestTwoProcessesExactIndex` | Exit 1, exact sorted index |
+| `mutant-atomic-red.txt` | Direct write, `TestRawAtomic200` | Exit 1, torn bytes |
+| `mutant-stdin-cap-red.txt` | Read only the limit, `TestInputEntireStreamBoundaries` | Exit 1, accepted oversized input |
+| `mutant-deadline-red.txt` | Add one second, `TestTotalTrickleDeadlineAndLock` | Exit 1, total deadline |
+| `mutant-path-red.txt` | Bypass checks, `TestStaticWrongTypesAndLinks` | Exit 1, static path refusals |
+| `mutant-log-red.txt` | Change effect event name, `TestLoggingEffectsAndActualErrors` | Exit 1, actual event identity |
+| `restored-green.txt` | Both complete packages after restoration of every original source byte | Exit 0, no known finding excluded |
+| `final-independent.txt` | Both complete packages in a final uncached run | Exit 0 |
+| `cli-run.txt` | `python3 cli_checks.py`, 60 actual invocations | Exit 0 |
+| `gate-format.txt` | Worktree formatting command | Exit 0, empty output |
+| `gate-vet.txt` | `go vet ./...` | Exit 0 |
+| `gate-lint.txt` | `golangci-lint run ./...` | Exit 0, `0 issues.` |
+| `gate-race.txt` | `go test -race -count=1 ./...` | Exit 0, every package uncached |
+| `gate-ste.txt` | `go test -run TestSTE -count=1 .` | Exit 0 |
+| `gate-diff.txt` | Full base-to-worker diff check | Exit 0, empty output |
+
+Every red above fails on behavior assertions, not compilation alone.
+All nine established mutation patches and full outputs remain.
+No new probe class ran. Original probe definitions and assertions stay byte-exact.
+Both complete checklists pass again, including these cases:
+
+- Scope and name rules, all frontmatter categories, valid-space trimming, literal quotes, colons, and 10000 unknown keys.
+- Whole stdin and existing files at literal 1048575, 1048576, 1048577, and 5000000 bytes.
+- Total 100 ms deadlines, active trickle, stdin before acquisition, and no lock during input wait.
+- All existing reads under one held lock, a cooperating change, and ten OS-process pairs with the exact sorted index.
+- Static links, wrong types, unreadable files, scan exclusions, and prewrite index obstructions.
+- Actual post-memory index rename faults, truthful created and updated partial effects, retained facts, and the old index.
+- Later regeneration by a distinct write without replay. Nil Go errors remain at both callback boundaries.
+- Exact raw handoff bytes, empty refusal, complete concurrent reads, and no temporary residue.
+
+The final handoff run completed 200 replacements and 533 concurrent exact-byte reads.
+Active trickle returned at 100.029671 ms for memory and 100.173979 ms for handoff.
+The complete package command ran three times: initial green, restored green, and final green.
+Each ran `go test -race -count=1 ./internal/t07memoryverify ./internal/t07atomicverify -v`.
+The explicit rename-fault test runs separately instead of relying on its normal no-hook skip.
+The child-only skips are process entry points. Their parent tests actually run the OS processes.
+
+### V1 actual worktree run
+
+```sh
+# commit 7a1049489c1efc94a46ca69620d00f762f2f8eb7
+go test -race -count=1 ./internal/memory/ ./internal/lib/scope/ -v
+echo "exit $?"
+```
+
+```text
+=== RUN   TestParseFrontmatterValid
+--- PASS: TestParseFrontmatterValid (0.00s)
+=== RUN   TestParseFrontmatterKeepsColonInValue
+--- PASS: TestParseFrontmatterKeepsColonInValue (0.00s)
+=== RUN   TestParseFrontmatterRequiresColonSpace
+=== RUN   TestParseFrontmatterRequiresColonSpace/missing_name
+=== RUN   TestParseFrontmatterRequiresColonSpace/missing_description
+=== RUN   TestParseFrontmatterRequiresColonSpace/both
+--- PASS: TestParseFrontmatterRequiresColonSpace (0.00s)
+    --- PASS: TestParseFrontmatterRequiresColonSpace/missing_name (0.00s)
+    --- PASS: TestParseFrontmatterRequiresColonSpace/missing_description (0.00s)
+    --- PASS: TestParseFrontmatterRequiresColonSpace/both (0.00s)
+=== RUN   TestParseFrontmatterTrimsAfterColonSpace
+--- PASS: TestParseFrontmatterTrimsAfterColonSpace (0.00s)
+=== RUN   TestParseFrontmatterErrors
+=== RUN   TestParseFrontmatterErrors/no_block
+=== RUN   TestParseFrontmatterErrors/no_close
+=== RUN   TestParseFrontmatterErrors/missing_name
+=== RUN   TestParseFrontmatterErrors/missing_description
+=== RUN   TestParseFrontmatterErrors/empty_name
+=== RUN   TestParseFrontmatterErrors/empty_description
+=== RUN   TestParseFrontmatterErrors/duplicate_name
+=== RUN   TestParseFrontmatterErrors/duplicate_description
+--- PASS: TestParseFrontmatterErrors (0.00s)
+    --- PASS: TestParseFrontmatterErrors/no_block (0.00s)
+    --- PASS: TestParseFrontmatterErrors/no_close (0.00s)
+    --- PASS: TestParseFrontmatterErrors/missing_name (0.00s)
+    --- PASS: TestParseFrontmatterErrors/missing_description (0.00s)
+    --- PASS: TestParseFrontmatterErrors/empty_name (0.00s)
+    --- PASS: TestParseFrontmatterErrors/empty_description (0.00s)
+    --- PASS: TestParseFrontmatterErrors/duplicate_name (0.00s)
+    --- PASS: TestParseFrontmatterErrors/duplicate_description (0.00s)
+=== RUN   TestParseMemoryNameDiffers
+--- PASS: TestParseMemoryNameDiffers (0.00s)
+=== RUN   TestParseMemoryNameDifferenceStaysOnOneLine
+--- PASS: TestParseMemoryNameDifferenceStaysOnOneLine (0.00s)
+=== RUN   TestReadMemoryFileBoundary
+--- PASS: TestReadMemoryFileBoundary (0.01s)
+=== RUN   TestMemoryWriteChildProcess
+    write_process_test.go:15: child helper for the two-process test
+--- SKIP: TestMemoryWriteChildProcess (0.00s)
+=== RUN   TestTwoProcessesWriteMemories
+--- PASS: TestTwoProcessesWriteMemories (1.02s)
+=== RUN   TestNewMemoryWritesFileAndIndex
+--- PASS: TestNewMemoryWritesFileAndIndex (0.00s)
+=== RUN   TestReplacementReportsUpdated
+--- PASS: TestReplacementReportsUpdated (0.00s)
+=== RUN   TestTwoMemoriesIndexNameOrder
+--- PASS: TestTwoMemoriesIndexNameOrder (0.00s)
+=== RUN   TestExistingInvalidFileStopsWrite
+--- PASS: TestExistingInvalidFileStopsWrite (0.00s)
+=== RUN   TestExistingOversizedFileStopsWrite
+--- PASS: TestExistingOversizedFileStopsWrite (0.00s)
+=== RUN   TestMemoryNameValidation
+=== RUN   TestMemoryNameValidation/#00
+=== RUN   TestMemoryNameValidation/Base
+=== RUN   TestMemoryNameValidation/base_is
+=== RUN   TestMemoryNameValidation/_base
+=== RUN   TestMemoryNameValidation/base_
+=== RUN   TestMemoryNameValidation/base/dev
+=== RUN   TestMemoryNameValidation/..
+=== RUN   TestMemoryNameValidation/%2e%2e%2f
+=== RUN   TestMemoryNameValidation/quote'
+=== RUN   TestMemoryNameValidation/#
+=== RUN   TestMemoryNameValidation/?
+=== RUN   TestMemoryNameValidation/%
+=== RUN   TestMemoryNameValidation/&
+=== RUN   TestMemoryNameValidation/;
+=== RUN   TestMemoryNameValidation/+
+=== RUN   TestMemoryNameValidation/lé
+=== RUN   TestMemoryNameValidation/bad_name
+--- PASS: TestMemoryNameValidation (0.00s)
+    --- PASS: TestMemoryNameValidation/#00 (0.00s)
+    --- PASS: TestMemoryNameValidation/Base (0.00s)
+    --- PASS: TestMemoryNameValidation/base_is (0.00s)
+    --- PASS: TestMemoryNameValidation/_base (0.00s)
+    --- PASS: TestMemoryNameValidation/base_ (0.00s)
+    --- PASS: TestMemoryNameValidation/base/dev (0.00s)
+    --- PASS: TestMemoryNameValidation/.. (0.00s)
+    --- PASS: TestMemoryNameValidation/%2e%2e%2f (0.00s)
+    --- PASS: TestMemoryNameValidation/quote' (0.00s)
+    --- PASS: TestMemoryNameValidation/# (0.00s)
+    --- PASS: TestMemoryNameValidation/? (0.00s)
+    --- PASS: TestMemoryNameValidation/% (0.00s)
+    --- PASS: TestMemoryNameValidation/& (0.00s)
+    --- PASS: TestMemoryNameValidation/; (0.00s)
+    --- PASS: TestMemoryNameValidation/+ (0.00s)
+    --- PASS: TestMemoryNameValidation/lé (0.00s)
+    --- PASS: TestMemoryNameValidation/bad_name (0.00s)
+=== RUN   TestVeryLongMemoryNameFailsWithoutPanic
+--- PASS: TestVeryLongMemoryNameFailsWithoutPanic (0.00s)
+=== RUN   TestStaticIndexDirectoryRefusedBeforeWrite
+--- PASS: TestStaticIndexDirectoryRefusedBeforeWrite (0.00s)
+=== RUN   TestStaticIndexLinkRefusedBeforeWrite
+--- PASS: TestStaticIndexLinkRefusedBeforeWrite (0.00s)
+=== RUN   TestStaticMemoryDirectoryLinkRefused
+--- PASS: TestStaticMemoryDirectoryLinkRefused (0.00s)
+=== RUN   TestStaticLeafLinkRefused
+--- PASS: TestStaticLeafLinkRefused (0.00s)
+=== RUN   TestPartialIndexForNewMemory
+--- PASS: TestPartialIndexForNewMemory (0.00s)
+=== RUN   TestPartialIndexForReplacement
+--- PASS: TestPartialIndexForReplacement (0.00s)
+=== RUN   TestMemoryOversizedInputWritesNothing
+--- PASS: TestMemoryOversizedInputWritesNothing (0.00s)
+=== RUN   TestMemoryTimeoutWritesNothing
+--- PASS: TestMemoryTimeoutWritesNothing (0.10s)
+=== RUN   TestWriteLogsEffectsWithoutContent
+--- PASS: TestWriteLogsEffectsWithoutContent (0.00s)
+=== RUN   TestInvalidSeparatorStdinStopsWrite
+=== RUN   TestInvalidSeparatorStdinStopsWrite/missing_name
+=== RUN   TestInvalidSeparatorStdinStopsWrite/missing_description
+--- PASS: TestInvalidSeparatorStdinStopsWrite (0.00s)
+    --- PASS: TestInvalidSeparatorStdinStopsWrite/missing_name (0.00s)
+    --- PASS: TestInvalidSeparatorStdinStopsWrite/missing_description (0.00s)
+=== RUN   TestExistingInvalidSeparatorStopsWrite
+--- PASS: TestExistingInvalidSeparatorStopsWrite (0.00s)
+=== RUN   TestWriteLogsSafeFrontmatterCategory
+--- PASS: TestWriteLogsSafeFrontmatterCategory (0.00s)
+=== RUN   TestExistingInvalidFileLogsNoParsedValues
+--- PASS: TestExistingInvalidFileLogsNoParsedValues (0.00s)
+=== RUN   TestExistingMismatchKeepsExactUserTextAndSafeLog
+--- PASS: TestExistingMismatchKeepsExactUserTextAndSafeLog (0.00s)
+=== RUN   TestProjectExistingMismatchKeepsExactUserTextAndSafeLog
+--- PASS: TestProjectExistingMismatchKeepsExactUserTextAndSafeLog (0.00s)
+=== RUN   TestWriteLogsProjectID
+--- PASS: TestWriteLogsProjectID (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/memory	2.154s
+=== RUN   TestResolveHomeScope
+--- PASS: TestResolveHomeScope (0.00s)
+=== RUN   TestResolveProjectScope
+--- PASS: TestResolveProjectScope (0.00s)
+=== RUN   TestResolveRejectsBadScopes
+=== RUN   TestResolveRejectsBadScopes/#00
+=== RUN   TestResolveRejectsBadScopes/project:
+=== RUN   TestResolveRejectsBadScopes/project:HIVE
+=== RUN   TestResolveRejectsBadScopes/project:a/b
+=== RUN   TestResolveRejectsBadScopes/project:..
+=== RUN   TestResolveRejectsBadScopes/project:%2e%2e%2f
+=== RUN   TestResolveRejectsBadScopes/other
+=== RUN   TestResolveRejectsBadScopes/_home
+=== RUN   TestResolveRejectsBadScopes/HOME
+=== RUN   TestResolveRejectsBadScopes/project:_hive
+=== RUN   TestResolveRejectsBadScopes/project:hive_
+--- PASS: TestResolveRejectsBadScopes (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/#00 (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project: (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:HIVE (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:a/b (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:.. (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:%2e%2e%2f (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/other (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/_home (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/HOME (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:_hive (0.00s)
+    --- PASS: TestResolveRejectsBadScopes/project:hive_ (0.00s)
+=== RUN   TestResolveReportsMissingProject
+--- PASS: TestResolveReportsMissingProject (0.00s)
+=== RUN   TestResolveRejectsLinkedProjectDirectory
+--- PASS: TestResolveRejectsLinkedProjectDirectory (0.00s)
+=== RUN   TestCheckFileRejectsStaticDirectoryAndLink
+--- PASS: TestCheckFileRejectsStaticDirectoryAndLink (0.00s)
+=== RUN   TestCheckFileRejectsLinkedAncestor
+--- PASS: TestCheckFileRejectsLinkedAncestor (0.00s)
+=== RUN   TestCheckFileRejectsOutsideHome
+--- PASS: TestCheckFileRejectsOutsideHome (0.00s)
+=== RUN   TestCheckFileAllowsMissingPath
+--- PASS: TestCheckFileAllowsMissingPath (0.00s)
+=== RUN   TestReadInputAtLimit
+--- PASS: TestReadInputAtLimit (0.01s)
+=== RUN   TestReadInputAboveLimit
+--- PASS: TestReadInputAboveLimit (0.00s)
+=== RUN   TestReadInputTimeout
+--- PASS: TestReadInputTimeout (0.10s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/lib/scope	1.119s
+exit 0
+```
+
+#### Exact retained mismatch probe: historical red, whole-restored green
+
+The probe SHA256 is `6ab57e5aafda632e5af812ad3efee5654840022eafc006ae761e498789c03752`.
+Its source stays byte-exact. It uses a synthetic sentinel, not a credential.
+Historical red, from the isolated exact `6bbc2a8f` copy:
+
+```sh
+go test -race -count=1 ./internal/t07atomicverify -run TestExistingMismatchExactUserAndSafeLog -v
+echo "exit $?"
+```
+
+```text
+=== RUN   TestExistingMismatchExactUserAndSafeLog
+    mismatch_test.go:25: user error: got output.Envelope{Outcome:"failed", Phase:"scan", Effects:[]output.Effect{}, Error:"memory file invalid: /tmp/t07-verify-03-gate.lln8by69/TestExistingMismatchExactUserAndSafeLog87852488/001/memory/bad.md: frontmatter: name differs", Result:interface {}(nil)}; want exact "memory file invalid: /tmp/t07-verify-03-gate.lln8by69/TestExistingMismatchExactUserAndSafeLog87852488/001/memory/bad.md: frontmatter: name T07V02_EXISTING_NAME_NOT_A_CREDENTIAL differs from bad"
+--- FAIL: TestExistingMismatchExactUserAndSafeLog (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/t07atomicverify	0.003s
+FAIL
+exit 1
+```
+
+The same probe passes in each complete green run on the exact final source.
+`final-independent.txt` retains the full final output, including the mismatch PASS and both package PASS lines.
+`restored-green.txt` records the whole-restored green after all nine mutants.
+No source fix ran in any copy.
+Observed final output selection, from the capture directory:
+
+```sh
+rg 'TestExistingMismatch|^ok|replacements|trickle timeout' final-independent.txt; echo "exit $?"
+```
+
+```text
+ok  	github.com/Harrison-Blair/hive/internal/t07memoryverify	12.005s
+    atomic_test.go:111: 200 replacements, 533 concurrent exact-byte reads
+    atomic_test.go:187: active trickle timeout 100.029671ms
+    atomic_test.go:187: active trickle timeout 100.173979ms
+=== RUN   TestExistingMismatchExactUserAndSafeLog
+--- PASS: TestExistingMismatchExactUserAndSafeLog (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/t07atomicverify	2.122s
+exit 0
+```
+
+### V2 actual worktree run
+
+```sh
+# commit 7a1049489c1efc94a46ca69620d00f762f2f8eb7
+go test -race -count=1 ./internal/handoff/ -v
+echo "exit $?"
+```
+
+```text
+=== RUN   TestHandoffWriteCreatesAndReplaces
+--- PASS: TestHandoffWriteCreatesAndReplaces (0.00s)
+=== RUN   TestHandoffEmptyInputWritesNothing
+--- PASS: TestHandoffEmptyInputWritesNothing (0.00s)
+=== RUN   TestHandoffOversizedInputKeepsOld
+--- PASS: TestHandoffOversizedInputKeepsOld (0.00s)
+=== RUN   TestHandoffTimeoutKeepsOld
+--- PASS: TestHandoffTimeoutKeepsOld (0.10s)
+=== RUN   TestHandoffStaticDirectoryRefused
+--- PASS: TestHandoffStaticDirectoryRefused (0.00s)
+=== RUN   TestHandoffStaticLinkRefused
+--- PASS: TestHandoffStaticLinkRefused (0.00s)
+=== RUN   TestHandoffConcurrentReplacement
+--- PASS: TestHandoffConcurrentReplacement (0.01s)
+=== RUN   TestHandoffLogsProjectID
+--- PASS: TestHandoffLogsProjectID (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/handoff	1.118s
+exit 0
+```
+
+### V3 actual CLI
+
+The production binary came from the exact clean final worker with `vcs.modified=false`.
+Its SHA256 is `cb01fd0e93e9e05ab7e4ca1e1949fc9756b0ebabba40cf44acad0cf4536214db`.
+Its unique absolute path was `t07-verify-03-captures/bin/hive-t07-verify-03` under the absolute capture directory above.
+The separate fault binary contains only the recorded external rename fault.
+Its SHA256 is `aa25147de83a1d4ae1886d0a78923aec75eb0bf3067ccde2ee9c5c12cc6e3e11`.
+The isolated build inherited the enclosing root's Git stamp, not the task revision.
+Exact archived source equality and the retained fault patch establish its source identity. The production stamp is exact.
+Every invocation uses an explicit absolute marked fixture home and an absolute binary.
+`cli/cli-commands.json` records each command, status, stdout, and stderr.
+Separate raw streams and synthetic logs remain.
+The exact driver command from the actual task worktree root was:
+
+```sh
+python3 /home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-03-captures/cli_checks.py
+echo "exit $?"
+```
+
+```text
+Completed: 60 CLI invocations. V3, text, JSON, registration, raw bytes, errors, external rename faults, partial/recovery and logs checked.
+PASS: all literal expectations
+exit 0
+```
+
+Observed required transcript in `cli/V3-actual-transcript.txt`:
+
+```text
+created memory memory/base-is-dev.md
+updated index memory/MEMORY.md
+- [base-is-dev](base-is-dev.md): The base branch of hive is dev.
+hive: frontmatter: missing description
+exit 1
+updated handoff handoff.md
+Open decisions: none.
+```
+
+Successful writes exit 0. The invalid memory write exits 1 without a fact or index change.
+The extended driver checks exact existing-file and stdin mismatch errors at both scopes, in text and JSON.
+It checks safe log categories separately from user text, JSON envelopes, and file bytes.
+Home logs add no project field. Checked project memory/index/handoff success and failure logs carry `project_id: demo`.
+Actual index rename failures occur after successful static checks and fact writes.
+Created and updated partial effects remain truthful. No false index success occurs.
+The old index remains. A distinct later write regenerates all retained facts without replay.
+The cleanup block below records removal of only this pass's fixture roots after compact logs and outputs.
+
+### V4 actual uncached gate
+
+The following commands ran from the actual task worktree root at exact `7a104948`.
+`TMPDIR=/tmp/t07-verify-03-gate.lln8by69` was outside every marked home.
+No absent-home test discovered the real home.
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race -count=1 ./...
+go test -run TestSTE -count=1 .
+git diff --check c6a4d91d82042f8861a2aa4b722944272117fa23..HEAD
+```
+
+```text
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race -count=1 ./...
+ok  	github.com/Harrison-Blair/hive	2.769s
+ok  	github.com/Harrison-Blair/hive/cmd	1.031s
+?   	github.com/Harrison-Blair/hive/cmd/common	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/handoff	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/handoff/write	1.180s
+?   	github.com/Harrison-Blair/hive/cmd/logs	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/memory	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/memory/write	1.183s
+?   	github.com/Harrison-Blair/hive/cmd/project	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/register	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/version	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/handoff	1.139s
+ok  	github.com/Harrison-Blair/hive/internal/lib/home	1.022s
+ok  	github.com/Harrison-Blair/hive/internal/lib/log	1.061s
+?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
+?   	github.com/Harrison-Blair/hive/internal/lib/records	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/lib/scope	1.141s
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	17.312s
+ok  	github.com/Harrison-Blair/hive/internal/lib/version	1.017s
+ok  	github.com/Harrison-Blair/hive/internal/logs	5.531s
+ok  	github.com/Harrison-Blair/hive/internal/memory	2.176s
+ok  	github.com/Harrison-Blair/hive/internal/project	1.030s
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.022s
+exit 0
+$ go test -run TestSTE -count=1 .
+ok  	github.com/Harrison-Blair/hive	0.120s
+exit 0
+$ git diff --check c6a4d91d82042f8861a2aa4b722944272117fa23..HEAD
+exit 0
+```
+
+Formatting prints nothing. Vet, lint, all uncached race packages, TestSTE, and the full-range diff check pass.
+Full original per-command outputs remain in `gate-*.txt`.
+
+### Freeze, cleanup, preservation, and limits
+
+Initial tracked freeze SHA256: `367de307b69ea277a1ed74aa68609952aff29528bf4753c887baf7b8f6c1142a`.
+Every initially tracked byte matched before this appendix. Every old verdict byte stays an exact prefix.
+All V files stay exact. This appendix is the only tracked change.
+After restoration, the current and historical copies each match all 175 original files at their exact Git commits.
+The first-verdict copy matches all 173 original files at `07bb763a`.
+All probe copies match these retained definitions byte for byte:
+
+```text
+fa5bcf92b4049a2e2da126f58d135acd189d886199325bfe68f9e3a67fe6df11  probe-t07memoryverify_test.go
+a9934aa68f557ff209823f263152f915790872ab4677d0d83c5e09746dc9d507  probe-t07atomicverify_test.go
+6ab57e5aafda632e5af812ad3efee5654840022eafc006ae761e498789c03752  probe-mismatch_test.go
+```
+
+The prior cleanup audit remains PASS within its accepted provenance limit.
+All 20 exact old listed scratch paths remain absent. Both retained hash manifests pass.
+Historical probe identity relies on retained provenance and captures, not a new comparison with removed historical copies.
+The unlisted empty secondary `tmp/` stays. I removed no prior scratch.
+All 541 old report/capture files match this pass's initial hash manifest.
+The real-root log stays exactly 3424 bytes. Its old prefix and whole-file hash stay exact.
+No task log existed at the initial freeze. The earlier real-root setup append stays preserved without rollback.
+
+Own cleanup command from the actual task worktree root:
+
+```sh
+python3 /home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-03-captures/cleanup.py
+```
+
+`cleanup.txt` records source/probe equality, old evidence preservation, and every exact present/removed/absent path.
+Only these six roots appear in `scratch-manifest.json`:
+
+```text
+t07-verify-03-captures/source
+t07-verify-03-captures/historical
+t07-verify-03-captures/original
+t07-verify-03-captures/bin
+t07-verify-03-captures/cli/fixtures
+/tmp/t07-verify-03-gate.lln8by69
+```
+
+The first five are below the absolute capture parent above. Every listed root is absent after removal.
+Compact probes, outputs, synthetic logs, scripts, patches, binary metadata, and before/after manifests remain.
+No broad deletion ran. No real memory, handoff, registry, or log received a CLI write from this pass.
+
+Only the approved local-user and cooperating-writer boundary applies.
+Hostile replacement between `Lstat` and `Open` stays deferred for T01.
+Timeout probes close their owned pipes. They do not prove cancellation of an arbitrary blocked reader.
+No credential content, global harness configuration, historical attribution, worktree, or other agent changed.
+No agent started. No tracker edit, handoff edit, force push, main change, co-author, or false session trailer occurred.
+No STE baseline increased.
+Uncompleted: the separate T07 landing. No owned acceptance check remains unrun.
+
+Full report and separate verdict commit receipt:
+
+`/home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-03.md`
+
+END VERIFIER T07-memory-and-handoff t07-verify-03
