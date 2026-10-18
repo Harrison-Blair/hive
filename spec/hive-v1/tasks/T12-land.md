@@ -35,7 +35,9 @@ One landing at a time runs for a repository.
 | `cmd/land/land.go` | New. |
 | `internal/land/doc.go`, `land.go`, `merge.go`, `pr.go`, `render.go` | New. |
 | `internal/lib/gitx/gitx.go` | Add `MergeNoFF`, `MergeAbort`, `MergeInProgress`, `HasRemote`, `Push`, `Tip`. |
+| `internal/lib/run/run.go` | Change `Command` to honor the caller context deadline. Keep the 30-second default. |
 | `internal/lib/store/namedlock.go` | New. A second `flock` file under `.hive/state/locks/<name>` for one long operation. |
+| `internal/lib/store/doc.go` | Add the map line for `namedlock.go`. |
 | `internal/lib/records/task.go` | Add the `delivery` fields: `mode`, `target`, `grant`, `commit`, `pushed`, `pr_url`, `evidence`, `at`. |
 
 ## Requirements
@@ -53,6 +55,7 @@ One landing at a time runs for a repository.
 - In the registered repository: `CurrentBranch` must equal the base, else `base branch not checked out: <base>`. `IsDirty` must be false, else `repository is dirty`.
 - `git merge --no-ff --no-edit <branch>` runs with a deadline of 60 seconds. On success hive records `mode`, `target`, `grant`, `evidence`, `commit` from `git rev-parse HEAD`, and `at`.
 - When the repository has a remote `origin`, hive then runs `git push origin <base>` with a deadline of 120 seconds and sets `pushed` true. A failed push gives `partial` with the merge as an effect and `pushed` false. Without `origin` hive skips the push and says so.
+- The 60-second merge bound and the 120-second push bound use `context.WithTimeout` at the call site. `run.Command` uses the caller context deadline and applies 30 seconds only when the context has no deadline. A test in `internal/lib/run/` covers the honored deadline and the earlier caller cancellation.
 - A merge with exit status not 0 and `MergeInProgress` true is a conflict. Hive runs `git merge --abort` and fails with `merge conflict: <files>`. The repository is clean after it.
 - A merge with another error, or on the deadline, runs `git merge --abort` when `MergeInProgress` is true. The outcome is `failed` with the git output. A failed abort gives `failed` with both messages and the effect `merge in progress`.
 - `MergeInProgress` checks `git rev-parse -q --verify MERGE_HEAD`.
@@ -89,8 +92,8 @@ One landing at a time runs for a repository.
 ### V2 Merge tests
 
 - Proves: AC1, AC2.
-- Command: `go test ./internal/land/ -run TestMerge -v`, red and green.
-- Expected: a real repository in a temporary directory with a base branch, a task branch, and a bare repository as `origin`. The merge gives a commit with two parents, and `origin` has the same base commit afterwards. A repository without `origin` lands without a push. A conflicting branch gives the error, and `git status --porcelain` is empty afterwards. A remote path that does not exist gives `partial` with `pushed` false and the commit in the record. A retry after it keeps the commit, pushes, and sets `pushed` true. A pre-merge hook that exits with 1 gives `failed` with the hook output and a clean repository.
+- Command: `go test ./internal/land/ -run TestMerge -v` and `go test ./internal/lib/run/ -run TestCommandHonorsCallerDeadline -v`, red and green.
+- Expected: a real repository in a temporary directory with a base branch, a task branch, and a bare repository as `origin`. The merge gives a commit with two parents, and `origin` has the same base commit afterwards. A repository without `origin` lands without a push. A conflicting branch gives the error, and `git status --porcelain` is empty afterwards. A remote path that does not exist gives `partial` with `pushed` false and the commit in the record. A retry after it keeps the commit, pushes, and sets `pushed` true. A pre-merge hook that exits with 1 gives `failed` with the hook output and a clean repository. The 60-second merge bound and the 120-second push bound use `context.WithTimeout` at the call site. `run.Command` uses the caller context deadline and applies 30 seconds only when the context has no deadline. The runner test covers the honored deadline and the earlier caller cancellation.
 
 ### V3 Pull request tests
 
@@ -151,3 +154,8 @@ rm -rf "$FIX"
 
 2026-10-18. Add CP3 as a dependent. Replace the live transcript with a unique
 fixture home, a unique fixture repository, and an absolute tested binary.
+2026-10-18. Add the D7 deadline contract. The 60-second merge bound and the
+120-second push bound use `context.WithTimeout` at the call site. `run.Command`
+honors the caller context deadline and applies 30 seconds only when the context
+has no deadline. Add the runner test. Plan D7 supersedes the handoff constraint
+to keep `Command` at 30 seconds.

@@ -45,7 +45,8 @@ passes `--adopt` with its ID.
 | `cmd/agent/spawn/spawn.go` | Add `--adopt WORKSPACE`. |
 | `internal/lib/herdr/workspace.go` | Add `WorkspaceCreate`. T09 made the file with `WorkspaceGet`, `WorkspaceList`, and `WorkspaceClose`. |
 | `internal/lib/herdr/tab.go` | New. `TabList`. |
-| `internal/lib/herdr/pane.go` | Add `PaneList`. T10 made the file with `PaneGet`. |
+| `internal/lib/herdr/types.go` | Add the optional `RestoreError` field to `PaneInfo` as a `*string`. Keep each other field. |
+| `internal/lib/herdr/pane.go` | Add `PaneList` and add the optional `restore_error` field to `paneInfoWire`. Decode it into `PaneInfo.RestoreError`. An absent value or null gives nil. A value of another type fails the decode. Keep each other field. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
 | `internal/lib/records/project.go` | Add `workspace` with `id`, `root_pane`, `created_by_hive`, and `created_at`. |
 | `ste_test.go` | Add the template to `steFiles`. |
@@ -169,3 +170,7 @@ rm -rf "$FIX"
 moved. Add the explicit `--pane` refusal. Add the static path checks. Replace the
 pane-count stop result with the T10 post-close result. Replace the live
 transcript with a unique fixture home and an absolute tested binary.
+2026-10-18. Add the D8 restore field. `PaneInfo` gains the optional
+`RestoreError` as a `*string`. `paneInfoWire` gains `restore_error`, and the
+decode gives nil for an absent value or null and fails on another type. Keep
+each other field and the AC2 refusal.

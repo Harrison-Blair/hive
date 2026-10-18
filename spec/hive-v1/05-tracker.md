@@ -1501,6 +1501,32 @@ this receipt, the CP2 row, and the T12 to T19 rows.
 - T20 and T21 stay `blocked` on CP3. CP1 stays passed without a rerun. CP3,
   CP4, and CP5 stay open.
 
+### Dated spec correction: wave 4 briefs
+
+2026-10-18. This section records the plan D7 to D10 corrections in the wave 4
+briefs. It changes only this receipt, the corrected briefs, and the tracker
+tables below. It accepts no source and no checkpoint.
+
+- D7: T12 states the deadline contract. `run.Command` honors the caller context
+  deadline and applies 30 seconds only when the context has no deadline. The
+  60-second merge bound and the 120-second push bound use `context.WithTimeout`
+  at the call site. A test in `internal/lib/run/` covers the honored deadline
+  and the earlier caller cancellation. Plan D7 supersedes the handoff constraint
+  to keep `Command` at 30 seconds.
+- D8: T13 states the optional `RestoreError` field on `PaneInfo` as a `*string`.
+  `paneInfoWire` gains `restore_error`. An absent value or null gives nil. A
+  value of another type fails the decode. Each other field stays.
+- D9: T15 states `agent.StartSupervisor`. It reads the supervisor claim and
+  registers the supervisor under one held store lock. It adds `PIDStart` to
+  `RegisterOptions` and the claim write. It does not call the locking `Register`.
+- D10: T16 to T19 state that the send reports the settled status and exits 0.
+  A separate pane read shows the reply. The send does not print the reply text.
+- The task ownership map adds `internal/lib/run/run.go` and
+  `internal/lib/store/doc.go` to T12, `internal/lib/herdr/types.go` to T13, and
+  `internal/agent/supervisor.go`, `internal/agent/register.go`, and
+  `internal/agent/doc.go` to T15. The shared-file collisions table gains the
+  matching rows.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -2192,10 +2218,10 @@ edit permission.
 | T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
 | T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/agent/register.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
 | T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
-| T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go` |
-| T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
+| T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go`, `internal/lib/run/run.go`, `internal/lib/store/doc.go` |
+| T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/types.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
 | T14 worker spawn | `internal/agent/spawn_worker.go`, `internal/agent/brief.go`, `internal/lib/herdr/tab_create.go` | `internal/agent/spawn.go`, `internal/agent/doc.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/doc.go` |
-| T15 supervise | `cmd/supervise/supervise.go`, `internal/supervise/doc.go`, `internal/supervise/supervise.go`, `internal/supervise/subscribe.go`, `internal/supervise/events.go`, `internal/supervise/watch.go`, `internal/supervise/quiet.go`, `internal/supervise/nudge.go`, `internal/supervise/reconcile.go`, `internal/lib/herdr/events.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/agent.go`, `internal/lib/records/claim.go`, `internal/lib/records/inbox.go`, `internal/lib/inbox/inbox.go`, `internal/doctor/checks.go` |
+| T15 supervise | `cmd/supervise/supervise.go`, `internal/supervise/doc.go`, `internal/supervise/supervise.go`, `internal/supervise/subscribe.go`, `internal/supervise/events.go`, `internal/supervise/watch.go`, `internal/supervise/quiet.go`, `internal/supervise/nudge.go`, `internal/supervise/reconcile.go`, `internal/lib/herdr/events.go`, `internal/agent/supervisor.go` | `cmd/root.go`, `internal/agent/register.go`, `internal/agent/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/agent.go`, `internal/lib/records/claim.go`, `internal/lib/records/inbox.go`, `internal/lib/inbox/inbox.go`, `internal/doctor/checks.go` |
 | T16 codex profile | `internal/lib/harness/codex.go`, `internal/lib/harness/codex_test.go` | `internal/lib/harness/registry.go`, `internal/lib/harness/doc.go` |
 | T17 opencode profile | `internal/lib/harness/opencode.go`, `internal/lib/harness/opencode_test.go` | `internal/lib/harness/registry.go`, `internal/lib/harness/doc.go` |
 | T18 pi profile | `internal/lib/harness/pi.go`, `internal/lib/harness/pi_test.go` | `internal/lib/harness/registry.go`, `internal/lib/harness/doc.go` |
@@ -2231,14 +2257,15 @@ edit permission.
 | `cmd/root.go` | T01, T03, T04, T05, T06, T07, T08, T09, T12, T15 | Keep each registration line. T04 and T07 add two lines each. T08 changes the TUI entry and adds no command. |
 | `internal/logs/read.go` | T06, T08 | T06 owns the reader. T08 adds only `NewReaderWithClock` for the existing private clock. Keep each other line. |
 | `internal/lib/herdr/doc.go` | T05, T09, T10, T13, T14, T15 | One map line for each new file. Keep each line. |
-| `internal/lib/herdr/types.go` | T05, T09, T10 | T05 owns the file. T09 changes only `WorkspaceInfo.Worktree` to `*WorkspaceWorktreeInfo`. T10 adds only the optional `agent_session` field to `AgentInfo` and `PaneInfo`. Keep each other field. |
+| `internal/lib/herdr/types.go` | T05, T09, T10, T13 | T05 owns the file. T09 changes only `WorkspaceInfo.Worktree` to `*WorkspaceWorktreeInfo`. T10 adds only the optional `agent_session` field to `AgentInfo` and `PaneInfo`. T13 adds only the optional `RestoreError` field to `PaneInfo`. Keep each other field. |
 | `internal/lib/records/agent.go` | T04, T10, T11, T15 | One field line for each task, at the end of the struct. |
 | `internal/lib/records/task.go` | T03, T09, T12 | One field block for each task. Keep each block. |
 | `internal/lib/records/inbox.go` | T04, T15 | One field line for each task. Keep each line. |
 | `internal/lib/records/claim.go` | T04, T15 | One field line for each task. Keep each line. |
 | `internal/lib/gitx/gitx.go` | T09, T12 | One helper for each task. Keep each helper. |
+| `internal/lib/run/run.go` | T05, T12 | T05 owns the bounded runner. T12 changes only `Command` to honor the caller context deadline and adds the deadline test. Keep the 30-second default and each other line. |
 | `internal/agent/spawn.go` | T13, T14 | One case line for each role. Keep each line. |
-| `internal/agent/doc.go` | T10, T13, T14 | One map line for each new file. Keep each line. |
+| `internal/agent/doc.go` | T10, T13, T14, T15 | One map line for each new file. Keep each line. |
 | `internal/lib/harness/registry.go` | T16, T17, T18, T19 | One registry line for each profile. Keep each line. |
 | `internal/lib/harness/doc.go` | T10, T16, T17, T18, T19 | One map line for each profile. Keep each line. |
 | `internal/doctor/checks.go` | T05, T15, T20 | One check line for each task. Keep each line. |
@@ -2247,10 +2274,10 @@ edit permission.
 | `internal/task/transition.go` | T03, T11 | T03 owns the status table. T11 adds the finish group under the held handle. |
 | `internal/task/render.go` | T03, T11, T20 | Extend the existing row once for T11. Keep each rendering case. |
 | `internal/task/show.go` | T03, T11, T20 | Keep each rendering addition. |
-| `internal/agent/register.go` | T04, T10, T11 | T04 owns registration. T10 adds only the internal spawn-intent option and its initial record assignment. T11 adds the task-project check. Keep each line. |
+| `internal/agent/register.go` | T04, T10, T11, T15 | T04 owns registration. T10 adds only the internal spawn-intent option and its initial record assignment. T11 adds the task-project check. T15 adds only `PIDStart` to `RegisterOptions` and its claim write. Keep each line. |
 | `internal/agent/stop.go` | T10, T13, T20 | T10 owns the stop. T13 updates the project. T20 refuses an unresolved record. |
 | `internal/worktree/remove.go` | T09, T20 | T09 owns removal. T20 adds the agent guard. |
-| `internal/lib/store/doc.go` | T01, T22 | One map line for `lock.go`. Keep the line. |
+| `internal/lib/store/doc.go` | T01, T12, T22 | One map line for `lock.go` from T22 and one for `namedlock.go` from T12. Keep each line. |
 | `internal/lib/records/doc.go` | T01, T03, T04 | One map line for each new record file. Keep each line. |
 | `ste_test.go`, `testdata/ste-baseline.json` | T13, T21 | T13 and T21 each add and keep their own entry for a new instruction file, with a baseline of 0. |
 

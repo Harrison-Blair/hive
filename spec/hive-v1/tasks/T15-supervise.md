@@ -39,6 +39,9 @@ its pane and its `terminal_id`, never by its herdr name.
 | --- | --- |
 | `cmd/root.go` | Register the `supervise` command. |
 | `cmd/supervise/supervise.go` | New. `hive supervise [--json]`. |
+| `internal/agent/supervisor.go` | New. `StartSupervisor` takes one held store lock, reads the supervisor claim, checks `process.Alive`, and registers the supervisor with `PIDStart` in the same mutation. |
+| `internal/agent/register.go` | Add `PIDStart` to `RegisterOptions` and write it in the claim. |
+| `internal/agent/doc.go` | Add the map line for `supervisor.go`. |
 | `internal/supervise/doc.go` | New. Package summary and file map. |
 | `internal/supervise/supervise.go` | New. The claim, the start, the main loop over the three triggers, the exit. |
 | `internal/supervise/subscribe.go` | New. The selector list from the watched panes, the rebuild on a change, and the reconcile across the gap. |
@@ -60,6 +63,7 @@ its pane and its `terminal_id`, never by its herdr name.
 ### AC1 Singleton
 
 - The start takes the store lock, reads the `supervisor` claim, and checks it with `process.Alive(pid, pid_start)` from the T10 package. A live claim fails the start with `supervisor live: pid <n>`. Otherwise the start registers the role `supervisor` with the own pid and start time in the same mutation, which increments the generation. Two starts at the same time give exactly one supervisor.
+- The start uses `agent.StartSupervisor`. It reads the claim and registers under one held lock. It does not call the locking `Register`.
 - A claim whose pid names a process with another start time is stale. The pid belongs to a new process.
 - The process stays in the foreground. On `SIGINT` or `SIGTERM` it closes the subscription and exits with 0. When the subscription connection ends, it exits with 1. Nothing restarts it in a loop.
 - With `--json` the process prints one envelope at exit, with the outcome and the exit reason. Without `--json` it prints one line at the start and one line at each record it writes.
@@ -241,3 +245,7 @@ the quiet-window rule, and the nudge check outside the lock. Add `agent_status`.
 Replace the live transcript with a unique fixture home and an absolute tested
 binary. Correct the `exited` and `unresolved` order, the dotted status frame,
 the final lifecycle status, and the fixture wrapper binding.
+2026-10-18. Add the D9 held registration. `agent.StartSupervisor` takes one
+held store lock, reads the claim, checks `process.Alive` and `PIDStart`, and
+registers the supervisor in the same mutation. Add `PIDStart` to
+`RegisterOptions` and its claim write. Do not call the locking `Register`.

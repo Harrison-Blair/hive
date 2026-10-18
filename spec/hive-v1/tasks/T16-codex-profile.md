@@ -30,7 +30,7 @@ Codex, so this task blocks CP3.
 ## User flows
 
 1. A manager runs `hive agent spawn --pane w3:p1 --role worker --project hive --task 12-spawn-worker --harness codex --model <model>`. Codex starts in the pane with that model, and hive waits until it is idle.
-2. The manager runs `hive agent send --agent worker-hive-1 --wait --timeout 120 "Reply with the word pong."`. The reply shows in the pane.
+2. The manager runs `hive agent send --agent worker-hive-1 --wait --timeout 120 "Reply with the word pong."`. The reply appears in the pane.
 3. The manager runs `hive agent stop --agent worker-hive-1`. Hive closes the pane. herdr closes the workspace when that pane was its last one.
 4. `hive doctor` shows `ok harness codex` when the binary is on `PATH`.
 
@@ -110,7 +110,7 @@ herdr workspace list
 rm -rf "$FIX"
 ```
 
-- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send prints the reply with the pane ID of the root pane and the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start, the requested model, and the actual model. A wrong or absent model leaves AC2 `BLOCKED`.
+- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send reports the settled status and exits 0. A separate pane read shows the reply with the pane ID of the root pane and the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start, the requested model, and the actual model. A wrong or absent model leaves AC2 `BLOCKED`.
 - A spawn that ends `partial` with `agent blocked` goes into the evidence as a separate run. The worker answers the dialog in the pane by hand, stops the agent, and runs the check again from the spawn. Only a run with the outcome `ok` proves AC2.
 - When a run fails before the stop, the worker closes the workspace of the check with `herdr workspace close <workspace>`.
 
@@ -129,3 +129,6 @@ rm -rf "$FIX"
 2026-10-18. Add the profile process-name method with `codex`. Replace the live
 transcript with a unique fixture home, an absolute tested binary, and exact
 model discovery.
+2026-10-18. Add the D10 settled-status wording. The send reports the settled
+status and exits 0. A separate pane read shows the reply. The send does not
+print the reply text.
