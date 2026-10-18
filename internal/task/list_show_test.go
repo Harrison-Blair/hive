@@ -2,6 +2,8 @@ package task
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -185,5 +187,41 @@ func TestShowMissing(t *testing.T) {
 		if envelope.Outcome != "failed" || envelope.Error != "task not found: "+id {
 			t.Fatalf("Show(%q) = %#v; want task not found", id, envelope)
 		}
+	}
+}
+
+func TestShowCombinesTheActingAgentAndKeepsUnknownDisplayable(t *testing.T) {
+	home, task := newSeed(t, "assigned")
+	briefPath := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
+	if err := os.MkdirAll(filepath.Dir(briefPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(briefPath, []byte("Seed"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	envelope := Show(home, task.ID, ShowOptions{})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Show() = %#v; want ok", envelope)
+	}
+	result, ok := envelope.Result.(ShowResult)
+	if !ok || result.Agent == nil || result.Agent.Key != "worker-1" {
+		t.Fatalf("Show() = %#v; want the acting agent record", envelope.Result)
+	}
+	if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: live") {
+		t.Fatalf("ShowText() = %q; want the acting agent status", text)
+	}
+
+	task.ActingAgent = "missing-agent"
+	seedTask(t, home, task)
+	envelope = Show(home, task.ID, ShowOptions{})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Show(unknown agent) = %#v; want the task to stay displayable", envelope)
+	}
+	result = envelope.Result.(ShowResult)
+	if result.Agent != nil {
+		t.Fatalf("agent = %#v; want nil for an unknown name", result.Agent)
+	}
+	if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: -") {
+		t.Fatalf("ShowText() = %q; want the absent status", text)
 	}
 }

@@ -18,7 +18,8 @@ import (
 // ErrCallerUnknown reports a caller that no live agent record matches.
 var ErrCallerUnknown = errors.New("caller unknown: pass --agent")
 
-type reader interface {
+// Reader reads nested collections of one held store handle.
+type Reader interface {
 	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
 }
 
@@ -41,7 +42,7 @@ func Resolve(home, agentFlag, paneID string) (records.Agent, error) {
 }
 
 // ResolveHeld returns the caller record from one held store handle.
-func ResolveHeld(locked *store.LockedStore, agentFlag, paneID string) (records.Agent, error) {
+func ResolveHeld(locked Reader, agentFlag, paneID string) (records.Agent, error) {
 	agents, err := loadAgents(locked)
 	if err != nil {
 		return records.Agent{}, err
@@ -159,7 +160,7 @@ func claimKey(role, project string) string {
 	}
 }
 
-func loadAgents(source reader) ([]records.Agent, error) {
+func loadAgents(source Reader) ([]records.Agent, error) {
 	raw, err := source.ListIn([]string{"agents"}, nil)
 	if err != nil {
 		return nil, err
@@ -175,7 +176,7 @@ func loadAgents(source reader) ([]records.Agent, error) {
 	return found, nil
 }
 
-func loadClaims(source reader) ([]records.Claim, error) {
+func loadClaims(source Reader) ([]records.Claim, error) {
 	raw, err := source.ListIn([]string{"claims"}, nil)
 	if err != nil {
 		return nil, err
@@ -193,7 +194,7 @@ func loadClaims(source reader) ([]records.Claim, error) {
 
 // FindHeld returns one agent record by key, name, or claim key. It does not
 // require a live status, because a task can name an agent that has finished.
-func FindHeld(locked *store.LockedStore, name string) (records.Agent, bool, error) {
+func FindHeld(locked Reader, name string) (records.Agent, bool, error) {
 	agents, err := loadAgents(locked)
 	if err != nil {
 		return records.Agent{}, false, err

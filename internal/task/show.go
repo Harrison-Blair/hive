@@ -1,10 +1,12 @@
 package task
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"os"
 
+	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -19,7 +21,8 @@ type ShowOptions struct {
 // ShowResult holds one task record and its brief text.
 type ShowResult struct {
 	records.Task
-	Brief string `json:"brief"`
+	Brief string         `json:"brief"`
+	Agent *records.Agent `json:"agent,omitempty"`
 }
 
 // Show returns one task record and its brief without taking the lock.
@@ -38,11 +41,33 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		return fail("store", err.Error())
 	}
 	var record records.Task
-	if err := registry.ReadIn([]string{tasksCollection}, id, &record); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
+	var agent *records.Agent
+	var readErr error
+	if err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		if err := locked.ReadIn([]string{tasksCollection}, id, &record); err != nil {
+			readErr = err
+			return nil
+		}
+		if record.ActingAgent == "" {
+			return nil
+		}
+		found, ok, err := identity.FindHeld(locked, record.ActingAgent)
+		if err != nil {
+			readErr = err
+			return nil
+		}
+		if ok {
+			agent = &found
+		}
+		return nil
+	}); err != nil {
+		return fail("store", err.Error())
+	}
+	if readErr != nil {
+		if errors.Is(readErr, os.ErrNotExist) {
 			return fail("read", "task not found: "+quoteIfControl(id))
 		}
-		return fail("read", err.Error())
+		return fail("read", readErr.Error())
 	}
 	if err := checkBriefDir(home); err != nil {
 		log.failure("task show", record.Project, id, "", "brief", err.Error())
@@ -53,5 +78,5 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		log.failure("task show", record.Project, id, "", "brief", err.Error())
 		return failedEnvelope("brief", err.Error())
 	}
-	return okEnvelope(ShowResult{Task: record, Brief: string(brief)})
+	return okEnvelope(ShowResult{Task: record, Brief: string(brief), Agent: agent})
 }

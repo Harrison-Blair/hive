@@ -26,6 +26,7 @@ var (
 type TransitionOptions struct {
 	Task   string
 	Agent  string
+	PaneID string
 	Fail   bool
 	Reason string
 	Logger *slog.Logger
@@ -159,4 +160,23 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 // failedEnvelope builds one failed outcome.
 func failedEnvelope(phase, message string) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: oneLine(message), Result: nil}
+}
+
+// transitionWriter holds the store operations of one transition under a held handle.
+type transitionWriter interface {
+	UpdateIn(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error
+	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
+}
+
+// finishWriter holds each store operation of one finish group under a held handle.
+type finishWriter interface {
+	transitionWriter
+	ReadIn(collection []string, id string, target any) error
+	WriteIn(collection []string, id string, value any) error
+	Next(name string) (uint64, error)
+}
+
+// finishLocked performs the finish group under one held handle.
+func finishLocked(writer finishWriter, command string, options TransitionOptions) output.Envelope {
+	return failedEnvelope("stub", "finish not implemented")
 }

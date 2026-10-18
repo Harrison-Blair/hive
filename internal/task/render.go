@@ -47,6 +47,7 @@ func ShowText(envelope output.Envelope) string {
 		"title: " + oneLine(task.Title),
 		"controlling_role: " + oneLine(task.ControllingRole),
 		"acting_agent: " + oneLine(task.ActingAgent),
+		"acting_agent_status: " + agentStatus(result.Agent),
 		"status: " + task.Status,
 		"depends_on: " + strings.Join(task.DependsOn, ","),
 		"verification: " + verificationText(task.Verification),
@@ -56,6 +57,45 @@ func ShowText(envelope output.Envelope) string {
 		"created_at: " + task.CreatedAt,
 		"updated_at: " + task.UpdatedAt,
 		"brief: " + briefRelPath(task.ID),
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// FailureReport renders the known effects and the inspection commands of one
+// finish failure. It never replays the finish group.
+func FailureReport(envelope output.Envelope, taskID, agent string) string {
+	role := ""
+	if result, ok := envelope.Result.(records.Task); ok {
+		taskID = result.ID
+		role = result.ControllingRole
+		if agent == "" {
+			if result.Verification != nil && result.Verification.Agent != "" {
+				agent = result.Verification.Agent
+			} else {
+				agent = result.ActingAgent
+			}
+		}
+	}
+	lines := []string{
+		"outcome: " + envelope.Outcome,
+		"phase: " + envelope.Phase,
+	}
+	for _, effect := range envelope.Effects {
+		lines = append(lines, fmt.Sprintf("effect: %s %s %s", effect.Action, effect.Resource, effect.Path))
+	}
+	if envelope.Error != nil {
+		lines = append(lines, "error: "+oneLine(fmt.Sprint(envelope.Error)))
+	}
+	if taskID != "" {
+		lines = append(lines, "inspect: hive task show "+taskID)
+	}
+	if agent != "" {
+		lines = append(lines, "inspect: hive agent show "+oneLine(agent))
+	}
+	if role != "" {
+		lines = append(lines, "inspect: hive inbox --role "+role)
+	} else {
+		lines = append(lines, "inspect: hive inbox")
 	}
 	return strings.Join(lines, "\n") + "\n"
 }
@@ -116,6 +156,14 @@ func deliveryText(delivery *records.Delivery) string {
 		return "-"
 	}
 	return jsonText(delivery)
+}
+
+// agentStatus renders the status of the acting agent.
+func agentStatus(agent *records.Agent) string {
+	if agent == nil {
+		return "-"
+	}
+	return agent.Status
 }
 
 // jsonText renders one value as compact JSON.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -24,7 +25,19 @@ func seedTask(t *testing.T, home string, task records.Task) {
 	}
 }
 
-// newSeed makes a home with one task in the given status.
+// seedAgent writes one live agent record for the task fixture.
+func seedAgent(t *testing.T, home string, record records.Agent) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// newSeed makes a home with one task and its worker and verifier records.
 func newSeed(t *testing.T, status string) (string, records.Task) {
 	t.Helper()
 	home := newHome(t)
@@ -41,6 +54,20 @@ func newSeed(t *testing.T, status string) (string, records.Task) {
 		UpdatedAt:       "2026-01-01T00:00:00Z",
 	}
 	seedTask(t, home, task)
+	for i, name := range []string{"worker-1", "worker-2"} {
+		seedAgent(t, home, records.Agent{
+			Key: name, Name: name, Role: "worker", Project: "one", Task: task.ID,
+			Status: records.AgentLive, PaneID: "w1:p" + string(rune('1'+i)), Generation: 1,
+			StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+		})
+	}
+	for i, name := range []string{"verifier-1", "verifier-2"} {
+		seedAgent(t, home, records.Agent{
+			Key: name, Name: name, Role: "verifier", Project: "one", Task: task.ID,
+			Status: records.AgentLive, PaneID: "w1:p" + string(rune('3'+i)), Generation: 1,
+			StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+		})
+	}
 	return home, task
 }
 
@@ -242,8 +269,11 @@ func TestVerifyReplacement(t *testing.T) {
 		t.Fatalf("verification = %#v; want the failed check of verifier-1", got.Verification)
 	}
 
-	if envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "ok" {
-		t.Fatalf("second Complete() = %#v; want ok", envelope)
+	if envelope := Assign(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+		t.Fatalf("Assign() = %#v; want the fresh worker", envelope)
+	}
+	if envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+		t.Fatalf("second Complete() = %#v; want the fresh worker", envelope)
 	}
 	passed := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-2"})
 	if passed.Outcome != "ok" {
@@ -260,8 +290,14 @@ func TestVerifyReplacement(t *testing.T) {
 
 	before := taskRecordBytes(t, home, task.ID)
 	again := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-2"})
-	if again.Outcome != "failed" || again.Error != "invalid transition: verified -> verify" {
-		t.Fatalf("Verify() = %#v; want an invalid transition", again)
+	if again.Outcome != "failed" {
+		t.Fatalf("Verify() = %#v; want a refused repeated finish", again)
+	}
+	message, _ := again.Error.(string)
+	for _, want := range []string{"task show", "agent show", "inbox"} {
+		if !strings.Contains(message, want) {
+			t.Fatalf("Verify() error = %q; want %q", message, want)
+		}
 	}
 	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
 		t.Fatalf("record changed on the second verification of a verified task")

@@ -3,6 +3,7 @@ package inbox
 import (
 	"io"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
@@ -22,30 +23,35 @@ func New() *cobra.Command {
 	}
 	command.Flags().String("role", "", "inbox key")
 	command.Flags().Bool("all", false, "print each record and set nothing")
+	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
 	command.AddCommand(newSend())
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		role, _ := cmd.Flags().GetString("role")
 		roleFlag := cmd.Flags().Lookup("role")
 		roleSet := roleFlag != nil && roleFlag.Changed
 		all, _ := cmd.Flags().GetBool("all")
+		pane, _ := cmd.Flags().GetString("pane")
 		var envelope output.Envelope
 		original := cmd.OutOrStdout()
 		tracker := &trackingWriter{writer: original}
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
-			if !roleSet {
-				envelope = output.Envelope{Outcome: "failed", Phase: "validate", Effects: []output.Effect{}, Error: "pass --role", Result: nil}
-				logInboxCommandError(home, role, "pass --role")
-				return envelope, "", nil
-			}
-			envelope = inboxlogic.Read(home, role, all)
+			envelope = inboxlogic.Read(home, inboxlogic.ReadOptions{
+				Role: role, RoleSet: roleSet, All: all, PaneID: pane,
+			})
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
 		cmd.SetOut(original)
 		if tracker.err != nil {
 			ids := inboxlogic.Consumed(envelope)
 			if len(ids) > 0 {
-				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), role, ids)
+				reportRole := role
+				if !roleSet {
+					if result, ok := envelope.Result.(inboxlib.Result); ok && len(result.Records) > 0 {
+						reportRole = result.Records[0].Role
+					}
+				}
+				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), reportRole, ids)
 			}
 		}
 		return err
@@ -64,8 +70,9 @@ func newSend() *cobra.Command {
 	command.RunE = func(cmd *cobra.Command, args []string) error {
 		to, _ := cmd.Flags().GetString("to")
 		agent, _ := cmd.Flags().GetString("agent")
+		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "inbox send", func(home string) (output.Envelope, string, error) {
-			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]})
+			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]}, pane)
 			return envelope, inboxlogic.SendText(envelope), nil
 		})
 	}

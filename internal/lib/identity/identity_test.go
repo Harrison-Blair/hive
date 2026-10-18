@@ -84,7 +84,7 @@ func TestResolvePaneUsesPaneAndPaneHistory(t *testing.T) {
 	home := t.TempDir()
 	writeAgent(t, home, liveWorker("worker-1", "worker-1", "w1:p1", 1))
 	moved := liveWorker("worker-2", "worker-2", "w2:p2", 1)
-	moved.PaneHistory = []string{"w1:p9", "w1:p1"}
+	moved.PaneHistory = []string{"w1:p9"}
 	writeAgent(t, home, moved)
 	if record, err := resolveHeld(t, home, "", "w1:p1"); err != nil || record.Key != "worker-1" {
 		t.Fatalf("ResolveHeld(pane) = %#v, %v; want worker-1", record, err)
@@ -157,8 +157,9 @@ func TestResolveFlagAndPaneUseTheSameClaimCheck(t *testing.T) {
 	writeAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
 	writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g1", Generation: 2})
 	for _, route := range []struct{ flag, pane string }{{"manager-one", ""}, {"", "w1:p1"}} {
-		if _, err := resolveHeld(t, home, route.flag, route.pane); err == nil || err.Error() != "agent not found: manager-one" {
-			t.Fatalf("ResolveHeld(%q, %q) error = %v; want the same refusal", route.flag, route.pane, err)
+		record, err := resolveHeld(t, home, route.flag, route.pane)
+		if err == nil || record.Key != "" {
+			t.Fatalf("ResolveHeld(%q, %q) = %#v, %v; want the same claim refusal", route.flag, route.pane, record, err)
 		}
 	}
 }

@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 type taskCLI struct {
@@ -34,6 +37,22 @@ func (c *taskCLI) run(args ...string) (int, string, string) {
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams(full, strings.NewReader(""), &stdout, &stderr)
 	return status, stdout.String(), stderr.String()
+}
+
+func (c *taskCLI) seedAgent(t *testing.T, name, role, taskID string) {
+	t.Helper()
+	registry, err := store.Open(c.home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := records.Agent{
+		Key: name, Name: name, Role: role, Project: "repo", Task: taskID,
+		Status: records.AgentLive, PaneID: "w1:" + name, Generation: 1,
+		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+	}
+	if err := registry.WriteIn([]string{"agents"}, name, record); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (c *taskCLI) createTask(t *testing.T, title string) string {
@@ -111,6 +130,8 @@ func countEvents(events []map[string]any, message string, fields map[string]stri
 func TestTaskCLILogsTransitionsAndErrors(t *testing.T) {
 	cli := newTaskCLI(t)
 	id := cli.createTask(t, "Logged")
+	cli.seedAgent(t, "worker-1", "worker", id)
+	cli.seedAgent(t, "verifier-1", "verifier", id)
 
 	steps := []struct {
 		args    []string
@@ -143,6 +164,7 @@ func TestTaskCLILogsTransitionsAndErrors(t *testing.T) {
 	}
 
 	actionID := cli.createTask(t, "Action")
+	cli.seedAgent(t, "worker-2", "worker", actionID)
 	cli.mustRun(t, "task", "assign", "--task", actionID, "--agent", "worker-2")
 	cli.mustRun(t, "task", "complete", "--task", actionID, "--agent", "worker-2")
 	before := countEvents(taskLogEvents(t, cli.home), "task transition", map[string]string{"task_id": actionID})
@@ -301,6 +323,7 @@ func TestTaskCLIPlainDiagnosticsStayOneLine(t *testing.T) {
 	}
 
 	id := cli.createTask(t, "Actor")
+	cli.seedAgent(t, "worker-1", "worker", id)
 	cli.mustRun(t, "task", "assign", "--task", id, "--agent", "worker-1")
 	status, stdout, stderr = cli.run("task", "complete", "--task", id, "--agent", "bad\nactor")
 	if status != 1 || stdout != "" {
@@ -309,8 +332,8 @@ func TestTaskCLIPlainDiagnosticsStayOneLine(t *testing.T) {
 	if strings.Count(stderr, "\n") != 1 || strings.ContainsAny(strings.TrimSuffix(stderr, "\n"), "\r\t") {
 		t.Fatalf("wrong actor stderr = %q; want one plain line", stderr)
 	}
-	if !strings.Contains(stderr, `not the acting agent: "bad\nactor"`) {
-		t.Fatalf("wrong actor stderr = %q; want the quoted actor name", stderr)
+	if !strings.Contains(stderr, `agent not found: "bad\nactor"`) {
+		t.Fatalf("wrong actor stderr = %q; want the quoted unknown actor", stderr)
 	}
 	status, stdout, stderr = cli.run("task", "show", id)
 	if status != 0 || stderr != "" || !strings.Contains(stdout, "status: assigned") {

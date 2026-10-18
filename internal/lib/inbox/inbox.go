@@ -500,3 +500,45 @@ func recordPath(key string, seq uint64) string {
 func failed(phase, message string) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
 }
+
+// HeldWriter is the store write surface of one held inbox append.
+type HeldWriter interface {
+	Next(name string) (uint64, error)
+	WriteIn(collection []string, id string, value any) error
+}
+
+// ValidateAppend checks one inbox append before a caller writes any record.
+func ValidateAppend(options AppendOptions) error {
+	return validateAppend(options)
+}
+
+// AppendHeld appends one record through a held store handle.
+func AppendHeld(writer HeldWriter, options AppendOptions) output.Envelope {
+	return appendLocked(nil, writer, options, time.Now)
+}
+
+// ConsumeHeld marks the unread records through a held store handle.
+func ConsumeHeld(locked *store.LockedStore, key string) output.Envelope {
+	if err := checkKey(key); err != nil {
+		return failed("validate", err.Error())
+	}
+	return consumeLocked(locked, key, markRead)
+}
+
+// AllHeld returns each record of key through a held store handle.
+func AllHeld(locked *store.LockedStore, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
+		return nil, err
+	}
+	return listLocked(locked, key, true)
+}
+
+// LogAppend writes the log events of one append call.
+func LogAppend(home string, options AppendOptions, envelope output.Envelope) {
+	logAppend(home, options, envelope)
+}
+
+// LogConsume writes the log events of one consume call.
+func LogConsume(home, key string, envelope output.Envelope) {
+	logConsume(home, key, envelope)
+}

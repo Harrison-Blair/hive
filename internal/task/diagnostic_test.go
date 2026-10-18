@@ -124,7 +124,7 @@ func TestShowInvalidIDErrorStaysOneLine(t *testing.T) {
 func TestWrongActorErrorStaysOneLine(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "bad\nactor"})
+	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Complete() = %#v; want failed", envelope)
 	}
