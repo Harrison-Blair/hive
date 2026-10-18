@@ -2,14 +2,11 @@ package inbox
 
 import (
 	"io"
-	"log/slog"
 	"os"
-	"time"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	inboxlogic "github.com/Harrison-Blair/hive/internal/inbox"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
-	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -93,13 +90,4 @@ func (w *trackingWriter) Write(data []byte) (int, error) {
 		w.err = err
 	}
 	return n, err
-}
-
-func logInboxCommandError(home, role, message string) {
-	writer, err := hivelog.NewWriter(home, "inbox", time.Now)
-	if err != nil {
-		return
-	}
-	defer func() { _ = writer.Close() }()
-	slog.New(writer).Debug("inbox operation failed", "role", role, "phase", "validate", "error", message)
 }
