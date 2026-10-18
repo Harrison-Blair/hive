@@ -1023,7 +1023,7 @@ git rev-parse main
 git rev-parse origin/main
 git ls-remote origin refs/heads/main
 # Quit the TUI in pane C with q. Send ctrl+c to the supervisor in pane B.
-DEADLINE=$((RUN_START + 600))
+DEADLINE=$((RUN_START + 3600))
 RECORD_OK=0
 while [ "$(date +%s)" -le "$DEADLINE" ]; do
   if [ -s "$SUP_EXIT" ]; then
