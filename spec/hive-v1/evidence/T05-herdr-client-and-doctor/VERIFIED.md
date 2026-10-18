@@ -470,3 +470,246 @@ These limits do not supply either finding.
 No store dependency remains open. T05 acceptance and landing remain uncompleted because V1 fails.
 
 `END VERIFIER T05-herdr-client-and-doctor t05-verify-02`
+
+---
+
+# T05 verification 03 — 2026-10-18
+
+**FAIL.** V1 fails on the remaining referenced-storage case of P05-F01.
+V2, V3, V4, V5, and V6 pass separately. P05-F05: CLOSED.
+Recommendation: return P05-F01 to the worker. Do not land T05.
+
+| Item | Value |
+| --- | --- |
+| Pass | `t05-verify-03` |
+| Role | Fresh independent verifier. No implementation. |
+| Actual route | `PI_PROVIDER=openai-codex`, `PI_MODEL=gpt-6.1-sol`, `PI_REASONING_LEVEL=high` |
+| Independent session | `01a14e2e-1b4e-72f1-a483-89b51e2f85db` |
+| Exact tested worker | `6d034695d3fbe3c92b09bb6f6fda53a2ae4fcd29` |
+| Source | `b39b4926f4a916a1894fbddb224b1eed7e52eca2` |
+| Second fix initial | `75d0d2effd29a6472db67fe2fc6acd4eb14fc1ef` |
+| Original base | `84da9819b31be83dbe71c36d620eadf3749e1f9f` |
+| Prerequisite | `47da8abb152732d4667707ec98ef2a682e5421a4` |
+| Initial state | Clean. Local and direct remote task tips equal the exact worker. |
+| Branch | `task/T05-herdr-client-and-doctor` |
+| Separate verdict commit | Evidence-only child of the exact tested worker. The root report records its full ID after commit. |
+| Root report | `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t05-verify-03.md` |
+| Captures | `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t05-verify-03-captures/` |
+
+I read all three complete prior root verdicts, tracked history, V1–V6, current/original task, and worker reports.
+The current worker report ends with `END WORKER T05-herdr-client-and-doctor t05-fix-02`.
+The provenance report ends with `END LATER FIX LAND 01`.
+I read the instructions, glossaries, tracker, API reference, CP1 PASS, and existing checklist/probe sources.
+Both original review areas are complete. I did not repeat CP1.
+
+Only the local-user and cooperating-writer boundary applies.
+Hostile replacement between `Lstat` and `Open` stays deferred for T01.
+Added probes cover only the changed null transaction and direct-Ping error paths.
+No malicious global-effect guarantee or future workspace/session type scope supplies a finding.
+
+## Full-range review and prerequisites
+
+I inspected the whole `84da9819..6d034695` diff and both fix ranges.
+The fix ranges are `b361a0c8..fb19808b` and `75d0d2ef..6d034695`.
+The root report lists all 89 changed paths. The captures retain the complete diffs and per-path hashes.
+Each imported object equals prerequisite `47da8abb`. All Go source equals `b39b4926`.
+All store paths equal accepted `ccfe0020a193a91c1493d2d4750e55f2efb81798`.
+The imported home, store, T03, and docs remain independently checked prerequisites.
+No imported dependency remains open.
+
+The second fix changes `client.go`, `protocol.go`, their tests, and V1/V2/V5/V6 only.
+The runner and doctor source remain exact from verification 02.
+The root command equals the mechanical union of doctor/task imports and registrations.
+Actual help retains doctor, task, logs, project, and version. No internal package imports Cobra or `cmd`.
+Root `a21f6be1` includes unrelated T04 work and later docs. This frozen task branch needs no unrelated T04 merge.
+
+## Separate verification items
+
+| Item | Proves | Verdict | Actual result |
+| --- | --- | --- | --- |
+| V1 | AC1 | FAIL | Supplied tests and exact prior probes pass. Null reference preservation still fails. |
+| V2 | AC1 | PASS | Actual pane `wA9:p1`, live protocol 22, matched ping ID `d8e2596d-1`. |
+| V3 | AC2 | PASS | Fresh race suite and complete independent runner checklist pass. |
+| V4 | AC3 | PASS | Fresh suite, both area checklists, seven process starts/ends, and imported store checks pass. |
+| V5 | AC3, AC4 | PASS | Actual text statuses `0,1,1,0`, JSON results, version, and home-free version pass. |
+| V6 | AC5 | PASS | Full uncached gate from the actual task worktree root. Format empty, vet 0, lint 0, race 0. |
+
+### P05-F01 remains OPEN, partially fixed
+
+Location: `internal/lib/herdr/client.go:321–329`, `decodeResult`.
+The exact prior ordinary null decoder now preserves `{Value:7 Valid:true}` on error.
+Its non-null error and valid `9` controls pass.
+Plain struct null, map/slice null-to-nil, and successful custom null behavior pass.
+All standard non-null struct/map/slice/nested-pointer failure and assignment controls pass.
+
+The new null path copies the top-level value but shares pointer-backed fields with the caller.
+The added ordinary decoder owns a count pointer and a `Valid` boolean.
+It reuses count storage, resets it before validation, and rejects null as a missing count.
+It touches no global, file, credential, signal, or other external object.
+The direct `encoding/json` control establishes this supported behavior.
+The matched socket response is `result:null`. The caller starts with count 7 and `Valid:true`.
+
+```text
+=== RUN   TestVerify03NullReferenceFailurePreservesCaller
+    verify03_null_reference_test.go:34: null err=bad reply: count is required count=0 valid=true same-pointer=true
+    verify03_null_reference_test.go:36: caller changed on failure: count=0 valid=true, want count=7 valid=true and original pointer
+--- FAIL: TestVerify03NullReferenceFailurePreservesCaller (0.00s)
+```
+
+The same assertion fails on the second-verdict source and this worker, also in ten rounds.
+The same destination preserves count 7 after a non-null error and assigns 9 on success.
+This is the existing preservation class and the reference handling that this fix changes.
+It does not demand rollback of malicious global effects.
+Recommendation: isolate caller-owned referenced state during null decoding. Assign only after complete success.
+Keep successful null controls. Do not bypass supported user decoders.
+I implemented no fix. This assertion remains red. Its fix and restored green run remain uncompleted.
+
+### P05-F05 — CLOSED
+
+The exact direct-Ping protocol-21 and wrong-pong assertions fail on `75d0d2ef` and pass on `6d034695`.
+The request, reply, and error events share the actual request ID, method, and duration.
+A long direct-Ping error keeps 4096 bytes, valid UTF-8, and `truncated:true` in ten rounds.
+The same bounded-error assertion fails on the second-verdict source.
+Original `Call` errors and actual-writer body checks remain green.
+The actual doctor protocol-21 fixture also passes the correlated-error assertion after a prior-source assertion failure.
+
+```text
+returned=herdr protocol 21, hive needs 22
+returned=bad reply: result type "not-pong", want pong
+actual id=984d9566-1 method=ping duration=1 error-bytes=4096 valid-UTF8=true truncated=true
+```
+
+The root report and captures retain the complete actual events and CLI output.
+Doctor still exits 1 with `herdr protocol 21, hive needs 22`.
+
+## Every original finding
+
+| ID | Disposition | Fresh evidence |
+| --- | --- | --- |
+| P05-F01 | OPEN, partial fix | Exact prior scalar case passes. Referenced custom null failure changes the count. |
+| P05-F02 | CLOSED | Typed nil pointer/map/slice and raw null encode `{}` before sizing, gate, or writes. |
+| P05-F03 | CLOSED | Own-context gate waits pass ten rounds. Per-path pass/failure caching remains correct. |
+| P05-F04 | CLOSED | Null counts as field presence. Both/neither reject before assignment. |
+| P05-F05 | CLOSED | Exact prior probes, direct-Ping error bounds, and actual CLI correlation pass after assertion-red replays. |
+| P05-F06 | CLOSED | Same defect as S05-F03. Actual CLI logs seven starts and seven ends. |
+| S05-F01 | CLOSED | Owned leader-exit children stop/reap near 100 ms. Ten rounds pass without cleanup signals. |
+| S05-F02 | CLOSED | Process-name and directory controls retain one physical diagnostic line. |
+| S05-F03 | CLOSED | Seven actual ends include six failed starts with their errors. |
+| S05-F04 | CLOSED | Returned cancellation/timeout errors equal logged errors. Ten cancellation rounds pass. |
+| S05-D01 | CLOSED, imported | Exact accepted store. Eight actual CLI FIFO/socket fixtures reject their complete paths. |
+
+## Checklist, actual runs, and test strength
+
+The root report gives every established primary/secondary checklist item and its fresh result.
+All old probes rerun, including actual 10-second and 30-second defaults.
+Fixed complete frames include LF and use literal 1048575/1048576/1048577 expectations.
+Oversized requests accept zero connections. UTF-8, large rejection, wrong IDs, EOF/HTTP/arrays, and slow streams pass.
+Protocol gates, cancellation, shared IDs, two child prefixes, and bounded actual-writer bodies remain correct.
+The runner drains 8 MiB with literal per-stream caps. Stdin EOF, argv, cwd, and exit code 23 pass.
+Owned/stopped groups, inherited pipes, returned/logged errors, and ten concurrent runner/store rounds pass.
+Doctor retains literal order, statuses, required flags, metadata-only effects, domain bytes, static path refusals, and the two-second lock bound.
+Fake gh alternatives and harness discovery require no real authentication or model execution.
+Impossible PID metadata stays recorder-only in a new session. The public runner accepts no supplied PID.
+
+| Run | Status | Capture |
+| --- | --- | --- |
+| Supplied V1/V3/V4, race and uncached | 0 each | `v1.txt`, `v3.txt`, `v4.txt` |
+| Exact prior null/Ping assertions, prior/current | 1 then 0 | `residual-red-rerun.txt`, `residual-green-rerun.txt` |
+| All old primary/secondary probes | 0 | `primary-rerun.txt`, `secondary.txt` |
+| Old short-deadline checks, ten rounds | 0 | `primary-ten-rerun.txt`, `secondary-ten.txt` |
+| Historical V1/V3/V4 assertion-red replays | 1 each | `v1-red.txt`, `v3-red.txt`, `v4-red.txt` |
+| First/second fix tests on `6b063bb`/`0007b1cc` | 1, intended assertions | `fix01-red.txt`, `fix02-red.txt` |
+| Socket/stream caps changed to 2097152, then restored | 1 then 0 each | `frame-mutation-*.txt`, `stream-mutation-*.txt` |
+| First two doctor checks swapped, then restored | 1 then 0 | `order-mutation-*.txt` |
+| Null reference failure, prior/current, ten rounds | 1 each | `copies-*-reference-only.txt` |
+| Bounded direct-Ping error, prior/current, ten rounds | 1 then 0 | `copies-*-ping-bound-final.txt` |
+| Actual protocol-21 CLI, prior/current | 1 then 0 for assertion driver | `cli-protocol-red.txt`, `cli-protocol-correlated-green.txt` |
+| Actual V2/V5, process logs, store cases | 0 for driver | `cli.txt` |
+| Original secondary CLI matrix | 0 after fixture setup | `secondary-cli-rerun.txt` |
+| Recorder with no signal | 0 | `signal-recorder.txt` |
+
+The old probe helper `requiredCount` conflicts with the new worker helper.
+Initial compilation failures count as setup failures only, not assertion-red.
+Only the isolated probe helper name changes to `verify02RequiredCount`. Logic and assertions stay exact.
+The old secondary CLI driver needed its own fixture parent and binary alias before its unchanged assertions could run.
+The added Ping probe initially expected writer-specific body truncation from a generic buffer handler.
+The final probe checks bounded errors and event correlation. Existing real-writer body assertions remain unchanged.
+The root report records these harness corrections and preserves their initial captures.
+No compile-only or setup failure supplies acceptance-red evidence.
+
+### Actual V1/V3/V4 commands
+
+```sh
+go test -race -count=1 ./internal/lib/herdr -v
+go test -race -count=1 ./internal/lib/run -v
+go test -race -count=1 ./internal/doctor -v
+```
+
+```text
+ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	6.464s
+exit 0
+ok  	github.com/Harrison-Blair/hive/internal/lib/run	3.475s
+exit 0
+ok  	github.com/Harrison-Blair/hive/internal/doctor	3.022s
+exit 0
+```
+
+These supplied-suite passes do not remove the independent V1 failure.
+
+### Actual V2/V5 transcript and V6 gate
+
+The unique absolute binary reports `6d034695d3fb`, with `modified:false`.
+Its SHA256 remains in `binary.sha256`. Each fixture home has an explicit marker and absolute `--home` path.
+The complete CLI transcript and matched live events remain in `cli.txt`.
+Selected actual lines:
+
+```text
+ok herdr socket: /home/penguin/.config/herdr/herdr.sock protocol 22
+ok herdr pane: wA9:p1
+exit 0
+fail herdr socket: herdr socket: /tmp/none.sock: no such file
+exit 1
+fail herdr socket: HERDR_SOCKET_PATH is not set
+exit 1
+{"outcome":"ok","phase":"complete","effects":[],"error":null,"result":{"version":"dev","commit":"6d034695d3fb","modified":false,"go":"go1.27.2-X:nodwarf5"}}
+exit 0
+process starts 7 ends 7 failed starts 6
+```
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race -count=1 ./...
+go test -run TestSTE -count=1 .
+git diff --check
+```
+
+Each command runs from the actual frozen task worktree root and exits 0.
+Format prints nothing. Lint reports `0 issues.`. Every uncached race package passes.
+The root report includes the complete final gate output from `final-gate.txt`.
+No STE baseline changes or increases.
+
+## Preservation, cleanup, and limits
+
+All 205 tracked paths match the exact worker before this append. Every V file remains exact.
+The old verdict prefix has 26692 bytes and SHA256:
+`52494e34c1699a947a4f2e3607ad494ad1170aa11f8fdccd628555282b6fd118`.
+This append preserves every byte. Only this evidence file enters the separate verdict commit.
+The root report records its full ID, exact parent, and non-force task-branch push.
+
+Cleanup removed only owned copies, fixtures, binaries, alias, and outside-home TMPDIR after compact capture.
+All copied Go source equals the worker after mutation restoration.
+All prior reports, logs, credentials, worktrees, and other agents remain.
+Historical fixed-duration sleepers expired before cleanup. Signals target only fixture-owned OS groups.
+No actual signal targets PID 0, PID 1, the parent, or an unrelated process.
+No real auth, model start, workspace mutation, credential inspection, or global setting change occurs.
+No source, worker evidence, tracker, glossary, baseline, attribution, `dev`, or `main` changes.
+No worktree removal, merge, co-author, false session trailer, or other agent control occurs.
+
+Hostile file replacement, hostile PID reuse, and uninterruptible kernel sleep remain outside the approved boundary.
+The runner's direct wait after SIGKILL cannot prove a bound for uninterruptible kernel sleep.
+No imported dependency remains open.
+Uncompleted: the remaining P05-F01 fix, its independent green check, task acceptance, and landing.
+
+`END VERIFIER T05-herdr-client-and-doctor t05-verify-03`
