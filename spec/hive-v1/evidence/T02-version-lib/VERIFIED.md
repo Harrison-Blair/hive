@@ -136,3 +136,53 @@ ok  	github.com/Harrison-Blair/hive/internal/lib/version	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/tui	(cached)
 exit 0
 ```
+
+## Current Sol audit 2026-10-18
+
+| Item | Value |
+| --- | --- |
+| Audit report | `.hive/tmp/coordinator/reports/t02-sol-audit-01.md` |
+| Tested HEAD | `840255d3f598ad18239eccd7a2eb2e93547ca1fb` |
+| Branch | `dev` |
+| Route | `pi openai-codex/gpt-6.1-sol:high` |
+| V1 | PASS |
+| V2 | PASS |
+| V3 | PASS |
+
+This section records a current independent audit. It does not replace the
+historical verdict or the historical evidence above. The original landing date
+stays `2026-10-17`. The original verifier attribution stays in the first table.
+
+Source provenance:
+
+| Commit | Purpose |
+| --- | --- |
+| `a462848470419f1eb27b5c266324aef3a9b06d3c` | Add the shared package and injectable-reader tests. |
+| `1b1501cd0e2c0f55e54c1e6c8a4074b2f4bba139` | Change command output and the root assertion. Remove the old package. |
+| `64540c42cbe7eefb1136cd9fd23b0e4628c40d56` | Add worker evidence. |
+| `388072ee4a1dee7847b300687146f391affef75f` | Add the historical independent verdict. |
+| `d8d6fc8b77d509b79816181a82f56b64f609a7cd` | Land T02. |
+
+The audit rebuilt three binaries in a unique ignored directory. The normal run
+printed `hive dev (commit 840255d3f598, go1.27.2-X:nodwarf5)`. The linker
+override printed `hive 1.0.0 (commit 840255d3f598, go1.27.2-X:nodwarf5)`. The
+`-buildvcs=false` run printed `hive dev (commit unknown,
+go1.27.2-X:nodwarf5)`. The audit also passed the four gate commands.
+
+Limits:
+
+- The audit did not repeat the historical red run.
+- The audit did not build a new modified tree. The injected-reader test covers
+`vcs.modified` true.
+- The route is trusted dispatch metadata. The audit did not inspect the model
+backend.
+- The audit did not test reader failure, a short revision, an empty revision
+setting, or explicit `vcs.modified=false`.
+- The approved boundary is a local user and a cooperating writer.
+- Hostile file replacement between `Lstat` and `Open` stays deferred for T01.
+
+The audit scratch directory stays as necessary evidence. It holds
+`results.json`, `provenance.json`, `format-checks.json`, `final-snapshot.json`,
+the capture runner, and the text captures. The report embeds the command
+transcript. The JSON files hold the per-command snapshots and status records that
+the report summarizes. Remove no file from that directory in this pass.

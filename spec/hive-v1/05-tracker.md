@@ -181,6 +181,34 @@ verification `wave2-spec-verify-02.md` returned FAIL on R01 through R08.
 - A fresh independent preflight checks the corrected result before any source agent starts. No manual user approval wait applies.
 - The `ready` status in the install clarification above is historical. This dated section replaces it.
 
+### Dated progress receipt: wave 2 source implementation and T02 audit
+
+2026-10-18. This section records progress. It changes no task status and no
+dependency.
+
+- `wave2-dispatch-preflight-03.md` reports PASS at `840255d3`. The pass covers
+the corrected installed text, the current records, the T22 brief, the T06 brief,
+and the six verifier templates. It permits only the two checked implementation
+payloads. It does not verify code and does not unblock T03, T04, T05, or T07.
+- The preflight keeps one planner-only R04 defect open in
+`E-spec-edit-checklist.md`. Do not reuse that checklist instruction. The defect
+does not block the T22 or T06 dispatch.
+- T22 runs in `wA4:p1` as `hive-t22-impl-01` with `pi
+opencode-go/deepseek-v4-flash:medium`. The workspace is `wA4`. The terminal is
+`term_65e161d77e9db10`. The observed branch tip is `d9b644f7`. The worker report
+marker is present. The code is not verified and not landed.
+- T06 runs in `wA5:p1` as `hive-t06-impl-01` with the same route. The workspace
+is `wA5`. The terminal is `term_65e161da1896e11`. The observed branch tip is
+`1c556c33`. The worker report marker is present. The code is not verified and
+not landed.
+- Each pane reports the agent `pi` with the status `done`. This observation is
+not evidence of code success. Test, evidence, and verification status stay pending.
+- T03, T04, T05, and T07 remain `blocked` on T22.
+- `t02-sol-audit-01.md` reports V1, V2, and V3 PASS at `840255d3` with `pi
+openai-codex/gpt-6.1-sol:high`. The audit adds evidence to the T02 record. It
+does not replace the original verdict. The T02 row keeps its landing date
+`2026-10-17` and its original verifier `opencode-go/deepseek-v4.1-flash`.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
