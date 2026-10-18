@@ -694,6 +694,49 @@ source and passes no checkpoint.
   Pi flow needs T09, T10, T12, and T18. No runtime record exists. CP2 to CP5
   stay open.
 
+### Dated fix receipt: CP5 supervisor shell-status barrier
+
+2026-10-18. This section records the C07 text fix from pass
+`later-c07-fix-03`. It changes no Go source and passes no checkpoint.
+
+- The CP5 pane A barrier now waits for two fresh records. One record holds the
+  supervisor child completion. The other record holds the pane B shell status.
+  Both records bind the same run ID, absolute wrapper, binary, binary SHA256,
+  home, and shell writer path.
+- A missing, stale, malformed, mismatched, or unclear record keeps the run
+  resources and reports `BLOCKED`. In these cases pane A runs no `doctor`,
+  reaches no stale-claim conclusion, and closes no pane.
+- The pane B shell writer is a generated absolute Python file. It refuses a
+  preexisting status file. It writes the shell exit status with `os.replace`.
+  The pane A barrier reads and checks that file before any cleanup.
+- The child status and the shell status stay separate. The final continuation
+  requires child status 0 and shell status 0. A nonzero child status can supply
+  diagnostic completion evidence, but it reports `BLOCKED` and claims no
+  checkpoint success.
+- The exact old tail ran `doctor`, listed workspaces, and closed the owned pane
+  when a fresh child record existed and the shell record was absent. That result
+  fails the no-call assertion. The corrected tail kept the resources and reported
+  `BLOCKED` while the shell record was absent. A fresh matching shell record
+  permitted the continuation. The tests bind a wrong run ID, a wrong wrapper, a
+  stale time, malformed data, missing files, child status 7, shell status 1, and
+  the graceful case. The capture directory is
+  `.hive/tmp/coordinator/reports/later-c07-fix-03-captures/`.
+- The installed-text check `later-text-and-t04-verify-01.md` reported T04
+  integration PASS. It retains the inherited evidence whitespace exception.
+  C04, C06, both type scopes, the old checklist, and the graph keep that
+  verdict. Their bytes do not change in this pass.
+- The installed contracts still need a fresh independent check after this fix.
+  This receipt claims no installed-text PASS, no source progress, and no
+  checkpoint PASS.
+- T05 and T07 stay `in progress` as pending source work. T08 and T11 stay
+  `ready` with preparation only. No source work starts in this pass.
+- The requested route is `pi opencode-go/deepseek-v4-flash:medium`. The actual
+  effective thinking level is `high`. The two values are separate. Local `main`
+  stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main` and the direct
+  remote `main` stay `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+- The final 12580 historical handoff bytes keep SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -936,13 +979,15 @@ move a `main` reference to make them equal.
 
 Use three panes of the hive session. Pane A is your pane. Pane B runs the
 supervisor through an absolute wrapper. Pane C runs the TUI with the tested
-binary. The wrapper owns the real supervisor child. It writes one unique
-completion record. Pane A waits with a finite deadline for that record. Pane A
-never waits for a child of another shell.
+binary. The wrapper owns the real supervisor child. It writes one unique child
+completion record. Pane B writes a separate shell status record. Pane A waits
+with a finite deadline for both records. Pane A never waits for a child of
+another shell.
 
-The next block generates the wrapper in pane A. It refuses a preexisting exit
-file. It binds the absolute tested binary, the real Hive home, and one absolute
-completion file.
+The next block generates the wrapper and the shell status writer in pane A. It
+refuses a preexisting child exit file and a preexisting shell status file. It
+binds the absolute tested binary, the real Hive home, one absolute child
+completion file, and one absolute shell status file.
 
 ```sh
 BIN=<absolute tested binary>
@@ -951,8 +996,13 @@ SUP_RUN="$PWD/.hive/tmp/$RUN_ID"
 SUP_WRAP="$SUP_RUN/supervisor-wrapper.py"
 SUP_EXIT="$SUP_RUN/supervisor-child-exit.json"
 SUP_STARTED="$SUP_EXIT.started"
+SUP_SHELL="$SUP_RUN/pane-b-shell-status.json"
+SUP_SHELL_WRAP="$SUP_RUN/pane-b-shell-status.py"
 SUP_OWNED_PANE=<pane that this run made for pane B, or empty>
-test ! -e "$SUP_EXIT" || { echo "stale exit evidence: keep $SUP_RUN and report BLOCKED"; exit 1; }
+if [ -e "$SUP_EXIT" ] || [ -e "$SUP_SHELL" ]; then
+  echo "stale completion evidence: keep $SUP_RUN and report BLOCKED"
+  exit 1
+fi
 mkdir "$SUP_RUN" || { echo "run path exists: keep it and report BLOCKED"; exit 1; }
 SHA=$(sha256sum "$BIN" | cut -d ' ' -f 1)
 cat > "$SUP_WRAP" <<'PY'
@@ -1025,7 +1075,49 @@ sys.exit(0 if code == 0 else 1)
 PY
 sed -i "s|__BIN__|$BIN|g; s|__HOME__|$PWD|g; s|__EXIT__|$SUP_EXIT|g; s|__RUN__|$RUN_ID|g; s|__SHA__|$SHA|g" "$SUP_WRAP"
 chmod +x "$SUP_WRAP"
-printf '%s\n' "$SUP_WRAP" "echo \"pane B shell status \$?\" > \"$SUP_WRAP.shell-status\"" > "$SUP_RUN/pane-b-command.txt"
+cat > "$SUP_SHELL_WRAP" <<'PY'
+#!/usr/bin/env python3
+import json, os, sys, time
+
+STATUS = "__SHELL__"
+RUN_ID = "__RUN__"
+WRAPPER = "__WRAP__"
+BIN = "__BIN__"
+SHA256 = "__SHA__"
+HOME = "__HOME__"
+
+if len(sys.argv) != 2:
+    print("usage: pane-b-shell-status.py <shell exit code>", file=sys.stderr)
+    sys.exit(2)
+try:
+    code = int(sys.argv[1])
+except ValueError:
+    print("refuse: shell exit code is not an integer", file=sys.stderr)
+    sys.exit(2)
+if os.path.exists(STATUS):
+    print("refuse: shell status exists", file=sys.stderr)
+    sys.exit(2)
+record = {
+    "run_id": RUN_ID,
+    "wrapper": WRAPPER,
+    "shell_writer": os.path.abspath(__file__),
+    "binary": BIN,
+    "binary_sha256": SHA256,
+    "home": HOME,
+    "shell_returncode": code,
+    "shell_exited_at": time.time(),
+}
+tmp = STATUS + ".tmp." + str(os.getpid())
+with open(tmp, "w", encoding="utf-8") as handle:
+    json.dump(record, handle, sort_keys=True)
+    handle.write("\n")
+    handle.flush()
+    os.fsync(handle.fileno())
+os.replace(tmp, STATUS)
+PY
+sed -i "s|__SHELL__|$SUP_SHELL|g; s|__RUN__|$RUN_ID|g; s|__WRAP__|$SUP_WRAP|g; s|__BIN__|$BIN|g; s|__SHA__|$SHA|g; s|__HOME__|$PWD|g" "$SUP_SHELL_WRAP"
+chmod +x "$SUP_SHELL_WRAP"
+printf '%s\n' "$SUP_WRAP" "python3 \"$SUP_SHELL_WRAP\" \"\$?\"" > "$SUP_RUN/pane-b-command.txt"
 RUN_START=$(date +%s)
 "$BIN" --home "$PWD" doctor
 "$BIN" --home "$PWD" agent spawn --role manager --project hive --harness pi \
@@ -1062,23 +1154,30 @@ git ls-remote origin refs/heads/main
 # Quit the TUI in pane C with q. Send ctrl+c to the supervisor in pane B.
 DEADLINE=$((RUN_START + 3600))
 RECORD_OK=0
+STATUS_PAIR=
 while [ "$(date +%s)" -le "$DEADLINE" ]; do
-  if [ -s "$SUP_EXIT" ]; then
-    if python3 - "$SUP_EXIT" "$SUP_STARTED" "$RUN_ID" "$BIN" "$SHA" "$PWD" "$RUN_START" <<'PY'
+  if [ -s "$SUP_EXIT" ] && [ -s "$SUP_SHELL" ]; then
+    if STATUS_PAIR=$(python3 - "$SUP_EXIT" "$SUP_STARTED" "$SUP_SHELL" "$RUN_ID" "$BIN" "$SHA" "$PWD" "$RUN_START" "$SUP_WRAP" "$SUP_SHELL_WRAP" <<'PY'
 import json, os, sys
-exit_path, started_path, run_id, binary, sha, home, run_start = sys.argv[1:]
+exit_path, started_path, shell_path, run_id, binary, sha, home, run_start, wrapper, shell_writer = sys.argv[1:]
+def load(path):
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
 try:
-    with open(exit_path, encoding="utf-8") as handle:
-        record = json.load(handle)
-    with open(started_path, encoding="utf-8") as handle:
-        started = json.load(handle)
+    record = load(exit_path)
+    started = load(started_path)
+    shell = load(shell_path)
 except (OSError, ValueError):
     sys.exit(1)
 if record.get("run_id") != run_id:
     sys.exit(1)
+if record.get("wrapper") != wrapper:
+    sys.exit(1)
 if record.get("binary") != binary or record.get("binary_sha256") != sha:
     sys.exit(1)
 if record.get("home") != home:
+    sys.exit(1)
+if started.get("run_id") != run_id or started.get("wrapper") != wrapper:
     sys.exit(1)
 if record.get("child_pid") != started.get("child_pid"):
     sys.exit(1)
@@ -1092,7 +1191,26 @@ if started_at < float(run_start) or exited_at < started_at:
     sys.exit(1)
 if os.path.getmtime(exit_path) < float(run_start):
     sys.exit(1)
+if shell.get("run_id") != run_id:
+    sys.exit(1)
+if shell.get("wrapper") != wrapper:
+    sys.exit(1)
+if shell.get("shell_writer") != shell_writer:
+    sys.exit(1)
+if shell.get("binary") != binary or shell.get("binary_sha256") != sha:
+    sys.exit(1)
+if shell.get("home") != home:
+    sys.exit(1)
+if not isinstance(shell.get("shell_returncode"), int):
+    sys.exit(1)
+shell_at = shell.get("shell_exited_at")
+if not isinstance(shell_at, (int, float)) or shell_at < exited_at:
+    sys.exit(1)
+if os.path.getmtime(shell_path) < float(run_start):
+    sys.exit(1)
+print(record["child_returncode"], shell["shell_returncode"])
 PY
+)
     then
       RECORD_OK=1
       break
@@ -1101,11 +1219,18 @@ PY
   sleep 2
 done
 if [ "$RECORD_OK" -ne 1 ]; then
-  echo "no fresh supervisor child exit record: keep $SUP_RUN and report BLOCKED"
+  echo "no fresh matching supervisor completion records: keep $SUP_RUN and report BLOCKED"
   exit 1
 fi
-cat "$SUP_EXIT"
-cat "$SUP_WRAP.shell-status"
+set -- $STATUS_PAIR
+CHILD_STATUS=$1
+SHELL_STATUS=$2
+echo "supervisor child status $CHILD_STATUS"
+echo "pane B shell status $SHELL_STATUS"
+if [ "$CHILD_STATUS" -ne 0 ] || [ "$SHELL_STATUS" -ne 0 ]; then
+  echo "supervisor completion is not a success: keep $SUP_RUN and report BLOCKED"
+  exit 1
+fi
 "$BIN" --home "$PWD" doctor
 herdr workspace list
 if [ -n "$SUP_OWNED_PANE" ]; then
@@ -1113,12 +1238,12 @@ if [ -n "$SUP_OWNED_PANE" ]; then
 fi
 ```
 
-The completion record has `child_returncode`. The pane B shell status is in
-`$SUP_WRAP.shell-status`. Capture the two values separately. The final `doctor`
-runs only after the fresh record exists. It reports the stale supervisor claim.
-Close only a pane that this run made. Keep pane A, pane C, every user pane, the
-real artifact, tracked evidence, logs, records, state, grants, and `main`
-references.
+The child record has `child_returncode`. The shell record has
+`shell_returncode`. The barrier reads both records and keeps the two values
+separate. The final `doctor` runs only after both fresh records match. It
+reports the stale supervisor claim. Close only a pane that this run made. Keep
+pane A, pane C, every user pane, the real artifact, tracked evidence, logs,
+records, state, grants, and `main` references.
 
 Look for: the workspace `hive:hive` with the manager in its first tab, the exact
 PiFlash manager, PiFlash worker, and PiSol verifier routes, the committed
