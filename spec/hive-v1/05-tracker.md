@@ -1330,6 +1330,43 @@ other task status and no checkpoint.
 - The H04 historical missing-data record stays. This landing does not restore
   it.
 
+### Dated correction receipt: T08 escape archive R01
+
+2026-10-18. This section records the R01 records correction for the T08 escape
+landing. It passes no checkpoint and changes no task status.
+
+- The landing report `t08-escape-land-01.md` and its state record say that the
+  archive payload excludes `.git`. That statement does not match the archive.
+  The payload holds `.git` as a regular file of 66 bytes.
+- The landing report and its state record give the pointer SHA256
+  `a06005131664ca972e9a73a16a817102db4b572b4d30f754e112c2bf9f5d37e3`. That
+  value matches no archive byte. The actual pointer SHA256 is
+  `00e72cf14448b73d1c0f71e0e05d05abe2bfbfc3c4bf875efff307878ff4b8ab`.
+- The old archive `.hive/tmp/coordinator/archives/T08-escape-d087123c/` stays.
+  Its two manifest files stay exact with SHA256
+  `252668587c79e10cae93b2c476d863aa002fe34cf87d1f860c5bfe6f4c4328d4`. No
+  payload entry is missing.
+- The new corrected archive is
+  `.hive/tmp/coordinator/archives/T08-escape-d087123c-r01/`. Its payload holds
+  596 entries: 515 files and 81 directories. It holds no link and no special
+  entry. The corrected manifest and the verified manifest match with SHA256
+  `3826cd7fb2ff92968ffe335580125376c161340d4c847751afa2b9c5336f68ef`.
+- The new archive holds the exact old `.git` pointer bytes in
+  `_manifests/git-pointer.txt`, with its type, mode, size, and hash receipt. It
+  holds the exact old manifest bytes as historical input metadata.
+- All 318 accepted tracked blobs and modes match `d087123c`.
+- The correction pass is `t08-records-fix-01`. Its report is
+  `.hive/tmp/coordinator/reports/t08-records-fix-01.md`. Its state record is
+  `.hive/tmp/coordinator/state/t08-records-fix-01.json`.
+- The actual home holds 81 actual ERROR `task not found` events for the B01
+  data preparation. The `l` key shows these events at info level.
+- The R01 correction independent acceptance stays pending. CP4 stays open and
+  BLOCKED. T10 stays `in progress` and does not land. CP2 stays open. The
+  graph and each earlier receipt stay unchanged.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
