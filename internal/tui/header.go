@@ -3,6 +3,7 @@ package tui
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"syscall"
 
@@ -18,14 +19,18 @@ type headerState struct {
 	unread     int
 }
 
+// refreshHeader reads the header once. A read error becomes a persistent,
+// bounded error view: the next ticks do not read again, so one unchanged
+// fault cannot log a new event on each tick.
 func (m *Model) refreshHeader() {
+	if m.headerStopped {
+		return
+	}
 	state, err := readHeader(m.home)
 	if err != nil {
-		message := boundedError(err.Error())
-		if message != m.headerErr {
-			m.logError("header", err)
-		}
-		m.headerErr = message
+		m.headerErr = boundedError(err.Error())
+		m.headerStopped = true
+		m.logError("header", err)
 		return
 	}
 	m.headerErr = ""
@@ -77,8 +82,13 @@ func readHeader(home string) (headerState, error) {
 	return state, nil
 }
 
+// maxPID is the largest signed 32-bit process ID. A larger positive value
+// must not reach the process lookup or a signal: the platform truncates it,
+// and a negative result such as -1 has process-wide meaning.
+const maxPID = int64(math.MaxInt32)
+
 func processAlive(pid int64) bool {
-	if pid <= 0 {
+	if pid <= 0 || pid > maxPID {
 		return false
 	}
 	process, err := os.FindProcess(int(pid))

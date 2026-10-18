@@ -3,6 +3,7 @@ package tui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -60,10 +61,12 @@ type Model struct {
 	follow     bool
 	errText    string
 
-	supervisor string
-	agentCount int
-	unread     int
-	headerErr  string
+	supervisor    string
+	agentCount    int
+	unread        int
+	headerErr     string
+	headerStopped bool
+	inputEnded    <-chan struct{}
 
 	width  int
 	height int
@@ -146,11 +149,12 @@ func (m *Model) Stop() {
 	})
 }
 
-// Init starts the refresh tick and the follower readers.
+// Init starts the refresh tick and the follower error reader. The tick is the
+// only consumer of the follower event channel, so events stay in file order.
 func (m *Model) Init() tea.Cmd {
 	cmds := []tea.Cmd{m.tick()}
 	if m.followStarted {
-		cmds = append(cmds, m.waitEvent(), m.waitFollow())
+		cmds = append(cmds, m.waitFollow())
 	}
 	return tea.Batch(cmds...)
 }
@@ -169,16 +173,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.follow && m.errText == "" {
 			m.viewport.GotoBottom()
 		}
+		if m.inputEnded != nil {
+			select {
+			case <-m.inputEnded:
+				return m, tea.Quit
+			default:
+			}
+		}
 		return m, m.tick()
-	case eventMsg:
-		if !msg.ok {
-			return m, nil
-		}
-		m.appendEvent(msg.event)
-		if m.follow && m.errText == "" {
-			m.viewport.GotoBottom()
-		}
-		return m, m.waitEvent()
 	case followErrMsg:
 		if msg.err != nil {
 			m.setError(msg.err.Error())
@@ -271,13 +273,146 @@ func Run(in io.Reader, out io.Writer) error {
 	return RunHome(resolved, in, out)
 }
 
-// RunHome starts the TUI for one resolved home.
+// RunHome starts the TUI for one resolved home. It checks the input and the
+// output at this boundary. A finite input end or a stream fault settles the
+// program and the follower, because the installed renderer discards its own
+// flush errors and an input end is not an error message.
 func RunHome(home string, in io.Reader, out io.Writer) error {
 	model := New(home, time.Now)
 	defer model.Stop()
-	_, err := tea.NewProgram(model, tea.WithInput(in), tea.WithOutput(out), tea.WithWindowSize(defaultWidth, defaultHeight)).Run()
-	if err != nil {
-		return fmt.Errorf("tui: %w", err)
+
+	inputEnded := make(chan struct{})
+	var endOnce sync.Once
+	model.inputEnded = inputEnded
+
+	faults := make(chan struct{}, 1)
+	signal := func() {
+		select {
+		case faults <- struct{}{}:
+		default:
+		}
+	}
+	inputGuard := &streamGuard{onFault: func(err error) {
+		if errors.Is(err, io.EOF) {
+			endOnce.Do(func() { close(inputEnded) })
+			return
+		}
+		signal()
+	}}
+	outputGuard := &streamGuard{onFault: func(error) { signal() }}
+	guardedIn := guardReader(in, inputGuard)
+	guardedOut := guardWriter(out, outputGuard)
+
+	program := tea.NewProgram(model,
+		tea.WithInput(guardedIn),
+		tea.WithOutput(guardedOut),
+		tea.WithWindowSize(defaultWidth, defaultHeight),
+	)
+	watched := make(chan struct{})
+	go func() {
+		select {
+		case <-faults:
+			program.Kill()
+		case <-watched:
+		}
+	}()
+
+	_, runErr := program.Run()
+	close(watched)
+
+	if err := outputGuard.Err(); err != nil {
+		return fmt.Errorf("tui: output: %w", err)
+	}
+	if err := inputGuard.Err(); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return fmt.Errorf("tui: input: %w", err)
+	}
+	if runErr != nil {
+		return fmt.Errorf("tui: %w", runErr)
 	}
 	return nil
+}
+
+type streamGuard struct {
+	mu      sync.Mutex
+	err     error
+	onFault func(error)
+}
+
+func (g *streamGuard) fault(err error) {
+	if err == nil {
+		return
+	}
+	g.mu.Lock()
+	first := g.err == nil
+	if first {
+		g.err = err
+	}
+	g.mu.Unlock()
+	if first && g.onFault != nil {
+		g.onFault(err)
+	}
+}
+
+func (g *streamGuard) Err() error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.err
+}
+
+type guardedReader struct {
+	in    io.Reader
+	guard *streamGuard
+}
+
+func (r *guardedReader) Read(data []byte) (int, error) {
+	n, err := r.in.Read(data)
+	if err != nil {
+		r.guard.fault(err)
+	}
+	return n, err
+}
+
+type guardedWriter struct {
+	out   io.Writer
+	guard *streamGuard
+}
+
+func (w *guardedWriter) Write(data []byte) (int, error) {
+	n, err := w.out.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
+	if err != nil {
+		w.guard.fault(err)
+	}
+	if n < 0 {
+		n = 0
+	}
+	if n > len(data) {
+		n = len(data)
+	}
+	return n, err
+}
+
+type fdHolder interface {
+	Fd() uintptr
+}
+
+// guardReader and guardWriter keep a terminal file unwrapped, so the terminal
+// detection and raw mode of Bubble Tea stay unchanged.
+func guardReader(in io.Reader, guard *streamGuard) io.Reader {
+	if _, ok := in.(fdHolder); ok {
+		return in
+	}
+	return &guardedReader{in: in, guard: guard}
+}
+
+func guardWriter(out io.Writer, guard *streamGuard) io.Writer {
+	if _, ok := out.(fdHolder); ok {
+		return out
+	}
+	return &guardedWriter{out: out, guard: guard}
 }
