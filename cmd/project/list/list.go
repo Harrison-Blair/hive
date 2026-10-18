@@ -1,0 +1,24 @@
+// Package list wires the project list command.
+package list
+
+import (
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	projectlib "github.com/Harrison-Blair/hive/internal/project"
+	"github.com/spf13/cobra"
+)
+
+// New creates the project list command.
+func New() *cobra.Command {
+	return &cobra.Command{
+		Use:   "list",
+		Short: "list registered projects",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return common.Run(cmd, "project list", func(home string) (output.Envelope, string, error) {
+				envelope := projectlib.List(home)
+				return envelope, projectlib.ListText(envelope), nil
+			})
+		},
+	}
+}

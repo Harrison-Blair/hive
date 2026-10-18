@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -34,8 +33,9 @@ func TestResolveEnvWinsOverAncestor(t *testing.T) {
 	}
 
 	got, err := Resolve("", false, envHome, cwd)
-	if err == nil || got != "" || !strings.Contains(err.Error(), "home conflict") {
-		t.Fatalf("Resolve() = %q, %v; want a home conflict", got, err)
+	want := "home conflict: HIVE_HOME is " + envHome + ", working directory is in " + workHome
+	if err == nil || got != "" || err.Error() != want {
+		t.Fatalf("Resolve() = %q, %v; want %q", got, err, want)
 	}
 }
 
@@ -73,6 +73,14 @@ func TestResolveFlagSkipsConflictCheck(t *testing.T) {
 func TestResolveNamedPathWithoutMarker(t *testing.T) {
 	path := t.TempDir()
 	got, err := Resolve(path, true, "", t.TempDir())
+	if got != "" || err == nil || err.Error() != "not a hive home: "+path {
+		t.Fatalf("Resolve() = %q, %v; want not a hive home: %s", got, err, path)
+	}
+}
+
+func TestResolveEnvPathWithoutMarker(t *testing.T) {
+	path := t.TempDir()
+	got, err := Resolve("", false, path, t.TempDir())
 	if got != "" || err == nil || err.Error() != "not a hive home: "+path {
 		t.Fatalf("Resolve() = %q, %v; want not a hive home: %s", got, err, path)
 	}
