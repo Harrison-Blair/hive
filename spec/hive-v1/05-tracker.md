@@ -222,6 +222,8 @@ Go source.
   key, the holder record key, and the generation under one held handle.
 - T13 keeps the workspace metadata when the recorded root is missing or moved.
 - T14 uses the current pane ID and the real Git branch.
+- T09 lands before T10. T09 corrects `WorkspaceInfo.Worktree` and adds the typed `WorkspaceWorktreeInfo`. T10 reads the optional session fields of `AgentInfo` and `PaneInfo`.
+- The limit of three external agents beside the coordinator includes each native model child that a live check starts. A native-live owner reserves its child slots before the run. Do not start an extra agent beyond three. This rule adds no slot infrastructure and changes no task dependency.
 - T20 compares `process_pid` and `process_start` when the record holds them.
 - T12 and T18 run after CP2 and before CP3. CP3 adds the fixture task, the
   fixture land, and the clean merged removal.
@@ -642,6 +644,9 @@ It accepts no unverified source and passes no checkpoint.
   names the T22 path and workspace `wAC`. The branch stays.
 - The docs correction is `a01167c`. It fixes C01 to C07 and the R01 receipt.
   The independent installed-text recheck is pending.
+- The recipe and type-scope correction is the docs commit of pass
+  `later-text-fix-02`. It fixes C04, C06, and C07. It adds the T09 and T10 type
+  scopes. The independent installed-text recheck is pending.
 - T04 is `in progress`. Fix pass `t04-fix-02` has verdict `64fdb038`. Four
   IDs stay open: P-F02, P-F06, I-F03, and I-F04. No source acceptance.
 - T05 is `in progress`. Prerequisite sync `5a7e1264` merges `47da8abb` into
@@ -710,12 +715,40 @@ git -C "$REPO" branch --list "task/$TASK"
 # Capture the repository workspace that this run can create.
 herdr workspace list
 REPO_WS=<repository workspace ID that this run made, or empty>
+REPO_WS_MADE=<yes or no>
 REPO_WS_OWNERSHIP=<known or unknown>
-if [ "$REPO_WS_OWNERSHIP" = known ]; then
-  if [ -n "$REPO_WS" ]; then herdr workspace close "$REPO_WS"; fi
-  rm -rf "$FIX"
-else
+if [ "$REPO_WS_OWNERSHIP" != known ]; then
   echo "repository workspace ownership is unknown: keep $FIX and report BLOCKED"
+elif [ "$REPO_WS_MADE" = no ] && [ -z "$REPO_WS" ]; then
+  rm -rf "$FIX"
+elif [ -z "$REPO_WS" ]; then
+  echo "repository workspace ID is missing: keep $FIX and report BLOCKED"
+else
+  CLOSE_RC=0
+  herdr workspace close "$REPO_WS" || CLOSE_RC=$?
+  if [ "$CLOSE_RC" -ne 0 ]; then
+    echo "repository workspace close failed: keep $FIX and report BLOCKED"
+  else
+    LIST_RC=0
+    LIST=$(herdr workspace list) || LIST_RC=$?
+    if [ "$LIST_RC" -ne 0 ]; then
+      echo "repository workspace query failed: keep $FIX and report BLOCKED"
+    elif printf '%s' "$LIST" | python3 -c '
+import json, sys
+ws = sys.argv[1]
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(2)
+items = data.get("result", {}).get("workspaces", [])
+if any(item.get("workspace_id") == ws for item in items):
+    sys.exit(1)
+' "$REPO_WS"; then
+      rm -rf "$FIX"
+    else
+      echo "repository workspace remains or the query is unclear: keep $FIX and report BLOCKED"
+    fi
+  fi
 fi
 ```
 
@@ -726,10 +759,14 @@ the workspace of the task is gone and the record is `stopped`. After the remove,
 the directory is gone and the branch stays. The branch check runs in `$REPO`.
 
 The run can create a repository workspace that the task stop does not close.
-Capture each workspace list. Close only a repository workspace that this run
-made and still owns. Keep an unknown workspace and the fixture, and report
-`BLOCKED`. Do not add a manager prerequisite or a manager-workspace criterion to
-CP2.
+Capture each workspace list. Record `REPO_WS_MADE` yes only when this run made a
+repository workspace. Record its ID. Close only a repository workspace that
+this run made and still owns. Remove `$FIX` only after the close succeeds and a
+checked list shows the workspace absent. When this run made no workspace, remove
+`$FIX` only with `REPO_WS_MADE=no` and an empty ID. On a close failure, a
+remaining workspace, a failed query, a missing ID, or unknown ownership, keep
+`$FIX` and report `BLOCKED`. Do not run `rm` after such a failure. Do not add a
+manager prerequisite or a manager-workspace criterion to CP2.
 
 Record the actual Claude Code harness and model. A selected model that is absent
 leaves CP2 open. Do not substitute a route.
@@ -861,19 +898,109 @@ remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. They differ. Never
 move a `main` reference to make them equal.
 
 Use three panes of the hive session. Pane A is your pane. Pane B runs the
-supervisor through an absolute wrapper. The wrapper runs the tested supervisor
-and writes the actual child status to an absolute exit file. Pane C runs the
-TUI with the tested binary.
+supervisor through an absolute wrapper. Pane C runs the TUI with the tested
+binary. The wrapper owns the real supervisor child. It writes one unique
+completion record. Pane A waits with a finite deadline for that record. Pane A
+never waits for a child of another shell.
+
+The next block generates the wrapper in pane A. It refuses a preexisting exit
+file. It binds the absolute tested binary, the real Hive home, and one absolute
+completion file.
 
 ```sh
 BIN=<absolute tested binary>
-SUP_WRAP=<absolute supervisor wrapper>
-SUP_EXIT=<absolute supervisor child exit file>
+RUN_ID="cp5-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+SUP_RUN="$PWD/.hive/tmp/$RUN_ID"
+SUP_WRAP="$SUP_RUN/supervisor-wrapper.py"
+SUP_EXIT="$SUP_RUN/supervisor-child-exit.json"
+SUP_STARTED="$SUP_EXIT.started"
+SUP_OWNED_PANE=<pane that this run made for pane B, or empty>
+test ! -e "$SUP_EXIT" || { echo "stale exit evidence: keep $SUP_RUN and report BLOCKED"; exit 1; }
+mkdir "$SUP_RUN" || { echo "run path exists: keep it and report BLOCKED"; exit 1; }
+SHA=$(sha256sum "$BIN" | cut -d ' ' -f 1)
+cat > "$SUP_WRAP" <<'PY'
+#!/usr/bin/env python3
+import json, os, signal, subprocess, sys, time
+
+BIN = "__BIN__"
+HOME = "__HOME__"
+EXIT_FILE = "__EXIT__"
+RUN_ID = "__RUN__"
+SHA256 = "__SHA__"
+
+def write_atomic(path, record):
+    tmp = path + ".tmp." + str(os.getpid())
+    with open(tmp, "w", encoding="utf-8") as handle:
+        json.dump(record, handle, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(tmp, path)
+
+if os.path.exists(EXIT_FILE):
+    print("refuse: exit evidence exists", file=sys.stderr)
+    sys.exit(2)
+
+child = None
+interrupted = False
+started_at = time.time()
+start = {
+    "run_id": RUN_ID,
+    "wrapper": os.path.abspath(__file__),
+    "binary": BIN,
+    "binary_sha256": SHA256,
+    "home": HOME,
+    "child_pid": None,
+    "started_at": started_at,
+}
+write_atomic(EXIT_FILE + ".started", start)
+
+def forward(signum, frame):
+    global interrupted
+    interrupted = True
+    if child is not None:
+        try:
+            child.send_signal(signal.SIGINT)
+        except ProcessLookupError:
+            pass
+
+signal.signal(signal.SIGINT, forward)
+child = subprocess.Popen([BIN, "--home", HOME, "supervise"], start_new_session=True)
+start["child_pid"] = child.pid
+write_atomic(EXIT_FILE + ".started", start)
+if interrupted:
+    child.send_signal(signal.SIGINT)
+
+code = child.wait()
+record = {
+    "run_id": RUN_ID,
+    "wrapper": os.path.abspath(__file__),
+    "binary": BIN,
+    "binary_sha256": SHA256,
+    "home": HOME,
+    "child_pid": child.pid,
+    "child_returncode": code,
+    "child_exited_at": time.time(),
+    "interrupt_forwarded": interrupted,
+}
+write_atomic(EXIT_FILE, record)
+sys.exit(0 if code == 0 else 1)
+PY
+sed -i "s|__BIN__|$BIN|g; s|__HOME__|$PWD|g; s|__EXIT__|$SUP_EXIT|g; s|__RUN__|$RUN_ID|g; s|__SHA__|$SHA|g" "$SUP_WRAP"
+chmod +x "$SUP_WRAP"
+printf '%s\n' "$SUP_WRAP" "echo \"pane B shell status \$?\" > \"$SUP_WRAP.shell-status\"" > "$SUP_RUN/pane-b-command.txt"
+RUN_START=$(date +%s)
 "$BIN" --home "$PWD" doctor
 "$BIN" --home "$PWD" agent spawn --role manager --project hive --harness pi \
   --model opencode-go/deepseek-v4-flash:medium --name manager-hive
 "$BIN" --home "$PWD" agent send --agent manager-hive "Create one task that adds reference/dogfood/cp5.md with the date of this run. Run it with a PiFlash worker at opencode-go/deepseek-v4-flash:medium. Verify it with a PiSol verifier at openai-codex/gpt-6.1-sol:high. Land it with mode merge under the new dated grant. Send the coordinator an explicit landing message. Remove the clean merged worktree without force. Write your handoff."
 ```
+
+In pane B, run the two lines in `$SUP_RUN/pane-b-command.txt`. The first line
+starts the absolute wrapper. The second line writes the pane B shell status.
+The wrapper records the child exit in `$SUP_EXIT`. It writes that record only
+after `child.wait()`. It sends a terminal interrupt only to its own child. The
+child has its own session, so the terminal does not deliver the interrupt twice.
 
 Preserve the real home, repository, artifact, logs, records, and grants.
 
@@ -896,18 +1023,65 @@ git rev-parse main
 git rev-parse origin/main
 git ls-remote origin refs/heads/main
 # Quit the TUI in pane C with q. Send ctrl+c to the supervisor in pane B.
-wait <supervisor wrapper shell pid>
-echo "shell $?"
+DEADLINE=$((RUN_START + 600))
+RECORD_OK=0
+while [ "$(date +%s)" -le "$DEADLINE" ]; do
+  if [ -s "$SUP_EXIT" ]; then
+    if python3 - "$SUP_EXIT" "$SUP_STARTED" "$RUN_ID" "$BIN" "$SHA" "$PWD" "$RUN_START" <<'PY'
+import json, os, sys
+exit_path, started_path, run_id, binary, sha, home, run_start = sys.argv[1:]
+try:
+    with open(exit_path, encoding="utf-8") as handle:
+        record = json.load(handle)
+    with open(started_path, encoding="utf-8") as handle:
+        started = json.load(handle)
+except (OSError, ValueError):
+    sys.exit(1)
+if record.get("run_id") != run_id:
+    sys.exit(1)
+if record.get("binary") != binary or record.get("binary_sha256") != sha:
+    sys.exit(1)
+if record.get("home") != home:
+    sys.exit(1)
+if record.get("child_pid") != started.get("child_pid"):
+    sys.exit(1)
+if not isinstance(record.get("child_returncode"), int):
+    sys.exit(1)
+started_at = started.get("started_at")
+exited_at = record.get("child_exited_at")
+if not isinstance(started_at, (int, float)) or not isinstance(exited_at, (int, float)):
+    sys.exit(1)
+if started_at < float(run_start) or exited_at < started_at:
+    sys.exit(1)
+if os.path.getmtime(exit_path) < float(run_start):
+    sys.exit(1)
+PY
+    then
+      RECORD_OK=1
+      break
+    fi
+  fi
+  sleep 2
+done
+if [ "$RECORD_OK" -ne 1 ]; then
+  echo "no fresh supervisor child exit record: keep $SUP_RUN and report BLOCKED"
+  exit 1
+fi
 cat "$SUP_EXIT"
+cat "$SUP_WRAP.shell-status"
 "$BIN" --home "$PWD" doctor
 herdr workspace list
+if [ -n "$SUP_OWNED_PANE" ]; then
+  herdr pane close "$SUP_OWNED_PANE"
+fi
 ```
 
-The supervisor child exit is the value in `$SUP_EXIT`. The shell status is the
-result of `wait`. Capture the two values separately. Run the final `doctor`
-after the actual supervisor child exit. The final `doctor` reports the stale
-supervisor claim. Keep the real artifact, tracked evidence, logs, records,
-state, grants, and `main` references.
+The completion record has `child_returncode`. The pane B shell status is in
+`$SUP_WRAP.shell-status`. Capture the two values separately. The final `doctor`
+runs only after the fresh record exists. It reports the stale supervisor claim.
+Close only a pane that this run made. Keep pane A, pane C, every user pane, the
+real artifact, tracked evidence, logs, records, state, grants, and `main`
+references.
 
 Look for: the workspace `hive:hive` with the manager in its first tab, the exact
 PiFlash manager, PiFlash worker, and PiSol verifier routes, the committed
@@ -1059,8 +1233,8 @@ edit permission.
 | T05 herdr interface and doctor | `cmd/doctor/doctor.go`, `internal/doctor/doc.go`, `internal/doctor/checks.go`, `internal/doctor/run.go`, `internal/doctor/render.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/client.go`, `internal/lib/herdr/protocol.go`, `internal/lib/herdr/errors.go`, `internal/lib/herdr/types.go`, `internal/lib/run/run.go` | `cmd/root.go`, `cmd/version/version.go` |
 | T07 memory and handoff | `cmd/memory/memory.go`, `cmd/memory/write/write.go`, `cmd/handoff/handoff.go`, `cmd/handoff/write/write.go`, `internal/memory/doc.go`, `internal/memory/write.go`, `internal/memory/index.go`, `internal/memory/frontmatter.go`, `internal/handoff/write.go`, `internal/lib/scope/scope.go`, `internal/lib/scope/input.go` | `cmd/root.go` |
 | T08 TUI log view | `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go` |
-| T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
-| T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/agent.go` |
+| T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
+| T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
 | T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
 | T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go` |
 | T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
@@ -1088,6 +1262,10 @@ edit permission.
 | `internal/task/assign.go` finished guard | T11 | A narrow refusal for a known finished agent. T03 stays independent of the agent record. |
 | Post-close stop result | T10 | `closed`, `surviving`, or `unknown` topology plus the known effects. |
 | Real branch source | T14 | `gitx.CurrentBranch` or a typed `WorktreeInfo` result that holds a branch. A workspace branch field does not exist. |
+| `WorkspaceWorktreeInfo` | T09 | The typed workspace metadata in `internal/lib/herdr/workspace.go`. It has no branch field. `WorktreeInfo` stays for the worktree methods. T09 lands before T10. |
+| `WorkspaceInfo.Worktree` | T09 | One type correction in `internal/lib/herdr/types.go`: `*WorktreeInfo` becomes `*WorkspaceWorktreeInfo`. Keep each other field. |
+| `AgentSessionInfo` | T10 | The typed optional session in `internal/lib/herdr/agent.go`. `AgentInfo` and `PaneInfo` use it when present. |
+| `AgentInfo.agent_session`, `PaneInfo.agent_session` | T10 | One optional field line in `internal/lib/herdr/types.go` for each type. Keep each other field. |
 
 ### Shared-file collisions
 
@@ -1095,6 +1273,7 @@ edit permission.
 | --- | --- | --- |
 | `cmd/root.go` | T01, T03, T04, T05, T06, T07, T08, T09, T12, T15 | Keep each registration line. T04 and T07 add two lines each. T08 changes the TUI entry and adds no command. |
 | `internal/lib/herdr/doc.go` | T05, T09, T10, T13, T14, T15 | One map line for each new file. Keep each line. |
+| `internal/lib/herdr/types.go` | T05, T09, T10 | T05 owns the file. T09 changes only `WorkspaceInfo.Worktree` to `*WorkspaceWorktreeInfo`. T10 adds only the optional `agent_session` field to `AgentInfo` and `PaneInfo`. Keep each other field. |
 | `internal/lib/records/agent.go` | T04, T10, T11, T15 | One field line for each task, at the end of the struct. |
 | `internal/lib/records/task.go` | T03, T09, T12 | One field block for each task. Keep each block. |
 | `internal/lib/records/inbox.go` | T04, T15 | One field line for each task. Keep each line. |

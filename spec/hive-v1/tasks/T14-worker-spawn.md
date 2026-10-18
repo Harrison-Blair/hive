@@ -114,26 +114,56 @@ worktree. The verifier spawn therefore reopens the worktree with
   fixture repository, and one absolute tested binary. Put fixture skills only in
   `$FIX/.agents/skills`. Do not replace a real home skill. Record the binary
   SHA256 and the actual path that the worker reads.
-- Create one absolute fixture wrapper at `$FIX/bin/hive` that executes `$BIN`.
-  Record the wrapper path and the binary SHA256. Name that wrapper and the
-  fixture home in each fixture skill and fixture brief. Each child command uses
-  the wrapper. The wrapper preserves the product prompt contract for a bare
-  `hive`. Parent `PATH` alone does not prove child `PATH` binding.
+- Create one absolute fixture wrapper at `$FIX/bin/hive`. The wrapper records
+  its actual path, `$BIN`, and the SHA256 of `$BIN` before `exec`. It records
+  no input, argument, or content. Record the wrapper path and the binary SHA256.
+- Install one explicit rule in both fixture skills before either child starts.
+  The rule is: `For this fixture, replace the executable hive in every product
+  prompt command with $WRAP. Use the home $FIX.` The rule covers the first
+  `task show --brief` retrieval and the final `task complete` or `task verify`.
+- Both product prompts read their skill first. The rule therefore reaches both
+  children before they run a command. The runner `PATH` does not reach the
+  target shell. `agent.start` has no environment parameter.
+- After the live run, read the wrapper log. Each line must name `$WRAP`, `$BIN`,
+  and the SHA256. Run the extracted wrapper forms with bare `hive` absent from
+  the child `PATH`.
 - Command, from a pane of the hive session:
 
 ```sh
 FIX=$(mktemp -d)
-mkdir -p "$FIX/.hive" "$FIX/bin" "$FIX/.agents/skills/hive-worker" "$FIX/.agents/skills/hive-verifier"
+mkdir -p "$FIX/.hive" "$FIX/bin" "$FIX/child-bin" "$FIX/.agents/skills/hive-worker" "$FIX/.agents/skills/hive-verifier"
 : > "$FIX/.hive/README.md"
 BIN="$FIX/hive-$(date +%s)"
 go build -o "$BIN" .
-sha256sum "$BIN"
+SHA=$(sha256sum "$BIN" | cut -d ' ' -f 1)
+echo "$SHA"
+W="t14-check-w-$(date +%s)"
+V="t14-check-v-$(date +%s)"
 WRAP="$FIX/bin/hive"
-printf '#!/bin/sh\nexec "%s" "$@"\n' "$BIN" > "$WRAP"
+WRAPLOG="$FIX/wrapper-exec.log"
+{
+  printf '#!/bin/sh\n'
+  printf 'printf "%%s %%s %%s\\n" "$0" "%s" "%s" >> "%s"\n' "$BIN" "$SHA" "$WRAPLOG"
+  printf 'exec "%s" "$@"\n' "$BIN"
+} > "$WRAP"
 chmod +x "$WRAP"
 echo "$WRAP"
-printf '%s\n' '# hive-worker fixture' "Run only $WRAP with --home $FIX." 'Follow the brief.' > "$FIX/.agents/skills/hive-worker/SKILL.md"
-printf '%s\n' '# hive-verifier fixture' "Run only $WRAP with --home $FIX." 'Follow the brief.' > "$FIX/.agents/skills/hive-verifier/SKILL.md"
+cat > "$FIX/.agents/skills/hive-worker/SKILL.md" <<EOF
+# hive-worker fixture
+For this fixture, replace the executable hive in every product prompt command with $WRAP.
+Use the home $FIX. The only hive executable is $WRAP.
+Run $WRAP --home $FIX task show 1-worker-demo --brief before any other command.
+The final completion command is $WRAP --home $FIX task complete --task 1-worker-demo --agent $W.
+Follow the brief.
+EOF
+cat > "$FIX/.agents/skills/hive-verifier/SKILL.md" <<EOF
+# hive-verifier fixture
+For this fixture, replace the executable hive in every product prompt command with $WRAP.
+Use the home $FIX. The only hive executable is $WRAP.
+Run $WRAP --home $FIX task show 1-worker-demo --brief before any other command.
+The final verification command is $WRAP --home $FIX task verify --task 1-worker-demo --agent $V.
+Follow the brief.
+EOF
 export PATH="$FIX/bin:$PATH"
 REPO="$FIX/repo-w"
 git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
@@ -141,10 +171,9 @@ git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
 "$BIN" --home "$FIX" task create --project repo-w --title "worker demo" --brief - <<B
 Make the file hello.txt in your worktree with the one line hello. Do not commit.
 Verification item V1: cat hello.txt prints hello.
-When V1 passes, run: '$WRAP' --home '$FIX' task complete --task 1-worker-demo
+When V1 passes, run: '$WRAP' --home '$FIX' task complete --task 1-worker-demo --agent '$W'
 B
 "$BIN" --home "$FIX" worktree create --task 1-worker-demo
-W="t14-check-w-$(date +%s)"
 "$BIN" --home "$FIX" agent spawn --role worker --task 1-worker-demo --name "$W" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
 "$BIN" --home "$FIX" task show 1-worker-demo
@@ -152,7 +181,6 @@ echo "exit $?"
 cat "$FIX/projects/repo-w/worktrees/1-worker-demo/hello.txt"
 "$BIN" --home "$FIX" agent stop --agent "$W"
 herdr workspace list
-V="t14-check-v-$(date +%s)"
 "$BIN" --home "$FIX" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
 herdr workspace list
@@ -161,10 +189,35 @@ herdr workspace list
 "$BIN" --home "$FIX" agent stop --agent "$V"
 "$BIN" --home "$FIX" worktree remove --task 1-worker-demo --force
 herdr workspace close <repository workspace ID from the create output>
+# Check the actual child execution path and hash.
+cat "$WRAPLOG"
+awk -v w="$WRAP" -v b="$BIN" -v s="$SHA" 'NF != 3 || $1 != w || $2 != b || $3 != s { exit 1 }' "$WRAPLOG"
+# Exercise the extracted wrapper forms with bare hive absent from the child PATH.
+"$BIN" --home "$FIX" task create --project repo-w --title "recipe demo" --brief - <<B
+Recipe only.
+B
+"$BIN" --home "$FIX" task assign --task 2-recipe-demo --agent worker-recipe
+test -z "$(env -i PATH="$FIX/child-bin" /bin/sh -c 'command -v hive')"
+env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task show 1-worker-demo --brief > "$FIX/brief-check.txt"
+grep -Fq "Make the file hello.txt" "$FIX/brief-check.txt"
+env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task complete --task 2-recipe-demo --agent worker-recipe
+env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task verify --task 2-recipe-demo --agent verifier-recipe
+cat "$WRAPLOG"
+test "$(wc -l < "$WRAPLOG")" -ge 3
+awk -v w="$WRAP" -v b="$BIN" -v s="$SHA" 'NF != 3 || $1 != w || $2 != b || $3 != s { exit 1 }' "$WRAPLOG"
 rm -rf "$FIX"
 ```
 
-- Expected: both spawns exit with 0. The worker and verifier read fixture skills that name the absolute wrapper and fixture home. The worker completion command uses `$WRAP`, which executes the tested binary. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check. The fixture cleanup removes only `$FIX`.
+- Expected: both spawns exit with 0. Both product prompts read a fixture skill
+  that holds the replacement rule, the absolute wrapper, and the fixture home.
+  The wrapper log names `$WRAP`, `$BIN`, and the SHA256 for the initial brief
+  retrieval and each finish command. The first task show gives the status
+  `assigned` and the acting agent `$W`. The file holds `hello`. The first
+  workspace list has no workspace `1-worker-demo`, and the second has one again.
+  The second task show gives the status `verified` and a `completed` and a
+  `verified` inbox record for `manager-repo-w`. The independent child gets the
+  brief, completes a recipe task, and verifies it. The cleanup leaves no
+  workspace of this check. The fixture cleanup removes only `$FIX`.
 
 ### V4 Gate
 
@@ -185,3 +238,8 @@ ownership rule, the unknown-start preservation, and the cleanup rule. Replace
 the live transcript with a unique fixture home, fixture skills, and an absolute
 tested binary. Bind each fixture skill, brief, and child command to the absolute
 fixture wrapper and fixture home.
+2026-10-18. Add one explicit replacement rule for every bare `hive` command in
+both product prompts. The rule covers the first brief retrieval and both finish
+commands. The wrapper records its actual path and the tested binary SHA256. The
+check runs the extracted wrapper forms with bare `hive` absent from the child
+`PATH`.

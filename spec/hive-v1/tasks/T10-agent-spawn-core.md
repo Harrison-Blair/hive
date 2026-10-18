@@ -50,8 +50,9 @@ while the process continues.
 | `internal/lib/harness/harness.go` | New. The `Profile` interface, `ProcessNames()`, the lookup by kind, and the bounds check. |
 | `internal/lib/harness/registry.go` | New. One line for each profile. |
 | `internal/lib/harness/claude.go` | New. The Claude Code profile. |
-| `internal/lib/herdr/agent.go` | New. `AgentStart`, `AgentWait`, `AgentPrompt`, `AgentGet`, `AgentList`. |
+| `internal/lib/herdr/agent.go` | New. `AgentStart`, `AgentWait`, `AgentPrompt`, `AgentGet`, `AgentList`, and the typed `AgentSessionInfo`. |
 | `internal/lib/herdr/pane.go` | New. `PaneGet`, `PaneClose`, and the typed `PaneProcessInfo`. T13 adds `PaneList`. |
+| `internal/lib/herdr/types.go` | Shared with T05 and T09. Add only the optional `agent_session` field to `AgentInfo` and `PaneInfo`. Change no other field. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
 | `internal/lib/process/process.go` | New. `Start(pid)` and `Alive(pid, start)` with a bounded `/proc/<pid>/stat` read. |
 | `internal/lib/process/process_test.go` | New. |
@@ -80,6 +81,7 @@ while the process continues.
 - Then `agent.wait` with `target` equal to the pane ID, `until` equal to `idle`, `blocked`, and `done`, and `timeout_ms` from the ready timeout. The client deadline of the call is the ready timeout plus 5 seconds, set with `herdr.WithDeadline` of T05.
 - The result `agent_info` with the status `idle` or `done` gives the outcome `ok`. The status `blocked` gives `partial` with the error `agent blocked: accept the dialog in <pane>`. The error `timeout` gives `partial` with `agent not ready after <seconds> s`. In each `partial` case the record stays `live`.
 - After the wait result, hive calls `pane.process_info`. It records the process identity only when exactly one foreground entry names the harness and its PID belongs to the foreground process set. A multiple, absent, shell, unknown, wrapper-only, or unstable entry gives `unresolved`. Keep the resource and report the started-agent effect and the uncertain phase.
+- The optional `agent_session` fields of `AgentInfo` and `PaneInfo` use the typed `AgentSessionInfo`. It has `source`, `agent`, `kind`, and `value`. Record it when present. An absent session alone passes. A recorded session that is missing or differs gives `unresolved`.
 - A wait timeout with independently proven ownership can keep the live partial-readiness result. The evidence uses one bounded `agent.get` reply and the stable typed process identity.
 - The error `agent_not_running` or `agent_not_found` during the wait means that the agent left the pane. Hive runs the inspection of AC4 and gives `failed` with `agent exited during start` or the `unresolved` error.
 - After the wait hive calls `agent.get` with the pane ID and logs the `name` of the reply. A missing name is a log event, not an error, because later requests use the pane ID.
@@ -102,7 +104,7 @@ while the process continues.
 - `hive agent stop --agent NAME` needs a record with the status `live`. Another status fails with `agent is <status>`.
 - A record with `spawned` false fails with `agent <name> was not spawned by hive: exit it by hand`. Hive closes only a pane in which it started the agent.
 - Step 1: `pane.get` with the pane ID of the record. The error `pane_not_found` makes the record `unresolved`, and the outcome is `failed` with `pane <id> not found: record unresolved`. A reply whose `terminal_id` differs from the record makes the record `unresolved` too, with `pane <id> holds another terminal: record unresolved`.
-- Step 2: `pane.process_info` and the recorded process identity. The recorded `process_pid` must be in the foreground process set. The recorded `process_name` must match. The recorded `process_start` must match. A recorded session reference must match. A mismatch, a missing process, a shell in the foreground, or an unreadable `/proc` gives `unresolved` and closes nothing.
+- Step 2: `pane.process_info` and the recorded process identity. The recorded `process_pid` must be in the foreground process set. The recorded `process_name` must match. The recorded `process_start` must match. An absent recorded session passes. A recorded session reference that is missing or different gives `unresolved`. A mismatch, a missing process, a shell in the foreground, or an unreadable `/proc` gives `unresolved` and closes nothing.
 - Step 3: `workspace.get` with the `workspace_id` of the reply. Hive keeps the workspace ID for the post-close read. The error `workspace_not_found` also makes the record `unresolved`.
 - Step 4: hive sets the record `stopped` under the store lock, before the close. The close events of this pane then find no `live` record, so the supervisor of T15 logs them only.
 - Step 5: `pane.close` with the pane ID. The result `ok` gives the effect `pane closed`. The error `pane_not_found` here makes the record `unresolved`. Another error sets the record back to `live` with `last_error`, and the outcome is `failed`.
@@ -137,7 +139,7 @@ while the process continues.
 
 - Proves: AC2.
 - Command: `go test -race ./internal/agent/ -run TestSpawn -v`, red and green.
-- Expected: a fake herdr server scripts the replies with the shapes of `reference/herdr/api/agent.md`: `agent_info` for the wait, and the error codes `timeout`, `agent_not_running`, and `agent_not_found`. Cases: idle gives `ok`, done gives `ok`, blocked gives `partial`, a wait timeout gives `partial`, and a start error gives `failed` with the record `exited`. A closed connection during the start gives `partial` with the record `unresolved`. `agent_not_running` during the wait gives `failed` with the record `exited`. A reply without a name after the wait gives `ok`. The fake server checks that the record file exists when the start request arrives. The test checks the start parameters, the wait target, and the record fields with `harness`, `cwd`, and `terminal_id`. Process cases: one named foreground entry records the PID, name, start, and optional session. A multiple entry, absent entry, shell entry, unknown name, wrapper-only entry, or unstable start gives `unresolved`. A wait timeout with the proven ownership keeps `live`. An absent session alone passes. A recorded session that is missing or different fails. A reused PID and an unreadable `/proc` fail.
+- Expected: a fake herdr server scripts the replies with the shapes of `reference/herdr/api/agent.md`: `agent_info` for the wait, and the error codes `timeout`, `agent_not_running`, and `agent_not_found`. Cases: idle gives `ok`, done gives `ok`, blocked gives `partial`, a wait timeout gives `partial`, and a start error gives `failed` with the record `exited`. A closed connection during the start gives `partial` with the record `unresolved`. `agent_not_running` during the wait gives `failed` with the record `exited`. A reply without a name after the wait gives `ok`. The fake server checks that the record file exists when the start request arrives. The test checks the start parameters, the wait target, and the record fields with `harness`, `cwd`, and `terminal_id`. The fake replies use the typed `AgentSessionInfo` when present. Process cases: one named foreground entry records the PID, name, start, and optional session. A multiple entry, absent entry, shell entry, unknown name, wrapper-only entry, or unstable start gives `unresolved`. A wait timeout with the proven ownership keeps `live`. An absent session alone passes. A recorded session that is missing or different fails. A reused PID and an unreadable `/proc` fail.
 
 ### V3 Send and stop tests
 
@@ -196,3 +198,7 @@ the profile process-name method, the process reader, the exact stop check, and
 the post-close topology result. Reuse the existing T04 record fields and add
 only the new identity fields. Replace the live transcript with a unique fixture
 home and an absolute tested binary.
+2026-10-18. Add the narrow `internal/lib/herdr/types.go` line. Add only the
+optional `agent_session` field to `AgentInfo` and `PaneInfo`. Add the typed
+`AgentSessionInfo` in `agent.go`. Keep optional absence allowed. Keep the
+recorded-session mismatch refusal. Do not change the planned agent record.
