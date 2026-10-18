@@ -143,3 +143,106 @@ func TestWalkBadNestedRecord(t *testing.T) {
 		t.Fatalf("WalkRecords() error = %v; want record invalid for %s", err, bad)
 	}
 }
+
+func TestWalkTemporaryPatternChecksTypeFirst(t *testing.T) {
+	t.Run("directory descends", func(t *testing.T) {
+		store := openStore(t, t.TempDir())
+		dir := filepath.Join(store.home, ".hive", "state", ".probe.tmp-123")
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "one.json"), []byte(`{"id":"one"}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		var found []string
+		if err := store.WalkRecords(context.Background(), func(record StoredRecord) error {
+			found = append(found, strings.Join(append(append([]string(nil), record.Collection...), record.Name), "/"))
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		want := ".probe.tmp-123/one.json"
+		if len(found) != 1 || found[0] != want {
+			t.Fatalf("WalkRecords() paths = %q; want [%q]", found, want)
+		}
+	})
+
+	t.Run("linked collection fails", func(t *testing.T) {
+		store := openStore(t, t.TempDir())
+		target := t.TempDir()
+		if err := os.WriteFile(filepath.Join(target, "one.json"), []byte(`{"id":"one"}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		link := filepath.Join(store.home, ".hive", "state", ".probe.tmp-123")
+		if err := os.Symlink(target, link); err != nil {
+			t.Fatal(err)
+		}
+		err := store.WalkRecords(context.Background(), func(record StoredRecord) error {
+			t.Errorf("WalkRecords() returned %v from a linked collection", record)
+			return nil
+		})
+		if err == nil || err.Error() != "store path invalid: "+link {
+			t.Fatalf("WalkRecords() error = %v; want store path invalid for %s", err, link)
+		}
+	})
+
+	t.Run("regular atomic temporary file skips", func(t *testing.T) {
+		store := openStore(t, t.TempDir())
+		stateDir := filepath.Join(store.home, ".hive", "state")
+		if err := os.WriteFile(filepath.Join(stateDir, ".probe.tmp-123"), []byte(`{"value":1}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := store.WalkRecords(context.Background(), func(record StoredRecord) error {
+			t.Errorf("WalkRecords() returned a temporary file %q", record.Name)
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func TestCollectWalkNodesChecksLockTypeFirst(t *testing.T) {
+	stateDir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(stateDir, "nested", "lock"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(stateDir, "nested", "lock", "one.json"), []byte(`{"id":"one"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(stateDir, "plain.json"), []byte(`{"id":"plain"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	nodes, err := collectWalkNodes(stateDir, nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found []string
+	for _, node := range nodes {
+		found = append(found, node.rel)
+	}
+	want := []string{"nested", "nested/lock", "nested/lock/one.json", "plain.json"}
+	if len(found) != len(want) {
+		t.Fatalf("collectWalkNodes() paths = %q; want %q", found, want)
+	}
+	for i := range want {
+		if found[i] != want[i] {
+			t.Fatalf("collectWalkNodes() paths = %q; want %q", found, want)
+		}
+	}
+
+	if err := os.RemoveAll(filepath.Join(stateDir, "nested")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(stateDir, "lock"), []byte(`{"value":1}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	nodes, err = collectWalkNodes(stateDir, nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, node := range nodes {
+		if node.name == "lock" {
+			t.Fatalf("collectWalkNodes() returned the regular lock file: %q", node.rel)
+		}
+	}
+}

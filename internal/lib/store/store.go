@@ -35,13 +35,20 @@ type StoredRecord struct {
 	Data       json.RawMessage
 }
 
-// Open creates the state directory if it does not exist.
+// Open creates the state directory if it does not exist. It rejects a static
+// symbolic link or a wrong type at the .hive ancestor or the state root.
 func Open(home string) (*Store, error) {
-	stateDir := filepath.Join(home, ".hive", "state")
-	if err := os.MkdirAll(stateDir, 0o755); err != nil {
+	store := &Store{home: home}
+	if err := store.checkHive(); err != nil {
 		return nil, err
 	}
-	return &Store{home: home}, nil
+	if err := store.checkRoot(); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(store.stateDir(), 0o755); err != nil {
+		return nil, err
+	}
+	return store, nil
 }
 
 func (s *Store) stateDir() string {
@@ -318,12 +325,6 @@ func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, e
 	nodes := []walkNode{}
 	for _, entry := range entries {
 		name := entry.Name()
-		if root && name == "lock" {
-			continue
-		}
-		if strings.HasPrefix(name, ".") && strings.Contains(name, ".tmp-") {
-			continue
-		}
 		path := filepath.Join(dir, name)
 		info, err := os.Lstat(path)
 		if err != nil {
@@ -348,6 +349,10 @@ func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, e
 				return nil, err
 			}
 			nodes = append(nodes, children...)
+		case info.Mode().IsRegular() && root && name == "lock":
+			continue
+		case info.Mode().IsRegular() && strings.HasPrefix(name, ".") && strings.Contains(name, ".tmp-"):
+			continue
 		default:
 			nodes = append(nodes, node)
 		}
@@ -451,6 +456,9 @@ func (s *Store) collectionPath(collection []string) (string, error) {
 }
 
 func (s *Store) checkRead(path string, collection []string) error {
+	if err := s.checkHive(); err != nil {
+		return err
+	}
 	if err := s.checkRoot(); err != nil {
 		return err
 	}
@@ -464,6 +472,9 @@ func (s *Store) checkRead(path string, collection []string) error {
 }
 
 func (s *Store) checkList(dir string, collection []string) error {
+	if err := s.checkHive(); err != nil {
+		return err
+	}
 	if err := s.checkRoot(); err != nil {
 		return err
 	}
@@ -471,6 +482,21 @@ func (s *Store) checkList(dir string, collection []string) error {
 		return err
 	}
 	return checkDirs(s.stateDir(), collection)
+}
+
+func (s *Store) checkHive() error {
+	path := filepath.Join(s.home, ".hive")
+	info, err := os.Lstat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return fmt.Errorf("store path invalid: %s", path)
+	}
+	return nil
 }
 
 func (s *Store) checkRoot() error {

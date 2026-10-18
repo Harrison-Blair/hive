@@ -181,30 +181,52 @@ func TestReadInRecordInvalid(t *testing.T) {
 	}
 }
 
+const (
+	sizeBelowLimit = 1048575
+	sizeAtLimit    = 1048576
+	sizeAboveLimit = 1048577
+)
+
+func recordOfSize(t *testing.T, size int) []byte {
+	t.Helper()
+	prefix, suffix := `{"padding":"`, `"}`
+	data := prefix + strings.Repeat("x", size-len(prefix)-len(suffix)) + suffix
+	if len(data) != size {
+		t.Fatalf("fixture size = %d; want %d", len(data), size)
+	}
+	return []byte(data)
+}
+
 func TestReadInSizeBoundary(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	dir := filepath.Join(store.home, ".hive", "state", "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	prefix, suffix := `{"padding":"`, `"}`
-	exact := prefix + strings.Repeat("x", maxRecordSize-len(prefix)-len(suffix)) + suffix
-	if len(exact) != maxRecordSize {
-		t.Fatalf("fixture size = %d; want %d", len(exact), maxRecordSize)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "exact.json"), []byte(exact), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	var record map[string]string
-	if err := store.ReadIn([]string{"tasks"}, "exact", &record); err != nil {
-		t.Fatalf("ReadIn() rejected exactly 1 MiB: %v", err)
-	}
-	oversize := filepath.Join(dir, "oversize.json")
-	if err := os.WriteFile(oversize, []byte(`{"padding":"`+strings.Repeat("x", maxRecordSize)+`"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.ReadIn([]string{"tasks"}, "oversize", &record); err == nil || err.Error() != "record too large: "+oversize {
-		t.Fatalf("ReadIn() oversize error = %v; want record too large", err)
+	for _, test := range []struct {
+		id      string
+		size    int
+		wantErr bool
+	}{
+		{"below", sizeBelowLimit, false},
+		{"exact", sizeAtLimit, false},
+		{"above", sizeAboveLimit, true},
+	} {
+		path := filepath.Join(dir, test.id+".json")
+		if err := os.WriteFile(path, recordOfSize(t, test.size), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		var record map[string]string
+		err := store.ReadIn([]string{"tasks"}, test.id, &record)
+		if test.wantErr {
+			if err == nil || err.Error() != "record too large: "+path {
+				t.Errorf("ReadIn(%q) error = %v; want record too large", test.id, err)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("ReadIn(%q) rejected %d bytes: %v", test.id, test.size, err)
+		}
 	}
 }
 
@@ -233,14 +255,15 @@ func TestListInBadSelectedFileReturnsNoRecords(t *testing.T) {
 func TestReadInPathTypes(t *testing.T) {
 	t.Run("state root symlink", func(t *testing.T) {
 		home := t.TempDir()
-		target := t.TempDir()
-		if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.Symlink(target, filepath.Join(home, ".hive", "state")); err != nil {
-			t.Fatal(err)
-		}
 		store := openStore(t, home)
+		target := t.TempDir()
+		state := filepath.Join(home, ".hive", "state")
+		if err := os.Remove(state); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(target, state); err != nil {
+			t.Fatal(err)
+		}
 		if err := store.ReadIn([]string{"tasks"}, "one", &map[string]any{}); err == nil || !strings.Contains(err.Error(), "store path invalid") {
 			t.Fatalf("ReadIn() error = %v; want store path invalid", err)
 		}

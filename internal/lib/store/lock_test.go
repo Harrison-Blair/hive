@@ -340,3 +340,22 @@ func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 		t.Fatalf("ReadIn() value = %d; want 7", generic["value"])
 	}
 }
+
+func TestWithLockRejectsDirectoryLock(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	lockPath := filepath.Join(store.home, ".hive", "state", "lock")
+	if err := os.Mkdir(lockPath, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	ran := false
+	err := store.WithLock(context.Background(), func(*LockedStore) error {
+		ran = true
+		return nil
+	})
+	if ran {
+		t.Fatal("callback ran with a directory at the lock path")
+	}
+	if err == nil || err.Error() != "store path invalid: "+lockPath {
+		t.Fatalf("WithLock() error = %v; want store path invalid for %s", err, lockPath)
+	}
+}

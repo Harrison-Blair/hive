@@ -41,6 +41,9 @@ func (s *Store) withLock(ctx context.Context, fn func(*LockedStore) error) error
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if err := s.checkHive(); err != nil {
+		return err
+	}
 	if err := s.checkRoot(); err != nil {
 		return err
 	}
