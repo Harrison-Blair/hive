@@ -58,10 +58,12 @@ Use these calls:
   record run under one lock.
 - `LockedStore.ReadIn`, `WriteIn`, and `Next`.
 - The collection `["tasks"]` for a task list.
-- `store.Read` or `LockedStore.ReadIn` for the lock-free record read of `show`.
+- `Store.Read` or `Store.ReadIn` for the lock-free record read of `show`.
+- `Store.ListIn` for a plain `task list` without `--ready`.
+- One `WithLock` handle for the `task list --ready` query and its dependency reads.
 
 Method matrix: `Store.Read` and `Store.ReadIn` take no lock. A standalone list
-takes no lock. A related read uses one `WithLock` callback. Each standalone
+(`Store.ListIn`) takes no lock. A related read uses one `WithLock` callback. Each standalone
 mutation uses bounded acquisition. A `LockedStore` method never acquires another
 lock. Do not read or write a task record file directly.
 
@@ -135,7 +137,7 @@ Incomplete states:
 
 ### AC4 Queries
 
-- `task list [--project ID] [--status S] [--ready]` prints one line for each task: ID, status, acting agent, title. The order is by project, then by number.
+- `task list [--project ID] [--status S] [--ready]` prints one line for each task: ID, status, acting agent, title. The order is by project, then by number. A plain list uses the lock-free `Store.ListIn`. The `--ready` query uses one `WithLock` handle for the task list and each dependency read.
 - `--ready` keeps each task with the status `created` whose dependencies all hold the status `verified`. A task without dependencies is ready.
 - `task show ID` prints each field and the brief path. `task show ID --brief` prints the brief text only. With `--json`, `result` holds the record and a `brief` field with the text.
 - An unknown task fails with `task not found: <id>`.
@@ -168,7 +170,7 @@ Incomplete states:
 
 - Proves: AC2, AC3.
 - Command: `go test ./internal/task/ -run 'TestTransition|TestVerify' -v`, red and green.
-- Expected: a table test covers each pair of the five statuses and the five commands `assign`, `complete`, `verify`, `verify --fail`, and `cancel`. The six rows of the status table move the record. Each of the other 19 pairs fails with `invalid transition`, and the record bytes before and after are equal. Three more cases: `complete` by another agent, `complete` without `--agent`, and `verify --fail` without `--reason`. Each fails and leaves the record unchanged. The verify tests cover the self-verification refusal and the replacement after a failed verification and a new completion.
+- Expected: a table test covers each pair of the five statuses and the five commands `assign`, `complete`, `verify`, `verify --fail`, and `cancel`. The six rows of the status table permit eight valid status/command pairs and move the record for each valid pair. The five statuses and five commands make 25 pairs. Each of the other 17 pairs fails with `invalid transition`, and the record bytes before and after are equal. Three more cases: `complete` by another agent, `complete` without `--agent`, and `verify --fail` without `--reason`. Each fails and leaves the record unchanged. The verify tests cover the self-verification refusal and the replacement after a failed verification and a new completion.
 
 ### V3 Command transcript
 

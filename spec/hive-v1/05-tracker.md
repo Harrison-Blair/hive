@@ -88,11 +88,11 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | ready | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | in progress | | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | ready | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | in progress | | |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
@@ -167,6 +167,19 @@ This clarification changes the checkpoint procedure:
 - A fresh independent agent checks each concrete implementation brief and each concrete verifier brief before dispatch. The check reports `pass` or `fail` with item IDs. It is not an approval.
 - A task worktree branches from a `dev` commit that contains the installed spec and each landed prerequisite. Require the CP1 PASS report separately.
 - A pending independent check of the installed spec is not an approval. Do not dispatch code until that check passes.
+
+### Dated correction and preflight gate: wave 2 text correction 02
+
+2026-10-18. This clarification records the correction after the installed-spec
+verification `wave2-spec-verify-02.md` returned FAIL on R01 through R08.
+
+- The correction pass is `wave2-spec-fix-prep-02.md`. Its corrected drafts are below `.hive/tmp/coordinator/plans/remaining-v1-r3/`.
+- T22 and T06 move from `ready` to `in progress` for preparation only. A worktree exists for each. No implementation started. T03, T04, T05, and T07 stay blocked.
+- The approved design is separate from code dispatch. `implementation_allowed` stays false until the installed task and the concrete brief of a task pass their own independent preflight. `implementation_started` stays false.
+- A task starts only after its own installed task file and its own concrete implementation brief pass an independent review. Unrelated blocked tasks stay blocked. T22 and T06 are the only tasks in preparation now.
+- The route is `pi opencode-go/deepseek-v4-flash:medium` for implementation and `pi openai-codex/gpt-6.1-sol:high` for verification.
+- A fresh independent preflight checks the corrected result before any source agent starts. No manual user approval wait applies.
+- The `ready` status in the install clarification above is historical. This dated section replaces it.
 
 ### CP1 home live
 

@@ -37,6 +37,39 @@ its `--json` output is JSON lines, the one exception to the envelope rule.
 | `internal/logs/follow.go` | New. Follow the current file from an offset and the day rollover. |
 | `internal/logs/render.go` | New. The text line for one event. |
 
+## Public API for T08
+
+T06 exposes the reader and the filter of `internal/logs` to T08. Record these
+signatures in `V1.md`. T08 imports these names.
+
+```go
+type Event struct {
+    Raw    []byte
+    Fields map[string]any
+}
+
+type Filter struct {
+    Level     string
+    Component string
+    TaskID    string
+    AgentID   string
+    RequestID string
+}
+
+func (f Filter) Match(e Event) bool
+
+type Offset struct {
+    Path string
+    Byte int64
+}
+
+type Reader struct { /* unexported fields */ }
+
+func NewReader(home string) *Reader
+func (r *Reader) Read(ctx context.Context, since time.Time) ([]Event, Offset, error)
+func (r *Reader) Follow(ctx context.Context, from Offset) (<-chan Event, <-chan error)
+```
+
 ## Requirements
 
 ### AC1 Read and filter
@@ -52,11 +85,11 @@ its `--json` output is JSON lines, the one exception to the envelope rule.
 ### AC2 Render
 
 - A text line: the local time with milliseconds, the level in four letters, the component, and the message. Each other field follows as `key=value` in key order.
-- With `--json` the command prints each matching event as its raw JSON line. Each stdout line parses as JSON.
+- With `--json` the command prints each matching event as its raw JSON line. Each stdout line parses as JSON. `logs --json` streams raw event lines and does not print a success envelope.
 
 ### AC3 Follow
 
-- `--follow` prints the matches, then continues from the offset after the last byte that the reader consumed. A line that arrives between the first print and the first poll prints too.
+- `--follow` prints the matches, then continues from the offset after the last byte that the reader consumed. The follower keeps each partial line between the initial snapshot and the follow start. A line that arrives between the first print and the first poll prints too.
 - The follower checks the file size every 500 milliseconds and prints each new line that matches. It keeps an incomplete line until its newline arrives.
 - At midnight the follower reads the rest of the old file. Then it moves to the new daily file within one second after its first line.
 - `SIGINT` ends the command with exit status 0. The transcript measures the child status, not the wrapper status. GNU `timeout` returns 124 by default, so use `timeout --preserve-status --kill-after=2s -s INT 2`, or inspect the child wait status directly.
@@ -106,6 +139,7 @@ timeout --preserve-status --kill-after=2s -s INT 2 ./hive --home "$HIVE_TMP" log
 ```
 
 - Expected: two text lines in the format of AC2, one parsed JSON event, and no line for the error level. Then one `?` line with `not json`. Then one JSON line on stdout and one `malformed line` diagnostic on stderr. The follow prints one line, waits, and ends with exit 0 on the signal. The measured status is the child status, not GNU timeout status 124.
+- Cleanup: remove only `$HIVE_TMP`. Do not remove the worktree `.hive/state`, `.hive/logs`, `.hive/tmp`, a report, or a log.
 
 ### V4 Gate
 

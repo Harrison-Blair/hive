@@ -127,15 +127,16 @@ lock. `WalkRecords` uses one `WithLock` callback.
 ### V2 Live ping
 
 - Proves: AC1.
-- Setup: `go build .`
-- Command, from a pane of the hive session:
+- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Export `HIVE_TMP=<absolute fixture path>`. Run from a pane of the hive session. Do not remove the worktree `.hive` directories.
+- Command:
 
 ```sh
-./hive --home "$PWD" --json doctor | head -c 2000
-grep '"method":"ping"' .hive/logs/"$(date +%F)".jsonl | tail -n 2
+./hive --home "$HIVE_TMP" --json doctor | head -c 2000
+grep '"method":"ping"' "$HIVE_TMP"/.hive/logs/"$(date +%F)".jsonl | tail -n 2
 ```
 
-- Expected: the herdr check has the status `ok` and a detail with `protocol 22` and the socket path. The two log lines are the `herdr request` and `herdr reply` events for `ping`, with the same `request_id`.
+- Expected: the herdr check has the status `ok` and a detail with `protocol 22` and the socket path. The two log lines are the `herdr request` and `herdr reply` events for `ping`, with the same `request_id`. The live herdr pane requirement stays. The fixture home holds the state and the log.
+- Cleanup: remove only `$HIVE_TMP`. Do not remove the worktree `.hive/state`, `.hive/logs`, `.hive/tmp`, a report, or a log.
 
 ### V3 Runner tests
 
@@ -163,6 +164,7 @@ env -u HERDR_SOCKET_PATH ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
 ```
 
 - Expected: the first run prints eight groups of lines and exit 0, or exit 1 with a `fail` line that explains why. The second run prints `fail herdr socket` with `/tmp/none.sock` and exit 1. The third prints `fail herdr socket` with `HERDR_SOCKET_PATH is not set` and exit 1. The fourth prints the envelope and exit 0.
+- Cleanup: remove only `$HIVE_TMP`. Do not remove the worktree `.hive/state`, `.hive/logs`, `.hive/tmp`, a report, or a log.
 
 ### V6 Gate
 

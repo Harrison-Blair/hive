@@ -54,7 +54,7 @@ lock.
 ### AC1 Scope and input
 
 - A scope is `home` or `project:<id>`. `home` resolves to the home root. `project:<id>` resolves to `projects/<id>/` and needs a registered project. Any other value fails with `bad scope: <value>`.
-- The scope directory and each Markdown path stay inside the home. Check the scope root, each ancestor, and the target with `Lstat`. Reject a static symbolic link or a wrong type before a read or a write. Hostile replacement between `Lstat` and `Open` stays deferred.
+- The scope directory and each Markdown path stay inside the home. Check the scope root, each ancestor, and the target with `Lstat`. Reject a static symbolic link or a wrong type before a read or a write. A static directory or symbolic link at `MEMORY.md` is a no-write refusal. Hostile replacement between `Lstat` and `Open` stays deferred.
 - Both commands read stdin up to 1 MiB and fail above it with `input too large`. The read has a deadline of 30 seconds. On expiry the command fails with `input timeout`. Both failures write nothing. The deadline is an explicit parameter of the reader, so a test can shorten it.
 
 ### AC2 Memory write
@@ -78,7 +78,8 @@ The rules in this task file are the sole authority for a worker or verifier. The
 safe order for a memory write is:
 
 1. Read stdin with the 1 MiB bound and the 30 second deadline. Check the name and
-   the frontmatter before the lock. Check the scope and the Markdown paths.
+   the frontmatter before the lock. Check the scope and the Markdown paths. A
+   static directory or symbolic link at `MEMORY.md` fails here with no write.
 2. Under one lock, read each existing memory file and check it. Write nothing on
    an invalid file.
 3. Write `<name>.md` with an atomic write. Effect: memory `created` for a new file
@@ -87,9 +88,11 @@ safe order for a memory write is:
 5. Write `MEMORY.md`. Effect: index `updated`.
 
 The memory file is the authority. The index is a derived file. A failure after
-the memory file leaves a stale index. The command reports `partial` with the
-actual failed phase and the memory effect. A later successful memory write
-regenerates the index. The command does not remove the memory file and does not
+the memory file leaves a stale index. For the partial-index test, inject an index
+write or rename failure after the successful static checks and the memory write.
+Do not use a static directory at `MEMORY.md` for this state. The command
+reports `partial` with the actual failed phase and the memory effect. A later
+successful memory write regenerates the index. The command does not remove the memory file and does not
 restore the old index. It returns a nil Go error for a partial outcome and builds
 an `output.Envelope` with outcome `partial`.
 
@@ -117,7 +120,8 @@ input write nothing.
 - Proves: AC1, AC2.
 - Command: `go test -race ./internal/memory/ ./internal/lib/scope/ -v`, red and green.
 - Expected: cases for each scope value and each frontmatter error. A 1 MiB plus one byte input fails with `input too large`. A pipe that sends no end of file fails with `input timeout` under a 100-millisecond deadline, and the directory stays unchanged. An existing file with a bad block fails with `memory file invalid`, and the previous index stays. After two writes the index has two entries in name order. A new memory file reports `created`. A replacement of the same name reports `updated`. Two OS processes, the test binary again with an environment flag, write two memories at the same time, and the final index holds both.
-- Expected: an index-write failure after the memory write gives `partial`, phase `index`. The memory file exists. The index is stale. A later write regenerates the index.
+- Expected: a static directory or symbolic link at `MEMORY.md` fails before the memory write and changes nothing. This is a no-write refusal, not the partial-index case.
+- Expected: an injected index write or rename failure after the memory write gives `partial`, phase `index`. A new memory file has effect memory `created`. A replacement has effect memory `updated`. The fact stays. The old index stays. A later successful write regenerates the index.
 - Expected: a static symbol link in the scope root, an ancestor, or a Markdown leaf fails before the read or write.
 
 ### V2 Handoff tests

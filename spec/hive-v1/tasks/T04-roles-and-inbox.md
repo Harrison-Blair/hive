@@ -78,7 +78,8 @@ T04 owns the narrow inbox render-failure path in `cmd/inbox` and
 - The pane is the `--pane` value, else `HERDR_PANE_ID`. With no pane the command fails with `no pane: run inside herdr or pass --pane`.
 - With the pane from `HERDR_PANE_ID`, hive records `HERDR_WORKSPACE_ID` and `HERDR_TAB_ID` when they exist. With an explicit `--pane`, hive leaves `workspace_id` and `tab_id` empty, because the inherited values can name another pane. T10 fills them from the herdr reply.
 - The name is the `--name` value, else by role: `coordinator`, `manager-<project>`, `worker-<project>-<n>`, `verifier-<project>-<n>`, `supervisor`. `n` comes from the counter `agent`, one for the home. A name must match `[a-z][a-z0-9_-]{0,31}`, the herdr rule. T01 bounds a project ID to 18 characters, so each default name with `n` below 10000 fits.
-- A generated worker or verifier name writes the counter `agent` first and the agent record second. A counter-only failure is `partial`, phase `agent`, with the counter effect known. A gap on retry is safe. An explicit name writes one record and no counter.
+- A generated worker or verifier name writes the counter `agent` first and the agent record second. A counter-only failure is `partial`, phase `agent`, with the counter effect known. A gap on retry is safe. An explicit worker or verifier name writes one record and no counter. An explicitly named singleton still writes its agent record and the claim.
+- The new agent record write has effect agent `created` when the file is new. A retry that replaces the matching orphan record has effect agent `updated`.
 - The record key is the name for a worker or a verifier. For a singleton role it is `<name>-g<generation>`, so a stale registration and the live one both exist. The record lives at `agents/<key>.json`.
 - The final record key check runs under the same lock as the name and pane checks. A collision with another claim or agent record fails without a write. The singleton exception applies only to replacement of the same singleton claim. An orphan retry needs the same intended identity, claim, and generation. Old generation records stay.
 - A name that a record with the status `live` holds fails with `agent exists: <name>`, except for a singleton role.
@@ -124,7 +125,8 @@ The safe order for a singleton register is:
    generation from the claim. Write nothing on a failure.
 4. Mark the previous holder record `stale` when it exists. Effect: agent `stale`.
 5. Write the new agent record with the key `<name>-g<generation>`. Effect: agent
-   `created`.
+   `created` for a new file or agent `updated` for a matching orphan
+   replacement.
 6. Write `claims/<key>.json`. Effect: claim `updated`. This write is the commit
    marker.
 
@@ -139,21 +141,52 @@ Incomplete states:
 
 - The phase names the write that failed. The unchanged stale claim goes in
   `error` or `result`, not in `effects`.
+- A failed stale-mark write changes nothing. It reports `failed` with no effect.
+  The old claim and its live holder stay.
+- A failed new-agent write after the stale mark reports `partial`, phase `agent`.
+  The old claim names a stale record. The role is vacant. A retry with the same
+  intended identity, claim, and generation writes the new record and the claim.
+- A failed claim write reports `partial`, phase `claim`. The new record is live.
+  The old claim names a stale record. A retry with the same intended identity,
+  claim, and generation updates the matching orphan record with effect agent
+  `updated`, then writes the claim. Old generation records stay.
 - A reader resolves a singleton role through the claim. A live agent record
   without the claim does not hold the role.
-- A retry with a new pane can replace the orphan record with the same generation
-  when its intended identity, claim, and generation agree. It then writes the
-  claim. It does not remove the old record.
 - A generated name writes the counter before the agent record. A counter-only
   failure is `partial`, phase `agent`, with a counter effect and a safe gap.
-  An explicit name has no counter and no partial state.
+- An explicit worker or verifier name has no counter and no partial state. An
+  explicitly named singleton still writes its agent record and the claim. The
+  singleton rules above apply to it.
 
-The safe order for `inbox send` is counter, then record. A failure after the
-counter leaves a sequence gap and no record. A gap is safe.
+The safe order for `inbox send` is counter, then record:
+
+1. Get the next value of the counter `inbox:<key>`. Effect: counter `updated`.
+2. Write `inbox/<key>/<seq>.json`. Effect: inbox `created`. This write is the
+   commit marker.
+
+A failure before the counter reports `failed` with no effect. A failure after
+ the counter reports `partial`, phase `record`, with the counter effect. The
+ sequence gap is safe. No record exists.
 
 The safe order for `inbox --role` is list, mark each record under one lock, then
-print after the lock. A partial consume reports each marked record. The command
-does not roll back a mark.
+print after the lock. Each mark has effect inbox `consumed`.
+
+- No unread record: outcome `ok`, no effect.
+- First mark fails: outcome `failed`, phase `consume`, no effect. Each record
+  stays unread.
+- Some marks complete: outcome `partial`, phase `consume`, one `consumed` effect
+  for each marked record. Each marked record stays read. Each unmarked record
+  stays unread. The command prints each marked record.
+- Every mark completes: outcome `ok`, one `consumed` effect for each record. The
+  command prints each record.
+- A failed stdout after every mark reports outcome `partial`, phase `consume`.
+  The marks stay. The command does not roll back a mark.
+
+A partial outcome returns a nil Go error. The command builds an
+`output.Envelope` with outcome `partial`, the actual phase, each completed
+effect, the remaining unread records in `result` for a consume, and one error
+string. The exit status is 1. `cmd/common.Run` replaces a non-nil error with
+outcome `failed`.
 
 ### AC5 Gate
 
@@ -177,15 +210,21 @@ does not roll back a mark.
 - Command: `go test -race ./internal/agent/ -v`, red and green.
 - Expected: cases for each role rule, an unregistered project, the name format, and a duplicate live name. A manager with a registered project and no task succeeds. A worker or a verifier with no task fails. One case registers a second live role on the same pane and fails. Two coordinator registers on different panes get generations 1 and 2, the first becomes stale, and both records exist under `coordinator-g1` and `coordinator-g2`. A third coordinator register on the pane of the second succeeds and marks the second stale. Twenty parallel worker registers get twenty different names.
 - Expected: a cross-claim name collision fails without a write. A worker name that collides with a generation key fails without a write. The singleton exception applies only to the same claim. Old generation records stay.
-- Expected: a generated name whose agent write fails gives `partial`, phase `agent`, and a counter effect. A retry permits a gap. An explicit name has no counter.
-- Expected: a failed claim write leaves the old record stale and the new record live. The claim is absent or old. The outcome is `partial` with phase `claim` and names each completed effect. The unchanged stale claim is in `error` or `result`, not in `effects`. Skip this case when the test runs as root.
+- Expected: a generated name whose agent write fails gives `partial`, phase `agent`, and a counter effect. A retry permits a gap. An explicit worker or verifier name has no counter.
+- Expected: an injected failure of the stale-mark write leaves the old claim and its live holder unchanged. The outcome is `failed` with no effect.
+- Expected: an injected failure of the new-agent write after the stale mark gives `partial`, phase `agent`, and effect agent `stale`. The role is vacant. A retry with the same intended identity, claim, and generation writes the new record and the claim.
+- Expected: an injected failure of the claim write leaves the old record stale and the new record live. The claim is absent or old. The outcome is `partial` with phase `claim` and names each completed effect. The unchanged stale claim is in `error` or `result`, not in `effects`. A retry with the same intended identity, claim, and generation updates the matching orphan record with effect agent `updated`, then writes the claim. Old generation records stay.
+- Expected: the failure cases use a deterministic write-failure seam in the record writer. Do not use a directory permission or a root-only skip.
 
 ### V2 Inbox library tests
 
 - Proves: AC4.
 - Command: `go test -race ./internal/lib/inbox/ -v`, red and green.
 - Expected: append gives sequence 1, 2, 3. Inbox IDs `1`, `2`, `10`, and a 20-digit numeric name list and order correctly. `Unread` returns the three records, `Consume` marks them and removes them from `Unread`, and the counts match. Parallel appends from several goroutines lose no record. Two parallel consumers of 100 records get disjoint sequence numbers, and together they get each record once. The keys `../x`, `A`, and an empty string fail.
-- Expected: a consume failure after the first mark leaves the first record read and the second unread. The outcome is `partial`.
+- Expected: zero unread records give outcome `ok` and no effect. A failure of the first mark gives outcome `failed`, phase `consume`, and no effect. Each record stays unread.
+- Expected: a consume failure after the first mark leaves the first record read and the second unread. The outcome is `partial`, phase `consume`. The effects name the first record as `consumed`. The result names the remaining unread records.
+- Expected: an append counter success then record failure gives `partial`, phase `record`, with the counter effect. The sequence gap stays. No record exists. A retry appends the next sequence.
+- Expected: a partial append or consume returns a nil Go error and exit status 1. The envelope has outcome `partial`, the actual phase, each completed effect, and one error string.
 - Expected: a failed stdout after successful marks leaves each mark in place. The stderr report gives each consumed sequence ID and `hive inbox --role KEY --all`. The exit status is 1. The command does not promise a valid JSON object. The command never marks a record unread and never resends it.
 - Expected: a grouped counter test calls `LockedStore.Next`, never a nested `Store.Next`.
 
