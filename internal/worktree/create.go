@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/Harrison-Blair/hive/internal/lib/gitx"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
@@ -198,7 +199,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	}
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
 	logEffects(logger, commandCreate, project.ID, options.Task, effects)
-	updated, phase, persistErr := persistCreate(registry, project.ID, options.Task, &worktree, repoWorkspaceID)
+	updated, phase, persistErr := persistCreate(registry, project, options.Task, &worktree, repoWorkspaceID)
 	if persistErr != nil {
 		message := createPersistMessage(phase, persistErr)
 		logFailure(logger, commandCreate, project.ID, options.Task, phase, message)
@@ -324,7 +325,7 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 	if worktreeProven {
 		persisted = &worktree
 	}
-	updated, phase, persistErr := persistCreate(registry, project.ID, taskID, persisted, repoWorkspaceID)
+	updated, phase, persistErr := persistCreate(registry, project, taskID, persisted, repoWorkspaceID)
 	if persistErr != nil {
 		message += "; " + createPersistMessage(phase, persistErr)
 		logFailure(logger, commandCreate, project.ID, taskID, phase, message)
@@ -432,7 +433,7 @@ func findWorktreeWorkspace(before, after []herdr.WorkspaceInfo, repoPath, worktr
 	return linked, repoID, ambiguous
 }
 
-func persistCreate(registry *store.Store, projectID, taskID string, worktree *records.Worktree, repoWorkspaceID string) (records.Task, string, error) {
+func persistCreate(registry *store.Store, project records.Project, taskID string, worktree *records.Worktree, repoWorkspaceID string) (records.Task, string, error) {
 	var updated records.Task
 	phase := ""
 	err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
@@ -448,7 +449,7 @@ func persistCreate(registry *store.Store, projectID, taskID string, worktree *re
 				if record.ID != taskID {
 					return nil, fmt.Errorf("task record changed: %s", record.ID)
 				}
-				if record.Project != projectID {
+				if record.Project != project.ID {
 					return nil, fmt.Errorf("task record changed: project %s", record.Project)
 				}
 				if record.Worktree != nil {
@@ -464,16 +465,22 @@ func persistCreate(registry *store.Store, projectID, taskID string, worktree *re
 			}
 		}
 		if repoWorkspaceID != "" {
-			if err := locked.UpdateIn([]string{"projects"}, projectID, func(raw json.RawMessage) (json.RawMessage, error) {
+			if err := locked.UpdateIn([]string{"projects"}, project.ID, func(raw json.RawMessage) (json.RawMessage, error) {
 				if len(raw) == 0 {
-					return nil, fmt.Errorf("project not found: %s", projectID)
+					return nil, fmt.Errorf("project not found: %s", project.ID)
 				}
 				var record records.Project
 				if err := json.Unmarshal(raw, &record); err != nil {
-					return nil, fmt.Errorf("record invalid: %s", projectID)
+					return nil, fmt.Errorf("record invalid: %s", project.ID)
 				}
-				if record.ID != projectID {
+				if record.ID != project.ID {
 					return nil, fmt.Errorf("project record changed: %s", record.ID)
+				}
+				if !samePath(record.Path, project.Path) {
+					return nil, fmt.Errorf("project record changed: path %s", record.Path)
+				}
+				if record.RepoWorkspaceID != project.RepoWorkspaceID && record.RepoWorkspaceID != repoWorkspaceID {
+					return nil, fmt.Errorf("project record changed: repo workspace %s", record.RepoWorkspaceID)
 				}
 				record.RepoWorkspaceID = repoWorkspaceID
 				return json.Marshal(record)
@@ -610,5 +617,9 @@ func boundLogText(text string) (string, bool) {
 	if len(text) <= maxLogText {
 		return text, false
 	}
-	return text[:maxLogText], true
+	cut := maxLogText
+	for cut > 0 && !utf8.RuneStart(text[cut]) {
+		cut--
+	}
+	return text[:cut], true
 }

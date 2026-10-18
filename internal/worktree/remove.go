@@ -246,7 +246,7 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "removed"})
 	logEffect(logger, commandRemove, project.ID, options.Task, "worktree", path, "removed")
 
-	updated, err := persistRemoved(registry, project.ID, options.Task, path, branch)
+	updated, err := persistRemoved(registry, project.ID, options.Task, path, branch, task.Worktree.WorkspaceID, task.Worktree.TabID, task.Worktree.RootPane)
 	if err != nil {
 		message := "persist worktree removal: " + oneLine(err.Error())
 		logFailure(logger, commandRemove, project.ID, options.Task, "task", message)
@@ -281,7 +281,7 @@ func worktreeRemoveFailure(result *run.Result) string {
 	return "git worktree remove: " + line
 }
 
-func persistRemoved(registry *store.Store, projectID, taskID, path, branch string) (records.Task, error) {
+func persistRemoved(registry *store.Store, projectID, taskID, path, branch, workspaceID, tabID, rootPane string) (records.Task, error) {
 	var updated records.Task
 	err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		return locked.UpdateIn([]string{"tasks"}, taskID, func(raw json.RawMessage) (json.RawMessage, error) {
@@ -303,6 +303,12 @@ func persistRemoved(registry *store.Store, projectID, taskID, path, branch strin
 			}
 			if record.Worktree.Path != path || record.Worktree.Branch != branch {
 				return nil, fmt.Errorf("task worktree changed: %s", record.Worktree.Path)
+			}
+			currentTopology := record.Worktree.WorkspaceID + "\x00" + record.Worktree.TabID + "\x00" + record.Worktree.RootPane
+			capturedTopology := workspaceID + "\x00" + tabID + "\x00" + rootPane
+			clearedTopology := record.Worktree.WorkspaceID == "" && record.Worktree.TabID == "" && record.Worktree.RootPane == ""
+			if currentTopology != capturedTopology && !clearedTopology {
+				return nil, fmt.Errorf("task worktree changed: topology %s/%s/%s", record.Worktree.WorkspaceID, record.Worktree.TabID, record.Worktree.RootPane)
 			}
 			if record.Worktree.RemovedAt != "" {
 				return nil, fmt.Errorf("task worktree already removed: %s", record.Worktree.RemovedAt)
