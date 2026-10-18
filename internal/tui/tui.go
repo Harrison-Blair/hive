@@ -375,12 +375,12 @@ func (r *guardedReader) Read(data []byte) (int, error) {
 	return n, err
 }
 
-type guardedWriter struct {
+type guardedOutput struct {
 	out   io.Writer
 	guard *streamGuard
 }
 
-func (w *guardedWriter) Write(data []byte) (int, error) {
+func (w *guardedOutput) Write(data []byte) (int, error) {
 	n, err := w.out.Write(data)
 	if err == nil && n != len(data) {
 		err = io.ErrShortWrite
@@ -397,12 +397,36 @@ func (w *guardedWriter) Write(data []byte) (int, error) {
 	return n, err
 }
 
+// Read and Close keep the term.File shape for the installed renderer. The
+// renderer uses Fd to detect a terminal and to get its size.
+func (w *guardedOutput) Read(data []byte) (int, error) {
+	if reader, ok := w.out.(io.Reader); ok {
+		return reader.Read(data)
+	}
+	return 0, errors.New("tui: output is not readable")
+}
+
+func (w *guardedOutput) Close() error {
+	if closer, ok := w.out.(io.Closer); ok {
+		return closer.Close()
+	}
+	return nil
+}
+
+func (w *guardedOutput) Fd() uintptr {
+	if file, ok := w.out.(fdHolder); ok {
+		return file.Fd()
+	}
+	return ^uintptr(0)
+}
+
 type fdHolder interface {
 	Fd() uintptr
 }
 
-// guardReader and guardWriter keep a terminal file unwrapped, so the terminal
-// detection and raw mode of Bubble Tea stay unchanged.
+// guardReader keeps a terminal file unwrapped, so the input raw mode of Bubble
+// Tea stays unchanged. guardWriter keeps the Fd of a file writer, so terminal
+// detection and size stay unchanged.
 func guardReader(in io.Reader, guard *streamGuard) io.Reader {
 	if _, ok := in.(fdHolder); ok {
 		return in
@@ -411,8 +435,5 @@ func guardReader(in io.Reader, guard *streamGuard) io.Reader {
 }
 
 func guardWriter(out io.Writer, guard *streamGuard) io.Writer {
-	if _, ok := out.(fdHolder); ok {
-		return out
-	}
-	return &guardedWriter{out: out, guard: guard}
+	return &guardedOutput{out: out, guard: guard}
 }
