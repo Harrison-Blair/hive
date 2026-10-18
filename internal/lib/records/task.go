@@ -46,7 +46,16 @@ type Worktree struct {
 }
 
 // Delivery holds the delivery fields of a task. T12 fills them.
-type Delivery struct{}
+type Delivery struct {
+	Mode     string `json:"mode"`
+	Target   string `json:"target"`
+	Grant    string `json:"grant"`
+	Commit   string `json:"commit"`
+	Pushed   bool   `json:"pushed"`
+	PRURL    string `json:"pr_url,omitempty"`
+	Evidence string `json:"evidence,omitempty"`
+	At       string `json:"at"`
+}
 
 // ValidTaskID reports whether id has the task form <n>-<slug>.
 func ValidTaskID(id string) bool {
