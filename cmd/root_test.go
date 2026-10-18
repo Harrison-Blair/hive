@@ -11,8 +11,8 @@ func TestVersionSubcommandPrintsVersion(t *testing.T) {
 	if err := ExecuteWithArgs([]string{"version"}, strings.NewReader(""), &out); err != nil {
 		t.Fatalf("version: %v", err)
 	}
-	if got := out.String(); got != "dev\n" {
-		t.Fatalf("output = %q, want %q", got, "dev\n")
+	if got := out.String(); !strings.HasPrefix(got, "hive dev (commit unknown, go") || !strings.HasSuffix(got, ")\n") || strings.Count(got, "\n") != 1 {
+		t.Fatalf("output = %q, want one version line", got)
 	}
 }
 
