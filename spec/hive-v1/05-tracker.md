@@ -2380,7 +2380,7 @@ edit permission.
 | `internal/lib/records/claim.go` | T04, T15 | One field line for each task. Keep each line. |
 | `internal/lib/gitx/gitx.go` | T09, T12 | One helper for each task. Keep each helper. |
 | `internal/lib/run/run.go` | T05, T12 | T05 owns the bounded runner. T12 changes only `Command` to honor the caller context deadline and adds the deadline test. Keep the 30-second default and each other line. |
-| `internal/agent/spawn.go` | T13, T14 | One case line for each role. Keep each line. |
+| `internal/agent/spawn.go` | T13, T14, T19 | One case line for each role. Keep each line. T19 extends only `captureIdentity` to match the argv basename. Keep each other line. |
 | `internal/agent/doc.go` | T10, T13, T14, T15 | One map line for each new file. Keep each line. |
 | `internal/lib/harness/registry.go` | T16, T17, T18, T19 | One registry line for each profile. Keep each line. |
 | `internal/lib/harness/doc.go` | T10, T16, T17, T18, T19 | One map line for each profile. Keep each line. |

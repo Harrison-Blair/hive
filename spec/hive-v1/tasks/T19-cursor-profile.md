@@ -39,6 +39,7 @@ the user skips it.
 | `internal/lib/harness/cursor_test.go` | New. |
 | `internal/lib/harness/registry.go` | Add one line. |
 | `internal/lib/harness/doc.go` | Add the map line. |
+| `internal/agent/spawn.go` (shared) | Extend `captureIdentity` to also select a candidate whose `Argv0` or `Argv[0]` basename is a profile process name. Keep each other line. |
 
 ## Requirements
 
@@ -51,6 +52,7 @@ the user skips it.
 - The start timeout and the ready timeout are two times the measured start. The floor is 120000 ms and the ceiling is 300000 ms. herdr rejects a start timeout outside `(3000, 300000]` with `invalid_agent_timeout`. A start timeout below the real start makes herdr drop the name with no error, so the floor protects the spawn. When two times the measured start exceeds 300000 ms, the profile uses 300000 ms and the worker reports it to the merger.
 - The profile passes `harness.Check` of T10. That check covers the timeout rules above.
 - The profile file has a comment for each dialog that blocks the first start, such as a trust or a login dialog. Hive reports `blocked` and does not answer a dialog.
+- `captureIdentity` selects a candidate when `Name`, `Argv0` basename, or `Argv[0]` basename is in `ProcessNames()`. A name match and an argv match that point to two processes is `multiple foreground processes have a profile name`.
 
 ### AC2 Live spawn
 
@@ -76,7 +78,7 @@ the user skips it.
 
 - Proves: AC1.
 - Command: `go test ./internal/lib/harness/ -run 'TestCursor|TestLookup' -v`, red and green.
-- Expected: the arguments with and without a model, the extra arguments, and a model value with bracket parameters as one unchanged argument. Also a start timeout above 3000 ms and at most 300000 ms, and the lookup by kind. The process-name test accepts `cursor-agent` and rejects `node`, `python`, `sh`, and `bash`.
+- Expected: the arguments with and without a model, the extra arguments, and a model value with bracket parameters as one unchanged argument. Also a start timeout above 3000 ms and at most 300000 ms, and the lookup by kind. The process-name test accepts `cursor-agent` and rejects `node`, `python`, `sh`, and `bash`. Hive selects a candidate whose `Name` is not a profile name but whose `Argv[0]` basename is a profile name. Hive does not select a candidate whose name and argv both differ from the profile names.
 
 ### V2 Live transcript
 
@@ -121,7 +123,7 @@ rm -rf "$FIX"
 
 ## Out of scope
 
-- Changes to the spawn core. A quirk that needs one goes to the merger as a brief change request.
+- The spawn core changes only in `captureIdentity`, to match the argv basename of a wrapper launcher. Every other spawn-core behavior stays.
 
 ## Changes
 
@@ -135,3 +137,7 @@ print the reply text.
 `t18-verify-01.md`, blocker B01 and observation N03. Read the output from the
 pane. Set the state directory of the child harness inside `$FIX` and record the
 SHA256 of that directory before and after the run.
+2026-10-18. Authorize the argv identity match for T19. The verification report
+`t19-verify-01.md` B01 shows that the Cursor launcher reports `MainThread` while
+its argv holds `cursor-agent`. T10 matches the process name only. This entry
+amends T10 and lets `captureIdentity` match the argv basename.
