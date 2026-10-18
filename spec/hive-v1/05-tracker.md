@@ -88,12 +88,12 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | landed | opencode-go/deepseek-v4.1-flash | 2026-10-17 |
-| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | verified | openai-codex/gpt-6.1-sol | |
-| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | blocked | | |
-| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | blocked | | |
-| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | blocked | | |
-| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | verified | openai-codex/gpt-6.1-sol | |
-| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | blocked | | |
+| [T22](tasks/T22-store-operations.md) | store operations | 2 | strong | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
+| [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, T22, CP1 | ready | | |
+| [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, T22, CP1 | ready | | |
+| [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | ready | | |
+| [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
+| [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | ready | | |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | blocked | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | blocked | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05 | blocked | | |
@@ -314,6 +314,44 @@ worktrees are clean.
 source.
 - T22 and T06 stay `verified` and not landed. T03, T04, T05, and T07 stay
 `blocked` on T22. No other status, dependency, or model route changes.
+
+### Dated landing receipt: wave 2 T22 and T06
+
+2026-10-18. This section records the landing of T22 and T06 on `dev`. It changes
+only the status of these tasks.
+
+- The merger landed `task/T22-store-operations` first at verification commit
+`0217df27`. The merge commit is `0d0c9d4e`. The subject is `merge(T22): land
+store operations`.
+- The merger landed `task/T06-logs-command` second at verification commit
+`b8006a86`. The merge commit is `84da9819`. The subject is `merge(T06): land
+logs command`.
+- Both merges used `--no-ff`. Neither merge had a conflict.
+- The combined root passes the gate. `gofmt -l` prints nothing. `go vet ./...`
+exits 0. `golangci-lint run --allow-serial-runners ./...` reports `0 issues.`
+`go test -race -count=1 ./...` passes each package.
+- Each task-owned source path and evidence path in `dev` equals its verification
+tip. The shared `cmd/root.go` has only the T06 import line and the T06
+registration line.
+- The push reached `origin/dev` at `84da9819` without force.
+- The coordinator archived the full T22 worktree at
+`.hive/tmp/coordinator/archives/T22-0217df27/`. It archived the full T06 worktree
+at `.hive/tmp/coordinator/archives/T06-b8006a86/`. Each archive excludes the
+`.git` pointer file. Each archive manifest equals the original manifest.
+- `herdr worktree remove --workspace wA4` removed workspace `wA4`, pane
+`wA4:p1`, terminal `term_65e161d77e9db10`, and the T22 worktree.
+`herdr worktree remove --workspace wA5` removed workspace `wA5`, pane `wA5:p1`,
+terminal `term_65e161da1896e11`, and the T06 worktree. Neither command used
+force.
+- Both branches `task/T22-store-operations` and `task/T06-logs-command` stay at
+their verification commits, local and remote.
+- The hive workspace `w9X` and the T01 follow-up workspace `wA6` stay.
+- The T22 and T06 rows show `landed` with verifier `openai-codex/gpt-6.1-sol`
+and date `2026-10-18`.
+- T03, T04, T05, and T07 move from `blocked` to `ready`. Each prerequisite is
+landed and CP1 passed.
+- T08 stays `blocked` on T04.
+- No other status, dependency, or model route changes.
 
 ### CP1 home live
 
