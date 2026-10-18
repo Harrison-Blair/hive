@@ -379,13 +379,22 @@ func finishVerifierSpawn(ctx context.Context, home string, choice *taskChoice, r
 	return envelope
 }
 
-// promptTaskAgent sends the first prompt of one task agent without a wait.
+// promptTaskAgent sends the first prompt of one task agent without a wait. A
+// launch that is still pending gives agent_not_ready. The function waits for
+// the interactive agent and sends the prompt again.
 func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	prompt := verifierPrompt(home, choice.Task.ID)
 	if record.Role != "verifier" {
 		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch)
 	}
-	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: choice.PaneID, Text: prompt}, herdr.WithLogger(logger)); err != nil {
+	params := herdr.AgentPromptParams{Target: choice.PaneID, Text: prompt}
+	_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+	if err != nil && isHerdrCode(err, "agent_not_ready") {
+		if waitErr := waitAgentInteractive(ctx, choice.PaneID, logger); waitErr == nil {
+			_, err = herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+		}
+	}
+	if err != nil {
 		envelope.Outcome = "partial"
 		envelope.Phase = "prompt"
 		envelope.Error = err.Error() + "; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
@@ -393,6 +402,31 @@ func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, recor
 	}
 	envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
 	return envelope
+}
+
+// promptReadyTimeout bounds the wait for one interactive agent.
+const promptReadyTimeout = 60 * time.Second
+
+// waitAgentInteractive waits until herdr reports an interactive agent.
+func waitAgentInteractive(ctx context.Context, paneID string, logger *slog.Logger) error {
+	deadline := time.Now().Add(promptReadyTimeout)
+	for {
+		info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+		if err == nil && info.Interactive {
+			return nil
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if time.Now().After(deadline) {
+			return errors.New("agent is not interactive")
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(250 * time.Millisecond):
+		}
+	}
 }
 
 // assignTask assigns one task under the store lock. A changed status fails with

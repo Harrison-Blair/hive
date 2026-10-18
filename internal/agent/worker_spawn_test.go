@@ -520,7 +520,7 @@ func TestWorkerSpawnPromptFailureIsPartial(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
-	fake.failure("agent.prompt", "agent_not_ready", "agent is not ready")
+	fake.failure("agent.prompt", "agent_prompt_stalled", "the prompt did not settle")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
@@ -790,5 +790,41 @@ func TestVerifierSpawnTopologyWriteFailureCleansUp(t *testing.T) {
 	}
 	if len(fake.recorded("workspace.close")) != 1 {
 		t.Fatalf("workspace.close requests = %d; want 1", len(fake.recorded("workspace.close")))
+	}
+}
+
+func workerAgentInteractiveJSON(paneID, workspaceID, tabID, status, name string) string {
+	return `{"type":"agent_info","agent":{"pane_id":"` + paneID + `","terminal_id":"term_` + paneID + `","workspace_id":"` + workspaceID + `","tab_id":"` + tabID + `","agent_status":"` + status + `","focused":false,"revision":2,"name":"` + name + `","interactive_ready":true}}`
+}
+
+func TestWorkerSpawnWaitsForInteractiveAgent(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
+	fake.result("workspace.get", workerWorkspaceGetJSON("w5", "1-worker-demo", repo, worktree))
+	fake.result("agent.start", workerAgentStartJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
+	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
+	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
+	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	fake.failure("agent.prompt", "agent_not_ready", "agent worker-1 is not an active named agent")
+	fake.result("agent.get", workerAgentInteractiveJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
+	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if len(fake.recorded("agent.prompt")) != 2 {
+		t.Fatalf("agent.prompt requests = %d; want 2", len(fake.recorded("agent.prompt")))
+	}
+	if task := readTaskRecord(t, home, "1-worker-demo"); task.Status != "assigned" {
+		t.Fatalf("task = %#v; want assigned", task)
 	}
 }
