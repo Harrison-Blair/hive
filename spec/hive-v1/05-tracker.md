@@ -108,7 +108,7 @@ flowchart TD
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 3f607ba |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
-| [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | ready | | |
+| [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 976d273 |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
 
@@ -1674,6 +1674,35 @@ checkpoint.
   Claude child no private configuration, and T13 proved the Claude pane path.
   The requested model is `opencode-go/deepseek-v4.1-flash:medium`. Pi records
   `deepseek-v4.1-flash` at level `high`.
+- CP3, CP4, and CP5 stay open.
+
+### Dated landing: T19
+
+2026-10-18. This section records the T19 landing. It passes no checkpoint.
+
+- T19 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T19 base tip is `cd7602f`. The verified T19 tip is `bb2c2fa`.
+- The T19 merge commit is `976d273`. Its subject is
+  `merge(T19): land the cursor profile`. Its first parent is `cd7602f`. Its
+  second parent is `bb2c2fa`. The merge had no conflict.
+- The combined gate ran on the uncommitted T19 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T19 push moved `origin/dev` from `cd7602f` to `976d273`.
+- The T19 verifier reports are
+  `.hive/tmp/coordinator/reports/t19-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t19-verify-02.md`. Report 01 fails on B01 and
+  B02. Report 02 passes the B01 fix after the `bb2c2fa` commit.
+- The amended T19 brief authorizes the argv identity match. Commit `ce4fe00`
+  adds the `captureIdentity` argv basename rule to the brief and to this file.
+  The verified tip contains that commit.
+- AC2 stays limited. The Cursor spawn reaches `idle` with outcome `ok`, and
+  the capture records the identity. The live reply is `BLOCKED`. The account
+  has no usable quota for `composer-2.5`, and the `auto` control hits the
+  usage limit. AC2 needs a paid Cursor account.
+- Report 02 records N06. The verifier and the fix worker are from the same
+  model family, and the different-family qualification stays unmet.
 - CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
