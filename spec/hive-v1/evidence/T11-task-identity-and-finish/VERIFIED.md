@@ -187,3 +187,159 @@ Recommendation: return every open finding for a bounded fix and fresh independen
 This verdict passes no future checkpoint and claims no native model interoperability result.
 
 END VERIFIER T11-task-identity-and-finish t11-verify-01
+
+# T11 independent fix verification 02
+
+Date: 2026-10-18.
+Pass: `t11-verify-02`.
+Verdict: **FAIL**. T11-IO-F03 remains open. No landing or future checkpoint acceptance occurs.
+Route: external Pi, `openai-codex/gpt-6.1-sol:high`.
+Observed provider, model, and reasoning: `openai-codex`, `gpt-6.1-sol`, `high`.
+Session: `01a14e9e-9e50-75a9-8ca7-af81d1a42680`.
+
+## Identities and scope
+
+| Item | Exact SHA |
+| --- | --- |
+| Tested worker and sole verdict parent | `0124ab636ffa62dfcb41256801154970528fdb01` |
+| Fix production | `44235d664f553c94f3039f8080ec0a534a34fe20` |
+| Fix test-first | `6dce8b53131bc96c3b0a419589284cce65288ceb` |
+| First failed verdict | `4d052b28fb71e486bf2c816260bf3cb3cd347b41` |
+| Original worker | `129b82f2afba5f5c251bc518806193d319831b2c` |
+| Activation base | `eded8f9cb09208bfdc81334870e86479e746c183` |
+
+Branch: `task/T11-task-identity-and-finish`.
+Initial local, tracking, and direct remote task tips equal the tested worker. The worktree is clean.
+The saved fix brief has SHA256 `4ac7d09e16e85d575dc0861cfdc0051f443ee05359749f0974baf8fa3c0c0470`.
+Its worktree path is `.hive/tmp/worker/t11-fix-01-captures-1792319830-988476/brief.txt`.
+That concrete brief controls this check. The stale template grants no finish fields or replay.
+I read both complete first-review reports and both complete worker reports through their final markers.
+I read the current task, T03/T04 requirements, V1 to V4, ACTIVATION, FIX-01, and the old VERIFIED text.
+The exact retained probes, reproduction captures, and new red/green/CLI/gate captures remain unchanged.
+
+Full report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t11-verify-02.md`.
+Captures: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t11-verify-02-captures/`.
+Capture names below refer to that directory.
+The report gives the exact verdict SHA and final direct remote SHA after delivery.
+
+I inspected the full activation range and the complete first-verdict-to-worker diff.
+The activation range has 32 paths: 15 source, 10 test, and seven evidence paths.
+The fix range has 14 paths: seven source, six test, and FIX-01.
+No common, output, store, logger, dependency, baseline, task brief, tracker, source05, or root source change occurs.
+ACTIVATION remains the bounded historical evidence exception. The old V3 literal whitespace exception stays historical.
+`ResolvedActor` is in-memory plumbing. No new persisted record or JSON envelope field occurs.
+No finish sequence, finish key, journal, rollback, or replay mechanism occurs.
+
+## V1 to V4 and fixed findings
+
+| Item | Result | Basis |
+| --- | --- | --- |
+| V1 / AC1 | PASS | Selected claims, static paths, all identity routes, and task registration pass. |
+| V2 / AC2 | FAIL | Direct library finish logs still lose the resolved actor. |
+| V3 / AC2, AC3 command scope | PASS | The required transcript and retained real CLI matrices pass. The library failure remains. |
+| V4 / AC4 | PASS | The full actual-worktree gate and TestSTE pass. |
+
+| ID | Disposition | Independent result |
+| --- | --- | --- |
+| P-F01 | CLOSED | A selected cross-claim alias refuses. The legitimate holder still resolves. |
+| T11-IO-F04 | CLOSED | Renamed holder/claim files refuse on all routes. Default consume preserves the unread record. |
+| P-F02 | CLOSED | Key, name, pane, and history complete succeed. Acting attribution stays exact. Self-verification aliases refuse. |
+| P-F03 | CLOSED | All three actual counter-failure retries refuse without writes and include all three inspection commands. |
+| T11-IO-F01 | CLOSED | Explicit invalid send creates no state directory. Resolved sender checks stay under the held handle. |
+| T11-IO-F02 | CLOSED | Default refusals log the real error without an invented role or message body. |
+| T11-IO-F03 | OPEN | Command logs pass. Direct library pane/history calls still omit the resolved actor ID. |
+| T11-IO-F05 | CLOSED | Fresh-worker rework reports the current worker on short/error stdout. |
+| T-W01 | CLOSED | Removing diagnostic quoting makes the restored control-bearing assertion fail. Restored source passes. |
+
+F04 is one finding. No finding closes from a worker claim alone.
+
+## T11-IO-F03 retained failure
+
+Location: `internal/task/transition.go:226-230,294-296`.
+`runFinish` gets the resolved actor only through the caller-supplied optional `ResolvedActor` pointer.
+The existing direct library routes do not require that output pointer.
+
+Literal fixture: task `1-literal`, project `one`, acting agent `worker-name`.
+The live record has key `worker-key`, name `worker-name`, and pane `worker-pane`.
+Call `Complete(home, TransitionOptions{Task: "1-literal", PaneID: "worker-pane"})`.
+The durable result is ok with task, counter, inbox, and finished effects.
+The actual default log has one transition and four effects. Every event omits `agent_id`.
+Expected: each applicable event carries resolved actor `worker-key`.
+
+The same omission affects verify pass/fail and actual task/counter/record/finished failures.
+The name route records the supplied name instead of the resolved key.
+The explicit-key route and optional-pointer control pass. Known effects and phases remain truthful.
+This is not a durable group failure.
+
+Evidence: `direct-library-logging.out`, `direct-default-logger.out`, and both retained logging probes.
+`library-logs/default-logger-complete-pane.jsonl` retains the actual default log without logger injection.
+`library-logs/complete-counter-pane.jsonl` retains the actual partial log.
+The matrix has 45 failed identity subcases. No failure relies on compilation.
+Recommendation: retain an unconditional local resolved actor in `runFinish` for its own logs.
+Copy that actor to the optional output when supplied. Keep the lock, result, effects, and schema unchanged.
+This check stays within the changed logging area and the existing F03 criterion.
+
+## Old checks, red sensitivity, and CLI
+
+All 56 old test functions in changed test files remain. Those files now contain 101 test functions.
+The 25-pair status table keeps eight allowed pairs and 17 refusals with unchanged task bytes.
+Only advanced finish diagnostics add inspection guidance. The fresh-worker and live-registration fixtures match the installed task.
+The diagnostic test retains its task-byte comparison and checks the literal control-bearing resolved name.
+This pass removes, skips, or weakens no old test.
+
+One current handle checks identity, role, project, task, claims, FSM, and full notification before all writes.
+The order stays task, counter, inbox, then finished. Held inbox calls retain public wrappers and take no nested lock.
+All twelve actual storage failures retain failed/no-effects first, then exact partial prefixes and actual phases.
+Command callbacks retain nil partial Go errors. Counter gaps remain explicit. No rollback or replay occurs.
+Same/changed-reason retries, finished assignment, fresh-worker rework, and cancellation after partials remain safe.
+4090 ASCII bytes and 2045 two-byte characters fit exactly. The next tested byte counts refuse before all writes.
+No truncation or general reason cap occurs.
+Ten race repetitions pass for cooperating readers and competing complete/verify pass/fail attempts.
+The controlled related reader waits for the whole group. Output writers that acquire the store lock pass.
+No output, Git, socket, process, or long wait occurs under the finish lock.
+Default coordinator/manager key routes, no-inbox roles, explicit inbox semantics, and unknown/live/finished show checks pass.
+
+The exact `6dce8b53` snapshot with old production gives assertion-red. The frozen worker gives green.
+Eleven focused mutations give assertion-red and restored green for the fixed identity/path/actor/logging/diagnostic behavior.
+Every original tracked copy hash matches after restore. The actual source stays frozen.
+The unresolved direct-library finding stays red. I apply no source fix.
+
+Exact first-review library probes replay with provenance. The primary real CLI transcript and all twelve actual prefix cases pass.
+The secondary command matrix passes twelve text/JSON short/error stdout cases and six partial stdout cases.
+The inbox checks retain actual consumed IDs 1 and 3. All-mode failures claim no consumption.
+Each JSON failure attempts one envelope, not a second object.
+Thirty CLI log checks retain actual effects, IDs, roles, and phases. Stream errors stay separate from durable success.
+No message or reason body appears in the checked logs.
+The historical secondary expectation that invalid send creates state now fails as expected.
+Its corrected replay reverses only that expectation. All binding and fixed-expectation changes retain exact patches.
+
+Actual-root binary SHA256: `dd29bacecbf3a2248947ac2ae7cce3da6c593a3951df982c94f5f1b9d0f05ec2`.
+Output-driver SHA256: `37e77325aa0acff320841e54aaaab6b0242b8806bba80da64245149ebecbb85d`.
+The exact driver changes only the external output writer. It mocks no internal behavior.
+CLI calls use absolute hashed binaries, unique marked fixture homes, and eight-second deadlines.
+No native agent or model child starts.
+
+## Gate, freeze, and cleanup
+
+The full actual-worktree gate uses short `TMPDIR=/tmp/t11v2-lhpmauqk`, outside every marked home.
+Tracked/new Go formatting prints nothing. Vet passes. Lint with `--allow-serial-runners` reports `0 issues.`.
+Full race tests use count 1 and pass. TestSTE passes. The extra relevant package race run passes.
+Baseline, ratchet source, and dependencies equal the activation base exactly.
+New report/evidence text has zero hard findings with both glossaries. The fix-range diff check passes.
+The full historical range retains only the old V3 trailing spaces.
+
+All 249 tracked hashes match before this append.
+The old VERIFIED prefix has 14375 bytes and SHA256 `8e720d072b1a227453bd87f7a98198b8d14dcf07e66c7535ca41d466e6816f70`.
+This append preserves that exact prefix.
+The no-follow cleanup manifest records 4985 entries in two owned obsolete roots.
+The receipt records both roots absent: the copy/fixture/binary root and external TMPDIR.
+Exact probes, patches, raw outputs, transcripts, hashes, and compact synthetic records/logs remain.
+No preexisting report, log, credential, state, worktree, attribution, or harness configuration changes.
+This pass changes only this evidence file among tracked paths.
+
+The boundary stays local users, cooperating writers, and static file types.
+Hostile Lstat/Open replacement, malicious callbacks, and unrelated process control remain deferred.
+UNCOMPLETED: F03 direct-library identity logging and source acceptance.
+Recommendation: return F03 for a bounded correction. Preserve all closed findings and passing checks.
+
+END VERIFIER T11-task-identity-and-finish t11-verify-02
