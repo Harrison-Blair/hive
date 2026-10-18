@@ -178,6 +178,24 @@ env -u HERDR_SOCKET_PATH ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
 - A live check of the supervisor process. T15 adds it.
 - Stdin for a child process. A command that needs to give input to a process writes a file under `.hive/tmp/` and passes its path.
 
+## Dated clarifications
+
+### Dated clarification: request and reply bound (2026-10-18)
+
+The 1 MiB request limit and the 1 MiB reply limit count the complete encoded JSON
+line. The line includes its terminating newline. A total of exactly 1048576 bytes
+is valid. A total of 1048577 bytes fails. The wire API does not change. No other
+boundary exists.
+
+### Dated clarification: doctor store check effects (2026-10-18)
+
+The state-store check changes no domain record. `Store.Open` can create an empty
+state directory. The required `WalkRecords` call can create or open the regular
+lock file. This text permits these metadata effects. Do not call the check free of
+filesystem writes. Command logging stays normal. The check preserves each stored
+JSON byte. It rejects a static bad path. It keeps the mandated `WalkRecords` call
+and does not traverse a record directly.
+
 ## Changes
 
 None.

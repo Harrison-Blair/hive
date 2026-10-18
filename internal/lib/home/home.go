@@ -62,6 +62,10 @@ func markerAbove(path string) (string, bool) {
 }
 
 func hasMarker(dir string) bool {
+	hiveDir, err := os.Lstat(filepath.Join(dir, ".hive"))
+	if err != nil || !hiveDir.IsDir() {
+		return false
+	}
 	info, err := os.Lstat(filepath.Join(dir, ".hive", "README.md"))
 	return err == nil && info.Mode().IsRegular()
 }

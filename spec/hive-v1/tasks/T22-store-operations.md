@@ -147,6 +147,14 @@ The store uses one method matrix. A method takes one row.
 - A collection component or ID that is empty, `.`, `..`, has a slash, has a
   backslash, has a control character, has an uppercase letter, or is too long
   fails with `invalid store <name>: <value>`.
+- `writeRecordFile` rejects an encoded record above 1048576 bytes before
+  `atomicWrite` creates or replaces a file. The encoded record is the JSON object
+  and one final newline. The error is `record too large: <path>`. An encoded
+  record of exactly 1048576 bytes is valid. A rejected write keeps the old record
+  bytes and makes no new record. The legacy `Write` and `Update` paths, the
+  generic `WriteIn` and `UpdateIn` paths, and the `LockedStore` methods use this
+  check. A multi-write caller reports its earlier effects and makes no rollback
+  claim. The reader and lock contracts do not change.
 - A directory, a symbolic link, an empty file, or a JSON array in place of a
   record fails with `record invalid: <path>`. A file above 1 MiB fails with
   `record too large: <path>`. A file of exactly 1 MiB is valid.
@@ -208,7 +216,7 @@ The store uses one method matrix. A method takes one row.
 ### V2 Name and path tests
 
 - Proves: AC2.
-- Command: `go test -race ./internal/lib/store/ -run 'TestStoreNames|TestReadIn|TestWriteIn|TestListIn' -v`, red and green.
+- Command: `go test -race ./internal/lib/store/ -run 'TestStoreNames|TestReadIn|TestWriteIn|TestListIn|TestWriteLimit' -v`, red and green.
 - Expected: the ID `12-spawn-worker` works. A 40-character slug works in a task
   ID. The nested inbox path writes `inbox/coordinator/1.json`. A missing
   collection lists as an empty slice. The `include` function selects one file and
@@ -219,6 +227,14 @@ The store uses one method matrix. A method takes one row.
 - Expected: a directory, a symbolic link, an empty file, and a JSON array give
   `record invalid`. A file of 1 MiB plus one byte gives `record too large`. A file
   of exactly 1 MiB works. A bad selected file makes `ListIn` return no records.
+- Expected: `TestWriteLimit` uses the fixed literal `1048576` and not the
+  implementation constant. It writes an encoded record of exactly 1048576 bytes,
+  including the final newline, and the write succeeds. It writes one byte more
+  and gets `record too large: <path>`.
+- Expected: a rejected write through each of `Write`, `Update`, `WriteIn`,
+  `UpdateIn`, and a `LockedStore` write or update keeps the old record bytes
+  equal. A rejected create makes no record. A multi-write caller reports its
+  earlier effect.
 - Expected: a symbolic link at the state root, a collection ancestor, a record
   leaf, or the lock gives `store path invalid` or `record invalid`. A dangling
   link, a directory, a FIFO, and a socket fail with no write.

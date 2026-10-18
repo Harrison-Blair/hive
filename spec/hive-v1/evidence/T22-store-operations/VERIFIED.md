@@ -859,3 +859,198 @@ The coordinator owns the next delivery decision. This pass does not merge or upd
 Root report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-verify-02.md`.
 Compact captures and probe sources: the sibling `t22-verify-02-artifacts/` directory.
 The report records the verification commit, push, source check, and completed cleanup.
+
+## 2026-10-18 — current verdict — t22-write-cap-verify-01
+
+The current T22 verdict is **PASS** at worker HEAD `a05e617ebb7d431b56bb9f500f3042cb531ddf22`.
+Every verdict below applies to that exact worker HEAD.
+Earlier verdicts keep their original bytes and attribution.
+
+| Item | Value |
+| --- | --- |
+| Pass | `t22-write-cap-verify-01` |
+| Role | Fresh independent verifier |
+| Route | pi, `openai-codex/gpt-6.1-sol:high`, from `PI_*` |
+| Branch | `task/T22-write-cap` |
+| Base | `7ae3fb8affb7bc577ec1a3aa248d416be2bde340` |
+| Tested worker HEAD | `a05e617ebb7d431b56bb9f500f3042cb531ddf22` |
+| Source fix | `f049a7b0949520018ad45001c81df689d2fb2fe5` |
+| Overall | **PASS** |
+
+The initial worktree was clean at the required HEAD.
+The remote task branch matched that HEAD.
+The provider, model, and reasoning level matched the brief.
+The independent SPEC PASS in `t03-verify-01.md` and `spec-verdict.json` checks the exact base.
+That SPEC PASS accepts contract text only.
+This pass supplies independent source evidence.
+
+### Scope and report location
+
+I read the complete base-to-worker diff and each changed path.
+The diff adds 586 lines across four files.
+The only production change adds three lines to `writeRecordFile`.
+The guard checks encoded bytes before `atomicWrite`.
+The other paths are `write_limit_test.go`, `V2.md`, and `V5.md`.
+The test imports use only the standard library.
+No production import, dependency, public API, reader, lock, baseline, or title limit changes.
+The V2 and V5 historical prefixes remain equal to their base versions.
+
+The actual worker report is `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-write-cap-01.md`.
+Its final marker is `END WORKER T22-write-cap t22-write-cap-01`.
+The worker did not use the planned worktree report path.
+This is an output-location deviation, not a source defect.
+
+| Item | Proves | Verdict | Evidence at the tested worker HEAD |
+| --- | --- | --- | --- |
+| V1 | AC1 | PASS | All existing lock tests pass under the race detector. |
+| V2 | AC2 | PASS | Literal byte boundaries, all writer paths, static paths, names, lists, escapes, and UTF-8 pass. |
+| V3 | AC3, AC4 | PASS | Grouped reads, retained prefixes, process counters, legacy behavior, and walk tests pass. |
+| V4 | AC2 | PASS | Shared bounded reader and guarded writer. Atomic and lock helpers remain unchanged. |
+| V5 | AC5 | PASS | Empty format output, vet, lint, and full uncached race gate pass. |
+| G1 | Shared writer size | CLOSED | Actual T03 CLI rejects oversized verify and preserves readable prior state. |
+| Test strength | Writer size | PASS | Removing only the guard makes new tests fail on assertions. |
+
+### Store tests and independent byte matrix
+
+Command from the actual worktree:
+
+```sh
+go test -race -count=1 ./internal/lib/store/ -v
+```
+
+```text
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	17.237s
+exit 0
+```
+
+This run includes every existing store test and all five new writer tests.
+The expected sizes are fixed literals: `1048575`, `1048576`, `1048577`, and `2097152`.
+The tests do not get expectations from `maxRecordSize`.
+The literal JSON frames include the final LF.
+The escape case counts U+0001 as six encoded bytes and `é` as two UTF-8 bytes.
+Exactly 1048576 bytes remain readable.
+One added byte fails without a replacement.
+
+An independent matrix adds 48 cases in an ignored source copy.
+It checks eight APIs, three literal sizes, and create/replacement modes.
+The eight APIs are legacy and generic write/update methods, both standalone and held.
+Generic cases use the nested collection `inbox/coordinator`.
+The matrix compares exact encoded bytes, including LF.
+It checks old-byte equality, readable old values, absent rejected creates, and absent temporary artifacts.
+Command inside the isolated candidate overlay:
+
+```sh
+go test -race -count=1 ./internal/lib/store/ -run TestCapVerify -v
+```
+
+```text
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	6.284s
+exit 0
+```
+
+The worker group test retains the earlier write after a later size rejection.
+The existing grouped tests retain completed prefixes after callback errors.
+No rollback claim applies.
+
+### Isolated red evidence
+
+The red copy contains the exact worker tree with only the three guard lines removed.
+A file comparison checks all 147 tracked paths and finds only that difference.
+Actual worktree source never changes.
+Command inside the red copy:
+
+```sh
+go test -race -count=1 ./internal/lib/store/ -run TestWriteLimit -v
+```
+
+The command compiles and exits 1 on assertions.
+Below-limit and exact-limit cases still pass.
+Create rejection fails at line 174 because each writer returns nil.
+Replacement rejection fails at line 275 for all eight writer APIs.
+The group assertion fails at line 312.
+The escaped-content assertion fails at line 367.
+`red-proof.txt` retains the complete output and exact three-line diff.
+
+### Prior T22 checklist
+
+I rechecked all 23 earlier checklist items against current tests, unchanged source, and prior captures.
+The prior source is `a3fea5a4304a29e1c24fd8e93b3da30ccf5aa5ad`.
+Its production store code differs only by the current guard.
+
+| Checklist items | Current basis |
+| --- | --- |
+| 1–7: lock and handles | Fresh `TestWithLock*` tests. Prior `api.txt` covers every nil/released method and standalone list. |
+| 8–14: names, paths, reader | Fresh generic, Open, Linux type, and literal reader tests. Prior filesystem and 166-command captures cover the broader static matrix. |
+| 15–17: groups and processes | Fresh grouped tests, retained-prefix tests, and four-process counter test. Prior API capture checks a later locked read. |
+| 18–20: legacy and walk | Fresh legacy, linked-path, temporary-pattern type, nested-lock, and walker tests. |
+| 21–23: helpers and scope | Fresh V4 searches and complete diff/import inspection. No dependency or unrelated tracked path changes. |
+
+Prior captures include `t22-verify-02-artifacts/api.txt`, `filesystem.txt`, `lock-types.txt`, and `matrix-summary.txt`.
+They cover static `.hive`, state, collection, lock, and record paths.
+They include permissions, external-byte preservation, JSON shapes, selected lists, and fixed reader sizes.
+These are prior captures, not new executions of that broader matrix.
+The current full store run rechecks the existing regression tests.
+The earlier F1/F2 and path F01/F02 closures remain valid.
+No unrelated probe class applies.
+
+### G1 closure through the actual CLI
+
+The CLI source copy starts at T03 `638c40e339abb329912d7c09b06d609ddc1c69b3`.
+Only the verified candidate `store.go` overlays that source before the CLI build.
+A comparison checks all 172 tracked paths and finds only this overlay.
+The copied source is a probe, not accepted T03 source.
+The fixture has an explicit home marker and a separate Git project.
+
+The commands repeat the actual escaped-title and escaped-reason case from `t03-verify-01-captures/probe.py`.
+The title contains 120000 U+0001 bytes.
+The verification reason contains 120000 U+0002 bytes.
+Create, assign, and complete each exit 0.
+Create writes 720332 bytes.
+The completed prior task has 720290 bytes.
+Verify with `--fail` exits 1 with `record too large: <fixture path>`.
+Its JSON envelope reports `failed`, phase `transition`, and no effects.
+The prior task bytes remain equal.
+Every state file remains equal, and no rejected record appears.
+Plain and JSON show/list each exit 0 and retain status `completed`.
+`g1.py` and `g1.txt` retain the reproducible procedure and measured results.
+G1 is CLOSED for the verified store candidate.
+T03 F1–F4 remain outside this fix and uncompleted.
+
+### V4 and full gate
+
+Every legacy, generic, and held write/update reaches `writePath`, then `writeRecordFile`.
+`marshalRecord` includes LF before the guard sees the data.
+Update callbacks supply their encoded bytes to the same guard.
+`writeRecordFile` alone calls `atomicWrite`.
+`atomicWrite` alone creates record temporary files.
+The sole reader uses `Lstat`, then `io.LimitReader` with 1048577 bytes.
+The lock open and production flock calls remain in `lock.go`.
+
+| Command from actual worktree | Result |
+| --- | --- |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | Exit 0. Output has zero bytes. |
+| `go vet ./...` | Exit 0. |
+| `golangci-lint run --allow-serial-runners ./...` | Exit 0. `0 issues.` |
+| `go test -race -count=1 ./...` | Exit 0. Every package passes. Store takes 17.378s. |
+
+### Source freeze, cleanup, and limits
+
+Before commit, every tracked path except this verdict equals the exact worker HEAD.
+The complete historical verdict prefix remains byte-for-byte equal.
+The source, module files, and STE baseline remain unchanged.
+Only this dated section enters the verdict commit.
+The root report and unique capture folder are ignored outputs.
+The report is `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t22-write-cap-verify-01.md`.
+The capture folder is the sibling `t22-write-cap-verify-01-captures/`.
+
+Cleanup removes only this pass's marked fixtures, unique binary, and two source copies.
+Captures retain commands, assertions, hashes, source-copy checks, and cleanup records.
+Existing state, logs, reports, archives, credentials, worktrees, and agents remain unchanged.
+No credential content inspection, global configuration change, merge, tracker change, or agent start occurs.
+The approved boundary remains a local user and a cooperating writer.
+Hostile replacement between `Lstat` and `Open` remains deferred for T01.
+No required in-scope check remains uncompleted.
+T03 F1–F4, later integration, and landing remain uncompleted.
+Recommendation: accept this bounded T22 fix only.

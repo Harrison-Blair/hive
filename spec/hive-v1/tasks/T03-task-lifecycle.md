@@ -76,7 +76,7 @@ lock. Do not read or write a task record file directly.
 - The slug is the `--slug` value, else the title in lowercase with each run of characters outside `[a-z0-9]` as one `-`, trimmed of `-` at both ends. Both forms must match `^[a-z0-9]+(-[a-z0-9]+)*$` and have at most 40 characters. A 40-character slug is valid, so an actual task ID can be longer than 18 characters. Otherwise the command fails with `invalid slug: <value>` before it takes a counter value.
 - The brief is the content of `--brief FILE`, or of stdin when FILE is `-`, or the title. Hive reads at most 1 MiB and fails above it. The read has a total deadline of 30 seconds. The deadline is an explicit parameter of `readBrief`, so a test can shorten it. Check that a brief file is a regular file before the open. A stalled input expires before the lock and changes nothing. Hive writes the brief to `.hive/state/briefs/<task-id>.md` atomically.
 - Each dependency must exist in the same project. A dependency path that returns to the new task fails with `dependency cycle: <a> -> <b> -> <a>`.
-- The record has `id`, `project`, `title`, `controlling_role`, `acting_agent`, `status`, `depends_on`, `verification`, `worktree`, `delivery`, `created_at`, and `updated_at`. The controlling role is `manager-<project>`. The status is `created`.
+- The record has `id`, `project`, `title`, `controlling_role`, `acting_agent`, `status`, `depends_on`, `verification`, `worktree`, `delivery`, `cancel_reason`, `created_at`, and `updated_at`. `cancel_reason` is an optional string. `omitempty` keeps it out of the JSON when it is absent or empty. The controlling role is `manager-<project>`. The status is `created`.
 
 ### AC2 Status machine
 
@@ -92,7 +92,7 @@ lock. Do not read or write a task record file directly.
 - Any other pair fails with `invalid transition: <status> -> <command>`. The record does not change. This includes `verify` of a task with the status `verified`.
 - `assign --task ID --agent NAME` sets `acting_agent`. This task does not check that an agent record exists.
 - `complete` needs `--agent` equal to `acting_agent`. Another name fails with `not the acting agent: <name>`.
-- `cancel [--reason TEXT]` stores the reason.
+- `cancel [--reason TEXT]` stores `TEXT` in `cancel_reason`. An absent or empty reason omits `cancel_reason`. The cancel command does not change `verification`.
 - Without `--agent`, `complete` and `verify` fail with `caller unknown: pass --agent`. T11 adds the lookup from the pane.
 
 ### AC3 Verify rules
@@ -211,6 +211,23 @@ git init -q "$HIVE_TMP/repo-one"
 
 - The caller lookup from `HERDR_PANE_ID`, the finished mark, and the inbox records. T11 adds them. T11 also makes `--agent` name a registered agent. In this task `--agent` is a free name.
 - The worktree fields. T09 fills them. The delivery fields. T12 fills them.
+
+## Dated clarifications
+
+### Necessary correction: cancel reason (2026-10-18)
+
+The `cancel` command needs a place for its reason. The record field list had no
+such field. The source implementation chose `cancel_reason`. This text records
+that field as a necessary contract correction. It does not accept the source.
+
+- `cancel_reason` is an optional string with `omitempty`.
+- An absent or empty reason leaves the field out of the record JSON.
+- The field holds the `--reason` value.
+- The cancel command does not change `verification`.
+- No other record field changes.
+
+The field name and the `omitempty` rule are the contract. A later independent
+review checks the source against this text.
 
 ## Changes
 
