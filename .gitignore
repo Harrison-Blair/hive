@@ -21,3 +21,12 @@
 
 # Test fixtures
 !**/testdata/**
+
+# Personal and runtime data of the home (the checkout is the home). Never tracked.
+projects/
+memory/
+overrides/
+plans/
+/handoff.md
+.hive/*
+!.hive/README.md
