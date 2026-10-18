@@ -218,6 +218,23 @@ remove: ok github.com/Harrison-Blair/hive/internal/worktree 1.298s; exit 0
 
 The create replay passes all 19 top-level audit tests. The remove replay passes all 8 top-level audit tests. The prior F01-F06 and F08-F10 assertions now pass.
 
+## V1 and V2 repeat
+
+The exact V1 and V2 commands ran on the fixed source. The outputs are in `v1-repeat.txt` and `v2-repeat.txt`.
+
+```sh
+go test -race -count=1 -timeout=120s ./internal/worktree -run TestCreate -v
+go test -race -count=1 -timeout=120s ./internal/worktree ./internal/lib/gitx -run 'TestRemove|TestGitx' -v
+```
+
+```text
+V1: ok github.com/Harrison-Blair/hive/internal/worktree 1.103s; exit 0
+V2: ok github.com/Harrison-Blair/hive/internal/worktree 1.195s; exit 0
+V2: ok github.com/Harrison-Blair/hive/internal/lib/gitx 1.030s; exit 0
+```
+
+Both items pass. The worker V1 create cases, the worker V2 removal cases, and both Git helper tests pass.
+
 ## CLI replay
 
 The exact `cli-probe.py` from the create verification ran with a new short `TMPDIR` and the fixed worktree as the source. The script SHA256 is `a78e75a6a6f98272b04e996a8788009db276d13c73ed457ced0b1543387437e3`.
