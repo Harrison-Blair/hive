@@ -97,10 +97,10 @@ flowchart TD
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
-| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | in progress | | |
+| [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | evidence | | |
 | [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | ready | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
-| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | in progress | | |
+| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | evidence | | |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | blocked | | |
@@ -891,6 +891,61 @@ accepts no later source.
   `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
 - Pending: an independent integration and records check. T09 source starts
   only after this landing and a fresh concrete dispatch check.
+
+### Dated correction receipt: T05 records R01 and wave 3 tracking
+
+2026-10-18. This section corrects the T05 incoming-path counts and records the
+wave 3 worker evidence. It accepts no T08 or T11 source and passes no
+checkpoint.
+
+- The completed independent pass `t05-land-verify-01` gives source integration
+  PASS and records FAIL on R01. The report is
+  `.hive/tmp/coordinator/reports/t05-land-verify-01.md`. Its last line is
+  `END T05 LAND VERIFY 01`.
+- R01: the original report `t05-land-01.md` and the state record
+  `t05-land-01.json` gave 26 incoming paths and 25 nonshared paths. The actual
+  counts are 25 incoming paths and 24 nonshared paths. Each exact range below
+  lists the same 25 paths:
+  - `git diff --name-only 47da8abb152732d4667707ec98ef2a682e5421a4 b2da1267778cb19e204b52a5661298280423d45a`
+  - `git diff --name-only eded8f9cb09208bfdc81334870e86479e746c183 b8cb5f7140298ea98b54a7b8e81d67d22c10db1c`
+- The path `cmd/root.go` is the one shared path. The other 24 paths are
+  nonshared. The full delivery range `eded8f9c..ec7977fd` has 26 paths. It adds
+  only `spec/hive-v1/05-tracker.md`. No source path is missing. The source
+  integration PASS stays accepted.
+- The correction receipt is
+  `.hive/tmp/coordinator/reports/t05-land-01-r01-correction.md`. The original
+  report and the old state record keep their bytes.
+- The new state record is
+  `.hive/tmp/coordinator/state/t05-records-fix-01.json`. It records
+  `incoming_path_count` 25 and `owned_path_count` 24. The current state pointer
+  in `wave-status.json` names the new record. The old `t05-land-01.json` and its
+  prior pointer stay as history.
+- T08 is `evidence`. The worker is `e26d08bd`. The worker committed and pushed
+  its V1 to V4 evidence. T11 is `evidence`. The worker is `129b82f2`. The worker
+  committed and pushed its V1 to V4 evidence. The observation time is
+  `2026-10-18T10:08:50Z`.
+- The fresh first area reviews run separately. The T11 area report
+  `t11-inbox-output-verify-01.md` gives FAIL for its area. This is not whole
+  task acceptance. The T08 first area review had no complete report at the
+  observation time. No whole source verdict exists for T08 or T11. This
+  receipt claims no landing.
+- T05 stays `landed`. T09 stays `ready`, but its records check gates its
+  source. T10 stays `blocked` on T09. The prepared T09 worktree `wAF` at
+  `ec7977fd` has no source started. CP1 stays passed. CP2 to CP5 stay open.
+- The prior checker inherited the absent pane `w9X:p2`. This pass does not
+  spoof a pane and does not change a global setting. A later fresh `pi
+  openai-codex/gpt-6.1-sol:high` checker uses the verification workspace `wAG`
+  and pane `wAG:p1`. This pass starts or controls neither, and claims no L01
+  closure.
+- The full root gate passes at the final tracker commit. The format list is
+  empty. Vet and lint pass. The race tests and TestSTE pass. The changed-range
+  diff from `ec7977fd` to the final docs commit is empty. The Go tree equals
+  `ec7977fd`. New prose has zero hard STE findings. The baseline is exact.
+- Local `main` stays `3692162633f896b8fee6197469adba91f666a00c`. `origin/main`
+  and the direct remote `main` stay
+  `928cfa95e0906315fcb4a65a5cdbdef1470a0503`.
+- The final 12580 historical handoff bytes keep SHA256
+  `0c0d843ff49e0e6d8efc60425630ea2183b1f9c0ca5aecb8d53a29c035a1bd69`.
 
 ### CP1 home live
 
