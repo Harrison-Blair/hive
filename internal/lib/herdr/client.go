@@ -320,8 +320,15 @@ func decodeResult(raw json.RawMessage, result any) error {
 	}
 	temporary := reflect.New(value.Elem().Type())
 	if isJSONNull(raw) {
-		// A null decode keeps a plain struct unchanged and sets a map or slice to nil.
-		temporary.Elem().Set(value.Elem())
+		if _, custom := temporary.Interface().(json.Unmarshaler); !custom {
+			// A null decode sets a map, slice, pointer, or interface to nil.
+			// Other values stay unchanged. No caller state enters the decode.
+			switch value.Elem().Kind() {
+			case reflect.Map, reflect.Slice, reflect.Pointer, reflect.Interface:
+				value.Elem().Set(reflect.Zero(value.Elem().Type()))
+			}
+			return nil
+		}
 	}
 	if err := json.Unmarshal(raw, temporary.Interface()); err != nil {
 		return fmt.Errorf("bad reply: %s", plainError(err))
