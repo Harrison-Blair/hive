@@ -80,6 +80,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	if paneError != "" {
 		return failed("validate", paneError)
 	}
+	if choice.Task != nil {
+		return spawnTaskAgent(ctx, home, options, choice.Task, logger)
+	}
 	paneID := choice.PaneID
 	manager := choice.Manager
 	if options.Role == "manager" {
@@ -288,6 +291,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 type paneChoice struct {
 	PaneID  string
 	Manager *managerChoice
+	Task    *taskChoice
 }
 
 func choosePane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (paneChoice, string) {
@@ -301,6 +305,12 @@ func choosePane(ctx context.Context, home string, options SpawnOptions, logger *
 			return paneChoice{}, message
 		}
 		return paneChoice{PaneID: choice.PaneID, Manager: &choice}, ""
+	case "worker", "verifier":
+		choice, message := resolveTaskPane(ctx, home, options, logger)
+		if message != "" {
+			return paneChoice{}, message
+		}
+		return paneChoice{PaneID: choice.PaneID, Task: &choice}, ""
 	default:
 		return paneChoice{}, "pane required: pass --pane"
 	}
