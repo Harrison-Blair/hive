@@ -17,7 +17,7 @@
 | Branch | `task/T11-task-identity-and-finish` |
 | Result | The fix closes T11-IO-F06. Source acceptance stays open for a fresh verifier. |
 
-The worktree was clean at the start tip. Local, tracking, and direct remote tips were equal. The start commit is the sole child of the verifier verdict commit. The activation base stays the source base. No merge from the root or from source08/09 ran.
+The worktree was clean at the start tip. Local, tracking, and direct remote tips were equal. The start tip is the verifier verdict commit. Its sole parent is worker `59b2b4125562bf075e50ab5d020e34d7310dab04`. The activation base stays the source base. No merge from the root or from source08/09 ran.
 
 The received brief is `.hive/tmp/worker/t11-fix-03-captures-1792323124-1339246/brief.txt`. Its SHA256 is `9fa9d22e53806127a0a4387d3add8116945caeae104cc200ef78eddaed9ae696`. The capture root also holds `route.txt`, `start.txt`, `remote-tip.txt`, the raw outputs, the exact probes, and the result files.
 
