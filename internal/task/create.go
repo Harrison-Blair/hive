@@ -129,7 +129,7 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 	var project records.Project
 	if err := locked.ReadIn([]string{"projects"}, plan.project, &project); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return fail("project", "project not found: "+plan.project, "")
+			return fail("project", "project not found: "+quoteIfControl(plan.project), "")
 		}
 		return fail("project", err.Error(), "")
 	}
@@ -137,12 +137,12 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		var dependency records.Task
 		if err := locked.ReadIn([]string{tasksCollection}, dep, &dependency); err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				return fail("dependency", "dependency not found: "+dep, "")
+				return fail("dependency", "dependency not found: "+quoteIfControl(dep), "")
 			}
 			return fail("dependency", err.Error(), "")
 		}
 		if dependency.Project != project.ID {
-			return fail("dependency", fmt.Sprintf("dependency not in project %s: %s", project.ID, dep), "")
+			return fail("dependency", fmt.Sprintf("dependency not in project %s: %s", quoteIfControl(project.ID), quoteIfControl(dep)), "")
 		}
 	}
 	nextValue, err := peekCounter(locked, "task")
@@ -184,10 +184,11 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		UpdatedAt:       plan.now.Format(time.RFC3339Nano),
 	}
 	if err := writeBrief(home, id, plan.brief); err != nil {
+		message := oneLine(err.Error())
 		envelope.Outcome = "partial"
 		envelope.Phase = "brief"
-		envelope.Error = err.Error()
-		log.failure("task create", project.ID, id, "", "brief", err.Error())
+		envelope.Error = message
+		log.failure("task create", project.ID, id, "", "brief", message)
 		return envelope
 	}
 	log.effect("task create", project.ID, id, "brief", briefRelPath(id), "created")
@@ -197,10 +198,11 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		Action:   "created",
 	})
 	if err := locked.WriteIn([]string{tasksCollection}, id, record); err != nil {
+		message := oneLine(err.Error())
 		envelope.Outcome = "partial"
 		envelope.Phase = "task"
-		envelope.Error = err.Error()
-		log.failure("task create", project.ID, id, "", "task", err.Error())
+		envelope.Error = message
+		log.failure("task create", project.ID, id, "", "task", message)
 		return envelope
 	}
 	log.effect("task create", project.ID, id, "task", taskRelPath(id), "created")
@@ -270,17 +272,17 @@ func readBrief(path string, in io.Reader, deadline time.Duration) ([]byte, error
 	}
 	info, err := os.Lstat(path)
 	if errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("brief not found: %s", path)
+		return nil, fmt.Errorf("brief not found: %s", quoteIfControl(path))
 	}
 	if err != nil {
-		return nil, fmt.Errorf("read brief: %v", err)
+		return nil, fmt.Errorf("read brief: %s", oneLine(err.Error()))
 	}
 	if info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
-		return nil, fmt.Errorf("brief is not a regular file: %s", path)
+		return nil, fmt.Errorf("brief is not a regular file: %s", quoteIfControl(path))
 	}
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("read brief: %v", err)
+		return nil, fmt.Errorf("read brief: %s", oneLine(err.Error()))
 	}
 	defer func() { _ = file.Close() }()
 	return readBounded(file, deadline)
@@ -302,7 +304,7 @@ func readBounded(reader io.Reader, deadline time.Duration) ([]byte, error) {
 	select {
 	case res := <-done:
 		if res.err != nil {
-			return nil, fmt.Errorf("read brief: %v", res.err)
+			return nil, fmt.Errorf("read brief: %s", oneLine(res.err.Error()))
 		}
 		if len(res.data) > briefLimit {
 			return nil, fmt.Errorf("brief too large: %d bytes", len(res.data))
@@ -320,38 +322,38 @@ func writeBrief(home, id string, data []byte) error {
 	}
 	path := briefPath(home, id)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	info, err := os.Lstat(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	if err == nil && (info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular()) {
-		return fmt.Errorf("brief path invalid: %s", path)
+		return fmt.Errorf("brief path invalid: %s", quoteIfControl(path))
 	}
 	file, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".tmp-")
 	if err != nil {
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	temp := file.Name()
 	defer func() { _ = os.Remove(temp) }()
 	if err := file.Chmod(0o644); err != nil {
 		_ = file.Close()
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	if _, err := file.Write(data); err != nil {
 		_ = file.Close()
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	if err := file.Sync(); err != nil {
 		_ = file.Close()
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	if err := file.Close(); err != nil {
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	if err := os.Rename(temp, path); err != nil {
-		return fmt.Errorf("write brief: %v", err)
+		return fmt.Errorf("write brief: %s", oneLine(err.Error()))
 	}
 	return nil
 }
@@ -398,7 +400,7 @@ func parseDeps(value string) ([]string, error) {
 			return nil, fmt.Errorf("invalid dependency: %s", quoteIfControl(id))
 		}
 		if seen[id] {
-			return nil, fmt.Errorf("duplicate dependency: %s", id)
+			return nil, fmt.Errorf("duplicate dependency: %s", quoteIfControl(id))
 		}
 		seen[id] = true
 		deps = append(deps, id)

@@ -31,7 +31,7 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		return failedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(id) {
-		return fail("validate", "task not found: "+id)
+		return fail("validate", "task not found: "+quoteIfControl(id))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -40,7 +40,7 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 	var record records.Task
 	if err := registry.ReadIn([]string{tasksCollection}, id, &record); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return fail("read", "task not found: "+id)
+			return fail("read", "task not found: "+quoteIfControl(id))
 		}
 		return fail("read", err.Error())
 	}

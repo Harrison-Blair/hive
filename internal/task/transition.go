@@ -48,7 +48,7 @@ func transition(locked *store.LockedStore, command string, options TransitionOpt
 	var prior string
 	err := locked.UpdateIn([]string{tasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
 		if len(raw) == 0 {
-			return nil, fmt.Errorf("task not found: %s", options.Task)
+			return nil, fmt.Errorf("task not found: %s", quoteIfControl(options.Task))
 		}
 		var record records.Task
 		if err := json.Unmarshal(raw, &record); err != nil {
@@ -74,7 +74,7 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 	}
 	next, ok := transitions[record.Status][key]
 	if !ok {
-		return fmt.Errorf("invalid transition: %s -> %s", record.Status, command)
+		return fmt.Errorf("invalid transition: %s -> %s", quoteIfControl(record.Status), quoteIfControl(command))
 	}
 	switch command {
 	case "assign":
@@ -87,7 +87,7 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 			return errCallerUnknown
 		}
 		if options.Agent != record.ActingAgent {
-			return fmt.Errorf("not the acting agent: %s", options.Agent)
+			return fmt.Errorf("not the acting agent: %s", quoteIfControl(options.Agent))
 		}
 	case "verify":
 		if options.Agent == "" {
@@ -126,7 +126,7 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 		return failedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
-		return fail("validate", "task not found: "+options.Task)
+		return fail("validate", "task not found: "+quoteIfControl(options.Task))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -158,5 +158,5 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 
 // failedEnvelope builds one failed outcome.
 func failedEnvelope(phase, message string) output.Envelope {
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
+	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: oneLine(message), Result: nil}
 }

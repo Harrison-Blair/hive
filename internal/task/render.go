@@ -52,6 +52,7 @@ func ShowText(envelope output.Envelope) string {
 		"verification: " + verificationText(task.Verification),
 		"worktree: " + worktreeText(task.Worktree),
 		"delivery: " + deliveryText(task.Delivery),
+		"cancel_reason: " + oneLine(task.CancelReason),
 		"created_at: " + task.CreatedAt,
 		"updated_at: " + task.UpdatedAt,
 		"brief: " + briefRelPath(task.ID),
