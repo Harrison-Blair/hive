@@ -17,6 +17,47 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
+func TestCommandHonorsCallerDeadline(t *testing.T) {
+	t.Run("honors the caller deadline over the default", func(t *testing.T) {
+		original := commandDeadline
+		commandDeadline = 100 * time.Millisecond
+		t.Cleanup(func() { commandDeadline = original })
+		ctx, cancel := context.WithTimeout(context.Background(), 600*time.Millisecond)
+		defer cancel()
+		started := time.Now()
+		_, err := Command(ctx, t.TempDir(), "sleep", "5")
+		elapsed := time.Since(started)
+		if !errors.Is(err, ErrTimeout) {
+			t.Fatalf("Command() error = %v, want ErrTimeout", err)
+		}
+		if elapsed < 400*time.Millisecond {
+			t.Fatalf("Command() returned after %v, want the caller deadline and not the 100ms default", elapsed)
+		}
+	})
+
+	t.Run("honors an earlier caller cancellation", func(t *testing.T) {
+		original := commandDeadline
+		commandDeadline = time.Second
+		t.Cleanup(func() { commandDeadline = original })
+		ctx, cancel := context.WithCancel(context.Background())
+		timer := time.AfterFunc(100*time.Millisecond, cancel)
+		defer timer.Stop()
+		defer cancel()
+		started := time.Now()
+		_, err := Command(ctx, t.TempDir(), "sleep", "5")
+		elapsed := time.Since(started)
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("Command() error = %v, want context.Canceled", err)
+		}
+		if errors.Is(err, ErrTimeout) {
+			t.Fatalf("Command() error = %v, want a cancellation and not a timeout", err)
+		}
+		if elapsed > 2*time.Second {
+			t.Fatalf("Command() returned after %v, want two seconds or less", elapsed)
+		}
+	})
+}
+
 func TestCommandTimeout(t *testing.T) {
 	dir := t.TempDir()
 	pidFile := filepath.Join(dir, "parent.pid")

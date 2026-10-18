@@ -25,6 +25,10 @@ const (
 	maxStream       = 1 << 20
 )
 
+// commandDeadline is the bound that Command applies when the caller context has
+// no deadline. A test can lower it to show that the caller deadline wins.
+var commandDeadline = defaultDeadline
+
 // Result is the bounded output of one process.
 type Result struct {
 	Stdout    string
@@ -52,8 +56,12 @@ func Command(ctx context.Context, dir, name string, args ...string) (*Result, er
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	runCtx, cancel := context.WithTimeout(ctx, defaultDeadline)
-	defer cancel()
+	runCtx := ctx
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+		var cancel context.CancelFunc
+		runCtx, cancel = context.WithTimeout(ctx, commandDeadline)
+		defer cancel()
+	}
 	logger := loggerFrom(ctx)
 	command := commandLine(name, args)
 	started := time.Now()

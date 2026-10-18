@@ -127,6 +127,61 @@ func WorktreeRemove(ctx context.Context, dir, path string, force bool) (*run.Res
 	return run.Command(ctx, dir, "git", args...)
 }
 
+// MergeNoFF merges branch into the current branch without a fast-forward.
+func MergeNoFF(ctx context.Context, dir, branch string) (*run.Result, error) {
+	return runPlain(ctx, dir, "merge", "--no-ff", "--no-edit", branch)
+}
+
+// MergeAbort aborts the merge in progress.
+func MergeAbort(ctx context.Context, dir string) (*run.Result, error) {
+	return runPlain(ctx, dir, "merge", "--abort")
+}
+
+// MergeInProgress reports whether the checkout has an unfinished merge. It
+// checks MERGE_HEAD and separates an absent merge from a command failure.
+func MergeInProgress(ctx context.Context, dir string) (bool, error) {
+	result, err := runGit(ctx, dir, "rev-parse", "-q", "--verify", "MERGE_HEAD")
+	if err != nil {
+		return false, err
+	}
+	if result.ExitCode == 0 {
+		return true, nil
+	}
+	if result.ExitCode == 1 {
+		return false, nil
+	}
+	return false, gitFailure("rev-parse MERGE_HEAD", result)
+}
+
+// HasRemote reports whether the repository has a remote with this name.
+func HasRemote(ctx context.Context, dir, name string) (bool, error) {
+	result, err := runPlain(ctx, dir, "remote")
+	if err != nil {
+		return false, err
+	}
+	if result.ExitCode != 0 {
+		return false, gitFailure("remote", result)
+	}
+	for _, line := range strings.Split(result.Stdout, "\n") {
+		if strings.TrimSpace(line) == name {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// Push pushes one ref to a remote. The extra arguments carry the refspec and
+// any flag such as -u.
+func Push(ctx context.Context, dir, remote string, args ...string) (*run.Result, error) {
+	full := append([]string{"push", remote}, args...)
+	return runPlain(ctx, dir, full...)
+}
+
+// Tip returns the commit at the tip of one ref.
+func Tip(ctx context.Context, dir, ref string) (string, error) {
+	return revParse(ctx, dir, ref)
+}
+
 func runGit(ctx context.Context, dir string, args ...string) (*run.Result, error) {
 	return run.Command(ctx, dir, "git", args...)
 }
