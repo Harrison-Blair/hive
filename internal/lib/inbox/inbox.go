@@ -1,8 +1,18 @@
 package inbox
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -11,6 +21,8 @@ import (
 
 // MaxTextBytes is the maximum UTF-8 byte length of one inbox record text.
 const MaxTextBytes = 4096
+
+const maxFieldBytes = 512
 
 var keyPattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,40}$`)
 
@@ -37,57 +49,280 @@ type lockedWriter interface {
 	WriteIn(collection []string, id string, value any) error
 }
 
+type recordLister interface {
+	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
+}
+
 // Append writes one inbox record.
 func Append(home string, options AppendOptions) output.Envelope {
-	return failed("stub", "append not implemented")
-}
-
-// Consume marks each unread record of key and returns the marked records.
-func Consume(home, key string) output.Envelope {
-	return failed("stub", "consume not implemented")
-}
-
-// Unread returns each unread record of key in sequence order.
-func Unread(home, key string) ([]records.Inbox, error) {
-	return nil, nil
-}
-
-// All returns each record of key in sequence order.
-func All(home, key string) ([]records.Inbox, error) {
-	return nil, nil
-}
-
-// UnreadCount returns the number of unread records of key.
-func UnreadCount(home, key string) (int, error) {
-	return 0, nil
-}
-
-// UnreadCountAll returns the unread count of each inbox under the home.
-func UnreadCountAll(home string) (map[string]int, error) {
-	return map[string]int{}, nil
+	if err := validateAppend(options); err != nil {
+		return failed("validate", err.Error())
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return failed("store", err.Error())
+	}
+	var envelope output.Envelope
+	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		envelope = appendLocked(locked, locked, options, time.Now)
+		return nil
+	})
+	if err != nil {
+		return failed("store", err.Error())
+	}
+	return envelope
 }
 
 func appendLocked(locked *store.LockedStore, writer lockedWriter, options AppendOptions, now func() time.Time) output.Envelope {
 	_ = locked
-	_ = writer
-	_ = options
-	_ = now
-	return failed("stub", "append not implemented")
+	if err := validateAppend(options); err != nil {
+		return failed("validate", err.Error())
+	}
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
+	}
+	seq, err := writer.Next("inbox:" + options.Role)
+	if err != nil {
+		return failed("counter", "next inbox counter: "+err.Error())
+	}
+	effects := []output.Effect{counterEffect(options.Role)}
+	record := records.Inbox{
+		Seq:       seq,
+		Role:      options.Role,
+		Kind:      kind,
+		Task:      options.Task,
+		Agent:     options.Agent,
+		Text:      options.Text,
+		CreatedAt: now().UTC().Format(time.RFC3339Nano),
+		ReadAt:    "",
+		NudgedAt:  "",
+	}
+	id := strconv.FormatUint(seq, 10)
+	if err := writer.WriteIn([]string{"inbox", options.Role}, id, record); err != nil {
+		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write inbox record: " + err.Error(), Result: nil}
+	}
+	effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(options.Role, seq), Action: "created"})
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
+}
+
+// Consume marks each unread record of key and returns the marked records.
+func Consume(home, key string) output.Envelope {
+	if err := checkKey(key); err != nil {
+		return failed("validate", err.Error())
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return failed("store", err.Error())
+	}
+	var envelope output.Envelope
+	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		envelope = consumeLocked(locked, key, markRead)
+		return nil
+	})
+	if err != nil {
+		return failed("store", err.Error())
+	}
+	return envelope
 }
 
 func consumeLocked(locked *store.LockedStore, key string, mark MarkFunc) output.Envelope {
-	_ = locked
-	_ = key
-	_ = mark
-	return failed("stub", "consume not implemented")
+	unread, err := listLocked(locked, key, false)
+	if err != nil {
+		return failed("consume", err.Error())
+	}
+	if len(unread) == 0 {
+		return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: Result{Records: []records.Inbox{}}}
+	}
+	marked := make([]records.Inbox, 0, len(unread))
+	effects := make([]output.Effect, 0, len(unread))
+	for i, record := range unread {
+		updated, err := mark(locked, record)
+		if err != nil {
+			if len(marked) == 0 {
+				return failed("consume", "mark inbox record "+strconv.FormatUint(record.Seq, 10)+": "+err.Error())
+			}
+			return output.Envelope{
+				Outcome: "partial",
+				Phase:   "consume",
+				Effects: effects,
+				Error:   "mark inbox record " + strconv.FormatUint(record.Seq, 10) + ": " + err.Error(),
+				Result:  Result{Records: marked, Remaining: append([]records.Inbox(nil), unread[i:]...)},
+			}
+		}
+		marked = append(marked, updated)
+		effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(key, record.Seq), Action: "consumed"})
+	}
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: Result{Records: marked}}
+}
+
+func markRead(locked *store.LockedStore, record records.Inbox) (records.Inbox, error) {
+	var updated records.Inbox
+	err := locked.UpdateIn([]string{"inbox", record.Role}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
+		if err := json.Unmarshal(raw, &updated); err != nil {
+			return nil, err
+		}
+		updated.ReadAt = time.Now().UTC().Format(time.RFC3339Nano)
+		return json.Marshal(updated)
+	})
+	return updated, err
+}
+
+// Unread returns each unread record of key in sequence order.
+func Unread(home, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
+		return nil, err
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return nil, err
+	}
+	return listLocked(registry, key, false)
+}
+
+// All returns each record of key in sequence order.
+func All(home, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
+		return nil, err
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return nil, err
+	}
+	return listLocked(registry, key, true)
+}
+
+func listLocked(lister recordLister, key string, all bool) ([]records.Inbox, error) {
+	raw, err := lister.ListIn([]string{"inbox", key}, nil)
+	if err != nil {
+		return nil, err
+	}
+	found := make([]records.Inbox, 0, len(raw))
+	for _, data := range raw {
+		var record records.Inbox
+		if err := json.Unmarshal(data, &record); err != nil {
+			return nil, err
+		}
+		if !all && record.ReadAt != "" {
+			continue
+		}
+		found = append(found, record)
+	}
+	sort.Slice(found, func(i, j int) bool { return found[i].Seq < found[j].Seq })
+	return found, nil
+}
+
+// UnreadCount returns the number of unread records of key.
+func UnreadCount(home, key string) (int, error) {
+	found, err := Unread(home, key)
+	if err != nil {
+		return 0, err
+	}
+	return len(found), nil
+}
+
+// UnreadCountAll returns the unread count of each inbox under the home.
+func UnreadCountAll(home string) (map[string]int, error) {
+	if _, err := store.Open(home); err != nil {
+		return nil, err
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox"))
+	if errors.Is(err, os.ErrNotExist) {
+		return map[string]int{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	counts := map[string]int{}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		key := entry.Name()
+		if checkKey(key) != nil {
+			continue
+		}
+		count, err := UnreadCount(home, key)
+		if err != nil {
+			return nil, err
+		}
+		counts[key] = count
+	}
+	return counts, nil
 }
 
 func checkKey(key string) error {
+	if !keyPattern.MatchString(key) {
+		return fmt.Errorf("invalid inbox key: %s", displayValue(key))
+	}
 	return nil
 }
 
 func boundedText(text string) error {
+	if len(text) > MaxTextBytes {
+		return fmt.Errorf("inbox text is %d bytes; the maximum is %d", len(text), MaxTextBytes)
+	}
 	return nil
+}
+
+func validateAppend(options AppendOptions) error {
+	if err := checkKey(options.Role); err != nil {
+		return err
+	}
+	if err := boundedText(options.Text); err != nil {
+		return err
+	}
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
+	}
+	switch kind {
+	case records.InboxCompleted, records.InboxVerified, records.InboxBlocked,
+		records.InboxExited, records.InboxQuiet, records.InboxUnresolved, records.InboxMessage:
+	default:
+		return fmt.Errorf("invalid inbox kind: %s", displayValue(kind))
+	}
+	for _, field := range []struct {
+		label string
+		value string
+	}{
+		{"task", options.Task},
+		{"agent", options.Agent},
+	} {
+		if len(field.value) > maxFieldBytes {
+			return fmt.Errorf("invalid inbox %s: value is longer than %d bytes", field.label, maxFieldBytes)
+		}
+		for _, r := range field.value {
+			if unicode.IsControl(r) {
+				return fmt.Errorf("invalid inbox %s: %q", field.label, field.value)
+			}
+		}
+	}
+	return nil
+}
+
+func displayValue(value string) string {
+	if strings.ContainsAny(value, "\n\r\t") {
+		return strconv.Quote(value)
+	}
+	for _, r := range value {
+		if unicode.IsControl(r) {
+			return strconv.Quote(value)
+		}
+	}
+	return value
+}
+
+func counterEffect(key string) output.Effect {
+	return output.Effect{
+		Resource: "counter",
+		Path:     filepath.ToSlash(filepath.Join(".hive", "state", "counters", "inbox:"+key+".json")),
+		Action:   "updated",
+	}
+}
+
+func recordPath(key string, seq uint64) string {
+	return filepath.ToSlash(filepath.Join(".hive", "state", "inbox", key, strconv.FormatUint(seq, 10)+".json"))
 }
 
 func failed(phase, message string) output.Envelope {

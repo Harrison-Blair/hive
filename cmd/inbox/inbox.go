@@ -1,6 +1,8 @@
 package inbox
 
 import (
+	"io"
+
 	"github.com/Harrison-Blair/hive/cmd/common"
 	inboxlogic "github.com/Harrison-Blair/hive/internal/inbox"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
@@ -21,10 +23,22 @@ func New() *cobra.Command {
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		role, _ := cmd.Flags().GetString("role")
 		all, _ := cmd.Flags().GetBool("all")
-		return common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
-			envelope := inboxlogic.Read(home, role, all)
+		var envelope output.Envelope
+		original := cmd.OutOrStdout()
+		tracker := &trackingWriter{writer: original}
+		cmd.SetOut(tracker)
+		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
+			envelope = inboxlogic.Read(home, role, all)
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
+		cmd.SetOut(original)
+		if tracker.err != nil {
+			ids := inboxlogic.Consumed(envelope)
+			if len(ids) > 0 {
+				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), role, ids)
+			}
+		}
+		return err
 	}
 	return command
 }
@@ -46,4 +60,17 @@ func newSend() *cobra.Command {
 		})
 	}
 	return command
+}
+
+type trackingWriter struct {
+	writer io.Writer
+	err    error
+}
+
+func (w *trackingWriter) Write(data []byte) (int, error) {
+	n, err := w.writer.Write(data)
+	if err != nil && w.err == nil {
+		w.err = err
+	}
+	return n, err
 }
