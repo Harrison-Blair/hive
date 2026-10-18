@@ -5,7 +5,7 @@
 | Task ID | T10-agent-spawn-core |
 | Wave | 3 |
 | Tier | strong |
-| Depends on | T04, T05 |
+| Depends on | T04, T05, T09 |
 | Blocks | CP2, T13, T14, T15, T16, T17, T18, T19 |
 | Branch | `task/T10-agent-spawn-core` |
 | Worktree | `projects/hive/worktrees/T10-agent-spawn-core/` |
@@ -47,21 +47,25 @@ while the process continues.
 | `internal/agent/inspect.go` | New. The pane inspection after `agent_not_found`: `exited` or `unresolved`. |
 | `internal/agent/doc.go` | Add the map lines. |
 | `internal/lib/harness/doc.go` | New. Package summary and file map. |
-| `internal/lib/harness/harness.go` | New. The `Profile` interface, the lookup by kind, and the bounds check. |
+| `internal/lib/harness/harness.go` | New. The `Profile` interface, `ProcessNames()`, the lookup by kind, and the bounds check. |
 | `internal/lib/harness/registry.go` | New. One line for each profile. |
 | `internal/lib/harness/claude.go` | New. The Claude Code profile. |
 | `internal/lib/herdr/agent.go` | New. `AgentStart`, `AgentWait`, `AgentPrompt`, `AgentGet`, `AgentList`. |
-| `internal/lib/herdr/pane.go` | New. `PaneGet` and `PaneClose`. T13 adds `PaneList`. |
+| `internal/lib/herdr/pane.go` | New. `PaneGet`, `PaneClose`, and the typed `PaneProcessInfo`. T13 adds `PaneList`. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
-| `internal/lib/records/agent.go` | Add `terminal_id`, `cwd`, `last_error`, and `spawned`. |
+| `internal/lib/process/process.go` | New. `Start(pid)` and `Alive(pid, start)` with a bounded `/proc/<pid>/stat` read. |
+| `internal/lib/process/process_test.go` | New. |
+| `internal/lib/records/agent.go` | Add `terminal_id`, `cwd`, `last_error`, `spawned`, `process_pid`, `process_name`, `process_start`, and `agent_session_ref`. |
 
 ## Requirements
 
 ### AC1 Harness profile
 
 - A profile gives `Kind()`, the herdr agent kind such as `claude`. It gives `Args(model string, extra []string)`, the native arguments for `agent.start`. It gives `StartTimeout()`, the value for `timeout_ms`, and `ReadyTimeout()`, the bound of the wait for a settled status.
+- A profile gives `ProcessNames()`, the executable names that can identify its harness. The Claude Code profile returns `claude`. A generic interpreter or shell name does not identify a harness.
 - `harness.Check(profile)` fails when `StartTimeout()` is not above 3 seconds and at most 300 seconds, or when `StartTimeout()` is below `ReadyTimeout()`. A start timeout below the ready timeout lets herdr drop the name while hive still waits.
 - The Claude Code profile has the kind `claude`. With a model it adds `--model <model>`. It appends the extra arguments. Its start timeout and its ready timeout are 120 seconds.
+- A profile process-name test accepts each actual executable name. It rejects `node`, `python`, `sh`, and `bash` when they are not the harness name.
 - `harness.Lookup(kind)` returns the profile or fails with `unknown harness: <kind>` and the list of known kinds.
 
 ### AC2 Spawn
@@ -75,6 +79,8 @@ while the process continues.
 - After the start reply, hive calls `pane.get` on the pane. It records `terminal_id`, `workspace_id`, `tab_id`, and the canonical `cwd` at once.
 - Then `agent.wait` with `target` equal to the pane ID, `until` equal to `idle`, `blocked`, and `done`, and `timeout_ms` from the ready timeout. The client deadline of the call is the ready timeout plus 5 seconds, set with `herdr.WithDeadline` of T05.
 - The result `agent_info` with the status `idle` or `done` gives the outcome `ok`. The status `blocked` gives `partial` with the error `agent blocked: accept the dialog in <pane>`. The error `timeout` gives `partial` with `agent not ready after <seconds> s`. In each `partial` case the record stays `live`.
+- After the wait result, hive calls `pane.process_info`. It records the process identity only when exactly one foreground entry names the harness and its PID belongs to the foreground process set. A multiple, absent, shell, unknown, wrapper-only, or unstable entry gives `unresolved`. Keep the resource and report the started-agent effect and the uncertain phase.
+- A wait timeout with independently proven ownership can keep the live partial-readiness result. The evidence uses one bounded `agent.get` reply and the stable typed process identity.
 - The error `agent_not_running` or `agent_not_found` during the wait means that the agent left the pane. Hive runs the inspection of AC4 and gives `failed` with `agent exited during start` or the `unresolved` error.
 - After the wait hive calls `agent.get` with the pane ID and logs the `name` of the reply. A missing name is a log event, not an error, because later requests use the pane ID.
 - The effects: record created, agent started, claim taken when the role is a singleton.
@@ -96,11 +102,14 @@ while the process continues.
 - `hive agent stop --agent NAME` needs a record with the status `live`. Another status fails with `agent is <status>`.
 - A record with `spawned` false fails with `agent <name> was not spawned by hive: exit it by hand`. Hive closes only a pane in which it started the agent.
 - Step 1: `pane.get` with the pane ID of the record. The error `pane_not_found` makes the record `unresolved`, and the outcome is `failed` with `pane <id> not found: record unresolved`. A reply whose `terminal_id` differs from the record makes the record `unresolved` too, with `pane <id> holds another terminal: record unresolved`.
-- Step 2: `workspace.get` with the `workspace_id` of the reply. Hive keeps the `pane_count`. The error `workspace_not_found` also makes the record `unresolved`.
-- Step 3: hive sets the record `stopped` under the store lock, before the close. The close events of this pane then find no `live` record, so the supervisor of T15 logs them only.
-- Step 4: `pane.close` with the pane ID. The result `ok` gives the outcome `ok` with the effect `pane closed`. When the `pane_count` was 1, hive adds the effect `workspace closed`. The error `pane_not_found` here makes the record `unresolved`. Another error sets the record back to `live` with `last_error`, and the outcome is `failed`.
+- Step 2: `pane.process_info` and the recorded process identity. The recorded `process_pid` must be in the foreground process set. The recorded `process_name` must match. The recorded `process_start` must match. A recorded session reference must match. A mismatch, a missing process, a shell in the foreground, or an unreadable `/proc` gives `unresolved` and closes nothing.
+- Step 3: `workspace.get` with the `workspace_id` of the reply. Hive keeps the workspace ID for the post-close read. The error `workspace_not_found` also makes the record `unresolved`.
+- Step 4: hive sets the record `stopped` under the store lock, before the close. The close events of this pane then find no `live` record, so the supervisor of T15 logs them only.
+- Step 5: `pane.close` with the pane ID. The result `ok` gives the effect `pane closed`. The error `pane_not_found` here makes the record `unresolved`. Another error sets the record back to `live` with `last_error`, and the outcome is `failed`.
+- Step 6: a bounded `workspace.get` outside the store lock. The result `closed` means `workspace_not_found`. The result `surviving` means a workspace reply with its pane count. The result `unknown` means a timeout, a transport error, or another failure. Do not infer closure from the pre-close pane count. An `unknown` result keeps the project metadata.
+- A manual registration has `spawned` false. Its stop refusal sends no close.
 - The stop closes a working agent at once. The command has no graceful mode and no `--force`.
-- `internal/agent/stop.go` exports the stop function with the record as its argument, so T13 and T15 call it without the command. It returns the `pane_count` and the workspace ID, so T13 can update the project record.
+- `internal/agent/stop.go` exports the stop function with the record as its argument, so T13 and T15 call it without the command. It returns the post-close result and the known effects, so T13 can update the project record.
 
 ### AC5 Gate
 
@@ -113,7 +122,7 @@ while the process continues.
 | AC1 | The profile interface and the Claude Code profile give the kind, the arguments, and the timeouts, and the bounds check holds. | V1 |
 | AC2 | The spawn writes the record first and sends start and wait with the pane as the target. It maps each result to an outcome and a record status. | V2, V4 |
 | AC3 | `send` prompts the agent with the exact request shape and maps each herdr error. | V3, V4 |
-| AC4 | `stop` refuses a registered agent, closes the pane of a spawned agent, and updates the record, also when the pane is already gone. | V3, V4 |
+| AC4 | `stop` refuses a registered agent, checks the process identity, closes the pane of a spawned agent, returns the post-close topology, and updates the record. | V3, V4 |
 | AC5 | The gate passes. | V5 |
 
 ## Verification items
@@ -122,42 +131,50 @@ while the process continues.
 
 - Proves: AC1.
 - Command: `go test ./internal/lib/harness/ -v`, red and green.
-- Expected: the Claude Code arguments with and without a model, the extra arguments, the timeouts, and the unknown kind error. The bounds check fails a profile with a start timeout of 3 seconds, of 301 seconds, or below its ready timeout. It passes each registered profile.
+- Expected: the Claude Code arguments with and without a model, the extra arguments, the timeouts, and the unknown kind error. The bounds check fails a profile with a start timeout of 3 seconds, of 301 seconds, or below its ready timeout. It passes each registered profile. The process-name test accepts `claude` and rejects `node`, `python`, `sh`, and `bash`.
 
 ### V2 Spawn tests
 
 - Proves: AC2.
 - Command: `go test -race ./internal/agent/ -run TestSpawn -v`, red and green.
-- Expected: a fake herdr server scripts the replies with the shapes of `reference/herdr/api/agent.md`: `agent_info` for the wait, and the error codes `timeout`, `agent_not_running`, and `agent_not_found`. Cases: idle gives `ok`, done gives `ok`, blocked gives `partial`, a wait timeout gives `partial`, and a start error gives `failed` with the record `exited`. A closed connection during the start gives `partial` with the record `unresolved`. `agent_not_running` during the wait gives `failed` with the record `exited`. A reply without a name after the wait gives `ok`. The fake server checks that the record file exists when the start request arrives. The test checks the start parameters, the wait target, and the record fields with `harness`, `cwd`, and `terminal_id`.
+- Expected: a fake herdr server scripts the replies with the shapes of `reference/herdr/api/agent.md`: `agent_info` for the wait, and the error codes `timeout`, `agent_not_running`, and `agent_not_found`. Cases: idle gives `ok`, done gives `ok`, blocked gives `partial`, a wait timeout gives `partial`, and a start error gives `failed` with the record `exited`. A closed connection during the start gives `partial` with the record `unresolved`. `agent_not_running` during the wait gives `failed` with the record `exited`. A reply without a name after the wait gives `ok`. The fake server checks that the record file exists when the start request arrives. The test checks the start parameters, the wait target, and the record fields with `harness`, `cwd`, and `terminal_id`. Process cases: one named foreground entry records the PID, name, start, and optional session. A multiple entry, absent entry, shell entry, unknown name, wrapper-only entry, or unstable start gives `unresolved`. A wait timeout with the proven ownership keeps `live`. An absent session alone passes. A recorded session that is missing or different fails. A reused PID and an unreadable `/proc` fail.
 
 ### V3 Send and stop tests
 
 - Proves: AC3, AC4.
 - Command: `go test ./internal/agent/ -run 'TestSend|TestStop' -v`, red and green.
-- Expected: the prompt request without `wait`, the exact nested `wait` shape, and the outcomes for `agent_blocked`, `agent_prompt_stalled`, `agent_not_ready`, and `timeout`. The stop cases: `spawned` false refuses with no request. `pane_not_found` from `pane.get` gives `unresolved`. A `terminal_id` difference gives `unresolved`. The success case shows the record `stopped` when the close request arrives, with the effect `workspace closed` for a `pane_count` of 1 and without it for 2. A close error gives `failed` with the record `live` and `last_error`.
+- Expected: the prompt request without `wait`, the exact nested `wait` shape, and the outcomes for `agent_blocked`, `agent_prompt_stalled`, `agent_not_ready`, and `timeout`. The stop cases: `spawned` false refuses with no request. `pane_not_found` from `pane.get` gives `unresolved`. A `terminal_id` difference gives `unresolved`. A process PID, name, start, or session difference gives `unresolved` and no close. The success case shows the record `stopped` when the close request arrives. The post-close read gives `closed`, `surviving`, or `unknown`, and each result keeps or clears the project metadata as AC4 gives. A close error gives `failed` with the record `live` and `last_error`.
 
 ### V4 Live transcript
 
 - Proves: AC2, AC3, AC4.
+- Use one unique fixture home with the marker `.hive/README.md` and one absolute
+  tested binary. Record the binary SHA256. Keep each earlier report.
 - Command, from a pane of the hive session, with a new tab in the own workspace of the worker:
 
 ```sh
-go build .
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
 NAME="t10-check-$(date +%s)"
-herdr tab create --workspace "$HERDR_WORKSPACE_ID"
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 PANE=<root pane ID from the output>
-./hive --home "$PWD" agent spawn --pane "$PANE" --role coordinator --name "$NAME" --harness claude --model <small model>
-./hive --home "$PWD" agent send --agent "$NAME" --wait --timeout 120 "Reply with the word pong."
+"$BIN" --home "$FIX" agent spawn --pane "$PANE" --role coordinator --name "$NAME" --harness claude --model {{T10_SMOKE_MODEL}}
+"$BIN" --home "$FIX" agent send --agent "$NAME" --wait --timeout 120 "Reply with the word pong."
 herdr pane read "$PANE" --lines 20
-./hive --home "$PWD" agent list
-./hive --home "$PWD" agent stop --agent "$NAME"
+"$BIN" --home "$FIX" agent list
+"$BIN" --home "$FIX" agent stop --agent "$NAME"
 echo "exit $?"
 herdr pane get "$PANE"
-./hive --home "$PWD" agent list --all
+"$BIN" --home "$FIX" agent list --all
 herdr tab list --workspace "$HERDR_WORKSPACE_ID"
+rm -rf "$FIX"
 ```
 
-- Expected: the spawn prints the name and the outcome `ok`. The pane read shows the word pong. The list shows the agent `live`. The stop exits with 0 and lists the effect `pane closed` alone, because the workspace has other tabs. `pane get` answers `pane_not_found`. The last list shows the record `stopped`. The tab list no longer shows the new tab, because its only pane is gone.
+- Expected: the spawn prints the name and the outcome `ok`. The pane read shows the word pong. The list shows the agent `live`. The stop exits with 0 and lists the effect `pane closed`. The post-close read returns one of `closed`, `surviving`, or `unknown`, and the project metadata follows that result. `pane get` answers `pane_not_found`. The last list shows the record `stopped`. The tab list no longer shows the new tab, because its only pane is gone.
 
 ### V5 Gate
 
@@ -171,7 +188,11 @@ herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 - The pane choice for a worker, the brief prompt, and the task assignment. T14 adds them.
 - The update of the project record after a manager stop. T13 adds it.
 - `hive agent resolve` for an `unresolved` record. T20 adds it.
+- The process reader. T10 owns it. T15 imports `internal/lib/process`.
 
 ## Changes
 
-None.
+2026-10-18. Add T09 as a direct prerequisite. Add the typed process identity,
+the profile process-name method, the process reader, the exact stop check, and
+the post-close topology result. Replace the live transcript with a unique
+fixture home and an absolute tested binary.

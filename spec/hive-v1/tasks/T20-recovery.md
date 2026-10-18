@@ -47,7 +47,8 @@ identity of the live agent with the record before it trusts the name.
 - `hive agent resolve --agent NAME --as exited|live` needs a record with the status `unresolved`. Another status fails with `agent is <status>`.
 - `--as exited` sets the status `exited`.
 - `--as live` calls `agent.get` with the recorded herdr name as the target. When the record has no herdr name, the target is the recorded pane ID.
-- Hive compares three fields of the live agent with the record. The agent kind must equal the recorded harness. The canonical `cwd` of the pane must equal the recorded `cwd`. The `terminal_id` must equal the recorded `terminal_id`. Hive skips a field that the record does not hold. A difference fails with `agent identity differs: <field>` and leaves the record unchanged.
+- Hive compares the fields of the live agent with the record. The agent kind must equal the recorded harness. The canonical `cwd` of the pane must equal the recorded `cwd`. The `terminal_id` must equal the recorded `terminal_id`.
+- When the record holds `process_pid`, compare it exactly with the live process. A difference fails with `agent identity differs: process_pid`. When the record holds `process_start`, compare it exactly. A difference fails with `agent identity differs: process_start`. Skip a field that the record does not hold. A difference leaves the record unchanged.
 - A match sets the status `live` and updates `pane_id`, `workspace_id`, `tab_id`, and `terminal_id` from the live agent.
 - The herdr error `agent_not_found` fails with `no live agent named <name>`. Each other failure, such as a timeout or a transport error, fails with the herdr code and message. In each failure the record stays unchanged.
 - The resolve writes the agent record. The supervisor of T15 watches the agent directory and rebuilds its subscription for the new pane ID.
@@ -77,7 +78,7 @@ identity of the live agent with the record before it trusts the name.
 
 - Proves: AC1.
 - Command: `go test ./internal/agent/ -run TestResolve -v`, red and green.
-- Expected: a fake herdr server. Cases: `exited`. `live` with a matching agent, with the four updated IDs. A matching name with a different kind, a different `cwd`, and a different `terminal_id`, each with the message and an unchanged record. `agent_not_found` with its message. A timeout with the herdr code and an unchanged record. A record that is not unresolved.
+- Expected: a fake herdr server. Cases: `exited`. `live` with a matching agent, with the four updated IDs. A matching name with a different kind, a different `cwd`, or a different `terminal_id` fails with the message and an unchanged record. A different `process_pid` or `process_start` fails the same way. A record without `process_pid` or `process_start` skips that field. `agent_not_found` with its message. A timeout with the herdr code and an unchanged record. A record that is not unresolved.
 
 ### V2 Guard tests
 
@@ -104,4 +105,5 @@ identity of the live agent with the record before it trusts the name.
 
 ## Changes
 
-None.
+2026-10-18. Compare `process_pid` and `process_start` exactly when the record
+holds them. Skip an absent field. Keep the manual resolve rule.

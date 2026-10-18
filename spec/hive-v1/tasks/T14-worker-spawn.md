@@ -51,11 +51,14 @@ worktree. The verifier spawn therefore reopens the worktree with
 
 - With `--role worker --task ID` and no `--pane`, the task must have the status `created` or `assigned` and a worktree with a `root_pane`. Otherwise the spawn fails with the message of the user flows.
 - `--project` can be absent. The project comes from the task. A `--project` that differs from the project of the task fails with `task <id> is in project <p>`.
-- Pane check: hive calls `pane.get` on the recorded `root_pane`. The pane must exist, its `workspace_id` must equal the recorded `workspace_id` of the worktree, and its `cwd` must equal the worktree path after symbolic link resolution. It must have no `restore_error`, the status `unknown`, and no `agent`.
+- Pane check: hive calls `pane.get` on the recorded `root_pane`. It compares the current pane ID with the recorded `root_pane` before the worker start. A difference fails with `worktree pane mismatch: pane_id`.
+- The pane must exist, its `workspace_id` must equal the recorded `workspace_id` of the worktree, and its `cwd` must equal the worktree path after symbolic link resolution. It must have no `restore_error`, the status `unknown`, and no `agent`.
+- Check the repository identity and checkout path through the real workspace metadata. Read the branch through `gitx.CurrentBranch`, or a typed `WorktreeInfo` result that holds a branch. Do not use a workspace branch field.
 - A pane that is gone, moved, or in another directory fails with `worktree pane mismatch: <field>`. A pane with `restore_error` fails with `pane not restored: <error>`.
 - A pane with an agent is busy. Hive calls `agent.get` with the pane ID and fails with `pane busy: <name>`. Without a name, it fails with `pane busy: <kind> agent` with the kind from `pane.get`.
 - A record with the status `unresolved` and the same pane blocks the spawn with `pane has an unresolved record: <name>`. T20 gives `hive agent resolve` for it.
 - The sequence: the spawn core of T10 with the pane, then the assignment, then `agent.prompt` with the worker prompt and no wait. Before the assignment, hive reads the task again under the store lock and checks the status again. A changed status fails with `task is <status>` and leaves the agent live without a task.
+- A lost start reply or another uncertain start preserves the topology and the record. Report `partial` and the unresolved record. Do not clean up after an uncertain start.
 - The result of the core decides the next steps. `ok` with the status `idle` or `done`: assign, then prompt. `blocked`: no assignment and no prompt. The outcome is `partial` with the error of T10 and the hint `then run: hive task assign --task <id> --agent <name> and hive agent send --agent <name> '<prompt>'`. A timeout: no assignment and no prompt, `partial` as T10 gives. `failed`, or an `unresolved` record: no assignment and no prompt.
 - A prompt that fails after the assignment gives `partial` with the effects `agent started` and `task assigned`, and the hint `then run: hive agent send --agent <name> '<prompt>'`.
 - The worker prompt is one line: `Read <home>/.agents/skills/hive-worker/SKILL.md first. Then run: hive --home '<home>' task show '<task-id>' --brief. Follow that brief. Your worktree is '<path>' on the branch '<branch>'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
@@ -64,8 +67,10 @@ worktree. The verifier spawn therefore reopens the worktree with
 ### AC2 Verifier
 
 - With `--role verifier --task ID`, the task must have the status `completed`. Each record of the task with the role `worker` must have the status `stopped` or `exited`. A `live` record fails with `worker still live: <name>`. An `unresolved` record fails with `pane has an unresolved record: <name>`.
-- Hive calls `workspace.get` with the recorded `workspace_id` of the worktree. The error `workspace_not_found` means that the stop of the worker closed the workspace. Hive then sends `worktree.open` with `cwd` equal to the repository path, `path` equal to the worktree path, `label` equal to the task ID, and `focus` false. The reply gives the workspace, the tab, and the root pane. Hive writes `workspace_id`, `tab_id`, and `root_pane` to the worktree of the task.
+- Hive calls `workspace.get` with the recorded `workspace_id` of the worktree. The error `workspace_not_found` means that the stop of the worker closed the workspace. Hive then sends `worktree.open` with `cwd` equal to the registered repository path, `path` equal to the worktree path, `label` equal to the task ID, and `focus` false. The reply gives the workspace, the tab, and the root pane. Hive writes `workspace_id`, `tab_id`, and `root_pane` to the worktree of the task.
 - A found workspace still holds panes of the user. Hive then sends `tab.create` with the `workspace_id`, `cwd` equal to the worktree path, and `focus` false. Hive writes `tab_id` and `root_pane` from the reply.
+- Hive tracks whether this invocation made the tab or the workspace. When a start fails before it becomes successful, close only newly made, still-owned topology. Do not close a user workspace to remove one tab. Do not treat `already_open` as ownership.
+- Hive permits cleanup only after a known no-start result and a fresh ownership check. A lost start reply or an uncertain start preserves the topology and the record. Report `partial` and the unresolved record.
 - The pane rules of AC1 then apply to that root pane.
 - The verifier prompt is one line: `Read <home>/.agents/skills/hive-verifier/SKILL.md first. Then run: hive --home '<home>' task show '<task-id>' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive --home '<home>' task verify --task '<task-id>', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
 - The spawn does not assign the task. The record has the role `verifier` and the task.
@@ -94,7 +99,7 @@ worktree. The verifier spawn therefore reopens the worktree with
 
 - Proves: AC1, AC2, AC3.
 - Command: `go test ./internal/agent/ -run 'TestWorkerSpawn|TestVerifierSpawn' -v`, red and green.
-- Expected: a fake herdr server. Refusal cases: no worktree, another project, a pane in another workspace, and a pane with another `cwd`. More refusal cases: a pane with `restore_error`, a busy pane with a name, and a busy pane without a name. The last refusal case: an unresolved record on the pane. Each refusal sends no start. Sequence cases: start, wait, assign, prompt in this order for `idle` and for `done`. The blocked case has no assignment, no prompt, and the hint. The timeout case has no assignment. A task that changes status during the start gets no assignment. A failed prompt after the assignment gives `partial` with both effects. The verifier cases: the status rule, a `live` worker record, and no assignment. More verifier cases: `worktree.open` after `workspace_not_found` with the worktree fields updated, `tab.create` for an open workspace, and the record fields with the new workspace.
+- Expected: a fake herdr server. Refusal cases: no worktree, another project, a pane in another workspace, and a pane with another `cwd`. Add a moved pane whose current ID differs from `root_pane`. More refusal cases: a pane with `restore_error`, a busy pane with a name, and a busy pane without a name. The last refusal case: an unresolved record on the pane. Each refusal sends no start. Sequence cases: start, wait, assign, prompt in this order for `idle` and for `done`. The blocked case has no assignment, no prompt, and the hint. The timeout case has no assignment. A task that changes status during the start gets no assignment. A failed prompt after the assignment gives `partial` with both effects. The verifier cases: the status rule, a `live` worker record, and no assignment. More verifier cases: `worktree.open` after `workspace_not_found` with the worktree fields updated. Also `tab.create` for an open workspace, a real branch from `gitx.CurrentBranch` or a typed `WorktreeInfo`, and `already_open` with no ownership. Add a topology-write failure, a lost start reply that keeps the topology, and cleanup only after a known no-start result. The record fields with the new workspace.
 
 ### V2 Prompt text tests
 
@@ -105,40 +110,51 @@ worktree. The verifier spawn therefore reopens the worktree with
 ### V3 Live transcript
 
 - Proves: AC1, AC2.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Put fixture skills only in
+  `$FIX/.agents/skills`. Do not replace a real home skill. Record the binary
+  SHA256 and the actual path that the worker reads.
 - Command, from a pane of the hive session:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-w projects/repo-w
-git init -q .hive/tmp/repo-w && git -C .hive/tmp/repo-w commit -q --allow-empty -m init
-./hive --home "$PWD" project register .hive/tmp/repo-w --base "$(git -C .hive/tmp/repo-w branch --show-current)"
-./hive --home "$PWD" task create --project repo-w --title "worker demo" --brief - <<B
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive" "$FIX/.agents/skills/hive-worker" "$FIX/.agents/skills/hive-verifier"
+: > "$FIX/.hive/README.md"
+printf '%s\n' '# hive-worker fixture' 'Follow the brief.' > "$FIX/.agents/skills/hive-worker/SKILL.md"
+printf '%s\n' '# hive-verifier fixture' 'Follow the brief.' > "$FIX/.agents/skills/hive-verifier/SKILL.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+REPO="$FIX/repo-w"
+git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
+"$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
+"$BIN" --home "$FIX" task create --project repo-w --title "worker demo" --brief - <<B
 Make the file hello.txt in your worktree with the one line hello. Do not commit.
 Verification item V1: cat hello.txt prints hello.
-When V1 passes, run: hive --home '$PWD' task complete --task 1-worker-demo
+When V1 passes, run: hive --home '$FIX' task complete --task 1-worker-demo
 B
-./hive --home "$PWD" worktree create --task 1-worker-demo
+"$BIN" --home "$FIX" worktree create --task 1-worker-demo
 W="t14-check-w-$(date +%s)"
-./hive --home "$PWD" agent spawn --role worker --task 1-worker-demo --name "$W" --harness claude --model <small model>
+"$BIN" --home "$FIX" agent spawn --role worker --task 1-worker-demo --name "$W" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
-./hive --home "$PWD" task show 1-worker-demo
+"$BIN" --home "$FIX" task show 1-worker-demo
 # wait until the task shows completed, then:
-cat projects/repo-w/worktrees/1-worker-demo/hello.txt
-./hive --home "$PWD" agent stop --agent "$W"
+cat "$FIX/projects/repo-w/worktrees/1-worker-demo/hello.txt"
+"$BIN" --home "$FIX" agent stop --agent "$W"
 herdr workspace list
 V="t14-check-v-$(date +%s)"
-./hive --home "$PWD" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model <small model>
+"$BIN" --home "$FIX" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
 herdr workspace list
 # wait until the task shows verified, then:
-./hive --home "$PWD" task show 1-worker-demo
-./hive --home "$PWD" agent stop --agent "$V"
-./hive --home "$PWD" worktree remove --task 1-worker-demo --force
+"$BIN" --home "$FIX" task show 1-worker-demo
+"$BIN" --home "$FIX" agent stop --agent "$V"
+"$BIN" --home "$FIX" worktree remove --task 1-worker-demo --force
 herdr workspace close <repository workspace ID from the create output>
-rm -rf .hive/tmp/repo-w projects/repo-w
+rm -rf "$FIX"
 ```
 
-- Expected: both spawns exit with 0. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check.
+- Expected: both spawns exit with 0. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check. The fixture cleanup removes only `$FIX`.
 
 ### V4 Gate
 
@@ -154,4 +170,7 @@ rm -rf .hive/tmp/repo-w projects/repo-w
 
 ## Changes
 
-None.
+2026-10-18. Add the current pane check, the real branch source, the invocation
+ownership rule, the unknown-start preservation, and the cleanup rule. Replace
+the live transcript with a unique fixture home, fixture skills, and an absolute
+tested binary.

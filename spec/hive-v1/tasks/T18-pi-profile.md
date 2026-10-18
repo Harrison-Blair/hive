@@ -6,7 +6,7 @@
 | Wave | 4 |
 | Tier | small |
 | Depends on | T10, CP2 |
-| Blocks | CP5 |
+| Blocks | CP3, CP5 |
 | Branch | `task/T18-pi-profile` |
 | Worktree | `projects/hive/worktrees/T18-pi-profile/` |
 | Evidence | `evidence/T18-pi-profile/` |
@@ -40,7 +40,9 @@ version and records the choice in the evidence.
 ### AC1 Profile
 
 - The kind is `pi`. With a model, the arguments hold `--model` and the model. Without a model, the arguments are empty. The profile does not pass `--provider`, because the model pattern carries the provider. The extra arguments come last.
+- The profile gives `ProcessNames()` with the actual executable name `pi`. It does not return `node`, `python`, or a shell name.
 - The model value stays one unchanged argument. A value such as `anthropic/claude-sonnet-5-5:high` keeps its slash and its suffix.
+- Pi 0.87.1 maps native DeepSeek `:medium` to null. Supported-level clamping selects the effective `high`. Record the requested `:medium` and the effective `high` separately. Keep the requested argument. This is native normalization of the same provider and model. It does not change a global catalog or config. PiSol `:high` stays effective `high`. A wrong or absent model blocks.
 - The measured start is the time from the `agent.start` request to the first settled status. The settled statuses are `idle`, `blocked`, and `done`. The worker takes the time from the `duration_ms` of the `agent.wait` log event of the spawn in V2. The first live run uses the default of 120000 ms.
 - The start timeout and the ready timeout are two times the measured start. The floor is 120000 ms and the ceiling is 300000 ms. herdr rejects a start timeout outside `(3000, 300000]` with `invalid_agent_timeout`. A start timeout below the real start makes herdr drop the name with no error, so the floor protects the spawn. When two times the measured start exceeds 300000 ms, the profile uses 300000 ms and the worker reports it to the merger.
 - The profile passes `harness.Check` of T10. That check covers the timeout rules above.
@@ -70,29 +72,38 @@ version and records the choice in the evidence.
 
 - Proves: AC1.
 - Command: `go test ./internal/lib/harness/ -run 'TestPi|TestLookup' -v`, red and green.
-- Expected: the arguments with and without a model, the extra arguments, and a `provider/id:thinking` value as one unchanged argument. Also a start timeout above 3000 ms and at most 300000 ms, and the lookup by kind.
+- Expected: the arguments with and without a model, the extra arguments, and a `provider/id:thinking` value as one unchanged argument. Also a start timeout above 3000 ms and at most 300000 ms, and the lookup by kind. The process-name test accepts `pi` and rejects `node`, `python`, `sh`, and `bash`. The evidence records the requested `:medium` and the effective `high` separately.
 
 ### V2 Live transcript
 
 - Proves: AC2.
+- Use one unique fixture home with the marker `.hive/README.md` and one absolute
+  tested binary. Record the binary SHA256. Discover the exact installed Pi model
+  first. Record the requested model and the actual effective model.
 - Command, from a pane of the hive session, with a new workspace for the check. The name gets a suffix from `date +%s`. herdr names are unique for the session, and T16 to T19 run in parallel.
 
 ```sh
-go build .
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
 NAME=t18-check-$(date +%s)
-herdr workspace create --cwd "$PWD" --label "$NAME" --no-focus
-./hive --home "$PWD" agent spawn --pane <root pane of the new workspace> --role coordinator --name "$NAME" --harness pi --model <model>
+herdr workspace create --cwd "$FIX" --label "$NAME" --no-focus
+"$BIN" --home "$FIX" agent spawn --pane <root pane of the new workspace> --role coordinator --name "$NAME" --harness pi --model {{T18_MODEL}}
 echo "exit $?"
-./hive --home "$PWD" agent send --agent "$NAME" --wait --timeout 120 'Reply with the word pong.'
+"$BIN" --home "$FIX" agent send --agent "$NAME" --wait --timeout 120 'Reply with the word pong.'
 echo "exit $?"
 herdr agent read "$NAME" --source visible
-./hive --home "$PWD" agent stop --agent "$NAME"
+"$BIN" --home "$FIX" agent stop --agent "$NAME"
 echo "exit $?"
-./hive --home "$PWD" agent show "$NAME"
+"$BIN" --home "$FIX" agent show "$NAME"
 herdr workspace list
+rm -rf "$FIX"
 ```
 
-- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send prints the reply with the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start.
+- Expected: the spawn prints the name and the outcome `ok` with exit 0. The send prints the reply with the word pong. The read shows the model name. The stop prints `ok` with exit 0. The show prints the status `stopped`. The workspace list no longer shows the workspace of the check, because its pane was the last one. The evidence records the measured start, the requested model, and the actual effective model. A `:medium` request can show the effective `high` after native normalization. A wrong or absent model leaves AC2 `BLOCKED`.
 - A spawn that ends `partial` with `agent blocked` goes into the evidence as a separate run. The worker answers the dialog in the pane by hand, stops the agent, and runs the check again from the spawn. Only a run with the outcome `ok` proves AC2.
 - When a run fails before the stop, the worker closes the workspace of the check with `herdr workspace close <workspace>`.
 
@@ -108,4 +119,7 @@ herdr workspace list
 
 ## Changes
 
-None.
+2026-10-18. Add CP3 as a dependent. Add the profile process-name method with
+`pi`, the native `:medium` normalization record, and the exact model discovery.
+Replace the live transcript with a unique fixture home and an absolute tested
+binary.

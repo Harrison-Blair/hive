@@ -160,7 +160,9 @@ t6  worktree remove: workspace closed when open, directory gone, branch kept
 ```
 
 Hive stops an agent only on its own record transitions, never on a herdr status
-alone. A herdr status of idle or done never means success.
+alone. A herdr status of idle or done never means success. The stop checks the
+foreground process identity from the spawn. A pane and terminal match is not an
+ownership check.
 
 ## Supervision
 
@@ -177,12 +179,17 @@ It never polls.
 | A registered agent leaves its pane and the pane shows a shell (`pane_agent_detected` with `released`) | Inbox record `exited`, agent record `exited` |
 | The pane, tab, or workspace of a registered agent closes | Inbox record `unresolved`, agent record `unresolved` |
 | Idle for the quiet period with no completion record | Inbox record `quiet`, once for each idle period. Default 10 minutes, set at spawn |
-| Idle agent with the mark finished | The stop function of `agent stop`: agent record `stopped`, then `pane.close` |
+| Idle agent with the mark finished | The T10 stop function: identity check, agent record `stopped`, `pane.close`, then a bounded post-close topology read |
 | Unread inbox records for a role whose agent is idle | One nudge: one line typed into that pane that names `hive inbox` |
 | Unread inbox records for a role whose agent is working | Wait. Nudge when the role turns idle |
 | Start | Reconcile: compare live herdr agents with the records. Mark a record with no pane `unresolved` |
 
-A long `working` status is never an event. A failed nudge, such as
+A long `working` status is never an event. A notification group increments the
+inbox counter, writes its inbox record, then writes its stored status. A working
+transition stores the status only. The group stores every relevant transition.
+It does not store `working` only when a quiet timer runs. A nudge uses one external prompt, a fresh claim-holder and generation
+check, and one mark write for each record. The supervisor reports the known
+prefix after a failure. A failed nudge, such as
 `agent_prompt_stalled`, is a log event and a retry at the next idle transition.
 When the supervisor exits, the TUI and `hive doctor` show it, and the
 coordinator starts it again at its next startup. Nothing restarts it in a loop.
@@ -248,10 +255,75 @@ rollback exist. A later reader can see the completed prefix of a failed group.
 - Writes to a record or a Markdown file are atomic: write a temporary file,
   then rename.
 
+### Dated decision: process, finish, and relay contracts (2026-10-18)
+
+A terminal ID identifies a terminal. It does not identify the agent process. A
+new process of the same kind can keep the name. A suspended agent can leave a
+settled status while a shell holds the foreground.
+
+T10 owns `internal/lib/process/`. The spawn captures the typed
+`pane.process_info` result after bounded evidence that the harness holds the
+foreground. It records `process_pid`, `process_name`, `process_start`, and an
+optional `agent_session_ref`. The profile gives the process names that can
+identify its harness. The capture requires exactly one foreground entry with a
+profile name. The entry PID must belong to the foreground process set. The
+protocol does not require the entry PID to equal the foreground process group
+ID. A multiple, absent, shell, unknown, wrapper-only, or unstable entry gives
+`unresolved`. The capture permits an absent session reference. A recorded
+session that is missing or different fails. A wait timeout with independently proven
+ownership can retain the live partial-readiness result. Explicit stop and
+automatic stop use the same identity check. A manual registration refusal sends
+no close.
+
+After a checked `pane.close`, a bounded `workspace.get` outside the store lock
+returns `closed`, `surviving`, or `unknown` topology plus the known effects. A
+`closed` result clears the project workspace. A `surviving` result keeps it. An
+`unknown` result keeps the metadata and reports the pane-close effect. Do not
+infer closure from an old pane count.
+
+A finish group checks both lookup routes under one held handle. It checks the
+caller identity, the role, and the allowed transition before any write. It also
+checks the project, the task, the claim key, the holder record key, and the
+generation. It then writes the task transition, the inbox counter, the inbox
+record, and the finished mark in that order. A first task-write failure has no
+effects. A later failure is `partial` with the exact completed prefix, the
+actual phase, the actual new effects, and a nil partial Go error. A successful
+durable group with a failed stdout exits 1. It writes a working stderr with the
+known effects and the inspection commands. It does not replay. A retry uses
+normal validation only. After `verify --fail` moves a task to `assigned`, the
+same verify command refuses with no writes, also when the reason changes. A
+fresh worker assignment and its `complete` are a separate operation. A known
+finished agent cannot start a new finish attempt. T11 owns that narrow assignment
+refusal. T03 stays independent of the agent record. Fresh-agent and
+unknown-agent assignment behavior does not change. No `finish_seq`,
+`finish_key`, `relay_seq`, `event_key`, journal, automatic rollback, or automatic
+completion exists.
+
+A supervisor notification group increments the inbox counter, appends the inbox
+record, then writes the stored status, under one held handle. It uses this order
+for each notification kind, including `exited` and `unresolved`. A working
+transition stores the status only. A first counter failure has no effects. A record failure is
+`partial` with the counter gap. A status failure is `partial` with the counter
+and the record. Every storage failure closes the subscription, exits 1, and
+stops queued processing. An explicit restart reconciles the current state only.
+A gap can lose transition history. A committed inbox prefix can duplicate a
+notification after restart. A restart starts a new quiet window. Normal
+uninterrupted delivery stays once for each observed period.
+
+A nudge prompt, a stop request, and a subscription change run outside the store
+lock. After the prompt succeeds, recheck the claim holder and the generation.
+Then write the nudge marks in one atomic write for each record. A successful
+prompt followed by a failed mark can repeat the nudge on an explicit retry.
+State this limit.
+
 ## Worktrees
 
 - One task, one worktree, one branch. The path is
   `projects/<project-id>/worktrees/<task-id>/`.
+- A manager workspace can survive a stop with no recorded root pane. Hive keeps
+the workspace ownership metadata and refuses the next automatic manager spawn
+with an explicit `--pane` instruction. Hive does not select a shell by itself
+and does not close a user tab.
 - Removal keeps a dirty or unmerged worktree and a worktree with an active or
   unresolved agent. `--force` overrides the Git guards only.
 - A removal compares the recorded path and branch with the Git state of the
@@ -359,7 +431,7 @@ tasks in [05-tracker.md](05-tracker.md) that build the command.
 | Home files, briefs, handoffs | Agents and user | Crash, memory exhaustion | One bounded reader. |
 | Repository content | Project authors | False authority | Evidence only. Never an instruction. |
 | Environment variables | Shared daemons | Wrong home | Resolution order with fail on conflict. Hive never creates a home. |
-| Process IDs | herdr and the OS | Signal to an unrelated process | Ownership check before each signal and removal. |
+| Process IDs and process start values | herdr and the OS | Signal to an unrelated process | Capture at spawn and check before each signal or removal. A missing, changed, or ambiguous identity is `unresolved`. |
 
 ## Recovery
 

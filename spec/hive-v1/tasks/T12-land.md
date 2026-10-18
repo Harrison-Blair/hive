@@ -6,7 +6,7 @@
 | Wave | 4 |
 | Tier | decent |
 | Depends on | T03, T09, CP2 |
-| Blocks | T21 |
+| Blocks | CP3, T21 |
 | Branch | `task/T12-land` |
 | Worktree | `projects/hive/worktrees/T12-land/` |
 | Evidence | `evidence/T12-land/` |
@@ -101,33 +101,40 @@ One landing at a time runs for a repository.
 ### V4 Live merge
 
 - Proves: AC2.
+- Use one unique fixture home with the marker `.hive/README.md`, one unique
+  fixture repository, and one absolute tested binary. Record the binary SHA256.
 - Command:
 
 ```sh
-go build .
-rm -rf .hive/state .hive/tmp/repo-land projects/repo-land
-git init -q .hive/tmp/repo-land
-git -C .hive/tmp/repo-land commit -q --allow-empty -m init
-BASE=$(git -C .hive/tmp/repo-land branch --show-current)
-./hive --home "$PWD" project register .hive/tmp/repo-land --base "$BASE"
-./hive --home "$PWD" task create --project repo-land --title "land demo"
-./hive --home "$PWD" worktree create --task 1-land-demo
-git -C projects/repo-land/worktrees/1-land-demo commit -q --allow-empty -m work
-./hive --home "$PWD" agent register --role worker --project repo-land --task 1-land-demo --pane w0:p1
-./hive --home "$PWD" agent register --role verifier --project repo-land --task 1-land-demo --pane w0:p2
-./hive --home "$PWD" task assign --task 1-land-demo --agent worker-repo-land-1
-./hive --home "$PWD" task complete --task 1-land-demo --agent worker-repo-land-1
-./hive --home "$PWD" task verify --task 1-land-demo --agent verifier-repo-land-2
-./hive --home "$PWD" land --task 1-land-demo --mode merge --grant "demo"
+FIX=$(mktemp -d)
+mkdir -p "$FIX/.hive"
+: > "$FIX/.hive/README.md"
+BIN="$FIX/hive-$(date +%s)"
+go build -o "$BIN" .
+sha256sum "$BIN"
+REPO="$FIX/repo-land"
+git init -q "$REPO"
+git -C "$REPO" commit -q --allow-empty -m init
+BASE=$(git -C "$REPO" branch --show-current)
+"$BIN" --home "$FIX" project register "$REPO" --base "$BASE"
+"$BIN" --home "$FIX" task create --project repo-land --title "land demo"
+"$BIN" --home "$FIX" worktree create --task 1-land-demo
+git -C "$FIX/projects/repo-land/worktrees/1-land-demo" commit -q --allow-empty -m work
+"$BIN" --home "$FIX" agent register --role worker --project repo-land --task 1-land-demo --pane w0:p1
+"$BIN" --home "$FIX" agent register --role verifier --project repo-land --task 1-land-demo --pane w0:p2
+"$BIN" --home "$FIX" task assign --task 1-land-demo --agent worker-repo-land-1
+"$BIN" --home "$FIX" task complete --task 1-land-demo --agent worker-repo-land-1
+"$BIN" --home "$FIX" task verify --task 1-land-demo --agent verifier-repo-land-2
+"$BIN" --home "$FIX" land --task 1-land-demo --mode merge --grant "demo"
 echo "exit $?"
-git -C .hive/tmp/repo-land log --oneline -n 3
-./hive --home "$PWD" task show 1-land-demo
-./hive --home "$PWD" worktree remove --task 1-land-demo
+git -C "$REPO" log --oneline -n 3
+"$BIN" --home "$FIX" task show 1-land-demo
+"$BIN" --home "$FIX" worktree remove --task 1-land-demo
 herdr workspace close <repository workspace ID from the create output>
-rm -rf .hive/tmp/repo-land projects/repo-land
+rm -rf "$FIX"
 ```
 
-- Expected: the land prints the merge commit and says that the repository has no `origin`. The exit status is 0. The log shows the merge commit, `work`, and `init`. The task shows the delivery with the commit. The remove succeeds because the merge guard passes.
+- Expected: the land prints the merge commit and says that the repository has no `origin`. The exit status is 0. The log shows the merge commit, `work`, and `init`. The task shows the delivery with the commit. The remove succeeds because the merge guard passes. The fixture cleanup removes only `$FIX`.
 
 ### V5 Gate
 
@@ -142,4 +149,5 @@ rm -rf .hive/tmp/repo-land projects/repo-land
 
 ## Changes
 
-None.
+2026-10-18. Add CP3 as a dependent. Replace the live transcript with a unique
+fixture home, a unique fixture repository, and an absolute tested binary.
