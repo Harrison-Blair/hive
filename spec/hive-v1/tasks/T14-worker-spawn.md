@@ -114,24 +114,34 @@ worktree. The verifier spawn therefore reopens the worktree with
   fixture repository, and one absolute tested binary. Put fixture skills only in
   `$FIX/.agents/skills`. Do not replace a real home skill. Record the binary
   SHA256 and the actual path that the worker reads.
+- Create one absolute fixture wrapper at `$FIX/bin/hive` that executes `$BIN`.
+  Record the wrapper path and the binary SHA256. Name that wrapper and the
+  fixture home in each fixture skill and fixture brief. Each child command uses
+  the wrapper. The wrapper preserves the product prompt contract for a bare
+  `hive`. Parent `PATH` alone does not prove child `PATH` binding.
 - Command, from a pane of the hive session:
 
 ```sh
 FIX=$(mktemp -d)
-mkdir -p "$FIX/.hive" "$FIX/.agents/skills/hive-worker" "$FIX/.agents/skills/hive-verifier"
+mkdir -p "$FIX/.hive" "$FIX/bin" "$FIX/.agents/skills/hive-worker" "$FIX/.agents/skills/hive-verifier"
 : > "$FIX/.hive/README.md"
-printf '%s\n' '# hive-worker fixture' 'Follow the brief.' > "$FIX/.agents/skills/hive-worker/SKILL.md"
-printf '%s\n' '# hive-verifier fixture' 'Follow the brief.' > "$FIX/.agents/skills/hive-verifier/SKILL.md"
 BIN="$FIX/hive-$(date +%s)"
 go build -o "$BIN" .
 sha256sum "$BIN"
+WRAP="$FIX/bin/hive"
+printf '#!/bin/sh\nexec "%s" "$@"\n' "$BIN" > "$WRAP"
+chmod +x "$WRAP"
+echo "$WRAP"
+printf '%s\n' '# hive-worker fixture' "Run only $WRAP with --home $FIX." 'Follow the brief.' > "$FIX/.agents/skills/hive-worker/SKILL.md"
+printf '%s\n' '# hive-verifier fixture' "Run only $WRAP with --home $FIX." 'Follow the brief.' > "$FIX/.agents/skills/hive-verifier/SKILL.md"
+export PATH="$FIX/bin:$PATH"
 REPO="$FIX/repo-w"
 git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
 "$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
 "$BIN" --home "$FIX" task create --project repo-w --title "worker demo" --brief - <<B
 Make the file hello.txt in your worktree with the one line hello. Do not commit.
 Verification item V1: cat hello.txt prints hello.
-When V1 passes, run: hive --home '$FIX' task complete --task 1-worker-demo
+When V1 passes, run: '$WRAP' --home '$FIX' task complete --task 1-worker-demo
 B
 "$BIN" --home "$FIX" worktree create --task 1-worker-demo
 W="t14-check-w-$(date +%s)"
@@ -154,7 +164,7 @@ herdr workspace close <repository workspace ID from the create output>
 rm -rf "$FIX"
 ```
 
-- Expected: both spawns exit with 0. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check. The fixture cleanup removes only `$FIX`.
+- Expected: both spawns exit with 0. The worker and verifier read fixture skills that name the absolute wrapper and fixture home. The worker completion command uses `$WRAP`, which executes the tested binary. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check. The fixture cleanup removes only `$FIX`.
 
 ### V4 Gate
 
@@ -173,4 +183,5 @@ rm -rf "$FIX"
 2026-10-18. Add the current pane check, the real branch source, the invocation
 ownership rule, the unknown-start preservation, and the cleanup rule. Replace
 the live transcript with a unique fixture home, fixture skills, and an absolute
-tested binary.
+tested binary. Bind each fixture skill, brief, and child command to the absolute
+fixture wrapper and fixture home.

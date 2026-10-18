@@ -680,15 +680,30 @@ herdr workspace list
 "$BIN" --home "$FIX" task cancel --task "$TASK"
 "$BIN" --home "$FIX" worktree remove --task "$TASK"
 herdr workspace list
-git branch --list "task/$TASK"
-rm -rf "$FIX"
+git -C "$REPO" branch --list "task/$TASK"
+# Capture the repository workspace that this run can create.
+herdr workspace list
+REPO_WS=<repository workspace ID that this run made, or empty>
+REPO_WS_OWNERSHIP=<known or unknown>
+if [ "$REPO_WS_OWNERSHIP" = known ]; then
+  if [ -n "$REPO_WS" ]; then herdr workspace close "$REPO_WS"; fi
+  rm -rf "$FIX"
+else
+  echo "repository workspace ownership is unknown: keep $FIX and report BLOCKED"
+fi
 ```
 
 Look for: a workspace with the task ID as its label beside the hive workspace,
 with one tab and the agent in its root pane. No tab shows an empty shell. The
 word pong appears in the pane. The list shows the agent as live. After the stop,
 the workspace of the task is gone and the record is `stopped`. After the remove,
-the directory is gone and the branch stays.
+the directory is gone and the branch stays. The branch check runs in `$REPO`.
+
+The run can create a repository workspace that the task stop does not close.
+Capture each workspace list. Close only a repository workspace that this run
+made and still owns. Keep an unknown workspace and the fixture, and report
+`BLOCKED`. Do not add a manager prerequisite or a manager-workspace criterion to
+CP2.
 
 Record the actual Claude Code harness and model. A selected model that is absent
 leaves CP2 open. Do not substitute a route.
@@ -711,13 +726,26 @@ artifact, commit `VERIFIED.md`, land the verified branch to fixture `dev`, push
 fixture `dev` to the fixture bare remote, and remove the clean merged worktree
 without force.
 
+After the worker completes, the supervisor stops the finished worker when it is
+idle. Capture the worker record `stopped`, the nudge, and the disappearance of
+the worker workspace. The verifier spawn then reopens the worktree as a
+workspace. Capture the reopened workspace and the verifier in its root pane.
+After the verifier commits `VERIFIED.md`, the supervisor stops the finished
+verifier when it is idle. Capture the verifier record `stopped` and the
+disappearance of the verifier workspace.
+
+At the end, remove only the two tabs that the run made for the manager and the
+supervisor. Keep the coordinator tab and the hive workspace. Capture the tab
+list before and after.
+
 Use PiFlash as the producer and PiSol as the verifier. Record the exact requested
 model and the actual effective model.
 
 A real settled manager runs in pane A. Register it. Send the bounded manager
-brief. The manager receives one nudge and reports its unread inbox count. It does
-not start the first worker. The runner starts the worker. The CP5 real manager
-evidence stays separate.
+brief. The manager receives nudges and sends acknowledgments. It reports its
+unread inbox count. It does not dispatch the worker or the verifier, and it does
+no source work. The runner starts the worker. The CP5 real manager evidence
+stays separate.
 
 The supervisor runs in pane B through an absolute shell wrapper. The wrapper
 writes the actual child status to an absolute exit file. Record the claim
@@ -733,9 +761,14 @@ checked `cwd`.
 
 Look for: the manager workspace with the manager in its first tab, the manager
 stop that removes the last-pane workspace, one nudge in pane A, the fixture
-worker completion, the fixture verifier record, the fixture `dev` merge, the
-fixture bare remote push, the clean merged removal, the supervisor child status
-0, the stale claim, and no change to real Hive source or real `main`.
+worker completion, the worker `stopped` record and worker workspace
+disappearance, the verifier worktree reopen and workspace, the fixture verifier
+record and verifier `stopped` record, the verifier workspace disappearance, the
+fixture `dev` merge, the fixture bare remote push, the clean merged removal, the
+removal of the two run tabs, the coordinator tab and hive workspace, the
+supervisor child status 0, the stale claim, and no change to real Hive source or
+real `main`. Require the actual records and captures for each stop and each
+topology observation.
 
 Uncertain resources stay. Report `BLOCKED`. Do not force a dirty removal.
 
@@ -802,10 +835,14 @@ remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. They differ. Never
 move a `main` reference to make them equal.
 
 Use three panes of the hive session. Pane A is your pane. Pane B runs the
-supervisor. Pane C runs the TUI.
+supervisor through an absolute wrapper. The wrapper runs the tested supervisor
+and writes the actual child status to an absolute exit file. Pane C runs the
+TUI with the tested binary.
 
 ```sh
 BIN=<absolute tested binary>
+SUP_WRAP=<absolute supervisor wrapper>
+SUP_EXIT=<absolute supervisor child exit file>
 "$BIN" --home "$PWD" doctor
 "$BIN" --home "$PWD" agent spawn --role manager --project hive --harness pi \
   --model opencode-go/deepseek-v4-flash:medium --name manager-hive
@@ -832,9 +869,19 @@ git merge-base --is-ancestor <landing> origin/dev
 git rev-parse main
 git rev-parse origin/main
 git ls-remote origin refs/heads/main
+# Quit the TUI in pane C with q. Send ctrl+c to the supervisor in pane B.
+wait <supervisor wrapper shell pid>
+echo "shell $?"
+cat "$SUP_EXIT"
 "$BIN" --home "$PWD" doctor
 herdr workspace list
 ```
+
+The supervisor child exit is the value in `$SUP_EXIT`. The shell status is the
+result of `wait`. Capture the two values separately. Run the final `doctor`
+after the actual supervisor child exit. The final `doctor` reports the stale
+supervisor claim. Keep the real artifact, tracked evidence, logs, records,
+state, grants, and `main` references.
 
 Look for: the workspace `hive:hive` with the manager in its first tab, the exact
 PiFlash manager, PiFlash worker, and PiSol verifier routes, the committed
@@ -959,8 +1006,8 @@ line for each task, so that two tasks can edit them in parallel:
 | `internal/doctor/checks.go` | One check line for each check. |
 | `internal/agent/spawn.go` | One case line for each role in the pane-choice switch. |
 | `internal/lib/records/*.go` | One field line for each task, at the end of the struct. |
-| `ste_test.go` | One `steFiles` line for each new instruction file. T21 owns this line. |
-| `testdata/ste-baseline.json` | One entry of 0 for each new instruction file. T21 owns this entry. |
+| `ste_test.go` | One `steFiles` line for each new instruction file. T13 and T21 each own their own line, each with a baseline of 0. |
+| `testdata/ste-baseline.json` | One entry of 0 for each new instruction file. T13 and T21 each own their own entry. |
 
 The merger resolves a conflict in these files by keeping each line. An owner
 file may add the imports that its new code needs. A shared file keeps each
@@ -978,7 +1025,7 @@ edit permission.
 | Task | Owned source and test paths | Shared lines |
 | --- | --- | --- |
 | T01 home and register | `main.go`, `cmd/root.go`, `cmd/common/common.go`, `cmd/project/project.go`, `cmd/project/register/register.go`, `cmd/project/list/list.go`, `cmd/project/show/show.go`, `internal/project/doc.go`, `internal/project/register.go`, `internal/project/list.go`, `internal/project/show.go`, `internal/project/render.go`, `internal/lib/home/home.go`, `internal/lib/store/doc.go`, `internal/lib/store/store.go`, `internal/lib/store/atomic.go`, `internal/lib/records/doc.go`, `internal/lib/records/project.go`, `internal/lib/log/log.go`, `internal/lib/output/output.go` | none |
-| T02 version lib | `internal/lib/version/version.go`, `internal/lib/version/version_test.go`, `cmd/version/version.go`, `cmd/root_test.go` | none |
+| T02 version lib | `internal/lib/version/version.go`, `internal/lib/version/version_test.go`, `cmd/version/version.go`, `cmd/root_test.go`, and `internal/version/version.go` (historical deletion only, no new source permission) | none |
 | T22 store operations | `internal/lib/store/store.go`, `internal/lib/store/lock.go`, `internal/lib/store/store_test.go`, `internal/lib/store/lock_test.go`, `internal/lib/store/doc.go` | none |
 | T06 logs command | `cmd/logs/logs.go`, `internal/logs/doc.go`, `internal/logs/read.go`, `internal/logs/filter.go`, `internal/logs/follow.go`, `internal/logs/render.go` | `cmd/root.go` |
 | T03 task lifecycle | `cmd/task/task.go`, `cmd/task/create/create.go`, `cmd/task/assign/assign.go`, `cmd/task/list/list.go`, `cmd/task/show/show.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `cmd/task/cancel/cancel.go`, `internal/task/doc.go`, `internal/task/create.go`, `internal/task/transition.go`, `internal/task/assign.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/cancel.go`, `internal/task/list.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/lib/records/task.go` | `cmd/root.go`, `internal/lib/records/doc.go` |
@@ -988,7 +1035,7 @@ edit permission.
 | T08 TUI log view | `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go` |
 | T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
 | T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/agent.go` |
-| T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go`, `internal/lib/records/inbox.go`, `internal/lib/records/task.go` |
+| T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
 | T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go` |
 | T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
 | T14 worker spawn | `internal/agent/spawn_worker.go`, `internal/agent/brief.go`, `internal/lib/herdr/tab_create.go` | `internal/agent/spawn.go`, `internal/agent/doc.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/doc.go` |
@@ -1023,8 +1070,8 @@ edit permission.
 | `cmd/root.go` | T01, T03, T04, T05, T06, T07, T08, T09, T12, T15 | Keep each registration line. T04 and T07 add two lines each. T08 changes the TUI entry and adds no command. |
 | `internal/lib/herdr/doc.go` | T05, T09, T10, T13, T14, T15 | One map line for each new file. Keep each line. |
 | `internal/lib/records/agent.go` | T04, T10, T11, T15 | One field line for each task, at the end of the struct. |
-| `internal/lib/records/task.go` | T03, T09, T11, T12 | One field block for each task. Keep each block. |
-| `internal/lib/records/inbox.go` | T04, T11, T15 | One field line for each task. Keep each line. |
+| `internal/lib/records/task.go` | T03, T09, T12 | One field block for each task. Keep each block. |
+| `internal/lib/records/inbox.go` | T04, T15 | One field line for each task. Keep each line. |
 | `internal/lib/records/claim.go` | T04, T15 | One field line for each task. Keep each line. |
 | `internal/lib/gitx/gitx.go` | T09, T12 | One helper for each task. Keep each helper. |
 | `internal/agent/spawn.go` | T13, T14 | One case line for each role. Keep each line. |
@@ -1042,7 +1089,7 @@ edit permission.
 | `internal/worktree/remove.go` | T09, T20 | T09 owns removal. T20 adds the agent guard. |
 | `internal/lib/store/doc.go` | T01, T22 | One map line for `lock.go`. Keep the line. |
 | `internal/lib/records/doc.go` | T01, T03, T04 | One map line for each new record file. Keep each line. |
-| `ste_test.go`, `testdata/ste-baseline.json` | T13, T21 | One entry for each new instruction file. Keep each entry. |
+| `ste_test.go`, `testdata/ste-baseline.json` | T13, T21 | T13 and T21 each add and keep their own entry for a new instruction file, with a baseline of 0. |
 
 ### Skip a task
 

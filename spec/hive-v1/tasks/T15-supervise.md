@@ -73,14 +73,14 @@ its pane and its `terminal_id`, never by its herdr name.
 | Status changed to `idle` or `done` | `finished` false, and no `completed` record for the task since the last `working` | Start the quiet timer of the agent. Store the status. |
 | Status changed to `working` | Any | Cancel a quiet timer. Store the status. |
 | Quiet timer ends | The stored status is still `idle` or `done` | Increment the inbox counter. Append `quiet`. Store the status. Once for each idle period. |
-| `pane_agent_detected` with `released` true and `final_status` `unknown` | The pane holds a `live` record | Set the record `exited`. Increment the inbox counter. Append `exited`. Store `exited`. |
-| `pane_exited`, `pane_closed`, `tab_closed`, or `workspace_closed` | The closed pane, tab, or workspace holds a `live` record | Set the record `unresolved`. Increment the inbox counter. Append `unresolved`. Store `unresolved`. |
+| `pane_agent_detected` with `released` true and `final_status` `unknown` | The pane holds a `live` record | Increment the inbox counter. Append `exited`. Set the record `exited` and store that lifecycle status. |
+| `pane_exited`, `pane_closed`, `tab_closed`, or `workspace_closed` | The closed pane, tab, or workspace holds a `live` record | Increment the inbox counter. Append `unresolved`. Set the record `unresolved` and store that lifecycle status. |
 | `pane_moved` | `previous_pane_id` is the pane of a `live` record | Set `pane_id`, `workspace_id`, and `tab_id` from `pane`. Append the old pane ID to `pane_history`. Rebuild the subscription. |
 | A status push with the stored status | Any | Log only. herdr pushes the event also on a metadata change. |
 
-- A notification group uses one held handle. The order is the inbox counter, the inbox record, then the stored status. It uses this order for `blocked`, `quiet`, `exited`, and `unresolved`. A working transition stores the status and writes no inbox record.
+- A notification group uses one held handle. The order is the inbox counter, the inbox record, then the final status. It uses this order for `blocked`, `quiet`, `exited`, and `unresolved`. For `exited` and `unresolved`, the final status write also sets the lifecycle status. A working transition stores the status and writes no inbox record.
 - Run each stop request and each subscription change outside the store lock. Read the records under one grouped read before the call.
-- A first counter failure gives `failed` with no effects. A record failure gives `partial` with the counter gap. A status failure gives `partial` with the counter and the record. Every storage failure closes the subscription, exits 1, and stops queued processing. Do not process a later event against the failed state and do not run an internal recovery loop.
+- A first counter failure gives `failed` with no effects. A record failure gives `partial` with the counter gap. A final-status failure gives `partial` with the counter and the record. For `exited`, `unresolved`, and `quiet`, these failures apply to each group. A status-only `working` write failure gives `failed` with no other effect, because it writes no counter and no record. Every storage failure closes the subscription, exits 1, and stops queued processing. Do not process a later event against the failed state and do not run an internal recovery loop.
 - An explicit restart reconciles the current state only. A gap can lose transition history. A committed inbox prefix can duplicate a notification after restart. A restart starts a new quiet window. Normal uninterrupted delivery stays once for each observed period.
 - `done` means idle in a tab that nobody saw yet. Each rule treats it as `idle`.
 - The controlling role of a worker or a verifier is `manager-<project>`. The controlling role of a manager is `coordinator`. A coordinator or a supervisor record has no controlling role, so the supervisor logs the event only.
@@ -88,7 +88,7 @@ its pane and its `terminal_id`, never by its herdr name.
 - A long `working` status is never an event.
 - An agent that exits to its shell gives `pane_agent_detected` with `released` true and no `pane_exited`. Only that evidence gives `exited`. A closed pane or workspace with a `live` record gives `unresolved`, because the supervisor cannot tell an exit from a loss. The stop function of T10 sets the record `stopped` before it closes the pane, so the close events of a stop match no `live` record.
 - The supervisor also evaluates the stop rule and the nudge rule at its start and on each change in the store. A `finished` mark on a record with the stored status `idle` or `done` leads to the stop without a new event.
-- The subscription is one `events.subscribe` request with one `{"type":"pane.agent_status_changed","pane_id":"<pane>"}` entry for each watched pane, and the plain entries `pane.agent_detected`, `pane.exited`, `pane.closed`, `tab.closed`, `workspace.closed`, and `pane.moved`. The watched panes are the panes of the `live` records. The envelope of a status change is `{"event":"pane.agent_status_changed","pane_id":...,"agent_status":...}`. The other events use the plain envelope with `data.type`.
+- The subscription is one `events.subscribe` request with one `{"type":"pane.agent_status_changed","pane_id":"<pane>"}` entry for each watched pane, and the plain entries `pane.agent_detected`, `pane.exited`, `pane.closed`, `tab.closed`, `workspace.closed`, and `pane.moved`. The watched panes are the panes of the `live` records. The dotted status frame is exactly `{"event":"pane.agent_status_changed","data":{"pane_id":"w1:p2","workspace_id":"w1","agent_status":"working"}}`. The other events use the plain envelope with `data.type`. Do not add a sequence field.
 - herdr has no method that changes a subscription. When the watched set changes, the supervisor opens a new connection with the new list, then closes the old one. A new `live` record, a record that leaves `live`, a `pane_moved`, or a `pane_id` change through the store, such as `hive agent resolve` of T20, changes the set. After each rebuild the supervisor calls `agent.get` on each watched pane and applies the current status. It does not reconstruct a transition during the gap.
 - The subscription connection has no deadline. Each other request, the stop function of T10 included, uses the default deadline of the client of T05.
 - Each event and each rebuild is a log event.
@@ -111,7 +111,7 @@ its pane and its `terminal_id`, never by its herdr name.
 - For a record with a pane, it calls `agent.get` with the pane ID. A reply with the `terminal_id` of the record gives the stored status. A record without `terminal_id`, such as a registration by hand, takes the `terminal_id` of the reply. A reply with another `terminal_id` makes the record `unresolved`, because another agent holds the pane.
 - On `agent_not_found` it calls `pane.get`. A pane with the status `unknown`, no `agent`, and no `restore_error` makes the record `exited`. A pane that does not exist, or a pane with `restore_error`, makes the record `unresolved`.
 - A record of the role `supervisor` with a `generation` other than the own claim becomes `stopped`. The supervisor makes no herdr call for it, because the claim was free.
-- Each `exited` or `unresolved` result appends its kind to the controlling role. A live herdr agent without a record is a log event.
+- Each `exited` or `unresolved` result uses the notification order: increment the inbox counter, append its kind to the controlling role, then write the lifecycle status. A live herdr agent without a record is a log event.
 - The supervisor then starts the quiet timers for the settled agents and evaluates the stop rule and the nudge rule.
 
 ### AC5 Doctor
@@ -145,7 +145,7 @@ its pane and its `terminal_id`, never by its herdr name.
 
 - Proves: AC2.
 - Command: `go test -race ./internal/supervise/ -run 'TestEvents|TestSubscription' -v`, red and green.
-- Expected: a fake herdr server pushes the literal frames of `reference/herdr/events.md` over a subscription. A fake clock drives the quiet timer. Each row of the table has a case, and the once-only rules have a case with a repeated event. Cases: `done` as idle, a repeated push with the stored status, and `pane_agent_detected` with `released` true. More cases: `workspace_closed` over a live record, and `pane_moved` with the record update and `pane_history`. A `blocked`, `working`, `blocked` cycle stores three transitions and writes two blocked records. The first counter failure gives `failed` with no effects. A record failure gives `partial` with the counter gap. A status failure gives `partial` with the counter and the record. Every storage failure closes the subscription, exits 1, and stops queued processing. A successful prompt before a disk failure keeps the prompt effect and the unread record. A restart after a status failure reconciles the current state and can write a second blocked record. A subscription gap does not reconstruct a transition. The subscribe request has one `pane.agent_status_changed` entry for each live pane and the six plain entries. A new live record, a `pane_moved`, and a `pane_id` change in a record file each open a new connection. Each of these closes the old connection and calls `agent.get` for each watched pane. A `finished` mark written to a record with the stored status `idle` leads to the stop without an event. The stop uses the T10 process identity and closes nothing on a mismatch.
+- Expected: a fake herdr server pushes the literal frames of `reference/herdr/events.md` over a subscription. The status frame is the literal dotted frame with the nested `data` object and `workspace_id`. The plain frames carry `data.type`. No frame carries a sequence field. A fake clock drives the quiet timer. Each row of the table has a case, and the once-only rules have a case with a repeated event. Cases: `done` as idle, a repeated push with the stored status, and `pane_agent_detected` with `released` true. More cases: `workspace_closed` over a live record, and `pane_moved` with the record update and `pane_history`. A `blocked`, `working`, `blocked` cycle stores three transitions and writes two blocked records. The first counter failure gives `failed` with no effects for `blocked`, `quiet`, `exited`, and `unresolved`. A record failure gives `partial` with the counter gap. A final-status failure gives `partial` with the counter and the record. For `exited` and `unresolved`, the lifecycle status stays unchanged after a final-status failure. A status-only `working` write failure gives `failed` with no other effect. Every storage failure closes the subscription, exits 1, and stops queued processing. A successful prompt before a disk failure keeps the prompt effect and the unread record. A restart after a status failure reconciles the current state and can write a second blocked record. A subscription gap does not reconstruct a transition. The subscribe request has one `pane.agent_status_changed` entry for each live pane and the six plain entries. A new live record, a `pane_moved`, and a `pane_id` change in a record file each open a new connection. Each of these closes the old connection and calls `agent.get` for each watched pane. A `finished` mark written to a record with the stored status `idle` leads to the stop without an event. The stop uses the T10 process identity and closes nothing on a mismatch.
 
 ### V3 Nudge tests
 
@@ -170,6 +170,9 @@ its pane and its `terminal_id`, never by its herdr name.
 - Proves: AC1, AC2, AC3, AC5.
 - Use one unique fixture home with the marker `.hive/README.md`, one unique
   fixture repository, and one absolute tested binary. Record the binary SHA256.
+- Create one absolute fixture wrapper at `$FIX/bin/hive` that executes `$BIN`.
+  Record the wrapper path and the binary SHA256. Each child command uses the
+  wrapper and the fixture home.
 - Command, from a pane of the hive session, with two new tabs in the own workspace of the worker:
 
 ```sh
@@ -179,6 +182,11 @@ mkdir -p "$FIX/.hive"
 BIN="$FIX/hive-$(date +%s)"
 go build -o "$BIN" .
 sha256sum "$BIN"
+mkdir -p "$FIX/bin"
+WRAP="$FIX/bin/hive"
+printf '#!/bin/sh\nexec "%s" "$@"\n' "$BIN" > "$WRAP"
+chmod +x "$WRAP"
+echo "$WRAP"
 REPO="$FIX/repo-sup"
 git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
 "$BIN" --home "$FIX" project register "$REPO"
@@ -196,7 +204,7 @@ W="t15-check-w-$(date +%s)"
 SUP=$!
 sleep 2
 "$BIN" --home "$FIX" doctor
-"$BIN" --home "$FIX" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: hive --home '$FIX' task complete --task 1-supervise-demo"
+"$BIN" --home "$FIX" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: '$WRAP' --home '$FIX' task complete --task 1-supervise-demo"
 sleep 5
 "$BIN" --home "$FIX" agent list --all
 "$BIN" --home "$FIX" inbox --role manager-repo-sup
@@ -211,7 +219,7 @@ herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 rm -rf "$FIX"
 ```
 
-- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The second `doctor` shows `warn supervisor down`. The tab list shows neither new tab, because each stop closed the only pane of its tab. The fixture cleanup removes only `$FIX`.
+- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The worker completion command uses the absolute wrapper, and the wrapper executes the tested binary. The second `doctor` shows `warn supervisor down`. The tab list shows neither new tab, because each stop closed the only pane of its tab. The fixture cleanup removes only `$FIX`.
 
 ### V7 Gate
 
@@ -231,4 +239,5 @@ rm -rf "$FIX"
 order for each notification group, the storage-failure exit, the restart limits,
 the quiet-window rule, and the nudge check outside the lock. Add `agent_status`.
 Replace the live transcript with a unique fixture home and an absolute tested
-binary.
+binary. Correct the `exited` and `unresolved` order, the dotted status frame,
+the final lifecycle status, and the fixture wrapper binding.

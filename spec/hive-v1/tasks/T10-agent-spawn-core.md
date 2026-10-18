@@ -55,7 +55,7 @@ while the process continues.
 | `internal/lib/herdr/doc.go` | Add the map lines. |
 | `internal/lib/process/process.go` | New. `Start(pid)` and `Alive(pid, start)` with a bounded `/proc/<pid>/stat` read. |
 | `internal/lib/process/process_test.go` | New. |
-| `internal/lib/records/agent.go` | Add `terminal_id`, `cwd`, `last_error`, `spawned`, `process_pid`, `process_name`, `process_start`, and `agent_session_ref`. |
+| `internal/lib/records/agent.go` | Add `last_error`, `spawned`, `process_pid`, `process_name`, `process_start`, and `agent_session_ref`. Reuse the existing T04 fields `terminal_id` and `cwd`. Do not duplicate them. |
 
 ## Requirements
 
@@ -188,11 +188,11 @@ rm -rf "$FIX"
 - The pane choice for a worker, the brief prompt, and the task assignment. T14 adds them.
 - The update of the project record after a manager stop. T13 adds it.
 - `hive agent resolve` for an `unresolved` record. T20 adds it.
-- The process reader. T10 owns it. T15 imports `internal/lib/process`.
 
 ## Changes
 
 2026-10-18. Add T09 as a direct prerequisite. Add the typed process identity,
 the profile process-name method, the process reader, the exact stop check, and
-the post-close topology result. Replace the live transcript with a unique
-fixture home and an absolute tested binary.
+the post-close topology result. Reuse the existing T04 record fields and add
+only the new identity fields. Replace the live transcript with a unique fixture
+home and an absolute tested binary.
