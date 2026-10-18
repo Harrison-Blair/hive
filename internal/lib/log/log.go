@@ -42,6 +42,10 @@ func Open(home, component string) (*slog.Logger, error) {
 
 // NewWriter creates a log writer with an explicit clock dependency.
 func NewWriter(home, component string, clock func() time.Time) (*Writer, error) {
+	date := clock().Local().Format("2006-01-02")
+	if err := checkStaticLogPath(home, date); err != nil {
+		return nil, err
+	}
 	logsDir := filepath.Join(home, ".hive", "logs")
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
 		return nil, err
@@ -66,18 +70,22 @@ func (w *Writer) Handle(_ context.Context, record slog.Record) error {
 	now := w.state.clock().Local()
 	date := now.Format("2006-01-02")
 	if w.state.file == nil || w.state.date != date {
-		if w.state.file != nil {
-			if err := w.state.file.Close(); err != nil {
-				return err
-			}
+		if err := checkStaticLogPath(w.state.home, date); err != nil {
+			return err
 		}
 		path := filepath.Join(w.state.home, ".hive", "logs", date+".jsonl")
 		file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
+		previous := w.state.file
 		w.state.file = file
 		w.state.date = date
+		if previous != nil {
+			if err := previous.Close(); err != nil {
+				return err
+			}
+		}
 	}
 
 	event := map[string]any{
@@ -129,6 +137,46 @@ func (w *Writer) Close() error {
 	w.state.file = nil
 	w.state.date = ""
 	return err
+}
+
+func checkStaticLogPath(home, date string) error {
+	hiveDir := filepath.Join(home, ".hive")
+	if err := checkNativeDirectory(hiveDir); err != nil {
+		return err
+	}
+	logsDir := filepath.Join(hiveDir, "logs")
+	if err := checkNativeDirectory(logsDir); err != nil {
+		return err
+	}
+	return checkRegularOrMissing(filepath.Join(logsDir, date+".jsonl"))
+}
+
+func checkNativeDirectory(path string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("log directory is not a native directory: %s", path)
+	}
+	return nil
+}
+
+func checkRegularOrMissing(path string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("log path is not a regular file: %s", path)
+	}
+	return nil
 }
 
 func addAttr(event map[string]any, groups []string, attr slog.Attr, truncated *bool) {
