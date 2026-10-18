@@ -288,3 +288,280 @@ Uncompleted: the three owner fixes, a fresh independent check of those fixes, fi
 The coordinator must not treat this FAIL as a whole-task PASS.
 
 END VERIFIER T07-memory-and-handoff t07-verify-01
+
+## 2026-10-18: t07-verify-02
+
+| Item | Value |
+| --- | --- |
+| Role | Fresh independent source verifier, both areas |
+| Actual route | `pi openai-codex/gpt-6.1-sol:high` |
+| Session | `01a14e2c-793d-74da-815d-9ebb29b07988` |
+| Tested final worker | `9eba57a39a7d7dadc6af05af654c1bfc008a341c`, clean |
+| Last source commit | `41196cc3f7a1b4c3eb4a56f5a30168a43825929e` |
+| Fix initial | `07bb763a8bbb685fc3b358bbd16f7aa2ee54716f` |
+| Original worker | `26b095f0b17b4fa509abe84263f0a22ad4dea515` |
+| Base | `c6a4d91d82042f8861a2aa4b722944272117fa23` |
+| Whole-task verdict | **FAIL: H-F01 remains incomplete** |
+| Verdict identity | Evidence-only child of the exact final worker. The report records its full commit after push. |
+
+| Item | Proves | Verdict | Disposition |
+| --- | --- | --- | --- |
+| V1 | AC1, AC2 | **FAIL** | Existing-file mismatch output loses the required reason. The old memory checklist and M-F01 probes pass. |
+| V2 | AC3 | **PASS** | Raw bytes, empty refusal, fixed limits, deadlines, atomic replacement, and static paths pass. |
+| V3 | AC2, AC3 | **PASS for required transcript** | Extended CLI assertions fail on H-F01 at both scopes. |
+| V4 | AC4 | **PASS** | Full uncached gate from the actual task worktree passes. |
+| Cleanup | Operational completion | **PASS within the provenance limit below** | Listed old scratch and all new owned scratch are absent. |
+
+Recommendation: return H-F01 to the worker with the exact existing-file output requirement.
+Keep M-F01 and H-F02 closed. Do not land T07 from this verdict.
+No implementation change ran in this pass.
+
+### Reads, prerequisites, and full-range inspection
+
+I read both complete prior verifier reports, all current V1 through V4, and the old tracked FAIL.
+I read the original task and the unchanged current task.
+I read both complete worker reports and the cleanup receipt, before/after paths, manifests, and provenance captures.
+The fix report ends with `END WORKER T07-memory-and-handoff t07-fix-01`.
+
+CP1 PASS remains accepted. I did not repeat CP1.
+The installed-spec report's CAP/HOME LANDING PASS remains accepted within its stated limits.
+Its C01 through C07 concern later tasks, not T07.
+The cap and home merges are ancestors of the tested worker.
+The task tracker records T22 landed. The listed T07 prerequisites pass.
+
+I inspected the complete base-to-final-worker diff: 26 files, 3724 insertions, and one deletion.
+The last source commit and the final worker differ only in V4 evidence.
+The fix changes four production files and adds or extends five test files.
+No store, home, common, output, records, dependency, schema, or lock contract changes.
+The owned scope value adds `ProjectID` for checked metadata. No unrelated shared API changes.
+
+Full-range changed files:
+
+```text
+cmd/handoff/handoff.go
+cmd/handoff/write/write.go
+cmd/handoff/write/write_cli_test.go
+cmd/memory/memory.go
+cmd/memory/write/write.go
+cmd/memory/write/write_cli_test.go
+cmd/root.go
+internal/handoff/write.go
+internal/handoff/write_test.go
+internal/lib/scope/doc.go
+internal/lib/scope/input.go
+internal/lib/scope/scope.go
+internal/lib/scope/scope_test.go
+internal/memory/doc.go
+internal/memory/frontmatter.go
+internal/memory/frontmatter_test.go
+internal/memory/index.go
+internal/memory/index_test.go
+internal/memory/write.go
+internal/memory/write_process_test.go
+internal/memory/write_test.go
+spec/hive-v1/evidence/T07-memory-and-handoff/V1.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V2.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V3.md
+spec/hive-v1/evidence/T07-memory-and-handoff/V4.md
+spec/hive-v1/evidence/T07-memory-and-handoff/VERIFIED.md
+```
+
+Both commands use the bounded stdin helper. Handoff uses the same atomic writer as memory and index.
+One lock contains all existing reads, the fact write, index construction, and the index write.
+The callback returns nil on partial outcomes. Each command wrapper passes a nil Go error to `common.Run`.
+No internal package imports Cobra or a command package.
+Recommendation: retain these package, helper, and lock choices.
+
+### Finding dispositions
+
+| ID | Prior area | Disposition |
+| --- | --- | --- |
+| M-F01 | Primary memory | **CLOSED**. Malformed nonempty separators refuse for stdin and existing files without fact or index changes. |
+| H-F01 | Secondary logging | **INCOMPLETE**. Both log paths are safe, but existing-file user mismatch text regresses. |
+| H-F02 | Secondary logging | **CLOSED**. Applicable checked project events carry `project_id`. Home events add no project identity. |
+
+#### H-F01-R1: existing-file user mismatch text
+
+This regression is in the touched H-F01 error route, not a new probe class.
+AC2 specifies the mismatch reason and the existing-file wrapper.
+The current brief requires the user mismatch error to remain exact.
+
+`internal/memory/frontmatter.go:15` makes `Error()` return only the safe category.
+`internal/memory/index.go:70-72` formats that error with `%v`.
+This discards the exact user message before `userErrorText` can select it.
+
+A synthetic `bad.md` has valid frontmatter with a different name.
+The actual CLI returns exit 1, phase `scan`, and no effects at home and project scope.
+Its reason is `frontmatter: name differs`.
+The required reason is `frontmatter: name T07V02_NAME_SENTINEL differs from bad`.
+Both have the same required `memory file invalid: <absolute file>: ` prefix.
+The actual and expected full strings are in `final-cli/findings.json`.
+
+The old fact and index bytes remain exact.
+Parsed name, description, and body sentinels stay absent from both error logs.
+The real error events retain category, phase, command, and applicable project metadata.
+The stdin user error remains exact.
+
+Recommendation: preserve separate user and log text through the existing-file wrapper.
+Keep the safe category and the wrapper prefix.
+A bounded local wrapper is sufficient. No shared logging abstraction or lock change is necessary.
+A new worker brief must authorize any needed scan-wrapper change.
+
+### V1 and V2 reruns, red checks, and restoration
+
+All capture names below resolve under:
+
+`/home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-02-captures/`
+
+| Capture | Actual command or check | Result |
+| --- | --- | --- |
+| `V1.txt` | `go test -race -count=1 ./internal/memory/ ./internal/lib/scope/ -v` | Exit 0. All worker cases pass. |
+| `V2.txt` | `go test -race -count=1 ./internal/handoff/ -v` | Exit 0. All worker cases pass. |
+| `historical-M-red.txt` | Separator probe on exact `07bb763a` source | Exit 1. Stdin and existing-file assertions fail. |
+| `historical-H-red.txt` | Old logging probes on exact `07bb763a` source | Exit 1. Content leak and three missing project fields reproduce. |
+| `independent-green.txt` | Both retained probe packages on final source | Exit 0. Both established checklists pass. |
+| `existing-mismatch-historical.txt` | Added exact-user-and-safe-log probe on old source | Exit 1. User text passes, but the synthetic name reaches the log. |
+| `existing-mismatch-source.txt` | Same probe on final source | Exit 1. Log safety passes, but exact user text fails. |
+| `rename-fault-green.txt` | Separate external rename-fault build | Exit 0. Old regular memory and handoff bytes remain, without effects or temporary residue. |
+| `restored-green.txt` | Old checklists after nine restored mutants | Exit 0. The separately executed known failing probe is excluded explicitly. |
+| `final-independent.txt` | Both complete probe packages after restoration, including the added probe | Exit 1. Only the exact existing-file mismatch assertion fails. |
+
+The final complete command was:
+
+```sh
+go test -race -count=1 ./internal/t07memoryverify ./internal/t07atomicverify -v
+```
+
+The original assertions remain present. The added probe covers only the touched existing-file error route.
+Fixed expectations use 1048575, 1048576, 1048577, and 5000000 bytes, not production constants.
+Both old checklists pass again, including these cases:
+
+- Scopes, project location, names, frontmatter categories, valid-space trimming, literal quotes, colons, and 10000 unknown keys.
+- Whole stdin and existing-file boundaries, active trickle, and total 100 ms deadlines.
+- Stdin before acquisition, no lock during input wait, and all existing reads under one lock.
+- A cooperating change after acquisition and ten pairs of OS processes with the exact sorted index.
+- Static links, wrong types, unreadable files, exclusions, and prewrite index obstructions.
+- Actual post-memory index rename faults, truthful created and updated partial effects, retained facts, and the old index.
+- Later regeneration by a distinct write without replay. Nil Go errors remain at both callback boundaries.
+- Exact raw handoff bytes, empty refusal, fixed limits, deadlines, complete concurrent reads, and no temporary residue.
+
+The final atomic run completed 200 replacements and 540 exact-byte concurrent reads.
+Active trickle returned at 100.039473 ms for memory and 100.21018 ms for handoff.
+
+Nine established mutant classes failed on behavior assertions in isolated source:
+lock placement, existing cap, partial outcome, sort order, atomic replacement, stdin cap, deadline, paths, and effect events.
+Each has a patch and red-output capture. All original source bytes were restored.
+No compilation-only failure counts as red.
+The added exact-user-and-safe-log probe remains red. No whole-task restored green is claimed.
+
+### V3 actual CLI
+
+The production binary came from the clean actual worktree at the exact final worker.
+Its build information records `vcs.modified=false`.
+Its SHA256 is `f9c75d9530217129965ae835bf5decfb54263ea6e67b479a099349263a266a55`.
+Every invocation used its unique absolute path and an explicit absolute marked fixture `--home`.
+The fault binary was separate. It contained only the recorded external rename fault.
+
+Observed required transcript:
+
+```text
+created memory memory/base-is-dev.md
+updated index memory/MEMORY.md
+- [base-is-dev](base-is-dev.md): The base branch of hive is dev.
+hive: frontmatter: missing description
+exit 1
+updated handoff handoff.md
+Open decisions: none.
+```
+
+Successful writes exit 0. The invalid write exits 1 without fact or index changes.
+The final extended driver completed 56 actual invocations and exited 1 for the two H-F01-R1 mismatches.
+It inspected text, JSON, file bytes, and synthetic persistent logs separately.
+`final-cli/cli-commands.json`, raw stream files, and log captures retain the actual results.
+No actual error event or completed-effect event was removed or fabricated.
+Project memory, index, handoff, input, frontmatter, scan, and index-failure events have checked identity.
+Home events have no invented project field.
+
+The first driver draft incorrectly expected the safe category in existing-file user output.
+Its exit-0 `cli-run.txt` is not acceptance evidence for exact user errors.
+I corrected the literal expectation without changing source.
+The final driver and the independent probe both detect H-F01-R1. Earlier captures remain for attribution.
+
+### V4 actual gate
+
+These commands ran from the exact task worktree root with an external `TMPDIR`:
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race -count=1 ./...
+go test -run TestSTE -count=1 .
+git diff --check c6a4d91d..HEAD
+```
+
+Formatting printed nothing. Vet exited 0. Lint reported `0 issues.` and exited 0.
+Every race-test package passed without cache. TestSTE passed. The diff check printed nothing.
+The full actual outputs and exit statuses are in `gate-*.txt`.
+Memory passed in 2.177 s, handoff in 1.144 s, and store in 17.286 s.
+`TMPDIR` was `/tmp/t07-verify-02-gate.h4q2dw1z`, outside every marked home.
+No absent-home test discovered the real home in this pass.
+
+### Freeze, cleanup, preservation, and limits
+
+Initial tracked-file freeze SHA256:
+
+`1cc95840788d724625ef4d241195141251ea64407582201015cee45801506f55`
+
+All source and V hashes matched before this appendix.
+The old 290-line verdict remains an exact Git-object prefix.
+All V files retain original worker bytes as prefixes.
+This appendix is the only tracked change.
+
+The worker receipt lists 20 obsolete scratch paths. Every exact listed path is absent.
+Both preserved cleanup manifests pass. Old reports, outputs, patches, scripts, freezes, and log evidence remain unchanged during this pass.
+No broad deletion or new removal of prior scratch ran here.
+The unlisted empty secondary `tmp/` directory remains.
+
+Retained probe SHA256 values:
+
+```text
+fa5bcf92b4049a2e2da126f58d135acd189d886199325bfe68f9e3a67fe6df11  probe-t07memoryverify_test.go
+a9934aa68f557ff209823f263152f915790872ab4677d0d83c5e09746dc9d507  probe-t07atomicverify_test.go
+6ab57e5aafda632e5af812ad3efee5654840022eafc006ae761e498789c03752  probe-mismatch_test.go
+```
+
+The first two match the worker receipt and retained source-copy provenance captures.
+Replay copies matched these definitions byte for byte.
+Prior tracked-source freezes do not include the added independent probes.
+No separate pre-cleanup immutable hash receipt for those files was supplied.
+Historical identity therefore relies on the retained cleanup provenance and captured assertions.
+I do not claim a direct comparison with the removed old source copies.
+Ownership of the 20 listed paths agrees with both old reports and the before-state receipt.
+
+I removed both new source copies, both fixture sets, the binaries, and the external test container after compact captures.
+Before removal, all original source bytes matched their exact Git objects.
+Probes, synthetic logs, raw streams, patches, scripts, hashes, and binary metadata remain.
+`cleanup.txt` records exact present and absent paths.
+Real root and task log prefixes remain exact by hash-only comparison.
+The earlier real-root setup append remains preserved. No rollback ran.
+
+Two setup checks needed correction before probes ran: the receipt has 20 paths, and its manifests resolve from their parent directory.
+Neither setup failure is a source finding or a meaningful red test.
+No old capture changed.
+
+Only the approved local-user and cooperating-writer boundary applies.
+Hostile `Lstat`/`Open` replacement remains deferred for T01.
+Timeout probes close their owned pipes. They do not prove arbitrary blocked-reader cancellation.
+No credential content, global configuration, worktree, other agent, or historical attribution changed.
+No agent started. No source fix, tracker edit, handoff edit, force push, or `main` change ran.
+No co-author or false session trailer was added. No STE baseline increased.
+
+Uncompleted: H-F01-R1, its fresh whole-task green check, and later T07 landing.
+No other owned acceptance check remains unrun.
+
+Full report and separate verdict commit receipt:
+
+`/home/penguin/source/hive/.hive/tmp/coordinator/reports/t07-verify-02.md`
+
+END VERIFIER T07-memory-and-handoff t07-verify-02
