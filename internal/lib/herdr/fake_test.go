@@ -28,7 +28,6 @@ type fakeServer struct {
 	mu       sync.Mutex
 	replies  map[string][]scriptedReply
 	requests []recordedRequest
-	hook     func(method string, params json.RawMessage)
 	closed   bool
 }
 
@@ -73,12 +72,6 @@ func (s *fakeServer) scriptError(method, code, message string) {
 	s.script(method, scriptedReply{error: `{"code":` + quote(code) + `,"message":` + quote(message) + `}`})
 }
 
-func (s *fakeServer) setHook(hook func(method string, params json.RawMessage)) {
-	s.mu.Lock()
-	s.hook = hook
-	s.mu.Unlock()
-}
-
 func (s *fakeServer) serve() {
 	for {
 		conn, err := s.listener.Accept()
@@ -106,7 +99,6 @@ func (s *fakeServer) handle(conn net.Conn) {
 	}
 	s.mu.Lock()
 	s.requests = append(s.requests, recordedRequest{ID: request.ID, Method: request.Method, Params: string(request.Params)})
-	hook := s.hook
 	var reply scriptedReply
 	found := false
 	if request.Method == "ping" {
@@ -118,9 +110,6 @@ func (s *fakeServer) handle(conn net.Conn) {
 		found = true
 	}
 	s.mu.Unlock()
-	if hook != nil {
-		hook(request.Method, request.Params)
-	}
 	if !found {
 		s.t.Errorf("unexpected method %q", request.Method)
 		return

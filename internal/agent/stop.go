@@ -141,11 +141,10 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 
 	result := StopResult{Agent: record, Topology: "unknown"}
 	workspace, workspaceErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger), herdr.WithDeadline(5*time.Second))
-	switch {
-	case workspaceErr == nil:
+	if workspaceErr == nil {
 		result.Topology = "surviving"
 		result.Workspace = &workspace
-	default:
+	} else {
 		var serverError *herdr.Error
 		if errors.As(workspaceErr, &serverError) && serverError.Code == herdr.CodeWorkspaceNotFound {
 			result.Topology = "closed"

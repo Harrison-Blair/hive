@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -558,5 +557,3 @@ func SpawnText(envelope output.Envelope) string {
 	}
 	return text + fmt.Sprintf("agent %s %s\n", result.Agent.Name, result.Agent.Status)
 }
-
-func displaySpawnValue(value string) string { return strings.TrimSpace(value) }

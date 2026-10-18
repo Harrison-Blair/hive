@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -283,19 +282,4 @@ func jsonNumber(value int64) string {
 
 func workspaceJSON(id string, paneCount int) string {
 	return `{"workspace_id":"` + id + `","number":1,"label":"x","focused":false,"pane_count":` + jsonNumber(int64(paneCount)) + `,"tab_count":1,"active_tab_id":"` + id + `:t1","agent_status":"unknown"}`
-}
-
-func waitForRequests(t *testing.T, fake *fakeHerdr, method string, count int) []fakeRequest {
-	t.Helper()
-	deadline := time.Now().Add(2 * time.Second)
-	for {
-		requests := fake.recorded(method)
-		if len(requests) >= count {
-			return requests
-		}
-		if time.Now().After(deadline) {
-			t.Fatalf("%s requests = %d; want at least %d", method, len(requests), count)
-		}
-		time.Sleep(5 * time.Millisecond)
-	}
 }
