@@ -414,7 +414,7 @@ func TestHealthyActionLogIsWrittenOnce(t *testing.T) {
 	clock := fixedClock(t, day)
 	m := newTestModel(t, home, clock)
 	before := countLogLines(t, home)
-	m, _ = raise(t, m, key('l', "l"))
+	raise(t, m, key('l', "l"))
 	after := countLogLines(t, home)
 	if after != before+1 {
 		t.Fatalf("healthy action log lines went from %d to %d; want one event", before, after)
