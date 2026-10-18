@@ -97,6 +97,21 @@ func appendEvent(t *testing.T, path, line string) {
 	}
 }
 
+func appendRaw(t *testing.T, path, text string) {
+	t.Helper()
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := file.WriteString(text); err != nil {
+		_ = file.Close()
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func writeRecord(t *testing.T, home string, collection []string, id string, value any) {
 	t.Helper()
 	registry, err := store.Open(home)
@@ -240,11 +255,20 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 		eventJSON(t, day, "DEBUG", "zeta"),
 	)
 	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 6})
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 10})
 	m, _ = raise(t, m, tickMsg{})
 	requireView(t, m, "alpha gq", "beta", "gamma gq", "epsilon gq", "zeta")
 
-	// Editing must not let viewing-mode keys act, including q.
+	// Editing must not let viewing-mode keys act.
+	m, _ = raise(t, m, key('/', "/"))
+	for _, code := range []rune{'f', 'l', 'G'} {
+		m, _ = raise(t, m, key(code, string(code)))
+	}
+	requireView(t, m, "text: -", "level: debug", "follow: on")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	requireView(t, m, "level: debug", "follow: on")
+
+	// A q in editing mode is a printable character, not a quit.
 	m, _ = raise(t, m, key('/', "/"))
 	for _, code := range []rune{'g', 'q'} {
 		var cmd tea.Cmd
@@ -255,7 +279,6 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 			}
 		}
 	}
-	requireView(t, m, "text: -", "level: debug", "follow: on")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	requireView(t, m, "alpha gq", "gamma gq", "epsilon gq", "text: gq")
 	rejectView(t, m, "beta", "delta", "zeta")
@@ -342,6 +365,25 @@ func TestDailyFileRolloverKeepsEarlierLines(t *testing.T) {
 	requireView(t, m, "before midnight one", "before midnight two", "after midnight")
 }
 
+func TestFollowKeepsIncompleteLineUntilNewline(t *testing.T) {
+	home := newTestHome(t)
+	day := time.Date(2026, 4, 18, 12, 0, 0, 0, time.Local)
+	clock := fixedClock(t, day)
+	path := dailyPath(home, day)
+	writeEvents(t, path, eventJSON(t, day, "INFO", "complete line"))
+	m := newTestModel(t, home, clock)
+	requireView(t, m, "complete line")
+
+	partial := `{"time":"2026-04-18T12:00:01-04:00","level":"INFO","msg":"half`
+	appendRaw(t, path, partial)
+	time.Sleep(700 * time.Millisecond)
+	rejectView(t, m, "half")
+	appendRaw(t, path, " line\"}\n")
+	msg := nextEvent(t, m)
+	m, _ = raise(t, m, msg)
+	requireView(t, m, "half line")
+}
+
 func TestDailyFileWaitsForFirstFile(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 9, 12, 0, 0, 0, time.Local)
@@ -394,7 +436,7 @@ func TestStopSettlesFollower(t *testing.T) {
 	m := New(home, clock.now)
 	m.Stop()
 	select {
-	case _, ok := <-m.events:
+	case _, ok := <-m.eventCh:
 		if ok {
 			t.Fatal("event stream stayed open after Stop")
 		}

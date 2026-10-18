@@ -16,6 +16,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/project"
 	"github.com/Harrison-Blair/hive/cmd/task"
 	"github.com/Harrison-Blair/hive/cmd/version"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +30,19 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return tui.Run(cmd.InOrStdin(), cmd.OutOrStdout())
+			jsonOutput, err := cmd.Root().PersistentFlags().GetBool("json")
+			if err != nil {
+				return err
+			}
+			return common.Run(cmd, "tui", func(resolvedHome string) (output.Envelope, string, error) {
+				if jsonOutput {
+					return output.Envelope{Outcome: "failed", Phase: "validate", Effects: []output.Effect{}, Error: "TUI requires text output", Result: nil}, "", nil
+				}
+				if err := tui.RunHome(resolvedHome, cmd.InOrStdin(), cmd.OutOrStdout()); err != nil {
+					return output.Envelope{}, "", err
+				}
+				return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: nil}, "", nil
+			})
 		},
 	}
 	root.PersistentFlags().String("home", "", "hive home")
