@@ -149,3 +149,269 @@ Hostile swaps remain deferred to T01.
 The shared-store oversize-writer gap and the pending T01 home fix are not T04 findings.
 No herdr operation, agent start, merge, or global configuration change occurred.
 The deeper inbox/output verdict remains pending from the separate verifier.
+
+
+## 2026-10-18 — t04-verify-02 — current verdict FAIL
+
+| Item | Value |
+| --- | --- |
+| Role | Fresh independent source verifier |
+| Route | pi `openai-codex/gpt-6.1-sol:high` |
+| Tested worker HEAD | `34ae036380b81a8e2d945271f71fe745e16fdc21` |
+| Source tip | `93aaf8067750abdf5b22aa53548b27f95d3a3490` |
+| Original worker | `7a6250f3f20d2a4fb497c9aa4540628651cb79ae` |
+| Original base | `84da9819b31be83dbe71c36d620eadf3749e1f9f` |
+| Fix initial HEAD | `42a177b43f3d0f5a1b2bcccfd5c2b8d8ec7a004c` |
+| Prerequisite | `c6a4d91d82042f8861a2aa4b722944272117fa23` |
+| Branch | `task/T04-roles-and-inbox` |
+| Overall | **FAIL** |
+
+This pass covers both earlier finding sets. It gives no landing permission.
+The earlier verdict keeps its exact bytes and attribution.
+The root report records the separate verdict commit and remote tip after delivery.
+
+### V verdicts
+
+| Item | Proves | Verdict | Observed result |
+| --- | --- | --- | --- |
+| V1 | AC1, AC2 | FAIL | Existing tests pass. P-F02 still permits a cross-claim alias in one order. |
+| V2 | AC4 | FAIL | Existing tests pass. I-F03 still redirects a selected-path mark. |
+| V3 | AC1 to AC4 | FAIL | All 12 specified steps pass. Extended namespace, identity, and logging checks fail. |
+| V4 | AC5 | PASS | Empty format output. Vet, lint, and the full uncached race gate pass. |
+
+### Finding dispositions
+
+`P-Fnn` identifies the earlier primary `T04-Fnn`.
+`I-Fnn` identifies the earlier secondary `T04-INBOX-Fnn`.
+No new finding class applies.
+
+| ID | Disposition | Evidence |
+| --- | --- | --- |
+| P-F01 | CLOSED | Generated collision and busy-pane refusal preserve all state bytes and report no effect. The checks precede `Next`. |
+| P-F02 | OPEN, partial fix | Worker aliases and live-name collisions refuse. A custom singleton name can still alias a later different claim. |
+| P-F03 | CLOSED | Logical and custom singleton names require the matching claim and holder under one lock. Orphans do not resolve. Direct generation inspection remains distinct. |
+| P-F04 | CLOSED | A changed orphan pane refuses without a record, claim, or effect change. Matching retries still succeed. |
+| P-F05 | CLOSED | Role, name, project, and show control values produce one escaped error line. |
+| P-F06 | OPEN, partial fix | Completed mutation logs and registration errors now exist. Owned read errors still lack error events. |
+| P-F07 | CLOSED | Fixed literal byte expectations catch both 4097 and 8192 cap mutants. Restored 4096 passes. |
+| I-F01 | CLOSED | Short nil-error stdout writes give status 1. Recovery names only actual completed consume IDs. |
+| I-F02 | CLOSED | Failed `--all` output claims no consumption and preserves record bytes. |
+| I-F03 | OPEN, partial fix | Cross-role, unequal sequence, and scalar records refuse with paths and no mark. A noncanonical numeric filename still redirects a mark. |
+| I-F04 | OPEN, partial fix | Append and mark events now exist. Invalid `--all` has no error event. Mark events omit the known sender ID. |
+| I-F05 | CLOSED | Text escapes terminal controls in every rendered inbox string. Stored text and JSON text remain intact. |
+| I-F06 | CLOSED | Missing role says `pass --role`. Explicit empty and invalid roles retain the invalid-key error. |
+| I-F07 | CLOSED | Independent ASCII and UTF-8 byte limits and literal 41/42 key limits pass. Their mutants fail on assertions. |
+| I-F08 | CLOSED | Counts reject static links and wrong-type roots or valid role collections with paths. Counts remain lock-free. |
+
+### P-F02: a custom singleton name can alias a later claim
+
+Location: `internal/agent/register.go:276-305`.
+Authority: AC1 namespace checks and the same-claim-only exception.
+This is the existing claim-alias finding, not a new class.
+
+Actual CLI sequence in an isolated marked home:
+
+```text
+$ hive --home <fixture> --json agent register --role coordinator --name supervisor --pane p1
+exit 0, outcome ok, agent supervisor-g1, claim coordinator
+$ hive --home <fixture> --json agent register --role supervisor --name leader --pane p2
+exit 0, outcome ok, agent leader-g1, claim supervisor
+$ hive --home <fixture> --json agent show supervisor
+exit 0, result key leader-g1, role supervisor
+$ hive --home <fixture> --json agent show coordinator
+exit 0, result key supervisor-g1, name supervisor, role coordinator
+```
+
+Both live registrations succeed and the second changes state.
+The new claim hides the first holder's custom name.
+The reverse registration order correctly refuses with no write.
+The check tests `agentByKey[claimKey]`, but it omits a live singleton's `Name` equal to that claim key.
+Recommendation: include live names when a new claim key enters the namespace.
+Keep only the exact same-claim and matching-orphan exceptions.
+
+### I-F03: selected numeric filename and mark target differ
+
+Locations: `internal/lib/inbox/inbox.go:175-184`, `216-250`.
+Authority: AC4 consume-once and the existing selected-path identity check.
+
+The coordinator's hypothesis reproduces with static regular files.
+This result requires no hostile replacement, link, or timing race.
+The fixture contains these records:
+
+```text
+inbox/coordinator/01.json: seq 1, role coordinator, text SELECTED-01, read_at empty
+inbox/coordinator/1.json:  seq 1, role coordinator, text OTHER-1, read_at 2026-01-02T00:00:00Z
+```
+
+`ListIn` accepts both filenames. `ParseUint("01", 10, 64)` returns 1.
+The stored numeric identity check therefore passes.
+The consume selects only `01.json`, but `markRead` reconstructs `1.json` with `FormatUint`.
+
+Two actual CLI consumes each produce this result:
+
+```text
+exit 0
+outcome ok
+result.records[0].text = OTHER-1
+effects = [{resource: inbox, path: .hive/state/inbox/coordinator/1.json, action: consumed}]
+selected 01.json bytes unchanged = true
+```
+
+Each consume changes the already-read `1.json` and prints its text again.
+The selected `01.json` remains unread.
+This violates the approved static-input contract and keeps I-F03 open.
+Recommendation: require the exact canonical sequence filename before any mark, or preserve the exact selected mutation path.
+Do not broaden this fix into hostile-store protection.
+
+### P-F06 and I-F04: logging remains incomplete
+
+Locations: `internal/agent/show.go`, `internal/inbox/read.go`, and `internal/lib/inbox/inbox.go:417-439`.
+Authority: the existing Logging rule requires each error and applicable IDs.
+
+Actual `agent show unknown` exits 1 with `agent not found: unknown`.
+Actual `inbox --role ../x --all` exits 1 with `invalid inbox key: ../x`.
+Their home log contains only command start/end events for these failures.
+No event contains an `error` field.
+The consume path logs role and sequence, but omits the stored sender `worker-x` and its `agent_id`.
+
+The normal registration, stale, claim, append, mark, and refusal events now exist.
+Append logs include the sender ID. Registration logs include applicable project and task IDs.
+The checked failed writes fabricate no record or claim success.
+The fixture message body never appears in a log event.
+Recommendation: complete error logs in the owned read paths and retain applicable IDs on mark events.
+Do not change the shared output packages.
+
+### Runs and assertion strength
+
+All actual-source commands ran from the task worktree root.
+Added Go probes and mutations ran only in isolated Git archives.
+The source in the actual worktree stayed frozen.
+
+```sh
+go test -race -count=1 ./internal/agent/ -v
+go test -race -count=1 ./internal/lib/inbox/ -v
+go test -race -count=1 ./cmd/ ./internal/inbox/ -v
+```
+
+```text
+ok  	github.com/Harrison-Blair/hive/internal/agent	1.210s
+exit=0
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	1.191s
+exit=0
+ok  	github.com/Harrison-Blair/hive/cmd	1.024s
+ok  	github.com/Harrison-Blair/hive/internal/inbox	1.004s
+exit=0
+```
+
+The prior primary CLI checklist passes all 193 assertions.
+The prior secondary driver completes 49 probes.
+Its recorded cross-role and terminal-control observations now show refusal and safe output.
+The follow-up driver repeats both alias orders, long names, raw error bytes, and ten simultaneous worker pairs.
+The targeted checks above expose the remaining failures.
+`residual-assertions-red.txt` records three assertion failures, not build failures.
+Those remaining acceptance assertions have no restored green result. Their fixes remain uncompleted.
+
+The historical replay overlays only five old production files from `42a177b4` onto final tests in an isolated copy.
+It compiles and fails the intended counter, namespace, orphan, error, log, stdout, identity, count, and render assertions.
+Restoring the exact tested source makes the same complete package selection pass.
+Both prior independent Go probe sets pass on that restored source.
+
+| Assertion check | Red observation | Restored result |
+| --- | --- | --- |
+| Historical fixed findings | Exit 1 on behavioral assertions | Exit 0 |
+| Cap 4097 | Literal 4097 ASCII and UTF-8 refusal assertions fail | Cap 4096 passes |
+| Cap 8192 | Literal 4097 and 8192 refusal assertions fail | Cap 4096 passes |
+| Key limit 42 | Literal 42-byte refusal fails | Original limit passes |
+| Empty `read_at` mutation | Mark and partial-prefix assertions fail | Exact mark source passes |
+| Live instead of stale mutation | Generation status assertion fails | Exact stale source passes |
+| Injection-only CLI tests | No injection gives assertion failures | Deterministic mark failures pass in text and JSON |
+
+Independent literal UTF-8 cases cover 4095, 4096, and 4097 bytes.
+Both cap mutants fail that added check. The exact source passes.
+The corrected generated-collision test strengthens the old incorrect counter expectation.
+No unrelated test weakens or skips an assertion.
+
+The repeated checks retain these existing classes:
+
+- Role matrix, environment precedence, explicit pane handling, record fields, and explicit names.
+- Counter-first writes after checks, safe gaps, singleton write prefixes, retries, and old generations.
+- Ten concurrency repetitions, disjoint grouped consumes, 50 process appends, and numeric order through maximum uint64.
+- Lock-free reads and counts, bounded mutation locks, and output after completed marks outside the lock.
+- First-mark failure, known partial prefixes, remaining records, nil Go-error routing, and no automatic replay.
+- Static invalid record shapes, types, paths, bounds, and unchanged unrelated records.
+- Actual failed stdout, short writes, read-only `--all`, safe text, and intact JSON data.
+
+### V3 transcript
+
+The actual binary builds from the frozen task worktree.
+All 12 specified transcript steps pass with an explicit marked fixture home.
+The list shows generation 1 stale and generation 2 live.
+Show returns generation 2 on `w1:p2`.
+The first consume prints `hello`. The second prints zero bytes.
+The final JSON contains one marked record.
+The four specified refusals exit 1 with their exact expected diagnostics.
+`v3-transcript.txt` retains the complete user-visible output and each exit status.
+
+### V4 full uncached gate
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race -count=1 ./...
+```
+
+```text
+gofmt_exit=0
+vet_exit=0
+0 issues.
+lint_exit=0
+race_exit=0
+```
+
+The format command prints no path. Every package passes the uncached race gate.
+The store package takes 17.225s. The full output is in `gate.txt`.
+The STE baseline and all source files remain unchanged.
+
+### Scope, prerequisites, and source freeze
+
+Initial HEAD, branch, clean status, and direct remote tip match the required worker.
+`PI_PROVIDER`, `PI_MODEL`, and session metadata record the required provider, model, and `high` level.
+I read both complete earlier verdicts, both probe sets, all V files, the installed task, and the final worker report.
+The worker report ends with `END WORKER T04-roles-and-inbox t04-fix-01`.
+I inspected the complete original-base-to-worker diff and the complete fix diff.
+The full diff has 47 changed paths and SHA256 `7efafbe09063be66d2e5fd7c5b5b84059113aee5ed4a5a70ff8fbe56406ba476`.
+`changed-files.txt` records every path, including inherited prerequisite paths.
+The root report lists the full range separately from the 14 fix paths.
+
+The prerequisite is an ancestor of the tested worker.
+The CP1 report gives PASS and keeps its final marker. I did not rerun CP1.
+The cap and home landing report is final at `c6a4d91d`.
+The current cap and home source paths equal their independently verified objects.
+The full gate rechecks their installed tests.
+
+All 179 tracked paths match the exact worker objects before this append.
+The source tip and tested worker contain identical Go source, module files, and STE baseline.
+The isolated source copies restore every original path before removal.
+The old verdict prefix has SHA256 `e7d70367f2f5bcd74f130af4f1153de4513b095e32f0ccf3d9412dc5f8dce41e`.
+Only this append enters the verdict commit.
+
+### Captures, cleanup, and limits
+
+Root report: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t04-verify-02.md`.
+Captures: `/home/penguin/source/hive/.hive/tmp/coordinator/reports/t04-verify-02-captures/`.
+The captures retain scripts, actual outputs, red/green runs, path bytes, logs, source comparisons, and cleanup receipts.
+
+Cleanup removes all own marked fixture homes, both unique binaries, and isolated source copies.
+The primary scratch contains 65 marked homes before removal.
+The secondary and targeted drivers remove their own fixture directories.
+All earlier reports, logs, credentials, worktrees, and attribution remain unchanged.
+No credential content inspection, global configuration change, agent start, herdr call, merge, or worktree removal occurs.
+
+The approved boundary remains local user and cooperating writer only.
+Hostile replacement between `Lstat` and `Open` remains deferred for T01.
+The public held-handle inbox API belongs to T11 and is not a finding.
+S05-D01 remains a separate T22 store-walker follow-up. It changes no T04 acceptance criterion.
+The open P-F02, P-F06, I-F03, and I-F04 fixes remain uncompleted.
+Later integration and landing remain uncompleted.
+Recommendation: return these bounded findings to the worker. Do not accept T04 yet.
