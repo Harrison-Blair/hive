@@ -3,6 +3,7 @@ package memory
 import (
 	"bytes"
 	"errors"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -343,6 +344,41 @@ func TestPartialIndexForReplacement(t *testing.T) {
 	}
 	if got, err := os.ReadFile(filepath.Join(home, "memory", "MEMORY.md")); err != nil || !bytes.Equal(got, oldIndex) {
 		t.Fatalf("index = %q, %v; want old index", got, err)
+	}
+}
+
+func TestMemoryOversizedInputWritesNothing(t *testing.T) {
+	home := t.TempDir()
+	envelope := Write(home, WriteOptions{
+		Scope:    "home",
+		Name:     "fact",
+		Input:    strings.NewReader(strings.Repeat("x", 1048577)),
+		Deadline: time.Second,
+	})
+	if envelope.Outcome != "failed" || envelope.Phase != "input" || envelope.Error != "input too large" {
+		t.Fatalf("Write() = %#v; want input too large", envelope)
+	}
+	if _, err := os.Stat(filepath.Join(home, "memory")); !os.IsNotExist(err) {
+		t.Fatalf("memory directory exists after oversized input: stat error = %v", err)
+	}
+}
+
+func TestMemoryTimeoutWritesNothing(t *testing.T) {
+	home := t.TempDir()
+	reader, writer := io.Pipe()
+	defer func() { _ = reader.Close() }()
+	envelope := Write(home, WriteOptions{
+		Scope:    "home",
+		Name:     "fact",
+		Input:    reader,
+		Deadline: 100 * time.Millisecond,
+	})
+	_ = writer.Close()
+	if envelope.Outcome != "failed" || envelope.Phase != "input" || envelope.Error != "input timeout" {
+		t.Fatalf("Write() = %#v; want input timeout", envelope)
+	}
+	if _, err := os.Stat(filepath.Join(home, "memory")); !os.IsNotExist(err) {
+		t.Fatalf("memory directory exists after timeout: stat error = %v", err)
 	}
 }
 
