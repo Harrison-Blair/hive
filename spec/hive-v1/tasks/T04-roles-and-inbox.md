@@ -264,6 +264,23 @@ outcome `failed`.
 - The check that `--task` names a task record of the project. T11 adds it.
 - The records of the kinds `completed`, `verified`, `blocked`, `exited`, `quiet`, and `unresolved`. T11 and T15 write them.
 
+## Dated clarifications
+
+### Dated clarification: code-search command (2026-10-18)
+
+The dispatch brief gave a code-search command that did not run. It omitted the
+recursive flag. Basic `grep` also read the parentheses as literal text. Use these
+commands for the code-search check:
+
+```sh
+grep -rnE 'os\.Getenv' internal/agent cmd/agent
+grep -rnE 'os\.(Open|OpenFile|ReadFile|WriteFile|Create)\(' internal/agent internal/inbox internal/lib/inbox
+grep -rnE '\.(WithLock|ReadIn|WriteIn|UpdateIn|ListIn|Next)\(' internal/agent internal/inbox internal/lib/inbox
+```
+
+The collision rule and the no-write rule stay as AC1 gives. The generated-name
+collision policy stays for independent review.
+
 ## Changes
 
 None.

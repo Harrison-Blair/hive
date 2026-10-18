@@ -216,6 +216,15 @@ record with its path and does not descend the link. The atomic temporary name
 starts with a dot and contains `.tmp-`. `StoredRecord.Name` includes the `.json`
 suffix. A colon name such as `counters/inbox:coordinator.json` remains visible.
 
+Dated correction (2026-10-18): the record writer rejects an encoded record above
+1048576 bytes before `atomicWrite`. The encoded record is the JSON object and one
+final newline. The error is `record too large: <path>`. An encoded record of
+exactly 1048576 bytes is valid. A rejected write keeps the old record bytes and
+makes no new record. The legacy, generic, and locked write and update paths use
+this check. A multi-write caller reports its earlier effects. The reader and lock
+contracts do not change. The store adds no title limit, no journal, no rollback,
+no public API, and no dependency.
+
 A multi-record operation writes in a safe order and names the last write as its
 commit marker. A completed write stays after a later error. The command reports
 `partial`, the actual failed phase, and each completed effect. No journal and no
