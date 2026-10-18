@@ -161,19 +161,6 @@ func rejectView(t *testing.T, m *Model, unwanted ...string) {
 	}
 }
 
-func nextEvent(t *testing.T, m *Model) tea.Msg {
-	t.Helper()
-	done := make(chan tea.Msg, 1)
-	go func() { done <- m.waitEvent()() }()
-	select {
-	case msg := <-done:
-		return msg
-	case <-time.After(4 * time.Second):
-		t.Fatal("no event arrived before the timeout")
-		return nil
-	}
-}
-
 func quitMessage(t *testing.T, cmd tea.Cmd) tea.QuitMsg {
 	t.Helper()
 	if cmd == nil {
@@ -342,9 +329,7 @@ func TestFollowControlsViewport(t *testing.T) {
 		t.Fatal("test needs a scrolled viewport")
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line eleven"))
-	msg := nextEvent(t, m)
-	m, _ = raise(t, m, msg)
-	m, _ = raise(t, m, tickMsg{})
+	m = tickUntilCount(t, m, 11)
 	if got := m.viewport.YOffset(); got != before {
 		t.Fatalf("follow off moved the viewport from %d to %d", before, got)
 	}
@@ -375,8 +360,7 @@ func TestDailyFileRolloverKeepsEarlierLines(t *testing.T) {
 
 	clock.set(secondDay)
 	writeEvents(t, dailyPath(home, secondDay), eventJSON(t, secondDay, "INFO", "after midnight"))
-	msg := nextEvent(t, m)
-	m, _ = raise(t, m, msg)
+	m = tickUntilCount(t, m, 3)
 	requireView(t, m, "before midnight one", "before midnight two", "after midnight")
 }
 
@@ -394,8 +378,7 @@ func TestFollowKeepsIncompleteLineUntilNewline(t *testing.T) {
 	time.Sleep(700 * time.Millisecond)
 	rejectView(t, m, "half")
 	appendRaw(t, path, " line\"}\n")
-	msg := nextEvent(t, m)
-	m, _ = raise(t, m, msg)
+	m = tickUntilCount(t, m, 2)
 	requireView(t, m, "half line")
 }
 
@@ -407,8 +390,7 @@ func TestDailyFileWaitsForFirstFile(t *testing.T) {
 	requireView(t, m, "no events today")
 
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "first arrives"))
-	msg := nextEvent(t, m)
-	m, _ = raise(t, m, msg)
+	m = tickUntilCount(t, m, 1)
 	requireView(t, m, "first arrives")
 }
 
