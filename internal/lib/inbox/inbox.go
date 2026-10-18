@@ -188,25 +188,39 @@ func markRead(locked *store.LockedStore, record records.Inbox) (records.Inbox, e
 // Unread returns each unread record of key in sequence order.
 func Unread(home, key string) ([]records.Inbox, error) {
 	if err := checkKey(key); err != nil {
+		logReadFailure(home, key, err.Error())
 		return nil, err
 	}
 	registry, err := store.Open(home)
 	if err != nil {
+		logReadFailure(home, key, err.Error())
 		return nil, err
 	}
-	return listLocked(registry, key, false, home)
+	found, err := listLocked(registry, key, false, home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	return found, nil
 }
 
 // All returns each record of key in sequence order.
 func All(home, key string) ([]records.Inbox, error) {
 	if err := checkKey(key); err != nil {
+		logReadFailure(home, key, err.Error())
 		return nil, err
 	}
 	registry, err := store.Open(home)
 	if err != nil {
+		logReadFailure(home, key, err.Error())
 		return nil, err
 	}
-	return listLocked(registry, key, true, home)
+	found, err := listLocked(registry, key, true, home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	return found, nil
 }
 
 func listLocked(lister recordLister, key string, all bool, home ...string) ([]records.Inbox, error) {
@@ -237,6 +251,9 @@ func listLocked(lister recordLister, key string, all bool, home ...string) ([]re
 		seq, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("record invalid: %s: the sequence name is not numeric", path)
+		}
+		if id != strconv.FormatUint(seq, 10) {
+			return nil, fmt.Errorf("record invalid: %s: the sequence name is not canonical", path)
 		}
 		if record.Seq != seq {
 			return nil, fmt.Errorf("record invalid: %s: sequence %d does not match the record path", path, record.Seq)
@@ -272,6 +289,7 @@ func UnreadCount(home, key string) (int, error) {
 // UnreadCountAll returns the unread count of each inbox under the home.
 func UnreadCountAll(home string) (map[string]int, error) {
 	if _, err := store.Open(home); err != nil {
+		logReadFailure(home, "", err.Error())
 		return nil, err
 	}
 	root := filepath.Join(home, ".hive", "state", "inbox")
@@ -280,13 +298,17 @@ func UnreadCountAll(home string) (map[string]int, error) {
 		return map[string]int{}, nil
 	}
 	if err != nil {
+		logReadFailure(home, "", err.Error())
 		return nil, err
 	}
 	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
-		return nil, fmt.Errorf("store path invalid: %s", root)
+		message := fmt.Sprintf("store path invalid: %s", root)
+		logReadFailure(home, "", message)
+		return nil, errors.New(message)
 	}
 	entries, err := os.ReadDir(root)
 	if err != nil {
+		logReadFailure(home, "", err.Error())
 		return nil, err
 	}
 	counts := map[string]int{}
@@ -298,10 +320,13 @@ func UnreadCountAll(home string) (map[string]int, error) {
 		rolePath := filepath.Join(root, key)
 		roleInfo, err := os.Lstat(rolePath)
 		if err != nil {
+			logReadFailure(home, key, err.Error())
 			return nil, err
 		}
 		if roleInfo.Mode()&os.ModeSymlink != 0 || !roleInfo.IsDir() {
-			return nil, fmt.Errorf("store path invalid: %s", rolePath)
+			message := fmt.Sprintf("store path invalid: %s", rolePath)
+			logReadFailure(home, key, message)
+			return nil, errors.New(message)
 		}
 		count, err := UnreadCount(home, key)
 		if err != nil {
@@ -386,6 +411,14 @@ func logInboxEvent(home, message string, attrs ...any) {
 	slog.New(writer).Debug(message, attrs...)
 }
 
+func logReadFailure(home, key, message string) {
+	attrs := []any{"phase", "read", "error", message}
+	if key != "" {
+		attrs = append([]any{"role", key}, attrs...)
+	}
+	logInboxEvent(home, "inbox operation failed", attrs...)
+}
+
 func logAppend(home string, options AppendOptions, envelope output.Envelope) {
 	kind := options.Kind
 	if kind == "" {
@@ -415,13 +448,22 @@ func logAppend(home string, options AppendOptions, envelope output.Envelope) {
 
 func logConsume(home, key string, envelope output.Envelope) {
 	attrs := []any{"role", key}
+	senders := map[uint64]string{}
+	if result, ok := envelope.Result.(Result); ok {
+		for _, record := range result.Records {
+			senders[record.Seq] = record.Agent
+		}
+	}
 	sequence := uint64(0)
 	for _, effect := range envelope.Effects {
 		if effect.Resource != "inbox" || effect.Action != "consumed" {
 			continue
 		}
 		sequence = effectSequence(effect.Path)
-		logInboxEvent(home, "inbox record consumed", append(attrs, "sequence", sequence)...)
+		sender := senders[sequence]
+		markAttrs := append([]any{}, attrs...)
+		markAttrs = append(markAttrs, "sequence", sequence, "agent", sender, "agent_id", sender)
+		logInboxEvent(home, "inbox record consumed", markAttrs...)
 	}
 	if envelope.Error == nil {
 		return

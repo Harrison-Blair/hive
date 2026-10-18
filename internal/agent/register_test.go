@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -737,6 +738,112 @@ func TestRegisterLogsTransitionsAndErrors(t *testing.T) {
 	message, _ := failureEvent["error"].(string)
 	if !strings.Contains(message, "invalid role: boss") || failureEvent["role"] != "boss" {
 		t.Fatalf("failure event = %#v; want role boss and the error text", failureEvent)
+	}
+}
+
+func stateSnapshot(t *testing.T, home string) map[string]string {
+	t.Helper()
+	root := filepath.Join(home, ".hive", "state")
+	snapshot := map[string]string{}
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(home, path)
+		if err != nil {
+			return err
+		}
+		snapshot[filepath.ToSlash(rel)] = string(data)
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+	return snapshot
+}
+
+func TestRegisterRejectsCustomSingletonNameBeforeDifferentClaim(t *testing.T) {
+	cases := []struct {
+		name   string
+		first  RegisterOptions
+		second RegisterOptions
+	}{
+		{
+			name:   "coordinator name then supervisor claim",
+			first:  RegisterOptions{Role: "coordinator", Name: "supervisor", NameSet: true, PaneID: "p1"},
+			second: RegisterOptions{Role: "supervisor", Name: "leader", NameSet: true, PaneID: "p2"},
+		},
+		{
+			name:   "supervisor name then coordinator claim",
+			first:  RegisterOptions{Role: "supervisor", Name: "leader", NameSet: true, PaneID: "p1"},
+			second: RegisterOptions{Role: "coordinator", Name: "supervisor", NameSet: true, PaneID: "p2"},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			home := t.TempDir()
+			if first := Register(home, test.first); first.Outcome != "ok" {
+				t.Fatalf("first Register() = %#v; want ok", first)
+			}
+			before := stateSnapshot(t, home)
+			second := Register(home, test.second)
+			if second.Outcome != "failed" || len(second.Effects) != 0 {
+				t.Fatalf("second Register() = %#v; want refused with no effect", second)
+			}
+			after := stateSnapshot(t, home)
+			if !reflect.DeepEqual(before, after) {
+				t.Fatalf("refused registration changed state: before %v after %v", before, after)
+			}
+			holder := Show(home, test.first.Name)
+			record, ok := holder.Result.(records.Agent)
+			if holder.Outcome != "ok" || !ok || record.Name != test.first.Name {
+				t.Fatalf("Show(%q) = %#v; want the first holder", test.first.Name, holder)
+			}
+		})
+	}
+}
+
+func TestRegisterRejectsRecordKeyBeforeDifferentLiveName(t *testing.T) {
+	home := t.TempDir()
+	first := Register(home, RegisterOptions{Role: "coordinator", Name: "leader-g1", NameSet: true, PaneID: "p1"})
+	if first.Outcome != "ok" {
+		t.Fatal(first.Error)
+	}
+	before := stateSnapshot(t, home)
+	second := Register(home, RegisterOptions{Role: "supervisor", Name: "leader", NameSet: true, PaneID: "p2"})
+	if second.Outcome != "failed" || len(second.Effects) != 0 {
+		t.Fatalf("Register() = %#v; want refused record-key alias with no effect", second)
+	}
+	after := stateSnapshot(t, home)
+	if !reflect.DeepEqual(before, after) {
+		t.Fatalf("refused registration changed state: before %v after %v", before, after)
+	}
+}
+
+func TestRegisterKeepsSameClaimNameAndKeyExceptions(t *testing.T) {
+	home := t.TempDir()
+	first := Register(home, RegisterOptions{Role: "coordinator", Name: "leader-g2", NameSet: true, PaneID: "p1"})
+	if first.Outcome != "ok" {
+		t.Fatal(first.Error)
+	}
+	second := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "p2"})
+	if second.Outcome != "ok" {
+		t.Fatalf("Register() = %#v; want the same-claim replacement", second)
+	}
+	old := readAgent(t, home, "leader-g2-g1")
+	if old.Status != records.AgentStale {
+		t.Fatalf("old record status = %q; want stale", old.Status)
+	}
+	current := readAgent(t, home, "leader-g2")
+	if current.Generation != 2 || current.Status != records.AgentLive {
+		t.Fatalf("new record = %#v; want live generation 2", current)
 	}
 }
 

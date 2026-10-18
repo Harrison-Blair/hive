@@ -2,6 +2,9 @@ package agent
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -49,6 +52,62 @@ func TestShowDoesNotResolveUnclaimedSingletonOrphan(t *testing.T) {
 				t.Fatalf("Show(%q) = %#v; want direct generation-record inspection", key, got)
 			}
 		})
+	}
+}
+
+func TestShowLogsReadFailure(t *testing.T) {
+	home := t.TempDir()
+	if envelope := Show(home, "unknown"); envelope.Outcome != "failed" {
+		t.Fatalf("Show() = %#v; want failed", envelope)
+	}
+	events := readAgentLogEvents(t, home)
+	event := findAgentLogEvent(events, "agent show failed")
+	if event == nil {
+		t.Fatalf("events = %#v; want an agent show failure event", events)
+	}
+	message, _ := event["error"].(string)
+	if event["name"] != "unknown" || event["phase"] != "read" || !strings.Contains(message, "agent not found: unknown") {
+		t.Fatalf("failure event = %#v; want name unknown and the read error", event)
+	}
+	if strings.ContainsAny(message, "\n\r\x1b") {
+		t.Fatalf("error = %q; want one physical line", message)
+	}
+	if got := Show(home, "a\nb"); got.Outcome != "failed" {
+		t.Fatalf("Show() = %#v; want failed for a control name", got)
+	}
+	events = readAgentLogEvents(t, home)
+	for _, candidate := range events {
+		if candidate["msg"] != "agent show failed" {
+			continue
+		}
+		value, _ := candidate["error"].(string)
+		if strings.ContainsAny(value, "\n\r\x1b") {
+			t.Fatalf("error event = %#v; want one physical line", candidate)
+		}
+	}
+}
+
+func TestListLogsReadFailure(t *testing.T) {
+	home := t.TempDir()
+	dir := filepath.Join(home, ".hive", "state", "agents")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "bad.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	envelope := List(home, ListOptions{Project: "hive", Role: "worker"})
+	if envelope.Outcome != "failed" {
+		t.Fatalf("List() = %#v; want failed", envelope)
+	}
+	events := readAgentLogEvents(t, home)
+	event := findAgentLogEvent(events, "agent list failed")
+	if event == nil {
+		t.Fatalf("events = %#v; want an agent list failure event", events)
+	}
+	message, _ := event["error"].(string)
+	if event["project_id"] != "hive" || event["role"] != "worker" || event["phase"] != "store" || message == "" {
+		t.Fatalf("failure event = %#v; want the list filters, phase, and error", event)
 	}
 }
 

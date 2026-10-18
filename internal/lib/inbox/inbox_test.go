@@ -111,6 +111,50 @@ func TestNumericSequenceIDsListAndOrder(t *testing.T) {
 	}
 }
 
+func TestConsumeRejectsNoncanonicalSequenceName(t *testing.T) {
+	home := t.TempDir()
+	root := filepath.Join(home, ".hive", "state", "inbox", "coordinator")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	selected := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "SELECTED-01", CreatedAt: "2026-01-01T00:00:00Z"}
+	other := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "OTHER-1", CreatedAt: "2026-01-01T00:00:00Z", ReadAt: "2026-01-02T00:00:00Z"}
+	selectedData, err := json.Marshal(selected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherData, err := json.Marshal(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := map[string][]byte{"01.json": selectedData, "1.json": otherData}
+	for name, data := range files {
+		if err := os.WriteFile(filepath.Join(root, name), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	envelope := Consume(home, "coordinator")
+	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
+		t.Fatalf("Consume() = %#v; want failed with no effect", envelope)
+	}
+	message, _ := envelope.Error.(string)
+	if !strings.Contains(message, filepath.Join(root, "01.json")) {
+		t.Fatalf("error = %q; want the selected record path", message)
+	}
+	if _, err := All(home, "coordinator"); err == nil || !strings.Contains(err.Error(), filepath.Join(root, "01.json")) {
+		t.Fatalf("All() error = %v; want the selected record path", err)
+	}
+	for name, want := range files {
+		got, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != string(want) {
+			t.Fatalf("%s changed: got %q want %q", name, got, want)
+		}
+	}
+}
+
 func TestConsumeMarksAndCountsAgree(t *testing.T) {
 	home := t.TempDir()
 	for i := 0; i < 3; i++ {
@@ -679,14 +723,33 @@ func TestInboxLogsTransitionsAndErrors(t *testing.T) {
 	if envelope := Append(home, AppendOptions{Role: "../x", Text: "secret message text"}); envelope.Outcome != "failed" {
 		t.Fatalf("invalid key Append() = %#v", envelope)
 	}
+	if _, err := All(home, "../all"); err == nil {
+		t.Fatal("All() with an invalid key = nil; want an error")
+	}
+	if _, err := Unread(home, "../unread"); err == nil {
+		t.Fatal("Unread() with an invalid key = nil; want an error")
+	}
 	events := readInboxLogEvents(t, home)
 	appendEvent := findInboxLogEvent(events, "inbox record appended")
 	if appendEvent == nil || appendEvent["role"] != "coordinator" || appendEvent["sequence"] != float64(1) || appendEvent["agent"] != "worker-x" {
 		t.Fatalf("append event = %#v; want role, sequence 1, and agent", appendEvent)
 	}
 	consumeEvent := findInboxLogEvent(events, "inbox record consumed")
-	if consumeEvent == nil || consumeEvent["role"] != "coordinator" || consumeEvent["sequence"] != float64(1) {
-		t.Fatalf("consume event = %#v; want role and sequence 1", consumeEvent)
+	if consumeEvent == nil || consumeEvent["role"] != "coordinator" || consumeEvent["sequence"] != float64(1) || consumeEvent["agent"] != "worker-x" || consumeEvent["agent_id"] != "worker-x" {
+		t.Fatalf("consume event = %#v; want role, sequence 1, and the stored sender", consumeEvent)
+	}
+	for _, want := range []string{"invalid inbox key: ../x", "invalid inbox key: ../all", "invalid inbox key: ../unread"} {
+		found := false
+		for _, event := range events {
+			message, _ := event["error"].(string)
+			if event["msg"] == "inbox operation failed" && strings.Contains(message, want) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("events = %#v; want a read failure event for %q", events, want)
+		}
 	}
 	failureEvent := findInboxLogEvent(events, "inbox operation failed")
 	if failureEvent == nil {

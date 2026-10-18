@@ -28,6 +28,52 @@ func (w *shortWriter) Write(data []byte) (int, error) {
 	return len(data) - 1, nil
 }
 
+func TestInboxAllInvalidKeyLogsReadFailure(t *testing.T) {
+	home := testHome(t)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "../x", "--all"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 1 {
+		t.Fatalf("status = %d, stderr = %q; want 1", status, stderr.String())
+	}
+	events := readRootLogEvents(t, home)
+	found := false
+	for _, event := range events {
+		message, _ := event["error"].(string)
+		if event["msg"] == "inbox operation failed" && strings.Contains(message, "invalid inbox key: ../x") {
+			found = true
+		}
+		if event["msg"] == "inbox record consumed" {
+			t.Fatalf("event = %#v; an invalid --all must not claim a consume", event)
+		}
+	}
+	if !found {
+		t.Fatalf("events = %#v; want the invalid --all read failure", events)
+	}
+}
+
+func TestInboxConsumeLogKeepsStoredSender(t *testing.T) {
+	home := testHome(t)
+	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "BODY-MUST-NOT-LOG"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 {
+		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
+	}
+	events := readRootLogEvents(t, home)
+	event := findRootLogEvent(events, "inbox record consumed")
+	if event == nil || event["role"] != "coordinator" || event["sequence"] != float64(1) || event["agent"] != "worker-x" || event["agent_id"] != "worker-x" {
+		t.Fatalf("consume event = %#v; want role, sequence, and the stored sender", event)
+	}
+	for _, candidate := range events {
+		data, _ := json.Marshal(candidate)
+		if strings.Contains(string(data), "BODY-MUST-NOT-LOG") {
+			t.Fatalf("log event contains message text: %s", data)
+		}
+	}
+}
+
 func TestInboxShortStdoutReturnsOneAndReportsActualIDs(t *testing.T) {
 	for _, jsonMode := range []bool{false, true} {
 		t.Run(map[bool]string{false: "text", true: "json"}[jsonMode], func(t *testing.T) {

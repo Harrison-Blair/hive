@@ -293,6 +293,12 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		if record.Status == records.AgentLive && record.Name == name {
 			return failed("agent", "agent exists: "+name)
 		}
+		if singleton && record.Status == records.AgentLive && record.Name == claimKey {
+			return failed("agent", "agent exists: "+claimKey)
+		}
+		if record.Status == records.AgentLive && record.Name == recordKey {
+			return failed("agent", "agent exists: "+recordKey)
+		}
 	}
 	for _, record := range agentRecords {
 		if record.Status != records.AgentLive && record.Status != records.AgentUnresolved {

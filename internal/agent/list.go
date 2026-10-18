@@ -20,17 +20,17 @@ type ListOptions struct {
 func List(home string, options ListOptions) output.Envelope {
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		return listFailed(home, options, "store", err.Error())
 	}
 	raw, err := registry.ListIn([]string{"agents"}, nil)
 	if err != nil {
-		return failed("store", err.Error())
+		return listFailed(home, options, "store", err.Error())
 	}
 	found := make([]records.Agent, 0, len(raw))
 	for _, data := range raw {
 		var record records.Agent
 		if err := json.Unmarshal(data, &record); err != nil {
-			return failed("store", err.Error())
+			return listFailed(home, options, "store", err.Error())
 		}
 		if !options.All && hiddenStatus(record.Status) {
 			continue
@@ -49,4 +49,17 @@ func List(home string, options ListOptions) output.Envelope {
 
 func hiddenStatus(status string) bool {
 	return status == records.AgentStopped || status == records.AgentExited || status == records.AgentStale
+}
+
+func listFailed(home string, options ListOptions, phase, message string) output.Envelope {
+	attrs := []any{}
+	if options.Project != "" {
+		attrs = append(attrs, "project_id", options.Project)
+	}
+	if options.Role != "" {
+		attrs = append(attrs, "role", options.Role)
+	}
+	attrs = append(attrs, "phase", phase, "error", message)
+	logAgentEvent(home, "agent list failed", attrs...)
+	return failed(phase, message)
 }
