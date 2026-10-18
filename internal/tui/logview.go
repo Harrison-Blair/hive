@@ -136,6 +136,9 @@ func (m *Model) bodyView() string {
 	if m.errText != "" {
 		return "error: " + m.errText
 	}
+	if m.logErr != "" {
+		return "error: " + m.logErr
+	}
 	return m.viewport.View()
 }
 

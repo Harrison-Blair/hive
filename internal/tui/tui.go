@@ -18,6 +18,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/logs"
+	xterm "github.com/charmbracelet/x/term"
 )
 
 const (
@@ -60,6 +61,7 @@ type Model struct {
 	textFilter string
 	follow     bool
 	errText    string
+	logErr     string
 
 	supervisor    string
 	agentCount    int
@@ -235,18 +237,34 @@ func (m *Model) layout() {
 	}
 }
 
+// logAction writes one action event through the checked logging path.
 func (m *Model) logAction(action string) {
+	m.recordLog("tui action", slog.String("action", action))
+}
+
+// logError writes one error event through the checked logging path.
+func (m *Model) logError(context string, err error) {
+	if err == nil {
+		return
+	}
+	m.recordLog("tui error", slog.String("context", context), slog.String("error", boundedError(err.Error())))
+}
+
+// recordLog writes one event through the handler and keeps the first refusal in
+// a bounded view. The writer checks the static log path on each new daily file.
+// slog discards the handler error, so this path calls the handler and shows the
+// error itself. It never logs the refusal, so it cannot recurse.
+func (m *Model) recordLog(message string, attrs ...slog.Attr) {
 	if m.logger == nil {
 		return
 	}
-	m.logger.Debug("tui action", "action", action)
-}
-
-func (m *Model) logError(context string, err error) {
-	if m.logger == nil || err == nil {
-		return
+	record := slog.NewRecord(m.now(), slog.LevelDebug, message, 0)
+	record.AddAttrs(attrs...)
+	if err := m.logger.Handler().Handle(context.Background(), record); err != nil {
+		if m.logErr == "" {
+			m.logErr = boundedError(err.Error())
+		}
 	}
-	m.logger.Debug("tui error", "context", context, "error", boundedError(err.Error()))
 }
 
 func joinLines(parts []string) string {
@@ -424,11 +442,13 @@ type fdHolder interface {
 	Fd() uintptr
 }
 
-// guardReader keeps a terminal file unwrapped, so the input raw mode of Bubble
-// Tea stays unchanged. guardWriter keeps the Fd of a file writer, so terminal
-// detection and size stay unchanged.
+// guardReader keeps a real terminal unwrapped, so the input raw mode of Bubble
+// Tea stays unchanged. Any other reader gets the guard: Bubble Tea then uses
+// its fallback reader, and the guard turns a finite end of input into a program
+// quit. A raw Fd on a regular file fails in epoll, and a pipe end otherwise
+// leaves the program active.
 func guardReader(in io.Reader, guard *streamGuard) io.Reader {
-	if _, ok := in.(fdHolder); ok {
+	if file, ok := in.(fdHolder); ok && xterm.IsTerminal(file.Fd()) {
 		return in
 	}
 	return &guardedReader{in: in, guard: guard}
