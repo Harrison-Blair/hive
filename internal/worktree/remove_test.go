@@ -280,7 +280,15 @@ func TestRemoveIdentityMismatchRefusesWithForce(t *testing.T) {
 			want: "worktree mismatch: is_linked_worktree",
 			prepare: func(t *testing.T, home string) (string, string, records.Task, func(fakeRequest) fakeReply) {
 				repo := newTestRepo(t)
-				return repo, repo, worktreeTask(repo, "main"), nil
+				path := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
+				if err := os.MkdirAll(path, 0o755); err != nil {
+					t.Fatalf("mkdir primary checkout: %v", err)
+				}
+				runGit(t, path, "init", "-q", "-b", "main")
+				runGit(t, path, "config", "user.name", "Hive Test")
+				runGit(t, path, "config", "user.email", "test@example.com")
+				runGit(t, path, "commit", "-q", "--allow-empty", "-m", "init")
+				return repo, path, worktreeTask(path, "task/1-live-demo"), nil
 			},
 		},
 		{

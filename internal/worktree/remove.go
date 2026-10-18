@@ -18,6 +18,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+const maxOutputText = 8192
+
 // RemoveOptions holds the values of one worktree remove.
 type RemoveOptions struct {
 	Task   string
@@ -33,6 +35,15 @@ type RemoveResult struct {
 	WorkspaceClosed bool         `json:"workspace_closed"`
 }
 
+type removeReadFailure struct {
+	phase   string
+	message string
+}
+
+func (e *removeReadFailure) Error() string {
+	return e.message
+}
+
 // Remove removes the worktree of one task.
 func Remove(ctx context.Context, home string, options RemoveOptions) output.Envelope {
 	if ctx == nil {
@@ -41,8 +52,10 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 	logger, closeLog := openWorktreeLogger(home, options.Logger)
 	defer closeLog()
 	ctx = run.WithLogger(ctx, logger)
+	failProjectID := ""
+	failTaskID := options.Task
 	fail := func(phase, message string) output.Envelope {
-		logFailure(logger, commandRemove, "", options.Task, phase, message)
+		logFailure(logger, commandRemove, failProjectID, failTaskID, phase, message)
 		return failedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
@@ -53,32 +66,71 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		return fail("store", "open store: "+oneLine(err.Error()))
 	}
 	var task records.Task
-	if err := registry.ReadIn([]string{"tasks"}, options.Task, &task); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return fail("task", "task not found: "+options.Task)
-		}
-		return fail("store", "read task: "+oneLine(err.Error()))
-	}
-	if task.Worktree == nil || task.Worktree.Path == "" || task.Worktree.Branch == "" {
-		return fail("task", "task has no worktree")
-	}
-	if task.Status != "verified" && task.Status != "cancelled" {
-		return fail("task", "task is "+task.Status+": complete, verify, or cancel it first")
-	}
 	var project records.Project
-	if err := registry.Read("projects", task.Project, &project); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return fail("project", "project not found: "+task.Project)
+	readErr := registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		if err := locked.ReadIn([]string{"tasks"}, options.Task, &task); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return &removeReadFailure{"task", "task not found: " + options.Task}
+			}
+			return &removeReadFailure{"store", "read task: " + oneLine(err.Error())}
 		}
-		return fail("store", "read project: "+oneLine(err.Error()))
+		if task.ID != options.Task || !records.ValidTaskID(task.ID) {
+			return &removeReadFailure{"task", "task record id mismatch: " + task.ID + " != " + options.Task}
+		}
+		if task.Worktree == nil || task.Worktree.Path == "" || task.Worktree.Branch == "" {
+			return &removeReadFailure{"task", "task has no worktree"}
+		}
+		if task.Status != "verified" && task.Status != "cancelled" {
+			return &removeReadFailure{"task", "task is " + task.Status + ": complete, verify, or cancel it first"}
+		}
+		if !records.ValidID(task.Project) {
+			return &removeReadFailure{"project", "invalid project id: " + task.Project}
+		}
+		if err := locked.Read("projects", task.Project, &project); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return &removeReadFailure{"project", "project not found: " + task.Project}
+			}
+			return &removeReadFailure{"store", "read project: " + oneLine(err.Error())}
+		}
+		if project.ID != task.Project || !records.ValidID(project.ID) {
+			return &removeReadFailure{"project", "project record id mismatch: " + project.ID + " != " + task.Project}
+		}
+		return nil
+	})
+	if readErr != nil {
+		var failure *removeReadFailure
+		if errors.As(readErr, &failure) {
+			return fail(failure.phase, failure.message)
+		}
+		return fail("store", "read records: "+oneLine(readErr.Error()))
 	}
 	path := task.Worktree.Path
 	branch := task.Worktree.Branch
 	if !filepath.IsAbs(path) {
 		return fail("identity", "worktree mismatch: path")
 	}
-	logEvent(logger, "worktree remove start", commandRemove, project.ID, task.ID, "status", task.Status, "path", path, "branch", branch, "force", options.Force)
+	permitted := filepath.Join(home, "projects", project.ID, "worktrees", options.Task)
+	if !samePath(path, permitted) {
+		return fail("identity", "worktree mismatch: path")
+	}
+	if branch != "task/"+options.Task {
+		return fail("identity", "worktree mismatch: branch")
+	}
+	failProjectID = project.ID
+	scoped := logger
+	if logger != nil {
+		scoped = logger.With("project_id", project.ID, "task_id", options.Task)
+	}
+	ctx = run.WithLogger(ctx, scoped)
+	logEvent(logger, "worktree remove start", commandRemove, project.ID, options.Task, "status", task.Status, "path", path, "branch", branch, "force", options.Force)
 
+	sourceLinked, err := gitx.IsLinkedWorktree(ctx, project.Path)
+	if err != nil {
+		return fail("identity", "repository check: "+oneLine(err.Error()))
+	}
+	if sourceLinked {
+		return fail("identity", "repository is a linked worktree: register the primary checkout")
+	}
 	linked, err := gitx.IsLinkedWorktree(ctx, path)
 	if err != nil {
 		return fail("identity", "worktree check: "+oneLine(err.Error()))
@@ -108,7 +160,7 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 	workspaceFound := false
 	workspaceID := task.Worktree.WorkspaceID
 	if workspaceID != "" {
-		workspace, getErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger))
+		workspace, getErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(scoped))
 		if getErr != nil {
 			var herdrErr *herdr.Error
 			if errors.As(getErr, &herdrErr) && herdrErr.Code == herdr.CodeWorkspaceNotFound {
@@ -150,7 +202,7 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 	effects := []output.Effect{}
 	closed := false
 	if workspaceFound {
-		closeErr := herdr.WorkspaceClose(ctx, workspaceID, false, herdr.WithLogger(logger))
+		closeErr := herdr.WorkspaceClose(ctx, workspaceID, false, herdr.WithLogger(scoped))
 		if closeErr != nil {
 			var herdrErr *herdr.Error
 			if errors.As(closeErr, &herdrErr) {
@@ -167,13 +219,13 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 				}
 			} else {
 				message := "workspace close outcome unknown: " + oneLine(closeErr.Error())
-				logFailure(logger, commandRemove, project.ID, task.ID, "workspace", message)
+				logFailure(logger, commandRemove, project.ID, options.Task, "workspace", message)
 				return partialEnvelope("workspace", message, nil, nil)
 			}
 		} else {
 			closed = true
 			effects = append(effects, output.Effect{Resource: "workspace", Path: workspaceID, Action: "closed"})
-			logEffect(logger, commandRemove, project.ID, task.ID, "workspace", workspaceID, "closed")
+			logEffect(logger, commandRemove, project.ID, options.Task, "workspace", workspaceID, "closed")
 		}
 	}
 
@@ -185,22 +237,22 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		gitFailure = worktreeRemoveFailure(removeResult)
 	}
 	if gitFailure != "" {
-		logFailure(logger, commandRemove, project.ID, task.ID, "worktree", gitFailure)
+		logFailure(logger, commandRemove, project.ID, options.Task, "worktree", gitFailure)
 		if closed {
 			return partialEnvelope("worktree", gitFailure, effects, RemoveResult{Task: task, Path: path, Branch: branch, WorkspaceClosed: true})
 		}
 		return failedEnvelopeWithEffects("worktree", gitFailure, effects)
 	}
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "removed"})
-	logEffect(logger, commandRemove, project.ID, task.ID, "worktree", path, "removed")
+	logEffect(logger, commandRemove, project.ID, options.Task, "worktree", path, "removed")
 
-	updated, err := persistRemoved(registry, task.ID)
+	updated, err := persistRemoved(registry, project.ID, options.Task, path, branch)
 	if err != nil {
 		message := "persist worktree removal: " + oneLine(err.Error())
-		logFailure(logger, commandRemove, project.ID, task.ID, "task", message)
+		logFailure(logger, commandRemove, project.ID, options.Task, "task", message)
 		return partialEnvelope("task", message, effects, RemoveResult{Task: task, Path: path, Branch: branch, WorkspaceClosed: closed})
 	}
-	logEvent(logger, "worktree remove done", commandRemove, project.ID, task.ID, "path", path, "branch", branch, "workspace_closed", closed)
+	logEvent(logger, "worktree remove done", commandRemove, project.ID, options.Task, "path", path, "branch", branch, "workspace_closed", closed)
 	return output.Envelope{
 		Outcome: "ok",
 		Phase:   "complete",
@@ -223,13 +275,13 @@ func worktreeRemoveFailure(result *run.Result) string {
 		line = line[:index]
 	}
 	line = oneLine(strings.TrimSpace(line))
-	if len(line) > 4096 {
-		line = line[:4096]
+	if len(line) > maxOutputText {
+		line = line[:maxOutputText]
 	}
 	return "git worktree remove: " + line
 }
 
-func persistRemoved(registry *store.Store, taskID string) (records.Task, error) {
+func persistRemoved(registry *store.Store, projectID, taskID, path, branch string) (records.Task, error) {
 	var updated records.Task
 	err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		return locked.UpdateIn([]string{"tasks"}, taskID, func(raw json.RawMessage) (json.RawMessage, error) {
@@ -240,8 +292,20 @@ func persistRemoved(registry *store.Store, taskID string) (records.Task, error) 
 			if err := json.Unmarshal(raw, &record); err != nil {
 				return nil, fmt.Errorf("record invalid: %s", taskID)
 			}
+			if record.ID != taskID {
+				return nil, fmt.Errorf("task record changed: %s", record.ID)
+			}
+			if record.Project != projectID {
+				return nil, fmt.Errorf("task record changed: project %s", record.Project)
+			}
 			if record.Worktree == nil {
 				return nil, fmt.Errorf("task has no worktree")
+			}
+			if record.Worktree.Path != path || record.Worktree.Branch != branch {
+				return nil, fmt.Errorf("task worktree changed: %s", record.Worktree.Path)
+			}
+			if record.Worktree.RemovedAt != "" {
+				return nil, fmt.Errorf("task worktree already removed: %s", record.Worktree.RemovedAt)
 			}
 			record.Worktree.RemovedAt = now()
 			record.Worktree.WorkspaceID = ""

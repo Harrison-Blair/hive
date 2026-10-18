@@ -13,13 +13,20 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/run"
 )
 
-// RefExists reports whether a ref exists in the repository.
+// RefExists reports whether a ref exists in the repository. It separates an
+// absent ref from a repository or command failure.
 func RefExists(ctx context.Context, dir, ref string) (bool, error) {
-	result, err := runGit(ctx, dir, "rev-parse", "--verify", ref)
+	result, err := runGit(ctx, dir, "rev-parse", "--verify", "--quiet", ref)
 	if err != nil {
 		return false, err
 	}
-	return result.ExitCode == 0, nil
+	if result.ExitCode == 0 {
+		return true, nil
+	}
+	if result.ExitCode == 1 {
+		return false, nil
+	}
+	return false, gitFailure("rev-parse --verify", result)
 }
 
 // BranchExists reports whether a branch exists in the repository.
