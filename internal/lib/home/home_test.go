@@ -207,6 +207,72 @@ func TestResolveReturnsAbsolutePathWithoutSymlinks(t *testing.T) {
 	}
 }
 
+func TestResolveRejectsLinkedHiveDirectory(t *testing.T) {
+	root := t.TempDir()
+	external := filepath.Join(root, "external")
+	if err := os.MkdirAll(external, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(external, "README.md"), []byte("linked marker"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	home := filepath.Join(root, "home")
+	if err := os.Mkdir(home, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(external, filepath.Join(home, ".hive")); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve(home, true, "", t.TempDir())
+	if got != "" || err == nil || err.Error() != "not a hive home: "+home {
+		t.Fatalf("Resolve() = %q, %v; want no home because .hive is a symlink", got, err)
+	}
+}
+
+func TestResolveRejectsNonDirectoryHive(t *testing.T) {
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	if err := os.Mkdir(home, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, ".hive"), []byte("not a directory"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve(home, true, "", t.TempDir())
+	if got != "" || err == nil || err.Error() != "not a hive home: "+home {
+		t.Fatalf("Resolve() = %q, %v; want no home because .hive is a regular file", got, err)
+	}
+}
+
+func TestResolveAncestorSkipsLinkedHiveMarker(t *testing.T) {
+	outer := makeHome(t, t.TempDir(), "outer")
+	linked := filepath.Join(outer, "linked")
+	if err := os.Mkdir(linked, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	external := filepath.Join(linked, "external")
+	if err := os.Mkdir(external, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(external, "README.md"), []byte("linked marker"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(external, filepath.Join(linked, ".hive")); err != nil {
+		t.Fatal(err)
+	}
+	cwd := filepath.Join(linked, "nested")
+	if err := os.Mkdir(cwd, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve("", false, "", cwd)
+	if err != nil || got != outer {
+		t.Fatalf("Resolve() = %q, %v; want outer home %q", got, err, outer)
+	}
+}
+
 func makeHome(t *testing.T, parent, name string) string {
 	t.Helper()
 	path := filepath.Join(parent, name)
