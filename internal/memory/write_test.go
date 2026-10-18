@@ -16,7 +16,7 @@ import (
 func TestNewMemoryWritesFileAndIndex(t *testing.T) {
 	home := t.TempDir()
 	input := memoryContent("base-is-dev", "The base branch of hive is dev.", "The base branch of hive is dev.")
-	envelope := writeMemory(t, home, "base-is-dev", input)
+	envelope := writeTestMemory(t, home, "base-is-dev", input)
 	if envelope.Outcome != "ok" || envelope.Phase != "complete" || envelope.Error != nil {
 		t.Fatalf("Write() = %#v; want success", envelope)
 	}
@@ -44,11 +44,11 @@ func TestNewMemoryWritesFileAndIndex(t *testing.T) {
 func TestReplacementReportsUpdated(t *testing.T) {
 	home := t.TempDir()
 	first := memoryContent("fact", "First fact.", "First body.")
-	if envelope := writeMemory(t, home, "fact", first); envelope.Outcome != "ok" {
+	if envelope := writeTestMemory(t, home, "fact", first); envelope.Outcome != "ok" {
 		t.Fatalf("first Write() = %#v", envelope)
 	}
 	second := memoryContent("fact", "Second fact.", "Second body.")
-	envelope := writeMemory(t, home, "fact", second)
+	envelope := writeTestMemory(t, home, "fact", second)
 	if envelope.Outcome != "ok" {
 		t.Fatalf("second Write() = %#v", envelope)
 	}
@@ -67,10 +67,10 @@ func TestReplacementReportsUpdated(t *testing.T) {
 
 func TestTwoMemoriesIndexNameOrder(t *testing.T) {
 	home := t.TempDir()
-	if envelope := writeMemory(t, home, "zulu", memoryContent("zulu", "Z.", "Z body.")); envelope.Outcome != "ok" {
+	if envelope := writeTestMemory(t, home, "zulu", memoryContent("zulu", "Z.", "Z body.")); envelope.Outcome != "ok" {
 		t.Fatalf("zulu Write() = %#v", envelope)
 	}
-	if envelope := writeMemory(t, home, "alpha", memoryContent("alpha", "A.", "A body.")); envelope.Outcome != "ok" {
+	if envelope := writeTestMemory(t, home, "alpha", memoryContent("alpha", "A.", "A body.")); envelope.Outcome != "ok" {
 		t.Fatalf("alpha Write() = %#v", envelope)
 	}
 	got, err := os.ReadFile(filepath.Join(home, "memory", "MEMORY.md"))
@@ -87,14 +87,14 @@ func TestExistingInvalidFileStopsWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	badPath := filepath.Join(memoryDir, "bad.md")
-	if err := os.WriteFile(badPath, []byte("---\nname: bad\n---\n"), 0o644); err != nil {
+	if err := writeFileFixture(t, badPath, []byte("---\nname: bad\n---\n")); err != nil {
 		t.Fatal(err)
 	}
 	oldIndex := []byte("old index\n")
-	if err := os.WriteFile(filepath.Join(memoryDir, "MEMORY.md"), oldIndex, 0o644); err != nil {
+	if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
 	want := "memory file invalid: " + badPath + ": frontmatter: missing description"
 	if envelope.Outcome != "failed" || envelope.Phase != "scan" || envelope.Error != want {
 		t.Fatalf("Write() = %#v; want %q", envelope, want)
@@ -115,10 +115,10 @@ func TestExistingOversizedFileStopsWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	badPath := filepath.Join(memoryDir, "large.md")
-	if err := os.WriteFile(badPath, bytes.Repeat([]byte("a"), 1048577), 0o644); err != nil {
+	if err := writeFileFixture(t, badPath, bytes.Repeat([]byte("a"), 1048577)); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
 	if envelope.Outcome != "failed" || !strings.HasPrefix(envelope.Error.(string), "memory file invalid: "+badPath+": ") {
 		t.Fatalf("Write() = %#v; want memory file invalid", envelope)
 	}
@@ -150,7 +150,7 @@ func TestMemoryNameValidation(t *testing.T) {
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {
 			home := t.TempDir()
-			envelope := writeMemory(t, home, name, memoryContent("fact", "A fact.", "Body."))
+			envelope := writeTestMemory(t, home, name, memoryContent("fact", "A fact.", "Body."))
 			if envelope.Outcome != "failed" {
 				t.Fatalf("Write(%q) = %#v; want failure", name, envelope)
 			}
@@ -167,7 +167,7 @@ func TestMemoryNameValidation(t *testing.T) {
 func TestVeryLongMemoryNameFailsWithoutPanic(t *testing.T) {
 	home := t.TempDir()
 	name := strings.Repeat("a", 10000)
-	envelope := writeMemory(t, home, name, memoryContent(name, "A fact.", "Body."))
+	envelope := writeTestMemory(t, home, name, memoryContent(name, "A fact.", "Body."))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Write(long name) = %#v; want failure", envelope)
 	}
@@ -183,7 +183,7 @@ func TestStaticIndexDirectoryRefusedBeforeWrite(t *testing.T) {
 	if err := os.MkdirAll(indexPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Write() = %#v; want refusal", envelope)
 	}
@@ -203,14 +203,14 @@ func TestStaticIndexLinkRefusedBeforeWrite(t *testing.T) {
 	}
 	target := filepath.Join(t.TempDir(), "index.md")
 	old := []byte("old\n")
-	if err := os.WriteFile(target, old, 0o644); err != nil {
+	if err := writeFileFixture(t, target, old); err != nil {
 		t.Fatal(err)
 	}
 	indexPath := filepath.Join(memoryDir, "MEMORY.md")
 	if err := os.Symlink(target, indexPath); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Write() = %#v; want refusal", envelope)
 	}
@@ -232,7 +232,7 @@ func TestStaticMemoryDirectoryLinkRefused(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(home, "memory")); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
+	envelope := writeTestMemory(t, home, "new", memoryContent("new", "New fact.", "New body."))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Write() = %#v; want refusal", envelope)
 	}
@@ -250,14 +250,14 @@ func TestStaticLeafLinkRefused(t *testing.T) {
 	}
 	target := filepath.Join(t.TempDir(), "fact.md")
 	old := []byte("outside\n")
-	if err := os.WriteFile(target, old, 0o644); err != nil {
+	if err := writeFileFixture(t, target, old); err != nil {
 		t.Fatal(err)
 	}
 	leaf := filepath.Join(memoryDir, "fact.md")
 	if err := os.Symlink(target, leaf); err != nil {
 		t.Fatal(err)
 	}
-	envelope := writeMemory(t, home, "fact", memoryContent("fact", "A fact.", "Body."))
+	envelope := writeTestMemory(t, home, "fact", memoryContent("fact", "A fact.", "Body."))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Write() = %#v; want refusal", envelope)
 	}
@@ -277,7 +277,7 @@ func TestPartialIndexForNewMemory(t *testing.T) {
 		t.Fatal(err)
 	}
 	oldIndex := []byte("old index\n")
-	if err := os.WriteFile(filepath.Join(memoryDir, "MEMORY.md"), oldIndex, 0o644); err != nil {
+	if err := writeFileFixture(t, filepath.Join(memoryDir, "MEMORY.md"), oldIndex); err != nil {
 		t.Fatal(err)
 	}
 	input := memoryContent("new", "New fact.", "New body.")
@@ -304,7 +304,7 @@ func TestPartialIndexForNewMemory(t *testing.T) {
 		t.Fatalf("index = %q, %v; want old index", got, err)
 	}
 
-	green := writeMemory(t, home, "new", memoryContent("new", "Regenerated fact.", "New body."))
+	green := writeTestMemory(t, home, "new", memoryContent("new", "Regenerated fact.", "New body."))
 	if green.Outcome != "ok" {
 		t.Fatalf("later Write() = %#v; want success", green)
 	}
@@ -317,7 +317,7 @@ func TestPartialIndexForNewMemory(t *testing.T) {
 func TestPartialIndexForReplacement(t *testing.T) {
 	home := t.TempDir()
 	first := memoryContent("fact", "First fact.", "First body.")
-	if envelope := writeMemory(t, home, "fact", first); envelope.Outcome != "ok" {
+	if envelope := writeTestMemory(t, home, "fact", first); envelope.Outcome != "ok" {
 		t.Fatalf("first Write() = %#v", envelope)
 	}
 	oldIndex, err := os.ReadFile(filepath.Join(home, "memory", "MEMORY.md"))
@@ -370,7 +370,7 @@ func TestWriteLogsEffectsWithoutContent(t *testing.T) {
 	}
 }
 
-func writeMemory(t *testing.T, home, name, input string) output.Envelope {
+func writeTestMemory(t *testing.T, home, name, input string) output.Envelope {
 	t.Helper()
 	return Write(home, WriteOptions{
 		Scope:    "home",
@@ -378,6 +378,19 @@ func writeMemory(t *testing.T, home, name, input string) output.Envelope {
 		Input:    strings.NewReader(input),
 		Deadline: time.Second,
 	})
+}
+
+func writeFileFixture(t *testing.T, path string, data []byte) error {
+	t.Helper()
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	if _, err := file.Write(data); err != nil {
+		_ = file.Close()
+		return err
+	}
+	return file.Close()
 }
 
 func memoryContent(name, description, body string) string {

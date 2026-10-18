@@ -113,7 +113,7 @@ func TestHandoffStaticLinkRefused(t *testing.T) {
 	home := t.TempDir()
 	target := filepath.Join(t.TempDir(), "target.md")
 	old := []byte("old target\n")
-	if err := os.WriteFile(target, old, 0o644); err != nil {
+	if err := writeFileFixture(t, target, old); err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Join(home, "handoff.md")
@@ -200,4 +200,17 @@ func writeHandoff(t *testing.T, home, content string) output.Envelope {
 		Input:    strings.NewReader(content),
 		Deadline: time.Second,
 	})
+}
+
+func writeFileFixture(t *testing.T, path string, data []byte) error {
+	t.Helper()
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	if _, err := file.Write(data); err != nil {
+		_ = file.Close()
+		return err
+	}
+	return file.Close()
 }
