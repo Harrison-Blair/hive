@@ -38,6 +38,9 @@ func (m *Model) updateViewing(press tea.KeyPressMsg) tea.Cmd {
 		m.follow = true
 		m.viewport.GotoBottom()
 		m.logAction("bottom")
+	case "esc", "escape":
+		m.clearTextFilter()
+		m.logAction("filter clear")
 	}
 	return nil
 }
@@ -48,11 +51,7 @@ func (m *Model) updateEditing(press tea.KeyPressMsg) tea.Cmd {
 		m.logAction("quit")
 		return tea.Quit
 	case "esc", "escape":
-		m.textFilter = ""
-		m.input.Reset()
-		m.input.Blur()
-		m.mode = viewing
-		m.rebuild()
+		m.clearTextFilter()
 		m.logAction("edit cancel")
 		return nil
 	case "enter":
@@ -66,6 +65,16 @@ func (m *Model) updateEditing(press tea.KeyPressMsg) tea.Cmd {
 	updated, cmd := m.input.Update(press)
 	m.input = updated
 	return cmd
+}
+
+// clearTextFilter clears the applied text filter and the input, returns to
+// viewing mode, and rebuilds the view with the current level and follow state.
+func (m *Model) clearTextFilter() {
+	m.textFilter = ""
+	m.input.Reset()
+	m.input.Blur()
+	m.mode = viewing
+	m.rebuild()
 }
 
 func (m *Model) cycleLevel() {
