@@ -86,7 +86,7 @@ flowchart TD
 | Task | Title | Wave | Tier | Depends on | Status | Verified by | Landed |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [T01](tasks/T01-home-and-register.md) | home and register | 1 | strong | none | in progress | | |
-| [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | in progress | | |
+| [T02](tasks/T02-version-lib.md) | version lib | 1 | small | none | evidence | | |
 | [T03](tasks/T03-task-lifecycle.md) | task lifecycle | 2 | decent | T01, CP1 | blocked | | |
 | [T04](tasks/T04-roles-and-inbox.md) | roles and inbox | 2 | decent | T01, CP1 | blocked | | |
 | [T05](tasks/T05-herdr-client-and-doctor.md) | herdr client and doctor | 2 | strong | T01, CP1 | blocked | | |
