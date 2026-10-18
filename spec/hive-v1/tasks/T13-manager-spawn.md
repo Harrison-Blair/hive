@@ -16,8 +16,9 @@
 This task gives the manager its workspace. `hive agent spawn --role manager`
 without `--pane` finds or makes the workspace `hive:<project>`, writes the
 project instructions, and starts the harness in the root pane of the first tab.
-`hive agent stop` closes the workspace that hive made when no other registered
-agent is in it. A live manager claim is what "active project" means.
+`hive agent stop` closes the pane of the manager. herdr closes the workspace
+when that pane was its last pane, and the tabs of the user stay otherwise. A
+live manager claim is what "active project" means.
 
 Hive reuses only the workspace whose ID the project record stores. A workspace
 with the same label that hive does not know has no owner. The user closes it or
@@ -28,9 +29,8 @@ passes `--adopt` with its ID.
 1. The coordinator runs `hive agent spawn --role manager --project hive --harness claude --model <strong model>`. A workspace `hive:hive` appears with the project directory as its working directory, and the manager starts in its first tab.
 2. The coordinator runs the same command a day later. The project record names the workspace, and it is still open with the label and the directory. Hive reuses it and starts the manager in the root pane of its first tab, if that pane holds a shell.
 3. The user made a workspace `hive:hive` by hand. The spawn fails with `workspace w5 has the label hive:hive but hive did not make it: close it or pass --adopt w5`. The coordinator runs the spawn again with `--adopt w5`, and hive records the workspace as not made by hive.
-4. The coordinator runs `hive agent stop --agent manager-hive`. The manager ends and the workspace closes, because hive made it and no other agent is in it.
-5. The coordinator runs `hive agent stop --agent manager-hive --keep`. The manager ends and the workspace stays.
-6. The manager ended, but the close failed. The coordinator runs `hive agent stop --agent manager-hive` again. The record is already `stopped`, so hive only closes the workspace.
+4. The coordinator runs `hive agent stop --agent manager-hive`. Hive closes the manager pane. It was the only pane, so the workspace is gone and the project record forgets it.
+5. The user opened a second tab in `hive:hive`. The stop closes the manager pane. The workspace stays with the tab of the user, and the project record keeps the workspace.
 
 ## Source files
 
@@ -38,13 +38,12 @@ passes `--adopt` with its ID.
 | --- | --- |
 | `internal/agent/spawn.go` | Add one case line for the manager role in the pane-choice switch. |
 | `internal/agent/workspace.go` | New. Find, check, adopt, or make the workspace. Choose the root pane of the first tab. |
-| `internal/agent/stop.go` | Add the workspace close, the close guard, and `--keep`. |
+| `internal/agent/stop.go` | Update `workspace` on the project record from the result of the stop function. |
 | `internal/agent/instructions.go` | New. Write `projects/<id>/AGENTS.md` from the embedded template. |
 | `internal/agent/templates/project-agents.md` | New. The template, in ASD-STE100 Strict. T21 refines it. |
 | `internal/agent/doc.go` | Add the map lines. |
 | `cmd/agent/spawn/spawn.go` | Add `--adopt WORKSPACE`. |
-| `cmd/agent/stop/stop.go` | Add `--keep`. |
-| `internal/lib/herdr/workspace.go` | Add `WorkspaceCreate` and `WorkspaceClose`. T09 made the file with `WorkspaceGet` and `WorkspaceList`. |
+| `internal/lib/herdr/workspace.go` | Add `WorkspaceCreate`. T09 made the file with `WorkspaceGet`, `WorkspaceList`, and `WorkspaceClose`. |
 | `internal/lib/herdr/tab.go` | New. `TabList`. |
 | `internal/lib/herdr/pane.go` | Add `PaneList`. T10 made the file with `PaneGet`. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
@@ -78,13 +77,11 @@ passes `--adopt` with its ID.
 
 ### AC4 Stop
 
-- `hive agent stop --agent NAME [--keep]` runs the stop function of T10 for a `live` record. For a manager, hive then runs the close guard when the record is `stopped` or `exited`.
-- The close guard has four conditions. The project record has `created_by_hive` true. `workspace.get` on the recorded ID shows the label `hive:<project>`. No other record with the status `live` or `unresolved` has that `workspace_id`. `agent.list` shows no agent with that `workspace_id`. When one condition fails, hive keeps the workspace and names the condition in the output.
-- When the guard passes, hive sends `workspace.close` with the `workspace_id` and `close_group` false. Then it clears `workspace` on the project record.
-- `--keep` skips the close. A `workspace_group_close_required` error fails with `workspace is a worktree group root: close it by hand`. Hive never passes `close_group` true.
-- A close that fails after a successful stop gives `partial` with the effect `agent stopped` and the close error. The record is `stopped`.
-- `hive agent stop` on a record that is already `stopped` or `exited` sends no keys. When the project record still has a `workspace`, hive runs only the close guard and the close. Otherwise it fails with `agent is <status>`.
-- `workspace_not_found` from the close gives the effect `workspace already gone`. Hive clears `workspace` on the project record, and the outcome is `ok`.
+- `hive agent stop --agent NAME` runs the stop function of T10. For a manager record, hive then updates the project record from the result.
+- When the `pane_count` of the workspace was 1, herdr closed the workspace with the pane. Hive clears `workspace` on the project record and adds the effect `workspace closed`.
+- When the `pane_count` was above 1, the workspace stays with the other panes. Hive keeps `workspace` on the project record and adds the effect `workspace kept: <n> other panes`. The next manager spawn reuses the workspace when its first tab holds a shell.
+- Hive sends no `workspace.close` on a stop, and it never passes `close_group` true.
+- A stop whose result is `unresolved` keeps `workspace` on the project record. `hive agent resolve` of T20 settles the record.
 
 ### AC5 Gate
 
@@ -97,7 +94,7 @@ passes `--adopt` with its ID.
 | AC1 | The spawn reuses only the recorded workspace, refuses one without an owner unless `--adopt`, and makes one with the project directory. | V1, V4 |
 | AC2 | The manager starts in the root pane of the first tab, or the spawn fails when that pane is not a shell. | V1, V4 |
 | AC3 | The instructions file comes from the template with the values filled in. | V2, V4 |
-| AC4 | The stop closes only a workspace that hive made and that no other agent uses, unless `--keep`, and a retry closes alone. | V3, V4 |
+| AC4 | The stop closes the manager pane, and the project record forgets the workspace only when that pane was its last one. | V3, V4 |
 | AC5 | The gate passes. | V5 |
 
 ## Verification items
@@ -118,7 +115,7 @@ passes `--adopt` with its ID.
 
 - Proves: AC4.
 - Command: `go test ./internal/agent/ -run TestStopWorkspace -v`, red and green.
-- Expected: a close with `created_by_hive` true, the label, and no other agent. No close with another `live` record, with another `unresolved` record, with an unaccounted agent in `agent.list`, with another label, with `created_by_hive` false, or with `--keep`. The group error message. A close error after the stop gives `partial` with the record `stopped`. A second stop on the `stopped` record sends no keys and closes. `workspace_not_found` gives `ok` with the effect and a cleared record.
+- Expected: a fake herdr server. A stop with a `pane_count` of 1 closes the pane, clears `workspace` on the project record, and has the effect `workspace closed`. A stop with a `pane_count` of 2 closes the pane, keeps `workspace`, and has the effect `workspace kept: 1 other panes`. Neither case sends `workspace.close`. An `unresolved` result keeps `workspace`.
 
 ### V4 Live transcript
 

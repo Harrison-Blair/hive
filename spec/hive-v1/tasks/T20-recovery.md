@@ -26,7 +26,6 @@ identity of the live agent with the record before it trusts the name.
 2. The coordinator runs `hive agent resolve --agent worker-hive-3 --as exited`. The record becomes `exited`.
 3. The coordinator runs `hive agent resolve --agent manager-hive --as live`. Hive finds the live agent, compares its kind, its directory, and its terminal with the record, and updates the pane IDs from it.
 4. A manager runs `hive worktree remove --task 12-spawn-worker` while its worker is `unresolved`. Hive refuses with `agent unresolved: worker-hive-3`.
-5. The coordinator runs `hive agent stop --agent manager-hive` while an `unresolved` worker record points at the same workspace. Hive stops the manager and keeps the workspace open.
 
 ## Source files
 
@@ -36,7 +35,7 @@ identity of the live agent with the record before it trusts the name.
 | `cmd/agent/agent.go` | Register the subcommand. |
 | `internal/agent/resolve.go` | New. |
 | `internal/agent/list.go` | Sort `unresolved` records first. |
-| `internal/agent/stop.go` | Refuse an `unresolved` record. Keep a manager workspace open when an `unresolved` record occupies it. |
+| `internal/agent/stop.go` | Refuse an `unresolved` record. |
 | `internal/worktree/remove.go` | Refuse when an agent record or a live herdr agent occupies the worktree. |
 | `internal/task/show.go`, `render.go` | Show the status of the acting agent. |
 | `internal/doctor/checks.go` | Add one check: the count of `unresolved` records, `warn` above zero. |
@@ -56,7 +55,6 @@ identity of the live agent with the record before it trusts the name.
 ### AC2 Guards
 
 - `agent stop` on an `unresolved` record fails with `agent unresolved: run hive agent resolve`.
-- The manager workspace close of T13 does not run when another record with the status `unresolved` has that `workspace_id`. The stop then ends with the outcome `ok` and the effect `workspace kept: unresolved agent <name>`.
 - `worktree remove` fails with `agent <status>: <name>` when a record of the task has a status other than `stopped` or `exited`. The same rule applies to a record with the `workspace_id` or the path of the worktree. A live herdr agent in the workspace, from `agent.list`, fails with `agent in workspace: <pane>`. `--force` does not override these guards.
 - `agent list` prints `unresolved` records first. `task show` prints the status of the acting agent: the record status, or `no record` when the record is missing.
 - `hive doctor` prints `warn unresolved agents: <n>` when the count is above zero, else `ok`.
@@ -70,7 +68,7 @@ identity of the live agent with the record before it trusts the name.
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | `resolve` settles an unresolved record in the two ways, checks the identity, and refuses other records and other failures. | V1, V3 |
-| AC2 | The stop, the close, the remove, the list, the show, and the doctor act on unresolved records as the requirements give. | V2, V3 |
+| AC2 | The stop, the remove, the list, the show, and the doctor act on unresolved records as the requirements give. | V2, V3 |
 | AC3 | The gate passes. | V4 |
 
 ## Verification items
@@ -84,8 +82,8 @@ identity of the live agent with the record before it trusts the name.
 ### V2 Guard tests
 
 - Proves: AC2.
-- Command: `go test ./internal/agent/ ./internal/worktree/ ./internal/task/ ./internal/doctor/ -run 'TestStopUnresolved|TestStopKeepsWorkspace|TestRemoveAgentGuard|TestListOrder|TestShowAgentStatus|TestDoctorUnresolved' -v`, red and green.
-- Expected: the stop message. No `workspace.close` request when an `unresolved` record has the workspace. The remove guard for four occupants. The occupants: a record of the task, a record with the workspace, a record with the path, and a live herdr agent in the workspace. Each case also with `--force`. The list with a `live` record written before an `unresolved` record, and the `unresolved` record first. The show for `live`, `unresolved`, `exited`, `stopped`, and a missing record. The doctor line.
+- Command: `go test ./internal/agent/ ./internal/worktree/ ./internal/task/ ./internal/doctor/ -run 'TestStopUnresolved|TestRemoveAgentGuard|TestListOrder|TestShowAgentStatus|TestDoctorUnresolved' -v`, red and green.
+- Expected: the stop message. The remove guard for four occupants. The occupants: a record of the task, a record with the workspace, a record with the path, and a live herdr agent in the workspace. Each case also with `--force`. The list with a `live` record written before an `unresolved` record, and the `unresolved` record first. The show for `live`, `unresolved`, `exited`, `stopped`, and a missing record. The doctor line.
 
 ### V3 Command test
 

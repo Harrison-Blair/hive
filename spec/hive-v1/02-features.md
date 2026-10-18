@@ -11,7 +11,7 @@ it where to leave a seam. "Out" stops speculative work.
 | Roles | Coordinator, one manager for each project, and workers. Each role has a durable record, a claim with a generation number, and an inbox that survives an agent exit. |
 | Tasks | Create, assign, complete, verify, and cancel. Dependencies between tasks. One central store and one lock. A task ID is a number and a short name, such as `12-spawn-worker`. |
 | Worktrees | One linked Git worktree for each task at `projects/<project-id>/worktrees/<task-id>/`, made and shown through herdr. |
-| herdr control | Spawn, send to, and stop agents through the socket. Make the workspace of a manager and the workspace of a worktree. An agent starts in the root pane of the first tab. A stop sends the exit keys of the harness, because herdr has no stop method. Hive closes what it made when the agent stops. |
+| herdr control | Spawn, send to, and stop agents through the socket. Make the workspace of a manager and the workspace of a worktree. An agent starts in the root pane of the first tab. A stop closes the pane of the agent, because herdr has no stop method. herdr closes the workspace with its last pane. |
 | Supervise | One relay process for each home. It turns herdr events into inbox records and nudges an idle role. No agent runs a wait loop. |
 | Memory and handoffs | Scoped Markdown files at home scope and project scope. A backend command writes each file atomically. |
 | Delivery | Land a verified branch by local merge or by pull request, under a grant. |

@@ -15,7 +15,7 @@ Each row names the risk and the answer that the design gives.
 | herdr updates itself and changes behavior without a schema change | The protocol is pinned in code. `reference/herdr/RESYNC.md` runs before hive trusts a new herdr version. |
 | An agent state of idle or done is mistaken for success | An independent agent verifies each task. An uncertain record is unresolved. Hive holds ambiguous work. Hive stops an agent only on its own record transitions. |
 | An agent waits in a loop and acts early on slow work | No wait command exists. The supervisor nudges a role only when the role is idle. A long `working` status is never an event. |
-| Agents, tabs, and workspaces stay behind after their work ends | `task complete` and `task verify` mark the agent finished. The supervisor stops it when idle. `worktree remove` closes the worktree workspace. `agent stop` closes a manager workspace that hive made. |
+| Agents, tabs, and workspaces stay behind after their work ends | `task complete` and `task verify` mark the agent finished. The supervisor stops it when idle. `agent stop` closes the pane of the agent, and herdr closes the workspace with its last pane. `worktree remove` closes an open worktree workspace. |
 | Two parallel tasks edit the same file and conflict at merge | Each task owns its folders. A shared file takes one line for each entry. The merger resolves only those conflicts. |
 | Tools descend into nested checkouts under `projects/` | Each tool acts on tracked and new files only. `go ./...` stops at a nested `go.mod`. |
 | Log growth | Daily files. Bodies capped at 4 KiB. No automatic deletion. The user prunes by hand. |

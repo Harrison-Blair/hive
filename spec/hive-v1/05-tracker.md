@@ -168,7 +168,7 @@ PANE=<root pane from the output>
 ./hive agent send --agent cp2-worker --wait "Reply with the word pong."
 ./hive agent list
 ./hive agent stop --agent cp2-worker
-herdr pane read "$PANE" --lines 5
+herdr workspace list
 ./hive task cancel --task "$TASK"
 ./hive worktree remove --task "$TASK"
 herdr workspace list
@@ -178,8 +178,8 @@ git branch --list "task/$TASK"
 Look for: a workspace with the task ID as its label beside the hive workspace,
 with one tab and the agent in its root pane. No tab shows an empty shell. The
 word pong appears in the pane. The list shows the agent as live. After the stop,
-the pane shows a shell prompt and the record is `stopped`. After the remove, the
-workspace and the directory are gone and the branch stays.
+the workspace of the task is gone and the record is `stopped`. After the remove,
+the directory is gone and the branch stays.
 
 Critique:
 
@@ -222,8 +222,8 @@ WORKER=<agent name from the output>
 ```
 
 Watch: an inbox record `completed` appears, one nudge line arrives in pane A,
-and the supervisor stops the worker when it is idle. The worktree pane then
-shows a shell prompt. Then:
+and the supervisor stops the worker when it is idle. The workspace of the
+worktree is then gone. Then:
 
 ```sh
 ./hive agent spawn --role verifier --task "$TASK" --harness codex
@@ -234,7 +234,8 @@ VERIFIER=<agent name from the output>
 ./hive worktree remove --task "$TASK"
 ```
 
-Watch: the record `verified`, the nudge, and the stop of the verifier. Then
+Watch: the verifier spawn reopens the worktree as a workspace, then the
+record `verified`, the nudge, and the stop of the verifier. Then
 press Ctrl-C in pane B. The supervisor exits with status 0, and `./hive doctor`
 in pane A reports the supervisor claim as stale.
 

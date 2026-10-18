@@ -20,19 +20,20 @@ spawn takes an explicit pane. T13 and T14 choose the pane for a manager and a
 worker. The profile tasks T16 to T19 add one profile each. The registry takes
 one line for each profile.
 
-herdr 0.9.5 has no stop method. Hive stops an agent with the exit keys of its
-harness profile through `agent.send_keys`, then waits until the agent leaves
-the pane. The pane keeps its shell. Hive targets each agent request at the pane
-ID of the record, never at the name, because herdr can drop a name while the
-process continues.
+herdr 0.9.5 has no stop method. Hive stops an agent with `pane.close` on the
+pane of the record. herdr ends the process and removes the pane. When the pane
+was the last pane of its workspace, herdr closes the workspace too. Hive closes
+only a pane in which hive started the agent. Hive targets each agent request at
+the pane ID of the record, never at the name, because herdr can drop a name
+while the process continues.
 
 ## User flows
 
 1. The user runs `hive agent spawn --pane w3:p1 --role worker --project hive --task 12-spawn-worker --harness claude --model <small model>`. Claude Code starts in the pane. Hive writes the record, waits until the agent is idle, and prints the name `worker-hive-1`.
 2. The user runs `hive agent send --agent worker-hive-1 "Reply with the word pong."`. The text arrives in the pane and the agent answers.
 3. Claude Code shows its folder trust dialog. The spawn ends with the outcome `partial` and the error `agent blocked: accept the dialog in w3:p1`. The record exists with the status `live`.
-4. The user runs `hive agent stop --agent worker-hive-1`. Hive types `/exit` and Enter into the pane. The agent process ends, the pane shows a shell, and the record has the status `stopped`.
-5. The agent ignores the exit keys. After 30 seconds hive ends with `partial` and the error `agent did not exit within 30 s`. The user runs `hive agent stop --agent worker-hive-1 --force`. Hive sends Ctrl-C twice, and the agent ends.
+4. The user runs `hive agent stop --agent worker-hive-1`. Hive closes the pane. The agent process ends, the pane is gone, and the record has the status `stopped`. When the pane was the last one of its workspace, the workspace is gone too.
+5. The user registered the coordinator in their own pane with `hive agent register`. `hive agent stop --agent coordinator` fails with `agent coordinator was not spawned by hive: exit it by hand`. The pane stays.
 
 ## Source files
 
@@ -49,19 +50,18 @@ process continues.
 | `internal/lib/harness/harness.go` | New. The `Profile` interface, the lookup by kind, and the bounds check. |
 | `internal/lib/harness/registry.go` | New. One line for each profile. |
 | `internal/lib/harness/claude.go` | New. The Claude Code profile. |
-| `internal/lib/herdr/agent.go` | New. `AgentStart`, `AgentWait`, `AgentPrompt`, `AgentSendKeys`, `AgentGet`, `AgentList`. |
-| `internal/lib/herdr/pane.go` | New. `PaneGet`. T13 adds `PaneList`. |
+| `internal/lib/herdr/agent.go` | New. `AgentStart`, `AgentWait`, `AgentPrompt`, `AgentGet`, `AgentList`. |
+| `internal/lib/herdr/pane.go` | New. `PaneGet` and `PaneClose`. T13 adds `PaneList`. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
-| `internal/lib/records/agent.go` | Add `terminal_id`, `cwd`, and `last_error`. |
+| `internal/lib/records/agent.go` | Add `terminal_id`, `cwd`, `last_error`, and `spawned`. |
 
 ## Requirements
 
 ### AC1 Harness profile
 
 - A profile gives `Kind()`, the herdr agent kind such as `claude`. It gives `Args(model string, extra []string)`, the native arguments for `agent.start`. It gives `StartTimeout()`, the value for `timeout_ms`, and `ReadyTimeout()`, the bound of the wait for a settled status.
-- A profile gives `ExitKeys()`, the logical keys that end the agent from an idle prompt. It gives `ForceExitKeys()`, the keys for `--force`, and `StopTimeout()`, the bound of the wait for the exit.
-- `harness.Check(profile)` fails when `StartTimeout()` is not above 3 seconds and at most 300 seconds, when `StartTimeout()` is below `ReadyTimeout()`, or when `ExitKeys()` is empty. A start timeout below the ready timeout lets herdr drop the name while hive still waits.
-- The Claude Code profile has the kind `claude`. With a model it adds `--model <model>`. It appends the extra arguments. Its start timeout and its ready timeout are 120 seconds. Its exit keys are `/`, `e`, `x`, `i`, `t`, and `enter`. Its force exit keys are `ctrl+c` and `ctrl+c`. Its stop timeout is 30 seconds.
+- `harness.Check(profile)` fails when `StartTimeout()` is not above 3 seconds and at most 300 seconds, or when `StartTimeout()` is below `ReadyTimeout()`. A start timeout below the ready timeout lets herdr drop the name while hive still waits.
+- The Claude Code profile has the kind `claude`. With a model it adds `--model <model>`. It appends the extra arguments. Its start timeout and its ready timeout are 120 seconds.
 - `harness.Lookup(kind)` returns the profile or fails with `unknown harness: <kind>` and the list of known kinds.
 
 ### AC2 Spawn
@@ -69,7 +69,7 @@ process continues.
 - `hive agent spawn --role ROLE --harness KIND [--pane ID] [--model M] [--project ID] [--task ID] [--name N] [--quiet-after MIN] [--arg X]...`. `--arg` repeats. The command line does not require `--pane` or `--project`. The spawn function checks them by role.
 - The pane choice is one `switch` on the role in `spawn.go`, for a spawn without `--pane`. Each case is one line that calls a function in its own file. This task has only the default case, which fails with `pane required: pass --pane`. T13 and T14 add one case each.
 - The role rules of T04 apply after the pane choice. The name comes from the same rules, or from `--name`. The name is the record key and the `name` of `agent.start`.
-- Hive writes the record before the start: the register of T04 with the pane, the harness, and the model. The record is the durable intent. A crash after this point leaves a `live` record that the supervisor of T15 reconciles.
+- Hive writes the record before the start: the register of T04 with the pane, the harness, and the model, and `spawned` true. A record from `hive agent register` has `spawned` false. The record is the durable intent. A crash after this point leaves a `live` record that the supervisor of T15 reconciles.
 - Then `agent.start` with `name`, `kind`, `pane_id`, `args`, and `timeout_ms` from the start timeout. An error envelope means that no agent started. Hive sets the record `exited` with `last_error` from the code and the message, and the outcome is `failed`.
 - A client error during the start, such as a deadline or a closed connection, leaves the result unknown. Hive sets the record `unresolved` and the outcome `partial` with the phase `start`.
 - After the start reply, hive calls `pane.get` on the pane. It records `terminal_id`, `workspace_id`, `tab_id`, and the canonical `cwd` at once.
@@ -93,12 +93,14 @@ process continues.
 
 ### AC4 Stop
 
-- `hive agent stop --agent NAME [--force]` needs a record with the status `live`. Another status fails with `agent is <status>`.
-- Step 1: `agent.get` with the pane ID of the record. On `agent_not_found` hive runs the inspection. The inspection calls `pane.get`. A pane with `agent_status` `unknown` and no `agent` kind shows a shell, so the record becomes `exited` and the command prints `agent was not live`. The outcome is `ok`. A pane that does not exist makes the record `unresolved`, and the outcome is `failed` with `pane <id> not found: record unresolved`.
-- Step 2: `agent.send_keys` with `target` equal to the pane ID and `keys` from `ExitKeys()`, or from `ForceExitKeys()` with `--force`. The error `agent_not_ready` gives `failed` with the herdr message, and the record stays `live`. A pending start and a suspended agent give this error.
-- Step 3: `agent.wait` with `target` equal to the pane ID, `until` equal to `unknown`, and `timeout_ms` from `StopTimeout()`. The client deadline is the stop timeout plus 5 seconds through `herdr.WithDeadline`. The errors `agent_not_running` and `agent_not_found`, and a result with the status `unknown`, end the wait. Then `pane.get` must show `agent_status` `unknown`. The record becomes `stopped`, and the outcome is `ok`.
-- The error `timeout` gives `partial` with the phase `wait`, the effect `keys sent`, and the error `agent did not exit within <n> s`. The record stays `live`. The user runs the command again, with `--force` when needed.
-- `internal/agent/stop.go` exports the stop function with the record and the force flag as arguments, so T13 and T15 call it without the command.
+- `hive agent stop --agent NAME` needs a record with the status `live`. Another status fails with `agent is <status>`.
+- A record with `spawned` false fails with `agent <name> was not spawned by hive: exit it by hand`. Hive closes only a pane in which it started the agent.
+- Step 1: `pane.get` with the pane ID of the record. The error `pane_not_found` makes the record `unresolved`, and the outcome is `failed` with `pane <id> not found: record unresolved`. A reply whose `terminal_id` differs from the record makes the record `unresolved` too, with `pane <id> holds another terminal: record unresolved`.
+- Step 2: `workspace.get` with the `workspace_id` of the reply. Hive keeps the `pane_count`. The error `workspace_not_found` also makes the record `unresolved`.
+- Step 3: hive sets the record `stopped` under the store lock, before the close. The close events of this pane then find no `live` record, so the supervisor of T15 logs them only.
+- Step 4: `pane.close` with the pane ID. The result `ok` gives the outcome `ok` with the effect `pane closed`. When the `pane_count` was 1, hive adds the effect `workspace closed`. The error `pane_not_found` here makes the record `unresolved`. Another error sets the record back to `live` with `last_error`, and the outcome is `failed`.
+- The stop closes a working agent at once. The command has no graceful mode and no `--force`.
+- `internal/agent/stop.go` exports the stop function with the record as its argument, so T13 and T15 call it without the command. It returns the `pane_count` and the workspace ID, so T13 can update the project record.
 
 ### AC5 Gate
 
@@ -108,10 +110,10 @@ process continues.
 
 | ID | Criterion | Proven by |
 | --- | --- | --- |
-| AC1 | The profile interface and the Claude Code profile give the kind, the arguments, the timeouts, and the exit keys, and the bounds check holds. | V1 |
+| AC1 | The profile interface and the Claude Code profile give the kind, the arguments, and the timeouts, and the bounds check holds. | V1 |
 | AC2 | The spawn writes the record first and sends start and wait with the pane as the target. It maps each result to an outcome and a record status. | V2, V4 |
 | AC3 | `send` prompts the agent with the exact request shape and maps each herdr error. | V3, V4 |
-| AC4 | `stop` sends the exit keys, waits for the exit, and updates the record, also when the agent is already gone. | V3, V4 |
+| AC4 | `stop` refuses a registered agent, closes the pane of a spawned agent, and updates the record, also when the pane is already gone. | V3, V4 |
 | AC5 | The gate passes. | V5 |
 
 ## Verification items
@@ -120,7 +122,7 @@ process continues.
 
 - Proves: AC1.
 - Command: `go test ./internal/lib/harness/ -v`, red and green.
-- Expected: the Claude Code arguments with and without a model, the extra arguments, the timeouts, the exit keys, and the unknown kind error. The bounds check fails a profile with a start timeout of 3 seconds, of 301 seconds, or below its ready timeout. It passes each registered profile.
+- Expected: the Claude Code arguments with and without a model, the extra arguments, the timeouts, and the unknown kind error. The bounds check fails a profile with a start timeout of 3 seconds, of 301 seconds, or below its ready timeout. It passes each registered profile.
 
 ### V2 Spawn tests
 
@@ -132,7 +134,7 @@ process continues.
 
 - Proves: AC3, AC4.
 - Command: `go test ./internal/agent/ -run 'TestSend|TestStop' -v`, red and green.
-- Expected: the prompt request without `wait`, the exact nested `wait` shape, and the outcomes for `agent_blocked`, `agent_prompt_stalled`, `agent_not_ready`, and `timeout`. The stop cases: the exit keys and the `stopped` record after `agent_not_running`, the force keys with `--force`, and `partial` after `timeout` with the record still `live`. More stop cases: `agent_not_ready` from the keys, `exited` after `agent_not_found` with a shell in the pane, and `unresolved` after `agent_not_found` with a missing pane.
+- Expected: the prompt request without `wait`, the exact nested `wait` shape, and the outcomes for `agent_blocked`, `agent_prompt_stalled`, `agent_not_ready`, and `timeout`. The stop cases: `spawned` false refuses with no request. `pane_not_found` from `pane.get` gives `unresolved`. A `terminal_id` difference gives `unresolved`. The success case shows the record `stopped` when the close request arrives, with the effect `workspace closed` for a `pane_count` of 1 and without it for 2. A close error gives `failed` with the record `live` and `last_error`.
 
 ### V4 Live transcript
 
@@ -150,13 +152,12 @@ herdr pane read "$PANE" --lines 20
 ./hive --home "$PWD" agent list
 ./hive --home "$PWD" agent stop --agent "$NAME"
 echo "exit $?"
-herdr pane read "$PANE" --lines 5
-herdr agent get "$PANE"
+herdr pane get "$PANE"
 ./hive --home "$PWD" agent list --all
-herdr tab close <the new tab>
+herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 ```
 
-- Expected: the spawn prints the name and the outcome `ok`. The pane read shows the word pong. The list shows the agent `live`. The stop exits with 0. The second pane read shows a shell prompt, and `agent get` answers `agent_not_found`. The last list shows the record `stopped`. The tab is gone at the end.
+- Expected: the spawn prints the name and the outcome `ok`. The pane read shows the word pong. The list shows the agent `live`. The stop exits with 0 and lists the effect `pane closed` alone, because the workspace has other tabs. `pane get` answers `pane_not_found`. The last list shows the record `stopped`. The tab list no longer shows the new tab, because its only pane is gone.
 
 ### V5 Gate
 
@@ -168,7 +169,7 @@ herdr tab close <the new tab>
 
 - The pane choice for a manager and the workspace of a project. T13 adds them.
 - The pane choice for a worker, the brief prompt, and the task assignment. T14 adds them.
-- The close of a workspace on stop. T13 adds it.
+- The update of the project record after a manager stop. T13 adds it.
 - `hive agent resolve` for an `unresolved` record. T20 adds it.
 
 ## Changes

@@ -27,7 +27,7 @@ its pane and its `terminal_id`, never by its herdr name.
 ## User flows
 
 1. The coordinator runs `hive supervise` in a pane of the hive session. It prints `supervisor live, generation 3` and stays in the foreground.
-2. A worker runs `hive task complete`. The supervisor sees the new inbox record and the finished mark. When the worker is idle, the supervisor stops it with the stop function of T10. The manager is idle, so one line arrives in its pane: `hive: 1 new inbox record, run: hive --home /home/user/hive inbox`.
+2. A worker runs `hive task complete`. The supervisor sees the new inbox record and the finished mark. When the worker is idle, the supervisor stops it with the stop function of T10. The pane of the worker closes, and its workspace closes with it. The manager is idle, so one line arrives in its pane: `hive: 1 new inbox record, run: hive --home /home/user/hive inbox`.
 3. A worker shows a permission dialog. herdr reports `blocked`. The supervisor writes a `blocked` record to the manager and nudges it.
 4. A worker is idle for ten minutes without a completion. The supervisor writes one `quiet` record. It writes no second record for the same idle period.
 5. The supervisor starts after a crash. It compares each live record with its pane and marks a record whose pane holds no agent `exited`, or `unresolved` when the pane is gone.
@@ -81,11 +81,11 @@ its pane and its `terminal_id`, never by its herdr name.
 - The controlling role of a worker or a verifier is `manager-<project>`. The controlling role of a manager is `coordinator`. A coordinator or a supervisor record has no controlling role, so the supervisor logs the event only.
 - The quiet period is `quiet_after_min` of the record, else 10 minutes. The supervisor has no flag for it.
 - A long `working` status is never an event.
-- An agent that exits to its shell gives `pane_agent_detected` with `released` true and no `pane_exited`. Only that evidence gives `exited`. A closed pane or workspace with a live record gives `unresolved`, because the supervisor cannot tell an exit from a loss.
+- An agent that exits to its shell gives `pane_agent_detected` with `released` true and no `pane_exited`. Only that evidence gives `exited`. A closed pane or workspace with a `live` record gives `unresolved`, because the supervisor cannot tell an exit from a loss. The stop function of T10 sets the record `stopped` before it closes the pane, so the close events of a stop match no `live` record.
 - The supervisor also evaluates the stop rule and the nudge rule at its start and on each change in the store. A `finished` mark on a record with the stored status `idle` or `done` leads to the stop without a new event.
 - The subscription is one `events.subscribe` request with one `{"type":"pane.agent_status_changed","pane_id":"<pane>"}` entry for each watched pane, and the plain entries `pane.agent_detected`, `pane.exited`, `pane.closed`, `tab.closed`, `workspace.closed`, and `pane.moved`. The watched panes are the panes of the `live` records. The envelope of a status change is `{"event":"pane.agent_status_changed","pane_id":...,"agent_status":...}`. The other events use the plain envelope with `data.type`.
 - herdr has no method that changes a subscription. When the watched set changes, the supervisor opens a new connection with the new list, then closes the old one. A new `live` record, a record that leaves `live`, a `pane_moved`, or a `pane_id` change through the store, such as `hive agent resolve` of T20, changes the set. After each rebuild the supervisor calls `agent.get` on each watched pane and applies the status as a push, so no change in the gap is lost.
-- The subscription connection has no deadline. Each other request uses the default deadline of the client of T05. The stop function of T10 sets its own with `herdr.WithDeadline`.
+- The subscription connection has no deadline. Each other request, the stop function of T10 included, uses the default deadline of the client of T05.
 - Each event and each rebuild is a log event.
 
 ### AC3 Nudge
@@ -192,12 +192,11 @@ wait "$SUP"
 echo "exit $?"
 cat .hive/tmp/supervise.out
 ./hive --home "$PWD" doctor
-herdr tab close <the first new tab>
-herdr tab close <the second new tab>
+herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 rm -rf .hive/tmp/repo-sup projects/repo-sup .hive/tmp/supervise.out
 ```
 
-- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The second `doctor` shows `warn supervisor down`. Both tabs are gone at the end.
+- Expected: the first `doctor` shows `ok supervisor`. The agent list shows the worker `stopped` and the manager `live`. The inbox shows one `completed` record with `nudged_at` set. The pane read of the manager shows the nudge line. The supervisor exits with 0 after the signal, and its output shows the stop and the nudge. The second `doctor` shows `warn supervisor down`. The tab list shows neither new tab, because each stop closed the only pane of its tab.
 
 ### V7 Gate
 

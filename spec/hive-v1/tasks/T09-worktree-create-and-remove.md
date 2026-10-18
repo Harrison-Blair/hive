@@ -16,9 +16,10 @@
 This task gives the worktree of a task. `hive worktree create` asks herdr to
 make a linked worktree of the registered repository at the path that hive
 chooses, and herdr opens it as a workspace. `hive worktree remove` checks the
-identity of the live workspace, then asks herdr to remove it after the Git
-guards pass. The task also gives `gitx`, the bounded Git helpers over the
-runner of T05, and the typed `workspace.get` wrapper.
+identity of the worktree, closes its workspace when it is still open, and
+removes the worktree with Git after the Git guards pass. The task also gives
+`gitx`, the bounded Git helpers over the runner of T05, and the typed
+workspace wrappers.
 
 The first `worktree.create` for a repository that herdr does not know opens
 two workspaces: one for the repository and one for the worktree. Hive reports
@@ -30,7 +31,7 @@ the repository workspace and records it on the project. Hive never closes it.
 2. The repository had no workspace. The same command also opens a workspace for the repository. Hive prints `repository workspace opened: w7` as an effect.
 3. The manager runs `hive worktree remove --task 12-spawn-worker` after the task landed. The workspace closes, the directory is gone, and the branch stays.
 4. The manager runs the remove on a task with uncommitted changes. Hive refuses with `worktree is dirty`. With `--force` hive removes it.
-5. The user closed the workspace by hand. Hive runs `git worktree remove` in the repository instead and reports it.
+5. The workspace is already closed, because the supervisor stopped the verifier. Hive skips the workspace close and removes the worktree with Git.
 6. The user moved another checkout into the recorded workspace. Hive refuses with `worktree mismatch: checkout_path`, also with `--force`.
 
 ## Source files
@@ -40,8 +41,8 @@ the repository workspace and records it on the project. Hive never closes it.
 | `cmd/root.go` | Register the `worktree` command. |
 | `cmd/worktree/worktree.go`, `create/create.go`, `remove/remove.go` | New. |
 | `internal/worktree/doc.go`, `create.go`, `remove.go`, `render.go` | New. |
-| `internal/lib/herdr/worktree.go` | New. `WorktreeCreate` and `WorktreeRemove` with their parameter and result types. |
-| `internal/lib/herdr/workspace.go` | New. `WorkspaceGet` and `WorkspaceList`. T13 adds the other workspace methods. |
+| `internal/lib/herdr/worktree.go` | New. `WorktreeCreate` with its parameter and result types. T14 adds `WorktreeOpen`. |
+| `internal/lib/herdr/workspace.go` | New. `WorkspaceGet`, `WorkspaceList`, and `WorkspaceClose`. T13 adds `WorkspaceCreate`. |
 | `internal/lib/herdr/doc.go` | Add the map lines. |
 | `internal/lib/gitx/gitx.go` | New. `RefExists`, `BranchExists`, `IsDirty`, `IsMerged`, `CurrentBranch`, `IsLinkedWorktree`, `CommonDir`, `WorktreeRemove` over `run`. |
 | `internal/lib/records/task.go` | Add the `worktree` fields: `workspace_id`, `tab_id`, `root_pane`, `path`, `branch`, `created_at`, `removed_at`. |
@@ -68,11 +69,12 @@ the repository workspace and records it on the project. Hive never closes it.
 
 - `hive worktree remove --task ID [--force]` needs a task with a worktree.
 - The task status must be `verified` or `cancelled`. Otherwise the command fails with `task is <status>: complete, verify, or cancel it first`.
-- Identity check: hive calls `workspace.get` with the recorded `workspace_id`. The reply must have `worktree.is_linked_worktree` true, `worktree.checkout_path` equal to the recorded path, and `worktree.repo_root` equal to the repository path, each after symbolic link resolution. `CurrentBranch(path)` must equal the recorded branch. A difference fails with `worktree mismatch: <field>` and sends no remove request. `--force` does not skip this check.
+- Identity check through Git: `IsLinkedWorktree(path)` must be true, `CommonDir(path)` must resolve into the repository, and `CurrentBranch(path)` must equal the recorded branch. A difference fails with `worktree mismatch: <field>`. `--force` does not skip this check.
+- Identity check through herdr, when the record has a `workspace_id` and `workspace.get` finds it. The reply must have `worktree.is_linked_worktree` true and `worktree.checkout_path` equal to the recorded path. Its `worktree.repo_root` must equal the repository path. Hive compares each path after symbolic link resolution. A difference fails with `worktree mismatch: <field>` and closes nothing. The error `workspace_not_found` means that the workspace is already closed, and hive goes on.
 - Git guards: `IsDirty(path)` true fails with `worktree is dirty`. `IsMerged(repo, base, branch)` false fails with `branch not merged into <base>`. `--force` skips both guards.
-- The request is `worktree.remove` with the recorded `workspace_id` and `force`. The reply `path` must equal the recorded path. A `dirty_worktree_requires_force` error fails with `worktree is dirty`.
-- When `workspace.get` answers `workspace_not_found`, hive uses Git instead. `IsLinkedWorktree(path)` must be true, `CommonDir(path)` must resolve into the repository, and `CurrentBranch(path)` must equal the recorded branch. Then hive runs `git -C <repo> worktree remove [--force] <path>` and reports the effect as `worktree removed by git`.
-- Hive sets `removed_at` and clears `workspace_id`, `tab_id`, and `root_pane`. It keeps `path` and `branch` for history. The branch stays in the repository.
+- When the workspace is open, hive sends `workspace.close` with the `workspace_id` and `close_group` false, and reports the effect `workspace closed`. A `workspace_group_close_required` error fails with `workspace is a group root: close it by hand`. The shells of the user in that workspace end with it, because the directory goes away.
+- Then hive runs `git -C <repo> worktree remove [--force] <path>` through `gitx.WorktreeRemove` and reports the effect `worktree removed`. A Git failure after the close gives `partial` with the effect `workspace closed` and the Git output.
+- Hive sets `removed_at` and clears `workspace_id`, `tab_id`, and `root_pane`. It keeps `path` and `branch` for history. The branch stays in the repository. Hive never sends `worktree.remove`.
 
 ### AC3 Git helpers
 
@@ -88,7 +90,7 @@ the repository workspace and records it on the project. Hive never closes it.
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | `create` checks, sends the request with `cwd`, records the worktree and the repository workspace, and reports each failure. | V1, V3 |
-| AC2 | `remove` checks the identity, guards, sends the request, uses Git when the workspace is gone, and updates the record. | V2, V3 |
+| AC2 | `remove` checks the identity through Git and herdr, guards, closes an open workspace, removes the worktree with Git, and updates the record. | V2, V3 |
 | AC3 | Each Git helper reads the real state of a repository. | V2 |
 | AC4 | The gate passes. | V4 |
 
@@ -104,7 +106,7 @@ the repository workspace and records it on the project. Hive never closes it.
 
 - Proves: AC2, AC3.
 - Command: `go test ./internal/worktree/ ./internal/lib/gitx/ -run 'TestRemove|TestGitx' -v`, red and green.
-- Expected: the gitx tests make a real repository with `git init` in a temporary directory and cover each helper, with a linked worktree for `IsLinkedWorktree` and `CommonDir`. The remove tests cover the status guard, the dirty guard, the merged guard, `--force`, and the Git path. They cover the identity check with one mismatch for each field. The mismatch case sends no remove request, also with `--force`.
+- Expected: the gitx tests make a real repository with `git init` in a temporary directory and cover each helper, with a linked worktree for `IsLinkedWorktree` and `CommonDir`. The remove tests cover the status guard, the dirty guard, the merged guard, and `--force`. They cover the close of an open workspace and the skip of the close for a closed workspace. They cover the identity check with one mismatch for each field. The mismatch case sends no close and runs no removal, also with `--force`. A Git failure after the close gives `partial`.
 
 ### V3 Live transcript
 

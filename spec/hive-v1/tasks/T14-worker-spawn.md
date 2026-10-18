@@ -20,13 +20,18 @@ and sends the first prompt. The brief itself stays in the store. The prompt
 tells the agent to read the skill of its role and then its brief with
 `hive task show --brief`. T21 writes the skills. This task owns the prompt text.
 
+The stop of the worker closes its pane, and with it the workspace of the
+worktree. The verifier spawn therefore reopens the worktree with
+`worktree.open`, or makes a new tab when the user kept the workspace open.
+
 ## User flows
 
 1. A manager runs `hive agent spawn --role worker --task 12-spawn-worker --harness claude --model <decent model>`. The worker starts in the pane of the worktree workspace, and the first prompt tells it to read the skill and its brief.
 2. The manager runs the same command for a task without a worktree. Hive fails with `task has no worktree: run hive worktree create --task 12-spawn-worker`.
-3. After the worker completes and the supervisor stops it, the manager runs `hive agent spawn --role verifier --task 12-spawn-worker --harness codex`. The verifier starts in the same pane.
-4. The worker is still in the pane. The verifier spawn fails with `pane busy: worker-hive-3`.
+3. After the worker completes and the supervisor stops it, the manager runs `hive agent spawn --role verifier --task 12-spawn-worker --harness codex`. The workspace of the worktree closed with the worker. Hive reopens the worktree as a new workspace, and the verifier starts in its root pane.
+4. The worker record is still `live`. The verifier spawn fails with `worker still live: worker-hive-3`.
 5. The worker shows a trust dialog at the start. Hive keeps the task unassigned, ends with `partial`, and prints the two commands that finish the spawn by hand.
+6. The user kept a tab open in the workspace of the worktree. The verifier spawn makes a new tab there and starts the verifier in it.
 
 ## Source files
 
@@ -36,6 +41,9 @@ tells the agent to read the skill of its role and then its brief with
 | `internal/agent/spawn_worker.go` | New. The worker and verifier path: the task checks, the pane check, the project from the task, the assignment, and the prompt. |
 | `internal/agent/brief.go` | New. The two prompt texts and the shell quoting. |
 | `internal/agent/doc.go` | Add the map lines. |
+| `internal/lib/herdr/worktree.go` | Add `WorktreeOpen`. T09 made the file with `WorktreeCreate`. |
+| `internal/lib/herdr/tab_create.go` | New. `TabCreate`. T13 makes `tab.go` at the same time, so this function has its own file. |
+| `internal/lib/herdr/doc.go` | Add the map lines. |
 
 ## Requirements
 
@@ -55,7 +63,10 @@ tells the agent to read the skill of its role and then its brief with
 
 ### AC2 Verifier
 
-- With `--role verifier --task ID`, the task must have the status `completed`. The pane rules of AC1 apply.
+- With `--role verifier --task ID`, the task must have the status `completed`. Each record of the task with the role `worker` must have the status `stopped` or `exited`. A `live` record fails with `worker still live: <name>`. An `unresolved` record fails with `pane has an unresolved record: <name>`.
+- Hive calls `workspace.get` with the recorded `workspace_id` of the worktree. The error `workspace_not_found` means that the stop of the worker closed the workspace. Hive then sends `worktree.open` with `cwd` equal to the repository path, `path` equal to the worktree path, `label` equal to the task ID, and `focus` false. The reply gives the workspace, the tab, and the root pane. Hive writes `workspace_id`, `tab_id`, and `root_pane` to the worktree of the task.
+- A found workspace still holds panes of the user. Hive then sends `tab.create` with the `workspace_id`, `cwd` equal to the worktree path, and `focus` false. Hive writes `tab_id` and `root_pane` from the reply.
+- The pane rules of AC1 then apply to that root pane.
 - The verifier prompt is one line: `Read <home>/.agents/skills/hive-verifier/SKILL.md first. Then run: hive --home '<home>' task show '<task-id>' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive --home '<home>' task verify --task '<task-id>', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
 - The spawn does not assign the task. The record has the role `verifier` and the task.
 - The verifier spawn uses the same core result rules as AC1, without the assignment.
@@ -73,7 +84,7 @@ tells the agent to read the skill of its role and then its brief with
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | The worker spawn checks the task and the pane, assigns only after a settled start, and sends the prompt. | V1, V2, V3 |
-| AC2 | The verifier spawn checks the status, uses the same pane, and sends its prompt. | V1, V2, V3 |
+| AC2 | The verifier spawn checks the task and the worker records, reopens the worktree or makes a tab, and sends its prompt. | V1, V2, V3 |
 | AC3 | The record has the fields from the task and the flags. | V1 |
 | AC4 | The gate passes. | V4 |
 
@@ -83,7 +94,7 @@ tells the agent to read the skill of its role and then its brief with
 
 - Proves: AC1, AC2, AC3.
 - Command: `go test ./internal/agent/ -run 'TestWorkerSpawn|TestVerifierSpawn' -v`, red and green.
-- Expected: a fake herdr server. Refusal cases: no worktree, another project, a pane in another workspace, and a pane with another `cwd`. More refusal cases: a pane with `restore_error`, a busy pane with a name, and a busy pane without a name. The last refusal case: an unresolved record on the pane. Each refusal sends no start. Sequence cases: start, wait, assign, prompt in this order for `idle` and for `done`. The blocked case has no assignment, no prompt, and the hint. The timeout case has no assignment. A task that changes status during the start gets no assignment. A failed prompt after the assignment gives `partial` with both effects. The verifier cases: the status rule, no assignment, and the record fields with the worktree workspace.
+- Expected: a fake herdr server. Refusal cases: no worktree, another project, a pane in another workspace, and a pane with another `cwd`. More refusal cases: a pane with `restore_error`, a busy pane with a name, and a busy pane without a name. The last refusal case: an unresolved record on the pane. Each refusal sends no start. Sequence cases: start, wait, assign, prompt in this order for `idle` and for `done`. The blocked case has no assignment, no prompt, and the hint. The timeout case has no assignment. A task that changes status during the start gets no assignment. A failed prompt after the assignment gives `partial` with both effects. The verifier cases: the status rule, a `live` worker record, and no assignment. More verifier cases: `worktree.open` after `workspace_not_found` with the worktree fields updated, `tab.create` for an open workspace, and the record fields with the new workspace.
 
 ### V2 Prompt text tests
 
@@ -114,9 +125,11 @@ echo "exit $?"
 # wait until the task shows completed, then:
 cat projects/repo-w/worktrees/1-worker-demo/hello.txt
 ./hive --home "$PWD" agent stop --agent "$W"
+herdr workspace list
 V="t14-check-v-$(date +%s)"
 ./hive --home "$PWD" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model <small model>
 echo "exit $?"
+herdr workspace list
 # wait until the task shows verified, then:
 ./hive --home "$PWD" task show 1-worker-demo
 ./hive --home "$PWD" agent stop --agent "$V"
@@ -125,7 +138,7 @@ herdr workspace close <repository workspace ID from the create output>
 rm -rf .hive/tmp/repo-w projects/repo-w
 ```
 
-- Expected: both spawns exit with 0. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check.
+- Expected: both spawns exit with 0. The first task show gives the status `assigned` and the acting agent `$W`. The file holds `hello`. The first workspace list has no workspace `1-worker-demo`, and the second has one again. The second task show gives the status `verified` and a `completed` and a `verified` inbox record for `manager-repo-w`. The cleanup leaves no workspace of this check.
 
 ### V4 Gate
 

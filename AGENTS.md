@@ -59,7 +59,7 @@ The coordinator runs in a pane of the hive session. At startup it registers itse
 - Each managed project has one workspace with the label `hive:<project>`. Hive makes it when it spawns the manager, with the project directory as the working directory. The manager runs in the root pane of the first tab.
 - Hive makes each worktree with `worktree.create`. The source is the registered repository path in `cwd`, never the `hive:<project>` workspace. The request gives an explicit `path` below `projects/<project-id>/worktrees/`, the branch `task/<task-id>`, the base branch of the project, and the task ID as the label. The worker starts in the root pane of the first tab of the new workspace.
 - A first tab is never an empty shell. Hive starts the agent in the pane that herdr returns.
-- Hive closes what it made. `worktree remove` closes the worktree workspace. `agent stop` closes a manager workspace that hive made, unless `--keep`.
+- Hive closes what it made. `agent stop` closes the pane in which hive started the agent, and herdr closes the workspace with its last pane. `worktree remove` closes an open worktree workspace, then removes the worktree with Git. Hive never closes the pane of an agent that it did not start.
 
 ## Development
 

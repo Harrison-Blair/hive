@@ -135,12 +135,15 @@ records go to the controlling role, so a replacement agent inherits them.
   workspace and draws that grouping itself.
 - The first tab of a hive workspace is never an empty shell. Hive starts the
   agent in the root pane that herdr returns.
-- herdr has no stop method. `agent stop` sends the exit keys of the harness
-  profile with `agent.send_keys`, waits for the agent to leave the pane, and
-  then marks the record `stopped`. An agent that stays gives a partial outcome.
-- Hive closes what it made. `worktree remove` removes the directory and closes
-  the worktree workspace. `agent stop` closes a manager workspace that hive
-  made when no other registered agent is in it, unless `--keep`.
+- herdr has no stop method. `agent stop` marks the record `stopped` and closes
+  the pane of the agent with `pane.close`. herdr ends the process, and it
+  closes the workspace when that pane was its last pane. Hive closes only a
+  pane in which it started the agent. An agent that the user registered by
+  hand exits by hand.
+- Hive closes what it made. `worktree remove` closes the worktree workspace
+  when it is still open, then removes the worktree with Git. The stop of a
+  manager closes its pane, and herdr closes `hive:<project>` when no other
+  pane is in it.
 - Adoption of a workspace that already exists for a repository needs user
   approval, through `--adopt <workspace-id>` on `hive agent spawn`.
 
@@ -150,10 +153,10 @@ records go to the controlling role, so a replacement agent inherits them.
 t0  agent spawn: workspace or worktree, agent in the first tab, record, claim
 t1  the agent reads its brief through hive task show --brief
 t2  task complete: record, inbox record to the manager, agent marked finished
-t3  the supervisor stops the finished agent when idle, the pane shows a shell
-t4  verifier spawn in that pane, task verify, verifier finished and stopped
+t3  the supervisor stops the finished agent when idle, its pane and workspace close
+t4  verifier spawn reopens the worktree, task verify, verifier finished and stopped
 t5  land: merge or pull request under the grant
-t6  worktree remove: directory gone, workspace closed, branch kept
+t6  worktree remove: workspace closed when open, directory gone, branch kept
 ```
 
 Hive stops an agent only on its own record transitions, never on a herdr status
@@ -174,7 +177,7 @@ It never polls.
 | A registered agent leaves its pane and the pane shows a shell (`pane_agent_detected` with `released`) | Inbox record `exited`, agent record `exited` |
 | The pane, tab, or workspace of a registered agent closes | Inbox record `unresolved`, agent record `unresolved` |
 | Idle for the quiet period with no completion record | Inbox record `quiet`, once for each idle period. Default 10 minutes, set at spawn |
-| Idle agent with the mark finished | The stop function of `agent stop`: exit keys, wait, agent record `stopped` |
+| Idle agent with the mark finished | The stop function of `agent stop`: agent record `stopped`, then `pane.close` |
 | Unread inbox records for a role whose agent is idle | One nudge: one line typed into that pane that names `hive inbox` |
 | Unread inbox records for a role whose agent is working | Wait. Nudge when the role turns idle |
 | Start | Reconcile: compare live herdr agents with the records. Mark a record with no pane `unresolved` |
@@ -210,8 +213,9 @@ coordinator starts it again at its next startup. Nothing restarts it in a loop.
   `projects/<project-id>/worktrees/<task-id>/`.
 - Removal keeps a dirty or unmerged worktree and a worktree with an active or
   unresolved agent. `--force` overrides the Git guards only.
-- A removal compares the recorded path, branch, and workspace with the live
-  worktree data of herdr before it acts. A mismatch refuses, also with `--force`.
+- A removal compares the recorded path and branch with the Git state of the
+  worktree, and with the worktree data of herdr when the workspace is still
+  open. A mismatch refuses, also with `--force`.
 
 ## Memory and handoffs
 
@@ -329,8 +333,8 @@ tasks in [05-tracker.md](05-tracker.md) that build the command.
 ## Harnesses
 
 Claude Code first, then Codex, OpenCode, Pi, and Cursor agent, on Linux. Each
-harness has its own instruction discovery, readiness signal, exit input, and
-input quirks.
+harness has its own instruction discovery, readiness signal, and input
+quirks.
 Hive keeps one typed profile for each harness and no generic adapter layer.
 The Cursor agent profile is optional while its limits are exhausted.
 
