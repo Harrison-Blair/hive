@@ -98,9 +98,9 @@ flowchart TD
 | [T06](tasks/T06-logs-command.md) | logs command | 2 | decent | T01, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T07](tasks/T07-memory-and-handoff.md) | memory and handoff | 2 | small | T01, T22, CP1 | landed | openai-codex/gpt-6.1-sol | 2026-10-18 |
 | [T08](tasks/T08-tui-log-view.md) | TUI log view | 3 | decent | T04, T06 | in progress | | |
-| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | in progress | | |
+| [T09](tasks/T09-worktree-create-and-remove.md) | worktree create and remove | 3 | decent | T03, T05 | evidence | | |
 | [T10](tasks/T10-agent-spawn-core.md) | agent spawn core | 3 | strong | T04, T05, T09 | blocked | | |
-| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | in progress | | |
+| [T11](tasks/T11-task-identity-and-finish.md) | task identity and finish | 3 | small | T03, T04 | verified | openai-codex/gpt-6.1-sol | |
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | blocked | | |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | blocked | | |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | blocked | | |
@@ -1020,6 +1020,72 @@ landing. It accepts no T08, T09, or T11 source. It passes no checkpoint.
 - Pending: an independent root integration and records check of this merge.
   The T01 source acceptance is separate from that check.
 
+### Dated correction receipt: T01 landing R01
+
+2026-10-18. This section corrects the T01 landing record R01. It accepts no
+T08, T09, or T11 source and passes no checkpoint.
+
+- The independent check `t01-log-guard-land-verify-01` gives source integration
+  PASS and records FAIL on R01. Its last line is
+  `END T01 LOG GUARD LAND VERIFY 01`.
+- R01: the dated landing receipt above and the records
+  `t01-log-guard-land-01.md` and `t01-log-guard-land-01.json` call T11 an active
+  fix at `0124ab63`. That phase label is inaccurate.
+- The landing preflight is `2026-10-18T10:51:11Z`. The tracker commit time is
+  `2026-10-18T10:53:03Z`. The worker `0124ab63` completed its fix evidence at
+  `2026-10-18T10:42:26Z`. The `t11-verify-02` freeze is
+  `2026-10-18T10:47:11Z` and its gate results are `2026-10-18T10:48:28Z`. Its
+  Pi Sol session is `01a14e9e-9e50-75a9-8ca7-af81d1a42680`.
+- Thus the landing observed verification of a completed and stopped fix
+  worker. It did not observe an active source fix. The generic `in progress`
+  label accepted no source.
+- T09 worker `161d637e` completed V1 to V4 evidence. That evidence awaited
+  verification. It was not source acceptance.
+- The old landing receipt above stays as superseded history. Its claim is not
+  rewritten. The original report and state record keep their bytes.
+- The new correction report is
+  `.hive/tmp/coordinator/reports/t01-log-guard-land-01-r01-correction.md`. It
+  names the original hashes and the exact observation times.
+- The T01 source integration PASS at `e87933fb` stays accepted. The corrected
+  record acceptance is pending a fresh independent check.
+- This correction changes no task status, dependency, checkpoint, or model
+  route. CP1 stays passed without a rerun. CP2 to CP5 stay open.
+
+### Dated change receipt: T10 spawn fields and wave 3 status
+
+2026-10-18. This section records the T10 field reconciliation and the wave 3
+status at `2026-10-18T11:57:01Z`. It starts no source and passes no checkpoint.
+
+- T10 now gives explicit field rules. `--name` selects `record.name`. T04
+  selects `record.key`, including the singleton generation suffix. The
+  `agent.start` request uses the returned `record.key` as its `name`. The spawn
+  prints `record.name`. Each later request targets the recorded `pane_id`.
+- T10 adds one narrow source row for `internal/agent/register.go`. A spawn sets
+  an internal spawn-intent input true in the first agent-record write. A manual
+  register leaves it false. The manual command gets no new CLI flag.
+- All T04 naming, claim, generation, collision, and counter rules stay. All
+  T11 task checks stay. No alternate registry, wrapper framework, or
+  registration refactor applies.
+- T10 stays `blocked` on T09. T10 source waits for the T09 landing and a fresh
+  independent acceptance of this installed text. This pass starts no T10
+  source.
+- T08 is `in progress` for correction. The repeat verifier `t08-verify-02`
+  gives FAIL at `7ec0bba6`. P03 closed-pipe EOF and later H03 error reporting
+  remain open. The first-fix worker is `e341019b`.
+- T09 is `evidence`. The fix worker `hive-t09-fix-01` completed and stopped at
+  `2d9c96d8`. Its `V1.md` to `V4.md` files exist. The combined `t09-verify-01`
+  verdict was FAIL at `ef396c34`. No independent acceptance or landing exists.
+- T11 is `verified`. The fix-03 worker `ab1e60ec` completed and stopped. The
+  named verifier `hive-t11-verify-04` completed `t11-verify-04` with PASS for
+  V1 to V4 and `END VERIFIER T11-task-identity-and-finish t11-verify-04`. It
+  closes T11-IO-F06 and keeps each earlier finding closed. The verdict commit is
+  `923f1753`. The earlier landing observation at `0124ab63` was verification,
+  not an active source fix. No landing or checkpoint pass exists.
+- The graph keeps 27 nodes and 46 edges. No Task ID, dependency, precondition,
+  timeout, process, session, stop contract, or other behavior changes.
+- Pending: a fresh independent check of this installed text. The T01 record
+  acceptance stays pending. No future source or checkpoint acceptance applies.
+
 ### CP1 home live
 
 After T01 and T02. Blocks wave 2.
@@ -1708,7 +1774,7 @@ edit permission.
 | T07 memory and handoff | `cmd/memory/memory.go`, `cmd/memory/write/write.go`, `cmd/handoff/handoff.go`, `cmd/handoff/write/write.go`, `internal/memory/doc.go`, `internal/memory/write.go`, `internal/memory/index.go`, `internal/memory/frontmatter.go`, `internal/handoff/write.go`, `internal/lib/scope/scope.go`, `internal/lib/scope/input.go` | `cmd/root.go` |
 | T08 TUI log view | `internal/logs/read_clock_test.go`, `internal/tui/doc.go`, `internal/tui/tui.go`, `internal/tui/header.go`, `internal/tui/logview.go`, `internal/tui/tick.go`, `go.mod`, `go.sum` | `cmd/root.go`, `internal/logs/read.go` |
 | T09 worktree create and remove | `cmd/worktree/worktree.go`, `cmd/worktree/create/create.go`, `cmd/worktree/remove/remove.go`, `internal/worktree/doc.go`, `internal/worktree/create.go`, `internal/worktree/remove.go`, `internal/worktree/render.go`, `internal/lib/herdr/worktree.go`, `internal/lib/herdr/workspace.go`, `internal/lib/gitx/gitx.go` | `cmd/root.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/task.go`, `internal/lib/records/project.go` |
-| T10 agent spawn core | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go`, `internal/lib/process/process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
+| T10 agent spawn | `cmd/agent/spawn/spawn.go`, `cmd/agent/send/send.go`, `cmd/agent/stop/stop.go`, `internal/agent/spawn.go`, `internal/agent/send.go`, `internal/agent/stop.go`, `internal/agent/inspect.go`, `internal/lib/harness/harness.go`, `internal/lib/harness/registry.go`, `internal/lib/harness/claude.go`, `internal/lib/herdr/agent.go`, `internal/lib/herdr/pane.go`, `internal/lib/process/process.go,process_test.go` | `cmd/agent/agent.go`, `internal/agent/doc.go`, `internal/agent/register.go`, `internal/lib/harness/doc.go`, `internal/lib/herdr/doc.go`, `internal/lib/herdr/types.go`, `internal/lib/records/agent.go` |
 | T11 task identity and finish | `internal/lib/identity/identity.go`, `internal/task/complete.go`, `internal/task/verify.go`, `internal/task/show.go`, `internal/task/render.go`, `internal/task/assign.go`, `internal/task/transition.go`, `cmd/task/complete/complete.go`, `cmd/task/verify/verify.go`, `internal/inbox/read.go`, `internal/inbox/send.go`, `internal/lib/inbox/inbox.go`, `internal/lib/inbox/inbox_test.go` | `cmd/task/task.go`, `cmd/inbox/inbox.go`, `internal/agent/register.go`, `internal/lib/records/agent.go` |
 | T12 land | `cmd/land/land.go`, `internal/land/doc.go`, `internal/land/land.go`, `internal/land/merge.go`, `internal/land/pr.go`, `internal/land/render.go`, `internal/lib/store/namedlock.go` | `cmd/root.go`, `internal/lib/gitx/gitx.go`, `internal/lib/records/task.go` |
 | T13 manager spawn | `internal/agent/workspace.go`, `internal/agent/instructions.go`, `internal/agent/templates/project-agents.md`, `internal/lib/herdr/tab.go` | `internal/agent/spawn.go`, `internal/agent/stop.go`, `internal/agent/doc.go`, `cmd/agent/spawn/spawn.go`, `internal/lib/herdr/workspace.go`, `internal/lib/herdr/pane.go`, `internal/lib/herdr/doc.go`, `internal/lib/records/project.go`, `ste_test.go`, `testdata/ste-baseline.json` |
@@ -1765,7 +1831,7 @@ edit permission.
 | `internal/task/transition.go` | T03, T11 | T03 owns the status table. T11 adds the finish group under the held handle. |
 | `internal/task/render.go` | T03, T11, T20 | Extend the existing row once for T11. Keep each rendering case. |
 | `internal/task/show.go` | T03, T11, T20 | Keep each rendering addition. |
-| `internal/agent/register.go` | T04, T11 | T04 owns registration. T11 adds the task-project check. |
+| `internal/agent/register.go` | T04, T10, T11 | T04 owns registration. T10 adds only the internal spawn-intent option and its initial record assignment. T11 adds the task-project check. Keep each line. |
 | `internal/agent/stop.go` | T10, T13, T20 | T10 owns the stop. T13 updates the project. T20 refuses an unresolved record. |
 | `internal/worktree/remove.go` | T09, T20 | T09 owns removal. T20 adds the agent guard. |
 | `internal/lib/store/doc.go` | T01, T22 | One map line for `lock.go`. Keep the line. |

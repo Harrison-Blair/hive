@@ -45,6 +45,7 @@ while the process continues.
 | `internal/agent/send.go` | New. |
 | `internal/agent/stop.go` | New. The stop function. T13 and T15 call it. |
 | `internal/agent/inspect.go` | New. The pane inspection after `agent_not_found`: `exited` or `unresolved`. |
+| `internal/agent/register.go` | Shared with T04 and T11. Add one internal spawn-intent input to `RegisterOptions` and to the initial record construction. The spawn sets it true in the first agent-record write. The manual register leaves it false. Add no CLI flag. |
 | `internal/agent/doc.go` | Add the map lines. |
 | `internal/lib/harness/doc.go` | New. Package summary and file map. |
 | `internal/lib/harness/harness.go` | New. The `Profile` interface, `ProcessNames()`, the lookup by kind, and the bounds check. |
@@ -73,8 +74,8 @@ while the process continues.
 
 - `hive agent spawn --role ROLE --harness KIND [--pane ID] [--model M] [--project ID] [--task ID] [--name N] [--quiet-after MIN] [--arg X]...`. `--arg` repeats. The command line does not require `--pane` or `--project`. The spawn function checks them by role.
 - The pane choice is one `switch` on the role in `spawn.go`, for a spawn without `--pane`. Each case is one line that calls a function in its own file. This task has only the default case, which fails with `pane required: pass --pane`. T13 and T14 add one case each.
-- The role rules of T04 apply after the pane choice. The name comes from the same rules, or from `--name`. The name is the record key and the `name` of `agent.start`.
-- Hive writes the record before the start: the register of T04 with the pane, the harness, and the model, and `spawned` true. A record from `hive agent register` has `spawned` false. The record is the durable intent. A crash after this point leaves a `live` record that the supervisor of T15 reconciles.
+- The role rules of T04 apply after the pane choice. `--name` selects `record.name`. T04 selects `record.key`, including the singleton generation suffix. The `agent.start` request uses the returned `record.key` as its `name`. The spawn prints `record.name`. Each later request targets the recorded `pane_id`. No rekey, record rename, or generation collapse applies.
+- Hive writes the record before the start: the register of T04 with the pane, the harness, and the model, and `spawned` true. A record from `hive agent register` has `spawned` false. The spawn sets the internal spawn-intent input true in the first agent-record write. The manual register leaves it false and gets no new CLI flag. The record is the durable intent. A crash after this point leaves a `live` record that the supervisor of T15 reconciles.
 - Then `agent.start` with `name`, `kind`, `pane_id`, `args`, and `timeout_ms` from the start timeout. An error envelope means that no agent started. Hive sets the record `exited` with `last_error` from the code and the message, and the outcome is `failed`.
 - A client error during the start, such as a deadline or a closed connection, leaves the result unknown. Hive sets the record `unresolved` and the outcome `partial` with the phase `start`.
 - After the start reply, hive calls `pane.get` on the pane. It records `terminal_id`, `workspace_id`, `tab_id`, and the canonical `cwd` at once.
@@ -202,3 +203,11 @@ home and an absolute tested binary.
 optional `agent_session` field to `AgentInfo` and `PaneInfo`. Add the typed
 `AgentSessionInfo` in `agent.go`. Keep optional absence allowed. Keep the
 recorded-session mismatch refusal. Do not change the planned agent record.
+2026-10-18. Reconcile the name fields with the T04 record construction.
+`--name` selects `record.name`. T04 selects `record.key`. The `agent.start`
+request uses the returned `record.key`. The spawn prints `record.name`. Add the
+narrow `internal/agent/register.go` spawn-intent input in the existing
+registration options and the initial record construction. The spawn sets it
+true in the first agent-record write. The manual register leaves it false and
+gets no CLI flag. Keep each T04 naming, claim, generation, and collision rule
+and each T11 task check.
