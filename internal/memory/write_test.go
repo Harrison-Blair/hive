@@ -249,7 +249,7 @@ func TestStaticLeafLinkRefused(t *testing.T) {
 		t.Fatal(err)
 	}
 	target := filepath.Join(t.TempDir(), "fact.md")
-	old := []byte("outside\n")
+	old := []byte("---\nname: fact\ndescription: Outside fact.\n---\nOutside body.\n")
 	if err := writeFileFixture(t, target, old); err != nil {
 		t.Fatal(err)
 	}
