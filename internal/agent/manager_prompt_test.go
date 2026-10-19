@@ -94,6 +94,7 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 			"Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.",
 			"hive agent spawn --role worker --task ID --harness KIND --model MODEL",
 			"hive agent spawn --role verifier --task ID --harness KIND --model MODEL",
+			"Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.",
 			"After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.",
 			"After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.",
 			"If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
