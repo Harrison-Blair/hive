@@ -58,15 +58,70 @@ func TestSkillCommands(t *testing.T) {
 			t.Fatalf("got %v; want none", problems)
 		}
 	})
+
+	t.Run("an absent root command is unknown", func(t *testing.T) {
+		problems := unknownSkillCommands(root, "x.md", "hive absent-command\n")
+		if len(problems) != 1 {
+			t.Fatalf("got %d problems %v; want 1", len(problems), problems)
+		}
+		if !strings.Contains(problems[0], "absent-command") {
+			t.Errorf("problem %q does not name the absent command", problems[0])
+		}
+	})
+
+	t.Run("a valid positional argument is accepted", func(t *testing.T) {
+		problems := unknownSkillCommands(root, "x.md", "hive project show repo-one\n")
+		if len(problems) != 0 {
+			t.Fatalf("got %v; want none", problems)
+		}
+	})
+}
+
+// TestCoordinatorPreference checks that the coordinator writes a preference
+// record to overrides/ and not to memory/.
+func TestCoordinatorPreference(t *testing.T) {
+	const file = ".agents/skills/hive-coordinator/SKILL.md"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatalf("read %s: %v", file, err)
+	}
+	section := markdownSection(string(data), "## Preference record")
+	if section == "" {
+		t.Fatalf("%s has no ## Preference record section", file)
+	}
+	if !strings.Contains(section, "overrides/") {
+		t.Errorf("preference procedure does not name overrides/:\n%s", section)
+	}
+	if strings.Contains(section, "memory write") {
+		t.Errorf("preference procedure writes a memory:\n%s", section)
+	}
+}
+
+// markdownSection returns the body of one level-two Markdown section.
+func markdownSection(text, heading string) string {
+	start := strings.Index(text, heading)
+	if start < 0 {
+		return ""
+	}
+	rest := text[start+len(heading):]
+	if end := strings.Index(rest, "\n## "); end >= 0 {
+		return rest[:end]
+	}
+	return rest
 }
 
 // unknownSkillCommands returns one message for each command line that starts
-// with hive and names a command path outside root.
+// with hive and names a command path outside root. A prose sentence is not a
+// command line, so the generated-file line of each template is skipped.
 func unknownSkillCommands(root *cobra.Command, source, text string) []string {
 	var problems []string
 	for index, raw := range strings.Split(text, "\n") {
-		fields := splitCommandLine(strings.TrimSpace(raw))
+		line := strings.TrimSpace(raw)
+		fields := splitCommandLine(line)
 		if len(fields) == 0 || fields[0] != "hive" {
+			continue
+		}
+		if sentencePunctuation(line) {
 			continue
 		}
 		path, known := resolveCommandPath(root, fields[1:])
@@ -84,7 +139,8 @@ func unknownSkillCommands(root *cobra.Command, source, text string) []string {
 // resolveCommandPath walks the command children of root over args. It skips
 // the persistent flags --home PATH and --json before the command path. It
 // returns the known path, and false when a token names no child of a command
-// that needs a child.
+// that has children. A leaf command accepts the token as a positional
+// argument.
 func resolveCommandPath(root *cobra.Command, args []string) (string, bool) {
 	current := root
 	path := []string{}
@@ -108,7 +164,7 @@ func resolveCommandPath(root *cobra.Command, args []string) (string, bool) {
 		}
 		child := findChild(current, token)
 		if child == nil {
-			if len(current.Commands()) > 0 && !runnable(current) {
+			if len(current.Commands()) > 0 {
 				return strings.Join(append(path, token), " "), false
 			}
 			break
@@ -130,9 +186,17 @@ func findChild(current *cobra.Command, name string) *cobra.Command {
 	return nil
 }
 
-// runnable reports whether the command runs a function of its own.
-func runnable(command *cobra.Command) bool {
-	return command.Run != nil || command.RunE != nil
+// sentencePunctuation reports whether line ends a sentence. The generated-file
+// line of each template starts with the word hive and is prose, not a command.
+func sentencePunctuation(line string) bool {
+	if line == "" {
+		return false
+	}
+	switch line[len(line)-1] {
+	case '.', '!', '?':
+		return true
+	}
+	return false
 }
 
 // splitCommandLine splits one command line into fields. It keeps a single

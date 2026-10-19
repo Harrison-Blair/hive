@@ -48,12 +48,8 @@ hive supervise
 
 ## Preference record
 
-The user states a preference. Write one memory at home scope. The command reads
-the memory text from standard input.
-
-```sh
-hive memory write --scope home NAME
-```
+The user states a preference. Write one file at `overrides/NAME.md` in the
+home. Give the file a stable name. Put the preference text in the file.
 
 ## Manager spawn
 
