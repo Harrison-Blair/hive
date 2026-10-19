@@ -21,6 +21,10 @@ For all other files, the coordinator and a manager never change a project source
 
 | Issue | Status |
 | --- | --- |
+| [No hive path repairs a verified task](#no-hive-path-repairs-a-verified-task) | Open |
+| [Any agent can read and consume the inbox of another role](#any-agent-can-read-and-consume-the-inbox-of-another-role) | Open |
+| [A verify fail leaves no workspace and no verifier for a re-verify](#a-verify-fail-leaves-no-workspace-and-no-verifier-for-a-re-verify) | Open |
+| [A worker spawn into an assigned task keeps the old acting agent](#a-worker-spawn-into-an-assigned-task-keeps-the-old-acting-agent) | Open |
 | [An idle session burns tokens on supervisor nudges](#an-idle-session-burns-tokens-on-supervisor-nudges) | Open |
 | [`hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn](#hive-agent-send-fails-with-agent_not_ready-after-a-pi---pane-spawn) | Open |
 | [An agent spawn can skip the first prompt](#an-agent-spawn-can-skip-the-first-prompt) | Open |
@@ -32,6 +36,92 @@ For all other files, the coordinator and a manager never change a project source
 | [Manager spawn fails with `agent_pane_busy` right after `workspace.create`](#manager-spawn-fails-with-agent_pane_busy-right-after-workspacecreate) | Resolved 2026-10-19 |
 
 ## Open
+
+### No hive path repairs a verified task
+
+**Issue:** No hive path repairs a verified task
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, `hive land --task 12-friction-log --mode merge`
+failed with a merge conflict in `testdata/ste-baseline.json`. Task 11 landed
+first, and each task added one baseline line. The task had the status
+`verified`. `hive agent spawn --role worker` refused it with `task is
+verified`. `hive task assign` refused it with `invalid transition: verified ->
+assign`. The workaround was a Pi agent that the manager started by hand with
+`herdr agent start` in a new tab of the task workspace. That agent merged
+`origin/dev` into the task branch, kept both lines, ran the gate, and pushed.
+Then `hive land` passed. The repair has no hive agent record and no second
+verification record.
+
+**Reproduction steps:**
+1. Make two tasks that each add one line at the same place in a file.
+2. Verify both tasks. Land the first task.
+3. Run `hive land` for the second task. The merge fails with a conflict.
+4. Run `hive agent spawn --role worker` for the second task. Hive returns
+   `task is verified`.
+5. Run `hive task assign` for the second task. Hive returns
+   `invalid transition: verified -> assign`.
+
+### Any agent can read and consume the inbox of another role
+
+**Issue:** Any agent can read and consume the inbox of another role
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, verifier `t12-verifier-1` ran
+`hive inbox --role manager-hive` at 12:46:30. That command marked record 66
+(`verified` for 12-friction-log) as read. The supervisor then did not nudge
+the manager, and the landing waited until the coordinator saw the record.
+`hive inbox --role` accepts any role from any agent. The workaround is a
+sentence in each brief that tells the agent to read only its own inbox.
+
+**Reproduction steps:**
+1. Spawn a verifier for a task of project `hive`.
+2. In the verifier pane, run `hive inbox --role manager-hive`.
+3. Check that the command prints and marks the unread manager records.
+4. Check that the supervisor sends no nudge to the manager for them.
+
+### A verify fail leaves no workspace and no verifier for a re-verify
+
+**Issue:** A verify fail leaves no workspace and no verifier for a re-verify
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, `t11-verifier-1` recorded a fail for
+11-ci-workflow. Then the verifier stopped, and the supervisor closed the
+worker workspace `wCK` when its last agent finished. After the repair,
+`hive agent send` to the verifier returned `agent is stopped`, and
+`herdr tab create --workspace wCK` returned `workspace_not_found`. The
+workaround was a fresh verifier spawn with no `--pane`, which made the new
+workspace `wCN` on the same worktree.
+
+**Reproduction steps:**
+1. Spawn a worker and a verifier for a task in the same workspace.
+2. Let the verifier record a fail and finish.
+3. Repair the task and complete it again.
+4. Run `hive agent send` to the verifier. Hive returns `agent is stopped`.
+5. Run `herdr tab create --workspace ID` for the task workspace. herdr
+   returns `workspace_not_found`.
+
+### A worker spawn into an assigned task keeps the old acting agent
+
+**Issue:** A worker spawn into an assigned task keeps the old acting agent
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, the manager spawned `t11-worker-2` with
+`hive agent spawn --role worker --pane` to repair 11-ci-workflow after a
+verify fail. The task still named `t11-worker-1` as the acting agent.
+`hive task complete` from `t11-worker-2` failed with `not the acting agent`.
+The workaround was `hive task assign --task 11-ci-workflow --agent
+t11-worker-2`, then `hive task complete`.
+
+**Reproduction steps:**
+1. Let a worker finish a task. Let the verifier record a fail.
+2. Spawn a second worker for the same task with `--pane`.
+3. In the second worker, run `hive task complete`.
+4. Check that hive returns `not the acting agent`.
 
 ### An idle session burns tokens on supervisor nudges
 
@@ -99,6 +189,12 @@ prompt. The pane stayed idle at context 0k. The workaround was
 6. Check the output for `prompted agent` and `agent t11-worker-1 live`.
 7. Read the Pi pane. It is idle at context 0k and has no first prompt.
 8. Run `herdr pane send-text`, then `herdr pane send-keys Enter`.
+
+Later on 2026-10-19, the first prompt was absent again for `t12-worker-1`,
+`t11-verifier-1` (Claude, with `--pane`), `t11-worker-2` (with `--pane`), and
+`t13-worker-1`. Each spawn printed `agent NAME live`. The first prompt arrived
+for `t11-verifier-2` and `t12-verifier-1`, both Pi verifiers with no
+`--pane`. The same workaround applied each time.
 
 ### A verifier spawn with `--pane` requires `--project`
 
