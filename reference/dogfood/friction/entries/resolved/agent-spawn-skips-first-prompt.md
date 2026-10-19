@@ -1,8 +1,8 @@
 ---
 title: "An agent spawn can skip the first prompt"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "A report task investigates first. The fix is decided after the report."
+decision: "Fixed in 28-first-prompt-fix (642fe78d): the first prompt uses the herdr prompt wait until working or blocked, with one retry on a stall. The user accepts the risk of a duplicate prompt."
 ---
 
 **Summary:**
@@ -49,6 +49,19 @@ returned `working` and showed the prompt one time. Fast-finish prompts returned
 Verdict: option 1 (the herdr prompt wait as delivery evidence, then a retry
 after a stall) was safe in all 24 runs. It is not proven for an accepted prompt
 that stays idle for more than 5 s; a retry could then send a duplicate.
+
+**Resolution 2026-10-19:**
+Fixed in 28-first-prompt-fix, landed at 642fe78d. Each spawn sends its first
+prompt with the `agent.prompt` wait until `working` or `blocked` and a bounded
+timeout. On `agent_prompt_stalled`, hive retries one time. A second stall fails
+the spawn and names the agent and the cause. On `agent_blocked`, hive sends no
+more text. The unchanged-`idle` delivery check is gone. The live check spawned
+three Pi workers into new worktrees, and each one got its first prompt with no
+hand resend.
+
+Accepted risk: when an accepted prompt stays idle longer than the herdr wait
+window, hive retries and the agent can get the prompt two times. The user
+accepts this risk. Hive has no pane-read guard against it.
 
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
