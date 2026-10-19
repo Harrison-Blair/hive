@@ -227,6 +227,28 @@ func TestNudgeQuietOnlyDoesNotPrompt(t *testing.T) {
 	}
 }
 
+func TestNudgePluralInboxPrompt(t *testing.T) {
+	home := testHome(t)
+	writeAgent(t, home, managerRecord("manager-demo-g1", "demo", "w1:p1"))
+	appendInbox(t, home, "manager-demo", records.InboxCompleted, "1-demo", "worker-1", "first")
+	appendInbox(t, home, "manager-demo", records.InboxCompleted, "1-demo", "worker-2", "second")
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.snapshot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.nudgeRule(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if ops.promptCount() != 1 {
+		t.Fatalf("prompts = %d; want one", ops.promptCount())
+	}
+	if got := ops.prompts[0].Text; got != "⬢ hive: 2 new inbox records, run: hive inbox" {
+		t.Fatalf("prompt = %q; want two-record nudge", got)
+	}
+}
+
 func TestNudgeCompletedWithQuietPromptsOnce(t *testing.T) {
 	home := testHome(t)
 	writeAgent(t, home, managerRecord("manager-demo-g1", "demo", "w1:p1"))
@@ -244,7 +266,7 @@ func TestNudgeCompletedWithQuietPromptsOnce(t *testing.T) {
 	if ops.promptCount() != 1 {
 		t.Fatalf("prompts = %d; want one for the completed record", ops.promptCount())
 	}
-	if got := ops.prompts[0].Text; got != nudgeLine(1, home) {
+	if got := ops.prompts[0].Text; got != "⬢ hive: 1 new inbox record, run: hive inbox" {
 		t.Fatalf("prompt = %q; want one-record nudge", got)
 	}
 	all := readInbox(t, home, "manager-demo")

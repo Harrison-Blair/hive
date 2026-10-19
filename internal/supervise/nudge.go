@@ -19,12 +19,12 @@ import (
 )
 
 // nudgeLine is the one prompt line of one nudge.
-func nudgeLine(count int, home string) string {
+func nudgeLine(count int) string {
 	noun := "record"
 	if count != 1 {
 		noun = "records"
 	}
-	return marker.Prefix + fmt.Sprintf("hive: %d new inbox %s, run: hive --home %s inbox", count, noun, home)
+	return marker.Prefix + fmt.Sprintf("hive: %d new inbox %s, run: hive inbox", count, noun)
 }
 
 // nudgeRule sends one prompt to each settled role with a record that needs a
@@ -57,7 +57,7 @@ func (s *Supervisor) nudgeRule(ctx context.Context) error {
 }
 
 func (s *Supervisor) nudgeRole(ctx context.Context, role string, record records.Agent, todos []records.Inbox) error {
-	line := nudgeLine(len(todos), s.options.Home)
+	line := nudgeLine(len(todos))
 	if _, err := s.ops.Prompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: line}); err != nil {
 		s.logger.Debug("supervisor nudge failed", "command", "supervise", "role", role, "agent_id", record.Key, "error", err.Error())
 		return nil
