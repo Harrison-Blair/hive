@@ -34,5 +34,6 @@
   ".agents/skills/hive-coordinator/SKILL.md": 0,
   ".agents/skills/hive-manager/SKILL.md": 0,
   ".agents/skills/hive-worker/SKILL.md": 0,
-  ".agents/skills/hive-verifier/SKILL.md": 0
+  ".agents/skills/hive-verifier/SKILL.md": 0,
+  "spec/hive-v1/tasks/14-friction-folder.md": 0
 }
