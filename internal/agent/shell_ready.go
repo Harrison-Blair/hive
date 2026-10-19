@@ -39,7 +39,7 @@ func waitForShell(ctx context.Context, paneID string, timeout time.Duration, log
 					if ctx.Err() != nil {
 						return ctx.Err()
 					}
-					if processErr == nil && processInfo.PaneID == paneID && processInfo.ShellPID != nil && processInfo.ForegroundProcessGroupID != nil && *processInfo.ShellPID == *processInfo.ForegroundProcessGroupID {
+					if processErr == nil && processInfo.PaneID == paneID && processInfo.ShellPID != nil && processInfo.ForegroundProcessGroupID != nil && *processInfo.ShellPID == *processInfo.ForegroundProcessGroupID && len(processInfo.ForegroundProcesses) == 1 && processInfo.ForegroundProcesses[0].PID == *processInfo.ShellPID {
 						return nil
 					}
 				}

@@ -9,7 +9,11 @@ import (
 )
 
 func shellProcessInfoJSON(paneID string, shellPID, foregroundPID int64) string {
-	return fmt.Sprintf(`{"type":"pane_process_info","process_info":{"pane_id":%q,"shell_pid":%d,"foreground_process_group_id":%d,"foreground_processes":[]}}`, paneID, shellPID, foregroundPID)
+	return shellProcessInfoJSONWithEntries(paneID, shellPID, foregroundPID, processEntry(shellPID, "bash", "/usr/bin/bash"))
+}
+
+func shellProcessInfoJSONWithEntries(paneID string, shellPID, foregroundPID int64, entries ...string) string {
+	return fmt.Sprintf(`{"type":"pane_process_info","process_info":{"pane_id":%q,"shell_pid":%d,"foreground_process_group_id":%d,"foreground_processes":[%s]}}`, paneID, shellPID, foregroundPID, strings.Join(entries, ","))
 }
 
 func requestsBefore(fake *fakeHerdr, stop, method string) int {
@@ -48,6 +52,42 @@ func TestManagerSpawnWaitsForShellSecondRead(t *testing.T) {
 	}
 	if got := requestsBefore(fake, "agent.start", "pane.process_info"); got != 2 {
 		t.Fatalf("pane.process_info requests before agent.start = %d; want 2", got)
+	}
+	if envelope.Outcome != "ok" || envelope.Error != nil {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+}
+
+func TestManagerSpawnWaitsForShellStartupProcessesToClear(t *testing.T) {
+	home := testHome(t)
+	writeManagerProject(t, home, nil)
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
+	for range 2 {
+		fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", managerRepoPath, "")+`}`)
+	}
+	fake.result("pane.process_info", shellProcessInfoJSONWithEntries(
+		"wBD:p1", 41, 41,
+		processEntry(41, "bash", "/usr/bin/bash"),
+		processEntry(42, "bash", "/usr/bin/bash"),
+		processEntry(43, "bash", "/usr/bin/bash"),
+		processEntry(44, "bash", "/usr/bin/bash"),
+		processEntry(45, "bash", "/usr/bin/bash"),
+		processEntry(46, "tail", "tail", "-1"),
+	))
+	fake.result("pane.process_info", shellProcessInfoJSONWithEntries(
+		"wBD:p1", 41, 41, processEntry(41, "bash", "/usr/bin/bash"),
+	))
+	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
+
+	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
+	if got := requestsBefore(fake, "agent.start", "pane.process_info"); got != 2 {
+		t.Fatalf("pane.process_info requests before agent.start = %d; want 2", got)
+	}
+	if starts := fake.recorded("agent.start"); len(starts) != 1 {
+		t.Fatalf("agent.start requests = %d; want 1", len(starts))
 	}
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)

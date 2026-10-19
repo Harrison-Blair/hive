@@ -261,7 +261,7 @@ func paneInfoJSON(paneID, terminalID, workspaceID, tabID, cwd string) string {
 
 func scriptReadyShell(fake *fakeHerdr, paneID, terminalID, workspaceID, tabID, cwd string) {
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON(paneID, terminalID, workspaceID, tabID, cwd)+`}`)
-	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"`+paneID+`","shell_pid":1,"foreground_process_group_id":1,"foreground_processes":[]}}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"`+paneID+`","shell_pid":1,"foreground_process_group_id":1,"foreground_processes":[`+processEntry(1, "bash", "/usr/bin/bash")+`]}}`)
 }
 
 func processInfoJSON(paneID string, entries ...string) string {
