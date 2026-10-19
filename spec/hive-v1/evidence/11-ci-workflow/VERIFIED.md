@@ -3,18 +3,18 @@
 | Item | Value |
 | --- | --- |
 | Task | 11-ci-workflow |
-| Commit | d8fd9bf2 |
+| Commit | 0bc15eb7 |
 | Date | 2026-10-19 |
-| Agent | t11-verifier-1, claude, claude-opus-5-5 |
-| Verdict | fail |
+| Agent | t11-verifier-2, pi, deepseek-v4.1-flash |
+| Verdict | pass |
 
 | Item | Proves | Result | Remark |
 | --- | --- | --- | --- |
 | V1 | R4 | pass | No output. Exit status 1. |
 | V2 | R4 | pass | Only `.github/workflows/ci.yml`. |
-| V3 | R4 | fail | At the task tip, the new case passes without the rule. `git check-ignore` without `--no-index` does not report a tracked file. |
+| V3 | R4 | pass | The new case fails without the allow rule and passes with it. |
 | V4 | R5 | pass | Exit status 0. No diff. |
-| V5 | R2, R3 | pass | `actionlint` is not installed. The YAML parse ran with no error. |
+| V5 | R2, R3 | pass | `actionlint` is not on PATH. The YAML parse ran with no error. |
 | V6 | R1, R2, R3 | pass | Each trigger, each step, the Go version source, and each pin agree. |
 | V7 | gate | pass | `gofmt -l` prints nothing. vet, lint, and race tests exit 0. |
 
@@ -25,6 +25,8 @@ $ git check-ignore -v .github/workflows/ci.yml; echo "exit=$?"
 exit=1
 ```
 
+The command printed no line.
+
 ## V2
 
 ```text
@@ -34,45 +36,51 @@ $ git ls-files .github
 
 ## V3 new gitignore_test.go case
 
-Control: remove the line `!.github/workflows/ci.yml` from `.gitignore` at d8fd9bf2. The file stays tracked.
+The worktree was clean at 0bc15eb7 before this item.
+
+Control: remove the line `!.github/workflows/ci.yml` from `.gitignore` in the
+worktree. The file stays tracked.
+
+```text
+$ git check-ignore --no-index -v .github/workflows/ci.yml; echo "exit=$?"
+.gitignore:2:*	.github/workflows/ci.yml
+exit=0
+```
 
 Red run, expected fail:
 
 ```text
-$ go test -count=1 -run 'Ignore|Tracked|GitHub' -v .
-=== RUN   TestTrackedFilesAreNotIgnored
-    gitignore_test.go:30: .gitignore ignores tracked files; add the narrowest allow rule for each:
-        .github/workflows/ci.yml
---- FAIL: TestTrackedFilesAreNotIgnored (0.00s)
+$ go test -count=1 -run '^TestGitHubWorkflowIsNotIgnored$' -v .; echo "exit=$?"
 === RUN   TestGitHubWorkflowIsNotIgnored
---- PASS: TestGitHubWorkflowIsNotIgnored (0.00s)
-...
+    gitignore_test.go:38: git ignores .github/workflows/ci.yml
+--- FAIL: TestGitHubWorkflowIsNotIgnored (0.00s)
 FAIL
+FAIL	github.com/Harrison-Blair/hive	0.003s
 exit=1
 ```
 
-The new case `TestGitHubWorkflowIsNotIgnored` passes without the rule. The
-existing `TestTrackedFilesAreNotIgnored` fails.
+Restore the allow rule with `git checkout -- .gitignore`. `git status
+--porcelain` printed nothing.
 
-Cause, with the rule removed:
+Green run, expected pass:
 
 ```text
-$ git check-ignore -v .github/workflows/ci.yml; echo "plain exit=$?"
-plain exit=1
-$ git check-ignore -v --no-index .github/workflows/ci.yml; echo "no-index exit=$?"
-.gitignore:2:*	.github/workflows/ci.yml
-no-index exit=0
+$ go test -count=1 -run '^TestGitHubWorkflowIsNotIgnored$' -v .; echo "exit=$?"
+=== RUN   TestGitHubWorkflowIsNotIgnored
+--- PASS: TestGitHubWorkflowIsNotIgnored (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive	0.003s
+exit=0
 ```
 
-The worker red run in `V3.md` ran at dadacf88, before Git tracked the file.
-After the commit, the new case cannot fail. A possible repair: add
-`--no-index` to the `git check-ignore` call in the new case.
-
-Green run, with the rule:
+The related cases also pass with the rule:
 
 ```text
+$ go test -count=1 -run 'TestGitHubWorkflowIsNotIgnored|TestTrackedFilesAreNotIgnored|TestHomeMarkerIsTracked' -v .; echo "exit=$?"
+--- PASS: TestTrackedFilesAreNotIgnored (0.00s)
 --- PASS: TestGitHubWorkflowIsNotIgnored (0.00s)
-ok  	github.com/Harrison-Blair/hive	0.003s
+--- PASS: TestHomeMarkerIsTracked (0.00s)
+PASS
 exit=0
 ```
 
@@ -83,9 +91,12 @@ $ go mod tidy && git diff --exit-code -- go.mod go.sum; echo "exit=$?"
 exit=0
 ```
 
+The worktree was clean after the command.
+
 ## V5
 
-`actionlint` is not installed.
+`actionlint` is not on PATH; `command -v actionlint` exited 1. The YAML parse
+with python3 ran instead:
 
 ```text
 $ python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))' .github/workflows/ci.yml; echo "exit=$?"
@@ -94,22 +105,43 @@ exit=0
 
 ## V6
 
-- R1: `pull_request` and `push`, each with branches `main` and `dev`.
-- R2: `runs-on: ubuntu-latest`. `actions/setup-go` with `go-version-file: go.mod`.
-- R2 pins: `actions/checkout@v7`, `actions/setup-go@v7`, `golangci/golangci-lint-action@v9`. The latest releases on GitHub are `v7.0.1`, `v7.0.0`, and `v9.3.0`. No SHA pin.
-- R3: gofmt with a fail on output, tidy check, `go build .`, `go vet ./...`, golangci-lint with `version: v2.15.0` (release exists), `go test -race ./...`. The order agrees.
+- R1: `pull_request` with branches `main` and `dev`. `push` with branches
+  `main` and `dev`.
+- R2: `runs-on: ubuntu-latest`. `actions/setup-go` with
+  `go-version-file: go.mod`.
+- R2 pins: `actions/checkout@v7`, `actions/setup-go@v7`,
+  `golangci/golangci-lint-action@v9`. Each is a major tag, not a commit SHA.
+  `git ls-remote --tags` shows v7, v7, and v9 as the current major tags of the
+  three repositories.
+- R3: the steps run in this order: gofmt with a fail on output, the tidy
+  check, `go build .`, `go vet ./...`, golangci-lint with `version: v2.15.0`,
+  and `go test -race ./...`. Each step fails the job on a failure. The tag
+  `v2.15.0` exists in `golangci/golangci-lint`.
 
 ## V7
 
 ```text
-$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
-$ go vet ./...            # exit 0
-$ golangci-lint run ./... # 0 issues. exit 0
-$ go test -race ./...     # each package ok. exit 0
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go'); echo "exit=$?"
+exit=0
+$ go vet ./...; echo "exit=$?"
+exit=0
+$ golangci-lint run ./...; echo "exit=$?"
+0 issues.
+exit=0
+$ go test -race ./...; echo "exit=$?"
+ok  	github.com/Harrison-Blair/hive	3.797s
+... each package ok ...
+exit=0
 ```
+
+`gofmt -l` printed nothing. `golangci-lint --version` prints version 2.15.0.
 
 ## Remarks
 
-- `testdata/ste-baseline.json` has a new entry for the brief copy at 0. The
-  pattern `spec/hive-v1/tasks/*.md` in `steFiles` covers the new file, so R6
-  requires this entry.
+- `testdata/ste-baseline.json` has the entry
+  `spec/hive-v1/tasks/11-ci-workflow.md: 0`. `steFiles` in `ste_test.go` has
+  the pattern `spec/hive-v1/tasks/*.md`, so R6 requires this entry.
+- The brief copy in `spec/hive-v1/tasks/11-ci-workflow.md` differs from the
+  live brief only in the V5 sentence. The manager stated that this change is a
+  deliberate STE reword.
+- The worktree was clean at the end: `git status --porcelain` printed nothing.
