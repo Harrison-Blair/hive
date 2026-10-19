@@ -41,7 +41,7 @@ func New() *cobra.Command {
 			pane, workspace, tab = paneFromEnv()
 		}
 		return common.Run(cmd, "agent register", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Register(home, agentlib.RegisterOptions{
+			envelope := agentlib.RegisterAndRename(home, agentlib.RegisterOptions{
 				Role:          role,
 				Project:       project,
 				Task:          task,

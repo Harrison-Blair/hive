@@ -49,6 +49,7 @@ type SpawnOptions struct {
 	ExtraArgs         []string
 	PID               int64
 	shellReadyTimeout time.Duration
+	renameTab         bool
 }
 
 // SpawnResult is the record and optional claim of one spawn.
@@ -88,6 +89,10 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	paneID := choice.PaneID
 	manager := choice.Manager
+	renameTab := options.renameTab
+	if manager != nil && !manager.Workspace.TabCreatedByHive {
+		renameTab = true
+	}
 	managerInstructions := ""
 	if options.Role == "manager" {
 		project, projectMessage := readProjectRecord(home, options.Project)
@@ -181,6 +186,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		return envelope
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
+	if renameTab {
+		effects = append(effects, renameAgentTab(ctx, home, logger, started.Agent.TabID, record.Name, "agent spawn", record.Key))
+	}
 	logArgv(logger, record.Key, started.Argv)
 
 	session := &sessionTrack{first: started.Agent.AgentSession}

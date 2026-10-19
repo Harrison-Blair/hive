@@ -15,6 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -101,6 +102,61 @@ func Register(home string, options RegisterOptions) output.Envelope {
 	}
 	logRegistration(home, options, envelope)
 	return envelope
+}
+
+// RegisterAndRename registers one agent and best-effort labels its tab.
+func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
+	envelope := Register(home, options)
+	if envelope.Outcome != "ok" {
+		return envelope
+	}
+	result, ok := envelope.Result.(RegisterResult)
+	if !ok {
+		return envelope
+	}
+
+	var logger *slog.Logger
+	writer, writerErr := hivelog.NewWriter(home, "agent", time.Now)
+	if writerErr == nil {
+		defer func() { _ = writer.Close() }()
+		logger = slog.New(writer)
+	}
+	pane, err := herdr.PaneGet(context.Background(), options.PaneID, herdr.WithLogger(logger))
+	if err != nil {
+		logTabLabel(home, logger, "agent register", result.Agent.Key, "", "", err)
+		return envelope
+	}
+	label := options.Role
+	if options.Project != "" {
+		label = result.Agent.Name
+	}
+	effect := renameAgentTab(context.Background(), home, logger, pane.TabID, label, "agent register", result.Agent.Key)
+	envelope.Effects = append(envelope.Effects, effect)
+	return envelope
+}
+
+func renameAgentTab(ctx context.Context, home string, logger *slog.Logger, tabID, label, command, agentID string) output.Effect {
+	err := herdr.TabRename(ctx, tabID, label, herdr.WithLogger(logger))
+	action := "renamed"
+	if err != nil {
+		action = "rename failed"
+	}
+	logTabLabel(home, logger, command, agentID, tabID, label, err)
+	return output.Effect{Resource: "tab", Path: tabID, Action: action}
+}
+
+func logTabLabel(home string, logger *slog.Logger, command, agentID, tabID, label string, err error) {
+	attrs := []any{"command", command, "agent_id", agentID, "tab_id", tabID, "label", label}
+	message := "agent tab renamed"
+	if err != nil {
+		message = "agent tab rename failed"
+		attrs = append(attrs, "error", err.Error())
+	}
+	if logger != nil {
+		logger.Debug(message, attrs...)
+		return
+	}
+	logAgentEvent(home, message, attrs...)
 }
 
 func validateRegistration(options RegisterOptions) string {

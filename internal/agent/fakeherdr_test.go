@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 
@@ -124,6 +125,18 @@ func (f *fakeHerdr) handle(conn net.Conn) {
 	} else if list := f.replies[request.Method]; len(list) > 0 {
 		reply = list[0]
 		f.replies[request.Method] = list[1:]
+		found = true
+	} else if request.Method == "tab.rename" {
+		var params struct {
+			TabID string `json:"tab_id"`
+			Label string `json:"label"`
+		}
+		if err := json.Unmarshal(request.Params, &params); err != nil {
+			f.t.Errorf("decode tab.rename params: %v", err)
+			return
+		}
+		workspaceID := strings.Split(params.TabID, ":")[0]
+		reply = fakeReply{result: `{"type":"tab_info","tab":{"tab_id":"` + params.TabID + `","workspace_id":"` + workspaceID + `","number":1,"label":"` + params.Label + `","focused":false,"pane_count":1,"agent_status":"unknown"}}`}
 		found = true
 	}
 	f.mu.Unlock()

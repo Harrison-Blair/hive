@@ -122,6 +122,8 @@ records go to the controlling role, so a replacement agent inherits them.
 
 - The **hive session** is the one herdr session that hosts the home. The
   coordinator and the supervisor run in panes of that session.
+- Hive labels each agent tab with the agent name. It labels the coordinator
+  and supervisor tabs with the role name.
 - A manager runs in a new hive tab of the workspace that holds the
   repository's parent checkout. Hive adopts that workspace. Hive makes a
   workspace at the repository path only when no workspace holds the checkout.
