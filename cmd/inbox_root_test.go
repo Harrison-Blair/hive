@@ -9,6 +9,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 type failWriter struct {
@@ -28,10 +29,53 @@ func (w *shortWriter) Write(data []byte) (int, error) {
 	return len(data) - 1, nil
 }
 
+func TestInboxAgentReadConsumesOwnRole(t *testing.T) {
+	home := testHome(t)
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
+	if err := st.WriteIn([]string{"agents"}, manager.Key, manager); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: manager.Key, Generation: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "owner message"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "manager-hive", "--role", "manager-hive"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 || !strings.Contains(stdout.String(), "owner message") {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want the owner message", status, stdout.String(), stderr.String())
+	}
+	found, err := inbox.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt == "" {
+		t.Fatalf("All() = %#v, %v; want one consumed record", found, err)
+	}
+}
+
+func seedInboxCoordinator(t *testing.T, home string) {
+	t.Helper()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w0:p1", Status: records.AgentLive, Generation: 1}
+	if err := st.WriteIn([]string{"agents"}, coordinator.Key, coordinator); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.WriteIn([]string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: coordinator.Key, Generation: 1}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestInboxAllInvalidKeyLogsReadFailure(t *testing.T) {
 	home := testHome(t)
+	seedInboxCoordinator(t, home)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "../x", "--all"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "../x", "--all"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d, stderr = %q; want 1", status, stderr.String())
 	}
@@ -57,7 +101,8 @@ func TestInboxConsumeLogKeepsStoredSender(t *testing.T) {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+	seedInboxCoordinator(t, home)
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -83,11 +128,12 @@ func TestInboxShortStdoutReturnsOneAndReportsActualIDs(t *testing.T) {
 					t.Fatalf("Append() = %#v", envelope)
 				}
 			}
+			seedInboxCoordinator(t, home)
 			args := []string{"--home", home}
 			if jsonMode {
 				args = append(args, "--json")
 			}
-			args = append(args, "inbox", "--role", "coordinator")
+			args = append(args, "inbox", "--agent", "coordinator", "--role", "coordinator")
 			var stderr bytes.Buffer
 			status := executeWithStreams(args, strings.NewReader(""), &shortWriter{}, &stderr)
 			if status != 1 {
@@ -113,11 +159,12 @@ func TestInboxShortStdoutReturnsOneAndReportsActualIDs(t *testing.T) {
 
 func TestInboxAllFailedStdoutClaimsNoConsumption(t *testing.T) {
 	home := testHome(t)
+	seedInboxCoordinator(t, home)
 	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "coordinator", "--all"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -130,25 +177,23 @@ func TestInboxAllFailedStdoutClaimsNoConsumption(t *testing.T) {
 	}
 }
 
-func TestInboxMissingRoleAsksForRole(t *testing.T) {
+func TestInboxMissingRoleRequiresCaller(t *testing.T) {
 	home := testHome(t)
 	var stderr bytes.Buffer
 	status := executeWithStreams([]string{"--home", home, "inbox"}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
-	if !strings.Contains(stderr.String(), "pass --role") {
-		t.Fatalf("stderr = %q; want pass --role", stderr.String())
-	}
-	if strings.Contains(stderr.String(), "invalid inbox key") {
-		t.Fatalf("stderr = %q; want the absent-role message", stderr.String())
+	if !strings.Contains(stderr.String(), "caller unknown: pass --agent or run inside herdr") {
+		t.Fatalf("stderr = %q; want the caller hint", stderr.String())
 	}
 }
 
 func TestInboxExplicitEmptyRoleIsInvalidKey(t *testing.T) {
 	home := testHome(t)
+	seedInboxCoordinator(t, home)
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--role", ""}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", ""}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -159,11 +204,12 @@ func TestInboxExplicitEmptyRoleIsInvalidKey(t *testing.T) {
 
 func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 	home := testHome(t)
+	seedInboxCoordinator(t, home)
 	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--role", "coordinator"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
+	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -172,7 +218,7 @@ func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 	}
 
 	var stdout, nextStderr bytes.Buffer
-	status = executeWithStreams([]string{"--home", home, "--json", "inbox", "--role", "coordinator", "--all"}, strings.NewReader(""), &stdout, &nextStderr)
+	status = executeWithStreams([]string{"--home", home, "--json", "inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &stdout, &nextStderr)
 	if status != 0 || nextStderr.Len() != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, nextStderr.String())
 	}

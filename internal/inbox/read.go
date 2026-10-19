@@ -3,6 +3,8 @@ package inbox
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
@@ -22,9 +24,6 @@ type ReadOptions struct {
 
 // Read returns all records or consumes the unread records of one role.
 func Read(home string, options ReadOptions) output.Envelope {
-	if options.RoleSet {
-		return readKey(home, options.Role, options.All)
-	}
 	registry, err := store.Open(home)
 	if err != nil {
 		return failedRead("store", err.Error())
@@ -35,23 +34,48 @@ func Read(home string, options ReadOptions) output.Envelope {
 		caller, err := identity.ResolveHeld(locked, options.Agent, options.PaneID)
 		if err != nil {
 			if errors.Is(err, identity.ErrCallerUnknown) {
-				envelope = failedRead("validate", "caller unknown: pass --role or pass --agent")
+				envelope = failedRead("validate", "caller unknown: pass --agent or run inside herdr")
 			} else {
 				envelope = failedRead("identity", err.Error())
 			}
 			return nil
 		}
-		role, ok := roleKey(caller)
-		if !ok {
+
+		ownKey, hasInbox := roleKey(caller)
+		if !options.RoleSet && !hasInbox {
 			envelope = failedRead("validate", "role has no inbox: "+caller.Role)
 			return nil
 		}
-		key = role
-		if options.All {
-			found, err := inboxlib.AllHeld(locked, role)
+		key = ownKey
+		if options.RoleSet {
+			key = options.Role
+			if err := inboxlib.ValidateAppend(inboxlib.AppendOptions{Role: key}); err != nil {
+				envelope = failedRead("validate", err.Error())
+				return nil
+			}
+		}
+
+		ownerRead := hasInbox && key == ownKey
+		coordinatorRead := caller.Role == "coordinator" && options.RoleSet && managerProject(key) != ""
+		if !ownerRead && !coordinatorRead {
+			envelope = failedRead("validate", fmt.Sprintf("inbox %s belongs to %s", key, inboxOwner(key)))
+			return nil
+		}
+
+		if options.All || coordinatorRead {
+			found, err := inboxlib.AllHeld(locked, key)
 			if err != nil {
 				envelope = failedRead("read", err.Error())
 				return nil
+			}
+			if coordinatorRead && !options.All {
+				unread := found[:0]
+				for _, record := range found {
+					if record.ReadAt == "" {
+						unread = append(unread, record)
+					}
+				}
+				found = unread
 			}
 			envelope = output.Envelope{
 				Outcome: "ok",
@@ -62,7 +86,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 			}
 			return nil
 		}
-		envelope = inboxlib.ConsumeHeld(locked, role)
+		envelope = inboxlib.ConsumeHeld(locked, key)
 		return nil
 	})
 	if lockErr != nil {
@@ -72,21 +96,22 @@ func Read(home string, options ReadOptions) output.Envelope {
 	return envelope
 }
 
-func readKey(home, role string, all bool) output.Envelope {
-	if !all {
-		return inboxlib.Consume(home, role)
+func managerProject(key string) string {
+	project := strings.TrimPrefix(key, "manager-")
+	if project == key {
+		return ""
 	}
-	found, err := inboxlib.All(home, role)
-	if err != nil {
-		return failedRead("read", err.Error())
+	return project
+}
+
+func inboxOwner(key string) string {
+	if key == "coordinator" {
+		return "the coordinator"
 	}
-	return output.Envelope{
-		Outcome: "ok",
-		Phase:   "complete",
-		Effects: []output.Effect{},
-		Error:   nil,
-		Result:  inboxlib.Result{Records: found},
+	if project := managerProject(key); project != "" {
+		return "the manager of project " + project
 	}
+	return "the owner"
 }
 
 func roleKey(record records.Agent) (string, bool) {
