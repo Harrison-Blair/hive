@@ -18,6 +18,7 @@
 
 # Repo config
 !.gitignore
+!.github/workflows/ci.yml
 
 # Skill discovery links for Claude Code
 !.claude/skills/hive-coordinator
