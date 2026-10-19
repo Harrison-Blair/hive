@@ -36,6 +36,20 @@ a duplicate. Proposed fixes: use the herdr prompt wait as delivery evidence and
 retry after a bounded stall result; or accept `idle` only after a seq or
 revision change, with a bounded observation window.
 
+**Probe 2026-10-19:**
+Report: `.hive/tmp/reports/prompt-wait-probe.md` in the home (task
+26-prompt-wait-probe). Each case ran 3 times with
+`herdr agent prompt PANE TEXT --wait --until working --until blocked --timeout 10000`.
+A Pi prompt into a new `herdr worktree create` pane returned
+`agent_prompt_stalled` after 5.3 s in 3 of 3 runs, with no prompt in the pane.
+One fresh Pi in a plain scratch workspace also stalled (1 of 3). Each retry
+returned `working` and showed the prompt one time. Fast-finish prompts returned
+`working`, then `done`, with no false stall. A Claude trust dialog returned
+`agent_blocked` in 0.001 s and typed nothing. Claude never dropped a prompt.
+Verdict: option 1 (the herdr prompt wait as delivery evidence, then a retry
+after a stall) was safe in all 24 runs. It is not proven for an accepted prompt
+that stays idle for more than 5 s; a retry could then send a duplicate.
+
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
 2. Read the verifier pane.
