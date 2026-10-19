@@ -1,8 +1,8 @@
 ---
 title: "Any agent can read and consume the inbox of another role"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "Only the owner's read marks records read. The coordinator can read a manager inbox and marks nothing. Any other caller gets an error. Workers get no inbox (wave 2)."
+decision: "Fixed in 15-inbox-ownership (1d97f21f): only the owner's read marks records read. The coordinator can read a manager inbox and marks nothing. Any other caller gets an error that names the owner."
 ---
 
 **Summary:**

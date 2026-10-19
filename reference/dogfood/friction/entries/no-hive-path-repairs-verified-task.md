@@ -17,6 +17,13 @@ assign`. The workaround was a Pi agent that the manager started by hand with
 Then `hive land` passed. The repair has no hive agent record and no second
 verification record.
 
+On 2026-10-19 the same conflict occurred for 15-inbox-ownership, after
+17-verifier-project and 16-quiet-no-nudge landed. The worker and verifier had
+exited, and herdr had closed the task workspace. The manager made a workspace
+with `herdr workspace create`, started `t15-merge-1` with `herdr agent start`,
+and that agent merged `origin/dev` twice and pushed. That agent has no hive
+record, so it sent its report with `--agent manager-hive`.
+
 **Reproduction steps:**
 1. Make two tasks that each add one line at the same place in a file.
 2. Verify both tasks. Land the first task.
