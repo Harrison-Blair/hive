@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [The supervisor keeps running an old hive binary after a rebuild](entries/supervisor-runs-stale-binary.md) | Open |  |
 | [A manager stops on a harness permission block and the coordinator does not know](entries/manager-blocked-by-harness-permission.md) | Open | Fix A: a manager sends the coordinator a blocked record before it stops for a user decision. Hive launches each spawned Claude Code agent with bypass permissions and each Codex agent with yolo. Each hive-sent message starts with the visible marker ⬢. Runs after the first-prompt fix, before H1. |
 | [An agent spawn can skip the first prompt](entries/agent-spawn-skips-first-prompt.md) | Open | A report task investigates first. The fix is decided after the report. |
 | [No `hive task edit --brief` command](entries/resolved/task-edit-brief-command.md) | Resolved 2026-10-19 | Fixed in 22-task-edit-brief (77cdf44d): hive task edit --task ID --brief FILE, only for created or assigned, only by the controlling role. |
