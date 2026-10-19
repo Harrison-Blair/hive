@@ -134,8 +134,11 @@ func TestRunChecksWithFakeHerdr(t *testing.T) {
 	if gh := findCheck(t, result, "gh"); gh.Status != StatusWarn || gh.Required {
 		t.Fatalf("gh = %+v, want an optional warn", gh)
 	}
-	if len(result.Checks) != 12 {
-		t.Fatalf("checks = %d, want 12", len(result.Checks))
+	if unresolved := findCheck(t, result, "unresolved agents"); unresolved.Status != StatusOK || unresolved.Required || unresolved.Detail != "0" {
+		t.Fatalf("unresolved agents = %+v, want an optional ok", unresolved)
+	}
+	if len(result.Checks) != 13 {
+		t.Fatalf("checks = %d, want 13", len(result.Checks))
 	}
 }
 
