@@ -1,8 +1,8 @@
 ---
 title: "An idle session burns tokens on supervisor nudges"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "A quiet record never nudges (wave 2)."
+decision: "Fixed in 16-quiet-no-nudge (848ef0b7): an unread quiet record never causes a nudge."
 ---
 
 **Summary:**
