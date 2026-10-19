@@ -150,7 +150,14 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		if options.ResolvedActor == nil {
 			return errCallerUnknown
 		}
-		if options.ResolvedActor.Key != record.ControllingRole {
+		callerRole := ""
+		switch options.ResolvedActor.Role {
+		case "coordinator":
+			callerRole = "coordinator"
+		case "manager":
+			callerRole = "manager-" + options.ResolvedActor.Project
+		}
+		if callerRole != record.ControllingRole {
 			return fmt.Errorf("not the controlling role: %s", quoteIfControl(options.ResolvedActor.Name))
 		}
 		record.VerificationHistory = append(record.VerificationHistory, records.VerificationHistory{

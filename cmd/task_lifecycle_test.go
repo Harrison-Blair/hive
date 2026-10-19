@@ -298,6 +298,53 @@ func TestTaskCLIReopenTextJSONShowHistoryAndLog(t *testing.T) {
 	}
 }
 
+func TestTaskCLIReopenRegisteredManagerUsesClaimKey(t *testing.T) {
+	cli := newTaskCLI(t)
+	cli.mustRun(t, "agent", "register", "--role", "manager", "--project", "repo", "--name", "manager-repo", "--pane", "w1:manager", "--harness", "pi", "--model", "test")
+
+	registry, err := store.Open(cli.home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manager records.Agent
+	if err := registry.ReadIn([]string{"agents"}, "manager-repo-g1", &manager); err != nil {
+		t.Fatal(err)
+	}
+	var claim records.Claim
+	if err := registry.ReadIn([]string{"claims"}, "manager-repo", &claim); err != nil {
+		t.Fatal(err)
+	}
+	if manager.Key != "manager-repo-g1" || manager.Name != "manager-repo" || claim.Key != "manager-repo" || claim.Agent != manager.Key {
+		t.Fatalf("manager = %#v, claim = %#v; want generation-suffixed agent and inbox-key claim", manager, claim)
+	}
+
+	for _, caller := range []struct {
+		name string
+		args []string
+	}{
+		{name: "agent", args: []string{"--agent", "manager-repo"}},
+		{name: "pane", args: []string{"--pane", "w1:manager"}},
+	} {
+		t.Run(caller.name, func(t *testing.T) {
+			id := cli.createTask(t, "Reopen by registered manager")
+			cli.markVerified(t, id)
+			args := []string{"task", "reopen", "--task", id, "--reason", "merge conflict"}
+			status, stdout, stderr := cli.run(append(args, caller.args...)...)
+			if status != 0 || stderr != "" {
+				t.Fatalf("reopen status = %d; stdout %q, stderr %q; want success", status, stdout, stderr)
+			}
+			var reopened records.Task
+			if err := registry.ReadIn([]string{"tasks"}, id, &reopened); err != nil {
+				t.Fatal(err)
+			}
+			if reopened.Status != "assigned" || reopened.Verification != nil || len(reopened.VerificationHistory) != 1 ||
+				reopened.VerificationHistory[0].Caller != "manager-repo" {
+				t.Fatalf("reopened task = %#v; want assigned with manager-repo in history", reopened)
+			}
+		})
+	}
+}
+
 func TestTaskCLILogsPartialCreatePrefixes(t *testing.T) {
 	cli := newTaskCLI(t)
 	taskPath := filepath.Join(cli.home, ".hive", "state", "tasks", "1-topic.json")
