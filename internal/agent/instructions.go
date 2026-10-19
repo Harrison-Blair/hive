@@ -50,7 +50,7 @@ func writeProjectInstructions(home string, project records.Project, logger *slog
 	if logger != nil {
 		logger.Debug("manager instructions written", "command", "agent spawn", "project_id", project.ID, "path", filepath.ToSlash(filepath.Join("projects", project.ID, "AGENTS.md")))
 	}
-	return ""
+	return writePresets(home, logger)
 }
 
 // writePresets writes overrides/presets.md when the file is absent. It returns
@@ -78,7 +78,7 @@ func writePresets(home string, logger *slog.Logger) string {
 		return writeMessage
 	}
 	if logger != nil {
-		logger.Debug("presets written", "command", "agent spawn", "path", filepath.ToSlash(filepath.Join("overrides", "presets.md")))
+		logger.Debug("presets file ensured", "command", "agent spawn", "path", filepath.ToSlash(filepath.Join("overrides", "presets.md")))
 	}
 	return ""
 }

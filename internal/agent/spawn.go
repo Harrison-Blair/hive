@@ -100,12 +100,6 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 			}
 			return failed("instructions", instructionMessage)
 		}
-		if presetsMessage := writePresets(home, logger); presetsMessage != "" {
-			if manager != nil {
-				manager.cleanup(ctx, home, logger)
-			}
-			return failed("presets", presetsMessage)
-		}
 	}
 
 	registered := Register(home, RegisterOptions{
