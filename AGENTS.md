@@ -10,7 +10,7 @@ Read this section first. Your working directory gives your role. A brief can als
 
 | Working directory | Role | Then read |
 | --- | --- | --- |
-| The root of this checkout | coordinator | [Coordinator](#coordinator) |
+| The root of this checkout | coordinator, unless the brief names manager | [Coordinator](#coordinator) or the brief |
 | `projects/<project-id>/` | manager | the project instructions, then your brief |
 | `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
 

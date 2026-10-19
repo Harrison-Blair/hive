@@ -89,7 +89,7 @@ absolute home path, and the worker passes `--home` to each command.
 | --- | --- | --- | --- |
 | User | 1 | Approves goals, constraints, grants, and material decisions | Any |
 | Coordinator | 1 for each home | Talks to the user. Spawns managers. Starts the supervisor. Keeps preferences and shared memory. Reports open decisions and status. | The home root |
-| Manager | 1 for each active project | Owns research, planning, implementation, documentation, independent checks, and reports for approved goals | `projects/<project-id>/` |
+| Manager | 1 for each active project | Owns research, planning, implementation, documentation, independent checks, and reports for approved goals | The root of the registered repository |
 | Code worker | Chosen by the manager | Changes project source for one task | `projects/<project-id>/worktrees/<task-id>/` |
 | Verifier | 1 for each completed task | Re-runs the checks of one task and records the result | The worktree of the task |
 | Read-only worker | Chosen by the manager | Researches or reviews without a change to source | `projects/<project-id>/` |
@@ -122,30 +122,31 @@ records go to the controlling role, so a replacement agent inherits them.
 
 - The **hive session** is the one herdr session that hosts the home. The
   coordinator and the supervisor run in panes of that session.
-- Each managed project has one workspace with the label `hive:<project>`. Hive
-  makes it when it spawns the manager, with the project directory as the
-  working directory. The manager runs in the root pane of the first tab. Hive
-  reuses the workspace that the project record names when it still exists.
+- A manager runs in a new hive tab of the workspace that holds the
+  repository's parent checkout. Hive adopts that workspace. Hive makes a
+  workspace at the repository path only when no workspace holds the checkout.
+  Hive keeps the label of an adopted workspace. It does not rename it. The
+  manager gets its role from the first prompt, which has the generated manager
+  instructions.
 - Hive makes each worktree with `worktree.create`. The source is the registered
-  repository path in `cwd`, never the `hive:<project>` workspace, whose
-  directory belongs to the hive repository. The request gives an explicit
-  `path` under `projects/<project-id>/worktrees/`, the branch
-  `task/<task-id>`, the base branch of the project, and the task ID as the
-  label. herdr opens the worktree as a workspace beside the repository
-  workspace and draws that grouping itself.
-- The first tab of a hive workspace is never an empty shell. Hive starts the
-  agent in the root pane that herdr returns.
+  repository path in `cwd`. The request gives an explicit `path` under
+  `projects/<project-id>/worktrees/`, the branch `task/<task-id>`, the base
+  branch of the project, and the task ID as the label. herdr opens the worktree
+  below the workspace that holds the parent checkout and draws that grouping.
+- Hive starts an agent in the root pane that herdr returns for a new workspace
+  or a new tab.
 - herdr has no stop method. `agent stop` marks the record `stopped` and closes
-  the pane of the agent with `pane.close`. herdr ends the process, and it
-  closes the workspace when that pane was its last pane. Hive closes only a
-  pane in which it started the agent. An agent that the user registered by
-  hand exits by hand.
+  the pane of the agent with `pane.close`. In an adopted workspace, the close
+  removes the manager tab and keeps the workspace. When herdr refuses a close
+  with `confirmation_required`, Hive keeps the workspace record and sends no
+  confirmation flag. Hive closes only a pane in which it started the agent.
+  An agent that the user registered by hand exits by hand.
 - Hive closes what it made. `worktree remove` closes the worktree workspace
-  when it is still open, then removes the worktree with Git. The stop of a
-  manager closes its pane, and herdr closes `hive:<project>` when no other
-  pane is in it.
-- Adoption of a workspace that already exists for a repository needs user
-  approval, through `--adopt <workspace-id>` on `hive agent spawn`.
+  when it is still open, then removes the worktree with Git. When herdr closes
+  the last pane of a manager workspace, the workspace closes. The project
+  record clears after that close.
+- `--adopt <workspace-id>` selects a workspace for the manager only when
+  `worktree.list` reports it as the parent workspace of the repository.
 
 ## Agent lifecycle
 

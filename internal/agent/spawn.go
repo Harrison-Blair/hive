@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"time"
 	"unicode"
@@ -86,6 +87,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	paneID := choice.PaneID
 	manager := choice.Manager
+	managerInstructions := ""
 	if options.Role == "manager" {
 		project, projectMessage := readProjectRecord(home, options.Project)
 		if projectMessage != "" {
@@ -100,6 +102,15 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 			}
 			return failed("instructions", instructionMessage)
 		}
+		instructionPath := filepath.Join(home, "projects", project.ID, "AGENTS.md")
+		content, readErr := os.ReadFile(instructionPath)
+		if readErr != nil {
+			if manager != nil {
+				manager.cleanup(ctx, home, logger)
+			}
+			return failed("instructions", "read manager instructions: "+readErr.Error())
+		}
+		managerInstructions = string(content)
 	}
 
 	registered := Register(home, RegisterOptions{
@@ -146,7 +157,11 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		if isHerdrCode(startErr, "agent_pane_busy") {
 			override = "first tab busy: stop the agent or pass --pane"
 		}
-		return spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr, override)
+		envelope := spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr, override)
+		if manager != nil {
+			manager.cleanup(ctx, home, logger)
+		}
+		return envelope
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
 	logArgv(logger, record.Key, started.Argv)
@@ -284,6 +299,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		return envelope
 	}
 	envelope := spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+	if options.Role == "manager" {
+		envelope = promptManagerInstructions(ctx, paneID, managerInstructions, record, result.Claim, effects, logger)
+	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
 }
@@ -361,6 +379,30 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
+}
+
+func promptManagerInstructions(ctx context.Context, paneID, content string, record records.Agent, claim *records.Claim, effects []output.Effect, logger *slog.Logger) output.Envelope {
+	baseline, baselineErr := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+	baselineOK := baselineErr == nil
+	params := herdr.AgentPromptParams{Target: paneID, Text: content}
+	delivered := false
+	for attempt := 0; attempt < promptAttempts && !delivered; attempt++ {
+		_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+		if err != nil {
+			if isHerdrCode(err, herdr.CodeAgentNotReady) {
+				_ = waitAgentInteractive(ctx, paneID, logger)
+				continue
+			}
+			envelope := spawnEnvelope("partial", "prompt", effects, "manager prompt: "+err.Error()+"; then run hive agent send --agent "+record.Name, SpawnResult{Agent: record, Claim: claim})
+			return envelope
+		}
+		delivered = promptStarted(ctx, paneID, baseline, baselineOK, logger)
+	}
+	if !delivered {
+		return spawnEnvelope("partial", "prompt", effects, "manager prompt did not start a turn; then run hive agent send --agent "+record.Name, SpawnResult{Agent: record, Claim: claim})
+	}
+	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
+	return spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: record, Claim: claim})
 }
 
 func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, profile harness.Profile, waitInfo herdr.AgentInfo, waitErr error, getInfo herdr.AgentInfo, getErr error, session *sessionTrack, sessionReason string) output.Envelope {

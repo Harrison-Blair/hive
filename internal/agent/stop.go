@@ -97,7 +97,8 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if reason := checkProcessIdentity(record, info, pane.AgentSession); reason != "" {
 		return stopUnresolved(home, logger, record, effects, "agent identity unresolved: "+reason)
 	}
-	if _, workspaceErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger)); workspaceErr != nil {
+	workspace, workspaceErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger))
+	if workspaceErr != nil {
 		message := "workspace get: " + workspaceErr.Error()
 		var serverError *herdr.Error
 		if errors.As(workspaceErr, &serverError) && serverError.Code == herdr.CodeWorkspaceNotFound {
@@ -136,6 +137,15 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 			logStop(logger, envelope, record.Key)
 			return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 		}
+		if isHerdrCode(closeErr, "confirmation_required") {
+			message := "pane kept: " + closeErr.Error()
+			effects = append(effects, output.Effect{Resource: "pane", Path: record.PaneID, Action: message})
+			result := StopResult{Agent: record, Topology: "surviving", Workspace: &workspace}
+			envelope := stopEnvelope("partial", "close", effects, message, record)
+			envelope.Result = result
+			logStop(logger, envelope, record.Key)
+			return result, envelope
+		}
 		message := "pane close: " + closeErr.Error()
 		restored, liveEffect, restoreErr := setRecordStatus(home, record, records.AgentStopped, records.AgentLive, message, "live")
 		effects = appendEffect(effects, liveEffect)
@@ -150,7 +160,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	logger.Debug("pane closed", "command", "agent stop", "agent_id", record.Key, "pane_id", record.PaneID)
 
 	result := StopResult{Agent: record, Topology: "unknown"}
-	workspace, workspaceErr := herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger), herdr.WithDeadline(5*time.Second))
+	workspace, workspaceErr = herdr.WorkspaceGet(ctx, workspaceID, herdr.WithLogger(logger), herdr.WithDeadline(5*time.Second))
 	if workspaceErr == nil {
 		result.Topology = "surviving"
 		result.Workspace = &workspace
@@ -190,6 +200,15 @@ func recordStoppedWorkspace(home string, record records.Agent, result StopResult
 		other := 0
 		if result.Workspace != nil {
 			other = int(result.Workspace.PaneCount)
+		}
+		project, message := readProjectRecord(home, record.Project)
+		if message != "" {
+			return output.Effect{}, errors.New(message)
+		}
+		if project.Workspace != nil && project.Workspace.ID == record.WorkspaceID && project.Workspace.TabCreatedByHive {
+			if err := clearProjectTab(home, record.Project, *project.Workspace); err != nil {
+				return output.Effect{}, err
+			}
 		}
 		return output.Effect{Resource: "workspace", Path: record.WorkspaceID, Action: fmt.Sprintf("kept: %d other panes", other)}, nil
 	default:
