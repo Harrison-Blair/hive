@@ -41,6 +41,8 @@ func TestRemoveSuccessClosesWorkspaceAndRemovesWorktree(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Result: `{"type":"ok"}`}
 		}
@@ -214,6 +216,8 @@ func TestRemoveForceSkipsDirtyAndMergedGuards(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Result: `{"type":"ok"}`}
 		}
@@ -247,6 +251,9 @@ func TestRemoveClosedWorkspaceSkipsClose(t *testing.T) {
 	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
 		if request.Method == "workspace.get" {
 			return fakeReply{Error: `{"code":"workspace_not_found","message":"workspace w2 not found"}`}
+		}
+		if request.Method == "agent.list" {
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		}
 		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
@@ -408,6 +415,8 @@ func TestRemoveGitFailureAfterCloseIsPartial(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			if err := os.Remove(filepath.Join(path, ".git")); err != nil {
 				t.Fatalf("remove worktree marker: %v", err)
@@ -447,6 +456,8 @@ func TestRemoveUnknownCloseOutcomeIsPartial(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Close: true}
 		}
@@ -480,6 +491,8 @@ func TestRemoveGroupRootRefused(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Error: `{"code":"workspace_group_close_required","message":"workspace has linked worktree workspaces; use --group (close_group=true in the API) to close the group"}`}
 		}
@@ -510,6 +523,8 @@ func TestRemovePreservesConcurrentTaskChange(t *testing.T) {
 		case "workspace.get":
 			close(arrived)
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo)), Hold: release}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Result: `{"type":"ok"}`}
 		}

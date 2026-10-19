@@ -82,7 +82,7 @@ func resolveIdentityCheck(ctx context.Context, record records.Agent, live herdr.
 	if liveCwd == "" {
 		liveCwd = live.ForegroundCwd
 	}
-	if filepath.Clean(liveCwd) != filepath.Clean(record.Cwd) {
+	if canonicalDir(liveCwd) != canonicalDir(record.Cwd) {
 		return "agent identity differs: cwd", nil
 	}
 	if live.TerminalID != record.TerminalID {
@@ -114,9 +114,25 @@ func resolveIdentityCheck(ctx context.Context, record records.Agent, live herdr.
 	return "", nil
 }
 
+// canonicalDir resolves the directory links of a path, so a link and its
+// target compare equal. A path that cannot be read falls back to a lexical
+// clean.
+func canonicalDir(path string) string {
+	if path == "" {
+		return ""
+	}
+	resolved, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return filepath.Clean(path)
+	}
+	return filepath.Clean(resolved)
+}
+
 // resolveWrite settles the record under one held store handle.
 func resolveWrite(home string, options ResolveOptions, record records.Agent, status string, live *herdr.AgentInfo) output.Envelope {
-	updated, effect, err := mutateAgentRecord(home, record, records.AgentUnresolved, func(current *records.Agent) {
+	// The live choice checks a live identity and needs a spawned record. The
+	// exited choice settles any unresolved record, including a hand-made one.
+	updated, effect, err := mutateAgentRecordChecked(home, record, records.AgentUnresolved, live != nil, func(current *records.Agent) {
 		current.Status = status
 		current.LastError = ""
 		if live != nil {

@@ -183,6 +183,8 @@ func TestFix02RemoveLatestTopologyConflict(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			latest := readTask(t, home, "1-live-demo")
 			latest.Worktree.WorkspaceID = "w3"
@@ -245,6 +247,8 @@ func TestFix02UnicodeDiagnosticBound(t *testing.T) {
 					return fakeReply{Result: workspaceListReply(t)}
 				case "workspace.get":
 					return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+				case "agent.list":
+					return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 				case "worktree.create", "workspace.close":
 					return fakeReply{Error: jsonText(t, map[string]any{"code": "invalid_request", "message": diagnostic})}
 				}
@@ -399,6 +403,8 @@ func TestFix02RemoveTopologyControls(t *testing.T) {
 				switch request.Method {
 				case "workspace.get":
 					return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+				case "agent.list":
+					return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 				case "workspace.close":
 					latest := readTask(t, home, "1-live-demo")
 					switch control {

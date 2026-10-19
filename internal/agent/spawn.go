@@ -589,6 +589,12 @@ func setRecordStatus(home string, record records.Agent, allowedStatus, status, m
 }
 
 func mutateAgentRecord(home string, expected records.Agent, allowedStatus string, apply func(*records.Agent), action string) (records.Agent, output.Effect, error) {
+	return mutateAgentRecordChecked(home, expected, allowedStatus, true, apply, action)
+}
+
+// mutateAgentRecordChecked writes a record mutation. A false requireSpawned
+// settles a record that a person registered by hand.
+func mutateAgentRecordChecked(home string, expected records.Agent, allowedStatus string, requireSpawned bool, apply func(*records.Agent), action string) (records.Agent, output.Effect, error) {
 	effect := output.Effect{Resource: "agent", Path: statePath("agents", expected.Key), Action: action}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -600,7 +606,7 @@ func mutateAgentRecord(home string, expected records.Agent, allowedStatus string
 		if err := locked.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
 			return err
 		}
-		if err := checkCurrentRecord(locked, current, expected, allowedStatus); err != nil {
+		if err := checkCurrentRecordChecked(locked, current, expected, allowedStatus, requireSpawned); err != nil {
 			return err
 		}
 		apply(&current)
@@ -618,12 +624,19 @@ func mutateAgentRecord(home string, expected records.Agent, allowedStatus string
 }
 
 func checkCurrentRecord(locked *store.LockedStore, current, expected records.Agent, allowedStatus string) error {
+	return checkCurrentRecordChecked(locked, current, expected, allowedStatus, true)
+}
+
+func checkCurrentRecordChecked(locked *store.LockedStore, current, expected records.Agent, allowedStatus string, requireSpawned bool) error {
 	if current.Key != expected.Key || current.Name != expected.Name || current.Role != expected.Role ||
 		current.Project != expected.Project || current.Task != expected.Task ||
 		current.PaneID != expected.PaneID || current.Generation != expected.Generation {
 		return errRecordChanged
 	}
-	if current.Status != allowedStatus || !current.Spawned {
+	if current.Status != allowedStatus {
+		return errRecordChanged
+	}
+	if requireSpawned && !current.Spawned {
 		return errRecordChanged
 	}
 	claimKey := claimKeyFor(current.Role, current.Project)

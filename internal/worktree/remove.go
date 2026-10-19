@@ -202,7 +202,11 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		}
 	}
 
-	if message, occupied := liveWorkspaceAgent(ctx, task.Worktree.WorkspaceID, scoped); occupied {
+	message, occupied, listErr := liveWorkspaceAgent(ctx, task.Worktree.WorkspaceID, scoped)
+	if listErr != nil {
+		return fail("agent", "agent occupancy unknown: "+oneLine(listErr.Error()))
+	}
+	if occupied {
 		return fail("agent", message)
 	}
 
@@ -309,25 +313,25 @@ func findAgentOccupant(home, taskID, workspaceID, path string) (string, bool) {
 }
 
 // liveWorkspaceAgent returns the first live herdr agent in the workspace. A
-// list failure is a log event and no occupant, because the record guard still
-// holds a recorded agent.
-func liveWorkspaceAgent(ctx context.Context, workspaceID string, logger *slog.Logger) (string, bool) {
+// list failure returns an error, because an unknown occupancy cannot permit a
+// removal.
+func liveWorkspaceAgent(ctx context.Context, workspaceID string, logger *slog.Logger) (string, bool, error) {
 	if workspaceID == "" {
-		return "", false
+		return "", false, nil
 	}
 	agents, err := herdr.AgentList(ctx, herdr.WithLogger(logger))
 	if err != nil {
 		if logger != nil {
 			logger.Debug("worktree remove agent list failed", "command", commandRemove, "workspace_id", workspaceID, "error", err.Error())
 		}
-		return "", false
+		return "", false, err
 	}
 	for _, agent := range agents {
 		if agent.WorkspaceID == workspaceID {
-			return "agent in workspace: " + agent.PaneID, true
+			return "agent in workspace: " + agent.PaneID, true, nil
 		}
 	}
-	return "", false
+	return "", false, nil
 }
 
 func worktreeRemoveFailure(result *run.Result) string {
