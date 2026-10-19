@@ -51,7 +51,9 @@ at 22:34:10.003, ten milliseconds later. herdr answered `agent_pane_busy`:
 pane was not ready. The spawn kept the workspace `wBD` and its project record,
 and it marked the agent record `exited`. A second identical spawn one minute
 later adopted `wBD` and started the manager. The error text names a wrong cause:
-no agent held the pane. It occurred once in one attempt.
+no agent held the pane. It occurred on each first spawn of a project manager:
+twice in two attempts on 2026-10-18, for `hive` and for `stenographer`. The
+retry succeeded each time.
 
 **Reproduction steps:**
 1. Register a project with no manager workspace record.
