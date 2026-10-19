@@ -33,6 +33,7 @@ func TestWorkerSpawnCompletedTurnSubmitsOnce(t *testing.T) {
 	fake := newFakeHerdr(t)
 	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
 	fake.result("workspace.get", workerWorkspaceGetJSON("w5", "1-worker-demo", repo, worktree))
+	scriptReadyShell(fake, "w5:p1", "term_w5:p1", "w5", "w5:t1", worktree)
 	fake.result("agent.start", workerAgentStartJSON("w5:p1", "w5", "w5:t1", "worker-1"))
 	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
@@ -71,6 +72,7 @@ func TestVerifierSpawnCleanupPreservesAddedTab(t *testing.T) {
 	fake.result("worktree.open", worktreeOpenJSON("w6", "1-worker-demo", repo, "w6:t1", "w6:p1", worktree, branch, false))
 	fake.result("pane.get", workerPaneGetJSON("w6:p1", "w6", "w6:t1", worktree, ""))
 	fake.result("workspace.get", workerWorkspaceGetJSON("w6", "1-worker-demo", repo, worktree))
+	scriptReadyShell(fake, "w6:p1", "term_w6:p1", "w6", "w6:t1", worktree)
 	fake.failure("agent.start", "agent_pane_busy", "pane is busy")
 	fake.result("workspace.get", workerWorkspaceCountJSON("w6", "1-worker-demo", repo, worktree, 2, 2))
 

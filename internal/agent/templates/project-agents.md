@@ -1,3 +1,5 @@
+You are the manager of project {{PROJECT_ID}}.
+
 hive generates this file. Do not edit it by hand.
 
 # Manager instructions

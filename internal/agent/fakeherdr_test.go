@@ -259,6 +259,11 @@ func paneInfoJSON(paneID, terminalID, workspaceID, tabID, cwd string) string {
 	return `{"pane_id":"` + paneID + `","terminal_id":"` + terminalID + `","workspace_id":"` + workspaceID + `","tab_id":"` + tabID + `","focused":false,"agent_status":"unknown","revision":1,"cwd":"` + cwd + `"}`
 }
 
+func scriptReadyShell(fake *fakeHerdr, paneID, terminalID, workspaceID, tabID, cwd string) {
+	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON(paneID, terminalID, workspaceID, tabID, cwd)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"`+paneID+`","shell_pid":1,"foreground_process_group_id":1,"foreground_processes":[`+processEntry(1, "bash", "/usr/bin/bash")+`]}}`)
+}
+
 func processInfoJSON(paneID string, entries ...string) string {
 	body := `{"pane_id":"` + paneID + `","shell_pid":null,"foreground_process_group_id":null,"foreground_processes":[`
 	for index, entry := range entries {

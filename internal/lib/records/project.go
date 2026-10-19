@@ -18,10 +18,12 @@ type Project struct {
 // the workspace that hive made or adopted. CreatedByHive is true only for the
 // workspace that this ID names.
 type ProjectWorkspace struct {
-	ID            string `json:"id"`
-	RootPane      string `json:"root_pane"`
-	CreatedByHive bool   `json:"created_by_hive"`
-	CreatedAt     string `json:"created_at,omitempty"`
+	ID               string `json:"id"`
+	RootPane         string `json:"root_pane"`
+	CreatedByHive    bool   `json:"created_by_hive"`
+	CreatedAt        string `json:"created_at,omitempty"`
+	TabID            string `json:"tab_id,omitempty"`
+	TabCreatedByHive bool   `json:"tab_created_by_hive,omitempty"`
 }
 
 // ValidID reports whether id is valid for a project record and directory.

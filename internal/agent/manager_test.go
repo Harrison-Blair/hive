@@ -34,7 +34,7 @@ func writeProjectWorkspaceRecord(t *testing.T, home, id string, workspace *recor
 	if err != nil {
 		t.Fatal(err)
 	}
-	record := records.Project{ID: id, Path: "/tmp/" + id, Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z", Workspace: workspace}
+	record := records.Project{ID: id, Path: managerRepoPath, Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z", Workspace: workspace}
 	if err := registry.WriteIn([]string{"projects"}, id, record); err != nil {
 		t.Fatal(err)
 	}
@@ -95,22 +95,46 @@ func managerWorkspaceCreateJSON(workspaceID, label, cwd, paneID string) string {
 func scriptManagerAgent(t *testing.T, fake *fakeHerdr, sleep sleepProcess, paneID, workspaceID, key, cwd string) {
 	t.Helper()
 	tabID := workspaceID + ":t1"
+	if part := filepath.Base(paneID); strings.HasPrefix(part, "p") {
+		tabID = workspaceID + ":t" + strings.TrimPrefix(part, "p")
+	}
+	scriptManagerAgentTab(t, fake, sleep, paneID, workspaceID, tabID, key, cwd)
+}
+
+func scriptManagerAgentTab(t *testing.T, fake *fakeHerdr, sleep sleepProcess, paneID, workspaceID, tabID, key, cwd string) {
+	t.Helper()
+	fake.mu.Lock()
+	hasWorktreeList := len(fake.replies["worktree.list"]) != 0
+	hasTabCreate := len(fake.replies["tab.create"]) != 0
+	fake.mu.Unlock()
+	if !hasWorktreeList {
+		fake.result("worktree.list", managerWorktreeListJSON(workspaceID))
+	}
+	if !hasTabCreate {
+		fake.result("tab.create", managerTabCreatedJSON(workspaceID, tabID, paneID, managerRepoPath))
+	}
+	scriptReadyShell(fake, paneID, "term_x", workspaceID, tabID, managerRepoPath)
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "unknown", key)+`,"argv":["claude","--model","m"]}`)
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON(paneID, "term_x", workspaceID, tabID, cwd, "")+`}`)
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON(paneID, "term_x", workspaceID, tabID, managerRepoPath, "")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "idle", key)+`}`)
-	fake.result("agent.get", `{"type":"agent_info","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "idle", key)+`}`)
+	for range 3 {
+		fake.result("agent.get", `{"type":"agent_info","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "idle", key)+`}`)
+	}
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON(paneID, processEntry(sleep.pid, "claude", "claude"))+`}`)
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "working", key)+`}`)
 }
 
 func TestManagerWorkspaceReuseOK(t *testing.T) {
 	home := testHome(t)
 	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, TabCreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", managerRepoPath, "")))
+	fake.result("pane.process_info", managerProcessInfoJSON("w5:p1", sleep))
 	scriptManagerAgent(t, fake, sleep, "w5:p1", "w5", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
@@ -120,7 +144,7 @@ func TestManagerWorkspaceReuseOK(t *testing.T) {
 		t.Fatalf("reuse made or closed a workspace")
 	}
 	project := readProjectWorkspaceRecord(t, home, "demo")
-	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p1" {
+	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p1" || project.Workspace.TabID != "w5:t1" {
 		t.Fatalf("project workspace = %#v", project.Workspace)
 	}
 }
@@ -132,8 +156,9 @@ func TestManagerWorkspaceReuseGone(t *testing.T) {
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.failure("workspace.get", "workspace_not_found", "workspace w5 not found")
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
@@ -144,7 +169,7 @@ func TestManagerWorkspaceReuseGone(t *testing.T) {
 		t.Fatalf("project workspace = %#v", project.Workspace)
 	}
 	creates := fake.recorded("workspace.create")
-	if len(creates) != 1 || !strings.Contains(creates[0].Params, `"cwd":"`+dir+`"`) {
+	if len(creates) != 1 || !strings.Contains(creates[0].Params, `"cwd":"`+managerRepoPath+`"`) {
 		t.Fatalf("workspace.create = %#v", creates)
 	}
 }
@@ -156,9 +181,9 @@ func TestManagerWorkspaceReuseOtherDirectory(t *testing.T) {
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", "/tmp/elsewhere", "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" {
@@ -177,90 +202,94 @@ func TestManagerWorkspaceReuseLabelDiffers(t *testing.T) {
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "other"))
-	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
-	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t2", "w5:p2", managerRepoPath))
+	scriptManagerAgent(t, fake, sleep, "w5:p2", "w5", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if project := readProjectWorkspaceRecord(t, home, "demo"); project.Workspace == nil || project.Workspace.ID != "w6" {
-		t.Fatalf("project workspace = %#v", project.Workspace)
+	if project := readProjectWorkspaceRecord(t, home, "demo"); project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.TabID != "w5:t2" {
+		t.Fatalf("project workspace = %#v; want the labeled parent workspace", project.Workspace)
 	}
 }
 
 func TestManagerWorkspaceNoRecordedRoot(t *testing.T) {
 	home := testHome(t)
 	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t2", "w5:p2", managerRepoPath))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p2", "w5", "w5:t2", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "workspace w5 has no recorded root pane: pass --pane <shell pane>") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("pane.get")) != 0 || len(fake.recorded("agent.start")) != 0 {
-		t.Fatalf("refusal sent a request")
+	project := readProjectWorkspaceRecord(t, home, "demo")
+	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.TabID != "w5:t2" || !project.Workspace.TabCreatedByHive {
+		t.Fatalf("project workspace = %#v; want a new manager tab", project.Workspace)
 	}
 }
 
 func TestManagerWorkspaceMovedRoot(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p9", "term_w5", "w5", "w5:t2", dir, "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p9", "term_w5", "w5", "w5:t2", managerRepoPath, "")))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t3", "w5:p3", managerRepoPath))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p3", "w5", "w5:t3", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "workspace w5 has no recorded root pane: pass --pane <shell pane>") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("agent.start")) != 0 || len(fake.recorded("workspace.close")) != 0 {
-		t.Fatalf("moved root sent a request")
+	if len(fake.recorded("workspace.close")) != 0 || len(fake.recorded("tab.create")) != 1 {
+		t.Fatalf("moved root requests = %#v", fake.requests)
 	}
 }
 
 func TestManagerWorkspaceMovedRootBackToFirstTab(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p9", "term_w5", "w5", "w5:t1", dir, "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
-	scriptManagerAgent(t, fake, sleep, "w5:p9", "w5", "manager-demo-g1", dir)
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p9", "term_w5", "w5", "w5:t1", managerRepoPath, "")))
+	fake.result("pane.process_info", managerProcessInfoJSON("w5:p9", sleep))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p9", "w5", "w5:t1", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "workspace w5 has no recorded root pane: pass --pane <shell pane>") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("agent.start")) != 0 || len(fake.recorded("workspace.close")) != 0 {
-		t.Fatalf("moved root sent a request")
+	if len(fake.recorded("tab.create")) != 0 || len(fake.recorded("workspace.close")) != 0 {
+		t.Fatalf("valid recorded tab was not reused: %#v", fake.requests)
 	}
 	project := readProjectWorkspaceRecord(t, home, "demo")
-	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p1" || !project.Workspace.CreatedByHive {
-		t.Fatalf("project workspace = %#v; want unchanged w5", project.Workspace)
+	if project.Workspace == nil || project.Workspace.RootPane != "w5:p9" {
+		t.Fatalf("project root pane = %#v; want current pane w5:p9", project.Workspace)
 	}
 }
 
 func TestManagerWorkspaceUserTabStays(t *testing.T) {
 	home := testHome(t)
 	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1), managerTabJSON("w5", "w5:t2", 2, 1)))
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", managerRepoPath, "")))
+	fake.result("pane.process_info", managerProcessInfoJSON("w5:p1", sleep))
 	scriptManagerAgent(t, fake, sleep, "w5:p1", "w5", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" {
@@ -274,45 +303,50 @@ func TestManagerWorkspaceUserTabStays(t *testing.T) {
 func TestManagerWorkspaceOwnerOneMatch(t *testing.T) {
 	home := testHome(t)
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	fake.result("workspace.list", managerWorkspaceListJSON(managerWorkspaceJSON("w7", "hive:demo")))
+	fake.result("worktree.list", managerWorktreeListJSON("w7"))
+	fake.result("workspace.get", managerWorkspaceGetJSON("w7", "hive:demo"))
+	fake.result("tab.create", managerTabCreatedJSON("w7", "w7:t2", "w7:p2", managerRepoPath))
+	scriptManagerAgent(t, fake, sleep, "w7:p2", "w7", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	want := "workspace w7 has the label hive:demo but hive did not make it: close it or pass --adopt w7"
-	if !strings.Contains(toString(envelope.Error), want) {
-		t.Fatalf("error = %v; want %s", envelope.Error, want)
-	}
-	if len(fake.recorded("workspace.create")) != 0 {
-		t.Fatalf("made a workspace with an owner present")
+	if len(fake.recorded("workspace.create")) != 0 || len(fake.recorded("workspace.list")) != 0 {
+		t.Fatalf("manager did not adopt the parent workspace")
 	}
 }
 
 func TestManagerWorkspaceOwnerTwoMatches(t *testing.T) {
 	home := testHome(t)
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON("w7"))
+	fake.result("workspace.get", managerWorkspaceGetJSON("w7", "hive:demo"))
+	fake.result("tab.create", managerTabCreatedJSON("w7", "w7:t2", "w7:p2", managerRepoPath))
 	fake.result("workspace.list", managerWorkspaceListJSON(managerWorkspaceJSON("w7", "hive:demo"), managerWorkspaceJSON("w8", "hive:demo")))
+	scriptManagerAgent(t, fake, sleep, "w7:p2", "w7", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "pass --adopt w7") {
-		t.Fatalf("error = %v; want the first match", envelope.Error)
+	if len(fake.recorded("workspace.list")) != 0 || len(fake.recorded("workspace.create")) != 0 {
+		t.Fatalf("matching labels changed parent resolution")
 	}
 }
 
 func TestManagerWorkspaceAdoptOnePane(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
+	projectDirectory(t, home, "demo")
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
-	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, "")))
-	scriptManagerAgent(t, fake, sleep, "w5:p1", "w5", "manager-demo-g1", dir)
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t2", "w5:p2", managerRepoPath))
+	scriptManagerAgent(t, fake, sleep, "w5:p2", "w5", "manager-demo-g1", managerRepoPath)
 	options := managerSpawnOptions("demo")
 	options.Adopt = "w5"
 	envelope := Spawn(context.Background(), home, options)
@@ -320,8 +354,8 @@ func TestManagerWorkspaceAdoptOnePane(t *testing.T) {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
 	project := readProjectWorkspaceRecord(t, home, "demo")
-	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p1" || project.Workspace.CreatedByHive {
-		t.Fatalf("project workspace = %#v; want adopted w5", project.Workspace)
+	if project.Workspace == nil || project.Workspace.ID != "w5" || project.Workspace.RootPane != "w5:p2" || project.Workspace.CreatedByHive || project.Workspace.TabID != "w5:t2" || !project.Workspace.TabCreatedByHive {
+		t.Fatalf("project workspace = %#v; want adopted w5 and a hive tab", project.Workspace)
 	}
 	if len(fake.recorded("workspace.create")) != 0 {
 		t.Fatalf("adopt made a workspace")
@@ -330,51 +364,48 @@ func TestManagerWorkspaceAdoptOnePane(t *testing.T) {
 
 func TestManagerWorkspaceAdoptTwoPanes(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
+	projectDirectory(t, home, "demo")
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 2)))
-	fake.result("pane.list", managerPaneListJSON(
-		managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, ""),
-		managerPaneInfoJSON("w5:p2", "term_w5", "w5", "w5:t1", dir, ""),
-	))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t3", "w5:p3", managerRepoPath))
+	scriptManagerAgent(t, fake, sleep, "w5:p3", "w5", "manager-demo-g1", managerRepoPath)
 	options := managerSpawnOptions("demo")
 	options.Adopt = "w5"
 	envelope := Spawn(context.Background(), home, options)
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "first tab has 2 panes: pass --pane") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("agent.start")) != 0 {
-		t.Fatalf("adopt with two panes started an agent")
+	if len(fake.recorded("tab.create")) != 1 || len(fake.recorded("agent.start")) != 1 {
+		t.Fatalf("manager did not get a new tab: %#v", fake.requests)
 	}
 }
 
 func TestManagerWorkspaceCreateOK(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
+	projectDirectory(t, home, "demo")
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
-	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
+	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
 	project := readProjectWorkspaceRecord(t, home, "demo")
-	if project.Workspace == nil || project.Workspace.ID != "w6" || project.Workspace.RootPane != "w6:p1" || !project.Workspace.CreatedByHive || project.Workspace.CreatedAt == "" {
+	if project.Workspace == nil || project.Workspace.ID != "w6" || project.Workspace.RootPane != "w6:p1" || !project.Workspace.CreatedByHive || project.Workspace.CreatedAt == "" || project.Workspace.TabID != "w6:t1" || project.Workspace.TabCreatedByHive {
 		t.Fatalf("project workspace = %#v", project.Workspace)
 	}
 	creates := fake.recorded("workspace.create")
 	if len(creates) != 1 {
 		t.Fatalf("workspace.create requests = %d; want 1", len(creates))
 	}
-	want := `{"cwd":"` + dir + `","label":"hive:demo","focus":false}`
+	want := `{"cwd":"` + managerRepoPath + `","label":"hive:demo","focus":false}`
 	if creates[0].Params != want {
 		t.Fatalf("workspace.create params = %s; want %s", creates[0].Params, want)
 	}
@@ -384,6 +415,7 @@ func TestManagerWorkspaceCreateCwdMismatch(t *testing.T) {
 	home := testHome(t)
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
 	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", "/tmp/wrong", "w6:p1"))
 	fake.result("workspace.close", `{"type":"ok"}`)
@@ -405,11 +437,12 @@ func TestManagerWorkspaceCreateCwdMismatch(t *testing.T) {
 
 func TestManagerWorkspaceCreateRecordFailure(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
+	projectDirectory(t, home, "demo")
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 	fake.result("workspace.close", `{"type":"ok"}`)
 	projectsDir := filepath.Join(home, ".hive", "state", "projects")
 	if err := os.Chmod(projectsDir, 0o555); err != nil {
@@ -433,73 +466,85 @@ func TestManagerWorkspaceCreateRecordFailure(t *testing.T) {
 
 func TestManagerWorkspacePaneBusyFromStart(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
+	projectDirectory(t, home, "demo")
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
-	fake.failure("agent.start", "agent_pane_busy", "pane w6:p1 is busy")
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneStatusJSON("w6:p1", "term_w6", "w6", "w6:t1", managerRepoPath, "working", `,"agent":"manager-demo-g0"`)+`}`)
+	fake.result("workspace.close", `{"type":"ok"}`)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "failed" {
 		t.Fatalf("envelope = %#v; want failed", envelope)
 	}
 	if !strings.Contains(toString(envelope.Error), "first tab busy: stop the agent or pass --pane") {
 		t.Fatalf("error = %v", envelope.Error)
+	}
+	if len(fake.recorded("agent.start")) != 0 {
+		t.Fatalf("busy pane sent agent.start")
 	}
 }
 
 func TestFirstTabReordered(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p2", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p2", TabID: "w5:t2", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p2", "term_w5", "w5", "w5:t2", dir, "")+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t2", 2, 1), managerTabJSON("w5", "w5:t1", 1, 1)))
-	scriptManagerAgent(t, fake, sleep, "w5:p2", "w5", "manager-demo-g1", dir)
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p2", "term_w5", "w5", "w5:t2", managerRepoPath, "")))
+	fake.result("pane.process_info", managerProcessInfoJSON("w5:p2", sleep))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p2", "w5", "w5:t2", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if len(fake.recorded("tab.create")) != 0 {
+		t.Fatalf("reordered recorded tab was not reused")
 	}
 }
 
 func TestFirstTabRestoreError(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, `,"restore_error":"Saved directory is unavailable."`)+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
+	fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("w5:p1", "term_w5", "w5", "w5:t1", managerRepoPath, `,"restore_error":"Saved directory is unavailable."`)))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t2", "w5:p2", managerRepoPath))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p2", "w5", "w5:t2", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "first tab busy: stop the agent or pass --pane") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("agent.start")) != 0 {
-		t.Fatalf("restore_error pane started an agent")
+	if len(fake.recorded("tab.create")) != 1 || !strings.Contains(fake.recorded("agent.start")[0].Params, `"pane_id":"w5:p2"`) {
+		t.Fatalf("busy recorded tab did not get a new manager tab")
 	}
 }
 
 func TestFirstTabAgentPresent(t *testing.T) {
 	home := testHome(t)
-	dir := projectDirectory(t, home, "demo")
-	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	projectDirectory(t, home, "demo")
+	writeProjectWorkspaceRecord(t, home, "demo", &records.ProjectWorkspace{ID: "w5", RootPane: "w5:p1", TabID: "w5:t1", CreatedByHive: true, CreatedAt: "2026-01-01T00:00:00Z"})
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("workspace.get", managerWorkspaceGetJSON("w5", "hive:demo"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneStatusJSON("w5:p1", "term_w5", "w5", "w5:t1", dir, "idle", `,"agent":"claude"`)+`}`)
+	fake.result("worktree.list", managerWorktreeListJSON("w5"))
 	fake.result("tab.list", managerTabListJSON(managerTabJSON("w5", "w5:t1", 1, 1)))
+	fake.result("pane.list", managerPaneListJSON(managerPaneStatusJSON("w5:p1", "term_w5", "w5", "w5:t1", managerRepoPath, "idle", `,"agent":"claude"`)))
+	fake.result("tab.create", managerTabCreatedJSON("w5", "w5:t2", "w5:p2", managerRepoPath))
+	scriptManagerAgentTab(t, fake, sleep, "w5:p2", "w5", "w5:t2", "manager-demo-g1", managerRepoPath)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
-	if envelope.Outcome != "failed" {
-		t.Fatalf("envelope = %#v; want failed", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if !strings.Contains(toString(envelope.Error), "first tab busy: stop the agent or pass --pane") {
-		t.Fatalf("error = %v", envelope.Error)
-	}
-	if len(fake.recorded("agent.start")) != 0 {
-		t.Fatalf("busy pane started an agent")
+	if len(fake.recorded("tab.create")) != 1 || len(fake.recorded("agent.start")) != 1 {
+		t.Fatalf("busy pane did not get a separate tab")
 	}
 }

@@ -14,8 +14,9 @@ func TestInstructionsWritten(t *testing.T) {
 	writeProjectWorkspaceRecord(t, home, "demo", nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
@@ -27,7 +28,7 @@ func TestInstructionsWritten(t *testing.T) {
 		t.Fatalf("instruction file: %v", err)
 	}
 	text := string(data)
-	if !strings.HasPrefix(text, "hive generates this file.") {
+	if !strings.HasPrefix(text, "You are the manager of project demo.") {
 		t.Fatalf("first line = %q; want the generated line", strings.SplitN(text, "\n", 2)[0])
 	}
 	for _, want := range []string{"demo", home, "/tmp/demo"} {
@@ -50,8 +51,9 @@ func TestInstructionsReplacedOnEachSpawn(t *testing.T) {
 	}
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
 	if envelope := Spawn(context.Background(), home, managerSpawnOptions("demo")); envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -99,13 +101,10 @@ func TestInstructionsStaticPath(t *testing.T) {
 			outside := t.TempDir()
 			test.prepare(t, home, outside)
 			writeProjectWorkspaceRecord(t, home, "demo", nil)
-			replyCwd := filepath.Join(home, "projects", "demo")
-			if resolved, err := filepath.EvalSymlinks(replyCwd); err == nil {
-				replyCwd = resolved
-			}
 			fake := newFakeHerdr(t)
+			fake.result("worktree.list", managerWorktreeListJSON(""))
 			fake.result("workspace.list", managerWorkspaceListJSON())
-			fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", replyCwd, "w6:p1"))
+			fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
 			fake.result("workspace.close", `{"type":"ok"}`)
 			envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 			if envelope.Outcome != "failed" {

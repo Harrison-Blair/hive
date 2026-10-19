@@ -28,6 +28,7 @@ func baseSpawnOptions(name string) SpawnOptions {
 
 func scriptSpawnSuccess(t *testing.T, fake *fakeHerdr, home string, sleep sleepProcess, waitStatus string) {
 	t.Helper()
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude","--model","m"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", waitStatus, "t10-coord-g1")+`}`)
@@ -160,6 +161,7 @@ func TestSpawnWaitTimeoutWithOwnershipKeepsLivePartial(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.failure("agent.wait", "timeout", "timed out waiting for agent status")
@@ -185,6 +187,7 @@ func TestSpawnWaitTimeoutWithoutOwnershipIsUnresolved(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.failure("agent.wait", "timeout", "timed out waiting for agent status")
@@ -203,6 +206,7 @@ func TestSpawnWaitTimeoutWithoutOwnershipIsUnresolved(t *testing.T) {
 func TestSpawnStartServerErrorExitsRecord(t *testing.T) {
 	home := testHome(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.failure("agent.start", "invalid_agent_name", "name is too long")
 	envelope := Spawn(context.Background(), home, baseSpawnOptions("t10-coord"))
 	if envelope.Outcome != "failed" || envelope.Phase != "start" {
@@ -218,14 +222,15 @@ func TestSpawnStartServerErrorExitsRecord(t *testing.T) {
 	if !hasEffect(envelope.Effects, "agent", "exited") && !hasEffect(envelope.Effects, "agent", "created") {
 		t.Fatalf("effects = %#v; want known register effects", envelope.Effects)
 	}
-	if len(fake.recorded("pane.get")) != 0 {
-		t.Fatalf("pane.get ran after a start error")
+	if got := len(fake.recorded("pane.get")); got != 1 {
+		t.Fatalf("pane.get requests = %d; want the shell-readiness check only", got)
 	}
 }
 
 func TestSpawnStartTransportErrorIsUnresolved(t *testing.T) {
 	home := testHome(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.drop("agent.start")
 	envelope := Spawn(context.Background(), home, baseSpawnOptions("t10-coord"))
 	if envelope.Outcome != "partial" || envelope.Phase != "start" {
@@ -241,6 +246,7 @@ func TestSpawnWaitNotRunningInspectsExited(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.failure("agent.wait", "agent_not_running", "agent is no longer running in the target pane")
@@ -294,6 +300,7 @@ func TestSpawnProcessIdentityCases(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			home := testHome(t)
 			fake := newFakeHerdr(t)
+			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 			fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 			fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 			fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t10-coord-g1")+`}`)
@@ -317,6 +324,7 @@ func TestSpawnProcessIdentityCases(t *testing.T) {
 func TestSpawnUnreadableProcessIsUnresolved(t *testing.T) {
 	home := testHome(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t10-coord-g1")+`}`)
@@ -349,6 +357,7 @@ func TestSpawnSessionRules(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			home := testHome(t)
 			fake := newFakeHerdr(t)
+			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 			fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 			fake.result("pane.get", `{"type":"pane_info","pane":`+test.paneJSON+`}`)
 			fake.result("agent.wait", `{"type":"agent_info","agent":`+test.waitJSON+`}`)
@@ -370,6 +379,7 @@ func TestSpawnClaimReplacementDuringWaitPreventsUpdate(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	replaced := false
@@ -436,6 +446,7 @@ func TestSpawnWorkerWithRealTask(t *testing.T) {
 	writeProject(t, home, "hive")
 	writeTask(t, home, "hive", "12-spawn-worker")
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "worker-hive-1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)

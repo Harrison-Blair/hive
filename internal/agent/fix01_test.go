@@ -108,6 +108,7 @@ func TestFix02SpawnRetainsStartSession(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSONSession("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t10-coord-g1", "herdr:claude", "id", "start-session")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSONSession("w1:p1", "term_a", "w1", "w1:t1", "idle", "t10-coord-g1", "herdr:claude", "id", "different-session")+`}`)
