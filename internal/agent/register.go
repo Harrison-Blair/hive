@@ -286,7 +286,8 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	counterEffect := output.Effect{Resource: "counter", Path: ".hive/state/counters/agent.json", Action: "updated"}
 	name := options.Name
 	generated := false
-	if !options.NameSet {
+	taskName := !options.NameSet && options.Spawned && options.Task != "" && (options.Role == "worker" || options.Role == "verifier")
+	if !options.NameSet && !taskName {
 		if options.Role == "worker" || options.Role == "verifier" {
 			var counter struct {
 				Value uint64 `json:"value"`
@@ -302,7 +303,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			name = defaultSingletonName(options.Role, options.Project)
 		}
 	}
-	if !namePattern.MatchString(name) {
+	if !taskName && !namePattern.MatchString(name) {
 		return failed("validate", "invalid agent name: "+displayValue(name))
 	}
 
@@ -313,6 +314,12 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	claims, err := loadClaims(writer)
 	if err != nil {
 		return failed("store", err.Error())
+	}
+	if taskName {
+		name = nextTaskAgentName(options.Task, options.Role, agentRecords, claims)
+	}
+	if !namePattern.MatchString(name) {
+		return failed("validate", "invalid agent name: "+displayValue(name))
 	}
 	agentByKey := make(map[string]records.Agent, len(agentRecords))
 	for _, record := range agentRecords {
@@ -516,6 +523,25 @@ func initialAgentStatus(spawned bool) string {
 
 func isActiveAgentStatus(status string) bool {
 	return status == records.AgentStarting || status == records.AgentLive
+}
+
+func nextTaskAgentName(taskID, role string, agentRecords []records.Agent, claims []records.Claim) string {
+	prefix := taskID[:strings.IndexByte(taskID, '-')]
+	occupied := make(map[string]bool, len(agentRecords)*2+len(claims)*2)
+	for _, record := range agentRecords {
+		occupied[record.Key] = true
+		occupied[record.Name] = true
+	}
+	for _, claim := range claims {
+		occupied[claim.Key] = true
+		occupied[claim.Agent] = true
+	}
+	for index := uint64(1); ; index++ {
+		candidate := fmt.Sprintf("t%s-%s-%d", prefix, role, index)
+		if !occupied[candidate] {
+			return candidate
+		}
+	}
 }
 
 func loadAgents(writer lockedWriter) ([]records.Agent, error) {

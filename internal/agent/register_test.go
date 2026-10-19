@@ -526,6 +526,36 @@ func TestRegisterExplicitWorkerUsesNoCounter(t *testing.T) {
 	}
 }
 
+func TestRegisterSpawnedTaskNameSkipsClaimedName(t *testing.T) {
+	for _, testCase := range []struct {
+		role string
+		name string
+		want string
+	}{
+		{role: "worker", name: "t1-worker-1", want: "t1-worker-2"},
+		{role: "verifier", name: "t1-verifier-1", want: "t1-verifier-2"},
+	} {
+		t.Run(testCase.role, func(t *testing.T) {
+			home := t.TempDir()
+			seedProject(t, home, "hive")
+			writeClaimRecord(t, home, records.Claim{Key: testCase.name, Agent: "previous", Generation: 1})
+			envelope := Register(home, RegisterOptions{
+				Role: testCase.role, Project: "hive", Task: testTaskID, PaneID: "w1:p1", Spawned: true,
+			})
+			if envelope.Outcome != "ok" {
+				t.Fatalf("Register() = %#v; want success", envelope)
+			}
+			result, ok := envelope.Result.(RegisterResult)
+			if !ok {
+				t.Fatalf("result = %#v; want RegisterResult", envelope.Result)
+			}
+			if result.Agent.Name != testCase.want {
+				t.Fatalf("agent name = %q; want %q", result.Agent.Name, testCase.want)
+			}
+		})
+	}
+}
+
 // The corrected T04 contract refuses the generated name before the counter
 // write. A retry therefore sees the same collision and still writes nothing.
 func TestRegisterGeneratedNameCollisionWritesNothing(t *testing.T) {

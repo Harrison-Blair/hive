@@ -1,8 +1,8 @@
 ---
 title: "A worker spawn into an assigned task keeps the old acting agent"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "The spawn sets the acting agent and refuses while the old worker is live (wave 3)."
+decision: "Fixed in 19-worker-respawn (78381ba1): the spawn sets the acting agent and refuses while the old worker is live."
 ---
 
 **Summary:**
@@ -12,6 +12,8 @@ verify fail. The task still named `t11-worker-1` as the acting agent.
 `hive task complete` from `t11-worker-2` failed with `not the acting agent`.
 The workaround was `hive task assign --task 11-ci-workflow --agent
 t11-worker-2`, then `hive task complete`.
+
+Resolution: Live check 2026-10-19: after a verify fail on 18-task-reopen, `hive agent spawn --role worker --task 18-task-reopen` with no `--name` and no `--pane` picked `t18-worker-2`, set it as the acting agent, and reopened the task workspace `wDJ` on the same worktree.
 
 **Reproduction steps:**
 1. Let a worker finish a task. Let the verifier record a fail.
