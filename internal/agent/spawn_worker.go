@@ -450,78 +450,83 @@ func finishVerifierSpawn(ctx context.Context, home string, choice *taskChoice, r
 	return envelope
 }
 
-// promptTaskAgent sends the first prompt of one task agent without a wait. A
-// launch that is still pending gives agent_not_ready. The function waits for
-// the interactive agent and sends the prompt again. A Pi launch can accept a
-// prompt before its input loop is ready. The function checks that a turn
-// started and sends the prompt again when it did not.
+// promptTaskAgent sends the first prompt of one task agent.
 func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	prompt := verifierPrompt(home, choice.Task.ID)
 	if record.Role != "verifier" {
 		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch)
 	}
-	params := herdr.AgentPromptParams{Target: choice.PaneID, Text: prompt}
-	baseline, baselineErr := herdr.AgentGet(ctx, choice.PaneID, herdr.WithLogger(logger))
-	baselineOK := baselineErr == nil
-	delivered := false
-	for attempt := 0; attempt < promptAttempts && !delivered; attempt++ {
-		_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
-		if err != nil {
-			if isHerdrCode(err, "agent_not_ready") {
-				_ = waitAgentInteractive(ctx, choice.PaneID, logger)
-				continue
-			}
-			envelope.Outcome = "partial"
-			envelope.Phase = "prompt"
-			envelope.Error = err.Error() + "; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
-			return envelope
-		}
-		delivered = promptStarted(ctx, choice.PaneID, baseline, baselineOK, logger)
-	}
-	if !delivered {
+	info, err := promptFirstTurn(ctx, choice.PaneID, prompt, logger)
+	if err != nil {
 		envelope.Outcome = "partial"
 		envelope.Phase = "prompt"
-		envelope.Error = "prompt did not start a turn; then run: hive agent send --agent " + record.Name + " " + shellQuote(prompt)
+		envelope.Error = taskPromptError(record.Name, prompt, err)
+		envelope.Result = nil
+		return envelope
+	}
+	if info.AgentStatus == "blocked" {
+		envelope.Outcome = "partial"
+		envelope.Phase = "prompt"
+		envelope.Error = "agent blocked: " + record.Name + " in " + choice.PaneID
+		envelope.Result = nil
 		return envelope
 	}
 	envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
 	return envelope
 }
 
-// promptAttempts bounds the send of one prompt that starts no turn.
+// promptAttempts bounds first-prompt submissions.
 const promptAttempts = 5
+
+// firstPromptWaitTimeout bounds the herdr wait for one first prompt.
+const firstPromptWaitTimeout = 10 * time.Second
+
+// promptFirstTurn sends one first prompt and waits for work or a blocked state.
+func promptFirstTurn(ctx context.Context, paneID, prompt string, logger *slog.Logger) (herdr.AgentInfo, error) {
+	params := herdr.AgentPromptParams{
+		Target: paneID,
+		Text:   prompt,
+		Wait: &herdr.AgentPromptWaitOptions{
+			Until:     []string{"working", "blocked"},
+			TimeoutMS: uint64(firstPromptWaitTimeout / time.Millisecond),
+		},
+	}
+	stalledRetries := 0
+	for attempt := 0; attempt < promptAttempts; attempt++ {
+		info, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
+		if err == nil {
+			switch info.AgentStatus {
+			case "working", "blocked", "done":
+				return info, nil
+			default:
+				return herdr.AgentInfo{}, fmt.Errorf("agent prompt wait returned unconfirmed status: %s", info.AgentStatus)
+			}
+		}
+		if isHerdrCode(err, herdr.CodeAgentNotReady) {
+			_ = waitAgentInteractive(ctx, paneID, logger)
+			continue
+		}
+		if isHerdrCode(err, herdr.CodeAgentPromptStalled) && stalledRetries == 0 {
+			stalledRetries++
+			continue
+		}
+		return herdr.AgentInfo{}, err
+	}
+	return herdr.AgentInfo{}, errors.New("prompt did not start a turn")
+}
+
+func taskPromptError(name, prompt string, err error) string {
+	if isHerdrCode(err, herdr.CodeAgentBlocked) {
+		return "agent blocked: " + name + ": " + err.Error()
+	}
+	if isHerdrCode(err, herdr.CodeAgentPromptStalled) {
+		return "first prompt for agent " + name + " stalled: " + err.Error()
+	}
+	return err.Error() + "; then run: hive agent send --agent " + name + " " + shellQuote(prompt)
+}
 
 // promptReadyTimeout bounds the wait for one interactive agent.
 const promptReadyTimeout = 60 * time.Second
-
-// promptStarted reports whether one prompt started a turn. A status that a
-// started or a completed turn can hold accepts delivery. A state change from
-// before the prompt also accepts delivery. A failed read cannot prove that the
-// prompt was lost, so it accepts delivery as well. The caller resends only
-// when the agent is unchanged.
-func promptStarted(ctx context.Context, paneID string, baseline herdr.AgentInfo, baselineOK bool, logger *slog.Logger) bool {
-	info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
-	if err != nil {
-		return true
-	}
-	if promptStatusStarted(info.AgentStatus) {
-		return true
-	}
-	if baselineOK && (info.StateChangeSeq != baseline.StateChangeSeq || info.Revision != baseline.Revision) {
-		return true
-	}
-	return !baselineOK
-}
-
-// promptStatusStarted reports a status that a started or a completed turn can
-// hold.
-func promptStatusStarted(status string) bool {
-	switch status {
-	case "working", "blocked", "done", "idle":
-		return true
-	}
-	return false
-}
 
 // waitAgentInteractive waits until herdr reports an interactive agent.
 func waitAgentInteractive(ctx context.Context, paneID string, logger *slog.Logger) error {
