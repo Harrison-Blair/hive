@@ -22,6 +22,20 @@ On 2026-10-19, `hive agent send` to a Pi agent spawned with
 `--pane` failed with `agent_not_ready` two times. This task records the issue.
 It does not fix it.
 
+**Report 2026-10-19:**
+Report: `.hive/tmp/reports/first-prompt-skip.md` in the home (task
+21-first-prompt-report). Cause: `promptStarted` in
+`internal/agent/spawn_worker.go` accepts `idle` as proof of delivery before it
+compares `state_change_seq` and `revision`. For all four wave 4 worker spawns,
+the state after `agent.prompt` was `idle` with the same seq and revision as the
+baseline, so hive logged `prompted agent` and skipped the retry. herdr
+`agent.prompt` success proves only that the text and Enter were written. Why Pi
+dropped those prompts stays unknown. A live test showed that an accepted prompt
+can also look like an unchanged `idle` at first, so an immediate retry can send
+a duplicate. Proposed fixes: use the herdr prompt wait as delivery evidence and
+retry after a bounded stall result; or accept `idle` only after a seq or
+revision change, with a bounded observation window.
+
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
 2. Read the verifier pane.
