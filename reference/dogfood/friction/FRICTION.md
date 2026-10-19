@@ -9,9 +9,9 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
-| [A verifier can record a verdict without a pushed VERIFIED.md](entries/verifier-verdict-without-commit.md) | Open |  |
 | [An agent spawn can skip the first prompt](entries/agent-spawn-skips-first-prompt.md) | Open | A report task investigates first. The fix is decided after the report. |
 | [No `hive task edit --brief` command](entries/task-edit-brief-command.md) | Open | Add `hive task edit --brief`, allowed only before `completed` (wave 4). |
+| [A verifier can record a verdict without a pushed VERIFIED.md](entries/resolved/verifier-verdict-without-commit.md) | Resolved 2026-10-19 | Fixed in 23-verify-clean-branch (27a883e9): hive task verify refuses a dirty worktree or an unpushed branch, and the verifier commits and pushes VERIFIED.md first. |
 | [No hive path repairs a verified task](entries/resolved/no-hive-path-repairs-verified-task.md) | Resolved 2026-10-19 | Fixed in 18-task-reopen (4f2bd6a5): hive task reopen moves a verified task to assigned, keeps the old check in verification_history, and land needs a new pass verify. |
 | [An exited agent name blocks reuse](entries/resolved/exited-agent-name-blocks-reuse.md) | Resolved 2026-10-19 | Fixed in 19-worker-respawn (78381ba1): with no --name, hive picks the next free name tNN-ROLE-N. |
 | [A verify fail leaves no workspace for the repair worker](entries/resolved/verify-fail-repair-worker-no-workspace.md) | Resolved 2026-10-19 | Fixed in 19-worker-respawn (78381ba1): the spawn reopens the worktree workspace with worktree.open and updates the record. |

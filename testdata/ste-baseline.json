@@ -30,6 +30,7 @@
   "spec/hive-v1/tasks/T21-role-playbooks.md": 0,
   "spec/hive-v1/tasks/T22-store-operations.md": 0,
   "spec/hive-v1/tasks/22-task-edit-brief.md": 0,
+  "spec/hive-v1/tasks/23-verify-clean-branch.md": 0,
   "spec/hive-v1/tasks/16-quiet-no-nudge.md": 0,
   "spec/hive-v1/tasks/19-worker-respawn.md": 0,
   "internal/agent/templates/project-agents.md": 0,

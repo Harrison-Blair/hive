@@ -109,6 +109,27 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	}
 }
 
+func TestVerifierCommitsVerdictBeforeVerify(t *testing.T) {
+	managerSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	verifierSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-verifier", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "The verifier commits and pushes `VERIFIED.md` on the task branch before it runs `hive task verify`."
+	for name, instructions := range map[string]string{
+		"template":       projectAgentsTemplate,
+		"manager skill":  string(managerSkill),
+		"verifier skill": string(verifierSkill),
+	} {
+		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), want) {
+			t.Errorf("%s does not contain %q", name, want)
+		}
+	}
+}
+
 func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
 	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
 	if err != nil {

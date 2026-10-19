@@ -58,6 +58,43 @@ func IsDirty(ctx context.Context, dir string) (bool, error) {
 	return strings.TrimSpace(result.Stdout) != "", nil
 }
 
+// FetchBranchTip fetches one branch from a remote and returns its tip.
+func FetchBranchTip(ctx context.Context, dir, remote, branch string) (string, bool, error) {
+	result, err := runPlain(ctx, dir, "fetch", "--quiet", "--no-tags", remote, branch)
+	if err != nil {
+		return "", false, err
+	}
+	if result.ExitCode != 0 {
+		exists, err := remoteBranchExists(ctx, dir, remote, branch)
+		if err != nil {
+			return "", false, err
+		}
+		if !exists {
+			return "", false, nil
+		}
+		return "", false, gitFailure("fetch", result)
+	}
+	tip, err := Tip(ctx, dir, "FETCH_HEAD")
+	if err != nil {
+		return "", false, err
+	}
+	return tip, true, nil
+}
+
+func remoteBranchExists(ctx context.Context, dir, remote, branch string) (bool, error) {
+	result, err := runPlain(ctx, dir, "ls-remote", "--exit-code", "--heads", remote, "refs/heads/"+branch)
+	if err != nil {
+		return false, err
+	}
+	if result.ExitCode == 0 {
+		return true, nil
+	}
+	if result.ExitCode == 2 {
+		return false, nil
+	}
+	return false, gitFailure("ls-remote", result)
+}
+
 // IsMerged reports whether branch is merged into base.
 func IsMerged(ctx context.Context, dir, base, branch string) (bool, error) {
 	result, err := runPlain(ctx, dir, "branch", "--merged", base)

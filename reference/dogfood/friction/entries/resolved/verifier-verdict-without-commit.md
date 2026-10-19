@@ -1,8 +1,8 @@
 ---
 title: "A verifier can record a verdict without a pushed VERIFIED.md"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: ""
+decision: "Fixed in 23-verify-clean-branch (27a883e9): hive task verify refuses a dirty worktree or an unpushed branch, and the verifier commits and pushes VERIFIED.md first."
 ---
 
 **Summary:**

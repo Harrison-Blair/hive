@@ -37,6 +37,9 @@ Write each result in `VERIFIED.md`. Give one row for each item with the result
 
 ## Verdict
 
+The verifier commits and pushes `VERIFIED.md` on the task branch before it runs
+`hive task verify`.
+
 Record a pass when each item passes.
 
 ```sh
