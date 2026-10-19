@@ -109,14 +109,14 @@ flowchart TD
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 976d273 |
-| [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | blocked | | |
-| [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | blocked | | |
+| [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | in progress | | |
+| [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | in progress | | |
 
 | Checkpoint | After | Blocks | Status | Date | Verdict by |
 | --- | --- | --- | --- | --- | --- |
 | CP1 home live | T01, T02 | wave 2 | passed | 2026-10-18 | runner `cp1-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp1-verify-01.md` |
 | CP2 worktree and spawn live | T09, T10 | wave 4 | passed | 2026-10-18 | runner `cp2-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp2-verify-01.md` |
-| CP3 messaging and close-down live | T12, T13, T14, T15, T16, T18 | wave 5 | open | | |
+| CP3 messaging and close-down live | T12, T13, T14, T15, T16, T18 | wave 5 | passed | 2026-10-18 | openai-codex/gpt-6.1-sol:high |
 | CP4 TUI live | T08 | CP5 | open | | |
 | CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | | |
 
@@ -1736,6 +1736,28 @@ checkpoint.
 - Report 02 records one limit. V6 keeps its earlier transcript audit. No
   new live run occurred at the `1aa22d7` tip.
 - CP3, CP4, and CP5 stay open.
+
+### Dated checkpoint: CP3 passed
+
+2026-10-18. This section records the CP3 pass and starts wave 5. It changes
+only this receipt, the CP3 row, and the T20 and T21 rows. The contract is the
+`### CP3 messaging and close-down live` section.
+
+- CP3 is `passed`. The date is `2026-10-18`. The verdict is
+  `openai-codex/gpt-6.1-sol:high`.
+- The runner report is `.hive/tmp/coordinator/reports/cp3-run-01.md`. Its
+  verdict is `PASS`.
+- The independent report is `.hive/tmp/coordinator/reports/cp3-verify-01.md`.
+  Its verdict is `pass`.
+- The tested binary SHA256 is
+  `0ffcee93b890b1e81910058c49612fd29ad29519c978af09f064cf34470a44d6`.
+- The fixture home is `/tmp/cp3fix.GDF8lCQI`.
+- The producer route request is `opencode-go/deepseek-v4.1-flash:medium`. The
+  effective level is `high`.
+- The verifier is PiSol at `openai-codex/gpt-6.1-sol:high`.
+- No real Hive source file and no `main` reference changed.
+- T20 and T21 move from `blocked` to `in progress`.
+- CP1 and CP2 stay passed. CP4 and CP5 stay open.
 
 ### CP1 home live
 
