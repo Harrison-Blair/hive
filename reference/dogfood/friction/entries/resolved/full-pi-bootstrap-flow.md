@@ -1,7 +1,7 @@
 ---
 title: "Full Pi worktree, agent, and delivery bootstrap flow is missing"
 status: "Resolved 2026-10-19"
-opened: 2026-10-19
+opened: 2026-10-18
 decision: "Stale: `hive worktree` and `hive agent spawn/send/stop` exist."
 ---
 
