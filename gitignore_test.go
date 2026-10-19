@@ -31,6 +31,18 @@ func TestTrackedFilesAreNotIgnored(t *testing.T) {
 	}
 }
 
+func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
+	skipWithoutGit(t)
+	err := exec.Command("git", "check-ignore", "-q", ".github/workflows/ci.yml").Run()
+	if err == nil {
+		t.Fatal("git ignores .github/workflows/ci.yml")
+	}
+	var exit *exec.ExitError
+	if !errors.As(err, &exit) || exit.ExitCode() != 1 {
+		t.Fatalf("git check-ignore: %v", err)
+	}
+}
+
 // TestHomeMarkerIsTracked checks that Git does not ignore the home marker,
 // which every clone needs so that hive never creates a home.
 func TestHomeMarkerIsTracked(t *testing.T) {
