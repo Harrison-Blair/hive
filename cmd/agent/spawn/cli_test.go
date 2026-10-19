@@ -35,7 +35,7 @@ func newCLIFake(t *testing.T, method string, replies ...string) *cliFake {
 	}
 	fake := &cliFake{t: t, listener: listener, replies: map[string][]string{
 		"pane.get":          {`{"type":"pane_info","pane":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}`},
-		"pane.process_info": {`{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","shell_pid":1,"foreground_process_group_id":1,"foreground_processes":[]}}`},
+		"pane.process_info": {`{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","shell_pid":1,"foreground_process_group_id":1,"foreground_processes":[{"pid":1,"name":"bash","argv":["/usr/bin/bash"],"cmdline":"/usr/bin/bash","cwd":"/tmp"}]}}`},
 	}}
 	fake.replies[method] = replies
 	t.Setenv("HERDR_SOCKET_PATH", path)
