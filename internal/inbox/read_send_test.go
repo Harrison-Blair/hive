@@ -58,25 +58,88 @@ func TestReadRejectsWorkerWithoutInbox(t *testing.T) {
 	}
 }
 
-func TestReadUnknownCallerAsksForRole(t *testing.T) {
+func TestReadUnknownCallerAsksForAgentOrPane(t *testing.T) {
 	envelope := Read(t.TempDir(), ReadOptions{})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Read() = %#v; want failed", envelope)
 	}
-	message, _ := envelope.Error.(string)
-	if message != "caller unknown: pass --role or pass --agent" {
-		t.Fatalf("error = %q; want the role hint", message)
+	if envelope.Error != "caller unknown: pass --agent or run inside herdr" {
+		t.Fatalf("error = %q; want the caller hint", envelope.Error)
 	}
 }
 
-func TestReadExplicitRoleKeepsWorkingWithoutCaller(t *testing.T) {
+func TestReadExplicitRoleKeepsWorkingForOwner(t *testing.T) {
 	home := t.TempDir()
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
+	seedInboxAgent(t, home, liveInboxAgent("manager-one-g1", "manager-one", "manager", "one", "w1:p1"), &records.Claim{Key: "manager-one", Agent: "manager-one-g1", Generation: 1})
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
-	envelope := Read(home, ReadOptions{Role: "coordinator", RoleSet: true})
+	envelope := Read(home, ReadOptions{Role: "manager-one", RoleSet: true, Agent: "manager-one"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Read(explicit) = %#v; want ok", envelope)
+	}
+}
+
+func TestReadExplicitRoleRejectsUnknownCallerWithoutConsuming(t *testing.T) {
+	home := t.TempDir()
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "unread"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	envelope := Read(home, ReadOptions{Role: "manager-hive", RoleSet: true})
+	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent or run inside herdr" {
+		t.Fatalf("Read() = %#v; want an unknown-caller refusal", envelope)
+	}
+	found, err := inboxlib.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All() = %#v, %v; want one unread record", found, err)
+	}
+}
+
+func TestCoordinatorReadManagerInboxPrintsWithoutConsuming(t *testing.T) {
+	home := t.TempDir()
+	seedInboxAgent(t, home, liveInboxAgent("coordinator-g1", "coordinator", "coordinator", "", "w0:p1"), &records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "manager message"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	envelope := Read(home, ReadOptions{Role: "manager-hive", RoleSet: true, PaneID: "w0:p1"})
+	if envelope.Outcome != "ok" || !strings.Contains(ReadText(envelope), "manager message") {
+		t.Fatalf("Read() = %#v, text %q; want the manager message", envelope, ReadText(envelope))
+	}
+	found, err := inboxlib.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All() = %#v, %v; want one unread record", found, err)
+	}
+}
+
+func TestVerifierCannotReadManagerInbox(t *testing.T) {
+	home := t.TempDir()
+	seedInboxAgent(t, home, liveInboxAgent("verifier-1", "verifier-1", "verifier", "hive", "w2:p1"), nil)
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	envelope := Read(home, ReadOptions{Role: "manager-hive", RoleSet: true, PaneID: "w2:p1"})
+	if envelope.Outcome != "failed" || envelope.Error != "inbox manager-hive belongs to the manager of project hive" {
+		t.Fatalf("Read() = %#v; want the manager ownership error", envelope)
+	}
+	found, err := inboxlib.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All() = %#v, %v; want one unread record", found, err)
+	}
+}
+
+func TestVerifierCannotReadAllManagerInbox(t *testing.T) {
+	home := t.TempDir()
+	seedInboxAgent(t, home, liveInboxAgent("verifier-1", "verifier-1", "verifier", "hive", "w2:p1"), nil)
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	envelope := Read(home, ReadOptions{Role: "manager-hive", RoleSet: true, All: true, PaneID: "w2:p1"})
+	if envelope.Outcome != "failed" || envelope.Error != "inbox manager-hive belongs to the manager of project hive" {
+		t.Fatalf("Read(--all) = %#v; want the manager ownership error", envelope)
+	}
+	found, err := inboxlib.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All() = %#v, %v; want one unread record", found, err)
 	}
 }
 

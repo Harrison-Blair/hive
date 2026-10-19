@@ -19,6 +19,7 @@ func New() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	command.Flags().String("role", "", "inbox key")
+	command.Flags().String("agent", "", "reading agent")
 	command.Flags().Bool("all", false, "print each record and set nothing")
 	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
 	command.AddCommand(newSend())
@@ -26,6 +27,7 @@ func New() *cobra.Command {
 		role, _ := cmd.Flags().GetString("role")
 		roleFlag := cmd.Flags().Lookup("role")
 		roleSet := roleFlag != nil && roleFlag.Changed
+		agent, _ := cmd.Flags().GetString("agent")
 		all, _ := cmd.Flags().GetBool("all")
 		pane, _ := cmd.Flags().GetString("pane")
 		var envelope output.Envelope
@@ -34,7 +36,7 @@ func New() *cobra.Command {
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
 			envelope = inboxlogic.Read(home, inboxlogic.ReadOptions{
-				Role: role, RoleSet: roleSet, All: all, PaneID: pane,
+				Role: role, RoleSet: roleSet, All: all, Agent: agent, PaneID: pane,
 			})
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
