@@ -2,7 +2,7 @@
 title: "A manager stops on a harness permission block and the coordinator does not know"
 status: "Open"
 opened: 2026-10-19
-decision: ""
+decision: "Fix A: a manager sends the coordinator a blocked record before it stops for a user decision. Hive launches each spawned Claude Code agent with bypass permissions and each Codex agent with yolo. Each hive-sent message starts with the visible marker ⬢. Runs after the first-prompt fix, before H1."
 ---
 
 **Summary:**
