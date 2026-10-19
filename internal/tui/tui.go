@@ -331,7 +331,7 @@ func RunHome(home string, in io.Reader, out io.Writer) error {
 	go func() {
 		select {
 		case <-faults:
-			program.Kill()
+			program.Quit()
 		case <-watched:
 		}
 	}()
