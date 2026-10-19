@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -42,6 +43,20 @@ func TestManagerSpawnWaitsForShellSecondRead(t *testing.T) {
 	fake.failure("pane.process_info", "pane_not_found", "shell process data is not ready")
 	fake.result("pane.process_info", shellProcessInfoJSON("wBD:p1", 41, 41))
 	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
+	var shellReadStatuses []string
+	startStatus := ""
+	fake.setBefore(func(method string, _ json.RawMessage) {
+		if method != "pane.get" && method != "agent.start" {
+			return
+		}
+		record := readAgent(t, home, "manager-demo-g1")
+		if method == "pane.get" && len(shellReadStatuses) < 2 {
+			shellReadStatuses = append(shellReadStatuses, record.Status)
+		}
+		if method == "agent.start" {
+			startStatus = record.Status
+		}
+	})
 
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if starts := fake.recorded("agent.start"); len(starts) != 1 {
@@ -55,6 +70,15 @@ func TestManagerSpawnWaitsForShellSecondRead(t *testing.T) {
 	}
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if len(shellReadStatuses) != 2 || shellReadStatuses[0] != "starting" || shellReadStatuses[1] != "starting" {
+		t.Fatalf("statuses during shell reads = %v; want [starting starting]", shellReadStatuses)
+	}
+	if startStatus != "starting" {
+		t.Fatalf("status at agent.start = %q; want starting", startStatus)
+	}
+	if record := readAgent(t, home, "manager-demo-g1"); record.Status != "live" {
+		t.Fatalf("final status = %q; want live", record.Status)
 	}
 }
 
@@ -109,6 +133,12 @@ func TestWorkerSpawnWaitsForShellSecondRead(t *testing.T) {
 	fake.result("pane.process_info", shellProcessInfoJSON("w5:p1", 51, 52))
 	fake.result("pane.process_info", shellProcessInfoJSON("w5:p1", 51, 51))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
+	startStatus := ""
+	fake.setBefore(func(method string, _ json.RawMessage) {
+		if method == "agent.start" {
+			startStatus = readAgent(t, home, "worker-1").Status
+		}
+	})
 	fake.result("agent.start", workerAgentStartJSON("w5:p1", "w5", "w5:t1", "worker-1"))
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
@@ -130,6 +160,9 @@ func TestWorkerSpawnWaitsForShellSecondRead(t *testing.T) {
 	}
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if startStatus != "starting" || spawnResultAgent(envelope).Status != "live" {
+		t.Fatalf("status at agent.start/final = %q/%q; want starting/live", startStatus, spawnResultAgent(envelope).Status)
 	}
 }
 

@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -15,6 +16,24 @@ func seedDoctorAgent(t *testing.T, home string, record records.Agent) {
 	}
 	if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
 		t.Fatalf("write agent: %v", err)
+	}
+}
+
+func TestDoctorShowsStartingAgents(t *testing.T) {
+	home := newHome(t)
+	seedDoctorAgent(t, home, records.Agent{Key: "agent-1", Name: "agent-1", Status: records.AgentStarting})
+	t.Setenv("HERDR_SOCKET_PATH", startHerdr(t, 22))
+	t.Setenv("HERDR_ENV", "")
+	t.Setenv("HERDR_PANE_ID", "")
+	t.Setenv("PATH", pathWithGitOnly(t))
+
+	result := Run(context.Background(), home, nil)
+	check := findCheck(t, result, "starting agents")
+	if check.Status != StatusWarn || check.Detail != "1" {
+		t.Fatalf("starting agents = %+v; want warn with 1", check)
+	}
+	if line := Render(Result{Checks: []Check{check}}); line != "warn starting agents: 1\n" {
+		t.Fatalf("Render() = %q, want the starting status line", line)
 	}
 }
 

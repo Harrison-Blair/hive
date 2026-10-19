@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -39,6 +40,23 @@ func StopByName(ctx context.Context, home, name string) (StopResult, output.Enve
 func Stop(ctx context.Context, home string, record records.Agent) (StopResult, output.Envelope) {
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if record.Status == records.AgentStarting {
+		settled, waitErr := waitForStartingRecord(ctx, home, record, startSettleTimeout(record))
+		if waitErr != nil {
+			message := waitErr.Error()
+			if errors.Is(waitErr, errStartSettleTimeout) {
+				updated, effect, updateErr := setRecordStatus(home, record, records.AgentStarting, records.AgentUnresolved, message, "unresolved")
+				effects := appendEffect(nil, effect)
+				if updateErr != nil {
+					message += "; " + updateErr.Error()
+				}
+				updated = chooseRecord(updated, record)
+				return StopResult{Agent: updated}, stopEnvelope("failed", "start", effects, message, updated)
+			}
+			return StopResult{Agent: record}, stopEnvelope("failed", "start", nil, message, record)
+		}
+		record = settled
 	}
 	if record.Status == records.AgentUnresolved {
 		return StopResult{Agent: record}, stopEnvelope("failed", "agent", nil, "agent unresolved: run hive agent resolve", record)
@@ -217,6 +235,66 @@ func recordStoppedWorkspace(home string, record records.Agent, result StopResult
 }
 
 var errStopIdentityChanged = errors.New("agent stop identity changed")
+
+var errStartSettleTimeout = errors.New("agent start did not settle")
+
+const startSettlePollInterval = 25 * time.Millisecond
+
+func startSettleTimeout(record records.Agent) time.Duration {
+	profile, err := harness.Lookup(record.Harness)
+	if err == nil && profile.StartTimeout() > 0 {
+		return profile.StartTimeout()
+	}
+	return defaultShellReadyTimeout
+}
+
+func waitForStartingRecord(ctx context.Context, home string, expected records.Agent, timeout time.Duration) (records.Agent, error) {
+	registry, err := store.Open(home)
+	if err != nil {
+		return expected, err
+	}
+	deadline := time.Now().Add(timeout)
+	if started, parseErr := time.Parse(time.RFC3339Nano, expected.StartedAt); parseErr == nil {
+		startedDeadline := started.Add(timeout)
+		if startedDeadline.Before(deadline) {
+			deadline = startedDeadline
+		}
+	}
+	for {
+		var current records.Agent
+		if err := registry.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
+			return expected, err
+		}
+		if current.Key != expected.Key || current.Name != expected.Name || current.Role != expected.Role ||
+			current.Project != expected.Project || current.Task != expected.Task ||
+			current.PaneID != expected.PaneID || current.Generation != expected.Generation {
+			return current, errRecordChanged
+		}
+		if current.Status != records.AgentStarting {
+			return current, nil
+		}
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return current, fmt.Errorf("%w within %s", errStartSettleTimeout, timeout)
+		}
+		pause := startSettlePollInterval
+		if remaining < pause {
+			pause = remaining
+		}
+		timer := time.NewTimer(pause)
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				select {
+				case <-timer.C:
+				default:
+				}
+			}
+			return current, ctx.Err()
+		case <-timer.C:
+		}
+	}
+}
 
 // stopRecord makes the final stopped transition under one held store handle.
 // It refuses when the checked ownership tuple changed since the external reads.

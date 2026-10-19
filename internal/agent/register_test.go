@@ -397,6 +397,61 @@ func TestRegisterNewAgentFailureLeavesVacantRoleAndRetries(t *testing.T) {
 	}
 }
 
+func TestSpawnRegistrationClaimFailureSettlesStartingRecord(t *testing.T) {
+	home := t.TempDir()
+	seam := &seamWriter{writeCollection: "claims", writeErr: errors.New("seam claim failure")}
+	envelope := runRegisterLocked(t, home, seam, RegisterOptions{Role: "coordinator", PaneID: "w1:p1", Spawned: true})
+	if envelope.Outcome != "partial" || envelope.Phase != "claim" {
+		t.Fatalf("Register() = %#v; want partial claim", envelope)
+	}
+	if got := readAgent(t, home, "coordinator-g1").Status; got != records.AgentUnresolved {
+		t.Fatalf("status = %q; want unresolved", got)
+	}
+}
+
+func TestSpawnedRegistrationStartsForManagerWorkerAndVerifier(t *testing.T) {
+	for _, role := range []string{"manager", "worker", "verifier"} {
+		t.Run(role, func(t *testing.T) {
+			home := t.TempDir()
+			seedProject(t, home, "hive")
+			options := RegisterOptions{
+				Role: role, Project: "hive", Task: testTaskID,
+				Name: role + "-test", NameSet: true, PaneID: "w1:p1", Spawned: true,
+			}
+			if role == "manager" {
+				options.Task = ""
+			}
+			envelope := Register(home, options)
+			if envelope.Outcome != "ok" {
+				t.Fatalf("Register() = %#v; want ok", envelope)
+			}
+			result, ok := envelope.Result.(RegisterResult)
+			if !ok || result.Agent.Status != records.AgentStarting {
+				t.Fatalf("Register() = %#v; want starting agent", envelope.Result)
+			}
+		})
+	}
+}
+
+func TestRegisterDoesNotSupersedeStartingSingleton(t *testing.T) {
+	home := t.TempDir()
+	seedProject(t, home, "hive")
+	first := Register(home, RegisterOptions{Role: "manager", Project: "hive", PaneID: "w1:p1", Spawned: true})
+	if first.Outcome != "ok" {
+		t.Fatalf("first Register() = %#v; want ok", first)
+	}
+	second := Register(home, RegisterOptions{Role: "manager", Project: "hive", PaneID: "w1:p2", Spawned: true})
+	if second.Outcome != "failed" || !strings.Contains(toString(second.Error), "agent is starting: manager-hive") {
+		t.Fatalf("second Register() = %#v; want starting refusal", second)
+	}
+	if got := readAgent(t, home, "manager-hive-g1").Status; got != records.AgentStarting {
+		t.Fatalf("first status = %q; want starting", got)
+	}
+	if claim := readClaim(t, home, "manager-hive"); claim.Generation != 1 {
+		t.Fatalf("claim = %#v; want generation 1", claim)
+	}
+}
+
 func TestRegisterClaimFailureLeavesOrphanAndRetriesWithUpdate(t *testing.T) {
 	home := t.TempDir()
 	if envelope := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w1:p1"}); envelope.Outcome != "ok" {

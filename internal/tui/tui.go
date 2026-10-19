@@ -65,6 +65,7 @@ type Model struct {
 
 	supervisor    string
 	agentCount    int
+	startingCount int
 	unread        int
 	headerErr     string
 	headerStopped bool

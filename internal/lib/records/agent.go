@@ -2,6 +2,7 @@ package records
 
 // Agent status values.
 const (
+	AgentStarting   = "starting"
 	AgentLive       = "live"
 	AgentStale      = "stale"
 	AgentStopped    = "stopped"

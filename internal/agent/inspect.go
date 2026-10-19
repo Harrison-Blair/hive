@@ -102,7 +102,7 @@ func shellProof(info herdr.PaneProcessInfo) bool {
 }
 
 func markInspection(home string, record records.Agent, status, detail string, logger *slog.Logger) inspection {
-	updated, effect, err := setRecordStatus(home, record, records.AgentLive, status, detail, status)
+	updated, effect, err := setRecordStatus(home, record, record.Status, status, detail, status)
 	if err != nil {
 		if logger != nil {
 			logger.Debug("agent inspection update failed", "command", "agent inspect", "agent_id", record.Key, "status", status, "error", err.Error())

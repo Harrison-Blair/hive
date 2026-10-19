@@ -153,7 +153,8 @@ records go to the controlling role, so a replacement agent inherits them.
 ## Agent lifecycle
 
 ```text
-t0  agent spawn: workspace or worktree, agent in the first tab, record, claim
+t0  agent spawn: write `starting` record and claim before shell wait
+    set record `live` when agent is ready
 t1  the agent reads its brief through hive task show --brief
 t2  task complete: record, inbox record to the manager, agent marked finished
 t3  the supervisor stops the finished agent when idle, its pane and workspace close
@@ -180,12 +181,15 @@ It never polls.
 | --- | --- |
 | Agent status `blocked` for a registered agent | Inbox record `blocked` to the controlling role |
 | A registered agent leaves its pane and the pane shows a shell (`pane_agent_detected` with `released`) | Inbox record `exited`, agent record `exited` |
+| A released shell report names a `starting` record | Log the report. Do not change the agent record or write an inbox record. |
 | The pane, tab, or workspace of a registered agent closes | Inbox record `unresolved`, agent record `unresolved` |
+| The pane, tab, or workspace of a `starting` agent closes | Inbox record `unresolved`, agent record `unresolved` |
 | Idle for the quiet period with no completion record | Inbox record `quiet`, once for each idle period. Default 10 minutes, set at spawn |
 | Idle agent with the mark finished | The T10 stop function: identity check, agent record `stopped`, `pane.close`, then a bounded post-close topology read |
 | Unread inbox records for a role whose agent is idle | One nudge: one line typed into that pane that names `hive inbox` |
 | Unread inbox records for a role whose agent is working | Wait. Nudge when the role turns idle |
-| Start | Reconcile: compare live herdr agents with the records. Mark a record with no pane `unresolved` |
+| Start | Reconcile live and starting records with herdr. Mark a record with no pane `unresolved` |
+| Start with a `starting` record and no pane | Inbox record `unresolved`, agent record `unresolved` |
 
 A long `working` status is never an event. A notification group increments the
 inbox counter, writes its inbox record, then writes its stored status. A working

@@ -1,10 +1,28 @@
 package agent
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
+
+func TestListAllShowsStartingStatus(t *testing.T) {
+	home := testHome(t)
+	writeRecord(t, home, records.Agent{
+		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "one",
+		Status: records.AgentStarting, PaneID: "w1:p1", Generation: 1,
+	})
+
+	envelope := List(home, ListOptions{All: true})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("List() = %+v, want ok", envelope)
+	}
+	text := ListText(envelope)
+	if !strings.Contains(text, "agent-starting\t1\tworker\tstarting\tone") {
+		t.Fatalf("ListText() = %q; want starting status", text)
+	}
+}
 
 func TestListOrder(t *testing.T) {
 	home := testHome(t)

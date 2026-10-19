@@ -595,12 +595,21 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	fake.result("agent.get", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "idle", "verifier-1"))
 	fake.result("agent.prompt", workerAgentPromptedJSON("w6:p1", "w6", "w6:t1", "verifier-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w6:p1", "w6", "w6:t1", "working", "verifier-1"))
+	startStatus := ""
+	fake.setBefore(func(method string, _ json.RawMessage) {
+		if method == "agent.start" {
+			startStatus = readAgent(t, home, "verifier-1").Status
+		}
+	})
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if startStatus != "starting" || spawnResultAgent(envelope).Status != "live" {
+		t.Fatalf("status at agent.start/final = %q/%q; want starting/live", startStatus, spawnResultAgent(envelope).Status)
 	}
 	opens := fake.recorded("worktree.open")
 	if len(opens) != 1 {

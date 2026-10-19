@@ -97,7 +97,7 @@ func (s *Supervisor) reconcile(ctx context.Context) error {
 	}
 	for _, key := range sortedKeys(s.agents) {
 		record := s.agents[key]
-		if record.Key == s.ownKey || record.Status != records.AgentLive {
+		if record.Key == s.ownKey || (record.Status != records.AgentLive && record.Status != records.AgentStarting) {
 			continue
 		}
 		if record.Role == "supervisor" && record.Generation != s.generation {
@@ -116,12 +116,18 @@ func (s *Supervisor) reconcile(ctx context.Context) error {
 
 func (s *Supervisor) reconcileRecord(ctx context.Context, record records.Agent) error {
 	if record.PaneID == "" {
+		if record.Status == records.AgentStarting {
+			return s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "pane id missing")
+		}
 		return nil
 	}
 	info, err := s.ops.GetAgent(ctx, record.PaneID)
 	if err == nil {
 		if record.TerminalID != "" && info.TerminalID != record.TerminalID {
 			return s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "pane holds another terminal")
+		}
+		if record.Status == records.AgentStarting {
+			return nil
 		}
 		if record.TerminalID == "" && info.TerminalID != "" {
 			if err := s.adoptAgent(ctx, record, info.TerminalID); err != nil {
@@ -147,6 +153,10 @@ func (s *Supervisor) reconcileRecord(ctx context.Context, record records.Agent) 
 		return s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "pane holds a restore error")
 	}
 	if pane.AgentStatus == "unknown" && pane.Agent == "" {
+		if record.Status == records.AgentStarting {
+			s.logger.Debug("supervisor reconcile ignored shell while starting", "command", "supervise", "agent_id", record.Key, "pane_id", record.PaneID)
+			return nil
+		}
 		return s.notifyLifecycle(ctx, record, records.InboxExited, records.AgentExited, "pane holds a shell")
 	}
 	return s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "pane holds no live record")
@@ -175,6 +185,9 @@ func (s *Supervisor) notifyLifecycle(ctx context.Context, record records.Agent, 
 	role := controllingRole(record)
 	if role == "" {
 		s.logger.Debug("supervisor lifecycle record", "command", "supervise", "agent_id", record.Key, "status", lifecycle, "detail", detail)
+		if record.Status == records.AgentStarting {
+			return s.markLifecycle(ctx, record, lifecycle)
+		}
 		return nil
 	}
 	return s.notify(ctx, herdr.Event{Event: "reconcile"}, notification{
@@ -238,7 +251,7 @@ func (s *Supervisor) markLifecycle(ctx context.Context, record records.Agent, st
 			envelope = failedEnvelope("status", "read agent: "+err.Error())
 			return nil
 		}
-		if current.Status != records.AgentLive || current.Generation != record.Generation {
+		if current.Status != record.Status || (current.Status != records.AgentLive && current.Status != records.AgentStarting) || current.Generation != record.Generation {
 			envelope = failedEnvelope("status", "agent record changed")
 			return nil
 		}

@@ -16,6 +16,7 @@ import (
 type headerState struct {
 	supervisor string
 	agents     int
+	starting   int
 	unread     int
 }
 
@@ -36,6 +37,7 @@ func (m *Model) refreshHeader() {
 	m.headerErr = ""
 	m.supervisor = state.supervisor
 	m.agentCount = state.agents
+	m.startingCount = state.starting
 	m.unread = state.unread
 }
 
@@ -67,8 +69,11 @@ func readHeader(home string) (headerState, error) {
 		return state, errors.New("agents: unexpected result")
 	}
 	for _, record := range agents {
-		if record.Status == records.AgentLive {
+		switch record.Status {
+		case records.AgentLive:
 			state.agents++
+		case records.AgentStarting:
+			state.starting++
 		}
 	}
 
@@ -103,6 +108,6 @@ func (m *Model) headerLine() string {
 	if m.headerErr != "" {
 		return "hive " + sanitizeText(m.home) + "  error: " + m.headerErr
 	}
-	return fmt.Sprintf("hive %s  supervisor: %s  agents: %d  inbox: %d unread",
-		sanitizeText(m.home), m.supervisor, m.agentCount, m.unread)
+	return fmt.Sprintf("hive %s  supervisor: %s  agents: %d live, %d starting  inbox: %d unread",
+		sanitizeText(m.home), m.supervisor, m.agentCount, m.startingCount, m.unread)
 }

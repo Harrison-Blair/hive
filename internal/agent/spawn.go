@@ -210,7 +210,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		cwd = paneInfo.ForegroundCwd
 	}
 	paneReason := session.observe(paneInfo.AgentSession)
-	updated, effect, updateErr = mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+	updated, effect, updateErr = mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 		current.TerminalID = paneInfo.TerminalID
 		current.WorkspaceID = paneInfo.WorkspaceID
 		current.TabID = paneInfo.TabID
@@ -277,7 +277,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	record = updated
 	status := waitInfo.AgentStatus
 	if status != "idle" && status != "done" && status != "blocked" {
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, "unexpected agent status: "+status, "unresolved")
+		updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentUnresolved, "unexpected agent status: "+status, "unresolved")
 		effects = appendEffect(effects, effect)
 		envelope := spawnEnvelope("partial", "wait", effects, "unexpected agent status: "+status, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
 		if updateErr != nil {
@@ -291,7 +291,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	if identityError != "" {
 		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "process", "agent process identity unresolved: "+identityError)
 	}
-	updated, effect, updateErr = mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+	updated, effect, updateErr = mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 		current.ProcessPID = identity.pid
 		current.ProcessName = identity.name
 		current.ProcessStart = identity.start
@@ -310,13 +310,13 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 
 	if status == "blocked" {
 		message := "agent blocked: accept the dialog in " + paneID
-		updated, effect, _ = setRecordStatus(home, record, records.AgentLive, records.AgentLive, message, "updated")
+		updated, effect, _ = setRecordStatus(home, record, record.Status, records.AgentLive, message, "updated")
 		effects = appendEffect(effects, effect)
 		envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
-	updated, effect, updateErr = setRecordStatus(home, record, records.AgentLive, records.AgentLive, "", "updated")
+	updated, effect, updateErr = setRecordStatus(home, record, record.Status, records.AgentLive, "", "updated")
 	effects = appendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
@@ -387,7 +387,7 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 	}
 	var serverError *herdr.Error
 	if errors.As(startErr, &serverError) {
-		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentExited, message, "exited")
+		updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentExited, message, "exited")
 		effects = appendEffect(effects, effect)
 		envelope := spawnEnvelope("failed", "start", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
 		if updateErr != nil {
@@ -396,7 +396,7 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
-	updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
+	updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentUnresolved, message, "unresolved")
 	effects = appendEffect(effects, effect)
 	envelope := spawnEnvelope("partial", "start", effects, "agent start: "+message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
 	if updateErr != nil {
@@ -442,7 +442,8 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 			processInfo, processErr := herdr.PaneProcessInfoGet(ctx, record.PaneID, herdr.WithLogger(logger))
 			identity, identityError := captureIdentity(profile, record, processInfo, processErr, waitInfo.AgentSession, getInfo.AgentSession)
 			if getErr == nil && identityError == "" && sessionReason == "" {
-				updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+				updated, effect, updateErr := mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
+					current.Status = records.AgentLive
 					current.ProcessPID = identity.pid
 					current.ProcessName = identity.name
 					current.ProcessStart = identity.start
@@ -480,7 +481,7 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 }
 
 func spawnUnresolved(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, first *herdr.AgentSessionInfo, phase, message string) output.Envelope {
-	updated, effect, updateErr := mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+	updated, effect, updateErr := mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 		current.Status = records.AgentUnresolved
 		current.LastError = message
 		setSessionRef(current, first)
@@ -626,7 +627,7 @@ func persistSession(home string, record records.Agent, first *herdr.AgentSession
 	if first == nil || record.AgentSessionRef == sessionRef(first) {
 		return record, output.Effect{}, nil
 	}
-	return mutateAgentRecord(home, record, records.AgentLive, func(current *records.Agent) {
+	return mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 		setSessionRef(current, first)
 	}, "updated")
 }

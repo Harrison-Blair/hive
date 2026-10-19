@@ -18,6 +18,7 @@ func Run(ctx context.Context, home string, logger *slog.Logger) Result {
 		checkHerdrPane(),
 		checkHome(home),
 		checkStateStore(home),
+		checkStartingAgents(home),
 		checkUnresolvedAgents(home),
 		checkGit(ctx),
 		checkSupervisor(home),
