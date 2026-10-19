@@ -40,7 +40,7 @@ workaround. No runtime task or agent record simulates a missing capability.
 
 **Issue:** Manager spawn fails with `agent_pane_busy` right after `workspace.create`
 
-**Status:** Open
+**Status:** Resolved 2026-10-19
 
 **Summary:** On 2026-10-18 the first `hive agent spawn --role manager --project
 hive --harness claude --model claude-opus-5-5` in a home with no manager
@@ -53,10 +53,80 @@ and it marked the agent record `exited`. A second identical spawn one minute
 later adopted `wBD` and started the manager. The error text names a wrong cause:
 no agent held the pane. It occurred on each first spawn of a project manager:
 twice in two attempts on 2026-10-18, for `hive` and for `stenographer`. The
-retry succeeded each time.
+retry succeeded each time. During rc-file startup, the shell runs commands in
+its own process group. Thus, a group ID equal to the shell PID is not sufficient.
+Commit `aa29b8d9` also requires one foreground process whose PID is the shell
+PID.
 
 **Reproduction steps:**
 1. Register a project with no manager workspace record.
 2. Run `hive agent spawn --role manager --project ID --harness claude --model claude-opus-5-5`.
 3. Read `.hive/logs/<date>.jsonl`: `agent.start` follows `workspace.create` within a few milliseconds and herdr returns `agent_pane_busy`.
 4. Run the same spawn again: it adopts the workspace and succeeds.
+
+**Issue:** No `hive task edit --brief` command
+
+**Status:** Open
+
+**Summary:** The manager changed a task brief by hand in
+`.hive/state/briefs/` on 2026-10-18. hive has no `hive task edit --brief`
+command. The manager must edit the stored brief by hand.
+
+**Reproduction steps:**
+1. Run `hive task --help`.
+2. Check that the command list has no `edit` command.
+3. Edit a task brief in `.hive/state/briefs/` by hand.
+
+**Issue:** An exited agent name blocks reuse
+
+**Status:** Open
+
+**Summary:** An exited agent name blocks a later spawn with `agent exists`.
+Each retry needs a new agent name.
+
+**Reproduction steps:**
+1. Spawn an agent with the name `NAME`.
+2. Let the agent exit.
+3. Spawn another agent with the name `NAME`.
+4. Check that hive returns `agent exists`.
+
+**Issue:** A verifier spawn with `--pane` requires `--project`
+
+**Status:** Open
+
+**Summary:** The manager skill shows a verifier spawn without `--project`. A
+verifier spawn with `--pane` requires `--project`.
+
+**Reproduction steps:**
+1. Read the verifier spawn command in `hive-manager/SKILL.md`.
+2. Add `--pane PANE`. Do not add `--project`.
+3. Run the command.
+4. Check that hive requires `--project`.
+
+**Issue:** Shell-ready race in worker and verifier spawns
+
+**Status:** Resolved 2026-10-19
+
+**Summary:** A worker or verifier spawn in a fresh worktree workspace could hit
+`agent_pane_busy`. Commit `aa29b8d9` adds the shell-ready wait before the shared
+`agent.start` call. This resolves the race for both roles.
+
+**Reproduction steps:**
+1. Before commit `aa29b8d9`, create a fresh worktree workspace.
+2. Spawn a worker or verifier in its root pane.
+3. Check the log for `agent.start` before the shell is ready.
+4. Check for `agent_pane_busy`.
+
+**Issue:** A verifier spawn with `--pane` skips the first prompt
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, a verifier spawn with `--pane` returned success
+without its first prompt. The manager sent the verifier prompt with
+`hive agent send` by hand.
+
+**Reproduction steps:**
+1. Spawn a verifier with `--pane`.
+2. Read the verifier pane.
+3. Check that the first prompt is absent.
+4. Send the prompt with `hive agent send`.
