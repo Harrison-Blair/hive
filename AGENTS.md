@@ -6,21 +6,24 @@
 
 ## Role gate
 
-Read this section first. Your working directory gives your role. A brief can also name your role. The brief wins.
+Read this section first. Your working directory gives your role. A brief can name another role. The brief wins.
 
 | Working directory | Role | Then read |
 | --- | --- | --- |
-| The root of this checkout | coordinator, unless the brief names manager | [Coordinator](#coordinator) or the brief |
+| The root of this checkout with no brief | coordinator | [Coordinator](#coordinator) |
 | `projects/<project-id>/` | manager | the project instructions, then your brief |
 | `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
 
+- A root session with no brief runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
+- Do not run coordinator startup when the user says "develop" under the Bootstrap clause.
+- A session with a brief that names another role does not run coordinator startup.
 - A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
 - When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
 - Claude Code loads this file in every checkout below the root. The role gate applies there too.
 
 ### Bootstrap clause
 
-Hive cannot yet register a project or spawn a manager. Until it can, the user can say "develop" to a root session. That session then works as a developer. It changes hive source directly and obeys [Development](#development). Remove this clause when the hive manager spawns its first worker.
+Hive cannot yet register a project or spawn a manager. Until it can, the user can say "develop" to a root session. That session works as a developer. It does not run coordinator startup. It changes hive source directly and obeys [Development](#development). Remove this clause when the hive manager spawns its first worker.
 
 During bootstrap, the user spawns workers by hand in worktrees under `projects/hive/worktrees/`. The task file in `spec/hive-v1/tasks/` is the brief of such a worker. [spec/hive-v1/05-tracker.md](spec/hive-v1/05-tracker.md) gives the procedure.
 
