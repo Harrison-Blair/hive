@@ -117,7 +117,7 @@ flowchart TD
 | CP1 home live | T01, T02 | wave 2 | passed | 2026-10-18 | runner `cp1-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp1-verify-01.md` |
 | CP2 worktree and spawn live | T09, T10 | wave 4 | passed | 2026-10-18 | runner `cp2-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp2-verify-01.md` |
 | CP3 messaging and close-down live | T12, T13, T14, T15, T16, T18 | wave 5 | passed | 2026-10-18 | openai-codex/gpt-6.1-sol:high |
-| CP4 TUI live | T08 | CP5 | open | | |
+| CP4 TUI live | T08 | CP5 | passed | 2026-10-18 | openai-codex/gpt-6.1-sol:high |
 | CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | | |
 
 ## Tiers
@@ -1758,6 +1758,28 @@ only this receipt, the CP3 row, and the T20 and T21 rows. The contract is the
 - No real Hive source file and no `main` reference changed.
 - T20 and T21 move from `blocked` to `in progress`.
 - CP1 and CP2 stay passed. CP4 and CP5 stay open.
+
+### Dated checkpoint: CP4 passed
+
+2026-10-18. This section records the CP4 pass. It changes only this receipt
+and the CP4 row. The contract is the `### CP4 TUI live` section.
+
+- CP4 is `passed`. The date is `2026-10-18`. The verdict is
+  `openai-codex/gpt-6.1-sol:high`.
+- The runner report is `.hive/tmp/coordinator/reports/cp4-run-01.md`. Its
+  verdict is `PASS`.
+- The independent report is `.hive/tmp/coordinator/reports/cp4-verify-01.md`.
+  Its verdict is `pass`.
+- The run built the tested binary from `dev` at `1fde1c2`. The binary SHA256
+  is `31e97ca926c9479266546d73b437caa80a90df4424333317731bf789cefcc148`.
+- The TUI child exit status is `0`.
+- The header counts match the real records. The header shows the home path
+  `/home/penguin/source/hive`, `supervisor: down`, `agents: 1`, and
+  `inbox: 0 unread`.
+- A live log event from a real `project list` command appears in the body.
+  The event time is `2026-10-18T20:45:27.937582406-04:00`.
+- No real Hive source file and no `main` reference changed.
+- CP1, CP2, and CP3 stay `passed`. CP5 stays `open`.
 
 ### CP1 home live
 
