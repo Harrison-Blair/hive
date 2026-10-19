@@ -37,7 +37,7 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+managerAgentInfoJSON("wBD:p1", "wBD", "wBD:t1", "working", "manager-demo-g1")+`}`)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
-		t.Fatalf("envelope = %#v; want ok", envelope)
+		t.Fatalf("outcome=%s error=%v; want ok", envelope.Outcome, envelope.Error)
 	}
 	requests := fake.recorded("agent.prompt")
 	if len(requests) != 2 {

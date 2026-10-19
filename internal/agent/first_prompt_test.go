@@ -65,7 +65,7 @@ func TestWorkerFirstPromptRetriesOneStall(t *testing.T) {
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %#v; want successful spawn after one retry", envelope)
+		t.Fatalf("outcome=%s error=%v; want successful spawn after one retry", envelope.Outcome, envelope.Error)
 	}
 	requests := fake.recorded("agent.prompt")
 	if len(requests) != 2 {
