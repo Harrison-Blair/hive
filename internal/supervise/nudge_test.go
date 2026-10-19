@@ -203,3 +203,68 @@ func TestNudgeNoLiveAgentNoPrompt(t *testing.T) {
 		t.Fatalf("prompts = %d; want none without a live agent", ops.promptCount())
 	}
 }
+
+func TestNudgeQuietOnlyDoesNotPrompt(t *testing.T) {
+	home := testHome(t)
+	writeAgent(t, home, managerRecord("manager-demo-g1", "demo", "w1:p1"))
+	appendInbox(t, home, "manager-demo", records.InboxQuiet, "1-demo", "worker-1", "quiet")
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.snapshot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.nudgeRule(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if ops.promptCount() != 0 {
+		t.Fatalf("prompts = %d; want none for a quiet record", ops.promptCount())
+	}
+	all := readInbox(t, home, "manager-demo")
+	if len(all) != 1 || all[0].Kind != records.InboxQuiet || all[0].ReadAt != "" || all[0].NudgedAt != "" {
+		t.Fatalf("quiet records = %+v; want one unread, unnudged record", all)
+	}
+}
+
+func TestNudgeCompletedWithQuietPromptsOnce(t *testing.T) {
+	home := testHome(t)
+	writeAgent(t, home, managerRecord("manager-demo-g1", "demo", "w1:p1"))
+	appendInbox(t, home, "manager-demo", records.InboxQuiet, "1-demo", "worker-1", "quiet")
+	appendInbox(t, home, "manager-demo", records.InboxCompleted, "1-demo", "worker-1", "completed")
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.snapshot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.nudgeRule(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if ops.promptCount() != 1 {
+		t.Fatalf("prompts = %d; want one for the completed record", ops.promptCount())
+	}
+	if got := ops.prompts[0].Text; got != nudgeLine(1, home) {
+		t.Fatalf("prompt = %q; want one-record nudge", got)
+	}
+	all := readInbox(t, home, "manager-demo")
+	if len(all) != 2 {
+		t.Fatalf("inbox = %+v; want both unread records", all)
+	}
+	for _, item := range all {
+		if item.ReadAt != "" {
+			t.Fatalf("record %d was marked read; want it to remain unread", item.Seq)
+		}
+		switch item.Kind {
+		case records.InboxQuiet:
+			if item.NudgedAt != "" {
+				t.Fatalf("quiet record = %+v; want it to remain unnudged", item)
+			}
+		case records.InboxCompleted:
+			if item.NudgedAt == "" || item.NudgedGeneration != 1 {
+				t.Fatalf("completed record = %+v; want a nudge for generation 1", item)
+			}
+		default:
+			t.Fatalf("unexpected record kind %q", item.Kind)
+		}
+	}
+}
