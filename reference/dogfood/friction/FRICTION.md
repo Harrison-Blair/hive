@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [A verify fail leaves no workspace for the repair worker](entries/verify-fail-repair-worker-no-workspace.md) | Open |  |
 | [No hive path repairs a verified task](entries/no-hive-path-repairs-verified-task.md) | Open | Add `hive task reopen` (verified -> assigned, re-verify required) (wave 3). |
 | [Any agent can read and consume the inbox of another role](entries/any-agent-read-another-role-inbox.md) | Open | Only the owner's read marks records read. The coordinator can read a manager inbox and marks nothing. Any other caller gets an error. Workers get no inbox (wave 2). |
 | [A worker spawn into an assigned task keeps the old acting agent](entries/worker-spawn-keeps-old-acting-agent.md) | Open | The spawn sets the acting agent and refuses while the old worker is live (wave 3). |
