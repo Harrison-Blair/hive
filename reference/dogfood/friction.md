@@ -1,12 +1,13 @@
 # Dogfooding friction log
 
-This file records the friction that agents meet when they use hive itself in
-this repository: bugs, missing capabilities, and workarounds found in real work.
-Append each new entry at the end with the template below. An entry has the
-status `Open` until a fix lands, then `Resolved YYYY-MM-DD` with the fix in its
-summary. A resolved entry keeps its full text as a record.
+This file records the friction that agents meet when they use hive in this repository: bugs, missing capabilities, and workarounds found in real work.
+The coordinator and a manager can edit this file directly. They can add or extend an entry, set its status to `Resolved YYYY-MM-DD`, and keep the index table in sync.
+They edit only `friction.md` in this way. They commit on `dev` with the subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit.
+For all other files, the coordinator and a manager never change a project source file.
 
 ## Entry template
+
+### Title
 
 **Issue:** Short title
 
@@ -18,7 +19,133 @@ summary. A resolved entry keeps its full text as a record.
 1. ...
 2. ...
 
-## Entries
+| Issue | Status |
+| --- | --- |
+| [An idle session burns tokens on supervisor nudges](#an-idle-session-burns-tokens-on-supervisor-nudges) | Open |
+| [`hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn](#hive-agent-send-fails-with-agent_not_ready-after-a-pi---pane-spawn) | Open |
+| [An agent spawn can skip the first prompt](#an-agent-spawn-can-skip-the-first-prompt) | Open |
+| [A verifier spawn with `--pane` requires `--project`](#a-verifier-spawn-with---pane-requires---project) | Open |
+| [An exited agent name blocks reuse](#an-exited-agent-name-blocks-reuse) | Open |
+| [No `hive task edit --brief` command](#no-hive-task-edit---brief-command) | Open |
+| [Full Pi worktree, agent, and delivery bootstrap flow is missing](#full-pi-worktree-agent-and-delivery-bootstrap-flow-is-missing) | Open |
+| [Shell-ready race in worker and verifier spawns](#shell-ready-race-in-worker-and-verifier-spawns) | Resolved 2026-10-19 |
+| [Manager spawn fails with `agent_pane_busy` right after `workspace.create`](#manager-spawn-fails-with-agent_pane_busy-right-after-workspacecreate) | Resolved 2026-10-19 |
+
+## Open
+
+### An idle session burns tokens on supervisor nudges
+
+**Issue:** An idle session burns tokens on supervisor nudges
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, with all tasks landed and both managers on hold,
+the supervisor kept the coordinator awake. Each idle manager writes a `quiet`
+record to the coordinator inbox every ten minutes. The supervisor types a
+nudge into the coordinator pane for each unread record. Each nudge costs one
+coordinator turn, which costs tokens, and a user who is away pays for it. The
+coordinator's own file watch doubled the cost before it was stopped. The
+workaround was to stop both managers and the supervisor by hand. Hive has no
+hush mode: a state in which the supervisor holds routine kinds (`quiet`,
+`completed`, `verified`) and nudges only for `blocked`, `exited`,
+`unresolved`, and urgent messages. The firstmate `/quiet` mode is the model.
+
+**Reproduction steps:**
+1. Spawn two managers with no goals. Leave the coordinator idle.
+2. Wait more than ten minutes.
+3. Each manager writes a `quiet` record. The supervisor types
+   `hive: 1 new inbox record, run: hive --home ... inbox` into the coordinator
+   pane for each one. The coordinator spends a turn on each nudge.
+
+### `hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn
+
+**Issue:** `hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, `hive agent send` to a Pi agent spawned with
+`--pane` failed with `agent_not_ready` two times. This task records the issue.
+It does not fix it.
+
+**Reproduction steps:**
+1. Spawn a Pi agent with `hive agent spawn --pane`.
+2. Run `hive agent send` for that agent.
+3. The command returns `agent_not_ready` (observed two times on 2026-10-19).
+
+### An agent spawn can skip the first prompt
+
+**Issue:** An agent spawn can skip the first prompt
+
+**Status:** Open
+
+**Summary:** A released-shell event could change the new agent record to
+`exited` before `agent.start` returned. The agent then ran without its first
+prompt. The `starting` status keeps the supervisor from treating this event as
+an exit. Fix commit: `c7b2566`.
+
+On 2026-10-19, the manager spawned worker `t11-worker-1` with
+`hive agent spawn --role worker` and no `--pane`. The spawn printed
+`prompted agent` and `agent t11-worker-1 live`. Pi did not get the first
+prompt. The pane stayed idle at context 0k. The workaround was
+`herdr pane send-text`, then `herdr pane send-keys Enter`.
+
+**Reproduction steps:**
+1. Spawn a verifier with `--pane`.
+2. Read the verifier pane.
+3. Check that the first prompt is absent.
+4. Send the prompt with `hive agent send`.
+5. On 2026-10-19, spawn worker `t11-worker-1` with
+   `hive agent spawn --role worker` and no `--pane`.
+6. Check the output for `prompted agent` and `agent t11-worker-1 live`.
+7. Read the Pi pane. It is idle at context 0k and has no first prompt.
+8. Run `herdr pane send-text`, then `herdr pane send-keys Enter`.
+
+### A verifier spawn with `--pane` requires `--project`
+
+**Issue:** A verifier spawn with `--pane` requires `--project`
+
+**Status:** Open
+
+**Summary:** The manager skill shows a verifier spawn without `--project`. A
+verifier spawn with `--pane` requires `--project`.
+
+**Reproduction steps:**
+1. Read the verifier spawn command in `hive-manager/SKILL.md`.
+2. Add `--pane PANE`. Do not add `--project`.
+3. Run the command.
+4. Check that hive requires `--project`.
+
+### An exited agent name blocks reuse
+
+**Issue:** An exited agent name blocks reuse
+
+**Status:** Open
+
+**Summary:** An exited agent name blocks a later spawn with `agent exists`.
+Each retry needs a new agent name.
+
+**Reproduction steps:**
+1. Spawn an agent with the name `NAME`.
+2. Let the agent exit.
+3. Spawn another agent with the name `NAME`.
+4. Check that hive returns `agent exists`.
+
+### No `hive task edit --brief` command
+
+**Issue:** No `hive task edit --brief` command
+
+**Status:** Open
+
+**Summary:** The manager changed a task brief by hand in
+`.hive/state/briefs/` on 2026-10-18. hive has no `hive task edit --brief`
+command. The manager must edit the stored brief by hand.
+
+**Reproduction steps:**
+1. Run `hive task --help`.
+2. Check that the command list has no `edit` command.
+3. Edit a task brief in `.hive/state/briefs/` by hand.
+
+### Full Pi worktree, agent, and delivery bootstrap flow is missing
 
 **Issue:** Full Pi worktree, agent, and delivery bootstrap flow is missing
 
@@ -37,6 +164,26 @@ workaround. No runtime task or agent record simulates a missing capability.
    not exist.
 3. The safe probe output is in
    `.hive/tmp/coordinator/reports/later-fix-land-01-captures/herdr-help-probes.txt`.
+
+## Resolved
+
+### Shell-ready race in worker and verifier spawns
+
+**Issue:** Shell-ready race in worker and verifier spawns
+
+**Status:** Resolved 2026-10-19
+
+**Summary:** A worker or verifier spawn in a fresh worktree workspace could hit
+`agent_pane_busy`. Commit `aa29b8d9` adds the shell-ready wait before the shared
+`agent.start` call. This resolves the race for both roles.
+
+**Reproduction steps:**
+1. Before commit `aa29b8d9`, create a fresh worktree workspace.
+2. Spawn a worker or verifier in its root pane.
+3. Check the log for `agent.start` before the shell is ready.
+4. Check for `agent_pane_busy`.
+
+### Manager spawn fails with `agent_pane_busy` right after `workspace.create`
 
 **Issue:** Manager spawn fails with `agent_pane_busy` right after `workspace.create`
 
@@ -63,106 +210,3 @@ PID.
 2. Run `hive agent spawn --role manager --project ID --harness claude --model claude-opus-5-5`.
 3. Read `.hive/logs/<date>.jsonl`: `agent.start` follows `workspace.create` within a few milliseconds and herdr returns `agent_pane_busy`.
 4. Run the same spawn again: it adopts the workspace and succeeds.
-
-**Issue:** No `hive task edit --brief` command
-
-**Status:** Open
-
-**Summary:** The manager changed a task brief by hand in
-`.hive/state/briefs/` on 2026-10-18. hive has no `hive task edit --brief`
-command. The manager must edit the stored brief by hand.
-
-**Reproduction steps:**
-1. Run `hive task --help`.
-2. Check that the command list has no `edit` command.
-3. Edit a task brief in `.hive/state/briefs/` by hand.
-
-**Issue:** An exited agent name blocks reuse
-
-**Status:** Open
-
-**Summary:** An exited agent name blocks a later spawn with `agent exists`.
-Each retry needs a new agent name.
-
-**Reproduction steps:**
-1. Spawn an agent with the name `NAME`.
-2. Let the agent exit.
-3. Spawn another agent with the name `NAME`.
-4. Check that hive returns `agent exists`.
-
-**Issue:** A verifier spawn with `--pane` requires `--project`
-
-**Status:** Open
-
-**Summary:** The manager skill shows a verifier spawn without `--project`. A
-verifier spawn with `--pane` requires `--project`.
-
-**Reproduction steps:**
-1. Read the verifier spawn command in `hive-manager/SKILL.md`.
-2. Add `--pane PANE`. Do not add `--project`.
-3. Run the command.
-4. Check that hive requires `--project`.
-
-**Issue:** Shell-ready race in worker and verifier spawns
-
-**Status:** Resolved 2026-10-19
-
-**Summary:** A worker or verifier spawn in a fresh worktree workspace could hit
-`agent_pane_busy`. Commit `aa29b8d9` adds the shell-ready wait before the shared
-`agent.start` call. This resolves the race for both roles.
-
-**Reproduction steps:**
-1. Before commit `aa29b8d9`, create a fresh worktree workspace.
-2. Spawn a worker or verifier in its root pane.
-3. Check the log for `agent.start` before the shell is ready.
-4. Check for `agent_pane_busy`.
-
-**Issue:** A verifier spawn with `--pane` skips the first prompt
-
-**Status:** Resolved 2026-10-19
-
-**Summary:** A released-shell event could change the new agent record to
-`exited` before `agent.start` returned. The agent then ran without its first
-prompt. The `starting` status keeps the supervisor from treating this event as
-an exit. Fix commit: `c7b2566`.
-
-**Reproduction steps:**
-1. Spawn a verifier with `--pane`.
-2. Read the verifier pane.
-3. Check that the first prompt is absent.
-4. Send the prompt with `hive agent send`.
-
-**Issue:** `hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn
-
-**Status:** Open
-
-**Summary:** On 2026-10-19, `hive agent send` to a Pi agent spawned with
-`--pane` failed with `agent_not_ready` two times. This task records the issue.
-It does not fix it.
-
-**Reproduction steps:**
-1. Spawn a Pi agent with `hive agent spawn --pane`.
-2. Run `hive agent send` for that agent.
-3. The command returns `agent_not_ready` (observed two times on 2026-10-19).
-
-**Issue:** An idle session burns tokens on supervisor nudges
-
-**Status:** Open
-
-**Summary:** On 2026-10-19, with all tasks landed and both managers on hold,
-the supervisor kept the coordinator awake. Each idle manager writes a `quiet`
-record to the coordinator inbox every ten minutes. The supervisor types a
-nudge into the coordinator pane for each unread record. Each nudge costs one
-coordinator turn, which costs tokens, and a user who is away pays for it. The
-coordinator's own file watch doubled the cost before it was stopped. The
-workaround was to stop both managers and the supervisor by hand. Hive has no
-hush mode: a state in which the supervisor holds routine kinds (`quiet`,
-`completed`, `verified`) and nudges only for `blocked`, `exited`,
-`unresolved`, and urgent messages. The firstmate `/quiet` mode is the model.
-
-**Reproduction steps:**
-1. Spawn two managers with no goals. Leave the coordinator idle.
-2. Wait more than ten minutes.
-3. Each manager writes a `quiet` record. The supervisor types
-   `hive: 1 new inbox record, run: hive --home ... inbox` into the coordinator
-   pane for each one. The coordinator spends a turn on each nudge.
