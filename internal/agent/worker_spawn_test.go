@@ -139,7 +139,7 @@ func workerAgentInfoJSON(paneID, workspaceID, tabID, status, name string) string
 }
 
 func workerAgentPromptedJSON(paneID, workspaceID, tabID, name string) string {
-	return `{"type":"agent_prompted","agent":` + agentJSON(paneID, "term_"+paneID, workspaceID, tabID, "idle", name) + `}`
+	return `{"type":"agent_prompted","agent":` + agentJSON(paneID, "term_"+paneID, workspaceID, tabID, "working", name) + `}`
 }
 
 func workerProcessJSON(paneID string, sleep sleepProcess) string {
@@ -531,6 +531,7 @@ func TestWorkerSpawnPromptFailureIsPartial(t *testing.T) {
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.failure("agent.prompt", "agent_prompt_stalled", "the prompt did not settle")
+	fake.failure("agent.prompt", "agent_prompt_stalled", "the retry did not settle")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
@@ -541,8 +542,11 @@ func TestWorkerSpawnPromptFailureIsPartial(t *testing.T) {
 	if !hasEffectAction(envelope.Effects, "assigned") {
 		t.Fatalf("effects = %#v; want task assigned", envelope.Effects)
 	}
-	if !strings.Contains(fmt.Sprint(envelope.Error), "then run: hive agent send --agent worker-1") {
-		t.Fatalf("error = %v; want the by-hand hint", envelope.Error)
+	if !strings.Contains(fmt.Sprint(envelope.Error), "worker-1") || !strings.Contains(fmt.Sprint(envelope.Error), "agent_prompt_stalled") {
+		t.Fatalf("error = %v; want agent name and stalled cause", envelope.Error)
+	}
+	if len(fake.recorded("agent.prompt")) != 2 {
+		t.Fatalf("agent.prompt requests = %d; want two", len(fake.recorded("agent.prompt")))
 	}
 	if task := readTaskRecord(t, home, "1-worker-demo"); task.Status != "assigned" || task.ActingAgent != "worker-1" {
 		t.Fatalf("task = %#v; want assigned", task)
@@ -991,11 +995,8 @@ func TestWorkerSpawnResendsLostPrompt(t *testing.T) {
 	fake.result("agent.wait", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "idle", "worker-1"))
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
-	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "unknown", "worker-1"))
-	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
-	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "unknown", "worker-1"))
-	fake.result("agent.prompt", workerAgentPromptedJSON("w5:p1", "w5", "w5:t1", "worker-1"))
-	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
+	fake.failure("agent.prompt", "agent_prompt_stalled", "the initial prompt was lost")
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w5:p1", "term_w5:p1", "w5", "w5:t1", "working", "worker-1")+`}`)
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,

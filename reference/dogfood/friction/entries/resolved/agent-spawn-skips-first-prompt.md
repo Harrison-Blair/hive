@@ -1,8 +1,8 @@
 ---
 title: "An agent spawn can skip the first prompt"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "A report task investigates first. The fix is decided after the report."
+decision: "Fixed in 28-first-prompt-fix (642fe78d): the first prompt uses the herdr prompt wait until working or blocked, with one retry on a stall. The user accepts the risk of a duplicate prompt."
 ---
 
 **Summary:**
@@ -35,6 +35,33 @@ can also look like an unchanged `idle` at first, so an immediate retry can send
 a duplicate. Proposed fixes: use the herdr prompt wait as delivery evidence and
 retry after a bounded stall result; or accept `idle` only after a seq or
 revision change, with a bounded observation window.
+
+**Probe 2026-10-19:**
+Report: `.hive/tmp/reports/prompt-wait-probe.md` in the home (task
+26-prompt-wait-probe). Each case ran 3 times with
+`herdr agent prompt PANE TEXT --wait --until working --until blocked --timeout 10000`.
+A Pi prompt into a new `herdr worktree create` pane returned
+`agent_prompt_stalled` after 5.3 s in 3 of 3 runs, with no prompt in the pane.
+One fresh Pi in a plain scratch workspace also stalled (1 of 3). Each retry
+returned `working` and showed the prompt one time. Fast-finish prompts returned
+`working`, then `done`, with no false stall. A Claude trust dialog returned
+`agent_blocked` in 0.001 s and typed nothing. Claude never dropped a prompt.
+Verdict: option 1 (the herdr prompt wait as delivery evidence, then a retry
+after a stall) was safe in all 24 runs. It is not proven for an accepted prompt
+that stays idle for more than 5 s; a retry could then send a duplicate.
+
+**Resolution 2026-10-19:**
+Fixed in 28-first-prompt-fix, landed at 642fe78d. Each spawn sends its first
+prompt with the `agent.prompt` wait until `working` or `blocked` and a bounded
+timeout. On `agent_prompt_stalled`, hive retries one time. A second stall fails
+the spawn and names the agent and the cause. On `agent_blocked`, hive sends no
+more text. The unchanged-`idle` delivery check is gone. The live check spawned
+three Pi workers into new worktrees, and each one got its first prompt with no
+hand resend.
+
+Accepted risk: when an accepted prompt stays idle longer than the herdr wait
+window, hive retries and the agent can get the prompt two times. The user
+accepts this risk. Hive has no pane-read guard against it.
 
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
