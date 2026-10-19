@@ -85,6 +85,10 @@ func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
 	if !strings.Contains(instructions, want) {
 		t.Fatalf("manager instructions do not contain %q", want)
 	}
+	want = "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`."
+	if !strings.Contains(instructions, want) {
+		t.Fatalf("manager instructions do not contain %q", want)
+	}
 }
 
 func TestManagerPromptLogCapsLargeBody(t *testing.T) {
