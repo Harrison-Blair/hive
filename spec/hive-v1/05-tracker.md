@@ -104,7 +104,7 @@ flowchart TD
 | [T12](tasks/T12-land.md) | land | 4 | decent | T03, T09, CP2 | landed | openai-codex/gpt-6.1-sol | 941f144 |
 | [T13](tasks/T13-manager-spawn.md) | manager spawn | 4 | decent | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 82f2e30 |
 | [T14](tasks/T14-worker-spawn.md) | worker spawn | 4 | decent | T09, T10, T11, CP2 | landed | openai-codex/gpt-6.1-sol | 9a1aa92 |
-| [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | ready | | |
+| [T15](tasks/T15-supervise.md) | supervise | 4 | strong | T04, T10, T11, CP2 | landed | openai-codex/gpt-6.1-sol | 660529c |
 | [T16](tasks/T16-codex-profile.md) | codex profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 3f607ba |
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
@@ -1703,6 +1703,38 @@ checkpoint.
   usage limit. AC2 needs a paid Cursor account.
 - Report 02 records N06. The verifier and the fix worker are from the same
   model family, and the different-family qualification stays unmet.
+- CP3, CP4, and CP5 stay open.
+
+### Dated landing: T15
+
+2026-10-18. This section records the T15 landing. It passes no checkpoint.
+
+- T15 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T15 base tip is `ac299a6`. The verified T15 tip is `1aa22d7`.
+- The T15 merge commit is `660529c`. Its subject is
+  `merge(T15): land the supervisor`. Its first parent is `ac299a6`. Its
+  second parent is `1aa22d7`. The merge had no conflict.
+- The combined gate ran on the uncommitted T15 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T15 push moved `origin/dev` from `ac299a6` to `660529c`.
+- The T15 verifier reports are
+  `.hive/tmp/coordinator/reports/t15-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t15-verify-02.md`. Report 01 fails on B1 to
+  B8. Report 02 passes each finding after the `1aa22d7` fix. The fix commit
+  is `e7431da`.
+- `agent.StartSupervisor` takes one held store lock, reads the supervisor
+  claim, and registers the supervisor in the same mutation. The T15 change
+  adds `PIDStart` to `RegisterOptions` and writes it in the claim.
+- The reconcile uses a learn-then-handle design. `reconcileRecord` and
+  `applyStatuses` feed the learned status through `applyStatus`. That call
+  also handles a status change that herdr pushes.
+- V6 names Claude in the brief. The run used Pi for the manager and the
+  worker. The requested model is `opencode-go/deepseek-v4.1-flash:medium`.
+  Pi records the effective level `high`.
+- Report 02 records one limit. V6 keeps its earlier transcript audit. No
+  new live run occurred at the `1aa22d7` tip.
 - CP3, CP4, and CP5 stay open.
 
 ### CP1 home live
