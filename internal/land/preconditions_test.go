@@ -135,6 +135,12 @@ func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
 		if envelope.Outcome != "failed" || envelope.Error != "task is assigned: land needs verified" {
 			t.Fatalf("Land() = %+v; want the assigned status error", envelope)
 		}
+		task.Status = "completed"
+		writeTask(t, home, task)
+		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		if envelope.Outcome != "failed" || envelope.Error != "task is completed: land needs verified" {
+			t.Fatalf("Land() after completion without a new verification = %+v; want the completed status error", envelope)
+		}
 
 		task.Status = "verified"
 		task.Verification = &records.Verification{Agent: "verifier-new", Result: "pass", At: "2026-10-19T00:00:00Z"}
