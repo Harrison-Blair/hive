@@ -85,4 +85,4 @@ A hush mode, other kinds, the inbox command, the friction folder, `main`.
 Commit on the task branch with a subject such as `fix(supervise): do not nudge
 for a quiet record`. Push the task branch. Write the evidence. Run
 `hive task complete`. Send the commit SHA and the V1-V3 results to the manager
-with `hive inbox send`.
+with `hive inbox send`. Read only your own inbox.
