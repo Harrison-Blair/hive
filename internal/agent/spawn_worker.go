@@ -83,7 +83,7 @@ func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, log
 	choice := taskChoice{Task: task, Project: project}
 	switch options.Role {
 	case "worker":
-		if message := checkWorkerTask(&choice); message != "" {
+		if message := checkWorkerTask(&choice, registry); message != "" {
 			return taskChoice{}, message
 		}
 	case "verifier":
@@ -100,7 +100,13 @@ func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, log
 		}
 		choice = resolved
 	}
-	pane, message := checkWorktreePane(ctx, home, choice.Worktree, project, logger)
+	pane, message, missing := checkWorktreePane(ctx, home, choice.Worktree, project, logger)
+	if missing && options.Role == "worker" {
+		choice, message = resolveWorkerTopology(ctx, home, choice, logger)
+		if message == "" {
+			pane, message, _ = checkWorktreePane(ctx, home, choice.Worktree, project, logger)
+		}
+	}
 	if message != "" {
 		choice.cleanup(ctx, home, logger)
 		return taskChoice{}, message
@@ -118,12 +124,24 @@ func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, log
 }
 
 // checkWorkerTask holds the task rules of one worker spawn.
-func checkWorkerTask(choice *taskChoice) string {
+func checkWorkerTask(choice *taskChoice, registry *store.Store) string {
 	if choice.Task.Status != "created" && choice.Task.Status != "assigned" {
 		return "task is " + choice.Task.Status
 	}
 	if choice.Task.Worktree == nil || choice.Task.Worktree.RootPane == "" {
 		return "task has no worktree: run hive worktree create --task " + choice.Task.ID
+	}
+	if choice.Task.Status == "assigned" && choice.Task.ActingAgent != "" {
+		agents, err := loadAgentRecords(registry)
+		if err != nil {
+			return "store: " + err.Error()
+		}
+		for _, record := range agents {
+			if record.Role == "worker" && record.Task == choice.Task.ID &&
+				(record.Name == choice.Task.ActingAgent || record.Key == choice.Task.ActingAgent) && record.Status == records.AgentLive {
+				return fmt.Sprintf("task %s has a live worker: %s", choice.Task.ID, record.Name)
+			}
+		}
 	}
 	choice.Worktree = *choice.Task.Worktree
 	return ""
@@ -208,51 +226,76 @@ func resolveVerifierTopology(ctx context.Context, home string, choice taskChoice
 	return choice, ""
 }
 
+// resolveWorkerTopology reopens the task worktree when its recorded pane is gone.
+func resolveWorkerTopology(ctx context.Context, home string, choice taskChoice, logger *slog.Logger) (taskChoice, string) {
+	opened, err := herdr.WorktreeOpen(ctx, herdr.WorktreeOpenParams{
+		Cwd:   choice.Project.Path,
+		Path:  choice.Worktree.Path,
+		Label: choice.Task.ID,
+		Focus: false,
+	}, herdr.WithLogger(logger))
+	if err != nil {
+		return choice, "worktree open: " + err.Error()
+	}
+	choice.Worktree.WorkspaceID = opened.Workspace.WorkspaceID
+	choice.Worktree.TabID = opened.Tab.TabID
+	choice.Worktree.RootPane = opened.RootPane.PaneID
+	choice.CreatedWorkspace = !opened.AlreadyOpen
+	choice.CreatedWorkspaceTabs = opened.Workspace.TabCount
+	choice.CreatedWorkspacePanes = opened.Workspace.PaneCount
+	choice.Branch = opened.Worktree.Branch
+	if err := writeTaskWorktree(home, choice.Task.ID, choice.Worktree); err != nil {
+		choice.cleanup(ctx, home, logger)
+		return choice, "store: " + err.Error()
+	}
+	return choice, ""
+}
+
 // checkWorktreePane checks the recorded root pane and the workspace metadata of
-// one worktree.
-func checkWorktreePane(ctx context.Context, home string, worktree records.Worktree, project records.Project, logger *slog.Logger) (herdr.PaneInfo, string) {
+// one worktree. The third result is true only when the recorded pane is absent.
+func checkWorktreePane(ctx context.Context, home string, worktree records.Worktree, project records.Project, logger *slog.Logger) (herdr.PaneInfo, string, bool) {
 	pane, err := herdr.PaneGet(ctx, worktree.RootPane, herdr.WithLogger(logger))
 	if err != nil {
 		if isHerdrCode(err, herdr.CodePaneNotFound) {
-			return herdr.PaneInfo{}, "worktree pane mismatch: pane_id"
+			return herdr.PaneInfo{}, "worktree pane mismatch: pane_id", true
 		}
-		return herdr.PaneInfo{}, "pane get: " + err.Error()
+		return herdr.PaneInfo{}, "pane get: " + err.Error(), false
 	}
 	if pane.PaneID != worktree.RootPane {
-		return herdr.PaneInfo{}, "worktree pane mismatch: pane_id"
+		return herdr.PaneInfo{}, "worktree pane mismatch: pane_id", false
 	}
 	if pane.WorkspaceID != worktree.WorkspaceID {
-		return herdr.PaneInfo{}, "worktree pane mismatch: workspace_id"
+		return herdr.PaneInfo{}, "worktree pane mismatch: workspace_id", false
 	}
 	if !sameDirectory(paneCwd(pane), worktree.Path) {
-		return herdr.PaneInfo{}, "worktree pane mismatch: cwd"
+		return herdr.PaneInfo{}, "worktree pane mismatch: cwd", false
 	}
 	if pane.RestoreError != nil {
-		return herdr.PaneInfo{}, "pane not restored: " + *pane.RestoreError
+		return herdr.PaneInfo{}, "pane not restored: " + *pane.RestoreError, false
 	}
 	if pane.Agent != "" || pane.AgentStatus != "unknown" {
-		return herdr.PaneInfo{}, busyPaneMessage(ctx, pane, logger)
+		return herdr.PaneInfo{}, busyPaneMessage(ctx, pane, logger), false
 	}
 	if name, found := unresolvedRecordForPane(home, pane.PaneID); found {
-		return herdr.PaneInfo{}, "pane has an unresolved record: " + name
+		return herdr.PaneInfo{}, "pane has an unresolved record: " + name, false
 	}
 	workspace, err := herdr.WorkspaceGet(ctx, worktree.WorkspaceID, herdr.WithLogger(logger))
 	if err != nil {
 		if isHerdrCode(err, herdr.CodeWorkspaceNotFound) {
-			return herdr.PaneInfo{}, "worktree pane mismatch: workspace_id"
+			return herdr.PaneInfo{}, "worktree pane mismatch: workspace_id", false
 		}
-		return herdr.PaneInfo{}, "workspace get: " + err.Error()
+		return herdr.PaneInfo{}, "workspace get: " + err.Error(), false
 	}
 	if workspace.Worktree == nil {
-		return herdr.PaneInfo{}, "worktree pane mismatch: worktree"
+		return herdr.PaneInfo{}, "worktree pane mismatch: worktree", false
 	}
 	if !sameDirectory(workspace.Worktree.RepoRoot, project.Path) {
-		return herdr.PaneInfo{}, "worktree pane mismatch: repo_root"
+		return herdr.PaneInfo{}, "worktree pane mismatch: repo_root", false
 	}
 	if !sameDirectory(workspace.Worktree.CheckoutPath, worktree.Path) {
-		return herdr.PaneInfo{}, "worktree pane mismatch: checkout_path"
+		return herdr.PaneInfo{}, "worktree pane mismatch: checkout_path", false
 	}
-	return pane, ""
+	return pane, "", false
 }
 
 // busyPaneMessage names the agent that holds one pane.

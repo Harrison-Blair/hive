@@ -575,6 +575,122 @@ func loadAgentByName(home, name string) (records.Agent, bool, error) {
 	return records.Agent{}, false, nil
 }
 
+func TestWorkerRespawnRejectsLiveActingWorker(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	task := workerTask(home, repo, worktree, branch, "assigned")
+	task.ID = "16-quiet-no-nudge"
+	task.ActingAgent = "t16-worker-1"
+	writeTaskRecord(t, home, task)
+	writeRecord(t, home, records.Agent{
+		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Task: task.ID, PaneID: "w4:p1", Status: records.AgentLive,
+	})
+	beforeTask, err := json.Marshal(readTaskRecord(t, home, task.ID))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := newFakeHerdr(t)
+	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
+	fake.result("workspace.get", workerWorkspaceGetJSON("w5", task.ID, repo, worktree))
+	scriptReadyShell(fake, "w5:p1", "term_w5:p1", "w5", "w5:t1", worktree)
+	fake.failure("agent.start", "agent_pane_busy", "pane is busy")
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-worker-2", NameSet: true,
+	})
+	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task 16-quiet-no-nudge has a live worker: t16-worker-1") {
+		t.Fatalf("envelope = %#v; want the live acting worker refusal", envelope)
+	}
+	if len(fake.recorded("agent.start")) != 0 {
+		t.Fatalf("live worker refusal started an agent")
+	}
+	afterTask, err := json.Marshal(readTaskRecord(t, home, task.ID))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(afterTask) != string(beforeTask) {
+		t.Fatalf("task changed from %s to %s", beforeTask, afterTask)
+	}
+	if keys := agentKeys(t, home); len(keys) != 1 || keys[0] != "t16-worker-1" {
+		t.Fatalf("agent keys = %v; want only the old worker record", keys)
+	}
+	if old := readAgent(t, home, "t16-worker-1"); old.Status != records.AgentLive {
+		t.Fatalf("old worker status = %q; want live", old.Status)
+	}
+}
+
+func TestWorkerRespawnReopensAndReassigns(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	task := workerTask(home, repo, worktree, branch, "assigned")
+	task.ID = "16-quiet-no-nudge"
+	task.ActingAgent = "t16-worker-1"
+	writeTaskRecord(t, home, task)
+	writeRecord(t, home, records.Agent{
+		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Task: task.ID, PaneID: "w5:p1", Status: records.AgentExited,
+	})
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	fake.failure("pane.get", "pane_not_found", "pane w5:p1 not found")
+	fake.result("worktree.open", worktreeOpenJSON("w6", task.ID, repo, "w6:t1", "w6:p1", worktree, branch, false))
+	scriptWorkerSuccess(fake, sleep, "w6:p1", "w6", "w6:t1", worktree, "t16-worker-2")
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-worker-2", NameSet: true,
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	updated := readTaskRecord(t, home, task.ID)
+	if updated.Status != "assigned" || updated.ActingAgent != "t16-worker-2" {
+		t.Fatalf("task = %#v; want assigned to t16-worker-2", updated)
+	}
+	if updated.Worktree == nil || updated.Worktree.WorkspaceID != "w6" || updated.Worktree.TabID != "w6:t1" || updated.Worktree.RootPane != "w6:p1" {
+		t.Fatalf("worktree = %#v; want reopened topology", updated.Worktree)
+	}
+	opens := fake.recorded("worktree.open")
+	if len(opens) != 1 {
+		t.Fatalf("worktree.open requests = %d; want 1", len(opens))
+	}
+	if len(fake.recorded("worktree.create")) != 0 {
+		t.Fatalf("respawn created a second worktree")
+	}
+}
+
+func TestWorkerSpawnWithoutNamePicksLowestFreeTaskName(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	task := workerTask(home, repo, worktree, branch, "assigned")
+	task.ID = "16-quiet-no-nudge"
+	task.ActingAgent = "t16-worker-1"
+	writeTaskRecord(t, home, task)
+	writeRecord(t, home, records.Agent{
+		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Task: task.ID, PaneID: "w4:p1", Status: records.AgentExited,
+	})
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t16-worker-2")
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "worker", Task: task.ID, Harness: "claude", Model: "m",
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if got := spawnResultAgent(envelope).Name; got != "t16-worker-2" {
+		t.Fatalf("agent name = %q; want t16-worker-2", got)
+	}
+	if got := readTaskRecord(t, home, task.ID).ActingAgent; got != "t16-worker-2" {
+		t.Fatalf("acting agent = %q; want t16-worker-2", got)
+	}
+}
+
 func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)

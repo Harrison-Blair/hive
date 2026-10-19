@@ -447,10 +447,10 @@ func TestSpawnWorkerWithRealTask(t *testing.T) {
 	writeTask(t, home, "hive", "12-spawn-worker")
 	fake := newFakeHerdr(t)
 	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
-	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "worker-hive-1")+`,"argv":["claude"]}`)
+	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "t12-worker-1")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")+`}`)
-	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
-	fake.result("agent.get", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
+	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t12-worker-1")+`}`)
+	fake.result("agent.get", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t12-worker-1")+`}`)
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(sleep.pid, "claude", "claude"))+`}`)
 	options := SpawnOptions{Role: "worker", Project: "hive", Task: "12-spawn-worker", Harness: "claude", Model: "m", PaneID: "w1:p1", PaneSet: true}
 	envelope := Spawn(context.Background(), home, options)
@@ -461,7 +461,7 @@ func TestSpawnWorkerWithRealTask(t *testing.T) {
 	if !ok {
 		t.Fatalf("result = %T", envelope.Result)
 	}
-	if result.Agent.Key != "worker-hive-1" || result.Agent.Name != "worker-hive-1" {
+	if result.Agent.Key != "t12-worker-1" || result.Agent.Name != "t12-worker-1" {
 		t.Fatalf("worker key/name = %q/%q", result.Agent.Key, result.Agent.Name)
 	}
 	if result.Claim != nil {
