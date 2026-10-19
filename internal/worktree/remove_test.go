@@ -74,8 +74,8 @@ func TestRemoveSuccessClosesWorkspaceAndRemovesWorktree(t *testing.T) {
 	if task.Worktree.Path != path || task.Worktree.Branch != branch || task.Worktree.CreatedAt == "" {
 		t.Fatalf("task worktree history = %+v, want path, branch, and created_at", task.Worktree)
 	}
-	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get", "workspace.close"}) {
-		t.Fatalf("methods = %v, want get then close", methods)
+	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get", "agent.list", "workspace.close"}) {
+		t.Fatalf("methods = %v, want get, agent.list, then close", methods)
 	}
 }
 
@@ -231,8 +231,8 @@ func TestRemoveForceSkipsDirtyAndMergedGuards(t *testing.T) {
 	if err != nil || !exists {
 		t.Fatalf("branch %s exists = %v, %v, want true", branch, exists, err)
 	}
-	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get", "workspace.close"}) {
-		t.Fatalf("methods = %v, want get then close", methods)
+	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get", "agent.list", "workspace.close"}) {
+		t.Fatalf("methods = %v, want get, agent.list, then close", methods)
 	}
 }
 
@@ -264,8 +264,8 @@ func TestRemoveClosedWorkspaceSkipsClose(t *testing.T) {
 	if _, err := os.Lstat(path); !os.IsNotExist(err) {
 		t.Fatalf("worktree still exists: %v", err)
 	}
-	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get"}) {
-		t.Fatalf("methods = %v, want only workspace.get", methods)
+	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.get", "agent.list"}) {
+		t.Fatalf("methods = %v, want workspace.get and agent.list", methods)
 	}
 }
 
