@@ -88,7 +88,7 @@ Use `tab_id` to select panes in the `logs` tab. Save one pane ID as `logs_pane_i
 herdr pane process-info --pane "$right_pane_id"
 ```
 
-When `foreground_processes` shows `hive` with the arguments `logs` and `--follow`, do not start another log stream. Otherwise, run:
+When one entry in `foreground_processes` has `argv` equal to `["hive", "logs", "--follow"]`, do not start another log stream. Otherwise, run:
 
 ```sh
 herdr pane run "$right_pane_id" hive logs --follow
