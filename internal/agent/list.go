@@ -43,7 +43,14 @@ func List(home string, options ListOptions) output.Envelope {
 		}
 		found = append(found, record)
 	}
-	sort.Slice(found, func(i, j int) bool { return found[i].Key < found[j].Key })
+	sort.Slice(found, func(i, j int) bool {
+		unresolvedI := found[i].Status == records.AgentUnresolved
+		unresolvedJ := found[j].Status == records.AgentUnresolved
+		if unresolvedI != unresolvedJ {
+			return unresolvedI
+		}
+		return found[i].Key < found[j].Key
+	})
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: found}
 }
 
