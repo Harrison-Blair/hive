@@ -110,7 +110,7 @@ flowchart TD
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 976d273 |
 | [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | landed | openai-codex/gpt-6.1-sol | 7046bfe |
-| [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | in progress | | |
+| [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | landed | openai-codex/gpt-6.1-sol | 175af5e |
 
 | Checkpoint | After | Blocks | Status | Date | Verdict by |
 | --- | --- | --- | --- | --- | --- |
@@ -1806,6 +1806,46 @@ and the CP4 row. The contract is the `### CP4 TUI live` section.
 - The T20 branch did not edit `internal/task/show.go`. The file keeps the
   base content.
 - CP5 stays open.
+
+### Dated landing: T21
+
+2026-10-18. This section records the T21 landing. It passes no checkpoint.
+
+- T21 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T21 base tip is `a3be841`. The verified T21 tip is `9fcde12`.
+- The T21 merge commit is `175af5e`. Its subject is
+  `merge(T21): land the role playbooks`. Its first parent is `a3be841`. Its
+  second parent is `9fcde12`. The merge had no conflict.
+- The combined gate ran on the uncommitted T21 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T21 push moved `origin/dev` from `a3be841` to `175af5e`.
+- The T21 verifier reports are
+  `.hive/tmp/coordinator/reports/t21-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t21-verify-02.md`. Report 01 fails on B1 and
+  B2. Report 02 passes each finding after the fix. The T21 fix commit is
+  `d379a58`.
+- The T21 change adds the four role playbooks
+  `.agents/skills/hive-coordinator/SKILL.md`,
+  `.agents/skills/hive-manager/SKILL.md`,
+  `.agents/skills/hive-worker/SKILL.md`, and
+  `.agents/skills/hive-verifier/SKILL.md`.
+- The T21 change adds the four `.claude/skills` links `hive-coordinator`,
+  `hive-manager`, `hive-worker`, and `hive-verifier`. Each link has mode
+  `120000` and a relative target under `.agents/skills/`.
+- The T21 change adds the presets document
+  `internal/agent/templates/presets.md`. The instruction writer writes that
+  file.
+- The T21 change adds the coordinator pointer to `AGENTS.md`. The pointer
+  names `.agents/skills/hive-coordinator/SKILL.md`. The bootstrap clause
+  stays. T21 does not remove it.
+- The prose-sentence skip heuristic in `skills_test.go` is a recorded design
+  decision. The checker skips a line that starts with `hive` and ends with
+  `.`, `!`, or `?`. A prose sentence is not a command line. This heuristic
+  narrows the checker coverage. No current skill command uses that escape.
+  `N1` of report 02 records the limit.
+- CP1 through CP4 stay passed. CP5 stays open.
 
 ### CP1 home live
 
