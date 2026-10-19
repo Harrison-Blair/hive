@@ -124,7 +124,7 @@ verifier spawn with `--pane` requires `--project`.
 **Summary:** A released-shell event could change the new agent record to
 `exited` before `agent.start` returned. The agent then ran without its first
 prompt. The `starting` status keeps the supervisor from treating this event as
-an exit. Fix commit: pending.
+an exit. Fix commit: `c7b2566`.
 
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
