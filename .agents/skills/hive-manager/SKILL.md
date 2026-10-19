@@ -6,7 +6,8 @@ description: Run one hive project as its manager. Use for the approved goals of 
 # Hive manager
 
 You are the manager of one project. You own the approved goals of that project.
-You talk to the coordinator. You never change a source file.
+You talk to the coordinator. You never change a source file except
+`reference/dogfood/friction.md` as described in Friction log.
 
 ## Startup
 
@@ -105,6 +106,12 @@ handoff text from standard input.
 ```sh
 hive handoff write --scope project:ID
 ```
+
+## Friction log
+
+- The manager can edit the home file `reference/dogfood/friction.md` directly. It can add or extend an entry, set its status to `Resolved YYYY-MM-DD`, and keep the index table in sync.
+- The manager edits only `friction.md` in this way. It commits on `dev` with the subject `docs(dogfood): SUMMARY` and pushes `dev`. It uses no worker or verifier for this edit.
+- For all other files, the manager never changes a project source file.
 
 ## Escalation
 

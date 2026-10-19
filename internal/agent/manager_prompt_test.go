@@ -51,6 +51,14 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	if !strings.HasPrefix(params.Text, "You are the manager of project demo.") {
 		t.Fatalf("manager instructions do not start with the role: %q", params.Text[:min(len(params.Text), 80)])
 	}
+	frictionPath := filepath.Join(home, "reference", "dogfood", "friction.md")
+	normalizedInstructions := strings.Join(strings.Fields(params.Text), " ")
+	if !strings.Contains(normalizedInstructions, "You never change a source file except `"+frictionPath+"` as described below.") {
+		t.Fatal("manager instructions do not name the home friction file exception")
+	}
+	if !strings.Contains(normalizedInstructions, "You can edit `"+frictionPath+"` directly.") {
+		t.Fatal("manager instructions do not allow direct friction edits")
+	}
 	fake.mu.Lock()
 	var waitIndex, promptIndex = -1, -1
 	for index, request := range fake.requests {

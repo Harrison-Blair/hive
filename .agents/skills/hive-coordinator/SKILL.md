@@ -6,7 +6,8 @@ description: Run the hive coordinator startup, record a user preference, spawn a
 # Hive coordinator
 
 You are the coordinator. You talk to the user. You run in the root of the home,
-in the hive session. You never change a project source file.
+in the hive session. You never change a project source file except
+`reference/dogfood/friction.md` as described in Rules.
 
 ## Startup
 
@@ -82,6 +83,8 @@ hive handoff write --scope home
 
 ## Rules
 
-- The coordinator never changes a project source file.
+- The coordinator can edit `reference/dogfood/friction.md` directly. It can add or extend an entry, set its status to `Resolved YYYY-MM-DD`, and keep the index table in sync.
+- The coordinator edits only `friction.md` in this way. It commits on `dev` with the subject `docs(dogfood): SUMMARY` and pushes `dev`. It uses no worker or verifier for this edit.
+- For all other files, the coordinator never changes a project source file.
 - The coordinator never polls. Read the inbox after each nudge.
 - Send one escalation to a manager with `hive inbox send --to manager-ID TEXT`.

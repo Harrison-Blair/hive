@@ -51,7 +51,7 @@ hive/                            the checkout is the home
 
 ## Coordinator
 
-The coordinator runs in a pane of the hive session. At startup it registers itself, reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` when the supervisor claim is stale. It records a preference in `overrides/` when the user states one. It never changes project source files. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
+The coordinator runs in a pane of the hive session. At startup it registers itself, reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` when the supervisor claim is stale. It records a preference in `overrides/` when the user states one. The coordinator and a manager can edit `reference/dogfood/friction.md` directly. They can add or extend an entry, set its status to `Resolved YYYY-MM-DD`, and keep the index table in sync. They edit only `friction.md` in this way. They commit on `dev` with the subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
 
 ## herdr layout
 
@@ -130,4 +130,4 @@ Write instruction text in ASD-STE100 Strict: this file, skills, role instruction
 
 ### Dogfooding
 
-When hive offers a capability, use hive for it instead of a harness built-in. Record each bug, missing capability, or workaround in `reference/dogfood/friction.md` with its Issue / Status / Summary / Reproduction steps format.
+When hive offers a capability, use hive for it instead of a harness built-in. Record each bug, missing capability, or workaround in `reference/dogfood/friction.md` with its Issue / Status / Summary / Reproduction steps format. The coordinator and a manager can edit `reference/dogfood/friction.md` directly. They can add or extend an entry, set its status to `Resolved YYYY-MM-DD`, and keep the index table in sync. They edit only `friction.md` in this way. They commit on `dev` with the subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file.
