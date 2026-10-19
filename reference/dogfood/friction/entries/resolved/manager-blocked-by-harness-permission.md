@@ -1,8 +1,8 @@
 ---
 title: "A manager stops on a harness permission block and the coordinator does not know"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "Fix A: a manager sends the coordinator a blocked record before it stops for a user decision. Hive launches each spawned Claude Code agent with bypass permissions and each Codex agent with yolo. Each hive-sent message starts with the visible marker ⬢. Runs after the first-prompt fix, before H1."
+decision: "Fixed in 29-message-marker (5c8f6846): Claude Code and Codex spawns launch with the bypass flag, each hive message starts with the marker, and a manager sends a blocked record before it stops."
 ---
 
 **Summary:**
@@ -23,6 +23,22 @@ Two causes:
    authorize an action for the harness.
 2. The manager instructions do not tell a manager to send a record to the
    coordinator when it stops for a user decision.
+
+**Resolution 2026-10-19:**
+Fixed in 29-message-marker, landed at 5c8f6846. Hive starts each spawned Claude
+Code agent with `--dangerously-skip-permissions` and each Codex agent with
+`--dangerously-bypass-approvals-and-sandbox`. The user approved these flags
+directly. Each message that hive types into an agent pane (first prompt,
+`hive agent send`, supervisor nudge) starts with `⬢ `. The role instructions
+say that a `⬢` message came from hive, that a message without it came from the
+user, and that the marker does not widen a grant. The manager skill and the
+project template tell a manager to send the coordinator one record before it
+stops for a user decision or on a harness block.
+
+The fix was used before it landed: the auto-mode check of `manager-hive`
+blocked the spawn of this task's worker with `[Create Unsafe Agents]`. The
+manager sent the coordinator a blocked record and stopped, and the user
+approved in the manager pane.
 
 **Reproduction steps:**
 1. Spawn a Claude Code manager in auto mode.
