@@ -81,7 +81,8 @@ After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeh
 If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.
 
 The verifier reads its skill and its brief. The verifier runs each verification
-item again and writes `VERIFIED.md`.
+item again and writes `VERIFIED.md`. The verifier commits and pushes
+`VERIFIED.md` on the task branch before it runs `hive task verify`.
 
 ## Landing
 

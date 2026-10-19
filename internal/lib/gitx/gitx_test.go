@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -170,6 +171,27 @@ func TestGitxHelpersReadRealRepository(t *testing.T) {
 	exists, err = BranchExists(ctx, repo, "task/foo")
 	if err != nil || !exists {
 		t.Fatalf("BranchExists(task/foo) after remove = %v, %v, want true, nil", exists, err)
+	}
+}
+
+func TestFetchBranchTipReadsRemoteBranch(t *testing.T) {
+	ctx := context.Background()
+	repo := newRepo(t)
+	origin := filepath.Join(t.TempDir(), "origin.git")
+	runTestGit(t, filepath.Dir(origin), "init", "--bare", "-q", origin)
+	runTestGit(t, repo, "remote", "add", "origin", origin)
+	runTestGit(t, repo, "push", "-u", "origin", "main")
+	runTestGit(t, repo, "update-ref", "-d", "refs/remotes/origin/main")
+	want := strings.TrimSpace(runTestGit(t, repo, "rev-parse", "HEAD"))
+
+	got, exists, err := FetchBranchTip(ctx, repo, "origin", "main")
+	if err != nil || !exists || got != want {
+		t.Fatalf("FetchBranchTip(main) = %q, %v, %v; want %q, true, nil", got, exists, err, want)
+	}
+
+	got, exists, err = FetchBranchTip(ctx, repo, "origin", "missing")
+	if err != nil || exists || got != "" {
+		t.Fatalf("FetchBranchTip(missing) = %q, %v, %v; want empty, false, nil", got, exists, err)
 	}
 }
 

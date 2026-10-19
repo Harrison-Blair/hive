@@ -51,6 +51,8 @@ hive inbox send --to coordinator TEXT --agent NAME
 
 Hive takes the project from the task. Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.
 
+The verifier commits and pushes `VERIFIED.md` on the task branch before it runs `hive task verify`.
+
 After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.
 
 After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.
