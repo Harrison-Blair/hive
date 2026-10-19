@@ -337,6 +337,7 @@ func spawnTaskAgent(ctx context.Context, home string, options SpawnOptions, choi
 	inner.Project = choice.Task.Project
 	inner.PaneID = choice.PaneID
 	inner.PaneSet = true
+	inner.renameTab = !options.PaneSet
 	envelope := Spawn(ctx, home, inner)
 	if envelope.Outcome == "failed" {
 		choice.cleanup(ctx, home, logger)

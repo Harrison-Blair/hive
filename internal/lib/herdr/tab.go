@@ -7,6 +7,36 @@ import (
 )
 
 // TabListParams names an optional workspace for tab.list.
+// Change the label of one tab.
+func TabRename(ctx context.Context, tabID, label string, opts ...Option) error {
+	var result struct {
+		Type *string         `json:"type"`
+		Tab  json.RawMessage `json:"tab"`
+	}
+	params := struct {
+		TabID string `json:"tab_id"`
+		Label string `json:"label"`
+	}{TabID: tabID, Label: label}
+	if err := Call(ctx, "tab.rename", params, &result, opts...); err != nil {
+		return err
+	}
+	if result.Type == nil || *result.Type != "tab_info" {
+		return fmt.Errorf("bad reply: result type %q, want tab_info", stringValue(result.Type))
+	}
+	if isAbsentOrNull(result.Tab) {
+		return fmt.Errorf("bad reply: tab_info tab is missing")
+	}
+	renamed, err := decodeTabInfo(result.Tab)
+	if err != nil {
+		return fmt.Errorf("bad reply: %s", err)
+	}
+	if renamed.TabID != tabID {
+		return fmt.Errorf("bad reply: renamed tab ID %q, want %q", renamed.TabID, tabID)
+	}
+	return nil
+}
+
+// TabListParams names an optional workspace for tab.list.
 type TabListParams struct {
 	WorkspaceID string `json:"workspace_id,omitempty"`
 }
