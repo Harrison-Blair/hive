@@ -31,6 +31,28 @@ type taskChoice struct {
 	CreatedWorkspacePanes uint
 }
 
+// resolveTaskProject reads the project of one worker or verifier task.
+func resolveTaskProject(home string, options SpawnOptions) (string, string) {
+	if !records.ValidTaskID(options.Task) {
+		return "", "task not found: " + displayValue(options.Task)
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return "", "store: " + err.Error()
+	}
+	var task records.Task
+	if err := registry.ReadIn([]string{"tasks"}, options.Task, &task); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return "", "task not found: " + displayValue(options.Task)
+		}
+		return "", "store: " + err.Error()
+	}
+	if options.Project != "" && options.Project != task.Project {
+		return "", fmt.Sprintf("task %s is in project %s", task.ID, task.Project)
+	}
+	return task.Project, ""
+}
+
 // resolveTaskPane checks the task and the pane of one worker or verifier
 // spawn. It returns the choice and an error message.
 func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (taskChoice, string) {
