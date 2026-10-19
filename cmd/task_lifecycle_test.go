@@ -55,6 +55,43 @@ func (c *taskCLI) seedAgent(t *testing.T, name, role, taskID string) {
 	}
 }
 
+func (c *taskCLI) seedController(t *testing.T) {
+	t.Helper()
+	registry, err := store.Open(c.home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	agent := records.Agent{
+		Key: "manager-repo", Name: "manager-repo", Role: "manager", Project: "repo",
+		Status: records.AgentLive, PaneID: "manager-pane", Generation: 1,
+		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+	}
+	if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
+		t.Fatal(err)
+	}
+	claim := records.Claim{Key: agent.Key, Agent: agent.Key, Generation: agent.Generation}
+	if err := registry.WriteIn([]string{"claims"}, claim.Key, claim); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func (c *taskCLI) markVerified(t *testing.T, id string) {
+	t.Helper()
+	registry, err := store.Open(c.home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var task records.Task
+	if err := registry.ReadIn([]string{"tasks"}, id, &task); err != nil {
+		t.Fatal(err)
+	}
+	task.Status = "verified"
+	task.Verification = &records.Verification{Agent: "verifier-old", Result: "pass", At: "2026-01-02T00:00:00Z"}
+	if err := registry.WriteIn([]string{"tasks"}, id, task); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func (c *taskCLI) createTask(t *testing.T, title string) string {
 	t.Helper()
 	status, stdout, stderr := c.run("task", "create", "--project", "repo", "--title", title)
@@ -188,6 +225,76 @@ func TestTaskCLILogsTransitionsAndErrors(t *testing.T) {
 				t.Fatalf("error event = %#v; want an error field", event)
 			}
 		}
+	}
+}
+
+func TestTaskCLIReopenTextJSONShowHistoryAndLog(t *testing.T) {
+	cli := newTaskCLI(t)
+	cli.seedController(t)
+
+	missingID := cli.createTask(t, "Reopen without reason")
+	cli.markVerified(t, missingID)
+	status, stdout, stderr := cli.run("task", "reopen", "--task", missingID, "--agent", "manager-repo")
+	if status == 0 || stdout != "" || !strings.Contains(stderr, "reason") {
+		t.Fatalf("reopen without reason: status %d, stdout %q, stderr %q; want a reason error", status, stdout, stderr)
+	}
+	status, stdout, stderr = cli.run("task", "reopen", "--task", missingID, "--reason", "", "--agent", "manager-repo")
+	if status == 0 || stdout != "" || !strings.Contains(stderr, "--reason is required") {
+		t.Fatalf("reopen with empty reason: status %d, stdout %q, stderr %q; want a required reason error", status, stdout, stderr)
+	}
+	registry, err := store.Open(cli.home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var unchanged records.Task
+	if err := registry.ReadIn([]string{"tasks"}, missingID, &unchanged); err != nil {
+		t.Fatal(err)
+	}
+	if unchanged.Status != "verified" || unchanged.Verification == nil || len(unchanged.VerificationHistory) != 0 {
+		t.Fatalf("task after rejected reopen = %#v; want the original verified record", unchanged)
+	}
+
+	textID := cli.createTask(t, "Reopen in text mode")
+	cli.markVerified(t, textID)
+	text := cli.mustRun(t, "task", "reopen", "--task", textID, "--reason", "merge conflict", "--agent", "manager-repo")
+	if text != "id: "+textID+"\nstatus: assigned\n" {
+		t.Fatalf("reopen text = %q; want task ID and assigned status", text)
+	}
+	shown := cli.mustRun(t, "task", "show", textID)
+	for _, want := range []string{"verification: -", `verification_history: [{"verification":`, `"reason":"merge conflict"`, `"caller":"manager-repo"`} {
+		if !strings.Contains(shown, want) {
+			t.Fatalf("task show = %q; want %q", shown, want)
+		}
+	}
+
+	jsonID := cli.createTask(t, "Reopen in JSON mode")
+	cli.markVerified(t, jsonID)
+	status, stdout, stderr = cli.run("task", "reopen", "--task", jsonID, "--reason", "json repair", "--pane", "manager-pane", "--json")
+	if status != 0 || stderr != "" {
+		t.Fatalf("JSON reopen status = %d; stdout %q, stderr %q; want success", status, stdout, stderr)
+	}
+	var envelope struct {
+		Outcome string `json:"outcome"`
+		Result  struct {
+			Status              string                        `json:"status"`
+			Verification        json.RawMessage               `json:"verification"`
+			VerificationHistory []records.VerificationHistory `json:"verification_history"`
+		} `json:"result"`
+	}
+	if err := json.Unmarshal([]byte(stdout), &envelope); err != nil {
+		t.Fatalf("decode JSON reopen: %v; output %q", err, stdout)
+	}
+	if envelope.Outcome != "ok" || envelope.Result.Status != "assigned" || string(envelope.Result.Verification) != "null" ||
+		len(envelope.Result.VerificationHistory) != 1 || envelope.Result.VerificationHistory[0].Reason != "json repair" {
+		t.Fatalf("JSON reopen = %#v; want assigned with cleared verification and history", envelope)
+	}
+
+	events := taskLogEvents(t, cli.home)
+	if countEvents(events, "task transition", map[string]string{
+		"command": "task reopen", "task_id": jsonID, "project_id": "repo", "agent_id": "manager-repo",
+		"from_status": "verified", "to_status": "assigned", "reason": "json repair",
+	}) != 1 {
+		t.Fatalf("log events = %#v; want the reopen transition with its reason", events)
 	}
 }
 

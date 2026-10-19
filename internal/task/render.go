@@ -51,6 +51,7 @@ func ShowText(envelope output.Envelope) string {
 		"status: " + task.Status,
 		"depends_on: " + strings.Join(task.DependsOn, ","),
 		"verification: " + verificationText(task.Verification),
+		"verification_history: " + verificationHistoryText(task.VerificationHistory),
 		"worktree: " + worktreeText(task.Worktree),
 		"delivery: " + deliveryText(task.Delivery),
 		"cancel_reason: " + oneLine(task.CancelReason),
@@ -140,6 +141,14 @@ func verificationText(verification *records.Verification) string {
 		text += ": " + oneLine(verification.Reason)
 	}
 	return text
+}
+
+// verificationHistoryText renders the verification history list.
+func verificationHistoryText(history []records.VerificationHistory) string {
+	if history == nil {
+		return "[]"
+	}
+	return jsonText(history)
 }
 
 // worktreeText renders the worktree record.

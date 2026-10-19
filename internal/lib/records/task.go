@@ -9,21 +9,30 @@ const maxTaskIDLength = 61
 
 // Task is one durable task record.
 type Task struct {
-	ID              string        `json:"id"`
-	Project         string        `json:"project"`
-	Title           string        `json:"title"`
-	ControllingRole string        `json:"controlling_role"`
-	ActingAgent     string        `json:"acting_agent"`
-	Status          string        `json:"status"`
-	DependsOn       []string      `json:"depends_on"`
-	Verification    *Verification `json:"verification"`
-	Worktree        *Worktree     `json:"worktree"`
-	Delivery        *Delivery     `json:"delivery"`
-	CreatedAt       string        `json:"created_at"`
-	UpdatedAt       string        `json:"updated_at"`
+	ID                  string                `json:"id"`
+	Project             string                `json:"project"`
+	Title               string                `json:"title"`
+	ControllingRole     string                `json:"controlling_role"`
+	ActingAgent         string                `json:"acting_agent"`
+	Status              string                `json:"status"`
+	DependsOn           []string              `json:"depends_on"`
+	Verification        *Verification         `json:"verification"`
+	VerificationHistory []VerificationHistory `json:"verification_history"`
+	Worktree            *Worktree             `json:"worktree"`
+	Delivery            *Delivery             `json:"delivery"`
+	CreatedAt           string                `json:"created_at"`
+	UpdatedAt           string                `json:"updated_at"`
 	// CancelReason holds the reason of a cancel command. It is empty for a
 	// task that no cancel command moved.
 	CancelReason string `json:"cancel_reason,omitempty"`
+}
+
+// VerificationHistory keeps one verification that is no longer current.
+type VerificationHistory struct {
+	Verification *Verification `json:"verification"`
+	Reason       string        `json:"reason"`
+	Caller       string        `json:"caller"`
+	At           string        `json:"at"`
 }
 
 // Verification is the last independent check of one task.

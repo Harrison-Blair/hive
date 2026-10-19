@@ -91,6 +91,7 @@ func testTask(id, branch string) records.Task {
 		ActingAgent:     "worker-1",
 		Status:          "verified",
 		DependsOn:       []string{},
+		Verification:    &records.Verification{Agent: "verifier-1", Result: "pass", At: "2026-10-18T00:00:00Z"},
 		Worktree: &records.Worktree{
 			Path:   filepath.Join("/tmp", id),
 			Branch: branch,

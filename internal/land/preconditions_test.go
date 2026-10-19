@@ -121,3 +121,53 @@ func TestPreconditions(t *testing.T) {
 		}
 	})
 }
+
+func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
+	t.Run("assigned before a new verification", func(t *testing.T) {
+		repo := newRepo(t)
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home, task := seedOne(t, repo)
+		task.Status = "assigned"
+		task.Verification = nil
+		writeTask(t, home, task)
+
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		if envelope.Outcome != "failed" || envelope.Error != "task is assigned: land needs verified" {
+			t.Fatalf("Land() = %+v; want the assigned status error", envelope)
+		}
+
+		task.Status = "verified"
+		task.Verification = &records.Verification{Agent: "verifier-new", Result: "pass", At: "2026-10-19T00:00:00Z"}
+		writeTask(t, home, task)
+		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		if envelope.Outcome != "ok" {
+			t.Fatalf("Land() after a new pass = %+v; want ok", envelope)
+		}
+	})
+
+	t.Run("verified without a check", func(t *testing.T) {
+		repo := newRepo(t)
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home, task := seedOne(t, repo)
+		task.Verification = nil
+		writeTask(t, home, task)
+
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		if envelope.Outcome != "failed" || envelope.Error != "task verification is not a pass" {
+			t.Fatalf("Land() = %+v; want a missing verification error", envelope)
+		}
+	})
+
+	t.Run("verified after a failed check", func(t *testing.T) {
+		repo := newRepo(t)
+		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		home, task := seedOne(t, repo)
+		task.Verification.Result = "fail"
+		writeTask(t, home, task)
+
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		if envelope.Outcome != "failed" || envelope.Error != "task verification is not a pass" {
+			t.Fatalf("Land() = %+v; want a failed verification error", envelope)
+		}
+	})
+}
