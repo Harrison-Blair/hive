@@ -1,8 +1,8 @@
 ---
 title: "A verify fail leaves no workspace for the repair worker"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: ""
+decision: "Fixed in 19-worker-respawn (78381ba1): the spawn reopens the worktree workspace with worktree.open and updates the record."
 ---
 
 **Summary:**
@@ -23,6 +23,8 @@ covers the re-verify. It does not cover the repair worker.
 t16-worker-1`, because that agent was stopped. The fix was
 `hive task assign --task 16-quiet-no-nudge --agent t16-worker-2` by the
 manager. Then `hive task complete --agent t16-worker-2` passed.
+
+Resolution: Live check 2026-10-19: after a verify fail on 18-task-reopen, `hive agent spawn --role worker --task 18-task-reopen` with no `--name` and no `--pane` picked `t18-worker-2`, set it as the acting agent, and reopened the task workspace `wDJ` on the same worktree.
 
 **Reproduction steps:**
 1. Spawn a worker for a task. Let it complete and exit.
