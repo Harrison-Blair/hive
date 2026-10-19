@@ -1,8 +1,8 @@
 ---
 title: "No `hive task edit --brief` command"
-status: "Open"
+status: "Resolved 2026-10-19"
 opened: 2026-10-18
-decision: "Add `hive task edit --brief`, allowed only before `completed` (wave 4)."
+decision: "Fixed in 22-task-edit-brief (77cdf44d): hive task edit --task ID --brief FILE, only for created or assigned, only by the controlling role."
 ---
 
 **Summary:**
