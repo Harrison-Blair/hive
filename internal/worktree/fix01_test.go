@@ -573,6 +573,8 @@ func TestFixRemoveExternalLogsCarryApplicableIDs(t *testing.T) {
 		switch request.Method {
 		case "workspace.get":
 			return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+		case "agent.list":
+			return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
 		case "workspace.close":
 			return fakeReply{Result: `{"type":"ok"}`}
 		}

@@ -4,6 +4,7 @@ package agent
 import (
 	"github.com/Harrison-Blair/hive/cmd/agent/list"
 	"github.com/Harrison-Blair/hive/cmd/agent/register"
+	"github.com/Harrison-Blair/hive/cmd/agent/resolve"
 	"github.com/Harrison-Blair/hive/cmd/agent/send"
 	"github.com/Harrison-Blair/hive/cmd/agent/show"
 	"github.com/Harrison-Blair/hive/cmd/agent/spawn"
@@ -18,6 +19,6 @@ func New() *cobra.Command {
 		Short: "manage agent sessions",
 		Args:  cobra.NoArgs,
 	}
-	command.AddCommand(register.New(), list.New(), show.New(), spawn.New(), send.New(), stop.New())
+	command.AddCommand(register.New(), list.New(), show.New(), spawn.New(), send.New(), stop.New(), resolve.New())
 	return command
 }

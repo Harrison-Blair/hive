@@ -40,6 +40,9 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if record.Status == records.AgentUnresolved {
+		return StopResult{Agent: record}, stopEnvelope("failed", "agent", nil, "agent unresolved: run hive agent resolve", record)
+	}
 	if record.Status != records.AgentLive {
 		return StopResult{Agent: record}, stopEnvelope("failed", "agent", nil, "agent is "+record.Status, record)
 	}

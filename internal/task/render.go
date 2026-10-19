@@ -161,7 +161,7 @@ func deliveryText(delivery *records.Delivery) string {
 // agentStatus renders the status of the acting agent.
 func agentStatus(agent *records.Agent) string {
 	if agent == nil {
-		return "-"
+		return "no record"
 	}
 	return agent.Status
 }

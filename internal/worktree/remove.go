@@ -117,6 +117,9 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		return fail("identity", "worktree mismatch: branch")
 	}
 	failProjectID = project.ID
+	if message, occupied := findAgentOccupant(home, options.Task, task.Worktree.WorkspaceID, path); occupied {
+		return fail("agent", message)
+	}
 	scoped := logger
 	if logger != nil {
 		scoped = logger.With("project_id", project.ID, "task_id", options.Task)
@@ -199,6 +202,14 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		}
 	}
 
+	message, occupied, listErr := liveWorkspaceAgent(ctx, task.Worktree.WorkspaceID, scoped)
+	if listErr != nil {
+		return fail("agent", "agent occupancy unknown: "+oneLine(listErr.Error()))
+	}
+	if occupied {
+		return fail("agent", message)
+	}
+
 	effects := []output.Effect{}
 	closed := false
 	if workspaceFound {
@@ -260,6 +271,67 @@ func Remove(ctx context.Context, home string, options RemoveOptions) output.Enve
 		Error:   nil,
 		Result:  RemoveResult{Task: updated, Path: path, Branch: branch, WorkspaceClosed: closed},
 	}
+}
+
+// findAgentOccupant returns the first agent record that occupies the worktree
+// by the task, the workspace, or the path, unless its status is stopped or
+// exited.
+func findAgentOccupant(home, taskID, workspaceID, path string) (string, bool) {
+	registry, err := store.Open(home)
+	if err != nil {
+		return "", false
+	}
+	raw, err := registry.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return "", false
+	}
+	for _, data := range raw {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			continue
+		}
+		if record.Status == records.AgentStopped || record.Status == records.AgentExited {
+			continue
+		}
+		occupied := record.Task == taskID
+		if !occupied && workspaceID != "" && record.WorkspaceID == workspaceID {
+			occupied = true
+		}
+		if !occupied && path != "" && record.Cwd != "" && samePath(record.Cwd, path) {
+			occupied = true
+		}
+		if !occupied {
+			continue
+		}
+		name := record.Name
+		if name == "" {
+			name = record.Key
+		}
+		return "agent " + record.Status + ": " + name, true
+	}
+	return "", false
+}
+
+// liveWorkspaceAgent returns the first live herdr agent in the workspace. A
+// list failure returns an error, because an unknown occupancy cannot permit a
+// removal.
+func liveWorkspaceAgent(ctx context.Context, workspaceID string, logger *slog.Logger) (string, bool, error) {
+	if workspaceID == "" {
+		return "", false, nil
+	}
+	agents, err := herdr.AgentList(ctx, herdr.WithLogger(logger))
+	if err != nil {
+		if logger != nil {
+			logger.Debug("worktree remove agent list failed", "command", commandRemove, "workspace_id", workspaceID, "error", err.Error())
+		}
+		return "", false, err
+	}
+	for _, agent := range agents {
+		if agent.WorkspaceID == workspaceID {
+			return "agent in workspace: " + agent.PaneID, true, nil
+		}
+	}
+	return "", false, nil
 }
 
 func worktreeRemoveFailure(result *run.Result) string {

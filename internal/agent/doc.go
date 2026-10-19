@@ -4,4 +4,5 @@
 // workspace.go finds, adopts, or makes the manager workspace and chooses its root pane; instructions.go writes the project instructions.
 // spawn_worker.go resolves the worktree pane of a worker or verifier spawn and sends its prompt; brief.go builds the prompt texts.
 // supervisor.go starts the singleton supervisor under one held store lock.
+// resolve.go settles an unresolved record by hand and checks the live identity.
 package agent

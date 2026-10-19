@@ -221,7 +221,7 @@ func TestShowCombinesTheActingAgentAndKeepsUnknownDisplayable(t *testing.T) {
 	if result.Agent != nil {
 		t.Fatalf("agent = %#v; want nil for an unknown name", result.Agent)
 	}
-	if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: -") {
+	if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: no record") {
 		t.Fatalf("ShowText() = %q; want the absent status", text)
 	}
 }
