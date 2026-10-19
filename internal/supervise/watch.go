@@ -8,35 +8,41 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
-const inotifyEventSize = 16
+const (
+	inotifyEventSize = 16
+	inotifyRetry     = 10 * time.Millisecond
+)
 
 // watcher watches the inbox and agent directories with inotify.
 type watcher struct {
-	fd     int
-	mu     sync.Mutex
-	paths  map[int32]string
-	events chan struct{}
-	errs   chan error
-	done   chan struct{}
-	once   sync.Once
+	fd       int
+	mu       sync.Mutex
+	paths    map[int32]string
+	events   chan struct{}
+	errs     chan error
+	done     chan struct{}
+	finished chan struct{}
+	once     sync.Once
 }
 
 const watchMask = syscall.IN_CREATE | syscall.IN_MOVED_TO | syscall.IN_MODIFY |
 	syscall.IN_CLOSE_WRITE | syscall.IN_DELETE | syscall.IN_MOVED_FROM
 
 func newWatcher(roots ...string) (*watcher, error) {
-	fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC)
+	fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC | syscall.IN_NONBLOCK)
 	if err != nil {
 		return nil, err
 	}
 	w := &watcher{
-		fd:     fd,
-		paths:  map[int32]string{},
-		events: make(chan struct{}, 1),
-		errs:   make(chan error, 1),
-		done:   make(chan struct{}),
+		fd:       fd,
+		paths:    map[int32]string{},
+		events:   make(chan struct{}, 1),
+		errs:     make(chan error, 1),
+		done:     make(chan struct{}),
+		finished: make(chan struct{}),
 	}
 	for _, root := range roots {
 		if err := w.addTree(root); err != nil {
@@ -44,7 +50,10 @@ func newWatcher(roots ...string) (*watcher, error) {
 			return nil, err
 		}
 	}
-	go w.read()
+	go func() {
+		defer close(w.finished)
+		w.read()
+	}()
 	return w, nil
 }
 
@@ -90,11 +99,26 @@ func (w *watcher) addTree(root string) error {
 
 func (w *watcher) read() {
 	buf := make([]byte, 4096*8)
+	ticker := time.NewTicker(inotifyRetry)
+	defer ticker.Stop()
 	for {
+		select {
+		case <-w.done:
+			return
+		default:
+		}
 		n, err := syscall.Read(w.fd, buf)
 		if err != nil {
 			if errors.Is(err, syscall.EINTR) {
 				continue
+			}
+			if errors.Is(err, syscall.EAGAIN) {
+				select {
+				case <-w.done:
+					return
+				case <-ticker.C:
+					continue
+				}
 			}
 			select {
 			case w.errs <- err:
@@ -151,6 +175,7 @@ func (w *watcher) Events() <-chan struct{} {
 func (w *watcher) Close() {
 	w.once.Do(func() {
 		close(w.done)
+		<-w.finished
 		_ = syscall.Close(w.fd)
 	})
 }

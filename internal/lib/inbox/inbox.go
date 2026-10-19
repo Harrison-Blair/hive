@@ -25,7 +25,10 @@ import (
 // MaxTextBytes is the maximum UTF-8 byte length of one inbox record text.
 const MaxTextBytes = 4096
 
-const maxFieldBytes = 512
+const (
+	maxFieldBytes  = 512
+	appendLockWait = 10 * time.Second
+)
 
 var keyPattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,40}$`)
 
@@ -70,7 +73,9 @@ func Append(home string, options AppendOptions) output.Envelope {
 		return envelope
 	}
 	var envelope output.Envelope
-	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+	ctx, cancel := context.WithTimeout(context.Background(), appendLockWait)
+	defer cancel()
+	err = registry.WithLock(ctx, func(locked *store.LockedStore) error {
 		envelope = appendLocked(locked, locked, options, time.Now)
 		return nil
 	})

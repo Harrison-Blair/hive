@@ -8,7 +8,16 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
+	"time"
 )
+
+// withGroupedReadLock allows race-instrumented scheduling time; the test checks
+// version consistency, not lock acquisition speed.
+func withGroupedReadLock(store *Store, fn func(*LockedStore) error) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return store.WithLock(ctx, fn)
+}
 
 func TestGroupedReadSeesEqualVersions(t *testing.T) {
 	store := openStore(t, t.TempDir())
@@ -24,7 +33,7 @@ func TestGroupedReadSeesEqualVersions(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for version := 1; version <= rounds; version++ {
-			err := store.WithLock(context.Background(), func(locked *LockedStore) error {
+			err := withGroupedReadLock(store, func(locked *LockedStore) error {
 				if err := locked.WriteIn([]string{"tasks"}, "a", map[string]int{"version": version}); err != nil {
 					return err
 				}
@@ -37,7 +46,7 @@ func TestGroupedReadSeesEqualVersions(t *testing.T) {
 		}
 	}()
 	for range rounds {
-		err := store.WithLock(context.Background(), func(locked *LockedStore) error {
+		err := withGroupedReadLock(store, func(locked *LockedStore) error {
 			var a, b map[string]int
 			if err := locked.ReadIn([]string{"tasks"}, "a", &a); err != nil {
 				return err
