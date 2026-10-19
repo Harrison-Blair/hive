@@ -109,7 +109,7 @@ flowchart TD
 | [T17](tasks/T17-opencode-profile.md) | opencode profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | cb95422 |
 | [T18](tasks/T18-pi-profile.md) | pi profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 8078742 |
 | [T19](tasks/T19-cursor-profile.md) | cursor profile | 4 | small | T10, CP2 | landed | openai-codex/gpt-6.1-sol | 976d273 |
-| [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | in progress | | |
+| [T20](tasks/T20-recovery.md) | recovery | 5 | small | T13, T15, CP3 | landed | openai-codex/gpt-6.1-sol | 7046bfe |
 | [T21](tasks/T21-role-playbooks.md) | role playbooks | 5 | strong | T07, T12, T13, T14, T15, CP3 | in progress | | |
 
 | Checkpoint | After | Blocks | Status | Date | Verdict by |
@@ -1780,6 +1780,32 @@ and the CP4 row. The contract is the `### CP4 TUI live` section.
   The event time is `2026-10-18T20:45:27.937582406-04:00`.
 - No real Hive source file and no `main` reference changed.
 - CP1, CP2, and CP3 stay `passed`. CP5 stays `open`.
+
+### Dated landing: T20
+
+2026-10-18. This section records the T20 landing. It passes no checkpoint.
+
+- T20 is `landed`. Its verifier is `openai-codex/gpt-6.1-sol`. Its landing
+  date is `2026-10-18`.
+- The T20 base tip is `c733262`. The verified T20 tip is `8583e5f`.
+- The T20 merge commit is `7046bfe`. Its subject is
+  `merge(T20): land the recovery commands`. Its first parent is `c733262`. Its
+  second parent is `8583e5f`. The merge had no conflict.
+- The combined gate ran on the uncommitted T20 merge. `gofmt -l` prints
+  nothing. `go vet ./...` exits 0. `golangci-lint run ./...` reports
+  `0 issues.`. `go test -race -p=1 -count=1 ./...` exits 0.
+- The T20 push moved `origin/dev` from `c733262` to `7046bfe`.
+- The T20 verifier reports are
+  `.hive/tmp/coordinator/reports/t20-verify-01.md` and
+  `.hive/tmp/coordinator/reports/t20-verify-02.md`. Report 01 fails on B1, B2,
+  and B3. Report 02 passes each finding after the fix. The T20 fix commit is
+  `4047260`.
+- The T20 change adds the `checkUnresolvedAgents(home)` registration line to
+  `internal/doctor/run.go`. The merger unioned that line into the file's
+  ownership. The file keeps each other line.
+- The T20 branch did not edit `internal/task/show.go`. The file keeps the
+  base content.
+- CP5 stays open.
 
 ### CP1 home live
 
