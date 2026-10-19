@@ -118,7 +118,7 @@ func (s *Supervisor) nudgeTodos(ctx context.Context, role string, generation uin
 			return err
 		}
 		for _, record := range all {
-			if record.ReadAt != "" {
+			if record.ReadAt != "" || record.Kind == records.InboxQuiet {
 				continue
 			}
 			if record.NudgedAt == "" || record.NudgedGeneration != generation {
