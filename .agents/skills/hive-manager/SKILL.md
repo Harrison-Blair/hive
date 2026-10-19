@@ -58,8 +58,10 @@ hive worktree create --task ID
 Spawn one worker for one ready task. Put the task ID in the preamble.
 
 ```sh
-hive agent spawn --role worker --project ID --task ID --name NAME --harness KIND --model MODEL
+hive agent spawn --role worker --task ID --name NAME --harness KIND --model MODEL
 ```
+
+Hive takes the project from the task.
 
 The worker reads its skill and then its brief. The worker commits and pushes the
 task branch. The worker runs `hive task complete` when the work ends.
@@ -72,6 +74,8 @@ for that task.
 ```sh
 hive agent spawn --role verifier --task ID --name NAME --harness KIND --model MODEL
 ```
+
+After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.
 
 The verifier reads its skill and its brief. The verifier runs each verification
 item again and writes `VERIFIED.md`.

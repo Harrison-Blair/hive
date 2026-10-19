@@ -37,7 +37,7 @@ hive task list --project {{PROJECT_ID}} --ready
 hive task show ID --brief
 hive task create --project {{PROJECT_ID}} --title TITLE --slug SLUG --depends-on IDS --brief FILE
 hive worktree create --task ID
-hive agent spawn --role worker --project {{PROJECT_ID}} --task ID --name NAME --harness KIND --model MODEL
+hive agent spawn --role worker --task ID --name NAME --harness KIND --model MODEL
 hive agent spawn --role verifier --task ID --name NAME --harness KIND --model MODEL
 hive agent send --agent NAME --wait --timeout 120 TEXT
 hive agent stop --agent NAME
@@ -48,3 +48,7 @@ hive memory write --scope project:{{PROJECT_ID}} NAME
 hive handoff write --scope project:{{PROJECT_ID}}
 hive inbox send --to coordinator TEXT --agent NAME
 ```
+
+Hive takes the project from the task.
+
+After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.

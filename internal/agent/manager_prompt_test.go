@@ -79,6 +79,14 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	}
 }
 
+func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
+	instructions := strings.Join(strings.Fields(projectAgentsTemplate), " ")
+	want := "After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs."
+	if !strings.Contains(instructions, want) {
+		t.Fatalf("manager instructions do not contain %q", want)
+	}
+}
+
 func TestManagerPromptLogCapsLargeBody(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)

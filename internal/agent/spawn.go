@@ -84,6 +84,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	if paneError != "" {
 		return failed("validate", paneError)
 	}
+	if choice.Project != "" {
+		options.Project = choice.Project
+	}
 	if choice.Task != nil {
 		return spawnTaskAgent(ctx, home, options, choice.Task, logger)
 	}
@@ -334,12 +337,20 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 // paneChoice is the pane of one spawn and, for a manager, its workspace.
 type paneChoice struct {
 	PaneID  string
+	Project string
 	Manager *managerChoice
 	Task    *taskChoice
 }
 
 func choosePane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (paneChoice, string) {
 	if options.PaneSet && options.PaneID != "" {
+		if options.Task != "" && (options.Role == "worker" || options.Role == "verifier") {
+			project, message := resolveTaskProject(home, options)
+			if message != "" {
+				return paneChoice{}, message
+			}
+			return paneChoice{PaneID: options.PaneID, Project: project}, ""
+		}
 		return paneChoice{PaneID: options.PaneID}, ""
 	}
 	switch options.Role {

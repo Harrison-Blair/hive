@@ -2,7 +2,7 @@
 title: "A verify fail leaves no workspace and no verifier for a re-verify"
 status: "Resolved 2026-10-19"
 opened: 2026-10-19
-decision: "By design. The manager skill fix arrives in wave 2."
+decision: "By design. The manager skill fix landed in 17-verifier-project (e7031497): after a verify fail, spawn a fresh verifier with no --pane."
 ---
 
 **Summary:**
