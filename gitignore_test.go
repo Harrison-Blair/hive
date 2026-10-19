@@ -33,7 +33,7 @@ func TestTrackedFilesAreNotIgnored(t *testing.T) {
 
 func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
 	skipWithoutGit(t)
-	err := exec.Command("git", "check-ignore", "-q", ".github/workflows/ci.yml").Run()
+	err := exec.Command("git", "check-ignore", "--no-index", "-q", ".github/workflows/ci.yml").Run()
 	if err == nil {
 		t.Fatal("git ignores .github/workflows/ci.yml")
 	}
