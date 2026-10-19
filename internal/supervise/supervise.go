@@ -369,15 +369,24 @@ func (s *Supervisor) liveByPane(paneID string) (records.Agent, bool) {
 	return records.Agent{}, false
 }
 
-// liveAllByField returns each live record that matches one topology field.
-func (s *Supervisor) liveAllByField(field, value string) []records.Agent {
+func (s *Supervisor) recordByPane(paneID string) (records.Agent, bool) {
+	for _, record := range s.agents {
+		if (record.Status == records.AgentStarting || record.Status == records.AgentLive) && record.PaneID == paneID {
+			return record, true
+		}
+	}
+	return records.Agent{}, false
+}
+
+// activeAllByField returns the live or starting records for one topology field.
+func (s *Supervisor) activeAllByField(field, value string) []records.Agent {
 	var found []records.Agent
 	if value == "" {
 		return found
 	}
 	for _, key := range sortedKeys(s.agents) {
 		record := s.agents[key]
-		if record.Status != records.AgentLive {
+		if record.Status != records.AgentLive && record.Status != records.AgentStarting {
 			continue
 		}
 		switch field {

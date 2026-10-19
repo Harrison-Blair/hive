@@ -1,8 +1,11 @@
 package supervise
 
 import (
+	"bytes"
 	"context"
+	"log/slog"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -176,6 +179,31 @@ func TestEventsDoneIsIdleQuiet(t *testing.T) {
 	}
 }
 
+func TestEventsAgentDetectedReleasedStartingIgnored(t *testing.T) {
+	home := testHome(t)
+	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	worker.Status = records.AgentStarting
+	writeAgent(t, home, worker)
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+	var log bytes.Buffer
+	s.logger = slog.New(slog.NewTextHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+	event := eventOf("pane_agent_detected", `{"pane_id":"w1:p2","workspace_id":"w1","released":true,"final_status":"unknown"}`)
+	if err := s.handleEvent(context.Background(), event); err != nil {
+		t.Fatal(err)
+	}
+	if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentStarting {
+		t.Fatalf("status = %q; want starting", updated.Status)
+	}
+	if all := readInbox(t, home, "manager-demo"); len(all) != 0 {
+		t.Fatalf("inbox = %+v; want no records", all)
+	}
+	if !strings.Contains(log.String(), "ignored released pane while starting") {
+		t.Fatalf("log = %q; want an ignored-event entry", log.String())
+	}
+}
+
 func TestEventsAgentDetectedReleasedExited(t *testing.T) {
 	home := testHome(t)
 	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
@@ -193,6 +221,58 @@ func TestEventsAgentDetectedReleasedExited(t *testing.T) {
 	}
 	if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentExited {
 		t.Fatalf("status = %q; want exited", updated.Status)
+	}
+}
+
+func TestEventsStartingTopologyClosedUnresolved(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		event string
+		data  string
+	}{
+		{name: "pane", event: "pane_closed", data: `{"pane_id":"w1:p2"}`},
+		{name: "tab", event: "tab_closed", data: `{"tab_id":"w1:t2"}`},
+		{name: "workspace", event: "workspace_closed", data: `{"workspace_id":"w1"}`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			home := testHome(t)
+			worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+			worker.Status = records.AgentStarting
+			writeAgent(t, home, worker)
+			s := handlerSupervisor(t, home, newFakeOps(), newFakeClock())
+
+			if err := s.handleEvent(context.Background(), eventOf(test.event, test.data)); err != nil {
+				t.Fatal(err)
+			}
+			if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentUnresolved {
+				t.Fatalf("status = %q; want unresolved", updated.Status)
+			}
+			all := readInbox(t, home, "manager-demo")
+			if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
+				t.Fatalf("inbox = %+v; want one unresolved record", all)
+			}
+		})
+	}
+}
+
+func TestEventsStartingTopologyClosedWithoutControllerUnresolved(t *testing.T) {
+	home := testHome(t)
+	coordinator := records.Agent{
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1",
+		Status: records.AgentStarting, Generation: 1, Spawned: true,
+	}
+	writeAgent(t, home, coordinator)
+	s := handlerSupervisor(t, home, newFakeOps(), newFakeClock())
+
+	if err := s.handleEvent(context.Background(), eventOf("workspace_closed", `{"workspace_id":"w1"}`)); err != nil {
+		t.Fatal(err)
+	}
+	if updated := readAgent(t, home, coordinator.Key); updated.Status != records.AgentUnresolved {
+		t.Fatalf("status = %q; want unresolved", updated.Status)
+	}
+	if all := readInbox(t, home, "coordinator"); len(all) != 0 {
+		t.Fatalf("inbox = %+v; want no record without a controlling role", all)
 	}
 }
 

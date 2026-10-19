@@ -55,6 +55,70 @@ func scriptStop(t *testing.T, fake *fakeHerdr, sleep sleepProcess, closeResult s
 	}
 }
 
+func TestStopStartingWaitsUntilLive(t *testing.T) {
+	home := testHome(t)
+	sleep := startSleep(t)
+	record := spawnedRecord(sleep)
+	record.Status = records.AgentStarting
+	writeStopRecord(t, home, record)
+	fake := newFakeHerdr(t)
+	scriptStop(t, fake, sleep, "", `{"error":{"code":"workspace_not_found","message":"workspace w1 not found"}}`)
+	fake.setBefore(func(method string, _ json.RawMessage) {
+		if method == "pane.get" {
+			if got := readAgent(t, home, record.Key).Status; got != records.AgentLive {
+				t.Errorf("status at pane.get = %q; want live", got)
+			}
+		}
+	})
+	go func() {
+		time.Sleep(20 * time.Millisecond)
+		registry, err := store.Open(home)
+		if err != nil {
+			t.Errorf("store open: %v", err)
+			return
+		}
+		if err := registry.UpdateIn([]string{"agents"}, record.Key, func(raw json.RawMessage) (json.RawMessage, error) {
+			var current records.Agent
+			if err := json.Unmarshal(raw, &current); err != nil {
+				return nil, err
+			}
+			current.Status = records.AgentLive
+			return json.Marshal(current)
+		}); err != nil {
+			t.Errorf("set live: %v", err)
+		}
+	}()
+
+	result, envelope := Stop(context.Background(), home, record)
+	if envelope.Outcome != "ok" || result.Agent.Status != records.AgentStopped {
+		t.Fatalf("result = %#v envelope = %#v; want stopped", result, envelope)
+	}
+	if len(fake.recorded("pane.close")) != 1 {
+		t.Fatalf("pane.close requests = %d; want 1", len(fake.recorded("pane.close")))
+	}
+}
+
+func TestStopStartingTimeoutMarksUnresolved(t *testing.T) {
+	home := testHome(t)
+	sleep := startSleep(t)
+	record := spawnedRecord(sleep)
+	record.Status = records.AgentStarting
+	record.StartedAt = time.Now().Add(-time.Hour).UTC().Format(time.RFC3339Nano)
+	writeStopRecord(t, home, record)
+	fake := newFakeHerdr(t)
+
+	_, envelope := Stop(context.Background(), home, record)
+	if envelope.Outcome != "failed" || !strings.Contains(toString(envelope.Error), "start did not settle") {
+		t.Fatalf("envelope = %#v; want a start timeout", envelope)
+	}
+	if got := readAgent(t, home, record.Key).Status; got != records.AgentUnresolved {
+		t.Fatalf("status = %q; want unresolved", got)
+	}
+	if len(fake.recorded("pane.get")) != 0 {
+		t.Fatalf("pane.get ran after the start timeout")
+	}
+}
+
 func TestStopRefusesManualRegistration(t *testing.T) {
 	home := testHome(t)
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Spawned: false, Generation: 1}

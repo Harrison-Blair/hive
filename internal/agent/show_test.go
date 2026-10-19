@@ -11,6 +11,24 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+func TestShowPrefersStartingGenerationByName(t *testing.T) {
+	home := testHome(t)
+	writeRecord(t, home, records.Agent{Key: "worker-g1", Name: "worker", Role: "worker", Status: records.AgentLive, Generation: 1})
+	writeRecord(t, home, records.Agent{Key: "worker-g2", Name: "worker", Role: "worker", Status: records.AgentStarting, Generation: 2})
+
+	envelope := Show(home, "worker")
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Show() = %#v; want the starting record", envelope)
+	}
+	record, ok := envelope.Result.(records.Agent)
+	if !ok || record.Key != "worker-g2" || record.Status != records.AgentStarting {
+		t.Fatalf("Show() = %#v; want worker-g2 starting", envelope.Result)
+	}
+	if text := ShowText(envelope); !strings.Contains(text, "status: starting") {
+		t.Fatalf("ShowText() = %q; want starting status", text)
+	}
+}
+
 func TestShowResolvesClaimBeforeWorkerRecordKey(t *testing.T) {
 	home := t.TempDir()
 	if envelope := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "w1:p1"}); envelope.Outcome != "ok" {

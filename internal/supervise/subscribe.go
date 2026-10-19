@@ -34,7 +34,7 @@ func subscriptionParams(panes []string) herdr.SubscribeParams {
 func (s *Supervisor) watchedPanes() []string {
 	seen := map[string]bool{}
 	for _, record := range s.agents {
-		if record.Status == records.AgentLive && record.PaneID != "" {
+		if (record.Status == records.AgentLive || record.Status == records.AgentStarting) && record.PaneID != "" {
 			seen[record.PaneID] = true
 		}
 	}

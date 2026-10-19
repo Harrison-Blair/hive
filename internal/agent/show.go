@@ -108,8 +108,8 @@ func findAgentByName(locked *store.LockedStore, name string, target *records.Age
 		return nil
 	}
 	sort.Slice(candidates, func(i, j int) bool {
-		if (candidates[i].Status == records.AgentLive) != (candidates[j].Status == records.AgentLive) {
-			return candidates[i].Status == records.AgentLive
+		if isActiveAgentStatus(candidates[i].Status) != isActiveAgentStatus(candidates[j].Status) {
+			return isActiveAgentStatus(candidates[i].Status)
 		}
 		if candidates[i].Generation != candidates[j].Generation {
 			return candidates[i].Generation > candidates[j].Generation

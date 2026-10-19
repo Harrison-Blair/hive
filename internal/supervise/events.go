@@ -123,9 +123,13 @@ func (s *Supervisor) onAgentDetected(ctx context.Context, event herdr.Event, dat
 	if !data.Released || data.FinalStatus != "unknown" {
 		return nil
 	}
-	record, found := s.liveByPane(data.PaneID)
+	record, found := s.recordByPane(data.PaneID)
 	if !found {
 		s.logEvent(event, "no live record for pane")
+		return nil
+	}
+	if record.Status == records.AgentStarting {
+		s.logEvent(event, "ignored released pane while starting")
 		return nil
 	}
 	role := controllingRole(record)
@@ -148,26 +152,18 @@ func (s *Supervisor) onTopologyClosed(ctx context.Context, event herdr.Event, fi
 	if value == "" {
 		return nil
 	}
-	found := s.liveAllByField(field, value)
+	found := s.activeAllByField(field, value)
 	if len(found) == 0 {
 		s.logEvent(event, "no live record for closed "+field)
 		return nil
 	}
 	for _, record := range found {
 		role := controllingRole(record)
-		if role == "" {
+		if role == "" && record.Status != records.AgentStarting {
 			s.logEvent(event, "no controlling role")
 			continue
 		}
-		if err := s.notify(ctx, event, notification{
-			role:      role,
-			kind:      records.InboxUnresolved,
-			task:      record.Task,
-			agent:     record.Name,
-			text:      "unresolved",
-			agentKey:  record.Key,
-			lifecycle: records.AgentUnresolved,
-		}); err != nil {
+		if err := s.notifyLifecycle(ctx, record, records.InboxUnresolved, records.AgentUnresolved, "topology closed"); err != nil {
 			return err
 		}
 	}

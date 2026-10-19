@@ -168,6 +168,28 @@ func checkSupervisor(home string) Check {
 	return newCheck("supervisor", false, true, fmt.Sprintf("supervisor live: pid %d", claim.PID))
 }
 
+func checkStartingAgents(home string) Check {
+	store, err := storelib.Open(home)
+	if err != nil {
+		return newCheck("starting agents", false, false, err.Error())
+	}
+	raw, err := store.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return newCheck("starting agents", false, false, err.Error())
+	}
+	count := 0
+	for _, data := range raw {
+		var agent records.Agent
+		if err := json.Unmarshal(data, &agent); err != nil {
+			return newCheck("starting agents", false, false, "record invalid: "+err.Error())
+		}
+		if agent.Status == records.AgentStarting {
+			count++
+		}
+	}
+	return newCheck("starting agents", false, count == 0, fmt.Sprintf("%d", count))
+}
+
 func checkUnresolvedAgents(home string) Check {
 	store, err := storelib.Open(home)
 	if err != nil {

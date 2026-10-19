@@ -87,6 +87,46 @@ func TestReconcileAgentNotFoundMissingPaneUnresolved(t *testing.T) {
 	}
 }
 
+func TestReconcileStartingWithMissingPaneUnresolved(t *testing.T) {
+	home := testHome(t)
+	record := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	record.Status = records.AgentStarting
+	writeAgent(t, home, record)
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.reconcile(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if updated := readAgent(t, home, record.Key); updated.Status != records.AgentUnresolved {
+		t.Fatalf("status = %q; want unresolved", updated.Status)
+	}
+	all := readInbox(t, home, "manager-demo")
+	if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
+		t.Fatalf("inbox = %+v; want one unresolved record", all)
+	}
+}
+
+func TestReconcileStartingShellWaitsForSpawn(t *testing.T) {
+	home := testHome(t)
+	record := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	record.Status = records.AgentStarting
+	writeAgent(t, home, record)
+	ops := newFakeOps()
+	ops.pane["w1:p2"] = herdr.PaneInfo{PaneID: "w1:p2", TerminalID: "term-a", WorkspaceID: "w1", TabID: "w1:t2", AgentStatus: "unknown"}
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.reconcile(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if updated := readAgent(t, home, record.Key); updated.Status != records.AgentStarting {
+		t.Fatalf("status = %q; want starting", updated.Status)
+	}
+	if all := readInbox(t, home, "manager-demo"); len(all) != 0 {
+		t.Fatalf("inbox = %+v; want no records", all)
+	}
+}
+
 func TestReconcileAdoptsTerminalID(t *testing.T) {
 	home := testHome(t)
 	coordinator := records.Agent{

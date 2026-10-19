@@ -179,7 +179,7 @@ func TestHeaderShowsHomeAndRefreshesStoreCounts(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 
-	requireView(t, m, "hive "+home, "supervisor: down", "agents: 0", "inbox: 0 unread")
+	requireView(t, m, "hive "+home, "supervisor: down", "agents: 0 live, 0 starting", "inbox: 0 unread")
 
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
 		Key: "supervisor", Agent: "supervisor", Generation: 1, PID: int64(os.Getpid()),
@@ -190,13 +190,16 @@ func TestHeaderShowsHomeAndRefreshesStoreCounts(t *testing.T) {
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
 		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive,
 	})
+	writeRecord(t, home, []string{"agents"}, "agent-starting", records.Agent{
+		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentStarting,
+	})
 	for sequence := uint64(1); sequence <= 3; sequence++ {
 		writeRecord(t, home, []string{"inbox", "coordinator"}, fmt.Sprintf("%d", sequence), records.Inbox{
 			Seq: sequence, Role: "coordinator", Kind: records.InboxMessage, Text: "waiting",
 		})
 	}
 	m, _ = raise(t, m, tickMsg{})
-	requireView(t, m, "supervisor: live", "agents: 2", "inbox: 3 unread")
+	requireView(t, m, "supervisor: live", "agents: 2 live, 1 starting", "inbox: 3 unread")
 
 	writeRecord(t, home, []string{"agents"}, "agent-three", records.Agent{
 		Key: "agent-three", Name: "agent-three", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive,
@@ -205,7 +208,7 @@ func TestHeaderShowsHomeAndRefreshesStoreCounts(t *testing.T) {
 		Seq: 4, Role: "coordinator", Kind: records.InboxMessage, Text: "waiting",
 	})
 	m, _ = raise(t, m, tickMsg{})
-	requireView(t, m, "agents: 3", "inbox: 4 unread")
+	requireView(t, m, "agents: 3 live, 1 starting", "inbox: 4 unread")
 
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,
@@ -226,7 +229,7 @@ func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
 	m := newTestModel(t, home, clock)
 
 	requireView(t, m, "hive "+home, "error:")
-	rejectView(t, m, "agents: 0", "inbox: 0 unread")
+	rejectView(t, m, "agents: 0 live, 0 starting", "inbox: 0 unread")
 }
 
 func TestKeysFilterLevelFollowAndQuit(t *testing.T) {

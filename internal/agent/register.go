@@ -363,6 +363,11 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		if _, ok := agentByKey[claimKey]; ok {
 			return failed("agent", "agent exists: "+claimKey)
 		}
+		if currentClaim != nil {
+			if holder, ok := agentByKey[currentClaim.Agent]; ok && holder.Status == records.AgentStarting {
+				return failed("agent", "agent is starting: "+holder.Name)
+			}
+		}
 	}
 	for _, record := range agentRecords {
 		if record.Key == recordKey {
@@ -374,18 +379,18 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		if record.Key == name {
 			return failed("agent", "agent exists: "+name)
 		}
-		if record.Status == records.AgentLive && record.Name == name {
+		if isActiveAgentStatus(record.Status) && record.Name == name {
 			return failed("agent", "agent exists: "+name)
 		}
-		if singleton && record.Status == records.AgentLive && record.Name == claimKey {
+		if singleton && isActiveAgentStatus(record.Status) && record.Name == claimKey {
 			return failed("agent", "agent exists: "+claimKey)
 		}
-		if record.Status == records.AgentLive && record.Name == recordKey {
+		if isActiveAgentStatus(record.Status) && record.Name == recordKey {
 			return failed("agent", "agent exists: "+recordKey)
 		}
 	}
 	for _, record := range agentRecords {
-		if record.Status != records.AgentLive && record.Status != records.AgentUnresolved {
+		if record.Status != records.AgentLive && record.Status != records.AgentStarting && record.Status != records.AgentUnresolved {
 			continue
 		}
 		if record.PaneID != options.PaneID {
@@ -431,7 +436,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	}
 
 	startedAt := now
-	if replaceOrphan {
+	if replaceOrphan && !options.Spawned {
 		startedAt = existing.StartedAt
 	}
 	record := records.Agent{
@@ -447,7 +452,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		TabID:         options.TabID,
 		TerminalID:    "",
 		Cwd:           "",
-		Status:        records.AgentLive,
+		Status:        initialAgentStatus(options.Spawned),
 		Finished:      false,
 		QuietAfterMin: quietAfter,
 		Generation:    generation,
@@ -485,11 +490,32 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		if currentClaim != nil {
 			message += fmt.Sprintf("; claim unchanged at generation %d", currentClaim.Generation)
 		}
+		if options.Spawned {
+			record.Status = records.AgentUnresolved
+			record.LastError = message
+			record.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
+			if settleErr := writer.WriteIn([]string{"agents"}, recordKey, record); settleErr != nil {
+				message += "; settle agent record: " + settleErr.Error()
+			} else {
+				effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", recordKey), Action: "unresolved"})
+			}
+		}
 		return output.Envelope{Outcome: "partial", Phase: "claim", Effects: effects, Error: message, Result: nil}
 	}
 	effects = append(effects, output.Effect{Resource: "claim", Path: statePath("claims", claimKey), Action: "updated"})
 	result.Claim = &claim
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
+}
+
+func initialAgentStatus(spawned bool) string {
+	if spawned {
+		return records.AgentStarting
+	}
+	return records.AgentLive
+}
+
+func isActiveAgentStatus(status string) bool {
+	return status == records.AgentStarting || status == records.AgentLive
 }
 
 func loadAgents(writer lockedWriter) ([]records.Agent, error) {

@@ -119,14 +119,28 @@ verifier spawn with `--pane` requires `--project`.
 
 **Issue:** A verifier spawn with `--pane` skips the first prompt
 
-**Status:** Open
+**Status:** Resolved 2026-10-19
 
-**Summary:** On 2026-10-19, a verifier spawn with `--pane` returned success
-without its first prompt. The manager sent the verifier prompt with
-`hive agent send` by hand.
+**Summary:** A released-shell event could change the new agent record to
+`exited` before `agent.start` returned. The agent then ran without its first
+prompt. The `starting` status keeps the supervisor from treating this event as
+an exit. Fix commit: `c7b2566`.
 
 **Reproduction steps:**
 1. Spawn a verifier with `--pane`.
 2. Read the verifier pane.
 3. Check that the first prompt is absent.
 4. Send the prompt with `hive agent send`.
+
+**Issue:** `hive agent send` fails with `agent_not_ready` after a Pi `--pane` spawn
+
+**Status:** Open
+
+**Summary:** On 2026-10-19, `hive agent send` to a Pi agent spawned with
+`--pane` failed with `agent_not_ready` two times. This task records the issue.
+It does not fix it.
+
+**Reproduction steps:**
+1. Spawn a Pi agent with `hive agent spawn --pane`.
+2. Run `hive agent send` for that agent.
+3. The command returns `agent_not_ready` (observed two times on 2026-10-19).
