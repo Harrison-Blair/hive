@@ -61,6 +61,7 @@ func TestFix02Session(t *testing.T) {
 			home := testHome(t)
 			sleep := startSleep(t)
 			fake := newFakeHerdr(t)
+			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 			fake.result("agent.start", `{"type":"agent_started","agent":`+fix02AgentJSON("unknown", test.start)+`,"argv":["claude"]}`)
 			if test.paneFail {
 				fake.failure("pane.get", "pane_not_found", "pane w1:p1 not found")

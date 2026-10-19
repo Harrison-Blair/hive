@@ -34,20 +34,21 @@ var (
 
 // SpawnOptions holds explicit values for one agent spawn.
 type SpawnOptions struct {
-	Role          string
-	Project       string
-	Task          string
-	Harness       string
-	Model         string
-	Name          string
-	NameSet       bool
-	PaneID        string
-	PaneSet       bool
-	Adopt         string
-	QuietAfterMin int
-	QuietAfterSet bool
-	ExtraArgs     []string
-	PID           int64
+	Role              string
+	Project           string
+	Task              string
+	Harness           string
+	Model             string
+	Name              string
+	NameSet           bool
+	PaneID            string
+	PaneSet           bool
+	Adopt             string
+	QuietAfterMin     int
+	QuietAfterSet     bool
+	ExtraArgs         []string
+	PID               int64
+	shellReadyTimeout time.Duration
 }
 
 // SpawnResult is the record and optional claim of one spawn.
@@ -143,6 +144,22 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	record := result.Agent
 	effects := append([]output.Effect{}, registered.Effects...)
 	logger.Debug("agent spawn intent", "command", "agent spawn", "agent_id", record.Key, "pane_id", paneID, "role", options.Role)
+
+	readyTimeout := options.shellReadyTimeout
+	if readyTimeout <= 0 {
+		readyTimeout = defaultShellReadyTimeout
+	}
+	if waitErr := waitForShell(ctx, paneID, readyTimeout, logger); waitErr != nil {
+		override := ""
+		if isHerdrCode(waitErr, "agent_pane_busy") {
+			override = "first tab busy: stop the agent or pass --pane"
+		}
+		envelope := spawnStartFailure(home, logger, options, record, result.Claim, effects, waitErr, override)
+		if manager != nil {
+			manager.cleanup(ctx, home, logger)
+		}
+		return envelope
+	}
 
 	args := profile.Args(options.Model, options.ExtraArgs)
 	started, startErr := herdr.AgentStart(ctx, herdr.AgentStartParams{

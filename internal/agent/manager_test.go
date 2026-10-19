@@ -113,6 +113,7 @@ func scriptManagerAgentTab(t *testing.T, fake *fakeHerdr, sleep sleepProcess, pa
 	if !hasTabCreate {
 		fake.result("tab.create", managerTabCreatedJSON(workspaceID, tabID, paneID, managerRepoPath))
 	}
+	scriptReadyShell(fake, paneID, "term_x", workspaceID, tabID, managerRepoPath)
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "unknown", key)+`,"argv":["claude","--model","m"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON(paneID, "term_x", workspaceID, tabID, managerRepoPath, "")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON(paneID, "term_x", workspaceID, tabID, "idle", key)+`}`)
@@ -471,7 +472,7 @@ func TestManagerWorkspacePaneBusyFromStart(t *testing.T) {
 	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
 	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
-	fake.failure("agent.start", "agent_pane_busy", "pane w6:p1 is busy")
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneStatusJSON("w6:p1", "term_w6", "w6", "w6:t1", managerRepoPath, "working", `,"agent":"manager-demo-g0"`)+`}`)
 	fake.result("workspace.close", `{"type":"ok"}`)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "failed" {
@@ -479,6 +480,9 @@ func TestManagerWorkspacePaneBusyFromStart(t *testing.T) {
 	}
 	if !strings.Contains(toString(envelope.Error), "first tab busy: stop the agent or pass --pane") {
 		t.Fatalf("error = %v", envelope.Error)
+	}
+	if len(fake.recorded("agent.start")) != 0 {
+		t.Fatalf("busy pane sent agent.start")
 	}
 }
 

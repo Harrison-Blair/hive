@@ -23,14 +23,20 @@ func TestSpawnKeepsStartSessionBeforePaneRead(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+fix02AgentJSON("unknown", "s")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+fix02PaneJSON("s")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+fix02AgentJSON("idle", "s")+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+fix02AgentJSON("idle", "s")+`}`)
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(sleep.pid, "claude", "claude"))+`}`)
 	seen := make(chan string, 1)
+	started := false
 	fake.setBefore(func(method string, _ json.RawMessage) {
-		if method != "pane.get" {
+		if method == "agent.start" {
+			started = true
+			return
+		}
+		if method != "pane.get" || !started {
 			return
 		}
 		registry, err := store.Open(home)
@@ -73,6 +79,7 @@ func TestSpawnKeepsPaneTopologyOnSessionRefusal(t *testing.T) {
 			home := testHome(t)
 			sleep := startSleep(t)
 			fake := newFakeHerdr(t)
+			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 			fake.result("agent.start", `{"type":"agent_started","agent":`+fix02AgentJSON("unknown", "s")+`,"argv":["claude"]}`)
 			fake.result("pane.get", `{"type":"pane_info","pane":`+fix02PaneJSON(test.pane)+`}`)
 			fake.result("agent.wait", `{"type":"agent_info","agent":`+fix02AgentJSON("idle", "s")+`}`)
@@ -119,6 +126,7 @@ func TestSpawnWaitTimeoutWithMatchingSessionKeepsLive(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+fix02AgentJSON("unknown", "s")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+fix02PaneJSON("s")+`}`)
 	fake.failure("agent.wait", "timeout", "timed out waiting for agent status")
@@ -150,6 +158,7 @@ func TestSpawnSessionStoreFailureKeepsTruth(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", "/tmp/fixture")
 	fake.result("agent.start", `{"type":"agent_started","agent":`+fix02AgentJSON("unknown", "s")+`,"argv":["claude"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+fix02PaneJSON("s")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+fix02AgentJSON("idle", "s")+`}`)
@@ -189,7 +198,7 @@ func TestSpawnSessionStoreFailureKeepsTruth(t *testing.T) {
 	if !hasEffect(envelope.Effects, "agent", "started") {
 		t.Errorf("effects = %#v; want the started effect", envelope.Effects)
 	}
-	if got := len(fake.recorded("pane.get")); got != 0 {
-		t.Fatalf("pane.get ran %d times; the session write must fail before the read", got)
+	if got := len(fake.recorded("pane.get")); got != 1 {
+		t.Fatalf("pane.get requests = %d; want the shell-readiness check only", got)
 	}
 }

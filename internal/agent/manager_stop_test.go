@@ -87,6 +87,7 @@ func TestManagerStartFailureCleansOnlyCreatedAdoptedTab(t *testing.T) {
 	fake.result("worktree.list", managerWorktreeListJSON("wBC"))
 	fake.result("workspace.get", managerWorkspaceGetJSON("wBC", "project-home"))
 	fake.result("tab.create", managerTabCreatedJSON("wBC", "wBC:t2", "wBC:p2", managerRepoPath))
+	scriptReadyShell(fake, "wBC:p2", "term_wBC", "wBC", "wBC:t2", managerRepoPath)
 	fake.failure("agent.start", "invalid_agent_name", "name is too long")
 	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBC:p2", "term_wBC", "wBC", "wBC:t2", managerRepoPath, "")+`}`)
 	fake.result("pane.close", `{"type":"ok"}`)

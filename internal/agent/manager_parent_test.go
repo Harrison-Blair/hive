@@ -44,9 +44,12 @@ func managerAgentInfoJSON(paneID, workspaceID, tabID, status, name string) strin
 	return `{"pane_id":"` + paneID + `","terminal_id":"term_` + workspaceID + `","workspace_id":"` + workspaceID + `","tab_id":"` + tabID + `","agent_status":"` + status + `","focused":false,"revision":2,"name":"` + name + `"}`
 }
 
-func scriptManagerSpawnTail(t *testing.T, fake *fakeHerdr, sleep sleepProcess, paneID, workspaceID, tabID string) {
+func scriptManagerSpawnTail(t *testing.T, fake *fakeHerdr, sleep sleepProcess, paneID, workspaceID, tabID string, readyShell ...bool) {
 	t.Helper()
 	key := "manager-demo-g1"
+	if len(readyShell) == 0 || readyShell[0] {
+		scriptReadyShell(fake, paneID, "term_"+workspaceID, workspaceID, tabID, managerRepoPath)
+	}
 	fake.result("agent.start", `{"type":"agent_started","agent":`+managerAgentInfoJSON(paneID, workspaceID, tabID, "unknown", key)+`,"argv":["claude","--model","m"]}`)
 	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON(paneID, "term_"+workspaceID, workspaceID, tabID, managerRepoPath, "")+`}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+managerAgentInfoJSON(paneID, workspaceID, tabID, "idle", key)+`}`)
@@ -261,6 +264,7 @@ func TestManagerWorkspaceCreatedAtRepositoryPath(t *testing.T) {
 	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
 	fake.result("workspace.close", `{"type":"ok"}`)
 	// A manager start failure ensures this test only checks workspace resolution.
+	scriptReadyShell(fake, "wBD:p1", "term_wBD", "wBD", "wBD:t1", managerRepoPath)
 	fake.failure("agent.start", "invalid_agent_name", "name is too long")
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "failed" || envelope.Phase != "start" {
