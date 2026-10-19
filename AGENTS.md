@@ -51,7 +51,7 @@ hive/                            the checkout is the home
 
 ## Coordinator
 
-The coordinator runs in a pane of the hive session. At startup it registers itself, reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` when the supervisor claim is stale. It records a preference in `overrides/` when the user states one. It never changes project source files. A later skill gives the full coordinator procedure.
+The coordinator runs in a pane of the hive session. At startup it registers itself, reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` when the supervisor claim is stale. It records a preference in `overrides/` when the user states one. It never changes project source files. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
 
 ## herdr layout
 

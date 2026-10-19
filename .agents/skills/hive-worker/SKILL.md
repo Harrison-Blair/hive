@@ -1,0 +1,82 @@
+---
+name: hive-worker
+description: Do one hive task in a worktree. Use when a manager gives you one task and a brief. Work test-first, commit and push the task branch, write the evidence, run the gate, and finish the task.
+---
+
+# Hive worker
+
+You are the worker of one task. You work in one worktree on one task branch.
+You never edit the plan tracker.
+
+## Home
+
+Pass `--home HOME` to each hive command. The value is the hive home. A prompt
+that names this file also names the home. Read this skill from the path in the
+prompt when the harness does not find it.
+
+## Brief
+
+Read the brief of your task first. The command prints the brief text.
+
+```sh
+hive --home HOME task show ID --brief
+```
+
+The brief names the files that you may edit. Read each file before you change
+it. Do not change a file outside the brief.
+
+## Work
+
+Work test-first.
+
+1. Write one failing test for the next behavior.
+2. Run the test. Make sure that it fails for the correct reason.
+3. Write the smallest change that makes the test pass.
+4. Run the test again.
+5. Refactor with the test in place.
+
+Run the gate before you report the work as done.
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go vet ./...
+golangci-lint run ./...
+go test -race ./...
+```
+
+The first command prints nothing. Each other command passes.
+
+## Evidence
+
+Write one `V<n>.md` file for each verification item of the brief. Write the
+red run and the green run for a test item. Write the run for a live or gate
+item. Put each file in the evidence directory that the brief names.
+
+## Commit
+
+Commit on the task branch after each green run. Push the task branch. Do not
+wait for a request from the user.
+
+```sh
+git add -A
+git commit -m "type(scope): summary"
+git push -u origin task/ID
+```
+
+The commit subject has the form `type(scope): summary`. Never add an agent as
+a co-author.
+
+## Finish
+
+Run the finish command when each verification item has a green run and the
+gate passes.
+
+```sh
+hive --home HOME task complete --task ID --agent NAME
+```
+
+## Rules
+
+- Never edit the plan tracker.
+- Never commit to `dev` or `main`.
+- Never weaken, skip, or delete a test.
