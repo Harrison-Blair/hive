@@ -15,6 +15,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -418,7 +419,7 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 }
 
 func promptManagerInstructions(ctx context.Context, paneID, content string, record records.Agent, claim *records.Claim, effects []output.Effect, logger *slog.Logger) output.Envelope {
-	info, err := promptFirstTurn(ctx, paneID, content, logger)
+	info, err := promptFirstTurn(ctx, paneID, marker.Prefix+content, logger)
 	if err != nil {
 		message := managerPromptError(record.Name, err)
 		envelope := spawnEnvelope("partial", "prompt", effects, message, SpawnResult{})

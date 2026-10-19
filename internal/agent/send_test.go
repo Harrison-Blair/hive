@@ -42,9 +42,31 @@ func TestSendNoWaitShape(t *testing.T) {
 	if len(requests) != 1 {
 		t.Fatalf("agent.prompt requests = %d; want 1", len(requests))
 	}
-	want := `{"target":"w1:p1","text":"Reply with pong."}`
+	if !strings.Contains(requests[0].Params, `"text":"⬢ Reply with pong."`) {
+		t.Fatalf("params = %s; want the hive marker before the message", requests[0].Params)
+	}
+	want := `{"target":"w1:p1","text":"⬢ Reply with pong."}`
 	if requests[0].Params != want {
 		t.Fatalf("params = %s; want %s", requests[0].Params, want)
+	}
+}
+
+func TestSendDoesNotDuplicateHiveMarker(t *testing.T) {
+	home := testHome(t)
+	writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
+	fake := newFakeHerdr(t)
+	for range 2 {
+		fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "done", "worker-hive-1")+`}`)
+	}
+	for index, text := range []string{"Reply with pong.", "⬢ Reply with pong."} {
+		if envelope := Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: text}); envelope.Outcome != "ok" {
+			t.Fatalf("envelope %d = %#v; want ok", index+1, envelope)
+		}
+		requests := fake.recorded("agent.prompt")
+		want := `{"target":"w1:p1","text":"⬢ Reply with pong."}`
+		if len(requests) != index+1 || requests[index].Params != want {
+			t.Fatalf("params = %#v; want one marker prefix", requests)
+		}
 	}
 }
 
@@ -64,11 +86,11 @@ func TestSendWaitShapes(t *testing.T) {
 	if len(requests) != 2 {
 		t.Fatalf("requests = %d; want 2", len(requests))
 	}
-	wantDefault := `{"target":"w1:p1","text":"x","wait":{"until":["idle","blocked","done"],"timeout_ms":600000}}`
+	wantDefault := `{"target":"w1:p1","text":"⬢ x","wait":{"until":["idle","blocked","done"],"timeout_ms":600000}}`
 	if requests[0].Params != wantDefault {
 		t.Fatalf("default params = %s; want %s", requests[0].Params, wantDefault)
 	}
-	wantExplicit := `{"target":"w1:p1","text":"x","wait":{"until":["idle","blocked","done"],"timeout_ms":120000}}`
+	wantExplicit := `{"target":"w1:p1","text":"⬢ x","wait":{"until":["idle","blocked","done"],"timeout_ms":120000}}`
 	if requests[1].Params != wantExplicit {
 		t.Fatalf("explicit params = %s; want %s", requests[1].Params, wantExplicit)
 	}

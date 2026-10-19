@@ -8,6 +8,19 @@ import (
 	"testing"
 )
 
+func TestBriefPromptsStartWithHiveMarker(t *testing.T) {
+	for name, prompt := range map[string]string{
+		"worker":   workerPrompt("/tmp/home", "task", "/tmp/worktree", "task/branch"),
+		"verifier": verifierPrompt("/tmp/home", "task"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if !strings.HasPrefix(prompt, "⬢ ") {
+				t.Fatalf("prompt = %q; want the hive marker prefix", prompt)
+			}
+		})
+	}
+}
+
 func TestBriefPrompt(t *testing.T) {
 	home := "/tmp/a b'c"
 	task := "1-worker-demo"
@@ -44,7 +57,7 @@ func TestBriefPrompt(t *testing.T) {
 			if strings.Contains(testCase.prompt, "\n") {
 				t.Fatalf("prompt is not one line: %q", testCase.prompt)
 			}
-			prefix := "Read " + home + "/.agents/skills/" + testCase.skill + "/SKILL.md first. Then run: "
+			prefix := "⬢ Read " + home + "/.agents/skills/" + testCase.skill + "/SKILL.md first. Then run: "
 			if !strings.HasPrefix(testCase.prompt, prefix) {
 				t.Fatalf("prompt = %q; want the prefix %q", testCase.prompt, prefix)
 			}

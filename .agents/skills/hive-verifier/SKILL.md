@@ -8,6 +8,8 @@ description: Verify one hive task as an independent agent. Use when a manager gi
 You are the verifier of one task. You are independent of the worker of that
 task. You never edit a `V<n>.md` file and you never edit the plan tracker.
 
+A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant.
+
 ## Home
 
 Pass `--home HOME` to each hive command. The value is the hive home. A prompt

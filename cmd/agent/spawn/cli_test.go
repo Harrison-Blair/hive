@@ -174,7 +174,7 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 		t.Fatalf("status = %q; want exited", envelope.Result.Agent.Status)
 	}
 	request := fake.requestText()
-	if !strings.Contains(request, `"args":["--model","m","--one","two"]`) {
+	if !strings.Contains(request, `"args":["--dangerously-skip-permissions","--model","m","--one","two"]`) {
 		t.Fatalf("start request = %s; want repeated --arg values", request)
 	}
 }

@@ -238,6 +238,9 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	if err := json.Unmarshal([]byte(prompts[0].Params), &params); err != nil {
 		t.Fatal(err)
 	}
+	if !strings.HasPrefix(params.Text, "⬢ ") {
+		t.Fatalf("worker prompt = %q; want the hive marker prefix", params.Text)
+	}
 	want := workerPrompt(home, "1-worker-demo", worktree, branch)
 	if params.Text != want {
 		t.Fatalf("prompt = %q; want %q", params.Text, want)
@@ -755,6 +758,9 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	}
 	if err := json.Unmarshal([]byte(prompts[0].Params), &params); err != nil {
 		t.Fatal(err)
+	}
+	if !strings.HasPrefix(params.Text, "⬢ ") {
+		t.Fatalf("verifier prompt = %q; want the hive marker prefix", params.Text)
 	}
 	if params.Text != verifierPrompt(home, "1-worker-demo") {
 		t.Fatalf("prompt = %q", params.Text)

@@ -8,6 +8,8 @@ description: Do one hive task in a worktree. Use when a manager gives you one ta
 You are the worker of one task. You work in one worktree on one task branch.
 You never edit the plan tracker.
 
+A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant.
+
 ## Home
 
 Pass `--home HOME` to each hive command. The value is the hive home. A prompt

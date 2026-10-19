@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+func TestClaudeBypassPermissions(t *testing.T) {
+	profile, err := Lookup("claude")
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := profile.Args("", nil)
+	if len(args) == 0 || args[0] != "--dangerously-skip-permissions" {
+		t.Fatalf("Args() = %#v; want --dangerously-skip-permissions", args)
+	}
+}
+
 func TestClaudeArgsAndTimeouts(t *testing.T) {
 	profile, err := Lookup("claude")
 	if err != nil {
@@ -17,13 +28,13 @@ func TestClaudeArgsAndTimeouts(t *testing.T) {
 	if got, want := profile.Kind(), "claude"; got != want {
 		t.Fatalf("Kind() = %q; want %q", got, want)
 	}
-	if got, want := profile.Args("", nil), []string{}; !reflect.DeepEqual(got, want) {
+	if got, want := profile.Args("", nil), []string{"--dangerously-skip-permissions"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args empty = %#v; want %#v", got, want)
 	}
-	if got, want := profile.Args("claude-haiku-5-5", nil), []string{"--model", "claude-haiku-5-5"}; !reflect.DeepEqual(got, want) {
+	if got, want := profile.Args("claude-haiku-5-5", nil), []string{"--dangerously-skip-permissions", "--model", "claude-haiku-5-5"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args model = %#v; want %#v", got, want)
 	}
-	if got, want := profile.Args("m", []string{"--one", "--two"}), []string{"--model", "m", "--one", "--two"}; !reflect.DeepEqual(got, want) {
+	if got, want := profile.Args("m", []string{"--one", "--two"}), []string{"--dangerously-skip-permissions", "--model", "m", "--one", "--two"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Args extra = %#v; want %#v", got, want)
 	}
 	if got, want := profile.StartTimeout(), 120*time.Second; got != want {
