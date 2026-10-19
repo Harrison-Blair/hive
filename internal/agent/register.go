@@ -43,6 +43,9 @@ type RegisterOptions struct {
 	QuietAfterMin int
 	QuietAfterSet bool
 	PID           int64
+	// PIDStart is the start time of the holder process from /proc/<pid>/stat.
+	// A singleton claim stores it so a later start can tell a reused PID apart.
+	PIDStart uint64
 	// Spawned marks the first record write of a spawn. Manual registration
 	// leaves it false. No CLI flag sets it.
 	Spawned bool
@@ -418,6 +421,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		Agent:      recordKey,
 		Generation: generation,
 		PID:        options.PID,
+		PIDStart:   options.PIDStart,
 		ClaimedAt:  now,
 	}
 	if err := writer.WriteIn([]string{"claims"}, claimKey, claim); err != nil {

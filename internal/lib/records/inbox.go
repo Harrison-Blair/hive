@@ -13,13 +13,14 @@ const (
 
 // Inbox is one durable record in the inbox of a role.
 type Inbox struct {
-	Seq       uint64 `json:"seq"`
-	Role      string `json:"role"`
-	Kind      string `json:"kind"`
-	Task      string `json:"task"`
-	Agent     string `json:"agent"`
-	Text      string `json:"text"`
-	CreatedAt string `json:"created_at"`
-	ReadAt    string `json:"read_at"`
-	NudgedAt  string `json:"nudged_at"`
+	Seq              uint64 `json:"seq"`
+	Role             string `json:"role"`
+	Kind             string `json:"kind"`
+	Task             string `json:"task"`
+	Agent            string `json:"agent"`
+	Text             string `json:"text"`
+	CreatedAt        string `json:"created_at"`
+	ReadAt           string `json:"read_at"`
+	NudgedAt         string `json:"nudged_at"`
+	NudgedGeneration uint64 `json:"nudged_generation"`
 }

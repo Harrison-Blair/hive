@@ -16,6 +16,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/logs"
 	"github.com/Harrison-Blair/hive/cmd/memory"
 	"github.com/Harrison-Blair/hive/cmd/project"
+	"github.com/Harrison-Blair/hive/cmd/supervise"
 	"github.com/Harrison-Blair/hive/cmd/task"
 	"github.com/Harrison-Blair/hive/cmd/version"
 	"github.com/Harrison-Blair/hive/cmd/worktree"
@@ -50,7 +51,7 @@ func NewRootCmd() *cobra.Command {
 	}
 	root.PersistentFlags().String("home", "", "hive home")
 	root.PersistentFlags().Bool("json", false, "write JSON output")
-	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), memory.New(), handoff.New(), worktree.New(), land.New())
+	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), memory.New(), handoff.New(), worktree.New(), land.New(), supervise.New())
 	return root
 }
 
