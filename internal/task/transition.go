@@ -99,6 +99,24 @@ func transition(writer transitionWriter, command string, options TransitionOptio
 }
 
 // applyTransition changes one record for one command.
+func controllingRole(caller records.Agent) string {
+	switch caller.Role {
+	case "coordinator":
+		return "coordinator"
+	case "manager":
+		return "manager-" + caller.Project
+	default:
+		return ""
+	}
+}
+
+func checkControllingRole(task records.Task, caller records.Agent) error {
+	if controllingRole(caller) != task.ControllingRole {
+		return fmt.Errorf("not the controlling role: %s", quoteIfControl(caller.Name))
+	}
+	return nil
+}
+
 func applyTransition(record *records.Task, command string, options TransitionOptions) error {
 	key := command
 	if command == "verify" && options.Fail {
@@ -150,15 +168,8 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		if options.ResolvedActor == nil {
 			return errCallerUnknown
 		}
-		callerRole := ""
-		switch options.ResolvedActor.Role {
-		case "coordinator":
-			callerRole = "coordinator"
-		case "manager":
-			callerRole = "manager-" + options.ResolvedActor.Project
-		}
-		if callerRole != record.ControllingRole {
-			return fmt.Errorf("not the controlling role: %s", quoteIfControl(options.ResolvedActor.Name))
+		if err := checkControllingRole(*record, *options.ResolvedActor); err != nil {
+			return err
 		}
 		record.VerificationHistory = append(record.VerificationHistory, records.VerificationHistory{
 			Verification: record.Verification,

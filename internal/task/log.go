@@ -59,6 +59,16 @@ func (l operationLog) transition(command, projectID, taskID, agentID, from, to s
 	l.logger.Debug("task transition", fields...)
 }
 
+// briefEdit writes one completed brief replacement without its text.
+func (l operationLog) briefEdit(projectID, taskID, agentID string, oldSize, newSize int) {
+	if l.logger == nil {
+		return
+	}
+	fields := l.fields("task edit", projectID, taskID, agentID)
+	fields = append(fields, "old_size", oldSize, "new_size", newSize)
+	l.logger.Debug("task brief edit", fields...)
+}
+
 // effect writes one completed write in the task prefix order.
 func (l operationLog) effect(command, projectID, taskID, resource, path, action string) {
 	if l.logger == nil {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,9 +34,13 @@ func newTaskCLI(t *testing.T) *taskCLI {
 }
 
 func (c *taskCLI) run(args ...string) (int, string, string) {
+	return c.runWithInput(strings.NewReader(""), args...)
+}
+
+func (c *taskCLI) runWithInput(input io.Reader, args ...string) (int, string, string) {
 	full := append([]string{"--home", c.home}, args...)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams(full, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams(full, input, &stdout, &stderr)
 	return status, stdout.String(), stderr.String()
 }
 
@@ -162,6 +167,109 @@ func countEvents(events []map[string]any, message string, fields map[string]stri
 		}
 	}
 	return count
+}
+
+func TestTaskCLIEditBrief(t *testing.T) {
+	cli := newTaskCLI(t)
+	cli.seedController(t)
+	briefFile := filepath.Join(t.TempDir(), "brief.md")
+
+	createdID := cli.createTask(t, "Edit in created")
+	const updatedBrief = "# Updated brief\n\nKeep this text out of logs.\n"
+	if err := os.WriteFile(briefFile, []byte(updatedBrief), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	status, stdout, stderr := cli.run("task", "edit", "--task", createdID, "--brief", briefFile, "--agent", "manager-repo")
+	if status != 0 || stderr != "" {
+		t.Fatalf("created task edit status = %d; stdout %q, stderr %q; want success", status, stdout, stderr)
+	}
+	if want := "updated brief .hive/state/briefs/" + createdID + ".md\n"; stdout != want {
+		t.Fatalf("created task edit output = %q; want %q", stdout, want)
+	}
+	if got := cli.mustRun(t, "task", "show", "--brief", createdID); got != updatedBrief {
+		t.Fatalf("edited brief = %q; want %q", got, updatedBrief)
+	}
+	if err := os.WriteFile(briefFile, []byte("rejected completed update"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	completedID := cli.createTask(t, "Edit in completed")
+	cli.seedAgent(t, "worker-completed", "worker", completedID)
+	cli.mustRun(t, "task", "assign", "--task", completedID, "--agent", "worker-completed")
+	cli.mustRun(t, "task", "complete", "--task", completedID, "--agent", "worker-completed")
+	status, stdout, stderr = cli.run("task", "edit", "--task", completedID, "--brief", briefFile, "--agent", "manager-repo")
+	if status != 1 || stdout != "" || !strings.Contains(stderr, "task is completed: edit needs created or assigned") {
+		t.Fatalf("completed task edit status = %d; stdout %q, stderr %q; want status refusal", status, stdout, stderr)
+	}
+	if got := cli.mustRun(t, "task", "show", "--brief", completedID); got != "Edit in completed" {
+		t.Fatalf("completed task brief = %q; want the original text", got)
+	}
+
+	workerID := cli.createTask(t, "Edit by worker")
+	cli.seedAgent(t, "worker-edit", "worker", workerID)
+	status, stdout, stderr = cli.run("task", "edit", "--task", workerID, "--brief", briefFile, "--agent", "worker-edit")
+	if status != 1 || stdout != "" || !strings.Contains(stderr, "not the controlling role: worker-edit") {
+		t.Fatalf("worker edit status = %d; stdout %q, stderr %q; want role refusal", status, stdout, stderr)
+	}
+	if got := cli.mustRun(t, "task", "show", "--brief", workerID); got != "Edit by worker" {
+		t.Fatalf("worker task brief = %q; want the original text", got)
+	}
+
+	stdinID := cli.createTask(t, "Edit from stdin")
+	const stdinBrief = "Brief from standard input\n"
+	status, stdout, stderr = cli.runWithInput(strings.NewReader(stdinBrief), "task", "edit", "--task", stdinID, "--brief", "-", "--agent", "manager-repo", "--json")
+	if status != 0 || stderr != "" {
+		t.Fatalf("stdin edit status = %d; stdout %q, stderr %q; want success", status, stdout, stderr)
+	}
+	var jsonEnvelope map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(stdout), &jsonEnvelope); err != nil {
+		t.Fatalf("decode JSON edit response: %v; output %q", err, stdout)
+	}
+	for _, field := range []string{"outcome", "phase", "effects", "error", "result"} {
+		if _, ok := jsonEnvelope[field]; !ok {
+			t.Errorf("JSON edit response lacks %q: %s", field, stdout)
+		}
+	}
+	if string(jsonEnvelope["outcome"]) != `"ok"` || string(jsonEnvelope["phase"]) != `"complete"` || string(jsonEnvelope["error"]) != "null" {
+		t.Fatalf("JSON edit response = %s; want successful complete envelope", stdout)
+	}
+	if got := cli.mustRun(t, "task", "show", "--brief", stdinID); got != stdinBrief {
+		t.Fatalf("stdin edited brief = %q; want %q", got, stdinBrief)
+	}
+
+	largeID := cli.createTask(t, "Edit with oversized brief")
+	if err := os.WriteFile(briefFile, bytes.Repeat([]byte("x"), (1<<20)+1), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	status, stdout, stderr = cli.run("task", "edit", "--task", largeID, "--brief", briefFile, "--agent", "manager-repo")
+	if status != 1 || stdout != "" || !strings.Contains(stderr, "brief too large") {
+		t.Fatalf("oversized edit status = %d; stdout %q, stderr %q; want size refusal", status, stdout, stderr)
+	}
+	if got := cli.mustRun(t, "task", "show", "--brief", largeID); got != "Edit with oversized brief" {
+		t.Fatalf("oversized task brief = %q; want the original text", got)
+	}
+
+	logText, err := os.ReadFile(dailyLogPath(cli.home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(logText), "Keep this text out of logs") {
+		t.Fatal("task edit log contains brief text")
+	}
+	events := taskLogEvents(t, cli.home)
+	editEvents := 0
+	for _, event := range events {
+		if eventField(event, "msg") != "task brief edit" || eventField(event, "task_id") != createdID {
+			continue
+		}
+		editEvents++
+		if eventField(event, "command") != "task edit" || eventField(event, "project_id") != "repo" ||
+			eventField(event, "agent_id") != "manager-repo" || event["old_size"] != float64(15) || event["new_size"] != float64(45) {
+			t.Fatalf("brief edit event = %#v; want task, caller, and byte sizes", event)
+		}
+	}
+	if editEvents != 1 {
+		t.Fatalf("task events = %#v; want one edit event", events)
+	}
 }
 
 func TestTaskCLILogsTransitionsAndErrors(t *testing.T) {

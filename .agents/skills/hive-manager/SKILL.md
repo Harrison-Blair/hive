@@ -37,7 +37,10 @@ is `-`.
 
 ```sh
 hive task create --project ID --title TITLE --slug SLUG --depends-on IDS --brief FILE
+hive task edit --task ID --brief FILE
 ```
+
+Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 
 List the ready tasks of the project.
 

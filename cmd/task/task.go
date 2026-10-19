@@ -8,6 +8,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/task/cancel"
 	"github.com/Harrison-Blair/hive/cmd/task/complete"
 	"github.com/Harrison-Blair/hive/cmd/task/create"
+	"github.com/Harrison-Blair/hive/cmd/task/edit"
 	"github.com/Harrison-Blair/hive/cmd/task/list"
 	"github.com/Harrison-Blair/hive/cmd/task/reopen"
 	"github.com/Harrison-Blair/hive/cmd/task/show"
@@ -26,6 +27,7 @@ func New() *cobra.Command {
 	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
 	command.AddCommand(
 		create.New(),
+		edit.New(),
 		assign.New(),
 		list.New(),
 		show.New(),
