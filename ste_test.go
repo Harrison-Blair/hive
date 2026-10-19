@@ -26,6 +26,11 @@ var steFiles = []string{
 	"spec/hive-v1/tasks/*.md",
 	"spec/hive-v1/evidence/README.md",
 	"internal/agent/templates/project-agents.md",
+	"internal/agent/templates/presets.md",
+	".agents/skills/hive-coordinator/SKILL.md",
+	".agents/skills/hive-manager/SKILL.md",
+	".agents/skills/hive-worker/SKILL.md",
+	".agents/skills/hive-verifier/SKILL.md",
 }
 
 const (

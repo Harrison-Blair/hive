@@ -26,5 +26,10 @@
   "spec/hive-v1/tasks/T20-recovery.md": 0,
   "spec/hive-v1/tasks/T21-role-playbooks.md": 0,
   "spec/hive-v1/tasks/T22-store-operations.md": 0,
-  "internal/agent/templates/project-agents.md": 0
+  "internal/agent/templates/project-agents.md": 0,
+  "internal/agent/templates/presets.md": 0,
+  ".agents/skills/hive-coordinator/SKILL.md": 0,
+  ".agents/skills/hive-manager/SKILL.md": 0,
+  ".agents/skills/hive-worker/SKILL.md": 0,
+  ".agents/skills/hive-verifier/SKILL.md": 0
 }

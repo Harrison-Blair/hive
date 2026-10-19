@@ -19,6 +19,12 @@
 # Repo config
 !.gitignore
 
+# Skill discovery links for Claude Code
+!.claude/skills/hive-coordinator
+!.claude/skills/hive-manager
+!.claude/skills/hive-worker
+!.claude/skills/hive-verifier
+
 # Test fixtures
 !**/testdata/**
 
