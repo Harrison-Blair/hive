@@ -6,6 +6,8 @@
 
 ## Role gate
 
+A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant.
+
 Read this section first. Your working directory gives your role. A brief can name another role. The brief wins.
 
 | Working directory | Role | Then read |

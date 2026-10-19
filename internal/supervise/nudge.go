@@ -12,6 +12,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
+	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -23,7 +24,7 @@ func nudgeLine(count int, home string) string {
 	if count != 1 {
 		noun = "records"
 	}
-	return fmt.Sprintf("hive: %d new inbox %s, run: hive --home %s inbox", count, noun, home)
+	return marker.Prefix + fmt.Sprintf("hive: %d new inbox %s, run: hive --home %s inbox", count, noun, home)
 }
 
 // nudgeRule sends one prompt to each settled role with a record that needs a

@@ -8,7 +8,7 @@ type claudeProfile struct{}
 func (claudeProfile) Kind() string { return "claude" }
 
 func (claudeProfile) Args(model string, extra []string) []string {
-	args := []string{}
+	args := []string{"--dangerously-skip-permissions"}
 	if model != "" {
 		args = append(args, "--model", model)
 	}

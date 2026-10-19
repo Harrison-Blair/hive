@@ -9,6 +9,20 @@ import (
 // codexModel is the installed model that the live check requests.
 const codexModel = "gpt-6.1-sol"
 
+func TestCodexBypassApprovalsAndSandbox(t *testing.T) {
+	profile, err := Lookup("codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := profile.Args("", nil)
+	for _, arg := range args {
+		if arg == "--dangerously-bypass-approvals-and-sandbox" {
+			return
+		}
+	}
+	t.Fatalf("Args() = %#v; want --dangerously-bypass-approvals-and-sandbox", args)
+}
+
 func TestCodexArgs(t *testing.T) {
 	profile, err := Lookup("codex")
 	if err != nil {
@@ -26,11 +40,11 @@ func TestCodexArgs(t *testing.T) {
 		extra []string
 		want  []string
 	}{
-		{name: "no model", model: "", extra: nil, want: []string{"--no-daemon"}},
-		{name: "model", model: codexModel, extra: nil, want: []string{"--no-daemon", "--model", codexModel}},
-		{name: "extra only", model: "", extra: []string{"--approve-for-me"}, want: []string{"--no-daemon", "--approve-for-me"}},
-		{name: "model and extra", model: codexModel, extra: []string{"--sandbox", "workspace-write"}, want: []string{"--no-daemon", "--model", codexModel, "--sandbox", "workspace-write"}},
-		{name: "colon model", model: "gpt-6.1-sol:high", extra: nil, want: []string{"--no-daemon", "--model", "gpt-6.1-sol:high"}},
+		{name: "no model", model: "", extra: nil, want: []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox"}},
+		{name: "model", model: codexModel, extra: nil, want: []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", codexModel}},
+		{name: "extra only", model: "", extra: []string{"--approve-for-me"}, want: []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--approve-for-me"}},
+		{name: "model and extra", model: codexModel, extra: []string{"--sandbox", "workspace-write"}, want: []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", codexModel, "--sandbox", "workspace-write"}},
+		{name: "colon model", model: "gpt-6.1-sol:high", extra: nil, want: []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-6.1-sol:high"}},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -44,10 +58,10 @@ func TestCodexArgs(t *testing.T) {
 		})
 	}
 	modelArgs := profile.Args(codexModel, nil)
-	if count := len(modelArgs); count != 3 {
-		t.Fatalf("Args(codex model) = %#v; want 3 arguments", modelArgs)
+	if count := len(modelArgs); count != 4 {
+		t.Fatalf("Args(codex model) = %#v; want 4 arguments", modelArgs)
 	}
-	if modelArgs[1] != "--model" || modelArgs[2] != codexModel {
+	if modelArgs[2] != "--model" || modelArgs[3] != codexModel {
 		t.Fatalf("Args(codex model) = %#v; want the model as one unchanged argument", modelArgs)
 	}
 }

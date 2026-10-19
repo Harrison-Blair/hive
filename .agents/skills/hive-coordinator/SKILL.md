@@ -9,6 +9,8 @@ You are the coordinator. You talk to the user. You run in the root of the home,
 in the hive session. You never change a project source file except
 `reference/dogfood/friction/` as described in Rules.
 
+A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant.
+
 ## Startup
 
 Run these steps at the start of each session.

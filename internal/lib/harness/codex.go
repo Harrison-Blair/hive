@@ -27,7 +27,7 @@ type codexProfile struct{}
 func (codexProfile) Kind() string { return "codex" }
 
 func (codexProfile) Args(model string, extra []string) []string {
-	args := []string{"--no-daemon"}
+	args := []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox"}
 	if model != "" {
 		args = append(args, "--model", model)
 	}

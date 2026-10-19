@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
@@ -72,7 +74,11 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 	logger.Debug("agent prompt", "command", "agent send", "agent_id", record.Key, "pane_id", record.PaneID, hivelog.Body(options.Text))
 
-	params := herdr.AgentPromptParams{Target: record.PaneID, Text: options.Text}
+	text := options.Text
+	if !strings.HasPrefix(text, marker.Prefix) {
+		text = marker.Prefix + text
+	}
+	params := herdr.AgentPromptParams{Target: record.PaneID, Text: text}
 	opts := []herdr.Option{herdr.WithLogger(logger)}
 	if options.Wait {
 		params.Wait = &herdr.AgentPromptWaitOptions{

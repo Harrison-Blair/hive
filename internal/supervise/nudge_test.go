@@ -3,6 +3,7 @@ package supervise
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
@@ -49,8 +50,8 @@ func TestNudgeIdleManagerGetsPrompt(t *testing.T) {
 	if prompt.Target != "w1:p1" {
 		t.Fatalf("target = %q; want w1:p1", prompt.Target)
 	}
-	if prompt.Text == "" {
-		t.Fatalf("prompt text is empty")
+	if !strings.HasPrefix(prompt.Text, "⬢ ") {
+		t.Fatalf("prompt = %q; want the hive marker prefix", prompt.Text)
 	}
 	all := readInbox(t, home, "manager-demo")
 	if len(all) != 1 || all[0].NudgedAt == "" || all[0].NudgedGeneration != 1 {

@@ -73,7 +73,7 @@ func TestSpawnIdleRecordsIdentity(t *testing.T) {
 	if len(startRequests) != 1 {
 		t.Fatalf("agent.start requests = %d; want 1", len(startRequests))
 	}
-	wantStart := `{"name":"t10-coord-g1","kind":"claude","pane_id":"w1:p1","args":["--model","m"],"timeout_ms":120000}`
+	wantStart := `{"name":"t10-coord-g1","kind":"claude","pane_id":"w1:p1","args":["--dangerously-skip-permissions","--model","m"],"timeout_ms":120000}`
 	if startRequests[0].Params != wantStart {
 		t.Fatalf("start params = %s; want %s", startRequests[0].Params, wantStart)
 	}

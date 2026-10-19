@@ -52,8 +52,11 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if params.Target != "wBD:p1" || params.Text != string(content) {
-		t.Fatalf("prompt target/text = %q/%q; want wBD:p1 and generated instructions", params.Target, params.Text)
+	if !strings.HasPrefix(params.Text, "⬢ ") {
+		t.Fatalf("manager prompt = %q; want the hive marker prefix", params.Text)
+	}
+	if params.Target != "wBD:p1" || params.Text != "⬢ "+string(content) {
+		t.Fatalf("prompt target/text = %q/%q; want wBD:p1 and marked generated instructions", params.Target, params.Text)
 	}
 	if params.Wait == nil {
 		t.Fatal("manager prompt has no wait")
@@ -64,7 +67,7 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	if params.Wait.TimeoutMS != 10000 {
 		t.Fatalf("manager prompt wait.timeout_ms = %d; want 10000", params.Wait.TimeoutMS)
 	}
-	if !strings.HasPrefix(params.Text, "You are the manager of project demo.") {
+	if !strings.HasPrefix(params.Text, "⬢ You are the manager of project demo.") {
 		t.Fatalf("manager instructions do not start with the role: %q", params.Text[:min(len(params.Text), 80)])
 	}
 	frictionPath := filepath.Join(home, "reference", "dogfood", "friction") + string(filepath.Separator)
@@ -92,6 +95,24 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	fake.mu.Unlock()
 	if waitIndex < 0 || promptIndex <= waitIndex {
 		t.Fatalf("request order wait=%d prompt=%d; prompt must follow readiness", waitIndex, promptIndex)
+	}
+}
+
+func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
+	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	markerRule := "A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant."
+	escalationRule := "Before you stop for a user decision, or when a harness blocks an action, send the coordinator one record. The record names the decision or the block. Then end your turn."
+	command := "hive inbox send --to coordinator TEXT --agent NAME"
+	for name, text := range map[string]string{"template": projectAgentsTemplate, "manager skill": string(skill)} {
+		normalized := strings.Join(strings.Fields(text), " ")
+		for _, want := range []string{markerRule, escalationRule, command} {
+			if !strings.Contains(normalized, want) {
+				t.Errorf("%s does not contain %q", name, want)
+			}
+		}
 	}
 }
 
