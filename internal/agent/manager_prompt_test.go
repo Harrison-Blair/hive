@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -29,14 +30,20 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	scriptManagerPromptSpawn(t, home, fake, sleep, false)
+	fake.mu.Lock()
+	fake.replies["agent.prompt"] = nil
+	fake.mu.Unlock()
+	fake.failure("agent.prompt", herdr.CodeAgentPromptStalled, "first manager prompt stalled")
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+managerAgentInfoJSON("wBD:p1", "wBD", "wBD:t1", "working", "manager-demo-g1")+`}`)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {
-		t.Fatalf("envelope = %#v; want ok", envelope)
+		t.Fatalf("outcome=%s error=%v; want ok", envelope.Outcome, envelope.Error)
 	}
 	requests := fake.recorded("agent.prompt")
-	if len(requests) != 1 {
-		t.Fatalf("agent.prompt requests = %d; want 1", len(requests))
+	if len(requests) != 2 {
+		t.Fatalf("agent.prompt requests = %d; want first prompt and one retry", len(requests))
 	}
+	requireFirstPromptWait(t, requests)
 	var params herdr.AgentPromptParams
 	if err := json.Unmarshal([]byte(requests[0].Params), &params); err != nil {
 		t.Fatalf("decode prompt params: %v", err)
@@ -47,6 +54,15 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	}
 	if params.Target != "wBD:p1" || params.Text != string(content) {
 		t.Fatalf("prompt target/text = %q/%q; want wBD:p1 and generated instructions", params.Target, params.Text)
+	}
+	if params.Wait == nil {
+		t.Fatal("manager prompt has no wait")
+	}
+	if got, want := params.Wait.Until, []string{"working", "blocked"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("manager prompt wait.until = %v; want %v", got, want)
+	}
+	if params.Wait.TimeoutMS != 10000 {
+		t.Fatalf("manager prompt wait.timeout_ms = %d; want 10000", params.Wait.TimeoutMS)
 	}
 	if !strings.HasPrefix(params.Text, "You are the manager of project demo.") {
 		t.Fatalf("manager instructions do not start with the role: %q", params.Text[:min(len(params.Text), 80)])

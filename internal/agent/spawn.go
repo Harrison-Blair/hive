@@ -418,27 +418,31 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 }
 
 func promptManagerInstructions(ctx context.Context, paneID, content string, record records.Agent, claim *records.Claim, effects []output.Effect, logger *slog.Logger) output.Envelope {
-	baseline, baselineErr := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
-	baselineOK := baselineErr == nil
-	params := herdr.AgentPromptParams{Target: paneID, Text: content}
-	delivered := false
-	for attempt := 0; attempt < promptAttempts && !delivered; attempt++ {
-		_, err := herdr.AgentPrompt(ctx, params, herdr.WithLogger(logger))
-		if err != nil {
-			if isHerdrCode(err, herdr.CodeAgentNotReady) {
-				_ = waitAgentInteractive(ctx, paneID, logger)
-				continue
-			}
-			envelope := spawnEnvelope("partial", "prompt", effects, "manager prompt: "+err.Error()+"; then run hive agent send --agent "+record.Name, SpawnResult{Agent: record, Claim: claim})
-			return envelope
-		}
-		delivered = promptStarted(ctx, paneID, baseline, baselineOK, logger)
+	info, err := promptFirstTurn(ctx, paneID, content, logger)
+	if err != nil {
+		message := managerPromptError(record.Name, err)
+		envelope := spawnEnvelope("partial", "prompt", effects, message, SpawnResult{})
+		envelope.Result = nil
+		return envelope
 	}
-	if !delivered {
-		return spawnEnvelope("partial", "prompt", effects, "manager prompt did not start a turn; then run hive agent send --agent "+record.Name, SpawnResult{Agent: record, Claim: claim})
+	if info.AgentStatus == "blocked" {
+		message := "agent blocked: " + record.Name + " in " + paneID
+		envelope := spawnEnvelope("partial", "prompt", effects, message, SpawnResult{})
+		envelope.Result = nil
+		return envelope
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
 	return spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: record, Claim: claim})
+}
+
+func managerPromptError(name string, err error) string {
+	if isHerdrCode(err, herdr.CodeAgentBlocked) {
+		return "agent blocked: " + name + ": " + err.Error()
+	}
+	if isHerdrCode(err, herdr.CodeAgentPromptStalled) {
+		return "first prompt for agent " + name + " stalled: " + err.Error()
+	}
+	return "manager prompt: " + err.Error() + "; then run hive agent send --agent " + name
 }
 
 func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, profile harness.Profile, waitInfo herdr.AgentInfo, waitErr error, getInfo herdr.AgentInfo, getErr error, session *sessionTrack, sessionReason string) output.Envelope {
