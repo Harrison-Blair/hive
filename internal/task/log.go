@@ -46,7 +46,7 @@ func (l operationLog) fields(command, projectID, taskID, agentID string) []any {
 }
 
 // transition writes one completed state transition.
-func (l operationLog) transition(command, projectID, taskID, agentID, from, to string) {
+func (l operationLog) transition(command, projectID, taskID, agentID, from, to string, extra ...any) {
 	if l.logger == nil {
 		return
 	}
@@ -55,6 +55,7 @@ func (l operationLog) transition(command, projectID, taskID, agentID, from, to s
 		fields = append(fields, "from_status", from)
 	}
 	fields = append(fields, "to_status", to)
+	fields = append(fields, extra...)
 	l.logger.Debug("task transition", fields...)
 }
 

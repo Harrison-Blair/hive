@@ -96,6 +96,7 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 			"hive agent spawn --role verifier --task ID --harness KIND --model MODEL",
 			"After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.",
 			"After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.",
+			"If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
 		} {
 			if !strings.Contains(normalized, want) {
 				t.Errorf("%s does not contain %q", name, want)
@@ -103,6 +104,19 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 		}
 		if strings.Contains(normalized, "hive task assign --task") {
 			t.Errorf("%s has a manual task assign command", name)
+		}
+	}
+}
+
+func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
+	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`."
+	for name, instructions := range map[string]string{"template": projectAgentsTemplate, "skill": string(skill)} {
+		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), want) {
+			t.Errorf("%s does not contain %q", name, want)
 		}
 	}
 }

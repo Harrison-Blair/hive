@@ -116,6 +116,9 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 		if task.Status != "verified" {
 			return &landFailure{"precondition", "task is " + task.Status + ": land needs verified"}
 		}
+		if task.Verification == nil || task.Verification.Result != "pass" {
+			return &landFailure{"precondition", "task verification is not a pass"}
+		}
 		if task.Worktree == nil || task.Worktree.Branch == "" {
 			return &landFailure{"precondition", "task has no worktree branch"}
 		}

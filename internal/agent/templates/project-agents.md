@@ -54,3 +54,5 @@ Hive takes the project from the task. Hive picks a free name when you omit `--na
 After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.
 
 After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.
+
+If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.

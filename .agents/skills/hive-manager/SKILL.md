@@ -78,6 +78,8 @@ hive agent spawn --role verifier --task ID --harness KIND --model MODEL
 
 After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.
 
+If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.
+
 The verifier reads its skill and its brief. The verifier runs each verification
 item again and writes `VERIFIED.md`.
 

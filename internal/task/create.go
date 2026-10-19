@@ -173,15 +173,16 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		dependsOn = []string{}
 	}
 	record := records.Task{
-		ID:              id,
-		Project:         project.ID,
-		Title:           plan.title,
-		ControllingRole: "manager-" + project.ID,
-		ActingAgent:     "",
-		Status:          "created",
-		DependsOn:       dependsOn,
-		CreatedAt:       plan.now.Format(time.RFC3339Nano),
-		UpdatedAt:       plan.now.Format(time.RFC3339Nano),
+		ID:                  id,
+		Project:             project.ID,
+		Title:               plan.title,
+		ControllingRole:     "manager-" + project.ID,
+		ActingAgent:         "",
+		Status:              "created",
+		DependsOn:           dependsOn,
+		VerificationHistory: []records.VerificationHistory{},
+		CreatedAt:           plan.now.Format(time.RFC3339Nano),
+		UpdatedAt:           plan.now.Format(time.RFC3339Nano),
 	}
 	if err := writeBrief(home, id, plan.brief); err != nil {
 		message := oneLine(err.Error())

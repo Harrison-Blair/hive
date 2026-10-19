@@ -9,6 +9,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/task/complete"
 	"github.com/Harrison-Blair/hive/cmd/task/create"
 	"github.com/Harrison-Blair/hive/cmd/task/list"
+	"github.com/Harrison-Blair/hive/cmd/task/reopen"
 	"github.com/Harrison-Blair/hive/cmd/task/show"
 	"github.com/Harrison-Blair/hive/cmd/task/verify"
 	"github.com/spf13/cobra"
@@ -31,6 +32,7 @@ func New() *cobra.Command {
 		complete.New(),
 		verify.New(),
 		cancel.New(),
+		reopen.New(),
 	)
 	return command
 }

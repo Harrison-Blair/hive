@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
@@ -23,6 +24,8 @@ var (
 	errSelfVerify = errors.New("verifier must not be the acting agent")
 	// errReasonNeeded reports a failed check without a reason.
 	errReasonNeeded = errors.New("--fail needs --reason")
+	// errReopenReasonNeeded reports a reopen without a reason.
+	errReopenReasonNeeded = errors.New("--reason is required")
 )
 
 // TransitionOptions holds the values of one task transition.
@@ -33,9 +36,9 @@ type TransitionOptions struct {
 	Fail   bool
 	Reason string
 	Logger *slog.Logger
-	// ResolvedActor receives the caller that a finish command resolved. A
-	// finish command uses this one record for the identity and the transition
-	// checks. It adds no record field.
+	// ResolvedActor receives the caller that a command resolved. A finish
+	// command uses this record for identity and transition checks. It adds no
+	// task record field.
 	ResolvedActor *records.Agent
 }
 
@@ -45,7 +48,7 @@ var transitions = map[string]map[string]string{
 	"created":   {"assign": "assigned", "cancel": "cancelled"},
 	"assigned":  {"assign": "assigned", "complete": "completed", "cancel": "cancelled"},
 	"completed": {"verify": "verified", "verify-fail": "assigned", "cancel": "cancelled"},
-	"verified":  {},
+	"verified":  {"reopen": "assigned"},
 	"cancelled": {},
 }
 
@@ -64,6 +67,18 @@ func transition(writer transitionWriter, command string, options TransitionOptio
 		}
 		prior = record.Status
 		result = record
+		if command == "reopen" {
+			if _, ok := transitions[record.Status][command]; ok {
+				if options.ResolvedActor == nil {
+					return nil, errCallerUnknown
+				}
+				caller, err := identity.ResolveHeld(writer, options.Agent, options.PaneID)
+				if err != nil {
+					return nil, err
+				}
+				*options.ResolvedActor = caller
+			}
+		}
 		if command == "assign" && options.Agent != "" {
 			known, found, err := identity.FindHeld(writer, options.Agent)
 			if err != nil {
@@ -128,6 +143,30 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		}
 	case "cancel":
 		record.CancelReason = options.Reason
+	case "reopen":
+		if strings.TrimSpace(options.Reason) == "" {
+			return errReopenReasonNeeded
+		}
+		if options.ResolvedActor == nil {
+			return errCallerUnknown
+		}
+		callerRole := ""
+		switch options.ResolvedActor.Role {
+		case "coordinator":
+			callerRole = "coordinator"
+		case "manager":
+			callerRole = "manager-" + options.ResolvedActor.Project
+		}
+		if callerRole != record.ControllingRole {
+			return fmt.Errorf("not the controlling role: %s", quoteIfControl(options.ResolvedActor.Name))
+		}
+		record.VerificationHistory = append(record.VerificationHistory, records.VerificationHistory{
+			Verification: record.Verification,
+			Reason:       options.Reason,
+			Caller:       options.ResolvedActor.Name,
+			At:           time.Now().UTC().Format(time.RFC3339Nano),
+		})
+		record.Verification = nil
 	}
 	record.Status = next
 	return nil
@@ -138,8 +177,12 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 	log := openOperationLog(home, options.Logger)
 	defer log.close()
 	logCommand := "task " + command
+	actorID := options.Agent
+	if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
+		actorID = options.ResolvedActor.Key
+	}
 	fail := func(phase, message string) output.Envelope {
-		log.failure(logCommand, "", options.Task, options.Agent, phase, message)
+		log.failure(logCommand, "", options.Task, actorID, phase, message)
 		return failedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
@@ -154,7 +197,10 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 		record, prior, innerErr := transition(locked, command, options)
 		if innerErr != nil {
 			envelope = failedEnvelope("transition", innerErr.Error())
-			log.failure(logCommand, record.Project, options.Task, options.Agent, "transition", innerErr.Error())
+			if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
+				actorID = options.ResolvedActor.Key
+			}
+			log.failure(logCommand, record.Project, options.Task, actorID, "transition", innerErr.Error())
 			return nil
 		}
 		envelope = output.Envelope{
@@ -164,7 +210,14 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 			Error:   nil,
 			Result:  record,
 		}
-		log.transition(logCommand, record.Project, record.ID, options.Agent, prior, record.Status)
+		if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
+			actorID = options.ResolvedActor.Key
+		}
+		if command == "reopen" {
+			log.transition(logCommand, record.Project, record.ID, actorID, prior, record.Status, "reason", options.Reason)
+		} else {
+			log.transition(logCommand, record.Project, record.ID, actorID, prior, record.Status)
+		}
 		return nil
 	})
 	if lockErr != nil {
