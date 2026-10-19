@@ -27,7 +27,7 @@ its pane and its `terminal_id`, never by its herdr name.
 ## User flows
 
 1. The coordinator runs `hive supervise` in a pane of the hive session. It prints `supervisor live, generation 3` and stays in the foreground.
-2. A worker runs `hive task complete`. The supervisor sees the new inbox record and the finished mark. When the worker is idle, the supervisor stops it with the stop function of T10. The pane of the worker closes, and its workspace closes with it. The manager is idle, so one line arrives in its pane: `hive: 1 new inbox record, run: hive --home /home/user/hive inbox`.
+2. A worker runs `hive task complete`. The supervisor sees the new inbox record and the finished mark. When the worker is idle, the supervisor stops it with the stop function of T10. The pane of the worker closes, and its workspace closes with it. The manager is idle, so one line arrives in its pane: `⬢ hive: 1 new inbox record, run: hive inbox`.
 3. A worker shows a permission dialog. herdr reports `blocked`. The supervisor writes a `blocked` record to the manager and nudges it.
 4. A worker is idle for ten minutes without a completion. The supervisor writes one `quiet` record. It writes no second record for the same idle period.
 5. The supervisor starts after a crash. It compares each live record with its pane and marks a record whose pane holds no agent `exited`, or `unresolved` when the pane is gone.
@@ -101,7 +101,7 @@ its pane and its `terminal_id`, never by its herdr name.
 
 - The supervisor learns about a new inbox record from the inotify watch of `.hive/state/inbox/`, including new role directories, within one second. The watch of `.hive/state/agents/` gives the record changes.
 - An unread record needs a nudge when its `nudged_at` is empty. It also needs one when its `nudged_generation` differs from the `generation` of the live record of its role. A restarted role gets the nudge again.
-- The agent of that role must have the stored status `idle` or `done`. Then the supervisor sends one `agent.prompt` with `target` equal to the pane ID, one line, and no wait. The line is `hive: <n> new inbox record(s), run: hive --home <home> inbox`.
+- The agent of that role must have the stored status `idle` or `done`. Then the supervisor sends one `agent.prompt` with `target` equal to the pane ID, one line, and no wait. The line is `⬢ hive: <n> new inbox record(s), run: hive inbox`.
 - Run the prompt outside the store lock. After the prompt succeeds, take the lock again. Recheck the same claim holder and generation. Then set `nudged_at` and `nudged_generation` in one atomic write for each record.
 - When the agent is `working` or `blocked`, the supervisor waits and nudges at its next transition to `idle` or `done`.
 - When the role has no live agent, the records stay unread without a nudge.
