@@ -94,6 +94,8 @@ When one entry in `foreground_processes` has `argv` equal to `["hive", "logs", "
 herdr pane run "$right_pane_id" hive logs --follow
 ```
 
+After you start the log stream, repeat the process check until one entry has the matching `argv`.
+
 12. Start the supervisor only when the claim is absent or stale.
 
 When the `hive doctor` result from step 5 does not report a live supervisor, run:
