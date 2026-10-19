@@ -19,6 +19,11 @@ worker spawn with `--pane` and `--project`. The task record kept
 `hive task complete --agent t16-worker-1`. The fresh-verifier rule of wave 2
 covers the re-verify. It does not cover the repair worker.
 
+`hive task complete --agent t16-worker-1` then failed with `agent not found:
+t16-worker-1`, because that agent was stopped. The fix was
+`hive task assign --task 16-quiet-no-nudge --agent t16-worker-2` by the
+manager. Then `hive task complete --agent t16-worker-2` passed.
+
 **Reproduction steps:**
 1. Spawn a worker for a task. Let it complete and exit.
 2. Spawn a verifier with no `--pane`. Hive puts it in the task workspace.
