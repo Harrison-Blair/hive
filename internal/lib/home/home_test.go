@@ -4,10 +4,13 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 )
 
 func TestResolveFlagWins(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	flagHome := makeHome(t, root, "flag")
 	envHome := makeHome(t, root, "env")
@@ -24,6 +27,7 @@ func TestResolveFlagWins(t *testing.T) {
 }
 
 func TestResolveEnvWinsOverAncestor(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	envHome := makeHome(t, root, "env")
 	workHome := makeHome(t, root, "work")
@@ -33,13 +37,13 @@ func TestResolveEnvWinsOverAncestor(t *testing.T) {
 	}
 
 	got, err := Resolve("", false, envHome, cwd)
-	want := "home conflict: HIVE_HOME is " + envHome + ", working directory is in " + workHome
-	if err == nil || got != "" || err.Error() != want {
-		t.Fatalf("Resolve() = %q, %v; want %q", got, err, want)
+	if err != nil || got != envHome {
+		t.Fatalf("Resolve() = %q, %v; want HIVE_HOME %q despite ancestor %q", got, err, envHome, workHome)
 	}
 }
 
 func TestResolveOutermostMarkerWins(t *testing.T) {
+	isolateConfig(t)
 	root := makeHome(t, t.TempDir(), "outer")
 	worktree := filepath.Join(root, "projects", "hive", "worktrees", "task")
 	if err := os.MkdirAll(filepath.Join(worktree, ".hive"), 0o755); err != nil {
@@ -56,6 +60,7 @@ func TestResolveOutermostMarkerWins(t *testing.T) {
 }
 
 func TestResolveFlagSkipsConflictCheck(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	flagHome := makeHome(t, root, "flag")
 	envHome := makeHome(t, root, "env")
@@ -71,6 +76,7 @@ func TestResolveFlagSkipsConflictCheck(t *testing.T) {
 }
 
 func TestResolveNamedPathWithoutMarker(t *testing.T) {
+	isolateConfig(t)
 	path := t.TempDir()
 	got, err := Resolve(path, true, "", t.TempDir())
 	if got != "" || err == nil || err.Error() != "not a hive home: "+path {
@@ -79,6 +85,7 @@ func TestResolveNamedPathWithoutMarker(t *testing.T) {
 }
 
 func TestResolveEnvPathWithoutMarker(t *testing.T) {
+	isolateConfig(t)
 	path := t.TempDir()
 	got, err := Resolve("", false, path, t.TempDir())
 	if got != "" || err == nil || err.Error() != "not a hive home: "+path {
@@ -87,14 +94,16 @@ func TestResolveEnvPathWithoutMarker(t *testing.T) {
 }
 
 func TestResolveNoMarker(t *testing.T) {
+	isolateConfig(t)
 	cwd := t.TempDir()
 	got, err := Resolve("", false, "", cwd)
-	if got != "" || err == nil || err.Error() != "not a hive home: no marker above "+cwd {
-		t.Fatalf("Resolve() = %q, %v; want no marker error for %s", got, err, cwd)
+	if got != "" || err == nil || err.Error() != "not a hive home: no marker above "+cwd+"; run hive init in the home" {
+		t.Fatalf("Resolve() = %q, %v; want init guidance for %s", got, err, cwd)
 	}
 }
 
 func TestResolveEmptyHomeFlagIsUsageError(t *testing.T) {
+	isolateConfig(t)
 	_, err := Resolve("", true, "", t.TempDir())
 	var usage *UsageError
 	if !errors.As(err, &usage) {
@@ -103,6 +112,7 @@ func TestResolveEmptyHomeFlagIsUsageError(t *testing.T) {
 }
 
 func TestResolveEmptyEnvIsUnset(t *testing.T) {
+	isolateConfig(t)
 	home := makeHome(t, t.TempDir(), "home")
 	cwd := filepath.Join(home, "nested")
 	if err := os.Mkdir(cwd, 0o755); err != nil {
@@ -115,6 +125,7 @@ func TestResolveEmptyEnvIsUnset(t *testing.T) {
 }
 
 func TestResolveRelativeHomePathsAgainstWorkingDirectory(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	cwd := filepath.Join(root, "cwd")
 	if err := os.Mkdir(cwd, 0o755); err != nil {
@@ -134,6 +145,7 @@ func TestResolveRelativeHomePathsAgainstWorkingDirectory(t *testing.T) {
 }
 
 func TestResolveConflictComparesResolvedPaths(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	home := makeHome(t, root, "home")
 	alias := filepath.Join(root, "alias")
@@ -151,6 +163,7 @@ func TestResolveConflictComparesResolvedPaths(t *testing.T) {
 }
 
 func TestResolveDoesNotTrimHomeValues(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	cwd := filepath.Join(root, "cwd")
 	if err := os.Mkdir(cwd, 0o755); err != nil {
@@ -164,6 +177,7 @@ func TestResolveDoesNotTrimHomeValues(t *testing.T) {
 }
 
 func TestResolveDoesNotTrimEnvHomeValue(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	cwd := filepath.Join(root, "cwd")
 	if err := os.Mkdir(cwd, 0o755); err != nil {
@@ -177,6 +191,7 @@ func TestResolveDoesNotTrimEnvHomeValue(t *testing.T) {
 }
 
 func TestResolveMarkerMustBeRegularFile(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	markerDir := filepath.Join(root, ".hive")
 	if err := os.Mkdir(markerDir, 0o755); err != nil {
@@ -190,12 +205,13 @@ func TestResolveMarkerMustBeRegularFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	got, err := Resolve("", false, "", root)
-	if got != "" || err == nil || err.Error() != "not a hive home: no marker above "+root {
+	if got != "" || err == nil || err.Error() != "not a hive home: no marker above "+root+"; run hive init in the home" {
 		t.Fatalf("Resolve() = %q, %v; want no marker because README.md is a symlink", got, err)
 	}
 }
 
 func TestResolveReturnsAbsolutePathWithoutSymlinks(t *testing.T) {
+	isolateConfig(t)
 	root := makeHome(t, t.TempDir(), "home")
 	alias := filepath.Join(filepath.Dir(root), "alias")
 	if err := os.Symlink(root, alias); err != nil {
@@ -208,6 +224,7 @@ func TestResolveReturnsAbsolutePathWithoutSymlinks(t *testing.T) {
 }
 
 func TestResolveRejectsLinkedHiveDirectory(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	external := filepath.Join(root, "external")
 	if err := os.MkdirAll(external, 0o755); err != nil {
@@ -231,6 +248,7 @@ func TestResolveRejectsLinkedHiveDirectory(t *testing.T) {
 }
 
 func TestResolveRejectsNonDirectoryHive(t *testing.T) {
+	isolateConfig(t)
 	root := t.TempDir()
 	home := filepath.Join(root, "home")
 	if err := os.Mkdir(home, 0o755); err != nil {
@@ -247,6 +265,7 @@ func TestResolveRejectsNonDirectoryHive(t *testing.T) {
 }
 
 func TestResolveAncestorSkipsLinkedHiveMarker(t *testing.T) {
+	isolateConfig(t)
 	outer := makeHome(t, t.TempDir(), "outer")
 	linked := filepath.Join(outer, "linked")
 	if err := os.Mkdir(linked, 0o755); err != nil {
@@ -271,6 +290,121 @@ func TestResolveAncestorSkipsLinkedHiveMarker(t *testing.T) {
 	if err != nil || got != outer {
 		t.Fatalf("Resolve() = %q, %v; want outer home %q", got, err, outer)
 	}
+}
+
+func TestResolveUsesConfigFromUnmarkedDirectory(t *testing.T) {
+	configPath := configFixture(t, "")
+	configHome := makeHome(t, t.TempDir(), "config-home")
+	writeConfig(t, configPath, "home = "+strconv.Quote(configHome)+"\n")
+	cwd := t.TempDir()
+
+	got, err := Resolve("", false, "", cwd)
+	if err != nil || got != configHome {
+		t.Fatalf("Resolve() = %q, %v; want config home %q", got, err, configHome)
+	}
+}
+
+func TestResolveConfigRequiresMarkedHome(t *testing.T) {
+	configPath := configFixture(t, "")
+	configHome := t.TempDir()
+	writeConfig(t, configPath, "home = "+strconv.Quote(configHome)+"\n")
+
+	got, err := Resolve("", false, "", t.TempDir())
+	if got != "" || err == nil || !strings.Contains(err.Error(), configPath) || !strings.Contains(err.Error(), configHome) {
+		t.Fatalf("Resolve() = %q, %v; want invalid config home error naming %s and %s", got, err, configPath, configHome)
+	}
+}
+
+func TestResolveConfigConflictNamesBothHomes(t *testing.T) {
+	configPath := configFixture(t, "")
+	configHome := makeHome(t, t.TempDir(), "config-home")
+	workHome := makeHome(t, t.TempDir(), "work-home")
+	writeConfig(t, configPath, "home = "+strconv.Quote(configHome)+"\n")
+	cwd := filepath.Join(workHome, "projects", "nested")
+	if err := os.MkdirAll(cwd, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve("", false, "", cwd)
+	if got != "" || err == nil || !strings.HasPrefix(err.Error(), "home conflict:") || !strings.Contains(err.Error(), configHome) || !strings.Contains(err.Error(), workHome) {
+		t.Fatalf("Resolve() = %q, %v; want conflict naming %q and %q", got, err, configHome, workHome)
+	}
+}
+
+func TestResolveEnvWinsOverConfigAndAncestor(t *testing.T) {
+	configPath := configFixture(t, "")
+	configHome := makeHome(t, t.TempDir(), "config-home")
+	envHome := makeHome(t, t.TempDir(), "env-home")
+	workHome := makeHome(t, t.TempDir(), "work-home")
+	writeConfig(t, configPath, "home = "+strconv.Quote(configHome)+"\n")
+	cwd := filepath.Join(workHome, "nested")
+	if err := os.Mkdir(cwd, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve("", false, envHome, cwd)
+	if err != nil || got != envHome {
+		t.Fatalf("Resolve() = %q, %v; want HIVE_HOME %q", got, err, envHome)
+	}
+}
+
+func TestResolveConfigErrorsNameConfigPath(t *testing.T) {
+	validHome := makeHome(t, t.TempDir(), "config-home")
+	for _, test := range []struct {
+		name    string
+		content string
+	}{
+		{name: "missing key", content: "other = \"value\"\n"},
+		{name: "relative home", content: "home = \"relative\"\n"},
+		{name: "invalid string", content: "home = [\n"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			configPath := configFixture(t, "")
+			writeConfig(t, configPath, test.content)
+			got, err := Resolve("", false, "", t.TempDir())
+			if got != "" || err == nil || !strings.Contains(err.Error(), configPath) {
+				t.Fatalf("Resolve() = %q, %v; want config error naming %s", got, err, configPath)
+			}
+		})
+	}
+
+	configPath := configFixture(t, "")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(configPath, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Resolve("", false, "", validHome)
+	if got != "" || err == nil || !strings.Contains(err.Error(), configPath) {
+		t.Fatalf("Resolve() = %q, %v; want read error naming %s", got, err, configPath)
+	}
+}
+
+func configFixture(t *testing.T, content string) string {
+	t.Helper()
+	configDir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", configDir)
+	path := filepath.Join(configDir, "hive", "config.toml")
+	if content != "" {
+		writeConfig(t, path, content)
+	}
+	return path
+}
+
+func writeConfig(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func isolateConfig(t *testing.T) {
+	t.Helper()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 }
 
 func makeHome(t *testing.T, parent, name string) string {

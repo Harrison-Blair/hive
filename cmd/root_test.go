@@ -8,6 +8,19 @@ import (
 	"testing"
 )
 
+func TestMain(m *testing.M) {
+	configDir, err := os.MkdirTemp("", "hive-cmd-test-config-")
+	if err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("XDG_CONFIG_HOME", configDir); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	_ = os.RemoveAll(configDir)
+	os.Exit(code)
+}
+
 func TestVersionSubcommandPrintsVersion(t *testing.T) {
 	var out bytes.Buffer
 	if err := ExecuteWithArgs([]string{"version"}, strings.NewReader(""), &out); err != nil {

@@ -2,6 +2,7 @@
 package home
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,19 +25,27 @@ func Resolve(homeFlag string, homeFlagSet bool, envHome, cwd string) (string, er
 		return namedHome(homeFlag, workingDir)
 	}
 	if envHome != "" {
-		resolved, err := namedHome(envHome, workingDir)
+		return namedHome(envHome, workingDir)
+	}
+	configHome, err := ReadConfig()
+	if err == nil {
+		resolved, err := namedHome(configHome, workingDir)
 		if err != nil {
-			return "", err
+			configPath, _ := ConfigPath()
+			return "", fmt.Errorf("home config %s: %w", configPath, err)
 		}
 		if workingHome, ok := markerAbove(workingDir); ok && workingHome != resolved {
-			return "", fmt.Errorf("home conflict: HIVE_HOME is %s, working directory is in %s", resolved, workingHome)
+			return "", fmt.Errorf("home conflict: config is %s, working directory is in %s", resolved, workingHome)
 		}
 		return resolved, nil
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		return "", err
 	}
 	if marker, ok := markerAbove(workingDir); ok {
 		return marker, nil
 	}
-	return "", fmt.Errorf("not a hive home: no marker above %s", workingDir)
+	return "", fmt.Errorf("not a hive home: no marker above %s; run hive init in the home", workingDir)
 }
 
 func namedHome(path, cwd string) (string, error) {
@@ -45,6 +54,16 @@ func namedHome(path, cwd string) (string, error) {
 		return "", fmt.Errorf("not a hive home: %s", resolved)
 	}
 	return resolved, nil
+}
+
+// FindMarkerAbove returns the outermost marked home above path.
+func FindMarkerAbove(path string) (string, bool) {
+	return markerAbove(resolvePath(path, ""))
+}
+
+// Validate checks that path names a marked home and returns its canonical path.
+func Validate(path string) (string, error) {
+	return namedHome(path, "")
 }
 
 func markerAbove(path string) (string, bool) {

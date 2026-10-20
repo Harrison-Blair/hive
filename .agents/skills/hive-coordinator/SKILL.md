@@ -43,6 +43,8 @@ hive doctor
 
 Read the supervisor status. Use it in step 12.
 
+When a `hive` command says to run `hive init`, run `hive init` in the home.
+
 6. Find the workspace of the coordinator pane.
 
 ```sh
