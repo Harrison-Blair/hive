@@ -139,9 +139,28 @@ Send the commit SHA and the V1-V4 results to the manager with
 
 ## Scope change 1
 
-`cmd/root_test.go` is now in the source table, only for
+Scope change 1 adds `cmd/root_test.go` to the source table, only for
 `TestBareHiveRunsTUIUntilQuit` and other tests that assert the old TUI header
 or quit keys. Change the expected header text to the new header (for example
 `⬢ hive`) and the quit input to two `ctrl+c`. Keep each other assertion. The
 test must still prove that bare `hive` runs the TUI and that the TUI quits.
 List each change in the evidence.
+
+## Repair 1
+
+The verifier failed V1. `TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice` never
+runs the tick command, so it passes when code removes the `headerLoading` guard.
+No test covers the `screenLoading` guard. Read
+`.hive/spec/hive-tui/tasks/79-tui-shell/evidence/VERIFIED.md`. Do only this
+repair:
+
+1. Change the test so that it runs the command of a second tick while the
+   first header load is not done, and asserts that no second header load
+   starts.
+2. Add the same test for the screen load.
+3. Remove each guard in turn and see each test fail. Restore the guard and see
+   it pass. Record the runs in the evidence.
+4. Run the gate. Commit, push, run `hive task complete`, and send the SHA to
+   the manager with `hive inbox send`.
+
+Do not change other behavior.

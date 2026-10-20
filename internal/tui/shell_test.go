@@ -2,11 +2,14 @@ package tui
 
 import (
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/logs"
 )
 
 func TestScreenKeysSelectAllEightScreens(t *testing.T) {
@@ -57,11 +60,18 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	started := make(chan struct{}, 2)
 	release := make(chan struct{})
+	var releaseOnce sync.Once
+	releaseLoad := func() { releaseOnce.Do(func() { close(release) }) }
+	defer releaseLoad()
+	var loads atomic.Int32
 	m.headerLoader = func(string) (headerState, error) {
 		started <- struct{}{}
-		<-release
+		if loads.Add(1) == 1 {
+			<-release
+		}
 		return headerState{}, nil
 	}
+	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) { return nil, nil }
 	cmd := m.startHeaderLoad()
 	done := make(chan tea.Msg, 1)
 	go func() { done <- cmd() }()
@@ -74,20 +84,78 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	if !strings.Contains(m.View().Content, "▶ 2 Agents") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}
+	m.screenIndex = 7
 	_, refresh := raise(t, m, tickMsg{})
-	if refresh == nil {
-		t.Fatal("refresh did not return its next tick")
-	}
+	runRefreshLoads(t, refresh)
 	select {
 	case <-started:
 		t.Fatal("refresh started a second header load before the first settled")
 	default:
 	}
-	close(release)
+	releaseLoad()
 	msg := <-done
 	m, _ = raise(t, m, msg)
 	if m.headerLoading {
 		t.Fatal("header load did not settle")
+	}
+}
+
+func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.Local))
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 7
+	started := make(chan struct{}, 2)
+	release := make(chan struct{})
+	var releaseOnce sync.Once
+	releaseLoad := func() { releaseOnce.Do(func() { close(release) }) }
+	defer releaseLoad()
+	var loads atomic.Int32
+	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
+		started <- struct{}{}
+		if loads.Add(1) == 1 {
+			<-release
+		}
+		return nil, nil
+	}
+	cmd := m.startCurrentScreenLoad()
+	done := make(chan tea.Msg, 1)
+	go func() { done <- cmd() }()
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		t.Fatal("screen load did not start")
+	}
+	m, _ = raise(t, m, key('2', "2"))
+	if !strings.Contains(m.View().Content, "▶ 2 Agents") {
+		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
+	}
+	m, _ = raise(t, m, key('8', "8"))
+	_, refresh := raise(t, m, tickMsg{})
+	runRefreshLoads(t, refresh)
+	select {
+	case <-started:
+		t.Fatal("refresh started a second screen load before the first settled")
+	default:
+	}
+	releaseLoad()
+	msg := <-done
+	m, _ = raise(t, m, msg)
+	if m.screenLoading {
+		t.Fatal("screen load did not settle")
+	}
+}
+
+func runRefreshLoads(t *testing.T, refresh tea.Cmd) {
+	t.Helper()
+	msg := refresh()
+	commands, ok := msg.(tea.BatchMsg)
+	if !ok || len(commands) < 2 {
+		t.Fatalf("refresh command returned %T with no load command", msg)
+	}
+	// The first command schedules the next tick. Run the data commands now.
+	for _, command := range commands[1:] {
+		command()
 	}
 }
 
