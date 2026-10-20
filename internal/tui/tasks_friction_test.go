@@ -12,6 +12,23 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+func TestLoadTasksFindsLongTaskID(t *testing.T) {
+	home := newTestHome(t)
+	const id = "96-tasks-evidence-view"
+	writeRecord(t, home, []string{"tasks"}, id, records.Task{ID: id, Title: "Long task", Status: "created"})
+
+	data, err := loadTasks(home)
+	if err != nil {
+		t.Fatalf("loadTasks() error = %v", err)
+	}
+	for _, item := range data.items {
+		if item.record.ID == id {
+			return
+		}
+	}
+	t.Fatalf("loadTasks() omitted task %q", id)
+}
+
 func TestTasksScreenRendersLandedTaskAndVerificationHistory(t *testing.T) {
 	home := writeTasksFixture(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
