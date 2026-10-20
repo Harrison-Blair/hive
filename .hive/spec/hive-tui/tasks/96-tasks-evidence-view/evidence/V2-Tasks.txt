@@ -1,0 +1,57 @@
+⬢ hive · 1 project · 0 live agents · working unknown / idle unknown · supervisor stale · needs_user 0 · 12:27
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Tasks                                                                                                                                                                        │
+│   1 Chat                   ││ active 2  queued 0  [landed 1]  failed 0  all 3                                                ╭───────────────────────────────────────────────────────────────────────────╮ │
+│   2 Agents                 ││ project: all                                                                                   │ task details                                                              │ │
+│   3 Goals                  ││ ID             title                       project   status     agent · verification           │ 79-tui-shell · TUI shell                                                  │ │
+│   4 Queue                  ││ > 79-tui-shell   TUI shell                   hive      landed     t79-worker-2 · pass 7204d69  │ needs: 81-agents-screen ✓                                                 │ │
+│ ▶ 5 Tasks                  ││                                                                                                │ blocks: 83-downstream-task                                                │ │
+│   6 Friction               ││                                                                                                │ branch: task/79-tui-shell                                                 │ │
+│   7 Health                 ││                                                                                                │ feature: hive-tui                                                         │ │
+│   8 Logs                   ││                                                                                                │ grant: grants.md 2026-10-20 hive TUI goal                                 │ │
+│                            ││                                                                                                │ needs user: -                                                             │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                ╰───────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                                ╭───────────────────────────────────────────────────────────────────────────╮ │
+│                            ││                                                                                                │ ┤ evidence ├                                                              │ │
+│                            ││                                                                                                │ brief: tasks/79-tui-shell/brief.md                                        │ │
+│                            ││                                                                                                │ evidence: VERIFIED.md, V1.md                                              │ │
+│                            ││                                                                                                │ V1 fail · V1 failed: missing shell load · 2026-10-20T10:00:00Z            │ │
+│                            ││                                                                                                │ current pass · - · 2026-10-20T11:00:00Z                                   │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                │                                                                           │ │
+│                            ││                                                                                                ╰───────────────────────────────────────────────────────────────────────────╯ │
+│                            ││ landed = delivery commit set and pushed · verified = verification passed                                                                                                     │
+╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+
+tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move

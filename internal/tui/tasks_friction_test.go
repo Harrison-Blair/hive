@@ -162,6 +162,74 @@ func TestTasksProjectFilterAndFailedTab(t *testing.T) {
 	}
 }
 
+func TestFileViewsMatchTerminalFrames(t *testing.T) {
+	for _, size := range []struct {
+		width  int
+		height int
+	}{{width: 120, height: 40}, {width: 200, height: 57}} {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			for _, keyText := range []string{"b", "v", "d"} {
+				t.Run("Tasks/"+keyText, func(t *testing.T) {
+					home := writeTasksFixture(t)
+					m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+					m.screenIndex = 4
+					m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+					cmd := m.startCurrentScreenLoad()
+					if cmd == nil {
+						t.Fatal("Tasks screen did not request data")
+					}
+					m, _ = raise(t, m, cmd())
+					for range 2 {
+						m, _ = raise(t, m, key(0, "tab"))
+					}
+					m, cmd = raise(t, m, key(rune(keyText[0]), keyText))
+					if keyText != "d" && cmd == nil {
+						t.Fatal(keyText + " did not request a file")
+					}
+					m = deliverAgentCommands(t, m, cmd)
+					assertModelFrameSize(t, m, size.width, size.height)
+				})
+			}
+
+			t.Run("Friction/file", func(t *testing.T) {
+				home := newTestHome(t)
+				writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "FRICTION.md"), "# Friction\n")
+				writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "selected.md"), "---\ntitle: \"Selected issue\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"Keep this decision.\"\n---\n\n**Summary:**\nA selected issue.\n")
+				m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+				m.screenIndex = 5
+				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+				cmd := m.startCurrentScreenLoad()
+				if cmd == nil {
+					t.Fatal("Friction screen did not request data")
+				}
+				m, _ = raise(t, m, cmd())
+				m, cmd = raise(t, m, key(0, "enter"))
+				if cmd == nil {
+					t.Fatal("enter did not request the selected entry")
+				}
+				m = deliverAgentCommands(t, m, cmd)
+				assertModelFrameSize(t, m, size.width, size.height)
+			})
+		})
+	}
+}
+
+func assertModelFrameSize(t *testing.T, m *Model, width, height int) {
+	t.Helper()
+	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+	if len(lines) != height {
+		t.Errorf("frame has %d lines, want %d:\n%s", len(lines), height, strings.Join(lines, "\n"))
+	}
+	for index, line := range lines {
+		if got := ansi.StringWidth(line); got != width {
+			t.Errorf("frame line %d has display width %d, want %d: %q", index+1, got, width, line)
+		}
+	}
+	if !strings.HasSuffix(lines[height-4], "╯") {
+		t.Errorf("main panel bottom border is not on line %d: %q", height-3, lines[height-4])
+	}
+}
+
 func TestFrictionScreenShowsSelectedDetailsInRightPanel(t *testing.T) {
 	for _, size := range []struct {
 		width  int
