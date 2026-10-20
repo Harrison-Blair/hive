@@ -37,7 +37,7 @@ coordinator.
 ```sh
 hive task list --project {{PROJECT_ID}} --ready
 hive task show ID --brief
-hive task create --project {{PROJECT_ID}} --title TITLE --slug SLUG --depends-on IDS --brief FILE
+hive task create --project {{PROJECT_ID}} --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE
 hive task edit --task ID --brief FILE
 hive worktree create --task ID
 hive agent spawn --role worker --task ID --harness KIND --model MODEL
@@ -51,6 +51,8 @@ hive memory write --scope project:{{PROJECT_ID}} NAME
 hive handoff write --scope project:{{PROJECT_ID}}
 hive inbox send --to coordinator TEXT --agent NAME
 ```
+
+Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.
 
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 

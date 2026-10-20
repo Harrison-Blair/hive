@@ -16,6 +16,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/run"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
@@ -36,23 +37,28 @@ var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // CreateOptions holds the values for one task creation.
 type CreateOptions struct {
-	Project    string
-	Title      string
-	Slug       string
-	SlugSet    bool
-	DependsOn  string
-	DependsSet bool
-	BriefPath  string
-	BriefSet   bool
-	Input      io.Reader
-	Deadline   time.Duration
-	Logger     *slog.Logger
+	Project        string
+	Title          string
+	Feature        string
+	RequireFeature bool
+	Spec           bool
+	Slug           string
+	SlugSet        bool
+	DependsOn      string
+	DependsSet     bool
+	BriefPath      string
+	BriefSet       bool
+	Input          io.Reader
+	Deadline       time.Duration
+	Logger         *slog.Logger
 }
 
 // createPlan holds the validated values that the locked part uses.
 type createPlan struct {
 	project string
 	title   string
+	feature string
+	spec    bool
 	slug    string
 	deps    []string
 	brief   []byte
@@ -69,6 +75,11 @@ func Create(home string, options CreateOptions) output.Envelope {
 	}
 	if options.Project == "" {
 		return fail("validate", "project requires a value")
+	}
+	if options.RequireFeature || options.Feature != "" || options.Spec {
+		if err := checkFeature(options.Feature); err != nil {
+			return fail("validate", err.Error())
+		}
 	}
 	slug := options.Slug
 	if !options.SlugSet {
@@ -100,6 +111,8 @@ func Create(home string, options CreateOptions) output.Envelope {
 	plan := createPlan{
 		project: options.Project,
 		title:   options.Title,
+		feature: options.Feature,
+		spec:    options.Spec,
 		slug:    slug,
 		deps:    deps,
 		brief:   brief,
@@ -132,6 +145,11 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 			return fail("project", "project not found: "+quoteIfControl(plan.project), "")
 		}
 		return fail("project", err.Error(), "")
+	}
+	if plan.feature != "" && !plan.spec {
+		if err := checkFeatureREADME(project, plan.feature, log.logger); err != nil {
+			return fail("validate", err.Error(), "")
+		}
 	}
 	for _, dep := range plan.deps {
 		var dependency records.Task
@@ -176,6 +194,8 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		ID:                  id,
 		Project:             project.ID,
 		Title:               plan.title,
+		Feature:             plan.feature,
+		Spec:                plan.spec,
 		ControllingRole:     "manager-" + project.ID,
 		ActingAgent:         "",
 		Status:              "created",
@@ -215,6 +235,19 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 	envelope.Result = record
 	log.transition("task create", project.ID, id, "", "", record.Status)
 	return envelope
+}
+
+func checkFeatureREADME(project records.Project, feature string, logger *slog.Logger) error {
+	path := filepath.ToSlash(filepath.Join(".hive", "spec", feature, "README.md"))
+	ctx := run.WithLogger(context.Background(), logger)
+	result, err := run.Command(ctx, "", "git", "-C", project.Path, "cat-file", "-e", project.Base+":"+path)
+	if err != nil {
+		return fmt.Errorf("check feature README %s: %s", path, oneLine(err.Error()))
+	}
+	if result.ExitCode != 0 {
+		return fmt.Errorf("feature README missing on base: %s", path)
+	}
+	return nil
 }
 
 // peekCounter reads the current counter value under the lock and returns the

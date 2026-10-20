@@ -98,7 +98,7 @@ func (c *taskCLI) markVerified(t *testing.T, id string) {
 
 func (c *taskCLI) createTask(t *testing.T, title string) string {
 	t.Helper()
-	status, stdout, stderr := c.run("task", "create", "--project", "repo", "--title", title)
+	status, stdout, stderr := c.run("task", "create", "--project", "repo", "--title", title, "--feature", "f", "--spec")
 	if status != 0 {
 		t.Fatalf("task create status = %d; stdout %q, stderr %q", status, stdout, stderr)
 	}
@@ -459,7 +459,7 @@ func TestTaskCLILogsPartialCreatePrefixes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	status, stdout, stderr := cli.run("task", "create", "--project", "repo", "--title", "Topic")
+	status, stdout, stderr := cli.run("task", "create", "--project", "repo", "--title", "Topic", "--feature", "f", "--spec")
 	if status != 1 {
 		t.Fatalf("partial create status = %d; stdout %q, stderr %q; want 1", status, stdout, stderr)
 	}
@@ -503,7 +503,7 @@ func TestTaskCLIRejectsLinkedBriefAncestor(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	status, _, stderr := cli.run("task", "create", "--project", "repo", "--title", "Seed")
+	status, _, stderr := cli.run("task", "create", "--project", "repo", "--title", "Seed", "--feature", "f", "--spec")
 	if status != 1 {
 		t.Fatalf("linked brief create status = %d; stderr %q; want 1", status, stderr)
 	}

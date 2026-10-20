@@ -43,6 +43,7 @@ hive/                            the checkout is the home
 ├─ main.go  cmd/  internal/      Go source             tracked
 ├─ spec/  reference/             design and API docs   tracked
 ├─ .hive/README.md               home marker           tracked
+├─ .hive/spec/                   feature specs         tracked
 ├─ projects/<project-id>/        project directory     ignored
 │  └─ worktrees/<task-id>/       worktree              ignored
 ├─ memory/  overrides/  plans/   personal              ignored
@@ -50,7 +51,7 @@ hive/                            the checkout is the home
 └─ .hive/  state/  logs/  tmp/   runtime               ignored
 ```
 
-- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md`. That file marks the home. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
+- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md` and `.hive/spec/`. The README file marks the home. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
 - `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
 - Put scratch files in `.hive/tmp/`.
 

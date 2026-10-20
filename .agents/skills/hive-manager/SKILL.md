@@ -38,9 +38,11 @@ dependency. The command reads the brief text from standard input when the file
 is `-`.
 
 ```sh
-hive task create --project ID --title TITLE --slug SLUG --depends-on IDS --brief FILE
+hive task create --project ID --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE
 hive task edit --task ID --brief FILE
 ```
+
+Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.
 
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 

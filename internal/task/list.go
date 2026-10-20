@@ -17,6 +17,7 @@ import (
 // ListOptions holds the filters of one task list.
 type ListOptions struct {
 	Project string
+	Feature string
 	Status  string
 	Ready   bool
 	Logger  *slog.Logger
@@ -110,6 +111,9 @@ func filterTasks(tasks []records.Task, options ListOptions) []records.Task {
 	filtered := make([]records.Task, 0, len(tasks))
 	for _, task := range tasks {
 		if options.Project != "" && task.Project != options.Project {
+			continue
+		}
+		if options.Feature != "" && task.Feature != options.Feature {
 			continue
 		}
 		if options.Status != "" && task.Status != options.Status {

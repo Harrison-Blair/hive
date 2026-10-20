@@ -17,6 +17,8 @@ func New() *cobra.Command {
 	}
 	flags := command.Flags()
 	flags.String("project", "", "project ID")
+	flags.String("feature", "", "feature slug")
+	flags.Bool("spec", false, "mark the feature spec task")
 	flags.String("title", "", "task title")
 	flags.String("slug", "", "task slug")
 	flags.String("depends-on", "", "comma-separated dependency IDs")
@@ -24,20 +26,25 @@ func New() *cobra.Command {
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		return common.Run(cmd, "task create", func(home string) (output.Envelope, string, error) {
 			project, _ := cmd.Flags().GetString("project")
+			feature, _ := cmd.Flags().GetString("feature")
+			spec, _ := cmd.Flags().GetBool("spec")
 			title, _ := cmd.Flags().GetString("title")
 			slug, _ := cmd.Flags().GetString("slug")
 			dependsOn, _ := cmd.Flags().GetString("depends-on")
 			briefPath, _ := cmd.Flags().GetString("brief")
 			envelope := tasklib.Create(home, tasklib.CreateOptions{
-				Project:    project,
-				Title:      title,
-				Slug:       slug,
-				SlugSet:    cmd.Flags().Changed("slug"),
-				DependsOn:  dependsOn,
-				DependsSet: cmd.Flags().Changed("depends-on"),
-				BriefPath:  briefPath,
-				BriefSet:   cmd.Flags().Changed("brief"),
-				Input:      cmd.InOrStdin(),
+				Project:        project,
+				Title:          title,
+				Feature:        feature,
+				RequireFeature: true,
+				Spec:           spec,
+				Slug:           slug,
+				SlugSet:        cmd.Flags().Changed("slug"),
+				DependsOn:      dependsOn,
+				DependsSet:     cmd.Flags().Changed("depends-on"),
+				BriefPath:      briefPath,
+				BriefSet:       cmd.Flags().Changed("brief"),
+				Input:          cmd.InOrStdin(),
 			})
 			return envelope, tasklib.CreateText(envelope), nil
 		})

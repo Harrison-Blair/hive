@@ -12,6 +12,8 @@ type Task struct {
 	ID                  string                `json:"id"`
 	Project             string                `json:"project"`
 	Title               string                `json:"title"`
+	Feature             string                `json:"feature,omitempty"`
+	Spec                bool                  `json:"spec,omitempty"`
 	ControllingRole     string                `json:"controlling_role"`
 	ActingAgent         string                `json:"acting_agent"`
 	Status              string                `json:"status"`
