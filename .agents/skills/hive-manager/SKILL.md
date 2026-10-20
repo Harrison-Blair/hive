@@ -35,16 +35,27 @@ hive inbox --role manager-ID
 
 Create one task for each unit of work. Give the task a brief and each
 dependency. The command reads the brief text from standard input when the file
-is `-`.
+is `-`. Add each new task to its wave.
 
 ```sh
 hive task create --project ID --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE
 hive task edit --task ID --brief FILE
+hive goal create --project ID --title TITLE --slug SLUG --grant TEXT
+hive goal edit --goal ID --add-wave TITLE --done-when POINT
+hive goal edit --goal ID --wave WAVE --add-task TASK
+hive goal edit --goal ID --wave WAVE --needs-user TEXT
+hive goal edit --goal ID --wave WAVE --clear-needs-user
+hive goal edit --goal ID --wave WAVE --status open|done
+hive goal edit --goal ID --status active|done
+hive goal show ID
+hive goal list --project ID
 ```
 
 Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.
 
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
+
+Before you stop for a user decision on a task, set `needs_user` with `hive task edit --task ID --needs-user TEXT`. Clear it when the user gives the decision with `hive task edit --task ID --clear-needs-user`.
 
 List the ready tasks of the project.
 

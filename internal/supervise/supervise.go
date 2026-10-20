@@ -502,8 +502,9 @@ func (s *Supervisor) appendAndStatus(ctx context.Context, n notification) output
 		if n.lifecycle != "" {
 			current.Status = n.lifecycle
 		}
-		if n.agentStatus != "" {
+		if n.agentStatus != "" && current.AgentStatus != n.agentStatus {
 			current.AgentStatus = n.agentStatus
+			current.StatusChangedAt = now
 		}
 		current.UpdatedAt = now
 		if err := locked.WriteIn([]string{"agents"}, n.agentKey, current); err != nil {
@@ -539,7 +540,10 @@ func (s *Supervisor) statusOnly(ctx context.Context, record records.Agent, statu
 			envelope = failedEnvelope("status", "agent record changed")
 			return nil
 		}
-		current.AgentStatus = status
+		if current.AgentStatus != status {
+			current.AgentStatus = status
+			current.StatusChangedAt = now
+		}
 		current.UpdatedAt = now
 		if err := locked.WriteIn([]string{"agents"}, current.Key, current); err != nil {
 			envelope = failedEnvelope("status", "write agent: "+err.Error())

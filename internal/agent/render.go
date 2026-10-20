@@ -35,10 +35,20 @@ func ShowText(envelope output.Envelope) string {
 	if !ok || envelope.Error != nil {
 		return ""
 	}
-	return fmt.Sprintf("key: %s\nname: %s\nrole: %s\nproject: %s\ntask: %s\nharness: %s\nmodel: %s\npane_id: %s\nworkspace_id: %s\ntab_id: %s\nterminal_id: %s\ncwd: %s\nstatus: %s\nfinished: %t\nquiet_after_min: %d\ngeneration: %d\nstarted_at: %s\nupdated_at: %s\n",
+	text := fmt.Sprintf("key: %s\nname: %s\nrole: %s\nproject: %s\ntask: %s\nharness: %s\nmodel: %s\npane_id: %s\nworkspace_id: %s\ntab_id: %s\nterminal_id: %s\ncwd: %s\nstatus: %s\nfinished: %t\nquiet_after_min: %d\ngeneration: %d\nstarted_at: %s\nupdated_at: %s\n",
 		record.Key, record.Name, record.Role, record.Project, record.Task, record.Harness, record.Model,
 		record.PaneID, record.WorkspaceID, record.TabID, record.TerminalID, record.Cwd, record.Status,
 		record.Finished, record.QuietAfterMin, record.Generation, record.StartedAt, record.UpdatedAt)
+	if record.Parent != "" {
+		text += fmt.Sprintf("parent: %s\n", record.Parent)
+	}
+	if record.Replaces != "" {
+		text += fmt.Sprintf("replaces: %s\n", record.Replaces)
+	}
+	if record.StatusChangedAt != "" {
+		text += fmt.Sprintf("status since: %s\n", record.StatusChangedAt)
+	}
+	return text
 }
 
 func effectsText(envelope output.Envelope) string {

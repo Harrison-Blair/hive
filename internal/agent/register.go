@@ -16,6 +16,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	identitylib "github.com/Harrison-Blair/hive/internal/lib/identity"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -39,6 +40,8 @@ type RegisterOptions struct {
 	Name          string
 	NameSet       bool
 	PaneID        string
+	CallerAgent   string
+	CallerPaneID  string
 	WorkspaceID   string
 	TabID         string
 	QuietAfterMin int
@@ -442,6 +445,20 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 	}
 
+	parent := ""
+	replaces := ""
+	if options.Spawned {
+		caller, err := identitylib.ResolveHeld(writer, options.CallerAgent, options.CallerPaneID)
+		if err == nil {
+			parent = caller.Key
+		} else if !errors.Is(err, identitylib.ErrCallerUnknown) &&
+			!strings.HasPrefix(err.Error(), "agent not found:") &&
+			!strings.HasPrefix(err.Error(), "caller ambiguous:") {
+			return failed("identity", err.Error())
+		}
+		replaces = replacementKey(options.Role, options.Project, options.Task, recordKey, previousHolderKey, agentRecords)
+	}
+
 	startedAt := now
 	if replaceOrphan && !options.Spawned {
 		startedAt = existing.StartedAt
@@ -460,6 +477,8 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		TerminalID:    "",
 		Cwd:           "",
 		Status:        initialAgentStatus(options.Spawned),
+		Parent:        parent,
+		Replaces:      replaces,
 		Finished:      false,
 		QuietAfterMin: quietAfter,
 		Generation:    generation,
@@ -523,6 +542,36 @@ func initialAgentStatus(spawned bool) string {
 
 func isActiveAgentStatus(status string) bool {
 	return status == records.AgentStarting || status == records.AgentLive
+}
+
+func replacementKey(role, project, task, currentKey, previousHolderKey string, agents []records.Agent) string {
+	var newest records.Agent
+	for _, candidate := range agents {
+		if candidate.Key == currentKey || candidate.Role != role {
+			continue
+		}
+		switch role {
+		case "worker", "verifier":
+			if candidate.Task != task {
+				continue
+			}
+		case "manager":
+			if candidate.Project != project {
+				continue
+			}
+		case "coordinator":
+		default:
+			continue
+		}
+		if candidate.Status == records.AgentLive && candidate.Key != previousHolderKey {
+			continue
+		}
+		if newest.Key == "" || candidate.StartedAt > newest.StartedAt ||
+			(candidate.StartedAt == newest.StartedAt && candidate.Key > newest.Key) {
+			newest = candidate
+		}
+	}
+	return newest.Key
 }
 
 func nextTaskAgentName(taskID, role string, agentRecords []records.Agent, claims []records.Claim) string {
