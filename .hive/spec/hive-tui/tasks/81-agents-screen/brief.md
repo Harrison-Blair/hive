@@ -12,8 +12,8 @@
 
 Fill screen 2, Agents: a topology of the agents with the tabs tree, graph, and
 table. The feature README is `.hive/spec/hive-tui/README.md`. Read it first,
-mainly goal decision 1 and G4, G5, G12, G14. Its decisions are approved. Do
-not change a decision. When the code does not agree with this brief or the
+mainly goal decision 1 and G4, G5, G12, G14. Use its approved decisions. Do
+not change one. When the code does not agree with this brief or the
 README, stop and report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`.
 
