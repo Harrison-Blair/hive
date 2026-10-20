@@ -406,6 +406,88 @@ func TestSendAllowsUnregisteredPaneInCoordinatorWorkspace(t *testing.T) {
 	}
 }
 
+func TestSendAllowsUserPaneInCoordinatorWorkspaceWithManager(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedManager(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w1:p3", Text: "hello"})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Send() = %#v; want ok from the coordinator workspace", envelope)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 1 {
+		t.Fatalf("agent.prompt calls = %d; want one", got)
+	}
+}
+
+func TestSendRefusesManagerPaneInCoordinatorWorkspaceByRule1(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedManager(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w1:p2", Text: "hello"})
+	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live manager agent)")
+}
+
+func TestSendRefusesUserPaneInLiveWorkerWorkspaceByRule3(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedWorker(t, home)
+	fake := newFakeHerdr(t)
+	fake.setPaneWorkspace("w2")
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w2:p2", Text: "hello"})
+	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)")
+}
+
+func TestValidateCallerRefusesWorkerWorkspaceWithoutCoordinatorByRule3(t *testing.T) {
+	home := chatHome(t)
+	seedWorker(t, home)
+	fake := newFakeHerdr(t)
+	fake.setPaneWorkspace("w2")
+	err := ValidateCaller(context.Background(), home, "", "w2:p2", "")
+	if err == nil || err.Error() != "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)" {
+		t.Fatalf("ValidateCaller() error = %v; want rule 3 refusal", err)
+	}
+}
+
+func TestSendRefusesCoordinatorWorkspaceCallerBelowProjectsByRule2(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	fake := newFakeHerdr(t)
+	workingDir := filepath.Join(home, "projects", "demo")
+	if err := os.MkdirAll(workingDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w1:p2", WorkingDir: workingDir, Text: "hello"})
+	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)")
+}
+
+func seedManager(t *testing.T, home string) {
+	t.Helper()
+	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
+	seedAgent(t, home, manager)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: manager.Key, Generation: 1}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func assertSendDenied(t *testing.T, home string, fake *fakeHerdr, envelope output.Envelope, want string) {
+	t.Helper()
+	if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != want {
+		t.Fatalf("Send() = %#v; want error %q", envelope, want)
+	}
+	if files := chatFiles(t, home); len(files) != 0 {
+		t.Fatalf("chat files = %v; want none", files)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 0 {
+		t.Fatalf("agent.prompt calls = %d; want none", got)
+	}
+}
+
 func assertSendRefused(t *testing.T, home string, fake *fakeHerdr, envelope output.Envelope, rule string) {
 	t.Helper()
 	message := fmt.Sprint(envelope.Error)
