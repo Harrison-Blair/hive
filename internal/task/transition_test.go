@@ -123,7 +123,7 @@ var validTransitions = map[string]map[string]string{
 	"created":   {"assign": "assigned", "cancel": "cancelled"},
 	"assigned":  {"assign": "assigned", "complete": "completed", "cancel": "cancelled"},
 	"completed": {"verify": "verified", "verify-fail": "assigned", "cancel": "cancelled"},
-	"verified":  {},
+	"verified":  {"cancel": "cancelled"},
 	"cancelled": {},
 }
 
@@ -178,8 +178,8 @@ func TestTransitionTable(t *testing.T) {
 			}
 		}
 	}
-	if valid != 8 || invalid != 17 {
-		t.Fatalf("valid = %d, invalid = %d; want 8 and 17", valid, invalid)
+	if valid != 9 || invalid != 16 {
+		t.Fatalf("valid = %d, invalid = %d; want 9 and 16", valid, invalid)
 	}
 }
 
@@ -324,6 +324,48 @@ func TestTransitionCancelStoresReason(t *testing.T) {
 	if got.Status != "cancelled" || got.CancelReason != "user stopped the work" {
 		t.Fatalf("record = %#v; want cancelled with the reason", got)
 	}
+}
+
+func TestTransitionCancelVerifiedTask(t *testing.T) {
+	t.Run("without delivery", func(t *testing.T) {
+		home, task := newSeed(t, "verified")
+		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		if envelope.Outcome != "ok" || envelope.Error != nil {
+			t.Fatalf("Cancel() = %#v; want ok", envelope)
+		}
+		got := readTask(t, home, task.ID)
+		if got.Status != "cancelled" || got.CancelReason != "stop work" {
+			t.Fatalf("record = %#v; want cancelled with the reason", got)
+		}
+	})
+
+	t.Run("with an unpushed delivery", func(t *testing.T) {
+		home, task := newSeed(t, "verified")
+		task.Delivery = &records.Delivery{Mode: "merge", Target: "main", Commit: "abc123"}
+		seedTask(t, home, task)
+		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		if envelope.Outcome != "ok" || envelope.Error != nil {
+			t.Fatalf("Cancel() = %#v; want ok", envelope)
+		}
+		got := readTask(t, home, task.ID)
+		if got.Status != "cancelled" || got.CancelReason != "stop work" {
+			t.Fatalf("record = %#v; want cancelled with the reason", got)
+		}
+	})
+
+	t.Run("with a pushed delivery", func(t *testing.T) {
+		home, task := newSeed(t, "verified")
+		task.Delivery = &records.Delivery{Mode: "merge", Target: "main", Commit: "abc123", Pushed: true}
+		seedTask(t, home, task)
+		before := taskRecordBytes(t, home, task.ID)
+		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		if envelope.Outcome != "failed" || envelope.Error != "task is landed: cancel refused" {
+			t.Fatalf("Cancel() = %#v; want landed-task refusal", envelope)
+		}
+		if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
+			t.Fatalf("record changed when cancel refused")
+		}
+	})
 }
 
 func TestTransitionRecordInvalidID(t *testing.T) {

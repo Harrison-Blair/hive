@@ -43,6 +43,45 @@ func TestMerge(t *testing.T) {
 		}
 	})
 
+	t.Run("a branch already on the base records its own tip without a new commit", func(t *testing.T) {
+		repo := newRepo(t)
+		bare := newBare(t)
+		runGit(t, repo, "remote", "add", "origin", bare)
+		runGit(t, repo, "push", "-q", "-u", "origin", "main")
+		branchTip := addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
+		runGit(t, repo, "merge", "-q", "--no-ff", "--no-edit", "task/1-a")
+		baseTip := strings.TrimSpace(runGit(t, repo, "rev-parse", "main"))
+		home := newHome(t)
+		writeProject(t, home, testProject(repo))
+		writeTask(t, home, testTask("1-a", "task/1-a"))
+
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "demo"})
+		if envelope.Outcome != "ok" || envelope.Error != nil {
+			t.Fatalf("Land() = %+v, want ok", envelope)
+		}
+		result, ok := envelope.Result.(Result)
+		if !ok || result.Commit != branchTip || result.Note != "branch was already on the base" || !result.Pushed {
+			t.Fatalf("result = %#v, want branch tip, already-on-base note, and pushed", envelope.Result)
+		}
+		if got := strings.TrimSpace(runGit(t, repo, "rev-parse", "main")); got != baseTip {
+			t.Fatalf("main = %s, want unchanged tip %s", got, baseTip)
+		}
+		if got := strings.TrimSpace(runGit(t, bare, "rev-parse", "main")); got != baseTip {
+			t.Fatalf("origin main = %s, want pushed base tip %s", got, baseTip)
+		}
+		if len(envelope.Effects) < 1 || envelope.Effects[0].Resource != "merge" ||
+			envelope.Effects[0].Path != branchTip || envelope.Effects[0].Action != "already-merged" {
+			t.Fatalf("effects = %#v, want already-merged branch tip", envelope.Effects)
+		}
+		if text := LandText(envelope); !strings.Contains(text, "branch was already on the base") {
+			t.Fatalf("LandText() = %q, want already-on-base message", text)
+		}
+		record := loadTask(t, home, "1-a")
+		if record.Delivery == nil || record.Delivery.Commit != branchTip || !record.Delivery.Pushed {
+			t.Fatalf("delivery = %+v, want pushed delivery of branch tip", record.Delivery)
+		}
+	})
+
 	t.Run("a repository without origin lands without a push", func(t *testing.T) {
 		repo := newRepo(t)
 		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
