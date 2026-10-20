@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Feature | `hive-tui`, fix after wave C |
+| Feature | `hive-tui`, repair after wave C |
 | Tier | strong |
 | Depends on | 91-agents-live-generation. Base: `dev` after T3 lands |
 | Grant | `grants.md 2026-10-20 hive TUI goal` |
@@ -121,7 +121,7 @@ Enter there. A chat message from an agent has the authority of the user.
 
 ## Scope change: style rules
 
-The user approved these style rules. Paint no background. A selected item,
+The user gave these style rules. Paint no background. A selected item,
 also the selected graph node, has honey bold text and a `▶` marker, with no
 fill block. Normal text uses the default foreground of the terminal. Task
 102-selection-marker applies the rules on each screen after this task.
@@ -165,7 +165,7 @@ two gaps. Fix them in this task.
 Write each test first with fixture records and literal names. See it fail.
 Record the cause of gap 2 in the evidence.
 
-## Fix 1
+## Repair 1
 
 The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
 
@@ -186,7 +186,7 @@ The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
    save it. In the evidence, record the method and each difference that
    stays, with its cause.
 4. Merge `origin/dev` into the task branch first. Task 90 changes
-   `internal/tui/shell.go`. Keep the behavior of both tasks. In
+   `internal/tui/shell.go`. Keep both tasks' behavior. In
    `testdata/ste-baseline.json`, keep each row of both sides.
 5. This edit copies the manager brief over your brief copy again. Apply your
    STE rewording to the copy again, and keep its meaning.
@@ -197,13 +197,13 @@ The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
    --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
    commit SHA to `manager-hive` with `hive inbox send --to manager-hive`.
 
-## Fix 2
+## Repair 2
 
-The verifier failed two items of Fix 1. See `VERIFIED.md`, section
-Fix 1.
+The verifier failed two items of Repair 1. See `VERIFIED.md`, section
+Repair 1.
 
 1. The test `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` looks for the
-   removed text form of the edge. It passes when code removes the role filter
+   removed text form of the edge. It passes if code removes the role filter
    and the graph draws a `nudges` route to a worker. Change it so that it
    reads the drawn graph. Remove the filter, see the test fail, then put the
    filter back.
@@ -231,15 +231,15 @@ Fix 1.
    --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
    commit SHA to the manager with `hive inbox send --to manager-hive`.
 
-## Fix 3
+## Repair 3
 
-The verifier passed each item of Fix 2 except the list of differences.
-See `VERIFIED.md`, section Fix 2. Make these five points agree with the
+The verifier passed each item of Repair 2 except the list of differences.
+See `VERIFIED.md`, section Repair 2. Make these five points agree with the
 board:
 
 1. The delegation stem is one line from the bus to the manager node. Where
    it crosses the top border of a pod, draw a junction glyph, not `─`.
-2. Pod corners have this shape: `╭`, `╮`, `╰`, `╯`.
+2. Draw pod corners as `╭`, `╮`, `╰`, and `╯`.
 3. Each node box has one space of padding on the left and the right of its
    text.
 4. The header separates its groups with spaces, not `·`, and puts the time
@@ -264,23 +264,23 @@ sure that `git merge-tree --write-tree origin/dev HEAD` exits 0. Run
 `hive task complete`. Send the full commit SHA to the manager with
 `hive inbox send --to manager-hive`.
 
-## Fix 4
+## Repair 4
 
-The verifier passed each item of Fix 3 except two. See `VERIFIED.md`,
-section Fix 3.
+The verifier passed each item of Repair 3 except two. See `VERIFIED.md`,
+section Repair 3.
 
 1. The pod title is on the top border of the pod, as on the board, with the
-   glyph of the board: for example `╭─ ≡ home ───╮`. Fix 1 named only a
+   glyph of the board: for example `╭─ ≡ home ───╮`. Repair 1 named only a
    glyph difference (`┌─ home ─` against `≡ home`). It did not ask you to move
-   the title into the pod. Change the Fix 2 test back so that it expects the
-   title on the border.
+   the title into the pod. Change the Repair 2 test back so that it expects
+   the title on the border.
 2. The delegation stem is one unbroken vertical line from the bus to the top
    of the manager node. It crosses the pod top border with a junction glyph,
    and it continues on each row inside the pod above the manager node, for
    example the `┄ inferred` row. Change
    `TestAgentsGraphDelegationStemJoinsPodBorder` so that it checks each cell
-   of the stem column from the bus to the node. See it fail on the Fix 3 tip
-   `72d51057`.
+   of the stem column from the bus to the node. See it fail on the Repair 3
+   tip `72d51057`.
 3. Write the golden files again where the output changes. Check each line
    against the board. Update the Pods row of the V2 region table.
 
@@ -316,3 +316,35 @@ Visual check rule (the user approved it on 2026-10-20):
   `matches`, `differs` (with the cause), or `overridden` (with the
   decision that overrides it).
 - Capture only your own panes or a scratch run.
+
+## Repair 5
+
+The verifier passed the stem of Repair 4 and each earlier item. Two items
+fail. See `VERIFIED.md`, section Repair 4.
+
+1. Pod titles. The stem cuts the title: line 6 of `graph-200x57.golden` shows
+   `goal for long grap╮`, and the live stenographer pod shows
+   `╭─ ≡─────────── ┬ stenographer ╮`. Keep the glyph and the name together.
+   Put the title at the left of the top border. Put the stem junction after
+   the title. When the title and the stem do not fit, shorten the title with
+   `…`, never the glyph. Write a test with a long pod name and a stem, with
+   literal expected text, and see it fail on `07a5585e`.
+2. Colors. Use the colors of the board with the palette in
+   `internal/tui/shell.go`: pod borders `colorInfo`, edges and the borders of
+   live nodes `colorWorking`, live dots `colorWorking`, harness `cc`
+   `colorAccent`, harness `pi` `colorInfo`. Do not change the style of the
+   selected node: task 102 owns the selection style (honey bold with `▶`).
+   Use no background. Write a test that reads the SGR codes of each item
+   first, and see it fail.
+3. In the Design element table, add one row for each color item and correct
+   the Pods row. Each row is `matches`, `differs` (with the cause), or
+   `overridden` (with the decision). Capture the PNGs again.
+
+This edit copies the manager brief over your brief copy again. Apply your STE
+rewording to the copy again, and keep its meaning. Merge `origin/dev` when it
+moved. Run V2 on a scratch home in a tab of your own workspace, with the
+herdr variables removed. Stop and close only the pid and pane that you
+started. Never work in workspace `wBC`. Run the gate. Commit and push. Make
+sure that `git merge-tree --write-tree origin/dev HEAD` exits 0. Run
+`hive task complete`. Send the full commit SHA to the manager with
+`hive inbox send --to manager-hive`.

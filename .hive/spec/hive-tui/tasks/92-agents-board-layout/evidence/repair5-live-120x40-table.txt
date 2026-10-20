@@ -1,0 +1,40 @@
+⬢ hive  3 projects  7 agents  2 working  5 idle  supervisor ●  needs you 0                                         15:48
+╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ TREE  GRAPH  [ TABLE ]                                                                 │
+│ ▾ home                     ││ name · role · project · task · harness · model · status · age · parent                 │
+│   ○ coordinator            ││ coordinator · coordinator · — · — · claude · claude-opus-5-5 · idle · 11m · none       │
+│   ● supervisor             ││ supervisor · supervisor · — · — · — · — · working · 2h · none                          │
+│ ▾ hive · 1 working         ││ manager-hive · manager · hive · — · claude · claude-opus-5-5 · idle · 19m · inferred   │
+│   ○ manager-hive           ││ t92-verifier-5 · verifier · hive · 92-agents-board-layout · claude …                   │
+│     × t92-verifier-5       ││ ▶ t92-worker-6 · worker · hive · 92-agents-board-layout · pi · ope…                    │
+│     ▶ ● t92-worker-6       ││ manager-qmeter · manager · qmeter · — · claude · claude-opus-5-5 · idle · 4h · inferr… │
+│ ▾ qmeter · 0 working       ││ manager-stenographer · manager · stenographer · — · claude · claude-opus-5-5 · idle ·… │
+│   ○ manager-qmeter         ││ t108-verifier-2 · verifier · stenographer · 108-hub-live-board · claude · claude-opus… │
+│ ▾ stenographer · 1 working ││ t108-worker-2 · worker · stenographer · 108-hub-live-board · pi · o…                   │
+│   ○ manager-stenographer   ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+│     ● t108-verifier-2      ││ │ t92-worker-6  parent manager-hive  model openai-codex/gpt-6-luna:xhigh             │ │
+│     × t108-worker-2        ││ │ task 92-agents-board-layout  assigned  pane wSE:p1  next 102-selection-marker      │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│ ────────────────────────── ││                                                                                        │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                        │
+│ 5 TASKS · 6 FRICTION       ││                                                                                        │
+│ 7 HEALTH · 8 LOGS          ││                                                                                        │
+╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started                                                                      
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)       
+←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat     

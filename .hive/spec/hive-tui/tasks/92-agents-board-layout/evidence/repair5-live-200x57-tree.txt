@@ -1,0 +1,57 @@
+⬢ hive  3 projects  7 agents  2 working  5 idle  supervisor ●  needs you 0                                                                                                                         15:48
+╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ [ TREE ]  GRAPH  TABLE                                                                                                                                                 │
+│ ▾ home                     ││ ▾ home                                                                                                                                                                 │
+│   ○ coordinator            ││   ├─ ○ coordinator · idle · 11m                                                                                                                                        │
+│   ● supervisor             ││   └─ ● supervisor · working · 2h                                                                                                                                       │
+│ ▾ hive · 1 working         ││ ▾ hive · Hive TUI dashboard                                                                                                                                            │
+│   ○ manager-hive           ││   ┄┄ ○ manager-hive · idle · 18m                                                                                                                                       │
+│     × t92-verifier-5       ││      ├─ × t92-verifier-5 · stopped · 23m ⋯ replaces t92-verifier-4                                                                                                     │
+│     ▶ ● t92-worker-6       ││      └─ ▶ ● t92-worker-6 · working · 18m ⋯ replaces t92-worker-5                                                                                                       │
+│ ▾ qmeter · 0 working       ││ ▾ qmeter                                                                                                                                                               │
+│   ○ manager-qmeter         ││   ┄┄ ○ manager-qmeter · idle · 4h                                                                                                                                      │
+│ ▾ stenographer · 1 working ││ ▾ stenographer                                                                                                                                                         │
+│   ○ manager-stenographer   ││   ┄┄ ○ manager-stenographer · idle · 10m                                                                                                                               │
+│     ● t108-verifier-2      ││      ├─ ● t108-verifier-2 · working · 10m ⋯ replaces t108-verifier-1                                                                                                   │
+│     × t108-worker-2        ││      └─ × t108-worker-2 · stopped · 23m ⋯ replaces t108-worker-1                                                                                                       │
+│                            ││ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│                            ││ │ t92-worker-6  parent manager-hive  model openai-codex/gpt-6-luna:xhigh  task 92-agents-board-layout  assigned  pane wSE:p1  next 102-selection-marker              │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│ ────────────────────────── ││                                                                                                                                                                        │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                                                                                                        │
+│ 5 TASKS · 6 FRICTION       ││                                                                                                                                                                        │
+│ 7 HEALTH · 8 LOGS          ││                                                                                                                                                                        │
+╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started                                                                                                                                                      
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)                                                                                       
+←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat                                                                                     

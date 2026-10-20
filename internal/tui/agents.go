@@ -604,7 +604,13 @@ func (s agentsScreen) View(width, height int) string {
 		return renderAgentPeek(state, contentWidth, height-3)
 	}
 	tabLine := []string{"[ TREE ]  GRAPH  TABLE", "TREE  [ GRAPH ]  TABLE", "TREE  GRAPH  [ TABLE ]"}[state.tab]
-	lines, _ := state.contentLines()
+	var lines []string
+	var graphPositions map[string]graphPosition
+	if state.tab == agentsGraph {
+		lines, graphPositions = state.graphLayout()
+	} else {
+		lines, _ = state.contentLines()
+	}
 	selected, hasSelected := state.selected()
 	var detailLines []string
 	if hasSelected {
@@ -616,8 +622,10 @@ func (s agentsScreen) View(width, height int) string {
 	}
 	state.scrollHeight = visibleHeight
 	state.keepSelectedVisible()
+	var graphStyles [][]string
 	if state.tab == agentsGraph {
 		state.keepGraphSelectedVisible(contentWidth)
+		graphStyles = state.graphColorStyles(lines, graphPositions)
 	}
 	end := state.scrollOffset + visibleHeight
 	if end > len(lines) {
@@ -631,8 +639,9 @@ func (s agentsScreen) View(width, height int) string {
 		legend = "  edges: ─ delegates · ┄ nudges · ⋯ replaced"
 	}
 	body := []string{trimGraphLine(titleStyle.Render(tabLine+legend), contentWidth)}
-	for _, line := range lines[state.scrollOffset:end] {
+	for index, line := range lines[state.scrollOffset:end] {
 		if state.tab == agentsGraph {
+			line = colorGraphLine(line, graphStyles[state.scrollOffset+index])
 			line = ansi.Cut(line, state.graphOffset, state.graphOffset+contentWidth)
 		} else {
 			line = trimGraphLine(line, contentWidth)
@@ -881,6 +890,114 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 	return graph, positions
 }
 
+func (s agentsState) graphColorStyles(lines []string, positions map[string]graphPosition) [][]string {
+	styles := make([][]string, len(lines))
+	for row, line := range lines {
+		styles[row] = make([]string, ansi.StringWidth(line))
+	}
+	setCell := func(row, column int, color string) {
+		if row >= 0 && row < len(styles) && column >= 0 && column < len(styles[row]) {
+			styles[row][column] = color
+		}
+	}
+	setRange := func(row, start, end int, color string) {
+		for column := start; column < end; column++ {
+			setCell(row, column, color)
+		}
+	}
+
+	for row, line := range lines {
+		column := 0
+		for _, mark := range ansi.Strip(line) {
+			if strings.ContainsRune("─│┌┐└┘┬┴├┤┼┄⋯╭╮╰╯", mark) {
+				setCell(row, column, colorWorking)
+			}
+			column += ansi.StringWidth(string(mark))
+		}
+	}
+
+	busRows := 0
+	if len(lines) > 0 && strings.Contains(ansi.Strip(lines[0]), "┌") {
+		busRows = 2
+	}
+	column := 0
+	nodes := s.nodeMap()
+	for _, group := range s.data.groups {
+		pod, _, width, _ := s.graphPod(group, nodes)
+		for row, line := range pod {
+			graphRow := busRows + row
+			if row == 0 || row == len(pod)-1 {
+				cell := 0
+				for _, mark := range ansi.Strip(line) {
+					if mark != ' ' {
+						setCell(graphRow, column+cell, colorInfo)
+					}
+					cell += ansi.StringWidth(string(mark))
+				}
+			} else {
+				setCell(graphRow, column, colorInfo)
+				setCell(graphRow, column+width-1, colorInfo)
+			}
+		}
+		column += width + 3
+	}
+
+	for key, position := range positions {
+		node := nodes[key]
+		live := node.current && node.record.Status == records.AgentLive && !node.stopped
+		borderColor := ""
+		if live && key != s.selectedKey {
+			borderColor = colorWorking
+		}
+		for column := position.col; column < position.col+position.width; column++ {
+			setCell(position.row-1, column, borderColor)
+			setCell(position.row+2, column, borderColor)
+		}
+		for row := position.row; row <= position.row+1; row++ {
+			setCell(row, position.col, borderColor)
+			setCell(row, position.col+position.width-1, borderColor)
+		}
+		if !live {
+			continue
+		}
+		if node.status == "working" && key != s.selectedKey {
+			setCell(position.row, position.col+2, colorWorking)
+		}
+		if node.record.Role == "supervisor" {
+			continue
+		}
+		switch graphHarness(node.record.Harness) {
+		case "cc":
+			setRange(position.row+1, position.col+2, position.col+4, colorAccent)
+		case "pi":
+			setRange(position.row+1, position.col+2, position.col+4, colorInfo)
+		}
+	}
+	return styles
+}
+
+func colorGraphLine(line string, styles []string) string {
+	width := min(ansi.StringWidth(line), len(styles))
+	var rendered strings.Builder
+	for start := 0; start < width; {
+		color := styles[start]
+		end := start + 1
+		for end < width && styles[end] == color {
+			end++
+		}
+		part := ansi.Cut(line, start, end)
+		if color != "" {
+			part = lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(part)
+		}
+		rendered.WriteString(part)
+		start = end
+	}
+	if width < ansi.StringWidth(line) {
+		rendered.WriteString(ansi.Cut(line, width, ansi.StringWidth(line)))
+	}
+	return rendered.String()
+}
+
 func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]string, map[string]int, int, int) {
 	nodeList := make([]agentNode, 0, len(group.keys))
 	var appendNodes func(agentNode)
@@ -901,7 +1018,7 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	}
 	title := "≡ " + group.title
 	hasDelegationStem := len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager")
-	width := max(24, lipgloss.Width(title)+5, cardWidth+4)
+	width := max(24, lipgloss.Width(title)+5, cardWidth+4, 2*(lipgloss.Width("≡ "+group.id)+6))
 	if hasDelegationStem {
 		width = max(width, lipgloss.Width(title)+8)
 	}
@@ -1029,12 +1146,16 @@ func graphPodLine(width, middle int, mark rune) string {
 
 func graphPodTitleBorderLine(width int, title string, hasStem bool) string {
 	cells := []rune("╭" + strings.Repeat("─", width-2) + "╮")
+	limit := width - 4
 	if hasStem {
-		graphTextAroundStem(cells, " "+title+" ", width/2, 2, width-1)
+		limit = width/2 - 3
 		cells[width/2] = '┬'
-	} else {
-		copy(cells[2:], []rune(" "+title+" "))
 	}
+	label := " " + title + " "
+	if lipgloss.Width(label) > limit {
+		label = ansi.Truncate(" "+title, limit-1, "…") + " "
+	}
+	copy(cells[2:], []rune(label))
 	return string(cells)
 }
 

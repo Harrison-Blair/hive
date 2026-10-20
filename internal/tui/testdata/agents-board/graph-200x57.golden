@@ -3,7 +3,7 @@
 │ AGENTS                     ││ TREE  [ GRAPH ]  TABLE  edges: ─ delegates · ┄ nudges · ⋯ replaced                                                                                                     │
 │ ▾ home                     ││             ┌────────────────────────────────────┬─────────────────────────────────────────────┐                                                                       │
 │   ▶ ● coordinator          ││             │                                    │                                             │                                                                       │
-│   ○ supervisor             ││ ╭─ ≡ home ─ ┬ ──────────╮   ╭─ ≡ alpha · Alpha── ┬ goal for long graph╮   ╭─ ≡ beta · Beta──── ┬ goal for long grap╮                                                   │
+│   ○ supervisor             ││ ╭─ ≡ home ──┬───────────╮   ╭─ ≡ alpha · Alpha… ─┬────────────────────╮   ╭─ ≡ beta · Beta g… ─┬───────────────────╮                                                   │
 │ ▾ alpha · 1 working        ││ │           │           │   │                    │                    │   │                    │                   │                                                   │
 │   ○ manager-alpha          ││ │           │           │   │                    │                    │   │                    │                   │                                                   │
 │     ● worker-alpha         ││ │  ┌────────┬────────┐  │   │          ┌─────────┬─────────┐          │   │          ┌─────────┬────────┐          │                                                   │
