@@ -79,3 +79,20 @@ Commit on the task branch with a subject such as `fix(tui): remove painted
 backgrounds`. Push the task branch. Write the evidence. Run
 `hive task complete`. Send the commit SHA and the V1-V4 results to the
 manager with `hive inbox send`. Read only your own inbox.
+
+## Repair 1
+
+`hive land` failed: the branch has a merge conflict with `origin/dev` in
+`testdata/ste-baseline.json`. Other tasks added rows for their brief copies.
+Do only this repair:
+
+1. Merge `origin/dev` into the task branch.
+2. In `testdata/ste-baseline.json`, keep each row of both sides. Keep the
+   order and format of the file.
+3. Run the gate of `AGENTS.md`. It must pass.
+4. Commit the merge. Push the task branch.
+5. Make sure that `git merge-tree --write-tree origin/dev HEAD` exits 0.
+6. Run `hive task complete`. Send the commit SHA to the manager with
+   `hive inbox send`.
+
+Do not change other files. Do not run the TUI.

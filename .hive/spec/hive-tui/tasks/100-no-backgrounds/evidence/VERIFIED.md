@@ -44,3 +44,21 @@ The two-dot `git diff origin/dev --stat` now also shows those dev changes in
 reverse. The merge base is still `ef2dde2e`. `git merge-tree` against
 `cd2e672e` gives one conflict in `testdata/ste-baseline.json`: adjacent added
 lines. The lander must resolve it.
+
+## Repair 1
+
+Verifier: claude-opus-5-5. Scope: the merge of `origin/dev` and the
+`testdata/ste-baseline.json` rows only. The TUI was not run.
+
+Merge commit `ac28f3a6`, parents `4c1ef298` (last `VERIFIED.md` commit) and
+`13366406` (`origin/dev`).
+
+| Check | Result | Observation |
+| --- | --- | --- |
+| Rows of both sides kept | pass | Each line of the baseline in `4c1ef298` and in `13366406` is in `HEAD`. `HEAD` has no line from neither side. 88 keys. Against `origin/dev`, the only change is the added row `100-no-backgrounds/brief.md: 0`, in sorted order. |
+| Only the merge changed | pass | `git diff --name-only 4c1ef298 HEAD` gives 20 files. This set is equal to the set that `origin/dev` changed since the merge base. Each of the 19 files other than the baseline is identical to `origin/dev`. |
+| `git diff origin/dev HEAD --stat` | pass | Only the files of the source table: the brief copy, the evidence, `internal/tui/shell.go`, `internal/tui/shell_test.go`, `testdata/ste-baseline.json`. |
+| `git merge-tree --write-tree origin/dev HEAD` | pass | Exit 0, tree `89a191f6`. `origin/dev` is an ancestor of `HEAD`. |
+| Gate | pass | `gofmt -l` and `go mod tidy -diff` print nothing. `go vet` exit 0. `golangci-lint` 0 issues. `go test -race ./...` exit 0, no FAIL line. |
+
+The brief copy change (the Repair 1 section) is committed with this file.
