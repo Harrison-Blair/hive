@@ -35,6 +35,7 @@ type dataRequest uint8
 
 const (
 	noDataRequest dataRequest = iota
+	chatDataRequest
 	logsDataRequest
 )
 
@@ -52,7 +53,6 @@ func (s placeholderScreen) View(_, _ int) string     { return s.name + " · next
 func (s placeholderScreen) KeyHints() string         { return "1–8 screens · ctrl+c twice to quit" }
 func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
-type chatScreen struct{ placeholderScreen }
 type agentsScreen struct{ placeholderScreen }
 type goalsScreen struct{ placeholderScreen }
 type queueScreen struct{ placeholderScreen }
@@ -92,7 +92,7 @@ func (s logsScreen) DataRequest() dataRequest { return logsDataRequest }
 
 func (m *Model) makeScreens() []screen {
 	return []screen{
-		chatScreen{placeholderScreen{name: "Chat"}},
+		chatScreen{model: m},
 		agentsScreen{placeholderScreen{name: "Agents"}},
 		goalsScreen{placeholderScreen{name: "Goals"}},
 		queueScreen{placeholderScreen{name: "Queue"}},
@@ -135,7 +135,10 @@ func (m *Model) shellView() string {
 		mainWidth = 1
 	}
 	left := m.renderSidebar(sidebarWidth, bodyHeight)
-	body := m.renderPanel(m.currentScreenName(), m.currentScreen().View(mainWidth, bodyHeight), mainWidth, bodyHeight)
+	body := m.currentScreen().View(mainWidth, bodyHeight)
+	if m.screenIndex != 0 {
+		body = m.renderPanel(m.currentScreenName(), body, mainWidth, bodyHeight)
+	}
 	panels := lipgloss.JoinHorizontal(lipgloss.Top, left, body)
 	footer := m.footerView(width)
 	return lipgloss.JoinVertical(lipgloss.Left, header, panels, footer)
@@ -190,7 +193,7 @@ func (m *Model) footerView(width int) string {
 }
 
 func (m *Model) footerError() string {
-	for _, text := range []string{m.attachErr, m.headerErr, m.screenErr, m.logErr} {
+	for _, text := range []string{m.attachErr, m.headerErr, m.screenErr, m.chatErr, m.logErr} {
 		if text != "" {
 			return text
 		}

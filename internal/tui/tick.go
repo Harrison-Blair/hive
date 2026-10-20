@@ -18,8 +18,10 @@ type headerLoadMsg struct {
 }
 
 type screenLoadMsg struct {
-	events []logs.Event
-	err    error
+	request dataRequest
+	events  []logs.Event
+	chat    chatScreenData
+	err     error
 }
 
 type attachMsg struct{ err error }
