@@ -26,12 +26,16 @@ const (
 )
 
 type agentNode struct {
-	record    records.Agent
-	status    string
-	age       string
-	parentKey string
-	inferred  bool
-	stopped   bool
+	record      records.Agent
+	status      string
+	age         string
+	parentKey   string
+	inferred    bool
+	stopped     bool
+	current     bool
+	ghost       bool
+	landedGhost bool
+	landedLabel string
 }
 
 type agentGroup struct {
@@ -50,7 +54,7 @@ type agentsState struct {
 	data         agentsData
 	tab          agentsTab
 	selectedKey  string
-	hideStopped  bool
+	showHistory  bool
 	scrollOffset int
 	scrollHeight int
 	peekPane     string
@@ -71,6 +75,10 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 	if err != nil {
 		return agentsData{}, fmt.Errorf("goals: %w", err)
 	}
+	tasks, err := listRecords[records.Task](registry, "tasks")
+	if err != nil {
+		return agentsData{}, fmt.Errorf("tasks: %w", err)
+	}
 	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
 	if agentEnvelope.Outcome != "ok" {
 		return agentsData{}, fmt.Errorf("agents: %v", agentEnvelope.Error)
@@ -84,6 +92,15 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		return agentsData{}, err
 	}
 
+	activeTasks := make(map[string]bool, len(tasks))
+	landedTaskLabels := make(map[string]string)
+	for _, task := range tasks {
+		activeTasks[task.ID] = task.Status != "done" && !taskLanded(task)
+		if taskLanded(task) {
+			landedTaskLabels[task.ID] = landedTaskLabel(task)
+		}
+	}
+	currentAgents := currentAgentKeys(agents)
 	goalTitle := make(map[string]string)
 	for _, goal := range goals {
 		if goal.Status == "active" && goalTitle[goal.Project] == "" {
@@ -138,14 +155,93 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 			}
 		}
 		stopped := record.Status == records.AgentStopped || record.Status == records.AgentExited
+		ghost := stopped && (record.Role == "worker" || record.Role == "verifier") && activeTasks[record.Task]
+		landedLabel := landedTaskLabels[record.Task]
+		landedGhost := stopped && record.Role == "worker" && landedLabel != ""
 		node := agentNode{
 			record: record, status: agentStatus(record, fresh), age: activityAge(record.StatusChangedAt, now),
 			parentKey: parentKey, inferred: inferred, stopped: stopped,
+			current: currentAgents[record.Key], ghost: ghost,
+			landedGhost: landedGhost, landedLabel: landedLabel,
 		}
 		data.nodes = append(data.nodes, node)
 		data.groups[groupIndex].keys = append(data.groups[groupIndex].keys, record.Key)
 	}
 	return data, nil
+}
+
+func currentAgentKeys(agents []records.Agent) map[string]bool {
+	replaced := make(map[string]bool)
+	groups := make(map[string][]records.Agent)
+	for _, record := range agents {
+		if record.Replaces != "" {
+			replaced[record.Replaces] = true
+		}
+		identity := agentIdentity(record)
+		groups[identity] = append(groups[identity], record)
+	}
+	current := make(map[string]bool)
+	for _, group := range groups {
+		var newest records.Agent
+		found := false
+		for _, record := range group {
+			if replaced[record.Key] {
+				continue
+			}
+			if !found || newerAgent(record, newest) {
+				newest = record
+				found = true
+			}
+		}
+		if found {
+			current[newest.Key] = true
+		}
+	}
+	return current
+}
+
+func agentIdentity(record records.Agent) string {
+	if record.Parent == "" && record.Replaces == "" {
+		return "name\x00" + record.Name
+	}
+	return strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00")
+}
+
+func newerAgent(left, right records.Agent) bool {
+	if comparison := compareAgentTimes(left.StatusChangedAt, right.StatusChangedAt); comparison != 0 {
+		return comparison > 0
+	}
+	if comparison := compareAgentTimes(left.UpdatedAt, right.UpdatedAt); comparison != 0 {
+		return comparison > 0
+	}
+	return left.Key > right.Key
+}
+
+func compareAgentTimes(left, right string) int {
+	leftTime, leftErr := time.Parse(time.RFC3339Nano, left)
+	rightTime, rightErr := time.Parse(time.RFC3339Nano, right)
+	if leftErr == nil && rightErr != nil {
+		return 1
+	}
+	if leftErr != nil && rightErr == nil {
+		return -1
+	}
+	if leftErr != nil {
+		return strings.Compare(left, right)
+	}
+	return leftTime.Compare(rightTime)
+}
+
+func landedTaskLabel(task records.Task) string {
+	number, _, _ := strings.Cut(task.ID, "-")
+	if number == "" {
+		number = task.ID
+	}
+	commit := task.Delivery.Commit
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+	return number + " landed · " + commit
 }
 
 func listRecords[T any](registry *store.Store, collection string) ([]T, error) {
@@ -229,15 +325,19 @@ func (s agentsState) visibleNodes() []agentNode {
 		}
 	}
 	for _, node := range s.data.nodes {
-		if !seen[node.record.Key] && (!s.hideStopped || !node.stopped) {
+		if !seen[node.record.Key] && s.nodeVisible(node) {
 			visible = append(visible, node)
 		}
 	}
 	return visible
 }
 
+func (s agentsState) nodeVisible(node agentNode) bool {
+	return s.showHistory || (node.current && (!node.stopped || node.ghost))
+}
+
 func appendVisibleNodes(visible *[]agentNode, seen map[string]bool, node agentNode, nodes map[string]agentNode, state agentsState) {
-	if seen[node.record.Key] || (state.hideStopped && node.stopped) {
+	if seen[node.record.Key] || !state.nodeVisible(node) {
 		return
 	}
 	seen[node.record.Key] = true
@@ -324,7 +424,11 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	return "↑/↓ j/k move · tab tree/graph/table · h hide stopped · enter peek · a attach"
+	history := "off"
+	if s.model.agents.showHistory {
+		history = "on"
+	}
+	return "↑/↓ j/k move · tab tree/graph/table · h history: " + history + " · enter peek · a attach"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
@@ -351,11 +455,11 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 		state.keepSelectedVisible()
 		return s.model.logAction("agent tab", slog.String("tab", []string{"tree", "graph", "table"}[state.tab]))
 	case "h":
-		state.hideStopped = !state.hideStopped
+		state.showHistory = !state.showHistory
 		if _, ok := state.selected(); !ok {
 			state.accept(state.data)
 		}
-		return s.model.logAction("agent stopped visibility", slog.Bool("hide_stopped", state.hideStopped))
+		return s.model.logAction("agent history visibility", slog.Bool("history", state.showHistory))
 	case "up", "k", "left":
 		previous := state.selectedKey
 		state.moveSelection(-1)
@@ -436,7 +540,7 @@ func (s agentsState) treeLines() ([]string, map[string]int) {
 }
 
 func appendTreeNode(lines *[]string, positions *map[string]int, node agentNode, nodes map[string]agentNode, state agentsState, prefix string, last bool) {
-	if state.hideStopped && node.stopped {
+	if !state.nodeVisible(node) {
 		return
 	}
 	(*positions)[node.record.Key] = len(*lines)
@@ -465,25 +569,13 @@ func (s agentsState) graphLines() ([]string, map[string]int) {
 	for _, group := range s.data.groups {
 		visible := make([]agentNode, 0, len(group.keys))
 		for _, key := range group.keys {
-			if node, ok := nodes[key]; ok {
+			if node, ok := nodes[key]; ok && s.nodeVisible(node) {
 				visible = append(visible, node)
 			}
-		}
-		if s.hideStopped {
-			filtered := visible[:0]
-			for _, node := range visible {
-				if !node.stopped {
-					filtered = append(filtered, node)
-				}
-			}
-			visible = filtered
 		}
 		content := make([]string, 0, len(visible))
 		groupPositions := make(map[string]int, len(visible))
 		for _, root := range s.groupRootsFrom(group, nodes) {
-			if s.hideStopped && root.stopped {
-				continue
-			}
 			appendGraphNode(&content, &groupPositions, root, nodes, s, "", true)
 		}
 		if len(visible) == 0 {
@@ -502,7 +594,7 @@ func (s agentsState) graphLines() ([]string, map[string]int) {
 				positions[nodeKey] = len(lines)
 				if nodeKey == s.selectedKey {
 					line = "│" + selectedStyle.Render(text) + strings.Repeat(" ", padding) + "│"
-				} else if node := nodes[nodeKey]; node.stopped {
+				} else if node := nodes[nodeKey]; node.stopped || !node.current {
 					line = "│" + dimStyle.Render(text) + strings.Repeat(" ", padding) + "│"
 				}
 			}
@@ -511,14 +603,14 @@ func (s agentsState) graphLines() ([]string, map[string]int) {
 		lines = append(lines, "└"+strings.Repeat("─", boxWidth)+"┘")
 	}
 	for _, node := range s.data.nodes {
-		if s.hideStopped && node.stopped {
+		if !s.nodeVisible(node) {
 			continue
 		}
 		if node.parentKey == "" {
 			continue
 		}
 		parent, ok := nodes[node.parentKey]
-		if !ok || groupOf(s.data.groups, parent.record.Key) == groupOf(s.data.groups, node.record.Key) {
+		if !ok || !s.nodeVisible(parent) || groupOf(s.data.groups, parent.record.Key) == groupOf(s.data.groups, node.record.Key) {
 			continue
 		}
 		kind := "──▶"
@@ -568,7 +660,7 @@ func appendGraphNode(lines *[]string, positions *map[string]int, node agentNode,
 	children := state.children(node.record.Key)
 	filtered := children[:0]
 	for _, child := range children {
-		if !state.hideStopped || !child.stopped {
+		if state.nodeVisible(child) {
 			filtered = append(filtered, child)
 		}
 	}
@@ -590,9 +682,12 @@ func (s agentsState) tableLines() ([]string, map[string]int) {
 		line := fmt.Sprintf("%s · %s · %s · %s · %s · %s · %s · %s · %s",
 			node.record.Name, emptyDash(node.record.Role), emptyDash(node.record.Project), emptyDash(node.record.Task),
 			emptyDash(node.record.Harness), emptyDash(node.record.Model), node.status, node.age, parent)
+		if s.showHistory && node.landedGhost {
+			line = "✓ " + line + " · " + node.landedLabel
+		}
 		if node.record.Key == s.selectedKey {
 			line = selectedStyle.Render("▶ " + line)
-		} else if node.stopped {
+		} else if node.stopped || !node.current {
 			line = dimStyle.Render(line)
 		}
 		lines = append(lines, line)
@@ -629,25 +724,39 @@ func (s agentsState) parentLabel(node agentNode) string {
 }
 
 func (s agentsState) treeLabel(node agentNode) string {
-	label := statusMark(node.status) + " " + node.record.Name + " · " + node.status + " · " + node.age
+	mark := statusMark(node.status)
+	if s.showHistory && node.landedGhost {
+		mark = "✓"
+	}
+	label := mark + " " + node.record.Name + " · " + node.status + " · " + node.age
+	if s.showHistory && node.landedGhost {
+		label += " · " + node.landedLabel
+	}
 	if node.record.Replaces != "" {
 		label += " ⋯ replaces " + displayAgent(s.nodeMap(), node.record.Replaces)
 	}
 	if node.record.Key == s.selectedKey {
 		return selectedStyle.Render("▶ " + label)
 	}
-	if node.stopped {
+	if node.stopped || !node.current {
 		return dimStyle.Render(label)
 	}
 	return label
 }
 
 func (s agentsState) graphNodeLabel(node agentNode) string {
-	label := statusMark(node.status) + " " + node.record.Name + " · " + emptyDash(node.record.Harness) + " · "
+	mark := statusMark(node.status)
+	if s.showHistory && node.landedGhost {
+		mark = "✓"
+	}
+	label := mark + " " + node.record.Name + " · " + emptyDash(node.record.Harness) + " · "
 	if node.record.Task != "" {
 		label += node.record.Task
 	} else {
 		label += node.age
+	}
+	if s.showHistory && node.landedGhost {
+		label += " · " + node.landedLabel
 	}
 	return label
 }
@@ -663,14 +772,14 @@ func (s agentsState) nodeMap() map[string]agentNode {
 func (s agentsState) groupRootsFrom(group agentGroup, nodes map[string]agentNode) []agentNode {
 	keys := make(map[string]struct{}, len(group.keys))
 	for _, key := range group.keys {
-		if node, ok := nodes[key]; ok && (!s.hideStopped || !node.stopped) {
+		if node, ok := nodes[key]; ok && s.nodeVisible(node) {
 			keys[key] = struct{}{}
 		}
 	}
 	roots := make([]agentNode, 0)
 	for _, key := range group.keys {
 		node, ok := nodes[key]
-		if !ok || (s.hideStopped && node.stopped) {
+		if !ok || !s.nodeVisible(node) {
 			continue
 		}
 		if _, hasParent := keys[node.parentKey]; !hasParent {
