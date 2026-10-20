@@ -10,7 +10,7 @@
 
 ## Overview
 
-The user approved these style rules for the TUI. Task 100-no-backgrounds
+The user set these style rules for the TUI. Task 100-no-backgrounds
 removed each painted background and added a test for it. This task applies
 the other two rules on each screen. It runs after the other screen tasks, so
 that it changes each screen once. When the code does not agree with this
@@ -153,7 +153,7 @@ overrides it. The source table of this task also includes
 | Explorer status dots | live `●` green | default text | fix |
 | Explorer working count | `· 1 working` dim | default text | fix |
 | Explorer selected row | fill block behind the row | honey bold with `▶`, no fill | keep (user rule: no background) |
-| Pod title text | full goal title, for example `≡ hive · H2 spec layout` | `≡ hive · Hi…` | fix: fit the full title when the frame has space. Use `…` only when the title does not fit. |
+| Pod title text | full goal title, for example `≡ hive · H2 spec layout` | `≡ hive · Hi…` | fix: widen the pod to fit the title when the frame has space. Use `…` only when it does not fit. |
 | Selected node border | honey | default | fix |
 | Detail strip border | honey | muted line color | fix |
 | Detail strip name | honey bold | default text | fix |
@@ -168,9 +168,28 @@ for each row above. The verifier of this task checks each row.
 
 The user is colourblind (`overrides/colourblind-ui.md` in the home). In each
 screen that this task changes, a glyph or a word shows each state. Colour can
-add to a state. Colour must not be the only signal of a state. Examples: a
-live agent has `●` and a stopped agent has `○`. A failed check has `fail` or
-`✗`, not only red. The selected row has `▶`, not only honey. Write a test
-that reads the plain text (with the SGR codes removed) and finds the glyph or
-word of each state. In the Design element table, add one column "state
-without colour" with the glyph or word of each row.
+add to a state. Colour must not be the only signal of a state. A live agent
+has `●`. A stopped agent has `○`. A failed check has `fail` or `✗`, not only
+red. A selected row has `▶`, not only honey. Write a test that reads the
+plain text (with the SGR codes removed). Check that the test finds the glyph
+or word of each state. In the Design element table, add one column "state
+without colour". In each row, name the glyph or word that shows the state.
+
+## Fix 1
+
+The verifier passed each item except one. See `VERIFIED.md`. Do only this
+fix.
+
+The row "Detail strip name" of the task 92 gap table has no test that fails
+when the behavior breaks. `requireHoneyBoldText(view, "coordinator")` passes
+on `origin/dev`, because it finds the explorer row. It also passes if you
+remove `selectedStyle.Render(words[0])` from `styleAgentDetailLine`.
+Write a test that finds the detail strip line. Check that the name on that
+line is honey bold. Remove the style call and check that the test fails. Add
+the call again and check that the test passes. Record both runs in the evidence.
+
+This edit copies the manager brief over your brief copy again. Apply your STE
+rewording to the copy again, and keep its meaning. Merge `origin/dev` when it
+moved. Run the gate. Commit and push. Make sure that `git merge-tree
+--write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
+full commit SHA to the manager with `hive inbox send --to manager-hive`.

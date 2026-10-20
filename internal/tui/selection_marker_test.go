@@ -251,6 +251,20 @@ func TestAgentBoardShowsDistinctStatusColorAndDimWorkingCount(t *testing.T) {
 	}
 }
 
+func TestAgentGraphDetailStripNameIsHoneyBold(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.width = 120
+	m.agents.tab = agentsGraph
+	m.agents.selectedKey = "coordinator"
+	view := agentsScreen{model: m}.View(120, 40)
+	lines := strings.Split(view, "\n")
+	detail := lines[len(lines)-2]
+	if !strings.Contains(ansi.Strip(detail), "coordinator") {
+		t.Fatalf("Agents detail strip omits the selected agent name: %s", ansi.Strip(detail))
+	}
+	requireHoneyBoldText(t, detail, "coordinator")
+}
+
 func TestAgentGraphBoardRendersTabsLegendHeaderAndDetails(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.width = 120
