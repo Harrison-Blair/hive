@@ -39,6 +39,15 @@ hive task list --project {{PROJECT_ID}} --ready
 hive task show ID --brief
 hive task create --project {{PROJECT_ID}} --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE
 hive task edit --task ID --brief FILE
+hive goal create --project {{PROJECT_ID}} --title TITLE --slug SLUG --grant TEXT
+hive goal edit --goal ID --add-wave TITLE --done-when POINT
+hive goal edit --goal ID --wave WAVE --add-task TASK
+hive goal edit --goal ID --wave WAVE --needs-user TEXT
+hive goal edit --goal ID --wave WAVE --clear-needs-user
+hive goal edit --goal ID --wave WAVE --status open|done
+hive goal edit --goal ID --status active|done
+hive goal show ID
+hive goal list --project {{PROJECT_ID}}
 hive worktree create --task ID
 hive agent spawn --role worker --task ID --harness KIND --model MODEL
 hive agent spawn --role verifier --task ID --harness KIND --model MODEL
@@ -52,7 +61,7 @@ hive handoff write --scope project:{{PROJECT_ID}}
 hive inbox send --to coordinator TEXT --agent NAME
 ```
 
-Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.
+Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature. Add each new task to its wave.
 
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 
