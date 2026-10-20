@@ -1,0 +1,53 @@
+⬢ hive · 3 projects · 12 live agents · 7 working / 5 idle · supervisor fresh · needs_user 0 · 11:04
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Logs                                                                                                                                                                         │
+│   1 Chat                   ││ logs · 2026-10-20.jsonl                                                                                          ╭────────────────────────────────────────────────────╮      │
+│   2 Agents                 ││ level: info component: all project: all agent: all text: - follow: on day: 2026-10-20 request: all               │ event · 00:01:20                                   │      │
+│   3 Goals                  ││ ▶ 00:01:20 ERROR task task error                                                                                 │ {                                                  │      │
+│   4 Queue                  ││ 00:15:42 ERROR task task error                                                                                   │   "agent_id": "t68-verifier",                      │      │
+│   5 Tasks                  ││ 00:19:33 ERROR task task error                                                                                   │   "command": "task verify",                        │      │
+│   6 Friction               ││ 00:55:15 ERROR task task error                                                                                   │   "component": "task",                             │      │
+│   7 Health                 ││ 01:54:33 ERROR task task error                                                                                   │   "error": "agent not found: t68-verifier",        │      │
+│ ▶ 8 Logs                   ││ 03:13:12 ERROR task task error                                                                                   │   "level": "ERROR",                                │      │
+│                            ││ 03:16:04 ERROR task task error                                                                                   │   "msg": "task error",                             │      │
+│                            ││ 03:34:13 ERROR task task error                                                                                   │   "phase": "identity",                             │      │
+│                            ││ 03:34:13 ERROR task task error                                                                                   │   "project_id": "stenographer",                    │      │
+│                            ││ 03:34:13 ERROR task task error                                                                                   │   "task_id": "68-hub-spec",                        │      │
+│                            ││ 10:43:00 ERROR task task error                                                                                   │   "time": "2026-10-20T00:01:20.056964799-04:00"    │      │
+│                            ││ 10:46:29 ERROR task task error                                                                                   │ }                                                  │      │
+│                            ││ 10:46:42 ERROR worktree worktree error                                                                           │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+│                            ││                                                                                                                  │                                                    │      │
+╰────────────────────────────╯│                                                                                                                  ╰────────────────────────────────────────────────────╯      │
+                              ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+level: info  component: all  project: all  agent: all  text: -  follow: on  day: 2026-10-20  request: all
+1–8 screens · l level · c component · p project · a agent · / search · r request · [ ] day · f follow · g/G scroll · enter JSON · esc back
