@@ -865,6 +865,9 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 			crossNudges = append(crossNudges, nudgeRoute{source: sourceColumn, target: targetColumn, label: (sourceCenter + targetCenter) / 2})
 		}
 	}
+	for column := range anchors {
+		lines[0] = setGraphRune(lines[0], column, '┬')
+	}
 	graph := append(busRows, lines...)
 	for key, position := range positions {
 		position.row += len(busRows)
@@ -893,15 +896,14 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	for _, node := range nodeList {
 		first := "▶ " + statusMark(node.status) + " " + node.record.Name
 		second := s.graphNodeSubLabel(node)
-		cardWidth = max(cardWidth, lipgloss.Width(first)+2, lipgloss.Width(second)+2)
+		cardWidth = max(cardWidth, lipgloss.Width(first)+4, lipgloss.Width(second)+4)
 	}
 	title := "≡ " + group.title
 	width := max(24, lipgloss.Width(title)+5, cardWidth+4)
 	cardWidth = width - 4
-	top := "┌─ " + title + " "
 	lines := []string{
-		top + strings.Repeat("─", max(0, width-lipgloss.Width(top)-1)) + "┐",
-		"│" + strings.Repeat(" ", width-2) + "│",
+		"╭" + strings.Repeat("─", width-2) + "╮",
+		graphPodTitleLine(width, title),
 		"│" + strings.Repeat(" ", width-2) + "│",
 	}
 	if len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager") {
@@ -946,7 +948,7 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 			border = "┄"
 		}
 		pad := func(text string) string {
-			return text + strings.Repeat(" ", max(0, cardWidth-2-lipgloss.Width(text)))
+			return " " + text + strings.Repeat(" ", max(0, cardWidth-4-lipgloss.Width(text))) + " "
 		}
 		card := []string{
 			"┌" + strings.Repeat(border, cardWidth-2) + "┐",
@@ -970,7 +972,7 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	if len(nodeList) == 0 {
 		lines = append(lines, "│"+strings.Repeat(" ", width-2)+"│")
 	}
-	lines = append(lines, "└"+strings.Repeat("─", width-2)+"┘")
+	lines = append(lines, "╰"+strings.Repeat("─", width-2)+"╯")
 	return lines, positions, width, cardWidth
 }
 
@@ -1012,6 +1014,10 @@ func agentsNudgePair(left, right agentNode) bool {
 func graphPodLine(width, middle int, mark rune) string {
 	line := "│" + strings.Repeat(" ", width-2) + "│"
 	return setGraphRune(line, middle, mark)
+}
+
+func graphPodTitleLine(width int, title string) string {
+	return "│ " + title + strings.Repeat(" ", max(0, width-3-lipgloss.Width(title))) + "│"
 }
 
 func graphPodLabelLine(width int, label string) string {
@@ -1209,7 +1215,7 @@ func (s agentsState) detailLine(node agentNode) string {
 	if parent == "none" {
 		parent = "?"
 	}
-	return fmt.Sprintf("%s · parent %s · model %s · task %s · %s · pane %s · next %s",
+	return fmt.Sprintf("%s  parent %s  model %s  task %s  %s  pane %s  next %s",
 		node.record.Name, parent, emptyQuestion(node.record.Model), emptyQuestion(node.record.Task),
 		emptyQuestion(node.taskStatus), emptyQuestion(node.record.PaneID), emptyQuestion(node.nextTask))
 }
@@ -1371,14 +1377,14 @@ func wrapAgentLine(text string, width int) []string {
 			word += " " + words[index+1]
 			index++
 		}
-		if line != "" && lipgloss.Width(line+" "+word) > width {
+		if line != "" && lipgloss.Width(line+"  "+word) > width {
 			lines = append(lines, line)
 			line = ""
 		}
 		if line == "" {
 			line = word
 		} else {
-			line += " " + word
+			line += "  " + word
 		}
 	}
 	if line != "" {

@@ -392,9 +392,9 @@ func TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent(t *testing.T
 	m, _ = raise(t, m, key('j', "j"))
 	requireAgentsView(t, m, "legacy-verifier", "parent inferred")
 	m, _ = raise(t, m, key('j', "j"))
-	requireAgentsView(t, m, "worker-1 · parent manager-demo")
+	requireAgentsView(t, m, "worker-1  parent manager-demo")
 	m, _ = raise(t, m, key('k', "k"))
-	requireAgentsView(t, m, "legacy-verifier · parent inferred")
+	requireAgentsView(t, m, "legacy-verifier  parent inferred")
 }
 
 func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
@@ -406,10 +406,10 @@ func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
 	}
-	requireAgentsView(t, m, "worker-1 · parent manager-demo")
+	requireAgentsView(t, m, "worker-1  parent manager-demo")
 	writeAgentRecord(t, home, records.Agent{Key: "aaa-worker", Name: "aaa-worker", Role: "worker", Project: "demo", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
 	m = refreshAgents(t, m)
-	requireAgentsView(t, m, "worker-1 · parent manager-demo")
+	requireAgentsView(t, m, "worker-1  parent manager-demo")
 }
 
 func TestAgentsProjectsFollowProjectRecordOrder(t *testing.T) {
@@ -554,7 +554,7 @@ func TestAgentsBoardDetailShowsTaskStatusAndNextTask(t *testing.T) {
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, want := range []string{
-		"worker-alpha · parent manager-alpha", "model model-alpha", "task 10-alpha · assigned",
+		"worker-alpha  parent manager-alpha", "model model-alpha", "task 10-alpha  assigned",
 		"pane w1:p4", "next 11-next", "╭", "╰",
 	} {
 		if !strings.Contains(view, want) {
@@ -562,7 +562,7 @@ func TestAgentsBoardDetailShowsTaskStatusAndNextTask(t *testing.T) {
 		}
 	}
 	unknown := agentsState{data: agentsData{nodes: []agentNode{{record: records.Agent{Name: "unknown"}, status: "unknown"}}}}
-	if got := unknown.detailLine(unknown.data.nodes[0]); !strings.Contains(got, "parent ? · model ? · task ? · ? · pane ? · next ?") {
+	if got := unknown.detailLine(unknown.data.nodes[0]); !strings.Contains(got, "parent ?  model ?  task ?  ?  pane ?  next ?") {
 		t.Fatalf("unknown detail values are not marked with ?: %s", got)
 	}
 }
@@ -800,13 +800,11 @@ func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	}
 }
 
-func TestAgentsGraphPodTitleSharesTopBorder(t *testing.T) {
+func TestAgentsGraphPodTitleIsInsideBorder(t *testing.T) {
 	m := agentsBoardModel(t)
-	m.agents.tab = agentsGraph
-	lines, _ := m.agents.graphLines()
-	graph := ansi.Strip(strings.Join(lines, "\n"))
-	if !strings.Contains(graph, "┌─ ≡ home") || strings.Contains(graph, "│ ≡ home") {
-		t.Fatalf("pod title is not on the top border:\n%s", graph)
+	pod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], m.agents.nodeMap())
+	if !strings.HasPrefix(pod[1], "│ ≡ home") || strings.Contains(pod[0], "≡ home") {
+		t.Fatalf("pod title is not inside the left side of the top border:\n%s", strings.Join(pod, "\n"))
 	}
 }
 
@@ -894,6 +892,100 @@ func TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator(t *testing.T) {
 		if strings.Contains(graph, unwanted) {
 			t.Errorf("graph has extra subtitle separator %q:\n%s", unwanted, graph)
 		}
+	}
+}
+
+func TestAgentsGraphDelegationStemJoinsPodBorder(t *testing.T) {
+	m := agentsBoardModel(t)
+	lines, positions := m.agents.graphLayout()
+	manager := positions["manager-alpha"]
+	column := manager.col + manager.width/2
+	podTop := ansi.Strip(lines[2])
+	if got := []rune(podTop)[column]; got != '┬' {
+		t.Fatalf("delegation stem at the pod border = %q, want '┬': %s", got, podTop)
+	}
+}
+
+func TestAgentsGraphPodsHaveRoundedCorners(t *testing.T) {
+	m := agentsBoardModel(t)
+	pod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], m.agents.nodeMap())
+	for _, test := range []struct {
+		line int
+		col  int
+		want rune
+	}{{line: 0, col: 0, want: '╭'}, {line: 0, col: -1, want: '╮'}, {line: -1, col: 0, want: '╰'}, {line: -1, col: -1, want: '╯'}} {
+		line := test.line
+		if line < 0 {
+			line = len(pod) + line
+		}
+		column := test.col
+		if column < 0 {
+			column = len([]rune(pod[line])) + column
+		}
+		if got := []rune(pod[line])[column]; got != test.want {
+			t.Errorf("pod corner at line %d column %d = %q, want %q: %s", line, column, got, test.want, pod[line])
+		}
+	}
+}
+
+func TestAgentsGraphNodeHasOneCellOfPadding(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.agents.tab = agentsGraph
+	lines, _ := m.agents.graphLines()
+	for _, line := range lines {
+		plain := ansi.Strip(line)
+		name := "▶ ● coordinator"
+		start := strings.Index(plain, name)
+		if start < 0 {
+			continue
+		}
+		runes := []rune(plain)
+		runeStart := len([]rune(plain[:start]))
+		if runeStart < 2 || runes[runeStart-1] != ' ' || runes[runeStart-2] != '│' {
+			t.Fatalf("coordinator node has no left padding: %s", plain)
+		}
+		end := runeStart + len([]rune(name))
+		rightBorder := end
+		for rightBorder < len(runes) && runes[rightBorder] != '│' {
+			rightBorder++
+		}
+		if rightBorder == len(runes) || rightBorder == end || runes[rightBorder-1] != ' ' {
+			t.Fatalf("coordinator node has no right padding: %s", plain)
+		}
+		return
+	}
+	t.Fatal("graph has no coordinator node")
+}
+
+func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.width = 120
+	m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.Local) }
+	line := ansi.Strip(m.agentsHeaderLine())
+	if !strings.HasPrefix(line, "⬢ hive  2 projects  5 agents  2 working  3 idle  supervisor ●  needs you 0") {
+		t.Fatalf("Agents header groups are not separated by spaces: %s", line)
+	}
+	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00") {
+		t.Fatalf("Agents header time is not at the right edge: width=%d line=%q", ansi.StringWidth(line), line)
+	}
+}
+
+func TestAgentsDetailFieldsUseSpaces(t *testing.T) {
+	m := agentsBoardModel(t)
+	var worker agentNode
+	for _, node := range m.agents.data.nodes {
+		if node.record.Key == "worker-alpha" {
+			worker = node
+			break
+		}
+	}
+	want := "worker-alpha  parent manager-alpha  model model-alpha  task 10-alpha  assigned  pane w1:p4  next 11-next"
+	if got := m.agents.detailLine(worker); got != want {
+		t.Fatalf("Agents detail = %q, want %q", got, want)
+	}
+	strip := strings.Join(agentDetailStrip(want, 120), "\n")
+	if !strings.Contains(strip, "worker-alpha  parent manager-alpha  model model-alpha") {
+		t.Fatalf("Agents detail strip does not keep space separators:\n%s", strip)
 	}
 }
 
