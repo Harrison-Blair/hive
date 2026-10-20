@@ -309,12 +309,15 @@ func (m *Model) visibleChatEvents() []records.Inbox {
 		switch m.chatNoise {
 		case chatNoiseMessages, chatNoiseLandingsAndDecisions:
 			switch event.Kind {
-			case records.InboxMessage, records.InboxCompleted, records.InboxVerified:
+			case records.InboxMessage, records.InboxBlocked, records.InboxUnresolved,
+				records.InboxCompleted, records.InboxVerified, records.InboxQuiet:
 			default:
 				continue
 			}
 		case chatNoiseDecisionsOnly:
-			if event.Kind != records.InboxMessage {
+			switch event.Kind {
+			case records.InboxMessage, records.InboxBlocked, records.InboxUnresolved:
+			default:
 				continue
 			}
 		}

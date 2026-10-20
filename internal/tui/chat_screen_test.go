@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -237,19 +238,50 @@ func TestChatNoiseLevelsFilterInboxKinds(t *testing.T) {
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 200, Height: 57})
 	m = loadChat(t, m)
 
-	requireView(t, m, "noise: landings and decisions", "3 hive events", "decision: D", "completed: C", "verified: V")
-	rejectView(t, m, "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	assertKinds := func(t *testing.T, want []string) {
+		t.Helper()
+		got := make([]string, 0, len(m.visibleChatEvents()))
+		for _, event := range m.visibleChatEvents() {
+			got = append(got, event.Kind)
+		}
+		expected := append([]string(nil), want...)
+		sort.Strings(got)
+		sort.Strings(expected)
+		if len(got) != len(expected) {
+			t.Fatalf("visible inbox kinds = %v; want %v", got, expected)
+		}
+		for index := range got {
+			if got[index] != expected[index] {
+				t.Fatalf("visible inbox kinds = %v; want %v", got, expected)
+			}
+		}
+	}
+
+	t.Run("landings and decisions", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved", "completed", "verified", "quiet"})
+		requireView(t, m, "noise: landings and decisions", "6 hive events", "decision: D", "blocked: B", "unresolved: U", "completed: C", "verified: V", "quiet: Q")
+		rejectView(t, m, "exited: E")
+	})
 
 	m, _ = raise(t, m, key('n', "n"))
-	requireView(t, m, "noise: decisions only", "1 hive events", "decision: D")
-	rejectView(t, m, "completed: C", "verified: V", "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	t.Run("decisions only", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved"})
+		requireView(t, m, "noise: decisions only", "3 hive events", "decision: D", "blocked: B", "unresolved: U")
+		rejectView(t, m, "completed: C", "verified: V", "exited: E", "quiet: Q")
+	})
 
 	m, _ = raise(t, m, key('n', "n"))
-	requireView(t, m, "noise: all", "7 hive events", "decision: D", "completed: C", "verified: V", "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	t.Run("all", func(t *testing.T) {
+		assertKinds(t, []string{"message", "completed", "verified", "blocked", "exited", "quiet", "unresolved"})
+		requireView(t, m, "noise: all", "7 hive events", "decision: D", "completed: C", "verified: V", "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	})
 
 	m, _ = raise(t, m, key('n', "n"))
-	requireView(t, m, "noise: landings and decisions", "3 hive events", "decision: D", "completed: C", "verified: V")
-	rejectView(t, m, "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	t.Run("returns to landings and decisions", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved", "completed", "verified", "quiet"})
+		requireView(t, m, "noise: landings and decisions", "6 hive events", "decision: D", "blocked: B", "unresolved: U", "completed: C", "verified: V", "quiet: Q")
+		rejectView(t, m, "exited: E")
+	})
 }
 
 func TestChatInputKeepsDraftAndTreatsScreenNumbersAsText(t *testing.T) {
