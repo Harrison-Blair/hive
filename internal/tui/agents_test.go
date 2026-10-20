@@ -14,6 +14,185 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+func TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts(t *testing.T) {
+	home, clock := agentsGenerationFixture(t)
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 1
+	m, cmd := raise(t, m, key('2', "2"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	want := []string{"coordinator-current", "supervisor-current", "manager-current", "live-worker", "active-ghost"}
+	all := []string{
+		"coordinator-old", "coordinator-current", "supervisor-old", "supervisor-current",
+		"manager-old", "manager-current", "live-worker", "active-ghost", "landed-ghost",
+	}
+	for _, tab := range []agentsTab{agentsTree, agentsGraph, agentsTable} {
+		m.agents.tab = tab
+		lines, _ := m.agents.contentLines()
+		for _, name := range want {
+			if got := countAgentRows(lines, name); got != 1 {
+				t.Errorf("tab %d has %d rows for %q, want one:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
+			}
+		}
+		for _, name := range all {
+			if containsAgentName(want, name) {
+				continue
+			}
+			if got := countAgentRows(lines, name); got != 0 {
+				t.Errorf("tab %d has %d rows for hidden generation %q:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
+			}
+		}
+		var dimGhost string
+		switch tab {
+		case agentsTree:
+			dimGhost = dimStyle.Render("× active-ghost · stopped · 3m")
+		case agentsGraph:
+			dimGhost = dimStyle.Render("    ├── × active-ghost · — · 11-active")
+		case agentsTable:
+			dimGhost = dimStyle.Render("active-ghost · worker · demo · 11-active · — · — · stopped · 3m · manager-current")
+		}
+		if !strings.Contains(strings.Join(lines, "\n"), dimGhost) {
+			t.Errorf("tab %d does not dim the active-task ghost: %s", tab, ansi.Strip(strings.Join(lines, "\n")))
+		}
+	}
+}
+
+func TestAgentsHistoryToggleShowsAllGenerations(t *testing.T) {
+	home, clock := agentsGenerationFixture(t)
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 1
+	m, cmd := raise(t, m, key('2', "2"))
+	m = deliverAgentCommands(t, m, cmd)
+	if !strings.Contains(m.currentScreen().KeyHints(), "history: off") {
+		t.Fatalf("default footer does not show history off: %s", m.currentScreen().KeyHints())
+	}
+	m, _ = raise(t, m, key('h', "h"))
+	if !strings.Contains(m.currentScreen().KeyHints(), "history: on") {
+		t.Fatalf("footer does not show history on: %s", m.currentScreen().KeyHints())
+	}
+
+	want := []string{
+		"coordinator-old", "coordinator-current", "supervisor-old", "supervisor-current",
+		"manager-old", "manager-current", "live-worker", "active-ghost", "landed-ghost",
+	}
+	for _, tab := range []agentsTab{agentsTree, agentsGraph, agentsTable} {
+		m.agents.tab = tab
+		lines, _ := m.agents.contentLines()
+		for _, name := range want {
+			if got := countAgentRows(lines, name); got != 1 {
+				t.Errorf("tab %d has %d history rows for %q, want one:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
+			}
+		}
+		var landedExample string
+		switch tab {
+		case agentsTree:
+			landedExample = "✓ landed-ghost · stopped · 4m · 12 landed · abc1234"
+		case agentsGraph:
+			landedExample = "✓ landed-ghost · — · 12-landed · 12 landed · abc1234"
+		case agentsTable:
+			landedExample = "✓ landed-ghost · worker · demo · 12-landed · — · — · stopped · 4m · manager-current · 12 landed · abc1234"
+		}
+		if !strings.Contains(ansi.Strip(strings.Join(lines, "\n")), landedExample) {
+			t.Errorf("tab %d omits the landed ghost label %q: %s", tab, landedExample, ansi.Strip(strings.Join(lines, "\n")))
+		}
+		var dimExample string
+		switch tab {
+		case agentsTree:
+			dimExample = dimStyle.Render("○ coordinator-old · idle · 1m")
+		case agentsGraph:
+			dimExample = dimStyle.Render("  ○ coordinator-old · — · 1m")
+		case agentsTable:
+			dimExample = dimStyle.Render("coordinator-old · coordinator · — · — · — · — · idle · 1m · none")
+		}
+		if !strings.Contains(strings.Join(lines, "\n"), dimExample) {
+			t.Errorf("tab %d does not dim old generations: %s", tab, ansi.Strip(strings.Join(lines, "\n")))
+		}
+	}
+}
+
+func TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime(t *testing.T) {
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC))
+	for _, agent := range []records.Agent{
+		{Key: "legacy-a", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "legacy-b", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:56:00Z"},
+		{Key: "legacy-c", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:57:00Z"},
+	} {
+		writeAgentRecord(t, home, agent)
+	}
+	data, err := loadAgents(home, clock.now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := agentsState{data: data}
+	visible := state.visibleNodes()
+	if len(visible) != 1 || visible[0].record.Key != "legacy-c" {
+		t.Fatalf("visible legacy generations = %#v, want only record legacy-c", visible)
+	}
+}
+
+func agentsGenerationFixture(t *testing.T) (string, *testClock) {
+	t.Helper()
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC))
+	pidStart, err := process.Start(int64(os.Getpid()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor-current", Generation: 2, PID: int64(os.Getpid()), PIDStart: pidStart})
+	writeRecord(t, home, []string{"projects"}, "demo", records.Project{ID: "demo", Path: "/repo/demo", Base: "dev"})
+	for _, record := range []records.Agent{
+		{Key: "coordinator-old", Name: "coordinator-old", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "coordinator-current", Name: "coordinator-current", Role: "coordinator", Status: records.AgentLive, AgentStatus: "working", Replaces: "coordinator-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "supervisor-old", Name: "supervisor-old", Role: "supervisor", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "supervisor-current", Name: "supervisor-current", Role: "supervisor", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "supervisor-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "manager-old", Name: "manager-old", Role: "manager", Project: "demo", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator-old", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "manager-current", Name: "manager-current", Role: "manager", Project: "demo", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "manager-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "live-worker", Name: "live-worker", Role: "worker", Project: "demo", Task: "10-live", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:00Z"},
+		{Key: "active-ghost", Name: "active-ghost", Role: "worker", Project: "demo", Task: "11-active", Status: records.AgentStopped, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:57:00Z"},
+		{Key: "landed-ghost", Name: "landed-ghost", Role: "worker", Project: "demo", Task: "12-landed", Status: records.AgentExited, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:56:00Z"},
+	} {
+		writeAgentRecord(t, home, record)
+	}
+	writeRecord(t, home, []string{"tasks"}, "11-active", records.Task{ID: "11-active", Project: "demo", Status: "assigned"})
+	writeRecord(t, home, []string{"tasks"}, "12-landed", records.Task{ID: "12-landed", Project: "demo", Status: "verified", Delivery: &records.Delivery{Commit: "abc1234def", Pushed: true}})
+	return home, clock
+}
+
+func countAgentRows(lines []string, name string) int {
+	count := 0
+	for _, line := range lines {
+		plain := ansi.Strip(line)
+		index := strings.Index(plain, name+" ·")
+		if index < 0 {
+			continue
+		}
+		prefix := plain[:index]
+		if index == 0 || strings.HasSuffix(prefix, "▶ ") || hasAgentMark(prefix) {
+			count++
+		}
+	}
+	return count
+}
+
+func hasAgentMark(prefix string) bool {
+	for _, mark := range []string{"● ", "○ ", "! ", "× ", "? ", "✓ "} {
+		if strings.HasSuffix(prefix, mark) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsAgentName(names []string, name string) bool {
+	for _, item := range names {
+		if item == name {
+			return true
+		}
+	}
+	return false
+}
+
 func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
@@ -129,7 +308,7 @@ func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"action":"agent tab"`, `"tab":"graph"`, `"action":"agent selection"`, `"agent_id":"supervisor"`, `"action":"agent stopped visibility"`, `"hide_stopped":false`, `"action":"agent attach"`, `"pane_id":"w1:p2"`} {
+	for _, want := range []string{`"action":"agent tab"`, `"tab":"graph"`, `"action":"agent selection"`, `"agent_id":"supervisor"`, `"action":"agent history visibility"`, `"history":true`, `"action":"agent attach"`, `"pane_id":"w1:p2"`} {
 		if !strings.Contains(string(data), want) {
 			t.Fatalf("TUI log omits %q:\n%s", want, data)
 		}
@@ -138,7 +317,7 @@ func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
 
 func TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale(t *testing.T) {
 	home, clock := agentsFixture(t, 4)
-	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
+	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
 	m, cmd := raise(t, m, key('2', "2"))
@@ -157,8 +336,8 @@ func TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale(t *test
 	rejectAgentsView(t, m, "× old-worker")
 
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
-	writeAgentRecord(t, home, records.Agent{Key: "idle-worker", Name: "idle-worker", Role: "worker", Project: "demo", Task: "10-build", Harness: "pi", Model: "model-idle", PaneID: "w1:p5", Status: records.AgentLive, AgentStatus: "done", Parent: "manager-demo", StatusChangedAt: "2026-05-22T11:56:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "no-age", Name: "no-age", Role: "worker", Project: "demo", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
+	writeAgentRecord(t, home, records.Agent{Key: "idle-worker", Name: "idle-worker", Role: "worker", Project: "demo", Task: "11-idle", Harness: "pi", Model: "model-idle", PaneID: "w1:p5", Status: records.AgentLive, AgentStatus: "done", Parent: "manager-demo", StatusChangedAt: "2026-05-22T11:56:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "no-age", Name: "no-age", Role: "worker", Project: "demo", Task: "13-no-age", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
 	m = refreshAgents(t, m)
 	requireAgentsView(t, m, "unknown", "idle-worker", "no-age", "?")
 }
