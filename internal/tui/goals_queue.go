@@ -213,6 +213,7 @@ func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
 		taskID := wave.Tasks[0]
 		s.model.screenIndex = 4
 		s.model.tasks.tab = tasksAll
+		s.model.tasks.projectIndex = 0
 		s.model.tasks.selectedID = taskID
 		s.model.tasks.scrollOffset = 0
 		s.model.tasks.fileOpen = false

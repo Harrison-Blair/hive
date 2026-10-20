@@ -106,18 +106,40 @@ Visual check rule (the user approved it on 2026-10-20):
   decision that overrides it).
 - Capture only your own panes or a scratch run.
 
-## Scope change: colour is never the only signal
+## Scope change: each state has a plain-text signal
 
-The user is colourblind (`overrides/colourblind-ui.md` in the home). In each
-screen that this task changes, a glyph or a word shows each state. Colour can
-add to a state. Colour must not be the only signal of a state.
+The user cannot distinguish some colours. Show each state with a glyph or a
+word in every screen that this task changes. Colour can support the signal.
+Do not use colour as the only signal. For example:
 
-Examples:
-- A live agent has `●`.
-- A stopped agent has `○`.
-- A failed check has `fail` or `✗`, not red alone.
-- A selected row has `▶`, not honey alone.
+- Show a live agent with `●`.
+- Show a stopped agent with `○`.
+- Show a failed check with `fail` or `✗`, not with red alone.
+- Show the selected row with `▶`, not with honey alone.
 
-Write a test that removes SGR codes, reads plain text, and finds one glyph or
-word for each state. Add a "state without colour" column to the Design element
-table. Each row must show its glyph or word.
+Write a test. Remove SGR codes from the screen text. Check that the test finds
+the glyph or word for each state. Add a "state without colour" column to the
+Design element table. List the glyph or word in each row.
+
+## Fix 1
+
+The verifier failed V2 for Goals `t`. Read `VERIFIED.md`. Make only this change.
+
+1. Goals `t` does not reset the Tasks project filter. If the filter is not
+   `all`, Tasks shows another project. In `goalsScreen.Update`, set
+   `tasks.projectIndex` to `0`, as Queue `enter` does. First, add a test.
+   Set Tasks to another project. Press `t` on a wave. Check that Tasks selects
+   and shows the first task of that wave. Run the test. Check that it fails
+   before the code change.
+2. The manager clarified `o`. Open the README for the first task in the wave
+   that has a feature. The code already does this. Do not change `o`. Record
+   this decision in the evidence.
+
+The manager's edit replaced the task brief in this worktree. Rewrite the new
+text in STE. Keep its meaning. Get `origin/dev`. If it changed, merge it into
+this branch. Run V2 for `t` in a scratch home and in a tab in your workspace.
+Remove the Herdr variables from the TUI command. Stop the process and close
+only the tab and pane that you started. Never use workspace `wBC`. Run the
+gate. Commit and push. Check that `git merge-tree --write-tree origin/dev
+HEAD` exits with status `0`. Run `hive task complete`. Send the full commit
+SHA to the manager with `hive inbox send --to manager-hive`.

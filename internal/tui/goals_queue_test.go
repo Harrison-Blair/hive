@@ -106,6 +106,33 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 	}
 }
 
+func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"projects"}, "other", records.Project{ID: "other", Path: "/repo/other", Base: "dev"})
+	writeRecord(t, home, []string{"tasks"}, "8-other", records.Task{ID: "8-other", Project: "other", Title: "Other task", Status: "created", DependsOn: []string{}})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('5', "5"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, _ = raise(t, m, key('p', "p"))
+	m, _ = raise(t, m, key('p', "p"))
+	if got := m.tasks.projectFilter(); got != "other" {
+		t.Fatalf("Tasks filter setup failed: got %q, want other", got)
+	}
+
+	m, cmd = raise(t, m, key('3', "3"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, cmd = raise(t, m, key('t', "t"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	if m.tasks.projectIndex != 0 || m.tasks.selectedID != "1-alpha" {
+		t.Fatalf("Goals did not reset the Tasks project filter and select the first wave task: project=%q task=%q", m.tasks.projectFilter(), m.tasks.selectedID)
+	}
+	view := ansi.Strip(m.currentScreen().View(160, 30))
+	if !strings.Contains(view, "project: all") || !strings.Contains(view, "> 1-alpha") {
+		t.Fatalf("Tasks screen did not show the selected first wave task with all projects:\n%s", view)
+	}
+}
+
 func TestGoalsOpenWaveDesign(t *testing.T) {
 	tests := []struct {
 		name       string
