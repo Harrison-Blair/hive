@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
 | [A completed task cannot be reopened or edited](entries/completed-task-cannot-reopen.md) | Open |  |
 | [A failed verification is lost when the next verification passes](entries/verify-fail-lost-on-pass.md) | Open |  |
 | [store.List skips an agent record with a key longer than 18 characters](entries/store-list-skips-long-keys.md) | Open |  |
