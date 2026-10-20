@@ -22,7 +22,11 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 		if !strings.Contains(m.View().Content, "▶ "+string(number)+" "+name) {
 			t.Fatalf("key %q did not select %s:\n%s", number, name, m.View().Content)
 		}
-		if name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
+		if name == "Chat" {
+			if !strings.Contains(m.View().Content, "coordinator") {
+				t.Fatalf("Chat screen does not show the coordinator:\n%s", m.View().Content)
+			}
+		} else if name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
 			t.Fatalf("%s screen does not show its placeholder:\n%s", name, m.View().Content)
 		}
 	}
