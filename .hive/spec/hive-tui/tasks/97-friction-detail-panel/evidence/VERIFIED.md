@@ -111,3 +111,18 @@ $ go vet ./...                                               exit 0
 $ golangci-lint run ./...                                    0 issues. exit 0
 $ go test -race ./...                                        all ok, exit 0
 ```
+
+## Repair 1
+
+Verifier: claude-opus-5-5, 2026-10-20. Repair commit `01741b56` (merge of
+`c003eabc` and dev `2924385e`). The TUI was not run.
+
+| Item | Result | Observation |
+| --- | --- | --- |
+| Baseline rows of both sides | pass | `git diff 2924385e HEAD -- testdata/ste-baseline.json` adds only the `97-friction-detail-panel` row. `git diff c003eabc HEAD` adds only the dev rows `93-ci-test-fixes`, `98-health-panels`, and `100-no-backgrounds`. No row is removed. Order and format are kept. |
+| `git merge-tree --write-tree origin/dev HEAD` | pass | Prints `6cbf602e0c9f5fe4e073120ab49cfbea0e2f139b`, exit 0 (origin/dev `7bf0387b`). |
+| Source files change only by the merge | pass | `git diff --stat 2924385e HEAD -- ':!.hive'` shows only `internal/tui/friction_screen.go`, `internal/tui/tasks_friction_test.go`, and `testdata/ste-baseline.json` (+1 row), which are the task changes. Each other non-spec file that differs from `c003eabc` comes from dev. |
+| Brief copy STE rewording | pass | The V2 row splits into short sentences. The steps (build, temp marked home with fixture data, `HIVE_HOME`, temp `XDG_CONFIG_HOME`, herdr tab at about 200 x 57, `herdr pane read` per gap) and the expected result are kept. The Repair 1 section is added. |
+| Gate | pass | `gofmt -l` no output; `go mod tidy -diff` no output; `go vet ./...` exit 0; `golangci-lint run ./...` 0 issues; `go test -race ./...` all ok, exit 0. |
+
+Note: `git diff origin/dev --stat` also shows `reference/dogfood/friction/` changes. These come from dev commits `1320b605` and `7bf0387b` after the merge base. The task branch does not change these files (`git diff --stat $(git merge-base HEAD origin/dev) HEAD` has no file in that folder).
