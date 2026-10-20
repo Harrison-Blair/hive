@@ -23,8 +23,8 @@ edit it. When the code does not agree with this brief, stop and report it with
 
 - The status machine is the `transitions` map in
   `internal/task/transition.go`. `verified` has only `reopen`.
-- A task is landed when its status is `verified` and its delivery has
-  `pushed` true. Hive has no `landed` status.
+- Hive considers a task landed when its status is `verified` and its delivery
+  has `pushed` true. Hive has no `landed` status.
 - `landMerge` in `internal/land/merge.go` runs `git merge --no-ff` of the
   task branch when the task has no delivery commit. When the branch is
   already on the base, Git makes no commit and prints `Already up to date`.
@@ -52,7 +52,7 @@ Do not edit other files.
   no delivery, or a delivery with `pushed` false.
 - It refuses a landed task (a delivery with `pushed` true) with the error
   `task is landed: cancel refused`. The record does not change.
-- The reason is stored as for each other cancel.
+- Hive stores the reason as it does for each other cancel.
 
 ### R2 Land a branch that is already on the base
 
@@ -67,19 +67,20 @@ Do not edit other files.
 
 ### R3 Tests
 
-Write each test first and see it fail on the base. Use a temp Git repository
-with a fixture task record. Cover: cancel of a verified task with no
-delivery, with `pushed` false, and with `pushed` true; land of a branch that
-is already on the base (the delivery commit is the branch tip, and the base
-has no new commit); land of a branch that is not on the base (unchanged
-behavior). Use literal expected values.
+Write each test first. Run it on the base and check that it fails. Use a
+temp Git repository with a fixture task record. Cover verified-task
+cancellation with no delivery, with `pushed` false, and with `pushed` true.
+Cover landing a branch that is already on the base. Check that its delivery
+commit is the branch tip and that the base has no new commit. Cover landing a
+branch that is not on the base. Check that landing keeps the current
+behavior. Use literal expected values.
 
 ## Verification
 
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run the R3 tests against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Build the task binary. In a scratch home (`HIVE_HOME` and a temp `XDG_CONFIG_HOME`) with a fixture project on a temp Git repository and a bare temp origin, make three verified tasks: one with no delivery, one with a branch already on `dev`, one landed. Run `cancel` on the first, `land --mode merge` on the second, and `cancel` on the third | The first is cancelled. The second reads landed, its delivery commit is its branch tip, and `dev` has no new commit. The third is refused and does not change. |
+| V2 | Build the task binary. Use a scratch home for `HIVE_HOME` and a temp directory for `XDG_CONFIG_HOME`. Use a fixture project with a temp Git repository and a bare temp origin. Create three verified tasks: one without a delivery, one whose branch is already on `dev`, and one landed task. Run `cancel` on task one, `land --mode merge` on task two, and `cancel` on task three | Task one has status `cancelled`. Task two meets Hive's landed definition: status `verified` and delivery `pushed` true. Its delivery commit matches its branch tip. The `dev` tip stays the same. Task three's cancel command refuses and leaves its record unchanged. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
