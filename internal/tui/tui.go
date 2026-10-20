@@ -16,6 +16,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -69,10 +70,12 @@ type Model struct {
 	attachErr        string
 	headerLoader     func(string) (headerState, error)
 	logLoader        func(*logs.Reader, time.Time) ([]logs.Event, error)
+	healthLoader     func(string, *slog.Logger) doctor.Result
 	agentsLoader     func(string, time.Time) (agentsData, error)
 	goalsQueueLoader func(string) (goalsQueueData, error)
 	paneReader       func(context.Context, string) (string, error)
 	agents           agentsState
+	health           healthState
 	goalsQueue       goalsQueueState
 	chatLoader       func(string, time.Time) (chatScreenData, error)
 	headerLoading    bool
@@ -111,6 +114,7 @@ func New(home string, now func() time.Time) *Model {
 			return events, err
 		},
 		agentsLoader:     loadAgents,
+		healthLoader:     loadHealth,
 		goalsQueueLoader: loadGoalsQueue,
 		paneReader:       readAgentPane,
 	}
@@ -193,6 +197,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.agents.accept(msg.agents)
 		case goalsQueueDataRequest:
 			m.goalsQueue.accept(msg.goalsQueue)
+		case healthDataRequest:
+			m.health.accept(msg.health)
 		case chatDataRequest:
 			m.chatData = msg.chat
 			m.rebuildChat()
@@ -369,6 +375,11 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return func() tea.Msg {
 			data, err := loader(home)
 			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
+		}
+	case healthDataRequest:
+		loader, home, logger := m.healthLoader, m.home, m.logger
+		return func() tea.Msg {
+			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger)}
 		}
 	default:
 		loader, reader, now := m.logLoader, m.reader, m.now

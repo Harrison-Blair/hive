@@ -4,6 +4,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/logs"
 )
 
@@ -23,6 +24,7 @@ type screenLoadMsg struct {
 	agents     agentsData
 	goalsQueue goalsQueueData
 	chat       chatScreenData
+	health     doctor.Result
 	err        error
 }
 
