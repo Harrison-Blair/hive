@@ -34,7 +34,8 @@ of the item. Compare the output with the expected output.
 
 - For a test item, run the red run and the green run.
 - For a live item, run the commands and record each observation.
-- For the gate item, run the five gate commands.
+- For the gate item, run the five gate commands. The second command is
+  `go mod tidy -diff`. It must print nothing.
 
 For a task with a feature, write `VERIFIED.md` in
 `.hive/spec/<feature>/tasks/<id>/evidence/`. For a task without a feature, write
