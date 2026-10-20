@@ -3,7 +3,7 @@
 Verifier: `t92-verifier-1` (Claude Opus 5.5). Task head: `e1c2ed53`. Base for red runs: `598f2732`.
 Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`.
 
-Verdict of the first verify (`e1c2ed53`): **fail**. Two items failed: V2 and the R3 golden record. See [Repair 1](#repair-1) for the verify of the repair.
+Verdict of the first verify (`e1c2ed53`): **fail**. Two items failed: V2 and the R3 golden record. See [Repair 1](#repair-1) and [Repair 2](#repair-2) for the verify of each repair.
 
 | ID | Check | Result |
 | --- | --- | --- |
@@ -176,3 +176,91 @@ Binary built from `45770aec`. Scratch home: a copy of `.hive/README.md`, `.hive/
 | TUI process 120 x 40 | PID 2247276 in `wRW:p2` | Stopped with Ctrl+C after a PID check |
 
 I did not use workspace `wBC`. I removed the scratch home, the binary, the pre-repair worktree, and the temporary test file. I restored `agents.go` after each mutation; `git status` was clean.
+
+## Repair 2
+
+Verifier: `t92-verifier-3` (Claude Opus 5.5). Task head: `3e6d1b54`. `origin/dev`: `8ee27847` (ancestor of the head; it did not move). Repair 1 tip for red runs: `45770aec`.
+Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`.
+
+Verdict: **fail**. One item fails: item 3. V2 does not list five board differences, and it gives no cause for them.
+
+| ID | Check | Result |
+| --- | --- | --- |
+| R2.1 nudge test | Filter removed: `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` fails; filter restored: passes | pass |
+| R2.2 drawing faults | Each of the four faults has a literal-text test that fails on `45770aec` and passes on `3e6d1b54` | pass |
+| R2.3 / V2 differences | Each other board difference fixed or listed in V2 with a cause | **fail** |
+| R2.4 goldens | Goldens written again; method recorded in V1.md and V2.md | pass |
+| R2.5 brief copy | STE rewording applied again (headings `Fix 1` / `Fix 2` for `Repair 1` / `Repair 2`); meaning kept | pass |
+| R2.6 live V2 | Scratch home, own tab, herdr variables removed | pass |
+| R2.7 merge-tree | `git merge-tree --write-tree origin/dev HEAD` exit 0 (`e7ecbb11`) | pass |
+| First-verify passes | Ghost rule, supervisor row, style, nudge rule, task 90 idle CPU | pass |
+| Frame size | Exactly 120 x 40 and 200 x 57 | pass |
+| V3 | `git diff origin/dev --stat` | pass |
+| V4 | Gate | pass |
+
+### R2.1 nudge test
+
+I ran the mutation in a detached scratch worktree at `3e6d1b54`. I removed `|| (record.Role != "coordinator" && record.Role != "manager")` from `agents.go:144`. `go test ./internal/tui -run TestAgentsNudgeEdges -count=1`: `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` FAIL, `agents_test.go:725: drawn graph has a nudge route for a worker or verifier`, and the graph has two `nudges` labels. `TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox` PASS. I restored the file (`git status` clean). The same run then passed.
+
+### R2.2 drawing faults
+
+I copied the task `agents_test.go` and the six goldens into a detached worktree at `45770aec`. `go test ./internal/tui -count=1`:
+
+- `TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren` FAIL: `manager-beta draws a stem with no visible child: └───────────────┴───────────────┘`.
+- `TestAgentsGraphDelegationBusUsesOpenEndGlyphs` FAIL: `delegation bus at coordinator = '┬', want '┌'` and `at manager-beta = '┬', want '┐'`.
+- `TestAgentsTreeLastVisibleChildUsesBottomConnector` FAIL: `├─ ● worker-alpha · working · 4m`.
+- `TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator` FAIL: omits `cc idle · 3m`, `pi 10-alpha`; has `cc · idle`, `pi · 10-alpha`.
+- Also red: `TestAgentsScreenRendersTopologyTabsAndDetail`, `TestAgentsBoardGoldenFrames` (all six), `TestAgentsBoardKeyHintsMatchTheBoard`, `TestAgentsGraphPodTitleSharesTopBorder`, `TestAgentsExplorerUsesIndentationWithoutConnectors`.
+
+Each test passes on `3e6d1b54`. The bus ends agree with the board: the board line runs from `left: 95px` to `left: 776px`, with stems at 95, 315, 540, and 775, so the ends are corners.
+
+Note (not a fail reason): no test fails when the `DETAIL` label comes back. `TestAgentsBoardDetailShowsTaskStatusAndNextTask` passes on `45770aec`, because `worker-alpha · parent manager-alpha` is a substring of `DETAIL worker-alpha · parent …`. The goldens catch the label. V1.md says that the detail test found the label. That is not correct.
+
+### R2.3 board differences that are not listed
+
+I compared each board region with the goldens and with my live captures (`verify-repair2-200x57-graph.txt`, `verify-repair2-120x40-graph.txt`). V2.md "Fix 2 live check" lists the key bar, pod titles, subtitles, detail label, explorer, supervisor, G4 `inferred`, the T3 nudge rule, clipping, and the selection style with their causes. It does not list these differences, and it gives no cause for them:
+
+1. **Stem breaks at the pod border.** On the board, each delegation stem runs without a break from the bus (`top: 8px`) through the pod border (`top: 34px`) to the node box (`top: 60px`). The task draws `─` where the stem crosses the pod top border. Example, home pod: line 5 has `│` at panel column 13, line 6 `┌─ ≡ home ─────` has `─` at column 13, line 8 has `│` again. The same break shows in each pod in the goldens and the live captures.
+2. **Pod corners.** The board pods have `border-radius: 3px` (rounded, as the panels and the detail strip that the task draws with `╭╮╰╯`). The task draws pods with `┌┐└┘`.
+3. **Node box padding.** The board node boxes have `padding: 4px 8px`. The task puts the text against the left border, and in long rows against the right border too: `│● t107-worker-2`, `│cc 107-hub-no-background│`.
+4. **Header layout.** The board header has groups with gaps and the time at the right edge (a `flex: 1` spacer before `02:46`). The task joins the groups with `·` and puts the time inline: `… · needs you 0 · 14:28`.
+5. **Detail strip separators.** The board separates the detail fields with gaps (`gap: 24px`). The task joins them with `·`.
+
+Each one must agree with the board, or V2 must give its cause (a decision, a T3 rule, a brief rule, or a terminal limit).
+
+### First-verify passes and task 90
+
+All in the scratch worktree at `3e6d1b54`, each file restored after the run:
+
+- Ghost rule: `open = activeGoalTasks[task.ID]` to `open = true` fails `TestAgentsGhostsRequireAnOpenTask` (`closed task ghost "ghost-verified-unassigned" is visible without history`, and in the explorer). Holds.
+- Task 90, render cache: `if true` for both `View` cache checks (`tui.go:420`, `shell.go:156`) fails `TestHeaderRefreshReusesUnchangedScreenRender` (`header refresh rendered screen 2 times`) and `TestMinuteRefreshUpdatesOnlyTheHeader` (`minute refresh rendered screen 2 times`). A mutation of `shell.go:156` alone does not fail them, because the `View` cache in `tui.go` also holds the screen.
+- Task 90, idle reload: `headerChanged := true` (`tui.go:242`) fails `TestIdleTickDoesNotReloadUnchangedData` (`1 header loads`) and `TestIdleTickReloadsChangedScreenOnce` (`1 header loads and 1 screen loads; want 0 and 1`).
+- Unchanged code: the four task 90 tests and the ghost, supervisor, golden, arrow-selection, and `t` tests pass.
+- Supervisor row: live GRAPH shows `● supervisor` / `pid 2107907 · 50m`. PID 2107907 is the running `hive supervise`. Holds.
+- Style: the selected node shows `▶`. `git diff 45770aec HEAD` adds no `Background(`. Holds.
+
+### Live check
+
+Binary built from `3e6d1b54` in my scratch folder. Scratch home: a copy of `.hive/README.md`, `.hive/state`, and `.hive/spec` of the real home in my scratch folder, set with `HIVE_HOME`. A temp `XDG_CONFIG_HOME`. Each start: `stty cols W rows H`, then `env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH ./hive`. I never opened the Chat input and never pressed Enter.
+
+- 200 x 57: TREE, GRAPH, and TABLE have 57 lines. The top border is 200 cells. The key bar is the last line. The bus has `┌ … ┬ … ┬ … ┐`. `manager-qmeter` has no stem. TREE uses `└─` for each last child. Subtitles: `cc you · now`, `cc idle · 4m`, `pi 92-agents-board-layout`. The detail strip has no `DETAIL` label.
+- Selection: Down in GRAPH selects `▶ ● t92-verifier-3`. Detail: `t92-verifier-3 · parent manager-hive · model claude-opus-5-5 · task 92-agents-board-layout · completed · pane wS1:p1 · next 102-selection-marker`. `t` opens Tasks at `92-agents-board-layout`.
+- 120 x 40: each view has 40 lines with a 120-cell top border. Right x3 scrolls the graph to `▶ ○ manager-stenographer`.
+- Text reads show stray `│` cells past the frame (column 206 at 200 x 57; column 129 on lines 3, 4, 9, 13, 14 at 120 x 40, after a Chat to Agents change). An ANSI read of the same lines ends at the frame border. The pane is 207 columns wide. I think that these cells are terminal leftovers outside the `stty` area. Each frame line is exactly 120 or 200 cells.
+- Footer: `not in herdr: no coordinator or supervisor started`. The only `hive supervise` process before and after was PID 2107907, which I did not start. No coordinator tab was made.
+
+### V3 and gate
+
+`git diff origin/dev --stat`: `internal/tui/` (`agents.go`, `agents_test.go`, `fix_test.go`, `header.go`, `refresh.go`, `shell.go`, `shell_test.go`, `tui.go`, six goldens), `testdata/ste-baseline.json` (+1), and the brief copy and evidence of this task. Pass.
+
+Gate: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `go vet ./...` exit 0. `golangci-lint run ./...` `0 issues.` exit 0. `go test -race -count=1 ./...` exit 0.
+
+### Resources
+
+| Resource | ID | Result |
+| --- | --- | --- |
+| Tab in my workspace `wS1` | `wS1:t2` (`t92-v3-live`), root pane `wS1:p2`, shell PID 2356204 | Closed after a label and ID check; shell gone |
+| TUI process 200 x 57 | PID 2357068 in `wS1:p2` | Stopped with Ctrl+C after a PID check |
+| TUI process 120 x 40 | PID 2361315 in `wS1:p2` | Stopped with Ctrl+C after a PID check |
+
+I did not use workspace `wBC`. Tab `wS1:t1` stays open.
