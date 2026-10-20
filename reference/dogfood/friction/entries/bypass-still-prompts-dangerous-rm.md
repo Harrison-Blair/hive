@@ -24,3 +24,9 @@ dialog on `rm -rf $S/*` in its scratchpad cleanup, chained after
 inbox record had no reason, so the manager had to read the pane with
 `herdr pane read` to find it. The manager denied it and the verifier reran
 `hive task verify` alone.
+
+**Occurrence 2026-10-20:**
+Verifier t81-verifier-2 ran `rm -f -- "$S"/*.txt` on its scratchpad in a
+cleanup step, although its note said to avoid `rm` on an unquoted variable.
+The same dialog showed. The manager denied it with `herdr pane send-keys
+<pane> Escape`. A note in the verifier prompt does not stop the pattern.
