@@ -29,6 +29,9 @@ hive task show ID --brief
 The brief names the files that you may edit. Read each file before you change
 it. Do not change a file outside the brief.
 
+For a task with a feature, read the worktree brief at
+`.hive/spec/<feature>/tasks/<id>/brief.md`. Commit this file with your work.
+
 ## Work
 
 Work test-first.
@@ -54,7 +57,11 @@ The first command prints nothing. Each other command passes.
 
 Write one `V<n>.md` file for each verification item of the brief. Write the
 red run and the green run for a test item. Write the run for a live or gate
-item. Put each file in the evidence directory that the brief names.
+item.
+
+For a task with a feature, write each `V<n>.md` file to
+`.hive/spec/<feature>/tasks/<id>/evidence/`. For a task without a feature,
+write each file to the evidence directory that the brief names.
 
 ## Commit
 

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
@@ -135,10 +136,28 @@ func Edit(home string, options EditOptions) output.Envelope {
 			log.failure("task edit", task.Project, task.ID, actorID, envelope.Phase, err.Error())
 			return nil
 		}
+		effects := []output.Effect{{Resource: "brief", Path: briefRelPath(task.ID), Action: "updated"}}
+		if paths := TaskFeaturePaths(task); paths != nil && task.Worktree != nil && task.Worktree.RemovedAt == "" {
+			featurePath := filepath.Join(task.Worktree.Path, filepath.FromSlash(paths.Brief))
+			if err := writeWorktreeBrief(task.Worktree.Path, paths.Brief, brief); err != nil {
+				message := "copy feature brief: " + err.Error()
+				envelope = output.Envelope{
+					Outcome: "partial",
+					Phase:   "brief",
+					Effects: effects,
+					Error:   message,
+					Result:  task,
+				}
+				log.failure("task edit", task.Project, task.ID, actorID, envelope.Phase, message)
+				return nil
+			}
+			effects = append(effects, output.Effect{Resource: "brief", Path: featurePath, Action: "copied"})
+			log.effect("task edit", task.Project, task.ID, "brief", featurePath, "copied")
+		}
 		envelope = output.Envelope{
 			Outcome: "ok",
 			Phase:   "complete",
-			Effects: []output.Effect{{Resource: "brief", Path: briefRelPath(task.ID), Action: "updated"}},
+			Effects: effects,
 			Error:   nil,
 			Result:  task,
 		}
@@ -149,6 +168,17 @@ func Edit(home string, options EditOptions) output.Envelope {
 		return fail("store", lockErr.Error())
 	}
 	return envelope
+}
+
+func writeWorktreeBrief(worktreePath, relativePath string, data []byte) error {
+	destination := filepath.Join(worktreePath, filepath.FromSlash(relativePath))
+	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+		return fmt.Errorf("create directory: %s", err)
+	}
+	if err := os.WriteFile(destination, data, 0o644); err != nil {
+		return fmt.Errorf("write file: %s", err)
+	}
+	return nil
 }
 
 // EditText renders the effects of a successful task edit.

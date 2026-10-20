@@ -211,7 +211,9 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)
 	writeProjectPath(t, home, "demo", repo)
-	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
+	task := workerTask(home, repo, worktree, branch, "created")
+	task.Feature = "spec-feature"
+	writeTaskRecord(t, home, task)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "worker-1")
@@ -223,7 +225,7 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
 	requireOrder(t, fake, "agent.start", "agent.wait", "agent.prompt")
-	task := readTaskRecord(t, home, "1-worker-demo")
+	task = readTaskRecord(t, home, "1-worker-demo")
 	if task.Status != "assigned" || task.ActingAgent != "worker-1" {
 		t.Fatalf("task = %#v; want assigned to worker-1", task)
 	}
@@ -241,7 +243,11 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	if !strings.HasPrefix(params.Text, "⬢ ") {
 		t.Fatalf("worker prompt = %q; want the hive marker prefix", params.Text)
 	}
-	want := workerPrompt(home, "1-worker-demo", worktree, branch)
+	want := "⬢ Read " + home + "/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. " +
+		"Follow that brief. Your worktree is '" + worktree + "' on the branch '" + branch + "'. " +
+		"The task brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
+		"Write each V<n>.md to .hive/spec/spec-feature/tasks/1-worker-demo/evidence/. " +
+		"The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
 	if params.Text != want {
 		t.Fatalf("prompt = %q; want %q", params.Text, want)
 	}
@@ -702,7 +708,9 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)
 	writeProjectPath(t, home, "demo", repo)
-	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "completed"))
+	task := workerTask(home, repo, worktree, branch, "completed")
+	task.Feature = "spec-feature"
+	writeTaskRecord(t, home, task)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.failure("workspace.get", "workspace_not_found", "workspace w5 not found")
@@ -742,7 +750,7 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	if opens[0].Params != want {
 		t.Fatalf("worktree.open = %s; want %s", opens[0].Params, want)
 	}
-	task := readTaskRecord(t, home, "1-worker-demo")
+	task = readTaskRecord(t, home, "1-worker-demo")
 	if task.Worktree == nil || task.Worktree.WorkspaceID != "w6" || task.Worktree.TabID != "w6:t1" || task.Worktree.RootPane != "w6:p1" {
 		t.Fatalf("worktree = %#v; want the reopened topology", task.Worktree)
 	}
@@ -762,8 +770,13 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	if !strings.HasPrefix(params.Text, "⬢ ") {
 		t.Fatalf("verifier prompt = %q; want the hive marker prefix", params.Text)
 	}
-	if params.Text != verifierPrompt(home, "1-worker-demo") {
-		t.Fatalf("prompt = %q", params.Text)
+	wantPrompt := "⬢ Read " + home + "/.agents/skills/hive-verifier/SKILL.md first. Then run: " +
+		"hive task show '1-worker-demo' --brief. The task brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
+		"You are the verifier. Run each verification item again, write VERIFIED.md to .hive/spec/spec-feature/tasks/1-worker-demo/evidence/, then run: " +
+		"hive task verify --task '1-worker-demo', or add --fail --reason. Never write VERIFIED.md at the checkout root. " +
+		"The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex."
+	if params.Text != wantPrompt {
+		t.Fatalf("prompt = %q; want %q", params.Text, wantPrompt)
 	}
 	if len(fake.recorded("workspace.close")) != 0 {
 		t.Fatalf("success closed the workspace")
