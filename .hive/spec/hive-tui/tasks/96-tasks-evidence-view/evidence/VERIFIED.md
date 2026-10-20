@@ -7,7 +7,7 @@
 | Task commit | `dd56c496` |
 | Base | `origin/dev` `a51c833f` (code equal to `b4f1d71e`; the newer commit changes one dogfood doc only) |
 | Date | 2026-10-20 |
-| Verdict | fail |
+| Verdict | fail (first pass); pass (Repair 1, see below) |
 
 | ID | Result | Note |
 | --- | --- | --- |
@@ -262,3 +262,140 @@ test 0
 ```
 
 `gofmt -l` and `go mod tidy -diff` printed nothing. Each `go test` package printed `ok` or `no test files`.
+
+## Repair 1
+
+| Item | Value |
+| --- | --- |
+| Verifier | t96-verifier-2, Claude Code, claude-opus-5-5 |
+| Task commit | `ffcab868` (code fix `32213943`) |
+| Base | `origin/dev` `598f2732` |
+| Date | 2026-10-20 |
+| Verdict | pass |
+
+| ID | Result | Note |
+| --- | --- | --- |
+| R1 frame test | pass | `TestFileViewsMatchTerminalFrames` fails on `eed52a62` (pre-repair) and passes on the task branch, for Tasks `b`, `v`, `d` and the Friction file view at 120 x 40 and 200 x 57. |
+| R1 fix scope | pass | In `friction_screen.go` the only change is the height given to `fileView` (`height-3` to `height-4`). `task_screen.go` has the same change. |
+| V1 | pass | The 3 first-pass tests fail on `b4f1d71e` and pass on the task branch. |
+| V2 | pass | Each view fills the 207 x 57 pane. The panels reach the bottom border at row 54. |
+| V3 | pass | `git diff origin/dev...HEAD --stat` shows only the source table files, the friction file view, and the evidence. |
+| V4 | pass | The gate is clean. `git merge-tree --write-tree origin/dev HEAD` exits 0. |
+
+### Frame test
+
+Red run: a detached scratch worktree at `eed52a62` with the task `internal/tui/tasks_friction_test.go` copied in.
+
+```sh
+go test ./internal/tui -run '^TestFileViewsMatchTerminalFrames$' -count=1
+```
+
+```text
+--- FAIL: TestFileViewsMatchTerminalFrames/120x40/Tasks/b
+--- FAIL: TestFileViewsMatchTerminalFrames/120x40/Tasks/v
+--- FAIL: TestFileViewsMatchTerminalFrames/120x40/Tasks/d
+--- FAIL: TestFileViewsMatchTerminalFrames/120x40/Friction/file
+--- FAIL: TestFileViewsMatchTerminalFrames/200x57/Tasks/b
+--- FAIL: TestFileViewsMatchTerminalFrames/200x57/Tasks/v
+--- FAIL: TestFileViewsMatchTerminalFrames/200x57/Tasks/d
+--- FAIL: TestFileViewsMatchTerminalFrames/200x57/Friction/file
+frame has 41 lines, want 40   (4 times)
+frame has 58 lines, want 57   (4 times)
+```
+
+Green run on `ffcab868`: all 8 subtests `PASS`, `ok github.com/Harrison-Blair/hive/internal/tui`.
+
+The test checks the line count, the display width of each line, and the main panel bottom border on line `height-3`.
+
+### Fix
+
+```diff
+-		return state.fileView(contentWidth, height-3)
++		return state.fileView(contentWidth, height-4)
+```
+
+This is the only change in `internal/tui/friction_screen.go` (in `frictionScreen.View`, the file-view branch) and in `internal/tui/task_screen.go` for the repair.
+
+### V1
+
+Red run: a detached scratch worktree at `b4f1d71e` with the task `internal/tui/task_screen_test.go` copied in.
+
+```text
+--- FAIL: TestTasksScreenShowsEvidencePanelAndDefinitions (0.00s)
+--- FAIL: TestTasksScreenVOpensVerifiedEvidence (0.00s)
+    task_screen_test.go:52: v did not request VERIFIED.md
+--- FAIL: TestTasksScreenDOpensSelectedTaskDependencyGraph (0.00s)
+    task_screen_test.go:76: d did not log opening the dependency graph
+```
+
+Green run on `ffcab868`: the 3 tests `PASS`.
+
+### V2
+
+Scratch home in the verifier scratchpad: the `.hive/README.md` marker, project `hive` with its path set to the scratch home and no workspace, the task records 88, 89, 96, 97, 98, and 99 copied from the home, a copy of `.hive/spec/hive-tui` (with the task-branch 96 folder), and a copy of `reference/dogfood/friction`. A temp `XDG_CONFIG_HOME`. The binary was built from `ffcab868`. herdr 0.9.5.
+
+Before the run, workspace `wR2` had only tab `wR2:t1`. The verifier did not use workspace `wBC`.
+
+```sh
+herdr tab create --workspace wR2 --cwd <scratch>/v2/bin --label t96-verifier-r1 --env HIVE_HOME=<scratch>/v2/home --env XDG_CONFIG_HOME=<scratch>/v2/config --no-focus
+# returned tab wR2:t2, pane wR2:p2; 57 rows
+herdr pane run wR2:p2 'env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH -u HERDR_TAB_ID ./hive'
+# started pid 1755211; /proc/1755211/environ has the scratch HIVE_HOME and XDG_CONFIG_HOME, and no HERDR_ENV
+herdr pane send-keys wR2:p2 5          # Tasks; then b, v, d, each closed with Escape
+herdr pane send-keys wR2:p2 6 ; herdr pane send-keys wR2:p2 Enter   # Friction file view
+herdr pane read wR2:p2 --source visible --lines 80
+```
+
+| Capture | Lines | Main panel bottom border | Content |
+| --- | --- | --- | --- |
+| Tasks | 57 | row 54 | `task details` panel and `┤ evidence ├` panel, both to row 54; note `landed = delivery commit set and pushed · verified = verification passed` |
+| `b` | 57 | row 54 | `brief.md` of 96 |
+| `v` | 57 | row 54 | `VERIFIED.md` of 96 |
+| `d` | 57 | row 54 | `dependency graph · 96-tasks-evidence-view`, `96-tasks-evidence-view ← 88-tui-terminal-io (needs)`, `blocks: -` |
+| Friction file | 57 | row 54 | `agent-can-send-user-chat.md` front matter and summary |
+
+Rows 55-57 of each capture are the status line, a blank row, and the key help. The TUI printed `not in herdr: no coordinator or supervisor started`. No Chat input was opened.
+
+`v` capture (rows 1-6, cut at 150 columns):
+
+```text
+⬢ hive · 1 project · 0 live agents · working unknown / idle unknown · supervisor stale · needs_user 0 · 12:36
+╭────────────────────────────╮╭───────────────────
+│ SCREENS                    ││ Tasks
+│   1 Chat                   ││ VERIFIED.md
+│   2 Agents                 ││ # 96-tasks-evidence-view VERIFIED
+│   3 Goals                  ││
+```
+
+Cleanup: two Ctrl+C presses stopped pid 1755211. The verifier closed only tab `wR2:t2` (pane `wR2:p2`). After that, workspace `wR2` had only `wR2:t1`.
+
+### V3
+
+`origin/dev` moved to `598f2732` (task 91) after the task merge. The two-dot diff now also shows the dev change in reverse, so this check uses the merge base.
+
+```text
+$ git diff origin/dev...HEAD --stat
+ .hive/spec/hive-tui/tasks/96-tasks-evidence-view/brief.md, evidence/ (V1-V4, V2-*.txt, VERIFIED.md)
+ internal/tui/friction_screen.go     |   2 +-
+ internal/tui/task_screen.go         | 142 +++++++++--
+ internal/tui/task_screen_test.go    |  93 ++++++++
+ internal/tui/tasks_friction_test.go |  68 ++++++
+ testdata/ste-baseline.json          |   1 +
+ 16 files changed, 1056 insertions(+), 16 deletions(-)
+```
+
+`testdata/ste-baseline.json` adds only the 96 brief copy with 0.
+
+### V4
+
+```text
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+$ go mod tidy -diff
+$ go vet ./...          exit 0
+$ golangci-lint run ./...
+0 issues.
+$ go test -race ./...   exit 0, 40 packages ok
+$ git merge-tree --write-tree origin/dev HEAD   exit 0
+```
+
+The verifier also ran `go vet ./...` and `go test -race ./...` on a scratch merge of `origin/dev` `598f2732` and `ffcab868`. Both exit 0.
