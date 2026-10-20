@@ -10,6 +10,7 @@ For all other files, the coordinator and manager never change a project source f
 | Issue | Status | Decision |
 | --- | --- | --- |
 | [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
+| [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
