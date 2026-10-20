@@ -68,7 +68,7 @@ func (s logsScreen) View(width, height int) string {
 	if width < 1 {
 		width = 1
 	}
-	filterLines := wrapFilterLine(m.statusLine(), width-4)
+	filterLines := wrapFilterLine(m.statusLine(), width-4-lipgloss.Width("▶ "))
 	if len(filterLines) > 0 {
 		levelFilter := "level: " + m.level
 		filterLines[0] = selectedStyle.Render("▶ "+levelFilter) + strings.TrimPrefix(filterLines[0], levelFilter)

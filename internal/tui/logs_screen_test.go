@@ -14,6 +14,49 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+func TestLogsLongFilterKeepsPanelFrameAtTerminalSize(t *testing.T) {
+	for _, size := range []struct {
+		width       int
+		height      int
+		filterWords int
+		wantBottom  string
+	}{
+		{
+			width:       120,
+			height:      40,
+			filterWords: 2,
+			wantBottom:  "╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯",
+		},
+		{
+			width:       200,
+			height:      57,
+			filterWords: 10,
+			wantBottom:  "╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯",
+		},
+	} {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+			m := newTestLogsModel(t, newTestHome(t), fixedClock(t, day))
+			m.textFilter = strings.TrimSpace(strings.Repeat("filter ", size.filterWords))
+			m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+
+			view := ansi.Strip(m.View().Content)
+			lines := strings.Split(view, "\n")
+			if len(lines) != size.height {
+				t.Fatalf("Logs frame has %d lines, want %d:\n%s", len(lines), size.height, view)
+			}
+			for index, line := range lines {
+				if width := ansi.StringWidth(line); width != size.width {
+					t.Fatalf("frame line %d has width %d cells, want %d:\n%s", index+1, width, size.width, view)
+				}
+			}
+			if got := lines[size.height-4]; got != size.wantBottom {
+				t.Fatalf("last line of the Logs panel is %q, want %q:\n%s", got, size.wantBottom, view)
+			}
+		})
+	}
+}
+
 func TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen(t *testing.T) {
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
