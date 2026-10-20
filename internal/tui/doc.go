@@ -4,6 +4,7 @@
 // shell.go defines the screen interface, frame, palette, and placeholder screens.
 // chat_screen.go loads and renders chat and coordinator inbox data, and handles Chat input.
 // agents.go loads and renders agent topology, and handles pane actions.
+// goals_queue.go loads and renders goal and queue records.
 // task_screen.go loads and renders task records and evidence.
 // friction_screen.go loads and renders dogfood friction entries.
 // health_screen.go loads and renders doctor checks.
