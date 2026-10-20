@@ -76,7 +76,7 @@ Go source changes. Other CI steps. A CI check in the manager flow. `main`.
 | --- | --- | --- |
 | V1 | On the base commit, run `go mod tidy -diff`. On the task branch, run it again | The base prints a diff of `go.mod` and `go.sum` and exits 1. The task branch prints nothing and exits 0. |
 | V2 | On the task branch, add `// indirect` to the `github.com/charmbracelet/x/ansi` line of `go.mod` in the working tree only. Run `go mod tidy -diff`. Then run `git checkout -- go.mod` | The command exits 1 and prints the diff. The restore leaves the tree clean. |
-| V3 | `git grep -n -e 'four gate' -e 'go mod tidy'` | No line says "four gate". The gate in `AGENTS.md` and the worker skill, the verifier skill, `EVIDENCE-FORMAT.md`, and `ci.yml` name `go mod tidy -diff`. |
+| V3 | `git grep -n -e 'four gate' -e 'go mod tidy' -- AGENTS.md .agents/skills .hive/spec/EVIDENCE-FORMAT.md .github/workflows/ci.yml` | No line says "four gate". The gate in `AGENTS.md` and the worker skill, the verifier skill, `EVIDENCE-FORMAT.md`, and `ci.yml` name `go mod tidy -diff`. |
 | V4 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V5 | The five gate commands from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other three commands exit 0. |
 
@@ -86,3 +86,14 @@ Commit on the task branch with a subject such as `fix(build): tidy the module
 and add the tidy check to the gate`. Push the task branch. Write the evidence.
 Run `hive task complete`. Send the commit SHA and the V1-V5 results to the
 manager with `hive inbox send`. Read only your own inbox.
+
+## Scope change 1
+
+V3 in the table above is too wide. The brief copy and the friction entry
+contain the words of the check. Use this V3:
+
+| ID | Check | Expected result |
+| --- | --- | --- |
+| V3 | `git grep -n -e 'four gate' -e 'go mod tidy' -- AGENTS.md .agents/skills .hive/spec/EVIDENCE-FORMAT.md .github/workflows/ci.yml` | No line says "four gate". The gate in `AGENTS.md` and the worker skill, the verifier skill, `EVIDENCE-FORMAT.md`, and `ci.yml` name `go mod tidy -diff`. |
+
+Do not edit other files for V3. Continue with V4 and V5.
