@@ -23,3 +23,11 @@ manager showed the true source.
 2. On screen 1, press `i`, type text, and press Enter.
 3. The coordinator pane gets `⬢ user: TEXT`, and `hive chat log` shows a user
    record.
+
+**Fix and remaining gap:**
+Task 94-chat-user-only makes `chat.Send` refuse a caller with `--agent`, a
+caller in the pane of a live agent, a caller with a working directory below
+`projects/`, and a caller in the workspace of a live manager, worker, or
+verifier. The TUI passes its pane and working directory. A gap stays open: an
+agent can open a tab in the hive session workspace with a working directory
+outside `projects/`, and that tab can still send a user chat message.
