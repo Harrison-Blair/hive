@@ -41,11 +41,11 @@ hive agent list --all
 hive doctor
 ```
 
-Read the supervisor status. Use it in step 12.
+Read the supervisor status. Use it in step 13.
 
-When a `hive` command says to run `hive init`, run `hive init` in the home.
+6. Run `hive init` when a `hive` command says to run it.
 
-6. Find the workspace of the coordinator pane.
+7. Find the workspace of the coordinator pane.
 
 ```sh
 herdr pane current --current
@@ -53,7 +53,7 @@ herdr pane current --current
 
 Read `workspace_id` from the result.
 
-7. Find the `logs` tab in that workspace.
+8. Find the `logs` tab in that workspace.
 
 ```sh
 herdr tab list --workspace "$workspace_id"
@@ -61,7 +61,7 @@ herdr tab list --workspace "$workspace_id"
 
 When a tab has the label `logs`, save its `tab_id`. Use that tab. Do not create a second `logs` tab.
 
-8. When no `logs` tab exists, create one with the home as its working directory.
+9. When no `logs` tab exists, create one with the home as its working directory.
 
 ```sh
 herdr tab create --workspace "$workspace_id" --cwd "$PWD" --label logs
@@ -69,7 +69,7 @@ herdr tab create --workspace "$workspace_id" --cwd "$PWD" --label logs
 
 Save `tab_id` from the result. Save `root_pane.pane_id` as `left_pane_id`. The coordinator runs in the home, so `$PWD` is the home.
 
-9. Split the root pane of the new tab to the right.
+10. Split the root pane of the new tab to the right.
 
 ```sh
 herdr pane split "$left_pane_id" --direction right --ratio 0.5
@@ -77,7 +77,7 @@ herdr pane split "$left_pane_id" --direction right --ratio 0.5
 
 Read the new pane ID from `result.pane.pane_id`. This is the right pane. The root pane is the left pane.
 
-10. Find the left and right panes of an existing `logs` tab.
+11. Find the left and right panes of an existing `logs` tab.
 
 ```sh
 herdr pane list --workspace "$workspace_id"
@@ -86,7 +86,7 @@ herdr pane layout --pane "$logs_pane_id"
 
 Use `tab_id` to select panes in the `logs` tab. Save one pane ID as `logs_pane_id`. In `result.layout.panes`, the lowest `rect.x` is `left_pane_id`. The highest `rect.x` is `right_pane_id`.
 
-11. Check the process in the right pane.
+12. Check the process in the right pane.
 
 ```sh
 herdr pane process-info --pane "$right_pane_id"
@@ -100,7 +100,7 @@ herdr pane run "$right_pane_id" hive logs --follow
 
 After you start the log stream, repeat the process check until one entry has the matching `argv`.
 
-12. Start the supervisor only when the claim is absent or stale.
+13. Start the supervisor only when the claim is absent or stale.
 
 When the `hive doctor` result from step 5 does not report a live supervisor, run:
 
@@ -110,7 +110,7 @@ herdr pane run "$left_pane_id" hive supervise
 
 When a supervisor is live, do not start another one. Leave it where it is.
 
-13. Report each open decision and the state of each project to the user.
+14. Report each open decision and the state of each project to the user.
 
 ## Preference record
 
