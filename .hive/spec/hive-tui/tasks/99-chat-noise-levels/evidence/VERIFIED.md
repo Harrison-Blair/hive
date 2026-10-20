@@ -4,6 +4,103 @@ Verifier: Claude Opus 5.5 (`claude-opus-5-5`), independent of the worker.
 Task commit: `17469a98` (code commit `0bff20f2`). Base: `ef2dde2e` (merge base with `origin/dev`).
 Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Chat.dc.html`.
 
+## Repair 1
+
+Verifier: Claude Opus 5.5 (`claude-opus-5-5`), independent of the worker.
+Task commit: `0a4f5bb9` (code commit `7af1aeec`, test commit `fcf71744`). Base: `origin/dev` `b4f1d71e`, which is an ancestor of the task branch.
+
+Verdict: **pass**. Each item passes.
+
+| ID | Result | Observation |
+| --- | --- | --- |
+| Level table | pass | `visibleChatEvents` at `7af1aeec`: `decisions only` = `message`, `blocked`, `unresolved`; `landings and decisions` (default) = those and `completed`, `verified`, `quiet`; `all` = each kind. This agrees with the Repair 1 table. |
+| Literal kind sets | pass | `TestChatNoiseLevelsFilterInboxKinds` writes each expected kind set as a literal (for example `[]string{"message", "blocked", "unresolved"}`) and also asserts literal view text per level. |
+| Red on pre-repair code | pass | Detached worktree at `HEAD` with `internal/tui/chat_screen.go` from `7af1aeec^`. `TestChatNoiseAndEventFoldingDoNotMarkRecordsRead` failed (`view does not contain "2 hive events"`). `TestChatNoiseLevelsFilterInboxKinds` failed in `landings_and_decisions` (`visible inbox kinds = [completed message verified]; want [blocked completed message quiet unresolved verified]`), `decisions_only` (`= [message]; want [blocked message unresolved]`), and `returns_to_landings_and_decisions`. The `all` subtest passed, as expected, because that rule did not change. All pass on the task branch. |
+| Merge of `origin/dev` | pass | `git merge-base --is-ancestor origin/dev HEAD` exits 0. `git merge-tree --write-tree origin/dev HEAD` exits 0. A script compared `testdata/ste-baseline.json` at `HEAD` with `origin/dev` and with the task side `990e2eed`: no row is missing, no count differs, and no other row was added. |
+| V1 | pass | Detached worktree at `HEAD` with `internal/tui/chat_screen.go` from `origin/dev`. `TestChatLoadsRecentConversationAndCoordinatorState` and `TestChatNoiseAndEventFoldingDoNotMarkRecordsRead` failed (`"2 hive events"`). `TestChatNoiseLevelsFilterInboxKinds` failed in three subtests (for example `decisions_only`: `= [blocked completed exited message quiet unresolved verified]; want [blocked message unresolved]`). All pass on the task branch. |
+| V2 | pass | Live run below. Each level shows exactly the kinds of the Repair 1 table. |
+| V3 | pass | `git diff origin/dev --stat` lists only the brief, evidence `V1.md`-`V4.md` and `VERIFIED.md`, `internal/tui/chat_screen.go`, `internal/tui/chat_screen_test.go`, and `testdata/ste-baseline.json` (1 line added). |
+| V4 | pass | `gofmt -l` and `go mod tidy -diff` printed nothing. `go vet ./...` exit 0. `golangci-lint run ./...`: `0 issues.`, exit 0. `go test -race ./...` exit 0, each package `ok` (for example `internal/tui 16.436s`). |
+
+### Repair 1: V2 live run
+
+- Built the task binary to the verifier scratch directory. `HIVE_HOME` was a scratch home with a copy of `.hive/README.md` and seven coordinator inbox records, one of each kind: `message`, `completed`, `verified`, `blocked`, `exited`, `quiet`, `unresolved` (text `Fixture <kind> <letter>`). `XDG_CONFIG_HOME` was an empty scratch directory.
+- Before the run: one `hive supervise` process (PID `1288721`, not started by the verifier). Recorded the tab list.
+- Created herdr workspace `wQW` (tab `wQW:t1`, pane `wQW:p1`, 57 rows, cwd in scratch). Not in `wBC`.
+- Ran `HIVE_HOME=… XDG_CONFIG_HOME=… env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH ./hive` in `wQW:p1`. `herdr pane process-info` gave TUI PID `1624562`. The status line showed `0 live agents` and the Chat header `not live · no coordinator`. Sent only `n` and `ctrl+c`. Never opened the Chat input and sent no chat.
+- Read each level with `herdr pane read wQW:p1 --source visible --lines 57`.
+
+Default level, events column:
+
+```text
+││ hive events                      │
+││ Oct 20 06:07 · fixture-          │
+││ unresolved: Fixture unresolved U │
+││ Oct 20 06:06 · fixture-quiet:    │
+││ Fixture quiet Q                  │
+││ Oct 20 06:04 · fixture-blocked:  │
+││ Fixture blocked B                │
+││ Oct 20 06:03 · fixture-verified: │
+││ Fixture verified V               │
+││ Oct 20 06:02 · fixture-          │
+││ completed: Fixture completed C   │
+││ Oct 20 06:01 · fixture-message:  │
+││ Fixture message M                │
+││                                  │
+││ noise: landings and decisions    │
+```
+
+Chat column: `── 6 hive events ──`. `exited` is hidden.
+
+After one `n`:
+
+```text
+││ hive events                      │
+││ Oct 20 06:07 · fixture-          │
+││ unresolved: Fixture unresolved U │
+││ Oct 20 06:04 · fixture-blocked:  │
+││ Fixture blocked B                │
+││ Oct 20 06:01 · fixture-message:  │
+││ Fixture message M                │
+││                                  │
+││ noise: decisions only            │
+```
+
+Chat column: `── 3 hive events ──`.
+
+After a second `n`:
+
+```text
+││ hive events                      │
+││ Oct 20 06:07 · fixture-          │
+││ unresolved: Fixture unresolved U │
+││ Oct 20 06:06 · fixture-quiet:    │
+││ Fixture quiet Q                  │
+││ Oct 20 06:05 · fixture-exited:   │
+││ Fixture exited E                 │
+││ Oct 20 06:04 · fixture-blocked:  │
+││ Fixture blocked B                │
+││ Oct 20 06:03 · fixture-verified: │
+││ Fixture verified V               │
+││ Oct 20 06:02 · fixture-          │
+││ completed: Fixture completed C   │
+││ Oct 20 06:01 · fixture-message:  │
+││ Fixture message M                │
+││                                  │
+││ noise: all                       │
+```
+
+Chat column: `── 7 hive events ──`. A third `n` returned to `noise: landings and decisions` with `── 6 hive events ──`.
+
+### Repair 1: cleanup
+
+- Sent `ctrl+c` twice to `wQW:p1` after `process-info` again gave PID `1624562`. `kill -0 1624562` then failed: the TUI exited. Closed tab `wQW:t1`, the ID that herdr returned at create. `herdr workspace get wQW` then gave `workspace_not_found`.
+- After the run: `pgrep -af 'hive supervise'` gave only PID `1288721`, the process that existed before. The tab list had no tab that was not in the list before.
+- Note for the manager: tab `wBC:t12` (label `tui-idle-cpu`) was in the list before and was not in the list after. The verifier did not start it, did not send it a key, and did not close it. Another agent closed it during the run.
+- Removed the scratch worktree with `git worktree remove`.
+
+## Initial verification
+
 Verdict: **fail**, on V2. The level names match the board, but the event set of each level is not sensible and does not agree with the board.
 
 | ID | Result | Observation |
