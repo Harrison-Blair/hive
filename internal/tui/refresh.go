@@ -74,6 +74,7 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 			filepath.Join(state, "agents"),
 			filepath.Join(state, "claims"),
 			filepath.Join(state, "goals"),
+			filepath.Join(state, "inbox"),
 			filepath.Join(state, "projects"),
 		}
 	case goalsQueueDataRequest:

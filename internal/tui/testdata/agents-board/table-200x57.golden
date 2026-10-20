@@ -1,16 +1,16 @@
-⬢ hive · 2 projects · 5 live agents · 2 working / 3 idle · supervisor fresh · needs_user 0 · 12:00                                                                                                      
+⬢ hive · 2 projects · 5 agents · 2 working · 3 idle · supervisor ● · needs you 0 · 12:00                                                                                                                
 ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ AGENTS                     ││ Agents                                                                                                                                                                 │
-│ ▾ home                     ││ TREE  GRAPH  [ TABLE ]                                                                                                                                                 │
-│   └─ ▶ ● coordinator       ││ name · role · project · task · harness · model · status · age · parent                                                                                                 │
-│      └─ ○ supervisor       ││ ▶ coordinator · coordinator · — · — · claude · model-coordinator · working · 1m · none                                                                                 │
-│ ▾ alpha · 1 working        ││ supervisor · supervisor · — · — · pi · model-supervisor · idle · 2m · coordinator                                                                                      │
-│   └─ ○ manager-alpha       ││ manager-alpha · manager · alpha · — · claude · model-manager-alpha · idle · 3m · coordinator                                                                           │
-│      └─ ● worker-alpha     ││ worker-alpha · worker · alpha · 10-alpha · pi · model-alpha · working · 4m · manager-alpha                                                                             │
-│ ▾ beta · 0 working         ││ manager-beta · manager · beta · — · claude · model-manager-beta · idle · 5m · coordinator                                                                              │
-│   └─ ○ manager-beta        ││ ghost-beta · worker · beta · 20-ghost · pi · model-ghost · stopped · 6m · manager-beta                                                                                 │
-│      └─ × ghost-beta       ││ DETAIL coordinator · parent ? · model model-coordinator · task ? · ? · pane w1:p1 · next ?                                                                             │
-│                            ││                                                                                                                                                                        │
+│ AGENTS                     ││ TREE  GRAPH  [ TABLE ]                                                                                                                                                 │
+│ ▾ home                     ││ name · role · project · task · harness · model · status · age · parent                                                                                                 │
+│   └─ ▶ ● coordinator       ││ ▶ coordinator · coordinator · — · — · claude · model-coordinator · working · 1m · none                                                                                 │
+│      └─ ○ supervisor       ││ supervisor · supervisor · — · — · pi · model-supervisor · idle · 2m · coordinator                                                                                      │
+│ ▾ alpha · 1 working        ││ manager-alpha · manager · alpha · — · claude · model-manager-alpha · idle · 3m · coordinator                                                                           │
+│   └─ ○ manager-alpha       ││ worker-alpha · worker · alpha · 10-alpha · pi · model-alpha · working · 4m · manager-alpha                                                                             │
+│      └─ ● worker-alpha     ││ manager-beta · manager · beta · — · claude · model-manager-beta · idle · 5m · coordinator                                                                              │
+│ ▾ beta · 0 working         ││ ghost-beta · worker · beta · 20-ghost · pi · model-ghost · stopped · 6m · manager-beta                                                                                 │
+│   └─ ○ manager-beta        ││ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│      └─ × ghost-beta       ││ │ DETAIL coordinator · parent ? · model model-coordinator · task ? · ? · pane w1:p1 · next ?                                                                         │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
 │                            ││                                                                                                                                                                        │
 │                            ││                                                                                                                                                                        │
 │                            ││                                                                                                                                                                        │
@@ -54,4 +54,4 @@
 ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
                                                                                                                                                                                                         
                                                                                                                                                                                                         
-↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat                                                                                                      
+↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat                                                                                                      

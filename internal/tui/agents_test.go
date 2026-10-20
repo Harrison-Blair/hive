@@ -63,12 +63,12 @@ func TestAgentsHistoryToggleShowsAllGenerations(t *testing.T) {
 	m.screenIndex = 1
 	m, cmd := raise(t, m, key('2', "2"))
 	m = deliverAgentCommands(t, m, cmd)
-	if !strings.Contains(m.currentScreen().KeyHints(), "history: off") {
-		t.Fatalf("default footer does not show history off: %s", m.currentScreen().KeyHints())
+	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
+		t.Fatalf("default footer does not show the stopped-agent hint: %s", m.currentScreen().KeyHints())
 	}
 	m, _ = raise(t, m, key('h', "h"))
-	if !strings.Contains(m.currentScreen().KeyHints(), "history: on") {
-		t.Fatalf("footer does not show history on: %s", m.currentScreen().KeyHints())
+	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
+		t.Fatalf("footer does not keep the stopped-agent hint: %s", m.currentScreen().KeyHints())
 	}
 
 	want := []string{
@@ -220,15 +220,18 @@ func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
 	}
-	requireAgentsView(t, m, "[ GRAPH ]", "parent manager-demo", "worker-1 ⋯ replaces old-worker", "model model-worker", "task 10-build", "pane w1:p4")
+	requireAgentsView(t, m, "[ GRAPH ]", "parent manager-demo", "model model-worker", "task 10-build", "pane w1:p4")
 	view := ansi.Strip(m.currentScreen().View(120, 30))
 	for _, want := range []string{
-		"┌─ home", "┌─ demo · Active demo goal", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
-		"coordinator ──▶ manager-demo · inferred", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
+		"≡ home", "≡ demo · Active demo goal", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
+		"cc · idle · 3m", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
 	} {
 		if !strings.Contains(view, want) {
 			t.Errorf("graph omits board element %q:\n%s", want, view)
 		}
+	}
+	if strings.Contains(view, "coordinator ──▶ manager-demo") {
+		t.Fatalf("graph still lists edges as text below the pods:\n%s", view)
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	requireAgentsView(t, m, "[ TABLE ]", "name", "role", "project", "task", "harness", "model", "status", "age", "parent", "worker-1 · worker · demo · 10-build · pi · model-worker · blocked · 4m · manager-demo")
@@ -477,6 +480,21 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	}
 }
 
+func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
+	m := agentsBoardModel(t)
+	frame := ansi.Strip(m.View().Content)
+	for _, want := range []string{"5 agents", "2 working", "3 idle", "supervisor ●", "needs you 0"} {
+		if !strings.Contains(frame, want) {
+			t.Errorf("Agents header omits %q:\n%s", want, frame)
+		}
+	}
+	for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
+		if strings.Contains(frame, unwanted) {
+			t.Errorf("Agents header contains %q:\n%s", unwanted, frame)
+		}
+	}
+}
+
 func TestAgentsBoardGoldenFrames(t *testing.T) {
 	sizes := []struct {
 		name   string
@@ -537,7 +555,7 @@ func TestAgentsBoardDetailShowsTaskStatusAndNextTask(t *testing.T) {
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, want := range []string{
 		"DETAIL worker-alpha", "parent manager-alpha", "model model-alpha", "task 10-alpha · assigned",
-		"pane w1:p4", "next 11-next",
+		"pane w1:p4", "next 11-next", "╭", "╰",
 	} {
 		if !strings.Contains(view, want) {
 			t.Errorf("Agents detail omits %q:\n%s", want, view)
@@ -666,13 +684,19 @@ func TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox(t *testing.T) {
 			m.agents.tab = agentsGraph
 			lines, _ := m.agents.graphLines()
 			graph := strings.Join(lines, "\n")
-			edge := "supervisor ┄┄▶ " + test.role + " · nudge"
-			wantCount := 0
-			if test.wantEdge {
-				wantCount = 1
+			hasNudge := false
+			for index, line := range lines {
+				plain := ansi.Strip(line)
+				if !strings.Contains(plain, "nudges") {
+					continue
+				}
+				hasNudge = strings.Contains(plain, "┄") || index > 0 && strings.Contains(ansi.Strip(lines[index-1]), "┄")
 			}
-			if got := strings.Count(graph, edge); got != wantCount {
-				t.Fatalf("nudge edge count = %d, want %d:\n%s", got, wantCount, graph)
+			if hasNudge != test.wantEdge {
+				t.Fatalf("nudge edge present = %t, want %t:\n%s", hasNudge, test.wantEdge, graph)
+			}
+			if strings.Contains(graph, "supervisor ┄┄▶ "+test.role) {
+				t.Fatalf("graph still lists the nudge as text:\n%s", graph)
 			}
 			view := ansi.Strip(m.currentScreen().View(90, 32))
 			if !strings.Contains(view, "edges: ─ delegates · ┄ nudges · ⋯ replaced") {
@@ -699,6 +723,28 @@ func TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers(t *testing.T) {
 	graph := strings.Join(lines, "\n")
 	if strings.Contains(graph, "supervisor ┄┄▶ worker-alpha · nudge") || strings.Contains(graph, "supervisor ┄┄▶ verifier-alpha · nudge") {
 		t.Fatalf("graph has a nudge edge for a worker or verifier:\n%s", graph)
+	}
+}
+
+func TestAgentsGraphConnectsSiblingWorkersToManagerStem(t *testing.T) {
+	m := agentsBoardModel(t)
+	writeAgentRecord(t, m.home, records.Agent{
+		Key: "worker-alpha-sibling", Name: "worker-alpha-sibling", Role: "worker", Project: "alpha",
+		Task: "11-next", Harness: "pi", Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working",
+	})
+	m = refreshAgents(t, m)
+	m.agents.tab = agentsGraph
+	lines, positions := m.agents.graphLines()
+	for _, key := range []string{"manager-alpha", "worker-alpha", "worker-alpha-sibling"} {
+		if _, ok := positions[key]; !ok {
+			t.Fatalf("graph position missing %q: %#v", key, positions)
+		}
+	}
+	graph := strings.Join(lines, "\n")
+	for _, connector := range []string{"┬", "┴"} {
+		if !strings.Contains(graph, connector) {
+			t.Fatalf("graph is missing manager stem connector %q:\n%s", connector, graph)
+		}
 	}
 }
 

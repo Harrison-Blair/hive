@@ -88,6 +88,39 @@ func readHeader(home string) (headerState, error) {
 	return state, nil
 }
 
+func (m *Model) agentsHeaderLine() string {
+	state := m.header
+	projectLabel := "projects"
+	if state.projects == 1 {
+		projectLabel = "project"
+	}
+	agentLabel := "agents"
+	if state.agents == 1 {
+		agentLabel = "agent"
+	}
+	workCounts := fmt.Sprintf("%d working · %d idle", state.working, state.idle)
+	if state.supervisor != "fresh" {
+		workCounts = "working unknown · idle unknown"
+	}
+	supervisor := dimStyle.Render("○")
+	if state.supervisor == "fresh" {
+		supervisor = workingStyle.Render("●")
+	}
+	counts := fmt.Sprintf("⬢ hive · %d %s · %d %s · %s", state.projects, projectLabel, state.agents, agentLabel, workCounts)
+	status := fmt.Sprintf("supervisor %s · needs you %d · %s", supervisor, state.needsUser, m.now().Format("15:04"))
+	if m.width < 100 {
+		return counts + "\n" + status
+	}
+	return counts + " · " + status
+}
+
+func (m *Model) activeHeaderLine() string {
+	if m.screenIndex == 1 {
+		return m.agentsHeaderLine()
+	}
+	return m.headerLine()
+}
+
 func (m *Model) headerLine() string {
 	state := m.header
 	if m.headerErr != "" {

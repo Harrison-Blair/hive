@@ -1,38 +1,40 @@
-⬢ hive · 3 projects · 8 live agents · 3 working / 5 idle · supervisor fresh · needs_user 0 · 13:13
-╭────────────────────────────╮╭─────────────────────────────────────────────────────────────────────────────────────╮
-│ AGENTS                     ││ Agents                                                                              │
-│ ▾ home                     ││ TREE  [ GRAPH ]  TABLE  edges: ─ delegates · ┄ nudges · ⋯ replaced                  │
-│   ├─ ▶ ○ coordinator       ││ ┌─ home ───────────────┐   ┌─ hive · Hive TUI dashboard ───┐   ┌─ qmeter ────────── │
-│   └─ ● supervisor          ││ │ ┌──────────────────┐ │   │ ┌───────────────────────────┐ │   │ ┌───────────────── │
-│ ▾ hive · 2 working         ││ │ │▶ ○ coordinator   │ │   │ │○ manager-hive             │ │   │ │○ manager-qmeter  │
-│   ┄┄ ○ manager-hive        ││ │ │claude · 16m      │ │   │ │claude · 8m                │ │   │ │claude · 2h       │
-│      ├─ ● t90-worker-1     ││ │ └──────────────────┘ │   │ └───────────────────────────┘ │   │ └───────────────── │
-│      └─ ● t92-worker-1     ││ │                      │   │               │               │   └─────────────────── │
-│ ▾ qmeter · 0 working       ││ │ ┌──────────────────┐ │   │ ┌───────────────────────────┐ │                        │
-│   ┄┄ ○ manager-qmeter      ││ │ │● supervisor      │ │   │ │● t90-worker-1             │ │                        │
-│ ▾ stenographer · 1 working ││ │ │pid 1288721 · 1h  │ │   │ │pi · 90-tui-idle-cpu       │ │                        │
-│   ┄┄ ○ manager-stenograph… ││ │ └──────────────────┘ │   │ └───────────────────────────┘ │                        │
-│      └─ ● t62-worker-1     ││ └──────────────────────┘   │               ├               │                        │
-│                            ││                            │ ┌───────────────────────────┐ │                        │
-│                            ││                            │ │● t92-worker-1             │ │                        │
-│                            ││                            │ │pi · 92-agents-board-layout│ │                        │
-│                            ││                            │ └───────────────────────────┘ │                        │
-│                            ││                            └───────────────────────────────┘                        │
-│                            ││ coordinator ──▶ manager-hive · inferred                                             │
-│                            ││ coordinator ──▶ manager-qmeter · inferred                                           │
-│                            ││ coordinator ──▶ manager-stenographer · inferred                                     │
-│                            ││ supervisor ┄┄▶ manager-hive · nudge                                                 │
-│                            ││ DETAIL coordinator · parent ? · model claude-opus-5-5 · task ? · ? · pane wBC:pV ·  │
-│                            ││ next ?                                                                              │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│ ────────────────────────── ││                                                                                     │
-│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                     │
-│ 5 TASKS · 6 FRICTION       ││                                                                                     │
-│ 7 HEALTH · 8 LOGS          ││                                                                                     │
-╰────────────────────────────╯╰─────────────────────────────────────────────────────────────────────────────────────╯
+⬢ hive · 3 projects · 7 agents · 2 working · 5 idle · supervisor ● · needs you 0 · 13:46
+╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ TREE  [ GRAPH ]  TABLE  edges: ─ delegates · ┄ nudges · ⋯ replaced                     │
+│ ▾ home                     ││             ┬──────────────────────────────┬───────────────────────────────┬────────── │
+│   ├─ ○ coordinator         ││             │                              │                               │           │
+│   └─ ● supervisor          ││ ┌───────────┬──────────┐   ┌───────────────┬───────────────┐   ┌───────────┬────────── │
+│ ▾ hive · 1 working         ││ │ ≡ home               │   │ ≡ hive · Hive TUI dashboard   │   │ ≡ qmeter              │
+│   ┄┄ ○ manager-hive        ││ │           │          │   │          ┄ inferred           │   │      ┄ inferred       │
+│      ├─ × t92-verifier-1   ││ │ ┌─────────┬────────┐ │   │ ┌─────────────┬─────────────┐ │   │ ┌─────────┬────────┐  │
+│      └─ ▶ ● t92-worker-2   ││ │ │○ coordinator     │ │   │ │○ manager-hive             │ │   │ │○ manager-qmeter  │  │
+│ ▾ qmeter · 0 working       ││ │ │cc · you · now    │ │   │ │cc · idle · 7m             │ │   │ │cc · idle · 2h    │  │
+│   ┄┄ ○ manager-qmeter      ││ │ └──────────────────┘ │   │ └─────────────┴─────────────┘ │   │ └─────────┴────────┘  │
+│ ▾ stenographer · 1 working ││ │     ┄┄ nudges ┄┄     │   │               │               │   └────────────────────── │
+│   ┄┄ ○ manager-stenograph… ││ │ ┌──────────────────┐ │   │ ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┬┄┄┄┄┄┄┄┄┄┄┄┄┄┐ │                           │
+│      └─ ● t104-worker-1    ││ │ │● supervisor      │ │   │ │× t92-verifier-1           │ │                           │
+│                            ││ │ │pid 2107907 · 8m  │ │   │ │cc · 92-agents-board-layout│ │                           │
+│                            ││ │ └──────────────────┘ │   │ └┄┄┄┄┄┄┄┄┄┄┄┄┄┴┄┄┄┄┄┄┄┄┄┄┄┄┄┘ │                           │
+│                            ││ └──────────────────────┘   │               │               │                           │
+│                            ││                            │ ┌─────────────┬─────────────┐ │                           │
+│                            ││                            │ │▶ ● t92-worker-2           │ │                           │
+│                            ││                            │ │pi · 92-agents-board-layout│ │                           │
+│                            ││                            │ └───────────────────────────┘ │                           │
+│                            ││                            └───────────────────────────────┘                           │
+│                            ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+│                            ││ │ DETAIL t92-worker-2 · parent manager-hive · model openai-codex/gpt-6-luna:xhigh ·  │ │
+│                            ││ │ task 92-agents-board-layout · assigned · pane wRH:p1 · next 102-selection-marker   │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│ ────────────────────────── ││                                                                                        │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                        │
+│ 5 TASKS · 6 FRICTION       ││                                                                                        │
+│ 7 HEALTH · 8 LOGS          ││                                                                                        │
+╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
 not in herdr: no coordinator or supervisor started
 error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
-↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat
+↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat

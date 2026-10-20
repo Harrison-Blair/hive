@@ -164,3 +164,35 @@ two gaps. Fix them in this task.
 
 Write each test first with fixture records and literal names. See it fail.
 Record the cause of gap 2 in the evidence.
+
+## Repair 1
+
+The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
+
+1. Draw the edges in the graph as on the board. Draw a delegation bus above
+   the pods that joins the coordinator to each manager box. Draw the nudge
+   edge as a dashed line with the label `nudges` between the two boxes.
+   Remove the text list of edges below the pods. Join the sibling workers of
+   a manager with a stem from the manager box.
+2. For each other difference from the board, make the output agree with the
+   board, or record the decision or the T3 rule that causes the difference.
+   The verifier found these differences: the pod title `┌─ home ─` against
+   `≡ home`, the harness `claude` against `cc`, the detail strip with no
+   border, the header `supervisor fresh` and `needs_user 0` against
+   `supervisor ●` and `needs you 0`, and the key bar `h history: off` against
+   `h hide stopped`. Compare each region of the board again and find each
+   other difference.
+3. Write the golden files again. Check each line against the board before you
+   save it. In the evidence, record the method and each difference that
+   stays, with its cause.
+4. Merge `origin/dev` into the task branch first. Task 90 changes
+   `internal/tui/shell.go`. Keep the behavior of both tasks. In
+   `testdata/ste-baseline.json`, keep each row of both sides.
+5. This edit copies the manager brief over your brief copy again. Apply your
+   STE rewording to the copy again, and keep its meaning.
+6. Do V2 again on a scratch home in a tab of your own workspace, with the
+   herdr variables removed. Stop and close only the pid and pane that you
+   started. Never work in workspace `wBC`.
+7. Run the gate. Commit and push. Make sure that `git merge-tree
+   --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
+   commit SHA to `manager-hive` with `hive inbox send --to manager-hive`.

@@ -1,18 +1,18 @@
-⬢ hive · 3 projects · 8 live agents · 3 working / 5 idle · supervisor fresh · needs_user 0 · 13:12
+⬢ hive · 3 projects · 7 agents · 2 working · 5 idle · supervisor ● · needs you 0 · 13:49
 ╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ AGENTS                     ││ Agents                                                                                                                                                                       │
-│ ▾ home                     ││ TREE  GRAPH  [ TABLE ]                                                                                                                                                       │
-│   ├─ ▶ ○ coordinator       ││ name · role · project · task · harness · model · status · age · parent                                                                                                       │
-│   └─ ● supervisor          ││ ▶ coordinator · coordinator · — · — · claude · claude-opus-5-5 · idle · 16m · none                                                                                           │
-│ ▾ hive · 2 working         ││ supervisor · supervisor · — · — · — · — · working · 1h · none                                                                                                                │
-│   ┄┄ ○ manager-hive        ││ manager-hive · manager · hive · — · claude · claude-opus-5-5 · idle · 7m · inferred                                                                                          │
-│      ├─ ● t90-worker-1     ││ t90-worker-1 · worker · hive · 90-tui-idle-cpu · pi · openai-codex/gpt-6-luna:xhigh · working · 1h · manager-hive                                                            │
-│      └─ ● t92-worker-1     ││ t92-worker-1 · worker · hive · 92-agents-board-layout · pi · openai-codex/gpt-6-luna:xhigh · working · 35m · manager-hive                                                    │
-│ ▾ qmeter · 0 working       ││ manager-qmeter · manager · qmeter · — · claude · claude-opus-5-5 · idle · 2h · inferred                                                                                      │
-│   ┄┄ ○ manager-qmeter      ││ manager-stenographer · manager · stenographer · — · claude · claude-opus-5-5 · idle · 16m · inferred                                                                         │
-│ ▾ stenographer · 1 working ││ t62-worker-1 · worker · stenographer · 62-hub-files · pi · openai-codex/gpt-6-luna:xhigh · working · 16m · manager-stenographer                                              │
-│   ┄┄ ○ manager-stenograph… ││ DETAIL coordinator · parent ? · model claude-opus-5-5 · task ? · ? · pane wBC:pV · next ?                                                                                    │
-│      └─ ● t62-worker-1     ││                                                                                                                                                                              │
+│ AGENTS                     ││ TREE  GRAPH  [ TABLE ]                                                                                                                                                       │
+│ ▾ home                     ││ name · role · project · task · harness · model · status · age · parent                                                                                                       │
+│   ├─ ○ coordinator         ││ coordinator · coordinator · — · — · claude · claude-opus-5-5 · idle · 10m · none                                                                                             │
+│   └─ ● supervisor          ││ supervisor · supervisor · — · — · — · — · working · 11m · none                                                                                                               │
+│ ▾ hive · 1 working         ││ manager-hive · manager · hive · — · claude · claude-opus-5-5 · idle · 10m · inferred                                                                                         │
+│   ┄┄ ○ manager-hive        ││ t92-verifier-1 · verifier · hive · 92-agents-board-layout · claude · claude-opus-5-5 · stopped · 31m · manager-hive                                                          │
+│      ├─ × t92-verifier-1   ││ ▶ t92-worker-2 · worker · hive · 92-agents-board-layout · pi · openai-codex/gpt-6-luna:xhigh · working · 25m · manager-hive                                                  │
+│      └─ ▶ ● t92-worker-2   ││ manager-qmeter · manager · qmeter · — · claude · claude-opus-5-5 · idle · 2h · inferred                                                                                      │
+│ ▾ qmeter · 0 working       ││ manager-stenographer · manager · stenographer · — · claude · claude-opus-5-5 · idle · 10m · inferred                                                                         │
+│   ┄┄ ○ manager-qmeter      ││ t104-worker-1 · worker · stenographer · 104-relabel-memory · pi · openai-codex/gpt-6-luna:xhigh · working · 12m · manager-stenographer                                       │
+│ ▾ stenographer · 1 working ││ ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│   ┄┄ ○ manager-stenograph… ││ │ DETAIL t92-worker-2 · parent manager-hive · model openai-codex/gpt-6-luna:xhigh · task 92-agents-board-layout · assigned · pane wRH:p1 · next 102-selection-marker       │ │
+│      └─ ● t104-worker-1    ││ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
 │                            ││                                                                                                                                                                              │
 │                            ││                                                                                                                                                                              │
 │                            ││                                                                                                                                                                              │
@@ -54,4 +54,4 @@
 ╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 not in herdr: no coordinator or supervisor started
 error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
-↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat
+↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat

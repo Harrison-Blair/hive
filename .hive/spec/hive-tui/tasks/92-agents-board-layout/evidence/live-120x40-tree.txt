@@ -1,38 +1,40 @@
-⬢ hive · 3 projects · 8 live agents · 3 working / 5 idle · supervisor fresh · needs_user 0 · 13:12
-╭────────────────────────────╮╭─────────────────────────────────────────────────────────────────────────────────────╮
-│ AGENTS                     ││ Agents                                                                              │
-│ ▾ home                     ││ [ TREE ]  GRAPH  TABLE                                                              │
-│   ├─ ▶ ○ coordinator       ││ ▾ home                                                                              │
-│   └─ ● supervisor          ││   ├─ ▶ ○ coordinator · idle · 16m                                                   │
-│ ▾ hive · 2 working         ││   └─ ● supervisor · working · 1h                                                    │
-│   ┄┄ ○ manager-hive        ││ ▾ hive · Hive TUI dashboard                                                         │
-│      ├─ ● t90-worker-1     ││   ┄┄ ○ manager-hive · idle · 8m                                                     │
-│      └─ ● t92-worker-1     ││      ├─ ● t90-worker-1 · working · 1h                                               │
-│ ▾ qmeter · 0 working       ││      ├─ ● t92-worker-1 · working · 36m                                              │
-│   ┄┄ ○ manager-qmeter      ││ ▾ qmeter                                                                            │
-│ ▾ stenographer · 1 working ││   ┄┄ ○ manager-qmeter · idle · 2h                                                   │
-│   ┄┄ ○ manager-stenograph… ││ ▾ stenographer                                                                      │
-│      └─ ● t62-worker-1     ││   ┄┄ ○ manager-stenographer · idle · 16m                                            │
-│                            ││      ├─ ● t62-worker-1 · working · 16m                                              │
-│                            ││ DETAIL coordinator · parent ? · model claude-opus-5-5 · task ? · ? · pane wBC:pV ·  │
-│                            ││ next ?                                                                              │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│                            ││                                                                                     │
-│ ────────────────────────── ││                                                                                     │
-│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                     │
-│ 5 TASKS · 6 FRICTION       ││                                                                                     │
-│ 7 HEALTH · 8 LOGS          ││                                                                                     │
-╰────────────────────────────╯╰─────────────────────────────────────────────────────────────────────────────────────╯
+⬢ hive · 3 projects · 7 agents · 2 working · 5 idle · supervisor ● · needs you 0 · 13:46
+╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ [ TREE ]  GRAPH  TABLE                                                                 │
+│ ▾ home                     ││ ▾ home                                                                                 │
+│   ├─ ○ coordinator         ││   ├─ ○ coordinator · idle · 7m                                                         │
+│   └─ ● supervisor          ││   └─ ● supervisor · working · 8m                                                       │
+│ ▾ hive · 1 working         ││ ▾ hive · Hive TUI dashboard                                                            │
+│   ┄┄ ○ manager-hive        ││   ┄┄ ○ manager-hive · idle · 7m                                                        │
+│      ├─ × t92-verifier-1   ││      ├─ × t92-verifier-1 · stopped · 28m                                               │
+│      └─ ▶ ● t92-worker-2   ││      ├─ ▶ ● t92-worker-2 · working · 22m ⋯ replaces t92-worker-1                       │
+│ ▾ qmeter · 0 working       ││ ▾ qmeter                                                                               │
+│   ┄┄ ○ manager-qmeter      ││   ┄┄ ○ manager-qmeter · idle · 2h                                                      │
+│ ▾ stenographer · 1 working ││ ▾ stenographer                                                                         │
+│   ┄┄ ○ manager-stenograph… ││   ┄┄ ○ manager-stenographer · idle · 7m                                                │
+│      └─ ● t104-worker-1    ││      ├─ ● t104-worker-1 · working · 9m                                                 │
+│                            ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+│                            ││ │ DETAIL t92-worker-2 · parent manager-hive · model openai-codex/gpt-6-luna:xhigh ·  │ │
+│                            ││ │ task 92-agents-board-layout · assigned · pane wRH:p1 · next 102-selection-marker   │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│                            ││                                                                                        │
+│ ────────────────────────── ││                                                                                        │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                        │
+│ 5 TASKS · 6 FRICTION       ││                                                                                        │
+│ 7 HEALTH · 8 LOGS          ││                                                                                        │
+╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
 not in herdr: no coordinator or supervisor started
 error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
-↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat
+↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat

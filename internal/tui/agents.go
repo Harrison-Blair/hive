@@ -514,11 +514,7 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	history := "off"
-	if s.model.agents.showHistory {
-		history = "on"
-	}
-	return "↑/↓←/→ move · tab tree/graph/table · h history: " + history + " · enter peek · a attach · t task · ask in Chat"
+	return "↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
@@ -612,7 +608,7 @@ func (s agentsScreen) View(width, height int) string {
 	selected, hasSelected := state.selected()
 	var detailLines []string
 	if hasSelected {
-		detailLines = wrapAgentLine(state.detailLine(selected), contentWidth)
+		detailLines = agentDetailStrip(state.detailLine(selected), contentWidth)
 	}
 	visibleHeight := height - 4 - len(detailLines)
 	if visibleHeight < 1 {
@@ -758,20 +754,23 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 		positions map[string]int
 		width     int
 		cardWidth int
+		column    int
 	}
 	pods := make([]pod, 0, len(s.data.groups))
 	nodes := s.nodeMap()
-	for _, group := range s.data.groups {
-		podLines, nodeRows, width, cardWidth := s.graphPod(group, nodes)
-		pods = append(pods, pod{lines: podLines, positions: nodeRows, width: width, cardWidth: cardWidth})
-	}
 	rowCount := 0
-	for _, item := range pods {
-		rowCount = max(rowCount, len(item.lines))
+	width := 0
+	for _, group := range s.data.groups {
+		podLines, nodeRows, podWidth, cardWidth := s.graphPod(group, nodes)
+		pods = append(pods, pod{lines: podLines, positions: nodeRows, width: podWidth, cardWidth: cardWidth, column: width})
+		rowCount = max(rowCount, len(podLines))
+		width += podWidth + 3
+	}
+	if len(pods) > 0 {
+		width -= 3
 	}
 	lines := make([]string, rowCount)
 	positions := make(map[string]graphPosition, len(s.data.nodes))
-	column := 0
 	for index, item := range pods {
 		for row := range lines {
 			part := ""
@@ -780,50 +779,112 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 			}
 			lines[row] += part + strings.Repeat(" ", item.width-lipgloss.Width(part))
 		}
-		for key, row := range item.positions {
-			positions[key] = graphPosition{row: row, col: column + 2, width: item.cardWidth}
-		}
-		column += item.width
 		if index+1 < len(pods) {
 			for row := range lines {
 				lines[row] += "   "
 			}
-			column += 3
+		}
+		for key, row := range item.positions {
+			positions[key] = graphPosition{row: row, col: item.column + 2, width: item.cardWidth}
 		}
 	}
+
+	anchors := make(map[int]bool)
+	coordinatorCol := -1
+	managerCols := make([]int, 0)
 	for _, node := range s.data.nodes {
-		if !s.nodeVisible(node) {
+		if !s.nodeVisible(node) || (node.record.Role != "coordinator" && node.record.Role != "manager") {
 			continue
 		}
-		if node.parentKey != "" {
-			parent, ok := nodes[node.parentKey]
-			if ok && s.nodeVisible(parent) && groupOf(s.data.groups, parent.record.Key) != groupOf(s.data.groups, node.record.Key) {
-				label := ""
-				if node.inferred {
-					label = " · inferred"
-				}
-				lines = append(lines, parent.record.Name+" ──▶ "+node.record.Name+label)
-			}
+		position, ok := positions[node.record.Key]
+		if !ok {
+			continue
 		}
-		if node.record.Replaces != "" {
-			lines = append(lines, node.record.Name+" ⋯ replaces "+displayAgent(nodes, node.record.Replaces))
+		center := position.col + position.width/2
+		anchors[center] = true
+		if node.record.Role == "coordinator" {
+			coordinatorCol = center
+		} else {
+			managerCols = append(managerCols, center)
+		}
+		groupIndex := groupOf(s.data.groups, node.record.Key)
+		if groupIndex >= 0 {
+			lines[0] = setGraphRune(lines[0], pods[groupIndex].column+pods[groupIndex].width/2, '┬')
 		}
 	}
-	supervisor := ""
+	busRows := make([]string, 0, 2)
+	if coordinatorCol >= 0 && len(managerCols) > 0 {
+		minimum, maximum := coordinatorCol, coordinatorCol
+		for _, managerCol := range managerCols {
+			minimum = min(minimum, managerCol)
+			maximum = max(maximum, managerCol)
+		}
+		busRows = append(busRows, graphBusLine(width, minimum, maximum, anchors), graphStemLine(width, anchors))
+	}
+	var supervisor agentNode
+	hasSupervisor := false
 	for _, node := range s.data.nodes {
 		if node.record.Role == "supervisor" && node.current && s.nodeVisible(node) {
-			supervisor = node.record.Name
+			supervisor, hasSupervisor = node, true
 			break
 		}
 	}
-	if supervisor != "" {
-		for _, node := range s.data.nodes {
-			if node.nudged && s.nodeVisible(node) {
-				lines = append(lines, supervisor+" ┄┄▶ "+node.record.Name+" · nudge")
+	type nudgeRoute struct{ source, target, label int }
+	crossNudges := make([]nudgeRoute, 0)
+	if hasSupervisor {
+		for _, target := range s.data.nodes {
+			if !target.nudged || !s.nodeVisible(target) || groupOf(s.data.groups, supervisor.record.Key) == groupOf(s.data.groups, target.record.Key) {
+				continue
 			}
+			sourceGroup := groupOf(s.data.groups, supervisor.record.Key)
+			targetGroup := groupOf(s.data.groups, target.record.Key)
+			if sourceGroup < 0 || targetGroup < 0 {
+				continue
+			}
+			sourcePosition := positions[supervisor.record.Key]
+			targetPosition := positions[target.record.Key]
+			sourceColumn := pods[sourceGroup].column + pods[sourceGroup].width - 2
+			targetColumn := pods[targetGroup].column + 1
+			if sourceGroup < targetGroup {
+				lines[sourcePosition.row] = setGraphCell(lines[sourcePosition.row], sourcePosition.col+sourcePosition.width-1, '├')
+				lines[sourcePosition.row] = setGraphCell(lines[sourcePosition.row], sourceColumn, '┄')
+				lines[targetPosition.row] = setGraphCell(lines[targetPosition.row], targetPosition.col, '┤')
+				lines[targetPosition.row] = setGraphCell(lines[targetPosition.row], targetColumn, '┄')
+			} else {
+				lines[sourcePosition.row] = setGraphCell(lines[sourcePosition.row], sourcePosition.col, '┤')
+				lines[sourcePosition.row] = setGraphCell(lines[sourcePosition.row], sourceColumn, '┄')
+				lines[targetPosition.row] = setGraphCell(lines[targetPosition.row], targetPosition.col+targetPosition.width-1, '├')
+				lines[targetPosition.row] = setGraphCell(lines[targetPosition.row], targetColumn, '┄')
+			}
+			for row := sourcePosition.row + 1; row < rowCount; row++ {
+				mark := '│'
+				if row == len(pods[sourceGroup].lines)-1 {
+					mark = '┼'
+				}
+				lines[row] = setGraphCell(lines[row], sourceColumn, mark)
+			}
+			for row := targetPosition.row + 1; row < rowCount; row++ {
+				mark := '│'
+				if row == len(pods[targetGroup].lines)-1 {
+					mark = '┼'
+				}
+				lines[row] = setGraphCell(lines[row], targetColumn, mark)
+			}
+			sourceCenter := sourcePosition.col + sourcePosition.width/2
+			targetCenter := targetPosition.col + targetPosition.width/2
+			crossNudges = append(crossNudges, nudgeRoute{source: sourceColumn, target: targetColumn, label: (sourceCenter + targetCenter) / 2})
 		}
 	}
-	return lines, positions
+	graph := append(busRows, lines...)
+	for key, position := range positions {
+		position.row += len(busRows)
+		positions[key] = position
+	}
+	for _, route := range crossNudges {
+		branches := map[int]bool{route.source: true, route.target: true}
+		graph = append(graph, graphStemLine(width, branches), graphNudgeLine(width, route.source, route.target), graphNudgeLabelLine(width, route.label))
+	}
+	return graph, positions
 }
 
 func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]string, map[string]int, int, int) {
@@ -846,27 +907,42 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 		second := s.graphNodeSubLabel(node)
 		cardWidth = max(cardWidth, lipgloss.Width(first)+2, lipgloss.Width(second)+2)
 	}
-	width := max(24, lipgloss.Width(group.title)+5, cardWidth+4)
+	title := "≡ " + group.title
+	width := max(24, lipgloss.Width(title)+4, cardWidth+4)
 	cardWidth = width - 4
-	lines := []string{"┌─ " + group.title + " " + strings.Repeat("─", width-lipgloss.Width(group.title)-5) + "┐"}
+	lines := []string{
+		"┌" + strings.Repeat("─", width-2) + "┐",
+		"│ " + title + strings.Repeat(" ", max(0, width-lipgloss.Width(title)-4)) + " │",
+		"│" + strings.Repeat(" ", width-2) + "│",
+	}
+	if len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager") {
+		if nodeList[0].inferred {
+			lines[2] = graphPodLabelLine(width, "┄ inferred")
+		} else {
+			lines[2] = graphPodLine(width, width/2, '│')
+		}
+	}
 	positions := make(map[string]int, len(nodeList))
 	previous := agentNode{}
 	for index, node := range nodeList {
 		if index > 0 {
 			inner := strings.Repeat(" ", width-2)
-			if previous.record.Key == node.parentKey {
-				middle := width / 2
-				if node.inferred {
-					label := "┄ inferred"
-					inner = inner[:middle-1] + label + inner[min(len(inner), middle-1+lipgloss.Width(label)):]
-				} else {
-					inner = inner[:middle-1] + "│" + inner[middle:]
-				}
-			} else if previous.parentKey == node.parentKey && node.parentKey != "" {
-				middle := width / 2
-				inner = inner[:middle-1] + "├" + inner[middle:]
+			middle := width / 2
+			switch {
+			case agentsNudgePair(previous, node):
+				lines = append(lines, graphPodLabelLine(width, "┄┄ nudges ┄┄"))
+				inner = ""
+			case node.inferred && previous.record.Key == node.parentKey:
+				lines = append(lines, graphPodLabelLine(width, "┄ inferred"))
+				inner = ""
+			case node.parentKey == previous.record.Key || node.parentKey != "" && node.parentKey == previous.parentKey:
+				inner = inner[:middle-1] + "│" + inner[middle:]
+			case node.record.Replaces == previous.record.Key || previous.record.Replaces == node.record.Key:
+				inner = inner[:middle-1] + "⋯" + inner[middle:]
 			}
-			lines = append(lines, "│"+inner+"│")
+			if inner != "" {
+				lines = append(lines, "│"+inner+"│")
+			}
 		}
 		first := graphNodeMark(node) + " " + node.record.Name
 		second := s.graphNodeSubLabel(node)
@@ -889,10 +965,17 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 			"│" + pad(second) + "│",
 			"└" + strings.Repeat(border, cardWidth-2) + "┘",
 		}
+		middle := cardWidth / 2
+		if node.parentKey != "" || node.record.Role == "coordinator" || node.record.Role == "manager" {
+			card[0] = setGraphRune(card[0], middle, '┬')
+		}
+		if len(s.children(node.record.Key)) != 0 || index+1 < len(nodeList) && nodeList[index+1].parentKey == node.parentKey && node.parentKey != "" {
+			card[3] = setGraphRune(card[3], middle, '┴')
+		}
+		positions[node.record.Key] = len(lines) + 1
 		for _, cardLine := range card {
 			lines = append(lines, "│ "+cardLine+" │")
 		}
-		positions[node.record.Key] = len(lines) - 3
 		previous = node
 	}
 	if len(nodeList) == 0 {
@@ -903,18 +986,110 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 }
 
 func (s agentsState) graphNodeSubLabel(node agentNode) string {
-	if node.record.Role == "supervisor" {
-		return "pid " + emptyQuestion(node.pid) + " · " + emptyQuestion(node.age)
-	}
+	harness := graphHarness(node.record.Harness)
 	activity := node.record.Task
-	if activity == "" {
-		activity = node.age
+	switch node.record.Role {
+	case "supervisor":
+		return "pid " + emptyQuestion(node.pid) + " · " + emptyQuestion(node.age)
+	case "coordinator":
+		activity = "you · now"
+	case "manager":
+		if activity == "" {
+			activity = node.status + " · " + node.age
+		}
+	default:
+		if activity == "" {
+			activity = node.age
+		}
 	}
-	label := emptyQuestion(node.record.Harness) + " · " + emptyQuestion(activity)
+	label := emptyQuestion(harness) + " · " + emptyQuestion(activity)
 	if s.showHistory && node.landedGhost {
 		label += " · " + node.landedLabel
 	}
 	return label
+}
+
+func graphHarness(harness string) string {
+	if harness == "claude" {
+		return "cc"
+	}
+	return harness
+}
+
+func agentsNudgePair(left, right agentNode) bool {
+	return left.record.Role == "supervisor" && right.nudged || right.record.Role == "supervisor" && left.nudged
+}
+
+func graphPodLine(width, middle int, mark rune) string {
+	line := "│" + strings.Repeat(" ", width-2) + "│"
+	return setGraphRune(line, middle, mark)
+}
+
+func graphPodLabelLine(width int, label string) string {
+	cells := []rune(strings.Repeat(" ", width-2))
+	start := max(0, (len(cells)-len([]rune(label)))/2)
+	copy(cells[start:], []rune(label))
+	return "│" + string(cells) + "│"
+}
+
+func graphBusLine(width, minimum, maximum int, anchors map[int]bool) string {
+	cells := []rune(strings.Repeat(" ", width))
+	for column := minimum; column <= maximum && column < len(cells); column++ {
+		if column >= 0 {
+			cells[column] = '─'
+		}
+	}
+	for column := range anchors {
+		if column >= 0 && column < len(cells) {
+			cells[column] = '┬'
+		}
+	}
+	return string(cells)
+}
+
+func graphStemLine(width int, anchors map[int]bool) string {
+	cells := []rune(strings.Repeat(" ", width))
+	for column := range anchors {
+		if column >= 0 && column < len(cells) {
+			cells[column] = '│'
+		}
+	}
+	return string(cells)
+}
+
+func graphNudgeLabelLine(width, center int) string {
+	label := "nudges"
+	start := max(0, min(width-len(label), center-len(label)/2))
+	return strings.Repeat(" ", start) + label
+}
+
+func graphNudgeLine(width, left, right int) string {
+	if left > right {
+		left, right = right, left
+	}
+	cells := []rune(strings.Repeat(" ", width))
+	for column := left; column <= right && column < len(cells); column++ {
+		if column >= 0 {
+			cells[column] = '┄'
+		}
+	}
+	return string(cells)
+}
+
+func setGraphCell(line string, column int, value rune) string {
+	width := lipgloss.Width(line)
+	if column < 0 || column >= width {
+		return line
+	}
+	return ansi.Cut(line, 0, column) + string(value) + ansi.Cut(line, column+1, width)
+}
+
+func setGraphRune(line string, column int, value rune) string {
+	cells := []rune(line)
+	if column >= 0 && column < len(cells) {
+		cells[column] = value
+	}
+	return string(cells)
 }
 
 func graphNodeMark(node agentNode) string {
@@ -1042,6 +1217,22 @@ func (s agentsState) detailLine(node agentNode) string {
 	return fmt.Sprintf("DETAIL %s · parent %s · model %s · task %s · %s · pane %s · next %s",
 		node.record.Name, parent, emptyQuestion(node.record.Model), emptyQuestion(node.record.Task),
 		emptyQuestion(node.taskStatus), emptyQuestion(node.record.PaneID), emptyQuestion(node.nextTask))
+}
+
+func agentDetailStrip(text string, width int) []string {
+	if width < 5 {
+		return wrapAgentLine(text, max(1, width))
+	}
+	innerWidth := width - 4
+	wrapped := wrapAgentLine(text, innerWidth)
+	lines := make([]string, 0, len(wrapped)+2)
+	lines = append(lines, "╭"+strings.Repeat("─", width-2)+"╮")
+	for _, line := range wrapped {
+		line = trimGraphLine(line, innerWidth)
+		lines = append(lines, "│ "+line+strings.Repeat(" ", max(0, innerWidth-lipgloss.Width(line)))+" │")
+	}
+	lines = append(lines, "╰"+strings.Repeat("─", width-2)+"╯")
+	return lines
 }
 
 func (s agentsState) parentLabel(node agentNode) string {
