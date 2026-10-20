@@ -36,8 +36,11 @@ of the item. Compare the output with the expected output.
 - For a live item, run the commands and record each observation.
 - For the gate item, run the four gate commands.
 
-Write each result in `VERIFIED.md`. Give one row for each item with the result
-`pass` or `fail`.
+For a task with a feature, write `VERIFIED.md` in
+`.hive/spec/<feature>/tasks/<id>/evidence/`. For a task without a feature, write
+`VERIFIED.md` in the evidence folder that the brief names. Give one row for
+each item with the result `pass` or `fail`. Never write `VERIFIED.md` at the
+checkout root.
 
 ## Verdict
 

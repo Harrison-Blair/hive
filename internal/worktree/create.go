@@ -151,6 +151,20 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return fail("precheck", "check path: "+oneLine(err.Error()))
 	}
+	featureBrief := featureBriefRelativePath(task)
+	if task.Feature != "" {
+		check, err := run.Command(ctx, project.Path, "git", "-C", project.Path, "check-ignore", "-q", "--no-index", featureBrief)
+		if err != nil {
+			return fail("validate", "check ignored path "+featureBrief+": "+oneLine(err.Error()))
+		}
+		switch check.ExitCode {
+		case 0:
+			return fail("validate", "path is ignored: "+featureBrief+". The .gitignore of the repo must allow .hive/spec/.")
+		case 1:
+		default:
+			return fail("validate", fmt.Sprintf("check ignored path %s: git exited with code %d", featureBrief, check.ExitCode))
+		}
+	}
 
 	before, err := herdr.WorkspaceList(ctx, herdr.WithLogger(scoped))
 	if err != nil {
@@ -198,6 +212,18 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		CreatedAt:   now(),
 	}
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
+	var briefCopyErr error
+	if task.Feature != "" {
+		if err := copyFeatureBrief(home, worktreePath, task, featureBrief); err != nil {
+			briefCopyErr = err
+		} else {
+			effects = append(effects, output.Effect{
+				Resource: "brief",
+				Path:     filepath.Join(worktreePath, filepath.FromSlash(featureBrief)),
+				Action:   "copied",
+			})
+		}
+	}
 	logEffects(logger, commandCreate, project.ID, options.Task, effects)
 	updated, phase, persistErr := persistCreate(registry, project, options.Task, &worktree, repoWorkspaceID)
 	if persistErr != nil {
@@ -214,6 +240,11 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		message := "repository workspace is uncertain: more than one new workspace matches the repository"
 		logFailure(logger, commandCreate, project.ID, options.Task, "workspace", message)
 		return partialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
+	}
+	if briefCopyErr != nil {
+		message := "copy feature brief: " + oneLine(briefCopyErr.Error())
+		logFailure(logger, commandCreate, project.ID, options.Task, "brief", message)
+		return partialEnvelope("brief", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
 	logEvent(logger, "worktree create done", commandCreate, project.ID, options.Task, "workspace_id", worktree.WorkspaceID, "path", worktreePath, "branch", branch)
 	return output.Envelope{
@@ -367,6 +398,29 @@ func createEffects(workspaceID, path, branch, repoWorkspaceID string) []output.E
 		effects = append(effects, output.Effect{Resource: "workspace", Path: repoWorkspaceID, Action: "opened"})
 	}
 	return effects
+}
+
+func featureBriefRelativePath(task records.Task) string {
+	if task.Feature == "" {
+		return ""
+	}
+	return filepath.ToSlash(filepath.Join(".hive", "spec", task.Feature, "tasks", task.ID, "brief.md"))
+}
+
+func copyFeatureBrief(home, worktreePath string, task records.Task, relativePath string) error {
+	source := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
+	data, err := os.ReadFile(source)
+	if err != nil {
+		return fmt.Errorf("read state brief: %s", oneLine(err.Error()))
+	}
+	destination := filepath.Join(worktreePath, filepath.FromSlash(relativePath))
+	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+		return fmt.Errorf("create feature brief directory: %s", oneLine(err.Error()))
+	}
+	if err := os.WriteFile(destination, data, 0o644); err != nil {
+		return fmt.Errorf("write feature brief: %s", oneLine(err.Error()))
+	}
+	return nil
 }
 
 func createResult(task records.Task, workspaceID, tabID, rootPane, path, branch, repoWorkspaceID string) CreateResult {

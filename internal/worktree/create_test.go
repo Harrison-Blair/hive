@@ -459,6 +459,135 @@ func TestCreatePreservesConcurrentTaskChange(t *testing.T) {
 	}
 }
 
+func TestCreateFeatureIgnoredPathRefusesBeforeWorktreeCreation(t *testing.T) {
+	repo := newTestRepo(t)
+	runGit(t, repo, "config", "core.excludesFile", "")
+	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, repo, "add", "-f", ".gitignore")
+	runGit(t, repo, "commit", "-q", "-m", "ignore feature brief")
+	home := newTestHome(t, "repo-live")
+	task := testTask()
+	task.Feature = "f"
+	writeProject(t, home, testProject(repo))
+	writeTask(t, home, task)
+	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+	})
+
+	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+	wantPath := ".hive/spec/f/tasks/1-live-demo/brief.md"
+	if envelope.Outcome != "failed" || envelope.Phase != "validate" || !strings.Contains(fmt.Sprint(envelope.Error), wantPath) || !strings.Contains(fmt.Sprint(envelope.Error), "allow .hive/spec/") {
+		t.Fatalf("Create() = %+v, want validate failure naming %s and the allowlist", envelope, wantPath)
+	}
+	if methods := server.methods(); len(methods) != 0 {
+		t.Fatalf("methods = %v, want no workspace or worktree request", methods)
+	}
+	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
+	if _, err := os.Lstat(worktreePath); !os.IsNotExist(err) {
+		t.Fatalf("worktree path status = %v, want no path", err)
+	}
+	if got := runGit(t, repo, "branch", "--list", "task/1-live-demo"); strings.TrimSpace(got) != "" {
+		t.Fatalf("task branch = %q, want no branch", got)
+	}
+}
+
+func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
+	repo := newTestRepo(t)
+	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!.hive/\n!.hive/spec/\n!.hive/spec/**\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, repo, "add", "-f", ".gitignore")
+	runGit(t, repo, "commit", "-q", "-m", "allow feature brief")
+	home := newTestHome(t, "repo-live")
+	task := testTask()
+	task.Feature = "f"
+	writeProject(t, home, testProject(repo))
+	writeTask(t, home, task)
+	stateBrief := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
+	if err := os.MkdirAll(filepath.Dir(stateBrief), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	const brief = "# Feature task\n"
+	if err := os.WriteFile(stateBrief, []byte(brief), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
+	branch := "task/" + task.ID
+	var listCalls atomic.Int32
+	startFakeHerdr(t, func(request fakeRequest) fakeReply {
+		switch request.Method {
+		case "workspace.list":
+			if listCalls.Add(1) == 1 {
+				return fakeReply{Result: workspaceListReply(t)}
+			}
+			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", worktreePath, repo))}
+		case "worktree.create":
+			runGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
+			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
+		}
+		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+	})
+
+	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Create() = %+v, want ok", envelope)
+	}
+	featureBrief := filepath.Join(worktreePath, ".hive", "spec", "f", "tasks", task.ID, "brief.md")
+	if got, err := os.ReadFile(featureBrief); err != nil || string(got) != brief {
+		t.Fatalf("worktree brief = %q, %v; want %q", got, err, brief)
+	}
+	if !hasEffect(envelope, "brief", "copied", featureBrief) {
+		t.Fatalf("effects = %+v, want copied brief at %s", envelope.Effects, featureBrief)
+	}
+	status := runGit(t, worktreePath, "status", "--short", "--untracked-files=all")
+	if !strings.Contains(status, "?? .hive/spec/f/tasks/1-live-demo/brief.md") {
+		t.Fatalf("git status = %q, want the copied brief untracked", status)
+	}
+}
+
+func TestCreateWithoutFeatureSkipsFeatureIgnoreCheckAndCopy(t *testing.T) {
+	repo := newTestRepo(t)
+	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, repo, "add", "-f", ".gitignore")
+	runGit(t, repo, "commit", "-q", "-m", "ignore files")
+	home := newTestHome(t, "repo-live")
+	task := testTask()
+	writeProject(t, home, testProject(repo))
+	writeTask(t, home, task)
+	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
+	branch := "task/" + task.ID
+	var listCalls atomic.Int32
+	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+		switch request.Method {
+		case "workspace.list":
+			if listCalls.Add(1) == 1 {
+				return fakeReply{Result: workspaceListReply(t)}
+			}
+			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", worktreePath, repo))}
+		case "worktree.create":
+			runGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
+			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
+		}
+		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+	})
+
+	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Create() = %+v, want ok", envelope)
+	}
+	if len(server.methods()) != 3 {
+		t.Fatalf("methods = %v, want the workspace lists and worktree create", server.methods())
+	}
+	featureBrief := filepath.Join(worktreePath, ".hive", "spec", "f", "tasks", task.ID, "brief.md")
+	if _, err := os.Lstat(featureBrief); !os.IsNotExist(err) {
+		t.Fatalf("feature brief status = %v, want no file", err)
+	}
+}
+
 func TestCreateAmbiguousRepositoryWorkspaceIsPartial(t *testing.T) {
 	repo := newTestRepo(t)
 	home := newTestHome(t, "repo-live")
