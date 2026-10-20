@@ -14,6 +14,45 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+func TestStartCoordinatorSendsStartupPromptWithoutRegistering(t *testing.T) {
+	home := testHome(t)
+	fake := newFakeHerdr(t)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
+	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "coordinator")+`,"argv":["claude","--dangerously-skip-permissions","--model","m"]}`)
+	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "coordinator")+`}`)
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "coordinator")+`}`)
+
+	if err := StartCoordinator(context.Background(), home, "w1:p1", "claude", "m", nil); err != nil {
+		t.Fatalf("StartCoordinator(): %v", err)
+	}
+	startRequests := fake.recorded("agent.start")
+	if len(startRequests) != 1 {
+		t.Fatalf("agent.start requests = %#v; want one claude start", startRequests)
+	}
+	if got, want := startRequests[0].Params, `{"name":"coordinator","kind":"claude","pane_id":"w1:p1","args":["--dangerously-skip-permissions","--model","m"],"timeout_ms":120000}`; got != want {
+		t.Fatalf("agent.start params = %s; want %s", got, want)
+	}
+	requests := fake.recorded("agent.prompt")
+	if len(requests) != 1 {
+		t.Fatalf("agent.prompt requests = %d; want 1", len(requests))
+	}
+	var params struct {
+		Text string `json:"text"`
+	}
+	if err := json.Unmarshal([]byte(requests[0].Params), &params); err != nil {
+		t.Fatalf("decode prompt params: %v", err)
+	}
+	for _, want := range []string{"coordinator", ".agents/skills/hive-coordinator/SKILL.md", "startup"} {
+		if !strings.Contains(params.Text, want) {
+			t.Errorf("first prompt %q does not contain %q", params.Text, want)
+		}
+	}
+	agents := List(home, ListOptions{Role: "coordinator", All: true})
+	if agents.Outcome != "ok" || len(agents.Result.([]records.Agent)) != 0 {
+		t.Fatalf("coordinator records after start = %#v; want none before the coordinator startup registers", agents)
+	}
+}
+
 func baseSpawnOptions(name string) SpawnOptions {
 	return SpawnOptions{
 		Role:    "coordinator",

@@ -57,64 +57,48 @@ herdr pane current --current
 
 Read `workspace_id` from the result.
 
-8. Find the `logs` tab in that workspace.
+8. List the tabs in that workspace.
 
 ```sh
 herdr tab list --workspace "$workspace_id"
 ```
 
-When a tab has the label `logs`, save its `tab_id`. Use that tab. Do not create a second `logs` tab.
+Save the `tab_id` of the `supervisor` tab, if it exists. Save the `tab_id` of the old `logs` tab, if it exists.
 
-9. When no `logs` tab exists, create one with the home as its working directory.
+9. Start the supervisor only when its claim is stale and the `supervisor` tab is gone.
 
-```sh
-herdr tab create --workspace "$workspace_id" --cwd "$PWD" --label logs
-```
-
-Save `tab_id` from the result. Save `root_pane.pane_id` as `left_pane_id`. The coordinator runs in the home, so `$PWD` is the home.
-
-10. Split the root pane of the new tab to the right.
+Use the result of step 5 to check the claim. When the claim is stale and the tab is gone, create the tab with the home as its working directory.
 
 ```sh
-herdr pane split "$left_pane_id" --direction right --ratio 0.5
+herdr tab create --workspace "$workspace_id" --cwd "$PWD" --label supervisor --no-focus
 ```
 
-Read the new pane ID from `result.pane.pane_id`. This is the right pane. The root pane is the left pane.
+Read `root_pane.pane_id` from the result. Save it as `supervisor_pane_id`. Run `hive supervise` in that pane.
 
-11. Find the left and right panes of an existing `logs` tab.
+```sh
+herdr pane run "$supervisor_pane_id" hive supervise
+```
+
+When the claim is fresh, keep it. When the `supervisor` tab exists, do not start a supervisor.
+
+10. Close the old `logs` tab only when a supervisor is live and the `supervisor` tab exists.
+
+List the panes in the workspace. Use `tab_id` to select the panes in the old `logs` tab. Check the foreground processes in each pane.
 
 ```sh
 herdr pane list --workspace "$workspace_id"
-herdr pane layout --pane "$logs_pane_id"
+herdr pane process-info --pane "$logs_pane_id"
 ```
 
-Use `tab_id` to select panes in the `logs` tab. Save one pane ID as `logs_pane_id`. In `result.layout.panes`, the lowest `rect.x` is `left_pane_id`. The highest `rect.x` is `right_pane_id`.
-
-12. Check the process in the right pane.
+Each pane must have one or more entries in `foreground_processes`. Each entry must have `argv` equal to `["hive", "logs", "--follow"]` or `["hive", "supervise"]`. Keep the old tab when a pane has no entries or any entry has another `argv` value. Close the tab only when every entry matches one of those two values.
 
 ```sh
-herdr pane process-info --pane "$right_pane_id"
+herdr tab close "$logs_tab_id"
 ```
 
-When one entry in `foreground_processes` has `argv` equal to `["hive", "logs", "--follow"]`, do not start another log stream. Otherwise, run:
+Tell the user when you close the old tab.
 
-```sh
-herdr pane run "$right_pane_id" hive logs --follow
-```
-
-After you start the log stream, repeat the process check until one entry has the matching `argv`.
-
-13. Start the supervisor only when the claim is absent or stale.
-
-When the `hive doctor` result from step 5 does not report a live supervisor, run:
-
-```sh
-herdr pane run "$left_pane_id" hive supervise
-```
-
-When a supervisor is live, do not start another one. Leave it where it is.
-
-14. Report each open decision and the state of each project to the user.
+11. Report each open decision and the state of each project to the user.
 
 ## Preference record
 
