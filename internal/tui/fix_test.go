@@ -238,7 +238,7 @@ func TestHeaderErrorDoesNotStopShell(t *testing.T) {
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")
 	m, _ = raise(t, m, key('2', "2"))
-	requireView(t, m, "▶ 2 Agents", "error:")
+	requireView(t, m, "AGENTS", "error:")
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")
 	_, cmd := raise(t, m, key('q', "q"))

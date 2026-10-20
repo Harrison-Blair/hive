@@ -23,7 +23,11 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 	for index, name := range []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"} {
 		number := rune('1' + index)
 		m, _ = raise(t, m, key(number, string(number)))
-		if !strings.Contains(m.View().Content, "▶ "+string(number)+" "+name) {
+		selected := "▶ " + string(number) + " " + name
+		if name == "Agents" {
+			selected = "AGENTS"
+		}
+		if !strings.Contains(m.View().Content, selected) {
 			t.Fatalf("key %q did not select %s:\n%s", number, name, m.View().Content)
 		}
 		if name == "Chat" {
@@ -108,7 +112,7 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	}
 	m, keyCmd := raise(t, m, key('2', "2"))
 	m = deliverAgentCommands(t, m, keyCmd)
-	if !strings.Contains(m.View().Content, "▶ 2 Agents") {
+	if !strings.Contains(m.View().Content, "AGENTS") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}
 	m.screenIndex = 7
@@ -154,7 +158,7 @@ func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 		t.Fatal("screen load did not start")
 	}
 	m, _ = raise(t, m, key('2', "2"))
-	if !strings.Contains(m.View().Content, "▶ 2 Agents") {
+	if !strings.Contains(m.View().Content, "AGENTS") {
 		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
 	}
 	m, _ = raise(t, m, key('8', "8"))

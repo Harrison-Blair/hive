@@ -121,7 +121,7 @@ func (m *Model) shellHeader() string {
 	if width < 1 {
 		width = defaultWidth
 	}
-	return headerStyle.Width(width).Render(m.headerLine())
+	return headerStyle.Width(width).Render(m.activeHeaderLine())
 }
 
 func (m *Model) shellView() string {
@@ -150,9 +150,14 @@ func (m *Model) shellView() string {
 		mainWidth = 1
 	}
 	left := m.renderSidebar(sidebarWidth, bodyHeight)
+	if m.screenIndex == 1 {
+		left = m.renderAgentsExplorer(sidebarWidth, bodyHeight)
+	}
 	if !m.screenViewCacheValid || m.screenViewWidth != mainWidth || m.screenViewHeight != bodyHeight || m.screenViewIndex != m.screenIndex {
 		body := m.currentScreen().View(mainWidth, bodyHeight)
-		if m.screenIndex != 0 {
+		if m.screenIndex == 1 {
+			body = m.renderPanel("", body, mainWidth, bodyHeight)
+		} else if m.screenIndex != 0 {
 			body = m.renderPanel(m.currentScreenName(), body, mainWidth, bodyHeight)
 		}
 		m.screenViewCache = body
@@ -179,10 +184,54 @@ func (m *Model) renderSidebar(width, height int) string {
 	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(strings.Join(lines, "\n"))
 }
 
+func (m *Model) renderAgentsExplorer(width, height int) string {
+	state := &m.agents
+	tree, positions := state.explorerLines()
+	innerHeight := max(1, height-2)
+	treeHeight := max(0, innerHeight-5)
+	if selectedLine, ok := positions[state.selectedKey]; ok {
+		if selectedLine < state.explorerOffset {
+			state.explorerOffset = selectedLine
+		} else if selectedLine >= state.explorerOffset+treeHeight && treeHeight > 0 {
+			state.explorerOffset = selectedLine - treeHeight + 1
+		}
+	}
+	maxOffset := max(0, len(tree)-treeHeight)
+	if state.explorerOffset > maxOffset {
+		state.explorerOffset = maxOffset
+	}
+	end := state.explorerOffset + treeHeight
+	if end > len(tree) {
+		end = len(tree)
+	}
+	contentWidth := max(1, width-4)
+	lines := []string{titleStyle.Render("AGENTS")}
+	lines = append(lines, tree[state.explorerOffset:end]...)
+	for len(lines) < treeHeight+1 {
+		lines = append(lines, "")
+	}
+	lines = append(lines, strings.Repeat("─", contentWidth))
+	lines = append(lines,
+		"1 CHAT · 3 GOALS · 4 QUEUE",
+		"5 TASKS · 6 FRICTION",
+		"7 HEALTH · 8 LOGS",
+	)
+	for index, line := range lines {
+		lines[index] = fitLine(line, contentWidth)
+	}
+	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(strings.Join(lines, "\n"))
+}
+
 func (m *Model) renderPanel(title, content string, width, height int) string {
-	body := titleStyle.Render(title)
+	body := ""
+	if title != "" {
+		body = titleStyle.Render(title)
+	}
 	if content != "" {
-		body += "\n" + content
+		if body != "" {
+			body += "\n"
+		}
+		body += content
 	}
 	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(body)
 }
