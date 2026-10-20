@@ -22,6 +22,9 @@ reaches the status "evidence" when each `V<n>.md` exists. It reaches the status
   run counts as a pass only when it prints nothing. A `go mod tidy -diff` run
   counts as a pass only when it prints nothing.
 - An evidence file claims no result that its output does not show.
+- Commit PNG captures of changed screens to the task evidence directory. Keep each board PNG under `.hive/tmp/` in the home. Give its path. Never commit a board PNG.
+- Report one table row for each board element. Use the columns `Board element`, `State without colour`, `Result`, and `Cause or decision`.
+- Each UI state has a glyph or a word in plain text. Colour can add to a state. Colour must not be the only signal of a state. The `State without colour` cell names the glyph or word. The verifier fails a state that only colour shows.
 - The verifier does not edit a `V<n>.md`. It records its own runs in `VERIFIED.md`.
 - When the verifier records a fail, the worker continues in the same worktree. It corrects the behavior, replaces the affected `V<n>.md`, commits, and pushes. The verifier then runs again and replaces `VERIFIED.md`.
 
@@ -53,6 +56,16 @@ For an item without a test, name this section "Run".
 
 One sentence that states what the output shows.
 ```
+
+## Visual check table
+
+| Board element | State without colour | Result | Cause or decision |
+| --- | --- | --- | --- |
+| <element> | <glyph or word> | matches, differs, or overridden | <cause or decision> |
+
+Use `matches` when the screen agrees with the board. Use `differs` and name
+the cause when it does not. Use `overridden` and name the decision that takes
+priority.
 
 ## Format of `VERIFIED.md`
 

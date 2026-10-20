@@ -36,6 +36,51 @@ When hive worktree create shows allowlist_needed, add !.hive/spec/ and
 !.hive/spec/** to the project .gitignore after the rules that ignore the path.
 Commit this change with the feature README.
 
+## Visual check
+
+Before you change a user interface, check the brief. It must have a `Design`
+section that names each approved board by its absolute path. Stop and tell the
+manager when a UI task has no `Design` section.
+
+Capture each changed screen and each approved board as PNG files. Compare each
+screen with its board. Fix each difference before you finish.
+
+Each state must have a glyph or a word in plain text. Colour can add to a
+state. Colour must not be the only signal of a state. Remove colour from the
+plain text of each changed screen. Check for the glyph or word of each state.
+
+To capture a board, run this command with a new scratch profile folder:
+
+```sh
+firefox --headless --no-remote --profile SCRATCH --window-size=1220,780 --screenshot OUT.png file://BOARD.dc.html
+```
+
+To capture a Textual app, call `app.save_screenshot()`. It gives an SVG file.
+Convert it to PNG with `rsvg-convert -o OUT.png IN.svg`.
+
+To capture a terminal pane, use this command on a pane that you started:
+
+```sh
+herdr pane read PANE --source visible --format ansi > F.ansi
+```
+
+Use a short scratch script to change the ANSI SGR codes to an HTML `<pre>`.
+Then run the Firefox command above.
+
+Commit screen PNG files to the task evidence directory. Keep each board PNG in
+the home under `.hive/tmp/`. Give its path. Never commit a board PNG. Capture
+only your own panes or a scratch run.
+
+Write one table row for each board element. Use these columns:
+
+| Board element | State without colour | Result | Cause or decision |
+| --- | --- | --- | --- |
+| <element> | <glyph or word> | matches, differs, or overridden | <cause or decision> |
+
+Use `matches` when the screen agrees with the board. Use `differs` and name
+the cause when it does not. Use `overridden` and name the decision that takes
+priority.
+
 ## Work
 
 Work test-first.
