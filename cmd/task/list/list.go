@@ -17,14 +17,16 @@ func New() *cobra.Command {
 	}
 	flags := command.Flags()
 	flags.String("project", "", "project ID")
+	flags.String("feature", "", "feature slug")
 	flags.String("status", "", "task status")
 	flags.Bool("ready", false, "keep only created tasks with verified dependencies")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		return common.Run(cmd, "task list", func(home string) (output.Envelope, string, error) {
 			project, _ := cmd.Flags().GetString("project")
+			feature, _ := cmd.Flags().GetString("feature")
 			status, _ := cmd.Flags().GetString("status")
 			ready, _ := cmd.Flags().GetBool("ready")
-			envelope := tasklib.List(home, tasklib.ListOptions{Project: project, Status: status, Ready: ready})
+			envelope := tasklib.List(home, tasklib.ListOptions{Project: project, Feature: feature, Status: status, Ready: ready})
 			return envelope, tasklib.ListText(envelope), nil
 		})
 	}

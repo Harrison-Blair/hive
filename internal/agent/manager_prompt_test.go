@@ -116,6 +116,28 @@ func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
 	}
 }
 
+func TestManagerInstructionsRequireFeatureTaskRules(t *testing.T) {
+	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, text := range map[string]string{"template": projectAgentsTemplate, "skill": string(skill)} {
+		normalized := strings.Join(strings.Fields(text), " ")
+		command := "hive task create --project ID --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE"
+		if name == "template" {
+			command = "hive task create --project {{PROJECT_ID}} --feature F --title TITLE --slug SLUG --depends-on IDS --brief FILE"
+		}
+		for _, want := range []string{
+			command,
+			"Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.",
+		} {
+			if !strings.Contains(normalized, want) {
+				t.Errorf("%s does not contain %q", name, want)
+			}
+		}
+	}
+}
+
 func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
 	if err != nil {

@@ -60,6 +60,23 @@ func TestHomeMarkerIsTracked(t *testing.T) {
 
 // TestPersonalPathsAreIgnored checks that Git ignores each personal and runtime
 // path of the home, so a push of this public repository never carries them.
+func TestFeatureSpecPathsAreNotIgnored(t *testing.T) {
+	skipWithoutGit(t)
+	for _, path := range []string{
+		".hive/spec/x/README.md",
+		".hive/spec/x/tasks/1-y/evidence/V1.md",
+	} {
+		if err := exec.Command("git", "check-ignore", "-q", path).Run(); err == nil {
+			t.Errorf("git ignores %s", path)
+		} else {
+			var exit *exec.ExitError
+			if !errors.As(err, &exit) || exit.ExitCode() != 1 {
+				t.Errorf("git check-ignore %s: %v", path, err)
+			}
+		}
+	}
+}
+
 func TestPersonalPathsAreIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	for _, path := range []string{

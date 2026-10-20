@@ -57,7 +57,18 @@ func ShowText(envelope output.Envelope) string {
 		"cancel_reason: " + oneLine(task.CancelReason),
 		"created_at: " + task.CreatedAt,
 		"updated_at: " + task.UpdatedAt,
-		"brief: " + briefRelPath(task.ID),
+	}
+	if paths := TaskFeaturePaths(task); paths != nil {
+		lines = append(lines,
+			"feature: "+task.Feature,
+			"brief: "+paths.Brief,
+			"evidence: "+paths.Evidence,
+		)
+		for _, warning := range result.Warnings {
+			lines = append(lines, "warning: "+warning)
+		}
+	} else {
+		lines = append(lines, "brief: "+briefRelPath(task.ID))
 	}
 	return strings.Join(lines, "\n") + "\n"
 }
