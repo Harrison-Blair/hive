@@ -3,6 +3,8 @@ package log
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -10,11 +12,32 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 )
 
 const maxBodyBytes = 4096
+
+var activeRequestID atomic.Pointer[string]
+
+// NewRequestID makes a random request ID with eight lowercase hex characters.
+func NewRequestID() (string, error) {
+	var random [4]byte
+	if _, err := rand.Read(random[:]); err != nil {
+		return "", err
+	}
+	return "r-" + hex.EncodeToString(random[:]), nil
+}
+
+// SetRequestID sets the request ID for log events until the returned restore
+// function runs.
+func SetRequestID(id string) func() {
+	previous := activeRequestID.Load()
+	current := id
+	activeRequestID.Store(&current)
+	return func() { activeRequestID.Store(previous) }
+}
 
 type outputState struct {
 	mu    sync.Mutex
@@ -103,6 +126,9 @@ func (w *Writer) Handle(_ context.Context, record slog.Record) error {
 		addAttr(event, w.groups, attr, &truncated)
 		return true
 	})
+	if request := activeRequestID.Load(); request != nil && *request != "" {
+		event["request_id"] = *request
+	}
 	if truncated {
 		event["truncated"] = true
 	}

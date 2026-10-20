@@ -76,16 +76,35 @@ func (s logsScreen) Update(msg tea.Msg) tea.Cmd {
 	return batch(cmd, viewportCmd)
 }
 
-func (s logsScreen) View(_, _ int) string {
-	body := s.model.bodyView()
-	if s.model.mode == editing {
-		body += "\n" + s.model.input.View()
+func (s logsScreen) View(width, height int) string {
+	m := s.model
+	if width < 1 {
+		width = 1
 	}
-	return body
+	filterLines := wrapFilterLine(m.statusLine(), width-4)
+	listWidth := width
+	if m.logDetail && width >= 72 {
+		listWidth = width * 2 / 3
+	}
+	m.viewport.SetWidth(max(1, listWidth-4))
+	m.viewport.SetHeight(max(1, height-len(filterLines)-4))
+	left := "logs · " + m.logDate.Format("2006-01-02") + ".jsonl\n" + strings.Join(filterLines, "\n") + "\n" + m.bodyView()
+	if m.mode == editing {
+		left += "\n" + m.input.View()
+	}
+	if !m.logDetail {
+		return left
+	}
+	if width < 72 {
+		return left + "\n" + m.detailView(width, max(1, height/3))
+	}
+	detailWidth := width - listWidth - 1
+	detail := panelStyle.Width(max(1, detailWidth-4)).Height(max(1, height-2)).Render(m.detailView(detailWidth, height-4))
+	return lipgloss.JoinHorizontal(lipgloss.Top, left, detail)
 }
 
 func (s logsScreen) KeyHints() string {
-	return "1–8 screens · / filter · l level · f follow · g/G scroll · ctrl+c×2 quit"
+	return "1–8 screens · l level · c component · p project · a agent · / search · r request · [ ] day · f follow · g/G scroll · enter JSON · esc back"
 }
 
 func (s logsScreen) DataRequest() dataRequest { return logsDataRequest }

@@ -3,6 +3,7 @@ package logs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	loglib "github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +52,7 @@ func New() *cobra.Command {
 	return command
 }
 
-func run(cmd *cobra.Command, opts *options) error {
+func run(cmd *cobra.Command, opts *options) (runErr error) {
 	root := cmd.Root()
 	jsonOutput, err := root.PersistentFlags().GetBool("json")
 	if err != nil {
@@ -64,6 +66,28 @@ func run(cmd *cobra.Command, opts *options) error {
 	if err != nil {
 		return fail(cmd, jsonOutput, err, 1)
 	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return fail(cmd, jsonOutput, err, 1)
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
+	logger, err := hivelog.Open(resolvedHome, "cli")
+	if err != nil {
+		return fail(cmd, jsonOutput, err, 1)
+	}
+	started := time.Now()
+	logger.Debug("command start", "command", "logs")
+	defer func() {
+		outcome := "ok"
+		if runErr != nil {
+			var status *common.StatusError
+			if !errors.As(runErr, &status) || status.Status != 0 {
+				outcome = "failed"
+			}
+		}
+		logger.Debug("command end", "command", "logs", "duration_ms", time.Since(started).Milliseconds(), "outcome", outcome)
+	}()
 	if opts.limit < 0 {
 		return common.Usage(cmd, "--limit must be zero or more")
 	}

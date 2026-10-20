@@ -3,11 +3,14 @@ package supervise
 
 import (
 	"io"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	superviselib "github.com/Harrison-Blair/hive/internal/supervise"
@@ -26,6 +29,12 @@ func New() *cobra.Command {
 				return err
 			}
 			return common.Run(cmd, "supervise", func(home string) (output.Envelope, string, error) {
+				writer, err := log.NewWriter(home, "supervise", time.Now)
+				if err != nil {
+					return output.Envelope{Outcome: "failed", Phase: "log", Effects: []output.Effect{}, Error: err.Error(), Result: nil}, "", nil
+				}
+				defer func() { _ = writer.Close() }()
+				logger := slog.New(writer)
 				ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 				defer stop()
 				out := cmd.OutOrStdout()
@@ -36,6 +45,7 @@ func New() *cobra.Command {
 				start, _ := process.Start(pid)
 				_, envelope := superviselib.Run(ctx, superviselib.Options{
 					Home:        home,
+					Logger:      logger,
 					Out:         out,
 					PaneID:      os.Getenv("HERDR_PANE_ID"),
 					WorkspaceID: os.Getenv("HERDR_WORKSPACE_ID"),

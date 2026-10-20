@@ -248,30 +248,47 @@ func (s *Supervisor) closeStream() {
 
 func (s *Supervisor) loop(ctx context.Context) error {
 	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-s.watch.Events():
-			if err := s.refresh(ctx); err != nil {
-				return err
-			}
-		case event, ok := <-s.stream.Events():
-			if !ok {
-				return s.streamEnd()
-			}
-			if err := s.handleEvent(ctx, event); err != nil {
-				return err
-			}
-		case err := <-s.stream.Errors():
-			if err != nil {
-				return err
-			}
-			return errors.New("supervisor subscription closed")
-		case key := <-s.quiet.fired:
-			if err := s.handleQuiet(ctx, key); err != nil {
-				return err
-			}
+		requestID, err := hivelog.NewRequestID()
+		if err != nil {
+			return err
 		}
+		restoreRequestID := hivelog.SetRequestID(requestID)
+		baseLogger := s.logger
+		s.logger = baseLogger.With("request_id", requestID)
+		started := time.Now()
+		s.logger.Debug("command start", "command", "supervise")
+		err = s.loopPass(ctx)
+		outcome := "ok"
+		if err != nil && ctx.Err() == nil {
+			outcome = "failed"
+		}
+		s.logger.Debug("command end", "command", "supervise", "duration_ms", time.Since(started).Milliseconds(), "outcome", outcome)
+		s.logger = baseLogger
+		restoreRequestID()
+		if err != nil || ctx.Err() != nil {
+			return err
+		}
+	}
+}
+
+func (s *Supervisor) loopPass(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return nil
+	case <-s.watch.Events():
+		return s.refresh(ctx)
+	case event, ok := <-s.stream.Events():
+		if !ok {
+			return s.streamEnd()
+		}
+		return s.handleEvent(ctx, event)
+	case err := <-s.stream.Errors():
+		if err != nil {
+			return err
+		}
+		return errors.New("supervisor subscription closed")
+	case key := <-s.quiet.fired:
+		return s.handleQuiet(ctx, key)
 	}
 }
 

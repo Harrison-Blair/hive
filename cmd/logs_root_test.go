@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -103,7 +105,19 @@ func TestLogsJSONPrintsRawEventLines(t *testing.T) {
 	if stderr.Len() != 0 {
 		t.Fatalf("stderr = %q; want empty", stderr.String())
 	}
-	if got := stdout.String(); got != raw+"\n" {
-		t.Fatalf("stdout = %q; want the raw event line", got)
+	lines := strings.Split(strings.TrimSpace(stdout.String()), "\n")
+	if len(lines) != 2 || lines[0] != raw {
+		t.Fatalf("stdout = %q; want the raw event followed by the logs start event", stdout.String())
+	}
+	var start struct {
+		Command   string `json:"command"`
+		Message   string `json:"msg"`
+		RequestID string `json:"request_id"`
+	}
+	if err := json.Unmarshal([]byte(lines[1]), &start); err != nil {
+		t.Fatal(err)
+	}
+	if start.Command != "logs" || start.Message != "command start" || !regexp.MustCompile(`^r-[0-9a-f]{8}$`).MatchString(start.RequestID) {
+		t.Fatalf("logs start event = %+v; want a request ID and command start", start)
 	}
 }
