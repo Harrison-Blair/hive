@@ -124,6 +124,9 @@ func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
 	}
 	switch press.String() {
 	case "i":
+		if m.chatCallerBlocked {
+			return nil
+		}
 		m.chatInputActive = true
 		return batch(m.chatInput.Focus(), m.logAction("chat input open"))
 	case "n":
@@ -165,7 +168,9 @@ func (m *Model) sendChat() tea.Cmd {
 	m.chatErr = ""
 	home := m.home
 	return batch(m.logAction("chat send"), func() tea.Msg {
-		envelope := chatlib.Send(context.Background(), home, chatlib.SendOptions{Text: text})
+		envelope := chatlib.Send(context.Background(), home, chatlib.SendOptions{
+			PaneID: m.chatPaneID, WorkingDir: m.chatCallerCwd, Text: text,
+		})
 		return chatSendMsg{text: text, envelope: envelope}
 	})
 }

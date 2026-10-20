@@ -26,6 +26,10 @@ func newSend() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "chat send", func(home string) (output.Envelope, string, error) {
+			workingDir, err := os.Getwd()
+			if err != nil {
+				return output.Envelope{}, "", err
+			}
 			text := args[0]
 			if text == "-" {
 				data, err := io.ReadAll(cmd.InOrStdin())
@@ -34,7 +38,7 @@ func newSend() *cobra.Command {
 				}
 				text = string(data)
 			}
-			envelope := chatlib.Send(cmd.Context(), home, chatlib.SendOptions{Agent: agent, PaneID: pane, Text: text})
+			envelope := chatlib.Send(cmd.Context(), home, chatlib.SendOptions{Agent: agent, PaneID: pane, WorkingDir: workingDir, Text: text})
 			return envelope, chatlib.SendText(envelope), nil
 		})
 	}
