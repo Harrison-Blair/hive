@@ -73,7 +73,7 @@ only your own panes or a scratch run.
 
 Write one table row for each board element. Use these columns:
 
-| Board element | State without colour | Result | Cause or decision |
+| Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
 | <element> | <glyph or word> | matches, differs, or overridden | <cause or decision> |
 
