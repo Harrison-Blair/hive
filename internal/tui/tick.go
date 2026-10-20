@@ -18,11 +18,12 @@ type headerLoadMsg struct {
 }
 
 type screenLoadMsg struct {
-	request dataRequest
-	events  []logs.Event
-	agents  agentsData
-	chat    chatScreenData
-	err     error
+	request    dataRequest
+	events     []logs.Event
+	agents     agentsData
+	goalsQueue goalsQueueData
+	chat       chatScreenData
+	err        error
 }
 
 type agentsPeekMsg struct {

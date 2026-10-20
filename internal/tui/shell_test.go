@@ -30,7 +30,11 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 			if !strings.Contains(m.View().Content, "[ TREE ]") {
 				t.Fatalf("Agents screen does not show its tree tab:\n%s", m.View().Content)
 			}
-		} else if name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
+		} else if name == "Goals" && !strings.Contains(m.View().Content, "unassigned") {
+			t.Fatalf("Goals screen does not show its unassigned panel:\n%s", m.View().Content)
+		} else if name == "Queue" && !strings.Contains(m.View().Content, "no open tasks") {
+			t.Fatalf("Queue screen does not show its empty state:\n%s", m.View().Content)
+		} else if name != "Goals" && name != "Queue" && name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
 			t.Fatalf("%s screen does not show its placeholder:\n%s", name, m.View().Content)
 		}
 	}
