@@ -224,7 +224,7 @@ func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	view := ansi.Strip(m.currentScreen().View(120, 30))
 	for _, want := range []string{
 		"≡ home", "≡ demo · Active demo goal", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
-		"cc · idle · 3m", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
+		"cc idle · 3m", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
 	} {
 		if !strings.Contains(view, want) {
 			t.Errorf("graph omits board element %q:\n%s", want, view)
@@ -392,9 +392,9 @@ func TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent(t *testing.T
 	m, _ = raise(t, m, key('j', "j"))
 	requireAgentsView(t, m, "legacy-verifier", "parent inferred")
 	m, _ = raise(t, m, key('j', "j"))
-	requireAgentsView(t, m, "DETAIL worker-1", "parent manager-demo")
+	requireAgentsView(t, m, "worker-1 · parent manager-demo")
 	m, _ = raise(t, m, key('k', "k"))
-	requireAgentsView(t, m, "DETAIL legacy-verifier")
+	requireAgentsView(t, m, "legacy-verifier · parent inferred")
 }
 
 func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
@@ -406,10 +406,10 @@ func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
 	}
-	requireAgentsView(t, m, "DETAIL worker-1")
+	requireAgentsView(t, m, "worker-1 · parent manager-demo")
 	writeAgentRecord(t, home, records.Agent{Key: "aaa-worker", Name: "aaa-worker", Role: "worker", Project: "demo", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
 	m = refreshAgents(t, m)
-	requireAgentsView(t, m, "DETAIL worker-1")
+	requireAgentsView(t, m, "worker-1 · parent manager-demo")
 }
 
 func TestAgentsProjectsFollowProjectRecordOrder(t *testing.T) {
@@ -554,7 +554,7 @@ func TestAgentsBoardDetailShowsTaskStatusAndNextTask(t *testing.T) {
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, want := range []string{
-		"DETAIL worker-alpha", "parent manager-alpha", "model model-alpha", "task 10-alpha · assigned",
+		"worker-alpha · parent manager-alpha", "model model-alpha", "task 10-alpha · assigned",
 		"pane w1:p4", "next 11-next", "╭", "╰",
 	} {
 		if !strings.Contains(view, want) {
@@ -721,8 +721,8 @@ func TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers(t *testing.T) {
 	m.agents.tab = agentsGraph
 	lines, _ := m.agents.graphLines()
 	graph := strings.Join(lines, "\n")
-	if strings.Contains(graph, "supervisor ┄┄▶ worker-alpha · nudge") || strings.Contains(graph, "supervisor ┄┄▶ verifier-alpha · nudge") {
-		t.Fatalf("graph has a nudge edge for a worker or verifier:\n%s", graph)
+	if strings.Contains(graph, "nudges") {
+		t.Fatalf("drawn graph has a nudge route for a worker or verifier:\n%s", graph)
 	}
 }
 
@@ -789,6 +789,111 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 	m = deliverAgentCommands(t, m, cmd)
 	if view := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(view, "> 10-alpha") {
 		t.Fatalf("Tasks screen did not select task 10-alpha:\n%s", view)
+	}
+}
+
+func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
+	m := agentsBoardModel(t)
+	want := "←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat"
+	if got := m.currentScreen().KeyHints(); got != want {
+		t.Fatalf("Agents key hints = %q, want %q", got, want)
+	}
+}
+
+func TestAgentsGraphPodTitleSharesTopBorder(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.agents.tab = agentsGraph
+	lines, _ := m.agents.graphLines()
+	graph := ansi.Strip(strings.Join(lines, "\n"))
+	if !strings.Contains(graph, "┌─ ≡ home") || strings.Contains(graph, "│ ≡ home") {
+		t.Fatalf("pod title is not on the top border:\n%s", graph)
+	}
+}
+
+func TestAgentsExplorerUsesIndentationWithoutConnectors(t *testing.T) {
+	m := agentsBoardModel(t)
+	lines, _ := m.agents.explorerLines()
+	explorer := ansi.Strip(strings.Join(lines, "\n"))
+	for _, want := range []string{"  ▶ ● coordinator", "  ○ supervisor", "  ○ manager-alpha", "    ● worker-alpha"} {
+		if !strings.Contains(explorer, want) {
+			t.Errorf("Agents explorer omits %q:\n%s", want, explorer)
+		}
+	}
+	if got := strings.Count(explorer, "supervisor"); got != 1 {
+		t.Fatalf("Agents explorer has %d supervisor rows, want one:\n%s", got, explorer)
+	}
+	if strings.Contains(explorer, "├─") || strings.Contains(explorer, "└─") || strings.Contains(explorer, "┄┄") {
+		t.Fatalf("Agents explorer draws connectors:\n%s", explorer)
+	}
+}
+
+func TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren(t *testing.T) {
+	m := agentsBoardModel(t)
+	writeRecord(t, m.home, []string{"tasks"}, "20-ghost", records.Task{ID: "20-ghost", Project: "beta", Status: "cancelled"})
+	data, err := loadAgents(m.home, m.now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.agents.accept(data)
+	m.agents.tab = agentsGraph
+	lines, positions := m.agents.graphLayout()
+	manager, ok := positions["manager-beta"]
+	if !ok {
+		t.Fatal("graph omits manager-beta")
+	}
+	cardBottom := ansi.Strip(ansi.Cut(lines[manager.row+2], manager.col, manager.col+manager.width))
+	if strings.Contains(cardBottom, "┴") {
+		t.Fatalf("manager-beta draws a stem with no visible child: %s", cardBottom)
+	}
+}
+
+func TestAgentsGraphDelegationBusUsesOpenEndGlyphs(t *testing.T) {
+	m := agentsBoardModel(t)
+	lines, positions := m.agents.graphLayout()
+	bus := []rune(ansi.Strip(lines[0]))
+	for _, test := range []struct {
+		key  string
+		want rune
+	}{{key: "coordinator", want: '┌'}, {key: "manager-alpha", want: '┬'}, {key: "manager-beta", want: '┐'}} {
+		position := positions[test.key]
+		column := position.col + position.width/2
+		if got := bus[column]; got != test.want {
+			t.Errorf("delegation bus at %s = %q, want %q: %s", test.key, got, test.want, string(bus))
+		}
+	}
+}
+
+func TestAgentsTreeLastVisibleChildUsesBottomConnector(t *testing.T) {
+	m := agentsBoardModel(t)
+	writeAgentRecord(t, m.home, records.Agent{
+		Key: "z-hidden-worker", Name: "hidden-worker", Role: "worker", Project: "alpha",
+		Parent: "manager-alpha", Status: records.AgentStopped,
+	})
+	m = refreshAgents(t, m)
+	lines, positions := m.agents.treeLines()
+	row, ok := positions["worker-alpha"]
+	if !ok {
+		t.Fatal("TREE omits worker-alpha")
+	}
+	if !strings.Contains(lines[row], "└─ ● worker-alpha") {
+		t.Fatalf("last visible worker has the wrong connector: %s", lines[row])
+	}
+}
+
+func TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.agents.tab = agentsGraph
+	lines, _ := m.agents.graphLines()
+	graph := ansi.Strip(strings.Join(lines, "\n"))
+	for _, want := range []string{"cc idle · 3m", "pi 10-alpha"} {
+		if !strings.Contains(graph, want) {
+			t.Errorf("graph omits subtitle %q:\n%s", want, graph)
+		}
+	}
+	for _, unwanted := range []string{"cc · idle", "pi · 10-alpha"} {
+		if strings.Contains(graph, unwanted) {
+			t.Errorf("graph has extra subtitle separator %q:\n%s", unwanted, graph)
+		}
 	}
 }
 

@@ -2,15 +2,15 @@
 ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
 │ AGENTS                     ││ TREE  GRAPH  [ TABLE ]                                                                 │
 │ ▾ home                     ││ name · role · project · task · harness · model · status · age · parent                 │
-│   └─ ▶ ● coordinator       ││ ▶ coordinator · coordinator · — · — · claude · model-coordinator · working · 1m · none │
-│      └─ ○ supervisor       ││ supervisor · supervisor · — · — · pi · model-supervisor · idle · 2m · coordinator      │
+│   ▶ ● coordinator          ││ ▶ coordinator · coordinator · — · — · claude · model-coordinator · working · 1m · none │
+│   ○ supervisor             ││ supervisor · supervisor · — · — · pi · model-supervisor · idle · 2m · coordinator      │
 │ ▾ alpha · 1 working        ││ manager-alpha · manager · alpha · — · claude · model-manager-alpha · idle · 3m · coor… │
-│   └─ ○ manager-alpha       ││ worker-alpha · worker · alpha · 10-alpha · pi · model-alpha · working · 4m · manager-… │
-│      └─ ● worker-alpha     ││ manager-beta · manager · beta · — · claude · model-manager-beta · idle · 5m · coordin… │
+│   ○ manager-alpha          ││ worker-alpha · worker · alpha · 10-alpha · pi · model-alpha · working · 4m · manager-… │
+│     ● worker-alpha         ││ manager-beta · manager · beta · — · claude · model-manager-beta · idle · 5m · coordin… │
 │ ▾ beta · 0 working         ││ ghost-beta · worker · beta · 20-ghost · pi · model-ghost · stopped · 6m · manager-beta │
-│   └─ ○ manager-beta        ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
-│      └─ × ghost-beta       ││ │ DETAIL coordinator · parent ? · model model-coordinator · task ? · ? · pane w1:p1  │ │
-│                            ││ │ · next ?                                                                           │ │
+│   ○ manager-beta           ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+│     × ghost-beta           ││ │ coordinator · parent ? · model model-coordinator · task ? · ? · pane w1:p1 ·       │ │
+│                            ││ │ next ?                                                                             │ │
 │                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
 │                            ││                                                                                        │
 │                            ││                                                                                        │
@@ -37,4 +37,4 @@
 ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
                                                                                                                         
                                                                                                                         
-↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat                      
+←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat     

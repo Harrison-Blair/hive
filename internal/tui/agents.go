@@ -514,7 +514,7 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	return "↑/↓←/→ move · tab tree/graph/table · h hide stopped · enter peek · a attach · t task · ask in Chat"
+	return "←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
@@ -662,22 +662,24 @@ func (s agentsState) explorerLines() ([]string, map[string]int) {
 			lines = append(lines, fmt.Sprintf("▾ %s · %d working", title, working))
 		}
 		roots := s.groupRootsFrom(group, nodes)
-		for index, root := range roots {
-			appendExplorerNode(&lines, positions, root, nodes, s, "  ", index == len(roots)-1)
+		if group.id == "home" {
+			roots = roots[:0]
+			for _, key := range group.keys {
+				node := nodes[key]
+				if s.nodeVisible(node) && (node.record.Role == "coordinator" || node.record.Role == "supervisor") {
+					roots = append(roots, node)
+				}
+			}
+		}
+		for _, root := range roots {
+			appendExplorerNode(&lines, positions, root, nodes, s, "  ", group.id != "home")
 		}
 	}
 	return lines, positions
 }
 
-func appendExplorerNode(lines *[]string, positions map[string]int, node agentNode, nodes map[string]agentNode, state agentsState, prefix string, last bool) {
+func appendExplorerNode(lines *[]string, positions map[string]int, node agentNode, nodes map[string]agentNode, state agentsState, prefix string, expand bool) {
 	positions[node.record.Key] = len(*lines)
-	branch := "├─ "
-	if last {
-		branch = "└─ "
-	}
-	if node.inferred {
-		branch = "┄┄ "
-	}
 	label := statusMark(node.status) + " " + node.record.Name
 	if state.showHistory && node.landedGhost {
 		label = "✓ " + node.record.Name
@@ -687,20 +689,12 @@ func appendExplorerNode(lines *[]string, positions map[string]int, node agentNod
 	} else if node.stopped || !node.current {
 		label = dimStyle.Render(label)
 	}
-	*lines = append(*lines, prefix+branch+label)
-	children := state.children(node.record.Key)
-	visibleChildren := make([]agentNode, 0, len(children))
-	for _, child := range children {
-		if state.nodeVisible(child) {
-			visibleChildren = append(visibleChildren, child)
-		}
+	*lines = append(*lines, prefix+label)
+	if !expand {
+		return
 	}
-	for index, child := range visibleChildren {
-		childPrefix := prefix + "│  "
-		if last {
-			childPrefix = prefix + "   "
-		}
-		appendExplorerNode(lines, positions, child, nodes, state, childPrefix, index == len(visibleChildren)-1)
+	for _, child := range state.visibleChildren(node.record.Key) {
+		appendExplorerNode(lines, positions, child, nodes, state, prefix+"  ", true)
 	}
 }
 
@@ -732,7 +726,7 @@ func appendTreeNode(lines *[]string, positions *map[string]int, node agentNode, 
 		branch = "┄┄ "
 	}
 	*lines = append(*lines, prefix+branch+state.treeLabel(node))
-	children := state.children(node.record.Key)
+	children := state.visibleChildren(node.record.Key)
 	for index, child := range children {
 		childPrefix := prefix + "│  "
 		if last {
@@ -806,10 +800,6 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 			coordinatorCol = center
 		} else {
 			managerCols = append(managerCols, center)
-		}
-		groupIndex := groupOf(s.data.groups, node.record.Key)
-		if groupIndex >= 0 {
-			lines[0] = setGraphRune(lines[0], pods[groupIndex].column+pods[groupIndex].width/2, '┬')
 		}
 	}
 	busRows := make([]string, 0, 2)
@@ -892,10 +882,8 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	var appendNodes func(agentNode)
 	appendNodes = func(node agentNode) {
 		nodeList = append(nodeList, node)
-		for _, child := range s.children(node.record.Key) {
-			if s.nodeVisible(child) {
-				appendNodes(child)
-			}
+		for _, child := range s.visibleChildren(node.record.Key) {
+			appendNodes(child)
 		}
 	}
 	for _, root := range s.groupRootsFrom(group, nodes) {
@@ -908,11 +896,12 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 		cardWidth = max(cardWidth, lipgloss.Width(first)+2, lipgloss.Width(second)+2)
 	}
 	title := "≡ " + group.title
-	width := max(24, lipgloss.Width(title)+4, cardWidth+4)
+	width := max(24, lipgloss.Width(title)+5, cardWidth+4)
 	cardWidth = width - 4
+	top := "┌─ " + title + " "
 	lines := []string{
-		"┌" + strings.Repeat("─", width-2) + "┐",
-		"│ " + title + strings.Repeat(" ", max(0, width-lipgloss.Width(title)-4)) + " │",
+		top + strings.Repeat("─", max(0, width-lipgloss.Width(top)-1)) + "┐",
+		"│" + strings.Repeat(" ", width-2) + "│",
 		"│" + strings.Repeat(" ", width-2) + "│",
 	}
 	if len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager") {
@@ -969,7 +958,7 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 		if node.parentKey != "" || node.record.Role == "coordinator" || node.record.Role == "manager" {
 			card[0] = setGraphRune(card[0], middle, '┬')
 		}
-		if len(s.children(node.record.Key)) != 0 || index+1 < len(nodeList) && nodeList[index+1].parentKey == node.parentKey && node.parentKey != "" {
+		if len(s.visibleChildren(node.record.Key)) != 0 || index+1 < len(nodeList) && nodeList[index+1].parentKey == node.parentKey && node.parentKey != "" {
 			card[3] = setGraphRune(card[3], middle, '┴')
 		}
 		positions[node.record.Key] = len(lines) + 1
@@ -1002,7 +991,7 @@ func (s agentsState) graphNodeSubLabel(node agentNode) string {
 			activity = node.age
 		}
 	}
-	label := emptyQuestion(harness) + " · " + emptyQuestion(activity)
+	label := emptyQuestion(harness) + " " + emptyQuestion(activity)
 	if s.showHistory && node.landedGhost {
 		label += " · " + node.landedLabel
 	}
@@ -1043,6 +1032,12 @@ func graphBusLine(width, minimum, maximum int, anchors map[int]bool) string {
 		if column >= 0 && column < len(cells) {
 			cells[column] = '┬'
 		}
+	}
+	if minimum >= 0 && minimum < len(cells) {
+		cells[minimum] = '┌'
+	}
+	if maximum >= 0 && maximum < len(cells) {
+		cells[maximum] = '┐'
 	}
 	return string(cells)
 }
@@ -1214,7 +1209,7 @@ func (s agentsState) detailLine(node agentNode) string {
 	if parent == "none" {
 		parent = "?"
 	}
-	return fmt.Sprintf("DETAIL %s · parent %s · model %s · task %s · %s · pane %s · next %s",
+	return fmt.Sprintf("%s · parent %s · model %s · task %s · %s · pane %s · next %s",
 		node.record.Name, parent, emptyQuestion(node.record.Model), emptyQuestion(node.record.Task),
 		emptyQuestion(node.taskStatus), emptyQuestion(node.record.PaneID), emptyQuestion(node.nextTask))
 }
@@ -1301,6 +1296,16 @@ func (s agentsState) children(parent string) []agentNode {
 			if groupOf(s.data.groups, node.record.Key) == groupOf(s.data.groups, parent) {
 				children = append(children, node)
 			}
+		}
+	}
+	return children
+}
+
+func (s agentsState) visibleChildren(parent string) []agentNode {
+	children := make([]agentNode, 0)
+	for _, child := range s.children(parent) {
+		if s.nodeVisible(child) {
+			children = append(children, child)
 		}
 	}
 	return children
