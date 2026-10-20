@@ -10,9 +10,12 @@
 
 ## Overview
 
-Add the chat between the user and the coordinator: `hive chat send`, `hive chat reply`, `hive chat log`, the chat history, and one lock for each agent pane (README G2, G3, goal decisions 11, 12, 16, 27). The feature README is `.hive/spec/hive-tui/README.md`. Read it first. Its
-decisions are approved. Do not change a decision. When the code does not agree
-with this brief or the README, stop and report it with
+Add chat commands and history for the user and coordinator.
+The commands are `hive chat send`, `hive chat reply`, and `hive chat log`.
+Also add one lock for each agent pane (README G2, G3, goal decisions 11, 12, 16, 27).
+The feature README is `.hive/spec/hive-tui/README.md`. Read it first.
+Keep its approved decisions unchanged.
+When the code does not agree with this brief or the README, stop and report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`.
 
 ## Known facts
@@ -77,8 +80,8 @@ Do not edit other files.
 
 `hive chat log [--since YYYY-MM-DD] [--limit N]` prints the entries in order,
 with the last delivery state of each user message. With `--json` it prints
-one envelope with the entries in `result`. A bad line in a file is skipped
-and counted in the output.
+one envelope with the entries in `result`. The command skips each bad line in
+a file and counts it in the output.
 
 ### R5 No false user tag
 
@@ -107,9 +110,9 @@ the marker, so that only `hive chat send` makes a `⬢ user:` message.
 - Live checks use a temp home (`HIVE_HOME`) and a temp `XDG_CONFIG_HOME`, and
   clean up each herdr workspace that they make. Do not run `rm -rf` on an
   unquoted variable.
-- Other wave A tasks run at the same time. Edit only the files of your source
-  table. A conflict in `cmd/root.go` or `testdata/ste-baseline.json` at the
-  landing is expected and small.
+- Other wave A tasks run at the same time. Edit only the files in your source
+  table. Expect a small conflict in `cmd/root.go` or `testdata/ste-baseline.json`
+  at the landing.
 
 ## Not in scope
 
@@ -119,9 +122,26 @@ The Chat screen (wave B). A question card. `main`.
 
 | ID | Check | Expected result |
 | --- | --- | --- |
-| V1 | Run each new test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | In a temp home: `chat send` with no live coordinator; `chat send` as a registered agent; `chat reply` as a non-coordinator; `agent send` with text `user: x` | Each one fails and writes no chat entry. |
-| V3 | Live, in herdr, from a temp home with a coordinator record in a pane that runs a cheap agent: run `hive chat send` with a two-line text and, at the same time, `hive agent send` to the same pane. Then `herdr pane read` the pane, run `hive chat reply --to <id>` as that coordinator, and run `hive chat log` | The pane shows the two prompts as two separate submissions, not mixed. The log shows the user message with `sent` and the reply with its `reply_to`. Clean up each workspace. |
+| V1 | Run each new test against the base and task code. | Each test fails on the base and passes on the task branch. |
+| V2 | Run the four refusal checks in a temp home. | Each command fails and writes no chat entry. |
+| V3 | Run the live Herdr check in a temp home. | The pane shows two separate prompts. The log shows a sent user message and a reply with its `reply_to` ID. |
+
+V2 checks:
+
+- Run `chat send` with no live coordinator.
+- Run `chat send` as a registered agent.
+- Run `chat reply` as a non-coordinator.
+- Run `agent send` with text `user: x`.
+
+V3 steps:
+
+1. Create a Herdr workspace in the worktree. Start a cheap agent in its pane.
+2. Register that pane as the coordinator in a temp home.
+3. At the same time, run `hive chat send` with two lines and `hive agent send` to that pane.
+4. Read the pane with `herdr pane read`.
+5. Run `hive chat reply --to <id>` with that pane as the coordinator.
+6. Run `hive chat log`.
+7. Close the workspace.
 | V4 | `git diff dev --stat` | Only the files of the source table and the evidence changed. |
 | V5 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` prints nothing. The other three commands exit 0. |
 
@@ -131,3 +151,12 @@ Commit on the task branch with a subject such as `feat(chat): add the chat
 transport`. Push the task branch. Write the evidence. Run `hive task complete`.
 Send the commit SHA and the V1-V5 results to the manager with
 `hive inbox send`.
+
+## Scope change 1
+
+Pane IDs can hold uppercase letters, and `store.LockNamed` accepts only
+lowercase names. Do not change `internal/lib/store/`. The lock name is
+`pane-` and then the lowercase hex encoding of the bytes of the pane ID, for
+example `pane-77313a7041` for `w1:pA`. This replaces the R1 rule that changes
+`:` to `-`. Tests assert the name for one ID with uppercase letters as a
+literal string.

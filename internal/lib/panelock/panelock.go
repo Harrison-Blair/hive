@@ -3,8 +3,8 @@ package panelock
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
-	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -14,6 +14,6 @@ func Lock(ctx context.Context, home, paneID string) (*store.NamedLock, error) {
 	if paneID == "" {
 		return nil, fmt.Errorf("pane ID is empty")
 	}
-	name := "pane-" + strings.ReplaceAll(paneID, ":", "-")
+	name := "pane-" + hex.EncodeToString([]byte(paneID))
 	return store.LockNamed(ctx, home, name)
 }

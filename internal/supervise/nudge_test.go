@@ -47,7 +47,7 @@ func TestPromptNudgeHoldsPaneLock(t *testing.T) {
 	home := testHome(t)
 	ops := newFakeOps()
 	s := handlerSupervisor(t, home, ops, newFakeClock())
-	lock, err := store.LockNamed(context.Background(), home, "pane-w1-p1")
+	lock, err := store.LockNamed(context.Background(), home, "pane-77313a7031")
 	if err != nil {
 		t.Fatal(err)
 	}

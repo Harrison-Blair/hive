@@ -219,7 +219,7 @@ func TestSendHoldsPaneLockForPrompt(t *testing.T) {
 	writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
 	fake := newFakeHerdr(t)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
-	lock, err := store.LockNamed(context.Background(), home, "pane-w1-p1")
+	lock, err := store.LockNamed(context.Background(), home, "pane-77313a7031")
 	if err != nil {
 		t.Fatal(err)
 	}
