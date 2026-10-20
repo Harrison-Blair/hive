@@ -13,6 +13,7 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/panelock"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
@@ -43,6 +44,9 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 	if options.Text == "" {
 		return failed("validate", "prompt text is empty")
+	}
+	if isUserTagged(options.Text) {
+		return failed("validate", "agent send cannot send a user-tagged message")
 	}
 	if len(options.Text) > maxPromptBytes {
 		return failed("validate", fmt.Sprintf("prompt text is longer than %d bytes", maxPromptBytes))
@@ -87,6 +91,11 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		}
 		opts = append(opts, herdr.WithDeadline(time.Duration(timeout)*time.Second+5*time.Second))
 	}
+	paneLock, lockErr := panelock.Lock(ctx, home, record.PaneID)
+	if lockErr != nil {
+		return sendEnvelope("failed", "pane lock: "+lockErr.Error(), record, logger)
+	}
+	defer func() { _ = paneLock.Unlock() }()
 	reply, promptErr := herdr.AgentPrompt(ctx, params, opts...)
 	if promptErr != nil {
 		return sendFailure(ctx, home, logger, record, promptErr)
@@ -100,6 +109,11 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 	logger.Debug("agent prompt end", "command", "agent send", "agent_id", record.Key, "outcome", envelope.Outcome, "status", reply.AgentStatus)
 	return envelope
+}
+
+func isUserTagged(text string) bool {
+	text = strings.TrimPrefix(text, marker.Prefix)
+	return strings.HasPrefix(text, "user:")
 }
 
 func promptTimeoutFits(seconds int) bool {

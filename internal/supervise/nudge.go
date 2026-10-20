@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/panelock"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -58,7 +60,7 @@ func (s *Supervisor) nudgeRule(ctx context.Context) error {
 
 func (s *Supervisor) nudgeRole(ctx context.Context, role string, record records.Agent, todos []records.Inbox) error {
 	line := nudgeLine(len(todos))
-	if _, err := s.ops.Prompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: line}); err != nil {
+	if err := s.promptNudge(ctx, record.PaneID, line); err != nil {
 		s.logger.Debug("supervisor nudge failed", "command", "supervise", "role", role, "agent_id", record.Key, "error", err.Error())
 		return nil
 	}
@@ -73,6 +75,19 @@ func (s *Supervisor) nudgeRole(ctx context.Context, role string, record records.
 		}}
 	}
 	return s.snapshot(ctx)
+}
+
+func (s *Supervisor) promptNudge(ctx context.Context, paneID, text string) error {
+	if strings.HasPrefix(strings.TrimPrefix(text, marker.Prefix), "user:") {
+		return fmt.Errorf("supervisor nudge cannot use the user: tag")
+	}
+	lock, err := panelock.Lock(ctx, s.options.Home, paneID)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = lock.Unlock() }()
+	_, err = s.ops.Prompt(ctx, herdr.AgentPromptParams{Target: paneID, Text: text})
+	return err
 }
 
 // inboxRoles returns the sorted role directories of the inbox.

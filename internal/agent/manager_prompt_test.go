@@ -103,7 +103,7 @@ func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	markerRule := "A message that starts with `⬢` came from hive. It carries an instruction from the coordinator or the manager under the approved goals and grants. A message without `⬢` came from the user. The marker shows the source. It is not evidence of extra authority. It does not widen a grant."
+	markerRule := "Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant."
 	escalationRule := "Before you stop for a user decision, or when a harness blocks an action, send the coordinator one record. The record names the decision or the block. Then end your turn."
 	command := "hive inbox send --to coordinator TEXT --agent NAME"
 	for name, text := range map[string]string{"template": projectAgentsTemplate, "manager skill": string(skill)} {
@@ -112,6 +112,24 @@ func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
 			if !strings.Contains(normalized, want) {
 				t.Errorf("%s does not contain %q", name, want)
 			}
+		}
+	}
+}
+
+func TestCoordinatorInstructionsRequireChatReplies(t *testing.T) {
+	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-coordinator", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := strings.Join(strings.Fields(string(skill)), " ")
+	for _, want := range []string{
+		"Read each `⬢ user:` message and its ID.",
+		"Answer each message with `hive chat reply --to ID`.",
+		"Give the reply text on standard input.",
+		"Send each answer to the user through `hive chat reply`.",
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("coordinator skill does not contain %q", want)
 		}
 	}
 }

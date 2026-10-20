@@ -1,0 +1,332 @@
+package chat
+
+import (
+	"bufio"
+	"context"
+	"encoding/json"
+	"fmt"
+	"net"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
+)
+
+func chatHome(t *testing.T) string {
+	t.Helper()
+	home := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return home
+}
+
+func seedAgent(t *testing.T, home string, record records.Agent) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func seedCoordinator(t *testing.T, home string) {
+	t.Helper()
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
+	seedAgent(t, home, coordinator)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: coordinator.Key, Generation: 1}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func seedWorker(t *testing.T, home string) {
+	t.Helper()
+	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+}
+
+type promptRequest struct {
+	ID     string          `json:"id"`
+	Method string          `json:"method"`
+	Params json.RawMessage `json:"params"`
+}
+
+type fakeHerdr struct {
+	t         *testing.T
+	listener  net.Listener
+	path      string
+	mu        sync.Mutex
+	requests  []promptRequest
+	promptErr bool
+}
+
+func newFakeHerdr(t *testing.T) *fakeHerdr {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "herdr.sock")
+	listener, err := net.Listen("unix", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := &fakeHerdr{t: t, listener: listener, path: path}
+	t.Setenv("HERDR_SOCKET_PATH", path)
+	go fake.serve()
+	t.Cleanup(func() { _ = listener.Close(); _ = os.Remove(path) })
+	return fake
+}
+
+func (f *fakeHerdr) serve() {
+	for {
+		conn, err := f.listener.Accept()
+		if err != nil {
+			return
+		}
+		go f.handle(conn)
+	}
+}
+
+func (f *fakeHerdr) handle(conn net.Conn) {
+	defer func() { _ = conn.Close() }()
+	requestLine, err := bufio.NewReader(conn).ReadBytes('\n')
+	if err != nil {
+		return
+	}
+	var request promptRequest
+	if err := json.Unmarshal(requestLine, &request); err != nil {
+		f.t.Errorf("decode request: %v", err)
+		return
+	}
+	f.mu.Lock()
+	f.requests = append(f.requests, request)
+	promptErr := f.promptErr
+	f.mu.Unlock()
+	var result, serverError string
+	switch request.Method {
+	case "ping":
+		result = `{"type":"pong","version":"0.9.5","protocol":22}`
+	case "agent.prompt":
+		if promptErr {
+			serverError = `,"error":{"code":"agent_prompt_stalled","message":"stalled"}`
+		} else {
+			result = `{"type":"agent_prompted","agent":{"terminal_id":"term_a","agent_status":"idle","workspace_id":"w1","tab_id":"w1:t1","pane_id":"w1:p1","focused":false,"revision":1}}`
+		}
+	default:
+		f.t.Errorf("unexpected herdr method %q", request.Method)
+		return
+	}
+	body := fmt.Sprintf(`{"id":%q`, request.ID)
+	if serverError != "" {
+		body += serverError + "}\n"
+	} else {
+		body += `,"result":` + result + "}\n"
+	}
+	_, _ = conn.Write([]byte(body))
+}
+
+func (f *fakeHerdr) recorded(method string) []promptRequest {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var found []promptRequest
+	for _, request := range f.requests {
+		if request.Method == method {
+			found = append(found, request)
+		}
+	}
+	return found
+}
+
+func (f *fakeHerdr) failPrompt() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.promptErr = true
+}
+
+func chatFiles(t *testing.T, home string) []string {
+	t.Helper()
+	files, err := filepath.Glob(filepath.Join(home, ".hive", "state", "chat", "*.jsonl"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return files
+}
+
+func TestSendRequiresLiveCoordinatorBeforeChatWrite(t *testing.T) {
+	home := chatHome(t)
+	envelope := Send(context.Background(), home, SendOptions{Text: "hello"})
+	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "coordinator") {
+		t.Fatalf("Send() = %#v; want no-live-coordinator failure", envelope)
+	}
+	if files := chatFiles(t, home); len(files) != 0 {
+		t.Fatalf("chat files = %v; want none", files)
+	}
+}
+
+func TestSendRefusesRegisteredAgentBeforeChatWrite(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedWorker(t, home)
+	envelope := Send(context.Background(), home, SendOptions{Agent: "worker-one", Text: "hello"})
+	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "user") {
+		t.Fatalf("Send() = %#v; want refusal for a registered agent", envelope)
+	}
+	if files := chatFiles(t, home); len(files) != 0 {
+		t.Fatalf("chat files = %v; want none", files)
+	}
+}
+
+func TestSendRecordsMultilineUserPromptAndDelivery(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{Text: "line one\nline two"})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Send() = %#v; want ok", envelope)
+	}
+	result, ok := envelope.Result.(SendResult)
+	if !ok || result.ID != "c1" || result.Delivery != "sent" {
+		t.Fatalf("result = %#v; want c1 sent", envelope.Result)
+	}
+	prompts := fake.recorded("agent.prompt")
+	if len(prompts) != 1 {
+		t.Fatalf("agent.prompt calls = %d; want one", len(prompts))
+	}
+	var params herdr.AgentPromptParams
+	if err := json.Unmarshal(prompts[0].Params, &params); err != nil {
+		t.Fatal(err)
+	}
+	if params.Target != "w1:p1" || params.Text != "⬢ user: line one\nline two" {
+		t.Fatalf("prompt = %#v; want one marked multiline submission to coordinator pane", params)
+	}
+	files := chatFiles(t, home)
+	if len(files) != 1 {
+		t.Fatalf("chat files = %v; want one daily file", files)
+	}
+	data, err := os.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("chat lines = %d; want pending entry and delivery update", len(lines))
+	}
+	var message, delivery map[string]any
+	if err := json.Unmarshal([]byte(lines[0]), &message); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(lines[1]), &delivery); err != nil {
+		t.Fatal(err)
+	}
+	if message["id"] != "c1" || message["from"] != "user" || message["delivery"] != "pending" || delivery["id"] != "c1" || delivery["delivery"] != "sent" {
+		t.Fatalf("chat lines = %#v / %#v; want c1 user pending then c1 sent", message, delivery)
+	}
+	at, err := time.Parse(time.RFC3339Nano, message["at"].(string))
+	if err != nil || filepath.Base(files[0]) != at.UTC().Format("2006-01-02")+".jsonl" {
+		t.Fatalf("daily file = %s, at = %v; want UTC date", filepath.Base(files[0]), message["at"])
+	}
+	logEnvelope := Log(home, LogOptions{})
+	logResult, ok := logEnvelope.Result.(LogResult)
+	if logEnvelope.Outcome != "ok" || !ok || len(logResult.Entries) != 1 || logResult.Entries[0].Delivery != "sent" {
+		t.Fatalf("Log() = %#v; want user entry with sent delivery", logEnvelope)
+	}
+}
+
+func TestSendMarksPromptFailureUnknownWithoutRetry(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	fake := newFakeHerdr(t)
+	fake.failPrompt()
+	envelope := Send(context.Background(), home, SendOptions{Text: "hello"})
+	result, ok := envelope.Result.(SendResult)
+	if envelope.Outcome != "failed" || !ok || result.ID != "c1" || result.Delivery != "unknown" {
+		t.Fatalf("Send() = %#v; want c1 unknown failure", envelope)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 1 {
+		t.Fatalf("agent.prompt calls = %d; want one and no retry", got)
+	}
+}
+
+func TestReplyRequiresCoordinatorAndSetsReplyTo(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedWorker(t, home)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := registry.Next("chat"); err != nil {
+		t.Fatal(err)
+	}
+	appendChatLine(t, home, "2026-01-02", Entry{ID: "c1", At: "2026-01-02T03:04:05Z", From: "user", Text: "hello", Delivery: "pending"})
+	appendChatLine(t, home, "2026-01-02", Entry{ID: "c1", At: "2026-01-02T03:04:06Z", Delivery: "sent"})
+	denied := Reply(home, ReplyOptions{Agent: "worker-one", Text: "answer"})
+	if denied.Outcome != "failed" || !strings.Contains(fmt.Sprint(denied.Error), "coordinator") {
+		t.Fatalf("Reply() as worker = %#v; want coordinator-role error", denied)
+	}
+	allowed := Reply(home, ReplyOptions{Agent: "coordinator", To: "c1", Text: "answer"})
+	if allowed.Outcome != "ok" {
+		t.Fatalf("Reply() as coordinator = %#v; want ok", allowed)
+	}
+	result, ok := allowed.Result.(ReplyResult)
+	if !ok || result.Entry.ID != "c2" || result.Entry.From != "coordinator" || result.Entry.ReplyTo != "c1" {
+		t.Fatalf("reply result = %#v; want coordinator c2 reply_to c1", allowed.Result)
+	}
+}
+
+func TestLogSkipsBadLinesAppliesSinceAndLimit(t *testing.T) {
+	home := chatHome(t)
+	appendChatLine(t, home, "2026-01-01", Entry{ID: "c1", At: "2026-01-01T01:00:00Z", From: "user", Text: "old", Delivery: "pending"})
+	appendChatLine(t, home, "2026-01-01", Entry{ID: "c1", At: "2026-01-01T01:00:01Z", Delivery: "sent"})
+	appendChatLine(t, home, "2026-01-02", Entry{ID: "c2", At: "2026-01-02T01:00:00Z", From: "user", Text: "first", Delivery: "pending"})
+	appendChatLine(t, home, "2026-01-02", Entry{ID: "c2", At: "2026-01-02T01:01:00Z", Delivery: "sent"})
+	appendChatLine(t, home, "2026-01-02", Entry{ID: "c3", At: "2026-01-02T01:02:00Z", From: "coordinator", Text: "last", ReplyTo: "c2"})
+	appendChatRaw(t, home, "2026-01-02", "not-json")
+	envelope := Log(home, LogOptions{Since: "2026-01-02", Limit: 1})
+	result, ok := envelope.Result.(LogResult)
+	if envelope.Outcome != "ok" || !ok || len(result.Entries) != 1 || result.BadLines != 1 {
+		t.Fatalf("Log() = %#v; want one latest entry and one bad line", envelope)
+	}
+	entry := result.Entries[0]
+	if entry.ID != "c3" || entry.ReplyTo != "c2" {
+		t.Fatalf("entry = %#v; want coordinator reply to c2", entry)
+	}
+}
+
+func appendChatLine(t *testing.T, home, date string, entry Entry) {
+	t.Helper()
+	data, err := json.Marshal(entry)
+	if err != nil {
+		t.Fatal(err)
+	}
+	appendChatRaw(t, home, date, string(data))
+}
+
+func appendChatRaw(t *testing.T, home, date, line string) {
+	t.Helper()
+	dir := filepath.Join(home, ".hive", "state", "chat")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	file, err := os.OpenFile(filepath.Join(dir, date+".jsonl"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := file.WriteString(line + "\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
