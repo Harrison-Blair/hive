@@ -14,6 +14,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/logs"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func TestScreenKeysSelectAllEightScreens(t *testing.T) {
@@ -286,6 +287,52 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			assertNoPaintedBackgroundSGR(t, output)
 			if !strings.Contains(output, "38;2;245;185;66") {
 				t.Errorf("%s sidebar omits the honey foreground color:\n%s", name, output)
+			}
+		})
+	}
+
+	m.screenIndex = 0
+	m.chatInputActive = true
+	for _, draft := range []string{"", "selection marker draft"} {
+		t.Run("Chat input "+draft, func(t *testing.T) {
+			m.chatInput.Reset()
+			m.chatInput.InsertString(draft)
+			m.chatInput.Focus()
+			m.invalidateView()
+			view := m.View()
+			assertNoPaintedBackgroundSGR(t, view.Content)
+			if !strings.Contains(view.Content, "esc keep draft") {
+				t.Error("active Chat footer omits its input controls")
+			}
+			if view.Cursor == nil {
+				t.Fatal("active Chat input omits the real terminal cursor")
+			}
+			plain := ansi.Strip(view.Content)
+			wantText := "Type a message"
+			cursorOffset := 0
+			if draft != "" {
+				wantText = draft
+				cursorOffset = len(draft)
+			}
+			textIndex := strings.Index(plain, wantText)
+			if textIndex < 0 {
+				t.Fatalf("active Chat input omits %q", wantText)
+			}
+			prefix := plain[:textIndex+cursorOffset]
+			lineStart := strings.LastIndex(prefix, "\n") + 1
+			want := tea.Position{X: ansi.StringWidth(prefix[lineStart:]), Y: strings.Count(prefix, "\n")}
+			if got := view.Cursor.Position; got != want {
+				t.Errorf("active Chat cursor position = %+v, want text position %+v", got, want)
+			}
+			if draft != "" {
+				lines := strings.Split(plain, "\n")
+				row := strings.Count(plain[:strings.Index(plain, draft)], "\n")
+				if row < 1 || !strings.Contains(lines[row-1], "╭") {
+					t.Errorf("Chat composer omits its top border:\n%s", plain)
+				}
+				if row+4 >= len(lines) || !strings.Contains(lines[row+4], "╰") {
+					t.Errorf("Chat composer omits its bottom border:\n%s", plain)
+				}
 			}
 		})
 	}

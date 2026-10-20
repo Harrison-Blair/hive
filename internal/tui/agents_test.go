@@ -788,7 +788,7 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 		t.Fatal("t did not load the Tasks screen")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	if view := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(view, "> 10-alpha") {
+	if view := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(view, "▶ 10-alpha") {
 		t.Fatalf("Tasks screen did not select task 10-alpha:\n%s", view)
 	}
 }
@@ -809,7 +809,7 @@ func TestAgentsGraphPodTitleSharesTopBorder(t *testing.T) {
 		t.Fatalf("home pod title is not on the top border:\n%s", strings.Join(homePod, "\n"))
 	}
 	alphaPod, _, _, _ := m.agents.graphPod(m.agents.data.groups[1], nodes)
-	want := "╭─ ≡ alpha · Alpha… ─┬"
+	want := "╭─ ≡ alpha · Alpha goal for long graph ─┬"
 	if !strings.HasPrefix(alphaPod[0], want) {
 		t.Fatalf("alpha pod title = %q, want prefix %q", alphaPod[0], want)
 	}
@@ -819,7 +819,7 @@ func TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem(t *testing.T) {
 	m := agentsBoardModel(t)
 	group := agentGroup{id: "stenographer", title: "stenographer · a goal with a long title", keys: []string{"manager-alpha"}}
 	pod, _, _, _ := m.agents.graphPod(group, m.agents.nodeMap())
-	want := "╭─ ≡ stenographer · a… ─┬"
+	want := "╭─ ≡ stenographer · a goal with a long title ─┬"
 	if !strings.HasPrefix(pod[0], want) {
 		t.Fatalf("long pod title = %q, want prefix %q", pod[0], want)
 	}
@@ -895,7 +895,9 @@ func TestAgentsGraphColorsMatchBoard(t *testing.T) {
 						continue
 					}
 					node := nodes[key]
-					if key == m.agents.selectedKey || node.record.Status != records.AgentLive || node.stopped {
+					if key == m.agents.selectedKey {
+						want = "38;2;245;185;66"
+					} else if node.record.Status != records.AgentLive || node.stopped {
 						want = ""
 					}
 					break
@@ -1014,7 +1016,7 @@ func TestAgentsTreeLastVisibleChildUsesBottomConnector(t *testing.T) {
 	if !ok {
 		t.Fatal("TREE omits worker-alpha")
 	}
-	if !strings.Contains(lines[row], "└─ ● worker-alpha") {
+	if !strings.Contains(ansi.Strip(lines[row]), "└─ ● worker-alpha") {
 		t.Fatalf("last visible worker has the wrong connector: %s", lines[row])
 	}
 }
@@ -1149,7 +1151,7 @@ func TestAgentsDetailFieldsUseSpaces(t *testing.T) {
 		t.Fatalf("Agents detail = %q, want %q", got, want)
 	}
 	strip := strings.Join(agentDetailStrip(want, 120), "\n")
-	if !strings.Contains(strip, "worker-alpha  parent manager-alpha  model model-alpha") {
+	if !strings.Contains(ansi.Strip(strip), "worker-alpha  parent manager-alpha  model model-alpha") {
 		t.Fatalf("Agents detail strip does not keep space separators:\n%s", strip)
 	}
 }

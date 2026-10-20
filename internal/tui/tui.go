@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/logs"
+	"github.com/charmbracelet/x/ansi"
 	xterm "github.com/charmbracelet/x/term"
 )
 
@@ -439,6 +441,20 @@ func (m *Model) View() tea.View {
 	}
 	view := tea.NewView(m.viewCache)
 	view.AltScreen = true
+	if m.screenIndex == 0 && m.chatInputActive {
+		if cursor := m.chatInput.Cursor(); cursor != nil {
+			content := ansi.Strip(m.viewCache)
+			inputLines := strings.Split(ansi.Strip(m.chatInput.View()), "\n")
+			inputLine := strings.TrimRight(inputLines[0], " ")
+			if index := strings.Index(content, inputLine); index >= 0 {
+				prefix := content[:index]
+				lineStart := strings.LastIndex(prefix, "\n") + 1
+				cursor.X += lipgloss.Width(prefix[lineStart:])
+				cursor.Y += strings.Count(prefix, "\n")
+				view.Cursor = cursor
+			}
+		}
+	}
 	return view
 }
 

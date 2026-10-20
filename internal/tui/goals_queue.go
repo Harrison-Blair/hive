@@ -339,7 +339,7 @@ func (s goalsQueueState) goalBlocks(width int) ([]string, map[string]int) {
 		positions[goal.ID] = line
 		lines := goalLines(goal, s.taskMap(), goal.ID == s.selectedGoal)
 		block := panelStyle.Width(cardWidth).Render(strings.Join(lines, "\n"))
-		if goal.Status != "active" {
+		if goal.Status != "active" && goal.ID != s.selectedGoal {
 			block = dimStyle.Render(block)
 		}
 		blocks = append(blocks, block)
@@ -372,15 +372,17 @@ func goalLines(goal records.Goal, tasks map[string]records.Task, selected bool) 
 			break
 		}
 	}
-	prefix := "  "
-	if selected {
-		prefix = selectedStyle.Render("▶ ")
-	}
 	goalStatus := goal.Status
 	if goalStatus == "" {
 		goalStatus = "unknown"
 	}
-	lines := []string{titleStyle.Render(prefix + goal.Project + " · " + goal.Title + " · " + goalStatus + " · done when: " + current)}
+	goalLine := goal.Project + " · " + goal.Title + " · " + goalStatus + " · done when: " + current
+	if selected {
+		goalLine = selectedStyle.Render("▶ " + goalLine)
+	} else {
+		goalLine = titleStyle.Render("  " + goalLine)
+	}
+	lines := []string{goalLine}
 	for _, wave := range goal.Waves {
 		landed := 0
 		for _, id := range wave.Tasks {

@@ -1,6 +1,6 @@
 ⬢ hive  2 projects  5 agents  2 working  3 idle  supervisor ●  needs you 0                                         12:00
 ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
-│ AGENTS                     ││ [ TREE ]  GRAPH  TABLE                                                                 │
+│ AGENTS                     ││ ▶ [ TREE ]  GRAPH  TABLE                                                               │
 │ ▾ home                     ││ ▾ home                                                                                 │
 │   ▶ ● coordinator          ││   └─ ▶ ● coordinator · working · 1m                                                    │
 │   ○ supervisor             ││      └─ ○ supervisor · idle · 2m                                                       │
