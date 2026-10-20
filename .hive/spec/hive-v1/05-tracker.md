@@ -1,7 +1,7 @@
 # Tracker
 
-This file is the live record of the hive v1 plan. [tasks/README.md](tasks/README.md)
-gives the brief format. [evidence/README.md](evidence/README.md) gives the
+This file is the live record of the hive v1 plan. The [brief format](../BRIEF-FORMAT.md)
+gives the brief format. The [evidence format](../EVIDENCE-FORMAT.md) gives the
 evidence format. [03-architecture.md](03-architecture.md) gives the design that
 the tasks build. Only the merger edits this file, on `dev`.
 
@@ -2060,7 +2060,7 @@ worker, a verifier, and a landing.
 
 Use the real registered Hive home, project, and `dev`. Do not create a
 replacement fixture. The artifact is `reference/dogfood/cp5.md`. The tracked
-evidence is `spec/hive-v1/evidence/CP5-<pass>/VERIFIED.md`. Name that path in
+evidence is `.hive/spec/hive-v1/checkpoints/CP5-<pass>/VERIFIED.md`. Name that path in
 both concrete briefs. Root `VERIFIED.md` is also permitted by `!*.md`. Do not
 change the allowlist and do not force an add.
 
@@ -2430,16 +2430,17 @@ herdr worktree create --cwd "$HIVE" --branch task/<task-id> --base dev \
 ```text
 You are a worker on the hive project. Your home is /home/penguin/source/hive.
 Your worktree is /home/penguin/source/hive/projects/hive/worktrees/<task-id>, on the
-branch task/<task-id>. Read AGENTS.md. Your brief is spec/hive-v1/tasks/<task-id>.md.
-Follow the worker flow in spec/hive-v1/05-tracker.md. Do not edit the tracker.
+branch task/<task-id>. Read AGENTS.md. Your brief is
+.hive/spec/hive-v1/tasks/<task-id>/brief.md. Follow the worker flow in
+.hive/spec/hive-v1/05-tracker.md. Do not edit the tracker.
 ```
 
 ### Worker flow
 
-1. Read `AGENTS.md`, the brief, and `evidence/README.md`.
+1. Read `AGENTS.md`, the brief, and `.hive/spec/EVIDENCE-FORMAT.md`.
 2. For each acceptance criterion: write the failing test, run it, record the red run, write the code, run it, record the green run. Commit after each green run.
 3. Build the binary with `go build .` before each live check. Close each herdr workspace, tab, and agent that the check made.
-4. Write each `V<n>.md` into `spec/hive-v1/evidence/<task-id>/`.
+4. Write each `V<n>.md` into `.hive/spec/hive-v1/tasks/<task-id>/evidence/`.
 5. Run the gate from the root of the worktree. Record it as the last item. Commit the evidence.
 6. Each commit goes on the task branch with a subject of the form `type(scope): summary`. Push the branch after each commit with `git push -u origin task/<task-id>`. Do not wait for a request from the user. Never commit on `dev` or `main`.
 7. Tell the user in your pane that the evidence is complete. A spec task has no hive task record during the bootstrap, so `hive task complete` does not apply.
@@ -2449,10 +2450,10 @@ Follow the worker flow in spec/hive-v1/05-tracker.md. Do not edit the tracker.
 The merger sets the status to evidence and starts the verifier in the same
 pane after the worker stops. The verifier is from another model family.
 
-1. Read `AGENTS.md`, the brief, `evidence/README.md`, and each `V<n>.md`.
+1. Read `AGENTS.md`, the brief, `.hive/spec/EVIDENCE-FORMAT.md`, and each `V<n>.md`.
 2. Prepare an isolated home for each transcript and probe. Make a unique temporary directory. Create its marker `.hive/README.md`. Set `HIVE_HOME` to its absolute path for each command. Make a unique temporary project when a test needs Git. Keep the worktree files `.hive/state`, `.hive/logs`, and `.hive/tmp`. The worker report lives in `.hive/tmp`. Remove only the fixture that the pass made. Then run `go build .`.
 3. Run each verification item again. Compare the output with the expected output of the brief.
-4. Write `VERIFIED.md`, commit it on the task branch, and push the branch.
+4. Write `VERIFIED.md` to `.hive/spec/hive-v1/tasks/<task-id>/evidence/`. Commit it on the task branch and push the branch.
 5. On a fail, the merger starts the worker again in the same pane with the fail remarks. The worker corrects, the verifier runs again.
 
 The verifier does not implement source and does not rewrite worker evidence.

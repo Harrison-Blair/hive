@@ -50,5 +50,5 @@ meanings agree.
 | checkpoint | A node in the task graph where the user sees a behavior live and records a critique before dependent tasks start. | demo gate, review gate |
 | acceptance criterion | One provable statement in a brief that defines done. | |
 | verification item | One step with a command that proves one or more acceptance criteria. | |
-| evidence | A Markdown file in `spec/hive-v1/evidence/` that records one verification item and its output. | proof |
+| evidence | A Markdown file in `.hive/spec/<feature>/tasks/<task-id>/evidence/` that records one verification item and its output. | proof |
 | merger | The person or role that merges a task branch into `dev` and updates the tracker. | |

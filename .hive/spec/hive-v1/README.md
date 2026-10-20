@@ -22,8 +22,8 @@ correct this directory first, then the procedure.
 | [03-architecture.md](03-architecture.md) | Home, roles, herdr layout, agent lifecycle, supervision, state, worktrees, memory, delivery, presets, logging, TUI, bounds, recovery |
 | [04-risks.md](04-risks.md) | Each recorded risk and its answer |
 | [05-tracker.md](05-tracker.md) | The task graph, the waves, the checkpoints, the status of each task, and the procedures |
-| [tasks/](tasks/README.md) | One brief for each task, in the format that `tasks/README.md` gives |
-| [evidence/](evidence/README.md) | The evidence files of each task, in the format that `evidence/README.md` gives |
+| Task briefs | Each task folder holds `tasks/<task-id>/brief.md`. See [BRIEF-FORMAT.md](../BRIEF-FORMAT.md) for the format |
+| Task evidence | Each task folder holds `tasks/<task-id>/evidence/`. See [EVIDENCE-FORMAT.md](../EVIDENCE-FORMAT.md) for the format |
 
 ## History
 

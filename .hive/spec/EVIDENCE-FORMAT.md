@@ -1,10 +1,11 @@
 # Evidence
 
-Each task has one directory here with the name of the task ID. The directory
-holds one file for each verification item of the brief, `V<n>.md`, and one file
-`VERIFIED.md` from the verifier. A task reaches the status "evidence" when each
-`V<n>.md` exists. It reaches the status "verified" when `VERIFIED.md` records a
-pass for each item.
+Each feature task has an evidence directory at
+`.hive/spec/<feature>/tasks/<task-id>/evidence/`. A task without a feature uses
+the evidence directory that its brief names. The directory holds one file for
+each verification item, `V<n>.md`, and one verifier file, `VERIFIED.md`. A task
+reaches the status "evidence" when each `V<n>.md` exists. It reaches the status
+"verified" when `VERIFIED.md` records a pass for each item.
 
 ## Rules
 

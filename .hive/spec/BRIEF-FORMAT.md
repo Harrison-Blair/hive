@@ -1,9 +1,9 @@
 # Task briefs
 
-Each file in this directory is the brief of one task in the hive v1 plan. A
-worker reads its brief before any other file. [../05-tracker.md](../05-tracker.md)
-gives the order of the tasks, their status, and the procedures.
-[../evidence/README.md](../evidence/README.md) gives the evidence format.
+Each feature task folder holds one brief. A worker reads its brief before any
+other file. [hive-v1/05-tracker.md](hive-v1/05-tracker.md) gives the v1 task
+order, status, and procedures. [EVIDENCE-FORMAT.md](EVIDENCE-FORMAT.md) gives
+the evidence format.
 
 ## Rules
 
@@ -34,7 +34,7 @@ gives the order of the tasks, their status, and the procedures.
 | Blocks | task IDs and checkpoints |
 | Branch | `task/T<nn>-<slug>` |
 | Worktree | `projects/hive/worktrees/T<nn>-<slug>/` |
-| Evidence | `evidence/T<nn>-<slug>/` |
+| Evidence | `tasks/<task-id>/evidence/` |
 
 ## Overview
 
