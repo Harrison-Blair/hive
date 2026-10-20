@@ -1,8 +1,8 @@
 ---
 title: "A verified task that never landed cannot be cancelled"
-status: "Open"
+status: "Resolved 2026-10-20"
 opened: 2026-10-20
-decision: ""
+decision: "Task 105 lets cancel close a verified task with no pushed delivery, and lets land record a branch that is already on the base"
 ---
 
 **Summary:**

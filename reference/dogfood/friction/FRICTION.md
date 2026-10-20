@@ -10,7 +10,7 @@ For all other files, the coordinator and manager never change a project source f
 | Issue | Status | Decision |
 | --- | --- | --- |
 | [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
-| [A verified task that never landed cannot be cancelled](entries/verified-task-cannot-cancel.md) | Open |  |
+| [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
 | [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |

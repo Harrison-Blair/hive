@@ -27,6 +27,50 @@ hive task show ID --brief
 
 The brief names each verification item and the expected output.
 
+## Visual check
+
+Check each task that changes a user interface. Read its brief. The brief must
+have a `Design` section that names each approved board by its absolute path.
+Flag a UI change when its brief has no `Design` section. Examples include a
+change in `internal/tui/`, a `*_view.py` file, or hub CSS.
+
+Capture each changed screen and each approved board as PNG files again.
+Compare each screen with its board. Judge each difference independently.
+
+Each state must have a glyph or a word in plain text. Colour can add to a
+state. Colour must not be the only signal of a state. Remove colour from the
+plain text of each changed screen. Check for the glyph or word of each state.
+Fail a state that only colour shows.
+
+To capture a board, run this command with a new scratch profile folder:
+
+```sh
+firefox --headless --no-remote --profile SCRATCH --window-size=1220,780 --screenshot OUT.png file://BOARD.dc.html
+```
+
+To capture a Textual app, call `app.save_screenshot()`. It gives an SVG file.
+Convert it to PNG with `rsvg-convert -o OUT.png IN.svg`.
+
+To capture a terminal pane, use this command on a pane that you started:
+
+```sh
+herdr pane read PANE --source visible --format ansi > F.ansi
+```
+
+Use a short scratch script to change the ANSI SGR codes to an HTML `<pre>`.
+Then run the Firefox command above. Capture only your own panes or a scratch
+run.
+
+Write one table row for each board element. Use these columns:
+
+| Board element | state without colour | Result | Cause or decision |
+| --- | --- | --- | --- |
+| <element> | <glyph or word> | matches, differs, or overridden | <cause or decision> |
+
+Use `matches` when the screen agrees with the board. Use `differs` and name
+the cause when it does not. Use `overridden` and name the decision that takes
+priority.
+
 ## Items
 
 Run each verification item again from the worktree root. Use the exact command
