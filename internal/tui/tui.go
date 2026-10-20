@@ -64,20 +64,24 @@ type Model struct {
 	follow             bool
 	logErr             string
 
-	header        headerState
-	headerErr     string
-	screenErr     string
-	attachErr     string
-	headerLoader  func(string) (headerState, error)
-	logLoader     func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader  func(string, *slog.Logger) doctor.Result
-	agentsLoader  func(string, time.Time) (agentsData, error)
-	paneReader    func(context.Context, string) (string, error)
-	agents        agentsState
-	health        healthState
-	chatLoader    func(string, time.Time) (chatScreenData, error)
-	headerLoading bool
-	screenLoading bool
+	header         headerState
+	headerErr      string
+	screenErr      string
+	attachErr      string
+	headerLoader   func(string) (headerState, error)
+	logLoader      func(*logs.Reader, time.Time) ([]logs.Event, error)
+	healthLoader   func(string, *slog.Logger) doctor.Result
+	agentsLoader   func(string, time.Time) (agentsData, error)
+	paneReader     func(context.Context, string) (string, error)
+	agents         agentsState
+	health         healthState
+	tasksLoader    func(string) (tasksData, error)
+	tasks          tasksState
+	frictionLoader func(string) (frictionData, error)
+	friction       frictionState
+	chatLoader     func(string, time.Time) (chatScreenData, error)
+	headerLoading  bool
+	screenLoading  bool
 
 	screens     []screen
 	screenIndex int
@@ -111,9 +115,11 @@ func New(home string, now func() time.Time) *Model {
 			events, _, err := reader.Read(context.Background(), time.Time{})
 			return events, err
 		},
-		agentsLoader: loadAgents,
-		healthLoader: loadHealth,
-		paneReader:   readAgentPane,
+		agentsLoader:   loadAgents,
+		healthLoader:   loadHealth,
+		paneReader:     readAgentPane,
+		tasksLoader:    loadTasks,
+		frictionLoader: loadFriction,
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
@@ -200,12 +206,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.chatFollow {
 				m.chatViewport.GotoBottom()
 			}
-		default:
+		case tasksDataRequest:
+			m.tasks.accept(msg.tasks)
+		case frictionDataRequest:
+			m.friction.accept(msg.friction)
+		case logsDataRequest:
 			m.mergeEvents(msg.events)
 			m.rebuild()
 			if m.follow {
 				m.viewport.GotoBottom()
 			}
+		}
+		return m, nil
+	case taskFileMsg:
+		m.acceptTaskFile(msg)
+		if msg.err != nil {
+			return m, m.logError("task file read", msg.err)
+		}
+		return m, nil
+	case frictionFileMsg:
+		m.acceptFrictionFile(msg)
+		if msg.err != nil {
+			return m, m.logError("friction file read", msg.err)
 		}
 		return m, nil
 	case chatSendMsg:
@@ -369,6 +391,18 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		loader, home, logger := m.healthLoader, m.home, m.logger
 		return func() tea.Msg {
 			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger)}
+		}
+	case tasksDataRequest:
+		loader, home := m.tasksLoader, m.home
+		return func() tea.Msg {
+			data, err := loader(home)
+			return screenLoadMsg{request: tasksDataRequest, tasks: data, err: err}
+		}
+	case frictionDataRequest:
+		loader, home := m.frictionLoader, m.home
+		return func() tea.Msg {
+			data, err := loader(home)
+			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
 		}
 	default:
 		loader, reader, now := m.logLoader, m.reader, m.now

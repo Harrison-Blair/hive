@@ -39,6 +39,8 @@ const (
 	logsDataRequest
 	agentsDataRequest
 	healthDataRequest
+	tasksDataRequest
+	frictionDataRequest
 )
 
 type screen interface {
@@ -57,8 +59,6 @@ func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
 type goalsScreen struct{ placeholderScreen }
 type queueScreen struct{ placeholderScreen }
-type tasksScreen struct{ placeholderScreen }
-type frictionScreen struct{ placeholderScreen }
 
 type logsScreen struct{ model *Model }
 
@@ -96,8 +96,8 @@ func (m *Model) makeScreens() []screen {
 		agentsScreen{model: m},
 		goalsScreen{placeholderScreen{name: "Goals"}},
 		queueScreen{placeholderScreen{name: "Queue"}},
-		tasksScreen{placeholderScreen{name: "Tasks"}},
-		frictionScreen{placeholderScreen{name: "Friction"}},
+		tasksScreen{model: m},
+		frictionScreen{model: m},
 		healthScreen{model: m},
 		logsScreen{model: m},
 	}
