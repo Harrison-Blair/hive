@@ -37,6 +37,12 @@ func run(cmd *cobra.Command, _ []string) error {
 	if !ok {
 		return fail(cmd, jsonOutput, "home", fmt.Errorf("not a hive home: no marker above %s", cwd), 1)
 	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return fail(cmd, jsonOutput, "log", err, 1)
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
 	logger, err := hivelog.Open(markedHome, "cli")
 	if err != nil {
 		return fail(cmd, jsonOutput, "log", err, 1)

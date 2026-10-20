@@ -20,6 +20,7 @@ type headerLoadMsg struct {
 
 type screenLoadMsg struct {
 	request    dataRequest
+	day        time.Time
 	events     []logs.Event
 	agents     agentsData
 	goalsQueue goalsQueueData

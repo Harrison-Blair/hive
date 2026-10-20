@@ -272,16 +272,17 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	)
 	m := newTestLogsModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "alpha gq", "beta", "gamma gq", "epsilon gq", "zeta")
+	requireView(t, m, "alpha gq", "beta", "gamma gq", "epsilon gq")
+	rejectView(t, m, "zeta")
 
 	// Editing must not let viewing-mode keys act.
 	m, _ = raise(t, m, key('/', "/"))
 	for _, code := range []rune{'f', 'l', 'G'} {
 		m, _ = raise(t, m, key(code, string(code)))
 	}
-	requireView(t, m, "text: -", "level: debug", "follow: on")
+	requireView(t, m, "text: -", "level: info", "follow: on")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "level: debug", "follow: on")
+	requireView(t, m, "level: info", "follow: on")
 
 	// A q in editing mode is a printable character, not a quit.
 	m, _ = raise(t, m, key('/', "/"))
@@ -303,10 +304,11 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	m, _ = raise(t, m, key('z', "z"))
 	m, _ = raise(t, m, key('z', "z"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "beta", "delta", "zeta", "text: -", "level: debug")
+	requireView(t, m, "beta", "delta", "text: -", "level: info")
+	rejectView(t, m, "zeta")
 
-	// l cycles debug, info, warn, error, and debug again.
-	for _, want := range []string{"level: info", "level: warn", "level: error", "level: debug"} {
+	// l cycles info, warn, error, debug, and info again.
+	for _, want := range []string{"level: warn", "level: error", "level: debug", "level: info"} {
 		m, _ = raise(t, m, key('l', "l"))
 		requireView(t, m, want)
 	}
@@ -374,7 +376,7 @@ func TestFollowControlsViewport(t *testing.T) {
 	requireView(t, m, "follow: on")
 }
 
-func TestDailyFileRolloverKeepsEarlierLines(t *testing.T) {
+func TestDailyFileRolloverSelectsCurrentDay(t *testing.T) {
 	home := newTestHome(t)
 	firstDay := time.Date(2026, 4, 8, 12, 0, 0, 0, time.Local)
 	secondDay := firstDay.AddDate(0, 0, 1)
@@ -390,8 +392,14 @@ func TestDailyFileRolloverKeepsEarlierLines(t *testing.T) {
 
 	clock.set(secondDay)
 	writeEvents(t, dailyPath(home, secondDay), eventJSON(t, secondDay, "INFO", "after midnight"))
-	m = tickUntilCount(t, m, 3)
-	requireView(t, m, "before midnight one", "before midnight two", "after midnight")
+	m, _ = raise(t, m, tickMsg{})
+	m.screenLoading = false
+	m = loadLogs(t, m)
+	if len(m.events) != 1 {
+		t.Fatalf("new day loaded %d events; want only its daily file", len(m.events))
+	}
+	requireView(t, m, "after midnight")
+	rejectView(t, m, "before midnight one", "before midnight two")
 }
 
 func TestFollowKeepsIncompleteLineUntilNewline(t *testing.T) {

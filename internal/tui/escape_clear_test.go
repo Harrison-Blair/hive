@@ -33,11 +33,13 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	m, _ = raise(t, m, key('l', "l"))
+	for range 4 {
+		m, _ = raise(t, m, key('l', "l"))
+	}
 	m, _ = raise(t, m, key('f', "f"))
 	m, _ = raise(t, m, key('g', "g"))
 	m, _ = raise(t, m, key('G', "G"))
-	requireView(t, m, "level: info  text: project  follow: on")
+	requireView(t, m, "level: info", "text: project", "follow: on")
 	rejectView(t, m, "other beta", "delta")
 
 	before := countLogLines(t, home)
@@ -62,7 +64,7 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 		t.Fatalf("viewing Escape log event = %v", event)
 	}
 
-	requireView(t, m, "level: info  text: -  follow: on", "project alpha", "other beta", "project gamma", "delta")
+	requireView(t, m, "level: info", "text: -", "follow: on", "project alpha", "other beta", "project gamma", "delta")
 	rejectView(t, m, "project debug")
 	if m.textFilter != "" {
 		t.Fatalf("textFilter=%q after viewing Escape; want empty", m.textFilter)

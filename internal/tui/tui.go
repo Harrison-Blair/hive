@@ -60,8 +60,17 @@ type Model struct {
 	chatFollow         bool
 	chatErr            string
 	level              string
+	componentFilter    string
+	projectFilter      string
+	agentFilter        string
+	requestFilter      string
 	textFilter         string
 	follow             bool
+	logDate            time.Time
+	logDatePinned      bool
+	logSelection       int
+	logSelectedKey     string
+	logDetail          bool
 	logErr             string
 
 	header           headerState
@@ -105,7 +114,8 @@ func New(home string, now func() time.Time) *Model {
 	m := &Model{
 		home:         home,
 		now:          now,
-		level:        "debug",
+		level:        "info",
+		logDate:      startOfDay(now().Local()),
 		follow:       true,
 		chatNoise:    "messages",
 		chatFollow:   true,
@@ -115,8 +125,9 @@ func New(home string, now func() time.Time) *Model {
 		header:       headerState{supervisor: "stale"},
 		agents:       agentsState{hideStopped: true},
 		headerLoader: readHeader,
-		logLoader: func(reader *logs.Reader, _ time.Time) ([]logs.Event, error) {
-			events, _, err := reader.Read(context.Background(), time.Time{})
+		logLoader: func(_ *logs.Reader, day time.Time) ([]logs.Event, error) {
+			dayReader := logs.NewReaderWithClock(home, func() time.Time { return day })
+			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
 		agentsLoader:     loadAgents,
@@ -128,7 +139,7 @@ func New(home string, now func() time.Time) *Model {
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
-	m.viewport.SoftWrap = true
+	m.viewport.SoftWrap = false
 	m.chatViewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
 	m.chatViewport.SoftWrap = true
 	m.chatInput = newChatInput()
@@ -170,6 +181,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.layout()
 		return m, nil
 	case tickMsg:
+		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
+			m.logDate = startOfDay(m.now().Local())
+			m.events = nil
+			m.logSelectedKey = ""
+			m.logSelection = 0
+			m.rebuild()
+		}
 		if m.inputEnded != nil {
 			select {
 			case <-m.inputEnded:
@@ -218,11 +236,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case frictionDataRequest:
 			m.friction.accept(msg.friction)
 		case logsDataRequest:
-			m.mergeEvents(msg.events)
-			m.rebuild()
+			if !msg.day.IsZero() && !sameDay(msg.day, m.logDate) {
+				return m, m.startCurrentScreenLoad()
+			}
+			m.acceptLogEvents(msg.events)
 			if m.follow {
 				m.viewport.GotoBottom()
 			}
+		default:
+			return m, nil
 		}
 		return m, nil
 	case taskFileMsg:
@@ -415,10 +437,13 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
 		}
 	default:
-		loader, reader, now := m.logLoader, m.reader, m.now
+		loader, reader, day := m.logLoader, m.reader, startOfDay(m.logDate.Local())
 		return func() tea.Msg {
-			events, err := loader(reader, now())
-			return screenLoadMsg{request: logsDataRequest, events: events, err: err}
+			events, err := loader(reader, day)
+			if err == nil {
+				events = eventsOnDay(events, day)
+			}
+			return screenLoadMsg{request: logsDataRequest, day: day, events: events, err: err}
 		}
 	}
 }
@@ -446,19 +471,9 @@ func readAgentPane(ctx context.Context, paneID string) (string, error) {
 	return string(output), nil
 }
 
-func (m *Model) mergeEvents(events []logs.Event) {
-	seen := make(map[string]struct{}, len(m.events))
-	for _, event := range m.events {
-		seen[fmt.Sprintf("%s:%d", event.Path(), event.Line())] = struct{}{}
-	}
-	for _, event := range events {
-		key := fmt.Sprintf("%s:%d", event.Path(), event.Line())
-		if _, found := seen[key]; found {
-			continue
-		}
-		seen[key] = struct{}{}
-		m.events = append(m.events, event)
-	}
+func (m *Model) acceptLogEvents(events []logs.Event) {
+	m.events = events
+	m.rebuild()
 }
 
 func (m *Model) logAction(action string, attrs ...slog.Attr) tea.Cmd {

@@ -43,6 +43,12 @@ func Run(cmd *cobra.Command, command string, execute func(string) (output.Envelo
 	if err != nil {
 		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
 	logger, err := hivelog.Open(resolvedHome, "cli")
 	if err != nil {
 		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
