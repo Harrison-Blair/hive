@@ -33,3 +33,11 @@ this common.
 removed fails with `worktree check: start git: fork/exec /usr/bin/git: no such
 file or directory`. Git exists. The working directory of the Git call is the
 removed worktree. The message does not say that the worktree is gone.
+
+**Recurrence 2026-10-20 (stenographer hub board tasks 109-111):** four tasks
+ran in parallel and all edited `cli/hub/app.py`. Each landing (112, 115, 109,
+116, 110) gave the others new conflicts. Tasks 110 and 111 each needed two
+extra verifier runs only to record "dev merge needed", then a merge-only
+worker; 111 also conflicted in `site/index.html`. That is six verifier and
+worker cycles spent on conflicts. A verifier-free path for a completed task
+that only needs a dev merge would remove most of them.
