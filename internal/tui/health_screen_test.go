@@ -12,6 +12,39 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+func TestHealthScreenFramesPanelsAndSeparatesWarnings(t *testing.T) {
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC))
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 6
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	result := doctor.Result{Checks: []doctor.Check{
+		{Name: "home", Status: doctor.StatusOK, Detail: "/fixture"},
+		{Name: "herdr socket", Status: doctor.StatusFail, Detail: "socket missing"},
+		{Name: "supervisor binary", Status: doctor.StatusWarn, Detail: "old executable"},
+		{Name: "starting agents", Status: doctor.StatusOK, Detail: "0"},
+		{Name: "stale worktrees", Status: doctor.StatusWarn, Detail: "demo/1-landed"},
+	}}
+	m, _ = raise(t, m, screenLoadMsg{request: healthDataRequest, health: result})
+
+	view := ansi.Strip(m.View().Content)
+	for _, want := range []string{
+		"┤ home ├", "┤ agents ├", "┤ warnings ├",
+		"! supervisor binary: old executable", "✕ herdr socket: socket missing",
+		"! stale worktrees: demo/1-landed", "later: capacity from qmeter. Not in this goal.",
+	} {
+		if !strings.Contains(view, want) {
+			t.Errorf("health view omitted %q:\n%s", want, view)
+		}
+	}
+	if got := strings.Count(view, "╭"); got != 5 {
+		t.Errorf("health view has %d framed panels, want outer frames and 3 health panels:\n%s", got, view)
+	}
+	if strings.Contains(view, "┤ capacity ├") {
+		t.Errorf("health view shows an out-of-scope capacity panel:\n%s", view)
+	}
+}
+
 func TestHealthScreenRendersChecksAndKeepsSelectionAcrossRefresh(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC))

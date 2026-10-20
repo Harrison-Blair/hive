@@ -119,12 +119,12 @@ func TestUnpushedTaskBranchesCheckNamesCommitsAheadOfUpstream(t *testing.T) {
 
 func startFakeSupervisor(t *testing.T, home string, modified time.Time) (string, string) {
 	t.Helper()
-	sleep, err := exec.LookPath("sleep")
+	source, err := os.Executable()
 	if err != nil {
 		t.Fatal(err)
 	}
 	executable := filepath.Join(t.TempDir(), "supervisor")
-	data, err := os.ReadFile(sleep)
+	data, err := os.ReadFile(source)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func startFakeSupervisor(t *testing.T, home string, modified time.Time) (string,
 	if err := os.Chtimes(executable, modified, modified); err != nil {
 		t.Fatal(err)
 	}
-	command := exec.Command(executable, "60")
+	command := exec.Command(executable, "-test.run=^TestFakeSupervisorProcess$")
 	if err := command.Start(); err != nil {
 		t.Fatal(err)
 	}
@@ -156,6 +156,15 @@ func startFakeSupervisor(t *testing.T, home string, modified time.Time) (string,
 		t.Fatal(err)
 	}
 	return executable, filepath.Join("/proc", fmt.Sprint(command.Process.Pid), "exe")
+}
+
+func TestFakeSupervisorProcess(t *testing.T) {
+	if filepath.Base(os.Args[0]) != "supervisor" {
+		return
+	}
+	for {
+		time.Sleep(time.Hour)
+	}
 }
 
 func installFakeHive(t *testing.T, modified time.Time) string {

@@ -302,7 +302,39 @@ func TestReadAcceptsRecordOfExactlyOneMiB(t *testing.T) {
 	}
 }
 
-func TestReadListUsesOnlyValidIDFileNames(t *testing.T) {
+func TestListKeepsLongStoreSegments(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	want := []string{"96-tasks-evidence-view", "manager-stenographer-g7", "p1"}
+	for _, name := range want {
+		if err := store.Write("tasks", name, map[string]string{"id": name}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	notes := filepath.Join(store.home, ".hive", "state", "tasks", "notes.txt")
+	if err := os.WriteFile(notes, []byte("not a record"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	records, err := store.List("tasks")
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+	var got []string
+	for _, raw := range records {
+		var record struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(raw, &record); err != nil {
+			t.Fatal(err)
+		}
+		got = append(got, record.ID)
+	}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("List() IDs = %q; want %q", got, want)
+	}
+}
+
+func TestListSkipsInvalidStoreSegments(t *testing.T) {
 	home := t.TempDir()
 	store, err := Open(home)
 	if err != nil {
@@ -313,19 +345,33 @@ func TestReadListUsesOnlyValidIDFileNames(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, data := range map[string]string{
-		"valid-id.json":            `{"id":"valid-id"}`,
-		"bad_id.json":              `{"id":"bad_id"}`,
-		"a..b.json":                `{"id":"a..b"}`,
-		"-bad.json":                `{"id":"-bad"}`,
-		"abcdefghijklmnopqrs.json": `{"id":"long"}`,
+		"valid-id.json": `{"id":"valid-id"}`,
+		"bad_id.json":   `{"id":"bad_id"}`,
+		"a..b.json":     `{"id":"bad-dots"}`,
+		"-bad.json":     `{"id":"-bad"}`,
+		"notes.txt":     `not a record`,
 	} {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}
 	records, err := store.List("projects")
-	if err != nil || len(records) != 1 || !strings.Contains(string(records[0]), "valid-id") {
-		t.Fatalf("List() = %q, %v; want only valid-id", records, err)
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+	var got []string
+	for _, raw := range records {
+		var record struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(raw, &record); err != nil {
+			t.Fatal(err)
+		}
+		got = append(got, record.ID)
+	}
+	want := []string{"-bad", "bad_id", "valid-id"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("List() IDs = %q; want %q", got, want)
 	}
 }
 
