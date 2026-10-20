@@ -255,7 +255,7 @@ type tasksScreen struct{ model *Model }
 func (tasksScreen) DataRequest() dataRequest { return tasksDataRequest }
 
 func (tasksScreen) KeyHints() string {
-	return "tab filter · enter evidence · b brief · p project · ask in Chat · ↑/↓ move"
+	return "tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move"
 }
 
 func (s tasksScreen) Update(msg tea.Msg) tea.Cmd {
@@ -308,6 +308,21 @@ func (s tasksScreen) Update(msg tea.Msg) tea.Cmd {
 			read := s.model.startTaskFileRead(state, path, "brief.md")
 			return batch(s.model.logAction("task brief open", slog.String("task_id", selected.record.ID)), read)
 		}
+	case "v":
+		if selected, ok := state.selected(); ok && selected.projectPath != "" && selected.record.Feature != "" {
+			path := filepath.Join(selected.projectPath, ".hive", "spec", selected.record.Feature, "tasks", selected.record.ID, "evidence", "VERIFIED.md")
+			read := s.model.startTaskFileRead(state, path, "VERIFIED.md")
+			return batch(s.model.logAction("task verification evidence open", slog.String("task_id", selected.record.ID)), read)
+		}
+	case "d":
+		if selected, ok := state.selected(); ok {
+			state.fileOpen = true
+			state.fileLoading = false
+			state.fileTitle = "dependency graph · " + selected.record.ID
+			state.fileContent = strings.Join(taskDependencyGraphLines(state.data, selected), "\n")
+			state.fileViewportSet = false
+			return s.model.logAction("task dependency graph open", slog.String("task_id", selected.record.ID))
+		}
 	}
 	return nil
 }
@@ -324,7 +339,7 @@ func (s tasksScreen) View(width, height int) string {
 	visible := state.visibleItems()
 	state.keepSelectedVisible()
 	counts := state.counts()
-	lines := []string{titleStyle.Render(taskTabLine(state.tab, counts)), "project: " + state.projectFilter(), "ID             title                       project   status     agent · verification"}
+	listLines := []string{titleStyle.Render(taskTabLine(state.tab, counts)), "project: " + state.projectFilter(), "ID             title                       project   status     agent · verification"}
 	rowLines := make([]string, 0, len(visible))
 	for _, item := range visible {
 		prefix := "  "
@@ -337,8 +352,7 @@ func (s tasksScreen) View(width, height int) string {
 	if len(rowLines) == 0 {
 		rowLines = append(rowLines, "  no tasks")
 	}
-	detailLines := state.detailLines()
-	listHeight := height - 5 - len(detailLines)
+	listHeight := height - 5
 	if listHeight < 1 {
 		listHeight = 1
 	}
@@ -351,8 +365,64 @@ func (s tasksScreen) View(width, height int) string {
 	if state.scrollOffset > len(rowLines) {
 		state.scrollOffset = 0
 	}
-	lines = append(lines, rowLines[state.scrollOffset:end]...)
-	lines = append(lines, detailLines...)
+	listLines = append(listLines, rowLines[state.scrollOffset:end]...)
+	for index, line := range listLines {
+		listLines[index] = trimGraphLine(line, contentWidth)
+	}
+
+	detailLines := append([]string{titleStyle.Render("task details")}, state.detailLines()...)
+	evidenceLines := append([]string{dimStyle.Render("┤ evidence ├")}, state.evidenceLines()...)
+	note := "landed = delivery commit set and pushed · verified = verification passed"
+	if contentWidth >= 120 {
+		listWidth := contentWidth * 55 / 100
+		if listWidth < 1 {
+			listWidth = 1
+		}
+		rightWidth := contentWidth - listWidth - 1
+		if rightWidth < 1 {
+			rightWidth = 1
+		}
+		panelHeight := height - 4
+		if panelHeight < 1 {
+			panelHeight = 1
+		}
+		detailHeight := panelHeight / 3
+		if detailHeight < 10 {
+			detailHeight = 10
+		}
+		if detailHeight >= panelHeight {
+			detailHeight = panelHeight - 1
+		}
+		if detailHeight < 1 {
+			detailHeight = 1
+		}
+		evidenceHeight := panelHeight - detailHeight
+		if evidenceHeight < 1 {
+			evidenceHeight = 1
+			detailHeight = panelHeight - evidenceHeight
+		}
+		for index, line := range listLines {
+			listLines[index] = trimGraphLine(line, listWidth)
+		}
+		for index, line := range detailLines {
+			detailLines[index] = trimGraphLine(line, rightWidth-4)
+		}
+		for index, line := range evidenceLines {
+			evidenceLines[index] = trimGraphLine(line, rightWidth-4)
+		}
+		left := lipgloss.NewStyle().Width(listWidth).Height(panelHeight).Render(strings.Join(listLines, "\n"))
+		details := panelStyle.Width(rightWidth).Height(detailHeight).Render(strings.Join(detailLines, "\n"))
+		evidence := panelStyle.Width(rightWidth).Height(evidenceHeight).Render(strings.Join(evidenceLines, "\n"))
+		panels := lipgloss.JoinHorizontal(lipgloss.Top, left, " ", lipgloss.JoinVertical(lipgloss.Left, details, evidence))
+		return panels + "\n" + trimGraphLine(note, contentWidth)
+	}
+
+	lines := append([]string(nil), listLines...)
+	lines = append(lines, "┤ task details ├")
+	lines = append(lines, state.detailLines()...)
+	lines = append(lines, "┤ evidence ├")
+	lines = append(lines, state.evidenceLines()...)
+	lines = append(lines, trimGraphLine(note, contentWidth))
 	for index, line := range lines {
 		lines[index] = trimGraphLine(line, contentWidth)
 	}
@@ -477,7 +547,7 @@ func (s *tasksState) keepSelectedVisible() {
 func (s tasksState) detailLines() []string {
 	item, ok := s.selected()
 	if !ok {
-		return []string{"", "no task selected"}
+		return []string{"no task selected"}
 	}
 	task := item.record
 	needs := make([]string, 0, len(task.DependsOn))
@@ -522,12 +592,7 @@ func (s tasksState) detailLines() []string {
 	if needsUser == "" {
 		needsUser = "-"
 	}
-	evidence := append([]string(nil), item.evidence...)
-	if len(evidence) == 0 {
-		evidence = []string{"-"}
-	}
-	lines := []string{
-		"",
+	return []string{
 		titleStyle.Render(task.ID + " · " + task.Title),
 		"needs: " + joinOrDash(needs),
 		"blocks: " + joinOrDash(blocks),
@@ -535,8 +600,24 @@ func (s tasksState) detailLines() []string {
 		"feature: " + feature,
 		"grant: " + grant,
 		"needs user: " + needsUser,
-		"evidence: " + strings.Join(evidence, ", "),
 	}
+}
+
+func (s tasksState) evidenceLines() []string {
+	item, ok := s.selected()
+	if !ok {
+		return []string{"no task selected"}
+	}
+	task := item.record
+	brief := "-"
+	if task.Feature != "" {
+		brief = filepath.ToSlash(filepath.Join("tasks", task.ID, "brief.md"))
+	}
+	evidence := append([]string(nil), item.evidence...)
+	if len(evidence) == 0 {
+		evidence = []string{"-"}
+	}
+	lines := []string{"brief: " + brief, "evidence: " + strings.Join(evidence, ", ")}
 	for index, history := range task.VerificationHistory {
 		if history.Verification == nil {
 			continue
@@ -563,6 +644,37 @@ func (s tasksState) detailLines() []string {
 	}
 	if len(task.VerificationHistory) == 0 && task.Verification == nil {
 		lines = append(lines, "verification history: -")
+	}
+	return lines
+}
+
+func taskDependencyGraphLines(data tasksData, selected taskItem) []string {
+	task := selected.record
+	lines := []string{task.ID + " · " + task.Title, "needs:"}
+	if len(task.DependsOn) == 0 {
+		lines = append(lines, "  -")
+	} else {
+		for _, dependency := range task.DependsOn {
+			lines = append(lines, task.ID+" ← "+dependency+" (needs)")
+		}
+	}
+	blocks := make([]string, 0)
+	for _, candidate := range data.items {
+		for _, dependency := range candidate.record.DependsOn {
+			if dependency == task.ID {
+				blocks = append(blocks, candidate.record.ID)
+				break
+			}
+		}
+	}
+	sort.Strings(blocks)
+	lines = append(lines, "blocks:")
+	if len(blocks) == 0 {
+		lines = append(lines, "  -")
+	} else {
+		for _, blocked := range blocks {
+			lines = append(lines, task.ID+" → "+blocked+" (blocks)")
+		}
 	}
 	return lines
 }
