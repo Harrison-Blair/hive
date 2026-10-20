@@ -86,3 +86,21 @@ A TUI check uses a scratch home (a temp copy of a marked home, set with
 `HIVE_HOME`, and a temp `XDG_CONFIG_HOME`), or it does not open the Chat
 input. On the real home, never press `i` on the Chat screen and never press
 Enter there. A chat message from an agent has the authority of the user.
+
+## Repair 1
+
+`hive land` failed: the branch has a merge conflict with `origin/dev` in
+`testdata/ste-baseline.json`. Task 94-chat-user-only also added a row for its
+brief copy. Do only this repair:
+
+1. Merge `origin/dev` into the task branch.
+2. In `testdata/ste-baseline.json`, keep both rows: the row of 94 and the row
+   of this task. Keep the order and format of the file.
+3. Run `go test ./` from the worktree root. It must pass.
+4. Commit with subject `merge(dev): resolve ste baseline conflict`. Push the
+   task branch.
+5. Make sure that `git merge-tree --write-tree origin/dev HEAD` exits 0.
+6. Run `hive task complete`. Send the commit SHA to the manager with
+   `hive inbox send`.
+
+Do not change other files. Do not run the TUI.
