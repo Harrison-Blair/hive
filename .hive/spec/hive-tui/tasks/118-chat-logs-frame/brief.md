@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Feature | `hive-tui`, Chat and Logs fixes after wave C |
+| Feature | `hive-tui`, fix after wave C |
 | Tier | decent |
 | Depends on | 102-selection-marker (order only). Base: `dev` |
 | Grant | `grants.md 2026-10-20 hive TUI goal` |
@@ -41,8 +41,9 @@ Do not edit other files.
 
 ### R2 Logs keeps the selected row on the screen
 
-- In follow mode, the TUI selects and shows the newest event on screen for any number of events.
-- When the user moves the selection, keep the selected row on screen.
+- In follow mode, the TUI selects and shows the newest event on screen for
+  any number of events.
+- When the user moves the selection, the selected row stays on the screen.
 
 ### R3 Tests
 
@@ -56,16 +57,16 @@ and check that the selected row is in the frame. Use literal expected text.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run the R3 tests against the base code, then against the task code | Each fails on the base and passes on the task branch. |
-| V2 | Build the task binary. Copy the real chat log and real log files to a scratch home. Open Chat and Logs at 120 x 40 and 200 x 57. | Each frame has exactly the height and the width. Chat wraps at spaces. The Logs selected row shows in follow mode and after moves. |
+| V2 | Build the task binary. Copy the real chat log and the real log files to a scratch home. Open Chat and Logs at 120 x 40 and 200 x 57. | Each frame has exactly the height and the width. Chat wraps at spaces. The Logs selected row shows in follow mode and after moves. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
-Set `HIVE_HOME` to a scratch home. Set `XDG_CONFIG_HOME` to a temporary directory.
-Copy the real chat log and the real log files to the scratch home.
-Open Chat and Logs in a tab of your task workspace at 120 x 40 and 200 x 57.
-Start the binary with
-`env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH`.
-Stop only the process ID that you started. Close only the pane that you started. Never work in
+Set `HIVE_HOME` to a scratch home. Set `XDG_CONFIG_HOME` to a temporary
+directory. Use a tab in your task workspace. Start the binary with this
+command:
+
+`env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH`
+Stop and close only the pid and pane that you started. Never work in
 workspace `wBC`. Never open the Chat input on the real home. Never send chat.
 
 ## Finish
@@ -74,3 +75,17 @@ Commit on the task branch with a subject such as `fix(tui): keep Chat and
 Logs in the frame`. Push the task branch. Write the evidence. Run
 `hive task complete`. Send the commit SHA and the V1-V4 results to the
 manager with `hive inbox send --to manager-hive`.
+
+## Design
+
+The approved boards for this task:
+
+- `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Chat.dc.html`
+- `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Logs.dc.html`
+
+Follow the visual check rule in the worker skill. This task changes only the
+fit of the Chat and Logs frames, the wrap of chat entries, and the place of
+the selected Logs row. In the element table, judge only those elements.
+Record each other difference from the board as `differs` with the cause
+"not in the scope of this task". Do not fix it. The user is colourblind:
+each state has a glyph or a word, and colour only adds to it.
