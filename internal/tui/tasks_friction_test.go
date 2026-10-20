@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -158,6 +159,60 @@ func TestTasksProjectFilterAndFailedTab(t *testing.T) {
 	view = ansi.Strip(m.currentScreen().View(120, 36))
 	if !strings.Contains(view, "> 82-failed-task") {
 		t.Fatalf("refresh did not preserve task selection:\n%s", view)
+	}
+}
+
+func TestFrictionScreenShowsSelectedDetailsInRightPanel(t *testing.T) {
+	for _, size := range []struct {
+		width  int
+		height int
+	}{{width: 120, height: 40}, {width: 200, height: 57}} {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			home := newTestHome(t)
+			writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "FRICTION.md"), "# Friction\n")
+			writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "selected.md"), "---\ntitle: \"Selected issue detail\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"Keep this decision.\"\n---\n\n**Summary:**\nThe selected issue summary.\n")
+			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+			m.screenIndex = 5
+			m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+			cmd := m.startCurrentScreenLoad()
+			if cmd == nil {
+				t.Fatal("Friction screen did not request data")
+			}
+			m, _ = raise(t, m, cmd())
+
+			view := ansi.Strip(m.View().Content)
+			listColumn := -1
+			var detailColumns []int
+			for _, line := range strings.Split(view, "\n") {
+				if index := strings.Index(line, "opened       title"); index >= 0 {
+					listColumn = ansi.StringWidth(line[:index])
+				}
+				for start := 0; ; {
+					index := strings.Index(line[start:], "Selected issue detail")
+					if index < 0 {
+						break
+					}
+					index += start
+					detailColumns = append(detailColumns, ansi.StringWidth(line[:index]))
+					start = index + len("Selected issue detail")
+				}
+			}
+			if listColumn < 0 {
+				t.Fatal("Friction list header is missing")
+			}
+			rightmostDetail := -1
+			for _, column := range detailColumns {
+				if column > rightmostDetail {
+					rightmostDetail = column
+				}
+			}
+			if rightmostDetail <= listColumn || rightmostDetail < size.width/2 {
+				t.Fatalf("selected entry details are not in a right-hand panel (list column %d, detail columns %v):\n%s", listColumn, detailColumns, view)
+			}
+			if !strings.Contains(view, "decision") {
+				t.Fatalf("Friction list lost its decision column:\n%s", view)
+			}
+		})
 	}
 }
 
