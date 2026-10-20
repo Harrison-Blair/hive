@@ -38,6 +38,7 @@ const (
 	chatDataRequest
 	logsDataRequest
 	agentsDataRequest
+	goalsQueueDataRequest
 	healthDataRequest
 )
 
@@ -55,8 +56,6 @@ func (s placeholderScreen) View(_, _ int) string     { return s.name + " · next
 func (s placeholderScreen) KeyHints() string         { return "1–8 screens · ctrl+c twice to quit" }
 func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
-type goalsScreen struct{ placeholderScreen }
-type queueScreen struct{ placeholderScreen }
 type tasksScreen struct{ placeholderScreen }
 type frictionScreen struct{ placeholderScreen }
 
@@ -94,8 +93,8 @@ func (m *Model) makeScreens() []screen {
 	return []screen{
 		chatScreen{model: m},
 		agentsScreen{model: m},
-		goalsScreen{placeholderScreen{name: "Goals"}},
-		queueScreen{placeholderScreen{name: "Queue"}},
+		goalsScreen{model: m},
+		queueScreen{model: m},
 		tasksScreen{placeholderScreen{name: "Tasks"}},
 		frictionScreen{placeholderScreen{name: "Friction"}},
 		healthScreen{model: m},

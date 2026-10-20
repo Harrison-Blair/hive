@@ -64,20 +64,22 @@ type Model struct {
 	follow             bool
 	logErr             string
 
-	header        headerState
-	headerErr     string
-	screenErr     string
-	attachErr     string
-	headerLoader  func(string) (headerState, error)
-	logLoader     func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader  func(string, *slog.Logger) doctor.Result
-	agentsLoader  func(string, time.Time) (agentsData, error)
-	paneReader    func(context.Context, string) (string, error)
-	agents        agentsState
-	health        healthState
-	chatLoader    func(string, time.Time) (chatScreenData, error)
-	headerLoading bool
-	screenLoading bool
+	header           headerState
+	headerErr        string
+	screenErr        string
+	attachErr        string
+	headerLoader     func(string) (headerState, error)
+	logLoader        func(*logs.Reader, time.Time) ([]logs.Event, error)
+	healthLoader     func(string, *slog.Logger) doctor.Result
+	agentsLoader     func(string, time.Time) (agentsData, error)
+	goalsQueueLoader func(string) (goalsQueueData, error)
+	paneReader       func(context.Context, string) (string, error)
+	agents           agentsState
+	health           healthState
+	goalsQueue       goalsQueueState
+	chatLoader       func(string, time.Time) (chatScreenData, error)
+	headerLoading    bool
+	screenLoading    bool
 
 	screens     []screen
 	screenIndex int
@@ -111,9 +113,10 @@ func New(home string, now func() time.Time) *Model {
 			events, _, err := reader.Read(context.Background(), time.Time{})
 			return events, err
 		},
-		agentsLoader: loadAgents,
-		healthLoader: loadHealth,
-		paneReader:   readAgentPane,
+		agentsLoader:     loadAgents,
+		healthLoader:     loadHealth,
+		goalsQueueLoader: loadGoalsQueue,
+		paneReader:       readAgentPane,
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
@@ -192,6 +195,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.request {
 		case agentsDataRequest:
 			m.agents.accept(msg.agents)
+		case goalsQueueDataRequest:
+			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
 			m.health.accept(msg.health)
 		case chatDataRequest:
@@ -364,6 +369,12 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
+		}
+	case goalsQueueDataRequest:
+		loader, home := m.goalsQueueLoader, m.home
+		return func() tea.Msg {
+			data, err := loader(home)
+			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
 		}
 	case healthDataRequest:
 		loader, home, logger := m.healthLoader, m.home, m.logger
