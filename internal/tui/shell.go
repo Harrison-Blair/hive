@@ -79,6 +79,7 @@ func (s logsScreen) View(width, height int) string {
 	}
 	m.viewport.SetWidth(max(1, listWidth-4))
 	m.viewport.SetHeight(max(1, height-len(filterLines)-4))
+	m.viewport.EnsureVisible(m.logSelection, 0, 1)
 	left := "logs · " + m.logDate.Format("2006-01-02") + ".jsonl\n" + strings.Join(filterLines, "\n") + "\n" + m.bodyView()
 	if m.mode == editing {
 		left += "\n" + m.input.View()

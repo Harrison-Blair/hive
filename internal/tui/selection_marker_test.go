@@ -190,7 +190,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Logs", selected: "12:00:01 INFO task queued", also: []string{"level: info"}, states: []string{"INFO task queued"},
+			name: "Logs", selected: "12:00:03 WARN herdr network retry", also: []string{"level: info"}, states: []string{"WARN herdr network retry"},
 			model: func(t *testing.T) *Model {
 				clock := fixedClock(t, time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local))
 				m := newTestLogsModel(t, newTestHome(t), clock)

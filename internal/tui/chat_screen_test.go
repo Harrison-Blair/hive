@@ -153,6 +153,79 @@ func TestChatLoadsRecentConversationAndCoordinatorState(t *testing.T) {
 	}
 }
 
+func TestChatFrameFitsLargeConversationAndWrapsAtWords(t *testing.T) {
+	sizes := []struct {
+		width  int
+		height int
+	}{{width: 120, height: 40}, {width: 200, height: 57}}
+	for _, size := range sizes {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			home := newTestHome(t)
+			clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+			for index := 1; index <= 200; index++ {
+				text := fmt.Sprintf("entry-%03d", index)
+				if index%5 == 0 {
+					text += strings.Repeat(" olderword", 12)
+				}
+				if index == 200 {
+					text = "alpha beta " + strings.Repeat("x", 80) + " omega"
+				}
+				at := time.Date(2026, 10, 20, 10, 0, index, 0, time.UTC).Format(time.RFC3339)
+				appendChatFixture(t, home, chatlib.Entry{
+					ID: fmt.Sprintf("c%d", index), At: at, From: "coordinator", Text: text,
+				})
+			}
+
+			m := newTestModel(t, home, clock)
+			m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+			m = loadChat(t, m)
+			view := ansi.Strip(m.View().Content)
+			lines := strings.Split(view, "\n")
+			if len(lines) != size.height {
+				t.Fatalf("Chat frame has %d lines, want %d:\n%s", len(lines), size.height, view)
+			}
+			for index, line := range lines {
+				if got := ansi.StringWidth(line); got != size.width {
+					t.Fatalf("Chat frame line %d has width %d, want %d: %q", index+1, got, size.width, line)
+				}
+			}
+			if !strings.Contains(view, "alpha beta") || !strings.Contains(view, "omega") {
+				t.Fatalf("Chat frame omitted the newest wrapped entry:\n%s", view)
+			}
+			if strings.Contains(view, "entry-001") {
+				t.Fatalf("Chat frame did not scroll older entries out at the top:\n%s", view)
+			}
+		})
+	}
+}
+
+func TestChatNarrowViewportWrapsWordsAndBreaksLongWords(t *testing.T) {
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+	m := newTestModel(t, home, clock)
+	m.chatData.entries = []chatlib.Entry{{
+		ID: "c1", At: "2026-10-20T11:00:00Z", From: "coordinator",
+		Text: "alpha beta gamma abcdefghijklmnopqrstu omega",
+	}}
+	m.rebuildChat()
+	m.chatView(34, 20)
+	got := strings.Split(strings.TrimRight(ansi.Strip(m.chatViewport.View()), "\n"), "\n")
+	for index := range got {
+		got[index] = strings.TrimRight(got[index], " ")
+	}
+	want := []string{"  alpha beta", "gamma", "abcdefghijklmn", "opqrstu omega"}
+	found := false
+	for start := 0; start+len(want) <= len(got); start++ {
+		if strings.Join(got[start:start+len(want)], "\n") == strings.Join(want, "\n") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("Chat wrapped text as %q, want adjacent literal lines %q", got, want)
+	}
+}
+
 func TestChatPagesScrollTheConversation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))

@@ -2,6 +2,7 @@ package tui
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"sync"
@@ -12,6 +13,39 @@ import (
 	"github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/charmbracelet/x/ansi"
 )
+
+func TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen(t *testing.T) {
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	clock := fixedClock(t, day)
+	home := newTestHome(t)
+	lines := make([]string, 5000)
+	for index := range lines {
+		lines[index] = logsFixtureEvent(t, day.Add(time.Duration(index)*time.Second), "INFO", "tui", fmt.Sprintf("event-%04d", index), nil)
+	}
+	writeEvents(t, dailyPath(home, day), lines...)
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	m = loadLogs(t, m)
+
+	assertSelectedRowVisible := func(want string) {
+		t.Helper()
+		view := ansi.Strip(m.View().Content)
+		if !strings.Contains(view, "▶ "+want) {
+			t.Fatalf("selected log row %q is off screen:\n%s", want, view)
+		}
+	}
+	assertSelectedRowVisible("13:23:19 INFO tui event-4999")
+	if m.logSelection != 4999 {
+		t.Fatalf("follow selected row %d, want newest row 4999", m.logSelection)
+	}
+
+	for range 60 {
+		m, _ = raise(t, m, key('k', "k"))
+	}
+	assertSelectedRowVisible("13:22:19 INFO tui event-4939")
+	m, _ = raise(t, m, key('j', "j"))
+	assertSelectedRowVisible("13:22:20 INFO tui event-4940")
+}
 
 func TestLogsScreenRendersFilteredRows(t *testing.T) {
 	home := newTestHome(t)
@@ -51,6 +85,8 @@ func TestLogsScreenFoldsRequestsAndShowsSelectedJSON(t *testing.T) {
 	if strings.Contains(view, "command end") {
 		t.Fatalf("folded request still shows its end event:\n%s", view)
 	}
+	m, _ = raise(t, m, key('k', "k"))
+	m, _ = raise(t, m, key('k', "k"))
 
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	view = ansi.Strip(logsScreen{model: m}.View(120, 30))
