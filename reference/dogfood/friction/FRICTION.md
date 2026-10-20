@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [store.List skips an agent record with a key longer than 18 characters](entries/store-list-skips-long-keys.md) | Open |  |
 | [Hive cannot spawn a reviewer or another one-off agent](entries/no-reviewer-role.md) | Open |  |
 | [A new task can go only in a feature that has a README](entries/old-features-lack-readme.md) | Open |  |
 | [A supervisor nudge splits a message that the user types](entries/nudge-interrupts-user-typing.md) | Open |  |
