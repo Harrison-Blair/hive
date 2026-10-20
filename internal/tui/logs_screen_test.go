@@ -2,7 +2,9 @@ package tui
 
 import (
 	"encoding/json"
+	"io"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -64,6 +66,20 @@ func TestLogsScreenFoldsRequestsAndShowsSelectedJSON(t *testing.T) {
 	view = ansi.Strip(logsScreen{model: m}.View(72, 14))
 	if strings.Contains(view, "request: r-11111111") || !strings.Contains(view, "network retry") {
 		t.Fatalf("second r did not restore all requests:\n%s", view)
+	}
+}
+
+func TestLogsScreenCyclesInfoLevelToWarn(t *testing.T) {
+	home := newTestHome(t)
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	clock := fixedClock(t, day)
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: logsFixture(t, day)})
+	m, _ = raise(t, m, key('l', "l"))
+
+	view := ansi.Strip(logsScreen{model: m}.View(72, 14))
+	if !strings.Contains(view, "level: warn") {
+		t.Fatalf("logs screen did not show the cycled warn level:\n%s", view)
 	}
 }
 
@@ -155,15 +171,40 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 
 func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 	home := newTestHome(t)
+	t.Setenv("HIVE_HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	day := time.Now().In(time.Local)
 	writeEvents(t, dailyPath(home, day), logsFixtureEvent(t, day, "INFO", "task", "queued", map[string]any{"project_id": "demo"}))
-	var output strings.Builder
-	if err := RunHome(home, strings.NewReader("8l"), &output); err != nil {
+	input, sendInput := io.Pipe()
+	output := newSynchronizedOutput()
+	done := make(chan error, 1)
+	go func() { done <- RunHome(home, input, output) }()
+	t.Cleanup(func() {
+		_ = input.Close()
+		_ = sendInput.Close()
+	})
+
+	if _, err := sendInput.Write([]byte("8")); err != nil {
+		t.Fatalf("send screen key: %v", err)
+	}
+	waitForOutput(t, output, "▶ 8 Logs", "task queued")
+	if _, err := sendInput.Write([]byte("l")); err != nil {
+		t.Fatalf("send level key: %v", err)
+	}
+	view := waitForOutput(t, output, "▶ 8 Logs", "warn", "no events today")
+	if err := sendInput.Close(); err != nil {
+		t.Fatalf("close input: %v", err)
+	}
+	if err := <-done; err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	view := ansi.Strip(output.String())
-	if !strings.Contains(view, "▶ 8 Logs") {
-		t.Fatalf("program output did not show Logs:\n%s", view)
+	eventAt := strings.Index(view, "task queued")
+	if !strings.Contains(view, "▶ 8 Logs") || eventAt < 0 || !strings.Contains(view[eventAt:], "warnno events today") {
+		t.Fatalf("program output did not show Logs with the warn filter applied:\n%s", view)
+	}
+	screenView := ansi.Strip(output.String())
+	if !strings.Contains(screenView, "▶ 8 Logs") {
+		t.Fatalf("program output did not show Logs:\n%s", screenView)
 	}
 	events, _, err := logs.NewReader(home).Read(t.Context(), day)
 	if err != nil {
@@ -178,6 +219,58 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 	}
 	if !cycledLevel {
 		t.Fatalf("program did not apply the level key; events: %#v", events)
+	}
+}
+
+type synchronizedOutput struct {
+	mu      sync.Mutex
+	output  strings.Builder
+	changed chan struct{}
+}
+
+func newSynchronizedOutput() *synchronizedOutput {
+	return &synchronizedOutput{changed: make(chan struct{}, 1)}
+}
+
+func (w *synchronizedOutput) Write(data []byte) (int, error) {
+	w.mu.Lock()
+	n, err := w.output.Write(data)
+	w.mu.Unlock()
+	select {
+	case w.changed <- struct{}{}:
+	default:
+	}
+	return n, err
+}
+
+func (w *synchronizedOutput) String() string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.output.String()
+}
+
+func waitForOutput(t *testing.T, output *synchronizedOutput, wants ...string) string {
+	t.Helper()
+	timeout := time.NewTimer(10 * time.Second)
+	defer timeout.Stop()
+	for {
+		view := ansi.Strip(output.String())
+		found := true
+		for _, want := range wants {
+			if !strings.Contains(view, want) {
+				found = false
+				break
+			}
+		}
+		if found {
+			return view
+		}
+		select {
+		case <-output.changed:
+		case <-timeout.C:
+			t.Fatalf("program output did not reach state containing %q:\n%s", strings.Join(wants, ", "), view)
+			return view
+		}
 	}
 }
 
