@@ -24,7 +24,7 @@ it with `hive inbox send --to manager-hive TEXT --agent NAME`.
 
 - T1: Separate task detail and evidence panels, as on the board. The evidence panel shows the brief and the verification history.
 - T2: `v` opens `VERIFIED.md` and `d` shows the dependency graph of the selected task, as read-only views.
-- T3: A note defines `landed` and `verified`. Use G8 for `landed`.
+- T3: Add a short definition for `landed` and `verified`. Use G8 for `landed`.
 
 ## Source files
 
@@ -50,7 +50,7 @@ report it.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each new test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Build the task binary. Run it on a scratch home with fixture data (a temp copy of a marked home, set with `HIVE_HOME`, and a temp `XDG_CONFIG_HOME`) in a herdr tab at about 200 x 57. Capture the screen with `herdr pane read` for each gap | Each gap is fixed as the board shows. Put the captures in the evidence. |
+| V2 | Build the task binary. Run it in a herdr tab at about 200 x 57. Use a scratch home with fixture data. Copy a marked home to a temporary path. Set `HIVE_HOME` to that path. Set `XDG_CONFIG_HOME` to a temporary path. Capture the screen with `herdr pane read` for each gap. | Fix each gap to match the board. Put each capture in the evidence. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
