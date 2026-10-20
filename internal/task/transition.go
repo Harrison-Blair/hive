@@ -48,7 +48,7 @@ var transitions = map[string]map[string]string{
 	"created":   {"assign": "assigned", "cancel": "cancelled"},
 	"assigned":  {"assign": "assigned", "complete": "completed", "cancel": "cancelled"},
 	"completed": {"verify": "verified", "verify-fail": "assigned", "cancel": "cancelled"},
-	"verified":  {"reopen": "assigned"},
+	"verified":  {"cancel": "cancelled", "reopen": "assigned"},
 	"cancelled": {},
 }
 
@@ -160,6 +160,9 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 			At:     time.Now().UTC().Format(time.RFC3339Nano),
 		}
 	case "cancel":
+		if record.Status == "verified" && record.Delivery != nil && record.Delivery.Pushed {
+			return errors.New("task is landed: cancel refused")
+		}
 		record.CancelReason = options.Reason
 	case "reopen":
 		if strings.TrimSpace(options.Reason) == "" {
