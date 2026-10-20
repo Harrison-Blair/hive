@@ -46,6 +46,55 @@ func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	requireAgentsView(t, m, "[ TABLE ]", "name", "role", "project", "task", "harness", "model", "status", "age", "parent", "worker-1 · worker · demo · 10-build · pi · model-worker · blocked · 4m · manager-demo")
 }
 
+func TestAgentsLoadsLongAgentKeysAsNodesAndParents(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	managerKey := "manager-stenographer-g7"
+	writeAgentRecord(t, home, records.Agent{Key: managerKey, Name: "long-manager", Role: "manager", Project: "demo", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle"})
+	writeAgentRecord(t, home, records.Agent{Key: "long-key-worker", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: managerKey})
+
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 1
+	m, cmd := raise(t, m, key('2', "2"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	requireAgentsView(t, m, "long-manager · manager · demo", "long-key-worker · worker · demo · 11-build · pi · — · working · ? · long-manager")
+	if len(managerKey) <= 18 {
+		t.Fatalf("fixture key %q must exceed the legacy ID limit", managerKey)
+	}
+}
+
+func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
+	for _, size := range []struct {
+		width  int
+		height int
+	}{{width: 80, height: 24}, {width: 120, height: 40}} {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			home, clock := agentsFixture(t, 40)
+			m := newTestModel(t, home, clock)
+			m.width, m.height, m.screenIndex = size.width, size.height, 1
+			m.layout()
+			m, cmd := raise(t, m, key('2', "2"))
+			m = deliverAgentCommands(t, m, cmd)
+
+			headerRows := strings.Count(ansi.Strip(headerStyle.Width(size.width).Render(m.headerLine())), "\n") + 1
+			bodyHeight := size.height - headerRows - statusRows - 5
+			sidebarWidth := 24
+			if size.width >= 100 {
+				sidebarWidth = 30
+			}
+			sidebar := m.renderSidebar(sidebarWidth, bodyHeight)
+			mainWidth := size.width - sidebarWidth
+			panel := m.renderPanel("Agents", m.currentScreen().View(mainWidth, bodyHeight), mainWidth, bodyHeight)
+			sidebarLines := strings.Count(ansi.Strip(sidebar), "\n") + 1
+			panelLines := strings.Count(ansi.Strip(panel), "\n") + 1
+			if panelLines != sidebarLines {
+				t.Fatalf("Agents panel has %d rendered lines; sidebar has %d (body %d, screen %d)\n%s", panelLines, sidebarLines, bodyHeight, strings.Count(ansi.Strip(m.currentScreen().View(mainWidth, bodyHeight)), "\n")+1, ansi.Strip(panel))
+			}
+		})
+	}
+}
+
 func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)

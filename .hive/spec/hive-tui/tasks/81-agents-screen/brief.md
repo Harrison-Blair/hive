@@ -12,7 +12,8 @@
 
 Fill screen 2, Agents: a topology of the agents with the tabs tree, graph, and
 table. The feature README is `.hive/spec/hive-tui/README.md`. Read it first,
-mainly goal decision 1 and G4, G5, G12, G14. Use its approved decisions. Do not change one. When the code does not agree with this brief or the
+mainly goal decision 1 and G4, G5, G12, G14. Its decisions are approved. Do
+not change a decision. When the code does not agree with this brief or the
 README, stop and report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`.
 
@@ -125,3 +126,25 @@ Commit on the task branch with a subject such as `feat(tui): add the Agents
 screen`. Push the task branch. Write the evidence. Run `hive task complete`.
 Send the commit SHA and the V1-V5 results to the manager with
 `hive inbox send`.
+
+## Repair 1
+
+The verifier failed V2. Read
+`.hive/spec/hive-tui/tasks/81-agents-screen/evidence/VERIFIED.md`. Do only
+this repair:
+
+1. The screen loads agents with `store.List`, which skips a record key longer
+   than 18 characters (`records.ValidID`). On the real home
+   `manager-stenographer-g7` is missing from each tab, and its children show
+   the raw parent key or have no inferred manager. Load the agents with the
+   same function as the header (`agent.List`). Add a test with a fixture key
+   longer than 18 characters, as parent and as agent. See it fail first.
+2. The Agents panel is 3 rows too tall when the content fills it: `View`
+   returns `height` lines and the panel adds the title and the border. Make
+   the panel fit the frame at 80x24 and at a larger size. Add a test that
+   counts the rendered lines. See it fail first.
+3. Run V2 again on the real home. Run the gate. Commit, push, run
+   `hive task complete`, and send the SHA to the manager with
+   `hive inbox send`.
+
+Do not change other behavior.

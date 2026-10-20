@@ -11,6 +11,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -70,9 +71,13 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 	if err != nil {
 		return agentsData{}, fmt.Errorf("goals: %w", err)
 	}
-	agents, err := listRecords[records.Agent](registry, "agents")
-	if err != nil {
-		return agentsData{}, fmt.Errorf("agents: %w", err)
+	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
+	if agentEnvelope.Outcome != "ok" {
+		return agentsData{}, fmt.Errorf("agents: %v", agentEnvelope.Error)
+	}
+	agents, ok := agentEnvelope.Result.([]records.Agent)
+	if !ok {
+		return agentsData{}, errors.New("agents: unexpected result")
 	}
 	fresh, err := supervisorIsLive(registry)
 	if err != nil {
@@ -379,12 +384,21 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 
 func (s agentsScreen) View(width, height int) string {
 	state := &s.model.agents
+	contentWidth := width - 4
+	if contentWidth < 1 {
+		contentWidth = 1
+	}
 	if state.peekOpen {
-		return renderAgentPeek(state, width, height)
+		return renderAgentPeek(state, contentWidth, height-3)
 	}
 	tabLine := []string{"[ TREE ]  GRAPH  TABLE", "TREE  [ GRAPH ]  TABLE", "TREE  GRAPH  [ TABLE ]"}[state.tab]
 	lines, _ := state.contentLines()
-	visibleHeight := height - 2
+	selected, hasSelected := state.selected()
+	var detailLines []string
+	if hasSelected {
+		detailLines = wrapAgentLine(state.detailLine(selected), contentWidth)
+	}
+	visibleHeight := height - 4 - len(detailLines)
 	if visibleHeight < 1 {
 		visibleHeight = 1
 	}
@@ -399,8 +413,9 @@ func (s agentsScreen) View(width, height int) string {
 	}
 	body := []string{titleStyle.Render(tabLine)}
 	body = append(body, lines[state.scrollOffset:end]...)
-	if selected, ok := state.selected(); ok {
-		body = append(body, state.detailLine(selected))
+	body = append(body, detailLines...)
+	for index, line := range body {
+		body[index] = trimGraphLine(line, contentWidth)
 	}
 	return strings.Join(body, "\n")
 }
@@ -727,6 +742,41 @@ func emptyDash(text string) string {
 		return "—"
 	}
 	return text
+}
+
+func wrapAgentLine(text string, width int) []string {
+	words := strings.Fields(text)
+	lines := make([]string, 0, 1)
+	line := ""
+	for index := 0; index < len(words); index++ {
+		word := words[index]
+		if isAgentDetailField(word) && index+1 < len(words) {
+			word += " " + words[index+1]
+			index++
+		}
+		if line != "" && lipgloss.Width(line+" "+word) > width {
+			lines = append(lines, line)
+			line = ""
+		}
+		if line == "" {
+			line = word
+		} else {
+			line += " " + word
+		}
+	}
+	if line != "" {
+		lines = append(lines, line)
+	}
+	return lines
+}
+
+func isAgentDetailField(word string) bool {
+	switch word {
+	case "parent", "replaces", "model", "task", "pane", "age":
+		return true
+	default:
+		return false
+	}
 }
 
 func trimGraphLine(text string, width int) string {
