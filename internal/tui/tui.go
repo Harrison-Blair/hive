@@ -119,8 +119,9 @@ func New(home string, now func() time.Time) *Model {
 		header:       headerState{supervisor: "stale"},
 		agents:       agentsState{hideStopped: true},
 		headerLoader: readHeader,
-		logLoader: func(reader *logs.Reader, _ time.Time) ([]logs.Event, error) {
-			events, _, err := reader.Read(context.Background(), time.Time{})
+		logLoader: func(_ *logs.Reader, day time.Time) ([]logs.Event, error) {
+			dayReader := logs.NewReaderWithClock(home, func() time.Time { return day })
+			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
 		agentsLoader:     loadAgents,

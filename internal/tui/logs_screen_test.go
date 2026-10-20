@@ -134,14 +134,13 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 	home := newTestHome(t)
 	firstDay := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	secondDay := firstDay.AddDate(0, 0, 1)
-	clock := fixedClock(t, firstDay)
+	clock := fixedClock(t, secondDay)
 	writeEvents(t, dailyPath(home, firstDay), eventJSON(t, firstDay, "INFO", "first day"))
 	writeEvents(t, dailyPath(home, secondDay), eventJSON(t, secondDay, "INFO", "second day"))
 	m := newTestLogsModel(t, home, clock)
-	requireView(t, m, "first day")
-	clock.set(secondDay)
+	requireView(t, m, "second day")
 	m.logger = nil
-	m, cmd := raise(t, m, key(']', "]"))
+	m, cmd := raise(t, m, key('[', "["))
 	if cmd == nil {
 		t.Fatal("day change did not start a background read")
 	}
@@ -150,8 +149,8 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 		t.Fatalf("day read returned %T; want screenLoadMsg", loaded)
 	}
 	m, _ = raise(t, m, loaded)
-	requireView(t, m, "second day")
-	rejectView(t, m, "first day")
+	requireView(t, m, "first day")
+	rejectView(t, m, "second day")
 }
 
 func TestRunHomeLogsKeysOnStringReader(t *testing.T) {

@@ -11,7 +11,7 @@
 ## Overview
 
 Fill screen 8, Logs, with filters and request groups, and give each CLI command one `request_id`. The feature README is `.hive/spec/hive-tui/README.md`. Read it first,
-mainly goal decision 5 and G14. The manager approved its decisions. Do not change a decision. When the
+mainly goal decision 5 and G14. The manager approved the README decisions. Do not change a decision. When the
 code does not agree with this brief or the README, stop and report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`.
 
@@ -52,9 +52,9 @@ Do not edit other files.
 - One line for each event: time, level, component, the event text, and the
   duration when it has one. A command start and its end fold into one line
   with the duration.
-- Filters: `l` cycles the level through debug, info, warn, and error. Info is the default level.
-  `c` cycles the component, `p` cycles the project, `/` text search. The
-  filter line shows each filter. `f` toggles follow.
+- Filters: `l` cycles the level through debug, info, warn, and error. Info is
+  the default level. `c` cycles the component, `p` cycles the project, and `/`
+  opens text search. The filter line shows each filter. `f` toggles follow.
 - `enter` shows the JSON of the selected event in a side panel.
 - `r` shows only the events of the `request_id` of the selected event. `r`
   again or `esc` shows all.
@@ -106,3 +106,25 @@ and the V1-V5 results to the manager with `hive inbox send`.
   and end events for each pass), with their tests.
 - `hive version` is an exclusion. It writes no log events and gets no
   `request_id`.
+
+## Repair 1
+
+The verifier failed V3. Read
+`.hive/spec/hive-tui/tasks/85-logs-screen/evidence/VERIFIED.md`. Do only this
+repair:
+
+1. `[` and `]` change only the day label. The default log loader
+   (`internal/tui/tui.go`, near line 120) reads only the file of today, so
+   each other day shows `no events on <day>`. Make the loader read the file
+   of the selected day.
+2. `TestLogsScreenDayNavigationLoadsSelectedFile` passes only because it
+   moves the clock. Change it so that the clock stays on one day and the test
+   reads events from the file of an earlier day. See it fail on the current
+   code first.
+3. Merge `origin/dev` into the task branch. It conflicts in
+   `internal/tui/tick.go` (`screenLoadMsg`: the `day` field of this task and
+   the `goalsQueue` field of task 82). Keep both fields.
+4. Run V3 again. Run the gate. Commit, push, run `hive task complete`, and
+   send the SHA to the manager with `hive inbox send`.
+
+Do not change other behavior.
