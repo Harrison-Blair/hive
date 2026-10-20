@@ -65,6 +65,8 @@ Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you
 
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 
+Before you stop for a user decision on a task, set `needs_user` with `hive task edit --task ID --needs-user TEXT`. Clear it when the user gives the decision with `hive task edit --task ID --clear-needs-user`.
+
 Hive takes the project from the task. Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.
 
 The verifier commits and pushes `VERIFIED.md` on the task branch before it runs `hive task verify`.
