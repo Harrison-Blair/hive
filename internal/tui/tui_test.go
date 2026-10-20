@@ -247,6 +247,58 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	requireView(t, m, "working unknown / idle unknown", "supervisor stale", "needs_user 1")
 }
 
+func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
+	sizes := []struct {
+		width  int
+		height int
+	}{
+		{width: 80, height: 24},
+		{width: 120, height: 40},
+		{width: 200, height: 57},
+		{width: 207, height: 57},
+		{width: 103, height: 57},
+		{width: 57, height: 20},
+		{width: 300, height: 80},
+	}
+	screens := []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}
+
+	for screenIndex, screen := range screens {
+		for _, size := range sizes {
+			t.Run(fmt.Sprintf("%s/%dx%d", screen, size.width, size.height), func(t *testing.T) {
+				home := newTestHome(t)
+				clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
+				m := newTestModel(t, home, clock)
+				m.screenIndex = screenIndex
+				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+
+				lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+				if len(lines) != size.height {
+					t.Errorf("%s frame has %d lines, want %d", screen, len(lines), size.height)
+				}
+				for lineIndex, line := range lines {
+					if got := ansi.StringWidth(line); got != size.width {
+						t.Fatalf("%s frame line %d has display width %d, want %d: %q", screen, lineIndex+1, got, size.width, line)
+					}
+				}
+				foundBorder := false
+				for _, line := range lines {
+					if !strings.Contains(line, "╭") || !strings.Contains(line, "╮") {
+						continue
+					}
+					foundBorder = true
+					if got := ansi.StringWidth(strings.TrimRight(line, " ")); got != size.width {
+						t.Errorf("%s panel right border ends at display column %d, want %d: %q", screen, got, size.width, line)
+					}
+					break
+				}
+				if !foundBorder {
+					t.Errorf("%s frame has no top border", screen)
+				}
+			})
+		}
+	}
+}
+
 func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
 	home := newTestHome(t)
 	if err := os.MkdirAll(filepath.Join(home, ".hive", "state"), 0o755); err != nil {

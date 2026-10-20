@@ -28,7 +28,7 @@ the code does not agree with this brief, stop and report it with
   example uutils coreutils) that selects its tool from the name of the
   program. A copy named `supervisor` exits at once, and `/proc/PID/exe` is
   then gone. Prove or disprove this. For example, run the copy on an Ubuntu
-  container or read the runner image file. Record the result.
+  container or read the runner image documentation. Record the result.
 - `internal/tui`: `TestRunHomeLogsKeysOnStringReader` in
   `internal/tui/logs_screen_test.go` fails on the runner: the output does not
   show `▶ 8 Logs` and `level: warn`. The worker of 87-tidy-gate saw it fail
@@ -73,7 +73,7 @@ lost), fix the program and add a model test for it.
 | --- | --- | --- |
 | V1 | Reproduce each failure before the fix. For R1, use a multi-call `sleep` or the proven cause. For R2, run `go test -race -count=50 -run TestRunHomeLogsKeysOnStringReader ./internal/tui/` or run under CPU load. | Each failure shows on the base. Record the output. |
 | V2 | The same runs on the task branch | Each passes. R2 passes 50 of 50 runs. |
-| V3 | Push the task branch and open no pull request. Run `gh workflow run` only when the workflow has `workflow_dispatch`. It has none. Report "not run" for CI here. The manager checks CI after the land. | Recorded. |
+| V3 | Push the task branch and open no pull request. Run `gh workflow run` only when the workflow has `workflow_dispatch`. The workflow has none. Report "not run" for CI here. The manager checks CI after the land. | Recorded. |
 | V4 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V5 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
@@ -90,3 +90,25 @@ A TUI check uses a scratch home (a temp copy of a marked home, set with
 `HIVE_HOME`, and a temp `XDG_CONFIG_HOME`), or it does not open the Chat
 input. On the real home, never press `i` on the Chat screen and never press
 Enter there. A chat message from an agent has the authority of the user.
+
+## Repair 1
+
+Task 88-tui-terminal-io landed on `dev` (merge `ef2dde2e`). It also changed
+`internal/tui/logs_screen_test.go`, so this branch has a merge conflict with
+`origin/dev`. Do only this repair:
+
+1. Merge `origin/dev` into the task branch.
+2. Resolve the conflict in `internal/tui/logs_screen_test.go`. Keep the change
+   of 88 and the R2 fix of this task. Keep each assertion of both sides.
+   Resolve a conflict in `testdata/ste-baseline.json` by keeping each row.
+3. Run `go test -race -count=50 -run TestRunHomeLogsKeysOnStringReader ./internal/tui/`.
+   It must pass 50 of 50.
+4. Run the gate of `AGENTS.md`.
+5. Commit with subject `merge(dev): resolve logs test conflict`. Push the
+   task branch. Add a `Repair 1` section to `evidence/V2.md` with the
+   results of steps 3 and 4.
+6. Make sure that `git merge-tree --write-tree origin/dev HEAD` exits 0.
+7. Run `hive task complete`. Send the commit SHA to the manager with
+   `hive inbox send`.
+
+Do not change other files. Do not run the TUI on the real home.

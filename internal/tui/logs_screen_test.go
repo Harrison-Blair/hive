@@ -202,6 +202,24 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 	if !strings.Contains(view, "▶ 8 Logs") || eventAt < 0 || !strings.Contains(view[eventAt:], "warnno events today") {
 		t.Fatalf("program output did not show Logs with the warn filter applied:\n%s", view)
 	}
+	screenView := ansi.Strip(output.String())
+	if !strings.Contains(screenView, "▶ 8 Logs") {
+		t.Fatalf("program output did not show Logs:\n%s", screenView)
+	}
+	events, _, err := logs.NewReader(home).Read(t.Context(), day)
+	if err != nil {
+		t.Fatalf("read TUI action log: %v", err)
+	}
+	cycledLevel := false
+	for _, event := range events {
+		if event.Fields["msg"] == "tui action" && event.Fields["action"] == "level" {
+			cycledLevel = true
+			break
+		}
+	}
+	if !cycledLevel {
+		t.Fatalf("program did not apply the level key; events: %#v", events)
+	}
 }
 
 type synchronizedOutput struct {
