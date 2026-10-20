@@ -1,8 +1,8 @@
 ---
 title: "store.List skips an agent record with a key longer than 18 characters"
-status: "Open"
+status: "Resolved 2026-10-20"
 opened: 2026-10-20
-decision: ""
+decision: "Task 101-store-list-long-keys: List and ListIn keep each valid store segment of any length (merge e6f70c2f)."
 ---
 
 **Summary:**

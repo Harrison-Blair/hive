@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestLegacyListHidesLongID(t *testing.T) {
+func TestListKeepsLongID(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	longID := strings.Repeat("a", 19)
 	if err := store.Write("projects", longID, map[string]string{"id": longID}); err != nil {
@@ -17,8 +17,8 @@ func TestLegacyListHidesLongID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(list) != 0 {
-		t.Fatalf("List() returned %d records; want the long ID hidden", len(list))
+	if len(list) != 1 || !strings.Contains(string(list[0]), longID) {
+		t.Fatalf("List() records = %q; want the long ID", list)
 	}
 	in, err := store.ListIn([]string{"projects"}, nil)
 	if err != nil {

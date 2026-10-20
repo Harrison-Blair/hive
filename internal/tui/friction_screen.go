@@ -14,6 +14,7 @@ import (
 
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type frictionTab uint8
@@ -290,7 +291,38 @@ func (s frictionScreen) View(width, height int) string {
 	} else {
 		tabLine = "open " + strconv.Itoa(openCount) + "  [resolved " + strconv.Itoa(resolvedCount) + "]"
 	}
-	lines := []string{titleStyle.Render(tabLine), "opened       title                                      decision"}
+
+	split := width >= 72
+	listWidth := width
+	titleWidth, decisionWidth := 42, 40
+	detailWidth := 0
+	if split {
+		detailWidth = width / 3
+		if detailWidth < 28 {
+			detailWidth = 28
+		}
+		if detailWidth > 56 {
+			detailWidth = 56
+		}
+		if detailWidth > width-36 {
+			detailWidth = width - 36
+		}
+		listWidth = width - detailWidth - 1
+		columnWidth := listWidth - 16
+		titleWidth = columnWidth * 2 / 3
+		if titleWidth > 42 {
+			titleWidth = 42
+		}
+		if titleWidth < 1 {
+			titleWidth = 1
+		}
+		decisionWidth = columnWidth - titleWidth
+	}
+	header := "opened       title                                      decision"
+	if split {
+		header = fmt.Sprintf("%-12s %-*s %s", "opened", titleWidth, "title", "decision")
+	}
+	lines := []string{titleStyle.Render(tabLine), header}
 	rowLines := make([]string, 0, len(entries))
 	for _, entry := range entries {
 		prefix := "  "
@@ -304,6 +336,9 @@ func (s frictionScreen) View(width, height int) string {
 			opened, title, decision = "?", "? "+entry.file, "?"
 		}
 		row := fmt.Sprintf("%s%-12s %-42s %s", prefix, opened, clipCell(title, 42), clipCell(frictionOneLine(decision), 40))
+		if split {
+			row = fmt.Sprintf("%s%-12s %-*s %-*s", prefix, opened, titleWidth, clipCell(title, titleWidth), decisionWidth, clipCell(frictionOneLine(decision), decisionWidth))
+		}
 		if entry.resolved {
 			row = dimStyle.Render(row)
 		}
@@ -315,6 +350,9 @@ func (s frictionScreen) View(width, height int) string {
 	state.keepSelectedVisible()
 	detailLines := state.detailLines()
 	listHeight := height - 5 - len(detailLines)
+	if split {
+		listHeight = height - 5
+	}
 	if listHeight < 1 {
 		listHeight = 1
 	}
@@ -328,6 +366,19 @@ func (s frictionScreen) View(width, height int) string {
 		state.scrollOffset = 0
 	}
 	lines = append(lines, rowLines[state.scrollOffset:end]...)
+	if split {
+		for index, line := range lines {
+			lines[index] = trimGraphLine(line, listWidth)
+		}
+		detailStyle := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color(colorAccent)).
+			Padding(0, 1).
+			Width(max(1, detailWidth-4)).
+			Height(max(1, height-3))
+		detail := detailStyle.Render(strings.Join(detailLines, "\n"))
+		return lipgloss.JoinHorizontal(lipgloss.Top, strings.Join(lines, "\n"), detail)
+	}
 	lines = append(lines, detailLines...)
 	for index, line := range lines {
 		lines[index] = trimGraphLine(line, contentWidth)

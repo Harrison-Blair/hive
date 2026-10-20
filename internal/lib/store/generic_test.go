@@ -24,6 +24,26 @@ func TestStoreNamesAcceptValidComponents(t *testing.T) {
 	}
 }
 
+func TestListInKeepsLongStoreSegment(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	id := strings.Repeat("k", 201)
+	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, id+".json"), []byte(`{"id":"`+id+`"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	records, err := store.ListIn([]string{"tasks"}, nil)
+	if err != nil {
+		t.Fatalf("ListIn() error = %v", err)
+	}
+	if len(records) != 1 || !strings.Contains(string(records[0]), id) {
+		t.Fatalf("ListIn() records = %q; want the long store segment", records)
+	}
+}
+
 func TestStoreNamesRejectInvalidComponents(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	invalid := []string{
@@ -116,7 +136,7 @@ func TestListInIncludeSelectsOne(t *testing.T) {
 	}
 }
 
-func TestListInSkipsInvalidNames(t *testing.T) {
+func TestListInSkipsInvalidStoreSegments(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	dir := filepath.Join(store.home, ".hive", "state", "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -126,7 +146,7 @@ func TestListInSkipsInvalidNames(t *testing.T) {
 		"valid.json":     `{"id":"valid"}`,
 		"Bad.json":       `{"id":"bad-uppercase"}`,
 		"a..b.json":      `{"id":"bad-dots"}`,
-		".hidden.json":   `{"id":"bad-dot"}`,
+		".hidden.json":   `{"id":"hidden"}`,
 		"has space.json": `{"id":"bad-space"}`,
 	} {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644); err != nil {
@@ -137,8 +157,19 @@ func TestListInSkipsInvalidNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListIn() error = %v", err)
 	}
-	if len(records) != 1 || !strings.Contains(string(records[0]), `"valid"`) {
-		t.Fatalf("ListIn() records = %q; want only valid", records)
+	var got []string
+	for _, raw := range records {
+		var record struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(raw, &record); err != nil {
+			t.Fatal(err)
+		}
+		got = append(got, record.ID)
+	}
+	want := []string{"hidden", "bad-uppercase", "bad-space", "valid"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("ListIn() IDs = %q; want %q", got, want)
 	}
 }
 
