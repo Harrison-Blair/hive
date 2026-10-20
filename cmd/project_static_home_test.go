@@ -54,7 +54,7 @@ func TestProjectListRejectsLinkedHiveHome(t *testing.T) {
 
 			wantError := "not a hive home: " + home
 			if test.cwd {
-				wantError = "not a hive home: no marker above " + home
+				wantError = "not a hive home: no marker above " + home + "; run hive init in the home"
 			}
 			if test.json {
 				if stderr.Len() != 0 {

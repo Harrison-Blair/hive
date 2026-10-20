@@ -495,6 +495,8 @@ func TestRunQuits(t *testing.T) {
 }
 
 func TestRunResolvesFixtureHome(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", "")
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 17, 12, 0, 0, 0, time.Local)
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "wrapper event"))
