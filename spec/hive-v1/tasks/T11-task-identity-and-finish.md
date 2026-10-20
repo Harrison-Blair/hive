@@ -115,20 +115,20 @@ go build -o "$BIN" .
 sha256sum "$BIN"
 REPO="$FIX/repo-one"
 git init -q "$REPO"
-"$BIN" --home "$FIX" project register "$REPO"
-"$BIN" --home "$FIX" task create --project repo-one --title "step"
-"$BIN" --home "$FIX" agent register --role manager --project repo-one --pane w9:p1
-"$BIN" --home "$FIX" agent register --role worker --project repo-one --task 1-step --pane w9:p2
-"$BIN" --home "$FIX" agent register --role verifier --project repo-one --task 1-step --pane w9:p3
-"$BIN" --home "$FIX" task assign --task 1-step --agent worker-repo-one-1
-HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" inbox send --to manager-repo-one "hello"
-HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" inbox
+HIVE_HOME="$FIX" "$BIN" project register "$REPO"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-one --title "step"
+HIVE_HOME="$FIX" "$BIN" agent register --role manager --project repo-one --pane w9:p1
+HIVE_HOME="$FIX" "$BIN" agent register --role worker --project repo-one --task 1-step --pane w9:p2
+HIVE_HOME="$FIX" "$BIN" agent register --role verifier --project repo-one --task 1-step --pane w9:p3
+HIVE_HOME="$FIX" "$BIN" task assign --task 1-step --agent worker-repo-one-1
+HERDR_PANE_ID=w9:p2 HIVE_HOME="$FIX" "$BIN" inbox send --to manager-repo-one "hello"
+HERDR_PANE_ID=w9:p2 HIVE_HOME="$FIX" "$BIN" inbox
 echo "exit $?"
-HERDR_PANE_ID=w9:p2 "$BIN" --home "$FIX" task complete --task 1-step
-HERDR_PANE_ID=w9:p3 "$BIN" --home "$FIX" task verify --task 1-step
-HERDR_PANE_ID=w9:p1 "$BIN" --home "$FIX" inbox
-"$BIN" --home "$FIX" agent show worker-repo-one-1
-"$BIN" --home "$FIX" agent show verifier-repo-one-2
+HERDR_PANE_ID=w9:p2 HIVE_HOME="$FIX" "$BIN" task complete --task 1-step
+HERDR_PANE_ID=w9:p3 HIVE_HOME="$FIX" "$BIN" task verify --task 1-step
+HERDR_PANE_ID=w9:p1 HIVE_HOME="$FIX" "$BIN" inbox
+HIVE_HOME="$FIX" "$BIN" agent show worker-repo-one-1
+HIVE_HOME="$FIX" "$BIN" agent show verifier-repo-one-2
 rm -rf "$FIX"
 ```
 

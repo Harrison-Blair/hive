@@ -23,9 +23,9 @@ strong. The task adds no herdr call and no external process.
 ## User flows
 
 1. The user clones the repository and runs `hive project register . --base dev` from the root. Hive resolves the home from the marker, writes the project record, makes the project directory, and prints one line for each effect.
-2. A manager runs `hive --home /home/user/hive project show hive --json` from a project directory. It gets one JSON object with the record in `result`.
-3. A worker runs a command from a worktree without `--home`. Hive resolves the outermost marker above the worktree, which is the real home, and acts there.
-4. A script runs `hive --home /tmp/nothing project list`. Hive prints `not a hive home: /tmp/nothing` and exits with status 1. It creates nothing.
+2. A manager runs `HIVE_HOME=/home/user/hive hive project show hive --json` from a project directory. It gets one JSON object with the record in `result`.
+3. A worker runs a command from a worktree. Hive resolves the outermost marker above the worktree, which is the real home, and acts there.
+4. A script runs `HIVE_HOME=/tmp/nothing hive project list`. Hive prints `not a hive home: /tmp/nothing` and exits with status 1. It creates nothing.
 5. A script runs `hive project show` without an ID. Hive prints one usage error line and exits with status 2.
 
 ## Source files
@@ -33,7 +33,7 @@ strong. The task adds no herdr call and no external process.
 | Path | Purpose of the edit |
 | --- | --- |
 | `main.go` | Set the process exit status from the value that `cmd.Execute` returns: 0, 1, or 2. |
-| `cmd/root.go` | Bind the persistent flags `--home` and `--json`. Register the `project` command. Return the exit status of the command to `main.go`. |
+| `cmd/root.go` | Bind the persistent `--json` flag. Register the `project` command. Return the exit status of the command to `main.go`. |
 | `cmd/common/common.go` | New. The persistent flags, the resolved context (home, json, writers), and the helper that runs an internal function and renders its envelope. |
 | `cmd/project/project.go` | New. The `project` parent command. |
 | `cmd/project/register/register.go` | New. `hive project register PATH [--id ID] [--base BRANCH]`. |
@@ -53,16 +53,18 @@ strong. The task adds no herdr call and no external process.
 | `internal/lib/log/log.go` | New. The log writer with the daily file change. |
 | `internal/lib/output/output.go` | New. The envelope, the effect type, text and JSON rendering, and the exit status. |
 
+T01 added the persistent `--home` flag.
+
 ## Requirements
 
 ### AC1 Home resolution
 
-- `home.Resolve` takes the `--home` value, the `HIVE_HOME` value, and the working directory. It returns one absolute path without symbolic links, or an error.
-- The order: the `--home` value wins. Then `HIVE_HOME`. Then the outermost ancestor of the working directory, the directory itself included, that holds a regular file `.hive/README.md`.
-- A `--home` or `HIVE_HOME` path without the marker fails with `not a hive home: <path>`.
-- When `HIVE_HOME` names a home and the outermost marker above the working directory is in a different home, the command fails. The message is `home conflict: HIVE_HOME is <a>, working directory is in <b>`.
-- A `--home` value skips the conflict check. A worker in a worktree passes `--home` to act on the worktree as its own home during checks.
-- With no `--home`, no `HIVE_HOME`, and no marker above the working directory, the command fails with `not a hive home: no marker above <cwd>`.
+- `home.Resolve` takes `HIVE_HOME`, the config, and the working directory. It returns one absolute path without symbolic links, or an error.
+- The order is `HIVE_HOME`, then the config, then the outermost ancestor with a regular `.hive/README.md` marker.
+- An `HIVE_HOME` or config path without the marker fails with `not a hive home: <path>`.
+- `HIVE_HOME` wins without a conflict check. A config that conflicts with an ancestor marker fails with `home conflict: config is <a>, working directory is in <b>`.
+- A worker in a worktree uses the home that hive resolves from its environment, config, or working directory.
+- With no `HIVE_HOME`, no config, and no marker above the working directory, the command fails with `not a hive home: no marker above <cwd>`.
 - Hive never creates a marker or a home.
 
 ### AC2 Project register
@@ -134,24 +136,24 @@ the same output. The cleanup of V4 removes each fixture.
 - Proves: AC1.
 - Command: `go test ./internal/lib/home/ -run TestResolve -v`
 - Red run: the test fails on its assertions after the worker adds `Resolve` with an empty body.
-- Expected green run: each case passes. The cases: the flag wins, the env wins over the ancestor, and the outermost marker wins over a nested marker. The flag also wins without a conflict check when the working directory is in another home. A named path without a marker fails, a conflict fails, and no marker fails.
+- Expected green run: each case passes. The cases: the environment wins over config and ancestor, and the outermost marker wins over a nested marker. `HIVE_HOME` wins without a conflict check when the working directory is in another home. A named path without a marker fails, a config conflict fails, and no marker fails.
 
 ### V2 Home resolution at the command line
 
 - Proves: AC1, AC6.
-- Setup: `go build . && rm -rf .hive/state projects .hive/tmp/repo-one .hive/tmp/repo-two`
+- Setup: `go build . && rm -rf .hive/state projects .hive/tmp/repo-one .hive/tmp/repo-two && export XDG_CONFIG_HOME="$(mktemp -d)"`
 - Command:
 
 ```sh
-./hive --home /tmp/not-a-home project list; echo "exit $?"
-./hive --home /tmp/not-a-home --json project list; echo "exit $?"
+HIVE_HOME=/tmp/not-a-home ./hive project list; echo "exit $?"
+HIVE_HOME=/tmp/not-a-home ./hive --json project list; echo "exit $?"
 HIVE_HOME="$PWD" ./hive project list; echo "exit $?"
-./hive --home "$PWD" project list; echo "exit $?"
-./hive --home "$PWD" --json project list; echo "exit $?"
-./hive --home "$PWD" project show; echo "exit $?"
+env -u HIVE_HOME ./hive project list; echo "exit $?"
+HIVE_HOME="$PWD" ./hive --json project list; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project show; echo "exit $?"
 ```
 
-- Expected: line one prints `hive: not a hive home: /tmp/not-a-home` and exit 1. Line two prints one JSON object with `outcome` `failed`, `phase` `home`, and the same error, then exit 1. Line three fails with `home conflict`, because the outermost marker above the worktree is the real home. Line four prints `no projects` and exit 0. Line five prints the envelope with `result` `[]` and exit 0. Line six prints one usage line on stderr and exit 2.
+- Expected: line one prints `hive: not a hive home: /tmp/not-a-home` and exits 1. Line two prints one JSON object with `outcome` `failed`, `phase` `home`, and the same error, then exits 1. Line three uses `HIVE_HOME` without a conflict and exits 0. Line four finds the home from the marker and exits 0. Line five prints the envelope with `result` `[]` and exits 0. Line six prints one usage line on stderr and exits 2.
 
 ### V3 Register tests and transcript
 
@@ -161,14 +163,14 @@ HIVE_HOME="$PWD" ./hive project list; echo "exit $?"
 
 ```sh
 git init -q .hive/tmp/repo-one
-./hive --home "$PWD" project register .hive/tmp/repo-one --base main; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project register .hive/tmp/repo-one --base main; echo "exit $?"
 ls projects/repo-one
-./hive --home "$PWD" project register .hive/tmp/repo-one; echo "exit $?"
-./hive --home "$PWD" project register .hive/tmp/repo-one --id other; echo "exit $?"
-./hive --home "$PWD" project register .hive/tmp/repo-one --id Repo_One; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project register .hive/tmp/repo-one; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project register .hive/tmp/repo-one --id other; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project register .hive/tmp/repo-one --id Repo_One; echo "exit $?"
 git init -q .hive/tmp/repo-two
 touch projects/repo-two
-./hive --home "$PWD" --json project register .hive/tmp/repo-two; echo "exit $?"
+HIVE_HOME="$PWD" ./hive --json project register .hive/tmp/repo-two; echo "exit $?"
 ```
 
 - Expected: four effect lines, one for the record and one for each directory, and exit 0. `ls` prints `overrides` and `worktrees`. The second register fails with `project exists: repo-one` and exit 1. The third fails with `path registered as repo-one` and exit 1. The fourth fails with `invalid project id: Repo_One` and exit 1. The last prints an envelope with `outcome` `partial`, `phase` `dirs`, one effect for the record `repo-two`, an error that names `projects/repo-two`, and exit 1.
@@ -179,11 +181,11 @@ touch projects/repo-two
 - Command:
 
 ```sh
-./hive --home "$PWD" project list
-./hive --home "$PWD" --json project list
-./hive --home "$PWD" project show repo-one
-./hive --home "$PWD" --json project show repo-one
-./hive --home "$PWD" --json project show nope; echo "exit $?"
+HIVE_HOME="$PWD" ./hive project list
+HIVE_HOME="$PWD" ./hive --json project list
+HIVE_HOME="$PWD" ./hive project show repo-one
+HIVE_HOME="$PWD" ./hive --json project show repo-one
+HIVE_HOME="$PWD" ./hive --json project show nope; echo "exit $?"
 ```
 
 - Expected: two text lines, `repo-one` with its path and `main`, then `repo-two`. Then an envelope whose `result` is an array of the two records. Then four lines `id: repo-one`, `path: <path>`, `base: main`, and `registered_at: <time>`. Then one JSON object with `outcome` `ok` and the record in `result`. Then one JSON object with `outcome` `failed` and the error `project not found: nope`, and exit 1.
@@ -201,7 +203,7 @@ touch projects/repo-two
 - Command: `go test ./internal/lib/log/ -v`, red and green. Then:
 
 ```sh
-./hive --home "$PWD" project list >/dev/null
+HIVE_HOME="$PWD" ./hive project list >/dev/null
 tail -n 2 .hive/logs/"$(date +%F)".jsonl
 ```
 
@@ -230,8 +232,8 @@ go test -race ./...
 ## Changes
 
 - 2026-10-17, untrusted inputs. These rules add to AC1, AC2, AC3, and AC4. V1, V3, and V5 prove them with tests that their `-run` patterns select.
-  - An empty `HIVE_HOME` counts as unset. An empty `--home` value or an empty `PATH` is a usage error with exit status 2.
-  - A relative `--home`, `HIVE_HOME`, or `PATH` resolves against the working directory. Hive does not trim spaces around a value. The conflict check compares resolved paths.
+  - An empty `HIVE_HOME` counts as unset. An empty `PATH` is a usage error with exit status 2.
+  - A relative `HIVE_HOME` or `PATH` resolves against the working directory. Hive does not trim spaces around a value. The conflict check compares resolved paths.
   - A `--base` value that is empty, starts with `-`, or holds a space or a control character fails with `invalid base branch: <value>`. A `PATH` with a control character fails with `invalid path: <value>` before any file access. Hive prints such a value with `%q`.
   - `project show` applies the ID rule before it reads a file. An ID that fails the rule gives `invalid project id: <id>`.
   - The store refuses a kind, an ID, or a counter name that is empty or holds `/` or `..`. The temporary file of an atomic write starts with `.`. `List` reads only files with the name `<id>.json` where `<id>` passes the ID rule.

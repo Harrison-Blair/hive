@@ -31,27 +31,16 @@ func (e *UsageError) Error() string { return e.Message }
 // Run resolves the home, logs the command, and renders its result.
 func Run(cmd *cobra.Command, command string, execute func(string) (output.Envelope, string, error)) error {
 	root := cmd.Root()
-	homeFlag, err := root.PersistentFlags().GetString("home")
-	if err != nil {
-		return err
-	}
 	jsonOutput, err := root.PersistentFlags().GetBool("json")
 	if err != nil {
 		return err
 	}
-	flag := root.PersistentFlags().Lookup("home")
-	flagSet := flag != nil && flag.Changed
 	cwd, err := os.Getwd()
 	if err != nil {
 		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
-	resolvedHome, err := home.Resolve(homeFlag, flagSet, os.Getenv("HIVE_HOME"), cwd)
+	resolvedHome, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
-		var usage *home.UsageError
-		if errors.As(err, &usage) {
-			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", usage.Error())
-			return &StatusError{Status: 2}
-		}
 		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
 	logger, err := hivelog.Open(resolvedHome, "cli")

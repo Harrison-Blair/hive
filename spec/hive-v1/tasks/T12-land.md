@@ -119,20 +119,20 @@ REPO="$FIX/repo-land"
 git init -q "$REPO"
 git -C "$REPO" commit -q --allow-empty -m init
 BASE=$(git -C "$REPO" branch --show-current)
-"$BIN" --home "$FIX" project register "$REPO" --base "$BASE"
-"$BIN" --home "$FIX" task create --project repo-land --title "land demo"
-"$BIN" --home "$FIX" worktree create --task 1-land-demo
+HIVE_HOME="$FIX" "$BIN" project register "$REPO" --base "$BASE"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-land --title "land demo"
+HIVE_HOME="$FIX" "$BIN" worktree create --task 1-land-demo
 git -C "$FIX/projects/repo-land/worktrees/1-land-demo" commit -q --allow-empty -m work
-"$BIN" --home "$FIX" agent register --role worker --project repo-land --task 1-land-demo --pane w0:p1
-"$BIN" --home "$FIX" agent register --role verifier --project repo-land --task 1-land-demo --pane w0:p2
-"$BIN" --home "$FIX" task assign --task 1-land-demo --agent worker-repo-land-1
-"$BIN" --home "$FIX" task complete --task 1-land-demo --agent worker-repo-land-1
-"$BIN" --home "$FIX" task verify --task 1-land-demo --agent verifier-repo-land-2
-"$BIN" --home "$FIX" land --task 1-land-demo --mode merge --grant "demo"
+HIVE_HOME="$FIX" "$BIN" agent register --role worker --project repo-land --task 1-land-demo --pane w0:p1
+HIVE_HOME="$FIX" "$BIN" agent register --role verifier --project repo-land --task 1-land-demo --pane w0:p2
+HIVE_HOME="$FIX" "$BIN" task assign --task 1-land-demo --agent worker-repo-land-1
+HIVE_HOME="$FIX" "$BIN" task complete --task 1-land-demo --agent worker-repo-land-1
+HIVE_HOME="$FIX" "$BIN" task verify --task 1-land-demo --agent verifier-repo-land-2
+HIVE_HOME="$FIX" "$BIN" land --task 1-land-demo --mode merge --grant "demo"
 echo "exit $?"
 git -C "$REPO" log --oneline -n 3
-"$BIN" --home "$FIX" task show 1-land-demo
-"$BIN" --home "$FIX" worktree remove --task 1-land-demo
+HIVE_HOME="$FIX" "$BIN" task show 1-land-demo
+HIVE_HOME="$FIX" "$BIN" worktree remove --task 1-land-demo
 herdr workspace close <repository workspace ID from the create output>
 rm -rf "$FIX"
 ```

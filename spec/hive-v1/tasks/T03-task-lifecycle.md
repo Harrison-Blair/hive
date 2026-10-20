@@ -175,27 +175,27 @@ Incomplete states:
 ### V3 Command transcript
 
 - Proves: AC1, AC2, AC3, AC4.
-- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Make a unique temporary project in it. Export `HIVE_TMP=<absolute fixture path>` and pass `--home "$HIVE_TMP"` to each command.
+- Setup: Run `go build .` and create a unique temporary home. Create its marker `.hive/README.md`. Make a unique temporary project in it. Set `HIVE_TMP` to its path. Run each CLI command as `HIVE_HOME="$HIVE_TMP" ./hive CMD`.
 - Command:
 
 ```sh
 git init -q "$HIVE_TMP/repo-one"
-./hive --home "$HIVE_TMP" project register "$HIVE_TMP/repo-one"
-./hive --home "$HIVE_TMP" task create --project repo-one --title "First step"
-./hive --home "$HIVE_TMP" task create --project repo-one --title "Second step" --depends-on 1-first-step
-./hive --home "$HIVE_TMP" task create --project repo-one --title "Bad" --slug "Bad/Slug"; echo "exit $?"
-./hive --home "$HIVE_TMP" task list --project repo-one --ready
-./hive --home "$HIVE_TMP" task assign --task 1-first-step --agent worker-repo-one-1
-./hive --home "$HIVE_TMP" task complete --task 1-first-step --agent worker-repo-one-1
-./hive --home "$HIVE_TMP" task verify --task 1-first-step --agent worker-repo-one-1; echo "exit $?"
-./hive --home "$HIVE_TMP" task verify --task 1-first-step --agent verifier-repo-one-2 --fail --reason "V3 output differs"
-./hive --home "$HIVE_TMP" task complete --task 1-first-step --agent worker-repo-one-1
-./hive --home "$HIVE_TMP" task verify --task 1-first-step --agent verifier-repo-one-2
-./hive --home "$HIVE_TMP" task verify --task 1-first-step --agent verifier-repo-one-2; echo "exit $?"
-./hive --home "$HIVE_TMP" task list --project repo-one --ready
-./hive --home "$HIVE_TMP" task show 2-second-step --brief
-./hive --home "$HIVE_TMP" --json task show 1-first-step
-./hive --home "$HIVE_TMP" --json task cancel --task 1-first-step; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive project register "$HIVE_TMP/repo-one"
+HIVE_HOME="$HIVE_TMP" ./hive task create --project repo-one --title "First step"
+HIVE_HOME="$HIVE_TMP" ./hive task create --project repo-one --title "Second step" --depends-on 1-first-step
+HIVE_HOME="$HIVE_TMP" ./hive task create --project repo-one --title "Bad" --slug "Bad/Slug"; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive task list --project repo-one --ready
+HIVE_HOME="$HIVE_TMP" ./hive task assign --task 1-first-step --agent worker-repo-one-1
+HIVE_HOME="$HIVE_TMP" ./hive task complete --task 1-first-step --agent worker-repo-one-1
+HIVE_HOME="$HIVE_TMP" ./hive task verify --task 1-first-step --agent worker-repo-one-1; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive task verify --task 1-first-step --agent verifier-repo-one-2 --fail --reason "V3 output differs"
+HIVE_HOME="$HIVE_TMP" ./hive task complete --task 1-first-step --agent worker-repo-one-1
+HIVE_HOME="$HIVE_TMP" ./hive task verify --task 1-first-step --agent verifier-repo-one-2
+HIVE_HOME="$HIVE_TMP" ./hive task verify --task 1-first-step --agent verifier-repo-one-2; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive task list --project repo-one --ready
+HIVE_HOME="$HIVE_TMP" ./hive task show 2-second-step --brief
+HIVE_HOME="$HIVE_TMP" ./hive --json task show 1-first-step
+HIVE_HOME="$HIVE_TMP" ./hive --json task cancel --task 1-first-step; echo "exit $?"
 ```
 
 - Expected: the IDs `1-first-step` and `2-second-step`. The bad slug fails with `invalid slug: Bad/Slug` and exit 1. The first ready list shows only `1-first-step`. The self-verification fails with exit 1. The failed verification prints the status `assigned`. The second complete prints `completed`, and the next verify prints `verified`. The verify of the verified task fails with `invalid transition: verified -> verify` and exit 1. The second ready list shows only `2-second-step`. The brief prints `Second step`. The JSON show has `verification` with `result` `pass` and the agent `verifier-repo-one-2`. The cancel of a verified task fails with `invalid transition: verified -> cancel` and exit 1.

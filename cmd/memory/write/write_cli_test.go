@@ -133,10 +133,10 @@ func markedCLIHome(t *testing.T) string {
 
 func runHiveCLI(t *testing.T, binary, home string, input []byte, args ...string) (int, []byte, []byte) {
 	t.Helper()
-	command := exec.Command(binary, append([]string{"--home", home}, args...)...)
+	command := exec.Command(binary, args...)
 	command.Stdin = bytes.NewReader(input)
 	command.Dir = t.TempDir()
-	command.Env = append(os.Environ(), "HIVE_HOME=")
+	command.Env = append(os.Environ(), "HIVE_HOME="+home, "XDG_CONFIG_HOME="+t.TempDir())
 	var stdout, stderr bytes.Buffer
 	command.Stdout = &stdout
 	command.Stderr = &stderr

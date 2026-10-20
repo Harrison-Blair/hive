@@ -113,8 +113,10 @@ func cliHome(t *testing.T) string {
 	return home
 }
 
-func runCLI(t *testing.T, args ...string) (int, string, string) {
+func runCLI(t *testing.T, home string, args ...string) (int, string, string) {
 	t.Helper()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", home)
 	root := cmd.NewRootCmd()
 	var stdout, stderr bytes.Buffer
 	root.SetArgs(args)
@@ -136,7 +138,7 @@ func runCLI(t *testing.T, args ...string) (int, string, string) {
 func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 	home := cliHome(t)
 	fake := newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"name is too long"}}`)
-	status, stdout, stderr := runCLI(t, "--home", home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
+	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr)
 	}
@@ -181,7 +183,7 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 
 func TestSpawnTextDefaultAndExit(t *testing.T) {
 	home := cliHome(t)
-	status, stdout, stderr := runCLI(t, "--home", home, "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "nope")
+	status, stdout, stderr := runCLI(t, home, "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "nope")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -196,7 +198,7 @@ func TestSpawnTextDefaultAndExit(t *testing.T) {
 func TestSpawnPartialExitIsNonzero(t *testing.T) {
 	home := cliHome(t)
 	newCLIFake(t, "agent.start", "")
-	status, stdout, _ := runCLI(t, "--home", home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude")
+	status, stdout, _ := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 for partial", status)
 	}
@@ -208,8 +210,10 @@ func TestSpawnPartialExitIsNonzero(t *testing.T) {
 func TestSpawnWriterErrorIsObservable(t *testing.T) {
 	home := cliHome(t)
 	newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"bad"}}`)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", home)
 	root := cmd.NewRootCmd()
-	root.SetArgs([]string{"--home", home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude"})
+	root.SetArgs([]string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude"})
 	root.SetOut(failingWriter{})
 	root.SetErr(&bytes.Buffer{})
 	err := root.Execute()

@@ -88,8 +88,10 @@ func seedResolveCommandRecord(t *testing.T, home, key, paneID string) records.Ag
 
 func runResolveCommand(t *testing.T, home string, args ...string) (string, error) {
 	t.Helper()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", home)
 	var out bytes.Buffer
-	err := cmd.ExecuteWithArgs(append([]string{"--home", home}, args...), strings.NewReader(""), &out)
+	err := cmd.ExecuteWithArgs(args, strings.NewReader(""), &out)
 	return out.String(), err
 }
 

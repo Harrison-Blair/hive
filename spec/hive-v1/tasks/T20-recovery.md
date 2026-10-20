@@ -90,7 +90,7 @@ identity of the live agent with the record before it trusts the name.
 
 - Proves: AC1, AC2.
 - Command: `go test ./cmd/agent/resolve/ -run TestResolveCommand -v`, red and green.
-- Expected: the test makes a temporary home with the marker and a fake herdr server. It seeds one `unresolved` record through the store library. It runs the commands through `ExecuteWithArgs` with `--home`: `agent list`, `agent stop`, `doctor`, `agent resolve --as live` with a matching agent, and `agent resolve --as exited` on a second seeded record. It asserts the exact messages, the exit status of each command, and the updated IDs.
+- Expected: The test makes a temporary home with the marker and a fake herdr server. It seeds one `unresolved` record through the store library. It sets `HIVE_HOME` with `t.Setenv`. It runs `ExecuteWithArgs` for `agent list`, `agent stop`, `doctor`, `agent resolve --as live` with a matching agent, and `agent resolve --as exited` on a second seeded record. It checks the messages, exit status, and updated IDs.
 
 ### V4 Gate
 

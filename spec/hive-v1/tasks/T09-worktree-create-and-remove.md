@@ -127,15 +127,15 @@ sha256sum "$BIN"
 REPO="$FIX/repo-live"
 git init -q "$REPO"
 git -C "$REPO" commit -q --allow-empty -m init
-"$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
-"$BIN" --home "$FIX" task create --project repo-live --title "live demo"
+HIVE_HOME="$FIX" "$BIN" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-live --title "live demo"
 herdr workspace list
-"$BIN" --home "$FIX" worktree create --task 1-live-demo
+HIVE_HOME="$FIX" "$BIN" worktree create --task 1-live-demo
 herdr workspace list
-"$BIN" --home "$FIX" worktree remove --task 1-live-demo
+HIVE_HOME="$FIX" "$BIN" worktree remove --task 1-live-demo
 echo "exit $?"
-"$BIN" --home "$FIX" task cancel --task 1-live-demo
-"$BIN" --home "$FIX" worktree remove --task 1-live-demo
+HIVE_HOME="$FIX" "$BIN" task cancel --task 1-live-demo
+HIVE_HOME="$FIX" "$BIN" worktree remove --task 1-live-demo
 herdr workspace list
 git -C "$REPO" branch
 herdr workspace close <repository workspace ID from the create output>

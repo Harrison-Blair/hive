@@ -165,14 +165,14 @@ sha256sum "$BIN"
 NAME="t10-check-$(date +%s)"
 herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 PANE=<root pane ID from the output>
-"$BIN" --home "$FIX" agent spawn --pane "$PANE" --role coordinator --name "$NAME" --harness claude --model {{T10_SMOKE_MODEL}}
-"$BIN" --home "$FIX" agent send --agent "$NAME" --wait --timeout 120 "Reply with the word pong."
+HIVE_HOME="$FIX" "$BIN" agent spawn --pane "$PANE" --role coordinator --name "$NAME" --harness claude --model {{T10_SMOKE_MODEL}}
+HIVE_HOME="$FIX" "$BIN" agent send --agent "$NAME" --wait --timeout 120 "Reply with the word pong."
 herdr pane read "$PANE" --lines 20
-"$BIN" --home "$FIX" agent list
-"$BIN" --home "$FIX" agent stop --agent "$NAME"
+HIVE_HOME="$FIX" "$BIN" agent list
+HIVE_HOME="$FIX" "$BIN" agent stop --agent "$NAME"
 echo "exit $?"
 herdr pane get "$PANE"
-"$BIN" --home "$FIX" agent list --all
+HIVE_HOME="$FIX" "$BIN" agent list --all
 herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 rm -rf "$FIX"
 ```

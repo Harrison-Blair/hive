@@ -131,7 +131,7 @@ lock. `WalkRecords` uses one `WithLock` callback.
 - Command:
 
 ```sh
-./hive --home "$HIVE_TMP" --json doctor | head -c 2000
+HIVE_HOME="$HIVE_TMP" ./hive --json doctor | head -c 2000
 grep '"method":"ping"' "$HIVE_TMP"/.hive/logs/"$(date +%F)".jsonl | tail -n 2
 ```
 
@@ -157,10 +157,10 @@ grep '"method":"ping"' "$HIVE_TMP"/.hive/logs/"$(date +%F)".jsonl | tail -n 2
 - Command:
 
 ```sh
-./hive --home "$HIVE_TMP" doctor; echo "exit $?"
-HERDR_SOCKET_PATH=/tmp/none.sock ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
-env -u HERDR_SOCKET_PATH ./hive --home "$HIVE_TMP" doctor; echo "exit $?"
-./hive --home "$HIVE_TMP" --json version; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive doctor; echo "exit $?"
+HERDR_SOCKET_PATH=/tmp/none.sock HIVE_HOME="$HIVE_TMP" ./hive doctor; echo "exit $?"
+env -u HERDR_SOCKET_PATH HIVE_HOME="$HIVE_TMP" ./hive doctor; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive --json version; echo "exit $?"
 ```
 
 - Expected: the first run prints eight groups of lines and exit 0, or exit 1 with a `fail` line that explains why. The second run prints `fail herdr socket` with `/tmp/none.sock` and exit 1. The third prints `fail herdr socket` with `HERDR_SOCKET_PATH is not set` and exit 1. The fourth prints the envelope and exit 0.

@@ -133,14 +133,14 @@ input write nothing.
 ### V3 Command transcript
 
 - Proves: AC2, AC3.
-- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Export `HIVE_TMP=<absolute fixture path>` and pass `--home "$HIVE_TMP"` to each command. Do not remove real memory or handoff files.
+- Setup: Run `go build .` and create a unique temporary home. Create its marker `.hive/README.md`. Set `HIVE_TMP` to its path. Run each CLI command as `HIVE_HOME="$HIVE_TMP" ./hive CMD`. Keep real memory and handoff files.
 - Command:
 
 ```sh
-printf -- '---\nname: base-is-dev\ndescription: The base branch of hive is dev.\n---\nThe base branch of hive is dev.\n' | ./hive --home "$HIVE_TMP" memory write --scope home base-is-dev
+printf -- '---\nname: base-is-dev\ndescription: The base branch of hive is dev.\n---\nThe base branch of hive is dev.\n' | HIVE_HOME="$HIVE_TMP" ./hive memory write --scope home base-is-dev
 cat "$HIVE_TMP"/memory/MEMORY.md
-printf -- '---\nname: other\n---\nNo description.\n' | ./hive --home "$HIVE_TMP" memory write --scope home other; echo "exit $?"
-printf 'Open decisions: none.\n' | ./hive --home "$HIVE_TMP" handoff write --scope home
+printf -- '---\nname: other\n---\nNo description.\n' | HIVE_HOME="$HIVE_TMP" ./hive memory write --scope home other; echo "exit $?"
+printf 'Open decisions: none.\n' | HIVE_HOME="$HIVE_TMP" ./hive handoff write --scope home
 cat "$HIVE_TMP"/handoff.md
 ```
 

@@ -12,7 +12,7 @@
 
 Hive finds the home from a global config file. `hive init` writes that file.
 This task adds the config, `hive init`, and the new resolution order. It keeps
-the `--home` flag. Task B of H1 removes the flag later. The plan is
+the command-line home override. Task B of H1 removes it later. The plan is
 `projects/hive/plans/home-spec-planning/MAP.md` in the home, decisions 1 and
 2. The user agreed to it. Do not change a decision in this brief. When the code
 does not agree with this brief, stop and report it with
@@ -63,7 +63,7 @@ Do not edit other files.
 
 Resolve the home in this order:
 
-1. The `--home` flag has first priority. Task B removes it later.
+1. A command-line home value has first priority. Task B removes it later.
 2. `HIVE_HOME`, when it has a value. It must name a marked home. It selects that
    home. It does not fail on a different marked home above the working
    directory. This removes the current `HIVE_HOME` conflict. Fixture tests in
@@ -112,8 +112,8 @@ its meaning. Record each change in the evidence.
 
 ## Not in scope
 
-The removal of the `--home` flag and of `--home` in docs, skills, prompts, and
-tests (task B). The spec layout (H2). `main`.
+The removal of the command-line home override and its references in docs,
+skills, prompts, and tests (task B). The spec layout (H2). `main`.
 
 ## Verification
 

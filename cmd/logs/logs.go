@@ -3,7 +3,6 @@ package logs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -53,26 +52,16 @@ func New() *cobra.Command {
 
 func run(cmd *cobra.Command, opts *options) error {
 	root := cmd.Root()
-	homeFlag, err := root.PersistentFlags().GetString("home")
-	if err != nil {
-		return err
-	}
 	jsonOutput, err := root.PersistentFlags().GetBool("json")
 	if err != nil {
 		return err
 	}
-	flag := root.PersistentFlags().Lookup("home")
-	flagSet := flag != nil && flag.Changed
 	cwd, err := os.Getwd()
 	if err != nil {
 		return fail(cmd, jsonOutput, err, 1)
 	}
-	resolvedHome, err := home.Resolve(homeFlag, flagSet, os.Getenv("HIVE_HOME"), cwd)
+	resolvedHome, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
-		var usage *home.UsageError
-		if errors.As(err, &usage) {
-			return common.Usage(cmd, usage.Error())
-		}
 		return fail(cmd, jsonOutput, err, 1)
 	}
 	if opts.limit < 0 {

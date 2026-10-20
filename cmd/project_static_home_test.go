@@ -21,13 +21,12 @@ func TestProjectListRejectsLinkedHiveHome(t *testing.T) {
 		env  bool
 		cwd  bool
 	}{
-		{name: "flag text"},
-		{name: "flag json", json: true},
 		{name: "environment text", env: true},
 		{name: "cwd discovery text", cwd: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			home, external := linkedHomeFixture(t)
+			t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 			t.Setenv("HIVE_HOME", "")
 			beforeExternal := captureTree(t, external)
 			beforeHome := captureTree(t, home)
@@ -41,8 +40,6 @@ func TestProjectListRejectsLinkedHiveHome(t *testing.T) {
 				t.Setenv("HIVE_HOME", home)
 			} else if test.cwd {
 				t.Chdir(home)
-			} else {
-				args = append(args, "--home", home)
 			}
 			args = append(args, "project", "list")
 
@@ -88,7 +85,7 @@ func TestProjectListRejectsLinkedHiveHome(t *testing.T) {
 func TestProjectListAcceptsRegularHiveHome(t *testing.T) {
 	home := testHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "project", "list"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"project", "list"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 || stdout.String() != "no projects\n" || stderr.Len() != 0 {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want a normal list", status, stdout.String(), stderr.String())
 	}
@@ -106,8 +103,9 @@ func TestProjectListAcceptsSymlinkedHomeRoot(t *testing.T) {
 	if err := os.Symlink(home, alias); err != nil {
 		t.Fatal(err)
 	}
+	t.Setenv("HIVE_HOME", alias)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", alias, "project", "list"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"project", "list"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 || stdout.String() != "no projects\n" || stderr.Len() != 0 {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want a normal list", status, stdout.String(), stderr.String())
 	}

@@ -14,11 +14,11 @@ gives the order of the tasks, their status, and the procedures.
 - A test item records a red run and a green run. The last item of each brief is the gate.
 - A brief gives the behavior, not the code. The worker chooses each name that the brief leaves open and records the choice in the evidence.
 - A brief can change after its task starts. The merger makes the change on `dev`, with the date, in the "Changes" section. The worker merges `dev` into its branch and reads the change.
-- The worker runs each CLI check from the root of its worktree with `--home "$PWD"`. The worktree holds the home marker, so it is a valid home. The real home stays clean.
+- Run each CLI check from the worktree root as `HIVE_HOME="$PWD" hive CMD`. The worktree marker makes it a home. The real home stays clean.
 - A live check against herdr acts on the herdr session of the user. The check builds the binary first with `go build .`. The worker closes each workspace, tab, and agent that the check made. When herdr does not know a repository, its first `worktree.create` also opens a workspace for that repository. The worker closes that workspace too.
 - A live check gives each agent a unique name with `--name t<nn>-check-<suffix>`. herdr names are unique in the session, and several tasks run at the same time.
 - A task that adds an instruction file, such as a skill or a template, adds it to the ratchet. It adds one line to `steFiles` in `ste_test.go` and one entry of 0 to `testdata/ste-baseline.json`. The brief names both files in its source table.
-- A live check never changes the real home. It runs with `--home "$PWD"` from the worktree, and its fixtures go under `.hive/tmp/` of the worktree.
+- A live check never changes the real home. Run it as `HIVE_HOME="$PWD" hive CMD` from the worktree. Store its fixtures under `.hive/tmp/` in that worktree.
 
 ## Template
 

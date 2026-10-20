@@ -71,7 +71,7 @@ and `testdata/ste-baseline.json`. It does not change a global setting or the
   - the verifier spawn after a `completed` record,
   - landing under a grant from `overrides/grants.md`, worktree removal, memory, and handoff,
   - escalation with `hive inbox send --to coordinator`.
-- The worker skill gives: `--home` on each command, the brief, test-first work, the evidence, and the gate. It also gives a commit and a push on the task branch after each green run, without a request from the user. It gives `task complete` and the rule to never edit the tracker.
+- The worker skill gives the brief, test-first work, evidence, and gate steps. It requires a commit and push on the task branch after each green run. The worker does not wait for a user request. It names `task complete` and says not to edit the tracker.
 - The verifier skill gives: the items, `VERIFIED.md`, and `task verify` with or without `--fail`.
 - Each skill that an agent reads from a path, not through the harness, starts with the same frontmatter and works as plain text.
 
@@ -93,7 +93,7 @@ and `testdata/ste-baseline.json`. It does not change a global setting or the
 
 ### AC4 Command check
 
-- `skills_test.go` reads each skill and the two templates. It finds each command line that starts with `hive`. It skips the persistent flags `--home PATH` and `--json` before the command path. It checks the command path against the tree from `cmd.NewRootCmd()`. It does not run a command.
+- `skills_test.go` reads each skill and the two templates. It finds each command line that starts with `hive`. It skips `--json` before the command path. It checks the command path against the tree from `cmd.NewRootCmd()`. It does not run a command.
 - An unknown command fails the test with the file, the line, and the command.
 
 ### AC5 Gate
@@ -115,8 +115,8 @@ and `testdata/ste-baseline.json`. It does not change a global setting or the
 ### V1 Command check test
 
 - Proves: AC1, AC4.
-- Command: `go test . -run 'TestSkillCommands|TestSTE' -v`, red and green. The red run has a checker with an empty body and a fixture skill with the lines `hive --home /tmp/home agent fly` and `hive --json agent fly`.
-- Expected: the red run fails on the two unknown commands. The green run passes with the four skills, the two templates, and a ratchet count of 0 for each. The green run also accepts `hive --home /tmp/home task complete --task 1-step`.
+- Command: `go test . -run 'TestSkillCommands|TestSTE' -v`, red and green. The red run has a checker with an empty body and a fixture skill with the lines `hive agent fly` and `hive --json agent fly`.
+- Expected: the red run fails on the two unknown commands. The green run passes with the four skills, the two templates, and a ratchet count of 0 for each. The green run also accepts `hive task complete --task 1-step`.
 
 ### V2 Templates tests
 

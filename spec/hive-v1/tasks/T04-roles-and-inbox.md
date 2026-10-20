@@ -231,22 +231,22 @@ outcome `failed`.
 ### V3 Command transcript
 
 - Proves: AC1, AC2, AC3, AC4.
-- Setup: `go build .` and make a unique temporary home. Create its marker `.hive/README.md` explicitly. Export `HIVE_TMP=<absolute fixture path>` and pass `--home "$HIVE_TMP"` to each command.
+- Setup: Run `go build .` and create a unique temporary home. Create its marker `.hive/README.md`. Set `HIVE_TMP` to its path. Run each CLI command as `HIVE_HOME="$HIVE_TMP" ./hive CMD`.
 - Command:
 
 ```sh
-./hive --home "$HIVE_TMP" agent register --role coordinator --pane w1:p1
-./hive --home "$HIVE_TMP" agent register --role coordinator --pane w1:p2
-./hive --home "$HIVE_TMP" agent register --role supervisor --pane w1:p2; echo "exit $?"
-./hive --home "$HIVE_TMP" agent register --role worker --pane w2:p1; echo "exit $?"
-./hive --home "$HIVE_TMP" agent register --role manager --project nope --pane w3:p1; echo "exit $?"
-./hive --home "$HIVE_TMP" agent list --all
-./hive --home "$HIVE_TMP" agent show coordinator
-./hive --home "$HIVE_TMP" inbox send --to coordinator "hello" --agent worker-x
-./hive --home "$HIVE_TMP" inbox --role coordinator
-./hive --home "$HIVE_TMP" inbox --role coordinator
-./hive --home "$HIVE_TMP" --json inbox --role coordinator --all
-./hive --home "$HIVE_TMP" inbox --role ../x; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive agent register --role coordinator --pane w1:p1
+HIVE_HOME="$HIVE_TMP" ./hive agent register --role coordinator --pane w1:p2
+HIVE_HOME="$HIVE_TMP" ./hive agent register --role supervisor --pane w1:p2; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive agent register --role worker --pane w2:p1; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive agent register --role manager --project nope --pane w3:p1; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive agent list --all
+HIVE_HOME="$HIVE_TMP" ./hive agent show coordinator
+HIVE_HOME="$HIVE_TMP" ./hive inbox send --to coordinator "hello" --agent worker-x
+HIVE_HOME="$HIVE_TMP" ./hive inbox --role coordinator
+HIVE_HOME="$HIVE_TMP" ./hive inbox --role coordinator
+HIVE_HOME="$HIVE_TMP" ./hive --json inbox --role coordinator --all
+HIVE_HOME="$HIVE_TMP" ./hive inbox --role ../x; echo "exit $?"
 ```
 
 - Expected: two coordinator records in the list, generation 1 `stale` and generation 2 `live`. The supervisor register fails with `pane busy: w1:p2 holds coordinator` and exit 1. The worker register fails because `--project` and `--task` are absent, with exit 1. The manager register fails with `project not found: nope` and exit 1. `agent show coordinator` prints the record with generation 2 and `pane_id` `w1:p2`. The first `inbox` prints the message, the second prints nothing, and the JSON shows one record with `read_at` set. The last command fails with `invalid inbox key: ../x` and exit 1.

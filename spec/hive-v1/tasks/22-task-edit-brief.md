@@ -98,7 +98,7 @@ its meaning. Record each change in the evidence.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each R2 and R3 test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Live check in a scratch home (`hive --home DIR`): edit an assigned task as the manager, then a completed task | The first edit changes `hive task show --brief`. The second fails and changes nothing. |
+| V2 | Live check in a scratch home (`HIVE_HOME=DIR hive`): edit an assigned task as the manager, then a completed task | The first edit changes `hive task show --brief`. The second fails and changes nothing. |
 | V3 | `git diff dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` prints nothing. The other three commands exit 0. |
 

@@ -74,14 +74,14 @@ Rules:
 ## Home resolution
 
 Hive never creates a home. A clone of this repository is a home because Git
-tracks `.hive/README.md`. Each command resolves one home in this order: the
-`--home` argument, then `HIVE_HOME`, then the outermost ancestor directory of
-the working directory that contains the marker. The outermost rule matters
-because a worktree of this repository also contains the marker, and every
-worktree sits inside the real home. A named path without the marker fails with
-one error line. A `--home` value wins without a conflict check. A `HIVE_HOME`
-value that conflicts with an ancestor marker fails. A worker brief carries the
-absolute home path, and the worker passes `--home` to each command.
+tracks `.hive/README.md`. Each command resolves one home in this order:
+`HIVE_HOME`, the config, then the outermost ancestor directory of the working
+directory that contains the marker. The outermost rule matters because a
+worktree of this repository also contains the marker, and every worktree sits
+inside the real home. A named path without the marker fails with one error
+line. A `HIVE_HOME` value wins without a conflict check. A config that conflicts
+with an ancestor marker fails. A worker prompt carries the home path in the
+skill path. It does not put the home path in a hive command.
 
 ## Roles
 
@@ -408,8 +408,9 @@ of the command. Exit status 0 means `ok` only.
 
 ## Command tree
 
-Nouns before verbs. `--home PATH` and `--json` are flags of every command. The
-task commands take `--agent NAME` to name the caller. The last column names the
+Nouns before verbs. `--json` is a flag of every command. Home resolution uses
+`HIVE_HOME`, the config, or the marker. The task commands take `--agent NAME`
+to name the caller. The last column names the
 tasks in [05-tracker.md](05-tracker.md) that build the command.
 
 | Command | Purpose | Tasks |
