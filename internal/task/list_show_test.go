@@ -9,6 +9,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func seedSimple(t *testing.T, home, id, status string, deps []string) {
@@ -119,6 +120,42 @@ func TestReadyFilter(t *testing.T) {
 	ids = listIDs(t, second)
 	if strings.Join(ids, ",") != "2-b" {
 		t.Fatalf("ready = %v; want only 2-b after 1-a is verified", ids)
+	}
+}
+
+func TestShowAndListRenderNeedsUser(t *testing.T) {
+	home := newHome(t)
+	registerProject(t, home, "one")
+	task := records.Task{
+		ID: "8-needs-user", Project: "one", Title: "Needs a decision",
+		ControllingRole: "manager-one", Status: "verified", DependsOn: []string{},
+		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"tasks"}, task.ID, struct {
+		records.Task
+		NeedsUser string `json:"needs_user"`
+	}{Task: task, NeedsUser: "choose an option"}); err != nil {
+		t.Fatal(err)
+	}
+	briefPath := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
+	if err := os.MkdirAll(filepath.Dir(briefPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(briefPath, []byte("Needs a decision"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	shown := Show(home, task.ID, ShowOptions{})
+	if text := ShowText(shown); !strings.Contains(text, "needs user: choose an option") {
+		t.Fatalf("ShowText() = %q; want the needs-user text", text)
+	}
+	listed := List(home, ListOptions{})
+	if text := ListText(listed); !strings.Contains(text, "[needs user]") {
+		t.Fatalf("ListText() = %q; want the needs-user marker", text)
 	}
 }
 

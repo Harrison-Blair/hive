@@ -154,6 +154,7 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 			"hive agent spawn --role worker --task ID --harness KIND --model MODEL",
 			"hive agent spawn --role verifier --task ID --harness KIND --model MODEL",
 			"Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.",
+			"Before you stop for a user decision on a task, set `needs_user` with `hive task edit --task ID --needs-user TEXT`. Clear it when the user gives the decision with `hive task edit --task ID --clear-needs-user`.",
 			"After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.",
 			"After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.",
 			"If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
