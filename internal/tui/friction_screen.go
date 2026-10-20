@@ -274,7 +274,7 @@ func (s frictionScreen) View(width, height int) string {
 		contentWidth = 1
 	}
 	if state.fileOpen {
-		return state.fileView(contentWidth, height-3)
+		return state.fileView(contentWidth, height-4)
 	}
 	entries := state.visibleEntries()
 	openCount, resolvedCount := 0, 0

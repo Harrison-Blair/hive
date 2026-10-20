@@ -1,0 +1,57 @@
+⬢ hive · 1 project · 0 live agents · working unknown / idle unknown · supervisor stale · needs_user 0 · 12:27
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Tasks                                                                                                                                                                        │
+│   1 Chat                   ││ dependency graph · 79-tui-shell                                                                                                                                              │
+│   2 Agents                 ││ 79-tui-shell · TUI shell                                                                                                                                                     │
+│   3 Goals                  ││ needs:                                                                                                                                                                       │
+│   4 Queue                  ││ 79-tui-shell ← 81-agents-screen (needs)                                                                                                                                      │
+│ ▶ 5 Tasks                  ││ blocks:                                                                                                                                                                      │
+│   6 Friction               ││ 79-tui-shell → 83-downstream-task (blocks)                                                                                                                                   │
+│   7 Health                 ││                                                                                                                                                                              │
+│   8 Logs                   ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+
+tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move

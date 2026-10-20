@@ -21,6 +21,14 @@ task went back to `assigned`.
 3. Run `hive task edit --task ID --brief FILE`: `edit needs created or
    assigned`.
 
+**Recurrence 2026-10-20 (stenographer 63-hub-sessions):** the worker
+completed while tasks 61 and 72 landed on `dev`, and the branch got content
+conflicts in `cli/hub/app.py` and `cli/hub/services.py`. `hive agent spawn
+--role worker` refused (`task is completed`) and `hive task reopen` refused
+(`completed -> reopen`). The manager again spawned a verifier only to record
+the conflict as a failed check. Parallel tasks that touch one shared file make
+this common.
+
 **Related:** `hive worktree remove` on a task whose worktree is already
 removed fails with `worktree check: start git: fork/exec /usr/bin/git: no such
 file or directory`. Git exists. The working directory of the Git call is the
