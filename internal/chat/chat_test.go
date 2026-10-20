@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -43,7 +44,7 @@ func seedAgent(t *testing.T, home string, record records.Agent) {
 
 func seedCoordinator(t *testing.T, home string) {
 	t.Helper()
-	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
 	seedAgent(t, home, coordinator)
 	registry, err := store.Open(home)
 	if err != nil {
@@ -56,7 +57,7 @@ func seedCoordinator(t *testing.T, home string) {
 
 func seedWorker(t *testing.T, home string) {
 	t.Helper()
-	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", WorkspaceID: "w2", Status: records.AgentLive, Generation: 1})
 }
 
 type promptRequest struct {
@@ -66,12 +67,13 @@ type promptRequest struct {
 }
 
 type fakeHerdr struct {
-	t         *testing.T
-	listener  net.Listener
-	path      string
-	mu        sync.Mutex
-	requests  []promptRequest
-	promptErr bool
+	t             *testing.T
+	listener      net.Listener
+	path          string
+	mu            sync.Mutex
+	requests      []promptRequest
+	promptErr     bool
+	paneWorkspace string
 }
 
 func newFakeHerdr(t *testing.T) *fakeHerdr {
@@ -81,7 +83,7 @@ func newFakeHerdr(t *testing.T) *fakeHerdr {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fake := &fakeHerdr{t: t, listener: listener, path: path}
+	fake := &fakeHerdr{t: t, listener: listener, path: path, paneWorkspace: "w1"}
 	t.Setenv("HERDR_SOCKET_PATH", path)
 	go fake.serve()
 	t.Cleanup(func() { _ = listener.Close(); _ = os.Remove(path) })
@@ -117,6 +119,18 @@ func (f *fakeHerdr) handle(conn net.Conn) {
 	switch request.Method {
 	case "ping":
 		result = `{"type":"pong","version":"0.9.5","protocol":22}`
+	case "pane.get":
+		var params struct {
+			PaneID string `json:"pane_id"`
+		}
+		if err := json.Unmarshal(request.Params, &params); err != nil {
+			f.t.Errorf("decode pane.get params: %v", err)
+			return
+		}
+		f.mu.Lock()
+		workspaceID := f.paneWorkspace
+		f.mu.Unlock()
+		result = fmt.Sprintf(`{"type":"pane_info","pane":{"pane_id":%q,"terminal_id":"term_tui","workspace_id":%q,"tab_id":"%s:t1","focused":false,"agent_status":"idle","revision":1}}`, params.PaneID, workspaceID, workspaceID)
 	case "agent.prompt":
 		if promptErr {
 			serverError = `,"error":{"code":"agent_prompt_stalled","message":"stalled"}`
@@ -154,6 +168,12 @@ func (f *fakeHerdr) failPrompt() {
 	f.promptErr = true
 }
 
+func (f *fakeHerdr) setPaneWorkspace(workspaceID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.paneWorkspace = workspaceID
+}
+
 func chatFiles(t *testing.T, home string) []string {
 	t.Helper()
 	files, err := filepath.Glob(filepath.Join(home, ".hive", "state", "chat", "*.jsonl"))
@@ -178,12 +198,17 @@ func TestSendRefusesRegisteredAgentBeforeChatWrite(t *testing.T) {
 	home := chatHome(t)
 	seedCoordinator(t, home)
 	seedWorker(t, home)
+	fake := newFakeHerdr(t)
 	envelope := Send(context.Background(), home, SendOptions{Agent: "worker-one", Text: "hello"})
-	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "user") {
-		t.Fatalf("Send() = %#v; want refusal for a registered agent", envelope)
+	message := fmt.Sprint(envelope.Error)
+	if envelope.Outcome != "failed" || !strings.HasPrefix(message, "chat send is for the user only") || !strings.Contains(message, "rule 1") {
+		t.Fatalf("Send() = %#v; want a rule 1 refusal", envelope)
 	}
 	if files := chatFiles(t, home); len(files) != 0 {
 		t.Fatalf("chat files = %v; want none", files)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 0 {
+		t.Fatalf("agent.prompt calls = %d; want none", got)
 	}
 }
 
@@ -328,5 +353,69 @@ func appendChatRaw(t *testing.T, home, date, line string) {
 	}
 	if err := file.Close(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestSendRefusesLiveAgentPane(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	seedWorker(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w2:p1", Text: "hello"})
+	assertSendRefused(t, home, fake, envelope, "rule 1")
+}
+
+func TestSendRefusesLiveAgentPaneWithoutCoordinator(t *testing.T) {
+	home := chatHome(t)
+	seedWorker(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w2:p1", Text: "hello"})
+	assertSendRefused(t, home, fake, envelope, "rule 1")
+}
+
+func TestSendRefusesCallerInLiveAgentWorkspace(t *testing.T) {
+	for _, role := range []string{"manager", "worker", "verifier"} {
+		t.Run(role, func(t *testing.T) {
+			home := chatHome(t)
+			seedCoordinator(t, home)
+			seedAgent(t, home, records.Agent{
+				Key: "agent-one", Name: "agent-one", Role: role, Project: "demo", Task: "task-one",
+				WorkspaceID: "w-agent", Status: records.AgentLive, Generation: 1,
+			})
+			fake := newFakeHerdr(t)
+			fake.setPaneWorkspace("w-agent")
+			envelope := Send(context.Background(), home, SendOptions{PaneID: "w-user:p1", Text: "hello"})
+			assertSendRefused(t, home, fake, envelope, "rule 3")
+		})
+	}
+}
+
+func TestSendAllowsUnregisteredPaneInCoordinatorWorkspace(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	fake := newFakeHerdr(t)
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "w1:p2", Text: "hello"})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Send() = %#v; want ok for an unregistered user pane", envelope)
+	}
+	if got := len(fake.recorded("pane.get")); got != 1 {
+		t.Fatalf("pane.get calls = %d; want one workspace check", got)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 1 {
+		t.Fatalf("agent.prompt calls = %d; want one", got)
+	}
+}
+
+func assertSendRefused(t *testing.T, home string, fake *fakeHerdr, envelope output.Envelope, rule string) {
+	t.Helper()
+	message := fmt.Sprint(envelope.Error)
+	if envelope.Outcome != "failed" || !strings.HasPrefix(message, "chat send is for the user only") || !strings.Contains(message, rule) {
+		t.Fatalf("Send() = %#v; want %s refusal", envelope, rule)
+	}
+	if files := chatFiles(t, home); len(files) != 0 {
+		t.Fatalf("chat files = %v; want none", files)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 0 {
+		t.Fatalf("agent.prompt calls = %d; want none", got)
 	}
 }

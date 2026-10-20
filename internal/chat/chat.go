@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -38,9 +39,10 @@ type Entry struct {
 
 // SendOptions holds the caller and text of one user message.
 type SendOptions struct {
-	Agent  string
-	PaneID string
-	Text   string
+	Agent      string
+	PaneID     string
+	WorkingDir string
+	Text       string
 }
 
 // SendResult reports the ID and delivery state of one user message.
@@ -91,12 +93,16 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	var date string
 	var phase, message string
 	lockErr := registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		if err := checkAgentCaller(locked, options.Agent, options.PaneID); err != nil {
+			phase, message = "identity", err.Error()
+			return nil
+		}
 		coordinator, err = identity.ResolveHeld(locked, "coordinator", "")
 		if err != nil {
 			phase, message = "coordinator", "no live coordinator: "+err.Error()
 			return nil
 		}
-		if err := checkUserCaller(locked, options.Agent, options.PaneID); err != nil {
+		if err := checkCallerContext(ctx, locked, home, options.PaneID, options.WorkingDir); err != nil {
 			phase, message = "identity", err.Error()
 			return nil
 		}
@@ -140,25 +146,113 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 }
 
-func checkUserCaller(locked *store.LockedStore, agentFlag, paneID string) error {
+const userOnlyPrefix = "chat send is for the user only"
+
+// ValidateCaller checks whether one caller can send user chat.
+func ValidateCaller(ctx context.Context, homePath, agentFlag, paneID, workingDir string) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	registry, err := store.Open(homePath)
+	if err != nil {
+		return err
+	}
+	var inner error
+	if err := registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		inner = checkUserCaller(ctx, locked, homePath, agentFlag, paneID, workingDir)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return inner
+}
+
+func checkUserCaller(ctx context.Context, locked *store.LockedStore, homePath, agentFlag, paneID, workingDir string) error {
+	if err := checkAgentCaller(locked, agentFlag, paneID); err != nil {
+		return err
+	}
+	return checkCallerContext(ctx, locked, homePath, paneID, workingDir)
+}
+
+func checkAgentCaller(locked *store.LockedStore, agentFlag, paneID string) error {
 	if agentFlag != "" {
-		caller, err := identity.ResolveHeld(locked, agentFlag, paneID)
-		if err != nil {
-			return fmt.Errorf("resolve caller: %w", err)
-		}
-		return fmt.Errorf("only the user can send chat; caller is the live %s agent", caller.Role)
+		return fmt.Errorf("%s: only the user can send chat; rule 1 (caller used --agent)", userOnlyPrefix)
 	}
 	if paneID == "" {
 		return nil
 	}
 	caller, err := identity.ResolveHeld(locked, "", paneID)
 	if err == nil {
-		return fmt.Errorf("only the user can send chat; caller is the live %s agent", caller.Role)
+		return fmt.Errorf("%s: only the user can send chat; rule 1 (caller pane belongs to the live %s agent)", userOnlyPrefix, caller.Role)
 	}
-	if errors.Is(err, identity.ErrCallerUnknown) {
+	if !errors.Is(err, identity.ErrCallerUnknown) {
+		return fmt.Errorf("%s: only the user can send chat; rule 1 check failed: resolve caller: %w", userOnlyPrefix, err)
+	}
+	return nil
+}
+
+func checkCallerContext(ctx context.Context, locked *store.LockedStore, homePath, paneID, workingDir string) error {
+	if workingDir != "" {
+		below, err := callerBelowProjects(homePath, workingDir)
+		if err != nil {
+			return fmt.Errorf("%s: only the user can send chat; rule 2 check failed: %w", userOnlyPrefix, err)
+		}
+		if below {
+			return fmt.Errorf("%s: only the user can send chat; rule 2 (working directory is below projects/)", userOnlyPrefix)
+		}
+	}
+	if paneID == "" {
 		return nil
 	}
-	return fmt.Errorf("resolve caller: %w", err)
+	pane, err := herdr.PaneGet(ctx, paneID)
+	if err != nil {
+		return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read caller pane: %w", userOnlyPrefix, err)
+	}
+	agents, err := locked.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read agent records: %w", userOnlyPrefix, err)
+	}
+	for _, data := range agents {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: decode agent record: %w", userOnlyPrefix, err)
+		}
+		if record.Status == records.AgentLive && record.WorkspaceID == pane.WorkspaceID &&
+			(record.Role == "manager" || record.Role == "worker" || record.Role == "verifier") {
+			return fmt.Errorf("%s: only the user can send chat; rule 3 (caller pane shares a live %s workspace)", userOnlyPrefix, record.Role)
+		}
+	}
+	return nil
+}
+
+func callerBelowProjects(homePath, workingDir string) (bool, error) {
+	absoluteDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		return false, err
+	}
+	canonicalDir, err := filepath.EvalSymlinks(absoluteDir)
+	if err != nil {
+		return false, err
+	}
+	projectHome := homePath
+	if markedHome, ok := home.FindMarkerAbove(canonicalDir); ok {
+		projectHome = markedHome
+	}
+	canonicalHome, err := filepath.EvalSymlinks(projectHome)
+	if err != nil {
+		return false, err
+	}
+	projectsDir := filepath.Join(canonicalHome, "projects")
+	if resolved, err := filepath.EvalSymlinks(projectsDir); err == nil {
+		projectsDir = resolved
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false, err
+	}
+	relative, err := filepath.Rel(projectsDir, canonicalDir)
+	if err != nil {
+		return false, err
+	}
+	return relative == "." || (relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)) && !filepath.IsAbs(relative)), nil
 }
 
 func prompt(ctx context.Context, home, paneID, text string) error {

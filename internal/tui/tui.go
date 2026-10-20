@@ -16,6 +16,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
@@ -55,6 +56,9 @@ type Model struct {
 	chatInput          textarea.Model
 	chatInputActive    bool
 	chatSending        bool
+	chatCallerCwd      string
+	chatPaneID         string
+	chatCallerBlocked  bool
 	chatEventsExpanded bool
 	chatNoise          string
 	chatFollow         bool
@@ -136,6 +140,17 @@ func New(home string, now func() time.Time) *Model {
 		paneReader:       readAgentPane,
 		tasksLoader:      loadTasks,
 		frictionLoader:   loadFriction,
+	}
+	if callerCwd, err := os.Getwd(); err != nil {
+		m.chatCallerBlocked = true
+		m.chatErr = boundedError("chat send is for the user only: rule 2 check failed: " + err.Error())
+	} else {
+		m.chatCallerCwd = callerCwd
+		m.chatPaneID = os.Getenv("HERDR_PANE_ID")
+		if err := chatlib.ValidateCaller(context.Background(), home, "", m.chatPaneID, callerCwd); err != nil {
+			m.chatCallerBlocked = true
+			m.chatErr = boundedError(err.Error())
+		}
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))

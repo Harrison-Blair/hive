@@ -50,6 +50,10 @@ func newTestHome(t *testing.T) string {
 func newTestModel(t *testing.T, home string, clock *testClock) *Model {
 	t.Helper()
 	model := New(home, clock.now)
+	model.chatCallerCwd = home
+	model.chatPaneID = ""
+	model.chatCallerBlocked = false
+	model.chatErr = ""
 	t.Cleanup(model.Stop)
 	return model
 }
