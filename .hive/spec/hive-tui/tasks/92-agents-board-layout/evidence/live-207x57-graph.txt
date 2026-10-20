@@ -1,0 +1,57 @@
+⬢ hive · 3 projects · 8 live agents · 3 working / 5 idle · supervisor fresh · needs_user 0 · 13:01
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ Agents                                                                                                                                                                       │
+│ ▾ home                     ││ TREE  [ GRAPH ]  TABLE  edges: ─ delegates · ┄ nudges · ⋯ replaced                                                                                                           │
+│   ├─ ▶ ○ coordinator       ││ ┌─ home ───────────────┐   ┌─ hive · Hive TUI dashboard ───┐   ┌─ qmeter ─────────────┐   ┌─ stenographer ─────────────┐                                                     │
+│   └─ ● supervisor          ││ │ ┌──────────────────┐ │   │ ┌───────────────────────────┐ │   │ ┌──────────────────┐ │   │ ┌────────────────────────┐ │                                                     │
+│ ▾ hive · 2 working         ││ │ │▶ ○ coordinator   │ │   │ │○ manager-hive             │ │   │ │○ manager-qmeter  │ │   │ │○ manager-stenographer  │ │                                                     │
+│   ┄┄ ○ manager-hive        ││ │ │claude · 5m       │ │   │ │claude · 21m               │ │   │ │claude · 2h       │ │   │ │claude · 5m             │ │                                                     │
+│      ├─ ● t90-worker-1     ││ │ └──────────────────┘ │   │ └───────────────────────────┘ │   │ └──────────────────┘ │   │ └────────────────────────┘ │                                                     │
+│      └─ ● t92-worker-1     ││ │                      │   │               │               │   └──────────────────────┘   │              │             │                                                     │
+│ ▾ qmeter · 0 working       ││ │ ┌──────────────────┐ │   │ ┌───────────────────────────┐ │                              │ ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐ │                                                     │
+│   ┄┄ ○ manager-qmeter      ││ │ │● supervisor      │ │   │ │● t90-worker-1             │ │                              │ │× t59-verifier-2        │ │                                                     │
+│ ▾ stenographer · 1 working ││ │ │pid 1288721 · 1h  │ │   │ │pi · 90-tui-idle-cpu       │ │                              │ │claude · 59-files-engine│ │                                                     │
+│   ┄┄ ○ manager-stenograph… ││ │ └──────────────────┘ │   │ └───────────────────────────┘ │                              │ └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘ │                                                     │
+│      ├─ × t59-verifier-2   ││ └──────────────────────┘   │               ├               │                              │              ├             │                                                     │
+│      ├─ × t59-worker-2     ││                            │ ┌───────────────────────────┐ │                              │ ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐ │                                                     │
+│      └─ ● t62-worker-1     ││                            │ │● t92-worker-1             │ │                              │ │× t59-worker-2          │ │                                                     │
+│                            ││                            │ │pi · 92-agents-board-layout│ │                              │ │pi · 59-files-engine    │ │                                                     │
+│                            ││                            │ └───────────────────────────┘ │                              │ └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘ │                                                     │
+│                            ││                            └───────────────────────────────┘                              │              ├             │                                                     │
+│                            ││                                                                                           │ ┌────────────────────────┐ │                                                     │
+│                            ││                                                                                           │ │● t62-worker-1          │ │                                                     │
+│                            ││                                                                                           │ │pi · 62-hub-files       │ │                                                     │
+│                            ││                                                                                           │ └────────────────────────┘ │                                                     │
+│                            ││                                                                                           └────────────────────────────┘                                                     │
+│                            ││ coordinator ──▶ manager-hive · inferred                                                                                                                                      │
+│                            ││ coordinator ──▶ manager-qmeter · inferred                                                                                                                                    │
+│                            ││ coordinator ──▶ manager-stenographer · inferred                                                                                                                              │
+│                            ││ t59-verifier-2 ⋯ replaces t59-verifier-1                                                                                                                                     │
+│                            ││ t59-worker-2 ⋯ replaces t59-worker-1                                                                                                                                         │
+│                            ││ DETAIL coordinator · parent ? · model claude-opus-5-5 · task ? · ? · pane wBC:pV · next ?                                                                                    │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│ ────────────────────────── ││                                                                                                                                                                              │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                                                                                                              │
+│ 5 TASKS · 6 FRICTION       ││                                                                                                                                                                              │
+│ 7 HEALTH · 8 LOGS          ││                                                                                                                                                                              │
+╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
+↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat

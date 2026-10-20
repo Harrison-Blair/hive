@@ -1,0 +1,38 @@
+⬢ hive · 3 projects · 8 live agents · 3 working / 5 idle · supervisor fresh · needs_user 0 · 13:02
+╭────────────────────────────╮╭─────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ Agents                                                                              │
+│ ▾ home                     ││ TREE  [ GRAPH ]  TABLE  edges: ─ delegates · ┄ nudges · ⋯ replaced                  │
+│   ├─ ○ coordinator         ││ · Hive TUI dashboard ───┐   ┌─ qmeter ─────────────┐   ┌─ stenographer ──────────── │
+│   └─ ● supervisor          ││ ──────────────────────┐ │   │ ┌──────────────────┐ │   │ ┌────────────────────────┐ │
+│ ▾ hive · 2 working         ││ ager-hive             │ │   │ │○ manager-qmeter  │ │   │ │▶ ○ manager-stenographer│ │
+│   ┄┄ ○ manager-hive        ││ e · 23m               │ │   │ │claude · 2h       │ │   │ │claude · 6m             │ │
+│      ├─ ● t90-worker-1     ││ ──────────────────────┘ │   │ └──────────────────┘ │   │ └────────────────────────┘ │
+│      └─ ● t92-worker-1     ││         │               │   └──────────────────────┘   │              │             │
+│ ▾ qmeter · 0 working       ││ ──────────────────────┐ │                              │ ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐ │
+│   ┄┄ ○ manager-qmeter      ││ -worker-1             │ │                              │ │× t59-verifier-2        │ │
+│ ▾ stenographer · 1 working ││ 90-tui-idle-cpu       │ │                              │ │claude · 59-files-engine│ │
+│   ┄┄ ▶…                    ││ ──────────────────────┘ │                              │ └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘ │
+│      ├─ × t59-verifier-2   ││         ├               │                              │              ├             │
+│      ├─ × t59-worker-2     ││ ──────────────────────┐ │                              │ ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐ │
+│      └─ ● t62-worker-1     ││ -worker-1             │ │                              │ │× t59-worker-2          │ │
+│                            ││ 92-agents-board-layout│ │                              │ │pi · 59-files-engine    │ │
+│                            ││ ──────────────────────┘ │                              │ └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘ │
+│                            ││ ────────────────────────┘                              │              ├             │
+│                            ││                                                        │ ┌────────────────────────┐ │
+│                            ││                                                        │ │● t62-worker-1          │ │
+│                            ││                                                        │ │pi · 62-hub-files       │ │
+│                            ││                                                        │ └────────────────────────┘ │
+│                            ││                                                        └─────────────────────────── │
+│                            ││ rred                                                                                │
+│                            ││ ferred                                                                              │
+│                            ││ r · inferred                                                                        │
+│                            ││ ier-1                                                                               │
+│                            ││ 1                                                                                   │
+│ ────────────────────────── ││ DETAIL manager-stenographer · parent inferred · model claude-opus-5-5 · task ? · ?  │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││ · pane wF7:p1 · next ?                                                              │
+│ 5 TASKS · 6 FRICTION       ││                                                                                     │
+│ 7 HEALTH · 8 LOGS          ││                                                                                     │
+╰────────────────────────────╯╰─────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
+↑/↓←/→ move · tab tree/graph/table · h history: off · enter peek · a attach · t task · ask in Chat
