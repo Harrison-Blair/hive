@@ -1,0 +1,57 @@
+⬢ hive · 0 projects · 0 live agents · working unknown / idle unknown · supervisor stale · needs_user 0 · 11:51
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Health                                                                                                                                                                       │
+│   1 Chat                   ││ ╭───────────────────────────────────────────────────────────────────────────────────╮  ╭───────────────────────────────────────────────────────────────────────────────────╮ │
+│   2 Agents                 ││ │ ┤ home ├                                                                          │  │ ┤ agents ├                                                                        │ │
+│   3 Goals                  ││ │ ✓ herdr socket                                                                    │  │ ✓ starting agents                                                                 │ │
+│   4 Queue                  ││ │ ! herdr pane                                                                      │  │ ✓ unresolved agents                                                               │ │
+│   5 Tasks                  ││ │ ✓ home                                                                            │  │ ✓ stale worktrees                                                                 │ │
+│   6 Friction               ││ │ ✓ state store                                                                     │  │ ✓ unpushed task branches                                                          │ │
+│ ▶ 7 Health                 ││ │ ✓ git                                                                             │  │ ✓ harness claude                                                                  │ │
+│   8 Logs                   ││ │ ! supervisor                                                                      │  │ ✓ harness codex                                                                   │ │
+│                            ││ │ ! supervisor binary                                                               │  │ ✓ harness opencode                                                                │ │
+│                            ││ │ ! gh                                                                              │  │ ✓ harness pi                                                                      │ │
+│                            ││ ╰───────────────────────────────────────────────────────────────────────────────────╯  │ ✓ harness cursor-agent                                                            │ │
+│                            ││                                                                                        ╰───────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││ ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│                            ││ │ ┤ warnings ├                                                                                                                                                             │ │
+│                            ││ │ ! herdr pane: outside a herdr pane                                                                                                                                       │ │
+│                            ││ │ ! supervisor: supervisor down                                                                                                                                            │ │
+│                            ││ │ ! supervisor binary: supervisor down                                                                                                                                     │ │
+│                            ││ │ ! gh: not authenticated                                                                                                                                                  │ │
+│                            ││ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││ DETAIL herdr socket: /home/penguin/.config/herdr/herdr.sock protocol 22                                                                                                      │
+│                            ││ capacity · later: capacity from qmeter. Not in this goal.                                                                                                                    │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
+↑/↓ j/k select · r re-check · ask in Chat · 1–8 screens · ctrl+c×2 quit
