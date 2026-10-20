@@ -10,6 +10,8 @@ the evidence format.
 - One task has one file with the name `<task-id>.md`. A task ID has the form `T<nn>-<slug>`.
 - Write each brief in ASD-STE100 Strict. `ste_test.go` checks each file in this directory against a baseline of 0.
 - A brief names each file that the worker edits. The worker edits no other source file. A new test file beside a named file needs no entry.
+- A UI task must have a `Design` section. The section names each approved board by its absolute path.
+- Each UI state has a glyph or a word in plain text. Colour can add to a state. Colour must not be the only signal of a state.
 - Each acceptance criterion has the ID `AC<n>`. Each verification item has the ID `V<n>` and names the criteria that it proves. Each criterion appears in at least one item.
 - A test item records a red run and a green run. The last item of each brief is the gate.
 - A brief gives the behavior, not the code. The worker chooses each name that the brief leaves open and records the choice in the evidence.
@@ -43,6 +45,14 @@ What the task builds and why it sits here in the plan.
 ## User flows
 
 Numbered flows. Each gives who acts, which command runs, and what the actor sees.
+
+## Design
+
+Name each approved board by its absolute path. A UI task must have this
+section. Each state must have a glyph or a word in plain text. Colour can add
+to a state. Colour must not be the only signal of a state.
+
+- <absolute path to an approved board>
 
 ## Source files
 
