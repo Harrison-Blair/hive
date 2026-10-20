@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [Claude Code in bypass mode still asks before a dangerous rm](entries/bypass-still-prompts-dangerous-rm.md) | Open |  |
 | [The verifier skill does not give the path of VERIFIED.md](entries/verified-md-path-unspecified.md) | Open |  |
 | [The supervisor keeps running an old hive binary after a rebuild](entries/supervisor-runs-stale-binary.md) | Open |  |
 | [A manager stops on a harness permission block and the coordinator does not know](entries/resolved/manager-blocked-by-harness-permission.md) | Resolved 2026-10-19 | Fixed in 29-message-marker (5c8f6846): Claude Code and Codex spawns launch with the bypass flag, each hive message starts with the marker, and a manager sends a blocked record before it stops. |
