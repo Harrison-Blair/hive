@@ -12,8 +12,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 const (
@@ -100,7 +98,7 @@ func (s *Store) Update(kind, id string, fn func(json.RawMessage) (json.RawMessag
 	})
 }
 
-// List reads all valid-ID records of one kind in ID order.
+// List reads all valid store segments of one kind in ID order.
 func (s *Store) List(kind string) ([]json.RawMessage, error) {
 	if err := validateSegment("kind", kind); err != nil {
 		return nil, err
@@ -127,7 +125,7 @@ func (s *Store) listUnlocked(kind string) ([]json.RawMessage, error) {
 			continue
 		}
 		id := strings.TrimSuffix(name, ".json")
-		if !records.ValidID(id) {
+		if err := validateSegment("id", id); err != nil {
 			continue
 		}
 		data, err := readRecordFile(filepath.Join(dir, name))
@@ -239,7 +237,7 @@ func (s *Store) listInUnlocked(collection []string, include func(filename string
 			continue
 		}
 		id := strings.TrimSuffix(name, ".json")
-		if err := validateComponent("collection", id); err != nil {
+		if err := validateSegment("id", id); err != nil {
 			continue
 		}
 		if include != nil && !include(name) {
