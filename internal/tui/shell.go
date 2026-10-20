@@ -8,27 +8,25 @@ import (
 )
 
 const (
-	colorBackground = "#0e0f13"
-	colorPanel      = "#12141a"
-	colorBorder     = "#3d3a33"
-	colorText       = "#e8e4da"
-	colorDim        = "#a39d90"
-	colorAccent     = "#f5b942"
-	colorWorking    = "#6ee69a"
-	colorDone       = "#7ccf6a"
-	colorInfo       = "#6fb7ff"
+	colorBorder  = "#3d3a33"
+	colorText    = "#e8e4da"
+	colorDim     = "#a39d90"
+	colorAccent  = "#f5b942"
+	colorWorking = "#6ee69a"
+	colorDone    = "#7ccf6a"
+	colorInfo    = "#6fb7ff"
 )
 
 var (
-	headerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Background(lipgloss.Color(colorBackground)).Bold(true)
+	headerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Bold(true)
 	workingStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
 	doneStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
 	infoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
-	panelStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Background(lipgloss.Color(colorPanel)).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorBorder)).Padding(0, 1)
+	panelStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorBorder)).Padding(0, 1)
 	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
 	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
 	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
-	footerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim)).Background(lipgloss.Color(colorBackground))
+	footerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
 )
 
 type dataRequest uint8

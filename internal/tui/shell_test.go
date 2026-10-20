@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -9,6 +10,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	chatlib "github.com/Harrison-Blair/hive/internal/chat"
+	"github.com/Harrison-Blair/hive/internal/doctor"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/logs"
 )
 
@@ -262,4 +266,119 @@ func TestRunHomeHandlesScreenAndQuitKeys(t *testing.T) {
 	if !strings.Contains(out.String(), "Agents") || !strings.Contains(out.String(), "Logs") {
 		t.Fatalf("program output omitted selected screens:\n%s", out.String())
 	}
+}
+
+func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
+	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+	m := newTestModel(t, newTestHome(t), clock)
+	fixtureBackgroundScreens(m, clock.now())
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+
+	for index, name := range []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"} {
+		t.Run(name, func(t *testing.T) {
+			m.screenIndex = index
+			m.layout()
+			output := m.View().Content
+			assertNoPaintedBackgroundSGR(t, output)
+			if !strings.Contains(output, "38;2;245;185;66") {
+				t.Errorf("%s sidebar omits the honey foreground color:\n%s", name, output)
+			}
+		})
+	}
+}
+
+func fixtureBackgroundScreens(m *Model, now time.Time) {
+	m.chatData = chatScreenData{
+		entries: []chatlib.Entry{{ID: "c1", At: now.Format(time.RFC3339Nano), From: "coordinator", Text: "fixture chat"}},
+		coordinator: records.Agent{
+			Name: "coordinator", Harness: "fixture", Model: "fixture", PaneID: "fixture-pane",
+			Status: records.AgentLive, AgentStatus: "working",
+		},
+		coordinatorFound: true,
+	}
+	m.rebuildChat()
+
+	node := agentNode{
+		record: records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Status: records.AgentLive},
+		status: "working", age: "now",
+	}
+	m.agents.accept(agentsData{
+		nodes: []agentNode{node}, groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator"}}},
+		supervisorLive: true,
+	})
+
+	goal := records.Goal{
+		ID: "g1-fixture", Project: "hive", Title: "Fixture goal", Grant: "fixture grant", Status: "active",
+		Waves: []records.GoalWave{{ID: "wave-a", Title: "Fixture wave", DoneWhen: "dev", Tasks: []string{"100-fixture"}, Status: "active"}},
+	}
+	task := records.Task{ID: "100-fixture", Project: "hive", Title: "Fixture task", Status: "assigned", DependsOn: []string{}}
+	m.goalsQueue.accept(goalsQueueData{goals: []records.Goal{goal}, tasks: []records.Task{task}})
+	m.tasks.accept(tasksData{items: []taskItem{{record: task}}, projects: []string{"hive"}})
+	m.friction.accept(frictionData{entries: []frictionEntry{{
+		file: "fixture.md", path: "entries/fixture.md", title: "Fixture friction", status: "Open",
+		opened: "2026-10-20", body: "Fixture summary.", valid: true,
+		sections: []frictionSection{{title: "Summary", body: []string{"Fixture summary."}}},
+	}}})
+	m.health.accept(doctor.Result{Checks: []doctor.Check{
+		{Name: "home", Status: doctor.StatusOK, Required: true, Detail: "fixture home"},
+		{Name: "harness fixture", Status: doctor.StatusOK, Detail: "fixture agent"},
+	}})
+
+	m.acceptLogEvents([]logs.Event{{
+		Raw:    []byte(`{"time":"2026-10-20T12:00:00Z","level":"INFO","msg":"fixture log"}`),
+		Fields: map[string]any{"time": "2026-10-20T12:00:00Z", "level": "INFO", "msg": "fixture log"},
+	}})
+}
+
+func assertNoPaintedBackgroundSGR(t *testing.T, output string) {
+	t.Helper()
+	var background string
+	for index := 0; index < len(output); {
+		if output[index] != '\x1b' || index+1 >= len(output) || output[index+1] != '[' {
+			index++
+			continue
+		}
+		end := index + 2
+		for end < len(output) && (output[end] < 0x40 || output[end] > 0x7e) {
+			end++
+		}
+		if end == len(output) {
+			t.Errorf("unterminated ANSI sequence at byte %d", index)
+			return
+		}
+		if background == "" && output[end] == 'm' && sgrSetsBackground(output[index+2:end]) {
+			background = output[index : end+1]
+		}
+		index = end + 1
+	}
+	if background != "" {
+		t.Errorf("SGR sets a terminal background: %q", background)
+	}
+}
+
+func sgrSetsBackground(parameters string) bool {
+	parts := strings.Split(parameters, ";")
+	for index := 0; index < len(parts); index++ {
+		parameter := parts[index]
+		if parameter == "" {
+			continue
+		}
+		code, err := strconv.Atoi(parameter)
+		if err != nil {
+			continue
+		}
+		if code == 48 || code >= 40 && code <= 47 || code >= 100 && code <= 107 || code == 7 {
+			return true
+		}
+		if code != 38 || index+1 >= len(parts) {
+			continue
+		}
+		switch parts[index+1] {
+		case "2":
+			index += 4
+		case "5":
+			index += 2
+		}
+	}
+	return false
 }

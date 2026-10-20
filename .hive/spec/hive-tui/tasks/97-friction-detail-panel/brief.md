@@ -49,7 +49,7 @@ report it.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each new test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Build and run the task binary in a herdr tab at about 200 x 57. Use fixture data in a temporary copy of a marked home. Set `HIVE_HOME` to that home. Set `XDG_CONFIG_HOME` to a temporary directory. Capture each gap with `herdr pane read`. | The screen matches the board for each gap. Save each capture in the evidence directory. |
+| V2 | Build the task binary. Make a temporary copy of a marked home with fixture data. Set `HIVE_HOME` to this home. Set `XDG_CONFIG_HOME` to a temporary directory. Run the binary in a herdr tab at about 200 x 57. Capture the screen for each gap with `herdr pane read`. | The screen matches the board for each gap. Save each capture in the evidence directory. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
@@ -62,3 +62,19 @@ Commit on the task branch with a subject such as `fix(tui): match the Friction b
 branch. Write the evidence. Run `hive task complete`. Send the commit SHA and
 the V1-V4 results to the manager with `hive inbox send`. Read only your own
 inbox.
+## Repair 1
+
+`hive land` failed: the branch has a merge conflict with `origin/dev` in
+`testdata/ste-baseline.json`. Other tasks added rows for their brief copies.
+Do only this repair:
+
+1. Merge `origin/dev` into the task branch.
+2. In `testdata/ste-baseline.json`, keep each row of both sides. Keep the
+   order and format of the file.
+3. Run the gate of `AGENTS.md`. It must pass.
+4. Commit the merge. Push the task branch.
+5. Make sure that `git merge-tree --write-tree origin/dev HEAD` exits 0.
+6. Run `hive task complete`. Send the commit SHA to the manager with
+   `hive inbox send`.
+
+Do not change other files. Do not run the TUI.
