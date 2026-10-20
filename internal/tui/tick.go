@@ -21,6 +21,7 @@ type screenLoadMsg struct {
 	request dataRequest
 	events  []logs.Event
 	agents  agentsData
+	chat    chatScreenData
 	err     error
 }
 

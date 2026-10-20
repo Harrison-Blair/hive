@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
@@ -43,14 +44,24 @@ type Model struct {
 	logger *slog.Logger
 	closer io.Closer
 
-	events     []logs.Event
-	viewport   viewport.Model
-	input      textinput.Model
-	mode       mode
-	level      string
-	textFilter string
-	follow     bool
-	logErr     string
+	events   []logs.Event
+	viewport viewport.Model
+	input    textinput.Model
+	mode     mode
+
+	chatData           chatScreenData
+	chatViewport       viewport.Model
+	chatInput          textarea.Model
+	chatInputActive    bool
+	chatSending        bool
+	chatEventsExpanded bool
+	chatNoise          string
+	chatFollow         bool
+	chatErr            string
+	level              string
+	textFilter         string
+	follow             bool
+	logErr             string
 
 	header        headerState
 	headerErr     string
@@ -61,6 +72,7 @@ type Model struct {
 	agentsLoader  func(string, time.Time) (agentsData, error)
 	paneReader    func(context.Context, string) (string, error)
 	agents        agentsState
+	chatLoader    func(string, time.Time) (chatScreenData, error)
 	headerLoading bool
 	screenLoading bool
 
@@ -84,6 +96,9 @@ func New(home string, now func() time.Time) *Model {
 		now:          now,
 		level:        "debug",
 		follow:       true,
+		chatNoise:    "messages",
+		chatFollow:   true,
+		chatLoader:   loadChatScreenData,
 		width:        defaultWidth,
 		height:       defaultHeight,
 		header:       headerState{supervisor: "stale"},
@@ -99,6 +114,9 @@ func New(home string, now func() time.Time) *Model {
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
 	m.viewport.SoftWrap = true
+	m.chatViewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
+	m.chatViewport.SoftWrap = true
+	m.chatInput = newChatInput()
 	m.input = textinput.New()
 	m.input.Prompt = "filter: "
 	m.input.CharLimit = 0
@@ -167,16 +185,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.logError("screen", msg.err)
 		}
 		m.screenErr = ""
-		if msg.request == agentsDataRequest {
+		switch msg.request {
+		case agentsDataRequest:
 			m.agents.accept(msg.agents)
-		} else {
+		case chatDataRequest:
+			m.chatData = msg.chat
+			m.rebuildChat()
+			if m.chatFollow {
+				m.chatViewport.GotoBottom()
+			}
+		default:
 			m.mergeEvents(msg.events)
 			m.rebuild()
-		}
-		if m.follow {
-			m.viewport.GotoBottom()
+			if m.follow {
+				m.viewport.GotoBottom()
+			}
 		}
 		return m, nil
+	case chatSendMsg:
+		return m, m.updateChatSend(msg)
 	case quitNoticeExpiredMsg:
 		if m.quitNotice && msg.at.Equal(m.quitAt) {
 			m.quitNotice = false
@@ -222,6 +249,9 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 		return batch(m.logAction("quit request"), expires)
 	}
 	m.quitNotice = false
+	if m.screenIndex == 0 && m.chatInputActive {
+		return m.currentScreen().Update(press)
+	}
 	if m.mode != editing && len(press.String()) == 1 && press.String()[0] >= '1' && press.String()[0] <= '8' {
 		index := int(press.String()[0] - '1')
 		m.screenIndex = index
@@ -260,6 +290,28 @@ func (m *Model) layout() {
 	mainWidth := width - sidebarWidth
 	contentWidth := mainWidth - 4
 	contentHeight := bodyHeight - 3
+	chatEventWidth := mainWidth / 3
+	if chatEventWidth < 18 {
+		chatEventWidth = 18
+	}
+	if chatEventWidth > 32 {
+		chatEventWidth = 32
+	}
+	if chatEventWidth > mainWidth-12 {
+		chatEventWidth = mainWidth - 12
+	}
+	chatWidth := mainWidth - chatEventWidth - 3 - 4
+	chatHeight := bodyHeight - 7
+	if chatWidth < 1 {
+		chatWidth = 1
+	}
+	if chatHeight < 1 {
+		chatHeight = 1
+	}
+	m.chatViewport.SetWidth(chatWidth)
+	m.chatViewport.SetHeight(chatHeight)
+	m.chatInput.SetWidth(chatWidth)
+	m.chatInput.SetHeight(4)
 	if contentWidth < 1 {
 		contentWidth = 1
 	}
@@ -286,22 +338,33 @@ func (m *Model) startHeaderLoad() tea.Cmd {
 }
 
 func (m *Model) startCurrentScreenLoad() tea.Cmd {
+	if m.screenLoading {
+		return nil
+	}
 	request := m.currentScreen().DataRequest()
-	if m.screenLoading || request == noDataRequest {
+	if request == noDataRequest {
 		return nil
 	}
 	m.screenLoading = true
-	if request == agentsDataRequest {
+	switch request {
+	case agentsDataRequest:
 		loader, home, now := m.agentsLoader, m.home, m.now
 		return func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: agentsDataRequest, agents: data, err: err}
 		}
-	}
-	loader, reader, now := m.logLoader, m.reader, m.now
-	return func() tea.Msg {
-		events, err := loader(reader, now())
-		return screenLoadMsg{request: logsDataRequest, events: events, err: err}
+	case chatDataRequest:
+		loader, home, now := m.chatLoader, m.home, m.now
+		return func() tea.Msg {
+			data, err := loader(home, now())
+			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
+		}
+	default:
+		loader, reader, now := m.logLoader, m.reader, m.now
+		return func() tea.Msg {
+			events, err := loader(reader, now())
+			return screenLoadMsg{request: logsDataRequest, events: events, err: err}
+		}
 	}
 }
 
