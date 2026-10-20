@@ -30,6 +30,10 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 			if !strings.Contains(m.View().Content, "[ TREE ]") {
 				t.Fatalf("Agents screen does not show its tree tab:\n%s", m.View().Content)
 			}
+		} else if name == "Health" {
+			if !strings.Contains(m.View().Content, "home") || !strings.Contains(m.View().Content, "agents") {
+				t.Fatalf("Health screen does not show its panels:\n%s", m.View().Content)
+			}
 		} else if name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
 			t.Fatalf("%s screen does not show its placeholder:\n%s", name, m.View().Content)
 		}

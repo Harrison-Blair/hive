@@ -8,7 +8,9 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -166,6 +168,157 @@ func checkSupervisor(home string) Check {
 		return newCheck("supervisor", false, false, "supervisor down")
 	}
 	return newCheck("supervisor", false, true, fmt.Sprintf("supervisor live: pid %d", claim.PID))
+}
+
+func checkSupervisorBinary(home string) Check {
+	registry, err := storelib.Open(home)
+	if err != nil {
+		return newCheck("supervisor binary", false, false, err.Error())
+	}
+	var claim records.Claim
+	if err := registry.ReadIn([]string{"claims"}, "supervisor", &claim); err != nil {
+		return newCheck("supervisor binary", false, false, "supervisor down")
+	}
+	alive, err := process.Alive(claim.PID, claim.PIDStart)
+	if err != nil || !alive {
+		return newCheck("supervisor binary", false, false, "supervisor down")
+	}
+
+	hivePath, err := exec.LookPath("hive")
+	if err != nil {
+		return newCheck("supervisor binary", false, false, "hive binary is not on PATH")
+	}
+	hiveInfo, err := os.Stat(hivePath)
+	if err != nil {
+		return newCheck("supervisor binary", false, false, fmt.Sprintf("stat hive binary %s: %s", hivePath, err))
+	}
+
+	procExe := filepath.Join("/proc", strconv.FormatInt(claim.PID, 10), "exe")
+	executable, err := os.Readlink(procExe)
+	if err != nil {
+		return newCheck("supervisor binary", false, false, fmt.Sprintf("read supervisor executable: %s", err))
+	}
+	supervisorInfo, err := os.Stat(procExe)
+	if err != nil {
+		return newCheck("supervisor binary", false, false, fmt.Sprintf("stat supervisor executable: %s", err))
+	}
+	supervisorTime := supervisorInfo.ModTime().UTC().Format(time.RFC3339Nano)
+	hiveTime := hiveInfo.ModTime().UTC().Format(time.RFC3339Nano)
+	detail := fmt.Sprintf("supervisor %s modified %s; hive %s modified %s", executable, supervisorTime, hivePath, hiveTime)
+	if strings.HasSuffix(executable, " (deleted)") {
+		return newCheck("supervisor binary", false, false, detail+"; executable is deleted")
+	}
+	if supervisorInfo.ModTime().Before(hiveInfo.ModTime()) {
+		return newCheck("supervisor binary", false, false, detail+"; supervisor binary is older")
+	}
+	return newCheck("supervisor binary", false, true, detail)
+}
+
+func checkStaleWorktrees(home string) Check {
+	worktrees, err := listTaskWorktrees(home)
+	if err != nil {
+		return newCheck("stale worktrees", false, false, err.Error())
+	}
+	stale := make([]string, 0)
+	for _, worktree := range worktrees {
+		task := worktree.task
+		if task.Status == "cancelled" || (task.Delivery != nil && task.Delivery.Commit != "" && task.Delivery.Pushed) {
+			stale = append(stale, worktree.name)
+		}
+	}
+	if len(stale) == 0 {
+		return newCheck("stale worktrees", false, true, "none")
+	}
+	return newCheck("stale worktrees", false, false, strings.Join(stale, ", "))
+}
+
+func checkUnpushedTaskBranches(ctx context.Context, home string) Check {
+	worktrees, err := listTaskWorktrees(home)
+	if err != nil {
+		return newCheck("unpushed task branches", false, false, err.Error())
+	}
+	checkCtx, cancel := context.WithTimeout(ctx, checkBound)
+	defer cancel()
+	unpushed := make([]string, 0)
+	for _, worktree := range worktrees {
+		result, err := run.Command(checkCtx, worktree.path, "git", "rev-list", "--count", "@{upstream}..HEAD")
+		if err != nil {
+			unpushed = append(unpushed, worktree.name+": "+err.Error())
+			continue
+		}
+		if result.ExitCode != 0 {
+			detail := firstLine(result.Stderr)
+			if detail == "" {
+				detail = fmt.Sprintf("git rev-list exited with code %d", result.ExitCode)
+			}
+			unpushed = append(unpushed, worktree.name+": "+detail)
+			continue
+		}
+		count, err := strconv.Atoi(strings.TrimSpace(result.Stdout))
+		if err != nil {
+			unpushed = append(unpushed, worktree.name+": invalid ahead count")
+			continue
+		}
+		if count > 0 {
+			commitText := "commits"
+			if count == 1 {
+				commitText = "commit"
+			}
+			unpushed = append(unpushed, fmt.Sprintf("%s: %d %s ahead of upstream", worktree.name, count, commitText))
+		}
+	}
+	if len(unpushed) == 0 {
+		return newCheck("unpushed task branches", false, true, "none")
+	}
+	return newCheck("unpushed task branches", false, false, strings.Join(unpushed, ", "))
+}
+
+type taskWorktree struct {
+	task records.Task
+	path string
+	name string
+}
+
+func listTaskWorktrees(home string) ([]taskWorktree, error) {
+	registry, err := storelib.Open(home)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := registry.List("tasks")
+	if err != nil {
+		return nil, err
+	}
+	worktrees := make([]taskWorktree, 0)
+	for _, data := range raw {
+		var task records.Task
+		if err := json.Unmarshal(data, &task); err != nil {
+			return nil, fmt.Errorf("task record invalid: %s", err)
+		}
+		if task.Worktree == nil || task.Worktree.Path == "" {
+			continue
+		}
+		path := filepath.Clean(task.Worktree.Path)
+		relative, err := filepath.Rel(home, path)
+		if err != nil {
+			return nil, err
+		}
+		parts := strings.Split(filepath.ToSlash(relative), "/")
+		if len(parts) != 4 || parts[0] != "projects" || parts[2] != "worktrees" {
+			continue
+		}
+		info, err := os.Stat(path)
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		if !info.IsDir() {
+			continue
+		}
+		worktrees = append(worktrees, taskWorktree{task: task, path: path, name: filepath.Join(parts[1], parts[3])})
+	}
+	return worktrees, nil
 }
 
 func checkStartingAgents(home string) Check {
