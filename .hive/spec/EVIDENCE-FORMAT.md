@@ -18,7 +18,9 @@ reaches the status "evidence" when each `V<n>.md` exists. It reaches the status
 - The red run and the green run each start with the line `commit <short hash>` of the worktree at that run.
 - An observation outside the command output goes into its own fenced block with the command that made it. Examples are a `herdr pane read` capture and a workspace list.
 - A live check records its cleanup commands and their output as the last block of the item.
-- The gate item records the four gate commands and their output. A `gofmt -l` run counts as a pass only when it prints nothing.
+- The gate item records the five gate commands and their output. A `gofmt -l`
+  run counts as a pass only when it prints nothing. A `go mod tidy -diff` run
+  counts as a pass only when it prints nothing.
 - An evidence file claims no result that its output does not show.
 - The verifier does not edit a `V<n>.md`. It records its own runs in `VERIFIED.md`.
 - When the verifier records a fail, the worker continues in the same worktree. It corrects the behavior, replaces the affected `V<n>.md`, commits, and pushes. The verifier then runs again and replaces `VERIFIED.md`.
