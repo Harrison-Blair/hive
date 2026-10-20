@@ -4,8 +4,11 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func liveRecord(key, name string) records.Agent {
@@ -208,6 +211,57 @@ func TestSendLogsTextBody(t *testing.T) {
 	logText := readLog(t, home)
 	if !strings.Contains(logText, text) {
 		t.Fatalf("log does not contain the prompt body")
+	}
+}
+
+func TestSendHoldsPaneLockForPrompt(t *testing.T) {
+	home := testHome(t)
+	writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
+	fake := newFakeHerdr(t)
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
+	lock, err := store.LockNamed(context.Background(), home, "pane-w1-p1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	finished := make(chan output.Envelope, 1)
+	go func() {
+		finished <- Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: "x"})
+	}()
+	time.Sleep(50 * time.Millisecond)
+	if got := len(fake.recorded("agent.prompt")); got != 0 {
+		_ = lock.Unlock()
+		t.Fatalf("agent.prompt requests = %d while pane lock is held; want 0", got)
+	}
+	if err := lock.Unlock(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case envelope := <-finished:
+		if envelope.Outcome != "ok" {
+			t.Fatalf("Send() = %#v; want ok", envelope)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Send() did not finish after the pane lock was released")
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 1 {
+		t.Fatalf("agent.prompt requests = %d; want 1", got)
+	}
+}
+
+func TestSendRefusesUserTag(t *testing.T) {
+	for _, text := range []string{"user: x", "⬢ user: x"} {
+		t.Run(text, func(t *testing.T) {
+			home := testHome(t)
+			writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
+			fake := newFakeHerdr(t)
+			envelope := Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: text})
+			if envelope.Outcome != "failed" || !strings.Contains(toString(envelope.Error), "user-tagged") {
+				t.Fatalf("envelope = %#v; want refusal of a user tag", envelope)
+			}
+			if len(fake.recorded("agent.prompt")) != 0 {
+				t.Fatal("agent.prompt ran for a user-tagged prompt")
+			}
+		})
 	}
 }
 
