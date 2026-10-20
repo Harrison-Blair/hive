@@ -375,9 +375,6 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return nil
 	}
 	request := m.currentScreen().DataRequest()
-	if request == noDataRequest {
-		return nil
-	}
 	m.screenLoading = true
 	switch request {
 	case agentsDataRequest:

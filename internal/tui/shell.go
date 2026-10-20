@@ -34,8 +34,7 @@ var (
 type dataRequest uint8
 
 const (
-	noDataRequest dataRequest = iota
-	chatDataRequest
+	chatDataRequest dataRequest = iota
 	logsDataRequest
 	agentsDataRequest
 	goalsQueueDataRequest
@@ -50,13 +49,6 @@ type screen interface {
 	KeyHints() string
 	DataRequest() dataRequest
 }
-
-type placeholderScreen struct{ name string }
-
-func (s placeholderScreen) Update(tea.Msg) tea.Cmd   { return nil }
-func (s placeholderScreen) View(_, _ int) string     { return s.name + " · next wave" }
-func (s placeholderScreen) KeyHints() string         { return "1–8 screens · ctrl+c twice to quit" }
-func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
 type logsScreen struct{ model *Model }
 
