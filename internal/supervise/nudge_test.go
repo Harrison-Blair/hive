@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
@@ -27,6 +28,49 @@ func appendInbox(t *testing.T, home, role, kind, task, agent, text string) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPromptNudgeRefusesUserTag(t *testing.T) {
+	home := testHome(t)
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+	if err := s.promptNudge(context.Background(), "w1:p1", "⬢ user: x"); err == nil || !strings.Contains(err.Error(), "user:") {
+		t.Fatalf("promptNudge() error = %v; want user-tag refusal", err)
+	}
+	if ops.promptCount() != 0 {
+		t.Fatalf("prompts = %d; want none", ops.promptCount())
+	}
+}
+
+func TestPromptNudgeHoldsPaneLock(t *testing.T) {
+	home := testHome(t)
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+	lock, err := store.LockNamed(context.Background(), home, "pane-w1-p1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	finished := make(chan error, 1)
+	go func() { finished <- s.promptNudge(context.Background(), "w1:p1", "⬢ hive: nudge") }()
+	time.Sleep(50 * time.Millisecond)
+	if got := ops.promptCount(); got != 0 {
+		_ = lock.Unlock()
+		t.Fatalf("prompts = %d while pane lock is held; want 0", got)
+	}
+	if err := lock.Unlock(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-finished:
+		if err != nil {
+			t.Fatalf("promptNudge() = %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("promptNudge() did not finish after the pane lock was released")
+	}
+	if got := ops.promptCount(); got != 1 {
+		t.Fatalf("prompts = %d; want one", got)
 	}
 }
 
