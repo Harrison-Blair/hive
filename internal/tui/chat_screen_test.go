@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -143,8 +144,8 @@ func TestChatLoadsRecentConversationAndCoordinatorState(t *testing.T) {
 	m = loadChat(t, m)
 	requireView(t, m, "coordinator", "live", "claude", "working", "claude-opus-5-5", "w1:p1")
 	requireView(t, m, "you · Oct 19", "first message", "pending", "coordinator · Oct 19", "answer", "↳ c2", "delivered message")
-	rejectView(t, m, "outside the seven-day window", "[sent]", "hidden by default noise", "message second line")
-	requireView(t, m, "1 hive events", "message first line")
+	rejectView(t, m, "outside the seven-day window", "[sent]", "message second line")
+	requireView(t, m, "2 hive events", "message first line", "hidden by default noise")
 
 	view := ansi.Strip(m.View().Content)
 	if strings.Index(view, "answer") > strings.Index(view, "delivered message") {
@@ -187,12 +188,10 @@ func TestChatNoiseAndEventFoldingDoNotMarkRecordsRead(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 150, Height: 40})
 	m = loadChat(t, m)
-	requireView(t, m, "1 hive events", "older event")
-	rejectView(t, m, "newer event")
+	requireView(t, m, "2 hive events", "older event", "newer event")
 
 	m, _ = raise(t, m, key('n', "n"))
-	requireView(t, m, "hive events", "off")
-	rejectView(t, m, "older event", "newer event")
+	requireView(t, m, "noise: decisions only", "2 hive events", "older event", "newer event")
 	m, _ = raise(t, m, key('n', "n"))
 	allEvents := ansi.Strip(m.View().Content)
 	if strings.Index(allEvents, "newer-sender") > strings.Index(allEvents, "older-sender") {
@@ -214,6 +213,73 @@ func TestChatNoiseAndEventFoldingDoNotMarkRecordsRead(t *testing.T) {
 			t.Fatalf("Chat marked inbox record %d read", event.Seq)
 		}
 	}
+}
+
+func TestChatNoiseLevelsFilterInboxKinds(t *testing.T) {
+	home := newTestHome(t)
+	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+	for index, event := range []records.Inbox{
+		{Kind: records.InboxMessage, Agent: "decision", Text: "D"},
+		{Kind: records.InboxCompleted, Agent: "completed", Text: "C"},
+		{Kind: records.InboxVerified, Agent: "verified", Text: "V"},
+		{Kind: records.InboxBlocked, Agent: "blocked", Text: "B"},
+		{Kind: records.InboxExited, Agent: "exited", Text: "E"},
+		{Kind: records.InboxQuiet, Agent: "quiet", Text: "Q"},
+		{Kind: records.InboxUnresolved, Agent: "unresolved", Text: "U"},
+	} {
+		event.Seq = uint64(index + 1)
+		event.Role = "coordinator"
+		event.CreatedAt = time.Date(2026, 10, 20, 10, index, 0, 0, time.UTC).Format(time.RFC3339)
+		appendInboxFixture(t, home, event)
+	}
+	m := newTestModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 200, Height: 57})
+	m = loadChat(t, m)
+
+	assertKinds := func(t *testing.T, want []string) {
+		t.Helper()
+		got := make([]string, 0, len(m.visibleChatEvents()))
+		for _, event := range m.visibleChatEvents() {
+			got = append(got, event.Kind)
+		}
+		expected := append([]string(nil), want...)
+		sort.Strings(got)
+		sort.Strings(expected)
+		if len(got) != len(expected) {
+			t.Fatalf("visible inbox kinds = %v; want %v", got, expected)
+		}
+		for index := range got {
+			if got[index] != expected[index] {
+				t.Fatalf("visible inbox kinds = %v; want %v", got, expected)
+			}
+		}
+	}
+
+	t.Run("landings and decisions", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved", "completed", "verified", "quiet"})
+		requireView(t, m, "noise: landings and decisions", "6 hive events", "decision: D", "blocked: B", "unresolved: U", "completed: C", "verified: V", "quiet: Q")
+		rejectView(t, m, "exited: E")
+	})
+
+	m, _ = raise(t, m, key('n', "n"))
+	t.Run("decisions only", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved"})
+		requireView(t, m, "noise: decisions only", "3 hive events", "decision: D", "blocked: B", "unresolved: U")
+		rejectView(t, m, "completed: C", "verified: V", "exited: E", "quiet: Q")
+	})
+
+	m, _ = raise(t, m, key('n', "n"))
+	t.Run("all", func(t *testing.T) {
+		assertKinds(t, []string{"message", "completed", "verified", "blocked", "exited", "quiet", "unresolved"})
+		requireView(t, m, "noise: all", "7 hive events", "decision: D", "completed: C", "verified: V", "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
+	})
+
+	m, _ = raise(t, m, key('n', "n"))
+	t.Run("returns to landings and decisions", func(t *testing.T) {
+		assertKinds(t, []string{"message", "blocked", "unresolved", "completed", "verified", "quiet"})
+		requireView(t, m, "noise: landings and decisions", "6 hive events", "decision: D", "blocked: B", "unresolved: U", "completed: C", "verified: V", "quiet: Q")
+		rejectView(t, m, "exited: E")
+	})
 }
 
 func TestChatInputKeepsDraftAndTreatsScreenNumbersAsText(t *testing.T) {
