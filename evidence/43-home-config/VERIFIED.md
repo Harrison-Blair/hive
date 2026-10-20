@@ -150,3 +150,55 @@ exit 0
 $ go test -race ./...
 exit 0, no FAIL lines
 ```
+
+# Run 2
+
+| Item | Value |
+| --- | --- |
+| Task | 43-home-config |
+| Commit | ec136ef0 (after Repair 1) |
+| Base | `dev` at b16c5dff (merge base) |
+| Date | 2026-10-19 |
+| Agent | t43-verifier-2, Claude Code, claude-opus-5-5 |
+| Verdict | PASS |
+
+Each run used a new temp `XDG_CONFIG_HOME` below the session scratchpad and
+`HIVE_HOME` unset. `~/.config/hive/` does not exist before or after the runs.
+`git diff 7a6ddba8 HEAD -- '*.go'` is empty, so Repair 1 changed no Go file.
+
+## Results
+
+| ID | Result | Observation |
+| --- | --- | --- |
+| V1 | pass | Same procedure as run 1. On base b16c5dff the same 8 home tests and 6 cmd tests fail; `internal/tui` passes (isolation edit only). On ec136ef0 all 3 packages pass. |
+| V2 | pass | First init writes `home = "/home/penguin/source/hive"`, exit 0. Second init exit 0, mtime, size, and sha1 unchanged. List from `/tmp` exit 0, 32 rows, includes `43-home-config`. Other-home config: list and init exit 1 with `hive: home conflict: config is OTHER, working directory is in /home/penguin/source/hive`; `cmp` shows the config unchanged. No config: list from `/tmp` exit 1 with `no marker above /tmp; run hive init in the home`. |
+| V3 | pass | `XDG_CONFIG_HOME=X go test -count=1 -race ./...` with `X/hive/config.toml` naming a marked temp home exits 0, no non-`ok` lines. Config atime stays 2000-01-01. |
+| V4 | pass | `git diff dev --stat`: 20 files. All are in the source table or below `evidence/43-home-config/`. No file below `spec/hive-v1/evidence/`. No path in V1-V5 or the brief copy names the old folder. |
+| V5 | pass | `gofmt -l` prints nothing. `go vet` exit 0. `golangci-lint` 0 issues, exit 0. `go test -race ./...` exit 0, 0 FAIL lines. |
+
+## V4 run 2
+
+```text
+$ git diff dev --stat
+ .agents/skills/hive-coordinator/SKILL.md |  20 +--
+ cmd/homeinit/homeinit.go                 |  83 +++++++++++++
+ cmd/homeinit_root_test.go                | 205 +++++++++++++++++++++++++++++++
+ cmd/project_static_home_test.go          |   2 +-
+ cmd/root.go                              |   3 +-
+ cmd/root_test.go                         |  13 ++
+ evidence/43-home-config/V1.md            |  88 +++++++++++++
+ evidence/43-home-config/V2.md            | 104 ++++++++++++++++
+ evidence/43-home-config/V3.md            | 101 +++++++++++++++
+ evidence/43-home-config/V4.md            |  50 ++++++++
+ evidence/43-home-config/V5.md            | 105 ++++++++++++++++
+ evidence/43-home-config/VERIFIED.md      | 152 +++++++++++++++++++++++
+ internal/homeinit/homeinit.go            |  46 +++++++
+ internal/lib/home/config.go              |  78 ++++++++++++
+ internal/lib/home/doc.go                 |   5 +
+ internal/lib/home/home.go                |  27 +++-
+ internal/lib/home/home_test.go           | 146 +++++++++++++++++++++-
+ internal/tui/tui_test.go                 |   2 +
+ spec/hive-v1/tasks/43-home-config.md     | 136 ++++++++++++++++++++
+ testdata/ste-baseline.json               |   3 +-
+ 20 files changed, 1347 insertions(+), 22 deletions(-)
+```
