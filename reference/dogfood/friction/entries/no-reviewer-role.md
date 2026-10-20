@@ -26,3 +26,19 @@ must answer.
 2. The command fails with "invalid role: reviewer".
 3. Run `pi -p --model MODEL "PROMPT"` in the home with no TTY.
 4. The process waits with no output and no CPU use, at the trust prompt.
+
+**Takeover:**
+The pi reviewer in the home root ran coordinator startup two times. The
+first prompt was "Read FILE and do what it says". The second prompt also
+said "you are a plan reviewer, not the coordinator". Each time it ran
+`hive agent register --role coordinator`, which marked the live coordinator
+stale, took the coordinator claim, and renamed the review tab to
+`coordinator`. Nudges then went to the reviewer pane. It also read the
+coordinator inbox and ran `hive doctor`. The real coordinator ran
+`hive agent register --role coordinator` again to take back the claim. A
+pi agent in a scratch directory outside the home, with the tools read,
+grep, find, ls, and write, did not load `AGENTS.md` or the hive skills and
+did the review only.
+
+5. Start pi in the home root with a prompt that names another role.
+6. pi runs `hive agent register --role coordinator` and takes the claim.
