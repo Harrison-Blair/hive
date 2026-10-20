@@ -20,7 +20,13 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-const chatWindow = 7 * 24 * time.Hour
+const (
+	chatWindow                    = 7 * 24 * time.Hour
+	chatNoiseAll                  = "all"
+	chatNoiseLandingsAndDecisions = "landings and decisions"
+	chatNoiseDecisionsOnly        = "decisions only"
+	chatNoiseMessages             = "messages"
+)
 
 type chatScreenData struct {
 	entries          []chatlib.Entry
@@ -131,12 +137,12 @@ func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
 		return batch(m.chatInput.Focus(), m.logAction("chat input open"))
 	case "n":
 		switch m.chatNoise {
-		case "messages":
-			m.chatNoise = "off"
-		case "off":
-			m.chatNoise = "all"
+		case chatNoiseMessages, chatNoiseLandingsAndDecisions:
+			m.chatNoise = chatNoiseDecisionsOnly
+		case chatNoiseDecisionsOnly:
+			m.chatNoise = chatNoiseAll
 		default:
-			m.chatNoise = "messages"
+			m.chatNoise = chatNoiseLandingsAndDecisions
 		}
 		m.rebuildChat()
 		return m.logAction("chat noise", slogString("noise", m.chatNoise))
@@ -212,8 +218,8 @@ func (m *Model) chatView(width, height int) string {
 	if eventWidth < 18 {
 		eventWidth = 18
 	}
-	if eventWidth > 32 {
-		eventWidth = 32
+	if eventWidth > 36 {
+		eventWidth = 36
 	}
 	if eventWidth > width-12 {
 		eventWidth = width - 12
@@ -279,26 +285,38 @@ func coordinatorLine(data chatScreenData) string {
 
 func (m *Model) chatEventsView(width, height int) string {
 	lines := []string{titleStyle.Render("hive events")}
-	if m.chatNoise == "off" {
-		lines = append(lines, "off")
-	} else {
-		events := m.visibleChatEvents()
-		for _, event := range events {
-			lines = append(lines, renderInboxEvent(event, false))
-		}
-		if len(events) == 0 {
-			lines = append(lines, "no events")
-		}
-		lines = append(lines, "", "noise: "+m.chatNoise)
+	events := m.visibleChatEvents()
+	for _, event := range events {
+		lines = append(lines, renderInboxEvent(event, false))
 	}
+	if len(events) == 0 {
+		lines = append(lines, "no events")
+	}
+	lines = append(lines, "", "noise: "+chatNoiseLabel(m.chatNoise))
 	return panelStyle.Width(width).Height(height).Render(strings.Join(lines, "\n"))
+}
+
+func chatNoiseLabel(noise string) string {
+	if noise == chatNoiseMessages {
+		return chatNoiseLandingsAndDecisions
+	}
+	return noise
 }
 
 func (m *Model) visibleChatEvents() []records.Inbox {
 	visible := make([]records.Inbox, 0, len(m.chatData.inbox))
 	for _, event := range m.chatData.inbox {
-		if m.chatNoise == "messages" && event.Kind != records.InboxMessage {
-			continue
+		switch m.chatNoise {
+		case chatNoiseMessages, chatNoiseLandingsAndDecisions:
+			switch event.Kind {
+			case records.InboxMessage, records.InboxCompleted, records.InboxVerified:
+			default:
+				continue
+			}
+		case chatNoiseDecisionsOnly:
+			if event.Kind != records.InboxMessage {
+				continue
+			}
 		}
 		visible = append(visible, event)
 	}
