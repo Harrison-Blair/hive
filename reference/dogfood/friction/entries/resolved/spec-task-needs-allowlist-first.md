@@ -1,8 +1,8 @@
 ---
 title: "A feature spec task cannot start in a repository that ignores .hive/spec/"
-status: "Open"
+status: "Resolved 2026-10-20"
 opened: 2026-10-19
-decision: ""
+decision: "Fixed in 70-spec-allowlist (e1276caa): a spec task worktree stages the brief with git add -f and reports allowlist_needed; the spec task commits the .gitignore rules."
 ---
 
 **Summary:**
