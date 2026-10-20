@@ -27,13 +27,13 @@ Read this section first. Your working directory gives your role. A brief can nam
 
 Hive cannot yet register a project or spawn a manager. Until it can, the user can say "develop" to a root session. That session works as a developer. It does not run coordinator startup. It changes hive source directly and obeys [Development](#development). Remove this clause when the hive manager spawns its first worker.
 
-During bootstrap, the user spawns workers by hand in worktrees under `projects/hive/worktrees/`. The task file in `spec/hive-v1/tasks/` is the brief of such a worker. [spec/hive-v1/05-tracker.md](spec/hive-v1/05-tracker.md) gives the procedure.
+During bootstrap, the user starts workers by hand in worktrees under `projects/hive/worktrees/`. Each task brief is in `.hive/spec/hive-v1/tasks/<task-id>/brief.md`. Read the general task flow in `.agents/skills/hive-worker/SKILL.md`. Read `.hive/spec/hive-v1/05-tracker.md` for v1 tasks.
 
 ## Project
 
 Hive coordinates coding agents in herdr from one home. The user talks to one coordinator. A manager owns each project. Workers do one task each in their own checkout. Hive builds hive: this checkout is the home and the first registered project.
 
-[spec/hive-v1/README.md](spec/hive-v1/README.md) is the design authority. It gives the goals, the features, the architecture, the risks, and the task plan. The branches `plan/hive-v1` and `integration/hive-v1` are history. Do not import them.
+[.hive/spec/hive-v1/README.md](.hive/spec/hive-v1/README.md) is the design authority. It gives the goals, the features, the architecture, the risks, and the task plan. The branches `plan/hive-v1` and `integration/hive-v1` are history. Do not import them.
 
 ## Home layout
 
@@ -41,7 +41,7 @@ Hive coordinates coding agents in herdr from one home. The user talks to one coo
 hive/                            the checkout is the home
 ├─ AGENTS.md  STE-GLOSSARY.md    instructions          tracked
 ├─ main.go  cmd/  internal/      Go source             tracked
-├─ spec/  reference/             design and API docs   tracked
+├─ reference/                    API and dogfood docs    tracked
 ├─ .hive/README.md               home marker           tracked
 ├─ .hive/spec/                   feature specs         tracked
 ├─ projects/<project-id>/        project directory     ignored
@@ -73,7 +73,7 @@ These rules apply to a developer and to a worker on the hive project.
 
 ### Task flow
 
-A spec task is a brief in `spec/hive-v1/tasks/`. `spec/hive-v1/05-tracker.md` gives the procedure to start, verify, and land a task, and the evidence rules. Read it before you start a task. A worker edits only the files that its brief names, plus new tests beside them.
+Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The manager skill gives the manager flow. The worker skill gives the worker flow. Read `.agents/skills/hive-manager/SKILL.md` for manager work. Read `.agents/skills/hive-worker/SKILL.md` for worker work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A worker edits only named files and new tests beside them.
 
 ### Go layout
 
@@ -121,14 +121,14 @@ A command prints text for people by default. With `--json` it prints one JSON ob
 
 ### Instruction text
 
-Write instruction text in ASD-STE100 Strict: this file, skills, role instructions, briefs, the task files in `spec/hive-v1/tasks/`, and the tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
+Write instruction text in ASD-STE100 Strict: this file, skills, role instructions, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
 
 ### Git
 
 - Work on `dev` or on a branch from `dev`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
 - Write a commit subject as `type(scope): summary`, for example `feat(tui): add the log view`.
 - Never add an agent as a co-author.
-- An agent commits and pushes its own work. It does not wait for a request from the user. A developer commits on `dev` and pushes `dev`. A worker commits on its task branch and pushes that branch. `spec/hive-v1/05-tracker.md` gives the steps.
+- An agent commits and pushes its own work. It does not wait for a request from the user. A developer commits on `dev` and pushes `dev`. A worker commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
 
 ### herdr reference
 

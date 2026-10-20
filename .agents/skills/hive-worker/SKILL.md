@@ -61,7 +61,8 @@ item.
 
 For a task with a feature, write each `V<n>.md` file to
 `.hive/spec/<feature>/tasks/<id>/evidence/`. For a task without a feature,
-write each file to the evidence directory that the brief names.
+write each file to the evidence directory that the brief names. The verifier
+writes `VERIFIED.md` in the same directory.
 
 ## Commit
 

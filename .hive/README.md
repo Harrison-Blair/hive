@@ -13,4 +13,4 @@ The home uses these subdirectories:
 | `tmp/` | Scratch files |
 | `spec/` | Feature specs, task files, and evidence |
 
-`spec/hive-v1/03-architecture.md` gives the full home layout.
+`.hive/spec/hive-v1/03-architecture.md` gives the full home layout.

@@ -22,9 +22,9 @@ import (
 var steFiles = []string{
 	"AGENTS.md",
 	".hive/README.md",
-	"spec/hive-v1/05-tracker.md",
-	"spec/hive-v1/tasks/*.md",
-	"spec/hive-v1/evidence/README.md",
+	".hive/spec/hive-v1/05-tracker.md",
+	".hive/spec/*/tasks/*/brief.md",
+	".hive/spec/*.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
 	".agents/skills/hive-coordinator/SKILL.md",
