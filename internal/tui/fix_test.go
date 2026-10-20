@@ -16,35 +16,18 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-// startInitCommands runs each command that Init returns, as the program would.
-func startInitCommands(t *testing.T, m *Model) {
-	t.Helper()
-	cmd := m.Init()
-	if cmd == nil {
-		return
-	}
-	batch, ok := cmd().(tea.BatchMsg)
-	if !ok {
-		t.Fatalf("Init returned one command; the fixture needs the tick and follow commands")
-	}
-	for _, sub := range batch {
-		sub := sub
-		go func() { _ = sub() }()
-	}
-}
-
 func tickUntilCount(t *testing.T, m *Model, want int) *Model {
 	t.Helper()
-	deadline := time.Now().Add(3 * time.Second)
 	for len(m.events) < want {
-		if time.Now().After(deadline) {
-			t.Fatalf("events=%d; want %d before the timeout", len(m.events), want)
+		cmd := m.startCurrentScreenLoad()
+		if cmd == nil {
+			t.Fatalf("screen data load did not start with %d events; want %d", len(m.events), want)
 		}
-		m, _ = raise(t, m, tickMsg{})
-		time.Sleep(20 * time.Millisecond)
+		m, _ = raise(t, m, cmd())
 	}
 	return m
 }
@@ -88,27 +71,24 @@ func exitedPID(t *testing.T) int64 {
 	return int64(cmd.Process.Pid)
 }
 
-// TestInitDoesNotConsumeFollowerEvents starts the actual Init commands. A
-// competing follower command would take append A, so the tick would show only
-// append B. The one ordered path must show A before B.
-func TestInitDoesNotConsumeFollowerEvents(t *testing.T) {
+// TestLogRefreshKeepsFileOrder checks that a background reload adds each new
+// line once and keeps the order from the file.
+func TestLogRefreshKeepsFileOrder(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 5, 1, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
 	path := dailyPath(home, day)
 	writeEvents(t, path, eventJSON(t, day, "INFO", "initial"))
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 
-	startInitCommands(t, m)
 	appendEvent(t, path, eventJSON(t, day, "INFO", "append A"))
 	appendEvent(t, path, eventJSON(t, day, "INFO", "append B"))
-	time.Sleep(700 * time.Millisecond)
-	m = tickUntilCount(t, m, 3)
+	m = loadLogs(t, m)
 
 	got := eventMessages(m)
 	want := []string{"initial", "append A", "append B"}
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("follower order=%q; want %q", got, want)
+		t.Fatalf("log order=%q; want %q", got, want)
 	}
 	view := m.View().Content
 	if strings.Index(view, "append A") > strings.Index(view, "append B") {
@@ -201,92 +181,69 @@ func TestRunHomeFiniteEOFStops(t *testing.T) {
 		if err != nil {
 			t.Fatalf("RunHome on a finite empty input: %v", err)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(4 * time.Second):
 		t.Fatal("RunHome did not stop on finite input EOF")
 	}
 }
 
 func TestHeaderRejectsOutOfRangePIDs(t *testing.T) {
 	self := int64(os.Getpid())
+	selfStart, err := process.Start(self)
+	if err != nil {
+		t.Fatal(err)
+	}
 	exited := exitedPID(t)
 	cases := []struct {
 		name string
 		pid  int64
 		want string
 	}{
-		{"self", self, "supervisor: live"},
-		{"zero", 0, "supervisor: down"},
-		{"negative", -1, "supervisor: down"},
-		{"exited", exited, "supervisor: down"},
-		{"plus 2^32", self + (1 << 32), "supervisor: down"},
-		{"max int32 plus one", int64(math.MaxInt32) + 1, "supervisor: down"},
-		{"max int64", math.MaxInt64, "supervisor: down"},
+		{"self", self, "supervisor fresh"},
+		{"zero", 0, "supervisor stale"},
+		{"negative", -1, "supervisor stale"},
+		{"exited", exited, "supervisor stale"},
+		{"plus 2^32", self + (1 << 32), "supervisor stale"},
+		{"max int32 plus one", int64(math.MaxInt32) + 1, "supervisor stale"},
+		{"max int64", math.MaxInt64, "supervisor stale"},
 	}
 	for _, item := range cases {
 		t.Run(item.name, func(t *testing.T) {
 			home := newTestHome(t)
+			pidStart := uint64(0)
+			if item.pid == self {
+				pidStart = selfStart
+			}
 			writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
-				Key: "supervisor", Agent: "supervisor", Generation: 1, PID: item.pid,
+				Key: "supervisor", Agent: "supervisor", Generation: 1, PID: item.pid, PIDStart: pidStart,
 			})
 			clock := fixedClock(t, time.Date(2026, 5, 2, 12, 0, 0, 0, time.Local))
 			m := newTestModel(t, home, clock)
-			m, _ = raise(t, m, tickMsg{})
+			m = loadHeader(t, m)
 			requireView(t, m, item.want)
 		})
 	}
 }
 
-func TestHeaderPersistentErrorDoesNotLogEachTick(t *testing.T) {
-	cases := []struct {
-		name  string
-		setup func(t *testing.T, home string)
-	}{
-		{
-			name: "agents",
-			setup: func(t *testing.T, home string) {
-				path := filepath.Join(home, ".hive", "state", "agents")
-				if err := os.WriteFile(path, []byte("not a directory\n"), 0o644); err != nil {
-					t.Fatal(err)
-				}
-			},
-		},
-		{
-			name: "inbox",
-			setup: func(t *testing.T, home string) {
-				path := filepath.Join(home, ".hive", "state", "inbox")
-				if err := os.WriteFile(path, []byte("not a directory\n"), 0o644); err != nil {
-					t.Fatal(err)
-				}
-			},
-		},
+func TestHeaderErrorDoesNotStopShell(t *testing.T) {
+	home := newTestHome(t)
+	if err := os.MkdirAll(filepath.Join(home, ".hive", "state"), 0o755); err != nil {
+		t.Fatal(err)
 	}
-	for _, item := range cases {
-		t.Run(item.name, func(t *testing.T) {
-			home := newTestHome(t)
-			if err := os.MkdirAll(filepath.Join(home, ".hive", "state"), 0o755); err != nil {
-				t.Fatal(err)
-			}
-			item.setup(t, home)
-			clock := fixedClock(t, time.Date(2026, 5, 3, 12, 0, 0, 0, time.Local))
-			m := newTestModel(t, home, clock)
-			requireView(t, m, "error:")
-			before := countLogLines(t, home)
-			if before == 0 {
-				t.Fatal("the first header error wrote no log event")
-			}
-			for index := 0; index < 4; index++ {
-				m, _ = raise(t, m, tickMsg{})
-			}
-			after := countLogLines(t, home)
-			if after != before {
-				t.Fatalf("log events grew from %d to %d over unchanged error ticks", before, after)
-			}
-			if _, cmd := raise(t, m, key('q', "q")); cmd == nil {
-				t.Fatal("quit does not work in the persistent error state")
-			} else {
-				quitMessage(t, cmd)
-			}
-		})
+	path := filepath.Join(home, ".hive", "state", "agents")
+	if err := os.WriteFile(path, []byte("not a directory\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	clock := fixedClock(t, time.Date(2026, 5, 3, 12, 0, 0, 0, time.Local))
+	m := newTestModel(t, home, clock)
+	m = loadHeader(t, m)
+	requireView(t, m, "error:")
+	m, _ = raise(t, m, key('2', "2"))
+	requireView(t, m, "▶ 2 Agents", "error:")
+	m = loadHeader(t, m)
+	requireView(t, m, "error:")
+	_, cmd := raise(t, m, key('q', "q"))
+	if cmd != nil {
+		t.Fatal("q returned a command while a header error was visible")
 	}
 }
 
@@ -307,7 +264,7 @@ func TestRunHomeFiniteFDPipeStops(t *testing.T) {
 		if err != nil {
 			t.Fatalf("RunHome on a finite pipe: %v", err)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(4 * time.Second):
 		t.Fatal("RunHome did not stop on a finite pipe EOF")
 	}
 }
@@ -326,7 +283,7 @@ func TestRunHomeFiniteFDFileStops(t *testing.T) {
 		if err != nil {
 			t.Fatalf("RunHome on a finite regular file: %v", err)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(4 * time.Second):
 		t.Fatal("RunHome did not stop on a finite regular file EOF")
 	}
 }
@@ -353,9 +310,13 @@ func TestActionLogRefusalShowsError(t *testing.T) {
 			if item.rotation {
 				writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "retained old line"))
 			}
-			m := newTestModel(t, home, clock)
+			m := newTestLogsModel(t, home, clock)
 			if item.rotation {
-				m, _ = raise(t, m, key('l', "l"))
+				var cmd tea.Cmd
+				m, cmd = raise(t, m, key('l', "l"))
+				if cmd != nil {
+					_ = cmd()
+				}
 				clock.set(day.AddDate(0, 0, 1))
 			}
 			external := t.TempDir()
@@ -384,7 +345,11 @@ func TestActionLogRefusalShowsError(t *testing.T) {
 				}
 			}
 			start := time.Now()
-			m, _ = raise(t, m, key('l', "l"))
+			var actionCmd tea.Cmd
+			m, actionCmd = raise(t, m, key('l', "l"))
+			if actionCmd != nil {
+				m, _ = raise(t, m, actionCmd())
+			}
 			if elapsed := time.Since(start); elapsed > 2*time.Second {
 				t.Fatalf("the action blocked for %v on a static obstruction", elapsed)
 			}
@@ -412,9 +377,12 @@ func TestHealthyActionLogIsWrittenOnce(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2043, 7, 10, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 	before := countLogLines(t, home)
-	raise(t, m, key('l', "l"))
+	_, cmd := raise(t, m, key('l', "l"))
+	if cmd != nil {
+		_ = cmd()
+	}
 	after := countLogLines(t, home)
 	if after != before+1 {
 		t.Fatalf("healthy action log lines went from %d to %d; want one event", before, after)

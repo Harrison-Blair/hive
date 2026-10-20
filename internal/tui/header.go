@@ -3,47 +3,27 @@ package tui
 import (
 	"errors"
 	"fmt"
-	"math"
 	"os"
-	"syscall"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
-	"github.com/Harrison-Blair/hive/internal/lib/inbox"
+	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/project"
+	"github.com/Harrison-Blair/hive/internal/task"
 )
 
 type headerState struct {
 	supervisor string
+	projects   int
 	agents     int
-	starting   int
-	unread     int
-}
-
-// refreshHeader reads the header once. A read error becomes a persistent,
-// bounded error view: the next ticks do not read again, so one unchanged
-// fault cannot log a new event on each tick.
-func (m *Model) refreshHeader() {
-	if m.headerStopped {
-		return
-	}
-	state, err := readHeader(m.home)
-	if err != nil {
-		m.headerErr = boundedError(err.Error())
-		m.headerStopped = true
-		m.logError("header", err)
-		return
-	}
-	m.headerErr = ""
-	m.supervisor = state.supervisor
-	m.agentCount = state.agents
-	m.startingCount = state.starting
-	m.unread = state.unread
+	working    int
+	idle       int
+	needsUser  int
 }
 
 func readHeader(home string) (headerState, error) {
-	var state headerState
-	state.supervisor = "down"
+	state := headerState{supervisor: "stale"}
 	registry, err := store.Open(home)
 	if err != nil {
 		return state, err
@@ -52,13 +32,23 @@ func readHeader(home string) (headerState, error) {
 	err = registry.Read("claims", "supervisor", &claim)
 	switch {
 	case err == nil:
-		if claim.PID > 0 && processAlive(claim.PID) {
-			state.supervisor = "live"
+		if alive, checkErr := process.Alive(claim.PID, claim.PIDStart); checkErr == nil && alive {
+			state.supervisor = "fresh"
 		}
 	case errors.Is(err, os.ErrNotExist):
 	default:
 		return state, err
 	}
+
+	projectEnvelope := project.List(home)
+	if projectEnvelope.Outcome != "ok" {
+		return state, fmt.Errorf("projects: %v", projectEnvelope.Error)
+	}
+	projects, ok := projectEnvelope.Result.([]records.Project)
+	if !ok {
+		return state, errors.New("projects: unexpected result")
+	}
+	state.projects = len(projects)
 
 	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
 	if agentEnvelope.Outcome != "ok" {
@@ -69,45 +59,64 @@ func readHeader(home string) (headerState, error) {
 		return state, errors.New("agents: unexpected result")
 	}
 	for _, record := range agents {
-		switch record.Status {
-		case records.AgentLive:
-			state.agents++
-		case records.AgentStarting:
-			state.starting++
+		if record.Status != records.AgentLive {
+			continue
+		}
+		state.agents++
+		if state.supervisor == "fresh" {
+			if record.AgentStatus == "working" {
+				state.working++
+			} else {
+				state.idle++
+			}
 		}
 	}
 
-	counts, err := inbox.UnreadCountAll(home)
-	if err != nil {
-		return state, fmt.Errorf("inbox: %w", err)
+	taskEnvelope := task.List(home, task.ListOptions{})
+	if taskEnvelope.Outcome != "ok" {
+		return state, fmt.Errorf("tasks: %v", taskEnvelope.Error)
 	}
-	for _, count := range counts {
-		state.unread += count
+	tasks, ok := taskEnvelope.Result.([]records.Task)
+	if !ok {
+		return state, errors.New("tasks: unexpected result")
+	}
+	for _, record := range tasks {
+		if record.NeedsUser != "" {
+			state.needsUser++
+		}
 	}
 	return state, nil
 }
 
-// maxPID is the largest signed 32-bit process ID. A larger positive value
-// must not reach the process lookup or a signal: the platform truncates it,
-// and a negative result such as -1 has process-wide meaning.
-const maxPID = int64(math.MaxInt32)
-
-func processAlive(pid int64) bool {
-	if pid <= 0 || pid > maxPID {
-		return false
-	}
-	process, err := os.FindProcess(int(pid))
-	if err != nil {
-		return false
-	}
-	err = process.Signal(syscall.Signal(0))
-	return err == nil || errors.Is(err, syscall.EPERM)
-}
-
 func (m *Model) headerLine() string {
+	state := m.header
 	if m.headerErr != "" {
-		return "hive " + sanitizeText(m.home) + "  error: " + m.headerErr
+		return fmt.Sprintf("⬢ hive · error: %s\n%s", m.headerErr, m.now().Format("15:04"))
 	}
-	return fmt.Sprintf("hive %s  supervisor: %s  agents: %d live, %d starting  inbox: %d unread",
-		sanitizeText(m.home), m.supervisor, m.agentCount, m.startingCount, m.unread)
+	supervisorStyle := dimStyle
+	if state.supervisor == "fresh" {
+		supervisorStyle = workingStyle
+	}
+	projectLabel := "projects"
+	if state.projects == 1 {
+		projectLabel = "project"
+	}
+	agentLabel := "live agents"
+	if state.agents == 1 {
+		agentLabel = "live agent"
+	}
+	workCount := workingStyle.Render(fmt.Sprintf("%d working", state.working))
+	idleCount := doneStyle.Render(fmt.Sprintf("%d idle", state.idle))
+	if state.supervisor != "fresh" {
+		workCount = dimStyle.Render("working unknown")
+		idleCount = dimStyle.Render("idle unknown")
+	}
+	counts := fmt.Sprintf("⬢ hive · %d %s · %d %s · %s / %s",
+		state.projects, projectLabel, state.agents, agentLabel, workCount, idleCount)
+	status := fmt.Sprintf("supervisor %s · needs_user %s · %s",
+		supervisorStyle.Render(state.supervisor), infoStyle.Render(fmt.Sprint(state.needsUser)), m.now().Format("15:04"))
+	if m.width < 100 {
+		return counts + "\n" + status
+	}
+	return counts + " · " + status
 }

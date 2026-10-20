@@ -113,6 +113,22 @@ func TestAgentPromptShapes(t *testing.T) {
 	}
 }
 
+func TestAgentFocusRequestAndReply(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("agent.focus", `{"type":"agent_info","agent":{"pane_id":"w1:pA","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":true,"revision":7}}`)
+	info, err := AgentFocus(context.Background(), "w1:pA")
+	if err != nil {
+		t.Fatalf("AgentFocus error = %v", err)
+	}
+	if info.PaneID != "w1:pA" || !info.Focused {
+		t.Fatalf("focused agent = %+v", info)
+	}
+	requests := server.recorded("agent.focus")
+	if len(requests) != 1 || requests[0].Params != `{"target":"w1:pA"}` {
+		t.Fatalf("agent.focus requests = %+v; want target w1:pA", requests)
+	}
+}
+
 func TestAgentGetAndList(t *testing.T) {
 	server := newFakeServer(t)
 	server.scriptResult("agent.get", `{"type":"agent_info","agent":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":5,"name":"n"}}`)

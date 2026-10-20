@@ -3,6 +3,7 @@ package tui
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,8 +13,11 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/logs"
+	"github.com/charmbracelet/x/ansi"
 )
 
 type testClock struct {
@@ -48,6 +52,33 @@ func newTestModel(t *testing.T, home string, clock *testClock) *Model {
 	model := New(home, clock.now)
 	t.Cleanup(model.Stop)
 	return model
+}
+
+func newTestLogsModel(t *testing.T, home string, clock *testClock) *Model {
+	t.Helper()
+	m := newTestModel(t, home, clock)
+	m.screenIndex = 7
+	return loadLogs(t, m)
+}
+
+func loadHeader(t *testing.T, m *Model) *Model {
+	t.Helper()
+	cmd := m.startHeaderLoad()
+	if cmd == nil {
+		t.Fatal("header load did not start")
+	}
+	m, _ = raise(t, m, cmd())
+	return m
+}
+
+func loadLogs(t *testing.T, m *Model) *Model {
+	t.Helper()
+	cmd := m.startCurrentScreenLoad()
+	if cmd == nil {
+		t.Fatal("screen data load did not start")
+	}
+	m, _ = raise(t, m, cmd())
+	return m
 }
 
 func dailyPath(home string, day time.Time) string {
@@ -143,7 +174,7 @@ func ctrlC() tea.KeyPressMsg {
 
 func requireView(t *testing.T, m *Model, wants ...string) {
 	t.Helper()
-	view := m.View().Content
+	view := ansi.Strip(m.View().Content)
 	for _, want := range wants {
 		if !strings.Contains(view, want) {
 			t.Fatalf("view does not contain %q:\n%s", want, view)
@@ -153,7 +184,7 @@ func requireView(t *testing.T, m *Model, wants ...string) {
 
 func rejectView(t *testing.T, m *Model, unwanted ...string) {
 	t.Helper()
-	view := m.View().Content
+	view := ansi.Strip(m.View().Content)
 	for _, item := range unwanted {
 		if strings.Contains(view, item) {
 			t.Fatalf("view contains %q:\n%s", item, view)
@@ -174,47 +205,42 @@ func quitMessage(t *testing.T, cmd tea.Cmd) tea.QuitMsg {
 	return quit
 }
 
-func TestHeaderShowsHomeAndRefreshesStoreCounts(t *testing.T) {
+func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
+	m = loadHeader(t, m)
+	requireView(t, m, "⬢ hive", "0 projects", "0 live agents", "supervisor stale", "needs_user 0", "12:00")
 
-	requireView(t, m, "hive "+home, "supervisor: down", "agents: 0 live, 0 starting", "inbox: 0 unread")
-
+	pidStart, err := process.Start(int64(os.Getpid()))
+	if err != nil {
+		t.Fatal(err)
+	}
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
-		Key: "supervisor", Agent: "supervisor", Generation: 1, PID: int64(os.Getpid()),
+		Key: "supervisor", Agent: "supervisor", Generation: 1, PID: int64(os.Getpid()), PIDStart: pidStart,
 	})
+	writeRecord(t, home, []string{"projects"}, "demo", records.Project{ID: "demo", Path: "/repo/demo", Base: "dev"})
 	writeRecord(t, home, []string{"agents"}, "agent-one", records.Agent{
-		Key: "agent-one", Name: "agent-one", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive,
+		Key: "agent-one", Name: "agent-one", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "working",
 	})
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
-		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive,
+		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "done",
 	})
 	writeRecord(t, home, []string{"agents"}, "agent-starting", records.Agent{
 		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentStarting,
 	})
-	for sequence := uint64(1); sequence <= 3; sequence++ {
-		writeRecord(t, home, []string{"inbox", "coordinator"}, fmt.Sprintf("%d", sequence), records.Inbox{
-			Seq: sequence, Role: "coordinator", Kind: records.InboxMessage, Text: "waiting",
-		})
-	}
-	m, _ = raise(t, m, tickMsg{})
-	requireView(t, m, "supervisor: live", "agents: 2 live, 1 starting", "inbox: 3 unread")
+	writeRecord(t, home, []string{"tasks"}, "1-first", records.Task{ID: "1-first", Project: "demo", Title: "first", NeedsUser: "choose"})
+	m = loadHeader(t, m)
+	requireView(t, m, "1 project", "2 live agents", "1 working / 1 idle", "supervisor fresh", "needs_user 1")
 
-	writeRecord(t, home, []string{"agents"}, "agent-three", records.Agent{
-		Key: "agent-three", Name: "agent-three", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive,
+	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
+		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "idle",
 	})
-	writeRecord(t, home, []string{"inbox", "coordinator"}, "4", records.Inbox{
-		Seq: 4, Role: "coordinator", Kind: records.InboxMessage, Text: "waiting",
-	})
-	m, _ = raise(t, m, tickMsg{})
-	requireView(t, m, "agents: 3 live, 1 starting", "inbox: 4 unread")
-
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,
 	})
-	m, _ = raise(t, m, tickMsg{})
-	requireView(t, m, "supervisor: down")
+	m = loadHeader(t, m)
+	requireView(t, m, "working unknown / idle unknown", "supervisor stale", "needs_user 1")
 }
 
 func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
@@ -227,9 +253,9 @@ func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
 	}
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
-
-	requireView(t, m, "hive "+home, "error:")
-	rejectView(t, m, "agents: 0 live, 0 starting", "inbox: 0 unread")
+	m = loadHeader(t, m)
+	requireView(t, m, "⬢ hive", "error:")
+	rejectView(t, m, "0 agents")
 }
 
 func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
@@ -244,9 +270,8 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 		eventJSON(t, day, "ERROR", "epsilon gq"),
 		eventJSON(t, day, "DEBUG", "zeta"),
 	)
-	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 10})
-	m, _ = raise(t, m, tickMsg{})
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	requireView(t, m, "alpha gq", "beta", "gamma gq", "epsilon gq", "zeta")
 
 	// Editing must not let viewing-mode keys act.
@@ -287,8 +312,11 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	}
 
 	m, cmd := raise(t, m, key('q', "q"))
-	quitMessage(t, cmd)
-	m, _ = raise(t, m, tickMsg{})
+	if cmd != nil {
+		t.Fatal("q returned a command")
+	}
+	m, _ = raise(t, m, ctrlC())
+	requireView(t, m, "press ctrl+c again to quit")
 	_, cmd = raise(t, m, ctrlC())
 	quitMessage(t, cmd)
 }
@@ -299,12 +327,11 @@ func TestFollowReadsAppendedLineOnTick(t *testing.T) {
 	clock := fixedClock(t, day)
 	path := dailyPath(home, day)
 	writeEvents(t, path, eventJSON(t, day, "INFO", "first"))
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "first")
 
 	appendEvent(t, path, eventJSON(t, day, "INFO", "second on tick"))
-	time.Sleep(700 * time.Millisecond)
-	m, _ = raise(t, m, tickMsg{})
+	m = loadLogs(t, m)
 	requireView(t, m, "second on tick")
 }
 
@@ -318,9 +345,8 @@ func TestFollowControlsViewport(t *testing.T) {
 	}
 	path := dailyPath(home, day)
 	writeEvents(t, path, lines...)
-	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 5})
-	m, _ = raise(t, m, tickMsg{})
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 10})
 	if !m.viewport.AtBottom() {
 		t.Fatalf("follow on left the viewport away from the end")
 	}
@@ -358,7 +384,8 @@ func TestDailyFileRolloverKeepsEarlierLines(t *testing.T) {
 		eventJSON(t, firstDay, "INFO", "before midnight one"),
 		eventJSON(t, firstDay, "INFO", "before midnight two"),
 	)
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 160, Height: 24})
 	requireView(t, m, "before midnight one", "before midnight two")
 
 	clock.set(secondDay)
@@ -373,12 +400,12 @@ func TestFollowKeepsIncompleteLineUntilNewline(t *testing.T) {
 	clock := fixedClock(t, day)
 	path := dailyPath(home, day)
 	writeEvents(t, path, eventJSON(t, day, "INFO", "complete line"))
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "complete line")
 
 	partial := `{"time":"2026-04-18T12:00:01-04:00","level":"INFO","msg":"half`
 	appendRaw(t, path, partial)
-	time.Sleep(700 * time.Millisecond)
+	m = loadLogs(t, m)
 	rejectView(t, m, "half")
 	appendRaw(t, path, " line\"}\n")
 	m = tickUntilCount(t, m, 2)
@@ -389,7 +416,7 @@ func TestDailyFileWaitsForFirstFile(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 9, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "no events today")
 
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "first arrives"))
@@ -404,55 +431,49 @@ func TestDailyFileInvalidTypeShowsError(t *testing.T) {
 	if err := os.MkdirAll(dailyPath(home, day), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	m := newTestModel(t, home, clock)
+	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "error:", "not a regular file")
 	rejectView(t, m, "no events today")
 }
 
-func TestFollowFailureShowsErrorAndStops(t *testing.T) {
+func TestScreenLoadErrorShowsInFooter(t *testing.T) {
 	home := newTestHome(t)
-	day := time.Date(2026, 4, 11, 12, 0, 0, 0, time.Local)
-	clock := fixedClock(t, day)
-	path := dailyPath(home, day)
-	writeEvents(t, path, eventJSON(t, day, "INFO", "one"))
-	m := newTestModel(t, home, clock)
-	if err := os.Truncate(path, 0); err != nil {
-		t.Fatal(err)
+	clock := fixedClock(t, time.Date(2026, 4, 11, 12, 0, 0, 0, time.Local))
+	m := newTestLogsModel(t, home, clock)
+	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
+		return nil, errors.New("fixture load failure")
 	}
-	done := make(chan tea.Msg, 1)
-	go func() { done <- m.waitFollow()() }()
-	select {
-	case msg := <-done:
-		m, _ = raise(t, m, msg)
-	case <-time.After(4 * time.Second):
-		t.Fatal("follower failure did not arrive")
-	}
-	requireView(t, m, "error:", "truncated")
+	m.screenLoading = false
+	cmd := m.startCurrentScreenLoad()
+	m, _ = raise(t, m, cmd())
+	requireView(t, m, "error:", "fixture load failure")
 }
 
-func TestStopSettlesFollower(t *testing.T) {
+func TestStopClosesWriterMoreThanOnce(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 4, 12, 12, 0, 0, 0, time.Local))
 	m := New(home, clock.now)
 	m.Stop()
-	select {
-	case _, ok := <-m.eventCh:
-		if ok {
-			t.Fatal("event stream stayed open after Stop")
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("Stop did not settle the follower")
-	}
+	m.Stop()
 }
 
-func TestQuitKeysQuit(t *testing.T) {
+func TestQuitKeysRequireTwoCtrlCPresses(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 4, 13, 12, 0, 0, 0, time.Local))
-	for _, press := range []tea.KeyPressMsg{key('q', "q"), ctrlC()} {
-		m := newTestModel(t, home, clock)
-		_, cmd := raise(t, m, press)
-		quitMessage(t, cmd)
+	m := newTestLogsModel(t, home, clock)
+	_, cmd := raise(t, m, key('q', "q"))
+	if cmd != nil {
+		t.Fatal("q returned a command")
 	}
+	m, cmd = raise(t, m, ctrlC())
+	if cmd != nil {
+		if _, ok := cmd().(tea.QuitMsg); ok {
+			t.Fatal("first ctrl+c quit the TUI")
+		}
+	}
+	requireView(t, m, "press ctrl+c again to quit")
+	_, cmd = raise(t, m, ctrlC())
+	quitMessage(t, cmd)
 }
 
 func TestOtherKeysDoNotQuit(t *testing.T) {
@@ -480,7 +501,7 @@ func TestRunQuits(t *testing.T) {
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "run event"))
 	var out bytes.Buffer
 	done := make(chan error, 1)
-	go func() { done <- RunHome(home, strings.NewReader("q"), &out) }()
+	go func() { done <- RunHome(home, strings.NewReader("\x03\x03"), &out) }()
 	select {
 	case err := <-done:
 		if err != nil {
@@ -489,8 +510,8 @@ func TestRunQuits(t *testing.T) {
 	case <-time.After(8 * time.Second):
 		t.Fatal("RunHome did not exit after q")
 	}
-	if !strings.Contains(out.String(), home) {
-		t.Fatalf("output %q does not hold the home path", out.String())
+	if !strings.Contains(out.String(), "hive") {
+		t.Fatalf("output %q does not show the shell", out.String())
 	}
 }
 
@@ -503,7 +524,7 @@ func TestRunResolvesFixtureHome(t *testing.T) {
 	t.Chdir(home)
 	var out bytes.Buffer
 	done := make(chan error, 1)
-	go func() { done <- Run(strings.NewReader("q"), &out) }()
+	go func() { done <- Run(strings.NewReader("\x03\x03"), &out) }()
 	select {
 	case err := <-done:
 		if err != nil {
@@ -512,7 +533,7 @@ func TestRunResolvesFixtureHome(t *testing.T) {
 	case <-time.After(8 * time.Second):
 		t.Fatal("Run did not exit after q")
 	}
-	if !strings.Contains(out.String(), home) {
-		t.Fatalf("output %q does not hold the resolved home", out.String())
+	if !strings.Contains(out.String(), "hive") {
+		t.Fatalf("output %q does not show the shell", out.String())
 	}
 }

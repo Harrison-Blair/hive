@@ -58,9 +58,9 @@ func newRootTestHome(t *testing.T) string {
 }
 
 func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
-	home := newRootTestHome(t)
+	newRootTestHome(t)
 	var out bytes.Buffer
-	status := executeWithStreams(nil, strings.NewReader("q"), &out, &out)
+	status := executeWithStreams(nil, strings.NewReader("\x03\x03"), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0", status)
 	}
@@ -68,8 +68,8 @@ func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 	if !strings.Contains(out.String(), "\x1b[?25l") {
 		t.Fatalf("output %q shows no TUI ran", out.String())
 	}
-	if !strings.Contains(out.String(), home) {
-		t.Fatalf("output %q does not show the resolved home", out.String())
+	if !strings.Contains(out.String(), "⬢ hive") {
+		t.Fatalf("output %q does not show the TUI header", out.String())
 	}
 	if strings.Contains(out.String(), `"outcome"`) {
 		t.Fatalf("successful TUI wrote an envelope: %q", out.String())
