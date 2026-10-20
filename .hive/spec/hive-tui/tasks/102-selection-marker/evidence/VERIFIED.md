@@ -2,7 +2,9 @@
 
 Verifier: `t102-verifier-1`. Task commit: `5ca5078b`. Base: `origin/dev` at `d7fdcf2d`.
 
-Verdict: **fail**. One "fix" row of the task 92 table has no test that fails when the fix breaks. All other items pass.
+First verdict (`24b103b9`): **fail**. One "fix" row of the task 92 table had no test that failed when the fix broke. All other items passed.
+
+Repair 1 verdict (`ae160d09`): **pass**. See [Repair 1](#repair-1).
 
 ## Results
 
@@ -116,3 +118,49 @@ With the real chat copy, Chat at 120 × 40 renders 46 rows (the conversation pan
 ## Repair needed
 
 Add a test for the Detail strip name that reads the detail strip line (not the whole view) and checks that the agent name is honey bold. See it fail on `origin/dev` and with the `selectedStyle.Render(words[0])` call removed.
+
+## Repair 1
+
+Verifier: `t102-verifier-2`. Repair commit: `ae160d0972249dd87edd0684de99a0116988e655`. Base: `origin/dev` at `d7fdcf2d` (not moved).
+
+| ID | Check | Result |
+| --- | --- | --- |
+| R1 | `TestAgentGraphDetailStripNameIsHoneyBold` finds the detail strip line and checks the name is honey bold; red on `origin/dev`, red with the style call removed, green with it restored | pass |
+| R2 | Earlier passes still hold (selections, no background, no `colorText`, colourblind glyphs, frames, element table) | pass |
+| R3 | Gate | pass |
+| R4 | `git merge-tree --write-tree origin/dev HEAD` | pass, exit 0 |
+
+### R1 — red and green
+
+The test renders the Agents graph at 120 × 40 with `selectedKey = "coordinator"`. It takes the second-last view line (the detail strip), checks that its plain text contains `coordinator`, and then calls `requireHoneyBoldText` on that line only. The explorer row is not in the input, so it cannot satisfy the check.
+
+Command: `go test ./internal/tui -run '^TestAgentGraphDetailStripNameIsHoneyBold$' -count=1`
+
+| Run | Result |
+| --- | --- |
+| Task code `ae160d09` | `--- PASS`, `ok` |
+| `styled.WriteString(selectedStyle.Render(words[0]))` replaced with `styled.WriteString(words[0])` in `internal/tui/agents.go` | `FAIL`: `selection_marker_test.go:265: text "coordinator" is not honey bold` |
+| Style call restored (`git checkout internal/tui/agents.go`, clean status) | `ok` |
+| Detached worktree at `origin/dev` with the task `selection_marker_test.go` copied in | `FAIL`: `selection_marker_test.go:265: text "coordinator" is not honey bold` (the plain-text check passed, so the line is the detail strip) |
+
+The base worktree was removed after the run.
+
+### R2 — earlier passes
+
+`git diff --stat 24b103b9 HEAD` outside `.hive/`: only `internal/tui/selection_marker_test.go` (+14). No source file changed since the first verification, so M1, M3, M4, and M5 results stand. Re-run checks:
+
+- `go test ./internal/tui -run 'TestScreenSelectionsUseHoneyMarkerAndDefaultForeground|TestAgentBoardShowsDistinct|TestAgentGraphBoardRenders|TestAgentsGraph|TestEightScreensDoNotPaint|Golden|golden' -count=1`: `ok`.
+- `grep colorText\|e8e4da` in non-test `internal/tui/*.go`: no match.
+- No live check: the source is unchanged since V2 passed.
+
+The M2 row "Detail strip name" now passes with `TestAgentGraphDetailStripNameIsHoneyBold`. The Chat 46-row and Logs follow notes belong to task 118 and are not task faults.
+
+### R3 — gate
+
+| Command | Result |
+| --- | --- |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | no output |
+| `go mod tidy -diff` | no output |
+| `go vet ./...` | exit 0 |
+| `golangci-lint run ./...` | `0 issues.` |
+| `go test -race ./...` | all packages `ok` or `no test files`, exit 0 |
