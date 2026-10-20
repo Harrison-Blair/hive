@@ -208,6 +208,10 @@ func checkCallerContext(ctx context.Context, locked *store.LockedStore, homePath
 	if err != nil {
 		return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read caller pane: %w", userOnlyPrefix, err)
 	}
+	coordinator, err := identity.ResolveHeld(locked, "coordinator", "")
+	if err == nil && pane.WorkspaceID == coordinator.WorkspaceID {
+		return nil
+	}
 	agents, err := locked.ListIn([]string{"agents"}, nil)
 	if err != nil {
 		return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read agent records: %w", userOnlyPrefix, err)
