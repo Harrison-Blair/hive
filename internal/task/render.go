@@ -28,8 +28,12 @@ func ListText(envelope output.Envelope) string {
 	}
 	lines := make([]string, 0, len(tasks))
 	for _, task := range tasks {
-		lines = append(lines, fmt.Sprintf("%s\t%s\t%s\t%s",
-			task.ID, task.Status, oneLine(task.ActingAgent), oneLine(task.Title)))
+		line := fmt.Sprintf("%s\t%s\t%s\t%s",
+			task.ID, task.Status, oneLine(task.ActingAgent), oneLine(task.Title))
+		if task.NeedsUser != "" {
+			line += " [needs user]"
+		}
+		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n") + "\n"
 }
@@ -57,6 +61,9 @@ func ShowText(envelope output.Envelope) string {
 		"cancel_reason: " + oneLine(task.CancelReason),
 		"created_at: " + task.CreatedAt,
 		"updated_at: " + task.UpdatedAt,
+	}
+	if task.NeedsUser != "" {
+		lines = append(lines, "needs user: "+oneLine(task.NeedsUser))
 	}
 	if paths := TaskFeaturePaths(task); paths != nil {
 		lines = append(lines,
