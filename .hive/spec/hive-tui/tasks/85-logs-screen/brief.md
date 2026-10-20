@@ -128,3 +128,16 @@ repair:
    send the SHA to the manager with `hive inbox send`.
 
 Do not change other behavior.
+
+## Repair 2
+
+Task 86 landed on `dev` after the verification. The merge of this branch into
+`dev` conflicts only in `testdata/ste-baseline.json`. Do only this repair:
+
+1. Merge `origin/dev` into the task branch. In `testdata/ste-baseline.json`,
+   keep each entry of both sides. When both sides have the same key, keep the
+   lower count.
+2. Run the gate. Commit, push, run `hive task complete`, and send the SHA to
+   the manager with `hive inbox send`.
+
+Do not change other files.

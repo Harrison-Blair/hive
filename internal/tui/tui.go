@@ -77,6 +77,8 @@ type Model struct {
 	headerErr        string
 	screenErr        string
 	attachErr        string
+	startupNotice    string
+	startupErr       string
 	headerLoader     func(string) (headerState, error)
 	logLoader        func(*logs.Reader, time.Time) ([]logs.Event, error)
 	healthLoader     func(string, *slog.Logger) doctor.Result
@@ -502,6 +504,11 @@ func Run(in io.Reader, out io.Writer) error {
 func RunHome(home string, in io.Reader, out io.Writer) error {
 	model := New(home, time.Now)
 	defer model.Stop()
+	notice, startupErr := setupSession(home, model.logger)
+	model.startupNotice = notice
+	if startupErr != nil {
+		model.startupErr = boundedError(startupErr.Error())
+	}
 
 	inputEnded := make(chan struct{})
 	var endOnce sync.Once

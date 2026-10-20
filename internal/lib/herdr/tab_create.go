@@ -8,10 +8,11 @@ import (
 
 // TabCreateParams is one tab.create request.
 type TabCreateParams struct {
-	WorkspaceID string `json:"workspace_id,omitempty"`
-	Cwd         string `json:"cwd,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Focus       bool   `json:"focus"`
+	WorkspaceID string            `json:"workspace_id,omitempty"`
+	Cwd         string            `json:"cwd,omitempty"`
+	Label       string            `json:"label,omitempty"`
+	Focus       bool              `json:"focus"`
+	Env         map[string]string `json:"env,omitempty"`
 }
 
 // TabCreated is the new tab and its root pane.

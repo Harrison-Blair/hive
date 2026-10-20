@@ -191,6 +191,8 @@ func (m *Model) footerView(width int) string {
 	}
 	if m.quitNotice {
 		notice = "press ctrl+c again to quit"
+	} else {
+		notice = m.startupNotice
 	}
 	if err := m.footerError(); err != "" {
 		if notice == "" {
@@ -211,7 +213,7 @@ func (m *Model) footerView(width int) string {
 }
 
 func (m *Model) footerError() string {
-	for _, text := range []string{m.attachErr, m.headerErr, m.screenErr, m.chatErr, m.logErr} {
+	for _, text := range []string{m.startupErr, m.attachErr, m.headerErr, m.screenErr, m.chatErr, m.logErr} {
 		if text != "" {
 			return text
 		}
