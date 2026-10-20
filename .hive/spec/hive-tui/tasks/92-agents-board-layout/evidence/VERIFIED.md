@@ -369,3 +369,115 @@ Gate: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `
 | tmux server `-L t92v4` | PID 2513043, TUI PIDs 2513044 and 2513310 | Stopped with `tmux -L t92v4 kill-server`; all three PIDs gone |
 
 I did not use workspace `wBC`. Tab `wS3:t1` stays open.
+
+## Repair 4
+
+Verifier: `t92-verifier-5`. Task head: `07a5585e` (code at `626cb9f0`). Repair 3 tip: `72d51057`. Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`.
+
+Result: **fail**. The stem repair passes. The pod title repair fails: a title is cut off in the committed golden, and live the `≡` glyph is split away from the project name. The Design element table omits the line and dot colors of the board.
+
+| Item | Result |
+| --- | --- |
+| R4.1 pod title on the top border with the board glyph | fail |
+| R4.2 stem unbroken in each cell from the bus to the manager node | pass |
+| R4 tests fail on `72d51057` and pass on the task head | pass |
+| R4.3 golden files checked against the board | fail (beta title cut off) |
+| Design visual check: worker element table | fail (pods row, colors not listed) |
+| Earlier passes (nudge mutation, ghost rule, task 90 idle CPU) | pass |
+| Exact frame at 120 x 40 and 200 x 57 | pass |
+| V3 diff scope | pass |
+| V4 gate | pass |
+| `git merge-tree --write-tree origin/dev HEAD` | exit 0 |
+
+### R4 red and green
+
+I made a scratch worktree at `72d51057` and copied `internal/tui/agents_test.go` of the task head into it:
+
+```sh
+go test ./internal/tui -run 'TestAgentsGraphPodTitleSharesTopBorder|TestAgentsGraphDelegationStemJoinsPodBorder|TestAgentsGraphNodeCardsStayInsetInLongTitlePods|TestAgentsScreenRendersTopologyTabsAndDetail' -count=1
+```
+
+Red on `72d51057`: `home pod title is not on the top border` (the title is on row 2, inside the pod), `delegation stem at row 3 = 'a', want '│'` (the title text is in the stem column), and `alpha node cards have only 4 cells of total pod margin, want at least 6`. Green: `go test ./internal/tui -count=1` passes on the task head.
+
+The stem test now checks each cell from the bus (row 0) to the node top (`manager.row - 1`): `┬` on the bus, the pod border, and the node top, `│` on each other row. Two mutations on the task head, each restored after the run:
+
+- `graphPodLabelLineWithStem`: `cells[center] = '│'` to `' '` (stem removed on the `┄ inferred` row). The test failed: `delegation stem at row 4 = ' ', want '│': … │ ┄ inferred    …`.
+- `graphPod`: `lines[1] = graphPodLine(width, width/2, '│')` to `' '` (stem removed on the row below the border). The test failed: `delegation stem at row 3 = ' ', want '│'`.
+
+Live, the stem is unbroken in each pod: bus `┬`, `│`, border `┬`, `│`, `┄ inferred  │`, node top `┬`. R4.2 passes.
+
+### R4.1 and R4.3 pod title: fail
+
+The brief asks for the title on the top border with the board glyph, for example `╭─ ≡ home ───╮`. The task splits the title text around the stem column. The worker records this as a terminal limit and says "The full title remains visible." I accept the split around the stem as a terminal limit. Two outputs do not agree with that cause:
+
+1. **Cut-off title in the committed golden.** `internal/tui/testdata/agents-board/graph-200x57.golden` line 6: `╭─ ≡ beta · Beta──── ┬ goal for long grap╮`. The fixture title is `Beta goal for long graph` (`agents_test.go:1039`). The last `h` is lost and the text touches the corner. The alpha title also touches the corner: `≡ alpha · Alpha── ┬ goal for long graph╮`. `TestAgentsGraphPodTitleSharesTopBorder` checks only the alpha pod, so it does not see the beta loss. A golden with a cut-off title did not get a check of each line against the board (R4.3).
+2. **Glyph split from the name, live.** The scratch home at 207 x 57 (`verify-repair4-207x57-graph.txt` line 6, and the worker's own `repair4-live-207x57-graph.txt` and `repair4-agents-graph-207x57.png`): `╭─ ≡─────────── ┬ stenographer ╮`. The `≡` stands alone with border dashes after it, and the name is on the other side of the stem. The cause is in `graphTextAroundStem`: when the text does not fit left of the stem, the split loop finds the only space after `≡` and puts the full name on the right. On the board the title reads `≡ stenographer · hub` as one unit. The terminal limit does not cause this. The pod can be wider, or the title can move clear of the stem.
+
+Other titles: `╭─ ≡ home ─ ┬ ─────────╮` and `╭─ ≡ hive · Hive ┬ TUI dashboard ─╮` agree with the board under the terminal limit. `╭─ ≡ qmeter  ┬ ──────────╮` has two spaces before the stem; this is minor.
+
+### Design visual check
+
+Board PNG: `firefox --headless --no-remote --profile .hive/tmp/t92v5/ff --window-size=1220,780 --screenshot .hive/tmp/t92v5/board.png file://…/Main.dc.html`. It stays at `/home/penguin/source/hive/projects/hive/worktrees/92-agents-board-layout/.hive/tmp/t92v5/board.png`, not in Git.
+
+Screen PNGs: in my pane `wSC:p2` I ran the task binary on a scratch home, read TREE, GRAPH, and TABLE with `herdr pane read wSC:p2 --source visible --format ansi`, changed each to an HTML `<pre>` with a short Python script, and ran the same Firefox command at 1500 x 900. They stay at `.hive/tmp/t92v5/screen-{tree,graph,table}.png`. My render and the worker's PNGs both show a width drift on rows with `≡`, `●`, and `▶` (the browser font draws these glyphs wider than one cell). The text captures have exact cells, so I judged cell positions from the text.
+
+Judgment of the worker's element table (V2, "Fix 4 visual check"):
+
+| Board element | Worker | My judgment |
+| --- | --- | --- |
+| Header | matches | agree |
+| Explorer | matches | agree |
+| Screen list | matches | agree |
+| Tabs | matches | agree |
+| Legend | matches | agree |
+| Pods | differs: title split at a word boundary, full title visible | **disagree**: the beta title is cut off in the golden, and the stenographer `≡` is split from its name live (see R4.1). |
+| Nodes | overridden by the selection rule | agree for the selection. The table does not list the colors (below). |
+| Edges | differs: no nudge record, clipping at 120 | agree for the shape. The table does not list the colors (below). |
+| Detail strip | matches | agree. The board border is honey; the task border is the muted line color. |
+| Key bar | overridden by G12 | agree |
+| **Colors (no row)** | not listed | **difference with no cause.** On the board, pod borders are blue, delegation edges and live node borders are green, the selected node border is honey, the status dots are green, and the harness `cc` is honey and `pi` is blue. The GRAPH ANSI capture has only the muted line color `38;2;61;58;51`, default text, grey for stopped nodes, honey for the selection, and one green dot (header supervisor). The brief style rules forbid a background and set normal text to the default foreground. They do not name line or dot colors. The worker must match the board colors or record the decision that overrides them. |
+
+### Earlier passes
+
+In the scratch worktree at the task head, each file restored with `git checkout` after each run:
+
+- Nudge filter removed (`agents.go:144`): `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` failed: `drawn graph has a nudge route for a worker or verifier`. Holds.
+- Ghost rule `open = true` (`agents.go:127`): `TestAgentsGhostsRequireAnOpenTask` failed: `closed task ghost "ghost-verified-unassigned" is visible without history` and in the explorer. Holds.
+- Task 90 render cache, `tui.go:420` and `shell.go:156` to `if true`: `header refresh rendered screen 2 times` and `minute refresh rendered screen 2 times`. Holds.
+- Task 90 idle reload, `headerChanged := true` (`tui.go:242`): `unchanged tick started 1 header loads and 0 screen loads; want none` and `changed tick started 1 header loads and 1 screen loads; want 0 and 1`. Holds.
+- Unchanged code: the six tests pass.
+
+### Live check
+
+Binary built from `07a5585e`. Scratch home: a copy of `.hive/README.md`, `.hive/state`, and `.hive/spec` of the real home, set with `HIVE_HOME`, and a temp `XDG_CONFIG_HOME`. Each start removed `HERDR_ENV`, `HERDR_PANE_ID`, `HERDR_WORKSPACE_ID`, `HERDR_SOCKET_PATH`, and `HERDR_TAB_ID`; `/proc/2688473/environ` had no `HERDR_ENV`, `HERDR_PANE_ID`, `HERDR_WORKSPACE_ID`, or `HERDR_SOCKET_PATH`. I never opened the Chat input and never pressed Enter in the TUI.
+
+1. Tab `wSC:t2` (`t92-v5-live`), pane `wSC:p2`, 207 x 57: TUI PID 2688473. Capture [`verify-repair4-207x57-graph.txt`](verify-repair4-207x57-graph.txt).
+2. Exact frames: from `wSC:p2`, `tmux -L t92v5 -f /dev/null new-session -d -s v120 -x 120 -y 40 'env -u … ./hive'` and `-s v200 -x 200 -y 57`. Server PID 2696132, TUI PIDs 2696136 and 2696142. I sent `2` and Tab with `tmux send-keys` and read each view with `tmux capture-pane -p`.
+
+| Size | View | Capture | Lines | Widest line |
+| --- | --- | --- | --- | --- |
+| 120 x 40 | TREE | [`verify-repair4-120x40-tree.txt`](verify-repair4-120x40-tree.txt) | 40 | 120 |
+| 120 x 40 | GRAPH | [`verify-repair4-120x40-graph.txt`](verify-repair4-120x40-graph.txt) | 40 | 120 |
+| 120 x 40 | TABLE | [`verify-repair4-120x40-table.txt`](verify-repair4-120x40-table.txt) | 40 | 120 |
+| 200 x 57 | TREE | [`verify-repair4-200x57-tree.txt`](verify-repair4-200x57-tree.txt) | 57 | 200 |
+| 200 x 57 | GRAPH | [`verify-repair4-200x57-graph.txt`](verify-repair4-200x57-graph.txt) | 57 | 200 |
+| 200 x 57 | TABLE | [`verify-repair4-200x57-table.txt`](verify-repair4-200x57-table.txt) | 57 | 200 |
+
+No line goes past the edge. Footer: `not in herdr: no coordinator or supervisor started`. The only `hive supervise` process before and after was PID 2107907, which I did not start. No coordinator tab was made.
+
+### V3, merge, and gate
+
+`git diff origin/dev --stat`: `internal/tui/` (`agents.go`, `agents_test.go`, `fix_test.go`, `header.go`, `refresh.go`, `shell.go`, `shell_test.go`, `tui.go`, six goldens), `testdata/ste-baseline.json` (+1), and the brief copy and evidence of this task. Pass. `git merge-tree --write-tree origin/dev HEAD` exit 0 (`origin/dev` at `21d4b8c0`).
+
+Gate from the worktree root: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `go vet ./...` exit 0. `golangci-lint run ./...` `0 issues.` exit 0. `go test -race -count=1 ./...` exit 0.
+
+### Resources
+
+| Resource | ID | Result |
+| --- | --- | --- |
+| Tab in my workspace `wSC` | `wSC:t2` (`t92-v5-live`), root pane `wSC:p2` | Closed after a label and ID check |
+| TUI 207 x 57 in `wSC:p2` | PID 2688473 | Stopped with Ctrl+C after a PID check |
+| tmux server `-L t92v5` | PID 2696132, TUI PIDs 2696136 and 2696142 | Stopped with `tmux -L t92v5 kill-server`; all three PIDs gone |
+| Scratch worktree | `.hive/tmp/t92v5/wt` at the task head | Removed with `git worktree remove` |
+
+I did not use workspace `wBC`. Tab `wSC:t1` stays open.
