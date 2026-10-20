@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -26,6 +27,65 @@ func TestShowPrefersStartingGenerationByName(t *testing.T) {
 	}
 	if text := ShowText(envelope); !strings.Contains(text, "status: starting") {
 		t.Fatalf("ShowText() = %q; want starting status", text)
+	} else if strings.Contains(text, "parent:") || strings.Contains(text, "replaces:") || strings.Contains(text, "status since:") {
+		t.Fatalf("ShowText() = %q; want no empty lineage fields", text)
+	}
+}
+
+func TestShowAndListExposeLineageFields(t *testing.T) {
+	home := testHome(t)
+	record := records.Agent{Key: "worker-g2", Name: "worker", Role: "worker", Status: records.AgentLive, Generation: 2}
+	writeRecord(t, home, record)
+	setAgentJSONFields(t, home, record.Key, map[string]string{
+		"parent": "manager-g1", "replaces": "worker-g1", "status_changed_at": "2026-01-02T03:04:05Z",
+	})
+
+	envelope := Show(home, record.Key)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Show() = %#v; want success", envelope)
+	}
+	text := ShowText(envelope)
+	for _, want := range []string{"parent: manager-g1", "replaces: worker-g1", "status since: 2026-01-02T03:04:05Z"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("ShowText() = %q; missing %q", text, want)
+		}
+	}
+
+	listed := List(home, ListOptions{All: true})
+	if listed.Outcome != "ok" {
+		t.Fatalf("List() = %#v; want success", listed)
+	}
+	data, err := json.Marshal(listed.Result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"parent":"manager-g1"`, `"replaces":"worker-g1"`, `"status_changed_at":"2026-01-02T03:04:05Z"`} {
+		if !strings.Contains(string(data), want) {
+			t.Errorf("List JSON = %s; missing %s", data, want)
+		}
+	}
+}
+
+func setAgentJSONFields(t *testing.T, home, key string, fields map[string]string) {
+	t.Helper()
+	path := filepath.Join(home, ".hive", "state", "agents", key+".json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record map[string]any
+	if err := json.Unmarshal(data, &record); err != nil {
+		t.Fatal(err)
+	}
+	for field, value := range fields {
+		record[field] = value
+	}
+	data, err = json.Marshal(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
 	}
 }
 

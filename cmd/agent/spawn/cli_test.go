@@ -15,6 +15,8 @@ import (
 	"github.com/Harrison-Blair/hive/cmd"
 	"github.com/Harrison-Blair/hive/cmd/agent/register"
 	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 type cliFake struct {
@@ -178,6 +180,60 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 	request := fake.requestText()
 	if !strings.Contains(request, `"args":["--dangerously-skip-permissions","--model","m","--one","two"]`) {
 		t.Fatalf("start request = %s; want repeated --arg values", request)
+	}
+}
+
+func TestSpawnRecordsCallerAsParent(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		flag string
+		pane string
+		want string
+	}{
+		{name: "explicit agent", flag: "manager-hive", pane: "w1:p9", want: "manager-hive-g1"},
+		{name: "caller pane", pane: "w1:p9", want: "manager-hive-g1"},
+		{name: "unknown caller", pane: "", want: ""},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			home := cliHome(t)
+			registry, err := store.Open(home)
+			if err != nil {
+				t.Fatal(err)
+			}
+			parent := records.Agent{
+				Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive",
+				Status: records.AgentLive, PaneID: "w1:p9", Generation: 1,
+			}
+			if err := registry.WriteIn([]string{"agents"}, parent.Key, parent); err != nil {
+				t.Fatal(err)
+			}
+			if err := registry.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: parent.Key, Generation: 1}); err != nil {
+				t.Fatal(err)
+			}
+			newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"bad"}}`)
+			t.Setenv("HERDR_PANE_ID", test.pane)
+			args := []string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude", "--name", "new-coord"}
+			if test.flag != "" {
+				args = append(args, "--agent", test.flag)
+			}
+			status, stdout, stderr := runCLI(t, home, args...)
+			if status != 1 {
+				t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr)
+			}
+			var response struct {
+				Result struct {
+					Agent struct {
+						Parent string `json:"parent"`
+					} `json:"agent"`
+				} `json:"result"`
+			}
+			if err := json.Unmarshal([]byte(strings.TrimSpace(stdout)), &response); err != nil {
+				t.Fatalf("decode spawn response: %v: %q", err, stdout)
+			}
+			if response.Result.Agent.Parent != test.want {
+				t.Fatalf("parent = %q; want %q", response.Result.Agent.Parent, test.want)
+			}
+		})
 	}
 }
 

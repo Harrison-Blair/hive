@@ -12,20 +12,23 @@ const (
 
 // Agent is one registered coding-agent session in a herdr pane.
 type Agent struct {
-	Key         string   `json:"key"`
-	Name        string   `json:"name"`
-	Role        string   `json:"role"`
-	Project     string   `json:"project"`
-	Task        string   `json:"task"`
-	Harness     string   `json:"harness"`
-	Model       string   `json:"model"`
-	PaneID      string   `json:"pane_id"`
-	PaneHistory []string `json:"pane_history,omitempty"`
-	WorkspaceID string   `json:"workspace_id"`
-	TabID       string   `json:"tab_id"`
-	TerminalID  string   `json:"terminal_id"`
-	Cwd         string   `json:"cwd"`
-	Status      string   `json:"status"`
+	Key             string   `json:"key"`
+	Name            string   `json:"name"`
+	Role            string   `json:"role"`
+	Project         string   `json:"project"`
+	Task            string   `json:"task"`
+	Harness         string   `json:"harness"`
+	Model           string   `json:"model"`
+	PaneID          string   `json:"pane_id"`
+	PaneHistory     []string `json:"pane_history,omitempty"`
+	WorkspaceID     string   `json:"workspace_id"`
+	TabID           string   `json:"tab_id"`
+	TerminalID      string   `json:"terminal_id"`
+	Cwd             string   `json:"cwd"`
+	Status          string   `json:"status"`
+	Parent          string   `json:"parent,omitempty"`
+	Replaces        string   `json:"replaces,omitempty"`
+	StatusChangedAt string   `json:"status_changed_at,omitempty"`
 	// AgentStatus is the last observed harness status, separate from Status.
 	AgentStatus     string `json:"agent_status,omitempty"`
 	Finished        bool   `json:"finished"`
