@@ -169,6 +169,8 @@ func (m *Model) rebuild() {
 				break
 			}
 		}
+	} else if m.follow {
+		m.logSelection = len(rows) - 1
 	}
 	if m.logSelection >= len(rows) {
 		m.logSelection = len(rows) - 1
@@ -185,6 +187,7 @@ func (m *Model) rebuild() {
 		}
 	}
 	m.viewport.SetContentLines(lines)
+	m.viewport.EnsureVisible(m.logSelection, 0, 1)
 }
 
 func (m *Model) filteredLogRows() []logRow {

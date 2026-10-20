@@ -18,6 +18,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/charmbracelet/x/ansi"
 )
 
 const (
@@ -257,6 +258,8 @@ func (m *Model) chatView(width, height int) string {
 	}
 	m.chatViewport.SetWidth(conversationWidth - 2)
 	m.chatViewport.SetHeight(feedHeight)
+	m.chatViewport.SoftWrap = false
+	m.chatViewport.SetContentLines(wrapChatContent(m.chatContent, m.chatViewport.Width()))
 	inputWidth := composerWidth - 4
 	if inputWidth < 1 {
 		inputWidth = 1
@@ -405,7 +408,18 @@ func (m *Model) rebuildChat() {
 	if len(lines) == 0 {
 		lines = []string{"no chat yet"}
 	}
-	m.chatViewport.SetContentLines(lines)
+	m.chatContent = lines
+}
+
+func wrapChatContent(lines []string, width int) []string {
+	if width < 1 {
+		width = 1
+	}
+	wrapped := make([]string, 0, len(lines))
+	for _, line := range lines {
+		wrapped = append(wrapped, strings.Split(ansi.Wrap(line, width, ""), "\n")...)
+	}
+	return wrapped
 }
 
 type chatTimelineItem struct {

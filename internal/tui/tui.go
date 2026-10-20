@@ -54,6 +54,7 @@ type Model struct {
 	mode     mode
 
 	chatData           chatScreenData
+	chatContent        []string
 	chatViewport       viewport.Model
 	chatInput          textarea.Model
 	chatInputActive    bool
