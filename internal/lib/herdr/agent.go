@@ -142,6 +142,25 @@ func AgentPrompt(ctx context.Context, params AgentPromptParams, opts ...Option) 
 	return agent, nil
 }
 
+// AgentFocus focuses one agent and marks its pane as seen.
+func AgentFocus(ctx context.Context, target string, opts ...Option) (AgentInfo, error) {
+	var result struct {
+		Type  *string         `json:"type"`
+		Agent json.RawMessage `json:"agent"`
+	}
+	if err := Call(ctx, "agent.focus", AgentTarget{Target: target}, &result, opts...); err != nil {
+		return AgentInfo{}, err
+	}
+	if result.Type == nil || *result.Type != "agent_info" {
+		return AgentInfo{}, fmt.Errorf("bad reply: result type %q, want agent_info", stringValue(result.Type))
+	}
+	agent, err := decodeAgentInfo(result.Agent)
+	if err != nil {
+		return AgentInfo{}, fmt.Errorf("bad reply: %s", err)
+	}
+	return agent, nil
+}
+
 // AgentGet reads one agent.
 func AgentGet(ctx context.Context, target string, opts ...Option) (AgentInfo, error) {
 	var result struct {

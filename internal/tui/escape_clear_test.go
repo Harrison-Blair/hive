@@ -25,9 +25,8 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 		eventJSON(t, day, "WARN", "project gamma"),
 		eventJSON(t, day, "INFO", "delta"),
 	)
-	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 12})
-	m, _ = raise(t, m, tickMsg{})
+	m := newTestLogsModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 
 	m, _ = raise(t, m, key('/', "/"))
 	for _, r := range "project" {
@@ -42,7 +41,10 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 	rejectView(t, m, "other beta", "delta")
 
 	before := countLogLines(t, home)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	m, cmd := raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	if cmd != nil {
+		m, _ = raise(t, m, cmd())
+	}
 	after := countLogLines(t, home)
 	if after != before+1 {
 		t.Fatalf("log lines went from %d to %d after viewing Escape; want one event", before, after)

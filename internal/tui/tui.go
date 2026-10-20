@@ -1,4 +1,3 @@
-// Package tui is the hive terminal interface that bare `hive` opens.
 package tui
 
 import (
@@ -15,6 +14,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/logs"
@@ -24,10 +24,8 @@ import (
 const (
 	defaultWidth  = 80
 	defaultHeight = 24
-	statusRows    = 2
+	statusRows    = 3
 )
-
-var headerStyle = lipgloss.NewStyle().Bold(true)
 
 type mode int
 
@@ -36,7 +34,7 @@ const (
 	editing
 )
 
-// Model is the root Bubble Tea model.
+// Model is the root Bubble Tea model for the eight-screen shell.
 type Model struct {
 	home   string
 	now    func() time.Time
@@ -44,122 +42,83 @@ type Model struct {
 	logger *slog.Logger
 	closer io.Closer
 
-	ctx      context.Context
-	cancel   context.CancelFunc
-	stopOnce sync.Once
-
-	events        []logs.Event
-	eventCh       <-chan logs.Event
-	followDone    chan struct{}
-	followErr     error
-	followStarted bool
-
+	events     []logs.Event
 	viewport   viewport.Model
 	input      textinput.Model
 	mode       mode
 	level      string
 	textFilter string
 	follow     bool
-	errText    string
 	logErr     string
 
-	supervisor    string
-	agentCount    int
-	startingCount int
-	unread        int
+	header        headerState
 	headerErr     string
-	headerStopped bool
-	inputEnded    <-chan struct{}
+	screenErr     string
+	attachErr     string
+	headerLoader  func(string) (headerState, error)
+	logLoader     func(*logs.Reader, time.Time) ([]logs.Event, error)
+	headerLoading bool
+	screenLoading bool
 
-	width  int
-	height int
+	screens     []screen
+	screenIndex int
+	quitNotice  bool
+	quitAt      time.Time
+
+	inputEnded <-chan struct{}
+	width      int
+	height     int
 }
 
-// New builds a log view for one resolved home and one clock.
+// New builds the TUI for one resolved home and one clock.
 func New(home string, now func() time.Time) *Model {
 	if now == nil {
 		now = time.Now
 	}
 	m := &Model{
-		home:   home,
-		now:    now,
-		level:  "debug",
-		follow: true,
-		width:  defaultWidth,
-		height: defaultHeight,
+		home:         home,
+		now:          now,
+		level:        "debug",
+		follow:       true,
+		width:        defaultWidth,
+		height:       defaultHeight,
+		header:       headerState{supervisor: "stale"},
+		headerLoader: readHeader,
+		logLoader: func(reader *logs.Reader, _ time.Time) ([]logs.Event, error) {
+			events, _, err := reader.Read(context.Background(), time.Time{})
+			return events, err
+		},
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
-	m.ctx, m.cancel = context.WithCancel(context.Background())
-	m.viewport = viewport.New(viewport.WithWidth(m.width), viewport.WithHeight(m.bodyHeight()))
+	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
 	m.viewport.SoftWrap = true
 	m.input = textinput.New()
 	m.input.Prompt = "filter: "
 	m.input.CharLimit = 0
 	m.input.Blur()
+	m.screens = m.makeScreens()
 
 	writer, err := hivelog.NewWriter(home, "tui", now)
 	if err != nil {
-		m.setError("log: " + err.Error())
-		m.refreshHeader()
-		return m
+		m.logErr = boundedError("log: " + err.Error())
+	} else {
+		m.closer = writer
+		m.logger = slog.New(writer)
 	}
-	m.closer = writer
-	m.logger = slog.New(writer)
-
-	m.refreshHeader()
-	m.loadInitial()
+	m.layout()
 	return m
 }
 
-func (m *Model) loadInitial() {
-	events, offset, err := m.reader.Read(context.Background(), time.Time{})
-	if err != nil {
-		m.setError(err.Error())
-		return
-	}
-	m.events = events
-	m.rebuild()
-	m.startFollow(offset)
-}
-
-func (m *Model) startFollow(offset logs.Offset) {
-	m.followStarted = true
-	events, errs := m.reader.Follow(m.ctx, offset)
-	m.eventCh = events
-	m.followDone = make(chan struct{})
-	go func() {
-		err := <-errs
-		m.followErr = err
-		close(m.followDone)
-	}()
-}
-
-// Stop cancels the follower and waits for it to settle.
+// Stop closes the TUI log writer.
 func (m *Model) Stop() {
-	m.stopOnce.Do(func() {
-		if m.cancel != nil {
-			m.cancel()
-		}
-		if m.followDone != nil {
-			select {
-			case <-m.followDone:
-			case <-time.After(5 * time.Second):
-			}
-		}
-		if m.closer != nil {
-			_ = m.closer.Close()
-		}
-	})
+	if m.closer != nil {
+		_ = m.closer.Close()
+	}
 }
 
-// Init starts the refresh tick and the follower error reader. The tick is the
-// only consumer of the follower event channel, so events stay in file order.
+// Init starts the first data loads and the refresh tick.
 func (m *Model) Init() tea.Cmd {
-	cmds := []tea.Cmd{m.tick()}
-	if m.followStarted {
-		cmds = append(cmds, m.waitFollow())
-	}
-	return tea.Batch(cmds...)
+	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad())
 }
 
 // Update handles one message.
@@ -171,11 +130,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.layout()
 		return m, nil
 	case tickMsg:
-		m.drainEvents()
-		m.refreshHeader()
-		if m.follow && m.errText == "" {
-			m.viewport.GotoBottom()
-		}
 		if m.inputEnded != nil {
 			select {
 			case <-m.inputEnded:
@@ -183,100 +137,206 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, m.tick()
-	case followErrMsg:
+		cmds := []tea.Cmd{m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad()}
+		if m.follow && m.screenIndex == 7 && m.screenErr == "" {
+			m.viewport.GotoBottom()
+		}
+		return m, batch(cmds...)
+	case headerLoadMsg:
+		m.headerLoading = false
 		if msg.err != nil {
-			m.setError(msg.err.Error())
+			m.headerErr = boundedError(msg.err.Error())
+			m.layout()
+			return m, m.logError("header", msg.err)
+		}
+		m.header = msg.state
+		m.headerErr = ""
+		m.layout()
+		return m, nil
+	case screenLoadMsg:
+		m.screenLoading = false
+		if msg.err != nil {
+			m.screenErr = boundedError(msg.err.Error())
+			return m, m.logError("screen", msg.err)
+		}
+		m.screenErr = ""
+		m.mergeEvents(msg.events)
+		m.rebuild()
+		if m.follow {
+			m.viewport.GotoBottom()
+		}
+		return m, nil
+	case quitNoticeExpiredMsg:
+		if m.quitNotice && msg.at.Equal(m.quitAt) {
+			m.quitNotice = false
+		}
+		return m, nil
+	case attachMsg:
+		if msg.err != nil {
+			m.attachErr = boundedError(msg.err.Error())
+			return m, m.logError("attach", msg.err)
+		}
+		m.attachErr = ""
+		return m, nil
+	case logWriteErrMsg:
+		if msg.err != nil && m.logErr == "" {
+			m.logErr = boundedError(msg.err.Error())
 		}
 		return m, nil
 	case tea.KeyPressMsg:
-		if m.mode == editing {
-			return m, m.updateEditing(msg)
-		}
-		return m, m.updateViewing(msg)
+		return m, m.updateKey(msg)
 	}
 	return m, nil
 }
 
-// View renders the header, the body, and the status line.
-func (m *Model) View() tea.View {
-	parts := []string{headerStyle.Render(m.headerLine()), m.bodyView(), m.statusLine()}
-	if m.mode == editing {
-		parts = append(parts, m.input.View())
-	}
-	return tea.NewView(joinLines(parts))
-}
-
-func (m *Model) bodyHeight() int {
-	height := m.height - statusRows
-	if height < 1 {
-		return 1
-	}
-	return height
-}
-
-func (m *Model) drainEvents() {
-	for m.eventCh != nil {
-		select {
-		case event, ok := <-m.eventCh:
-			if !ok {
-				m.eventCh = nil
-				return
-			}
-			m.appendEvent(event)
-		default:
-			return
+func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
+	if press.String() == "ctrl+c" {
+		now := m.now()
+		if m.quitNotice && !now.Before(m.quitAt) && now.Sub(m.quitAt) <= 3*time.Second {
+			m.quitNotice = false
+			return tea.Quit
 		}
+		m.quitNotice = true
+		m.quitAt = now
+		expires := tea.Tick(3*time.Second, func(time.Time) tea.Msg { return quitNoticeExpiredMsg{at: now} })
+		return batch(m.logAction("quit request"), expires)
 	}
+	m.quitNotice = false
+	if m.mode != editing && len(press.String()) == 1 && press.String()[0] >= '1' && press.String()[0] <= '8' {
+		index := int(press.String()[0] - '1')
+		m.screenIndex = index
+		return batch(m.logAction("screen select", slog.Int("screen", index+1)), m.startCurrentScreenLoad())
+	}
+	return m.currentScreen().Update(press)
+}
+
+// View renders the header, sidebar, current screen, and footer.
+func (m *Model) View() tea.View {
+	view := tea.NewView(m.shellView())
+	view.AltScreen = true
+	return view
 }
 
 func (m *Model) layout() {
-	m.viewport.SetWidth(m.width)
-	m.viewport.SetHeight(m.bodyHeight())
+	width := m.width
+	if width < 1 {
+		width = defaultWidth
+	}
+	headerRows := lipgloss.Height(headerStyle.Width(width).Render(m.headerLine()))
+	bodyHeight := m.height - headerRows - statusRows - 5
+	if bodyHeight < 1 {
+		bodyHeight = 1
+	}
+	sidebarWidth := 24
+	if width >= 100 {
+		sidebarWidth = 30
+	}
+	if sidebarWidth > width-12 {
+		sidebarWidth = width - 12
+	}
+	if sidebarWidth < 12 {
+		sidebarWidth = 12
+	}
+	mainWidth := width - sidebarWidth
+	contentWidth := mainWidth - 4
+	contentHeight := bodyHeight - 3
+	if contentWidth < 1 {
+		contentWidth = 1
+	}
+	if contentHeight < 1 {
+		contentHeight = 1
+	}
+	m.viewport.SetWidth(contentWidth)
+	m.viewport.SetHeight(contentHeight)
 	if m.follow {
 		m.viewport.GotoBottom()
 	}
 }
 
-// logAction writes one action event through the checked logging path.
-func (m *Model) logAction(action string) {
-	m.recordLog("tui action", slog.String("action", action))
+func (m *Model) startHeaderLoad() tea.Cmd {
+	if m.headerLoading {
+		return nil
+	}
+	m.headerLoading = true
+	loader, home := m.headerLoader, m.home
+	return func() tea.Msg {
+		state, err := loader(home)
+		return headerLoadMsg{state: state, err: err}
+	}
 }
 
-// logError writes one error event through the checked logging path.
-func (m *Model) logError(context string, err error) {
+func (m *Model) startCurrentScreenLoad() tea.Cmd {
+	if m.screenLoading || m.currentScreen().DataRequest() != logsDataRequest {
+		return nil
+	}
+	m.screenLoading = true
+	loader, reader, now := m.logLoader, m.reader, m.now
+	return func() tea.Msg {
+		events, err := loader(reader, now())
+		return screenLoadMsg{events: events, err: err}
+	}
+}
+
+func (m *Model) attachCmd(paneID string) tea.Cmd {
+	return func() tea.Msg {
+		_, err := herdr.AgentFocus(context.Background(), paneID)
+		return attachMsg{err: err}
+	}
+}
+
+func (m *Model) mergeEvents(events []logs.Event) {
+	seen := make(map[string]struct{}, len(m.events))
+	for _, event := range m.events {
+		seen[fmt.Sprintf("%s:%d", event.Path(), event.Line())] = struct{}{}
+	}
+	for _, event := range events {
+		key := fmt.Sprintf("%s:%d", event.Path(), event.Line())
+		if _, found := seen[key]; found {
+			continue
+		}
+		seen[key] = struct{}{}
+		m.events = append(m.events, event)
+	}
+}
+
+func (m *Model) logAction(action string, attrs ...slog.Attr) tea.Cmd {
+	attrs = append(attrs, slog.String("action", action))
+	return m.recordLogCmd("tui action", attrs...)
+}
+
+func (m *Model) logError(context string, err error) tea.Cmd {
 	if err == nil {
-		return
+		return nil
 	}
-	m.recordLog("tui error", slog.String("context", context), slog.String("error", boundedError(err.Error())))
+	return m.recordLogCmd("tui error", slog.String("context", context), slog.String("error", boundedError(err.Error())))
 }
 
-// recordLog writes one event through the handler and keeps the first refusal in
-// a bounded view. The writer checks the static log path on each new daily file.
-// slog discards the handler error, so this path calls the handler and shows the
-// error itself. It never logs the refusal, so it cannot recurse.
-func (m *Model) recordLog(message string, attrs ...slog.Attr) {
+func (m *Model) recordLogCmd(message string, attrs ...slog.Attr) tea.Cmd {
 	if m.logger == nil {
-		return
+		return nil
 	}
-	record := slog.NewRecord(m.now(), slog.LevelDebug, message, 0)
-	record.AddAttrs(attrs...)
-	if err := m.logger.Handler().Handle(context.Background(), record); err != nil {
-		if m.logErr == "" {
-			m.logErr = boundedError(err.Error())
-		}
+	logger, now := m.logger, m.now
+	return func() tea.Msg {
+		record := slog.NewRecord(now(), slog.LevelDebug, message, 0)
+		record.AddAttrs(attrs...)
+		return logWriteErrMsg{err: logger.Handler().Handle(context.Background(), record)}
 	}
 }
 
-func joinLines(parts []string) string {
-	result := ""
-	for index, part := range parts {
-		if index != 0 {
-			result += "\n"
+func batch(cmds ...tea.Cmd) tea.Cmd {
+	filtered := make([]tea.Cmd, 0, len(cmds))
+	for _, cmd := range cmds {
+		if cmd != nil {
+			filtered = append(filtered, cmd)
 		}
-		result += part
 	}
-	return result
+	if len(filtered) == 0 {
+		return nil
+	}
+	if len(filtered) == 1 {
+		return filtered[0]
+	}
+	return tea.Batch(filtered...)
 }
 
 // Run starts the TUI on in and out and resolves the home itself.
@@ -294,8 +354,7 @@ func Run(in io.Reader, out io.Writer) error {
 
 // RunHome starts the TUI for one resolved home. It checks the input and the
 // output at this boundary. A finite input end or a stream fault settles the
-// program and the follower, because the installed renderer discards its own
-// flush errors and an input end is not an error message.
+// program and the log writer.
 func RunHome(home string, in io.Reader, out io.Writer) error {
 	model := New(home, time.Now)
 	defer model.Stop()

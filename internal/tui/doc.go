@@ -1,7 +1,8 @@
 // Package tui is the hive terminal interface that bare `hive` opens.
 //
-// tui.go defines the model, its lifecycle, and the entries that run it.
-// header.go reads the store and renders the header.
-// logview.go renders the filtered log lines and handles the key modes.
-// tick.go schedules the 500-millisecond refresh, drains the follower, and carries the follower error.
+// tui.go defines the root model, its lifecycle, and the program runner.
+// shell.go defines the screen interface, frame, palette, and placeholder screens.
+// header.go loads and renders project, agent, supervisor, task, and clock data.
+// logview.go renders and filters log lines and handles log keys.
+// tick.go schedules refreshes and carries background load results.
 package tui
