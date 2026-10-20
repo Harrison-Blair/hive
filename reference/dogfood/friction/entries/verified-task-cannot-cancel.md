@@ -21,3 +21,14 @@ it as dirty. The manager copied the evidence to
    verified -> cancel`.
 3. Run `hive task reopen --task ID --reason R`, then `hive task cancel`: the
    task is cancelled.
+
+**Second case (2026-10-20):** stenographer `45-ci-fix` has status
+`verified` and a delivery with commit `4a94e73` and `pushed: false`. The
+commit is on `origin/dev` and `origin/main`. The record does not read landed.
+`hive task cancel` gives the same refusal. A `hive land --mode merge` for a
+task with a delivery commit skips the merge and only pushes the base branch
+(`internal/land/merge.go`, the `retry` path). The local `dev` of stenographer
+is equal to `origin/dev`, so that push has nothing to send and sets `pushed`
+to true. This is a workaround, not a clear command: no command records a land
+for a commit that is already on the base, and no command cancels a verified
+task. Same family as `completed-task-cannot-reopen`.
