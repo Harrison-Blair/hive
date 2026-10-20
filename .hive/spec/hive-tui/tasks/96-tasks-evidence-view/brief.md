@@ -24,7 +24,7 @@ it with `hive inbox send --to manager-hive TEXT --agent NAME`.
 
 - T1: Separate task detail and evidence panels, as on the board. The evidence panel shows the brief and the verification history.
 - T2: `v` opens `VERIFIED.md` and `d` shows the dependency graph of the selected task, as read-only views.
-- T3: Add a short definition for `landed` and `verified`. Use G8 for `landed`.
+- T3: Add short definitions for `landed` and `verified`. Use G8 for `landed`.
 
 ## Source files
 
@@ -50,7 +50,7 @@ report it.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each new test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Build the task binary. Run it in a herdr tab at about 200 x 57. Use a scratch home with fixture data. Copy a marked home to a temporary path. Set `HIVE_HOME` to that path. Set `XDG_CONFIG_HOME` to a temporary path. Capture the screen with `herdr pane read` for each gap. | Fix each gap to match the board. Put each capture in the evidence. |
+| V2 | Build the task binary. Copy a marked home to a temporary path. Add fixture data. Set `HIVE_HOME` to the copy. Set `XDG_CONFIG_HOME` to a temporary path. Run the binary in a herdr tab at about 200 x 57. Use `herdr pane read` to capture each view. | Each view matches the board. Put each capture in the evidence. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
@@ -63,3 +63,33 @@ Commit on the task branch with a subject such as `fix(tui): match the Tasks boar
 branch. Write the evidence. Run `hive task complete`. Send the commit SHA and
 the V1-V4 results to the manager with `hive inbox send`. Read only your own
 inbox.
+
+## Repair 1
+
+The verifier failed V2: the `v` view (`VERIFIED.md`) and the `d` view (the
+dependency graph) break the frame. The panels collapse to about 8 rows, and
+`Model.View()` gives 41 lines at 120 x 40 and 58 lines at 200 x 57. The `b`
+view (the brief) has the same fault on `dev`. The shared file viewer is
+`fileView` in `internal/tui/friction_screen.go`. See `VERIFIED.md`.
+
+Scope change: you can also edit `internal/tui/friction_screen.go`, only for
+the file viewer, and its tests.
+
+Do these steps:
+
+1. Merge `origin/dev` into the task branch. In `testdata/ste-baseline.json`,
+   keep each row of both sides.
+2. This edit copies the manager brief over your brief copy again. Apply your
+   STE rewording to the copy again, and keep its meaning.
+3. Add a frame test first: open the `b`, `v`, and `d` views on Tasks, and
+   the file view on Friction, at 120 x 40 and 200 x 57. Each frame has
+   exactly the height in lines and the width in cells. See it fail.
+4. Fix the file viewer and the views so that the test passes and the panels
+   use the full height.
+5. Run V2 again on a scratch home in a tab of your own workspace, started
+   with `env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH`.
+   Stop and close only the pid and pane that you started. Never work in
+   workspace `wBC`.
+6. Run the gate. Commit and push. Make sure that `git merge-tree
+   --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
+   commit SHA to the manager with `hive inbox send`.

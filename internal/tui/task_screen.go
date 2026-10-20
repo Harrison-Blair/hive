@@ -334,7 +334,7 @@ func (s tasksScreen) View(width, height int) string {
 		contentWidth = 1
 	}
 	if state.fileOpen {
-		return state.fileView(contentWidth, height-3)
+		return state.fileView(contentWidth, height-4)
 	}
 	visible := state.visibleItems()
 	state.keepSelectedVisible()
