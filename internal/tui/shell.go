@@ -34,12 +34,13 @@ var (
 type dataRequest uint8
 
 const (
-	noDataRequest dataRequest = iota
-	chatDataRequest
+	chatDataRequest dataRequest = iota
 	logsDataRequest
 	agentsDataRequest
 	goalsQueueDataRequest
 	healthDataRequest
+	tasksDataRequest
+	frictionDataRequest
 )
 
 type screen interface {
@@ -48,16 +49,6 @@ type screen interface {
 	KeyHints() string
 	DataRequest() dataRequest
 }
-
-type placeholderScreen struct{ name string }
-
-func (s placeholderScreen) Update(tea.Msg) tea.Cmd   { return nil }
-func (s placeholderScreen) View(_, _ int) string     { return s.name + " · next wave" }
-func (s placeholderScreen) KeyHints() string         { return "1–8 screens · ctrl+c twice to quit" }
-func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
-
-type tasksScreen struct{ placeholderScreen }
-type frictionScreen struct{ placeholderScreen }
 
 type logsScreen struct{ model *Model }
 
@@ -114,8 +105,8 @@ func (m *Model) makeScreens() []screen {
 		agentsScreen{model: m},
 		goalsScreen{model: m},
 		queueScreen{model: m},
-		tasksScreen{placeholderScreen{name: "Tasks"}},
-		frictionScreen{placeholderScreen{name: "Friction"}},
+		tasksScreen{model: m},
+		frictionScreen{model: m},
 		healthScreen{model: m},
 		logsScreen{model: m},
 	}

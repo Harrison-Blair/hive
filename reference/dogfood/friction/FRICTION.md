@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [A completed task cannot be reopened or edited](entries/completed-task-cannot-reopen.md) | Open |  |
 | [A failed verification is lost when the next verification passes](entries/verify-fail-lost-on-pass.md) | Open |  |
 | [store.List skips an agent record with a key longer than 18 characters](entries/store-list-skips-long-keys.md) | Open |  |
 | [Hive cannot spawn a reviewer or another one-off agent](entries/no-reviewer-role.md) | Open |  |

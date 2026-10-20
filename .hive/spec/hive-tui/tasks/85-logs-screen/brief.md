@@ -141,3 +141,19 @@ Task 86 landed on `dev` after the verification. The merge of this branch into
    the manager with `hive inbox send`.
 
 Do not change other files.
+
+## Repair 3
+
+Task 83 landed on `dev` (`765d61d3`) during Repair 2. The merge now conflicts
+in `internal/tui/tui.go`, in the switch on the data request of
+`screenLoadMsg`. Do only this repair:
+
+1. Merge `origin/dev` into the task branch. Keep the `tasksDataRequest` and
+   `frictionDataRequest` cases of `dev`. For `logsDataRequest`, keep the code
+   of this task (the day check and `acceptLogEvents`).
+2. Resolve `testdata/ste-baseline.json` as in Repair 2, if it conflicts.
+3. Run the gate. Run V3 again for `[` and `]`. Commit, push, run
+   `hive task complete`, and send the SHA to the manager with
+   `hive inbox send`.
+
+Do not change other behavior.

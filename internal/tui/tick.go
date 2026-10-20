@@ -24,6 +24,8 @@ type screenLoadMsg struct {
 	events     []logs.Event
 	agents     agentsData
 	goalsQueue goalsQueueData
+	tasks      tasksData
+	friction   frictionData
 	chat       chatScreenData
 	health     doctor.Result
 	err        error
