@@ -14,6 +14,7 @@ For all other files, the coordinator and manager never change a project source f
 | [Claude Code in bypass mode still asks before a dangerous rm](entries/bypass-still-prompts-dangerous-rm.md) | Open |  |
 | [The verifier skill does not give the path of VERIFIED.md](entries/verified-md-path-unspecified.md) | Open |  |
 | [The supervisor keeps running an old hive binary after a rebuild](entries/supervisor-runs-stale-binary.md) | Open |  |
+| [The worker skill gate adds golangci-lint that the project gate does not have](entries/worker-gate-adds-golangci-lint.md) | Open |  |
 | [A manager stops on a harness permission block and the coordinator does not know](entries/resolved/manager-blocked-by-harness-permission.md) | Resolved 2026-10-19 | Fixed in 29-message-marker (5c8f6846): Claude Code and Codex spawns launch with the bypass flag, each hive message starts with the marker, and a manager sends a blocked record before it stops. |
 | [An agent spawn can skip the first prompt](entries/resolved/agent-spawn-skips-first-prompt.md) | Resolved 2026-10-19 | Fixed in 28-first-prompt-fix (642fe78d): the first prompt uses the herdr prompt wait until working or blocked, with one retry on a stall. The user accepts the risk of a duplicate prompt. |
 | [No `hive task edit --brief` command](entries/resolved/task-edit-brief-command.md) | Resolved 2026-10-19 | Fixed in 22-task-edit-brief (77cdf44d): hive task edit --task ID --brief FILE, only for created or assigned, only by the controlling role. |

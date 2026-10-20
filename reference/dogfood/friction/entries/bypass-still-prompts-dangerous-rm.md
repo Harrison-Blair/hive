@@ -17,3 +17,10 @@ and recorded the verdict. The bypass flag does not stop this safety check.
 1. Spawn a Claude Code verifier with hive (bypass flag on).
 2. The agent runs `rm -rf $VAR/*` with a shell variable.
 3. Claude Code shows the dangerous rm dialog. herdr reports `blocked`.
+
+**Recurrence 2026-10-19 (qmeter):** verifier t52-verifier-1 hit the same
+dialog on `rm -rf $S/*` in its scratchpad cleanup, chained after
+`hive task verify` in one command. herdr reported `blocked`; the blocked
+inbox record had no reason, so the manager had to read the pane with
+`herdr pane read` to find it. The manager denied it and the verifier reran
+`hive task verify` alone.
