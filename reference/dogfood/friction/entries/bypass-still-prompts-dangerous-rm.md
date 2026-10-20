@@ -30,3 +30,10 @@ Verifier t81-verifier-2 ran `rm -f -- "$S"/*.txt` on its scratchpad in a
 cleanup step, although its note said to avoid `rm` on an unquoted variable.
 The same dialog showed. The manager denied it with `herdr pane send-keys
 <pane> Escape`. A note in the verifier prompt does not stop the pattern.
+
+**Recurrence 2026-10-20 (stenographer 108, 110):** t108-verifier-3 hit the
+dialog on `rm -rf $S/*` in its final commit step, and t110-verifier-2 on
+`rm -rf $S/$rev` before the manager's prompt arrived. The manager declined
+with `herdr pane send-keys <pane> Down`, then `Return` (`Enter` did not
+register). `hive agent send` refuses while the pane is blocked
+(`agent_blocked`).
