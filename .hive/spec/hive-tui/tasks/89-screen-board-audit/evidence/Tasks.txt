@@ -1,0 +1,52 @@
+⬢ hive · 3 projects · 12 live agents · 6 working / 6 idle · supervisor fresh · needs_user 0 · 11:04
+╭────────────────────────────╮╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Tasks                                                                                                                                                                        │
+│   1 Chat                   ││ [active 8]  queued 6  landed 48  failed 1  all 62                                                                                                                            │
+│   2 Agents                 ││ project: all                                                                                                                                                                 │
+│   3 Goals                  ││ ID             title                       project   status     agent · verification                                                                                         │
+│   4 Queue                  ││ > 10-pr47-final  PR 47 final body refresh    hive      verified   t10-worker-1 · pass                                                                                        │
+│ ▶ 5 Tasks                  ││   45-ci-fix      fix PR 28 CI failures, CI … stenographer verified   t45-worker-1 · pass 4a94e73                                                                             │
+│   6 Friction               ││   58-diarization stable live labels, re-lab… stenographer completed  t58-worker-2 · V3 fail                                                                                  │
+│   7 Health                 ││   64-hub-config  hub Config section          stenographer completed  t64-worker-1 · running                                                                                  │
+│   8 Logs                   ││   72-tui-input-… TUI input first for hub an… stenographer assigned   t72-worker-2 · running                                                                                  │
+│                            ││   88-tui-termin… TUI terminal input and size hive      assigned   t88-worker-1 · running                                                                                     │
+│                            ││   93-ci-test-fi… CI test failures after the… hive      assigned   t93-worker-1 · running                                                                                     │
+│                            ││   94-chat-user-… Chat send for the user only hive      assigned   t94-worker-1 · running                                                                                     │
+│                            ││                                                                                                                                                                              │
+│                            ││ 10-pr47-final · PR 47 final body refresh                                                                                                                                     │
+│                            ││ needs: 9-pr47-refresh ✓                                                                                                                                                      │
+│                            ││ blocks: -                                                                                                                                                                    │
+│                            ││ branch: task/10-pr47-final                                                                                                                                                   │
+│                            ││ feature: pr-dev-main                                                                                                                                                         │
+│                            ││ grant: -                                                                                                                                                                     │
+│                            ││ needs user: -                                                                                                                                                                │
+│                            ││ evidence: -                                                                                                                                                                  │
+│                            ││ current pass · - · 2026-10-19T14:33:20.828298114Z                                                                                                                            │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+│                            ││                                                                                                                                                                              │
+╰────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+tab filter · enter evidence · b brief · p project · ask in Chat · ↑/↓ move
