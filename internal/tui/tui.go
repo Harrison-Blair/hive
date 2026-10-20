@@ -79,6 +79,10 @@ type Model struct {
 	agents           agentsState
 	health           healthState
 	goalsQueue       goalsQueueState
+	tasksLoader      func(string) (tasksData, error)
+	tasks            tasksState
+	frictionLoader   func(string) (frictionData, error)
+	friction         frictionState
 	chatLoader       func(string, time.Time) (chatScreenData, error)
 	headerLoading    bool
 	screenLoading    bool
@@ -119,6 +123,8 @@ func New(home string, now func() time.Time) *Model {
 		healthLoader:     loadHealth,
 		goalsQueueLoader: loadGoalsQueue,
 		paneReader:       readAgentPane,
+		tasksLoader:      loadTasks,
+		frictionLoader:   loadFriction,
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
@@ -207,12 +213,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.chatFollow {
 				m.chatViewport.GotoBottom()
 			}
-		default:
+		case tasksDataRequest:
+			m.tasks.accept(msg.tasks)
+		case frictionDataRequest:
+			m.friction.accept(msg.friction)
+		case logsDataRequest:
 			m.mergeEvents(msg.events)
 			m.rebuild()
 			if m.follow {
 				m.viewport.GotoBottom()
 			}
+		}
+		return m, nil
+	case taskFileMsg:
+		m.acceptTaskFile(msg)
+		if msg.err != nil {
+			return m, m.logError("task file read", msg.err)
+		}
+		return m, nil
+	case frictionFileMsg:
+		m.acceptFrictionFile(msg)
+		if msg.err != nil {
+			return m, m.logError("friction file read", msg.err)
 		}
 		return m, nil
 	case chatSendMsg:
@@ -355,9 +377,6 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return nil
 	}
 	request := m.currentScreen().DataRequest()
-	if request == noDataRequest {
-		return nil
-	}
 	m.screenLoading = true
 	switch request {
 	case agentsDataRequest:
@@ -382,6 +401,18 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		loader, home, logger := m.healthLoader, m.home, m.logger
 		return func() tea.Msg {
 			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger)}
+		}
+	case tasksDataRequest:
+		loader, home := m.tasksLoader, m.home
+		return func() tea.Msg {
+			data, err := loader(home)
+			return screenLoadMsg{request: tasksDataRequest, tasks: data, err: err}
+		}
+	case frictionDataRequest:
+		loader, home := m.frictionLoader, m.home
+		return func() tea.Msg {
+			data, err := loader(home)
+			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
 		}
 	default:
 		loader, reader, now := m.logLoader, m.reader, m.now

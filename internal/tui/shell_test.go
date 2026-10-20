@@ -34,12 +34,18 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 			if !strings.Contains(m.View().Content, "home") || !strings.Contains(m.View().Content, "agents") {
 				t.Fatalf("Health screen does not show its panels:\n%s", m.View().Content)
 			}
+		} else if name == "Tasks" {
+			if !strings.Contains(m.View().Content, "active 0") {
+				t.Fatalf("Tasks screen does not show its task tabs:\n%s", m.View().Content)
+			}
+		} else if name == "Friction" {
+			if !strings.Contains(m.View().Content, "open 0") {
+				t.Fatalf("Friction screen does not show its entry tabs:\n%s", m.View().Content)
+			}
 		} else if name == "Goals" && !strings.Contains(m.View().Content, "unassigned") {
 			t.Fatalf("Goals screen does not show its unassigned panel:\n%s", m.View().Content)
 		} else if name == "Queue" && !strings.Contains(m.View().Content, "no open tasks") {
 			t.Fatalf("Queue screen does not show its empty state:\n%s", m.View().Content)
-		} else if name != "Goals" && name != "Queue" && name != "Health" && name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
-			t.Fatalf("%s screen does not show its placeholder:\n%s", name, m.View().Content)
 		}
 	}
 }
