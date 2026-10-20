@@ -102,6 +102,25 @@ func PaneList(ctx context.Context, workspaceID string, opts ...Option) ([]PaneIn
 	return panes, nil
 }
 
+// PaneSendInput sends command text and Enter to one pane in one request.
+func PaneSendInput(ctx context.Context, paneID, text string, opts ...Option) error {
+	var result struct {
+		Type *string `json:"type"`
+	}
+	params := struct {
+		PaneID string   `json:"pane_id"`
+		Text   string   `json:"text"`
+		Keys   []string `json:"keys"`
+	}{PaneID: paneID, Text: text, Keys: []string{"enter"}}
+	if err := Call(ctx, "pane.send_input", params, &result, opts...); err != nil {
+		return err
+	}
+	if result.Type == nil || *result.Type != "ok" {
+		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
+	}
+	return nil
+}
+
 // PaneClose closes one pane.
 func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 	var result struct {

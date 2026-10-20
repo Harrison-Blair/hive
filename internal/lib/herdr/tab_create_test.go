@@ -5,6 +5,22 @@ import (
 	"testing"
 )
 
+func TestTabCreatePassesEnvironmentToNewTab(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("tab.create", `{"type":"tab_created","tab":{"tab_id":"w1:t2","workspace_id":"w1","number":2,"label":"coordinator","focused":false,"pane_count":1,"agent_status":"unknown"},"root_pane":{"pane_id":"w1:p2","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t2","focused":false,"agent_status":"unknown","revision":1}}`)
+	_, err := TabCreate(context.Background(), TabCreateParams{
+		WorkspaceID: "w1",
+		Env:         map[string]string{"HIVE_HOME": "/tmp/hive-home", "XDG_CONFIG_HOME": "/tmp/config"},
+	})
+	if err != nil {
+		t.Fatalf("TabCreate(): %v", err)
+	}
+	requests := server.recorded("tab.create")
+	if len(requests) != 1 || requests[0].Params != `{"workspace_id":"w1","focus":false,"env":{"HIVE_HOME":"/tmp/hive-home","XDG_CONFIG_HOME":"/tmp/config"}}` {
+		t.Fatalf("tab.create params = %#v; want environment values", requests)
+	}
+}
+
 func TestTabCreateRequestAndReply(t *testing.T) {
 	server := newFakeServer(t)
 	server.scriptResult("tab.create", `{"type":"tab_created","tab":{"tab_id":"w1:t2","workspace_id":"w1","number":2,"label":"2","focused":false,"pane_count":1,"agent_status":"unknown"},"root_pane":{"pane_id":"w1:p2","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t2","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp/demo"}}`)

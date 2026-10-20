@@ -96,6 +96,34 @@ func TestCoordinatorPreference(t *testing.T) {
 	}
 }
 
+func TestCoordinatorStartupUsesBareHiveTabs(t *testing.T) {
+	const skillPath = ".agents/skills/hive-coordinator/SKILL.md"
+	skillData, err := os.ReadFile(skillPath)
+	if err != nil {
+		t.Fatalf("read %s: %v", skillPath, err)
+	}
+	startup := markdownSection(string(skillData), "## Startup")
+	for _, forbidden := range []string{"herdr tab create --workspace \"$workspace_id\" --cwd \"$PWD\" --label logs", "herdr pane run \"$right_pane_id\" hive logs --follow", "herdr pane split \"$left_pane_id\""} {
+		if strings.Contains(startup, forbidden) {
+			t.Errorf("coordinator startup still uses the logs tab command %q", forbidden)
+		}
+	}
+	for _, required := range []string{"claim is stale and the `supervisor` tab is gone", "foreground_processes", "[\"hive\", \"logs\", \"--follow\"]", "[\"hive\", \"supervise\"]", "herdr tab close \"$logs_tab_id\"", "Tell the user when you close the old tab."} {
+		if !strings.Contains(startup, required) {
+			t.Errorf("coordinator startup omits %q", required)
+		}
+	}
+
+	agents, err := os.ReadFile("AGENTS.md")
+	if err != nil {
+		t.Fatalf("read AGENTS.md: %v", err)
+	}
+	coordinator := markdownSection(string(agents), "## Coordinator")
+	if !strings.Contains(coordinator, "Bare `hive` starts the coordinator and the supervisor in their own tabs.") {
+		t.Errorf("AGENTS.md coordinator section does not describe bare hive startup:\n%s", coordinator)
+	}
+}
+
 // markdownSection returns the body of one level-two Markdown section.
 func markdownSection(text, heading string) string {
 	start := strings.Index(text, heading)

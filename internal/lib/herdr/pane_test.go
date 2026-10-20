@@ -44,6 +44,21 @@ func TestPaneGetRejectsWrongTypeAndMissingPane(t *testing.T) {
 	}
 }
 
+func TestPaneSendInputSendsCommandAndEnterTogether(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("pane.send_input", `{"type":"ok"}`)
+	if err := PaneSendInput(context.Background(), "w1:p2", "hive supervise"); err != nil {
+		t.Fatalf("PaneSendInput(): %v", err)
+	}
+	requests := server.recorded("pane.send_input")
+	if len(requests) != 1 {
+		t.Fatalf("pane.send_input requests = %d; want 1", len(requests))
+	}
+	if got, want := requests[0].Params, `{"pane_id":"w1:p2","text":"hive supervise","keys":["enter"]}`; got != want {
+		t.Fatalf("params = %s; want %s", got, want)
+	}
+}
+
 func TestPaneClose(t *testing.T) {
 	server := newFakeServer(t)
 	server.scriptResult("pane.close", `{"type":"ok"}`)

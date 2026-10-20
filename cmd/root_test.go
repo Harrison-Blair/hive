@@ -9,6 +9,11 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	for _, key := range []string{"HERDR_ENV", "HERDR_PANE_ID", "HERDR_SOCKET_PATH"} {
+		if err := os.Unsetenv(key); err != nil {
+			panic(err)
+		}
+	}
 	configDir, err := os.MkdirTemp("", "hive-cmd-test-config-")
 	if err != nil {
 		panic(err)
@@ -73,6 +78,20 @@ func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 	}
 	if strings.Contains(out.String(), `"outcome"`) {
 		t.Fatalf("successful TUI wrote an envelope: %q", out.String())
+	}
+}
+
+func TestBareHiveWithoutHerdrShowsStartupNotice(t *testing.T) {
+	newRootTestHome(t)
+	t.Setenv("HERDR_ENV", "")
+	t.Setenv("HERDR_PANE_ID", "")
+	var out bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader("\x03\x03"), &out, &out)
+	if status != 0 {
+		t.Fatalf("status = %d; want 0", status)
+	}
+	if !strings.Contains(out.String(), "not in herdr: no coordinator or supervisor started") {
+		t.Fatalf("output %q lacks the no-herdr startup notice", out.String())
 	}
 }
 
