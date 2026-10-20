@@ -77,28 +77,47 @@ type Model struct {
 	logDetail          bool
 	logErr             string
 
-	header           headerState
-	headerErr        string
-	screenErr        string
-	attachErr        string
-	startupNotice    string
-	startupErr       string
-	headerLoader     func(string) (headerState, error)
-	logLoader        func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader     func(string, *slog.Logger) doctor.Result
-	agentsLoader     func(string, time.Time) (agentsData, error)
-	goalsQueueLoader func(string) (goalsQueueData, error)
-	paneReader       func(context.Context, string) (string, error)
-	agents           agentsState
-	health           healthState
-	goalsQueue       goalsQueueState
-	tasksLoader      func(string) (tasksData, error)
-	tasks            tasksState
-	frictionLoader   func(string) (frictionData, error)
-	friction         frictionState
-	chatLoader       func(string, time.Time) (chatScreenData, error)
-	headerLoading    bool
-	screenLoading    bool
+	header               headerState
+	headerErr            string
+	screenErr            string
+	attachErr            string
+	startupNotice        string
+	startupErr           string
+	headerLoader         func(string) (headerState, error)
+	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
+	healthLoader         func(string, *slog.Logger) doctor.Result
+	agentsLoader         func(string, time.Time) (agentsData, error)
+	goalsQueueLoader     func(string) (goalsQueueData, error)
+	paneReader           func(context.Context, string) (string, error)
+	agents               agentsState
+	health               healthState
+	goalsQueue           goalsQueueState
+	tasksLoader          func(string) (tasksData, error)
+	tasks                tasksState
+	frictionLoader       func(string) (frictionData, error)
+	friction             frictionState
+	chatLoader           func(string, time.Time) (chatScreenData, error)
+	headerLoading        bool
+	screenLoading        bool
+	refreshSnapshot      refreshSnapshot
+	refreshChecking      bool
+	headerRefreshPending bool
+	screenRefreshPending bool
+	lastHealthRefresh    time.Time
+
+	viewCache        string
+	viewCacheValid   bool
+	viewDirty        bool
+	viewMinute       string
+	viewHeader       string
+	viewHeaderHeight int
+	viewHeaderDirty  bool
+
+	screenViewCache      string
+	screenViewCacheValid bool
+	screenViewWidth      int
+	screenViewHeight     int
+	screenViewIndex      int
 
 	screens     []screen
 	screenIndex int
@@ -171,6 +190,7 @@ func New(home string, now func() time.Time) *Model {
 		m.closer = writer
 		m.logger = slog.New(writer)
 	}
+	m.refreshSnapshot = snapshotRefreshState(home, m.logDate, m.tasks.data)
 	m.layout()
 	return m
 }
@@ -191,6 +211,7 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		m.invalidateView()
 		m.width = msg.Width
 		m.height = msg.Height
 		m.layout()
@@ -202,6 +223,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.logSelectedKey = ""
 			m.logSelection = 0
 			m.rebuild()
+			m.invalidateView()
 		}
 		if m.inputEnded != nil {
 			select {
@@ -210,27 +232,74 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		cmds := []tea.Cmd{m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad()}
+		cmds := []tea.Cmd{m.tick(), m.startRefreshCheck()}
 		if m.follow && m.screenIndex == 7 && m.screenErr == "" {
 			m.viewport.GotoBottom()
+		}
+		return m, batch(cmds...)
+	case refreshCheckMsg:
+		m.refreshChecking = false
+		headerChanged := msg.header != m.refreshSnapshot.header
+		if headerChanged {
+			m.refreshSnapshot.header = msg.header
+		}
+		screenChanged := msg.screen != m.refreshSnapshot.screens[msg.request]
+		m.refreshSnapshot.screens[msg.request] = msg.screen
+		cmds := make([]tea.Cmd, 0, 2)
+		if headerChanged {
+			if m.headerLoading {
+				m.headerRefreshPending = true
+			} else {
+				cmds = append(cmds, m.startHeaderLoad())
+			}
+		}
+		if msg.request == m.currentScreen().DataRequest() {
+			healthDue := msg.request == healthDataRequest && (m.lastHealthRefresh.IsZero() || m.now().Sub(m.lastHealthRefresh) >= 4*time.Second)
+			if screenChanged || healthDue {
+				if m.screenLoading {
+					m.screenRefreshPending = true
+				} else {
+					cmds = append(cmds, m.startCurrentScreenLoad())
+				}
+			}
 		}
 		return m, batch(cmds...)
 	case headerLoadMsg:
 		m.headerLoading = false
 		if msg.err != nil {
+			m.invalidateView()
 			m.headerErr = boundedError(msg.err.Error())
 			m.layout()
-			return m, m.logError("header", msg.err)
+			logCmd := m.logError("header", msg.err)
+			if m.headerRefreshPending {
+				m.headerRefreshPending = false
+				return m, batch(logCmd, m.startHeaderLoad())
+			}
+			return m, logCmd
 		}
 		m.header = msg.state
 		m.headerErr = ""
 		m.layout()
+		m.invalidateShellView()
+		if m.headerRefreshPending {
+			m.headerRefreshPending = false
+			return m, m.startHeaderLoad()
+		}
 		return m, nil
 	case screenLoadMsg:
+		m.invalidateView()
 		m.screenLoading = false
+		if msg.request != m.currentScreen().DataRequest() {
+			return m, m.startCurrentScreenLoad()
+		}
 		if msg.err != nil {
 			m.screenErr = boundedError(msg.err.Error())
-			return m, m.logError("screen", msg.err)
+			logCmd := m.logError("screen", msg.err)
+			if m.screenRefreshPending {
+				m.screenRefreshPending = false
+				return m, batch(logCmd, m.startCurrentScreenLoad())
+			}
+			return m, logCmd
 		}
 		m.screenErr = ""
 		switch msg.request {
@@ -240,6 +309,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
 			m.health.accept(msg.health)
+			m.lastHealthRefresh = m.now()
 		case chatDataRequest:
 			m.chatData = msg.chat
 			m.rebuildChat()
@@ -261,27 +331,36 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
+		if m.screenRefreshPending {
+			m.screenRefreshPending = false
+			return m, m.startCurrentScreenLoad()
+		}
 		return m, nil
 	case taskFileMsg:
+		m.invalidateView()
 		m.acceptTaskFile(msg)
 		if msg.err != nil {
 			return m, m.logError("task file read", msg.err)
 		}
 		return m, nil
 	case frictionFileMsg:
+		m.invalidateView()
 		m.acceptFrictionFile(msg)
 		if msg.err != nil {
 			return m, m.logError("friction file read", msg.err)
 		}
 		return m, nil
 	case chatSendMsg:
+		m.invalidateView()
 		return m, m.updateChatSend(msg)
 	case quitNoticeExpiredMsg:
 		if m.quitNotice && msg.at.Equal(m.quitAt) {
 			m.quitNotice = false
+			m.invalidateView()
 		}
 		return m, nil
 	case agentsPeekMsg:
+		m.invalidateView()
 		m.agents.peekOpen = true
 		m.agents.peekPane = msg.paneID
 		m.agents.peekText = msg.text
@@ -291,6 +370,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case attachMsg:
+		m.invalidateView()
 		if msg.err != nil {
 			m.attachErr = boundedError(msg.err.Error())
 			return m, m.logError("attach", msg.err)
@@ -300,9 +380,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case logWriteErrMsg:
 		if msg.err != nil && m.logErr == "" {
 			m.logErr = boundedError(msg.err.Error())
+			m.invalidateView()
 		}
 		return m, nil
 	case tea.KeyPressMsg:
+		m.invalidateView()
 		return m, m.updateKey(msg)
 	}
 	return m, nil
@@ -334,10 +416,38 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 
 // View renders the header, sidebar, current screen, and footer.
 func (m *Model) View() tea.View {
-	view := tea.NewView(m.shellView())
+	minute := m.now().Format("2006-01-02 15:04")
+	if !m.viewCacheValid || m.viewDirty {
+		m.viewCache = m.shellView()
+		m.viewCacheValid = true
+		m.viewDirty = false
+		m.viewHeader = m.shellHeader()
+		m.viewHeaderHeight = lipgloss.Height(m.viewHeader)
+		m.viewHeaderDirty = false
+		m.viewMinute = minute
+	} else if m.viewHeaderDirty || m.viewMinute != minute {
+		header := m.shellHeader()
+		if lipgloss.Height(header) != m.viewHeaderHeight {
+			m.viewCache = m.shellView()
+			m.viewHeaderHeight = lipgloss.Height(header)
+		} else {
+			m.viewCache = header + m.viewCache[len(m.viewHeader):]
+		}
+		m.viewHeader = header
+		m.viewHeaderDirty = false
+		m.viewMinute = minute
+	}
+	view := tea.NewView(m.viewCache)
 	view.AltScreen = true
 	return view
 }
+
+func (m *Model) invalidateView() {
+	m.viewDirty = true
+	m.screenViewCacheValid = false
+}
+
+func (m *Model) invalidateShellView() { m.viewHeaderDirty = true }
 
 func (m *Model) layout() {
 	width := m.width

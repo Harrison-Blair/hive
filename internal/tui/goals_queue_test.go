@@ -92,6 +92,10 @@ func TestGoalsRefreshKeepsGoalSelectionAndQueueProjectFilter(t *testing.T) {
 	m, cmd := raise(t, m, key('3', "3"))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	writeRecord(t, home, []string{"goals"}, "g2-other", records.Goal{
+		ID: "g2-other", Project: "demo", Title: "Goal two updated", Grant: "Grant two", Status: "active",
+		Waves: []records.GoalWave{},
+	})
 	m = refreshGoalsQueue(t, m)
 	view := ansi.Strip(m.currentScreen().View(200, 40))
 	if !strings.Contains(view, "▶ demo · Goal two") {
@@ -101,6 +105,7 @@ func TestGoalsRefreshKeepsGoalSelectionAndQueueProjectFilter(t *testing.T) {
 	m, cmd = raise(t, m, key('4', "4"))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('p', "p"))
+	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed updated", Status: "created", DependsOn: []string{}})
 	m = refreshGoalsQueue(t, m)
 	view = ansi.Strip(m.currentScreen().View(200, 40))
 	if !strings.Contains(view, "demo · Goal one") || strings.Contains(view, "zeta ·") {
@@ -158,18 +163,7 @@ func TestGoalsAndQueuePanelsFitStandardFrame(t *testing.T) {
 
 func refreshGoalsQueue(t *testing.T, model *Model) *Model {
 	t.Helper()
-	model, cmd := raise(t, model, tickMsg{})
-	if cmd == nil {
-		t.Fatal("refresh did not start")
-	}
-	batch, ok := cmd().(tea.BatchMsg)
-	if !ok || len(batch) < 3 {
-		t.Fatalf("refresh returned %T with no screen data command", batch)
-	}
-	for _, command := range batch[1:] {
-		model, _ = raise(t, model, command())
-	}
-	return model
+	return runIdleTick(t, model)
 }
 
 func TestGoalsQueueProgramUsesStringReader(t *testing.T) {

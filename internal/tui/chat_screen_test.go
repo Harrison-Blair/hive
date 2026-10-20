@@ -355,15 +355,7 @@ func TestChatSendRunsInBackgroundAndKeepsFailedDraft(t *testing.T) {
 	m, _ = raise(t, m, <-done)
 	requireView(t, m, "stalled")
 	requireView(t, m, "hello8")
-	_, tick := raise(t, m, tickMsg{})
-	if tick == nil {
-		t.Fatal("tick did not schedule a refresh")
-	}
-	refresh, ok := tick().(tea.BatchMsg)
-	if !ok || len(refresh) < 3 {
-		t.Fatalf("tick command = %#v; want data refresh", tick)
-	}
-	m, _ = raise(t, m, refresh[len(refresh)-1]())
+	m = runIdleTick(t, m)
 	requireView(t, m, "stalled")
 	if fake.prompts.Load() != 1 {
 		t.Fatalf("send retried without user input; calls=%d", fake.prompts.Load())

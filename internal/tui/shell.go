@@ -116,12 +116,20 @@ func (m *Model) currentScreenName() string {
 	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
+func (m *Model) shellHeader() string {
+	width := m.width
+	if width < 1 {
+		width = defaultWidth
+	}
+	return headerStyle.Width(width).Render(m.activeHeaderLine())
+}
+
 func (m *Model) shellView() string {
 	width := m.width
 	if width < 1 {
 		width = defaultWidth
 	}
-	header := headerStyle.Width(width).Render(m.headerLine())
+	header := m.shellHeader()
 	headerRows := lipgloss.Height(header)
 	bodyHeight := m.height - headerRows - statusRows
 	if bodyHeight < 1 {
@@ -142,14 +150,23 @@ func (m *Model) shellView() string {
 		mainWidth = 1
 	}
 	left := m.renderSidebar(sidebarWidth, bodyHeight)
-	body := m.currentScreen().View(mainWidth, bodyHeight)
 	if m.screenIndex == 1 {
 		left = m.renderAgentsExplorer(sidebarWidth, bodyHeight)
-		body = m.renderPanel(m.currentScreenName(), body, mainWidth, bodyHeight)
-	} else if m.screenIndex != 0 {
-		body = m.renderPanel(m.currentScreenName(), body, mainWidth, bodyHeight)
 	}
-	panels := lipgloss.JoinHorizontal(lipgloss.Top, left, body)
+	if !m.screenViewCacheValid || m.screenViewWidth != mainWidth || m.screenViewHeight != bodyHeight || m.screenViewIndex != m.screenIndex {
+		body := m.currentScreen().View(mainWidth, bodyHeight)
+		if m.screenIndex == 1 {
+			body = m.renderPanel("", body, mainWidth, bodyHeight)
+		} else if m.screenIndex != 0 {
+			body = m.renderPanel(m.currentScreenName(), body, mainWidth, bodyHeight)
+		}
+		m.screenViewCache = body
+		m.screenViewCacheValid = true
+		m.screenViewWidth = mainWidth
+		m.screenViewHeight = bodyHeight
+		m.screenViewIndex = m.screenIndex
+	}
+	panels := lipgloss.JoinHorizontal(lipgloss.Top, left, m.screenViewCache)
 	footer := m.footerView(width)
 	return lipgloss.JoinVertical(lipgloss.Left, header, panels, footer)
 }
@@ -164,7 +181,7 @@ func (m *Model) renderSidebar(width, height int) string {
 		}
 		lines = append(lines, line)
 	}
-	return panelStyle.Width(width).Height(height).Render(strings.Join(lines, "\n"))
+	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(strings.Join(lines, "\n"))
 }
 
 func (m *Model) renderAgentsExplorer(width, height int) string {
@@ -202,15 +219,21 @@ func (m *Model) renderAgentsExplorer(width, height int) string {
 	for index, line := range lines {
 		lines[index] = fitLine(line, contentWidth)
 	}
-	return panelStyle.Width(width).Height(height).Render(strings.Join(lines, "\n"))
+	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(strings.Join(lines, "\n"))
 }
 
 func (m *Model) renderPanel(title, content string, width, height int) string {
-	body := titleStyle.Render(title)
-	if content != "" {
-		body += "\n" + content
+	body := ""
+	if title != "" {
+		body = titleStyle.Render(title)
 	}
-	return panelStyle.Width(width).Height(height).Render(body)
+	if content != "" {
+		if body != "" {
+			body += "\n"
+		}
+		body += content
+	}
+	return panelStyle.Width(width).Height(height).MaxHeight(height).Render(body)
 }
 
 func (m *Model) footerView(width int) string {
