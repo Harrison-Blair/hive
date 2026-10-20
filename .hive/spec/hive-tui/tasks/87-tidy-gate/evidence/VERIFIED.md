@@ -1,6 +1,6 @@
 # VERIFIED: 87-tidy-gate
 
-Verifier: Claude Opus 5.5 (verifier-87-tidy-gate), 2026-10-20.
+Verifier: Claude Opus 5.5 (t87-verifier-1), 2026-10-20.
 Task branch head: `22032334`. Base: `origin/dev` at `bac988e9` (merge base).
 Each check ran from the worktree root with a temp `XDG_CONFIG_HOME` and
 `HIVE_HOME` in the session scratchpad. No herdr workspace was opened.
