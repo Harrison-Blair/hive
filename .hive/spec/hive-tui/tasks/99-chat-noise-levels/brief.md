@@ -48,7 +48,7 @@ report it.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each new test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Build the task binary. In a herdr tab, run it at about 200 x 57 on a scratch home with fixture data. Use a temporary copy of a marked home. Set `HIVE_HOME` to its path. Set `XDG_CONFIG_HOME` to a temporary directory. Use `herdr pane read` to capture each gap. | The screen shows the fix for each gap, as on the board. Save the captures in evidence. |
+| V2 | Build the task binary. Run it on a scratch home with fixture data (a temp copy of a marked home, set with `HIVE_HOME`, and a temp `XDG_CONFIG_HOME`) in a herdr tab at about 200 x 57. Capture the screen with `herdr pane read` for each gap | Each gap is fixed as the board shows. Put the captures in the evidence. |
 | V3 | `git diff origin/dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0. |
 
@@ -61,3 +61,30 @@ Commit on the task branch with a subject such as `fix(tui): match the Chat noise
 branch. Write the evidence. Run `hive task complete`. Send the commit SHA and
 the V1-V4 results to the manager with `hive inbox send`. Read only your own
 inbox.
+
+## Repair 1
+
+The verifier failed V2: the level rules hide `blocked` and `unresolved`, and
+the default level hides `quiet`, which the board shows. See `VERIFIED.md`.
+Use these rules for the inbox kinds:
+
+| Level | Kinds shown |
+| --- | --- |
+| `decisions only` | `message`, `blocked`, `unresolved` |
+| `landings and decisions` (default) | the kinds of `decisions only`, and `completed`, `verified`, `quiet` |
+| `all` | each kind |
+
+Do these steps:
+
+1. Merge `origin/dev` into the task branch. In `testdata/ste-baseline.json`,
+   keep each row of both sides.
+2. Change the level rules to the table above. Change the tests first: write
+   each expected kind set as a literal, and see each changed test fail on the
+   current code.
+3. Update the level rules in the evidence. Run V2 again on a scratch home
+   with one inbox record of each kind. Run the gate.
+4. Commit and push. Make sure that `git merge-tree --write-tree origin/dev
+   HEAD` exits 0. Run `hive task complete`. Send the commit SHA to the
+   manager with `hive inbox send`.
+
+Do not change other files.

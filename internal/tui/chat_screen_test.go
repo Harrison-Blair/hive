@@ -188,12 +188,10 @@ func TestChatNoiseAndEventFoldingDoNotMarkRecordsRead(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 150, Height: 40})
 	m = loadChat(t, m)
-	requireView(t, m, "1 hive events", "older event")
-	rejectView(t, m, "newer event")
+	requireView(t, m, "2 hive events", "older event", "newer event")
 
 	m, _ = raise(t, m, key('n', "n"))
-	requireView(t, m, "noise: decisions only", "older event")
-	rejectView(t, m, "newer event")
+	requireView(t, m, "noise: decisions only", "2 hive events", "older event", "newer event")
 	m, _ = raise(t, m, key('n', "n"))
 	allEvents := ansi.Strip(m.View().Content)
 	if strings.Index(allEvents, "newer-sender") > strings.Index(allEvents, "older-sender") {
