@@ -162,8 +162,22 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		t.Fatalf("RunHome: %v", err)
 	}
 	view := ansi.Strip(output.String())
-	if !strings.Contains(view, "▶ 8 Logs") || !strings.Contains(view, "level: warn") {
-		t.Fatalf("program output did not show Logs and the cycled level:\n%s", view)
+	if !strings.Contains(view, "▶ 8 Logs") {
+		t.Fatalf("program output did not show Logs:\n%s", view)
+	}
+	events, _, err := logs.NewReader(home).Read(t.Context(), day)
+	if err != nil {
+		t.Fatalf("read TUI action log: %v", err)
+	}
+	cycledLevel := false
+	for _, event := range events {
+		if event.Fields["msg"] == "tui action" && event.Fields["action"] == "level" {
+			cycledLevel = true
+			break
+		}
+	}
+	if !cycledLevel {
+		t.Fatalf("program did not apply the level key; events: %#v", events)
 	}
 }
 

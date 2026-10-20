@@ -345,7 +345,7 @@ func (m *Model) layout() {
 		width = defaultWidth
 	}
 	headerRows := lipgloss.Height(headerStyle.Width(width).Render(m.headerLine()))
-	bodyHeight := m.height - headerRows - statusRows - 5
+	bodyHeight := m.height - headerRows - statusRows
 	if bodyHeight < 1 {
 		bodyHeight = 1
 	}

@@ -221,11 +221,11 @@ func (m *Model) chatView(width, height int) string {
 	if eventWidth < 1 {
 		eventWidth = 1
 	}
-	conversationWidth := width - eventWidth - 3
+	conversationWidth := width - eventWidth
 	if conversationWidth < 1 {
 		conversationWidth = 1
 	}
-	feedHeight := height - 7
+	feedHeight := height - 8
 	if feedHeight < 1 {
 		feedHeight = 1
 	}
