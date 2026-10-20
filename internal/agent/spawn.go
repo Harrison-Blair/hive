@@ -36,6 +36,7 @@ var (
 // SpawnOptions holds explicit values for one agent spawn.
 type SpawnOptions struct {
 	Role              string
+	Agent             string
 	Project           string
 	Task              string
 	Harness           string
@@ -132,6 +133,8 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		Name:          options.Name,
 		NameSet:       options.NameSet,
 		PaneID:        paneID,
+		CallerAgent:   options.Agent,
+		CallerPaneID:  os.Getenv("HERDR_PANE_ID"),
 		QuietAfterMin: options.QuietAfterMin,
 		QuietAfterSet: options.QuietAfterSet,
 		PID:           options.PID,

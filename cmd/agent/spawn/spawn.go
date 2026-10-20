@@ -16,6 +16,7 @@ func New() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	command.Flags().String("role", "", "agent role")
+	command.Flags().String("agent", "", "caller agent name or key")
 	command.Flags().String("harness", "", "harness kind")
 	command.Flags().String("pane", "", "herdr pane ID")
 	command.Flags().String("adopt", "", "adopt an existing workspace")
@@ -27,6 +28,7 @@ func New() *cobra.Command {
 	command.Flags().StringArray("arg", nil, "native agent argument")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		role, _ := cmd.Flags().GetString("role")
+		agent, _ := cmd.Flags().GetString("agent")
 		harness, _ := cmd.Flags().GetString("harness")
 		pane, _ := cmd.Flags().GetString("pane")
 		adopt, _ := cmd.Flags().GetString("adopt")
@@ -39,6 +41,7 @@ func New() *cobra.Command {
 		return common.Run(cmd, "agent spawn", func(home string) (output.Envelope, string, error) {
 			envelope := agentlib.Spawn(cmd.Context(), home, agentlib.SpawnOptions{
 				Role:          role,
+				Agent:         agent,
 				Project:       project,
 				Task:          task,
 				Harness:       harness,

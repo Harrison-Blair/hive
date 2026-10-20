@@ -3,8 +3,10 @@ package supervise
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -62,6 +64,10 @@ func TestEventsBlockedWritesCounterRecordAndStatus(t *testing.T) {
 	if updated := readAgent(t, home, worker.Key); updated.AgentStatus != "blocked" {
 		t.Fatalf("agent_status = %q; want blocked", updated.AgentStatus)
 	}
+	wantChangedAt := "2026-01-01T00:00:00Z"
+	if got := readAgentStatusChangedAt(t, home, worker.Key); got != wantChangedAt {
+		t.Fatalf("status_changed_at = %q; want %q", got, wantChangedAt)
+	}
 
 	// A repeated push with the stored status writes nothing.
 	if err := s.handleEvent(context.Background(), event); err != nil {
@@ -70,6 +76,88 @@ func TestEventsBlockedWritesCounterRecordAndStatus(t *testing.T) {
 	if all := readInbox(t, home, "manager-demo"); len(all) != 1 {
 		t.Fatalf("inbox after repeat = %+v; want one blocked record", all)
 	}
+	if got := readAgentStatusChangedAt(t, home, worker.Key); got != wantChangedAt {
+		t.Fatalf("status_changed_at after repeat = %q; want %q", got, wantChangedAt)
+	}
+}
+
+func TestAppendAndStatusKeepsTimestampWhenAgentStatusDoesNotChange(t *testing.T) {
+	home := testHome(t)
+	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	writeAgentWithStatusChangedAt(t, home, worker, "2025-12-31T23:59:00Z")
+	s := handlerSupervisor(t, home, newFakeOps(), newFakeClock())
+
+	envelope := s.appendAndStatus(context.Background(), notification{
+		role: "manager-demo", kind: records.InboxBlocked, task: worker.Task,
+		agent: worker.Name, text: "blocked", agentKey: worker.Key, agentStatus: "working",
+	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("appendAndStatus() = %#v; want success", envelope)
+	}
+	if got := readAgentStatusChangedAt(t, home, worker.Key); got != "2025-12-31T23:59:00Z" {
+		t.Fatalf("status_changed_at after unchanged write = %q; want the original timestamp", got)
+	}
+}
+
+func TestStatusOnlyKeepsTimestampWhenAgentStatusDoesNotChange(t *testing.T) {
+	home := testHome(t)
+	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	worker.AgentStatus = "working"
+	writeAgentWithStatusChangedAt(t, home, worker, "2025-12-31T23:59:00Z")
+	s := handlerSupervisor(t, home, newFakeOps(), newFakeClock())
+
+	if envelope := s.statusOnly(context.Background(), worker, "idle"); envelope.Outcome != "ok" {
+		t.Fatalf("statusOnly() = %#v; want success", envelope)
+	}
+	const changedAt = "2026-01-01T00:00:00Z"
+	if got := readAgentStatusChangedAt(t, home, worker.Key); got != changedAt {
+		t.Fatalf("status_changed_at = %q; want %q", got, changedAt)
+	}
+	if envelope := s.statusOnly(context.Background(), worker, "idle"); envelope.Outcome != "ok" {
+		t.Fatalf("repeated statusOnly() = %#v; want success", envelope)
+	}
+	if got := readAgentStatusChangedAt(t, home, worker.Key); got != changedAt {
+		t.Fatalf("status_changed_at after unchanged write = %q; want %q", got, changedAt)
+	}
+}
+
+func writeAgentWithStatusChangedAt(t *testing.T, home string, record records.Agent, changedAt string) {
+	t.Helper()
+	data, err := json.Marshal(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var value map[string]any
+	if err := json.Unmarshal(data, &value); err != nil {
+		t.Fatal(err)
+	}
+	value["status_changed_at"] = changedAt
+	data, err = json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(home, ".hive", "state", "agents", record.Key+".json")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func readAgentStatusChangedAt(t *testing.T, home, key string) string {
+	t.Helper()
+	path := filepath.Join(home, ".hive", "state", "agents", key+".json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var value map[string]any
+	if err := json.Unmarshal(data, &value); err != nil {
+		t.Fatal(err)
+	}
+	changedAt, _ := value["status_changed_at"].(string)
+	return changedAt
 }
 
 func TestEventsWorkingStoresStatusWithoutRecord(t *testing.T) {
