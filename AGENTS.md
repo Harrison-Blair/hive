@@ -96,12 +96,15 @@ Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. R
 
 ```sh
 gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go mod tidy -diff
 go vet ./...
 golangci-lint run ./...
 go test -race ./...
 ```
 
-The first command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `projects/`.
+The first command must print nothing. The second command must print nothing. The
+gate acts on tracked and new files only. It must not read a checkout below
+`projects/`.
 
 ### Dependencies
 

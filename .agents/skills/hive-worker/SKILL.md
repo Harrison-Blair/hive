@@ -50,12 +50,14 @@ Run the gate before you report the work as done.
 
 ```sh
 gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go mod tidy -diff
 go vet ./...
 golangci-lint run ./...
 go test -race ./...
 ```
 
-The first command prints nothing. Each other command passes.
+The first command prints nothing. The second command prints nothing. Each other
+command passes.
 
 ## Evidence
 
