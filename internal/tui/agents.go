@@ -778,8 +778,9 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 				lines[row] += "   "
 			}
 		}
+		cardOffset := (item.width - item.cardWidth) / 2
 		for key, row := range item.positions {
-			positions[key] = graphPosition{row: row, col: item.column + 2, width: item.cardWidth}
+			positions[key] = graphPosition{row: row, col: item.column + cardOffset, width: item.cardWidth}
 		}
 	}
 
@@ -899,16 +900,23 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 		cardWidth = max(cardWidth, lipgloss.Width(first)+4, lipgloss.Width(second)+4)
 	}
 	title := "≡ " + group.title
+	hasDelegationStem := len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager")
 	width := max(24, lipgloss.Width(title)+5, cardWidth+4)
-	cardWidth = width - 4
+	if hasDelegationStem {
+		width = max(width, lipgloss.Width(title)+8)
+	}
+	if (width-cardWidth)%2 != 0 {
+		width++
+	}
 	lines := []string{
-		"╭" + strings.Repeat("─", width-2) + "╮",
-		graphPodTitleLine(width, title),
+		graphPodTitleBorderLine(width, title, hasDelegationStem),
+		"│" + strings.Repeat(" ", width-2) + "│",
 		"│" + strings.Repeat(" ", width-2) + "│",
 	}
-	if len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager") {
+	if hasDelegationStem {
+		lines[1] = graphPodLine(width, width/2, '│')
 		if nodeList[0].inferred {
-			lines[2] = graphPodLabelLine(width, "┄ inferred")
+			lines[2] = graphPodLabelLineWithStem(width, "┄ inferred")
 		} else {
 			lines[2] = graphPodLine(width, width/2, '│')
 		}
@@ -964,8 +972,11 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 			card[3] = setGraphRune(card[3], middle, '┴')
 		}
 		positions[node.record.Key] = len(lines) + 1
+		cardOffset := (width - cardWidth) / 2
+		leftPadding := cardOffset - 1
+		rightPadding := width - cardOffset - cardWidth - 1
 		for _, cardLine := range card {
-			lines = append(lines, "│ "+cardLine+" │")
+			lines = append(lines, "│"+strings.Repeat(" ", leftPadding)+cardLine+strings.Repeat(" ", rightPadding)+"│")
 		}
 		previous = node
 	}
@@ -1016,8 +1027,41 @@ func graphPodLine(width, middle int, mark rune) string {
 	return setGraphRune(line, middle, mark)
 }
 
-func graphPodTitleLine(width int, title string) string {
-	return "│ " + title + strings.Repeat(" ", max(0, width-3-lipgloss.Width(title))) + "│"
+func graphPodTitleBorderLine(width int, title string, hasStem bool) string {
+	cells := []rune("╭" + strings.Repeat("─", width-2) + "╮")
+	if hasStem {
+		graphTextAroundStem(cells, " "+title+" ", width/2, 2, width-1)
+		cells[width/2] = '┬'
+	} else {
+		copy(cells[2:], []rune(" "+title+" "))
+	}
+	return string(cells)
+}
+
+func graphTextAroundStem(cells []rune, text string, center, start, end int) {
+	leftEnd := max(start, center-1)
+	rightStart := min(end, center+2)
+	textRunes := []rune(text)
+	leftCount := min(len(textRunes), leftEnd-start)
+	rightTextStart := leftCount
+	if leftCount < len(textRunes) {
+		for split := leftCount; split > 1; split-- {
+			if textRunes[split-1] == ' ' {
+				leftCount = split - 1
+				rightTextStart = split
+				break
+			}
+			if textRunes[split] == ' ' {
+				leftCount = split
+				rightTextStart = split + 1
+				break
+			}
+		}
+	}
+	copy(cells[start:leftEnd], textRunes[:leftCount])
+	copy(cells[rightStart:end], textRunes[rightTextStart:])
+	cells[center-1] = ' '
+	cells[center+1] = ' '
 }
 
 func graphPodLabelLine(width int, label string) string {
@@ -1025,6 +1069,14 @@ func graphPodLabelLine(width int, label string) string {
 	start := max(0, (len(cells)-len([]rune(label)))/2)
 	copy(cells[start:], []rune(label))
 	return "│" + string(cells) + "│"
+}
+
+func graphPodLabelLineWithStem(width int, label string) string {
+	cells := []rune("│" + strings.Repeat(" ", width-2) + "│")
+	center := width / 2
+	graphTextAroundStem(cells, label, center, 2, width-1)
+	cells[center] = '│'
+	return string(cells)
 }
 
 func graphBusLine(width, minimum, maximum int, anchors map[int]bool) string {

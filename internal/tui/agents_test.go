@@ -223,7 +223,7 @@ func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	requireAgentsView(t, m, "[ GRAPH ]", "parent manager-demo", "model model-worker", "task 10-build", "pane w1:p4")
 	view := ansi.Strip(m.currentScreen().View(120, 30))
 	for _, want := range []string{
-		"≡ home", "≡ demo · Active demo goal", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
+		"≡ home", "≡ demo ·", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
 		"cc idle · 3m", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
 	} {
 		if !strings.Contains(view, want) {
@@ -800,11 +800,17 @@ func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	}
 }
 
-func TestAgentsGraphPodTitleIsInsideBorder(t *testing.T) {
+func TestAgentsGraphPodTitleSharesTopBorder(t *testing.T) {
 	m := agentsBoardModel(t)
-	pod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], m.agents.nodeMap())
-	if !strings.HasPrefix(pod[1], "│ ≡ home") || strings.Contains(pod[0], "≡ home") {
-		t.Fatalf("pod title is not inside the left side of the top border:\n%s", strings.Join(pod, "\n"))
+	nodes := m.agents.nodeMap()
+	homePod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], nodes)
+	if !strings.HasPrefix(homePod[0], "╭─ ≡ home ─") || strings.Contains(homePod[1], "≡ home") {
+		t.Fatalf("home pod title is not on the top border:\n%s", strings.Join(homePod, "\n"))
+	}
+	alphaPod, _, _, _ := m.agents.graphPod(m.agents.data.groups[1], nodes)
+	borderText := strings.NewReplacer("╭", "", "╮", "", "─", "", "┬", "").Replace(alphaPod[0])
+	if got := strings.Join(strings.Fields(borderText), " "); !strings.Contains(got, "≡ alpha · Alpha goal for long graph") {
+		t.Fatalf("alpha pod title is incomplete on the top border: %s", alphaPod[0])
 	}
 }
 
@@ -897,12 +903,36 @@ func TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator(t *testing.T) {
 
 func TestAgentsGraphDelegationStemJoinsPodBorder(t *testing.T) {
 	m := agentsBoardModel(t)
+	writeAgentRecord(t, m.home, records.Agent{
+		Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha",
+		Harness: "claude", Model: "model-manager-alpha", PaneID: "w1:p3",
+		Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:57:00Z",
+	})
+	m = refreshAgents(t, m)
 	lines, positions := m.agents.graphLayout()
+	if !strings.Contains(ansi.Strip(lines[4]), "┄ inferred") {
+		t.Fatalf("inferred manager label is missing from its row: %s", ansi.Strip(lines[4]))
+	}
 	manager := positions["manager-alpha"]
 	column := manager.col + manager.width/2
-	podTop := ansi.Strip(lines[2])
-	if got := []rune(podTop)[column]; got != '┬' {
-		t.Fatalf("delegation stem at the pod border = %q, want '┬': %s", got, podTop)
+	topOfNode := manager.row - 1
+	for row := 0; row <= topOfNode; row++ {
+		want := '│'
+		if row == 0 || row == 2 || row == topOfNode {
+			want = '┬'
+		}
+		line := []rune(ansi.Strip(lines[row]))
+		if got := line[column]; got != want {
+			t.Fatalf("delegation stem at row %d = %q, want %q: %s", row, got, want, string(line))
+		}
+	}
+}
+
+func TestAgentsGraphNodeCardsStayInsetInLongTitlePods(t *testing.T) {
+	m := agentsBoardModel(t)
+	_, _, podWidth, cardWidth := m.agents.graphPod(m.agents.data.groups[1], m.agents.nodeMap())
+	if gap := podWidth - cardWidth; gap < 6 {
+		t.Fatalf("alpha node cards have only %d cells of total pod margin, want at least 6", gap)
 	}
 }
 

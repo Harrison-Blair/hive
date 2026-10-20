@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Feature | `hive-tui`, repair after wave C |
+| Feature | `hive-tui`, fix after wave C |
 | Tier | strong |
 | Depends on | 91-agents-live-generation. Base: `dev` after T3 lands |
 | Grant | `grants.md 2026-10-20 hive TUI goal` |
@@ -121,7 +121,7 @@ Enter there. A chat message from an agent has the authority of the user.
 
 ## Scope change: style rules
 
-The user checked these style rules. Paint no background. A selected item,
+The user approved these style rules. Paint no background. A selected item,
 also the selected graph node, has honey bold text and a `▶` marker, with no
 fill block. Normal text uses the default foreground of the terminal. Task
 102-selection-marker applies the rules on each screen after this task.
@@ -165,7 +165,7 @@ two gaps. Fix them in this task.
 Write each test first with fixture records and literal names. See it fail.
 Record the cause of gap 2 in the evidence.
 
-## Repair 1
+## Fix 1
 
 The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
 
@@ -187,7 +187,7 @@ The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
    stays, with its cause.
 4. Merge `origin/dev` into the task branch first. Task 90 changes
    `internal/tui/shell.go`. Keep the behavior of both tasks. In
-   `testdata/ste-baseline.json`, keep each row from both sides.
+   `testdata/ste-baseline.json`, keep each row of both sides.
 5. This edit copies the manager brief over your brief copy again. Apply your
    STE rewording to the copy again, and keep its meaning.
 6. Do V2 again on a scratch home in a tab of your own workspace, with the
@@ -197,16 +197,16 @@ The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
    --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
    commit SHA to `manager-hive` with `hive inbox send --to manager-hive`.
 
-## Repair 2
+## Fix 2
 
-The verifier failed two items of Repair 1. See `VERIFIED.md`, section
-Repair 1.
+The verifier failed two items of Fix 1. See `VERIFIED.md`, section
+Fix 1.
 
 1. The test `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` looks for the
-   text form of the edge that the change removed. It passes if you remove the
-   role filter and the graph draws a `nudges` route to a worker. Change the test
-   to read the drawn graph. Remove the filter, see the test fail, then restore
-   the filter.
+   removed text form of the edge. It passes when code removes the role filter
+   and the graph draws a `nudges` route to a worker. Change it so that it
+   reads the drawn graph. Remove the filter, see the test fail, then put the
+   filter back.
 2. Fix these drawing faults to agree with the board:
    - `manager-qmeter` has a stem `┴` with only hidden children. Draw no stem
      when a manager shows no child.
@@ -231,15 +231,15 @@ Repair 1.
    --write-tree origin/dev HEAD` exits 0. Run `hive task complete`. Send the
    commit SHA to the manager with `hive inbox send --to manager-hive`.
 
-## Repair 3
+## Fix 3
 
-The verifier passed each item of Repair 2 except the list of differences.
-See `VERIFIED.md`, section Repair 2. Make these five points agree with the
+The verifier passed each item of Fix 2 except the list of differences.
+See `VERIFIED.md`, section Fix 2. Make these five points agree with the
 board:
 
 1. The delegation stem is one line from the bus to the manager node. Where
    it crosses the top border of a pod, draw a junction glyph, not `─`.
-2. Use these rounded pod corners: `╭`, `╮`, `╰`, `╯`.
+2. Pod corners have this shape: `╭`, `╮`, `╰`, `╯`.
 3. Each node box has one space of padding on the left and the right of its
    text.
 4. The header separates its groups with spaces, not `·`, and puts the time
@@ -263,3 +263,56 @@ started. Never work in workspace `wBC`. Run the gate. Commit and push. Make
 sure that `git merge-tree --write-tree origin/dev HEAD` exits 0. Run
 `hive task complete`. Send the full commit SHA to the manager with
 `hive inbox send --to manager-hive`.
+
+## Fix 4
+
+The verifier passed each item of Fix 3 except two. See `VERIFIED.md`,
+section Fix 3.
+
+1. The pod title is on the top border of the pod, as on the board, with the
+   glyph of the board: for example `╭─ ≡ home ───╮`. Fix 1 named only a
+   glyph difference (`┌─ home ─` against `≡ home`). It did not ask you to move
+   the title into the pod. Change the Fix 2 test back so that it expects the
+   title on the border.
+2. The delegation stem is one unbroken vertical line from the bus to the top
+   of the manager node. It crosses the pod top border with a junction glyph,
+   and it continues on each row inside the pod above the manager node, for
+   example the `┄ inferred` row. Change
+   `TestAgentsGraphDelegationStemJoinsPodBorder` so that it checks each cell
+   of the stem column from the bus to the node. See it fail on the Fix 3 tip
+   `72d51057`.
+3. Write the golden files again where the output changes. Check each line
+   against the board. Update the Pods row of the V2 region table.
+
+This edit copies the manager brief over your brief copy again. Apply your STE
+rewording to the copy again, and keep its meaning. Merge `origin/dev` when it
+moved. Run V2 on a scratch home in a tab of your own workspace, with the
+herdr variables removed. Stop and close only the pid and pane that you
+started. Never work in workspace `wBC`. Run the gate. Commit and push. Make
+sure that `git merge-tree --write-tree origin/dev HEAD` exits 0. Run
+`hive task complete`. Send the full commit SHA to the manager with
+`hive inbox send --to manager-hive`.
+
+## Design
+
+The approved boards for this task:
+
+- `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`
+
+Visual check rule (the user approved it on 2026-10-20):
+
+- Worker: capture each changed screen and each board above as PNG. Compare
+  them. Fix each gap before you finish.
+- Board to PNG: `firefox --headless --no-remote --profile SCRATCH
+  --window-size=1220,780 --screenshot OUT.png file://BOARD`, with a new
+  scratch profile folder below `.hive/tmp/`.
+- Screen to PNG: start the TUI on a scratch home in a pane that you started.
+  Run `herdr pane read PANE --source visible --format ansi > F.ansi`. Change
+  the ANSI SGR codes to an HTML `<pre>` with a short script in `.hive/tmp/`.
+  Then use the firefox command on that HTML file.
+- Evidence: commit the screen PNGs in the task evidence. Do not commit a
+  board PNG. Keep it below `.hive/tmp/` and give its path.
+- Report: in the evidence, one table with one row for each board element:
+  `matches`, `differs` (with the cause), or `overridden` (with the
+  decision that overrides it).
+- Capture only your own panes or a scratch run.
