@@ -38,9 +38,8 @@ func (c *taskCLI) run(args ...string) (int, string, string) {
 }
 
 func (c *taskCLI) runWithInput(input io.Reader, args ...string) (int, string, string) {
-	full := append([]string{"--home", c.home}, args...)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams(full, input, &stdout, &stderr)
+	status := executeWithStreams(args, input, &stdout, &stderr)
 	return status, stdout.String(), stderr.String()
 }
 

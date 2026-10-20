@@ -318,8 +318,7 @@ opencode-go/deepseek-v4-flash:medium`. Both panes reported the status `working`
 at 2026-10-18 01:30 EDT. Repair commits `d8155e5c` and `dc7964cb` exist at
 01:32 EDT. No repair report or repair verification exists.
 - A bounded static-link check finds a home gap before logger start. With `H/.hive`
-as a link to an external directory that holds a regular `README.md`, `hive
---home H project list` exits 0. That command writes `logs/2026-10-18.jsonl` and
+as a link to an external directory that holds a regular `README.md`, `HIVE_HOME=H hive project list` exits 0. That command writes `logs/2026-10-18.jsonl` and
 `state/` below the external directory. `home.Resolve` accepts the link because
 `os.Lstat` follows the `.hive` parent. `cmd/common` then calls `log.Open`, and
 the store opens the same way. Both call `os.MkdirAll` below `.hive` with no type
@@ -1856,7 +1855,7 @@ go build . && ./hive version
 ./hive project register . --base dev
 ./hive project list
 ./hive project show hive --json
-./hive --home /tmp/not-a-home project list
+HIVE_HOME=/tmp/not-a-home ./hive project list
 echo "exit $?"
 tail -n 3 .hive/logs/"$(date +%F)".jsonl
 ```
@@ -1887,19 +1886,19 @@ sha256sum "$BIN"
 REPO="$FIX/repo-cp2"
 git init -q "$REPO"
 git -C "$REPO" commit -q --allow-empty -m init
-"$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
-"$BIN" --home "$FIX" task create --project repo-cp2 --title "checkpoint two"
+HIVE_HOME="$FIX" "$BIN" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-cp2 --title "checkpoint two"
 TASK=<task ID from the output>
-"$BIN" --home "$FIX" worktree create --task "$TASK"
+HIVE_HOME="$FIX" "$BIN" worktree create --task "$TASK"
 PANE=<root pane from the output>
-"$BIN" --home "$FIX" agent spawn --pane "$PANE" --role worker --project repo-cp2 --task "$TASK" \
+HIVE_HOME="$FIX" "$BIN" agent spawn --pane "$PANE" --role worker --project repo-cp2 --task "$TASK" \
   --harness claude --model {{CP2_SMOKE_MODEL}} --name cp2-worker
-"$BIN" --home "$FIX" agent send --agent cp2-worker --wait "Reply with the word pong."
-"$BIN" --home "$FIX" agent list
-"$BIN" --home "$FIX" agent stop --agent cp2-worker
+HIVE_HOME="$FIX" "$BIN" agent send --agent cp2-worker --wait "Reply with the word pong."
+HIVE_HOME="$FIX" "$BIN" agent list
+HIVE_HOME="$FIX" "$BIN" agent stop --agent cp2-worker
 herdr workspace list
-"$BIN" --home "$FIX" task cancel --task "$TASK"
-"$BIN" --home "$FIX" worktree remove --task "$TASK"
+HIVE_HOME="$FIX" "$BIN" task cancel --task "$TASK"
+HIVE_HOME="$FIX" "$BIN" worktree remove --task "$TASK"
 herdr workspace list
 git -C "$REPO" branch --list "task/$TASK"
 # Capture the repository workspace that this run can create.
@@ -2163,7 +2162,7 @@ def forward(signum, frame):
             pass
 
 signal.signal(signal.SIGINT, forward)
-child = subprocess.Popen([BIN, "--home", HOME, "supervise"], start_new_session=True)
+child = subprocess.Popen([BIN, "supervise"], env={**os.environ, "HIVE_HOME": HOME}, start_new_session=True)
 start["child_pid"] = child.pid
 write_atomic(EXIT_FILE + ".started", start)
 if interrupted:
@@ -2230,10 +2229,10 @@ sed -i "s|__SHELL__|$SUP_SHELL|g; s|__RUN__|$RUN_ID|g; s|__WRAP__|$SUP_WRAP|g; s
 chmod +x "$SUP_SHELL_WRAP"
 printf '%s\n' "$SUP_WRAP" "python3 \"$SUP_SHELL_WRAP\" \"\$?\"" > "$SUP_RUN/pane-b-command.txt"
 RUN_START=$(date +%s)
-"$BIN" --home "$PWD" doctor
-"$BIN" --home "$PWD" agent spawn --role manager --project hive --harness pi \
+HIVE_HOME="$PWD" "$BIN" doctor
+HIVE_HOME="$PWD" "$BIN" agent spawn --role manager --project hive --harness pi \
   --model opencode-go/deepseek-v4.1-flash:medium --name manager-hive
-"$BIN" --home "$PWD" agent send --agent manager-hive "Create one task that adds reference/dogfood/cp5.md with the date of this run. Run it with a PiFlash worker at opencode-go/deepseek-v4.1-flash:medium. Verify it with a PiSol verifier at openai-codex/gpt-6.1-sol:high. Land it with mode merge under the new dated grant. Send the coordinator an explicit landing message. Remove the clean merged worktree without force. Write your handoff."
+HIVE_HOME="$PWD" "$BIN" agent send --agent manager-hive "Create one task that adds reference/dogfood/cp5.md with the date of this run. Run it with a PiFlash worker at opencode-go/deepseek-v4.1-flash:medium. Verify it with a PiSol verifier at openai-codex/gpt-6.1-sol:high. Land it with mode merge under the new dated grant. Send the coordinator an explicit landing message. Remove the clean merged worktree without force. Write your handoff."
 ```
 
 In pane B, run the two lines in `$SUP_RUN/pane-b-command.txt`. The first line
@@ -2249,16 +2248,23 @@ and commits the artifact on the task branch. The verifier checks the artifact an
 commits `VERIFIED.md` on the task branch. The manager lands the verified branch
 with `hive land --mode merge`. The landing reaches `dev` and `origin/dev`.
 
-Watch in pane C and with `"$BIN" --home "$PWD" inbox`, `task list`, and
-`agent list`. When the inbox shows the landing:
+Watch in pane C. Run these commands to read the records:
+
+```sh
+HIVE_HOME="$PWD" "$BIN" inbox
+HIVE_HOME="$PWD" "$BIN" task list
+HIVE_HOME="$PWD" "$BIN" agent list
+```
+
+When the inbox shows the landing:
 
 ```sh
 git log --oneline -3
 git merge-base --is-ancestor <dev commit under test> <landing>
 git merge-base --is-ancestor <landing> origin/dev
-"$BIN" --home "$PWD" inbox --role manager-hive --all
-"$BIN" --home "$PWD" inbox --role coordinator --all
-"$BIN" --home "$PWD" agent stop --agent manager-hive
+HIVE_HOME="$PWD" "$BIN" inbox --role manager-hive --all
+HIVE_HOME="$PWD" "$BIN" inbox --role coordinator --all
+HIVE_HOME="$PWD" "$BIN" agent stop --agent manager-hive
 git rev-parse main
 git rev-parse origin/main
 git ls-remote origin refs/heads/main
@@ -2366,7 +2372,7 @@ else
   echo "supervisor completion is not a success: keep $SUP_RUN and report BLOCKED"
   exit 1
 fi
-"$BIN" --home "$PWD" doctor
+HIVE_HOME="$PWD" "$BIN" doctor
 herdr workspace list
 if [ -n "$SUP_OWNED_PANE" ]; then
   herdr pane close "$SUP_OWNED_PANE"
@@ -2444,7 +2450,7 @@ The merger sets the status to evidence and starts the verifier in the same
 pane after the worker stops. The verifier is from another model family.
 
 1. Read `AGENTS.md`, the brief, `evidence/README.md`, and each `V<n>.md`.
-2. Prepare an isolated home for each transcript and probe. Make a unique temporary directory. Create its marker `.hive/README.md` explicitly. Pass its absolute path with `--home`. Make a unique temporary project where a test needs Git. Do not remove the worktree `.hive/state`, `.hive/logs`, or `.hive/tmp`. The worker report lives in `.hive/tmp`, so keep it. Remove only the unique fixture that the pass made. Then run `go build .`.
+2. Prepare an isolated home for each transcript and probe. Make a unique temporary directory. Create its marker `.hive/README.md`. Set `HIVE_HOME` to its absolute path for each command. Make a unique temporary project when a test needs Git. Keep the worktree files `.hive/state`, `.hive/logs`, and `.hive/tmp`. The worker report lives in `.hive/tmp`. Remove only the fixture that the pass made. Then run `go build .`.
 3. Run each verification item again. Compare the output with the expected output of the brief.
 4. Write `VERIFIED.md`, commit it on the task branch, and push the branch.
 5. On a fail, the merger starts the worker again in the same pane with the fail remarks. The worker corrects, the verifier runs again.

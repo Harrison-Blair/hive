@@ -17,9 +17,8 @@ Bare `hive` opens the TUI. Its first increment is a live view of the log with a
 header that shows the state of the home. The TUI is a client of the same files
 and records as the CLI. It has no logic of its own. It reuses the reader and
 the filter of T06 and the record readers of T04. T06 owns the reader behavior.
-T08 adds only the fixed-clock constructor that its rollover test needs. The root
-command passes the resolved home to the TUI, so `--home` selects the home that
-the TUI shows.
+T08 adds only the fixed-clock constructor that its rollover test needs. The root command passes the resolved home to the TUI. `HIVE_HOME`, the config,
+or the marker selects the home that the TUI shows.
 
 ## User flows
 
@@ -27,7 +26,7 @@ the TUI shows.
 2. The user presses `/`, types `herdr`, and presses Enter. The body shows only lines that contain `herdr`.
 3. The user presses `l` three times and sees the level filter move from debug to info, warn, and error.
 4. The user presses `f` to stop the follow, `g` to go to the top, `G` to return to the end, and `q` to quit.
-5. The user runs `hive --home /tmp/other-home`. The header shows `/tmp/other-home`, and the body shows the log of that home.
+5. The user runs `HIVE_HOME=/tmp/other-home hive`. The header shows `/tmp/other-home`, and the body shows the log of that home.
 6. The clock passes midnight. The body keeps the lines of the day before and continues with the first event of the new daily file.
 
 ## Source files
@@ -106,9 +105,9 @@ the TUI shows.
 ```sh
 go test ./internal/tui/ -run TestRunQuits -v
 go build .
-printf q | ./hive --home "$PWD"
+printf q | HIVE_HOME="$PWD" ./hive
 echo "exit $?"
-./hive --json --home "$PWD"
+HIVE_HOME="$PWD" ./hive --json
 echo "exit $?"
 ```
 

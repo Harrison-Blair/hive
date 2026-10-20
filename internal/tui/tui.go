@@ -285,7 +285,7 @@ func Run(in io.Reader, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	resolved, err := home.Resolve("", false, os.Getenv("HIVE_HOME"), cwd)
+	resolved, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
 		return err
 	}

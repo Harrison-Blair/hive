@@ -141,14 +141,14 @@ go build -o "$BIN" .
 sha256sum "$BIN"
 REPO="$FIX/repo-mgr"
 git init -q "$REPO"
-"$BIN" --home "$FIX" project register "$REPO"
+HIVE_HOME="$FIX" "$BIN" project register "$REPO"
 herdr workspace list
-"$BIN" --home "$FIX" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness pi --model opencode-go/deepseek-v4.1-flash:medium
+HIVE_HOME="$FIX" "$BIN" agent spawn --role manager --project repo-mgr --name "t13-check-$(date +%s)" --harness pi --model opencode-go/deepseek-v4.1-flash:medium
 echo "exit $?"
 herdr workspace list
 herdr tab list --workspace <workspace ID from the spawn output>
 head -n 3 "$FIX/projects/repo-mgr/AGENTS.md"
-"$BIN" --home "$FIX" agent stop --agent <name from the spawn output>
+HIVE_HOME="$FIX" "$BIN" agent stop --agent <name from the spawn output>
 echo "exit $?"
 herdr workspace list
 rm -rf "$FIX"

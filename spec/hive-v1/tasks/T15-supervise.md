@@ -193,32 +193,32 @@ chmod +x "$WRAP"
 echo "$WRAP"
 REPO="$FIX/repo-sup"
 git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
-"$BIN" --home "$FIX" project register "$REPO"
-"$BIN" --home "$FIX" task create --project repo-sup --title "supervise demo"
+HIVE_HOME="$FIX" "$BIN" project register "$REPO"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-sup --title "supervise demo"
 herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 M_PANE=<root pane ID from the output>
 herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$FIX"
 W_PANE=<root pane ID from the output>
 M="t15-check-m-$(date +%s)"
 W="t15-check-w-$(date +%s)"
-"$BIN" --home "$FIX" agent spawn --pane "$M_PANE" --role manager --project repo-sup --name "$M" --harness claude --model {{T15_SMOKE_MODEL}}
-"$BIN" --home "$FIX" agent spawn --pane "$W_PANE" --role worker --project repo-sup --task 1-supervise-demo --name "$W" --harness claude --model {{T15_SMOKE_MODEL}}
-"$BIN" --home "$FIX" task assign --task 1-supervise-demo --agent "$W"
-"$BIN" --home "$FIX" supervise > "$FIX/supervise.out" 2>&1 &
+HIVE_HOME="$FIX" "$BIN" agent spawn --pane "$M_PANE" --role manager --project repo-sup --name "$M" --harness claude --model {{T15_SMOKE_MODEL}}
+HIVE_HOME="$FIX" "$BIN" agent spawn --pane "$W_PANE" --role worker --project repo-sup --task 1-supervise-demo --name "$W" --harness claude --model {{T15_SMOKE_MODEL}}
+HIVE_HOME="$FIX" "$BIN" task assign --task 1-supervise-demo --agent "$W"
+HIVE_HOME="$FIX" "$BIN" supervise > "$FIX/supervise.out" 2>&1 &
 SUP=$!
 sleep 2
-"$BIN" --home "$FIX" doctor
-"$BIN" --home "$FIX" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: '$WRAP' --home '$FIX' task complete --task 1-supervise-demo"
+HIVE_HOME="$FIX" "$BIN" doctor
+HIVE_HOME="$FIX" "$BIN" agent send --agent "$W" --wait --timeout 120 "Run this command and then stop: HIVE_HOME='$FIX' '$WRAP' task complete --task 1-supervise-demo"
 sleep 5
-"$BIN" --home "$FIX" agent list --all
-"$BIN" --home "$FIX" inbox --role manager-repo-sup
+HIVE_HOME="$FIX" "$BIN" agent list --all
+HIVE_HOME="$FIX" "$BIN" inbox --role manager-repo-sup
 herdr pane read "$M_PANE" --lines 20
-"$BIN" --home "$FIX" agent stop --agent "$M"
+HIVE_HOME="$FIX" "$BIN" agent stop --agent "$M"
 kill -INT "$SUP"
 wait "$SUP"
 echo "exit $?"
 cat "$FIX/supervise.out"
-"$BIN" --home "$FIX" doctor
+HIVE_HOME="$FIX" "$BIN" doctor
 herdr tab list --workspace "$HERDR_WORKSPACE_ID"
 rm -rf "$FIX"
 ```

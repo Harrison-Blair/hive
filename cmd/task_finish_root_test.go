@@ -60,7 +60,7 @@ func assertFinishReport(t *testing.T, stderr string) {
 func TestTaskCompleteShortStdoutReportsKnownEffectsAndDoesNotReplay(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "assigned")
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--agent", "worker-1"}, strings.NewReader(""), &shortWriter{}, &stderr)
+	status := executeWithStreams([]string{"task", "complete", "--task", taskID, "--agent", "worker-1"}, strings.NewReader(""), &shortWriter{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -86,7 +86,7 @@ func TestTaskCompleteShortStdoutReportsKnownEffectsAndDoesNotReplay(t *testing.T
 func TestTaskVerifyFailedStdoutReportsKnownEffects(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "completed")
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "verify", "--task", taskID, "--agent", "verifier-1"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
+	status := executeWithStreams([]string{"task", "verify", "--task", taskID, "--agent", "verifier-1"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -122,10 +122,10 @@ func (w *truncatedWriter) Write(data []byte) (int, error) {
 }
 
 func TestTaskCompleteJSONShortStdoutWritesOneEnvelope(t *testing.T) {
-	home, taskID := seedFinishCLI(t, "assigned")
+	_, taskID := seedFinishCLI(t, "assigned")
 	var stderr bytes.Buffer
 	stdout := &truncatedWriter{}
-	status := executeWithStreams([]string{"--home", home, "--json", "task", "complete", "--task", taskID, "--agent", "worker-1"}, strings.NewReader(""), stdout, &stderr)
+	status := executeWithStreams([]string{"--json", "task", "complete", "--task", taskID, "--agent", "worker-1"}, strings.NewReader(""), stdout, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -149,7 +149,7 @@ func recordsAgentFinished(t *testing.T, registry *store.Store, key string) bool 
 func TestTaskCompleteLogsResolvedActorAndEffects(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "assigned")
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d; stdout %q, stderr %q; want 0", status, stdout.String(), stderr.String())
 	}
@@ -183,7 +183,7 @@ func TestTaskCompletePartialLogsExactPrefix(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; stdout %q, stderr %q; want 1", status, stdout.String(), stderr.String())
 	}
@@ -212,7 +212,7 @@ func TestTaskCompletePartialLogsExactPrefix(t *testing.T) {
 func TestTaskCompleteShortStdoutLogsStreamError(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "assigned")
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &shortWriter{}, &stderr)
+	status := executeWithStreams([]string{"task", "complete", "--task", taskID, "--pane", "w1:p1"}, strings.NewReader(""), &shortWriter{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -228,7 +228,7 @@ func TestVerifyFailLogsNoReasonText(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "completed")
 	const reason = "reason-sentinel-8a91"
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "verify", "--task", taskID, "--fail", "--reason", reason, "--pane", "w1:p2"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"task", "verify", "--task", taskID, "--fail", "--reason", reason, "--pane", "w1:p2"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d; stdout %q, stderr %q; want 0", status, stdout.String(), stderr.String())
 	}
@@ -263,7 +263,7 @@ func TestTaskCompleteShortStdoutReportsOperationActor(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "task", "complete", "--task", taskID, "--pane", "w1:p3"}, strings.NewReader(""), &shortWriter{}, &stderr)
+	status := executeWithStreams([]string{"task", "complete", "--task", taskID, "--pane", "w1:p3"}, strings.NewReader(""), &shortWriter{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -351,6 +351,7 @@ func TestTaskFinishOutputFailureBeforeHomeResolutionCreatesNothing(t *testing.T)
 						cwd := t.TempDir()
 						assertUnmarkedFixture(t, cwd)
 						t.Chdir(cwd)
+						t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 						t.Setenv("HIVE_HOME", "")
 						t.Setenv("HERDR_PANE_ID", "")
 						args := []string{"--json"}
@@ -358,7 +359,7 @@ func TestTaskFinishOutputFailureBeforeHomeResolutionCreatesNothing(t *testing.T)
 						if homeMode == "invalid" {
 							invalidHome = t.TempDir()
 							assertUnmarkedFixture(t, invalidHome)
-							args = append(args, "--home", invalidHome)
+							t.Setenv("HIVE_HOME", invalidHome)
 						}
 						args = append(args, operation.args...)
 						out, attempts := writer.make()
@@ -392,6 +393,7 @@ func TestTaskFinishHomeFailureWithWorkingOutputKeepsFailedEnvelope(t *testing.T)
 					cwd := t.TempDir()
 					assertUnmarkedFixture(t, cwd)
 					t.Chdir(cwd)
+					t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 					t.Setenv("HIVE_HOME", "")
 					t.Setenv("HERDR_PANE_ID", "")
 					args := []string{"--json"}
@@ -399,7 +401,7 @@ func TestTaskFinishHomeFailureWithWorkingOutputKeepsFailedEnvelope(t *testing.T)
 					if homeMode == "invalid" {
 						invalidHome = t.TempDir()
 						assertUnmarkedFixture(t, invalidHome)
-						args = append(args, "--home", invalidHome)
+						t.Setenv("HIVE_HOME", invalidHome)
 					}
 					args = append(args, operation.args...)
 					var stdout, stderr bytes.Buffer
@@ -434,7 +436,7 @@ func TestTaskFinishHomeFailureWithWorkingOutputKeepsFailedEnvelope(t *testing.T)
 	}
 }
 
-func TestTaskFinishEmptyHomeFlagWithFailingStdoutKeepsUsageStatus(t *testing.T) {
+func TestTaskFinishUnknownHomeFlagWithFailingStdoutKeepsNoEnvelope(t *testing.T) {
 	cwd := t.TempDir()
 	assertUnmarkedFixture(t, cwd)
 	t.Chdir(cwd)
@@ -442,15 +444,15 @@ func TestTaskFinishEmptyHomeFlagWithFailingStdoutKeepsUsageStatus(t *testing.T) 
 	t.Setenv("HERDR_PANE_ID", "")
 	out := &countingErrorWriter{}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", "", "--json", "task", "complete", "--task", "1-step"}, strings.NewReader(""), out, &stderr)
+	status := executeWithStreams([]string{"--" + "home", "", "--json", "task", "complete", "--task", "1-step"}, strings.NewReader(""), out, &stderr)
 	if status != 2 {
 		t.Fatalf("status = %d; stderr = %q; want 2", status, stderr.String())
 	}
 	if out.attempts != 0 {
 		t.Fatalf("JSON writer attempts = %d; want no envelope", out.attempts)
 	}
-	if !strings.Contains(stderr.String(), "--home requires a path") || strings.Count(stderr.String(), "\n") != 1 {
-		t.Fatalf("stderr = %q; want one usage line", stderr.String())
+	if stderr.String() != "hive: unknown flag: --"+"home\n" {
+		t.Fatalf("stderr = %q; want one unknown flag line", stderr.String())
 	}
 	assertNoHiveRoot(t, cwd)
 }
@@ -461,7 +463,7 @@ func TestTaskFinishValidHomeOutputFailureLogsResolvedActor(t *testing.T) {
 			home, _ := seedFinishCLI(t, operation.status)
 			out := &countingShortWriter{}
 			var stderr bytes.Buffer
-			args := append([]string{"--home", home, "--json"}, operation.args...)
+			args := append([]string{"--json"}, operation.args...)
 			args = append(args, "--pane", operation.pane)
 			status := executeWithStreams(args, strings.NewReader(""), out, &stderr)
 			if status != 1 {

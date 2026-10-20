@@ -22,13 +22,12 @@ var skillFiles = []string{
 	"internal/agent/templates/presets.md",
 }
 
-// TestSkillCommands checks the fixture, each real file, and the persistent
-// flag skip of the command checker.
+// TestSkillCommands checks the fixture, each real file, and the JSON flag skip.
 func TestSkillCommands(t *testing.T) {
 	root := cmd.NewRootCmd()
 
 	t.Run("fixture reports each unknown command", func(t *testing.T) {
-		const fixture = "hive --home /tmp/home agent fly\nhive --json agent fly\n"
+		const fixture = "hive agent fly\nhive --json agent fly\n"
 		problems := unknownSkillCommands(root, "fixture.md", fixture)
 		if len(problems) != 2 {
 			t.Fatalf("got %d problems %v; want 2", len(problems), problems)
@@ -52,8 +51,8 @@ func TestSkillCommands(t *testing.T) {
 		}
 	})
 
-	t.Run("persistent flags are skipped", func(t *testing.T) {
-		problems := unknownSkillCommands(root, "x.md", "hive --home /tmp/home task complete --task 1-step\n")
+	t.Run("JSON flag is skipped", func(t *testing.T) {
+		problems := unknownSkillCommands(root, "x.md", "hive --json task complete --task 1-step\n")
 		if len(problems) != 0 {
 			t.Fatalf("got %v; want none", problems)
 		}
@@ -137,8 +136,8 @@ func unknownSkillCommands(root *cobra.Command, source, text string) []string {
 }
 
 // resolveCommandPath walks the command children of root over args. It skips
-// the persistent flags --home PATH and --json before the command path. It
-// returns the known path, and false when a token names no child of a command
+// the persistent JSON flag before the command path. It returns the known path,
+// and false when a token names no child of a command
 // that has children. A leaf command accepts the token as a positional
 // argument.
 func resolveCommandPath(root *cobra.Command, args []string) (string, bool) {
@@ -147,11 +146,7 @@ func resolveCommandPath(root *cobra.Command, args []string) (string, bool) {
 	index := 0
 	for index < len(args) {
 		token := args[index]
-		if token == "--home" {
-			index += 2
-			continue
-		}
-		if strings.HasPrefix(token, "--home=") || token == "--json" {
+		if token == "--json" {
 			index++
 			continue
 		}

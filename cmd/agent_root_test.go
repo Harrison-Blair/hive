@@ -46,7 +46,7 @@ func findRootLogEvent(events []map[string]any, message string) map[string]any {
 func TestAgentShowUnknownLogsReadFailure(t *testing.T) {
 	home := testHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "agent", "show", "unknown"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"agent", "show", "unknown"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d, stderr = %q; want 1", status, stderr.String())
 	}
@@ -75,7 +75,7 @@ func TestAgentRegisterUsesHerdrEnvironment(t *testing.T) {
 	t.Setenv("HERDR_WORKSPACE_ID", "w1")
 	t.Setenv("HERDR_TAB_ID", "t1")
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "agent", "register", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"agent", "register", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -98,7 +98,7 @@ func TestAgentRegisterExplicitPaneLeavesWorkspaceAndTabEmpty(t *testing.T) {
 	t.Setenv("HERDR_WORKSPACE_ID", "w1")
 	t.Setenv("HERDR_TAB_ID", "t1")
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "agent", "register", "--role", "coordinator", "--pane", "w2:p2"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"agent", "register", "--role", "coordinator", "--pane", "w2:p2"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -121,7 +121,7 @@ func TestAgentRegisterRejectsUnsafeHerdrPaneValues(t *testing.T) {
 			home := testHome(t)
 			t.Setenv("HERDR_PANE_ID", pane)
 			var stdout, stderr bytes.Buffer
-			status := executeWithStreams([]string{"--home", home, "agent", "register", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+			status := executeWithStreams([]string{"agent", "register", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
 			if status != 1 {
 				t.Fatalf("status = %d, stderr = %q; want 1", status, stderr.String())
 			}

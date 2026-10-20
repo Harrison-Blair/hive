@@ -70,7 +70,7 @@ func TestLogsJSONReadErrorsUsePlainDiagnostics(t *testing.T) {
 			test.setup(t, home, path)
 
 			var stdout, stderr bytes.Buffer
-			status := executeWithStreams([]string{"--home", home, "--json", "logs"}, strings.NewReader(""), &stdout, &stderr)
+			status := executeWithStreams([]string{"--json", "logs"}, strings.NewReader(""), &stdout, &stderr)
 			if status != 1 {
 				t.Fatalf("status = %d; want 1 (stdout %q, stderr %q)", status, stdout.String(), stderr.String())
 			}
@@ -89,14 +89,14 @@ func TestLogsJSONReadErrorsUsePlainDiagnostics(t *testing.T) {
 }
 
 func TestLogsJSONPrintsRawEventLines(t *testing.T) {
-	home, path := makeLogFixture(t)
+	_, path := makeLogFixture(t)
 	raw := `{"time":"2026-10-18T10:00:00-04:00","level":"INFO","component":"cli","msg":"ok"}`
 	if err := os.WriteFile(path, []byte(raw+"\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "--json", "logs"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"--json", "logs"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0 (stdout %q, stderr %q)", status, stdout.String(), stderr.String())
 	}

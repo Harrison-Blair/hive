@@ -61,7 +61,7 @@ worktree. The verifier spawn therefore reopens the worktree with
 - A lost start reply or another uncertain start preserves the topology and the record. Report `partial` and the unresolved record. Do not clean up after an uncertain start.
 - The result of the core decides the next steps. `ok` with the status `idle` or `done`: assign, then prompt. `blocked`: no assignment and no prompt. The outcome is `partial` with the error of T10 and the hint `then run: hive task assign --task <id> --agent <name> and hive agent send --agent <name> '<prompt>'`. A timeout: no assignment and no prompt, `partial` as T10 gives. `failed`, or an `unresolved` record: no assignment and no prompt.
 - A prompt that fails after the assignment gives `partial` with the effects `agent started` and `task assigned`, and the hint `then run: hive agent send --agent <name> '<prompt>'`.
-- The worker prompt is one line: `Read <home>/.agents/skills/hive-worker/SKILL.md first. Then run: hive --home '<home>' task show '<task-id>' --brief. Follow that brief. Your worktree is '<path>' on the branch '<branch>'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
+- The worker prompt is one line: `Read <home>/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '<task-id>' --brief. Follow that brief. Your worktree is '<path>' on the branch '<branch>'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
 - Each value inside the single quotes of the prompt is shell-safe. Hive replaces each `'` in the value with `'\''`. A pasted command then works in `sh` with a path that holds a space or a quote.
 
 ### AC2 Verifier
@@ -72,7 +72,7 @@ worktree. The verifier spawn therefore reopens the worktree with
 - Hive tracks whether this invocation made the tab or the workspace. When a start fails before it becomes successful, close only newly made, still-owned topology. Do not close a user workspace to remove one tab. Do not treat `already_open` as ownership.
 - Hive permits cleanup only after a known no-start result and a fresh ownership check. A lost start reply or an uncertain start preserves the topology and the record. Report `partial` and the unresolved record.
 - The pane rules of AC1 then apply to that root pane.
-- The verifier prompt is one line: `Read <home>/.agents/skills/hive-verifier/SKILL.md first. Then run: hive --home '<home>' task show '<task-id>' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive --home '<home>' task verify --task '<task-id>', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
+- The verifier prompt is one line: `Read <home>/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '<task-id>' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive task verify --task '<task-id>', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
 - The spawn does not assign the task. The record has the role `verifier` and the task.
 - The verifier spawn uses the same core result rules as AC1, without the assignment.
 
@@ -152,56 +152,56 @@ cat > "$FIX/.agents/skills/hive-worker/SKILL.md" <<EOF
 # hive-worker fixture
 For this fixture, replace the executable hive in every product prompt command with $WRAP.
 Use the home $FIX. The only hive executable is $WRAP.
-Run $WRAP --home $FIX task show 1-worker-demo --brief before any other command.
-The final completion command is $WRAP --home $FIX task complete --task 1-worker-demo --agent $W.
+Run HIVE_HOME=$FIX $WRAP task show 1-worker-demo --brief before any other command.
+The final completion command is HIVE_HOME=$FIX $WRAP task complete --task 1-worker-demo --agent $W.
 Follow the brief.
 EOF
 cat > "$FIX/.agents/skills/hive-verifier/SKILL.md" <<EOF
 # hive-verifier fixture
 For this fixture, replace the executable hive in every product prompt command with $WRAP.
 Use the home $FIX. The only hive executable is $WRAP.
-Run $WRAP --home $FIX task show 1-worker-demo --brief before any other command.
-The final verification command is $WRAP --home $FIX task verify --task 1-worker-demo --agent $V.
+Run HIVE_HOME=$FIX $WRAP task show 1-worker-demo --brief before any other command.
+The final verification command is HIVE_HOME=$FIX $WRAP task verify --task 1-worker-demo --agent $V.
 Follow the brief.
 EOF
 export PATH="$FIX/bin:$PATH"
 REPO="$FIX/repo-w"
 git init -q "$REPO" && git -C "$REPO" commit -q --allow-empty -m init
-"$BIN" --home "$FIX" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
-"$BIN" --home "$FIX" task create --project repo-w --title "worker demo" --brief - <<B
+HIVE_HOME="$FIX" "$BIN" project register "$REPO" --base "$(git -C "$REPO" branch --show-current)"
+HIVE_HOME="$FIX" "$BIN" task create --project repo-w --title "worker demo" --brief - <<B
 Make the file hello.txt in your worktree with the one line hello. Do not commit.
 Verification item V1: cat hello.txt prints hello.
-When V1 passes, run: '$WRAP' --home '$FIX' task complete --task 1-worker-demo --agent '$W'
+When V1 passes, run: HIVE_HOME='$FIX' '$WRAP' task complete --task 1-worker-demo --agent '$W'
 B
-"$BIN" --home "$FIX" worktree create --task 1-worker-demo
-"$BIN" --home "$FIX" agent spawn --role worker --task 1-worker-demo --name "$W" --harness claude --model {{T14_SMOKE_MODEL}}
+HIVE_HOME="$FIX" "$BIN" worktree create --task 1-worker-demo
+HIVE_HOME="$FIX" "$BIN" agent spawn --role worker --task 1-worker-demo --name "$W" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
-"$BIN" --home "$FIX" task show 1-worker-demo
+HIVE_HOME="$FIX" "$BIN" task show 1-worker-demo
 # wait until the task shows completed, then:
 cat "$FIX/projects/repo-w/worktrees/1-worker-demo/hello.txt"
-"$BIN" --home "$FIX" agent stop --agent "$W"
+HIVE_HOME="$FIX" "$BIN" agent stop --agent "$W"
 herdr workspace list
-"$BIN" --home "$FIX" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model {{T14_SMOKE_MODEL}}
+HIVE_HOME="$FIX" "$BIN" agent spawn --role verifier --task 1-worker-demo --name "$V" --harness claude --model {{T14_SMOKE_MODEL}}
 echo "exit $?"
 herdr workspace list
 # wait until the task shows verified, then:
-"$BIN" --home "$FIX" task show 1-worker-demo
-"$BIN" --home "$FIX" agent stop --agent "$V"
-"$BIN" --home "$FIX" worktree remove --task 1-worker-demo --force
+HIVE_HOME="$FIX" "$BIN" task show 1-worker-demo
+HIVE_HOME="$FIX" "$BIN" agent stop --agent "$V"
+HIVE_HOME="$FIX" "$BIN" worktree remove --task 1-worker-demo --force
 herdr workspace close <repository workspace ID from the create output>
 # Check the actual child execution path and hash.
 cat "$WRAPLOG"
 awk -v w="$WRAP" -v b="$BIN" -v s="$SHA" 'NF != 3 || $1 != w || $2 != b || $3 != s { exit 1 }' "$WRAPLOG"
 # Exercise the extracted wrapper forms with bare hive absent from the child PATH.
-"$BIN" --home "$FIX" task create --project repo-w --title "recipe demo" --brief - <<B
+HIVE_HOME="$FIX" "$BIN" task create --project repo-w --title "recipe demo" --brief - <<B
 Recipe only.
 B
-"$BIN" --home "$FIX" task assign --task 2-recipe-demo --agent worker-recipe
+HIVE_HOME="$FIX" "$BIN" task assign --task 2-recipe-demo --agent worker-recipe
 test -z "$(env -i PATH="$FIX/child-bin" /bin/sh -c 'command -v hive')"
-env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task show 1-worker-demo --brief > "$FIX/brief-check.txt"
+env -i PATH="$FIX/child-bin" HOME="$FIX" HIVE_HOME="$FIX" "$WRAP" task show 1-worker-demo --brief > "$FIX/brief-check.txt"
 grep -Fq "Make the file hello.txt" "$FIX/brief-check.txt"
-env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task complete --task 2-recipe-demo --agent worker-recipe
-env -i PATH="$FIX/child-bin" HOME="$FIX" "$WRAP" --home "$FIX" task verify --task 2-recipe-demo --agent verifier-recipe
+env -i PATH="$FIX/child-bin" HOME="$FIX" HIVE_HOME="$FIX" "$WRAP" task complete --task 2-recipe-demo --agent worker-recipe
+env -i PATH="$FIX/child-bin" HOME="$FIX" HIVE_HOME="$FIX" "$WRAP" task verify --task 2-recipe-demo --agent verifier-recipe
 cat "$WRAPLOG"
 test "$(wc -l < "$WRAPLOG")" -ge 3
 awk -v w="$WRAP" -v b="$BIN" -v s="$SHA" 'NF != 3 || $1 != w || $2 != b || $3 != s { exit 1 }' "$WRAPLOG"

@@ -48,5 +48,6 @@
   "spec/hive-v1/tasks/28-first-prompt-fix.md": 0,
   "spec/hive-v1/tasks/29-message-marker.md": 0,
   "spec/hive-v1/tasks/36-nudge-no-home.md": 0,
-  "spec/hive-v1/tasks/43-home-config.md": 0
+  "spec/hive-v1/tasks/43-home-config.md": 0,
+  "spec/hive-v1/tasks/44-remove-home-flag.md": 0
 }

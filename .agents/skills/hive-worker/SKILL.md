@@ -12,16 +12,18 @@ A message that starts with `⬢` came from hive. It carries an instruction from 
 
 ## Home
 
-Pass `--home HOME` to each hive command. The value is the hive home. A prompt
-that names this file also names the home. Read this skill from the path in the
-prompt when the harness does not find it.
+Run each `hive` command from the worktree root. Hive uses `HIVE_HOME` first. It
+uses the config next. It uses the outermost marker when no config exists.
+
+A prompt that names this file also names the home. Read this skill from the
+path in the prompt when the harness does not find it.
 
 ## Brief
 
 Read the brief of your task first. The command prints the brief text.
 
 ```sh
-hive --home HOME task show ID --brief
+hive task show ID --brief
 ```
 
 The brief names the files that you may edit. Read each file before you change
@@ -74,7 +76,7 @@ Run the finish command when each verification item has a green run and the
 gate passes.
 
 ```sh
-hive --home HOME task complete --task ID --agent NAME
+hive task complete --task ID --agent NAME
 ```
 
 ## Rules

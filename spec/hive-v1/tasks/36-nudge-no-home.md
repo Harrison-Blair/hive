@@ -10,10 +10,10 @@
 
 ## Overview
 
-The supervisor nudge line names the home with the `--home` flag. The nudge
-must not name the home. Each agent runs below the home, and `home.Resolve`
-finds the home from the working directory. When the code does not agree with
-this brief, stop and report it with
+The supervisor nudge line names the home. The nudge must not name the home.
+Each agent runs below the home, and `home.Resolve` finds the home from the
+working directory. When the code does not agree with this brief, stop and
+report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`.
 
 ## Known facts
@@ -23,7 +23,7 @@ this brief, stop and report it with
   of `nudgeLine`. That test computes the expected value with the code under
   test.
 - `home.Resolve` in `internal/lib/home/home.go` finds the marker above the
-  working directory when the flag and `HIVE_HOME` are not set.
+  working directory when `HIVE_HOME` and the config are not set.
 
 ## Source files
 
@@ -43,9 +43,9 @@ Do not edit other files.
 
 - The nudge line is `⬢ hive: N new inbox record, run: hive inbox` for one
   record, and `⬢ hive: N new inbox records, run: hive inbox` for more than one.
-- The nudge line does not contain `--home` or the home path.
+- The nudge line does not contain the home path or a home option.
 - Remove a parameter or a field that becomes unused.
-- Do not remove or change the `--home` flag of the CLI.
+- Do not change CLI home resolution.
 
 ### R2 Tests
 
@@ -68,15 +68,15 @@ its meaning. Record each change in the evidence.
 
 ## Not in scope
 
-The `--home` flag, `home.Resolve`, the inbox command, `main`.
+CLI home resolution, `home.Resolve`, the inbox command, `main`.
 
 ## Verification
 
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each R2 test against the base code, then against the task code | Each changed test fails on the base and passes on the task branch. |
-| V2 | From a directory below the home, for example `projects/hive/worktrees/<task-id>/`, build the task binary and run `env -u HIVE_HOME ./hive task show 36-nudge-no-home` and `env -u HIVE_HOME ./hive task list --project hive` with no `--home` | Each command exits 0 and shows the state of the home at `/home/penguin/source/hive`. Do not run an inbox read. |
-| V3 | `git diff dev --stat` and `grep -rn 'hive --home' internal/supervise` | Only the files of the source table changed. The grep prints nothing. |
+| V2 | From a directory below the home, build the task binary. Run `env -u HIVE_HOME ./hive task show 36-nudge-no-home` and `env -u HIVE_HOME ./hive task list --project hive` without a home option. | Each command exits 0 and shows the state of the home at `/home/penguin/source/hive`. Do not run an inbox read. |
+| V3 | `git diff dev --stat` and `grep -rn 'hive --' internal/supervise` | Only the files of the source table changed. The grep prints nothing. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` prints nothing. The other three commands exit 0. |
 
 ## Finish

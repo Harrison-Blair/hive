@@ -26,61 +26,24 @@ func TestBriefPrompt(t *testing.T) {
 	task := "1-worker-demo"
 	path := "/tmp/wt with space"
 	branch := "task/1-worker-demo"
+	workerWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
+	verifierWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive task verify --task '1-worker-demo', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
 
-	cases := []struct {
-		name     string
-		prompt   string
-		skill    string
-		contains []string
-	}{
-		{
-			name:   "worker",
-			prompt: workerPrompt(home, task, path, branch),
-			skill:  "hive-worker",
-			contains: []string{
-				home, task, path, branch,
-				"/hive-worker in Claude Code", "$hive-worker in Codex",
-			},
-		},
-		{
-			name:   "verifier",
-			prompt: verifierPrompt(home, task),
-			skill:  "hive-verifier",
-			contains: []string{
-				home, task,
-				"/hive-verifier in Claude Code", "$hive-verifier in Codex",
-			},
-		},
+	if got := workerPrompt(home, task, path, branch); got != workerWant {
+		t.Fatalf("worker prompt = %q; want %q", got, workerWant)
 	}
-	for _, testCase := range cases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if strings.Contains(testCase.prompt, "\n") {
-				t.Fatalf("prompt is not one line: %q", testCase.prompt)
-			}
-			prefix := "⬢ Read " + home + "/.agents/skills/" + testCase.skill + "/SKILL.md first. Then run: "
-			if !strings.HasPrefix(testCase.prompt, prefix) {
-				t.Fatalf("prompt = %q; want the prefix %q", testCase.prompt, prefix)
-			}
-			for _, want := range testCase.contains {
-				if !strings.Contains(testCase.prompt, want) {
-					t.Fatalf("prompt = %q; want %q", testCase.prompt, want)
-				}
-			}
-			if !strings.Contains(testCase.prompt, "hive --home "+shellQuote(home)+" task show "+shellQuote(task)+" --brief") {
-				t.Fatalf("prompt = %q; want the brief retrieval command", testCase.prompt)
-			}
-		})
+	if got := verifierPrompt(home, task); got != verifierWant {
+		t.Fatalf("verifier prompt = %q; want %q", got, verifierWant)
 	}
 }
 
 func TestBriefPromptShellSafe(t *testing.T) {
-	home := filepath.Join(t.TempDir(), "a b'c")
-	if err := os.MkdirAll(home, 0o755); err != nil {
-		t.Fatal(err)
-	}
+	home := "/tmp/home path"
 	task := "1-worker-demo"
 	path := "/tmp/wt with space"
 	branch := "task/1-worker-demo"
+	workerWant := `⬢ Read /tmp/home path/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
+	verifierWant := `⬢ Read /tmp/home path/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive task verify --task '1-worker-demo', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
 
 	dir := t.TempDir()
 	script := filepath.Join(dir, "hive")
@@ -88,11 +51,18 @@ func TestBriefPromptShellSafe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, prompt := range []string{
-		workerPrompt(home, task, path, branch),
-		verifierPrompt(home, task),
+	for _, testCase := range []struct {
+		prompt string
+		want   string
+	}{
+		{workerPrompt(home, task, path, branch), workerWant},
+		{verifierPrompt(home, task), verifierWant},
 	} {
-		start := strings.Index(prompt, "hive --home ")
+		prompt := testCase.prompt
+		if prompt != testCase.want {
+			t.Fatalf("prompt = %q; want %q", prompt, testCase.want)
+		}
+		start := strings.Index(prompt, "hive task show ")
 		end := strings.Index(prompt, "--brief")
 		if start < 0 || end < 0 {
 			t.Fatalf("prompt = %q; want the brief retrieval command", prompt)
@@ -104,7 +74,7 @@ func TestBriefPromptShellSafe(t *testing.T) {
 		if err != nil {
 			t.Fatalf("sh -c %q error = %v", command, err)
 		}
-		want := strings.Join([]string{"--home", home, "task", "show", task, "--brief"}, "\n") + "\n"
+		want := strings.Join([]string{"task", "show", task, "--brief"}, "\n") + "\n"
 		if string(out) != want {
 			t.Fatalf("script args = %q; want %q", out, want)
 		}

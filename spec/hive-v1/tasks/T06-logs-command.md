@@ -128,14 +128,14 @@ func (r *Reader) Follow(ctx context.Context, from Offset) (<-chan Event, <-chan 
 - Command:
 
 ```sh
-./hive --home "$HIVE_TMP" project list >/dev/null
-./hive --home "$HIVE_TMP" logs --limit 2
-./hive --home "$HIVE_TMP" logs --component cli --json | tail -n 1 | python3 -m json.tool
-./hive --home "$HIVE_TMP" logs --level error
+HIVE_HOME="$HIVE_TMP" ./hive project list >/dev/null
+HIVE_HOME="$HIVE_TMP" ./hive logs --limit 2
+HIVE_HOME="$HIVE_TMP" ./hive logs --component cli --json | tail -n 1 | python3 -m json.tool
+HIVE_HOME="$HIVE_TMP" ./hive logs --level error
 printf 'not json\n' >> "$HIVE_TMP"/.hive/logs/"$(date +%F)".jsonl
-./hive --home "$HIVE_TMP" logs --limit 1
-./hive --home "$HIVE_TMP" logs --limit 1 --json
-timeout --preserve-status --kill-after=2s -s INT 2 ./hive --home "$HIVE_TMP" logs --follow --limit 1; echo "exit $?"
+HIVE_HOME="$HIVE_TMP" ./hive logs --limit 1
+HIVE_HOME="$HIVE_TMP" ./hive logs --limit 1 --json
+HIVE_HOME="$HIVE_TMP" timeout --preserve-status --kill-after=2s -s INT 2 ./hive logs --follow --limit 1; echo "exit $?"
 ```
 
 - Expected: two text lines in the format of AC2, one parsed JSON event, and no line for the error level. Then one `?` line with `not json`. Then one JSON line on stdout and one `malformed line` diagnostic on stderr. The follow prints one line, waits, and ends with exit 0 on the signal. The measured status is the child status, not GNU timeout status 124.

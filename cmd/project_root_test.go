@@ -10,9 +10,9 @@ import (
 )
 
 func TestRootProjectListJSONEnvelope(t *testing.T) {
-	home := testHome(t)
+	testHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "--json", "project", "list"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"--json", "project", "list"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -67,9 +67,9 @@ func TestRootMissingHomeJSONEnvelope(t *testing.T) {
 }
 
 func TestRootMissingProjectShowArgumentIsUsageError(t *testing.T) {
-	home := testHome(t)
+	testHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "project", "show"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"project", "show"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 2 {
 		t.Fatalf("status = %d; want 2 (stdout %q, stderr %q)", status, stdout.String(), stderr.String())
 	}
@@ -79,20 +79,21 @@ func TestRootMissingProjectShowArgumentIsUsageError(t *testing.T) {
 }
 
 func TestRegisterEmptyPathIsUsageError(t *testing.T) {
-	home := testHome(t)
+	testHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "project", "register", ""}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"project", "register", ""}, strings.NewReader(""), &stdout, &stderr)
 	if status != 2 || stdout.Len() != 0 || stderr.String() != "hive: PATH requires a value\n" {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want one PATH usage line", status, stdout.String(), stderr.String())
 	}
 }
 
-func TestResolveEmptyHomeFlagHasUsageStatus(t *testing.T) {
+func TestHomeFlagUnknownPrecedesHomeResolution(t *testing.T) {
 	t.Chdir(t.TempDir())
+	t.Setenv("HIVE_HOME", "")
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", "", "project", "list"}, strings.NewReader(""), &stdout, &stderr)
-	if status != 2 || stdout.Len() != 0 || strings.Count(stderr.String(), "\n") != 1 {
-		t.Fatalf("status = %d, stdout = %q, stderr = %q; want usage status 2 and one stderr line", status, stdout.String(), stderr.String())
+	status := executeWithStreams([]string{"--" + "home", "", "project", "list"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 2 || stdout.Len() != 0 || stderr.String() != "hive: unknown flag: --"+"home\n" {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want unknown flag status 2", status, stdout.String(), stderr.String())
 	}
 }
 
@@ -106,5 +107,6 @@ func testHome(t *testing.T) string {
 	if err := os.WriteFile(marker, []byte("home"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	t.Setenv("HIVE_HOME", home)
 	return home
 }

@@ -135,8 +135,10 @@ func registerHome(t *testing.T) string {
 	return home
 }
 
-func runRegister(t *testing.T, args ...string) (int, string) {
+func runRegister(t *testing.T, home string, args ...string) (int, string) {
 	t.Helper()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", home)
 	root := cmd.NewRootCmd()
 	var stdout, stderr bytes.Buffer
 	root.SetArgs(args)
@@ -193,14 +195,14 @@ func TestRegisterCommandRenamesRoleAndProjectLabels(t *testing.T) {
 			t.Setenv("HERDR_PANE_ID", envPane)
 			t.Setenv("HERDR_WORKSPACE_ID", "w1")
 			t.Setenv("HERDR_TAB_ID", "w1:t1")
-			args := []string{"--home", home, "--json", "agent", "register", "--role", test.role}
+			args := []string{"--json", "agent", "register", "--role", test.role}
 			if test.project {
 				args = append(args, "--project", "demo")
 			}
 			if test.explicit {
 				args = append(args, "--pane", test.paneID)
 			}
-			status, stdout := runRegister(t, args...)
+			status, stdout := runRegister(t, home, args...)
 			if status != 0 {
 				t.Fatalf("status = %d; stdout = %q", status, stdout)
 			}
@@ -230,7 +232,7 @@ func TestRegisterCommandRenameFailureIsAnEffectAndKeepsSuccess(t *testing.T) {
 	home := registerHome(t)
 	pane := `{"type":"pane_info","pane":{"pane_id":"w2:p9","terminal_id":"term_a","workspace_id":"w2","tab_id":"w2:t9","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}`
 	fake := newRegisterHerdr(t, pane, "tab disappeared")
-	status, stdout := runRegister(t, "--home", home, "--json", "agent", "register", "--role", "coordinator", "--pane", "w2:p9")
+	status, stdout := runRegister(t, home, "--json", "agent", "register", "--role", "coordinator", "--pane", "w2:p9")
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; stdout = %q", status, stdout)
 	}

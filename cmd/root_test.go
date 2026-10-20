@@ -21,6 +21,18 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func TestHomeFlagIsUnknown(t *testing.T) {
+	t.Setenv("HIVE_HOME", newRootTestHome(t))
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"--" + "home", "/tmp/ignored", "version"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 2 {
+		t.Fatalf("status = %d; want 2; stdout %q, stderr %q", status, stdout.String(), stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "unknown flag: --"+"home") {
+		t.Fatalf("stderr = %q; want unknown flag error", stderr.String())
+	}
+}
+
 func TestVersionSubcommandPrintsVersion(t *testing.T) {
 	var out bytes.Buffer
 	if err := ExecuteWithArgs([]string{"version"}, strings.NewReader(""), &out); err != nil {
@@ -33,6 +45,7 @@ func TestVersionSubcommandPrintsVersion(t *testing.T) {
 
 func newRootTestHome(t *testing.T) string {
 	t.Helper()
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	home := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
 		t.Fatal(err)
@@ -40,13 +53,14 @@ func newRootTestHome(t *testing.T) string {
 	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	t.Setenv("HIVE_HOME", home)
 	return home
 }
 
 func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 	home := newRootTestHome(t)
 	var out bytes.Buffer
-	status := executeWithStreams([]string{"--home", home}, strings.NewReader("q"), &out, &out)
+	status := executeWithStreams(nil, strings.NewReader("q"), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0", status)
 	}
@@ -63,9 +77,9 @@ func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 }
 
 func TestBareJSONRefusesBeforeTUI(t *testing.T) {
-	home := newRootTestHome(t)
+	newRootTestHome(t)
 	var out bytes.Buffer
-	status := executeWithStreams([]string{"--json", "--home", home}, strings.NewReader(""), &out, &out)
+	status := executeWithStreams([]string{"--json"}, strings.NewReader(""), &out, &out)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}

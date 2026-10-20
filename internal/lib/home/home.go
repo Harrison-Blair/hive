@@ -8,22 +8,9 @@ import (
 	"path/filepath"
 )
 
-// UsageError reports an invalid command-line value.
-type UsageError struct {
-	Message string
-}
-
-func (e *UsageError) Error() string { return e.Message }
-
-// Resolve finds the hive home from the command-line value, environment value, or working directory.
-func Resolve(homeFlag string, homeFlagSet bool, envHome, cwd string) (string, error) {
+// Resolve finds the hive home from the environment value, config, or working directory.
+func Resolve(envHome, cwd string) (string, error) {
 	workingDir := resolvePath(cwd, "")
-	if homeFlagSet {
-		if homeFlag == "" {
-			return "", &UsageError{Message: "--home requires a path"}
-		}
-		return namedHome(homeFlag, workingDir)
-	}
 	if envHome != "" {
 		return namedHome(envHome, workingDir)
 	}

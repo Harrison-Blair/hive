@@ -99,7 +99,7 @@ its meaning. Record each change in the evidence.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each R5 test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Live check in a scratch home (`hive --home DIR`). Register a coordinator, a manager, and a verifier with fake panes. Send records to the manager inbox. Read as each caller with `--role manager-ID` and with `--all`. | The owner read marks the records read. The coordinator read prints them and marks nothing. The verifier read fails, names the owner, and marks nothing. |
+| V2 | Live check in a scratch home (`HIVE_HOME=DIR hive`). Register a coordinator, a manager, and a verifier with fake panes. Send records to the manager inbox. Read as each caller with `--role manager-ID` and with `--all`. | The owner read marks the records read. The coordinator read prints them and marks nothing. The verifier read fails, names the owner, and marks nothing. |
 | V3 | `git diff dev --stat` | Only the files of the source table changed. |
 | V4 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` prints nothing. The other three commands exit 0. |
 

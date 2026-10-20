@@ -12,15 +12,17 @@ A message that starts with `⬢` came from hive. It carries an instruction from 
 
 ## Home
 
-Pass `--home HOME` to each hive command. The value is the hive home. A prompt
-that names this file also names the home.
+Run each `hive` command from the worktree root. Hive uses `HIVE_HOME` first. It
+uses the config next. It uses the outermost marker when no config exists.
+
+A prompt that names this file also names the home.
 
 ## Brief
 
 Read the brief of your task first. The command prints the brief text.
 
 ```sh
-hive --home HOME task show ID --brief
+hive task show ID --brief
 ```
 
 The brief names each verification item and the expected output.
@@ -45,13 +47,13 @@ The verifier commits and pushes `VERIFIED.md` on the task branch before it runs
 Record a pass when each item passes.
 
 ```sh
-hive --home HOME task verify --task ID --agent NAME
+hive task verify --task ID --agent NAME
 ```
 
 Record a fail when one item differs from the expected output.
 
 ```sh
-hive --home HOME task verify --task ID --agent NAME --fail --reason TEXT
+hive task verify --task ID --agent NAME --fail --reason TEXT
 ```
 
 The fail reason names the item and the difference. A failed verdict keeps the

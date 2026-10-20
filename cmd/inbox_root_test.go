@@ -46,7 +46,7 @@ func TestInboxAgentReadConsumesOwnRole(t *testing.T) {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "manager-hive", "--role", "manager-hive"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "manager-hive", "--role", "manager-hive"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 || !strings.Contains(stdout.String(), "owner message") {
 		t.Fatalf("status = %d, stdout = %q, stderr = %q; want the owner message", status, stdout.String(), stderr.String())
 	}
@@ -75,7 +75,7 @@ func TestInboxAllInvalidKeyLogsReadFailure(t *testing.T) {
 	home := testHome(t)
 	seedInboxCoordinator(t, home)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "../x", "--all"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--role", "../x", "--all"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d, stderr = %q; want 1", status, stderr.String())
 	}
@@ -102,7 +102,7 @@ func TestInboxConsumeLogKeepsStoredSender(t *testing.T) {
 	}
 	var stdout, stderr bytes.Buffer
 	seedInboxCoordinator(t, home)
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -129,7 +129,7 @@ func TestInboxShortStdoutReturnsOneAndReportsActualIDs(t *testing.T) {
 				}
 			}
 			seedInboxCoordinator(t, home)
-			args := []string{"--home", home}
+			args := []string{}
 			if jsonMode {
 				args = append(args, "--json")
 			}
@@ -164,7 +164,7 @@ func TestInboxAllFailedStdoutClaimsNoConsumption(t *testing.T) {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -178,9 +178,9 @@ func TestInboxAllFailedStdoutClaimsNoConsumption(t *testing.T) {
 }
 
 func TestInboxMissingRoleRequiresCaller(t *testing.T) {
-	home := testHome(t)
+	testHome(t)
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox"}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
+	status := executeWithStreams([]string{"inbox"}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -193,7 +193,7 @@ func TestInboxExplicitEmptyRoleIsInvalidKey(t *testing.T) {
 	home := testHome(t)
 	seedInboxCoordinator(t, home)
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", ""}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--role", ""}, strings.NewReader(""), &bytes.Buffer{}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -209,7 +209,7 @@ func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	var stderr bytes.Buffer
-	status := executeWithStreams([]string{"--home", home, "inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--role", "coordinator"}, strings.NewReader(""), &failWriter{message: "stdout failed"}, &stderr)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
@@ -218,7 +218,7 @@ func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 	}
 
 	var stdout, nextStderr bytes.Buffer
-	status = executeWithStreams([]string{"--home", home, "--json", "inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &stdout, &nextStderr)
+	status = executeWithStreams([]string{"--json", "inbox", "--agent", "coordinator", "--role", "coordinator", "--all"}, strings.NewReader(""), &stdout, &nextStderr)
 	if status != 0 || nextStderr.Len() != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, nextStderr.String())
 	}

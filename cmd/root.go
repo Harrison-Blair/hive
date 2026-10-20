@@ -50,7 +50,6 @@ func NewRootCmd() *cobra.Command {
 			})
 		},
 	}
-	root.PersistentFlags().String("home", "", "hive home")
 	root.PersistentFlags().Bool("json", false, "write JSON output")
 	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), homeinit.New(), memory.New(), handoff.New(), worktree.New(), land.New(), supervise.New())
 	return root

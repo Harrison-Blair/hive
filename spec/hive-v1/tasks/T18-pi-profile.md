@@ -92,14 +92,14 @@ go build -o "$BIN" .
 sha256sum "$BIN"
 NAME=t18-check-$(date +%s)
 herdr workspace create --cwd "$FIX" --label "$NAME" --no-focus
-"$BIN" --home "$FIX" agent spawn --pane <root pane of the new workspace> --role coordinator --name "$NAME" --harness pi --model {{T18_MODEL}}
+HIVE_HOME="$FIX" "$BIN" agent spawn --pane <root pane of the new workspace> --role coordinator --name "$NAME" --harness pi --model {{T18_MODEL}}
 echo "exit $?"
-"$BIN" --home "$FIX" agent send --agent "$NAME" --wait --timeout 120 'Reply with the word pong.'
+HIVE_HOME="$FIX" "$BIN" agent send --agent "$NAME" --wait --timeout 120 'Reply with the word pong.'
 echo "exit $?"
 herdr pane read <root pane of the new workspace> --source visible
-"$BIN" --home "$FIX" agent stop --agent "$NAME"
+HIVE_HOME="$FIX" "$BIN" agent stop --agent "$NAME"
 echo "exit $?"
-"$BIN" --home "$FIX" agent show "$NAME"
+HIVE_HOME="$FIX" "$BIN" agent show "$NAME"
 herdr workspace list
 rm -rf "$FIX"
 ```

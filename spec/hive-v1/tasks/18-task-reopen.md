@@ -121,7 +121,7 @@ friction folder, `main`.
 | ID | Check | Expected result |
 | --- | --- | --- |
 | V1 | Run each R5 and R4 test against the base code, then against the task code | Each new test fails on the base and passes on the task branch. |
-| V2 | Live check in a scratch home (`hive --home DIR`) with a fake verified task: reopen it as the manager, then `hive task show`, then `hive land` | Status `assigned`, `verification` is `null`, the history holds the old check, and land fails with `task is assigned`. |
+| V2 | Live check in a scratch home (`HIVE_HOME=DIR hive`) with a fake verified task: reopen it as the manager, then `hive task show`, then `hive land` | Status `assigned`, `verification` is `null`, the history holds the old check, and land fails with `task is assigned`. |
 | V3 | Read the R4 text in both instruction files | Present in both. |
 | V4 | `git diff dev --stat` | Only the files of the source table changed. |
 | V5 | The gate of `AGENTS.md` from the worktree root | `gofmt -l` prints nothing. The other three commands exit 0. |
