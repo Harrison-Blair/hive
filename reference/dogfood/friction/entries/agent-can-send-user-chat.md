@@ -1,20 +1,25 @@
 ---
-title: "An agent that drives the TUI can send a user chat message"
+title: "An agent can send a user chat message through the TUI"
 status: "Open"
 opened: 2026-10-20
 decision: ""
 ---
 
 **Summary:**
-On 2026-10-20 worker t89-worker-1 ran bare `hive` on the home for the
-screen board audit. It typed screen keys after `i` opened the Chat input, and
-the TUI sent `278` to the coordinator. Hive tags each TUI chat message with
-`⬢ user:`, and the role gate gives that tag the authority of the user. The
-TUI cannot tell the user from an agent that sends keys to its pane. The
-manager told the coordinator to ignore the message.
+On 2026-10-20 at 14:4x UTC, worker t89-worker-1 (task 89-screen-board-audit)
+ran the TUI in its own pane to audit the screens. It pressed `i` on the Chat
+screen and typed screen keys. The TUI sent "278" with `hive chat send`, and the
+coordinator got `⬢ user: 278` (chat record c1). A message with `⬢ user:`
+carries the authority of the user. The coordinator treated it as a message from
+the user and replied (c2).
+
+`hive chat send` refuses a caller that passes `--agent`. The TUI does not pass
+it, and nothing checks where the TUI runs. Thus each agent that can run `hive`
+can make a message with the authority of the user. Only the report from the
+manager showed the true source.
 
 **Reproduction steps:**
-1. As an agent, start bare `hive` in a herdr pane on the home.
-2. Send the keys `i`, `2`, `7`, `8`, and Enter to the pane.
-3. Run `hive chat log`: a user message `278` is in the history, and the
-   coordinator pane got `⬢ user: 278`.
+1. In the pane of a worker, run bare `hive`.
+2. On screen 1, press `i`, type text, and press Enter.
+3. The coordinator pane gets `⬢ user: TEXT`, and `hive chat log` shows a user
+   record.
