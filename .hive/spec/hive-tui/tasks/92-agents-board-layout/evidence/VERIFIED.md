@@ -623,3 +623,109 @@ Gate from the worktree root: `gofmt -l` printed nothing. `go mod tidy -diff` pri
 | Scratch worktree | `.hive/tmp/t92v6/wt` | Removed with `git worktree remove` |
 
 I did not use workspace `wBC`. Tab `wSJ:t1` stays open.
+
+## Repair 6
+
+Verifier: `t92-verifier-7`. Task head: `aa1747f72cca7295e13575dce4b4dad2a892d707` (after `git fetch`). Repair 5 head: `9c51e950`. Fix commit: `e0c44e52`. Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`.
+
+Result: **pass**. The scope is Repair 6 and the earlier passes. I did not fail on the rows of "Gaps for 102" (now in the brief of task 102). I found no new gap.
+
+| Item | Result |
+| --- | --- |
+| R6.1 extended `TestAgentsGraphColorsMatchBoard` red on `9c51e950`, green on the head | pass |
+| R6.1 test fails when the fix is removed from the head | pass |
+| R6.2 each pod border, live node border, and edge after the selected label has its board color (raw SGR) | pass |
+| R6.2 selected label style unchanged | pass |
+| R6.3 GRAPH PNG captured again | pass |
+| Repair 5 structure and colors (title tests red on `07a5585e`) | pass |
+| Nudge mutation, ghost rule, task 90 idle CPU tests | pass |
+| Exact frames at 120 x 40 and 200 x 57 | pass |
+| V3 diff scope; no board PNG in Git | pass |
+| V4 gate | pass |
+| `git merge-tree --write-tree origin/dev HEAD` | exit 0 |
+
+### R6.1 red and green
+
+The fix (`agents.go:990`, `colorGraphLine`) renders `ansi.Strip(part)` in place of `part` for each colored segment. The test also reads `ESC[m` as a reset.
+
+Scratch worktree at `9c51e950` with `internal/tui/agents_test.go` of the head:
+
+```sh
+go test ./internal/tui -run '^TestAgentsGraphColorsMatchBoard$' -count=1
+```
+
+Red on `9c51e950`: 11 cells with foreground `""`. Nine are on row 6 (the selected label row): columns 23, 27, 69, 73, 114 want `38;2;111;183;255` (`colorInfo`), and columns 38, 58, 84, 103 want `38;2;110;230;154` (`colorWorking`). Two are at row 11 and row 12, column 114 (the right border of the last pod), want `colorInfo`.
+
+Green: `go test ./internal/tui -count=1` passes on the head.
+
+Mutation: on the head, `Render(ansi.Strip(part))` back to `Render(part)`: the test fails again with the same cells. Restored with `git checkout`.
+
+### R6.2 raw SGR bytes
+
+Fixture render (`agentsBoardModel`, GRAPH, 176 x 48), the line with `▶`, from a scratch test that I did not commit. Start of the line:
+
+- `9c51e950`: `ESC[38;2;111;183;255m│ESC[1;38;2;245;185;66mESC[mESC[m │ ESC[1;38;2;245;185;66m▶ ● coordinatorESC[m  │ ESC[38;2;111;183;255mESC[1;38;2;245;185;66mESC[m│ESC[m…` — after the label, each color is reset before its glyph.
+- Head: `ESC[38;2;111;183;255m│ESC[m │ ESC[1;38;2;245;185;66m▶ ● coordinatorESC[m  │ ESC[38;2;111;183;255m│ESC[mESC[1;38;2;245;185;66mESC[m   ESC[38;2;111;183;255m│ESC[m … ESC[38;2;110;230;154m│ESC[m … manager-alpha   ESC[38;2;110;230;154m│ESC[m …` — each glyph directly follows its color. The empty `ESC[1;…mESC[m` pairs print nothing; the text `manager-alpha` stays default.
+
+The selected label bytes `ESC[1;38;2;245;185;66m▶ ● coordinatorESC[m` are the same on `9c51e950` and the head.
+
+Live, pane `wSX:p2` at 207 x 57, `herdr pane read wSX:p2 --source visible --format ansi`, row 10 (selected label row). Foreground per cell (B = `colorInfo`, G = `colorWorking`, H = honey, `_` = default):
+
+```text
+│ │ ▶ ○ coordinator  │ │   │  │ ○ manager-hive            │  │   │  │ ○ manager-qmeter   │  │   │   │ ○ manager-stenographer        │   │
+B _ H H HHHHHHHHHHH  _ B   B  G _ ____________            G  B   B  G _ ______________   G  B   B   G _ ____________________        G   B
+```
+
+Raw bytes for the pod border after the label: `ESC[0mESC[38;2;111;183;255m│ESC[0m`; for a live node border: `ESC[0mESC[38;2;110;230;154m│ESC[0m`. The only default box glyphs in the graph panel on rows 9 to 11 are the border of the selected coordinator node (columns 34 and 53). This is the "Selected node border" row of "Gaps for 102". No live capture has a `48;` background code.
+
+The tmux exact frames (TERM `xterm-256color`) down-sample the palette: row 10 has `ESC[38;5;75m│` (info) and `ESC[38;5;78m│` (working) after the label `ESC[1mESC[38;5;215m▶ ○ coordinator`. No `48;` code.
+
+### R6.3 PNG
+
+`repair6-agents-graph-200x57.png` shows the selected row with blue pod borders and green live node borders after the label. `repair6-agents-graph-120x40.png` is present.
+
+### Earlier passes
+
+Scratch worktree at the head; each file restored with `git checkout` after each run.
+
+- Nudge filter removed (`agents.go:144`): `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` fails.
+- Ghost rule `open := true` (`agents.go:121`): `TestAgentsGhostsRequireAnOpenTask`, `TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts`, and `TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren` fail.
+- Task 90 render cache (`tui.go:420`, `shell.go:156` to `if true`): `header refresh rendered screen 2 times` and `minute refresh rendered screen 2 times`.
+- Task 90 idle reload (`headerChanged := true`, `tui.go:242`): `unchanged tick started 1 header loads and 0 screen loads; want none` and `changed tick started 1 header loads and 1 screen loads; want 0 and 1`.
+- Repair 5: `agents.go` and `shell.go` of `07a5585e` with the head tests: the alpha and long pod title tests fail with `want prefix "╭─ ≡ alpha · Alpha… ─┬"` and `want prefix "╭─ ≡ stenographer · a… ─┬"`, and `TestAgentsGraphColorsMatchBoard` fails.
+- Live structure at 207 x 57: header, explorer tree, compact screen list, tabs and legend, pods with titles before the stem, node boxes, edges, detail strip, and key bar are as in Repair 5.
+
+### Live check
+
+Binary built from the head at `.hive/tmp/t92v7/hive`. Scratch home `.hive/tmp/t92v7/home` (copy of `.hive/README.md`, `.hive/state`, `.hive/spec`) in `HIVE_HOME`, temp `XDG_CONFIG_HOME` `.hive/tmp/t92v7/config`. Each start used `env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH -u HERDR_TAB_ID`. `/proc/2999976/environ` had no `HERDR_ENV`, `HERDR_PANE_ID`, `HERDR_WORKSPACE_ID`, or `HERDR_SOCKET_PATH`. I never opened the Chat input and never pressed Enter in the TUI.
+
+1. Tab `wSX:t2` (`t92-v7-live`) in my workspace `wSX`, pane `wSX:p2`, 207 x 57, shell PID 2998651, TUI PID 2999976. ANSI captures of TREE, GRAPH, TABLE.
+2. Exact frames: `tmux -L t92v7 -f /dev/null new-session -d -s v120 -x 120 -y 40` and `-s v200 -x 200 -y 57`, each running the same `env -u …` start. Server PID 3003395, TUI PIDs 3003396 and 3003399.
+
+| Size | View | Capture | Lines | Widest line |
+| --- | --- | --- | --- | --- |
+| 120 x 40 | TREE | [`verify-repair6-120x40-tree.txt`](verify-repair6-120x40-tree.txt) | 40 | 120 |
+| 120 x 40 | GRAPH | [`verify-repair6-120x40-graph.txt`](verify-repair6-120x40-graph.txt) | 40 | 120 |
+| 120 x 40 | TABLE | [`verify-repair6-120x40-table.txt`](verify-repair6-120x40-table.txt) | 40 | 120 |
+| 200 x 57 | TREE | [`verify-repair6-200x57-tree.txt`](verify-repair6-200x57-tree.txt) | 57 | 200 |
+| 200 x 57 | GRAPH | [`verify-repair6-200x57-graph.txt`](verify-repair6-200x57-graph.txt) | 57 | 200 |
+| 200 x 57 | TABLE | [`verify-repair6-200x57-table.txt`](verify-repair6-200x57-table.txt) | 57 | 200 |
+
+No line goes past the edge. Footer: `not in herdr: no coordinator or supervisor started`. The only `hive supervise` process before and after was PID 2107907, which I did not start. No coordinator tab was made.
+
+### V3, merge, and gate
+
+`git diff origin/dev --name-only`: no file outside `internal/tui/`, `testdata/ste-baseline.json`, and this task's brief and evidence. The PNG files in Git are screen captures (`repair*-agents-*.png`); no board PNG. Pass. `git merge-tree --write-tree origin/dev HEAD` exit 0 (`origin/dev` at `21d4b8c0`).
+
+Gate from the worktree root: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `go vet ./...` exit 0. `golangci-lint run ./...` `0 issues.` exit 0. `go test -race -count=1 ./...` exit 0.
+
+### Resources
+
+| Resource | ID | Result |
+| --- | --- | --- |
+| Tab in my workspace `wSX` | `wSX:t2` (`t92-v7-live`), pane `wSX:p2`, shell PID 2998651 | Closed with `herdr tab close wSX:t2` after an ID check; shell gone |
+| TUI 207 x 57 in `wSX:p2` | PID 2999976 | Ctrl+C sent after a cmdline and parent check, then the tab closed; PID gone |
+| tmux server `-L t92v7` | PID 3003395, TUI PIDs 3003396 and 3003399 | Stopped with `tmux -L t92v7 kill-server` after a cmdline check; all three PIDs gone |
+| Scratch worktree | `.hive/tmp/t92v7/wt` | Removed with `git worktree remove` |
+
+I did not use workspace `wBC`. Tab `wSX:t1` stays open.

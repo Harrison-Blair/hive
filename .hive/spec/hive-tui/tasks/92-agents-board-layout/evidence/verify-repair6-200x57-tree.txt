@@ -1,0 +1,57 @@
+⬢ hive  3 projects  10 agents  5 working  5 idle  supervisor ●  needs you 0                                                                                                                        16:18
+╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ AGENTS                     ││ [ TREE ]  GRAPH  TABLE                                                                                                                                                 │
+│ ▾ home                     ││ ▾ home                                                                                                                                                                 │
+│   ▶ ○ coordinator          ││   ├─ ▶ ○ coordinator · idle · 1m                                                                                                                                       │
+│   ● supervisor             ││   └─ ● supervisor · working · 2h                                                                                                                                       │
+│ ▾ hive · 1 working         ││ ▾ hive · Hive TUI dashboard                                                                                                                                            │
+│   ○ manager-hive           ││   ┄┄ ○ manager-hive · idle · 3m                                                                                                                                        │
+│     ● t92-verifier-7       ││      ├─ ● t92-verifier-7 · working · 3m ⋯ replaces t92-verifier-6                                                                                                      │
+│     × t92-worker-7         ││      └─ × t92-worker-7 · stopped · 19m ⋯ replaces t92-worker-6                                                                                                         │
+│ ▾ qmeter · 0 working       ││ ▾ qmeter                                                                                                                                                               │
+│   ○ manager-qmeter         ││   ┄┄ ○ manager-qmeter · idle · 5h                                                                                                                                      │
+│ ▾ stenographer · 4 working ││ ▾ stenographer                                                                                                                                                         │
+│   ○ manager-stenographer   ││   ┄┄ ○ manager-stenographer · idle · 1m                                                                                                                                │
+│     × t109-verifier-1      ││      ├─ × t109-verifier-1 · stopped · 5m                                                                                                                               │
+│     ● t109-worker-2        ││      ├─ ● t109-worker-2 · working · 4m ⋯ replaces t109-worker-1                                                                                                        │
+│     × t110-verifier-1      ││      ├─ × t110-verifier-1 · stopped · 5m                                                                                                                               │
+│     ● t110-worker-2        ││      ├─ ● t110-worker-2 · working · 2m ⋯ replaces t110-worker-1                                                                                                        │
+│     × t111-verifier-1      ││      ├─ × t111-verifier-1 · stopped · 6m                                                                                                                               │
+│     ● t111-worker-2        ││      ├─ ● t111-worker-2 · working · 1m ⋯ replaces t111-worker-1                                                                                                        │
+│     ● t112-verifier-1      ││      ├─ ● t112-verifier-1 · working · 10m                                                                                                                              │
+│     × t112-worker-1        ││      └─ × t112-worker-1 · stopped · 21m                                                                                                                                │
+│                            ││ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│                            ││ │ coordinator  parent ?  model claude-opus-5-5  task ?  ?  pane wBC:pV  next ?                                                                                       │ │
+│                            ││ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│                            ││                                                                                                                                                                        │
+│ ────────────────────────── ││                                                                                                                                                                        │
+│ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                                                                                                        │
+│ 5 TASKS · 6 FRICTION       ││                                                                                                                                                                        │
+│ 7 HEALTH · 8 LOGS          ││                                                                                                                                                                        │
+╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
+←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat
