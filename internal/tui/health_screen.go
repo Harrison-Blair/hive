@@ -121,7 +121,7 @@ func healthCheckLine(check doctor.Check, selected bool) string {
 	}
 	name := check.Name
 	if selected {
-		name = selectedStyle.Render(name)
+		name = selectedStyle.Render("▶ " + name)
 	}
 	return style.Render(mark) + " " + name
 }

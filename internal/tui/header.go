@@ -104,16 +104,17 @@ func (m *Model) agentsHeaderLine() string {
 	if state.agents == 1 {
 		agentLabel = "agent"
 	}
-	workCounts := fmt.Sprintf("%d working  %d idle", state.working, state.idle)
+	workCounts := fmt.Sprintf("%s  %d idle", workingStyle.Render(fmt.Sprintf("%d working", state.working)), state.idle)
 	if state.supervisor != "fresh" {
-		workCounts = "working unknown  idle unknown"
+		workCounts = dimStyle.Render("working unknown  idle unknown")
 	}
 	supervisor := dimStyle.Render("○")
 	if state.supervisor == "fresh" {
 		supervisor = workingStyle.Render("●")
 	}
 	counts := fmt.Sprintf("⬢ hive  %d %s  %d %s  %s", state.projects, projectLabel, state.agents, agentLabel, workCounts)
-	status := fmt.Sprintf("supervisor %s  needs you %d", supervisor, state.needsUser)
+	needsUser := lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Render(fmt.Sprint(state.needsUser))
+	status := fmt.Sprintf("supervisor %s  needs you %s", supervisor, needsUser)
 	timeLabel := m.now().Format("15:04")
 	width := m.width
 	if width < 1 {

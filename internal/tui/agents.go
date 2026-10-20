@@ -64,6 +64,7 @@ type agentsState struct {
 	scrollOffset   int
 	scrollHeight   int
 	graphOffset    int
+	graphViewWidth int
 	explorerOffset int
 	peekPane       string
 	peekText       string
@@ -603,7 +604,10 @@ func (s agentsScreen) View(width, height int) string {
 	if state.peekOpen {
 		return renderAgentPeek(state, contentWidth, height-3)
 	}
-	tabLine := []string{"[ TREE ]  GRAPH  TABLE", "TREE  [ GRAPH ]  TABLE", "TREE  GRAPH  [ TABLE ]"}[state.tab]
+	if state.tab == agentsGraph {
+		state.graphViewWidth = contentWidth
+	}
+	tabLine := agentsTabLine(state.tab)
 	var lines []string
 	var graphPositions map[string]graphPosition
 	if state.tab == agentsGraph {
@@ -634,11 +638,16 @@ func (s agentsScreen) View(width, height int) string {
 	if state.scrollOffset > len(lines) {
 		state.scrollOffset = 0
 	}
-	legend := ""
 	if state.tab == agentsGraph {
-		legend = "  edges: ─ delegates · ┄ nudges · ⋯ replaced"
+		legend := dimStyle.Render("edges: ─ delegates · ┄ nudges · ⋯ replaced")
+		gap := contentWidth - lipgloss.Width(tabLine) - lipgloss.Width(legend)
+		if gap > 0 {
+			tabLine += strings.Repeat(" ", gap) + legend
+		} else {
+			tabLine += "\n" + lipgloss.NewStyle().Width(contentWidth).Align(lipgloss.Right).Render(legend)
+		}
 	}
-	body := []string{trimGraphLine(titleStyle.Render(tabLine+legend), contentWidth)}
+	body := []string{tabLine}
 	for index, line := range lines[state.scrollOffset:end] {
 		if state.tab == agentsGraph {
 			line = colorGraphLine(line, graphStyles[state.scrollOffset+index])
@@ -650,6 +659,19 @@ func (s agentsScreen) View(width, height int) string {
 	}
 	body = append(body, detailLines...)
 	return strings.Join(body, "\n")
+}
+
+func agentsTabLine(selected agentsTab) string {
+	labels := [...]string{"TREE", "GRAPH", "TABLE"}
+	parts := make([]string, 0, len(labels))
+	for index, label := range labels {
+		if agentsTab(index) == selected {
+			parts = append(parts, selectedStyle.Render("▶ [ "+label+" ]"))
+		} else {
+			parts = append(parts, dimStyle.Render(label))
+		}
+	}
+	return strings.Join(parts, "  ")
 }
 
 func (s agentsState) explorerLines() ([]string, map[string]int) {
@@ -668,7 +690,7 @@ func (s agentsState) explorerLines() ([]string, map[string]int) {
 					working++
 				}
 			}
-			lines = append(lines, fmt.Sprintf("▾ %s · %d working", title, working))
+			lines = append(lines, "▾ "+title+" "+dimStyle.Render(fmt.Sprintf("· %d working", working)))
 		}
 		roots := s.groupRootsFrom(group, nodes)
 		if group.id == "home" {
@@ -689,14 +711,17 @@ func (s agentsState) explorerLines() ([]string, map[string]int) {
 
 func appendExplorerNode(lines *[]string, positions map[string]int, node agentNode, nodes map[string]agentNode, state agentsState, prefix string, expand bool) {
 	positions[node.record.Key] = len(*lines)
-	label := statusMark(node.status) + " " + node.record.Name
+	mark := statusMark(node.status)
 	if state.showHistory && node.landedGhost {
-		label = "✓ " + node.record.Name
+		mark = "✓"
 	}
+	label := mark + " " + node.record.Name
 	if node.record.Key == state.selectedKey {
 		label = selectedStyle.Render("▶ " + label)
 	} else if node.stopped || !node.current {
 		label = dimStyle.Render(label)
+	} else {
+		label = agentStatusStyle(node).Render(mark) + " " + node.record.Name
 	}
 	*lines = append(*lines, prefix+label)
 	if !expand {
@@ -946,7 +971,9 @@ func (s agentsState) graphColorStyles(lines []string, positions map[string]graph
 		node := nodes[key]
 		live := node.current && node.record.Status == records.AgentLive && !node.stopped
 		borderColor := ""
-		if live && key != s.selectedKey {
+		if key == s.selectedKey {
+			borderColor = colorAccent
+		} else if live {
 			borderColor = colorWorking
 		}
 		for column := position.col; column < position.col+position.width; column++ {
@@ -1018,9 +1045,12 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	}
 	title := "≡ " + group.title
 	hasDelegationStem := len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager")
-	width := max(24, lipgloss.Width(title)+5, cardWidth+4, 2*(lipgloss.Width("≡ "+group.id)+6))
+	width := max(24, lipgloss.Width(title)+6, cardWidth+4, 2*(lipgloss.Width("≡ "+group.id)+6))
 	if hasDelegationStem {
-		width = max(width, lipgloss.Width(title)+8)
+		width = max(width, 2*(lipgloss.Width(title)+5))
+	}
+	if s.graphViewWidth > 0 && width > s.graphViewWidth {
+		width = max(s.graphViewWidth, cardWidth+4)
 	}
 	if (width-cardWidth)%2 != 0 {
 		width++
@@ -1146,12 +1176,12 @@ func graphPodLine(width, middle int, mark rune) string {
 
 func graphPodTitleBorderLine(width int, title string, hasStem bool) string {
 	cells := []rune("╭" + strings.Repeat("─", width-2) + "╮")
+	label := " " + title + " "
 	limit := width - 4
 	if hasStem {
 		limit = width/2 - 3
 		cells[width/2] = '┬'
 	}
-	label := " " + title + " "
 	if lipgloss.Width(label) > limit {
 		label = ansi.Truncate(" "+title, limit-1, "…") + " "
 	}
@@ -1400,13 +1430,40 @@ func agentDetailStrip(text string, width int) []string {
 	innerWidth := width - 4
 	wrapped := wrapAgentLine(text, innerWidth)
 	lines := make([]string, 0, len(wrapped)+2)
-	lines = append(lines, "╭"+strings.Repeat("─", width-2)+"╮")
-	for _, line := range wrapped {
+	border := lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent))
+	lines = append(lines, border.Render("╭"+strings.Repeat("─", width-2)+"╮"))
+	for index, line := range wrapped {
 		line = trimGraphLine(line, innerWidth)
+		line = styleAgentDetailLine(line, index == 0)
 		lines = append(lines, "│ "+line+strings.Repeat(" ", max(0, innerWidth-lipgloss.Width(line)))+" │")
 	}
-	lines = append(lines, "╰"+strings.Repeat("─", width-2)+"╯")
+	lines = append(lines, border.Render("╰"+strings.Repeat("─", width-2)+"╯"))
 	return lines
+}
+
+func styleAgentDetailLine(line string, first bool) string {
+	words := strings.Fields(line)
+	var styled strings.Builder
+	index := 0
+	if first && len(words) > 0 {
+		styled.WriteString(selectedStyle.Render(words[0]))
+		index = 1
+	}
+	for index < len(words) {
+		if styled.Len() > 0 {
+			styled.WriteString("  ")
+		}
+		if isAgentDetailField(words[index]) && index+1 < len(words) {
+			styled.WriteString(dimStyle.Render(words[index]))
+			styled.WriteByte(' ')
+			styled.WriteString(words[index+1])
+			index += 2
+		} else {
+			styled.WriteString(words[index])
+			index++
+		}
+	}
+	return styled.String()
 }
 
 func (s agentsState) parentLabel(node agentNode) string {
@@ -1437,7 +1494,7 @@ func (s agentsState) treeLabel(node agentNode) string {
 	if node.stopped || !node.current {
 		return dimStyle.Render(label)
 	}
-	return label
+	return agentStatusStyle(node).Render(mark) + strings.TrimPrefix(label, mark)
 }
 
 func (s agentsState) nodeMap() map[string]agentNode {
@@ -1509,6 +1566,20 @@ func displayAgent(nodes map[string]agentNode, key string) string {
 		return node.record.Name
 	}
 	return key
+}
+
+func agentStatusStyle(node agentNode) lipgloss.Style {
+	if node.stopped || !node.current {
+		return dimStyle
+	}
+	switch node.status {
+	case "working":
+		return workingStyle
+	case "blocked":
+		return infoStyle
+	default:
+		return dimStyle
+	}
 }
 
 func statusMark(status string) string {

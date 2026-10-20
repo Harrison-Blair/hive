@@ -59,8 +59,8 @@ func TestHealthScreenRendersChecksAndKeepsSelectionAcrossRefresh(t *testing.T) {
 		{Name: "stale worktrees", Status: doctor.StatusWarn, Detail: "demo/1-landed"},
 	}}
 	m, _ = raise(t, m, screenLoadMsg{request: healthDataRequest, health: initial})
-	assertHealthLines(t, m, "✓ home", "! state store", "✕ herdr socket", "✓ starting agents", "! stale worktrees", "DETAIL home: /fixture", "later: capacity from qmeter. Not in this goal.")
-	if !strings.Contains(m.currentScreen().View(120, 30), selectedStyle.Render("home")) {
+	assertHealthLines(t, m, "✓ ▶ home", "! state store", "✕ herdr socket", "✓ starting agents", "! stale worktrees", "DETAIL home: /fixture", "later: capacity from qmeter. Not in this goal.")
+	if !strings.Contains(m.currentScreen().View(120, 30), selectedStyle.Render("▶ home")) {
 		t.Fatal("selected health check is not highlighted")
 	}
 
@@ -68,7 +68,7 @@ func TestHealthScreenRendersChecksAndKeepsSelectionAcrossRefresh(t *testing.T) {
 		m, _ = raise(t, m, key('j', "j"))
 	}
 	assertHealthLines(t, m, "DETAIL stale worktrees: demo/1-landed")
-	if !strings.Contains(m.currentScreen().View(120, 30), selectedStyle.Render("stale worktrees")) {
+	if !strings.Contains(m.currentScreen().View(120, 30), selectedStyle.Render("▶ stale worktrees")) {
 		t.Fatal("moved selection is not highlighted")
 	}
 

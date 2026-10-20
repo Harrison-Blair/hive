@@ -287,9 +287,9 @@ func (s frictionScreen) View(width, height int) string {
 	}
 	var tabLine string
 	if state.tab == frictionOpen {
-		tabLine = "[open " + strconv.Itoa(openCount) + "]  resolved " + strconv.Itoa(resolvedCount)
+		tabLine = selectedStyle.Render("▶ [open "+strconv.Itoa(openCount)+"]") + "  " + dimStyle.Render("resolved "+strconv.Itoa(resolvedCount))
 	} else {
-		tabLine = "open " + strconv.Itoa(openCount) + "  [resolved " + strconv.Itoa(resolvedCount) + "]"
+		tabLine = dimStyle.Render("open "+strconv.Itoa(openCount)) + "  " + selectedStyle.Render("▶ [resolved "+strconv.Itoa(resolvedCount)+"]")
 	}
 
 	split := width >= 72
@@ -322,12 +322,13 @@ func (s frictionScreen) View(width, height int) string {
 	if split {
 		header = fmt.Sprintf("%-12s %-*s %s", "opened", titleWidth, "title", "decision")
 	}
-	lines := []string{titleStyle.Render(tabLine), header}
+	lines := []string{tabLine, header}
 	rowLines := make([]string, 0, len(entries))
 	for _, entry := range entries {
 		prefix := "  "
-		if entry.path == state.selectedPath {
-			prefix = "> "
+		selected := entry.path == state.selectedPath
+		if selected {
+			prefix = "▶ "
 		}
 		opened := entry.opened
 		title := entry.title
@@ -339,7 +340,9 @@ func (s frictionScreen) View(width, height int) string {
 		if split {
 			row = fmt.Sprintf("%s%-12s %-*s %-*s", prefix, opened, titleWidth, clipCell(title, titleWidth), decisionWidth, clipCell(frictionOneLine(decision), decisionWidth))
 		}
-		if entry.resolved {
+		if selected {
+			row = selectedStyle.Render(row)
+		} else if entry.resolved {
 			row = dimStyle.Render(row)
 		}
 		rowLines = append(rowLines, row)

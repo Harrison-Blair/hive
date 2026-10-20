@@ -49,8 +49,8 @@ func TestTasksScreenRendersLandedTaskAndVerificationHistory(t *testing.T) {
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, line := range []string{
-		"active 2  queued 2  [landed 1]  failed 1  all 5",
-		"> 79-tui-shell   TUI shell                   hive      landed     t79-worker-2 · pass 7204d69",
+		"active 2  queued 2  ▶ [landed 1]  failed 1  all 5",
+		"▶ 79-tui-shell   TUI shell                   hive      landed     t79-worker-2 · pass 7204d69",
 		"needs: 81-agents-screen ✓",
 		"blocks: -",
 		"branch: task/79-tui-shell",
@@ -95,12 +95,12 @@ func TestTasksScreenArrowDownSelectsNextTask(t *testing.T) {
 		m, _ = raise(t, m, key(0, "tab"))
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "> 78-landed-task") {
+	if !strings.Contains(view, "▶ 78-landed-task") {
 		t.Fatalf("initial view does not select the first landed task:\n%s", view)
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "> 79-tui-shell") {
+	if !strings.Contains(view, "▶ 79-tui-shell") {
 		t.Fatalf("arrow-down did not select the next landed task:\n%s", view)
 	}
 }
@@ -157,7 +157,7 @@ func TestTasksProjectFilterAndFailedTab(t *testing.T) {
 	}
 	m, _ = raise(t, m, cmd())
 	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "> 82-failed-task") {
+	if !strings.Contains(view, "▶ 82-failed-task") {
 		t.Fatalf("refresh did not preserve task selection:\n%s", view)
 	}
 }
@@ -301,7 +301,7 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 	m, _ = raise(t, m, cmd())
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, line := range []string{
-		"[open 2]  resolved 2",
+		"▶ [open 2]  resolved 2",
 		"? invalid.md",
 		"Open issue",
 		"Summary",
@@ -338,7 +338,7 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 		t.Fatal("tab did not log the friction category change")
 	}
 	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "[resolved 2]") || !strings.Contains(view, "> 2026-10-19   Newest fixed issue") {
+	if !strings.Contains(view, "▶ [resolved 2]") || !strings.Contains(view, "▶ 2026-10-19   Newest fixed issue") {
 		t.Fatalf("resolved entries are missing or not sorted newest first:\n%s", view)
 	}
 	cmd = m.startCurrentScreenLoad()
@@ -347,7 +347,7 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 	}
 	m, _ = raise(t, m, cmd())
 	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "> 2026-10-19   Newest fixed issue") {
+	if !strings.Contains(view, "▶ 2026-10-19   Newest fixed issue") {
 		t.Fatalf("refresh did not preserve friction selection:\n%s", view)
 	}
 }

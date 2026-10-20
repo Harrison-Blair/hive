@@ -339,15 +339,17 @@ func (s tasksScreen) View(width, height int) string {
 	visible := state.visibleItems()
 	state.keepSelectedVisible()
 	counts := state.counts()
-	listLines := []string{titleStyle.Render(taskTabLine(state.tab, counts)), "project: " + state.projectFilter(), "ID             title                       project   status     agent · verification"}
+	listLines := []string{taskTabLine(state.tab, counts), selectedStyle.Render("▶ project: " + state.projectFilter()), "ID             title                       project   status     agent · verification"}
 	rowLines := make([]string, 0, len(visible))
 	for _, item := range visible {
-		prefix := "  "
-		if item.record.ID == state.selectedID {
-			prefix = "> "
-		}
 		line := fmt.Sprintf("%-14s %-27s %-9s %-10s %s", clipCell(item.record.ID, 14), clipCell(item.record.Title, 27), item.record.Project, taskDisplayStatus(item.record), item.record.ActingAgent+" · "+taskVerificationText(item.record))
-		rowLines = append(rowLines, prefix+strings.TrimSpace(line))
+		line = strings.TrimSpace(line)
+		if item.record.ID == state.selectedID {
+			line = selectedStyle.Render("▶ " + line)
+		} else {
+			line = "  " + line
+		}
+		rowLines = append(rowLines, line)
 	}
 	if len(rowLines) == 0 {
 		rowLines = append(rowLines, "  no tasks")
@@ -434,7 +436,9 @@ func taskTabLine(selected taskTab, counts [5]int) string {
 	for index, label := range taskTabs {
 		text := fmt.Sprintf("%s %d", label, counts[index])
 		if taskTab(index) == selected {
-			text = selectedStyle.Render("[" + text + "]")
+			text = selectedStyle.Render("▶ [" + text + "]")
+		} else {
+			text = dimStyle.Render(text)
 		}
 		parts = append(parts, text)
 	}

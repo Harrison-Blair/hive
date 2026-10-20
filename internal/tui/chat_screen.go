@@ -101,8 +101,17 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 
 func newChatInput() textarea.Model {
 	input := textarea.New()
+	styles := input.Styles()
+	styles.Focused.CursorLine = lipgloss.NewStyle()
+	styles.Focused.Selection = lipgloss.NewStyle()
+	styles.Blurred.Selection = lipgloss.NewStyle()
+	styles.Cursor.Shape = tea.CursorBar
+	styles.Cursor.Color = lipgloss.Color(colorAccent)
+	input.SetStyles(styles)
+	input.SetVirtualCursor(false)
 	input.Prompt = ""
 	input.Placeholder = "Type a message"
+	input.ShowLineNumbers = false
 	input.CharLimit = 0
 	input.MinHeight = 1
 	input.MaxHeight = 4
@@ -221,6 +230,9 @@ func (m *Model) chatView(width, height int) string {
 	if eventWidth > 36 {
 		eventWidth = 36
 	}
+	if width >= 72 && eventWidth < 36 {
+		eventWidth = 36
+	}
 	if eventWidth > width-12 {
 		eventWidth = width - 12
 	}
@@ -231,13 +243,25 @@ func (m *Model) chatView(width, height int) string {
 	if conversationWidth < 1 {
 		conversationWidth = 1
 	}
+	inputVisible := m.chatInputActive || m.chatInput.Value() != ""
 	feedHeight := height - 8
+	composerWidth := conversationWidth - 4
+	if composerWidth < 1 {
+		composerWidth = 1
+	}
+	if inputVisible {
+		feedHeight -= 2
+	}
 	if feedHeight < 1 {
 		feedHeight = 1
 	}
 	m.chatViewport.SetWidth(conversationWidth - 2)
 	m.chatViewport.SetHeight(feedHeight)
-	m.chatInput.SetWidth(conversationWidth - 2)
+	inputWidth := composerWidth - 4
+	if inputWidth < 1 {
+		inputWidth = 1
+	}
+	m.chatInput.SetWidth(inputWidth)
 	m.chatInput.SetHeight(4)
 	if m.chatFollow {
 		m.chatViewport.GotoBottom()
@@ -245,8 +269,9 @@ func (m *Model) chatView(width, height int) string {
 
 	status := coordinatorLine(m.chatData)
 	conversation := titleStyle.Render("coordinator") + "\n" + status + "\n" + m.chatViewport.View()
-	if m.chatInputActive || m.chatInput.Value() != "" {
-		conversation += "\n" + m.chatInput.View()
+	if inputVisible {
+		composerStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorAccent)).Padding(0, 1).Width(composerWidth)
+		conversation += "\n" + composerStyle.Render(m.chatInput.View())
 	}
 	main := panelStyle.Width(conversationWidth).Height(height).Render(conversation)
 	events := m.chatEventsView(eventWidth, height)
@@ -292,7 +317,7 @@ func (m *Model) chatEventsView(width, height int) string {
 	if len(events) == 0 {
 		lines = append(lines, "no events")
 	}
-	lines = append(lines, "", "noise: "+chatNoiseLabel(m.chatNoise))
+	lines = append(lines, "", selectedStyle.Render("▶ noise: "+chatNoiseLabel(m.chatNoise)))
 	return panelStyle.Width(width).Height(height).Render(strings.Join(lines, "\n"))
 }
 

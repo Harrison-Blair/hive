@@ -9,7 +9,6 @@ import (
 
 const (
 	colorBorder  = "#3d3a33"
-	colorText    = "#e8e4da"
 	colorDim     = "#a39d90"
 	colorAccent  = "#f5b942"
 	colorWorking = "#6ee69a"
@@ -18,11 +17,11 @@ const (
 )
 
 var (
-	headerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Bold(true)
+	headerStyle   = lipgloss.NewStyle().Bold(true)
 	workingStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
 	doneStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
 	infoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
-	panelStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorBorder)).Padding(0, 1)
+	panelStyle    = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorBorder)).Padding(0, 1)
 	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
 	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
 	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
@@ -70,6 +69,10 @@ func (s logsScreen) View(width, height int) string {
 		width = 1
 	}
 	filterLines := wrapFilterLine(m.statusLine(), width-4)
+	if len(filterLines) > 0 {
+		levelFilter := "level: " + m.level
+		filterLines[0] = selectedStyle.Render("▶ "+levelFilter) + strings.TrimPrefix(filterLines[0], levelFilter)
+	}
 	listWidth := width
 	if m.logDetail && width >= 72 {
 		listWidth = width * 2 / 3

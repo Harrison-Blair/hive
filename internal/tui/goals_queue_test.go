@@ -101,7 +101,7 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 		t.Fatalf("Goals did not open the selected wave tasks at the first task: screen=%d tab=%d task=%q", m.screenIndex, m.tasks.tab, m.tasks.selectedID)
 	}
 	view := ansi.Strip(m.currentScreen().View(160, 30))
-	if !strings.Contains(view, "> 1-alpha") {
+	if !strings.Contains(view, "▶ 1-alpha") {
 		t.Fatalf("Tasks screen did not show the first wave task selected:\n%s", view)
 	}
 }
@@ -128,7 +128,7 @@ func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
 		t.Fatalf("Goals did not reset the Tasks project filter and select the first wave task: project=%q task=%q", m.tasks.projectFilter(), m.tasks.selectedID)
 	}
 	view := ansi.Strip(m.currentScreen().View(160, 30))
-	if !strings.Contains(view, "project: all") || !strings.Contains(view, "> 1-alpha") {
+	if !strings.Contains(view, "project: all") || !strings.Contains(view, "▶ 1-alpha") {
 		t.Fatalf("Tasks screen did not show the selected first wave task with all projects:\n%s", view)
 	}
 }
@@ -281,7 +281,7 @@ func TestQueueArrowsSelectTasksAndEnterOpensSelectedTask(t *testing.T) {
 		t.Fatalf("Queue did not open its selected task: screen=%d tab=%d task=%q", m.screenIndex, m.tasks.tab, m.tasks.selectedID)
 	}
 	view := ansi.Strip(m.currentScreen().View(160, 30))
-	if !strings.Contains(view, "> 82-goals-queu…") {
+	if !strings.Contains(view, "▶ 82-goals-queu…") {
 		t.Fatalf("Tasks screen did not show the selected Queue task:\n%s", view)
 	}
 }
