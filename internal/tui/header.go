@@ -22,6 +22,9 @@ type headerState struct {
 	working    int
 	idle       int
 	needsUser  int
+	queueRun   int
+	queueStops int
+	queueWaits int
 }
 
 func readHeader(home string) (headerState, error) {
@@ -87,6 +90,7 @@ func readHeader(home string) (headerState, error) {
 			state.needsUser++
 		}
 	}
+	state.queueRun, state.queueStops, state.queueWaits = queueTaskCounts(tasks)
 	return state, nil
 }
 
@@ -128,7 +132,20 @@ func (m *Model) activeHeaderLine() string {
 	if m.screenIndex == 1 {
 		return m.agentsHeaderLine()
 	}
+	if m.screenIndex == 3 && m.headerErr == "" {
+		return m.queueHeaderLine()
+	}
 	return m.headerLine()
+}
+
+func (m *Model) queueHeaderLine() string {
+	line := fmt.Sprintf("⬢ hive · runs without you %d · stops %d · waits behind a stop %d", m.header.queueRun, m.header.queueStops, m.header.queueWaits)
+	timeLabel := m.now().Format("15:04")
+	if m.width < 100 {
+		return line + "\n" + timeLabel
+	}
+	padding := max(1, m.width-lipgloss.Width(line)-lipgloss.Width(timeLabel))
+	return line + strings.Repeat(" ", padding) + timeLabel
 }
 
 func (m *Model) headerLine() string {

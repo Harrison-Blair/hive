@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -19,7 +20,7 @@ func TestGoalsScreenRendersWaveProgressAndUnassignedTasks(t *testing.T) {
 
 	view := ansi.Strip(m.currentScreen().View(200, 40))
 	for _, line := range []string{
-		"demo · Goal one · done when: landed on dev",
+		"demo · Goal one · active · done when: landed on dev",
 		"dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to main ─▶ release published",
 		"▶ 1-alpha  ✋ 2-beta  · 3-gamma",
 		"unassigned",
@@ -31,7 +32,7 @@ func TestGoalsScreenRendersWaveProgressAndUnassignedTasks(t *testing.T) {
 	}
 }
 
-func TestQueueScreenShowsTransitiveStopsAndProjectFilter(t *testing.T) {
+func TestQueueScreenShowsTransitiveStopsAndIgnoresProjectCycle(t *testing.T) {
 	home := goalsQueueFixture(t)
 	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
 	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed", Status: "created", DependsOn: []string{}})
@@ -71,15 +72,221 @@ func TestQueueScreenShowsTransitiveStopsAndProjectFilter(t *testing.T) {
 	}
 
 	m, _ = raise(t, m, key('s', "s"))
-	m, _ = raise(t, m, key('p', "p"))
-	m, _ = raise(t, m, key('p', "p"))
 	view = ansi.Strip(m.currentScreen().View(200, 40))
-	if !strings.Contains(view, "zeta") || strings.Contains(view, "2-beta") {
-		t.Fatalf("project filter did not cycle to zeta:\n%s", view)
+	if !strings.Contains(view, "zeta") || !strings.Contains(view, "2-beta") {
+		t.Fatalf("Queue did not restore all project panels after clearing the stop filter:\n%s", view)
+	}
+	m, _ = raise(t, m, key('p', "p"))
+	if got := ansi.Strip(m.currentScreen().View(200, 40)); got != view {
+		t.Fatalf("p changed Queue project panels:\nbefore:\n%s\nafter:\n%s", view, got)
 	}
 }
 
-func TestGoalsRefreshKeepsGoalSelectionAndQueueProjectFilter(t *testing.T) {
+func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"goals"}, "g1-demo", records.Goal{
+		ID: "g1-demo", Project: "demo", Title: "Goal one", Grant: "Goal grant", Status: "active",
+		Waves: []records.GoalWave{
+			{ID: "done", Title: "Done wave", DoneWhen: "local", Tasks: []string{"4-free"}, Status: "done"},
+			{ID: "A", Title: "Wave alpha", DoneWhen: "dev", Tasks: []string{"1-alpha", "2-beta", "3-gamma"}, Status: "open"},
+		},
+	})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('3', "3"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, cmd = raise(t, m, key('t', "t"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	if m.screenIndex != 4 || m.tasks.tab != tasksAll || m.tasks.selectedID != "1-alpha" {
+		t.Fatalf("Goals did not open the selected wave tasks at the first task: screen=%d tab=%d task=%q", m.screenIndex, m.tasks.tab, m.tasks.selectedID)
+	}
+	view := ansi.Strip(m.currentScreen().View(160, 30))
+	if !strings.Contains(view, "> 1-alpha") {
+		t.Fatalf("Tasks screen did not show the first wave task selected:\n%s", view)
+	}
+}
+
+func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"projects"}, "other", records.Project{ID: "other", Path: "/repo/other", Base: "dev"})
+	writeRecord(t, home, []string{"tasks"}, "8-other", records.Task{ID: "8-other", Project: "other", Title: "Other task", Status: "created", DependsOn: []string{}})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('5', "5"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, _ = raise(t, m, key('p', "p"))
+	m, _ = raise(t, m, key('p', "p"))
+	if got := m.tasks.projectFilter(); got != "other" {
+		t.Fatalf("Tasks filter setup failed: got %q, want other", got)
+	}
+
+	m, cmd = raise(t, m, key('3', "3"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, cmd = raise(t, m, key('t', "t"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	if m.tasks.projectIndex != 0 || m.tasks.selectedID != "1-alpha" {
+		t.Fatalf("Goals did not reset the Tasks project filter and select the first wave task: project=%q task=%q", m.tasks.projectFilter(), m.tasks.selectedID)
+	}
+	view := ansi.Strip(m.currentScreen().View(160, 30))
+	if !strings.Contains(view, "project: all") || !strings.Contains(view, "> 1-alpha") {
+		t.Fatalf("Tasks screen did not show the selected first wave task with all projects:\n%s", view)
+	}
+}
+
+func TestGoalsOpenWaveDesign(t *testing.T) {
+	tests := []struct {
+		name       string
+		features   []string
+		files      map[string]string
+		wantDesign string
+	}{
+		{
+			name:       "one feature",
+			features:   []string{"feature-one"},
+			files:      map[string]string{"feature-one": "# Feature one design\n"},
+			wantDesign: "# Feature one design",
+		},
+		{
+			name:       "first feature wins",
+			features:   []string{"feature-one", "feature-two"},
+			files:      map[string]string{"feature-one": "# First feature design\n", "feature-two": "# Second feature design\n"},
+			wantDesign: "# First feature design",
+		},
+		{name: "no feature"},
+		{name: "missing file", features: []string{"missing-feature"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			home := goalsQueueFixture(t)
+			for index, id := range []string{"1-alpha", "2-beta", "3-gamma"} {
+				feature := ""
+				if index < len(tt.features) {
+					feature = tt.features[index]
+				}
+				task := records.Task{ID: id, Project: "demo", Title: id, Status: "created", Feature: feature}
+				writeRecord(t, home, []string{"tasks"}, id, task)
+			}
+			for feature, content := range tt.files {
+				writeText(t, filepath.Join(home, ".hive", "spec", feature, "README.md"), content)
+			}
+			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+			m, cmd := raise(t, m, key('3', "3"))
+			m = deliverAgentCommands(t, m, cmd)
+			m, cmd = raise(t, m, key('o', "o"))
+			m = deliverAgentCommands(t, m, cmd)
+
+			if tt.wantDesign == "" {
+				if m.screenIndex != 2 || m.tasks.fileOpen {
+					t.Fatalf("missing wave design opened a file: screen=%d open=%t", m.screenIndex, m.tasks.fileOpen)
+				}
+				if !strings.Contains(ansi.Strip(m.View().Content), "no design for this wave") {
+					t.Fatalf("Goals did not explain the missing wave design:\n%s", ansi.Strip(m.View().Content))
+				}
+				return
+			}
+			if m.screenIndex != 4 || !m.tasks.fileOpen || m.tasks.fileTitle != "README.md" || !strings.Contains(m.tasks.fileContent, tt.wantDesign) {
+				t.Fatalf("Goals did not open the wave feature design: screen=%d open=%t title=%q content=%q", m.screenIndex, m.tasks.fileOpen, m.tasks.fileTitle, m.tasks.fileContent)
+			}
+			view := ansi.Strip(m.currentScreen().View(160, 30))
+			if !strings.Contains(view, tt.wantDesign) {
+				t.Fatalf("shared file viewer omitted the wave design %q:\n%s", tt.wantDesign, view)
+			}
+		})
+	}
+}
+
+func TestGoalsAndQueueStatesHavePlainTextSignals(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"goals"}, "g2-completed", records.Goal{
+		ID: "g2-completed", Project: "demo", Title: "Completed goal", Status: "done",
+		Waves: []records.GoalWave{{ID: "B", Title: "Wave beta", DoneWhen: "dev", Tasks: []string{}, Status: "done"}},
+	})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('3', "3"))
+	m = deliverAgentCommands(t, m, cmd)
+	goals := ansi.Strip(m.currentScreen().View(200, 40))
+	for _, text := range []string{
+		"▶ demo · Goal one · active · done when: landed on dev",
+		"dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev",
+		"wave A · Wave alpha · open",
+		"▶ 1-alpha  ✋ 2-beta  · 3-gamma",
+		"demo · Completed goal · done · done when: —",
+		"wave B · Wave beta · done",
+	} {
+		if !strings.Contains(goals, text) {
+			t.Fatalf("Goals plain text omitted state signal %q:\n%s", text, goals)
+		}
+	}
+
+	m, cmd = raise(t, m, key('4', "4"))
+	m = deliverAgentCommands(t, m, cmd)
+	queue := ansi.Strip(m.currentScreen().View(200, 40))
+	for _, text := range []string{
+		"▶ now  1-alpha  —  ▶ assigned",
+		"✋ you",
+		"◆ auto",
+		"┄ waits",
+	} {
+		if !strings.Contains(queue, text) {
+			t.Fatalf("Queue plain text omitted state signal %q:\n%s", text, queue)
+		}
+	}
+}
+
+func TestQueueHeaderShowsRunStopAndWaitCounts(t *testing.T) {
+	home := goalsQueueFixture(t)
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m = deliverAgentCommands(t, m, m.startHeaderLoad())
+	m, cmd := raise(t, m, key('4', "4"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	view := ansi.Strip(m.View().Content)
+	want := "⬢ hive · runs without you 3 · stops 1 · waits behind a stop 1"
+	if !strings.Contains(view, want) {
+		t.Fatalf("Queue header omitted its task counts %q:\n%s", want, view)
+	}
+}
+
+func TestQueueShowsEveryRegisteredProjectWithoutProjectCycle(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"projects"}, "empty", records.Project{ID: "empty", Path: "/repo/empty", Base: "dev"})
+	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
+	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed", Status: "created", DependsOn: []string{}})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('4', "4"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	view := ansi.Strip(m.currentScreen().View(200, 40))
+	for _, text := range []string{"demo · Goal one · grant: Goal grant", "zeta · no active goal · grant: —", "empty · no active goal · grant: —", "(no open tasks)"} {
+		if !strings.Contains(view, text) {
+			t.Fatalf("Queue omitted registered-project content %q:\n%s", text, view)
+		}
+	}
+	m, _ = raise(t, m, key('p', "p"))
+	if got := ansi.Strip(m.currentScreen().View(200, 40)); got != view {
+		t.Fatalf("p changed the Queue project panels:\nbefore:\n%s\nafter:\n%s", view, got)
+	}
+}
+
+func TestQueueArrowsSelectTasksAndEnterOpensSelectedTask(t *testing.T) {
+	home := goalsQueueFixture(t)
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, cmd := raise(t, m, key('4', "4"))
+	m = deliverAgentCommands(t, m, cmd)
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	m, cmd = raise(t, m, key(tea.KeyEnter, "enter"))
+	m = deliverAgentCommands(t, m, cmd)
+
+	if m.screenIndex != 4 || m.tasks.tab != tasksAll || m.tasks.selectedID != "82-goals-queue-screens" {
+		t.Fatalf("Queue did not open its selected task: screen=%d tab=%d task=%q", m.screenIndex, m.tasks.tab, m.tasks.selectedID)
+	}
+	view := ansi.Strip(m.currentScreen().View(160, 30))
+	if !strings.Contains(view, "> 82-goals-queu…") {
+		t.Fatalf("Tasks screen did not show the selected Queue task:\n%s", view)
+	}
+}
+
+func TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects(t *testing.T) {
 	home := goalsQueueFixture(t)
 	writeRecord(t, home, []string{"goals"}, "g2-other", records.Goal{
 		ID: "g2-other", Project: "demo", Title: "Goal two", Grant: "Grant two", Status: "active",
@@ -105,11 +312,11 @@ func TestGoalsRefreshKeepsGoalSelectionAndQueueProjectFilter(t *testing.T) {
 	m, cmd = raise(t, m, key('4', "4"))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('p', "p"))
-	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed updated", Status: "created", DependsOn: []string{}})
+	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed updated", Status: "assigned", DependsOn: []string{}})
 	m = refreshGoalsQueue(t, m)
 	view = ansi.Strip(m.currentScreen().View(200, 40))
-	if !strings.Contains(view, "demo · Goal one") || strings.Contains(view, "zeta ·") {
-		t.Fatalf("Queue refresh lost its project filter:\n%s", view)
+	if !strings.Contains(view, "demo · Goal one") || !strings.Contains(view, "zeta · no active goal") || !strings.Contains(view, "now  7-zed") {
+		t.Fatalf("Queue refresh did not retain all projects and update task data:\n%s", view)
 	}
 }
 

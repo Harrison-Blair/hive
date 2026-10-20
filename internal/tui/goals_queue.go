@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,17 +17,19 @@ import (
 )
 
 type goalsQueueData struct {
-	goals []records.Goal
-	tasks []records.Task
+	goals    []records.Goal
+	projects []records.Project
+	tasks    []records.Task
 }
 
 type goalsQueueState struct {
 	data             goalsQueueData
 	selectedGoal     string
+	selectedTaskID   string
 	goalScrollOffset int
 	goalScrollHeight int
 	goalViewWidth    int
-	projectFilter    string
+	designNotice     string
 	showStops        bool
 }
 
@@ -38,6 +42,10 @@ func loadGoalsQueue(home string) (goalsQueueData, error) {
 	if err != nil {
 		return goalsQueueData{}, fmt.Errorf("goals: %w", err)
 	}
+	projects, err := listRecordsIn[records.Project](registry, []string{"projects"})
+	if err != nil {
+		return goalsQueueData{}, fmt.Errorf("projects: %w", err)
+	}
 	tasks, err := listRecordsIn[records.Task](registry, []string{"tasks"})
 	if err != nil {
 		return goalsQueueData{}, fmt.Errorf("tasks: %w", err)
@@ -48,8 +56,9 @@ func loadGoalsQueue(home string) (goalsQueueData, error) {
 		}
 		return goals[i].ID < goals[j].ID
 	})
+	sort.Slice(projects, func(i, j int) bool { return projects[i].ID < projects[j].ID })
 	sort.Slice(tasks, func(i, j int) bool { return taskIDLess(tasks[i].ID, tasks[j].ID) })
-	return goalsQueueData{goals: goals, tasks: tasks}, nil
+	return goalsQueueData{goals: goals, projects: projects, tasks: tasks}, nil
 }
 
 func listRecordsIn[T any](registry *store.Store, collection []string) ([]T, error) {
@@ -82,9 +91,7 @@ func (s *goalsQueueState) accept(data goalsQueueData) {
 			s.selectedGoal = data.goals[0].ID
 		}
 	}
-	if s.projectFilter != "" && !s.hasQueueProject(s.projectFilter) {
-		s.projectFilter = ""
-	}
+	s.keepQueueSelection()
 }
 
 func (s goalsQueueState) hasGoal(id string) bool {
@@ -96,13 +103,20 @@ func (s goalsQueueState) hasGoal(id string) bool {
 	return false
 }
 
-func (s goalsQueueState) hasQueueProject(id string) bool {
-	for _, project := range s.queueProjects() {
-		if project == id {
-			return true
+func (s goalsQueueState) selectedWave() (*records.Goal, *records.GoalWave) {
+	for i := range s.data.goals {
+		goal := &s.data.goals[i]
+		if goal.ID != s.selectedGoal {
+			continue
 		}
+		for j := range goal.Waves {
+			if goal.Waves[j].Status != "done" {
+				return goal, &goal.Waves[j]
+			}
+		}
+		return goal, nil
 	}
-	return false
+	return nil, nil
 }
 
 func (s *goalsQueueState) moveGoal(delta int) bool {
@@ -171,9 +185,11 @@ type queueScreen struct{ model *Model }
 func (goalsScreen) DataRequest() dataRequest { return goalsQueueDataRequest }
 func (queueScreen) DataRequest() dataRequest { return goalsQueueDataRequest }
 
-func (goalsScreen) KeyHints() string { return "↑/↓ select goal · ask in Chat · 1–8 screens" }
+func (goalsScreen) KeyHints() string {
+	return "↑/↓ select goal · t tasks · o design · ask in Chat · 1–8 screens"
+}
 func (queueScreen) KeyHints() string {
-	return "s stops only · p project · order comes from the dependencies · 1–8 screens"
+	return "↑/↓ select task · enter open task · s stops only · order comes from the dependencies · 1–8 screens"
 }
 
 func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
@@ -181,15 +197,63 @@ func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
 	if !ok {
 		return nil
 	}
+	state := &s.model.goalsQueue
+	state.designNotice = ""
 	var moved bool
 	switch press.String() {
 	case "up", "k":
-		moved = s.model.goalsQueue.moveGoal(-1)
+		moved = state.moveGoal(-1)
 	case "down", "j":
-		moved = s.model.goalsQueue.moveGoal(1)
+		moved = state.moveGoal(1)
+	case "t":
+		goal, wave := state.selectedWave()
+		if goal == nil || wave == nil || len(wave.Tasks) == 0 {
+			return nil
+		}
+		taskID := wave.Tasks[0]
+		s.model.screenIndex = 4
+		s.model.tasks.tab = tasksAll
+		s.model.tasks.projectIndex = 0
+		s.model.tasks.selectedID = taskID
+		s.model.tasks.scrollOffset = 0
+		s.model.tasks.fileOpen = false
+		s.model.tasks.fileLoading = false
+		s.model.screenLoading = false
+		return batch(s.model.logAction("goal open wave tasks", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("task_id", taskID)), s.model.startCurrentScreenLoad())
+	case "o":
+		goal, wave := state.selectedWave()
+		if goal == nil || wave == nil {
+			state.designNotice = "no design for this wave"
+			return s.model.logAction("goal design unavailable")
+		}
+		tasks := state.taskMap()
+		feature := ""
+		for _, id := range wave.Tasks {
+			if task, ok := tasks[id]; ok && task.Feature != "" {
+				feature = task.Feature
+				break
+			}
+		}
+		if feature == "" {
+			state.designNotice = "no design for this wave"
+			return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID))
+		}
+		path := filepath.Join(s.model.home, ".hive", "spec", feature, "README.md")
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			state.designNotice = "no design for this wave"
+			return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature))
+		}
+		state.designNotice = ""
+		s.model.screenIndex = 4
+		s.model.tasks.tab = tasksAll
+		s.model.tasks.fileOpen = false
+		s.model.tasks.fileLoading = false
+		s.model.screenLoading = false
+		read := s.model.startTaskFileRead(&s.model.tasks, path, "README.md")
+		return batch(s.model.logAction("goal design open", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature)), read)
 	}
 	if moved {
-		return s.model.logAction("goal selection", slog.String("goal_id", s.model.goalsQueue.selectedGoal))
+		return s.model.logAction("goal selection", slog.String("goal_id", state.selectedGoal))
 	}
 	return nil
 }
@@ -199,32 +263,34 @@ func (s queueScreen) Update(msg tea.Msg) tea.Cmd {
 	if !ok {
 		return nil
 	}
+	state := &s.model.goalsQueue
 	switch press.String() {
+	case "up", "k":
+		if state.moveQueueTask(-1) {
+			return s.model.logAction("queue task selection", slog.String("task_id", state.selectedTaskID))
+		}
+	case "down", "j":
+		if state.moveQueueTask(1) {
+			return s.model.logAction("queue task selection", slog.String("task_id", state.selectedTaskID))
+		}
 	case "s":
-		s.model.goalsQueue.showStops = !s.model.goalsQueue.showStops
-		return s.model.logAction("queue stop filter", slog.Bool("stops_only", s.model.goalsQueue.showStops))
-	case "p":
-		projects := s.model.goalsQueue.queueProjects()
-		if len(projects) == 0 {
+		state.showStops = !state.showStops
+		state.keepQueueSelection()
+		return s.model.logAction("queue stop filter", slog.Bool("stops_only", state.showStops))
+	case "enter":
+		if state.selectedTaskID == "" {
 			return nil
 		}
-		index := -1
-		for i, project := range projects {
-			if project == s.model.goalsQueue.projectFilter {
-				index = i
-				break
-			}
-		}
-		index++
-		if index >= len(projects) {
-			index = -1
-		}
-		if index < 0 {
-			s.model.goalsQueue.projectFilter = ""
-		} else {
-			s.model.goalsQueue.projectFilter = projects[index]
-		}
-		return s.model.logAction("queue project filter", slog.String("project_id", s.model.goalsQueue.projectFilter))
+		taskID := state.selectedTaskID
+		s.model.screenIndex = 4
+		s.model.tasks.tab = tasksAll
+		s.model.tasks.projectIndex = 0
+		s.model.tasks.selectedID = taskID
+		s.model.tasks.scrollOffset = 0
+		s.model.tasks.fileOpen = false
+		s.model.tasks.fileLoading = false
+		s.model.screenLoading = false
+		return batch(s.model.logAction("queue open task", slog.String("task_id", taskID)), s.model.startCurrentScreenLoad())
 	}
 	return nil
 }
@@ -254,7 +320,11 @@ func (s goalsScreen) View(width, height int) string {
 		state.goalScrollOffset = 0
 	}
 	end := min(len(lines), state.goalScrollOffset+state.goalScrollHeight)
-	return strings.Join(lines[state.goalScrollOffset:end], "\n")
+	content := strings.Join(lines[state.goalScrollOffset:end], "\n")
+	if state.designNotice != "" {
+		return state.designNotice + "\n" + content
+	}
+	return content
 }
 
 func (s goalsQueueState) goalBlocks(width int) ([]string, map[string]int) {
@@ -306,7 +376,11 @@ func goalLines(goal records.Goal, tasks map[string]records.Task, selected bool) 
 	if selected {
 		prefix = selectedStyle.Render("▶ ")
 	}
-	lines := []string{titleStyle.Render(prefix + goal.Project + " · " + goal.Title + " · done when: " + current)}
+	goalStatus := goal.Status
+	if goalStatus == "" {
+		goalStatus = "unknown"
+	}
+	lines := []string{titleStyle.Render(prefix + goal.Project + " · " + goal.Title + " · " + goalStatus + " · done when: " + current)}
 	for _, wave := range goal.Waves {
 		landed := 0
 		for _, id := range wave.Tasks {
@@ -315,6 +389,10 @@ func goalLines(goal records.Goal, tasks map[string]records.Task, selected bool) 
 			}
 		}
 		segments := []string{doneStyle.Render("dispatch ✓")}
+		waveStatus := wave.Status
+		if waveStatus == "" {
+			waveStatus = "unknown"
+		}
 		progressMark := "▶"
 		taskStyle := workingStyle
 		if landed == len(wave.Tasks) {
@@ -350,7 +428,7 @@ func goalLines(goal records.Goal, tasks map[string]records.Task, selected bool) 
 			}
 		}
 		stageLine := strings.Join(segments, doneStyle.Render(" ─▶ "))
-		lines = append(lines, titleStyle.Render("wave "+wave.ID+" · "+wave.Title), stageLine)
+		lines = append(lines, titleStyle.Render("wave "+wave.ID+" · "+wave.Title+" · "+waveStatus), stageLine)
 		if wave.NeedsUser != "" {
 			lines = append(lines, "✋ "+wave.NeedsUser)
 		}
@@ -472,16 +550,14 @@ type queueRow struct {
 func (s queueScreen) View(width, _ int) string {
 	state := s.model.goalsQueue
 	projects := state.queueProjects()
-	if state.projectFilter != "" {
-		projects = []string{state.projectFilter}
-	}
 	cardWidth := width - 4
 	if cardWidth < 1 {
 		cardWidth = 1
 	}
 	blocks := make([]string, 0, len(projects))
 	for _, project := range projects {
-		rows := state.projectQueue(project)
+		allRows := state.projectQueue(project)
+		rows := allRows
 		if state.showStops {
 			filtered := rows[:0]
 			for _, row := range rows {
@@ -491,21 +567,29 @@ func (s queueScreen) View(width, _ int) string {
 			}
 			rows = filtered
 		}
-		if len(rows) == 0 {
-			continue
-		}
 		goal := state.activeGoal(project)
 		goalLabel, grant := "no active goal", "—"
 		if goal != nil {
 			goalLabel, grant = goal.Title, goal.Grant
 		}
 		lines := []string{titleStyle.Render(project + " · " + goalLabel + " · grant: " + grant), "#  task  starts when  state"}
+		if len(rows) == 0 {
+			emptyLabel := "(no open tasks)"
+			if state.showStops && len(allRows) > 0 {
+				emptyLabel = "(no tasks needing you)"
+			}
+			lines = append(lines, emptyLabel)
+		}
 		for index, row := range rows {
 			position := row.kind
 			if row.kind != "now" {
 				position = strconv.Itoa(index - countQueueNow(rows) + 1)
 			}
-			lines = append(lines, fmt.Sprintf("%s  %s  %s  %s", position, row.task.ID, row.start, row.state))
+			line := fmt.Sprintf("%s  %s  %s  %s", position, row.task.ID, row.start, row.state)
+			if row.task.ID == state.selectedTaskID {
+				line = selectedStyle.Render("▶ " + line)
+			}
+			lines = append(lines, line)
 		}
 		blocks = append(blocks, panelStyle.Width(cardWidth).Render(strings.Join(lines, "\n")))
 	}
@@ -515,8 +599,82 @@ func (s queueScreen) View(width, _ int) string {
 	return strings.Join(blocks, "\n\n")
 }
 
+func (s goalsQueueState) visibleQueueRows() []queueRow {
+	rows := make([]queueRow, 0)
+	for _, project := range s.queueProjects() {
+		for _, row := range s.projectQueue(project) {
+			if !s.showStops || row.stopped || row.waiting {
+				rows = append(rows, row)
+			}
+		}
+	}
+	return rows
+}
+
+func (s *goalsQueueState) keepQueueSelection() {
+	rows := s.visibleQueueRows()
+	for _, row := range rows {
+		if row.task.ID == s.selectedTaskID {
+			return
+		}
+	}
+	s.selectedTaskID = ""
+	if len(rows) > 0 {
+		s.selectedTaskID = rows[0].task.ID
+	}
+}
+
+func (s *goalsQueueState) moveQueueTask(delta int) bool {
+	rows := s.visibleQueueRows()
+	if len(rows) == 0 {
+		return false
+	}
+	index := 0
+	for i, row := range rows {
+		if row.task.ID == s.selectedTaskID {
+			index = i
+			break
+		}
+	}
+	next := index + delta
+	if next < 0 {
+		next = 0
+	}
+	if next >= len(rows) {
+		next = len(rows) - 1
+	}
+	if next == index {
+		return false
+	}
+	s.selectedTaskID = rows[next].task.ID
+	return true
+}
+
+func queueTaskCounts(tasks []records.Task) (running, stopped, waiting int) {
+	taskMap := make(map[string]records.Task, len(tasks))
+	for _, task := range tasks {
+		taskMap[task.ID] = task
+	}
+	for _, task := range tasks {
+		if !isOpenTask(task) {
+			continue
+		}
+		if task.NeedsUser != "" {
+			stopped++
+		} else if dependencyHasStop(task, taskMap, make(map[string]bool)) {
+			waiting++
+		} else {
+			running++
+		}
+	}
+	return running, stopped, waiting
+}
+
 func (s goalsQueueState) queueProjects() []string {
 	set := make(map[string]bool)
+	for _, project := range s.data.projects {
+		set[project.ID] = true
+	}
 	for _, task := range s.data.tasks {
 		if isOpenTask(task) {
 			set[task.Project] = true
