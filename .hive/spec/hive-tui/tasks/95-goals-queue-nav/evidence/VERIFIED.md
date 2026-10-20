@@ -6,7 +6,7 @@
 | Commit | `a49c148f` (task code `5ed02380`), base `origin/dev` `bb731d3e` |
 | Date | 2026-10-20 |
 | Agent | `t95-verifier-1`, Claude Opus 5.5 |
-| Verdict | **fail** |
+| Verdict | **fail** on the first run. **pass** after [Repair 1](#repair-1) (`8f4be444`, agent `t95-verifier-2`). |
 
 ## Results
 
@@ -124,3 +124,72 @@ The "state without colour" column of the worker table agrees with the live plain
 - I closed only my split pane `wTG:p3` (made and closed before the tmux run) and my tab `wTG:t2`. `herdr tab list --workspace wTG` then showed only `wTG:t1`.
 - I started no `hive supervise` process. The one `hive supervise` process (pid `2107907`, workspace `wBC`, started 13:38) is the user's. I did not touch it.
 - I removed the scratch home, binary, captures, scripts, and browser profile below `.hive/tmp/v95/`. I kept `.hive/tmp/v95/png/`.
+
+## Repair 1
+
+| Item | Value |
+| --- | --- |
+| Commit | `8f4be4443d1f8eb30018e7aa966e667a8277b69e` (pre-repair tip `9fbe617e`), base `origin/dev` `be373cf4` |
+| Date | 2026-10-20 |
+| Agent | `t95-verifier-2`, Claude Opus 5.5 |
+| Scope | Repair 1 and the earlier passes, as the manager instructs |
+| Verdict | **pass** |
+
+| ID | Check | Result | Observation |
+| --- | --- | --- | --- |
+| R1 test | `TestGoalsOpenTasksResetsProjectFilter` red and green | pass | It fails on the pre-repair tip `9fbe617e`. It fails on `8f4be444` with only the Goals line `s.model.tasks.projectIndex = 0` removed. It passes on `8f4be444`. |
+| R1 live | Goals `t` with the Tasks filter `project: qmeter` | pass | At 200 x 57 and at 120 x 40, Tasks shows `project: all` and `> 87-tidy-gate`, the first task of wave D. At 200 x 57, the details panel shows `87-tidy-gate · Module tidy check in the gate`. |
+| R1 `o` | The clarified decision | pass | Decision: `o` opens the README of the feature of the first wave task that has a feature. The code does this, as the earlier run recorded. Live: `o` on wave D opens `README.md`, `# Hive TUI`. I do not fail on it. |
+| V1 | 9 new tests red on `bb731d3e`, green on `8f4be444` | pass | Each test fails at its assertion on the base, with no compile error. All 9 pass on the task code. |
+| V3 | `git diff origin/dev --stat` | pass | `internal/tui/goals_queue.go`, `internal/tui/goals_queue_test.go`, `internal/tui/header.go`, `testdata/ste-baseline.json`, and the brief and evidence of this task. No other file. `git merge-tree --write-tree origin/dev HEAD` exits 0. |
+| V4 | Gate | pass | `gofmt -l` and `go mod tidy -diff` print nothing. `go vet` exits 0. `golangci-lint`: `0 issues.` `go test -race ./...` exits 0. |
+| Q1-Q3 | Live Queue at 200 x 57 | pass | Header `⬢ hive · runs without you 1 · stops 1 · waits behind a stop 2`. Panels `hive`, `qmeter · no active goal · grant: —` with `(no open tasks)`, `stenographer` with `(no open tasks)`. The frame does not change after `p`. `↓` gives `▶ 1  102-selection-marker …`. `enter` opens Tasks with `project: all` and `> 102-selection…`. |
+| Colour | Plain text has a glyph or a word for each state | pass | Plain text shows `✓`, `▶`, `◎`, `✋ you`, `┄ waits`, `▶ verify`, `(no open tasks)`, `· active`, `· open`, `· done`. `TestGoalsAndQueueStatesHavePlainTextSignals` passes and fails on the base. |
+| Frames | Exact W x H | pass | `tmux list-panes` showed `200x57` and `120x40`. Each `tmux capture-pane` capture had 57 rows and 200 columns, or 40 rows and 120 columns. |
+| Design | Visual check against the boards | pass, with the notes of the first run | The screens agree with my first-run [Design check](#design-check). The repair changes no Goals or Queue rendering. |
+
+### Red runs
+
+The red runs used a detached scratch worktree `.hive/tmp/v95r1-red`. I removed it after the runs.
+
+```text
+# 9fbe617e with the task test file
+--- FAIL: TestGoalsOpenTasksResetsProjectFilter (0.00s)
+    goals_queue_test.go:128: Goals did not reset the Tasks project filter and select the first wave task: project="other" task="8-other"
+
+# 8f4be444 with line 216 (the Goals reset) removed; the Queue reset kept
+--- FAIL: TestGoalsOpenTasksResetsProjectFilter (0.00s)
+    goals_queue_test.go:128: Goals did not reset the Tasks project filter and select the first wave task: project="other" task="8-other"
+
+# 8f4be444
+--- PASS: TestGoalsOpenTasksResetsProjectFilter (0.00s)
+```
+
+### Live run
+
+- Binary: `go build -o .hive/tmp/v95r1/hive-v95r1 .` at `8f4be444`.
+- Scratch home `.hive/tmp/v95r1/home`: copies of the `goals`, `projects`, and `tasks` records of the real home, and `.hive/spec/hive-tui/`. I set `needs_user` on the scratch copy of `102-selection-marker` to get a stop. Temp `XDG_CONFIG_HOME` `.hive/tmp/v95r1/xdg`.
+- My tab `wTM:t2` (label `v95r1-live`), pane `wTM:p2`, in my task workspace `wTM`. I did not use workspace `wBC`.
+- A tmux server on a private socket (`tmux -L v95r1`, pid `3351593`) held one window of fixed size. The TUI (pid `3351594`) ran in it with `env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH -u TMUX HIVE_HOME=… XDG_CONFIG_HOME=…`. Pane `wTM:p2` attached to that window, and `herdr pane read wTM:p2` read it.
+- The footer read `not in herdr: no coordinator or supervisor started`. It also read `error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)`. This is the startup caller check in `internal/tui/tui.go`, because the working directory is below `projects/`. It shows before any key. I did not open the Chat input and I sent no chat.
+- Steps: `5`, `p`, `p` (`project: qmeter`), `3`, `t`.
+
+```text
+200 x 57, after t:
+│   2 Agents                 ││ project: all                                                                                │ task details
+│   3 Goals                  ││ ID             title                       project   status     agent · verification        │ 87-tidy-gate · Module tidy check in the gate
+╰────────────────────────────╯│ > 87-tidy-gate   Module tidy check in the g…
+
+120 x 40, after t:
+│   2 Agents                 ││ project: all
+╰────────────────────────────╯│ > 87-tidy-gate   Module tidy
+```
+
+Screen PNGs (not committed): `.hive/tmp/v95r1/png/goals-200.png` and `.hive/tmp/v95r1/png/queue-200.png`, from `tmux capture-pane -e` through a short SGR-to-HTML script and the firefox command of the brief. I compared them with the boards `.hive/tmp/v95/png/Goals-board.png` and `.hive/tmp/v95/png/Queue-board.png`. I committed no board PNG.
+
+### Repair 1 cleanup
+
+- I stopped only TUI pid `3351594` with `ctrl+c ctrl+c`. After the stop, `ps -p` showed no process for `3351594` or for the tmux server `3351593`, and `tmux -L v95r1 ls` showed no server.
+- I closed only my tab `wTM:t2`. `herdr tab list --workspace wTM` then showed only `wTM:t1`.
+- I started no `hive supervise` process. The one `hive supervise` process (pid `2107907`) is the user's. I did not touch it.
+- I removed the scratch home, binary, captures, scripts, and browser profiles below `.hive/tmp/v95r1/`. I kept `.hive/tmp/v95r1/png/`.
