@@ -21,3 +21,13 @@ after the runs, and the supervisors kept running.
 2. Run `HIVE_HOME=<scratch> hive` and quit the TUI.
 3. Run `herdr tab list` in the workspace: a coordinator tab and a supervisor
    tab are new. `pgrep -a 'hive supervise'` shows a new process.
+
+**Second occurrence (2026-10-20, 12:03 local):** worker t91-worker-1 ran its
+task binary on the real home with the herdr variables set. It then sent
+SIGINT to PID 1518955 and closed tab `wBC:t11` as its own cleanup. That PID
+and tab were the user's TUI, which the coordinator had started in pane
+`wBC:p1A`. The coordinator started the TUI again in tab `wBC:t14`. The worker
+picked the process and tab by name and place, not by the pid and pane ID that
+herdr gave it at start. Rule now in each brief: never signal a process or
+close a tab, pane, or workspace that the agent did not start, and never work
+in workspace `wBC`.
