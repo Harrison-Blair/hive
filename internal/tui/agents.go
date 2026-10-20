@@ -987,7 +987,7 @@ func colorGraphLine(line string, styles []string) string {
 		}
 		part := ansi.Cut(line, start, end)
 		if color != "" {
-			part = lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(part)
+			part = lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(ansi.Strip(part))
 		}
 		rendered.WriteString(part)
 		start = end

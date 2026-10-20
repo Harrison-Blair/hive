@@ -862,6 +862,53 @@ func TestAgentsGraphColorsMatchBoard(t *testing.T) {
 	check("live dot", 1+worker.row, worker.col+2, "38;2;110;230;154")
 	check("cc harness", 2+manager.row, manager.col+2, "38;2;245;185;66")
 	check("pi harness", 2+worker.row, worker.col+2, "38;2;111;183;255")
+
+	graphLines, graphPositions := m.agents.graphLayout()
+	podBorders := make(map[[2]int]bool)
+	podColumn := 0
+	for _, group := range m.agents.data.groups {
+		pod, _, podWidth, _ := m.agents.graphPod(group, m.agents.nodeMap())
+		for row := range pod {
+			for column := 0; column < podWidth; column++ {
+				if row == 0 || row == len(pod)-1 || column == 0 || column == podWidth-1 {
+					podBorders[[2]int{2 + row, podColumn + column}] = true
+				}
+			}
+		}
+		podColumn += podWidth + 3
+	}
+	nodes := m.agents.nodeMap()
+	for row, graphLine := range graphLines {
+		plain := ansi.Strip(graphLine)
+		column := 0
+		for _, glyph := range plain {
+			if strings.ContainsRune("─│┌┐└┘┬┴├┤┼┄⋯╭╮╰╯", glyph) {
+				want := "38;2;110;230;154"
+				if podBorders[[2]int{row, column}] {
+					want = "38;2;111;183;255"
+				}
+				for key, position := range graphPositions {
+					nodeBorder := row == position.row-1 || row == position.row+2 ||
+						(row == position.row || row == position.row+1) &&
+							(column == position.col || column == position.col+position.width-1)
+					if column < position.col || column >= position.col+position.width || !nodeBorder {
+						continue
+					}
+					node := nodes[key]
+					if key == m.agents.selectedKey || node.record.Status != records.AgentLive || node.stopped {
+						want = ""
+					}
+					break
+				}
+				viewRow := row + 1 - m.agents.scrollOffset
+				viewColumn := column - m.agents.graphOffset
+				if viewRow >= 0 && viewRow < len(lines) && viewColumn >= 0 && viewColumn < ansi.StringWidth(lines[viewRow]) {
+					check(fmt.Sprintf("graph glyph %q at row %d column %d", glyph, row, column), viewRow, viewColumn, want)
+				}
+			}
+			column += ansi.StringWidth(string(glyph))
+		}
+	}
 }
 
 func foregroundAtCell(line string, target int) string {
@@ -879,7 +926,7 @@ func foregroundAtCell(line string, target int) string {
 			parameters := strings.Split(line[index+2:end], ";")
 			for part := 0; part < len(parameters); part++ {
 				switch parameters[part] {
-				case "0", "39":
+				case "", "0", "39":
 					foreground = ""
 				case "38":
 					if part+4 < len(parameters) && parameters[part+1] == "2" {

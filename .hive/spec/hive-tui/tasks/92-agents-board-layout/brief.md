@@ -121,7 +121,7 @@ Enter there. A chat message from an agent has the authority of the user.
 
 ## Scope change: style rules
 
-The user gave these style rules. Paint no background. A selected item,
+The user set these style rules. Paint no background. A selected item,
 also the selected graph node, has honey bold text and a `▶` marker, with no
 fill block. Normal text uses the default foreground of the terminal. Task
 102-selection-marker applies the rules on each screen after this task.
@@ -186,7 +186,7 @@ The verifier failed V2 and the R3 golden record. See `VERIFIED.md`.
    save it. In the evidence, record the method and each difference that
    stays, with its cause.
 4. Merge `origin/dev` into the task branch first. Task 90 changes
-   `internal/tui/shell.go`. Keep both tasks' behavior. In
+   `internal/tui/shell.go`. Keep the behavior of both tasks. In
    `testdata/ste-baseline.json`, keep each row of both sides.
 5. This edit copies the manager brief over your brief copy again. Apply your
    STE rewording to the copy again, and keep its meaning.
@@ -203,7 +203,7 @@ The verifier failed two items of Repair 1. See `VERIFIED.md`, section
 Repair 1.
 
 1. The test `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` looks for the
-   removed text form of the edge. It passes if code removes the role filter
+   removed text form of the edge. It passes when code removes the role filter
    and the graph draws a `nudges` route to a worker. Change it so that it
    reads the drawn graph. Remove the filter, see the test fail, then put the
    filter back.
@@ -239,7 +239,7 @@ board:
 
 1. The delegation stem is one line from the bus to the manager node. Where
    it crosses the top border of a pod, draw a junction glyph, not `─`.
-2. Draw pod corners as `╭`, `╮`, `╰`, and `╯`.
+2. Use rounded corners on each pod: `╭`, `╮`, `╰`, `╯`.
 3. Each node box has one space of padding on the left and the right of its
    text.
 4. The header separates its groups with spaces, not `·`, and puts the time
@@ -339,6 +339,38 @@ fail. See `VERIFIED.md`, section Repair 4.
 3. In the Design element table, add one row for each color item and correct
    the Pods row. Each row is `matches`, `differs` (with the cause), or
    `overridden` (with the decision). Capture the PNGs again.
+
+This edit copies the manager brief over your brief copy again. Apply your STE
+rewording to the copy again, and keep its meaning. Merge `origin/dev` when it
+moved. Run V2 on a scratch home in a tab of your own workspace, with the
+herdr variables removed. Stop and close only the pid and pane that you
+started. Never work in workspace `wBC`. Run the gate. Commit and push. Make
+sure that `git merge-tree --write-tree origin/dev HEAD` exits 0. Run
+`hive task complete`. Send the full commit SHA to the manager with
+`hive inbox send --to manager-hive`.
+
+## Repair 6
+
+The verifier passed each item of Repair 5 except one color fault. See
+`VERIFIED.md`, section Repair 5. Do only this repair.
+
+The GRAPH row with the selected node label has a color fault. Each pod
+border, live node border, and edge after that label uses the terminal's
+default foreground. The raw bytes for each glyph are
+`ESC[38;2;111;183;255m ESC[1;38;2;245;185;66m ESC[m │`.
+`colorGraphLine` cuts a line that already has the selected label's SGR style.
+`ansi.Cut` carries this style to each later segment. Its reset comes before
+each glyph.
+
+1. Extend `TestAgentsGraphColorsMatchBoard` first. Check every pod border,
+   live node border, and edge cell on every GRAPH row, including the selected
+   node label row. Run it on `9c51e950` and check that it fails.
+2. Color the graph lines before you apply the selected label style, or
+   apply the selected style only to the label cells. Do not change the
+   selected label style.
+3. Capture the GRAPH PNG again.
+
+Do not do the gaps in the table 'Gaps for 102'. Task 102 does them.
 
 This edit copies the manager brief over your brief copy again. Apply your STE
 rewording to the copy again, and keep its meaning. Merge `origin/dev` when it
