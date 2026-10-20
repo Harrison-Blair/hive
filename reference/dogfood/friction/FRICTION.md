@@ -9,6 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
+| [Hive cannot spawn a reviewer or another one-off agent](entries/no-reviewer-role.md) | Open |  |
 | [A new task can go only in a feature that has a README](entries/old-features-lack-readme.md) | Open |  |
 | [A supervisor nudge splits a message that the user types](entries/nudge-interrupts-user-typing.md) | Open |  |
 | [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/no-agent-dashboard.md) | Open |  |
