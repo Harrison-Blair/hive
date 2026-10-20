@@ -26,6 +26,10 @@ func TestScreenKeysSelectAllEightScreens(t *testing.T) {
 			if !strings.Contains(m.View().Content, "coordinator") {
 				t.Fatalf("Chat screen does not show the coordinator:\n%s", m.View().Content)
 			}
+		} else if name == "Agents" {
+			if !strings.Contains(m.View().Content, "[ TREE ]") {
+				t.Fatalf("Agents screen does not show its tree tab:\n%s", m.View().Content)
+			}
 		} else if name != "Logs" && !strings.Contains(m.View().Content, "next wave") {
 			t.Fatalf("%s screen does not show its placeholder:\n%s", name, m.View().Content)
 		}
@@ -84,7 +88,8 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("header load did not start")
 	}
-	m, _ = raise(t, m, key('2', "2"))
+	m, keyCmd := raise(t, m, key('2', "2"))
+	m = deliverAgentCommands(t, m, keyCmd)
 	if !strings.Contains(m.View().Content, "▶ 2 Agents") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}

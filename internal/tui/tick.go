@@ -20,8 +20,15 @@ type headerLoadMsg struct {
 type screenLoadMsg struct {
 	request dataRequest
 	events  []logs.Event
+	agents  agentsData
 	chat    chatScreenData
 	err     error
+}
+
+type agentsPeekMsg struct {
+	paneID string
+	text   string
+	err    error
 }
 
 type attachMsg struct{ err error }

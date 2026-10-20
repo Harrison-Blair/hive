@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -68,6 +69,9 @@ type Model struct {
 	attachErr     string
 	headerLoader  func(string) (headerState, error)
 	logLoader     func(*logs.Reader, time.Time) ([]logs.Event, error)
+	agentsLoader  func(string, time.Time) (agentsData, error)
+	paneReader    func(context.Context, string) (string, error)
+	agents        agentsState
 	chatLoader    func(string, time.Time) (chatScreenData, error)
 	headerLoading bool
 	screenLoading bool
@@ -98,11 +102,14 @@ func New(home string, now func() time.Time) *Model {
 		width:        defaultWidth,
 		height:       defaultHeight,
 		header:       headerState{supervisor: "stale"},
+		agents:       agentsState{hideStopped: true},
 		headerLoader: readHeader,
 		logLoader: func(reader *logs.Reader, _ time.Time) ([]logs.Event, error) {
 			events, _, err := reader.Read(context.Background(), time.Time{})
 			return events, err
 		},
+		agentsLoader: loadAgents,
+		paneReader:   readAgentPane,
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
@@ -178,13 +185,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.logError("screen", msg.err)
 		}
 		m.screenErr = ""
-		if msg.request == chatDataRequest {
+		switch msg.request {
+		case agentsDataRequest:
+			m.agents.accept(msg.agents)
+		case chatDataRequest:
 			m.chatData = msg.chat
 			m.rebuildChat()
 			if m.chatFollow {
 				m.chatViewport.GotoBottom()
 			}
-		} else {
+		default:
 			m.mergeEvents(msg.events)
 			m.rebuild()
 			if m.follow {
@@ -197,6 +207,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case quitNoticeExpiredMsg:
 		if m.quitNotice && msg.at.Equal(m.quitAt) {
 			m.quitNotice = false
+		}
+		return m, nil
+	case agentsPeekMsg:
+		m.agents.peekOpen = true
+		m.agents.peekPane = msg.paneID
+		m.agents.peekText = msg.text
+		if msg.err != nil {
+			m.agents.peekText = "pane read: " + boundedError(msg.err.Error())
+			return m, m.logError("pane read", msg.err)
 		}
 		return m, nil
 	case attachMsg:
@@ -327,17 +346,25 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return nil
 	}
 	m.screenLoading = true
-	if request == chatDataRequest {
+	switch request {
+	case agentsDataRequest:
+		loader, home, now := m.agentsLoader, m.home, m.now
+		return func() tea.Msg {
+			data, err := loader(home, now())
+			return screenLoadMsg{request: agentsDataRequest, agents: data, err: err}
+		}
+	case chatDataRequest:
 		loader, home, now := m.chatLoader, m.home, m.now
 		return func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
 		}
-	}
-	loader, reader, now := m.logLoader, m.reader, m.now
-	return func() tea.Msg {
-		events, err := loader(reader, now())
-		return screenLoadMsg{request: logsDataRequest, events: events, err: err}
+	default:
+		loader, reader, now := m.logLoader, m.reader, m.now
+		return func() tea.Msg {
+			events, err := loader(reader, now())
+			return screenLoadMsg{request: logsDataRequest, events: events, err: err}
+		}
 	}
 }
 
@@ -346,6 +373,22 @@ func (m *Model) attachCmd(paneID string) tea.Cmd {
 		_, err := herdr.AgentFocus(context.Background(), paneID)
 		return attachMsg{err: err}
 	}
+}
+
+func (m *Model) startAgentsPeek(paneID string) tea.Cmd {
+	reader := m.paneReader
+	return func() tea.Msg {
+		text, err := reader(context.Background(), paneID)
+		return agentsPeekMsg{paneID: paneID, text: text, err: err}
+	}
+}
+
+func readAgentPane(ctx context.Context, paneID string) (string, error) {
+	output, err := exec.CommandContext(ctx, "herdr", "pane", "read", paneID, "--lines", "20", "--format", "text").Output()
+	if err != nil {
+		return "", fmt.Errorf("herdr pane read %s: %w", paneID, err)
+	}
+	return string(output), nil
 }
 
 func (m *Model) mergeEvents(events []logs.Event) {

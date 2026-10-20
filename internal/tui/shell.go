@@ -37,6 +37,7 @@ const (
 	noDataRequest dataRequest = iota
 	chatDataRequest
 	logsDataRequest
+	agentsDataRequest
 )
 
 type screen interface {
@@ -53,7 +54,6 @@ func (s placeholderScreen) View(_, _ int) string     { return s.name + " · next
 func (s placeholderScreen) KeyHints() string         { return "1–8 screens · ctrl+c twice to quit" }
 func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
-type agentsScreen struct{ placeholderScreen }
 type goalsScreen struct{ placeholderScreen }
 type queueScreen struct{ placeholderScreen }
 type tasksScreen struct{ placeholderScreen }
@@ -93,7 +93,7 @@ func (s logsScreen) DataRequest() dataRequest { return logsDataRequest }
 func (m *Model) makeScreens() []screen {
 	return []screen{
 		chatScreen{model: m},
-		agentsScreen{placeholderScreen{name: "Agents"}},
+		agentsScreen{model: m},
 		goalsScreen{placeholderScreen{name: "Goals"}},
 		queueScreen{placeholderScreen{name: "Queue"}},
 		tasksScreen{placeholderScreen{name: "Tasks"}},
