@@ -12,6 +12,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -40,6 +41,7 @@ type agentNode struct {
 	taskStatus  string
 	nextTask    string
 	pid         string
+	nudged      bool
 }
 
 type agentGroup struct {
@@ -136,6 +138,24 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		}
 	}
 	currentAgents := currentAgentKeys(agents)
+	nudgedRoles := make(map[string]bool)
+	checkedInboxes := make(map[string]bool)
+	for _, record := range agents {
+		if !currentAgents[record.Key] || record.Name == "" || checkedInboxes[record.Name] || (record.Role != "coordinator" && record.Role != "manager") {
+			continue
+		}
+		checkedInboxes[record.Name] = true
+		inboxRecords, err := inbox.Unread(home, record.Name)
+		if err != nil {
+			return agentsData{}, fmt.Errorf("%s inbox: %w", record.Name, err)
+		}
+		for _, item := range inboxRecords {
+			if item.NudgedAt != "" {
+				nudgedRoles[record.Name] = true
+				break
+			}
+		}
+	}
 	goalTitle := make(map[string]string)
 	for _, goal := range goals {
 		if goal.Status == "active" && goalTitle[goal.Project] == "" {
@@ -212,7 +232,7 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		}
 		node := agentNode{
 			record: record, status: status, age: age, parentKey: parentKey, inferred: inferred, stopped: stopped,
-			current: currentAgents[record.Key], ghost: ghost,
+			current: currentAgents[record.Key], ghost: ghost, nudged: currentAgents[record.Key] && nudgedRoles[record.Name],
 			landedGhost: landedGhost, landedLabel: landedLabel, taskStatus: taskStatus, nextTask: nextTasks[record.Task], pid: pid,
 		}
 		data.nodes = append(data.nodes, node)
@@ -787,6 +807,20 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 		}
 		if node.record.Replaces != "" {
 			lines = append(lines, node.record.Name+" ⋯ replaces "+displayAgent(nodes, node.record.Replaces))
+		}
+	}
+	supervisor := ""
+	for _, node := range s.data.nodes {
+		if node.record.Role == "supervisor" && node.current && s.nodeVisible(node) {
+			supervisor = node.record.Name
+			break
+		}
+	}
+	if supervisor != "" {
+		for _, node := range s.data.nodes {
+			if node.nudged && s.nodeVisible(node) {
+				lines = append(lines, supervisor+" ┄┄▶ "+node.record.Name+" · nudge")
+			}
 		}
 	}
 	return lines, positions

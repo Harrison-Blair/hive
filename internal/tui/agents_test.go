@@ -642,6 +642,66 @@ func agentNames(nodes []agentNode) []string {
 	return names
 }
 
+func TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox(t *testing.T) {
+	cases := []struct {
+		name     string
+		role     string
+		readAt   string
+		nudgedAt string
+		wantEdge bool
+	}{
+		{name: "unread nudged manager", role: "manager-alpha", nudgedAt: "2026-10-20T11:59:00Z", wantEdge: true},
+		{name: "read nudged manager", role: "manager-alpha", readAt: "2026-10-20T11:59:00Z", nudgedAt: "2026-10-20T11:58:00Z"},
+		{name: "unread manager without nudge", role: "manager-alpha"},
+		{name: "unread nudged coordinator", role: "coordinator", nudgedAt: "2026-10-20T11:59:00Z", wantEdge: true},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			m := agentsBoardModel(t)
+			writeRecord(t, m.home, []string{"inbox", test.role}, "1", records.Inbox{
+				Seq: 1, Role: test.role, Kind: records.InboxCompleted, Agent: "worker-alpha",
+				Text: "completed", ReadAt: test.readAt, NudgedAt: test.nudgedAt,
+			})
+			m = refreshAgents(t, m)
+			m.agents.tab = agentsGraph
+			lines, _ := m.agents.graphLines()
+			graph := strings.Join(lines, "\n")
+			edge := "supervisor ┄┄▶ " + test.role + " · nudge"
+			wantCount := 0
+			if test.wantEdge {
+				wantCount = 1
+			}
+			if got := strings.Count(graph, edge); got != wantCount {
+				t.Fatalf("nudge edge count = %d, want %d:\n%s", got, wantCount, graph)
+			}
+			view := ansi.Strip(m.currentScreen().View(90, 32))
+			if !strings.Contains(view, "edges: ─ delegates · ┄ nudges · ⋯ replaced") {
+				t.Fatalf("graph view omits the edge legend:\n%s", view)
+			}
+		})
+	}
+}
+
+func TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers(t *testing.T) {
+	m := agentsBoardModel(t)
+	writeAgentRecord(t, m.home, records.Agent{
+		Key: "verifier-alpha", Name: "verifier-alpha", Role: "verifier", Project: "alpha",
+		Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working",
+	})
+	for _, role := range []string{"worker-alpha", "verifier-alpha"} {
+		writeRecord(t, m.home, []string{"inbox", role}, "1", records.Inbox{
+			Seq: 1, Role: role, Kind: records.InboxCompleted, NudgedAt: "2026-10-20T11:59:00Z",
+		})
+	}
+	m = refreshAgents(t, m)
+	m.agents.tab = agentsGraph
+	lines, _ := m.agents.graphLines()
+	graph := strings.Join(lines, "\n")
+	if strings.Contains(graph, "supervisor ┄┄▶ worker-alpha · nudge") || strings.Contains(graph, "supervisor ┄┄▶ verifier-alpha · nudge") {
+		t.Fatalf("graph has a nudge edge for a worker or verifier:\n%s", graph)
+	}
+}
+
 func TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.agents.tab = agentsGraph
