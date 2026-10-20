@@ -15,7 +15,7 @@ The manager decided to skip F1 and to keep the capacity panel out (decision 6). 
 
 ## Repair 1
 
-Verifier: `t89-verifier-1`. Date: 2026-10-20. Branch head before this section: `aec7a8c3` (`merge(dev): resolve ste baseline conflict`), parents `27e3562f` and `51104904`. I did not start the TUI.
+Verifier: `t89-verifier-2`. Date: 2026-10-20. Branch head before this section: `aec7a8c3` (`merge(dev): resolve ste baseline conflict`), parents `27e3562f` and `51104904`. I did not start the TUI.
 
 | ID | Check | Observation | Result |
 | --- | --- | --- | --- |
