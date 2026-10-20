@@ -125,7 +125,7 @@ func (m *Model) shellView() string {
 	}
 	header := headerStyle.Width(width).Render(m.headerLine())
 	headerRows := lipgloss.Height(header)
-	bodyHeight := m.height - headerRows - statusRows - 5
+	bodyHeight := m.height - headerRows - statusRows
 	if bodyHeight < 1 {
 		bodyHeight = 1
 	}
