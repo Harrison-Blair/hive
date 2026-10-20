@@ -21,3 +21,18 @@ Each run used a temp `HIVE_HOME` and a temp `XDG_CONFIG_HOME`. No TUI run used t
 ## Note for the land
 
 `origin/dev` moved to `ef2dde2e` (task 88) during verification. Task 88 also changed `TestRunHomeLogsKeysOnStringReader`: it removed the `level: warn` output check and checks a `tui action` log event instead. `git merge-tree origin/dev HEAD` reports a conflict in `internal/tui/logs_screen_test.go`. The manager must resolve it at the land and run R2 again on the result.
+
+## Repair 1
+
+Verifier: `t93-verifier-3` (Claude Opus 5.5). Date: 2026-10-20.
+Task branch: `task/93-ci-test-fixes` at `fe41a82d`. `origin/dev` at `ef2dde2e`.
+No TUI run used the real home. The test sets a temp `HIVE_HOME` and a temp `XDG_CONFIG_HOME` and does not open Chat input.
+
+| Check | Result | Observation |
+| --- | --- | --- |
+| Assertions of both sides | pass | `git diff origin/dev -- internal/tui/logs_screen_test.go` adds lines only around the 88 checks. The 88 side keeps the `▶ 8 Logs` check and the `tui action` / `action: level` log-event check. The task side keeps the wait for `▶ 8 Logs` and `task queued`, the wait for the warn state, the `warnno events today` after-event check, and `TestLogsScreenCyclesInfoLevelToWarn` with the exact `level: warn` check. No assertion was removed. |
+| Brief copy STE rewording | pass | `git diff 8d442b6c HEAD -- brief.md`: two wording edits (`runner image file` to `runner image documentation`, `It has none` to `The workflow has none`) and the added `Repair 1` section. The meaning of each item did not change. `testdata/ste-baseline.json` keeps each row, with 0 for 88 and 93. `TestSTERatchet` passes in the gate. |
+| `go test -race -count=20 -run TestRunHomeLogsKeysOnStringReader ./internal/tui/` | pass | `ok github.com/Harrison-Blair/hive/internal/tui 81.331s`, exit 0. |
+| Gate | pass | `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `go vet ./...` exit 0. `golangci-lint run ./...` `0 issues.` exit 0. `go test -race ./...` exit 0, no failed package. |
+| `git merge-tree --write-tree origin/dev HEAD` | pass | Exit 0. The land conflict in the note above is resolved. |
+| `git diff origin/dev --stat` | pass | 10 files: the brief copy, evidence, `internal/doctor/health_test.go`, `internal/tui/logs_screen_test.go`, `testdata/ste-baseline.json`. Each is in the source table. |
