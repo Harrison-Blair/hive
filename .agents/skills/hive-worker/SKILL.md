@@ -32,6 +32,10 @@ it. Do not change a file outside the brief.
 For a task with a feature, read the worktree brief at
 `.hive/spec/<feature>/tasks/<id>/brief.md`. Commit this file with your work.
 
+When hive worktree create shows allowlist_needed, add !.hive/spec/ and
+!.hive/spec/** to the project .gitignore after the rules that ignore the path.
+Commit this change with the feature README.
+
 ## Work
 
 Work test-first.

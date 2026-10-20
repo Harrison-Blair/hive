@@ -7,13 +7,17 @@ import (
 )
 
 // workerPrompt is the first prompt of one worker. It is one line.
-func workerPrompt(home, task, path, branch, feature string) string {
+func workerPrompt(home, task, path, branch, feature string, spec bool) string {
 	prompt := marker.Prefix + "Read " + home + "/.agents/skills/hive-worker/SKILL.md first. Then run: " +
 		"hive task show " + shellQuote(task) + " --brief. " +
 		"Follow that brief. Your worktree is " + shellQuote(path) + " on the branch " + shellQuote(branch) + ". "
 	if feature != "" {
 		brief, evidence := featurePromptPaths(task, feature)
 		prompt += "The task brief is " + brief + ". Write each V<n>.md to " + evidence + ". "
+	}
+	if spec {
+		prompt += "When hive worktree create shows allowlist_needed, add !.hive/spec/ and !.hive/spec/** to the project .gitignore after the rules that ignore the path. " +
+			"Commit this change with the feature README. "
 	}
 	return prompt + "The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
 }

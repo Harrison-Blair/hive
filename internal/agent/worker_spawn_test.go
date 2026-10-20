@@ -213,6 +213,7 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	writeProjectPath(t, home, "demo", repo)
 	task := workerTask(home, repo, worktree, branch, "created")
 	task.Feature = "spec-feature"
+	task.Spec = true
 	writeTaskRecord(t, home, task)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
@@ -247,6 +248,8 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 		"Follow that brief. Your worktree is '" + worktree + "' on the branch '" + branch + "'. " +
 		"The task brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
 		"Write each V<n>.md to .hive/spec/spec-feature/tasks/1-worker-demo/evidence/. " +
+		"When hive worktree create shows allowlist_needed, add !.hive/spec/ and !.hive/spec/** to the project .gitignore after the rules that ignore the path. " +
+		"Commit this change with the feature README. " +
 		"The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
 	if params.Text != want {
 		t.Fatalf("prompt = %q; want %q", params.Text, want)

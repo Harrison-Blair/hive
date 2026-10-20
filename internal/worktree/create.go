@@ -152,6 +152,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		return fail("precheck", "check path: "+oneLine(err.Error()))
 	}
 	featureBrief := featureBriefRelativePath(task)
+	allowlistNeeded := false
 	if task.Feature != "" {
 		check, err := run.Command(ctx, project.Path, "git", "-C", project.Path, "check-ignore", "-q", "--no-index", featureBrief)
 		if err != nil {
@@ -159,7 +160,10 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		}
 		switch check.ExitCode {
 		case 0:
-			return fail("validate", "path is ignored: "+featureBrief+". The .gitignore of the repo must allow .hive/spec/.")
+			if !task.Spec {
+				return fail("validate", "path is ignored: "+featureBrief+". The .gitignore of the repo must allow .hive/spec/.")
+			}
+			allowlistNeeded = true
 		case 1:
 		default:
 			return fail("validate", fmt.Sprintf("check ignored path %s: git exited with code %d", featureBrief, check.ExitCode))
@@ -212,6 +216,13 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		CreatedAt:   now(),
 	}
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
+	if allowlistNeeded {
+		effects = append(effects, output.Effect{
+			Resource: "allowlist_needed",
+			Path:     "Add !.hive/spec/ and !.hive/spec/** to the project .gitignore after the rules that ignore the path. Commit this change with the feature README.",
+			Action:   "add",
+		})
+	}
 	var briefCopyErr error
 	if task.Feature != "" {
 		if err := copyFeatureBrief(home, worktreePath, task, featureBrief); err != nil {
@@ -222,6 +233,11 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 				Path:     filepath.Join(worktreePath, filepath.FromSlash(featureBrief)),
 				Action:   "copied",
 			})
+			if allowlistNeeded {
+				if _, err := run.Command(ctx, worktreePath, "git", "-C", worktreePath, "add", "-f", featureBrief); err != nil {
+					briefCopyErr = fmt.Errorf("stage feature brief: %s", oneLine(err.Error()))
+				}
+			}
 		}
 	}
 	logEffects(logger, commandCreate, project.ID, options.Task, effects)

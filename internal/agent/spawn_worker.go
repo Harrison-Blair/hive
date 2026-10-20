@@ -432,7 +432,7 @@ func finishWorkerSpawn(ctx context.Context, home string, choice *taskChoice, rec
 	}
 	if envelope.Outcome == "partial" && isBlockedEnvelope(envelope) {
 		hint := "hive task assign --task " + choice.Task.ID + " --agent " + record.Name
-		hint += " and hive agent send --agent " + record.Name + " " + shellQuote(workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature))
+		hint += " and hive agent send --agent " + record.Name + " " + shellQuote(workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature, choice.Task.Spec))
 		envelope.Error = appendHint(envelope.Error, hint)
 	}
 	return envelope
@@ -454,7 +454,7 @@ func finishVerifierSpawn(ctx context.Context, home string, choice *taskChoice, r
 func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	prompt := verifierPrompt(home, choice.Task.ID, choice.Task.Feature)
 	if record.Role != "verifier" {
-		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature)
+		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature, choice.Task.Spec)
 	}
 	info, err := promptFirstTurn(ctx, choice.PaneID, prompt, logger)
 	if err != nil {
