@@ -20,3 +20,8 @@ task went back to `assigned`.
    completed -> reopen`.
 3. Run `hive task edit --task ID --brief FILE`: `edit needs created or
    assigned`.
+
+**Related:** `hive worktree remove` on a task whose worktree is already
+removed fails with `worktree check: start git: fork/exec /usr/bin/git: no such
+file or directory`. Git exists. The working directory of the Git call is the
+removed worktree. The message does not say that the worktree is gone.
