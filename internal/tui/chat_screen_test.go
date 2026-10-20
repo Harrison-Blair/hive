@@ -28,6 +28,86 @@ func TestChatScreenShowsCoordinatorHeading(t *testing.T) {
 	requireView(t, m, "coordinator", "hive events")
 }
 
+func TestChatStartFromProjectsShowsRefusalAndBlocksInput(t *testing.T) {
+	home := newTestHome(t)
+	projectDir := filepath.Join(home, "projects", "demo", "worktrees", "task")
+	if err := os.MkdirAll(projectDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	previous, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(projectDir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(previous) })
+	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+	m := New(home, clock.now)
+	t.Cleanup(m.Stop)
+	requireView(t, m, "chat send is for the user only", "rule 2")
+	m, cmd := raise(t, m, key('i', "i"))
+	if cmd != nil || m.chatInputActive {
+		t.Fatal("Chat input opened for a caller below projects/")
+	}
+}
+
+func TestChatRefusedSendShowsNoticeAndKeepsDraft(t *testing.T) {
+	home := newTestHome(t)
+	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1",
+		Status: records.AgentLive, Generation: 1,
+	})
+	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
+	projectDir := filepath.Join(home, "projects", "demo", "worktrees", "task")
+	if err := os.MkdirAll(projectDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	previous, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(projectDir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(previous) })
+	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
+	m := New(home, clock.now)
+	t.Cleanup(m.Stop)
+	m.chatInputActive = true
+	m.chatInput.Focus()
+	m.chatInput.InsertString("hello")
+	msg := runChatSendCommand(t, m.sendChat())
+	m, _ = raise(t, m, msg)
+	requireView(t, m, "chat send is for the user only", "hello")
+	rejectView(t, m, "you ·")
+	if got := m.chatInput.Value(); got != "hello" {
+		t.Fatalf("draft = %q; want hello", got)
+	}
+}
+
+func runChatSendCommand(t *testing.T, command tea.Cmd) tea.Msg {
+	t.Helper()
+	if command == nil {
+		t.Fatal("send returned no command")
+	}
+	result := command()
+	if batch, ok := result.(tea.BatchMsg); ok {
+		for _, task := range batch {
+			if msg := task(); msg != nil {
+				if _, isSend := msg.(chatSendMsg); isSend {
+					return msg
+				}
+			}
+		}
+		t.Fatal("send command returned no chat result")
+	}
+	if _, ok := result.(chatSendMsg); !ok {
+		t.Fatalf("send command returned %T; want chatSendMsg", result)
+	}
+	return result
+}
+
 func TestChatLoadsRecentConversationAndCoordinatorState(t *testing.T) {
 	home := newTestHome(t)
 	now := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
