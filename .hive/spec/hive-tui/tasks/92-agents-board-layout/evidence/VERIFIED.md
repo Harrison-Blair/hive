@@ -264,3 +264,108 @@ Gate: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `
 | TUI process 120 x 40 | PID 2361315 in `wS1:p2` | Stopped with Ctrl+C after a PID check |
 
 I did not use workspace `wBC`. Tab `wS1:t1` stays open.
+
+## Repair 3
+
+Verifier: `t92-verifier-4`. Task head: `72d51057`. Repair 2 tip: `3e6d1b54`. Board: `/home/penguin/source/hive/.hive/tmp/coordinator/designs/hive-tui/Main.dc.html`.
+
+Result: **fail**. R3.1 (unbroken stem) fails, and the V2 region table lists the pod title as "same" when the task moved it off the border.
+
+| Item | Result |
+| --- | --- |
+| R3.1 stem is one line from the bus to the manager node, junction at the pod border | fail |
+| R3.2 rounded pod corners | pass |
+| R3.3 one cell of node padding | pass |
+| R3.4 header groups with spaces, time at the right edge | pass |
+| R3.5 detail fields with spaces | pass |
+| R3 tests fail on `3e6d1b54` and pass on `72d51057` | pass |
+| V2 region table | fail (pods row) |
+| Earlier passes (nudge mutation, ghost rule, task 90 idle CPU) | pass |
+| Exact frame at 120 x 40 and 200 x 57 | pass |
+| V3 diff scope | pass |
+| V4 gate | pass |
+| `git merge-tree --write-tree origin/dev HEAD` | exit 0 |
+
+### R3 red and green
+
+I copied `internal/tui/agents_test.go` of `72d51057` into a scratch worktree at `3e6d1b54` and ran:
+
+```sh
+go test ./internal/tui -run 'TestAgentsGraphDelegationStemJoinsPodBorder|TestAgentsGraphPodsHaveRoundedCorners|TestAgentsGraphNodeHasOneCellOfPadding|TestAgentsHeaderUsesSpacesAndRightAlignsTime|TestAgentsDetailFieldsUseSpaces|TestAgentsGraphPodTitleIsInsideBorder' -count=1
+```
+
+Each of the six tests failed for its point: `delegation stem at the pod border = 'o', want '┬'`, `pod corner … = '┌', want '╭'` (4 corners), `coordinator node has no left padding: │▶ ● coordinator`, `header groups are not separated by spaces: ⬢ hive · 2 projects · …`, `detail = "worker-alpha · parent …"`, and the title test. On `72d51057`, `go test ./internal/tui -count=1` passes.
+
+### R3.1 stem: fail
+
+The brief: "The delegation stem is one line from the bus to the manager node." The board draws each stem as one div from `top: 8px` (bus) to `top: 60px` (node top), through the pod border at `top: 34px`.
+
+The task draws `┬` on the pod top border, then breaks the stem on the next two rows. The pod title row is under the stem column, and in a project pod the `┄ inferred` label replaces the stem on the row after it. Golden `graph-120x40.golden`, home pod, panel column 13:
+
+```text
+│             ┌────────────────…   bus
+│             │                    stem
+│ ╭───────────┬──────────╮         pod border: ┬ (good)
+│ │ ≡ home               │         title row: blank at column 13 (break)
+│ │           │          │         stem
+│ │ ┌─────────┬────────┐ │         node
+```
+
+The alpha pod has `≡ alpha · Alpha goal for long graph` across the stem column. Live (`verify-repair3-200x57-graph.txt`, hive pod): `╭───────────────┬───────────────╮`, then `│ ≡ hive · Hive TUI dashboard   │` (text at the stem column), then `│          ┄ inferred           │` (label at the stem column), then the node `┌─────────────┬─────────────┐`. The stem has a gap of two rows in each project pod.
+
+`TestAgentsGraphDelegationStemJoinsPodBorder` checks only the border glyph (`lines[2]`). It does not check the rows between the border and the node, so it passes with the break.
+
+### V2 region table: pods row fails
+
+The region table says Pods: "Same … Titles sit at the left inside each pod." That is not the board. The board places each title on the pod top border: the title div has `top: 24px`, line height 20px, and an opaque background, and the pod border is at `top: 34px`, so the title is centered on the border line (a legend). The Repair 1 verification recorded this ("the board puts `≡ home` on the top border of the pod"), and Repair 2 put the title on the border with `TestAgentsGraphPodTitleSharesTopBorder`. Repair 3 moved the title to its own row inside the pod and changed that test to `TestAgentsGraphPodTitleIsInsideBorder`, which now requires the title to be off the border. V1.md says "The board places the title at the left inside the pod." The board does not.
+
+This difference is not listed with a cause, so it is a fault under the Repair 3 rule. It is also the cause of the R3.1 break: the title row sits between the border junction and the node. Note for the repair: on the board the stems of `hive`, `qmeter`, and `stenographer` cross their title text (the stem divs paint after the title divs). A terminal cannot draw both in one cell. Either place the title on the border clear of the stem column, or record the conflict as a terminal limit, and draw the stem without a gap. The `┄ inferred` label also needs a place that does not replace the stem cell.
+
+Each other row of the table agrees with the board or gives a cause I accept: header (spaces, time at the right edge; live counts), explorer, screen list, tabs and legend, nodes (dot, name, harness or PID, task, one-cell padding; selection style from the user rule), edges apart from the stem gap (bus ends, G4 `inferred`, T3 nudge rule, clipping at 120), detail strip (rounded border, `?`, spaces), and key bar.
+
+### Earlier passes
+
+In a scratch worktree at `72d51057`, each file restored with `git checkout` after each run:
+
+- Nudge filter: I removed `|| (record.Role != "coordinator" && record.Role != "manager")` from the inbox loop in `loadAgents` (`agents.go:144`). `TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers` failed: `drawn graph has a nudge route for a worker or verifier`. Holds.
+- Ghost rule: `open = activeGoalTasks[task.ID]` to `open = true` (`agents.go:127`). `TestAgentsGhostsRequireAnOpenTask` failed: `closed task ghost "ghost-verified-unassigned" is visible without history` and in the explorer. Holds.
+- Task 90 render cache: both `View` cache checks to `if true` (`tui.go` and `shell.go:156`). `TestHeaderRefreshReusesUnchangedScreenRender` (`rendered screen 2 times`) and `TestMinuteRefreshUpdatesOnlyTheHeader` (`rendered screen 2 times`) failed. Holds.
+- Task 90 idle reload: `headerChanged := true` (`tui.go:242`). `TestIdleTickDoesNotReloadUnchangedData` (`1 header loads and 0 screen loads`) and `TestIdleTickReloadsChangedScreenOnce` (`1 header loads and 1 screen loads; want 0 and 1`) failed. Holds.
+- Unchanged code: these six tests pass.
+
+### Live check
+
+Binary built from `72d51057` in my scratch folder. Scratch home: a copy of `.hive/README.md`, `.hive/state`, and `.hive/spec` of the real home, set with `HIVE_HOME`. A temp `XDG_CONFIG_HOME`. I never opened the Chat input and never pressed Enter.
+
+1. In my tab `wS3:t2` (pane `wS3:p2`), with `stty` set to each size and `env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH`: PID 2504214 (200 x 57) and PID 2506637 (120 x 40). `/proc/2504214/environ` had no `HERDR_ENV`, `HERDR_PANE_ID`, `HERDR_WORKSPACE_ID`, or `HERDR_SOCKET_PATH`. These reads show the same stem gap. They are not exact frames: the pane is 207 x 57, and after a Tab key the TUI got a resize event and drew itself at 207 x 57. The stray `│` at column 129 in earlier text reads comes from this size mismatch.
+2. For exact frames I started a private tmux server from the same pane: `tmux -L t92v4 -f /dev/null new-session -d -s v120 -x 120 -y 40 'env -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u HERDR_SOCKET_PATH -u HERDR_TAB_ID HIVE_HOME=… XDG_CONFIG_HOME=… …/hive'`, and the same with `-s v200 -x 200 -y 57`. Server PID 2513043, TUI PIDs 2513044 (120 x 40) and 2513310 (200 x 57). I sent `2`, then Tab, Tab with `tmux send-keys` and read each view with `tmux capture-pane -p`.
+
+| Size | View | Capture | Lines | Line widths |
+| --- | --- | --- | --- | --- |
+| 120 x 40 | TREE | [`verify-repair3-120x40-tree.txt`](verify-repair3-120x40-tree.txt) | 40 | 120 max; no line past the edge |
+| 120 x 40 | GRAPH | [`verify-repair3-120x40-graph.txt`](verify-repair3-120x40-graph.txt) | 40 | 120 max |
+| 120 x 40 | TABLE | [`verify-repair3-120x40-table.txt`](verify-repair3-120x40-table.txt) | 40 | 120 max |
+| 200 x 57 | TREE | [`verify-repair3-200x57-tree.txt`](verify-repair3-200x57-tree.txt) | 57 | 200 max |
+| 200 x 57 | GRAPH | [`verify-repair3-200x57-graph.txt`](verify-repair3-200x57-graph.txt) | 57 | 200 max |
+| 200 x 57 | TABLE | [`verify-repair3-200x57-table.txt`](verify-repair3-200x57-table.txt) | 57 | 200 max |
+
+Each frame line is 120 or 200 cells (the footer and key bar lines are shorter text). The header ends with the time at the right edge: `… supervisor ●  needs you 0 … 14:58`. Pods use `╭╮╰╯`. Nodes have one space of padding: `│ ▶ ● coordinator  │`. Detail: `coordinator  parent ?  model claude-opus-5-5  task ?  ?  pane wBC:pV  next ?`. Key bar: `←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat`.
+
+Footer: `not in herdr: no coordinator or supervisor started`. The only `hive supervise` process before and after was PID 2107907, which I did not start. No coordinator tab was made.
+
+### V3, merge, and gate
+
+`git diff origin/dev --stat`: `internal/tui/` (`agents.go`, `agents_test.go`, `fix_test.go`, `header.go`, `refresh.go`, `shell.go`, `shell_test.go`, `tui.go`, six goldens), `testdata/ste-baseline.json` (+1), and the brief copy and evidence of this task. Pass. `git merge-tree --write-tree origin/dev HEAD` exit 0 (`origin/dev` at `8ee27847`).
+
+Gate: `gofmt -l` printed nothing. `go mod tidy -diff` printed nothing, exit 0. `go vet ./...` exit 0. `golangci-lint run ./...` `0 issues.` exit 0. `go test -race -count=1 ./...` exit 0.
+
+### Resources
+
+| Resource | ID | Result |
+| --- | --- | --- |
+| Tab in my workspace `wS3` | `wS3:t2` (`t92-v4-live`), root pane `wS3:p2` | Closed after a label and ID check |
+| TUI 200 x 57 in `wS3:p2` | PID 2504214 | Stopped with Ctrl+C after a PID check |
+| TUI 120 x 40 in `wS3:p2` | PID 2506637 | Stopped with Ctrl+C after a PID check |
+| tmux server `-L t92v4` | PID 2513043, TUI PIDs 2513044 and 2513310 | Stopped with `tmux -L t92v4 kill-server`; all three PIDs gone |
+
+I did not use workspace `wBC`. Tab `wS3:t1` stays open.
