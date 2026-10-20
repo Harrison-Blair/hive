@@ -48,52 +48,64 @@ func (s healthScreen) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (s healthScreen) View(width, _ int) string {
-	contentWidth := width - 4
-	if contentWidth < 1 {
-		contentWidth = 1
-	}
+func (s healthScreen) View(width, height int) string {
+	contentWidth := max(1, width-4)
 	gap := 2
-	columnWidth := (contentWidth - gap) / 2
-	if columnWidth < 1 {
-		columnWidth = 1
-	}
+	columnWidth := max(1, (contentWidth-gap)/2)
 	homeChecks, agentChecks := healthGroups(s.model.health.result)
-	lines := []string{lipgloss.JoinHorizontal(lipgloss.Top,
-		dimStyle.Width(columnWidth).Render("┤ home ├"),
-		strings.Repeat(" ", gap),
-		dimStyle.Width(columnWidth).Render("┤ agents ├"),
-	)}
-	rows := max(len(homeChecks), len(agentChecks))
-	if rows == 0 {
-		lines = append(lines, "loading checks...")
+	homeLines := []string{dimStyle.Render("┤ home ├")}
+	agentTitle := "┤ agents ├"
+	if columnWidth-4 < lipgloss.Width(agentTitle) {
+		agentTitle = "agents"
+	}
+	agentLines := []string{dimStyle.Render(agentTitle)}
+	if len(homeChecks)+len(agentChecks) == 0 {
+		loading := trimGraphLine("loading checks...", columnWidth-4)
+		homeLines = append(homeLines, loading)
+		agentLines = append(agentLines, loading)
 	} else {
-		for index := 0; index < rows; index++ {
-			homeLine, agentLine := "", ""
-			if index < len(homeChecks) {
-				check := homeChecks[index]
-				homeLine = healthCheckLine(check, check.Name == s.model.health.selected)
-			}
-			if index < len(agentChecks) {
-				check := agentChecks[index]
-				agentLine = healthCheckLine(check, check.Name == s.model.health.selected)
-			}
-			homeLine = trimGraphLine(homeLine, columnWidth)
-			agentLine = trimGraphLine(agentLine, columnWidth)
-			padding := columnWidth - lipgloss.Width(homeLine)
-			if padding < 0 {
-				padding = 0
-			}
-			lines = append(lines, homeLine+strings.Repeat(" ", padding)+strings.Repeat(" ", gap)+agentLine)
+		for _, check := range homeChecks {
+			homeLines = append(homeLines, trimGraphLine(healthCheckLine(check, check.Name == s.model.health.selected), columnWidth-4))
+		}
+		for _, check := range agentChecks {
+			agentLines = append(agentLines, trimGraphLine(healthCheckLine(check, check.Name == s.model.health.selected), columnWidth-4))
 		}
 	}
-	if selected, ok := s.model.health.selectedCheck(); ok {
-		lines = append(lines, lipgloss.NewStyle().Width(contentWidth).Render("DETAIL "+selected.Name+": "+selected.Detail))
+	homePanel := panelStyle.Width(columnWidth).Render(strings.Join(homeLines, "\n"))
+	agentPanel := panelStyle.Width(columnWidth).Render(strings.Join(agentLines, "\n"))
+	lines := []string{lipgloss.JoinHorizontal(lipgloss.Top, homePanel, strings.Repeat(" ", gap), agentPanel)}
+
+	warningLines := []string{titleStyle.Render("┤ warnings ├")}
+	warnings := healthWarnings(s.model.health.result)
+	if len(warnings) == 0 {
+		warningLines = append(warningLines, "no warnings")
 	} else {
-		lines = append(lines, "DETAIL no check selected")
+		for _, check := range warnings {
+			line := healthCheckLine(check, check.Name == s.model.health.selected) + ": " + check.Detail
+			warningLines = append(warningLines, trimGraphLine(line, contentWidth-4))
+		}
+	}
+	warningPanel := panelStyle.BorderForeground(lipgloss.Color("#ffb37a")).Width(contentWidth).Render(strings.Join(warningLines, "\n"))
+	lines = append(lines, warningPanel)
+	if height > 14 {
+		if selected, ok := s.model.health.selectedCheck(); ok {
+			lines = append(lines, lipgloss.NewStyle().Width(contentWidth).Render("DETAIL "+selected.Name+": "+selected.Detail))
+		} else {
+			lines = append(lines, "DETAIL no check selected")
+		}
 	}
 	lines = append(lines, "capacity · later: capacity from qmeter. Not in this goal.")
 	return strings.Join(lines, "\n")
+}
+
+func healthWarnings(result doctor.Result) []doctor.Check {
+	warnings := make([]doctor.Check, 0)
+	for _, check := range result.Checks {
+		if check.Status == doctor.StatusWarn || check.Status == doctor.StatusFail {
+			warnings = append(warnings, check)
+		}
+	}
+	return warnings
 }
 
 func healthCheckLine(check doctor.Check, selected bool) string {
