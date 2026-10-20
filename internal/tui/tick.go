@@ -18,7 +18,15 @@ type headerLoadMsg struct {
 }
 
 type screenLoadMsg struct {
-	events []logs.Event
+	request dataRequest
+	events  []logs.Event
+	agents  agentsData
+	err     error
+}
+
+type agentsPeekMsg struct {
+	paneID string
+	text   string
 	err    error
 }
 

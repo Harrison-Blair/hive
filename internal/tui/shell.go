@@ -36,6 +36,7 @@ type dataRequest uint8
 const (
 	noDataRequest dataRequest = iota
 	logsDataRequest
+	agentsDataRequest
 )
 
 type screen interface {
@@ -53,7 +54,6 @@ func (s placeholderScreen) KeyHints() string         { return "1–8 screens · 
 func (s placeholderScreen) DataRequest() dataRequest { return noDataRequest }
 
 type chatScreen struct{ placeholderScreen }
-type agentsScreen struct{ placeholderScreen }
 type goalsScreen struct{ placeholderScreen }
 type queueScreen struct{ placeholderScreen }
 type tasksScreen struct{ placeholderScreen }
@@ -93,7 +93,7 @@ func (s logsScreen) DataRequest() dataRequest { return logsDataRequest }
 func (m *Model) makeScreens() []screen {
 	return []screen{
 		chatScreen{placeholderScreen{name: "Chat"}},
-		agentsScreen{placeholderScreen{name: "Agents"}},
+		agentsScreen{model: m},
 		goalsScreen{placeholderScreen{name: "Goals"}},
 		queueScreen{placeholderScreen{name: "Queue"}},
 		tasksScreen{placeholderScreen{name: "Tasks"}},
