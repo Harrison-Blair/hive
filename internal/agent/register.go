@@ -53,6 +53,10 @@ type RegisterOptions struct {
 	// Spawned marks the first record write of a spawn. Manual registration
 	// leaves it false. No CLI flag sets it.
 	Spawned bool
+	// TabCreatedByHive and FirstPrompt are the ownership fact and the kept
+	// first prompt of a general agent spawn.
+	TabCreatedByHive bool
+	FirstPrompt      string
 }
 
 // RegisterResult is the record and optional claim of one registration.
@@ -192,6 +196,10 @@ func validateRegistration(options RegisterOptions) string {
 	case "worker", "verifier":
 		if options.Project == "" || options.Task == "" {
 			return options.Role + " requires --project and --task"
+		}
+	case "agent":
+		if options.Task != "" {
+			return "agent takes no --task"
 		}
 	default:
 		return "invalid role: " + displayValue(options.Role)
@@ -505,6 +513,9 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		UpdatedAt:     now,
 		Spawned:       options.Spawned,
 		StartedByHive: startupStartedByHive(options),
+
+		TabCreatedByHive: options.TabCreatedByHive,
+		FirstPrompt:      options.FirstPrompt,
 	}
 	action := "created"
 	if replaceOrphan {

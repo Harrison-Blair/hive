@@ -67,6 +67,9 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if !record.Spawned {
 		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+" was not spawned by hive: exit it by hand", record)
 	}
+	if record.Role == "agent" && !record.StartedByHive {
+		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+": hive did not start it: exit it by hand", record)
+	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
 	if err != nil {
 		return StopResult{Agent: record}, stopEnvelope("failed", "log", nil, err.Error(), record)
@@ -189,6 +192,9 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		}
 	}
 	logger.Debug("agent stop topology", "command", "agent stop", "agent_id", record.Key, "topology", result.Topology)
+	if record.TabCreatedByHive {
+		effects = appendEffect(effects, stoppedTabEffect(ctx, logger, record, result))
+	}
 	if record.Role == "manager" && record.Project != "" {
 		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)
 		effects = appendEffect(effects, workspaceEffect)
@@ -231,6 +237,29 @@ func recordStoppedWorkspace(home string, record records.Agent, result StopResult
 		return output.Effect{Resource: "workspace", Path: record.WorkspaceID, Action: fmt.Sprintf("kept: %d other panes", other)}, nil
 	default:
 		return output.Effect{}, nil
+	}
+}
+
+// stoppedTabEffect reports the tab that hive created for a general agent after
+// its pane closed (decision 11). herdr closes a tab with its last pane.
+func stoppedTabEffect(ctx context.Context, logger *slog.Logger, record records.Agent, result StopResult) output.Effect {
+	closed := output.Effect{Resource: "tab", Path: record.TabID, Action: "closed"}
+	switch result.Topology {
+	case "closed":
+		return closed
+	case "surviving":
+		tabs, err := herdr.TabList(ctx, record.WorkspaceID, herdr.WithLogger(logger))
+		if err != nil {
+			return output.Effect{Resource: "tab", Path: record.TabID, Action: "unknown: " + err.Error()}
+		}
+		for _, tab := range tabs {
+			if tab.TabID == record.TabID {
+				return output.Effect{Resource: "tab", Path: record.TabID, Action: fmt.Sprintf("kept: %d other panes", tab.PaneCount)}
+			}
+		}
+		return closed
+	default:
+		return output.Effect{}
 	}
 }
 

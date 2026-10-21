@@ -30,15 +30,20 @@ type Agent struct {
 	Replaces        string   `json:"replaces,omitempty"`
 	StatusChangedAt string   `json:"status_changed_at,omitempty"`
 	// AgentStatus is the last observed harness status, separate from Status.
-	AgentStatus     string `json:"agent_status,omitempty"`
-	Finished        bool   `json:"finished"`
-	QuietAfterMin   int    `json:"quiet_after_min"`
-	Generation      uint64 `json:"generation"`
-	StartedAt       string `json:"started_at"`
-	UpdatedAt       string `json:"updated_at"`
-	LastError       string `json:"last_error,omitempty"`
-	Spawned         bool   `json:"spawned"`
-	StartedByHive   bool   `json:"started_by_hive,omitempty"`
+	AgentStatus   string `json:"agent_status,omitempty"`
+	Finished      bool   `json:"finished"`
+	QuietAfterMin int    `json:"quiet_after_min"`
+	Generation    uint64 `json:"generation"`
+	StartedAt     string `json:"started_at"`
+	UpdatedAt     string `json:"updated_at"`
+	LastError     string `json:"last_error,omitempty"`
+	Spawned       bool   `json:"spawned"`
+	StartedByHive bool   `json:"started_by_hive,omitempty"`
+	// TabCreatedByHive marks a general agent whose tab hive created for it.
+	TabCreatedByHive bool `json:"tab_created_by_hive,omitempty"`
+	// FirstPrompt is the kept first prompt of a general agent that spawn did
+	// not send. The supervisor sends it.
+	FirstPrompt     string `json:"first_prompt,omitempty"`
 	ProcessPID      int64  `json:"process_pid,omitempty"`
 	ProcessName     string `json:"process_name,omitempty"`
 	ProcessStart    uint64 `json:"process_start,omitempty"`

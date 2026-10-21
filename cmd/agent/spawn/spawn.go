@@ -18,7 +18,7 @@ func New() *cobra.Command {
 	command.Flags().String("role", "", "agent role")
 	command.Flags().String("agent", "", "caller agent name or key")
 	command.Flags().String("harness", "", "harness kind")
-	command.Flags().String("pane", "", "herdr pane ID")
+	command.Flags().String("pane", "", "destination herdr pane ID: hive starts the agent in this pane, and agent stop closes it; herdr then closes its tab or workspace when it holds no other pane")
 	command.Flags().String("adopt", "", "adopt an existing workspace")
 	command.Flags().String("model", "", "model name")
 	command.Flags().String("project", "", "project ID")
@@ -26,6 +26,10 @@ func New() *cobra.Command {
 	command.Flags().String("name", "", "agent name")
 	command.Flags().Int("quiet-after", 10, "quiet minutes")
 	command.Flags().StringArray("arg", nil, "native agent argument")
+	command.Flags().String("prompt", "", "spawner text of a general agent (role agent)")
+	command.Flags().String("prompt-file", "", "file with the spawner text of a general agent (role agent)")
+	command.Flags().String("cwd", "", "working directory of a general agent in a new tab")
+	command.Flags().Bool("allow-trust-dialog", false, "start a general agent that can show a trust dialog; keep its first prompt for the supervisor")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		role, _ := cmd.Flags().GetString("role")
 		agent, _ := cmd.Flags().GetString("agent")
@@ -38,6 +42,10 @@ func New() *cobra.Command {
 		name, _ := cmd.Flags().GetString("name")
 		quiet, _ := cmd.Flags().GetInt("quiet-after")
 		extra, _ := cmd.Flags().GetStringArray("arg")
+		prompt, _ := cmd.Flags().GetString("prompt")
+		promptFile, _ := cmd.Flags().GetString("prompt-file")
+		cwd, _ := cmd.Flags().GetString("cwd")
+		allowTrust, _ := cmd.Flags().GetBool("allow-trust-dialog")
 		return common.Run(cmd, "agent spawn", func(home string) (output.Envelope, string, error) {
 			envelope := agentlib.SpawnFromCLI(cmd.Context(), home, agentlib.SpawnOptions{
 				Role:          role,
@@ -54,6 +62,14 @@ func New() *cobra.Command {
 				QuietAfterMin: quiet,
 				QuietAfterSet: cmd.Flags().Lookup("quiet-after").Changed,
 				ExtraArgs:     extra,
+
+				Prompt:           prompt,
+				PromptSet:        cmd.Flags().Lookup("prompt").Changed,
+				PromptFile:       promptFile,
+				PromptFileSet:    cmd.Flags().Lookup("prompt-file").Changed,
+				Cwd:              cwd,
+				CwdSet:           cmd.Flags().Lookup("cwd").Changed,
+				AllowTrustDialog: allowTrust,
 			})
 			return envelope, agentlib.SpawnText(envelope), nil
 		})
