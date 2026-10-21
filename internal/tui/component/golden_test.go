@@ -2,6 +2,7 @@ package component
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"charm.land/lipgloss/v2"
@@ -66,5 +67,26 @@ func checkGolden(t *testing.T, got, board string, r rect) {
 	}
 	if len(diffs) > 0 {
 		t.Errorf("%d cells differ from %s.grid (board row and column):\n%s\nrendered:\n%s", len(diffs), board, cellgrid.FormatDiffs(diffs), got)
+	}
+}
+
+// checkHandGrid compares the rendered ANSI text with a hand-written grid in
+// the grid file format of cellgrid. Each differing cell is printed.
+func checkHandGrid(t *testing.T, got, want string) {
+	t.Helper()
+	w, err := cellgrid.ReadGrid(strings.NewReader(want))
+	if err != nil {
+		t.Fatalf("read the expected grid: %v", err)
+	}
+	g, err := cellgrid.Convert(got, w.Width, w.Height)
+	if err != nil {
+		t.Fatalf("convert: %v\n%s", err, got)
+	}
+	diffs, err := cellgrid.Compare(w, g, nil)
+	if err != nil {
+		t.Fatalf("compare: %v", err)
+	}
+	if len(diffs) > 0 {
+		t.Errorf("%d cells differ from the expected grid:\n%s\nrendered:\n%s", len(diffs), cellgrid.FormatDiffs(diffs), got)
 	}
 }
