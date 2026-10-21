@@ -35,23 +35,33 @@ var (
 
 // SpawnOptions holds explicit values for one agent spawn.
 type SpawnOptions struct {
-	Role              string
-	Agent             string
-	Project           string
-	Task              string
-	Harness           string
-	Model             string
-	Name              string
-	NameSet           bool
-	PaneID            string
-	PaneSet           bool
-	Adopt             string
-	QuietAfterMin     int
-	QuietAfterSet     bool
-	ExtraArgs         []string
-	PID               int64
+	Role          string
+	Agent         string
+	Project       string
+	Task          string
+	Harness       string
+	Model         string
+	Name          string
+	NameSet       bool
+	PaneID        string
+	PaneSet       bool
+	Adopt         string
+	QuietAfterMin int
+	QuietAfterSet bool
+	ExtraArgs     []string
+	PID           int64
+	// Prompt, PromptFile, Cwd, and AllowTrustDialog are the inputs of a
+	// general agent spawn (role agent).
+	Prompt            string
+	PromptSet         bool
+	PromptFile        string
+	PromptFileSet     bool
+	Cwd               string
+	CwdSet            bool
+	AllowTrustDialog  bool
 	shellReadyTimeout time.Duration
 	renameTab         bool
+	general           *generalSpawn
 }
 
 // SpawnResult is the record and optional claim of one spawn.
@@ -91,6 +101,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	defer func() { _ = writer.Close() }()
 	logger := slog.New(writer)
+	if options.Role == "agent" && options.general == nil {
+		return spawnGeneral(ctx, home, options, profile, logger)
+	}
 
 	choice, paneError := choosePane(ctx, home, options, logger)
 	if paneError != "" {
@@ -149,6 +162,9 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		QuietAfterSet: options.QuietAfterSet,
 		PID:           options.PID,
 		Spawned:       true,
+
+		TabCreatedByHive: options.general != nil && options.general.tabCreated,
+		FirstPrompt:      options.general.keptPrompt(),
 	})
 	if registered.Outcome != "ok" {
 		if manager != nil {
@@ -203,6 +219,18 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		return envelope
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
+	if options.general != nil {
+		updated, effect, updateErr := mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
+			current.StartedByHive = true
+		}, "updated")
+		effects = appendEffect(effects, effect)
+		if updateErr != nil {
+			envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
+			logSpawn(logger, envelope, options, record.Key)
+			return envelope
+		}
+		record = updated
+	}
 	if renameTab {
 		effects = append(effects, renameAgentTab(ctx, home, logger, started.Agent.TabID, record.Name, "agent spawn", record.Key))
 	}
