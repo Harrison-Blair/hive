@@ -42,3 +42,14 @@ did the review only.
 
 5. Start pi in the home root with a prompt that names another role.
 6. pi runs `hive agent register --role coordinator` and takes the claim.
+
+**Second occurrence (2026-10-21):** the user asked for a review of the
+`tui-v2` spec draft by GPT 6.1 Sol in a pane that the user can see. Hive
+still cannot spawn it: `hive agent spawn --role reviewer --pane w58:p7`
+fails with "invalid role: reviewer" (`internal/agent/register.go:179`).
+`hive agent spawn` has no free-text prompt flag. The coordinator made tab
+`w58:t7` with `herdr tab create` and started pi there with
+`herdr pane run`, with the prompt in a file. The tools were read, grep,
+find, and ls only. With no bash tool, pi cannot run
+`hive agent register`, so the coordinator claim stayed safe. Hive has no
+record of this agent.
