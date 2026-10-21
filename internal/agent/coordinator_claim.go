@@ -26,6 +26,7 @@ type CoordinatorLaunch struct {
 	pidStart   uint64
 	generation uint64
 	replaces   string
+	command    string
 	logger     *slog.Logger
 	// previous is the claim and record that a restart replaced. Release puts
 	// them back when the restart fails before the old pane closes.
@@ -156,7 +157,7 @@ func claimCoordinator(ctx context.Context, home string, restart *records.Agent, 
 			}
 			return fmt.Errorf("write starting claim: %w", writeErr)
 		}
-		launch = &CoordinatorLaunch{home: home, pid: pid, pidStart: pidStart, generation: generation, replaces: replaces, logger: logger, previousRecord: previousRecord}
+		launch = &CoordinatorLaunch{home: home, pid: pid, pidStart: pidStart, generation: generation, replaces: replaces, command: command, logger: logger, previousRecord: previousRecord}
 		if hasClaim {
 			saved := claim
 			launch.previous = &saved

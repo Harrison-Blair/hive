@@ -27,7 +27,7 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 	}
 	logger := l.logger
 	if logger != nil {
-		logger.Debug("coordinator harness start", "command", "bare hive", "home", l.home, "pane_id", paneID, "harness", harnessKind, "model", model)
+		logger.Debug("coordinator harness start", "command", l.command, "home", l.home, "pane_id", paneID, "harness", harnessKind, "model", model)
 	}
 	started := false
 	defer func() {
@@ -98,7 +98,7 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 		return err
 	}
 	if logger != nil {
-		logger.Debug("coordinator record written", "command", "bare hive", "agent_id", record.Key, "pane_id", record.PaneID, "process_pid", record.ProcessPID)
+		logger.Debug("coordinator record written", "command", l.command, "agent_id", record.Key, "pane_id", record.PaneID, "process_pid", record.ProcessPID)
 	}
 	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: CoordinatorPrompt}, options...); err != nil {
 		failure := fmt.Errorf("send coordinator startup prompt: %w", err)

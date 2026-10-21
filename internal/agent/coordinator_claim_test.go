@@ -1,9 +1,11 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -395,8 +397,27 @@ func testCoordinatorRestartFrom(t *testing.T, status string) {
 		oldAtClose = readAgent(t, home, "coordinator-g1")
 	})
 
-	if _, err := Restart(context.Background(), home, record, nil); err != nil {
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+	if _, err := Restart(context.Background(), home, record, logger); err != nil {
 		t.Fatalf("Restart(): %v", err)
+	}
+	for _, msg := range []string{"coordinator harness start", "coordinator record written"} {
+		found := false
+		for _, line := range strings.Split(strings.TrimSpace(logs.String()), "\n") {
+			var event map[string]any
+			if json.Unmarshal([]byte(line), &event) != nil || event["msg"] != msg {
+				continue
+			}
+			found = true
+			if event["command"] != "tui agent restart" {
+				t.Fatalf("%q command = %v; want tui agent restart", msg, event["command"])
+			}
+		}
+		if !found {
+			t.Fatalf("no %q log event in:\n%s", msg, logs.String())
+		}
 	}
 	mu.Lock()
 	defer mu.Unlock()
