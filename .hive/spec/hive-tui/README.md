@@ -40,6 +40,7 @@ The user can open an eight-screen TUI with bare `hive`. It shows agents and thei
 25. The plan review is `.hive/tmp/reports/plan-review-hive-tui.md`. The manager decides G2-G5, G7-G12, and G14. G13 is void because decision 22 was withdrawn.
 26. The user quits the TUI by pressing Ctrl+C twice. The first press shows `press ctrl+c again to quit`. The `q` key does not quit. The coordinator and supervisor keep running after the TUI quits.
 27. Hive sends each user chat message with the marker and tag `⬢ user: TEXT`. The marker shows that Hive delivered it. The tag shows that the user wrote it in the TUI and carries the user's authority. The coordinator treats it as the user's own message.
+28. The user can restart only the coordinator or the supervisor from the Agents screen. Press r. Hive asks for confirmation only when the target is live. This is the one exception to decisions 14 and G12. No other TUI write action is approved. The user approved this decision on 2026-10-21.
 
 ## Manager decisions
 
@@ -54,7 +55,7 @@ The user can open an eight-screen TUI with bare `hive`. It shows agents and thei
 - G9: Bare `hive` checks for herdr. Without herdr, it runs only the TUI and shows a notice. With herdr, each start step checks first and can run again safely. Hive keeps a live coordinator and a fresh supervisor claim. Otherwise, it starts each in its own tab. The coordinator and supervisor keep running after the TUI quits.
 - G10: Startup never closes a pane that it did not start. If an old `logs` tab exists, the coordinator skill tells the coordinator to close it by hand after the new supervisor tab is live.
 - G11: Config accepts `home` and a `[coordinator]` table with `harness` and `model`. `hive init` changes only the `home` line and keeps all other lines. An unknown key causes an error that names the key.
-- G12: The TUI reads data, chats, and attaches to a pane. It has no other action. Remove design controls for held nudges, question cards, interruption, edits, restart, and cleanup. Show the hint `ask in Chat` where a design has one of those controls.
+- G12: The TUI reads data, chats, and attaches to a pane. It has no other action except restart of the coordinator or the supervisor, as approved in decision 28. Remove design controls for held nudges, question cards, interruption, edits, and cleanup. Show the hint `ask in Chat` where a design has one of those controls.
 - G13: Void because goal decision 22 is withdrawn.
 - G14: Each TUI screen loads data in a background command, outside the input loop. Each CLI command logs one `request_id`. Logs groups events by request. Health checks if the supervisor binary is older than the installed `hive` and if a worktree exists for a landed task. Waves A and B each include a live check of a chat message and a nudge sent to the same pane at the same time.
 

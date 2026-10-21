@@ -795,7 +795,7 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 
 func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	m := agentsBoardModel(t)
-	want := "←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat"
+	want := "←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat"
 	if got := m.currentScreen().KeyHints(); got != want {
 		t.Fatalf("Agents key hints = %q, want %q", got, want)
 	}

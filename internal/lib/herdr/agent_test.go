@@ -2,6 +2,7 @@ package herdr
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"reflect"
 	"strings"
@@ -110,6 +111,34 @@ func TestAgentPromptShapes(t *testing.T) {
 	}
 	if got, want := requests[1].Params, `{"target":"w1:p1","text":"hello","wait":{"until":["idle","blocked","done"],"timeout_ms":600000}}`; got != want {
 		t.Fatalf("wait params = %s; want %s", got, want)
+	}
+}
+
+func TestAgentGetPreservesReadinessFields(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("agent.get", `{"type":"agent_info","agent":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":5,"launch_pending":true,"interactive_ready":false}}`)
+	server.scriptResult("agent.get", `{"type":"agent_info","agent":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":6,"launch_pending":false,"interactive_ready":true}}`)
+	for index, want := range []map[string]any{
+		{"launch_pending": true},
+		{"interactive_ready": true},
+	} {
+		info, err := AgentGet(context.Background(), "w1:p1")
+		if err != nil {
+			t.Fatalf("AgentGet(%d) error = %v", index, err)
+		}
+		data, err := json.Marshal(info)
+		if err != nil {
+			t.Fatalf("marshal AgentInfo: %v", err)
+		}
+		var fields map[string]any
+		if err := json.Unmarshal(data, &fields); err != nil {
+			t.Fatalf("decode AgentInfo: %v", err)
+		}
+		for key, value := range want {
+			if fields[key] != value {
+				t.Fatalf("AgentInfo readiness fields = %#v; want %s=%v", fields, key, value)
+			}
+		}
 	}
 }
 

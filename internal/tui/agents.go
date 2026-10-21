@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -58,6 +59,10 @@ type agentsData struct {
 
 type agentsState struct {
 	data           agentsData
+	restartConfirm bool
+	restartTarget  records.Agent
+	restartRunning bool
+	restartNotice  string
 	tab            agentsTab
 	selectedKey    string
 	showHistory    bool
@@ -515,7 +520,7 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	return "←↑↓→ move on graph · tab tree/graph/table · enter peek pane · a attach · h hide stopped · t open task · ask in Chat"
+	return "←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
@@ -525,6 +530,23 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 	}
 	state := &s.model.agents
 	key := press.String()
+	if state.restartConfirm {
+		target := state.restartTarget
+		state.restartConfirm = false
+		if key == "y" {
+			state.restartRunning = true
+			state.restartNotice = "restarting"
+			return batch(
+				s.model.logAction("agent restart confirmation", slog.String("agent_id", target.Key), slog.String("result", "confirmed")),
+				s.model.startAgentRestart(target),
+			)
+		}
+		state.restartNotice = "restart cancelled"
+		return s.model.logAction("agent restart confirmation", slog.String("agent_id", target.Key), slog.String("result", "cancelled"))
+	}
+	if state.restartRunning {
+		return nil
+	}
 	if state.peekOpen {
 		if key == "esc" {
 			paneID := state.peekPane
@@ -542,6 +564,37 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 		state.graphOffset = 0
 		state.keepSelectedVisible()
 		return s.model.logAction("agent tab", slog.String("tab", []string{"tree", "graph", "table"}[state.tab]))
+	case "r":
+		node, ok := state.selected()
+		if !ok || (node.record.Role != "coordinator" && node.record.Role != "supervisor") {
+			state.restartNotice = "restart applies only to the coordinator and the supervisor"
+			return s.model.logAction("agent restart request", slog.String("result", "unsupported target"))
+		}
+		if node.record.Status == records.AgentStarting {
+			state.restartNotice = "cannot restart an agent while it is starting"
+			return s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("result", "agent is starting"))
+		}
+		state.restartNotice = ""
+		state.restartTarget = node.record
+		if node.record.Role == "coordinator" && node.record.Status == records.AgentLive {
+			state.restartRunning = true
+			state.restartNotice = "checking coordinator pane"
+			return batch(
+				s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "checking pane")),
+				s.model.startCoordinatorRestartCheck(node.record),
+			)
+		}
+		if node.record.Status == records.AgentLive && (node.record.Role != "supervisor" || state.data.supervisorLive) {
+			state.restartConfirm = true
+			state.restartNotice = "restart " + node.record.Role + "? y/n"
+			return s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "confirmation required"))
+		}
+		state.restartRunning = true
+		state.restartNotice = "restarting"
+		return batch(
+			s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "started immediately")),
+			s.model.startAgentRestart(node.record),
+		)
 	case "h":
 		state.showHistory = !state.showHistory
 		if _, ok := state.selected(); !ok {
@@ -593,6 +646,68 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 		}
 	}
 	return nil
+}
+
+type agentRestartMsg struct {
+	agentKey string
+	result   agent.RestartResult
+	err      error
+}
+
+type coordinatorRestartCheckMsg struct {
+	record records.Agent
+	gone   bool
+	err    error
+}
+
+func (m *Model) startCoordinatorRestartCheck(record records.Agent) tea.Cmd {
+	home, logger := m.home, m.logger
+	return func() tea.Msg {
+		gone, err := coordinatorPaneGone(context.Background(), home, record, logger)
+		return coordinatorRestartCheckMsg{record: record, gone: gone, err: err}
+	}
+}
+
+func (m *Model) acceptCoordinatorRestartCheck(msg coordinatorRestartCheckMsg) tea.Cmd {
+	m.invalidateView()
+	state := &m.agents
+	if !state.restartRunning || state.restartTarget.Key != msg.record.Key {
+		return nil
+	}
+	if msg.gone {
+		target := state.restartTarget
+		target.Status = records.AgentStale
+		state.restartTarget = target
+		state.restartNotice = "restarting"
+		return batch(
+			m.logAction("agent restart pane check", slog.String("agent_id", target.Key), slog.String("outcome", "gone")),
+			m.logAction("agent restart request", slog.String("agent_id", target.Key), slog.String("role", target.Role), slog.String("result", "started immediately")),
+			m.startAgentRestart(target),
+		)
+	}
+	state.restartRunning = false
+	state.restartConfirm = true
+	state.restartNotice = "restart coordinator? y/n"
+	outcome := "present"
+	attrs := []slog.Attr{slog.String("agent_id", msg.record.Key), slog.String("outcome", outcome)}
+	if msg.err != nil {
+		outcome = "failed"
+		attrs[1] = slog.String("outcome", outcome)
+		attrs = append(attrs, slog.String("error", boundedError(msg.err.Error())))
+	}
+	return batch(
+		m.logAction("agent restart pane check", attrs...),
+		m.logAction("agent restart request", slog.String("agent_id", msg.record.Key), slog.String("role", msg.record.Role), slog.String("result", "confirmation required")),
+		m.logError("coordinator pane check", msg.err),
+	)
+}
+
+func (m *Model) startAgentRestart(record records.Agent) tea.Cmd {
+	home, logger := m.home, m.logger
+	return func() tea.Msg {
+		result, err := agent.Restart(context.Background(), home, record, logger)
+		return agentRestartMsg{agentKey: record.Key, result: result, err: err}
+	}
 }
 
 func (s agentsScreen) View(width, height int) string {

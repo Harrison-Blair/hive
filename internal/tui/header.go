@@ -1,13 +1,17 @@
 package tui
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+	"sync"
 
 	"charm.land/lipgloss/v2"
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -15,16 +19,23 @@ import (
 	"github.com/Harrison-Blair/hive/internal/task"
 )
 
+var supervisorBinaryCache struct {
+	sync.Mutex
+	key string
+	old bool
+}
+
 type headerState struct {
-	supervisor string
-	projects   int
-	agents     int
-	working    int
-	idle       int
-	needsUser  int
-	queueRun   int
-	queueStops int
-	queueWaits int
+	supervisor    string
+	supervisorOld bool
+	projects      int
+	agents        int
+	working       int
+	idle          int
+	needsUser     int
+	queueRun      int
+	queueStops    int
+	queueWaits    int
 }
 
 func readHeader(home string) (headerState, error) {
@@ -39,6 +50,7 @@ func readHeader(home string) (headerState, error) {
 	case err == nil:
 		if alive, checkErr := process.Alive(claim.PID, claim.PIDStart); checkErr == nil && alive {
 			state.supervisor = "fresh"
+			state.supervisorOld = supervisorBinaryIsOld(home, claim)
 		}
 	case errors.Is(err, os.ErrNotExist):
 	default:
@@ -94,6 +106,37 @@ func readHeader(home string) (headerState, error) {
 	return state, nil
 }
 
+func supervisorBinaryIsOld(home string, claim records.Claim) bool {
+	hivePath, err := exec.LookPath("hive")
+	if err != nil {
+		return false
+	}
+	hiveInfo, err := os.Stat(hivePath)
+	if err != nil {
+		return false
+	}
+	supervisorInfo, err := os.Stat(fmt.Sprintf("/proc/%d/exe", claim.PID))
+	if err != nil {
+		return false
+	}
+	key := fmt.Sprintf("%s:%d:%d:%s:%d:%d:%d:%d", home, claim.PID, claim.PIDStart, hivePath, hiveInfo.Size(), hiveInfo.ModTime().UnixNano(), supervisorInfo.Size(), supervisorInfo.ModTime().UnixNano())
+	supervisorBinaryCache.Lock()
+	defer supervisorBinaryCache.Unlock()
+	if supervisorBinaryCache.key == key {
+		return supervisorBinaryCache.old
+	}
+	old := false
+	for _, check := range doctor.Run(context.Background(), home, nil).Checks {
+		if check.Name == "supervisor binary" {
+			old = check.Status == doctor.StatusWarn && strings.Contains(check.Detail, "supervisor binary is older")
+			break
+		}
+	}
+	supervisorBinaryCache.key = key
+	supervisorBinaryCache.old = old
+	return old
+}
+
 func (m *Model) agentsHeaderLine() string {
 	state := m.header
 	projectLabel := "projects"
@@ -112,9 +155,16 @@ func (m *Model) agentsHeaderLine() string {
 	if state.supervisor == "fresh" {
 		supervisor = workingStyle.Render("●")
 	}
+	if state.supervisorOld {
+		supervisor = dimStyle.Render("old")
+	}
 	counts := fmt.Sprintf("⬢ hive  %d %s  %d %s  %s", state.projects, projectLabel, state.agents, agentLabel, workCounts)
 	needsUser := lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Render(fmt.Sprint(state.needsUser))
-	status := fmt.Sprintf("supervisor %s  needs you %s", supervisor, needsUser)
+	status := fmt.Sprintf("supervisor %s", supervisor)
+	if state.supervisorOld {
+		status += " · r to restart"
+	}
+	status += fmt.Sprintf("  needs you %s", needsUser)
 	timeLabel := m.now().Format("15:04")
 	width := m.width
 	if width < 1 {
@@ -174,8 +224,15 @@ func (m *Model) headerLine() string {
 	}
 	counts := fmt.Sprintf("⬢ hive · %d %s · %d %s · %s / %s",
 		state.projects, projectLabel, state.agents, agentLabel, workCount, idleCount)
+	supervisorLabel := state.supervisor
+	if state.supervisorOld {
+		supervisorLabel = "old"
+	}
 	status := fmt.Sprintf("supervisor %s · needs_user %s · %s",
-		supervisorStyle.Render(state.supervisor), infoStyle.Render(fmt.Sprint(state.needsUser)), m.now().Format("15:04"))
+		supervisorStyle.Render(supervisorLabel), infoStyle.Render(fmt.Sprint(state.needsUser)), m.now().Format("15:04"))
+	if state.supervisorOld {
+		status += " · r to restart"
+	}
 	if m.width < 100 {
 		return counts + "\n" + status
 	}
