@@ -4,7 +4,7 @@ This record follows goal `g1-tui-restart` from the manager to three landings on 
 
 The goal belongs to project `hive`. It has waves A, B, and C. Each wave and the goal has status `done`. [C01]
 
-No new end-to-end run occurred during this record task. The worker read saved records, log events, and commits. [C15]
+This task made no new end-to-end run. The home has four agent records for this task: three workers and one verifier. Its commits change only the CP5 artifact, tracker, brief, citation and evidence files, and the STE baseline. [C15]
 
 ## Agents
 
@@ -28,7 +28,7 @@ No new end-to-end run occurred during this record task. The worker read saved re
 
 Task `2-stale-coordinator-startup` first used worker `t2-worker-1`. Verifier `t2-verifier-1` reported a fail on V4 and the visual check. Hive changed the task from `completed` to `assigned`. [C03, C04, C11]
 
-The manager then started repair worker `t2-worker-2`. Verifier `t2-verifier-2` passed the task. Hive changed its status to `verified`. [C05, C06, C11]
+The manager then started a second worker, `t2-worker-2`. Verifier `t2-verifier-2` passed the task. Hive changed its status to `verified`. [C05, C06, C11]
 
 Merge commit `0e079272924127b69f78b1142929eaa02e7229cf` landed task 2 on `dev`. [C12]
 

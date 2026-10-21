@@ -12,8 +12,8 @@
 ## Overview
 
 CP5 is the v1 end-to-end checkpoint. The user approved a new plan on
-2026-10-21. The evidence is goal `g1-tui-restart`, which records the real-home
-path from the manager to `dev`. Record `1-cp5-end-to-end` shows status `cancelled`.
+2026-10-21. Goal `g1-tui-restart` records the end-to-end run on the real home
+from the manager to `dev`. Task `1-cp5-end-to-end` has status `cancelled`.
 
 This task writes the CP5 artifact from real records and commits only. Do not
 run a new end-to-end run. Do not spawn an agent. Do not change a record.
@@ -32,7 +32,7 @@ with `hive inbox send --to manager-hive TEXT --agent NAME`.
   `manager-hive`, `t2-worker-1`, `t2-verifier-1`, `t2-worker-2`,
   `t2-verifier-2`, `t3-worker-1`, `t3-verifier-1`, `t4-worker-1`, and
   `t4-verifier-1`.
-- Task 2 had a verify fail from `t2-verifier-1`, a repair by `t2-worker-2`,
+- Task 2 had a verify fail from `t2-verifier-1`, a second worker, `t2-worker-2`, that fixed the task,
   and a pass from `t2-verifier-2`.
 - Landings on `dev`: `0e079272` (task 2), `3ccd93fb` (task 3), `ede94f3e`
   (task 4).
@@ -60,11 +60,13 @@ Do not edit other files.
 
 - `reference/dogfood/cp5.md` gives the end-to-end flow of goal
   `g1-tui-restart`: the goal, the waves, each task, each agent with its role,
-  harness, and model, the verify fail and the repair on task 2, each pass,
+  harness, and model, the verify fail and the fix on task 2, each pass,
   and each landing.
 - Each claim cites a record path and field, a log event with its
   `request_id` or time, or a commit SHA.
-- It states that no new run occurred.
+- It states that this task made no new run. The evidence is the list of agent
+  records for task `6-cp5-record` (only its workers and verifiers) and the
+  task commits (only documents). Cite both.
 
 ### AC2 The citations
 
@@ -144,4 +146,6 @@ A new end-to-end run. The Bootstrap clause. `main`.
 
 ## Changes
 
-None.
+- 2026-10-21: the manager removed the word that the glossary bans, and gave
+  the evidence for the no-run claim. The verifier model is
+  `openai-codex/gpt-6-luna:xhigh`.
