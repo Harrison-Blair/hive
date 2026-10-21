@@ -1,4 +1,3 @@
-46 cells differ
 row 14 col 8: want ' ' dim normal, got ' ' fg normal
 row 14 col 9: want ' ' dim normal, got ' ' fg normal
 row 14 col 17: want ' ' dim normal, got ' ' fg normal
@@ -45,6 +44,4 @@ row 30 col 103: want '━' accent normal, got '━' dim normal
 row 30 col 104: want '━' accent normal, got '━' dim normal
 row 30 col 105: want '━' accent normal, got '━' dim normal
 row 30 col 106: want '━' accent normal, got '━' dim normal
-compare exit 0
-export exit 0
-.hive/spec/tui-v2/design/Components.grid
+PASS: exactly 46 required token changes; no rune or bold changes
