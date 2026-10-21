@@ -105,6 +105,9 @@ wave 6 do that.
   again.
 - Expected: each new test fails on the base and passes on the task branch.
   The changed token fails a golden check that prints the cell.
+- Exception: the AC3 test checks the `lipgloss` dependency, so it passes on
+  the base. To prove it, add one wide symbol to its list. The test must fail
+  and name that symbol.
 
 ### V2 Rectangles
 
@@ -141,4 +144,5 @@ The wave 4 components. The frame. Each screen.
 
 ## Changes
 
-None.
+- 2026-10-21: after a verify fail (t21-verifier-1), V1 has an exception for
+  the AC3 test.

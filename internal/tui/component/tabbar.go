@@ -11,6 +11,9 @@ import (
 // tabNames are the screens of the tab bar, in key order (decision 3).
 var tabNames = []string{"Agents", "Chat", "Work", "Friction", "Health", "Logs"}
 
+// tabGap is the extra space between labels from LongFormWidth (decision 3).
+var tabGap = " "
+
 // TabBar is the row of screen labels and the rule below it (decision 3).
 // Active is the zero-based index of the active screen.
 type TabBar struct {
@@ -24,7 +27,7 @@ type TabBar struct {
 func (b TabBar) View(width int) string {
 	gap := ""
 	if width >= LongFormWidth {
-		gap = " "
+		gap = tabGap
 	}
 	var labels, rule strings.Builder
 	labels.WriteString(" ")
@@ -40,7 +43,7 @@ func (b TabBar) View(width int) string {
 			rule.WriteString(borderStyle.Render(strings.Repeat("─", n)))
 		}
 		labels.WriteString(gap)
-		rule.WriteString(borderStyle.Render(strings.Repeat("─", len(gap))))
+		rule.WriteString(borderStyle.Render(strings.Repeat("─", lipgloss.Width(gap))))
 	}
 	return fitRow(labels.String(), width) + "\n" + fitRow(rule.String()+borderStyle.Render(strings.Repeat("─", width)), width)
 }

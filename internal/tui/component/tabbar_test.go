@@ -30,3 +30,19 @@ func TestTabBarSpacing(t *testing.T) {
 		}
 	}
 }
+
+// TestTabBarMultiByteGap sets a gap of one cell and two bytes. The ━
+// underline must stay under the active label (decision 12).
+func TestTabBarMultiByteGap(t *testing.T) {
+	defer func(g string) { tabGap = g }(tabGap)
+	tabGap = " "
+	rows := strings.Split(ansi.Strip(TabBar{Active: 5}.View(121)), "\n")
+	labels, rule := []rune(rows[0]), []rune(rows[1])
+	want := strings.Index(string(labels), " 6 Logs ")
+	want = len([]rune(string(labels)[:want]))
+	got := strings.IndexRune(string(rule), '━')
+	got = len([]rune(string(rule)[:got]))
+	if got != want {
+		t.Errorf("underline starts at cell %d, want cell %d (labels %q, rule %q)", got, want, string(labels), string(rule))
+	}
+}
