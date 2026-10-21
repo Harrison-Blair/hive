@@ -41,7 +41,7 @@ function sheet(t) {
   var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
   names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === 0) { put(t, x, 10, lab, 'accent', 1); put(t, x, 11, rep('━', lab.length), 'accent'); } else put(t, x, 10, lab, 'dim'); x += lab.length + 1; });
   cap(t, 13, 'SubTabs', '[ ] switch · active in brackets, accent bold · hint at right');
-  put(t, 1, 14, ' Goals    Queue   ', 'dim'); put(t, 19, 14, '[Tasks]', 'accent', 1); put(t, 102, 14, '[ ] switch view', 'dim');
+  put(t, 1, 14, ' Goals ', 'dim'); put(t, 10, 14, ' Queue ', 'dim'); put(t, 19, 14, '[Tasks]', 'accent', 1); put(t, 102, 14, '[ ] switch view', 'dim');
   cap(t, 16, 'Panel', 'RoundedBorder · Padding(0,1) · title in top border · focus = accent border · tab moves focus');
   box(t, 0, 17, 40, 5, 'border', 'unfocused', 'accent'); put(t, 2, 19, 'border #3d3a33', 'dim');
   box(t, 44, 17, 40, 5, 'accent', 'focused', 'accent'); put(t, 46, 19, 'border #f5b942 · takes the keys', 'dim');
@@ -49,7 +49,7 @@ function sheet(t) {
   box(t, 0, 24, 60, 7, 'accent', 'viewport', 'accent');
   for (var i = 0; i < 5; i++) put(t, 2, 25 + i, 'line ' + (41 + i) + ' of 120', 'fg');
   vline(t, 59, 26, 2, '┃', 'accent');
-  box(t, 64, 24, 56, 7, 'border', 'horizontal', 'accent'); put(t, 66, 26, 'projects 1–4 of 5 · ←→ at the edge', 'dim'); put(t, 65, 30, rep('━', 42), 'accent');
+  box(t, 64, 24, 56, 7, 'border', 'horizontal', 'accent'); put(t, 66, 26, 'projects 1–4 of 5 · ←→ at the edge', 'dim'); put(t, 65, 30, rep('━', 42), 'dim');
   cap(t, 32, 'List', '▶ selected · fixed columns · truncates with …');
   box(t, 0, 33, 60, 6, 'accent', 'tasks · 4', 'accent');
   put(t, 4, 34, fit('ID', 26) + fit('STATUS', 10) + 'WAVE', 'dim');
