@@ -16,6 +16,25 @@ type Profile interface {
 	StartTimeout() time.Duration
 	ReadyTimeout() time.Duration
 	ProcessNames() []string
+	Trust() Trust
+}
+
+// Trust is the trust dialog result of one harness (decision 13 of the
+// general-agent spec). A method starts the harness in a new directory with no
+// trust dialog, and trusts the directory only for that one process. The spawn
+// of a general agent adds Args to the start arguments and Env to the
+// environment of the harness process. An empty Args and Env with no NoMethod
+// means that the harness shows no trust dialog.
+type Trust struct {
+	// Version is the harness version of the live check.
+	Version string
+	// Args are the start arguments of the method.
+	Args []string
+	// Env holds the KEY=VALUE pairs of the method.
+	Env []string
+	// NoMethod is the reason when no method exists. It is empty when a method
+	// exists.
+	NoMethod string
 }
 
 // Check validates the bounds of one profile. A start timeout below the ready

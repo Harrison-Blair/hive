@@ -19,6 +19,7 @@ func (p testProfile) Args(model string, extra []string) []string { return p.args
 func (p testProfile) StartTimeout() time.Duration                { return p.start }
 func (p testProfile) ReadyTimeout() time.Duration                { return p.ready }
 func (p testProfile) ProcessNames() []string                     { return p.names }
+func (p testProfile) Trust() Trust                               { return Trust{} }
 
 func TestCheckBounds(t *testing.T) {
 	cases := []struct {

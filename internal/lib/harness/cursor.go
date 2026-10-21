@@ -12,7 +12,8 @@ import "time"
 // Two dialogs can block the first start in a new directory:
 //   - The trust dialog for the current workspace. Hive reports "blocked" and
 //     does not answer the dialog. The user accepts the dialog in the pane or
-//     starts the agent with the native "--trust" flag.
+//     starts the agent with the native "--trust" flag. Both save the trust for
+//     all time.
 //   - The login dialog for an account with no credential. Hive reports
 //     "blocked" and does not answer the dialog. The user logs in in the pane.
 //
@@ -34,3 +35,14 @@ func (cursorProfile) Args(model string, extra []string) []string {
 func (cursorProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (cursorProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (cursorProfile) ProcessNames() []string      { return []string{"cursor-agent"} }
+
+// Trust gives the trust result of Cursor agent 2026.10.19-6bbf2c4. A new
+// directory shows the workspace trust dialog. The --trust flag skips it, but
+// writes ~/.cursor/projects/<slug>/.workspace-trusted, so the directory stays
+// trusted for all time.
+func (cursorProfile) Trust() Trust {
+	return Trust{
+		Version:  "2026.10.19-6bbf2c4",
+		NoMethod: "--trust skips the workspace trust dialog but saves the trust for all time in ~/.cursor/projects",
+	}
+}
