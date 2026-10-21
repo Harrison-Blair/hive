@@ -169,6 +169,34 @@ func TestStartupFailureShowsInFooterAndDoesNotStopTUI(t *testing.T) {
 	}
 }
 
+func TestStartupNoStartupSkipsEachStepAndLogsReason(t *testing.T) {
+	homePath := newTestHome(t)
+	server := newStartupHerdr(t)
+	t.Setenv("HERDR_ENV", "1")
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	t.Setenv("HIVE_NO_STARTUP", "1")
+	var logOutput bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+		t.Fatal("no-startup started a coordinator")
+		return nil
+	}
+
+	notice, err := setupSessionWith(homePath, logger, starter)
+	if err != nil {
+		t.Fatalf("setupSessionWith(): %v", err)
+	}
+	if notice != "" || len(server.requests) != 0 {
+		t.Fatalf("notice/requests = %q / %#v; want no notice and no herdr request", notice, server.requests)
+	}
+	for _, step := range []string{"current tab label", "coordinator", "supervisor"} {
+		want := `"step":"` + step + `","outcome":"skipped","reason":"no-startup"`
+		if !strings.Contains(logOutput.String(), want) {
+			t.Errorf("startup log = %s; want %s", logOutput.String(), want)
+		}
+	}
+}
+
 func TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing(t *testing.T) {
 	homePath := newTestHome(t)
 	server := newStartupHerdr(t)

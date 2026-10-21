@@ -12,7 +12,7 @@ For all other files, the coordinator and manager never change a project source f
 | [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
 | [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
 | [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
-| [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open |  |
+| [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
