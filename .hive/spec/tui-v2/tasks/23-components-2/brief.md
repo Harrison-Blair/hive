@@ -39,6 +39,7 @@ components with the Components board.
 | `internal/tui/component/` and its tests | AC1-AC5. |
 | `internal/tui/component/testdata/` | Only test inputs, if a test needs a file. |
 | `go.mod`, `go.sum` | AC4. Only Glamour and the modules that it needs. |
+| `.hive/spec/tui-v2/README.md` | AC4. Only the text of decisions 32 and 33. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0, and to lower a count. |
 | `.hive/spec/tui-v2/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
@@ -91,9 +92,19 @@ that.
 - One Go file holds the complete Glamour style of decision 29.
 - The component removes only the blank first line and the trailing spaces
   of each line that Glamour adds. It keeps leading spaces.
-- Tables follow decision 32. Tests cover uneven content, columns of equal
-  width, and a table with too many columns. The Chat golden check includes
-  the table rows of `Chat.grid`.
+- Tables use the output of Glamour v2.0.1 with no change. The user decided
+  this on 2026-10-21. Write the text of decisions 32 and 33 in the spec to
+  state what Glamour does with a table: the column widths, the stretch to the
+  wrap width, the shrink, and the header style. Tests cover uneven content,
+  columns of equal width, and a table with too many columns.
+- Write the rendered rows of the table of `Chat` (wrap width 94) and of
+  `CompactChat` (inner width 76, no gutter) to
+  `/home/penguin/source/hive/.hive/tmp/reports/tui-v2-glamour-tables.md`.
+  Use the exact content of each board. Give one line for each row, and the
+  token and the bold flag of each cell. The coordinator redraws the boards
+  from this file. This file is not a source file. Do not commit it.
+- The Chat golden check includes the table rows after the new `Chat.grid`
+  lands on `dev`.
 - A test renders hand-written markdown with a heading, strong text, inline
   code, a code block, a list, and a link. It compares the tokens with a
   hand-written expected grid or with the Chat board.
@@ -162,3 +173,5 @@ The frame. The key routes. Each screen.
 - 2026-10-21: after the questions of t23-worker-1, the Popup uses `border`
   behind it and the AgentDetails rectangle, the Notice uses a hand-written
   grid, and AC4 includes decisions 32 and 33.
+- 2026-10-21: the user chose option A. Tables use the Glamour output. The
+  task writes decisions 32 and 33 and the table report.
