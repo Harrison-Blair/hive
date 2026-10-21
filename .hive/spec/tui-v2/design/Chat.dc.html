@@ -57,16 +57,16 @@ function chat(t) {
   put(t, X, y, 'Interrogate, round 2', 'accent', 1); y += 2;
   put(t, X, y, '1. What happens to the old tab on restart?', 'fg', 1); y += 1;
   segs(t, X, y, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has '], ['spawned=false', 'code'], ['. '], ['agent stop', 'code'], [' refuses it.']]); y += 2;
-  var cols = [9, 38, 22, 18];
+  var cols = [19, 35, 18, 19];
   function trow(cells, k, b) { var x = X; cells.forEach(function (c, i) { put(t, x, y, ' ' + fit(c, cols[i] - 1), i === 0 && b ? 'accent' : k, b); x += cols[i]; if (i < cols.length - 1) { put(t, x, y, '│', 'border'); x += 1; } }); y += 1; }
   function tline(m) { var s = ''; cols.forEach(function (c, i) { s += rep('─', c) + (i < cols.length - 1 ? m : ''); }); put(t, X, y, s, 'border'); y += 1; }
-  trow(['Choice', 'Answer', 'Pros', 'Cons'], 'fg', 1);
+  trow(['Choice', 'Answer', 'Pros', 'Cons'], 'fg', 0);
   tline('┼');
   trow(['A (REC)', 'Record that bare hive started it', 'No tab pile-up', 'Field change'], 'fg', 0);
   trow(['B', 'Leave the old tab, open a new one', 'Smallest change', 'Dead tabs pile up'], 'fg', 0);
   trow(['C', 'Reuse the same pane', 'One tab always', 'Must exit harness'], 'fg', 0);
   y += 1;
-  segs(t, X, y, [['• ', 'accent'], ['Recommended: ', 'fg', 1], ['A, because hive may close only panes it started.']]); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['Recommended:', 'fg', 1], [' A, because hive may close only panes it started.']]); y += 1;
   segs(t, X, y, [['• ', 'accent'], ['Reply like '], ['1A, 2A, 3A', 'code'], [', or '], ['simplify N', 'code'], ['.']]); y += 1;
   y += 1;
   put(t, X + 2, y, 'hive agent stop manager-hive', 'code');
