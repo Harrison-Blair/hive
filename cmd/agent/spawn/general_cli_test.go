@@ -54,3 +54,38 @@ func TestSpawnGeneralAgentRecordsRoleAndCallerParent(t *testing.T) {
 		t.Fatalf("record key/role/parent = %q/%q/%q; want x/agent/boss (stdout %s)", agent.Key, agent.Role, agent.Parent, stdout)
 	}
 }
+
+func TestSpawnGeneralAgentFlags(t *testing.T) {
+	home := cliHome(t)
+	seedParent(t, home)
+	dir := t.TempDir()
+	t.Setenv("HERDR_PANE_ID", "w1:p9")
+	for _, test := range []struct {
+		name string
+		args []string
+		want string
+	}{
+		{name: "both prompts", args: []string{"--harness", "pi", "--prompt", "T", "--prompt-file", "/none"}, want: "one of --prompt or --prompt-file"},
+		{name: "prompt file", args: []string{"--harness", "pi", "--prompt-file", dir + "/none"}, want: "prompt file:"},
+		{name: "cwd", args: []string{"--harness", "pi", "--prompt", "T", "--cwd", dir + "/none"}, want: "is not a directory"},
+		{name: "trust refusal", args: []string{"--harness", "codex", "--prompt", "T", "--cwd", dir}, want: "add --allow-trust-dialog"},
+		{name: "trust allowed", args: []string{"--harness", "codex", "--prompt", "T", "--cwd", dir, "--allow-trust-dialog"}, want: "tab create:"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			newCLIFake(t, "tab.create")
+			args := append([]string{"agent", "spawn", "--role", "agent", "--name", "x"}, test.args...)
+			status, _, stderr := runCLI(t, home, args...)
+			if status != 1 || !strings.Contains(stderr, test.want) {
+				t.Fatalf("status %d stderr %q; want 1 and %q", status, stderr, test.want)
+			}
+		})
+	}
+}
+
+func TestSpawnPaneHelpStatesStopResult(t *testing.T) {
+	home := cliHome(t)
+	_, stdout, _ := runCLI(t, home, "agent", "spawn", "--help")
+	if !strings.Contains(stdout, "agent stop closes it; herdr then closes its tab or workspace when it holds no other pane") {
+		t.Fatalf("help = %q; want the --pane stop result", stdout)
+	}
+}
