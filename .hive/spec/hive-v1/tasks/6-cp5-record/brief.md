@@ -12,7 +12,7 @@
 ## Overview
 
 CP5 is the v1 end-to-end checkpoint. The user approved a new plan on
-2026-10-21. Goal `g1-tui-restart` records the end-to-end run on the real home
+2026-10-21. The evidence is goal `g1-tui-restart`, which ran on the real home
 from the manager to `dev`. Task `1-cp5-end-to-end` has status `cancelled`.
 
 This task writes the CP5 artifact from real records and commits only. Do not
@@ -64,9 +64,10 @@ Do not edit other files.
   and each landing.
 - Each claim cites a record path and field, a log event with its
   `request_id` or time, or a commit SHA.
-- It states that this task made no new run. The evidence is the list of agent
-  records for task `6-cp5-record` (only its workers and verifiers) and the
-  task commits (only documents). Cite both.
+- It states that this task made no new run. The evidence uses a rule, not a
+  count: each agent record for task `6-cp5-record` has the role worker or
+  verifier, and each task commit changes only documents. The count of records
+  grows with each worker and verifier. Do not state a count.
 
 ### AC2 The citations
 
@@ -149,3 +150,4 @@ A new end-to-end run. The Bootstrap clause. `main`.
 - 2026-10-21: the manager removed the word that the glossary bans, and gave
   the evidence for the no-run claim. The verifier model is
   `openai-codex/gpt-6-luna:xhigh`.
+- 2026-10-21: the no-run evidence is a rule, not a count of agent records.

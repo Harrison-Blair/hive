@@ -4,7 +4,7 @@ This record follows goal `g1-tui-restart` from the manager to three landings on 
 
 The goal belongs to project `hive`. It has waves A, B, and C. Each wave and the goal has status `done`. [C01]
 
-This task made no new end-to-end run. The home has four agent records for this task: three workers and one verifier. Its commits change only the CP5 artifact, tracker, brief, citation and evidence files, and the STE baseline. [C15]
+This task made no new end-to-end run. Filter `hive agent list --project hive --all --json` for task `6-cp5-record`; each matching agent record has role `worker` or `verifier`. `git log --stat dev...HEAD` shows that each task commit changes only documents. [C15]
 
 ## Agents
 
