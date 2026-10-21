@@ -1,0 +1,50 @@
+46 cells differ
+row 14 col 8: want ' ' dim normal, got ' ' fg normal
+row 14 col 9: want ' ' dim normal, got ' ' fg normal
+row 14 col 17: want ' ' dim normal, got ' ' fg normal
+row 14 col 18: want ' ' dim normal, got ' ' fg normal
+row 30 col 65: want '━' accent normal, got '━' dim normal
+row 30 col 66: want '━' accent normal, got '━' dim normal
+row 30 col 67: want '━' accent normal, got '━' dim normal
+row 30 col 68: want '━' accent normal, got '━' dim normal
+row 30 col 69: want '━' accent normal, got '━' dim normal
+row 30 col 70: want '━' accent normal, got '━' dim normal
+row 30 col 71: want '━' accent normal, got '━' dim normal
+row 30 col 72: want '━' accent normal, got '━' dim normal
+row 30 col 73: want '━' accent normal, got '━' dim normal
+row 30 col 74: want '━' accent normal, got '━' dim normal
+row 30 col 75: want '━' accent normal, got '━' dim normal
+row 30 col 76: want '━' accent normal, got '━' dim normal
+row 30 col 77: want '━' accent normal, got '━' dim normal
+row 30 col 78: want '━' accent normal, got '━' dim normal
+row 30 col 79: want '━' accent normal, got '━' dim normal
+row 30 col 80: want '━' accent normal, got '━' dim normal
+row 30 col 81: want '━' accent normal, got '━' dim normal
+row 30 col 82: want '━' accent normal, got '━' dim normal
+row 30 col 83: want '━' accent normal, got '━' dim normal
+row 30 col 84: want '━' accent normal, got '━' dim normal
+row 30 col 85: want '━' accent normal, got '━' dim normal
+row 30 col 86: want '━' accent normal, got '━' dim normal
+row 30 col 87: want '━' accent normal, got '━' dim normal
+row 30 col 88: want '━' accent normal, got '━' dim normal
+row 30 col 89: want '━' accent normal, got '━' dim normal
+row 30 col 90: want '━' accent normal, got '━' dim normal
+row 30 col 91: want '━' accent normal, got '━' dim normal
+row 30 col 92: want '━' accent normal, got '━' dim normal
+row 30 col 93: want '━' accent normal, got '━' dim normal
+row 30 col 94: want '━' accent normal, got '━' dim normal
+row 30 col 95: want '━' accent normal, got '━' dim normal
+row 30 col 96: want '━' accent normal, got '━' dim normal
+row 30 col 97: want '━' accent normal, got '━' dim normal
+row 30 col 98: want '━' accent normal, got '━' dim normal
+row 30 col 99: want '━' accent normal, got '━' dim normal
+row 30 col 100: want '━' accent normal, got '━' dim normal
+row 30 col 101: want '━' accent normal, got '━' dim normal
+row 30 col 102: want '━' accent normal, got '━' dim normal
+row 30 col 103: want '━' accent normal, got '━' dim normal
+row 30 col 104: want '━' accent normal, got '━' dim normal
+row 30 col 105: want '━' accent normal, got '━' dim normal
+row 30 col 106: want '━' accent normal, got '━' dim normal
+compare exit 0
+export exit 0
+.hive/spec/tui-v2/design/Components.grid
