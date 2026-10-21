@@ -15,6 +15,7 @@ For all other files, the coordinator and manager never change a project source f
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
+| [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
 | [A completed task cannot be reopened or edited](entries/completed-task-cannot-reopen.md) | Open |  |

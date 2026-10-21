@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaafffffffffffffffffffffff
+b|00000000000000000000000000000000000000000000000001111111100000000000000000000000
+t|─────────────────────────────────────────────────━━━━━━━━───────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ filter ─────────────────────────────────────────────────────────────────────╮
+k|rraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111110000000000000000000000000000000000000000000000000000000000000000000000
+t|│ / level:debug agent:manager-hive                        < 2026-10-21 >       │
+k|rfafddddddffffffddddddffffffffffffffffffffffffffffffffffffaffffffffffffafffffffr
+b|00100000000000000000000000000000000000000000000000000000001000000000000100000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ event 14:38:02 · esc back ──────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111111111000000000000000000000000000000000000000000000000000
+t|│ {                                                                            ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "time": "2026-10-21T14:38:02.114Z",                                        ┃
+k|afffiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "level": "WARN",                                                           ┃
+k|afffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "msg": "verify fail",                                                      ┃
+k|afffiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "component": "task",                                                       ┃
+k|afffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "command": "task verify",                                                  ┃
+k|afffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "project_id": "hive",                                                      ┃
+k|afffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "task_id": "2-stale-coordinator-startup",                                  ┃
+k|afffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "agent_id": "t2-verifier-1",                                               ┃
+k|afffiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "request_id": "r-7f31c2",                                                  ┃
+k|afffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "duration_ms": 412,                                                        │
+k|afffiiiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "reason": "V4 diff scope; Design section missing",                         │
+k|afffiiiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   "truncated": false                                                         │
+k|afffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ }                                                                            │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [json] ↑↓ scroll · esc back to events · f follow                               
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111000000000000000000000000000000000000000000000000000000000000000000000000

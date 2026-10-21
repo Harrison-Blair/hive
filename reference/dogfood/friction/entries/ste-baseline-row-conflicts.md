@@ -30,3 +30,10 @@ copy, or a test that gives each brief copy a baseline of 0 when no row exists.
 `TestSTERatchet`. A later `hive task edit` (for a repair) copies the manager
 brief into the worktree again. That undoes the rewording, and the repair
 worker gets the same STE failure. This occurred for 93 and 97.
+
+**Again (2026-10-21):** goal `g2-tui-v2` ran `8-no-startup` and `9-cellgrid`
+at the same time. Task 8 landed first. `hive land` for task 9 then failed with
+a merge conflict in `testdata/ste-baseline.json`. The manager reopened task 9,
+a worker merged `dev`, and a second verifier ran. The conflict added one
+worker and one verifier. CP5 task `6-cp5-record` had the same conflict after
+`13-remove-bootstrap` landed.

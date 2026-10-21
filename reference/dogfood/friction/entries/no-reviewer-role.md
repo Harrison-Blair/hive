@@ -59,3 +59,15 @@ of it, so the supervisor sent no nudge, and the agent had no inbox and no
 `hive` command. The coordinator did not know that the review was complete.
 The user had to tell the coordinator. The coordinator then read the result
 from the pane with `herdr pane read`.
+
+**Third occurrence (2026-10-21):** the coordinator ran six review passes of
+the `general-agent` spec by GPT 6.1 Sol in tab `w58:t8`, started by hand
+with `herdr pane run`. The tools were read, grep, find, and ls only. The
+coordinator sent each later pass as a new prompt with `herdr pane run` into
+the same pi pane. To know when a pass was complete, the coordinator ran
+`herdr agent wait PANE --until working`, then
+`herdr agent wait PANE --until idle --until done --until blocked`, in a
+background shell. The wait gave a correct completion signal for each pass.
+The coordinator then read the result with `herdr pane read`. Hive still had
+no record of the agent. The spec `general-agent` (goal `g3-general-agent`)
+plans the fix.
