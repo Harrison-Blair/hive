@@ -1,8 +1,8 @@
 ---
 title: "The supervisor keeps running an old hive binary after a rebuild"
-status: "Open"
+status: "Resolved 2026-10-21"
 opened: 2026-10-19
-decision: ""
+decision: "Task 3 adds the r restart for the supervisor and an old-binary mark in the TUI header"
 ---
 
 **Summary:**

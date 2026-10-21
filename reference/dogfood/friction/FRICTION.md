@@ -13,7 +13,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
 | [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open |  |
-| [A stale coordinator record blocks bare hive startup](entries/stale-coordinator-blocks-startup.md) | Open |  |
+| [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
@@ -26,7 +26,7 @@ For all other files, the coordinator and manager never change a project source f
 | [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/no-agent-dashboard.md) | Open |  |
 | [Claude Code in bypass mode still asks before a dangerous rm](entries/bypass-still-prompts-dangerous-rm.md) | Open |  |
 | [The verifier skill does not give the path of VERIFIED.md](entries/verified-md-path-unspecified.md) | Open |  |
-| [The supervisor keeps running an old hive binary after a rebuild](entries/supervisor-runs-stale-binary.md) | Open |  |
+| [The supervisor keeps running an old hive binary after a rebuild](entries/resolved/supervisor-runs-stale-binary.md) | Resolved 2026-10-21 | Task 3 adds the r restart for the supervisor and an old-binary mark in the TUI header |
 | [The worker skill gate adds golangci-lint that the project gate does not have](entries/worker-gate-adds-golangci-lint.md) | Open |  |
 | [A feature spec task cannot start in a repository that ignores .hive/spec/](entries/resolved/spec-task-needs-allowlist-first.md) | Resolved 2026-10-20 | Fixed in 70-spec-allowlist (e1276caa): a spec task worktree stages the brief with git add -f and reports allowlist_needed; the spec task commits the .gitignore rules. |
 | [A manager stops on a harness permission block and the coordinator does not know](entries/resolved/manager-blocked-by-harness-permission.md) | Resolved 2026-10-19 | Fixed in 29-message-marker (5c8f6846): Claude Code and Codex spawns launch with the bypass flag, each hive message starts with the marker, and a manager sends a blocked record before it stops. |

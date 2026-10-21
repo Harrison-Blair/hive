@@ -1,8 +1,8 @@
 ---
 title: "A stale coordinator record blocks bare hive startup"
-status: "Open"
+status: "Resolved 2026-10-21"
 opened: 2026-10-20
-decision: ""
+decision: "Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen"
 ---
 
 **Summary:**
