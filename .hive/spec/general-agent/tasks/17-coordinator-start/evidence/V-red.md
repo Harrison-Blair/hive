@@ -173,3 +173,97 @@ FAIL
 ```
 
 The log `command` fix (commit `9dd2954c`) also went red first: `TestCoordinatorRestartNormal` failed with `"coordinator harness start" command = bare hive; want tui agent restart`, then passed after the fix.
+
+## Repair after the verify fail (decision 34, option A)
+
+The verifier `t17-verifier-1` failed AC4 because the restart accepted an absent claim. The user chose option A on 2026-10-21. The restart keeps this behavior. It also accepts a stale, stopped, or exited record. A claim that names another record still makes the restart fail with no change. Decision 34 in `.hive/spec/general-agent/README.md` now states this rule.
+
+The code already had this behavior, so the new tests pass on the task code with no code change. Each new test is in `internal/agent/coordinator_claim_test.go`:
+
+| Test | Case |
+| --- | --- |
+| `TestCoordinatorRestartWithNoClaim` | no claim |
+| `TestCoordinatorRestartStale` | a stale record |
+| `TestCoordinatorRestartStopped` | a stopped record |
+| `TestCoordinatorRestartExited` | an exited record |
+| `TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName` | a claim that names another record, with a stale old record; state files unchanged and no herdr request |
+
+The existing test `TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName` covers the same refusal with an unresolved old record.
+
+To prove that each test fails when its branch breaks, I changed the code on purpose three times. I restored the code after each run. `git diff --stat` of the two source files was empty after the runs.
+
+### break M1: refuse a restart with no claim
+
+In `claimCoordinator`, before the restart record check, I added `if restart != nil && !hasClaim { refusal = errors.New("MUTATION: no claim") }`.
+
+```text
+--- PASS: TestCoordinatorRestartNormal (0.03s)
+--- PASS: TestCoordinatorRestartUnresolved (0.02s)
+--- PASS: TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName (0.01s)
+    coordinator_claim_test.go:477: Restart() of a live record, claimed=false: MUTATION: no claim
+--- FAIL: TestCoordinatorRestartWithNoClaim (0.01s)
+--- PASS: TestCoordinatorRestartStale (0.02s)
+--- PASS: TestCoordinatorRestartStopped (0.02s)
+--- PASS: TestCoordinatorRestartExited (0.02s)
+--- PASS: TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName (0.01s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/agent	0.151s
+FAIL
+```
+
+### break M2: accept only a live or unresolved record
+
+In `restartCoordinator`, I changed the guard `record.Status == records.AgentStarting` to `record.Status != records.AgentLive && record.Status != records.AgentUnresolved`.
+
+```text
+--- PASS: TestCoordinatorRestartNormal (0.03s)
+--- PASS: TestCoordinatorRestartUnresolved (0.03s)
+--- PASS: TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName (0.01s)
+--- PASS: TestCoordinatorRestartWithNoClaim (0.02s)
+    coordinator_claim_test.go:482: Restart() of a stale record, claimed=true: cannot restart coordinator with status stale
+--- FAIL: TestCoordinatorRestartStale (0.01s)
+    coordinator_claim_test.go:487: Restart() of a stopped record, claimed=true: cannot restart coordinator with status stopped
+--- FAIL: TestCoordinatorRestartStopped (0.01s)
+    coordinator_claim_test.go:492: Restart() of a exited record, claimed=true: cannot restart coordinator with status exited
+--- FAIL: TestCoordinatorRestartExited (0.01s)
+    coordinator_claim_test.go:562: Restart() = cannot restart coordinator with status stale; want a refusal that names the claim holder
+--- FAIL: TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName (0.01s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/agent	0.129s
+FAIL
+```
+
+### break M3: remove the check that the claim names the record
+
+In `claimCoordinator`, I changed `if claim.Agent != restart.Key` to `if false && claim.Agent != restart.Key`.
+
+```text
+--- PASS: TestCoordinatorRestartNormal (0.03s)
+--- PASS: TestCoordinatorRestartUnresolved (0.03s)
+    coordinator_claim_test.go:458: Restart() = close old coordinator pane: bad reply: empty reply; want a refusal that names the claim holder
+--- FAIL: TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName (0.02s)
+--- PASS: TestCoordinatorRestartWithNoClaim (0.03s)
+--- PASS: TestCoordinatorRestartStale (0.03s)
+--- PASS: TestCoordinatorRestartStopped (0.03s)
+--- PASS: TestCoordinatorRestartExited (0.03s)
+    coordinator_claim_test.go:562: Restart() = create coordinator tab: bad reply: empty reply; want a refusal that names the claim holder
+--- FAIL: TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName (0.02s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/agent	0.206s
+FAIL
+```
+
+### green on the task code
+
+```text
+$ go test -count=1 ./internal/agent -run TestCoordinatorRestart -v
+--- PASS: TestCoordinatorRestartNormal (0.03s)
+--- PASS: TestCoordinatorRestartUnresolved (0.03s)
+--- PASS: TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName (0.01s)
+--- PASS: TestCoordinatorRestartWithNoClaim (0.03s)
+--- PASS: TestCoordinatorRestartStale (0.03s)
+--- PASS: TestCoordinatorRestartStopped (0.03s)
+--- PASS: TestCoordinatorRestartExited (0.03s)
+--- PASS: TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName (0.02s)
+ok  	github.com/Harrison-Blair/hive/internal/agent	0.221s
+```
