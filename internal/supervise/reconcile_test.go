@@ -24,7 +24,7 @@ func TestReconcileMatchingTerminalKeepsLive(t *testing.T) {
 	if updated.Status != records.AgentLive || updated.AgentStatus != "working" {
 		t.Fatalf("record = %+v; want live with the stored status", updated)
 	}
-	if len(readInbox(t, home, "manager-demo")) != 0 {
+	if len(readInbox(t, home, "coordinator")) != 0 {
 		t.Fatalf("want no inbox record")
 	}
 }
@@ -45,7 +45,7 @@ func TestReconcileAnotherTerminalUnresolved(t *testing.T) {
 	if updated.Status != records.AgentUnresolved {
 		t.Fatalf("status = %q; want unresolved", updated.Status)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
 		t.Fatalf("inbox = %+v; want one unresolved record", all)
 	}
@@ -66,7 +66,7 @@ func TestReconcileAgentNotFoundShellPaneExited(t *testing.T) {
 	if updated.Status != records.AgentExited {
 		t.Fatalf("status = %q; want exited", updated.Status)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxExited {
 		t.Fatalf("inbox = %+v; want one exited record", all)
 	}
@@ -101,7 +101,7 @@ func TestReconcileStartingWithMissingPaneUnresolved(t *testing.T) {
 	if updated := readAgent(t, home, record.Key); updated.Status != records.AgentUnresolved {
 		t.Fatalf("status = %q; want unresolved", updated.Status)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
 		t.Fatalf("inbox = %+v; want one unresolved record", all)
 	}
@@ -122,7 +122,7 @@ func TestReconcileStartingShellWaitsForSpawn(t *testing.T) {
 	if updated := readAgent(t, home, record.Key); updated.Status != records.AgentStarting {
 		t.Fatalf("status = %q; want starting", updated.Status)
 	}
-	if all := readInbox(t, home, "manager-demo"); len(all) != 0 {
+	if all := readInbox(t, home, "coordinator"); len(all) != 0 {
 		t.Fatalf("inbox = %+v; want no records", all)
 	}
 }

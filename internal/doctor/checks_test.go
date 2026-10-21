@@ -137,8 +137,11 @@ func TestRunChecksWithFakeHerdr(t *testing.T) {
 	if unresolved := findCheck(t, result, "unresolved agents"); unresolved.Status != StatusOK || unresolved.Required || unresolved.Detail != "0" {
 		t.Fatalf("unresolved agents = %+v, want an optional ok", unresolved)
 	}
-	if len(result.Checks) != 17 {
-		t.Fatalf("checks = %d, want 17", len(result.Checks))
+	if ownerless := findCheck(t, result, "ownerless inbox records"); ownerless.Status != StatusOK || ownerless.Required || ownerless.Detail != "0" {
+		t.Fatalf("ownerless inbox records = %+v, want an optional ok", ownerless)
+	}
+	if len(result.Checks) != 18 {
+		t.Fatalf("checks = %d, want 18", len(result.Checks))
 	}
 }
 
