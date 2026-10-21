@@ -39,7 +39,7 @@ func New() *cobra.Command {
 		quiet, _ := cmd.Flags().GetInt("quiet-after")
 		extra, _ := cmd.Flags().GetStringArray("arg")
 		return common.Run(cmd, "agent spawn", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Spawn(cmd.Context(), home, agentlib.SpawnOptions{
+			envelope := agentlib.SpawnFromCLI(cmd.Context(), home, agentlib.SpawnOptions{
 				Role:          role,
 				Agent:         agent,
 				Project:       project,
