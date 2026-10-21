@@ -36,6 +36,13 @@ When the code does not agree with this brief, stop and report it with
 - `AGENTS.md`, section `herdr layout`: hive closes what it made, and never
   closes the pane of an agent that it did not start.
 
+## Design
+
+There is no new board. The only UI change is the footer text of a failed
+pane check. Keep the existing footer style. The state has plain words: the
+footer names the failed check and the pane ID. Record a screenshot of the
+footer at 120x40 and at 200x57 in the evidence.
+
 ## Source files
 
 | Path | Purpose of the edit |
@@ -117,7 +124,8 @@ Do not edit other files.
 ### V4 Diff scope
 
 - Proves: AC1, AC2, AC3.
-- Command: `git diff dev --stat`
+- Command: `git diff dev...HEAD --stat`, after you merge `dev` into the task
+  branch.
 - Expected: only the files of the source table and the evidence changed.
 
 ### V5 Gate
@@ -140,4 +148,6 @@ wave 2 task builds them. `main`.
 
 ## Changes
 
-None.
+- 2026-10-21: added the `Design` section for the footer text. V4 uses
+  `git diff dev...HEAD`, because `dev` gets friction commits after the
+  branch starts.
