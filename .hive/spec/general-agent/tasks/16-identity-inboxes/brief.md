@@ -31,6 +31,7 @@ decision 25.
 | `internal/doctor/` and its tests | AC4. Only the unread-record check. |
 | `cmd/` other files and their tests | AC1. Only the flag wiring of the caller rule. |
 | `.agents/skills/` and `internal/agent/templates/` | AC3. Only the inbox command lines that change. |
+| `.hive/spec/general-agent/README.md` | AC4. Only the text of decision 28. |
 | `skills_test.go`, `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0, and to lower a count. |
 | `.hive/spec/general-agent/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
@@ -65,9 +66,15 @@ Do not edit other files.
 
 ### AC4 Routing (decisions 28, 29)
 
-- The supervisor sends each nudge to the inbox of the recorded `parent`. When
-  the parent record is not live or does not exist, the nudge goes to
-  `coordinator`. The quiet rule does not change.
+- The supervisor sends each nudge to the inbox of the recorded `parent`,
+  resolved through the `replaces` chain to its live successor. When no record
+  in the chain is live, or no parent record exists, the nudge goes to
+  `coordinator`. The quiet rule does not change. `hive agent report` (wave 5)
+  uses the same rule. Put the rule in one function and record its name.
+- Change the text of decision 28 in the spec to state this rule, in
+  ASD-STE100 Strict. The user decided it on 2026-10-21.
+- A test proves that after a manager restart a worker nudge reaches the new
+  manager.
 - A record stays in an inbox when its owner stops. `hive doctor` lists each
   unread record in an inbox that has no live owner.
 - A test proves for a worker, a verifier, and a manager with the usual
@@ -79,10 +86,10 @@ Do not edit other files.
 
 | ID | Criterion | Proven by |
 | --- | --- | --- |
-| AC1 | The pane agent is the caller; overrides fail in herdr | V-red, V1 |
+| AC1 | The pane agent is the caller. Overrides fail in herdr. | V-red, V1 |
 | AC2 | Each agent has its inbox and reads only it, except the coordinator | V-red, V1 |
 | AC3 | Instruction text matches the new rules | V2 |
-| AC4 | Nudges go to the parent, else to the coordinator | V-red |
+| AC4 | Nudges go to the live successor of the parent, else to the coordinator | V-red |
 
 ## Verification items
 
@@ -136,4 +143,6 @@ Do not edit other files.
 
 ## Changes
 
-None.
+- 2026-10-21: the user chose option B for decision 28. The parent resolves
+  through the `replaces` chain to its live successor. AC4 and the source table
+  changed.

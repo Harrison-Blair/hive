@@ -34,6 +34,9 @@ func createCommand() *cobra.Command {
 			grant, _ := cmd.Flags().GetString("grant")
 			agent, _ := cmd.Flags().GetString("agent")
 			pane, _ := cmd.Flags().GetString("pane")
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			envelope := goalservice.Create(home, goalservice.CreateOptions{
 				Project: project, Title: title, Slug: slug, Grant: grant, Agent: agent, PaneID: pane,
 			})
@@ -66,6 +69,9 @@ func editCommand() *cobra.Command {
 			status, _ := cmd.Flags().GetString("status")
 			agent, _ := cmd.Flags().GetString("agent")
 			pane, _ := cmd.Flags().GetString("pane")
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			envelope := goalservice.Edit(home, goalservice.EditOptions{
 				Goal: goalID, Agent: agent, PaneID: pane,
 				AddWave: addWave, AddWaveSet: cmd.Flags().Changed("add-wave"), DoneWhen: doneWhen,

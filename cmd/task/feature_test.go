@@ -24,6 +24,7 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 	}
 	t.Setenv("HIVE_HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HERDR_PANE_ID", "")
 	projectPath := filepath.Join(t.TempDir(), "repo")
 	if err := os.MkdirAll(filepath.Join(projectPath, ".hive", "spec", "f"), 0o755); err != nil {
 		t.Fatal(err)
