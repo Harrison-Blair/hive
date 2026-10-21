@@ -57,7 +57,7 @@ func TestEventsBlockedWritesCounterRecordAndStatus(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxBlocked {
 		t.Fatalf("inbox = %+v; want one blocked record", all)
 	}
@@ -73,7 +73,7 @@ func TestEventsBlockedWritesCounterRecordAndStatus(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	if all := readInbox(t, home, "manager-demo"); len(all) != 1 {
+	if all := readInbox(t, home, "coordinator"); len(all) != 1 {
 		t.Fatalf("inbox after repeat = %+v; want one blocked record", all)
 	}
 	if got := readAgentStatusChangedAt(t, home, worker.Key); got != wantChangedAt {
@@ -175,7 +175,7 @@ func TestEventsWorkingStoresStatusWithoutRecord(t *testing.T) {
 	if updated := readAgent(t, home, worker.Key); updated.AgentStatus != "working" {
 		t.Fatalf("agent_status = %q; want working", updated.AgentStatus)
 	}
-	if all := readInbox(t, home, "manager-demo"); len(all) != 0 {
+	if all := readInbox(t, home, "coordinator"); len(all) != 0 {
 		t.Fatalf("inbox = %+v; want no record", all)
 	}
 }
@@ -194,7 +194,7 @@ func TestEventsBlockedWorkingBlockedWritesTwoRecords(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 2 {
 		t.Fatalf("inbox = %+v; want two blocked records", all)
 	}
@@ -254,7 +254,7 @@ func TestEventsDoneIsIdleQuiet(t *testing.T) {
 	if err := s.handleQuiet(context.Background(), "worker-1"); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxQuiet {
 		t.Fatalf("inbox = %+v; want one quiet record", all)
 	}
@@ -262,7 +262,7 @@ func TestEventsDoneIsIdleQuiet(t *testing.T) {
 	if err := s.handleQuiet(context.Background(), "worker-1"); err != nil {
 		t.Fatal(err)
 	}
-	if all := readInbox(t, home, "manager-demo"); len(all) != 1 {
+	if all := readInbox(t, home, "coordinator"); len(all) != 1 {
 		t.Fatalf("inbox after second fire = %+v; want one record", all)
 	}
 }
@@ -284,7 +284,7 @@ func TestEventsAgentDetectedReleasedStartingIgnored(t *testing.T) {
 	if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentStarting {
 		t.Fatalf("status = %q; want starting", updated.Status)
 	}
-	if all := readInbox(t, home, "manager-demo"); len(all) != 0 {
+	if all := readInbox(t, home, "coordinator"); len(all) != 0 {
 		t.Fatalf("inbox = %+v; want no records", all)
 	}
 	if !strings.Contains(log.String(), "ignored released pane while starting") {
@@ -303,7 +303,7 @@ func TestEventsAgentDetectedReleasedExited(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxExited {
 		t.Fatalf("inbox = %+v; want one exited record", all)
 	}
@@ -335,7 +335,7 @@ func TestEventsStartingTopologyClosedUnresolved(t *testing.T) {
 			if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentUnresolved {
 				t.Fatalf("status = %q; want unresolved", updated.Status)
 			}
-			all := readInbox(t, home, "manager-demo")
+			all := readInbox(t, home, "coordinator")
 			if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
 				t.Fatalf("inbox = %+v; want one unresolved record", all)
 			}
@@ -375,7 +375,7 @@ func TestEventsWorkspaceClosedUnresolved(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxUnresolved {
 		t.Fatalf("inbox = %+v; want one unresolved record", all)
 	}

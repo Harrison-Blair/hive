@@ -10,7 +10,6 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
@@ -45,7 +44,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 			return nil
 		}
 
-		ownKey := InboxKey(caller)
+		ownKey := agent.InboxKey(caller)
 		key = ownKey
 		if options.RoleSet {
 			key = options.Role
@@ -112,20 +111,6 @@ func inboxOwner(key string) string {
 		return "the manager of project " + project
 	}
 	return "the agent " + key
-}
-
-// InboxKey returns the inbox key of one agent (decision 26). The coordinator
-// keeps coordinator and a manager keeps manager-PROJECT. Each other agent uses
-// its agent name.
-func InboxKey(record records.Agent) string {
-	switch record.Role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + record.Project
-	default:
-		return record.Name
-	}
 }
 
 func failedRead(phase, message string) output.Envelope {

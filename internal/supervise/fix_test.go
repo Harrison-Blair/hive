@@ -36,7 +36,7 @@ func TestVerifyInitialIdleStartsQuietWindow(t *testing.T) {
 	if err := s.handleQuiet(context.Background(), worker.Key); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxQuiet {
 		t.Fatalf("inbox = %+v; want one quiet record", all)
 	}
@@ -62,7 +62,7 @@ func TestVerifyStoreRefreshKeepsBlockedPush(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxBlocked {
 		t.Fatalf("blocked notifications = %+v; want one blocked record", all)
 	}
@@ -101,7 +101,7 @@ func TestVerifyDoneThenIdleIsOneQuietPeriod(t *testing.T) {
 	if err := s.handleQuiet(context.Background(), worker.Key); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 {
 		t.Fatalf("quiet records without working transition = %d; want 1", len(all))
 	}
@@ -243,7 +243,7 @@ func TestVerifyWorkspaceClosedMarksEveryLiveRecord(t *testing.T) {
 	if err := s.handleEvent(context.Background(), event); err != nil {
 		t.Fatal(err)
 	}
-	all := readInbox(t, home, "manager-demo")
+	all := readInbox(t, home, "coordinator")
 	if len(all) != 2 {
 		t.Fatalf("workspace close notifications = %d; want 2", len(all))
 	}
