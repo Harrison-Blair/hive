@@ -140,7 +140,8 @@ func runCLI(t *testing.T, home string, args ...string) (int, string, string) {
 func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 	home := cliHome(t)
 	fake := newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"name is too long"}}`)
-	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
+	seedWorkerTask(t, home)
+	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr)
 	}
@@ -168,7 +169,7 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 	if envelope.Outcome != "failed" || envelope.Phase != "start" {
 		t.Fatalf("envelope = %#v", envelope)
 	}
-	if envelope.Result.Agent.Name != "t10-cli" || envelope.Result.Agent.Key != "t10-cli-g1" {
+	if envelope.Result.Agent.Name != "t10-cli" || envelope.Result.Agent.Key != "t10-cli" {
 		t.Fatalf("agent name/key = %q/%q", envelope.Result.Agent.Name, envelope.Result.Agent.Key)
 	}
 	if !envelope.Result.Agent.Spawned {
@@ -210,9 +211,10 @@ func TestSpawnRecordsCallerAsParent(t *testing.T) {
 			if err := registry.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: parent.Key, Generation: 1}); err != nil {
 				t.Fatal(err)
 			}
+			seedWorkerTask(t, home)
 			newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"bad"}}`)
 			t.Setenv("HERDR_PANE_ID", test.pane)
-			args := []string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude", "--name", "new-coord"}
+			args := []string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude", "--name", "new-worker"}
 			if test.flag != "" {
 				args = append(args, "--agent", test.flag)
 			}
@@ -239,7 +241,7 @@ func TestSpawnRecordsCallerAsParent(t *testing.T) {
 
 func TestSpawnTextDefaultAndExit(t *testing.T) {
 	home := cliHome(t)
-	status, stdout, stderr := runCLI(t, home, "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "nope")
+	status, stdout, stderr := runCLI(t, home, "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "nope")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -253,8 +255,9 @@ func TestSpawnTextDefaultAndExit(t *testing.T) {
 
 func TestSpawnPartialExitIsNonzero(t *testing.T) {
 	home := cliHome(t)
+	seedWorkerTask(t, home)
 	newCLIFake(t, "agent.start", "")
-	status, stdout, _ := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude")
+	status, stdout, _ := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 for partial", status)
 	}
@@ -282,6 +285,21 @@ func TestSpawnWriterErrorIsObservable(t *testing.T) {
 func TestRegisterHasNoSpawnedFlag(t *testing.T) {
 	if register.New().Flags().Lookup("spawned") != nil {
 		t.Fatalf("agent register has a --spawned flag")
+	}
+}
+
+// seedWorkerTask writes the project and the task of a worker spawn.
+func seedWorkerTask(t *testing.T, home string) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"projects"}, "demo", records.Project{ID: "demo", Path: home}); err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"tasks"}, "1-demo", records.Task{ID: "1-demo", Project: "demo", Title: "demo", Status: "assigned"}); err != nil {
+		t.Fatal(err)
 	}
 }
 

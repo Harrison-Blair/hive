@@ -9,22 +9,44 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-// StartCoordinator starts the configured harness and sends its startup prompt.
-func StartCoordinator(ctx context.Context, home, paneID, harnessKind, model string, logger *slog.Logger) error {
+// CoordinatorPrompt is the startup prompt of the coordinator. Hive registers
+// the coordinator, so the prompt does not tell it to register.
+const CoordinatorPrompt = marker.Prefix + "You are the coordinator. Hive started you and wrote your record. Run the coordinator startup in .agents/skills/hive-coordinator/SKILL.md now."
+
+// Start starts the configured harness in paneID under the starting claim.
+// When the harness start fails, Start removes the claim. After the start, it
+// writes the coordinator record, sets the claim live, and sends the startup
+// prompt one time. When a step after the start fails, the record is
+// unresolved (decisions 31 and 32).
+func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, model string) (err error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	logger := l.logger
 	if logger != nil {
-		logger.Debug("coordinator harness start", "command", "bare hive", "home", home, "pane_id", paneID, "harness", harnessKind, "model", model)
+		logger.Debug("coordinator harness start", "command", l.command, "home", l.home, "pane_id", paneID, "harness", harnessKind, "model", model)
 	}
+	started := false
+	defer func() {
+		if err == nil || started {
+			return
+		}
+		if releaseErr := l.release(); releaseErr != nil {
+			err = fmt.Errorf("%w; remove starting claim: %v", err, releaseErr)
+		}
+	}()
 	profile, err := harness.Lookup(harnessKind)
 	if err != nil {
 		return err
 	}
 	if err := harness.Check(profile); err != nil {
 		return err
+	}
+	if err := l.setPane(paneID); err != nil {
+		return fmt.Errorf("set starting claim pane: %w", err)
 	}
 	if err := herdr.PaneWaitForShellPrompt(ctx, paneID, defaultShellReadyTimeout, herdr.WithLogger(logger)); err != nil {
 		return fmt.Errorf("wait for coordinator shell prompt: %w", err)
@@ -33,7 +55,7 @@ func StartCoordinator(ctx context.Context, home, paneID, harnessKind, model stri
 		return fmt.Errorf("coordinator pane: %w", err)
 	}
 	options := []herdr.Option{herdr.WithLogger(logger)}
-	started, err := herdr.AgentStart(ctx, herdr.AgentStartParams{
+	launched, err := herdr.AgentStart(ctx, herdr.AgentStartParams{
 		Name:      "coordinator",
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
@@ -43,7 +65,55 @@ func StartCoordinator(ctx context.Context, home, paneID, harnessKind, model stri
 	if err != nil {
 		return fmt.Errorf("start coordinator harness: %w", err)
 	}
-	waitOptions := append(options, herdr.WithDeadline(profile.ReadyTimeout()+5*time.Second))
+	started = true
+	now := time.Now().UTC().Format(time.RFC3339Nano)
+	record := records.Agent{
+		Key:           fmt.Sprintf("coordinator-g%d", l.generation),
+		Name:          "coordinator",
+		Role:          "coordinator",
+		Harness:       profile.Kind(),
+		Model:         model,
+		PaneID:        launched.Agent.PaneID,
+		WorkspaceID:   launched.Agent.WorkspaceID,
+		TabID:         launched.Agent.TabID,
+		TerminalID:    launched.Agent.TerminalID,
+		Cwd:           l.home,
+		Status:        records.AgentLive,
+		Replaces:      l.replaces,
+		QuietAfterMin: defaultQuietAfterMin,
+		Generation:    l.generation,
+		StartedAt:     now,
+		UpdatedAt:     now,
+		StartedByHive: true,
+	}
+	if failure := l.waitForHarness(ctx, profile, paneID, &record); failure != nil {
+		record.Status = records.AgentUnresolved
+		record.LastError = failure.Error()
+		if commitErr := l.commit(record); commitErr != nil {
+			return fmt.Errorf("%w; write coordinator record: %v", failure, commitErr)
+		}
+		return failure
+	}
+	if err := l.commit(record); err != nil {
+		return err
+	}
+	if logger != nil {
+		logger.Debug("coordinator record written", "command", l.command, "agent_id", record.Key, "pane_id", record.PaneID, "process_pid", record.ProcessPID)
+	}
+	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: CoordinatorPrompt}, options...); err != nil {
+		failure := fmt.Errorf("send coordinator startup prompt: %w", err)
+		if markErr := l.markUnresolved(record.Key, failure.Error()); markErr != nil {
+			return fmt.Errorf("%w; mark %s unresolved: %v", failure, record.Key, markErr)
+		}
+		return failure
+	}
+	return nil
+}
+
+// waitForHarness waits until the harness is ready and records its process.
+func (l *CoordinatorLaunch) waitForHarness(ctx context.Context, profile harness.Profile, paneID string, record *records.Agent) error {
+	logger := l.logger
+	waitOptions := []herdr.Option{herdr.WithLogger(logger), herdr.WithDeadline(profile.ReadyTimeout() + 5*time.Second)}
 	ready, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{
 		Target:    paneID,
 		Until:     settledStatuses,
@@ -55,13 +125,17 @@ func StartCoordinator(ctx context.Context, home, paneID, harnessKind, model stri
 	if ready.AgentStatus == "blocked" {
 		return fmt.Errorf("coordinator harness is blocked during startup")
 	}
-	if _, err := waitForCoordinatorReady(ctx, started.Agent.PaneID, profile.ReadyTimeout(), logger); err != nil {
+	if _, err := waitForCoordinatorReady(ctx, paneID, profile.ReadyTimeout(), logger); err != nil {
 		return fmt.Errorf("wait for coordinator harness readiness: %w", err)
 	}
-	prompt := marker.Prefix + "You are the coordinator. Run the coordinator startup in .agents/skills/hive-coordinator/SKILL.md now."
-	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: started.Agent.PaneID, Text: prompt}, options...); err != nil {
-		return fmt.Errorf("send coordinator startup prompt: %w", err)
+	info, infoErr := herdr.PaneProcessInfoGet(ctx, paneID, herdr.WithLogger(logger))
+	found, reason := captureIdentity(profile, *record, info, infoErr)
+	if reason != "" {
+		return fmt.Errorf("coordinator process identity unresolved: %s", reason)
 	}
+	record.ProcessPID = found.pid
+	record.ProcessName = found.name
+	record.ProcessStart = found.start
 	return nil
 }
 

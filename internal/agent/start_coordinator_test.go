@@ -12,18 +12,28 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-func TestStartCoordinatorSendsStartupPromptWithoutRegistering(t *testing.T) {
+func startCoordinatorWith(ctx context.Context, home, paneID, harnessKind, model string, logger *slog.Logger) error {
+	launch, err := ClaimCoordinatorStart(context.Background(), home, logger)
+	if err != nil {
+		return err
+	}
+	return launch.Start(ctx, paneID, harnessKind, model)
+}
+
+func TestStartCoordinatorSendsStartupPromptAfterHiveRegisters(t *testing.T) {
 	home := testHome(t)
+	harness := startSleep(t)
 	fake := newFakeHerdr(t)
 	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
 	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "coordinator")+`,"argv":["claude","--dangerously-skip-permissions","--model","m"]}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "coordinator")+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", false, true)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "coordinator")+`}`)
 
-	if err := StartCoordinator(context.Background(), home, "w1:p1", "claude", "m", nil); err != nil {
-		t.Fatalf("StartCoordinator(): %v", err)
+	if err := startCoordinatorWith(context.Background(), home, "w1:p1", "claude", "m", nil); err != nil {
+		t.Fatalf("start coordinator: %v", err)
 	}
 	startRequests := fake.recorded("agent.start")
 	if len(startRequests) != 1 {
@@ -48,13 +58,14 @@ func TestStartCoordinatorSendsStartupPromptWithoutRegistering(t *testing.T) {
 		}
 	}
 	agents := List(home, ListOptions{Role: "coordinator", All: true})
-	if agents.Outcome != "ok" || len(agents.Result.([]records.Agent)) != 0 {
-		t.Fatalf("coordinator records after start = %#v; want none before the coordinator startup registers", agents)
+	if agents.Outcome != "ok" || len(agents.Result.([]records.Agent)) != 1 || agents.Result.([]records.Agent)[0].Status != records.AgentLive {
+		t.Fatalf("coordinator records after start = %#v; want the live record that hive wrote", agents)
 	}
 }
 
 func TestStartCoordinatorWaitsForHerdrReadiness(t *testing.T) {
 	home := testHome(t)
+	harness := startSleep(t)
 	fake := newFakeHerdr(t)
 	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
 	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
@@ -62,10 +73,11 @@ func TestStartCoordinatorWaitsForHerdrReadiness(t *testing.T) {
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", true, false)+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", true, true)+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", false, true)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "coordinator")+`}`)
 
-	if err := StartCoordinator(context.Background(), home, "w1:p1", "claude", "m", nil); err != nil {
-		t.Fatalf("StartCoordinator(): %v", err)
+	if err := startCoordinatorWith(context.Background(), home, "w1:p1", "claude", "m", nil); err != nil {
+		t.Fatalf("start coordinator: %v", err)
 	}
 	methods := fake.requestedMethods()
 	if got := len(fake.recorded("agent.get")); got != 2 {
@@ -110,9 +122,9 @@ func TestStartCoordinatorReadinessCancellationDoesNotPromptAgain(t *testing.T) {
 	var logs bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
-	err := StartCoordinator(ctx, home, "w1:p1", "claude", "m", logger)
+	err := startCoordinatorWith(ctx, home, "w1:p1", "claude", "m", logger)
 	if err == nil || !strings.Contains(err.Error(), "wait for coordinator harness readiness") {
-		t.Fatalf("StartCoordinator() error = %v; want readiness step failure", err)
+		t.Fatalf("start coordinator error = %v; want readiness step failure", err)
 	}
 	if got := len(fake.recorded("agent.prompt")); got != 0 {
 		t.Fatalf("agent.prompt requests = %d; want no prompt before readiness", got)

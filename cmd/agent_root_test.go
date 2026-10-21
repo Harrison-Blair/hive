@@ -74,8 +74,9 @@ func TestAgentRegisterUsesHerdrEnvironment(t *testing.T) {
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
 	t.Setenv("HERDR_WORKSPACE_ID", "w1")
 	t.Setenv("HERDR_TAB_ID", "t1")
+	seedWorkerTask(t, home)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"agent", "register", "--role", "coordinator"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"agent", "register", "--role", "worker", "--project", "demo", "--task", "1-demo"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -84,7 +85,7 @@ func TestAgentRegisterUsesHerdrEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 	var record records.Agent
-	if err := registry.ReadIn([]string{"agents"}, "coordinator-g1", &record); err != nil {
+	if err := registry.ReadIn([]string{"agents"}, "worker-demo-1", &record); err != nil {
 		t.Fatal(err)
 	}
 	if record.PaneID != "w1:p1" || record.WorkspaceID != "w1" || record.TabID != "t1" {
@@ -97,8 +98,9 @@ func TestAgentRegisterExplicitPaneLeavesWorkspaceAndTabEmpty(t *testing.T) {
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
 	t.Setenv("HERDR_WORKSPACE_ID", "w1")
 	t.Setenv("HERDR_TAB_ID", "t1")
+	seedWorkerTask(t, home)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"agent", "register", "--role", "coordinator", "--pane", "w2:p2"}, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams([]string{"agent", "register", "--role", "worker", "--project", "demo", "--task", "1-demo", "--pane", "w2:p2"}, strings.NewReader(""), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d, stderr = %q; want 0", status, stderr.String())
 	}
@@ -107,7 +109,7 @@ func TestAgentRegisterExplicitPaneLeavesWorkspaceAndTabEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 	var record records.Agent
-	if err := registry.ReadIn([]string{"agents"}, "coordinator-g1", &record); err != nil {
+	if err := registry.ReadIn([]string{"agents"}, "worker-demo-1", &record); err != nil {
 		t.Fatal(err)
 	}
 	if record.PaneID != "w2:p2" || record.WorkspaceID != "" || record.TabID != "" {

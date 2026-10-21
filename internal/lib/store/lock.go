@@ -185,6 +185,22 @@ func (l *LockedStore) WriteIn(collection []string, id string, value any) error {
 	return l.store.writeInData(collection, id, data)
 }
 
+// RemoveIn deletes one nested record with the held lock. A missing record
+// gives an error that matches os.ErrNotExist.
+func (l *LockedStore) RemoveIn(collection []string, id string) error {
+	if err := l.available(); err != nil {
+		return err
+	}
+	path, err := l.store.recordPathIn(collection, id)
+	if err != nil {
+		return err
+	}
+	if err := l.store.checkRead(path, collection); err != nil {
+		return err
+	}
+	return os.Remove(path)
+}
+
 // UpdateIn runs one nested read-change-write operation with the held lock.
 func (l *LockedStore) UpdateIn(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
 	if err := l.available(); err != nil {

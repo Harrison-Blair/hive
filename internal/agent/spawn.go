@@ -60,6 +60,16 @@ type SpawnResult struct {
 	Claim *records.Claim `json:"claim,omitempty"`
 }
 
+// SpawnFromCLI is the CLI entry of spawn. It refuses each role that hive code
+// starts, before it changes a claim or a record.
+func SpawnFromCLI(ctx context.Context, home string, options SpawnOptions) output.Envelope {
+	if message := hiveOwnedRoleError(options.Role, false); message != "" {
+		logAgentEvent(home, "agent spawn refused", "command", "agent spawn", "role", options.Role, "error", message)
+		return failed("validate", message)
+	}
+	return Spawn(ctx, home, options)
+}
+
 // Spawn writes the intent record, starts one agent, and records its identity.
 func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelope {
 	if ctx == nil {

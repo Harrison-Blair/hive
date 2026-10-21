@@ -135,6 +135,21 @@ func registerHome(t *testing.T) string {
 	return home
 }
 
+// seedRegisterTask writes the project and the task of a worker registration.
+func seedRegisterTask(t *testing.T, home string) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"projects"}, "demo", records.Project{ID: "demo", Path: "/tmp/demo", Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"tasks"}, "1-demo", records.Task{ID: "1-demo", Project: "demo", Title: "demo", Status: "assigned"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func runRegister(t *testing.T, home string, args ...string) (int, string) {
 	t.Helper()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -167,25 +182,15 @@ func TestRegisterCommandRenamesRoleAndProjectLabels(t *testing.T) {
 		paneID   string
 		tabID    string
 		label    string
-		project  bool
 		explicit bool
 	}{
-		{name: "coordinator uses explicit pane tab", role: "coordinator", paneID: "w2:p9", tabID: "w2:t9", label: "coordinator", explicit: true},
-		{name: "supervisor uses role label", role: "supervisor", paneID: "w3:p3", tabID: "w3:t3", label: "supervisor"},
-		{name: "project agent uses agent name", role: "manager", paneID: "w4:p4", tabID: "w4:t4", label: "manager-demo", project: true, explicit: true},
+		{name: "worker uses explicit pane tab", role: "worker", paneID: "w2:p9", tabID: "w2:t9", label: "worker-demo-1", explicit: true},
+		{name: "verifier uses environment pane tab", role: "verifier", paneID: "w3:p3", tabID: "w3:t3", label: "verifier-demo-1"},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			home := registerHome(t)
-			if test.project {
-				registry, err := store.Open(home)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if err := registry.WriteIn([]string{"projects"}, "demo", records.Project{ID: "demo", Path: "/tmp/demo", Base: "dev", RegisteredAt: "2026-01-01T00:00:00Z"}); err != nil {
-					t.Fatal(err)
-				}
-			}
+			seedRegisterTask(t, home)
 			pane := `{"type":"pane_info","pane":{"pane_id":"` + test.paneID + `","terminal_id":"term_a","workspace_id":"` + strings.Split(test.tabID, ":")[0] + `","tab_id":"` + test.tabID + `","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}`
 			fake := newRegisterHerdr(t, pane, "")
 			envPane := test.paneID
@@ -195,10 +200,7 @@ func TestRegisterCommandRenamesRoleAndProjectLabels(t *testing.T) {
 			t.Setenv("HERDR_PANE_ID", envPane)
 			t.Setenv("HERDR_WORKSPACE_ID", "w1")
 			t.Setenv("HERDR_TAB_ID", "w1:t1")
-			args := []string{"--json", "agent", "register", "--role", test.role}
-			if test.project {
-				args = append(args, "--project", "demo")
-			}
+			args := []string{"--json", "agent", "register", "--role", test.role, "--project", "demo", "--task", "1-demo"}
 			if test.explicit {
 				args = append(args, "--pane", test.paneID)
 			}
@@ -231,8 +233,9 @@ func TestRegisterCommandRenamesRoleAndProjectLabels(t *testing.T) {
 func TestRegisterCommandRenameFailureIsAnEffectAndKeepsSuccess(t *testing.T) {
 	home := registerHome(t)
 	pane := `{"type":"pane_info","pane":{"pane_id":"w2:p9","terminal_id":"term_a","workspace_id":"w2","tab_id":"w2:t9","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}`
+	seedRegisterTask(t, home)
 	fake := newRegisterHerdr(t, pane, "tab disappeared")
-	status, stdout := runRegister(t, home, "--json", "agent", "register", "--role", "coordinator", "--pane", "w2:p9")
+	status, stdout := runRegister(t, home, "--json", "agent", "register", "--role", "worker", "--project", "demo", "--task", "1-demo", "--pane", "w2:p9")
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; stdout = %q", status, stdout)
 	}
@@ -265,7 +268,7 @@ func TestRegisterCommandRenameFailureIsAnEffectAndKeepsSuccess(t *testing.T) {
 		t.Fatal(err)
 	}
 	var record records.Agent
-	if err := registry.ReadIn([]string{"agents"}, "coordinator-g1", &record); err != nil {
+	if err := registry.ReadIn([]string{"agents"}, "worker-demo-1", &record); err != nil {
 		t.Fatal(err)
 	}
 	if record.Status != records.AgentLive {

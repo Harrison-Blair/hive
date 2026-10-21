@@ -107,8 +107,14 @@ func Register(home string, options RegisterOptions) output.Envelope {
 	return envelope
 }
 
-// RegisterAndRename registers one agent and best-effort labels its tab.
+// RegisterAndRename registers one agent and best-effort labels its tab. It is
+// the CLI entry, so it refuses each role that hive code registers.
 func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
+	if message := hiveOwnedRoleError(options.Role, true); message != "" {
+		envelope := failed("validate", message)
+		logRegistration(home, options, envelope)
+		return envelope
+	}
 	envelope := Register(home, options)
 	if envelope.Outcome != "ok" {
 		return envelope
@@ -129,13 +135,24 @@ func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
 		logTabLabel(home, logger, "agent register", result.Agent.Key, "", "", err)
 		return envelope
 	}
-	label := options.Role
-	if options.Project != "" {
-		label = result.Agent.Name
-	}
-	effect := renameAgentTab(context.Background(), home, logger, pane.TabID, label, "agent register", result.Agent.Key)
+	effect := renameAgentTab(context.Background(), home, logger, pane.TabID, result.Agent.Name, "agent register", result.Agent.Key)
 	envelope.Effects = append(envelope.Effects, effect)
 	return envelope
+}
+
+// hiveOwnedRoleError returns the refusal for a role that only hive code
+// registers. Register refuses the manager role too, because only spawn
+// registers a manager.
+func hiveOwnedRoleError(role string, register bool) string {
+	switch role {
+	case "coordinator", "supervisor":
+		return role + ": hive code registers this role; run bare hive, or the restart in Health › Agents"
+	case "manager":
+		if register {
+			return "manager: hive code registers this role; run hive agent spawn --role manager"
+		}
+	}
+	return ""
 }
 
 func renameAgentTab(ctx context.Context, home string, logger *slog.Logger, tabID, label, command, agentID string) output.Effect {
