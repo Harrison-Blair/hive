@@ -362,6 +362,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.invalidateView()
 		}
 		return m, nil
+	case coordinatorRestartCheckMsg:
+		return m, m.acceptCoordinatorRestartCheck(msg)
+	case agentRestartMsg:
+		m.invalidateView()
+		m.agents.restartRunning = false
+		if msg.err != nil {
+			m.agents.restartNotice = "restart failed: " + boundedError(msg.err.Error())
+			return m, batch(
+				m.logAction("agent restart result", slog.String("agent_id", msg.agentKey), slog.String("result", "failed"), slog.String("error", boundedError(msg.err.Error()))),
+				m.logError("agent restart", msg.err),
+			)
+		}
+		m.agents.restartNotice = "restarted " + msg.result.Tab.Tab.Label
+		if msg.result.Warning != "" {
+			m.agents.restartNotice += "; " + msg.result.Warning
+		}
+		return m, m.logAction("agent restart result", slog.String("agent_id", msg.agentKey), slog.String("result", "started"), slog.String("tab_id", msg.result.Tab.Tab.TabID), slog.String("warning", msg.result.Warning))
 	case agentsPeekMsg:
 		m.invalidateView()
 		m.agents.peekOpen = true

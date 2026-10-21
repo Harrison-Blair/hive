@@ -71,7 +71,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 				Cwd:         homePath,
 				Label:       "coordinator",
 				Focus:       false,
-				Env:         startupTabEnv(homePath, "coordinator"),
+				Env:         agent.StartupTabEnv(homePath, "coordinator"),
 			}, herdr.WithLogger(logger))
 			if createErr != nil {
 				logStartupStep(logger, "coordinator", "failed", createErr)
@@ -103,7 +103,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 			Cwd:         homePath,
 			Label:       "supervisor",
 			Focus:       false,
-			Env:         startupTabEnv(homePath, "supervisor"),
+			Env:         agent.StartupTabEnv(homePath, "supervisor"),
 		}, herdr.WithLogger(logger))
 		if createErr == nil && (created.Tab.WorkspaceID != pane.WorkspaceID || created.RootPane.WorkspaceID != pane.WorkspaceID || created.RootPane.TabID != created.Tab.TabID) {
 			createErr = errors.New("tab create returned a different workspace")
@@ -132,16 +132,6 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 	return "", nil
 }
 
-func startupTabEnv(homePath, role string) map[string]string {
-	env := map[string]string{"HIVE_HOME": homePath, "HIVE_STARTUP_ROLE": role}
-	for _, key := range []string{"XDG_CONFIG_HOME", "PATH"} {
-		if value := os.Getenv(key); value != "" {
-			env[key] = value
-		}
-	}
-	return env
-}
-
 func startCoordinator(ctx context.Context, homePath, paneID, harnessKind, model string, logger *slog.Logger) error {
 	return agent.StartCoordinator(ctx, homePath, paneID, harnessKind, model, logger)
 }
@@ -163,28 +153,37 @@ func hasLiveCoordinator(ctx context.Context, homePath string, logger *slog.Logge
 		if record.Role != "coordinator" || record.Status != records.AgentLive {
 			continue
 		}
-		pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
+		gone, err := coordinatorPaneGone(ctx, homePath, record, logger)
 		if err != nil {
-			var serverError *herdr.Error
-			if errors.As(err, &serverError) && serverError.Code == herdr.CodePaneNotFound {
-				logCoordinatorPaneCheck(logger, record.PaneID, "gone", nil)
-				if err := markCoordinatorStale(homePath, record); err != nil {
-					logStartupStep(logger, "coordinator", "failed", err)
-					return false, fmt.Errorf("mark coordinator %s stale: %w", record.Key, err)
-				}
-				continue
-			}
-			logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
-			return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+			return false, err
 		}
-		if pane.PaneID != record.PaneID {
-			err := fmt.Errorf("pane lookup returned %s", pane.PaneID)
-			logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
-			return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+		if !gone {
+			return true, nil
 		}
-		logCoordinatorPaneCheck(logger, record.PaneID, "present", nil)
-		return true, nil
 	}
+	return false, nil
+}
+
+func coordinatorPaneGone(ctx context.Context, homePath string, record records.Agent, logger *slog.Logger) (bool, error) {
+	pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
+	if err != nil {
+		var serverError *herdr.Error
+		if errors.As(err, &serverError) && serverError.Code == herdr.CodePaneNotFound {
+			logCoordinatorPaneCheck(logger, record.PaneID, "gone", nil)
+			if err := markCoordinatorStale(homePath, record); err != nil {
+				return false, fmt.Errorf("mark coordinator %s stale: %w", record.Key, err)
+			}
+			return true, nil
+		}
+		logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
+		return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+	}
+	if pane.PaneID != record.PaneID {
+		err := fmt.Errorf("pane lookup returned %s", pane.PaneID)
+		logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
+		return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+	}
+	logCoordinatorPaneCheck(logger, record.PaneID, "present", nil)
 	return false, nil
 }
 

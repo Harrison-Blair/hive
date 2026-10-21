@@ -248,6 +248,8 @@ func (m *Model) footerView(width int) string {
 	}
 	if m.quitNotice {
 		notice = "press ctrl+c again to quit"
+	} else if m.screenIndex == 1 && m.agents.restartNotice != "" {
+		notice = m.agents.restartNotice
 	} else {
 		notice = m.startupNotice
 	}

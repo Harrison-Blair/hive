@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestPaneGetRequestAndReply(t *testing.T) {
@@ -25,6 +26,21 @@ func TestPaneGetRequestAndReply(t *testing.T) {
 		t.Fatalf("pane.get requests = %d; want 1", len(requests))
 	}
 	if got, want := requests[0].Params, `{"pane_id":"w1:p1"}`; got != want {
+		t.Fatalf("params = %s; want %s", got, want)
+	}
+}
+
+func TestPaneWaitForShellPrompt(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("pane.wait_for_output", `{"type":"output_matched","pane_id":"w1:p2","revision":0,"matched_line":"user@host:~/project$","read":{"pane_id":"w1:p2","workspace_id":"w1","tab_id":"w1:t2","source":"recent_unwrapped","format":"text","text":"user@host:~/project$","revision":0,"truncated":false}}`)
+	if err := PaneWaitForShellPrompt(context.Background(), "w1:p2", 10*time.Second); err != nil {
+		t.Fatalf("PaneWaitForShellPrompt(): %v", err)
+	}
+	requests := server.recorded("pane.wait_for_output")
+	if len(requests) != 1 {
+		t.Fatalf("pane.wait_for_output requests = %d; want one", len(requests))
+	}
+	if got, want := requests[0].Params, `{"pane_id":"w1:p2","source":"recent_unwrapped","match":{"type":"regex","value":"(?m)^[^\\n]*[#$%\u003e❯] ?$"},"lines":1,"timeout_ms":10000}`; got != want {
 		t.Fatalf("params = %s; want %s", got, want)
 	}
 }

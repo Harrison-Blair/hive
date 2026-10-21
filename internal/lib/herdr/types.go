@@ -15,6 +15,7 @@ type AgentInfo struct {
 	Cwd            string            `json:"cwd,omitempty"`
 	ForegroundCwd  string            `json:"foreground_cwd,omitempty"`
 	Interactive    bool              `json:"interactive_ready,omitempty"`
+	LaunchPending  bool              `json:"launch_pending,omitempty"`
 	StateLabels    map[string]string `json:"state_labels,omitempty"`
 	Tokens         map[string]string `json:"tokens,omitempty"`
 	StateChangeSeq uint64            `json:"state_change_seq,omitempty"`

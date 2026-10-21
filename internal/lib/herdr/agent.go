@@ -74,6 +74,7 @@ type agentInfoWire struct {
 	Cwd            *string           `json:"cwd"`
 	ForegroundCwd  *string           `json:"foreground_cwd"`
 	Interactive    bool              `json:"interactive_ready"`
+	LaunchPending  bool              `json:"launch_pending"`
 	StateLabels    map[string]string `json:"state_labels"`
 	Tokens         map[string]string `json:"tokens"`
 	StateChangeSeq uint64            `json:"state_change_seq"`
@@ -254,6 +255,7 @@ func decodeAgentInfo(raw json.RawMessage) (AgentInfo, error) {
 		Focused:        *wire.Focused,
 		Revision:       *wire.Revision,
 		Interactive:    wire.Interactive,
+		LaunchPending:  wire.LaunchPending,
 		StateLabels:    wire.StateLabels,
 		Tokens:         wire.Tokens,
 		StateChangeSeq: wire.StateChangeSeq,

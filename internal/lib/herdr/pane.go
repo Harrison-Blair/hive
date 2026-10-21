@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // PaneTarget names one pane.
@@ -131,6 +132,37 @@ func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 	}
 	if result.Type == nil || *result.Type != "ok" {
 		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
+	}
+	return nil
+}
+
+// PaneWaitForShellPrompt waits until the last line of a pane looks like an interactive shell prompt.
+func PaneWaitForShellPrompt(ctx context.Context, paneID string, timeout time.Duration, opts ...Option) error {
+	var result struct {
+		Type *string `json:"type"`
+	}
+	params := struct {
+		PaneID string `json:"pane_id"`
+		Source string `json:"source"`
+		Match  struct {
+			Type  string `json:"type"`
+			Value string `json:"value"`
+		} `json:"match"`
+		Lines     uint32 `json:"lines"`
+		TimeoutMS uint64 `json:"timeout_ms"`
+	}{
+		PaneID:    paneID,
+		Source:    "recent_unwrapped",
+		Lines:     1,
+		TimeoutMS: uint64(timeout.Milliseconds()),
+	}
+	params.Match.Type = "regex"
+	params.Match.Value = `(?m)^[^\n]*[#$%>❯] ?$`
+	if err := Call(ctx, "pane.wait_for_output", params, &result, opts...); err != nil {
+		return err
+	}
+	if result.Type == nil || *result.Type != "output_matched" {
+		return fmt.Errorf("bad reply: result type %q, want output_matched", stringValue(result.Type))
 	}
 	return nil
 }

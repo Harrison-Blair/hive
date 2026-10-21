@@ -3,6 +3,7 @@ package tui
 import (
 	"hash/fnv"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -50,12 +51,16 @@ func snapshotRefreshState(home string, day time.Time, tasks tasksData) refreshSn
 
 func headerRefreshPaths(home string) []string {
 	state := filepath.Join(home, ".hive", "state")
-	return []string{
+	paths := []string{
 		filepath.Join(state, "agents"),
 		filepath.Join(state, "claims"),
 		filepath.Join(state, "projects"),
 		filepath.Join(state, "tasks"),
 	}
+	if hivePath, err := exec.LookPath("hive"); err == nil {
+		paths = append(paths, hivePath)
+	}
+	return paths
 }
 
 func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks tasksData) []string {
