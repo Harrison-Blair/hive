@@ -33,6 +33,7 @@ func TestNeedsUserEditFlow(t *testing.T) {
 	}
 	t.Setenv("HIVE_HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HERDR_PANE_ID", "")
 
 	registry, err := store.Open(home)
 	if err != nil {
@@ -176,6 +177,7 @@ func TestNeedsUserEditRejectsMultipleOperations(t *testing.T) {
 	}
 	t.Setenv("HIVE_HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HERDR_PANE_ID", "")
 	response, err := runFailure("--json", "task", "edit", "--task", "90-decision", "--needs-user", "choose", "--clear-needs-user", "--agent", "manager")
 	if err == nil || !strings.Contains(response, "exactly one") {
 		t.Fatalf("task edit with set and clear = %q, %v; want validation failure", response, err)

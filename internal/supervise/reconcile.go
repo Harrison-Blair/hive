@@ -182,7 +182,7 @@ func (s *Supervisor) reconcileUnknownAgents(ctx context.Context) {
 }
 
 func (s *Supervisor) notifyLifecycle(ctx context.Context, record records.Agent, kind, lifecycle, detail string) error {
-	role := controllingRole(record)
+	role := s.parentInbox(record)
 	if role == "" {
 		s.logger.Debug("supervisor lifecycle record", "command", "supervise", "agent_id", record.Key, "status", lifecycle, "detail", detail)
 		if record.Status == records.AgentStarting {

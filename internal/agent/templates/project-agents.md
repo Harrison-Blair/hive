@@ -53,7 +53,6 @@ hive agent spawn --role worker --task ID --harness KIND --model MODEL
 hive agent spawn --role verifier --task ID --harness KIND --model MODEL
 hive agent send --agent NAME --wait --timeout 120 TEXT
 hive agent stop --agent NAME
-hive task verify --task ID --agent NAME
 hive land --task ID --mode merge --grant TEXT
 hive worktree remove --task ID
 hive memory write --scope project:{{PROJECT_ID}} NAME

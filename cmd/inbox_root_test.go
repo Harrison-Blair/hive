@@ -238,3 +238,139 @@ func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 		t.Fatalf("seq = %d; want 1", envelope.Result.Records[0].Seq)
 	}
 }
+
+func seedInboxPaneAgents(t *testing.T, home string) {
+	t.Helper()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, agent := range []records.Agent{
+		{Key: "agent-a", Name: "agent-a", Role: "worker", Project: "hive", Task: "1-a", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1},
+		{Key: "agent-b", Name: "agent-b", Role: "worker", Project: "hive", Task: "2-b", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1},
+	} {
+		if err := st.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestInboxSendAgentOverrideInPaneFailsWithoutRecord(t *testing.T) {
+	home := testHome(t)
+	seedInboxPaneAgents(t, home)
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"inbox", "send", "--to", "manager-hive", "--agent", "agent-b", "forged"}, strings.NewReader(""), &stdout, &stderr)
+	if status == 0 {
+		t.Fatalf("status = 0, stdout = %q; want a refusal", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "--agent agent-b is not the caller agent-a") {
+		t.Fatalf("stderr = %q; want the --agent refusal", stderr.String())
+	}
+	found, err := inbox.All(home, "manager-hive")
+	if err != nil || len(found) != 0 {
+		t.Fatalf("All() = %#v, %v; want no record", found, err)
+	}
+}
+
+func TestInboxOverridesInPaneFailAndChangeNothing(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"read agent", []string{"inbox", "--agent", "agent-b"}, "--agent agent-b is not the caller agent-a"},
+		{"read pane", []string{"inbox", "--pane", "w2:p1"}, "--pane w2:p1 is not the caller pane w1:p1"},
+		{"send pane", []string{"inbox", "send", "--to", "agent-b", "--pane", "w2:p1", "forged"}, "--pane w2:p1 is not the caller pane w1:p1"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			home := testHome(t)
+			seedInboxPaneAgents(t, home)
+			if envelope := inbox.Append(home, inbox.AppendOptions{Role: "agent-b", Kind: records.InboxMessage, Text: "for b"}); envelope.Outcome != "ok" {
+				t.Fatalf("Append() = %#v", envelope)
+			}
+			t.Setenv("HERDR_PANE_ID", "w1:p1")
+			var stdout, stderr bytes.Buffer
+			status := executeWithStreams(tc.args, strings.NewReader(""), &stdout, &stderr)
+			if status == 0 || !strings.Contains(stderr.String(), tc.want) {
+				t.Fatalf("status = %d, stdout = %q, stderr = %q; want a refusal with %q", status, stdout.String(), stderr.String(), tc.want)
+			}
+			found, err := inbox.All(home, "agent-b")
+			if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+				t.Fatalf("All(agent-b) = %#v, %v; want one unread record", found, err)
+			}
+		})
+	}
+}
+
+func TestInboxAgentInUnregisteredPaneFails(t *testing.T) {
+	home := testHome(t)
+	seedInboxPaneAgents(t, home)
+	t.Setenv("HERDR_PANE_ID", "w9:p1")
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"inbox", "send", "--to", "manager-hive", "--agent", "agent-a", "forged"}, strings.NewReader(""), &stdout, &stderr)
+	if status == 0 || !strings.Contains(stderr.String(), "pane w9:p1 has no live agent") {
+		t.Fatalf("status = %d, stderr = %q; want the no-agent refusal", status, stderr.String())
+	}
+	if found, err := inbox.All(home, "manager-hive"); err != nil || len(found) != 0 {
+		t.Fatalf("All() = %#v, %v; want no record", found, err)
+	}
+}
+
+func TestInboxSendBetweenAgentInboxesInPanes(t *testing.T) {
+	home := testHome(t)
+	seedInboxPaneAgents(t, home)
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	var stdout, stderr bytes.Buffer
+	if status := executeWithStreams([]string{"inbox", "send", "--to", "agent-b", "--agent", "agent-a", "hello b"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
+		t.Fatalf("send status = %d, stderr = %q; want 0", status, stderr.String())
+	}
+	t.Setenv("HERDR_PANE_ID", "w2:p1")
+	stdout.Reset()
+	stderr.Reset()
+	if status := executeWithStreams([]string{"inbox"}, strings.NewReader(""), &stdout, &stderr); status != 0 || !strings.Contains(stdout.String(), "hello b") {
+		t.Fatalf("read status = %d, stdout = %q, stderr = %q; want the record", status, stdout.String(), stderr.String())
+	}
+	found, err := inbox.All(home, "agent-b")
+	if err != nil || len(found) != 1 || found[0].Agent != "agent-a" || found[0].ReadAt == "" {
+		t.Fatalf("All(agent-b) = %#v, %v; want one consumed record from agent-a", found, err)
+	}
+}
+
+func TestInboxCoordinatorReadsAgentInboxWithoutConsume(t *testing.T) {
+	home := testHome(t)
+	seedInboxCoordinator(t, home)
+	seedInboxPaneAgents(t, home)
+	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "agent-b", Kind: records.InboxMessage, Text: "for b"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	t.Setenv("HERDR_PANE_ID", "w0:p1")
+	var stdout, stderr bytes.Buffer
+	if status := executeWithStreams([]string{"inbox", "--role", "agent-b"}, strings.NewReader(""), &stdout, &stderr); status != 0 || !strings.Contains(stdout.String(), "for b") {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want the record", status, stdout.String(), stderr.String())
+	}
+	found, err := inbox.All(home, "agent-b")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All(agent-b) = %#v, %v; want one unread record", found, err)
+	}
+}
+
+func TestInboxAgentCannotReadOtherAgentInbox(t *testing.T) {
+	home := testHome(t)
+	seedInboxPaneAgents(t, home)
+	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "agent-b", Kind: records.InboxMessage, Text: "for b"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	for _, args := range [][]string{{"inbox", "--role", "agent-b"}, {"inbox", "--role", "agent-b", "--all"}} {
+		var stdout, stderr bytes.Buffer
+		if status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr); status == 0 || !strings.Contains(stderr.String(), "inbox agent-b belongs to the agent agent-b") {
+			t.Fatalf("%v: status = %d, stdout = %q, stderr = %q; want the ownership refusal", args, status, stdout.String(), stderr.String())
+		}
+	}
+	found, err := inbox.All(home, "agent-b")
+	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
+		t.Fatalf("All(agent-b) = %#v, %v; want one unread record", found, err)
+	}
+}

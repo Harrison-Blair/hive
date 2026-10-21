@@ -30,6 +30,9 @@ func New() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "task edit", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			envelope := tasklib.Edit(home, tasklib.EditOptions{
 				Task: taskID, Agent: agent, PaneID: pane,
 				Feature: feature, FeatureSet: cmd.Flags().Changed("feature"),
