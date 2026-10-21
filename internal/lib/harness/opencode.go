@@ -31,3 +31,9 @@ func (opencodeProfile) Args(model string, extra []string) []string {
 func (opencodeProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (opencodeProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (opencodeProfile) ProcessNames() []string      { return []string{"opencode"} }
+
+// Trust gives the trust result of OpenCode 1.18.32. A new directory shows no
+// trust dialog, so the method adds nothing.
+func (opencodeProfile) Trust() Trust {
+	return Trust{Version: "1.18.32"}
+}
