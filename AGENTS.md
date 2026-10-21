@@ -8,15 +8,17 @@
 
 Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant.
 
-Read this section first. Your working directory gives your role. A brief can name another role. The brief wins.
+Read this section first. A prompt from hive that names a role gives your role. That prompt wins over your working directory. A brief can name another role. The brief wins over your working directory.
 
-| Working directory | Role | Then read |
+| Role evidence | Role | Then read |
 | --- | --- | --- |
-| The root of this checkout with no brief | coordinator | [Coordinator](#coordinator) |
+| A `⬢` prompt from hive that names the coordinator | coordinator | [Coordinator](#coordinator) |
 | `projects/<project-id>/` | manager | the project instructions, then your brief |
 | `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
+| The root of this checkout with no prompt from hive | no role | this section |
 
-- A root session with no brief runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
+- Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
+- A session in the root of this checkout with no prompt from hive has no role. It does not run the coordinator startup. It tells the user that it has no role.
 - A session with a brief that names another role does not run coordinator startup.
 - A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
 - When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
@@ -50,7 +52,7 @@ hive/                            the checkout is the home
 
 ## Coordinator
 
-The coordinator runs in a pane of the hive session. Bare `hive` starts the coordinator and the supervisor in their own tabs. At startup the coordinator registers itself, reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` only when the supervisor claim is stale and the `supervisor` tab is gone. It records a preference in `overrides/` when the user states one. The coordinator and a manager can edit files in `reference/dogfood/friction/` directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
+The coordinator runs in a pane of the hive session. Bare `hive` starts the coordinator and the supervisor in their own tabs. Hive writes the coordinator record before it sends the startup prompt. At startup the coordinator reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` only when the supervisor claim is stale and the `supervisor` tab is gone. It records a preference in `overrides/` when the user states one. The coordinator and a manager can edit files in `reference/dogfood/friction/` directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
 
 ## herdr layout
 
