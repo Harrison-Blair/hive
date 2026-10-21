@@ -200,7 +200,7 @@ func TestAgentsRestartResultIsRenderedAndLogged(t *testing.T) {
 		result:   agent.RestartResult{Tab: herdr.TabCreated{Tab: herdr.TabInfo{TabID: "w1:t2", Label: "coordinator"}}},
 	})
 	requireView(t, m, "restarted coordinator")
-	m = deliverAgentCommands(t, m, cmd)
+	deliverAgentCommands(t, m, cmd)
 	logData, err := os.ReadFile(dailyPath(home, clock.now()))
 	if err != nil {
 		t.Fatal(err)
