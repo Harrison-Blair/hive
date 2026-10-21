@@ -109,6 +109,9 @@ task in the worktree for a repair.
 
 ## Rules
 
+- Run bare `hive` only as `hive --no-startup` or `HIVE_NO_STARTUP=1 hive`.
+  Without the switch, bare `hive` starts a coordinator, a supervisor, and
+  their tabs in your workspace.
 - Never edit a `V<n>.md` file. Record each run in `VERIFIED.md`.
 - Never edit the plan tracker.
 - A verdict claims only what an output shows.

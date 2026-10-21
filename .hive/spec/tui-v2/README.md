@@ -47,17 +47,17 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 
 1. Each screen has a fixed header, a tab bar, a content area, and a fixed footer. The header and the footer never scroll.
 2. From 120 columns, the header shows the home on the left. On the right it shows the coordinator state, the supervisor state, the needs-you count, and the clock. Below 120 columns, the header uses the short form on the 80×24 boards.
-3. The tab bar shows `1 Agents · 2 Chat · 3 Work · 4 Friction · 5 Health · 6 Logs`. The active tab is accent and bold, with a `━` underline.
+3. The tab bar shows the labels `1 Agents`, `2 Chat`, `3 Work`, `4 Friction`, `5 Health`, and `6 Logs`. Each label has one space on each side. At 120 columns and wider, one more space separates the labels. Below 120 columns, the labels touch. The active tab is accent and bold, with a `━` underline.
 4. The footer shows `[region]` in accent, then the key hints of the focused region in dim.
-5. Only regions scroll. A region draws its scroll mark `┃` on its right border. A region that scrolls sideways draws `━` on its bottom border.
+5. Only regions scroll. A region draws its scroll mark `┃` on its right border. A region that scrolls sideways draws `━` on its bottom border. The scroll mark uses `accent` in the focused region and `dim` in the other regions. An overlay or a popup dims the full screen behind it, including the header and the tab bar.
 6. One region has focus. The focused region has an accent border. `tab` moves the focus to the next region.
 
 ### Fit to screen
 
-7. The minimum size is 80×24. Below it, the TUI shows only the too-small notice with the current size.
+7. The minimum size is 80×24. Below it, the TUI shows the too-small notice with the current size. It also shows ` hive` on the first row and `ctrl+c ×2 quit` on the last row. It shows no other content.
 8. From 120 columns, a list and its details sit side by side.
 9. From 80 to 119 columns, details open as a full-width overlay over the list. `enter` opens the overlay. `esc` closes it.
-10. Agents gives each project one column of equal width. The minimum column width is 26 cells. When the columns do not fit, the graph scrolls sideways and keeps the selected card visible. With no project, Agents shows the notice "no project agents".
+10. Agents gives each project one column of equal width. The minimum column width is 26 cells. Each card is 24×4 cells. The idle dot is `◐` in `accent` on each screen. When the columns do not fit, the graph scrolls sideways and keeps the selected card visible. With no project, Agents shows the notice "no project agents".
 11. A resize never breaks a border. A resize with an overlay open keeps the overlay and its scroll position.
 12. Each component measures text with `lipgloss.Width`. No component measures text with `len`.
 13. Components use only the symbols in this list: `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┼ ┴ ┬ └ ━ ┃ ● ◐ ○ ▶ ✓ • · – — … ↑ ↓ ← → › █ ×`. Each symbol takes one cell. Wave 2 checks that each exported board uses only these symbols. A test checks that `lipgloss.Width` gives 1 for each symbol. The TUI supports terminals that draw ambiguous-width characters as one cell. A new symbol needs a change to this list.
@@ -69,7 +69,7 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 16. **Work** has the views Goals, Queue, and Tasks. Each view is a list with details. `b` opens the brief. `v` opens `VERIFIED.md`. `d` shows the dependencies. `o` opens the goal design. `s` shows stops only.
 17. **Friction** has the views Open and Resolved. Each view is a list with details.
 18. **Health** has the views Home and Agents. Home lists the checks of `hive doctor`. Agents lists each agent, including the coordinator and the supervisor.
-19. Restart of the coordinator and the supervisor moves to Health › Agents. Select the agent and press `r`. The TUI asks the user to accept only when the agent is live. The restart behavior of task `3-tui-restart` does not change. The Agents graph has no `r` key.
+19. Restart of the coordinator and the supervisor moves to Health › Agents. Select the agent and press `r`. The TUI asks the user to accept only when the agent is live. The restart behavior of task `3-tui-restart` does not change. The Agents graph and the details popup have no `r` key. On a manager or worker row in Health › Agents, `r` shows the footer notice "restart: coordinator and supervisor only" and does nothing.
 20. **Logs** has a fixed filter bar, the event list, and a JSON details panel that scrolls on its own.
 
 ### Keys
@@ -84,6 +84,8 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | Overlay or popup | `↑` `↓` `pgup` `pgdn` scroll, the action keys of the overlay | `ctrl+c` | `esc` closes it |
 | Help | `↑` `↓` scroll | `ctrl+c` | `?` or `esc` closes it |
 | Restart prompt | `y` restart | `ctrl+c` | each other key cancels, as task `3-tui-restart` does |
+
+The key hints in the footer show only the keys of the focus state. The Chat input, an overlay, and a popup show no `?` hint. When the restart prompt is open, the footer shows `[restart] y restart · any other key cancels`, and the list border uses `border`.
 
 22. Global keys: `1`–`6` screen, `tab` region, `[` `]` view, `↑↓` or `j` `k` move, `←→` graph, `pgup` `pgdn` page, `g` `G` top and end, `enter` open, `esc` back, `/` filter, `?` help, `R` refresh, `ctrl+c` twice to quit.
 23. Action keys: `a` attach, `p` peek, `r` restart, `h` hide stopped, `t` task, `b` brief, `v` verified, `d` dependencies, `o` design, `s` stops only, `f` follow, `<` `>` day.
@@ -110,8 +112,8 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 ### Markdown
 
 28. Chat renders agent replies with `charm.land/glamour/v2` at v2.0.1. The owner chose Glamour on 2026-10-21. The commit that adds it states this reason: "markdown rendering of agent chat replies, chosen by the owner 2026-10-21".
-29. Glamour uses a custom style built from the palette tokens. Headings use `accent` and bold. Strong text uses `fg` and bold. Inline code and code blocks use `code`, with no background and no syntax colors. List items use `• `. Links show their text in `info` and no URL. The document margin is 0. Wave 4 records the complete style in one Go file.
-30. The wrap width is the inner width of the feed region minus the 23-cell gutter for time and name.
+29. Glamour uses a custom style built from the palette tokens. Headings use `accent` and bold. Strong text uses `fg` and bold. Inline code and code blocks use `code`, with no background and no syntax colors. A code block has no border and no title. List items use `• `. Links show their text in `info` and no URL. The document margin is 0. Wave 4 records the complete style in one Go file.
+30. At 120 columns and wider, the feed has a gutter for the time and the name. Message text starts 23 cells from the left edge of the feed panel. The wrap width is the panel width minus 26 cells. Below 120 columns, the feed has no gutter. The time and the name use their own line, and the text starts at the panel padding.
 31. The Chat component removes only the padding that Glamour adds: the blank first line and the trailing spaces of each line. It keeps leading spaces, so code indentation stays.
 32. A table wider than the wrap width shrinks its widest column by one cell, again and again, until the table fits. When two columns have the same width, the leftmost column shrinks first. A column does not shrink below 4 cells. A shrunk cell ends with `…`. When the table does not fit with each column at 4 cells, the component shows each row as lines of `Header: value`. Tests cover uneven content, columns of equal width, and a table with too many columns.
 33. The coordinator tested Glamour v2.0.1 on 2026-10-21 in a scratch module:

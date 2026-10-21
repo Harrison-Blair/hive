@@ -54,6 +54,7 @@
   ".hive/spec/hive-tui/tasks/118-chat-logs-frame/brief.md": 0,
   ".hive/spec/hive-tui/tasks/120-logs-filter-fit/brief.md": 0,
   ".hive/spec/hive-v1/05-tracker.md": 0,
+  ".hive/spec/hive-v1/tasks/13-remove-bootstrap/brief.md": 0,
   ".hive/spec/hive-v1/tasks/6-cp5-record/brief.md": 0,
   ".hive/spec/hive-v1/tasks/70-spec-allowlist/brief.md": 0,
   ".hive/spec/hive-v1/tasks/T01-home-and-register/brief.md": 0,
@@ -104,6 +105,8 @@
   ".hive/spec/sidebar-layout/tasks/6-starting-status/brief.md": 0,
   ".hive/spec/tui-v2/README.md": 0,
   ".hive/spec/tui-v2/tasks/5-tui-v2-spec/brief.md": 0,
+  ".hive/spec/tui-v2/tasks/7-tui-v2-spec-copy/brief.md": 0,
+  ".hive/spec/tui-v2/tasks/8-no-startup/brief.md": 0,
   "AGENTS.md": 0,
   "internal/agent/templates/presets.md": 0,
   "internal/agent/templates/project-agents.md": 0

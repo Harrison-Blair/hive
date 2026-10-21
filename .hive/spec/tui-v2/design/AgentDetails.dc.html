@@ -41,10 +41,10 @@ function background(t) {
   frame(t, 0, 'graph', '');
   box(t, 0, 3, 120, 36, 'border', 'project agents', 'border');
   box(t, 28, 5, 64, 16, 'border', 'hive · g1-tui-restart · done', 'border');
-  function card(x, y, name, sub) { box(t, x, y, 26, 4, 'border'); put(t, x + 2, y + 1, name, 'border'); put(t, x + 2, y + 2, sub, 'border'); }
-  card(47, 7, '◐ manager-hive', 'claude · idle · nudged 4m');
-  card(33, 14, '○ t4-worker-1', 'pi · stopped · task 4');
-  card(63, 14, '○ t4-verifier-1', 'pi · stopped · pass');
+  function card(x, y, name, sub) { box(t, x, y, 24, 4, 'border'); put(t, x + 2, y + 1, name, 'border'); put(t, x + 2, y + 2, sub, 'border'); }
+  card(48, 7, '◐ manager-hive', 'claude · idle · nudged 4m');
+  card(34, 14, '○ t4-worker-1', 'pi · stopped · task 4');
+  card(64, 14, '○ t4-verifier-1', 'pi · stopped · pass');
   for (var y = 0; y < t.h; y++) for (var x = 0; x < t.w; x++) { t.g[y][x].k = 'border'; t.g[y][x].b = 0; }
 }
 function popup(t) {
@@ -55,12 +55,12 @@ function popup(t) {
   kv.forEach(function (p, i) { put(t, bx + 3, by + 2 + i, fit(p[0], 10), 'dim'); put(t, bx + 13, by + 2 + i, fit(p[1], 44), 'fg'); });
   put(t, bx + 13, by + 4, '◐', 'accent');
   put(t, bx + 3, by + 14, 'ACTIONS', 'accent', 1);
-  [['a', 'attach to pane'], ['p', 'peek pane'], ['r', 'restart · confirm, agent is live'], ['t', 'open task · none']].forEach(function (p, i) { put(t, bx + 3, by + 15 + i, p[0], i === 3 ? 'dim' : 'accent', 1); put(t, bx + 6, by + 15 + i, p[1], i === 3 ? 'dim' : 'fg'); });
+  [['a', 'attach to pane'], ['p', 'peek pane'], ['t', 'open task · none']].forEach(function (p, i) { put(t, bx + 3, by + 15 + i, p[0], i === 2 ? 'dim' : 'accent', 1); put(t, bx + 6, by + 15 + i, p[1], i === 2 ? 'dim' : 'fg'); });
   put(t, bx + 3, by + 20, 'RECENT', 'accent', 1);
   ['15:08 inbox 28 sent to coordinator', '15:07 land 4-agents-equal-columns · ede94f3e', '14:58 land 3-tui-restart · 3ccd93fb', '14:44 land 2-stale-coordinator-startup · 0e079272'].forEach(function (s, i) { put(t, bx + 3, by + 21 + i, fit(s, 54), i === 0 ? 'fg' : 'dim'); });
   var tag = ' [details] ';
   put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
-  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, 'a attach · p peek · r restart · t task · ↑↓ scroll · esc close · ? help', 'dim');
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, 'a attach · p peek · t task · ↑↓ scroll · esc close', 'dim');
 }
 class Component extends DCLogic {
   renderVals() {

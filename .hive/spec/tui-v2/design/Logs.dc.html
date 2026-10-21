@@ -39,7 +39,7 @@ function frame(t, active, region, hints) {
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
 }
 function logs(t) {
-  frame(t, 5, 'json', '↑↓ scroll · tab region · esc close · f follow · < > day · / filter · g/G top/end · ? help');
+  frame(t, 5, 'json', '↑↓ scroll · tab region · f follow · < > day · / filter · g/G top/end · ? help');
   box(t, 0, 3, 120, 3, 'border', 'filter', 'accent');
   put(t, 2, 4, '/', 'accent', 1); put(t, 4, 4, 'level:', 'dim'); put(t, 10, 4, 'debug', 'fg'); put(t, 16, 4, 'agent:', 'dim'); put(t, 22, 4, 'manager-hive', 'fg');
   put(t, 84, 4, 'follow', 'dim'); put(t, 91, 4, '●', 'working'); put(t, 94, 4, '<', 'accent', 1); put(t, 96, 4, '2026-10-21', 'fg'); put(t, 107, 4, '>', 'accent', 1);

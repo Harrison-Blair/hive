@@ -48,7 +48,7 @@ function screen(t) {
   frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · o design · t task · / filter · ? help');
   subtabs(t, 3, ['Goals', 'Queue', 'Tasks'], 0);
   box(t, 0, 4, 52, 35, 'accent', 'goals · 2', 'accent');
-  put(t, 2, 5, fit('GOAL', 26) + fit('STATUS', 10) + 'WAVES', 'dim');
+  put(t, 4, 5, fit('GOAL', 24) + fit('STATUS', 10) + 'WAVES', 'dim');
   var list = [['g2-tui-v2', 'planned', '0/5', 'info'], ['g1-tui-restart', 'done', '3/3', 'done']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
@@ -62,9 +62,9 @@ function screen(t) {
   var kv = [['title', 'TUI restart and stale coordinator startup'], ['status', 'done'], ['project', 'hive'], ['grant', 'grants.md 2026-10-18 hive delivery on dev'], ['manager', 'manager-hive']];
   kv.forEach(function (p, i) { put(t, 54, 6 + i, fit(p[0], 10), 'dim'); put(t, 64, 6 + i, fit(p[1], 54), i === 1 ? 'done' : 'fg'); });
   put(t, 54, 12, 'WAVES', 'accent', 1);
-  put(t, 54, 13, fit('WAVE', 4) + fit('TITLE', 28) + fit('DONE WHEN', 11) + fit('LANDED', 8) + 'STATUS', 'dim');
+  put(t, 54, 13, fit('WAVE', 5) + fit('TITLE', 27) + fit('DONE WHEN', 11) + fit('LANDED', 8) + 'STATUS', 'dim');
   var w = [['A', 'Stale coordinator startup', 'dev', '1/1'], ['B', 'TUI restart', 'dev', '1/1'], ['C', 'Agents graph columns', 'dev', '1/1']];
-  w.forEach(function (r, i) { var y = 14 + i; put(t, 54, y, fit(r[0], 4), 'accent', 1); put(t, 58, y, fit(r[1], 28), 'fg'); put(t, 86, y, fit(r[2], 11), 'fg'); put(t, 97, y, fit(r[3], 8), 'fg'); put(t, 105, y, '✓', 'done'); put(t, 107, y, 'done', 'done'); });
+  w.forEach(function (r, i) { var y = 14 + i; put(t, 54, y, fit(r[0], 4), 'accent', 1); put(t, 59, y, fit(r[1], 27), 'fg'); put(t, 86, y, fit(r[2], 11), 'fg'); put(t, 97, y, fit(r[3], 8), 'fg'); put(t, 105, y, '✓', 'done'); put(t, 107, y, 'done', 'done'); });
   put(t, 54, 18, 'TASKS', 'accent', 1);
   var tk = [['A', '2-stale-coordinator-startup', '0e079272'], ['B', '3-tui-restart', '3ccd93fb'], ['C', '4-agents-equal-columns', 'ede94f3e']];
   tk.forEach(function (r, i) { var y = 19 + i; put(t, 54, y, r[0], 'dim'); put(t, 58, y, fit(r[1], 30), 'fg'); put(t, 88, y, 'merge ' + r[2], 'dim'); });

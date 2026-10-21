@@ -63,7 +63,7 @@ function pod(t, x, p, selKey) {
   put(t, x + 2, y + 5, '├', 'border');
 }
 function agents(t) {
-  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · r restart · t task · h hide stopped · ? help');
+  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help');
   box(t, 0, 3, 120, 36, 'accent', 'project agents · 5 projects', 'accent');
   var projects = [
     {name:'hive', real:true, goal:'g2-tui-v2 · wave A', manager:{name:'manager-hive', state:'working', sub:'claude · working · 1m'}, children:[{name:'t5-worker-1', state:'working', sub:'pi · working · 3m'}, {name:'t6-worker-1', state:'working', sub:'pi · working · 1m'}, {name:'t4-verifier-1', state:'stopped', sub:'pi · stopped · pass'}]},
