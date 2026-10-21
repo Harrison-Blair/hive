@@ -27,3 +27,19 @@ Model: `openai-codex/gpt-6-luna:xhigh`
 | V5 Diff scope and gate | pass | After `git merge dev`, `git diff dev...HEAD --stat` lists 11 paths from the brief source table or task evidence. The five gate commands pass: `gofmt -l` and `go mod tidy -diff` print nothing, `go vet ./...` exits 0, `golangci-lint run ./...` reports `0 issues`, and `go test -race ./...` passes. |
 
 Result: FAIL. C15 has a changing agent-record count.
+
+## Verification pass 3
+
+- Date: 2026-10-21
+- Verifier: `t6-verifier-4`
+- Model: `openai-codex/gpt-6-luna:xhigh`
+
+| Item | Result | Re-run and findings |
+| --- | --- | --- |
+| V1 Citation check | pass | I reran the agent-list filter and `git log --stat dev...HEAD`. I checked the cited goal, task, and agent records, inbox text, log requests, and landing SHAs against each citation row. The values match. Every agent record for task `6-cp5-record` has role `worker` or `verifier`. The task commit stats show document-only changes. C15 gives no record count. |
+| V2 Landings | pass | `git log --merges --oneline origin/dev`, `git show`, and `git branch -r --contains` show that each cited SHA merges its named task branch and exists on `origin/dev`: `0e079272924127b69f78b1142929eaa02e7229cf`, `3ccd93fbf0a4a213b9ff790321ea72ca65d6e04e`, and `ede94f3ea4b8a7fd63d99d23eae5ea74613e5253`. |
+| V3 Tracker | pass | `git diff dev...HEAD -- .hive/spec/hive-v1/05-tracker.md` changes only the CP5 row and dated receipt. The CP5 model matches this verifier's agent record. A scratch-worktree red run added the forbidden plain-text term `repo` to the task brief; `go test ./ -run STE` failed on that glossary violation. The scratch worktree was removed. The same command passes on this branch. Baselines for task 6 and task 13 are 0. |
+| V4 main | pass | Before and after, local `main` is `3692162633f896b8fee6197469adba91f666a00c`; `origin/main` and the remote `main` are `928cfa95e0906315fcb4a65a5cdbdef1470a0503`. The references did not move. |
+| V5 Diff scope and gate | pass | `git merge dev` reported that the branch was up to date. `git diff dev...HEAD --stat` lists only paths from the brief source table and task evidence. The five gate commands pass. `gofmt -l` and `go mod tidy -diff` print nothing; vet exits 0; lint reports `0 issues`; race tests pass for all packages. |
+
+Result: PASS.
