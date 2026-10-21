@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|fddddddddddfddddddddfddddddddfaaaaaaaaaaaafddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|──────────────────────────────━━━━━━━━━━━━──────────────────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Open   [Resolved]                                                                                   [ ] switch view   
+k|fddddddffaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|000000000111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ resolved · 20 ──────────────────────────────────╮╭─ supervisor-runs-stale-binary ───────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarraaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111111110000000000000000000000000000000000000111111111111111111111111111111000000000000000000000000000000000000
+t|│   ENTRY                             RESOLVED     ││                                                                  │
+k|afffddddddddddddddddddddddddddddddddddddddddddfffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   stale-coordinator-blocks-startup  10-21        ┃│ title     The supervisor keeps running an old hive binary        │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ supervisor-runs-stale-binary      10-21        ┃│ status    Resolved 2026-10-21                                    │
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafdddddffffffffarfddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooofr
+b|001011111111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   spec-task-needs-allowlist-first   10-20        ┃│ opened    2026-10-19                                             │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   store-list-skips-long-keys        10-20        ┃│ decision  Task 3 adds r restart and an old-binary mark           │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verified-task-cannot-cancel       10-20        ┃│ file      entries/resolved/supervisor-runs-stale-binary.md       │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   agent-spawn-skips-first-prompt    10-19        ┃│                                                                  │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   any-agent-read-another-role-inbox 10-19        ┃│ SUMMARY                                                          │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000111111100000000000000000000000000000000000000000000000000000000000
+t|│   exited-agent-name-blocks-reuse    10-19        ┃│ On 2026-10-19, the supervisor (pid 1718014) started at 13:22     │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   full-pi-bootstrap-flow            10-19        ┃│ from the hive binary of 72a33b5b. The managers rebuilt           │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   idle-session-supervisor-nudges    10-19        ┃│ ~/go/bin/hive after waves 2, 3, and 4. The supervisor kept the   │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   manager-blocked-by-harness-permi… 10-19        ┃│ old code, so the wave 2 change was not live. hive doctor         │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   manager-spawn-shell-ready-race    10-19        ┃│ reported the supervisor as live and did not compare its binary   │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   no-hive-path-repairs-verified-ta… 10-19        ┃│ with the installed one.                                          │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   shell-ready-spawn-race            10-19        ┃│                                                                  │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   task-edit-brief-command           10-19        ││ RESOLVED BY                                                      │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000111111111110000000000000000000000000000000000000000000000000000000
+t|│   verifier-spawn-pane-requires-pro… 10-19        ││ 3-tui-restart   merge 3ccd93fb                                   │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfffffffffffffffffddddddddddddddfffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verifier-verdict-without-commit   10-19        ││                                                                  │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verify-fail-no-reverify-workspace 10-19        ││ ↓ 9 more lines                                                   │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarfddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verify-fail-repair-worker-no-wor… 10-19        ││                                                                  │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   worker-spawn-keeps-old-acting-ag… 10-19        ││                                                                  │
+k|afafffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [list] ↑↓ move · tab region · [ ] view · enter open · / filter · g/G top/end · ? help                                  
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddddddddddaaaaaaaaddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000000000001111111100000000000000000000000000000000000000000000000000000
+t|───────────────────━━━━━━━━─────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Goals    Queue   [Tasks]                                      list › details  
+k|fddddddddddddddddddaaaaaaaffffffffffffffffffffffffffffffffffffffddddddddddddddff
+b|00000000000000000001111111000000000000000000000000000000000000000000000000000000
+t|╭─ 3-tui-restart · esc back ───────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111111110000000000000000000000000000000000000000000000000000
+t|│ status    landed                                                             ┃
+k|afddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ goal      g1-tui-restart · wave B                                            ┃
+k|afddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ verifier  t3-verifier-1 · pass                                               ┃
+k|afddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ merge     3ccd93fb on dev                                                    ┃
+k|afddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ACCEPTANCE                                                                   ┃
+k|afaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00111111111100000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC1 r restarts a coordinator or supervisor, confirms only when live        ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC2 coordinator restart closes only a pane that hive started               ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC3 supervisor restart runs hive supervise in a new tab                    ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC4 old records get stale or stopped, stay on disk, h hides them           ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC5 header shows old and r to restart for an old supervisor                ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ✓ AC6 coordinator start waits for herdr readiness                            ┃
+k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ EVIDENCE                                                                     │
+k|afaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00111111110000000000000000000000000000000000000000000000000000000000000000000000
+t|│ b brief.md    v VERIFIED.md   d deps graph                                   │
+k|afafffffffffffffafffffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffa
+b|00100000000000001000000000000000100000000000000000000000000000000000000000000000
+t|│ ↓ 3 more lines                                                               │
+k|afddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [details] ↑↓ scroll · esc back to list · b brief · v verified · d deps         
+k|aaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111111000000000000000000000000000000000000000000000000000000000000000000000
