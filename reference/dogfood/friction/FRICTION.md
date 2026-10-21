@@ -14,6 +14,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open |  |
 | [A stale coordinator record blocks bare hive startup](entries/stale-coordinator-blocks-startup.md) | Open |  |
+| [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
 | [A completed task cannot be reopened or edited](entries/completed-task-cannot-reopen.md) | Open |  |
