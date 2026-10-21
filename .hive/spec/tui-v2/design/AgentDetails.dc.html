@@ -57,7 +57,7 @@ function popup(t) {
   put(t, bx + 3, by + 14, 'ACTIONS', 'accent', 1);
   [['a', 'attach to pane'], ['p', 'peek pane'], ['t', 'open task · none']].forEach(function (p, i) { put(t, bx + 3, by + 15 + i, p[0], i === 2 ? 'dim' : 'accent', 1); put(t, bx + 6, by + 15 + i, p[1], i === 2 ? 'dim' : 'fg'); });
   put(t, bx + 3, by + 20, 'RECENT', 'accent', 1);
-  ['15:08 inbox 28 sent to coordinator', '15:07 land 4-agents-equal-columns · ede94f3e', '14:58 land 3-tui-restart · 3ccd93fb', '14:44 land 2-stale-coordinator-startup · 0e079272'].forEach(function (s, i) { put(t, bx + 3, by + 21 + i, fit(s, 54), i === 0 ? 'fg' : 'dim'); });
+  ['14:08 inbox 28 sent to coordinator', '14:07 land 4-agents-equal-columns · ede94f3e', '13:58 land 3-tui-restart · 3ccd93fb', '13:44 land 2-stale-coordinator-startup · 0e079272'].forEach(function (s, i) { put(t, bx + 3, by + 21 + i, fit(s, 54), i === 0 ? 'fg' : 'dim'); });
   var tag = ' [details] ';
   put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, 'a attach · p peek · t task · ↑↓ scroll · esc close', 'dim');

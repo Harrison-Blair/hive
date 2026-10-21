@@ -83,16 +83,16 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  RECENT                                                  │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  15:08 inbox 28 sent to coordinator                      │                             │
+t|│                             │  14:08 inbox 28 sent to coordinator                      │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  15:07 land 4-agents-equal-columns · ede94f3e            │                             │
+t|│                             │  14:07 land 4-agents-equal-columns · ede94f3e            │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  14:58 land 3-tui-restart · 3ccd93fb                     │                             │
+t|│                             │  13:58 land 3-tui-restart · 3ccd93fb                     │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  14:44 land 2-stale-coordinator-startup · 0e079272       │                             │
+t|│                             │  13:44 land 2-stale-coordinator-startup · 0e079272       │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │                                                          │                             │
