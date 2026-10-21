@@ -47,7 +47,7 @@ function screen(t) {
   frame(t, 4, 'list', '↑↓ move · tab region · [ ] view · enter open · R refresh · ? help');
   subtabs(t, 3, ['Home', 'Agents'], 0);
   box(t, 0, 4, 52, 35, 'accent', 'checks · 17 · 1 warn', 'accent');
-  put(t, 2, 5, fit('CHECK', 26) + 'RESULT', 'dim');
+  put(t, 4, 5, fit('CHECK', 24) + 'RESULT', 'dim');
   var list = [['ok', 'herdr socket', 'protocol 22'], ['ok', 'herdr pane', 'w58:p4'], ['ok', 'home', '~/source/hive'], ['ok', 'state store', '76 records'], ['ok', 'starting agents', '0'], ['warn', 'unresolved agents', '1'], ['ok', 'git', '2.43.0'], ['ok', 'supervisor', 'live · pid 1620686'], ['ok', 'supervisor binary', 'current'], ['ok', 'stale worktrees', 'none'], ['ok', 'unpushed branches', 'none'], ['ok', 'harness claude', 'found'], ['ok', 'harness codex', 'found'], ['ok', 'harness opencode', 'found'], ['ok', 'harness pi', 'found'], ['ok', 'harness cursor-agent', 'found'], ['ok', 'gh', '2.102.0']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 5, warn = r[0] === 'warn';
