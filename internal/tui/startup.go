@@ -20,7 +20,7 @@ import (
 
 const noHerdrNotice = "not in herdr: no coordinator or supervisor started"
 
-type coordinatorStarter func(context.Context, string, string, string, string, *slog.Logger) error
+type coordinatorStarter func(ctx context.Context, launch *agent.CoordinatorLaunch, paneID, harnessKind, model string) error
 
 func setupSession(homePath string, logger *slog.Logger) (string, error) {
 	return setupSessionWith(homePath, logger, startCoordinator)
@@ -48,6 +48,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 
 	stepErrors := []string{}
 	var coordinatorPaneID string
+	var coordinatorLaunch *agent.CoordinatorLaunch
 	var coordinatorSettings homeconfig.Settings
 	if err := herdr.TabRename(ctx, pane.TabID, "hive", herdr.WithLogger(logger)); err != nil {
 		logStartupStep(logger, "current tab label", "failed", err)
@@ -71,7 +72,20 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 			logStartupStep(logger, "coordinator", "failed", configErr)
 			stepErrors = append(stepErrors, "coordinator config: "+configErr.Error())
 		}
+		var launch *agent.CoordinatorLaunch
 		if configErr == nil || errors.Is(configErr, os.ErrNotExist) {
+			if startCoordinatorFn == nil {
+				startErr := errors.New("coordinator starter is unavailable")
+				logStartupStep(logger, "coordinator", "failed", startErr)
+				stepErrors = append(stepErrors, "coordinator: "+startErr.Error())
+			} else if claimed, claimErr := agent.ClaimCoordinatorStart(ctx, homePath, logger); claimErr != nil {
+				logStartupStep(logger, "coordinator", "failed", claimErr)
+				stepErrors = append(stepErrors, "coordinator: "+claimErr.Error())
+			} else {
+				launch = claimed
+			}
+		}
+		if launch != nil {
 			created, createErr := herdr.TabCreate(ctx, herdr.TabCreateParams{
 				WorkspaceID: pane.WorkspaceID,
 				Cwd:         homePath,
@@ -79,18 +93,17 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 				Focus:       false,
 				Env:         agent.StartupTabEnv(homePath, "coordinator"),
 			}, herdr.WithLogger(logger))
-			if createErr != nil {
-				logStartupStep(logger, "coordinator", "failed", createErr)
-				stepErrors = append(stepErrors, "coordinator tab: "+createErr.Error())
-			} else if created.Tab.WorkspaceID != pane.WorkspaceID || created.RootPane.WorkspaceID != pane.WorkspaceID || created.RootPane.TabID != created.Tab.TabID {
+			if createErr == nil && (created.Tab.WorkspaceID != pane.WorkspaceID || created.RootPane.WorkspaceID != pane.WorkspaceID || created.RootPane.TabID != created.Tab.TabID) {
 				createErr = errors.New("tab create returned a different workspace")
+			}
+			if createErr != nil {
+				if releaseErr := launch.Release(); releaseErr != nil {
+					createErr = fmt.Errorf("%w; remove starting claim: %v", createErr, releaseErr)
+				}
 				logStartupStep(logger, "coordinator", "failed", createErr)
 				stepErrors = append(stepErrors, "coordinator tab: "+createErr.Error())
-			} else if startCoordinatorFn == nil {
-				startErr := errors.New("coordinator starter is unavailable")
-				logStartupStep(logger, "coordinator", "failed", startErr)
-				stepErrors = append(stepErrors, "coordinator: "+startErr.Error())
 			} else {
+				coordinatorLaunch = launch
 				coordinatorPaneID = created.RootPane.PaneID
 				coordinatorSettings = settings
 			}
@@ -125,7 +138,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 		}
 	}
 	if coordinatorPaneID != "" {
-		if startErr := startCoordinatorFn(ctx, homePath, coordinatorPaneID, coordinatorSettings.Coordinator.Harness, coordinatorSettings.Coordinator.Model, logger); startErr != nil {
+		if startErr := startCoordinatorFn(ctx, coordinatorLaunch, coordinatorPaneID, coordinatorSettings.Coordinator.Harness, coordinatorSettings.Coordinator.Model); startErr != nil {
 			logStartupStep(logger, "coordinator", "failed", startErr)
 			stepErrors = append(stepErrors, "coordinator: "+startErr.Error())
 		} else {
@@ -138,8 +151,8 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 	return "", nil
 }
 
-func startCoordinator(ctx context.Context, homePath, paneID, harnessKind, model string, logger *slog.Logger) error {
-	return agent.StartCoordinator(ctx, homePath, paneID, harnessKind, model, logger)
+func startCoordinator(ctx context.Context, launch *agent.CoordinatorLaunch, paneID, harnessKind, model string) error {
+	return launch.Start(ctx, paneID, harnessKind, model)
 }
 
 func hasLiveCoordinator(ctx context.Context, homePath string, logger *slog.Logger) (bool, error) {

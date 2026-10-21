@@ -43,21 +43,15 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 	if record.Role != "coordinator" && record.Role != "supervisor" {
 		return RestartResult{}, fmt.Errorf("restart applies only to the coordinator and the supervisor")
 	}
+	if record.Role == "coordinator" {
+		return restartCoordinator(ctx, home, record, logger)
+	}
 	if record.Status != records.AgentLive && record.Status != records.AgentStale && record.Status != records.AgentStopped && record.Status != records.AgentExited {
 		return RestartResult{}, fmt.Errorf("cannot restart %s with status %s", record.Name, record.Status)
 	}
 	workspaceID, err := restartWorkspace(ctx, record, logger)
 	if err != nil {
 		return RestartResult{}, err
-	}
-	settings := homeconfig.Settings{Coordinator: homeconfig.CoordinatorConfig{Harness: "claude", Model: "claude-opus-5-5"}}
-	if record.Role == "coordinator" {
-		configured, configErr := homeconfig.ReadSettings()
-		if configErr == nil {
-			settings = configured
-		} else if !errors.Is(configErr, os.ErrNotExist) {
-			return RestartResult{}, fmt.Errorf("read coordinator config: %w", configErr)
-		}
 	}
 
 	newStatus := record.Status
@@ -95,14 +89,112 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 		return RestartResult{}, errors.New("tab create returned a different workspace")
 	}
 	result.Tab = created
-	if record.Role == "coordinator" {
-		if err := StartCoordinator(ctx, home, created.RootPane.PaneID, settings.Coordinator.Harness, settings.Coordinator.Model, logger); err != nil {
-			return result, fmt.Errorf("start coordinator: %w", err)
-		}
-	} else if err := herdr.PaneSendInput(ctx, created.RootPane.PaneID, "hive supervise", herdr.WithLogger(logger)); err != nil {
+	if err := herdr.PaneSendInput(ctx, created.RootPane.PaneID, "hive supervise", herdr.WithLogger(logger)); err != nil {
 		return result, fmt.Errorf("start supervisor: %w", err)
 	}
 	return result, nil
+}
+
+// restartCoordinator follows decision 34. It takes a new starting claim and
+// marks the old record stale in one locked write. It closes the old pane when
+// hive started the old harness, then starts the new harness under the claim.
+func restartCoordinator(ctx context.Context, home string, record records.Agent, logger *slog.Logger) (RestartResult, error) {
+	var result RestartResult
+	if record.Status == records.AgentStarting {
+		return result, fmt.Errorf("cannot restart %s with status %s", record.Name, record.Status)
+	}
+	workspaceID, err := restartWorkspace(ctx, record, logger)
+	if err != nil {
+		return result, err
+	}
+	settings := homeconfig.Settings{Coordinator: homeconfig.CoordinatorConfig{Harness: "claude", Model: "claude-opus-5-5"}}
+	configured, configErr := homeconfig.ReadSettings()
+	if configErr == nil {
+		settings = configured
+	} else if !errors.Is(configErr, os.ErrNotExist) {
+		return result, fmt.Errorf("read coordinator config: %w", configErr)
+	}
+	launch, err := claimCoordinator(ctx, home, &record, logger)
+	if err != nil {
+		return result, err
+	}
+	closed := false
+	if record.Status == records.AgentLive || record.Status == records.AgentUnresolved {
+		if record.StartedByHive && record.PaneID != "" {
+			if err := closeCoordinatorPane(ctx, record, logger); err != nil {
+				if releaseErr := launch.Release(); releaseErr != nil {
+					err = fmt.Errorf("%w; restore coordinator claim: %v", err, releaseErr)
+				}
+				return result, fmt.Errorf("close old coordinator pane: %w", err)
+			}
+			closed = true
+		} else {
+			result.Warning = "old pane kept because Hive did not start it"
+		}
+	}
+	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{
+		WorkspaceID: workspaceID,
+		Cwd:         home,
+		Label:       record.Role,
+		Focus:       false,
+		Env:         StartupTabEnv(home, record.Role),
+	}, herdr.WithLogger(logger))
+	if err == nil && (created.Tab.WorkspaceID != workspaceID || created.RootPane.WorkspaceID != workspaceID || created.RootPane.TabID != created.Tab.TabID) {
+		err = errors.New("tab create returned a different workspace")
+	}
+	if err != nil {
+		release := launch.Release
+		if closed {
+			release = launch.release
+		}
+		if releaseErr := release(); releaseErr != nil {
+			err = fmt.Errorf("%w; remove starting claim: %v", err, releaseErr)
+		}
+		return result, fmt.Errorf("create %s tab: %w", record.Role, err)
+	}
+	result.Tab = created
+	if err := launch.Start(ctx, created.RootPane.PaneID, settings.Coordinator.Harness, settings.Coordinator.Model); err != nil {
+		return result, fmt.Errorf("start coordinator: %w", err)
+	}
+	return result, nil
+}
+
+// closeCoordinatorPane closes the pane of an old coordinator that hive
+// started, with the identity rules of hive agent stop. It closes no pane that
+// holds another terminal or another harness process.
+func closeCoordinatorPane(ctx context.Context, record records.Agent, logger *slog.Logger) error {
+	pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
+	if isHerdrCode(err, herdr.CodePaneNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if record.TerminalID != "" && pane.TerminalID != record.TerminalID {
+		return nil
+	}
+	if record.ProcessPID > 0 {
+		info, err := herdr.PaneProcessInfoGet(ctx, record.PaneID, herdr.WithLogger(logger))
+		if err != nil {
+			return fmt.Errorf("process info: %w", err)
+		}
+		reason := checkProcessIdentity(record, info, pane.AgentSession)
+		if reason == "process_pid is not in the foreground process set" {
+			if other, otherErr := paneHarnessProcess(ctx, record.PaneID, logger); otherErr != nil || other != nil {
+				reason = "pane " + record.PaneID + " holds another harness process"
+			} else {
+				reason = ""
+			}
+		}
+		if reason != "" {
+			return errors.New("old coordinator identity unresolved: " + reason)
+		}
+	}
+	err = herdr.PaneClose(ctx, record.PaneID, herdr.WithLogger(logger))
+	if err != nil && !isHerdrCode(err, herdr.CodePaneNotFound) {
+		return err
+	}
+	return nil
 }
 
 // StartupTabEnv sets the environment that a bare hive startup tab needs.

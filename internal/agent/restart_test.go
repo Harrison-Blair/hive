@@ -15,7 +15,9 @@ import (
 func TestRestartCoordinatorClosesOwnedPaneStartsConfiguredCoordinatorAndKeepsRecord(t *testing.T) {
 	home := testHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	harness := startSleep(t)
 	fake := newFakeHerdr(t)
+	fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_1", "w1", "w1:t1", "/tmp")+`}`)
 	fake.result("pane.close", `{"type":"ok"}`)
 	fake.result("tab.create", restartTabCreatedJSON("coordinator", "w1:t2", "w1:p2"))
 	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
@@ -24,6 +26,7 @@ func TestRestartCoordinatorClosesOwnedPaneStartsConfiguredCoordinatorAndKeepsRec
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p2", "term_2", "w1", "w1:t2", "unknown", "coordinator")+`,"argv":["claude"]}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p2", "term_2", "w1", "w1:t2", "idle", "coordinator")+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p2", "term_2", "w1", "w1:t2", "idle", false, true)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p2", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p2", "term_2", "w1", "w1:t2", "working", "coordinator")+`}`)
 
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, StartedByHive: true}
@@ -57,8 +60,8 @@ func TestRestartCoordinatorClosesOwnedPaneStartsConfiguredCoordinatorAndKeepsRec
 		t.Fatalf("tab.create = %#v, want the coordinator startup environment", create)
 	}
 	old := readRestartRecord(t, home, record.Key)
-	if old.Status != records.AgentStopped {
-		t.Fatalf("old coordinator status = %q, want stopped", old.Status)
+	if old.Status != records.AgentStale {
+		t.Fatalf("old coordinator status = %q, want stale (decision 34)", old.Status)
 	}
 	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "agents", record.Key+".json")); err != nil {
 		t.Fatalf("old coordinator record was removed: %v", err)
@@ -126,6 +129,7 @@ func TestRestartSupervisorClosesOwnedPaneAndRunsSupervise(t *testing.T) {
 func TestRestartCoordinatorDoesNotCloseUnownedPaneAndWarns(t *testing.T) {
 	home := testHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	harness := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("tab.create", restartTabCreatedJSON("coordinator", "w1:t6", "w1:p6"))
 	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
@@ -134,6 +138,7 @@ func TestRestartCoordinatorDoesNotCloseUnownedPaneAndWarns(t *testing.T) {
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p6", "term_6", "w1", "w1:t6", "unknown", "coordinator")+`,"argv":["claude"]}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p6", "term_6", "w1", "w1:t6", "idle", "coordinator")+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p6", "term_6", "w1", "w1:t6", "idle", false, true)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p6", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p6", "term_6", "w1", "w1:t6", "working", "coordinator")+`}`)
 	record := records.Agent{Key: "coordinator-g4", Name: "coordinator", Role: "coordinator", PaneID: "w1:p5", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRestartRecord(t, home, record)
@@ -156,6 +161,7 @@ func TestRestartCoordinatorDoesNotCloseUnownedPaneAndWarns(t *testing.T) {
 func TestRestartStaleCoordinatorStartsWithoutClosingAnUnownedPane(t *testing.T) {
 	home := testHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	harness := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("tab.create", restartTabCreatedJSON("coordinator", "w1:t4", "w1:p4"))
 	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
@@ -164,6 +170,7 @@ func TestRestartStaleCoordinatorStartsWithoutClosingAnUnownedPane(t *testing.T) 
 	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p4", "term_4", "w1", "w1:t4", "unknown", "coordinator")+`,"argv":["claude"]}`)
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p4", "term_4", "w1", "w1:t4", "idle", "coordinator")+`}`)
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p4", "term_4", "w1", "w1:t4", "idle", false, true)+`}`)
+	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p4", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p4", "term_4", "w1", "w1:t4", "working", "coordinator")+`}`)
 
 	record := records.Agent{Key: "coordinator-g3", Name: "coordinator", Role: "coordinator", PaneID: "w1:p3", WorkspaceID: "w1", Status: records.AgentStale}
