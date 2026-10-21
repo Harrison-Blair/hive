@@ -160,6 +160,17 @@ The key hints in the footer show only the keys of the focus state. The Chat inpu
 - The package layout of the components, the converter, and the exporter.
 - The format of the golden grid files, the fixture files, and the mask files.
 
+The manager made these decisions in task `9-cellgrid`:
+
+- Package: `internal/lib/cellgrid/`. The golden check and the exporter call it.
+- Grid file: `<Board>.grid` beside each board in `.hive/spec/tui-v2/design/`. It is UTF-8 text. Line 1 is `hive-grid 1 W H`. Then each row has three lines:
+  - `t|` and the W characters of the row.
+  - `k|` and W token letters.
+  - `b|` and W digits `0` or `1` for bold.
+- Token letters: `f` fg, `r` border, `d` dim, `a` accent, `w` working, `o` done, `i` info, `u` user, `c` code.
+- Mask file: `<Board>.mask` beside the grid. Each line is `ROW COL WIDTH`, zero-based, and an optional `# reason`. A blank line or a `#` line is a comment. A board with no mask has no mask file.
+- Fixture file: `<Board>.fixture.json` beside the grid. Task `demo-mode` defines its schema.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
