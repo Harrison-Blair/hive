@@ -37,3 +37,16 @@ func (codexProfile) Args(model string, extra []string) []string {
 func (codexProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ProcessNames() []string      { return []string{"codex"} }
+
+// Trust gives the trust result of Codex 0.160.1. A directory outside a Git
+// repository shows no trust dialog. A Git repository with no saved trust shows
+// the folder trust dialog, also with --dangerously-bypass-approvals-and-sandbox.
+// Codex reads folder trust only from the user config: a "-c projects.<dir>"
+// override does not skip the dialog. The other methods save trust in
+// ~/.codex/config.toml for all time, or start Codex with a copy of CODEX_HOME.
+func (codexProfile) Trust() Trust {
+	return Trust{
+		Version:  "0.160.1",
+		NoMethod: "a Git repository with no saved trust shows the folder trust dialog; only a saved trust in ~/.codex/config.toml skips it",
+	}
+}
