@@ -49,7 +49,7 @@ function screen(t) {
   box(t, 0, 3, 80, 20, 'accent', 'project agents · 1 project', 'accent');
   box(t, 2, 4, 76, 18, 'border', 'hive · g1-tui-restart', 'dim');
   function card(x, y, dot, dk, name, sub, sel) { box(t, x, y, 24, 4, sel ? 'accent' : 'border'); put(t, x + 2, y + 1, dot, dk); put(t, x + 4, y + 1, fit(name, 18), sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, x + 2, y + 2, fit(sub, 20), 'dim'); }
-  card(28, 6, '●', 'working', 'manager-hive', 'claude · idle · 4m', true);
+  card(28, 6, '◐', 'accent', 'manager-hive', 'claude · idle · 4m', true);
   put(t, 40, 10, '│', 'border'); put(t, 16, 11, '╭' + rep('─', 47) + '╮', 'border'); put(t, 40, 11, '┴', 'border');
   card(4, 12, '○', 'dim', 't4-worker-1', 'pi · stopped', false);
   card(52, 12, '○', 'dim', 't4-verifier-1', 'pi · stopped', false);
