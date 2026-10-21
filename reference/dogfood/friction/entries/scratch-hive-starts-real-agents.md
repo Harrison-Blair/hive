@@ -2,7 +2,7 @@
 title: "Bare hive in a scratch home starts real coordinator and supervisor tabs"
 status: "Open"
 opened: 2026-10-20
-decision: ""
+decision: "Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1"
 ---
 
 **Summary:**
@@ -38,3 +38,11 @@ left two idle shell tabs, `coordinator` and `supervisor`, in workspace `w5T`.
 The temp home was deleted after the run. No process ran in the tabs. The
 manager closed both panes. The real supervisor (supervisor-g4) was not
 touched.
+
+**Mitigation (2026-10-21):** task 8-no-startup of feature `tui-v2` adds
+the switch `hive --no-startup` and the variable `HIVE_NO_STARTUP=1`, from
+decision 34 of the spec. With either one, bare `hive` opens the TUI. It makes
+no tab, starts no coordinator and no supervisor, and does not rename the tab.
+The worker skill and the verifier skill tell each agent to run bare `hive`
+only with the switch or the variable. The entry stays open: the switch is
+opt-in, and automatic detection of a scratch home is out of scope.

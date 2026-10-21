@@ -27,6 +27,12 @@ func setupSession(homePath string, logger *slog.Logger) (string, error) {
 }
 
 func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn coordinatorStarter) (string, error) {
+	if os.Getenv("HIVE_NO_STARTUP") == "1" {
+		for _, step := range []string{"current tab label", "coordinator", "supervisor"} {
+			logStartupStep(logger, step, "skipped", nil, "reason", "no-startup")
+		}
+		return "", nil
+	}
 	if os.Getenv("HERDR_ENV") != "1" || os.Getenv("HERDR_PANE_ID") == "" {
 		logStartupStep(logger, "herdr environment", "skipped", nil)
 		return noHerdrNotice, nil
@@ -237,11 +243,11 @@ func hasFreshSupervisorClaim(homePath string) (bool, error) {
 	return alive && err == nil, nil
 }
 
-func logStartupStep(logger *slog.Logger, step, outcome string, err error) {
+func logStartupStep(logger *slog.Logger, step, outcome string, err error, extra ...any) {
 	if logger == nil {
 		return
 	}
-	attrs := []any{"component", "tui", "command", "bare hive", "step", step, "outcome", outcome}
+	attrs := append([]any{"component", "tui", "command", "bare hive", "step", step, "outcome", outcome}, extra...)
 	if err != nil {
 		attrs = append(attrs, "error", err.Error())
 	}

@@ -140,6 +140,9 @@ hive task complete --task ID --agent NAME
 
 ## Rules
 
+- Run bare `hive` only as `hive --no-startup` or `HIVE_NO_STARTUP=1 hive`.
+  Without the switch, bare `hive` starts a coordinator, a supervisor, and
+  their tabs in your workspace.
 - Never edit the plan tracker.
 - Never commit to `dev` or `main`.
 - Never weaken, skip, or delete a test.
