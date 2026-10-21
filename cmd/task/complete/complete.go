@@ -31,6 +31,9 @@ func New() *cobra.Command {
 		tracker := &trackingWriter{writer: original}
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "task complete", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			homeUsed = home
 			options := tasklib.TransitionOptions{Task: taskID, Agent: agent, PaneID: pane, ResolvedActor: &resolved}
 			envelope = tasklib.Complete(home, options)

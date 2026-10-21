@@ -15,7 +15,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/run"
@@ -363,6 +365,54 @@ func checkUnresolvedAgents(home string) Check {
 		}
 	}
 	return newCheck("unresolved agents", false, count == 0, fmt.Sprintf("%d", count))
+}
+
+// checkOwnerlessInboxes lists each unread inbox record in an inbox that has no
+// live owner (decision 28).
+func checkOwnerlessInboxes(home string) Check {
+	const name = "ownerless inbox records"
+	store, err := storelib.Open(home)
+	if err != nil {
+		return newCheck(name, false, false, err.Error())
+	}
+	raw, err := store.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return newCheck(name, false, false, err.Error())
+	}
+	owned := map[string]bool{}
+	for _, data := range raw {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			return newCheck(name, false, false, "record invalid: "+err.Error())
+		}
+		if record.Status == records.AgentLive {
+			owned[agent.InboxKey(record)] = true
+		}
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox"))
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return newCheck(name, false, false, err.Error())
+	}
+	unread := []string{}
+	for _, entry := range entries {
+		if !entry.IsDir() || owned[entry.Name()] {
+			continue
+		}
+		found, err := inboxlib.All(home, entry.Name())
+		if err != nil {
+			return newCheck(name, false, false, err.Error())
+		}
+		for _, record := range found {
+			if record.ReadAt == "" {
+				unread = append(unread, fmt.Sprintf("%s/%d", entry.Name(), record.Seq))
+			}
+		}
+	}
+	detail := strconv.Itoa(len(unread))
+	if len(unread) > 0 {
+		detail += ": " + strings.Join(unread, ", ")
+	}
+	return newCheck(name, false, len(unread) == 0, detail)
 }
 
 func checkHarness(ctx context.Context, name string) Check {

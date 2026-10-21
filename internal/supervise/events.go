@@ -81,7 +81,7 @@ func (s *Supervisor) onStatusChanged(ctx context.Context, event herdr.Event, dat
 func (s *Supervisor) applyStatus(ctx context.Context, event herdr.Event, record records.Agent, status string) error {
 	switch status {
 	case "blocked":
-		role := controllingRole(record)
+		role := s.parentInbox(record)
 		if role == "" {
 			s.logEvent(event, "no controlling role")
 			return nil
@@ -132,7 +132,7 @@ func (s *Supervisor) onAgentDetected(ctx context.Context, event herdr.Event, dat
 		s.logEvent(event, "ignored released pane while starting")
 		return nil
 	}
-	role := controllingRole(record)
+	role := s.parentInbox(record)
 	if role == "" {
 		s.logEvent(event, "no controlling role")
 		return nil
@@ -158,7 +158,7 @@ func (s *Supervisor) onTopologyClosed(ctx context.Context, event herdr.Event, fi
 		return nil
 	}
 	for _, record := range found {
-		role := controllingRole(record)
+		role := s.parentInbox(record)
 		if role == "" && record.Status != records.AgentStarting {
 			s.logEvent(event, "no controlling role")
 			continue
@@ -233,7 +233,7 @@ func (s *Supervisor) handleQuiet(ctx context.Context, key string) error {
 	if record.AgentStatus != "idle" && record.AgentStatus != "done" {
 		return nil
 	}
-	role := controllingRole(record)
+	role := s.parentInbox(record)
 	if role == "" {
 		return nil
 	}

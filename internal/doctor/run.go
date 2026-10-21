@@ -20,6 +20,7 @@ func Run(ctx context.Context, home string, logger *slog.Logger) Result {
 		checkStateStore(home),
 		checkStartingAgents(home),
 		checkUnresolvedAgents(home),
+		checkOwnerlessInboxes(home),
 		checkGit(ctx),
 		checkSupervisor(home),
 		checkSupervisorBinary(home),

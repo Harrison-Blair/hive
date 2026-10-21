@@ -26,6 +26,9 @@ func newSend() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "chat send", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			workingDir, err := os.Getwd()
 			if err != nil {
 				return output.Envelope{}, "", err
@@ -53,6 +56,9 @@ func newReply() *cobra.Command {
 		pane, _ := cmd.Flags().GetString("pane")
 		to, _ := cmd.Flags().GetString("to")
 		return common.Run(cmd, "chat reply", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			text, err := io.ReadAll(cmd.InOrStdin())
 			if err != nil {
 				return output.Envelope{}, "", err

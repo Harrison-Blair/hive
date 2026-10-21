@@ -25,6 +25,9 @@ func New() *cobra.Command {
 		pane, _ := cmd.Flags().GetString("pane")
 		reason, _ := cmd.Flags().GetString("reason")
 		return common.Run(cmd, "task reopen", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
 			envelope := tasklib.Reopen(home, tasklib.TransitionOptions{
 				Task: taskID, Agent: agent, PaneID: pane, Reason: reason,
 			})
