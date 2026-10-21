@@ -105,7 +105,54 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 	if err != nil {
 		return agentsData{}, err
 	}
+	source := agentsSource{projects: projects, goals: goals, tasks: tasks, agents: agents, supervisorLive: fresh, supervisorClaim: supervisorClaim, unread: make(map[string][]records.Inbox)}
+	for _, name := range inboxAgentNames(agents) {
+		inboxRecords, err := inbox.Unread(home, name)
+		if err != nil {
+			return agentsData{}, fmt.Errorf("%s inbox: %w", name, err)
+		}
+		source.unread[name] = inboxRecords
+	}
+	var coordinatorClaim records.Claim
+	if err := registry.Read("claims", "coordinator", &coordinatorClaim); err == nil {
+		source.coordinatorClaim = coordinatorClaim.Agent
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return agentsData{}, err
+	}
+	return buildAgents(source, now), nil
+}
 
+// agentsSource holds the records that the Agents screen derives its data from.
+type agentsSource struct {
+	projects         []records.Project
+	goals            []records.Goal
+	tasks            []records.Task
+	agents           []records.Agent
+	supervisorLive   bool
+	supervisorClaim  records.Claim
+	coordinatorClaim string
+	unread           map[string][]records.Inbox
+}
+
+// inboxAgentNames returns the current coordinator and manager names. Their
+// unread inbox shows a nudge.
+func inboxAgentNames(agents []records.Agent) []string {
+	currentAgents := currentAgentKeys(agents)
+	names := []string{}
+	checked := make(map[string]bool)
+	for _, record := range agents {
+		if !currentAgents[record.Key] || record.Name == "" || checked[record.Name] || (record.Role != "coordinator" && record.Role != "manager") {
+			continue
+		}
+		checked[record.Name] = true
+		names = append(names, record.Name)
+	}
+	return names
+}
+
+func buildAgents(source agentsSource, now time.Time) agentsData {
+	projects, goals, tasks, agents := source.projects, source.goals, source.tasks, source.agents
+	fresh, supervisorClaim := source.supervisorLive, source.supervisorClaim
 	activeGoalTasks := make(map[string]bool)
 	for _, goal := range goals {
 		if goal.Status != "active" {
@@ -145,19 +192,10 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 	}
 	currentAgents := currentAgentKeys(agents)
 	nudgedRoles := make(map[string]bool)
-	checkedInboxes := make(map[string]bool)
-	for _, record := range agents {
-		if !currentAgents[record.Key] || record.Name == "" || checkedInboxes[record.Name] || (record.Role != "coordinator" && record.Role != "manager") {
-			continue
-		}
-		checkedInboxes[record.Name] = true
-		inboxRecords, err := inbox.Unread(home, record.Name)
-		if err != nil {
-			return agentsData{}, fmt.Errorf("%s inbox: %w", record.Name, err)
-		}
-		for _, item := range inboxRecords {
+	for _, name := range inboxAgentNames(agents) {
+		for _, item := range source.unread[name] {
 			if item.NudgedAt != "" {
-				nudgedRoles[record.Name] = true
+				nudgedRoles[name] = true
 				break
 			}
 		}
@@ -179,13 +217,7 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		data.groups = append(data.groups, agentGroup{id: project.ID, title: title})
 	}
 	managerByProject := make(map[string]records.Agent)
-	coordinatorKey := ""
-	var coordinatorClaim records.Claim
-	if err := registry.Read("claims", "coordinator", &coordinatorClaim); err == nil {
-		coordinatorKey = coordinatorClaim.Agent
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return agentsData{}, err
-	}
+	coordinatorKey := source.coordinatorClaim
 	for _, record := range agents {
 		if record.Role == "manager" {
 			current, found := managerByProject[record.Project]
@@ -244,7 +276,7 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		data.nodes = append(data.nodes, node)
 		data.groups[groupIndex].keys = append(data.groups[groupIndex].keys, record.Key)
 	}
-	return data, nil
+	return data
 }
 
 func currentAgentKeys(agents []records.Agent) map[string]bool {
@@ -565,6 +597,9 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 		state.keepSelectedVisible()
 		return s.model.logAction("agent tab", slog.String("tab", []string{"tree", "graph", "table"}[state.tab]))
 	case "r":
+		if s.model.demo != nil {
+			return s.model.demoBlocked("restart")
+		}
 		node, ok := state.selected()
 		if !ok || (node.record.Role != "coordinator" && node.record.Role != "supervisor") {
 			state.restartNotice = "restart applies only to the coordinator and the supervisor"

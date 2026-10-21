@@ -1,0 +1,27 @@
+package main
+import (
+ "fmt"
+ "os"
+ "path/filepath"
+ "charm.land/lipgloss/v2"
+ c "github.com/Harrison-Blair/hive/internal/tui/component"
+ "github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+)
+func main(){
+ dir := ".hive/tmp/verify-21"
+ dim:=lipgloss.NewStyle().Foreground(c.Dim)
+ lines:=make([]string,120); for i:=range lines {lines[i]=fmt.Sprintf("line %d of 120",i+1)}
+ samples:=[]struct{name,text string;w,h int}{
+ {"header",(c.Header{Home:"~/source/hive",Coordinator:"working",Supervisor:"live",Clock:"14:22"}).View(120),120,1},
+ {"short-header",(c.Header{Home:"~/source/hive",Coordinator:"working",Supervisor:"live",Clock:"14:22"}).View(80),80,1},
+ {"tabs",(c.TabBar{Active:0}).View(120),120,2},
+ {"compact-tabs",(c.TabBar{Active:3}).View(80),80,2},
+ {"subtabs",(c.SubTabs{Views:[]string{"Goals","Queue","Tasks"},Active:2}).View(120),120,1},
+ {"panel",(c.Panel{Title:"unfocused",Lines:[]string{"",dim.Render("border #3d3a33"),""}}).View(40,5),40,5},
+ {"focused",(c.Panel{Title:"focused",Focused:true,Lines:[]string{"",dim.Render("border #f5b942 · takes the keys"),""}}).View(40,5),40,5},
+ {"vertical",(c.Viewport{Panel:c.Panel{Title:"viewport",Focused:true,Lines:lines,VMark:c.ScrollMark{Start:1,Size:2}},YOffset:40}).View(60,7),60,7},
+ {"horizontal",(c.Viewport{Panel:c.Panel{Title:"horizontal",Lines:[]string{"",dim.Render("projects 1–4 of 5 · ←→ at the edge")},HMark:c.ScrollMark{Start:0,Size:42}}}).View(56,7),56,7},
+ {"hints",(c.KeyHints{Region:"graph",Hints:[]string{"←↑↓→ move","enter details","a attach","p peek","t task","? help"}}).View(72),72,1},
+ }
+ for _,s:=range samples {g,e:=cellgrid.Convert(s.text,s.w,s.h);if e!=nil {panic(e)}; f,e:=os.Create(filepath.Join(dir,s.name+".grid"));if e!=nil{panic(e)};if e=cellgrid.WriteGrid(f,g);e!=nil{panic(e)};f.Close()}
+}

@@ -50,6 +50,10 @@ func loadGoalsQueue(home string) (goalsQueueData, error) {
 	if err != nil {
 		return goalsQueueData{}, fmt.Errorf("tasks: %w", err)
 	}
+	return buildGoalsQueue(goals, projects, tasks), nil
+}
+
+func buildGoalsQueue(goals []records.Goal, projects []records.Project, tasks []records.Task) goalsQueueData {
 	sort.Slice(goals, func(i, j int) bool {
 		if goals[i].Status != goals[j].Status {
 			return goals[i].Status == "active"
@@ -58,7 +62,7 @@ func loadGoalsQueue(home string) (goalsQueueData, error) {
 	})
 	sort.Slice(projects, func(i, j int) bool { return projects[i].ID < projects[j].ID })
 	sort.Slice(tasks, func(i, j int) bool { return taskIDLess(tasks[i].ID, tasks[j].ID) })
-	return goalsQueueData{goals: goals, projects: projects, tasks: tasks}, nil
+	return goalsQueueData{goals: goals, projects: projects, tasks: tasks}
 }
 
 func listRecordsIn[T any](registry *store.Store, collection []string) ([]T, error) {
@@ -239,9 +243,13 @@ func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
 			return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID))
 		}
 		path := filepath.Join(s.model.home, ".hive", "spec", feature, "README.md")
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			state.designNotice = "no design for this wave"
-			return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature))
+		// Demo mode reads no live file. The fixture text or the demo notice
+		// takes the place of this check.
+		if s.model.demo == nil {
+			if _, err := os.Stat(path); os.IsNotExist(err) {
+				state.designNotice = "no design for this wave"
+				return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature))
+			}
 		}
 		state.designNotice = ""
 		s.model.screenIndex = 4

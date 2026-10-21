@@ -1,0 +1,17 @@
+
+## home-before.txt
+e5806bccebbf88b500292c3483cfa0e78cc33ddf3e39ceec6063ce41d8252406  .hive/tmp/verify11/home/.hive/README.md
+
+## home-after.txt
+84c1d7173861fd7e0d9d0be64c227056c43c380c00ee973e2f46ad6aec1fa435  .hive/tmp/verify11/home/.hive/logs/2026-10-21.jsonl
+e5806bccebbf88b500292c3483cfa0e78cc33ddf3e39ceec6063ce41d8252406  .hive/tmp/verify11/home/.hive/README.md
+
+## Scratch log
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"current tab label","time":"2026-10-21T19:11:05.547695111-04:00"}
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"coordinator","time":"2026-10-21T19:11:05.547758864-04:00"}
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"supervisor","time":"2026-10-21T19:11:05.547783785-04:00"}
+{"action":"quit request","component":"tui","demo":true,"level":"DEBUG","msg":"tui action","time":"2026-10-21T19:11:27.368539581-04:00"}
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"current tab label","time":"2026-10-21T19:11:34.492047857-04:00"}
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"coordinator","time":"2026-10-21T19:11:34.49208739-04:00"}
+{"command":"bare hive","component":"tui","demo":true,"level":"DEBUG","msg":"startup step","outcome":"skipped","reason":"demo","step":"supervisor","time":"2026-10-21T19:11:34.492113573-04:00"}
+{"action":"quit request","component":"tui","demo":true,"level":"DEBUG","msg":"tui action","time":"2026-10-21T19:11:54.813182538-04:00"}

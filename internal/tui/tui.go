@@ -130,10 +130,18 @@ type Model struct {
 	inputEnded <-chan struct{}
 	width      int
 	height     int
+
+	demo *demoState
 }
 
 // New builds the TUI for one resolved home and one clock.
 func New(home string, now func() time.Time) *Model {
+	return newModel(home, now, nil)
+}
+
+// newModel builds the TUI. With demo state, the model reads only the fixture
+// and checks no caller and no file.
+func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	if now == nil {
 		now = time.Now
 	}
@@ -162,8 +170,11 @@ func New(home string, now func() time.Time) *Model {
 		paneReader:       readAgentPane,
 		tasksLoader:      loadTasks,
 		frictionLoader:   loadFriction,
+		demo:             demo,
 	}
-	if callerCwd, err := os.Getwd(); err != nil {
+	if demo != nil {
+		m.useDemoLoaders(demo.fixture)
+	} else if callerCwd, err := os.Getwd(); err != nil {
 		m.chatCallerBlocked = true
 		m.chatErr = boundedError("chat send is for the user only: rule 2 check failed: " + err.Error())
 	} else {
@@ -186,14 +197,26 @@ func New(home string, now func() time.Time) *Model {
 	m.input.Blur()
 	m.screens = m.makeScreens()
 
-	writer, err := hivelog.NewWriter(home, "tui", now)
+	logClock := now
+	if demo != nil {
+		// The fixture clock is for the screens. Log events keep the real time.
+		logClock = time.Now
+	}
+	writer, err := hivelog.NewWriter(home, "tui", logClock)
 	if err != nil {
 		m.logErr = boundedError("log: " + err.Error())
 	} else {
 		m.closer = writer
 		m.logger = slog.New(writer)
+		if demo != nil {
+			m.logger = slog.New(writer.WithAttrs([]slog.Attr{slog.Bool("demo", true)}))
+		}
 	}
-	m.refreshSnapshot = snapshotRefreshState(home, m.logDate, m.tasks.data)
+	if demo != nil {
+		m.applyDemoUI(demo.fixture.UI)
+	} else {
+		m.refreshSnapshot = snapshotRefreshState(home, m.logDate, m.tasks.data)
+	}
 	m.layout()
 	return m
 }
@@ -217,6 +240,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.invalidateView()
 		m.width = msg.Width
 		m.height = msg.Height
+		if m.demo != nil {
+			m.demoResize(msg.Width, msg.Height)
+		}
 		m.layout()
 		return m, nil
 	case tickMsg:
@@ -423,6 +449,9 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 		return batch(m.logAction("quit request"), expires)
 	}
 	m.quitNotice = false
+	if m.demo != nil {
+		m.demo.notice = ""
+	}
 	if m.screenIndex == 0 && m.chatInputActive {
 		return m.currentScreen().Update(press)
 	}
@@ -436,6 +465,13 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 
 // View renders the header, sidebar, current screen, and footer.
 func (m *Model) View() tea.View {
+	if m.demo != nil {
+		if pane, need, small := m.demoTooSmall(); small {
+			view := tea.NewView(tooSmallView(pane, need))
+			view.AltScreen = true
+			return view
+		}
+	}
 	minute := m.now().Format("2006-01-02 15:04")
 	if !m.viewCacheValid || m.viewDirty {
 		m.viewCache = m.shellView()
@@ -457,7 +493,11 @@ func (m *Model) View() tea.View {
 		m.viewHeaderDirty = false
 		m.viewMinute = minute
 	}
-	view := tea.NewView(m.viewCache)
+	content := m.viewCache
+	if m.demo != nil {
+		content = clipView(content, m.width, m.height)
+	}
+	view := tea.NewView(content)
 	view.AltScreen = true
 	if m.screenIndex == 0 && m.chatInputActive {
 		if cursor := m.chatInput.Cursor(); cursor != nil {
@@ -608,6 +648,9 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 }
 
 func (m *Model) attachCmd(paneID string) tea.Cmd {
+	if m.demo != nil {
+		return m.demoBlocked("attach")
+	}
 	return func() tea.Msg {
 		_, err := herdr.AgentFocus(context.Background(), paneID)
 		return attachMsg{err: err}
@@ -615,6 +658,9 @@ func (m *Model) attachCmd(paneID string) tea.Cmd {
 }
 
 func (m *Model) startAgentsPeek(paneID string) tea.Cmd {
+	if m.demo != nil {
+		return m.demoBlocked("peek")
+	}
 	reader := m.paneReader
 	return func() tea.Msg {
 		text, err := reader(context.Background(), paneID)
@@ -699,7 +745,11 @@ func RunHome(home string, in io.Reader, out io.Writer) error {
 	if startupErr != nil {
 		model.startupErr = boundedError(startupErr.Error())
 	}
+	return runProgram(model, in, out, defaultWidth, defaultHeight)
+}
 
+// runProgram runs the model on in and out until it quits.
+func runProgram(model *Model, in io.Reader, out io.Writer, width, height int) error {
 	inputEnded := make(chan struct{})
 	var endOnce sync.Once
 	model.inputEnded = inputEnded
@@ -725,7 +775,7 @@ func RunHome(home string, in io.Reader, out io.Writer) error {
 	program := tea.NewProgram(model,
 		tea.WithInput(guardedIn),
 		tea.WithOutput(guardedOut),
-		tea.WithWindowSize(defaultWidth, defaultHeight),
+		tea.WithWindowSize(width, height),
 	)
 	watched := make(chan struct{})
 	go func() {
