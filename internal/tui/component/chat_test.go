@@ -24,7 +24,7 @@ var chatSample = []ChatMessage{
 	{Time: "14:02", Name: "you", Kind: ChatUser, Text: "I want to give the user an ability to restart the coordinator or supervisor within the hive UI."},
 	{Time: "14:19", Name: "manager-hive", Kind: ChatEvent, Text: "goal g1-tui-restart created · wave A started · worker t2-worker-1 live"},
 	{Time: "14:21", Name: "coordinator", Kind: ChatAgent, Text: chatReply},
-	{Time: "14:24", Name: "you", Kind: ChatUser, Text: "1A, 2A, 3B"},
+	{Time: "14:22", Name: "you", Kind: ChatUser, Text: "1A, 2A, 3B"},
 }
 
 // TestChatGolden renders the feed of Chat.dc.html for the feed panel of 120
@@ -58,7 +58,7 @@ func TestCompactChatGolden(t *testing.T) {
 		"- **Recommended:** A, hive closes only panes it started.\n"
 	lines, err := ChatLines([]ChatMessage{
 		{Time: "14:21", Name: "coordinator", Kind: ChatAgent, Text: reply},
-		{Time: "14:24", Name: "you", Kind: ChatUser, Text: "1A, 2A, 3B"},
+		{Time: "14:22", Name: "you", Kind: ChatUser, Text: "1A, 2A, 3B"},
 	}, 80)
 	if err != nil {
 		t.Fatal(err)

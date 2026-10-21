@@ -35,6 +35,7 @@ from the spec folder and compares it with a capture of the approved board.
 | `.hive/spec/tui-v2/design/<Board>.dc.html` | AC1. Only the seven changed boards. |
 | `.hive/spec/tui-v2/design/<Board>.grid` | AC2. Only the seven changed boards. |
 | `.hive/spec/tui-v2/design/<Board>.fixture.json` | AC3. |
+| `internal/tui/component/chat_test.go`, `popup_test.go` | AC2. Only the sample time literals that the fixed boards changed. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0. |
 | `.hive/spec/tui-v2/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
@@ -129,4 +130,5 @@ The components. The frame. Each screen.
 
 ## Changes
 
-None.
+- 2026-10-21: the source table allows the sample times in two component
+  tests, because their golden checks read the fixed grids.
