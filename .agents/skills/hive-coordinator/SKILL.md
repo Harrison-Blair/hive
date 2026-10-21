@@ -17,39 +17,33 @@ Read each `⬢ user:` message and its ID. Answer each message with `hive chat re
 
 ## Startup
 
-Run these steps at the start of each session.
+Run these steps at the start of each session. Hive writes the coordinator record before it sends the startup prompt. Do not register the coordinator.
 
-1. Register the role.
+1. Read `handoff.md` in the home.
 
-```sh
-hive agent register --role coordinator
-```
-
-2. Read `handoff.md` in the home.
-
-3. Read each unread inbox record.
+2. Read each unread inbox record.
 
 ```sh
 hive inbox --role coordinator
 ```
 
-4. List each agent.
+3. List each agent.
 
 ```sh
 hive agent list --all
 ```
 
-5. Check the home, the live state, and the supervisor claim.
+4. Check the home, the live state, and the supervisor claim.
 
 ```sh
 hive doctor
 ```
 
-Read the supervisor status. Use it in step 13.
+Read the supervisor status. Use it in step 8.
 
-6. Run `hive init` when a `hive` command says to run it.
+5. Run `hive init` when a `hive` command says to run it.
 
-7. Find the workspace of the coordinator pane.
+6. Find the workspace of the coordinator pane.
 
 ```sh
 herdr pane current --current
@@ -57,7 +51,7 @@ herdr pane current --current
 
 Read `workspace_id` from the result.
 
-8. List the tabs in that workspace.
+7. List the tabs in that workspace.
 
 ```sh
 herdr tab list --workspace "$workspace_id"
@@ -65,9 +59,9 @@ herdr tab list --workspace "$workspace_id"
 
 Save the `tab_id` of the `supervisor` tab, if it exists. Save the `tab_id` of the old `logs` tab, if it exists.
 
-9. Start the supervisor only when its claim is stale and the `supervisor` tab is gone.
+8. Start the supervisor only when its claim is stale and the `supervisor` tab is gone.
 
-Use the result of step 5 to check the claim. When the claim is stale and the tab is gone, create the tab with the home as its working directory.
+Use the result of step 4 to check the claim. When the claim is stale and the tab is gone, create the tab with the home as its working directory.
 
 ```sh
 herdr tab create --workspace "$workspace_id" --cwd "$PWD" --label supervisor --no-focus
@@ -81,7 +75,7 @@ herdr pane run "$supervisor_pane_id" hive supervise
 
 When the claim is fresh, keep it. When the `supervisor` tab exists, do not start a supervisor.
 
-10. Close the old `logs` tab only when a supervisor is live and the `supervisor` tab exists.
+9. Close the old `logs` tab only when a supervisor is live and the `supervisor` tab exists.
 
 List the panes in the workspace. Use `tab_id` to select the panes in the old `logs` tab. Check the foreground processes in each pane.
 
@@ -98,7 +92,7 @@ herdr tab close "$logs_tab_id"
 
 Tell the user when you close the old tab.
 
-11. Report each open decision and the state of each project to the user.
+10. Report each open decision and the state of each project to the user.
 
 ## Preference record
 

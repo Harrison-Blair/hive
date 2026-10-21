@@ -14,6 +14,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
@@ -34,7 +35,8 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 	t.Setenv("HERDR_ENV", "1")
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
 	var gotCoordinator bool
-	starter := func(_ context.Context, gotHome, paneID, harnessKind, model string, _ *slog.Logger) error {
+	starter := func(_ context.Context, launch *agent.CoordinatorLaunch, paneID, harnessKind, model string) error {
+		gotHome := launch.Home()
 		if got := requestsFor(server.requests, "pane.send_input"); len(got) != 1 {
 			t.Errorf("coordinator started before supervisor: pane.send_input requests = %d; want 1", len(got))
 		}
@@ -86,7 +88,7 @@ func TestStartupKeepsLiveCoordinatorAndFreshSupervisor(t *testing.T) {
 	server := newStartupHerdr(t)
 	t.Setenv("HERDR_ENV", "1")
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
-	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+	starter := func(context.Context, *agent.CoordinatorLaunch, string, string, string) error {
 		t.Fatal("startup attempted to replace the live coordinator")
 		return nil
 	}
@@ -114,7 +116,7 @@ func TestStartupStartsSupervisorWhenClaimIsStale(t *testing.T) {
 	server := newStartupHerdr(t)
 	t.Setenv("HERDR_ENV", "1")
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
-	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+	starter := func(context.Context, *agent.CoordinatorLaunch, string, string, string) error {
 		t.Fatal("startup attempted to replace the live coordinator")
 		return nil
 	}
@@ -177,7 +179,7 @@ func TestStartupNoStartupSkipsEachStepAndLogsReason(t *testing.T) {
 	t.Setenv("HIVE_NO_STARTUP", "1")
 	var logOutput bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+	starter := func(context.Context, *agent.CoordinatorLaunch, string, string, string) error {
 		t.Fatal("no-startup started a coordinator")
 		return nil
 	}
@@ -224,7 +226,7 @@ func TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord(t *testing.T) {
 	var logOutput bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	var started bool
-	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+	starter := func(context.Context, *agent.CoordinatorLaunch, string, string, string) error {
 		started = true
 		return nil
 	}
@@ -264,7 +266,7 @@ func TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails(t *testing.T) {
 	var logOutput bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	starterCalled := false
-	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+	starter := func(context.Context, *agent.CoordinatorLaunch, string, string, string) error {
 		starterCalled = true
 		return nil
 	}

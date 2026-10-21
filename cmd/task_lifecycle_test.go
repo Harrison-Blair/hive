@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	agentlib "github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -407,7 +408,10 @@ func TestTaskCLIReopenTextJSONShowHistoryAndLog(t *testing.T) {
 
 func TestTaskCLIReopenRegisteredManagerUsesClaimKey(t *testing.T) {
 	cli := newTaskCLI(t)
-	cli.mustRun(t, "agent", "register", "--role", "manager", "--project", "repo", "--name", "manager-repo", "--pane", "w1:manager", "--harness", "pi", "--model", "test")
+	// The CLI refuses the manager role, so hive code registers the manager.
+	if envelope := agentlib.Register(cli.home, agentlib.RegisterOptions{Role: "manager", Project: "repo", Name: "manager-repo", NameSet: true, PaneID: "w1:manager", Harness: "pi", Model: "test"}); envelope.Outcome != "ok" {
+		t.Fatalf("register manager = %#v", envelope)
+	}
 
 	registry, err := store.Open(cli.home)
 	if err != nil {
