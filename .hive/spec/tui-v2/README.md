@@ -171,6 +171,18 @@ The manager made these decisions in task `9-cellgrid`:
 - Mask file: `<Board>.mask` beside the grid. Each line is `ROW COL WIDTH`, zero-based, and an optional `# reason`. A blank line or a `#` line is a comment. A board with no mask has no mask file.
 - Fixture file: `<Board>.fixture.json` beside the grid. Task `demo-mode` defines its schema.
 
+The worker made these decisions in task `11-demo-mode`:
+
+- Demo loader: the file `internal/tui/demo.go` in the package `tui`. The loaders give the data types of this package, so the demo loader stays in it.
+- Fixture schema: one JSON object. An unknown field fails the load, and the error names the field. The object has these fields:
+  - `board`: the board file name.
+  - `terminal`: the `width` and the `height` of the board.
+  - `clock`: the `time` in RFC 3339 and the `zone` as an IANA time zone. Demo mode does not advance the clock.
+  - `home`: the home path that the header shows.
+  - `data`: the records in the format that hive stores. The fields are `projects`, `agents`, `goals`, `tasks`, `inbox` by recipient, `evidence` by task, `friction`, `checks`, `chat`, and `logs`. The field `supervisor` replaces the supervisor claim and its process check.
+  - `ui`: the fields `screen`, `view`, `focus`, `selection`, `scroll` by region, `filter`, `overlay`, `popup`, `prompt`, `hide_stopped`, `stops_only`, `follow`, `log_day`, `chat_noise`, and `chat_input`.
+- The evidence of task `11-demo-mode` gives each field and each board that uses it.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
