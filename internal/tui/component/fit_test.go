@@ -90,3 +90,44 @@ func checkBorder(t *testing.T, name, view string, width, height int) {
 		t.Errorf("%s %dx%d: broken bottom border %q", name, width, height, last)
 	}
 }
+
+// TestFitWave4 checks the components of wave 4 at each width from the
+// minimum to 200 columns, with text longer than the width: each row is
+// exactly the width and each border is whole. The Chat lines and the
+// markdown lines are not padded, so they are checked for no line wider than
+// the room.
+func TestFitWave4(t *testing.T) {
+	long := strings.Repeat("wide·text ", 30)
+	list := List{Title: long, Focused: true, Columns: []Column{{Title: long, Width: 12}, {Title: "S", Width: 8}, {Title: long}}, Selected: 4}
+	var details Details
+	for range 9 {
+		list.Rows = append(list.Rows, []Cell{{Text: long}, {Text: long}, {Text: long}})
+		details.Lines = append(details.Lines, DetailField(long, long))
+	}
+	details.Title, details.Offset = long, 3
+	for width := PanelMinWidth; width <= maxFitWidth; width++ {
+		for height := PanelMinHeight; height <= 8; height++ {
+			checkBorder(t, "List", list.View(width, height), width, height)
+			checkBorder(t, "Details", details.View(width, height), width, height)
+		}
+		checkBorder(t, "FilterBar", FilterBar{Text: "level:warn " + long, Editing: width%2 == 0}.View(width), width, 3)
+		checkBorder(t, "Input", Input{Text: long, Focused: width%2 == 0}.View(width), width, 3)
+		checkRows(t, "Notice", Notice{Text: long}.View(width), width, 1)
+		screen := strings.Repeat(long+"\n", 12)
+		for _, h := range []int{3, 12} {
+			checkRows(t, "Popup", Popup{Details: details, Width: 60, Height: 27}.View(screen, width, h), width, h)
+		}
+	}
+	checkBorder(t, "Card", Card{Name: long, Sub: long, State: "idle", Selected: true}.View(), CardWidth, CardHeight)
+	for width := 30; width <= maxFitWidth; width++ {
+		lines, err := ChatLines(append(chatSample, ChatMessage{Time: "09:00", Name: long, Kind: ChatEvent, Text: long}), width)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, l := range lines {
+			if w := lipgloss.Width(l); w > width-4 {
+				t.Errorf("Chat at %d: line %d is %d cells, inner width %d", width, i, w, width-4)
+			}
+		}
+	}
+}
