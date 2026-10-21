@@ -514,13 +514,18 @@ func (m *Model) startFrictionFileRead(state *frictionState, path, title string) 
 	state.fileTitle = title
 	state.fileContent = ""
 	return func() tea.Msg {
-		data, err := os.ReadFile(path)
-		return frictionFileMsg{title: title, content: string(data), err: err}
+		content, err := m.readScreenFile(path)
+		return frictionFileMsg{title: title, content: content, err: err}
 	}
 }
 
 func (m *Model) acceptFrictionFile(msg frictionFileMsg) {
 	m.friction.fileLoading = false
+	if errors.Is(msg.err, errDemoNoFile) {
+		m.friction.fileContent = demoNoFile
+		m.demo.notice = demoNoFile
+		return
+	}
 	if msg.err != nil {
 		m.friction.fileContent = "error: " + boundedError(msg.err.Error())
 		return

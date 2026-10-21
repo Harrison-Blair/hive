@@ -734,13 +734,18 @@ func (m *Model) startTaskFileRead(state *tasksState, path, title string) tea.Cmd
 	state.fileTitle = title
 	state.fileContent = ""
 	return func() tea.Msg {
-		data, err := os.ReadFile(path)
-		return taskFileMsg{title: title, content: string(data), err: err}
+		content, err := m.readScreenFile(path)
+		return taskFileMsg{title: title, content: content, err: err}
 	}
 }
 
 func (m *Model) acceptTaskFile(msg taskFileMsg) {
 	m.tasks.fileLoading = false
+	if errors.Is(msg.err, errDemoNoFile) {
+		m.tasks.fileContent = demoNoFile
+		m.demo.notice = demoNoFile
+		return
+	}
 	if msg.err != nil {
 		m.tasks.fileContent = "error: " + boundedError(msg.err.Error())
 		return

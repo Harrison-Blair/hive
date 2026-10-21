@@ -16,6 +16,17 @@ and the live check read the same fixture. This task defines the fixture
 schema, the demo loader, `--demo`, and `--size`, and writes two fixtures. The
 next task writes the other fixtures.
 
+## Design
+
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/Main.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/TooSmall.dc.html`
+
+This task draws the current screens with fixture data. It does not change the
+look of a screen to match a board. The visual check confirms that demo mode
+and normal mode draw the same screen from the same data. A difference from a
+board that the current screens also show is not a fail of this task. Record
+it.
+
 ## Manager decisions
 
 - Fixture file: `<Board>.fixture.json` in `.hive/spec/tui-v2/design/`. The
@@ -42,7 +53,8 @@ Do not edit other files.
 ### AC1 The fixture schema (decision 44)
 
 - The schema holds the data of each screen: agents, goals, tasks, friction
-  entries, checks, chat messages, and log events. It holds the clock with its
+  entries, checks, chat messages, log events, and the text of each task brief
+  and evidence file that a screen can open. It holds the clock with its
   time zone, the home path to show, and the terminal size.
 - It holds the UI state: the screen, the view, the focus, the selection, each
   scroll position, the filter, and the open overlay, popup, or prompt.
@@ -62,7 +74,9 @@ Do not edit other files.
 - `hive --demo FILE` implies `--no-startup`. It reads all screen data from
   the fixture. It uses the fixture clock and does not advance it.
 - It runs no `hive doctor` and no other process. It reads no live record and
-  writes no record. It writes log events as usual, with `demo` set to true.
+  no live file, and writes no record. A task brief or an evidence file comes
+  from the fixture text. When the fixture has no text for a file, the screen
+  shows the notice `demo mode: no file` and reads nothing. It writes log events as usual, with `demo` set to true.
   The Logs screen shows only the log events of the fixture.
 - Chat send, restart, attach, and peek show the notice `demo mode: no action`
   and do nothing.
@@ -148,4 +162,6 @@ The other 19 fixtures. The new screens. The golden check of a screen.
 
 ## Changes
 
-None.
+- 2026-10-21: after a verify fail (t11-verifier-1), the fixture holds the
+  text of task brief and evidence files (AC1). Demo mode reads no live file
+  (AC3). The Design section is new.

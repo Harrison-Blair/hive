@@ -36,7 +36,8 @@
     "friction": [],
     "checks": [],
     "chat": [],
-    "logs": []
+    "logs": [],
+    "files": {}
   },
   "ui": {
     "screen": "agents",

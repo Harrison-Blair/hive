@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -235,5 +237,115 @@ func TestDemoLogsShowOnlyFixtureEvents(t *testing.T) {
 	}
 	if strings.Contains(view, "live home event") {
 		t.Fatalf("logs view shows a live home event:\n%s", view)
+	}
+}
+
+// demoFileFixture gives the Main fixture with the project at root, the given
+// UI state, the given friction entries, and the given file texts.
+func demoFileFixture(t *testing.T, root string, ui map[string]any, friction []any, files map[string]string) *demoFixture {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	fixtureData := fixture["data"].(map[string]any)
+	fixtureData["projects"].([]any)[0].(map[string]any)["path"] = root
+	fixtureData["friction"] = friction
+	if files != nil {
+		fixtureData["files"] = files
+	}
+	if ui["view"] == "goals" {
+		// Goals opens the design of the first wave that is not done.
+		goal := fixtureData["goals"].([]any)[0].(map[string]any)
+		goal["waves"].([]any)[2].(map[string]any)["status"] = "active"
+	}
+	state := fixture["ui"].(map[string]any)
+	maps.Copy(state, ui)
+	text, err := json.Marshal(fixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := parseDemoFixture(text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return parsed
+}
+
+// deliverFileReads runs cmd and gives each file read result to the model.
+func deliverFileReads(m *Model, cmd tea.Cmd) {
+	if cmd == nil {
+		return
+	}
+	switch msg := cmd().(type) {
+	case tea.BatchMsg:
+		for _, next := range msg {
+			deliverFileReads(m, next)
+		}
+	case taskFileMsg, frictionFileMsg:
+		m.Update(msg)
+	}
+}
+
+func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
+	const taskDir = ".hive/spec/hive-tui/tasks/4-agents-equal-columns/"
+	const frictionPath = "reference/dogfood/friction/entries/demo-entry.md"
+	tasksUI := map[string]any{"screen": "work", "view": "tasks", "focus": "list", "selection": "4-agents-equal-columns", "scroll": map[string]any{}}
+	goalsUI := map[string]any{"screen": "work", "view": "goals", "focus": "list", "selection": "g1-tui-restart", "scroll": map[string]any{}}
+	frictionUI := map[string]any{"screen": "friction", "view": "open", "focus": "list", "selection": "demo-entry.md", "scroll": map[string]any{}}
+	friction := []any{map[string]any{"file": "demo-entry.md", "title": "Demo entry", "status": "Open", "opened": "2026-10-21", "body": "## Summary\n\nfixture body"}}
+	for _, tc := range []struct {
+		name, key, livePath string
+		ui                  map[string]any
+		files               map[string]string
+		want                string
+	}{
+		{name: "brief from fixture", key: "b", livePath: taskDir + "brief.md", ui: tasksUI,
+			files: map[string]string{taskDir + "brief.md": "fixture brief text"}, want: "fixture brief text"},
+		{name: "brief not in fixture", key: "b", livePath: taskDir + "brief.md", ui: tasksUI, want: demoNoFile},
+		// The tasks screen lists VERIFIED.md first, so enter opens it.
+		{name: "evidence from fixture", key: "enter", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI,
+			files: map[string]string{taskDir + "evidence/VERIFIED.md": "fixture evidence text"}, want: "fixture evidence text"},
+		{name: "verification not in fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI, want: demoNoFile},
+		{name: "design from fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI,
+			files: map[string]string{".hive/spec/hive-tui/README.md": "fixture design text"}, want: "fixture design text"},
+		{name: "design not in fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI, want: demoNoFile},
+		{name: "friction entry from fixture", key: "enter", livePath: frictionPath, ui: frictionUI,
+			files: map[string]string{frictionPath: "fixture friction text"}, want: "fixture friction text"},
+		{name: "friction entry not in fixture", key: "enter", livePath: frictionPath, ui: frictionUI, want: demoNoFile},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			live := filepath.Join(root, filepath.FromSlash(tc.livePath))
+			if err := os.MkdirAll(filepath.Dir(live), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(live, []byte("live file text"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			m := newDemoModel(root, &demoState{fixture: demoFileFixture(t, root, tc.ui, friction, tc.files)})
+			t.Cleanup(m.Stop)
+			if tc.ui["view"] == "tasks" {
+				// The fixture task is landed, so only the tab all lists it.
+				m.tasks.tab = tasksAll
+				m.tasks.acceptSelection()
+			}
+			key := tea.KeyPressMsg{Code: rune(tc.key[0]), Text: tc.key}
+			if tc.key == "enter" {
+				key = tea.KeyPressMsg{Code: tea.KeyEnter}
+			}
+			deliverFileReads(m, m.updateKey(key))
+			view := ansi.Strip(m.View().Content)
+			if !strings.Contains(view, tc.want) {
+				t.Fatalf("view does not show %q:\n%s", tc.want, view)
+			}
+			if strings.Contains(view, "live file text") {
+				t.Fatalf("view shows the live file:\n%s", view)
+			}
+		})
 	}
 }

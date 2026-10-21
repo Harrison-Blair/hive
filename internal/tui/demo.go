@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ import (
 
 const (
 	demoNotice    = "demo mode: no action"
+	demoNoFile    = "demo mode: no file"
 	minimumWidth  = 80
 	minimumHeight = 24
 )
@@ -65,6 +67,7 @@ type demoData struct {
 	Checks     []doctor.Check             `json:"checks"`
 	Chat       []chatlib.Entry            `json:"chat"`
 	Logs       []json.RawMessage          `json:"logs"`
+	Files      map[string]string          `json:"files"`
 }
 
 // demoSupervisor replaces the supervisor claim and its process check.
@@ -377,6 +380,31 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.chatInputActive = true
 		m.chatInput.Focus()
 	}
+}
+
+// errDemoNoFile tells that the fixture has no text for a file.
+var errDemoNoFile = errors.New(demoNoFile)
+
+// readScreenFile reads one file that a screen opens. Demo mode reads only the
+// fixture text. The fixture key is the path relative to the home or to a
+// project directory.
+func (m *Model) readScreenFile(path string) (string, error) {
+	if m.demo == nil {
+		data, err := os.ReadFile(path)
+		return string(data), err
+	}
+	roots := []string{m.home}
+	for _, project := range m.demo.fixture.Data.Projects {
+		roots = append(roots, project.Path)
+	}
+	for _, root := range roots {
+		if rel, err := filepath.Rel(root, path); err == nil && filepath.IsLocal(rel) {
+			if text, ok := m.demo.fixture.Data.Files[filepath.ToSlash(rel)]; ok {
+				return text, nil
+			}
+		}
+	}
+	return "", errDemoNoFile
 }
 
 // demoBlocked shows the demo notice in place of an action.
