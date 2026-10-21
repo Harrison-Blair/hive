@@ -1,0 +1,32 @@
+ .hive/spec/tui-v2/README.md                        |  12 +
+ .hive/spec/tui-v2/design/Main.fixture.json         |  59 +++
+ .hive/spec/tui-v2/design/TooSmall.fixture.json     |  37 ++
+ .hive/spec/tui-v2/tasks/11-demo-mode/brief.md      | 167 +++++++
+ .../tui-v2/tasks/11-demo-mode/evidence/V-gate.md   | 162 ++++++
+ .../spec/tui-v2/tasks/11-demo-mode/evidence/V1.md  | 201 ++++++++
+ .../tasks/11-demo-mode/evidence/V2-brief-open.txt  |  40 ++
+ .../tasks/11-demo-mode/evidence/V2-main-screen.png | Bin 0 -> 65996 bytes
+ .../11-demo-mode/evidence/V2-pane-120x40.ansi      |  40 ++
+ .../tasks/11-demo-mode/evidence/V2-pane-120x40.txt |  40 ++
+ .../tasks/11-demo-mode/evidence/V2-pane-small.ansi |  55 +++
+ .../tasks/11-demo-mode/evidence/V2-pane-small.txt  |  55 +++
+ .../11-demo-mode/evidence/V2-too-small-screen.png  | Bin 0 -> 17302 bytes
+ .../spec/tui-v2/tasks/11-demo-mode/evidence/V2.md  | 142 ++++++
+ .../spec/tui-v2/tasks/11-demo-mode/evidence/V3.md  |  98 ++++
+ .../tui-v2/tasks/11-demo-mode/evidence/VERIFIED.md |  31 ++
+ cmd/root.go                                        |  42 ++
+ cmd/root_demo_test.go                              | 191 +++++++
+ internal/tui/agents.go                             |  75 ++-
+ internal/tui/chat_screen.go                        |  28 +-
+ internal/tui/demo.go                               | 549 +++++++++++++++++++++
+ internal/tui/demo_test.go                          | 351 +++++++++++++
+ internal/tui/doc.go                                |   1 +
+ internal/tui/friction_screen.go                    |  23 +-
+ internal/tui/goals_queue.go                        |  16 +-
+ internal/tui/header.go                             |  30 +-
+ internal/tui/refresh.go                            |   2 +-
+ internal/tui/shell.go                              |   2 +
+ internal/tui/task_screen.go                        |  40 +-
+ internal/tui/tui.go                                |  60 ++-
+ testdata/ste-baseline.json                         |   1 +
+ 31 files changed, 2483 insertions(+), 67 deletions(-)
