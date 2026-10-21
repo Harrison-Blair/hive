@@ -118,7 +118,7 @@ flowchart TD
 | CP2 worktree and spawn live | T09, T10 | wave 4 | passed | 2026-10-18 | runner `cp2-run-01.md`. Independent `pi/openai-codex/gpt-6.1-sol:high` `cp2-verify-01.md` |
 | CP3 messaging and close-down live | T12, T13, T14, T15, T16, T18 | wave 5 | passed | 2026-10-18 | openai-codex/gpt-6.1-sol:high |
 | CP4 TUI live | T08 | CP5 | passed | 2026-10-18 | openai-codex/gpt-6.1-sol:high |
-| CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | open | | |
+| CP5 v1 end to end | T17, T18, T19 landed or skipped, T20, T21, CP4 | the end of v1 | passed | 2026-10-21 | |
 
 ## Tiers
 
@@ -2612,3 +2612,15 @@ edit permission.
 
 The user can skip T19 when the Cursor agent has no quota. The merger sets the
 status to skipped with the reason. CP5 does not wait for a skipped task.
+
+### Dated receipt: CP5 record from goal g1-tui-restart
+
+2026-10-21. This receipt records task `6-cp5-record`. The task wrote
+`reference/dogfood/cp5.md`. The citation table is
+`.hive/spec/hive-v1/evidence/CP5-01/CITATIONS.md`. Files `V1.md` to `V5.md` are
+in `.hive/spec/hive-v1/tasks/6-cp5-record/evidence/`. Goal `g1-tui-restart` has
+status `done`.
+
+- CP5 has status `passed` and date `2026-10-21`. The verifier model stays blank.
+  The manager must add it because the verifier did not send it before this edit.
+- The worker ran no new end-to-end check. This receipt uses the existing records.
