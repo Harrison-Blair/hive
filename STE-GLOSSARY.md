@@ -21,7 +21,6 @@ meanings agree.
 | manager | The one role for each project. It owns the approved goals of that project and dispatches tasks. | |
 | worker | An agent that a manager spawns for one task in a worktree. | sub-agent, subagent |
 | verifier | The independent agent that re-runs the checks of one task and records the result. | reviewer |
-| developer | A root session that changes hive source directly under the bootstrap clause. | |
 | agent | A coding-agent process in a herdr pane, such as Claude Code or Codex. | bot, assistant |
 | harness | The kind of agent program: Claude Code, Codex, Pi, Cursor agent, or OpenCode. | |
 | task | One unit of tracked work with a brief and a durable record. | work unit, ticket |
@@ -44,7 +43,6 @@ meanings agree.
 | stop | End a live agent. | retire, kill |
 | land | Merge a verified branch into its target under a grant. | ship |
 | gate | The checks that a Go change passes before it is done. | |
-| bootstrap clause | The temporary rule that lets a root session develop hive directly. | |
 | tracer bullet | A thin end-to-end slice through the CLI, the internal package, the state store, and the log. | spike |
 | wave | The set of tasks that can run in parallel after the same merges. | sprint |
 | checkpoint | A node in the task graph where the user sees a behavior live and records a critique before dependent tasks start. | demo gate, review gate |
