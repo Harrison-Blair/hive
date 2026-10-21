@@ -36,6 +36,7 @@ has no role.
 | `AGENTS.md` (role gate), `.agents/skills/hive-coordinator/SKILL.md`, `internal/agent/templates/` | AC5. |
 | `skills_test.go`, `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0, and to lower a count. |
 | `.hive/spec/general-agent/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
+| `.hive/spec/general-agent/README.md` | AC4. Only the text of decision 34. |
 
 Do not edit other files.
 
@@ -65,7 +66,15 @@ Do not edit other files.
 
 ### AC4 Restart (decision 34) and tests (decision 35)
 
-- Implement decision 34 in the shared restart code.
+- Implement decision 34 in the shared restart code, with the change that the
+  user decided on 2026-10-21. When no claim exists, the restart takes a new
+  starting claim under the store lock. The restart also accepts a coordinator
+  record that is stale, stopped, or exited. A claim that names another record
+  still makes the restart fail with no change.
+- Change the text of decision 34 in the spec to state this rule, in
+  ASD-STE100 Strict.
+- Write one test for each case: no claim, a stale record, a stopped record,
+  an exited record, and a claim that names another record.
 - Write each test of decision 35.
 
 ### AC5 Instruction text (decision 38)
@@ -142,4 +151,5 @@ Do not edit other files.
 
 ## Changes
 
-None.
+- 2026-10-21: after a verify fail (t17-verifier-1), the user chose option A
+  for decision 34. AC4 and the source table changed.

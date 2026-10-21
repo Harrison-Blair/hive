@@ -470,3 +470,107 @@ func TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName(t *testing.T) {
 		t.Fatalf("herdr requests = %#v; want none", methods)
 	}
 }
+
+// TestCoordinatorRestartWithNoClaim covers decision 34: with no claim, the
+// restart takes a new starting claim under the store lock.
+func TestCoordinatorRestartWithNoClaim(t *testing.T) {
+	testCoordinatorRestartOf(t, records.AgentLive, false)
+}
+
+// TestCoordinatorRestartStale covers decision 34 for a stale record.
+func TestCoordinatorRestartStale(t *testing.T) {
+	testCoordinatorRestartOf(t, records.AgentStale, true)
+}
+
+// TestCoordinatorRestartStopped covers decision 34 for a stopped record.
+func TestCoordinatorRestartStopped(t *testing.T) {
+	testCoordinatorRestartOf(t, records.AgentStopped, true)
+}
+
+// TestCoordinatorRestartExited covers decision 34 for an exited record.
+func TestCoordinatorRestartExited(t *testing.T) {
+	testCoordinatorRestartOf(t, records.AgentExited, true)
+}
+
+// testCoordinatorRestartOf restarts a coordinator record with status. With
+// claimed, the claim names that record. Without it, no claim exists. Only a
+// live or unresolved old record has a pane to close.
+func testCoordinatorRestartOf(t *testing.T, status string, claimed bool) {
+	t.Helper()
+	home := testHome(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HERDR_PANE_ID", "")
+	old := startSleep(t)
+	harness := startSleep(t)
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_w1:p1", Status: status, Generation: 1, StartedByHive: true, ProcessPID: old.pid, ProcessName: "claude", ProcessStart: old.start}
+	writeRecord(t, home, record)
+	if claimed {
+		writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1, Status: records.ClaimLive})
+	}
+	closes := status == records.AgentLive || status == records.AgentUnresolved
+	fake := newFakeHerdr(t)
+	if closes {
+		fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p1", "term_w1:p1", "w1", "w1:t1", "/tmp")+`}`)
+		fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(old.pid, "claude", "claude"))+`}`)
+		fake.result("pane.close", `{"type":"ok"}`)
+	}
+	fake.result("tab.create", restartTabCreatedJSON("coordinator", "w1:t2", "w1:p2"))
+	scriptCoordinatorStart(fake, "w1:p2", "w1:t2", harness)
+	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p2", "term_w1:p2", "w1", "w1:t2", "working", "coordinator")+`}`)
+
+	if _, err := Restart(context.Background(), home, record, nil); err != nil {
+		t.Fatalf("Restart() of a %s record, claimed=%v: %v", status, claimed, err)
+	}
+	wantCloses := 0
+	if closes {
+		wantCloses = 1
+	}
+	if got := len(fake.recorded("pane.close")); got != wantCloses {
+		t.Fatalf("pane.close = %d; want %d", got, wantCloses)
+	}
+	if got := readAgent(t, home, "coordinator-g1"); got.Status != records.AgentStale {
+		t.Fatalf("old record = %q; want stale", got.Status)
+	}
+	next := readAgent(t, home, "coordinator-g2")
+	if next.Status != records.AgentLive || next.PaneID != "w1:p2" || next.Replaces != "coordinator-g1" {
+		t.Fatalf("new record = %#v; want live coordinator-g2 in w1:p2 that replaces coordinator-g1", next)
+	}
+	if claim, ok := readCoordinatorClaim(t, home); !ok || claim.Agent != "coordinator-g2" || claim.Generation != 2 || claim.Status != records.ClaimLive {
+		t.Fatalf("claim = %#v, %v; want a live claim of coordinator-g2", claim, ok)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 1 {
+		t.Fatalf("agent.prompt = %d; want 1", got)
+	}
+}
+
+// TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName covers
+// decision 34: a stale record is accepted only when no claim names another
+// record.
+func TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName(t *testing.T) {
+	home := testHome(t)
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HERDR_PANE_ID", "")
+	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentStale, Generation: 1, StartedByHive: true}
+	current := records.Agent{Key: "coordinator-g2", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 2, StartedByHive: true}
+	writeRecord(t, home, old)
+	writeRecord(t, home, current)
+	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g2", Generation: 2, Status: records.ClaimLive})
+	fake := newFakeHerdr(t)
+	before := stateFiles(t, home)
+
+	if _, err := Restart(context.Background(), home, old, nil); err == nil || !strings.Contains(err.Error(), "coordinator-g2") {
+		t.Fatalf("Restart() = %v; want a refusal that names the claim holder", err)
+	}
+	after := stateFiles(t, home)
+	if len(after) != len(before) {
+		t.Fatalf("state files = %d; want %d", len(after), len(before))
+	}
+	for path, data := range before {
+		if after[path] != data {
+			t.Fatalf("%s changed after the refused restart", path)
+		}
+	}
+	if methods := fake.requestedMethods(); len(methods) != 0 {
+		t.Fatalf("herdr requests = %#v; want none", methods)
+	}
+}
