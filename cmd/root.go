@@ -41,6 +41,16 @@ func NewRootCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			noStartup, err := cmd.Flags().GetBool("no-startup")
+			if err != nil {
+				return err
+			}
+			if noStartup {
+				// The TUI startup reads the variable, so the flag sets it.
+				if err := os.Setenv("HIVE_NO_STARTUP", "1"); err != nil {
+					return err
+				}
+			}
 			return common.Run(cmd, "tui", func(resolvedHome string) (output.Envelope, string, error) {
 				if jsonOutput {
 					return output.Envelope{Outcome: "failed", Phase: "validate", Effects: []output.Effect{}, Error: "TUI requires text output", Result: nil}, "", nil
@@ -53,6 +63,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 	root.PersistentFlags().Bool("json", false, "write JSON output")
+	root.Flags().Bool("no-startup", false, "open the TUI and start no coordinator, no supervisor, and no tab")
 	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), homeinit.New(), memory.New(), handoff.New(), worktree.New(), land.New(), supervise.New(), goalcmd.New(), chat.New())
 	return root
 }
