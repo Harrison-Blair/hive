@@ -115,12 +115,12 @@ The key hints in the footer show only the keys of the focus state. The Chat inpu
 29. Glamour uses a custom style built from the palette tokens. Headings use `accent` and bold. Strong text uses `fg` and bold. Inline code and code blocks use `code`, with no background and no syntax colors. A code block has no border and no title. List items use `• `. Links show their text in `info` and no URL. The document margin is 0. Wave 4 records the complete style in one Go file.
 30. At 120 columns and wider, the feed has a gutter for the time and the name. Message text starts 23 cells from the left edge of the feed panel. The wrap width is the panel width minus 26 cells. Below 120 columns, the feed has no gutter. The time and the name use their own line, and the text starts at the panel padding.
 31. The Chat component removes only the padding that Glamour adds: the blank first line and the trailing spaces of each line. It keeps leading spaces, so code indentation stays.
-32. A table wider than the wrap width shrinks its widest column by one cell, again and again, until the table fits. When two columns have the same width, the leftmost column shrinks first. A column does not shrink below 4 cells. A shrunk cell ends with `…`. When the table does not fit with each column at 4 cells, the component shows each row as lines of `Header: value`. Tests cover uneven content, columns of equal width, and a table with too many columns.
+32. Glamour v2.0.1 draws each table, and hive does not change the result. The user decided this on 2026-10-21. Glamour gives each column the width of its widest cell, with one space on each side. One rule cell separates two columns. The table has no outer border. When the table is narrower than the wrap width, the narrowest column gets one more cell. This step repeats until the table is as wide as the wrap width. When two columns have the same width, the left column gets the cell first. When the table is wider than the wrap width, the widest column loses cells first. Then the text of its cells wraps to more lines, with no `…`. When a column has too few cells, its header shows only `…` or nothing, and its values wrap one character to a line. Glamour has no `Header: value` form. The header row uses the style of the other rows: `fg`, not bold. The rules `│`, `┼`, and `─` use `border`, from the style of decision 29. Tests cover uneven content, columns of equal width, and a table with too many columns.
 33. The coordinator tested Glamour v2.0.1 on 2026-10-21 in a scratch module:
     - It resolves with `charm.land/lipgloss/v2` v2.0.6 and adds no second Lip Gloss.
     - It adds goldmark, chroma, bluemonday, and their dependencies.
     - It renders the sample reply in about 2 ms.
-    - It draws tables with inner rules only. The Chat boards show this shape.
+    - It draws tables with inner rules only. The Chat boards show the tables that Glamour draws, as decision 32 gives.
 
 ### Scratch startup and demo mode
 
