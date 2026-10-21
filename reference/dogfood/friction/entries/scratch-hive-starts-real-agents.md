@@ -31,3 +31,10 @@ picked the process and tab by name and place, not by the pid and pane ID that
 herdr gave it at start. Rule now in each brief: never signal a process or
 close a tab, pane, or workspace that the agent did not start, and never work
 in workspace `wBC`.
+
+**Third occurrence (2026-10-21):** worker t4-worker-1 of task
+4-agents-equal-columns ran a live check (V3) with a temp home. Bare `hive`
+left two idle shell tabs, `coordinator` and `supervisor`, in workspace `w5T`.
+The temp home was deleted after the run. No process ran in the tabs. The
+manager closed both panes. The real supervisor (supervisor-g4) was not
+touched.
