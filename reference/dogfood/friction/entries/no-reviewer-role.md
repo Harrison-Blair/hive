@@ -53,3 +53,9 @@ fails with "invalid role: reviewer" (`internal/agent/register.go:179`).
 find, and ls only. With no bash tool, pi cannot run
 `hive agent register`, so the coordinator claim stayed safe. Hive has no
 record of this agent.
+
+The reviewer finished, but it had no way to report back. Hive had no record
+of it, so the supervisor sent no nudge, and the agent had no inbox and no
+`hive` command. The coordinator did not know that the review was complete.
+The user had to tell the coordinator. The coordinator then read the result
+from the pane with `herdr pane read`.
