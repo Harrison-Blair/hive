@@ -11,4 +11,14 @@
 // scrollmark.go holds ScrollMark and Thumb, the scroll marks of a region.
 // viewport.go holds Viewport, a Panel whose body scrolls.
 // keyhints.go holds KeyHints, the footer with the region and its keys.
+// list.go holds List, a Panel of rows in fixed columns with a selection.
+// details.go holds Details, a Panel of label and value lines that scrolls.
+// filterbar.go holds FilterBar, the filter text of the log screen.
+// input.go holds Input, the message line of the chat.
+// card.go holds Card, the box of one agent.
+// notice.go holds Notice, a dim line of one notice.
+// popup.go holds Popup and DimScreen, a Details box over a dimmed screen.
+// markdown.go holds RenderMarkdown, an agent reply rendered by Glamour.
+// markdown_style.go holds the Glamour style of decision 29.
+// chat.go holds ChatLines, the lines of the chat feed.
 package component
