@@ -74,3 +74,41 @@ func TestAgentLineageFieldsRoundTripAndLegacyJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestAgentFirstPromptTimesRoundTripAndLegacyJSON(t *testing.T) {
+	const fixture = `{"key":"helper","name":"helper","role":"agent","status":"live","first_prompt":"p","first_prompt_attempt_at":"2026-01-02T03:04:05Z","first_prompt_sent_at":"2026-01-02T03:04:06Z"}`
+	var agent Agent
+	if err := json.Unmarshal([]byte(fixture), &agent); err != nil {
+		t.Fatalf("decode first prompt record: %v", err)
+	}
+	encoded, err := json.Marshal(agent)
+	if err != nil {
+		t.Fatalf("encode first prompt record: %v", err)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(encoded, &got); err != nil {
+		t.Fatalf("decode encoded record: %v", err)
+	}
+	for key, want := range map[string]string{
+		"first_prompt_attempt_at": "2026-01-02T03:04:05Z",
+		"first_prompt_sent_at":    "2026-01-02T03:04:06Z",
+	} {
+		if got[key] != want {
+			t.Errorf("%s = %#v; want %q", key, got[key], want)
+		}
+	}
+
+	var old Agent
+	if err := json.Unmarshal([]byte(`{"key":"old","name":"old","role":"agent","status":"live"}`), &old); err != nil {
+		t.Fatalf("decode old record: %v", err)
+	}
+	oldEncoded, err := json.Marshal(old)
+	if err != nil {
+		t.Fatalf("encode old record: %v", err)
+	}
+	for _, field := range []string{"first_prompt_attempt_at", "first_prompt_sent_at"} {
+		if strings.Contains(string(oldEncoded), `"`+field+`"`) {
+			t.Errorf("old record encoding has optional field %q: %s", field, oldEncoded)
+		}
+	}
+}

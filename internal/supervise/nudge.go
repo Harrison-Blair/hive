@@ -44,6 +44,9 @@ func (s *Supervisor) nudgeRule(ctx context.Context) error {
 		if record.AgentStatus != "idle" && record.AgentStatus != "done" {
 			continue
 		}
+		if keptPromptPending(record) {
+			continue
+		}
 		todos, err := s.nudgeTodos(ctx, role, record.Generation)
 		if err != nil {
 			return err

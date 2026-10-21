@@ -29,9 +29,12 @@ func (s *Supervisor) refresh(ctx context.Context) error {
 	return s.evaluate(ctx)
 }
 
-// evaluate starts the quiet timers, then applies the stop rule and the nudge
-// rule over the current records.
+// evaluate sends the kept first prompts, starts the quiet timers, then
+// applies the stop rule and the nudge rule over the current records.
 func (s *Supervisor) evaluate(ctx context.Context) error {
+	if err := s.firstPromptRule(ctx); err != nil {
+		return err
+	}
 	if err := s.settleQuiet(ctx); err != nil {
 		return err
 	}
