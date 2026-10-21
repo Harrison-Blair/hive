@@ -252,3 +252,19 @@ func splitCommandLine(line string) []string {
 	}
 	return fields
 }
+
+// TestWorkerAndVerifierRequireNoStartup checks that each skill tells the agent
+// to run bare hive only with the no-startup switch or variable.
+func TestWorkerAndVerifierRequireNoStartup(t *testing.T) {
+	for _, file := range []string{".agents/skills/hive-worker/SKILL.md", ".agents/skills/hive-verifier/SKILL.md"} {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatalf("read %s: %v", file, err)
+		}
+		for _, want := range []string{"hive --no-startup", "HIVE_NO_STARTUP=1 hive"} {
+			if !strings.Contains(string(data), want) {
+				t.Errorf("%s does not contain %q", file, want)
+			}
+		}
+	}
+}
