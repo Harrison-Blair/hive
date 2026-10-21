@@ -28,9 +28,8 @@ var chatSample = []ChatMessage{
 }
 
 // TestChatGolden renders the feed of Chat.dc.html for the feed panel of 120
-// cells and compares the text cells, cols 2-117, with Chat.grid. Rows 15-19
-// hold the table. They join the check when the board shows the Glamour
-// table (decision 32).
+// cells and compares the text cells, cols 2-117, with Chat.grid rows 5-27.
+// Rows 15-19 hold the table that Glamour draws (decision 32).
 func TestChatGolden(t *testing.T) {
 	lines, err := ChatLines(chatSample, 120)
 	if err != nil {
@@ -39,15 +38,39 @@ func TestChatGolden(t *testing.T) {
 	if len(lines) != 23 {
 		t.Fatalf("%d lines, want 23 (board rows 5-27)", len(lines))
 	}
-	part := func(from, to int) string {
-		var rows []string
-		for _, l := range lines[from:to] {
-			rows = append(rows, fitRow(l, 116))
-		}
-		return strings.Join(rows, "\n")
+	var rows []string
+	for _, l := range lines {
+		rows = append(rows, fitRow(l, 116))
 	}
-	t.Run("before the table", func(t *testing.T) { checkGolden(t, part(0, 10), "Chat", rect{5, 2, 116, 10}) })
-	t.Run("after the table", func(t *testing.T) { checkGolden(t, part(15, 23), "Chat", rect{20, 2, 116, 8}) })
+	checkGolden(t, strings.Join(rows, "\n"), "Chat", rect{5, 2, 116, 23})
+}
+
+// TestCompactChatGolden renders the feed of CompactChat.dc.html lines 50-62
+// for the feed panel of 80 cells, below LongFormWidth (decision 30), and
+// compares cols 2-77 with CompactChat.grid rows 4-18. Rows 10-13 hold the
+// table that Glamour draws at the inner width 76 (decision 32).
+func TestCompactChatGolden(t *testing.T) {
+	reply := "## Interrogate, round 2\n\n" +
+		"Bare hive makes the `coordinator` tab, but its record has\n`spawned=false`. `agent stop` refuses it.\n\n" +
+		"| Choice | Answer | Pros | Cons |\n| --- | --- | --- | --- |\n" +
+		"| A (REC) | Record that bare hive started it | No tab pile-up | Field change |\n" +
+		"| B | Leave the old tab | Smallest change | Tabs pile up |\n\n" +
+		"- **Recommended:** A, hive closes only panes it started.\n"
+	lines, err := ChatLines([]ChatMessage{
+		{Time: "14:21", Name: "coordinator", Kind: ChatAgent, Text: reply},
+		{Time: "14:24", Name: "you", Kind: ChatUser, Text: "1A, 2A, 3B"},
+	}, 80)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lines) != 15 {
+		t.Fatalf("%d lines, want 15 (board rows 4-18)", len(lines))
+	}
+	var rows []string
+	for _, l := range lines {
+		rows = append(rows, fitRow(l, 76))
+	}
+	checkGolden(t, strings.Join(rows, "\n"), "CompactChat", rect{4, 2, 76, 15})
 }
 
 // TestChatNarrow checks the feed below 120 columns (decision 30): the time
