@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -20,9 +21,12 @@ type ReadOptions struct {
 	All     bool
 	Agent   string
 	PaneID  string
+	// HerdrPane is HERDR_PANE_ID. An empty value means outside herdr.
+	HerdrPane string
 }
 
-// Read returns all records or consumes the unread records of one role.
+// Read consumes the unread records of the caller inbox, or returns all
+// records. The coordinator reads another inbox without a consume.
 func Read(home string, options ReadOptions) output.Envelope {
 	registry, err := store.Open(home)
 	if err != nil {
@@ -31,7 +35,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 	var envelope output.Envelope
 	var key string
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		caller, err := identity.ResolveHeld(locked, options.Agent, options.PaneID)
+		caller, err := agent.Caller(locked, agent.CallerOptions{Agent: options.Agent, Pane: options.PaneID, HerdrPane: options.HerdrPane})
 		if err != nil {
 			if errors.Is(err, identity.ErrCallerUnknown) {
 				envelope = failedRead("validate", "caller unknown: pass --agent or run inside herdr")
@@ -41,11 +45,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 			return nil
 		}
 
-		ownKey, hasInbox := roleKey(caller)
-		if !options.RoleSet && !hasInbox {
-			envelope = failedRead("validate", "role has no inbox: "+caller.Role)
-			return nil
-		}
+		ownKey := InboxKey(caller)
 		key = ownKey
 		if options.RoleSet {
 			key = options.Role
@@ -55,8 +55,8 @@ func Read(home string, options ReadOptions) output.Envelope {
 			}
 		}
 
-		ownerRead := hasInbox && key == ownKey
-		coordinatorRead := caller.Role == "coordinator" && options.RoleSet && managerProject(key) != ""
+		ownerRead := key == ownKey
+		coordinatorRead := caller.Role == "coordinator" && !ownerRead
 		if !ownerRead && !coordinatorRead {
 			envelope = failedRead("validate", fmt.Sprintf("inbox %s belongs to %s", key, inboxOwner(key)))
 			return nil
@@ -111,17 +111,20 @@ func inboxOwner(key string) string {
 	if project := managerProject(key); project != "" {
 		return "the manager of project " + project
 	}
-	return "the owner"
+	return "the agent " + key
 }
 
-func roleKey(record records.Agent) (string, bool) {
+// InboxKey returns the inbox key of one agent (decision 26). The coordinator
+// keeps coordinator and a manager keeps manager-PROJECT. Each other agent uses
+// its agent name.
+func InboxKey(record records.Agent) string {
 	switch record.Role {
 	case "coordinator":
-		return "coordinator", true
+		return "coordinator"
 	case "manager":
-		return "manager-" + record.Project, true
+		return "manager-" + record.Project
 	default:
-		return "", false
+		return record.Name
 	}
 }
 

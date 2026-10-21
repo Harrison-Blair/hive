@@ -49,12 +49,16 @@ func TestReadDefaultsRoleFromManagerCaller(t *testing.T) {
 	}
 }
 
-func TestReadRejectsWorkerWithoutInbox(t *testing.T) {
+func TestReadDefaultsWorkerToNameInbox(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "worker-1", Kind: records.InboxMessage, Text: "for worker"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
 	envelope := Read(home, ReadOptions{PaneID: "w1:p1"})
-	if envelope.Outcome != "failed" || envelope.Error != "role has no inbox: worker" {
-		t.Fatalf("Read() = %#v; want role has no inbox", envelope)
+	result, ok := envelope.Result.(inboxlib.Result)
+	if envelope.Outcome != "ok" || !ok || len(result.Records) != 1 || result.Records[0].Text != "for worker" || result.Records[0].ReadAt == "" {
+		t.Fatalf("Read() = %#v; want one consumed record of inbox worker-1", envelope)
 	}
 }
 
@@ -146,7 +150,7 @@ func TestVerifierCannotReadAllManagerInbox(t *testing.T) {
 func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
-	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "default"}, "w1:p1")
+	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "default"}, "w1:p1", "")
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Send() = %#v; want ok", envelope)
 	}
@@ -154,7 +158,7 @@ func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 	if err != nil || len(found) != 1 || found[0].Agent != "worker-1" {
 		t.Fatalf("records = %#v, %v; want the caller as sender", found, err)
 	}
-	explicit := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Agent: "sender-x", Text: "explicit"}, "")
+	explicit := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Agent: "sender-x", Text: "explicit"}, "", "")
 	if explicit.Outcome != "ok" {
 		t.Fatalf("Send(explicit) = %#v; want ok", explicit)
 	}
@@ -166,7 +170,7 @@ func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 
 func TestSendUnknownCallerWithoutAgentFails(t *testing.T) {
 	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}, "")
+	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}, "", "")
 	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent" {
 		t.Fatalf("Send() = %#v; want caller unknown", envelope)
 	}
@@ -207,7 +211,7 @@ func TestReadRejectsPathKeyMismatchWithoutConsume(t *testing.T) {
 
 func TestSendInvalidExplicitDoesNotCreateState(t *testing.T) {
 	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Role: "../x", Kind: "message", Agent: "explicit", Text: "body"}, "")
+	envelope := Send(home, inboxlib.AppendOptions{Role: "../x", Kind: "message", Agent: "explicit", Text: "body"}, "", "")
 	if envelope.Outcome != "failed" || envelope.Phase != "validate" || envelope.Error != "invalid inbox key: ../x" {
 		t.Fatalf("Send() = %#v; want failed validate", envelope)
 	}
@@ -263,15 +267,15 @@ func TestReadRefusalsLogOneErrorEvent(t *testing.T) {
 
 	unsupported := t.TempDir()
 	seedInboxAgent(t, unsupported, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
-	envelope = Read(unsupported, ReadOptions{PaneID: "w1:p1"})
-	if envelope.Outcome != "failed" || envelope.Error != "role has no inbox: worker" {
-		t.Fatalf("Read(worker) = %#v; want role has no inbox", envelope)
+	envelope = Read(unsupported, ReadOptions{Role: "manager-one", RoleSet: true, PaneID: "w1:p1"})
+	if envelope.Outcome != "failed" || envelope.Error != "inbox manager-one belongs to the manager of project one" {
+		t.Fatalf("Read(worker) = %#v; want the ownership refusal", envelope)
 	}
 	events = inboxLogEvents(t, unsupported)
 	if len(events) != 1 || events[0]["msg"] != "inbox operation failed" {
 		t.Fatalf("log events = %#v; want one inbox error", events)
 	}
-	if message, _ := events[0]["error"].(string); !strings.Contains(message, "role has no inbox: worker") {
-		t.Fatalf("error event = %#v; want the role refusal", events[0])
+	if message, _ := events[0]["error"].(string); !strings.Contains(message, "belongs to the manager of project one") {
+		t.Fatalf("error event = %#v; want the ownership refusal", events[0])
 	}
 }

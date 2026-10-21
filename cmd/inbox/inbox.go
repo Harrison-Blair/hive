@@ -36,7 +36,7 @@ func New() *cobra.Command {
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
 			envelope = inboxlogic.Read(home, inboxlogic.ReadOptions{
-				Role: role, RoleSet: roleSet, All: all, Agent: agent, PaneID: pane,
+				Role: role, RoleSet: roleSet, All: all, Agent: agent, PaneID: pane, HerdrPane: os.Getenv("HERDR_PANE_ID"),
 			})
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
@@ -71,7 +71,7 @@ func newSend() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "inbox send", func(home string) (output.Envelope, string, error) {
-			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]}, pane)
+			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]}, pane, os.Getenv("HERDR_PANE_ID"))
 			return envelope, inboxlogic.SendText(envelope), nil
 		})
 	}
