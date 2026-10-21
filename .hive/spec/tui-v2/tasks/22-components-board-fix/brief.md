@@ -20,12 +20,26 @@ it.
 When the board or the grid does not agree with this brief, stop and report it
 with `hive inbox send --to manager-hive TEXT --agent NAME`.
 
+## Design
+
+- `/home/penguin/source/hive/plans/tui-v2/design/Components.dc.html`, the
+  fixed board, artifact version 25.
+- `/home/penguin/source/hive/plans/tui-v2/design/support.js`, the script that
+  each board loads with `./support.js`. The coordinator wrote it as a small
+  shim. It runs the board script and fills the row template. Do not copy the
+  runtime of the artifact type.
+
+This task changes no screen. The visual check captures the board copy from the
+spec folder and compares it with a capture of the approved board.
+
 ## Source files
 
 | Path | Purpose of the edit |
 | --- | --- |
 | `.hive/spec/tui-v2/design/Components.dc.html` | AC1. Replace it. |
 | `.hive/spec/tui-v2/design/Components.grid` | AC2. Export it again. |
+| `.hive/spec/tui-v2/design/support.js` | AC3. A new file. |
+| `.gitignore` | AC3. Only if Git ignores the new file. Use the narrowest rule. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0. |
 | `.hive/spec/tui-v2/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
@@ -43,8 +57,15 @@ Do not edit other files. Do not edit the exporter.
 - Run the exporter of task `10-board-export` on the design folder. Commit
   only the changed `Components.grid`. Each other grid stays the same.
 - Only these cells change: row 30, the cells of the sideways scroll mark,
-  token `accent` to `dim`. Row 14, columns 8, 9, 17, and 18, token `dim` to
+  token `accent` to `dim`. Row 14, columns 8, 9, 17, and 18: token `dim` to
   `fg`. No rune and no bold flag changes.
+
+### AC3 The board script
+
+- Copy `/home/penguin/source/hive/plans/tui-v2/design/support.js` into
+  `.hive/spec/tui-v2/design/`. `cmp` gives no difference.
+- Each board of the spec folder renders in Firefox from a `file://` URL. No
+  capture shows a literal `{{`.
 
 ## Acceptance criteria
 
@@ -52,6 +73,7 @@ Do not edit other files. Do not edit the exporter.
 | --- | --- | --- |
 | AC1 | The board copy equals the fixed board | V1 |
 | AC2 | Only the named cells of `Components.grid` change | V2 |
+| AC3 | Each board in the spec folder renders | V3 |
 
 ## Verification items
 
@@ -68,6 +90,17 @@ Do not edit other files. Do not edit the exporter.
   cell, with `internal/lib/cellgrid`. List each changed cell.
 - Expected: only the cells of AC2 change. Each other grid file has no
   difference.
+
+### V3 Board render
+
+- Proves: AC3.
+- Command: capture `Components.dc.html` and two other boards from the spec
+  folder with the Firefox command of the verifier skill. Capture the approved
+  `Components.dc.html` from the plans folder.
+- Expected: no capture shows `{{`. The two captures of `Components.dc.html`
+  agree.
+- Firefox is a snap. It cannot read `/tmp`. Put the profile folder and the
+  captures in `.hive/tmp/` of the worktree. Remove them after the check.
 
 ### V-gate Diff scope and gate
 
@@ -89,5 +122,5 @@ The components. Each other board.
 
 ## Changes
 
-- 2026-10-21: In AC2, a period and a new sentence replace the semicolon
-  after `dim`. The meaning stays the same. The manager approved this change.
+- 2026-10-21: after a verify fail, added the Design section, AC3, and V3.
+  The boards load `./support.js`, which the spec folder did not have.
