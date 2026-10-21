@@ -17,17 +17,10 @@ Read this section first. Your working directory gives your role. A brief can nam
 | `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
 
 - A root session with no brief runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
-- Do not run coordinator startup when the user says "develop" under the Bootstrap clause.
 - A session with a brief that names another role does not run coordinator startup.
 - A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
 - When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
 - Claude Code loads this file in every checkout below the root. The role gate applies there too.
-
-### Bootstrap clause
-
-Hive cannot yet register a project or spawn a manager. Until it can, the user can say "develop" to a root session. That session works as a developer. It does not run coordinator startup. It changes hive source directly and obeys [Development](#development). Remove this clause when the hive manager spawns its first worker.
-
-During bootstrap, the user starts workers by hand in worktrees under `projects/hive/worktrees/`. Each task brief is in `.hive/spec/hive-v1/tasks/<task-id>/brief.md`. Read the general task flow in `.agents/skills/hive-worker/SKILL.md`. Read `.hive/spec/hive-v1/05-tracker.md` for v1 tasks.
 
 ## Project
 
@@ -69,7 +62,7 @@ The coordinator runs in a pane of the hive session. Bare `hive` starts the coord
 
 ## Development
 
-These rules apply to a developer and to a worker on the hive project.
+These rules apply to a worker on the hive project.
 
 ### Task flow
 
@@ -131,7 +124,7 @@ Write instruction text in ASD-STE100 Strict: this file, skills, role instruction
 - Work on `dev` or on a branch from `dev`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
 - Write a commit subject as `type(scope): summary`, for example `feat(tui): add the log view`.
 - Never add an agent as a co-author.
-- An agent commits and pushes its own work. It does not wait for a request from the user. A developer commits on `dev` and pushes `dev`. A worker commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
+- An agent commits and pushes its own work. It does not wait for a request from the user. A worker commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
 
 ### herdr reference
 
