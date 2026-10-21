@@ -65,7 +65,6 @@ func readHeader(home string) (headerState, error) {
 	if !ok {
 		return state, errors.New("projects: unexpected result")
 	}
-	state.projects = len(projects)
 
 	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
 	if agentEnvelope.Outcome != "ok" {
@@ -74,6 +73,24 @@ func readHeader(home string) (headerState, error) {
 	agents, ok := agentEnvelope.Result.([]records.Agent)
 	if !ok {
 		return state, errors.New("agents: unexpected result")
+	}
+
+	taskEnvelope := task.List(home, task.ListOptions{})
+	if taskEnvelope.Outcome != "ok" {
+		return state, fmt.Errorf("tasks: %v", taskEnvelope.Error)
+	}
+	tasks, ok := taskEnvelope.Result.([]records.Task)
+	if !ok {
+		return state, errors.New("tasks: unexpected result")
+	}
+	return buildHeader(state.supervisor == "fresh", state.supervisorOld, projects, agents, tasks), nil
+}
+
+func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project, agents []records.Agent, tasks []records.Task) headerState {
+	state := headerState{supervisor: "stale", projects: len(projects)}
+	if supervisorFresh {
+		state.supervisor = "fresh"
+		state.supervisorOld = supervisorOld
 	}
 	for _, record := range agents {
 		if record.Status != records.AgentLive {
@@ -88,22 +105,13 @@ func readHeader(home string) (headerState, error) {
 			}
 		}
 	}
-
-	taskEnvelope := task.List(home, task.ListOptions{})
-	if taskEnvelope.Outcome != "ok" {
-		return state, fmt.Errorf("tasks: %v", taskEnvelope.Error)
-	}
-	tasks, ok := taskEnvelope.Result.([]records.Task)
-	if !ok {
-		return state, errors.New("tasks: unexpected result")
-	}
 	for _, record := range tasks {
 		if record.NeedsUser != "" {
 			state.needsUser++
 		}
 	}
 	state.queueRun, state.queueStops, state.queueWaits = queueTaskCounts(tasks)
-	return state, nil
+	return state
 }
 
 func supervisorBinaryIsOld(home string, claim records.Claim) bool {

@@ -81,6 +81,26 @@ func loadTasks(home string) (tasksData, error) {
 	if err != nil {
 		return tasksData{}, fmt.Errorf("goals: %w", err)
 	}
+	return buildTasks(tasks, projects, goals, readTaskEvidence)
+}
+
+// readTaskEvidence lists the regular files in the evidence folder of a task.
+func readTaskEvidence(item taskItem) ([]string, error) {
+	dir := filepath.Join(item.projectPath, ".hive", "spec", item.record.Feature, "tasks", item.record.ID, "evidence")
+	entries, err := os.ReadDir(dir)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	names := []string{}
+	for _, entry := range entries {
+		if entry.Type().IsRegular() {
+			names = append(names, entry.Name())
+		}
+	}
+	return names, nil
+}
+
+func buildTasks(tasks []records.Task, projects []records.Project, goals []records.Goal, evidence func(taskItem) ([]string, error)) (tasksData, error) {
 	projectPaths := make(map[string]string, len(projects))
 	projectIDs := make([]string, 0, len(projects))
 	for _, project := range projects {
@@ -100,16 +120,11 @@ func loadTasks(home string) (tasksData, error) {
 	for _, task := range tasks {
 		item := taskItem{record: task, projectPath: projectPaths[task.Project], goalGrant: goalGrants[task.ID]}
 		if item.projectPath != "" && task.Feature != "" {
-			dir := filepath.Join(item.projectPath, ".hive", "spec", task.Feature, "tasks", task.ID, "evidence")
-			entries, readErr := os.ReadDir(dir)
-			if readErr != nil && !errors.Is(readErr, os.ErrNotExist) {
+			names, readErr := evidence(item)
+			if readErr != nil {
 				return tasksData{}, fmt.Errorf("task evidence %s: %w", task.ID, readErr)
 			}
-			for _, entry := range entries {
-				if entry.Type().IsRegular() {
-					item.evidence = append(item.evidence, entry.Name())
-				}
-			}
+			item.evidence = append(item.evidence, names...)
 			sort.Strings(item.evidence)
 			for index, name := range item.evidence {
 				if name == "VERIFIED.md" {

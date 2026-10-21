@@ -100,13 +100,17 @@ func loadFriction(home string) (frictionData, error) {
 			data.entries = append(data.entries, entry)
 		}
 	}
-	sort.SliceStable(data.entries, func(i, j int) bool {
-		if data.entries[i].opened == data.entries[j].opened {
-			return data.entries[i].file < data.entries[j].file
-		}
-		return data.entries[i].opened > data.entries[j].opened
-	})
+	sortFrictionEntries(data.entries)
 	return data, nil
+}
+
+func sortFrictionEntries(entries []frictionEntry) {
+	sort.SliceStable(entries, func(i, j int) bool {
+		if entries[i].opened == entries[j].opened {
+			return entries[i].file < entries[j].file
+		}
+		return entries[i].opened > entries[j].opened
+	})
 }
 
 func parseFrictionEntry(file, path, contents string, resolved bool) frictionEntry {

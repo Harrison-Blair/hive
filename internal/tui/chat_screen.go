@@ -68,18 +68,11 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 	if !ok {
 		return result, errors.New("chat history: unexpected result")
 	}
-	for _, entry := range chatResult.Entries {
-		at, err := time.Parse(time.RFC3339Nano, entry.At)
-		if err == nil && !at.Before(cutoff) {
-			result.entries = append(result.entries, entry)
-		}
-	}
 
 	inboxRecords, err := inbox.All(home, "coordinator")
 	if err != nil {
 		return result, fmt.Errorf("coordinator inbox: %w", err)
 	}
-	result.inbox = inboxRecords
 
 	agentEnvelope := agent.List(home, agent.ListOptions{Role: "coordinator", All: true})
 	if agentEnvelope.Outcome != "ok" {
@@ -89,7 +82,21 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 	if !ok {
 		return result, errors.New("coordinator agent: unexpected result")
 	}
-	for _, record := range agents {
+	return buildChatScreenData(chatResult.Entries, inboxRecords, agents, now), nil
+}
+
+// buildChatScreenData keeps the chat entries of the chat window and picks the
+// current coordinator from the coordinator records.
+func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, coordinators []records.Agent, now time.Time) chatScreenData {
+	cutoff := now.UTC().Add(-chatWindow)
+	result := chatScreenData{entries: []chatlib.Entry{}, inbox: inboxRecords}
+	for _, entry := range entries {
+		at, err := time.Parse(time.RFC3339Nano, entry.At)
+		if err == nil && !at.Before(cutoff) {
+			result.entries = append(result.entries, entry)
+		}
+	}
+	for _, record := range coordinators {
 		live := record.Status == records.AgentLive
 		currentLive := result.coordinator.Status == records.AgentLive
 		if !result.coordinatorFound || (live && !currentLive) || (live == currentLive && record.Generation > result.coordinator.Generation) {
@@ -97,7 +104,7 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 			result.coordinatorFound = true
 		}
 	}
-	return result, nil
+	return result
 }
 
 func newChatInput() textarea.Model {
@@ -173,6 +180,9 @@ func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
 }
 
 func (m *Model) sendChat() tea.Cmd {
+	if m.demo != nil {
+		return m.demoBlocked("chat send")
+	}
 	if m.chatSending {
 		return nil
 	}
