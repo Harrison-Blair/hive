@@ -19,7 +19,9 @@ import (
 // RenderMarkdown renders an agent reply with Glamour and the style of
 // decision 29, wrapped at width cells (decision 28). It removes only the
 // padding that Glamour adds: the blank first line and the trailing spaces of
-// each line (decision 31). It keeps leading spaces.
+// each line (decision 31). It keeps leading spaces. Glamour wraps a list
+// with breakpoints, and a final "." or "," can then hang one cell past the
+// width; such a line is wrapped again at width.
 func RenderMarkdown(src string, width int) ([]string, error) {
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.TaskList),
@@ -37,10 +39,16 @@ func RenderMarkdown(src string, width int) ([]string, error) {
 	if len(lines) > 0 && strings.TrimSpace(ansi.Strip(lines[0])) == "" {
 		lines = lines[1:]
 	}
-	for i, l := range lines {
-		lines[i] = trimRightSpaces(l)
+	var out []string
+	for _, l := range lines {
+		l = trimRightSpaces(l)
+		if ansi.StringWidth(l) > width {
+			out = append(out, strings.Split(ansi.Wordwrap(l, width, ""), "\n")...)
+			continue
+		}
+		out = append(out, l)
 	}
-	return lines, nil
+	return out, nil
 }
 
 // sgr matches one SGR escape sequence, and trailingSpaces matches the run

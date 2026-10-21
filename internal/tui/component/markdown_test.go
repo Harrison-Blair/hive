@@ -87,3 +87,20 @@ func TestMarkdownRemovesBlankFirstLine(t *testing.T) {
 		}
 	}
 }
+
+// TestMarkdownListFitsWidth renders a list item at a width where Glamour
+// lets the final "." hang one cell past the wrap width. Each line must fit,
+// and the last word moves to its own line.
+func TestMarkdownListFitsWidth(t *testing.T) {
+	lines, err := RenderMarkdown("- **Recommended:** A, because hive may close only panes it started.\n", 31)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, l := range lines {
+		lines[i] = ansi.Strip(l)
+	}
+	want := "• Recommended: A, because hive\nmay close only panes it\nstarted."
+	if got := strings.Join(lines, "\n"); got != want {
+		t.Errorf("got:\n%s\nwant:\n%s", got, want)
+	}
+}
