@@ -1,6 +1,7 @@
 package component
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/x/ansi"
@@ -24,8 +25,8 @@ func TestTabBarSpacing(t *testing.T) {
 	}
 	for _, tc := range cases {
 		got := ansi.Strip(TabBar{Active: 5}.View(tc.width))
-		if want := tc.want + "\n"; got[:len(want)] != want {
-			t.Errorf("View(%d) labels = %q, want %q", tc.width, got[:len(want)], want)
+		if want := tc.want + "\n"; !strings.HasPrefix(got, want) {
+			t.Errorf("View(%d) = %q, want labels %q", tc.width, got, want)
 		}
 	}
 }
