@@ -12,7 +12,7 @@
 ## Run
 
 The task branch has `origin/dev` at `0b3296b2` merged. The diff uses
-`origin/dev`, because the local `dev` ref of this worktree is older. The
+`origin/dev`, because this worktree has no local `dev` branch. The
 stat does not show this file, because this file comes after the run.
 
 ```sh
