@@ -342,6 +342,8 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			currentClaim = &claim
 			generation = claim.Generation + 1
 			previousHolderKey = claim.Agent
+		} else {
+			generation = nextSingletonGeneration(name, options, agentRecords)
 		}
 		recordKey = fmt.Sprintf("%s-g%d", name, generation)
 	}
@@ -485,6 +487,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		StartedAt:     startedAt,
 		UpdatedAt:     now,
 		Spawned:       options.Spawned,
+		StartedByHive: startupStartedByHive(options),
 	}
 	action := "created"
 	if replaceOrphan {
@@ -531,6 +534,48 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	effects = append(effects, output.Effect{Resource: "claim", Path: statePath("claims", claimKey), Action: "updated"})
 	result.Claim = &claim
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
+}
+
+func startupStartedByHive(options RegisterOptions) bool {
+	if options.Role != "coordinator" && options.Role != "supervisor" {
+		return false
+	}
+	return os.Getenv("HIVE_STARTUP_ROLE") == options.Role && os.Getenv("HERDR_PANE_ID") == options.PaneID
+}
+
+func nextSingletonGeneration(name string, options RegisterOptions, agents []records.Agent) uint64 {
+	highest := uint64(0)
+	retryGeneration := uint64(0)
+	for _, record := range agents {
+		if record.Role != options.Role || record.Name != name || record.Project != options.Project || record.Task != options.Task {
+			continue
+		}
+		if record.Generation > highest {
+			highest = record.Generation
+		}
+		if record.Status == records.AgentLive && record.PaneID == options.PaneID &&
+			record.Key == fmt.Sprintf("%s-g%d", name, record.Generation) && record.Generation > retryGeneration {
+			retryGeneration = record.Generation
+		}
+	}
+	if retryGeneration != 0 && retryGeneration == highest {
+		return retryGeneration
+	}
+	generation := highest + 1
+	for {
+		key := fmt.Sprintf("%s-g%d", name, generation)
+		occupied := false
+		for _, record := range agents {
+			if record.Key == key {
+				occupied = true
+				break
+			}
+		}
+		if !occupied {
+			return generation
+		}
+		generation++
+	}
 }
 
 func initialAgentStatus(spawned bool) string {

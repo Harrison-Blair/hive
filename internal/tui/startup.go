@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
@@ -49,7 +50,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 		logStartupStep(logger, "current tab label", "ok", nil)
 	}
 
-	coordinatorLive, err := hasLiveCoordinator(homePath)
+	coordinatorLive, err := hasLiveCoordinator(ctx, homePath, logger)
 	if err != nil {
 		logStartupStep(logger, "coordinator", "failed", err)
 		stepErrors = append(stepErrors, "coordinator: "+err.Error())
@@ -70,7 +71,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 				Cwd:         homePath,
 				Label:       "coordinator",
 				Focus:       false,
-				Env:         startupTabEnv(homePath),
+				Env:         startupTabEnv(homePath, "coordinator"),
 			}, herdr.WithLogger(logger))
 			if createErr != nil {
 				logStartupStep(logger, "coordinator", "failed", createErr)
@@ -102,7 +103,7 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 			Cwd:         homePath,
 			Label:       "supervisor",
 			Focus:       false,
-			Env:         startupTabEnv(homePath),
+			Env:         startupTabEnv(homePath, "supervisor"),
 		}, herdr.WithLogger(logger))
 		if createErr == nil && (created.Tab.WorkspaceID != pane.WorkspaceID || created.RootPane.WorkspaceID != pane.WorkspaceID || created.RootPane.TabID != created.Tab.TabID) {
 			createErr = errors.New("tab create returned a different workspace")
@@ -131,8 +132,8 @@ func setupSessionWith(homePath string, logger *slog.Logger, startCoordinatorFn c
 	return "", nil
 }
 
-func startupTabEnv(homePath string) map[string]string {
-	env := map[string]string{"HIVE_HOME": homePath}
+func startupTabEnv(homePath, role string) map[string]string {
+	env := map[string]string{"HIVE_HOME": homePath, "HIVE_STARTUP_ROLE": role}
 	for _, key := range []string{"XDG_CONFIG_HOME", "PATH"} {
 		if value := os.Getenv(key); value != "" {
 			env[key] = value
@@ -145,7 +146,7 @@ func startCoordinator(ctx context.Context, homePath, paneID, harnessKind, model 
 	return agent.StartCoordinator(ctx, homePath, paneID, harnessKind, model, logger)
 }
 
-func hasLiveCoordinator(homePath string) (bool, error) {
+func hasLiveCoordinator(ctx context.Context, homePath string, logger *slog.Logger) (bool, error) {
 	registry, err := store.Open(homePath)
 	if err != nil {
 		return false, err
@@ -159,11 +160,65 @@ func hasLiveCoordinator(homePath string) (bool, error) {
 		if err := json.Unmarshal(data, &record); err != nil {
 			return false, err
 		}
-		if record.Role == "coordinator" && record.Status == records.AgentLive {
-			return true, nil
+		if record.Role != "coordinator" || record.Status != records.AgentLive {
+			continue
 		}
+		pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
+		if err != nil {
+			var serverError *herdr.Error
+			if errors.As(err, &serverError) && serverError.Code == herdr.CodePaneNotFound {
+				logCoordinatorPaneCheck(logger, record.PaneID, "gone", nil)
+				if err := markCoordinatorStale(homePath, record); err != nil {
+					logStartupStep(logger, "coordinator", "failed", err)
+					return false, fmt.Errorf("mark coordinator %s stale: %w", record.Key, err)
+				}
+				continue
+			}
+			logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
+			return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+		}
+		if pane.PaneID != record.PaneID {
+			err := fmt.Errorf("pane lookup returned %s", pane.PaneID)
+			logCoordinatorPaneCheck(logger, record.PaneID, "failed", err)
+			return false, fmt.Errorf("coordinator pane %s: %w", record.PaneID, err)
+		}
+		logCoordinatorPaneCheck(logger, record.PaneID, "present", nil)
+		return true, nil
 	}
 	return false, nil
+}
+
+func markCoordinatorStale(homePath string, expected records.Agent) error {
+	registry, err := store.Open(homePath)
+	if err != nil {
+		return err
+	}
+	return registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		var current records.Agent
+		if err := locked.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if current.Role != "coordinator" || current.Status != records.AgentLive || current.PaneID != expected.PaneID {
+			return nil
+		}
+		current.Status = records.AgentStale
+		current.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
+		return locked.WriteIn([]string{"agents"}, current.Key, current)
+	})
+}
+
+func logCoordinatorPaneCheck(logger *slog.Logger, paneID, outcome string, err error) {
+	if logger == nil {
+		return
+	}
+	attrs := []any{"component", "tui", "command", "bare hive", "step", "coordinator pane", "outcome", outcome, "pane_id", paneID}
+	if err != nil {
+		attrs = append(attrs, "error", err.Error())
+	}
+	logger.Debug("coordinator pane check", attrs...)
 }
 
 func hasFreshSupervisorClaim(homePath string) (bool, error) {

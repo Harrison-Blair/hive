@@ -409,6 +409,77 @@ func TestSpawnRegistrationClaimFailureSettlesStartingRecord(t *testing.T) {
 	}
 }
 
+func TestRegisterAdvancesPastStaleCoordinatorWithoutClaim(t *testing.T) {
+	home := t.TempDir()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentStale, Generation: 1}
+	if err := registry.WriteIn([]string{"agents"}, old.Key, old); err != nil {
+		t.Fatal(err)
+	}
+
+	envelope := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w2:p1"})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Register() = %#v; want ok", envelope)
+	}
+	result := envelope.Result.(RegisterResult)
+	if result.Agent.Key != "coordinator-g2" {
+		t.Fatalf("new coordinator key = %q; want coordinator-g2", result.Agent.Key)
+	}
+	if got := readAgent(t, home, old.Key).Status; got != records.AgentStale {
+		t.Fatalf("old coordinator status = %q; want stale", got)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "agents", old.Key+".json")); err != nil {
+		t.Fatalf("old coordinator record was not kept: %v", err)
+	}
+}
+
+func TestRegisterMarksBareHiveCoordinatorAndSupervisor(t *testing.T) {
+	home := t.TempDir()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, role := range []string{"coordinator", "supervisor"} {
+		t.Run(role, func(t *testing.T) {
+			paneID := "w1:p1"
+			if role == "supervisor" {
+				paneID = "w1:p2"
+			}
+			t.Setenv("HIVE_STARTUP_ROLE", role)
+			t.Setenv("HERDR_PANE_ID", paneID)
+			envelope := Register(home, RegisterOptions{Role: role, PaneID: paneID})
+			if envelope.Outcome != "ok" {
+				t.Fatalf("Register() = %#v; want ok", envelope)
+			}
+			result := envelope.Result.(RegisterResult)
+			var record map[string]json.RawMessage
+			if err := registry.ReadIn([]string{"agents"}, result.Agent.Key, &record); err != nil {
+				t.Fatal(err)
+			}
+			if got := string(record["started_by_hive"]); got != "true" {
+				t.Fatalf("started_by_hive = %s; want true", got)
+			}
+		})
+	}
+
+	t.Setenv("HIVE_STARTUP_ROLE", "")
+	t.Setenv("HERDR_PANE_ID", "")
+	manual := Register(home, RegisterOptions{Role: "coordinator", PaneID: "w1:p3"})
+	if manual.Outcome != "ok" {
+		t.Fatalf("manual Register() = %#v; want ok", manual)
+	}
+	var manualRecord map[string]json.RawMessage
+	if err := registry.ReadIn([]string{"agents"}, manual.Result.(RegisterResult).Agent.Key, &manualRecord); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := manualRecord["started_by_hive"]; ok {
+		t.Fatalf("manual record has started_by_hive: %s", manualRecord["started_by_hive"])
+	}
+}
+
 func TestSpawnedRegistrationStartsForManagerWorkerAndVerifier(t *testing.T) {
 	for _, role := range []string{"manager", "worker", "verifier"} {
 		t.Run(role, func(t *testing.T) {

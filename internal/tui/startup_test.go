@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -58,14 +59,18 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 	}
 	for _, request := range requestsFor(server.requests, "tab.create") {
 		var params struct {
-			Cwd string            `json:"cwd"`
-			Env map[string]string `json:"env"`
+			Cwd   string            `json:"cwd"`
+			Label string            `json:"label"`
+			Env   map[string]string `json:"env"`
 		}
 		if err := json.Unmarshal([]byte(request.Params), &params); err != nil {
 			t.Fatalf("decode tab.create params: %v", err)
 		}
 		if params.Cwd != homePath || params.Env["HIVE_HOME"] != homePath || params.Env["XDG_CONFIG_HOME"] != configDir {
 			t.Errorf("tab.create cwd/env = %q/%#v; want home %q and config %q", params.Cwd, params.Env, homePath, configDir)
+		}
+		if params.Env["HIVE_STARTUP_ROLE"] != params.Label {
+			t.Errorf("tab.create startup role = %q; want %q", params.Env["HIVE_STARTUP_ROLE"], params.Label)
 		}
 	}
 	inputs := requestsFor(server.requests, "pane.send_input")
@@ -92,6 +97,10 @@ func TestStartupKeepsLiveCoordinatorAndFreshSupervisor(t *testing.T) {
 	}
 	if got := requestsFor(server.requests, "tab.create"); len(got) != 0 {
 		t.Fatalf("tab.create requests = %#v; want none", got)
+	}
+	paneGets := requestsFor(server.requests, "pane.get")
+	if len(paneGets) != 2 || !strings.Contains(paneGets[1].Params, `"pane_id":"w1:p9"`) {
+		t.Fatalf("pane.get requests = %#v; want current pane and coordinator pane w1:p9", paneGets)
 	}
 	if got := requestsFor(server.requests, "pane.send_input"); len(got) != 0 {
 		t.Fatalf("pane.send_input requests = %#v; want none", got)
@@ -140,15 +149,19 @@ func TestStartupSkipsHerdrWhenEnvironmentIsMissing(t *testing.T) {
 
 func TestStartupFailureShowsInFooterAndDoesNotStopTUI(t *testing.T) {
 	homePath := newTestHome(t)
+	writeStartupCoordinator(t, homePath)
+	writeStartupSupervisor(t, homePath, int64(os.Getpid()), currentProcessStart(t))
 	server := newStartupHerdr(t)
-	server.failMethod = "pane.get"
+	server.paneFailures = map[string]startupPaneFailure{
+		"w1:p9": {Code: "server_error", Message: "pane lookup unavailable"},
+	}
 	t.Setenv("HERDR_ENV", "1")
 	t.Setenv("HERDR_PANE_ID", "w1:p1")
 	var output strings.Builder
 	if err := RunHome(homePath, strings.NewReader("\x03\x03"), &output); err != nil {
 		t.Fatalf("RunHome(): %v", err)
 	}
-	if !strings.Contains(output.String(), "error:") || !strings.Contains(output.String(), "current pane") {
+	if !strings.Contains(output.String(), "error:") || !strings.Contains(output.String(), "coordinator pane") {
 		t.Fatalf("TUI output %q does not show the startup error", output.String())
 	}
 	if got := requestsFor(server.requests, "tab.create"); len(got) != 0 {
@@ -171,13 +184,101 @@ func TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing(t *testing.T) {
 	}
 }
 
+func TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord(t *testing.T) {
+	homePath := newTestHome(t)
+	writeStartupCoordinator(t, homePath)
+	server := newStartupHerdr(t)
+	server.paneFailures = map[string]startupPaneFailure{
+		"w1:p9": {Code: "pane_not_found", Message: "pane w1:p9 not found"},
+	}
+	t.Setenv("HERDR_ENV", "1")
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	var logOutput bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	var started bool
+	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+		started = true
+		return nil
+	}
+
+	if _, err := setupSessionWith(homePath, logger, starter); err != nil {
+		t.Fatalf("setupSessionWith(): %v", err)
+	}
+	if !started {
+		t.Fatal("coordinator did not start after its pane disappeared")
+	}
+	created := requestsFor(server.requests, "tab.create")
+	if len(created) != 2 || !strings.Contains(created[0].Params, `"label":"coordinator"`) {
+		t.Fatalf("tab.create requests = %#v; want new coordinator and supervisor tabs", created)
+	}
+	old := readStartupAgent(t, homePath, "coordinator-g1")
+	if old.Status != records.AgentStale {
+		t.Fatalf("old coordinator status = %q; want stale", old.Status)
+	}
+	if _, err := os.Stat(filepath.Join(homePath, ".hive", "state", "agents", "coordinator-g1.json")); err != nil {
+		t.Fatalf("old coordinator record was not kept: %v", err)
+	}
+	logText := logOutput.String()
+	if !strings.Contains(logText, `"pane_id":"w1:p9"`) || !strings.Contains(logText, `"outcome":"gone"`) {
+		t.Fatalf("pane check log = %s; want pane ID and gone outcome", logText)
+	}
+}
+
+func TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails(t *testing.T) {
+	homePath := newTestHome(t)
+	writeStartupCoordinator(t, homePath)
+	server := newStartupHerdr(t)
+	server.paneFailures = map[string]startupPaneFailure{
+		"w1:p9": {Code: "server_error", Message: "pane lookup unavailable"},
+	}
+	t.Setenv("HERDR_ENV", "1")
+	t.Setenv("HERDR_PANE_ID", "w1:p1")
+	var logOutput bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logOutput, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	starterCalled := false
+	starter := func(context.Context, string, string, string, string, *slog.Logger) error {
+		starterCalled = true
+		return nil
+	}
+
+	_, err := setupSessionWith(homePath, logger, starter)
+	if err == nil || !strings.Contains(err.Error(), "pane lookup unavailable") {
+		t.Fatalf("setupSessionWith() error = %v; want pane lookup failure", err)
+	}
+	if starterCalled {
+		t.Fatal("coordinator starter ran after pane lookup failed")
+	}
+	for _, request := range requestsFor(server.requests, "tab.create") {
+		if strings.Contains(request.Params, `"label":"coordinator"`) {
+			t.Fatalf("created a coordinator tab after lookup failure: %s", request.Params)
+		}
+	}
+	logText := logOutput.String()
+	if !strings.Contains(logText, `"pane_id":"w1:p9"`) || !strings.Contains(logText, `"outcome":"failed"`) || !strings.Contains(logText, "pane lookup unavailable") {
+		t.Fatalf("pane check log = %s; want failed outcome, pane ID, and error", logText)
+	}
+}
+
+func readStartupAgent(t *testing.T, homePath, key string) records.Agent {
+	t.Helper()
+	registry, err := store.Open(homePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record records.Agent
+	if err := registry.ReadIn([]string{"agents"}, key, &record); err != nil {
+		t.Fatal(err)
+	}
+	return record
+}
+
 func writeStartupCoordinator(t *testing.T, homePath string) {
 	t.Helper()
 	registry, err := store.Open(homePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.WriteIn([]string{"agents"}, "coordinator-g1", records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive}); err != nil {
+	if err := registry.WriteIn([]string{"agents"}, "coordinator-g1", records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", Status: records.AgentLive}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -231,12 +332,18 @@ type startupRequest struct {
 }
 
 type startupHerdr struct {
-	t          *testing.T
-	listener   net.Listener
-	mu         sync.Mutex
-	requests   []startupRequest
-	tabCount   int
-	failMethod string
+	t            *testing.T
+	listener     net.Listener
+	mu           sync.Mutex
+	requests     []startupRequest
+	tabCount     int
+	failMethod   string
+	paneFailures map[string]startupPaneFailure
+}
+
+type startupPaneFailure struct {
+	Code    string
+	Message string
 }
 
 func newStartupHerdr(t *testing.T) *startupHerdr {
@@ -280,11 +387,25 @@ func (s *startupHerdr) handle(conn net.Conn) {
 	}
 	s.mu.Lock()
 	s.requests = append(s.requests, startupRequest{Method: request.Method, Params: string(request.Params)})
-	fail := request.Method == s.failMethod
+	failure := startupPaneFailure{}
+	if request.Method == s.failMethod {
+		failure = startupPaneFailure{Code: "pane_not_found", Message: "pane not found"}
+	}
+	if request.Method == "pane.get" {
+		var target struct {
+			PaneID string `json:"pane_id"`
+		}
+		if err := json.Unmarshal(request.Params, &target); err != nil {
+			s.t.Errorf("decode pane.get params: %v", err)
+		}
+		if paneFailure, ok := s.paneFailures[target.PaneID]; ok {
+			failure = paneFailure
+		}
+	}
 	result := s.reply(request.Method, request.Params)
 	s.mu.Unlock()
-	if fail {
-		_, _ = fmt.Fprintf(conn, `{"id":%q,"error":{"code":"pane_not_found","message":"pane not found"}}`+"\n", request.ID)
+	if failure.Code != "" {
+		_, _ = fmt.Fprintf(conn, `{"id":%q,"error":{"code":%q,"message":%q}}`+"\n", request.ID, failure.Code, failure.Message)
 		return
 	}
 	if result == "" {

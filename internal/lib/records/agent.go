@@ -38,6 +38,7 @@ type Agent struct {
 	UpdatedAt       string `json:"updated_at"`
 	LastError       string `json:"last_error,omitempty"`
 	Spawned         bool   `json:"spawned"`
+	StartedByHive   bool   `json:"started_by_hive,omitempty"`
 	ProcessPID      int64  `json:"process_pid,omitempty"`
 	ProcessName     string `json:"process_name,omitempty"`
 	ProcessStart    uint64 `json:"process_start,omitempty"`
