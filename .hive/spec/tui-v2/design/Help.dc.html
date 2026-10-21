@@ -39,13 +39,13 @@ function frame(t, active, region, hints) {
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
 }
 function agents(t) {
-  frame(t, 0, 'graph', '←↑↓→ move · tab region · enter peek · a attach · r restart · t task · h hide stopped · ? help');
+  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help');
   box(t, 0, 3, 120, 36, 'accent', 'project agents', 'accent');
   box(t, 28, 5, 64, 16, 'border', 'hive', 'dim');
-  function card(x, y, name, sub) { box(t, x, y, 26, 4, 'border'); put(t, x + 2, y + 1, '● ' + name, 'fg'); put(t, x + 2, y + 2, sub, 'dim'); }
-  card(47, 7, 'manager-hive', 'claude · idle · 4m');
-  card(33, 14, 't4-worker-1', 'pi · stopped');
-  card(63, 14, 't4-verifier-1', 'pi · stopped');
+  function card(x, y, name, sub) { box(t, x, y, 24, 4, 'border'); put(t, x + 2, y + 1, name, 'fg'); put(t, x + 2, y + 2, sub, 'dim'); }
+  card(48, 7, '◐ manager-hive', 'claude · idle · 4m');
+  card(34, 14, '○ t4-worker-1', 'pi · stopped');
+  card(64, 14, '○ t4-verifier-1', 'pi · stopped');
 }
 function help(t) {
   agents(t);
@@ -56,15 +56,15 @@ function help(t) {
   put(t, bx + 3, by + 2, 'GLOBAL · same on every screen', 'accent', 1);
   put(t, bx + 44, by + 2, 'ACTIONS · one meaning each', 'accent', 1);
   var g = [['1–6', 'switch screen'], ['tab', 'next region'], ['[ ]', 'previous / next view'], ['↑↓ j k', 'move'], ['←→', 'move on the graph'], ['pgup pgdn', 'page'], ['g G', 'top / end'], ['enter', 'open / details'], ['esc', 'back / close'], ['/', 'filter bar'], ['?', 'this help'], ['R', 'refresh now'], ['ctrl+c ×2', 'quit']];
-  var a = [['a', 'attach to pane'], ['p', 'peek pane'], ['r', 'restart agent'], ['h', 'hide stopped agents'], ['t', 'open task'], ['b', 'task brief'], ['v', 'VERIFIED.md'], ['d', 'dependency graph'], ['o', 'goal design'], ['s', 'stops only'], ['f', 'follow logs'], ['< >', 'previous / next day']];
+  var a = [['a', 'attach to pane'], ['p', 'peek pane'], ['r', 'restart · Health › Agents'], ['h', 'hide stopped agents'], ['t', 'open task'], ['b', 'task brief'], ['v', 'VERIFIED.md'], ['d', 'dependency graph'], ['o', 'goal design'], ['s', 'stops only'], ['f', 'follow logs'], ['< >', 'previous / next day']];
   g.forEach(function (p, i) { put(t, bx + 3, by + 4 + i, fit(p[0], 11), 'accent', 1); put(t, bx + 14, by + 4 + i, p[1], 'fg'); });
   a.forEach(function (p, i) { put(t, bx + 44, by + 4 + i, fit(p[0], 6), 'accent', 1); put(t, bx + 50, by + 4 + i, p[1], 'fg'); });
   put(t, bx + 3, by + 19, 'FILTER FIELDS', 'accent', 1);
   put(t, bx + 3, by + 20, 'level:  comp:  proj:  agent:  task:  req:  text', 'fg');
   put(t, bx + 3, by + 21, 'example  / level:warn agent:manager-hive restart', 'dim');
   put(t, bx + 3, by + 23, 'CHAT', 'accent', 1);
-  put(t, bx + 3, by + 24, 'letters type into the input · esc leaves the input · 1–6 work again', 'dim');
-  put(t, bx + 3, by + 26, 'r restart asks to confirm only when the agent is live', 'dim');
+  put(t, bx + 3, by + 24, 'i or enter types in chat · esc leaves the input · 1–6 work again', 'dim');
+  put(t, bx + 3, by + 26, 'r restart: coordinator or supervisor, asks first only when live', 'dim');
   var tag = ' [help] ';
   put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, '↑↓ scroll · ? or esc close', 'dim');

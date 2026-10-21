@@ -39,13 +39,13 @@ function frame(t, active, region, hints) {
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
 }
 function agents(t, selected) {
-  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · r restart · t task · h hide stopped · ? help');
+  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help');
   box(t, 0, 3, 120, 36, 'accent', 'project agents', 'accent');
   box(t, 28, 5, 64, 16, 'border', 'hive · g1-tui-restart · done', 'dim');
-  function card(x, y, dot, dk, name, sub, sel) { box(t, x, y, 26, 4, sel ? 'accent' : 'border'); put(t, x + 2, y + 1, dot, dk); put(t, x + 4, y + 1, fit(name, 20), sel ? 'accent' : (dk === 'dim' ? 'dim' : 'fg'), sel ? 1 : 0); put(t, x + 2, y + 2, fit(sub, 22), 'dim'); }
-  card(47, 7, '◐', 'accent', 'manager-hive', 'claude · idle · nudged 4m', selected === 'manager');
-  card(33, 14, '○', 'dim', 't4-worker-1', 'pi · stopped · task 4', false);
-  card(63, 14, '○', 'dim', 't4-verifier-1', 'pi · stopped · pass', false);
+  function card(x, y, dot, dk, name, sub, sel) { box(t, x, y, 24, 4, sel ? 'accent' : 'border'); put(t, x + 2, y + 1, dot, dk); put(t, x + 4, y + 1, fit(name, 18), sel ? 'accent' : (dk === 'dim' ? 'dim' : 'fg'), sel ? 1 : 0); put(t, x + 2, y + 2, fit(sub, 20), 'dim'); }
+  card(48, 7, '◐', 'accent', 'manager-hive', 'claude · idle · nudged 4m', selected === 'manager');
+  card(34, 14, '○', 'dim', 't4-worker-1', 'pi · stopped · task 4', false);
+  card(64, 14, '○', 'dim', 't4-verifier-1', 'pi · stopped · pass', false);
   put(t, 60, 10, '┬', selected === 'manager' ? 'accent' : 'border');
   put(t, 60, 11, '│', 'border');
   put(t, 46, 12, '╭' + rep('─', 13) + '┴' + rep('─', 15) + '╮', 'border');

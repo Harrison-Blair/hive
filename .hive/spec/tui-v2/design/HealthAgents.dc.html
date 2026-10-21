@@ -44,17 +44,17 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 4, 'list', '↑↓ move · tab region · [ ] view · r restart · a attach · p peek · h hide stopped · R refresh · ? help');
+  frame(t, 4, 'restart', 'y restart · any other key cancels');
   subtabs(t, 3, ['Home', 'Agents'], 1);
-  box(t, 0, 4, 52, 35, 'accent', 'agents · 5 · h hides 2 stopped', 'accent');
-  put(t, 2, 5, fit('AGENT', 22) + fit('ROLE', 12) + 'STATE', 'dim');
-  var list = [['coordinator-g2', 'coordinator', 'working', 'working'], ['supervisor-g4', 'supervisor', 'live', 'working'], ['manager-hive', 'manager', 'idle', 'accent'], ['cp5-worker-01', 'worker', 'unresolved', 'accent'], ['t4-worker-1', 'worker', 'stopped', 'dim']];
+  box(t, 0, 4, 52, 35, 'border', 'agents · 5 · h hides 2 stopped', 'accent');
+  put(t, 4, 5, fit('AGENT', 22) + fit('ROLE', 12) + 'STATE', 'dim');
+  var list = [['coordinator-g2', 'coordinator', 'working', 'working'], ['supervisor-g4', 'supervisor', 'live', 'working'], ['manager-hive', 'manager', 'idle', 'idle'], ['cp5-worker-01', 'worker', 'unresolved', 'accent'], ['t4-worker-1', 'worker', 'stopped', 'dim']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
     put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
     put(t, 4, y, fit(r[0], 22), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 26, y, fit(r[1], 12), 'dim');
-    put(t, 38, y, '●', r[3]); put(t, 40, y, fit(r[2], 11), r[3] === 'dim' ? 'dim' : 'fg');
+    put(t, 38, y, r[3] === 'idle' ? '◐' : (r[3] === 'dim' ? '○' : '●'), r[3] === 'idle' ? 'accent' : r[3]); put(t, 40, y, fit(r[2], 11), r[3] === 'dim' ? 'dim' : 'fg');
   });
   box(t, 52, 4, 68, 35, 'border', 'supervisor-g4', 'accent');
   var kv = [['role', 'supervisor'], ['state', 'live'], ['pid', '1620686'], ['pane', 'w58:p5 · tab supervisor'], ['binary', 'current · ~/go/bin/hive'], ['started', 'by bare hive']];

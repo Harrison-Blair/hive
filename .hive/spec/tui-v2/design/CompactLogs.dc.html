@@ -45,7 +45,7 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 5, 'json', '↑↓ scroll · esc back to events · f follow · ?');
+  frame(t, 5, 'json', '↑↓ scroll · esc back to events · f follow');
   box(t, 0, 3, 80, 3, 'border', 'filter', 'accent');
   put(t, 2, 4, '/', 'accent', 1); put(t, 4, 4, 'level:', 'dim'); put(t, 10, 4, 'debug', 'fg'); put(t, 16, 4, 'agent:', 'dim'); put(t, 22, 4, 'manager-hive', 'fg');
   put(t, 58, 4, '<', 'accent', 1); put(t, 60, 4, '2026-10-21', 'fg'); put(t, 71, 4, '>', 'accent', 1);

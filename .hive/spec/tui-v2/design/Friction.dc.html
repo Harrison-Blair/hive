@@ -47,7 +47,7 @@ function screen(t) {
   frame(t, 3, 'list', '↑↓ move · tab region · [ ] view · enter open · / filter · g/G top/end · ? help');
   subtabs(t, 3, ['Open', 'Resolved'], 0);
   box(t, 0, 4, 52, 35, 'accent', 'open · 15', 'accent');
-  put(t, 2, 5, fit('ENTRY', 36) + 'OPENED', 'dim');
+  put(t, 4, 5, fit('ENTRY', 34) + 'OPENED', 'dim');
   var list = [['agent-send-flag-means-target', '10-21'], ['agent-can-send-user-chat', '10-20'], ['completed-task-cannot-reopen', '10-20'], ['local-gate-misses-ci-tidy', '10-20'], ['scratch-hive-starts-real-agents', '10-20'], ['ste-baseline-row-conflicts', '10-20'], ['verify-fail-lost-on-pass', '10-20'], ['worker-has-no-inbox', '10-20'], ['bypass-still-prompts-dangerous-rm', '10-19'], ['no-agent-dashboard', '10-19'], ['no-reviewer-role', '10-19'], ['nudge-interrupts-user-typing', '10-19'], ['old-features-lack-readme', '10-19'], ['verified-md-path-unspecified', '10-19'], ['worker-gate-adds-golangci-lint', '10-19']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 4;
