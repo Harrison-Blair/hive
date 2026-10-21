@@ -1,0 +1,202 @@
+hive-grid 1 120 67
+t|HIVE TUI COMPONENTS  Lip Gloss + Bubbles · each block below is one reusable Go component                                
+k|aaaaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffff
+b|111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Palette  terminal default background and foreground · lipgloss.Color                                                    
+k|aaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|██ fg        ██ border    ██ dim       ██ accent    ██ working   ██ done      ██ info      ██ user      ██ code         
+k|fffffffffffffrrfffffffffffddfffffffffffaafffffffffffwwfffffffffffoofffffffffffiifffffffffffuufffffffffffccffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|   default      #3d3a33      #a39d90      #f5b942      #6ee69a      #7ccf6a      #6fb7ff      #e9cf9b new  #9fd0ff new  
+k|fffdddddddffffffdddddddffffffdddddddffffffdddddddffffffdddddddffffffdddddddffffffdddddddffffffdddddddddddffdddddddddddff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Header  bold · full width · left: home · right: coordinator, supervisor, needs you, clock                               
+k|aaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffff
+b|111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|TabBar  keys 1–6 · active: accent bold + ━ underline · others dim · rule in border color                                
+k|aaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffff
+b|111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|faaaaaaaaaafddddddddfddddddddfddddddddddddfddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|011111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|SubTabs  [ ] switch · active in brackets, accent bold · hint at right                                                   
+k|aaaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffff
+b|111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Goals    Queue   [Tasks]                                                                            [ ] switch view   
+k|fddddddddddddddddddaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|000000000000000000011111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Panel  RoundedBorder · Padding(0,1) · title in top border · focus = accent border · tab moves focus                     
+k|aaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffff
+b|111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ unfocused ──────────────────────────╮    ╭─ focused ────────────────────────────╮                                    
+k|rraaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffff
+b|001111111111100000000000000000000000000000000011111111100000000000000000000000000000000000000000000000000000000000000000
+t|│                                      │    │                                      │                                    
+k|rffffffffffffffffffffffffffffffffffffffrffffaffffffffffffffffffffffffffffffffffffffaffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ border #3d3a33                       │    │ border #f5b942 · takes the keys      │                                    
+k|rfddddddddddddddfffffffffffffffffffffffrffffafdddddddddddddddddddddddddddddddffffffaffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                      │    │                                      │                                    
+k|rffffffffffffffffffffffffffffffffffffffrffffaffffffffffffffffffffffffffffffffffffffaffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────╯    ╰──────────────────────────────────────╯                                    
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Viewport + ScrollMark  only regions scroll · ┃ thumb drawn on the right border · horizontal ━ on the bottom border      
+k|aaaaaaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffff
+b|111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ viewport ───────────────────────────────────────────────╮    ╭─ horizontal ─────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffrraaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111000000000000000000000000000000000000000000000000000000111111111111000000000000000000000000000000000000000000
+t|│ line 41 of 120                                           │    │                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffaffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ line 42 of 120                                           ┃    │ projects 1–4 of 5 · ←→ at the edge                   │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffaffffrfddddddddddddddddddddddddddddddddddfffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ line 43 of 120                                           ┃    │                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffaffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ line 44 of 120                                           │    │                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffaffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ line 45 of 120                                           │    │                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffaffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────╯    ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|List  ▶ selected · fixed columns · truncates with …             Details  labels dim, 10 cols · sections accent          
+k|aaaaffdddddddddddddddddddddddddddddddddddddddddddddfffffffffffffaaaaaaaffdddddddddddddddddddddddddddddddddddddffffffffff
+b|111100000000000000000000000000000000000000000000000000000000000011111110000000000000000000000000000000000000000000000000
+t|╭─ tasks · 4 ──────────────────────────────────────────────╮    ╭─ 3-tui-restart ──────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffrraaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111100000000000000000000000000000000000000000000000000000111111111111111000000000000000000000000000000000000000
+t|│   ID                        STATUS    WAVE               │    │ status    landed                                     │
+k|afffddddddddddddddddddddddddddddddddddddddddfffffffffffffffaffffrfddddddddddoooooofffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   4-agents-equal-columns    landed    C                  │    │ goal      g1-tui-restart · wave B                    │
+k|afffffffffffffffffffffffffffffooooooffffdffffffffffffffffffaffffrfddddddddddfffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ 3-tui-restart             landed    B                  │    │ ACCEPTANCE                                           │
+k|afaaaaaaaaaaaaaaaaaaaaaaaaaaafooooooffffdffffffffffffffffffaffffrfaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffr
+b|001111111111111111111111111110000000000000000000000000000000000000111111111100000000000000000000000000000000000000000000
+t|│   2-stale-coordinator-star… landed    A                  │    │ ✓ AC1 r restarts, confirms only when live            │
+k|afffffffffffffffffffffffffffffooooooffffdffffffffffffffffffaffffrfoffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────╯    ╰──────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|FilterBar  / opens · typed fields level: comp: proj: agent: task: req: · fixed above the list                           
+k|aaaaaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffff
+b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ filter ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+k|rraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ / level:warn agent:manager-hive █                                                                                    │
+k|rfafddddddfffffddddddfffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Input + Chat text  fixed at the bottom · user text in user color · agent replies render markdown                        
+k|aaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffff
+b|111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|001111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > restart the supervisor please█                                                                                     │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Card  graph node · 24×4 · dot = state · one column per project, all the same width                                      
+k|aaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffff
+b|111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭──────────────────────╮  ╭──────────────────────╮  ╭──────────────────────╮                                            
+k|aaaaaaaaaaaaaaaaaaaaaaaaffrrrrrrrrrrrrrrrrrrrrrrrrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ● manager-hive       │  │ ◐ t3-verifier-1      │  │ ○ t4-worker-1        │    selected = accent border                
+k|afwfaaaaaaaaaaaafffffffaffrfaffffffffffffffffffffrffrfdfdddddddddddffffffffrffffddddddddddddddddddddddddffffffffffffffff
+b|000011111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ claude · working     │  │ pi · idle · 6m       │  │ pi · stopped         │    ● working ◐ idle ○ stopped              
+k|afddddddddddddddddfffffaffrfddddddddddddddfffffffrffrfddddddddddddfffffffffrffffddddddddddddddddddddddddddffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────╯  ╰──────────────────────╯  ╰──────────────────────╯                                            
+k|aaaaaaaaaaaaaaaaaaaaaaaaffrrrrrrrrrrrrrrrrrrrrrrrrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Popup  centered over a dimmed screen · enter opens · esc closes · same Panel + Details inside                           
+k|aaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffff
+b|111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ manager-hive · esc closes ──────────────╮                                                                            
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|001111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                          │    below 120 columns, every details panel                                  
+k|affffffffffffffffffffffffffffffffffffffffffaffffddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ a attach · p peek · t task               │    opens as a full-width overlay instead                                   
+k|affffffffffffffffffffffffffffffffffffffffffaffffdddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                          │                                                                            
+k|affffffffffffffffffffffffffffffffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────╯                                                                            
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|KeyHints  footer · [region] first in accent · hints dim · always the last row                                           
+k|aaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffff
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [graph] ←↑↓→ move · enter details · a attach · p peek · t task · ? help                                                
+k|aaaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffff
+b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Notice  below 80×24 the whole screen shows only the too-small notice                                                    
+k|aaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
