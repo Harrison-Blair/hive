@@ -1172,9 +1172,6 @@ func (s agentsState) graphPodAtWidth(group agentGroup, nodes map[string]agentNod
 		second := s.graphNodeSubLabel(node)
 		cardWidth = max(cardWidth, lipgloss.Width(first)+4, lipgloss.Width(second)+4)
 	}
-	if cardWidth%2 != 0 {
-		cardWidth++
-	}
 	title := "≡ " + group.title
 	hasDelegationStem := len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager")
 	width := max(24, lipgloss.Width(title)+6, cardWidth+4, 2*(lipgloss.Width("≡ "+group.id)+6))

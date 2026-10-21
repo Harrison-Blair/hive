@@ -169,7 +169,8 @@ func countAgentRows(lines []string, name string) int {
 			end := graphIndex + len(name)
 			prefix := plain[:graphIndex]
 			cardBorder := strings.LastIndex(prefix, "│")
-			if (end == len(plain) || strings.ContainsRune(" ·│", rune(plain[end]))) && cardBorder >= 0 &&
+			if strings.Count(plain, "│") >= 4 &&
+				(end == len(plain) || strings.ContainsRune(" ·│", rune(plain[end]))) && cardBorder >= 0 &&
 				hasAgentMarkAnywhere(prefix[cardBorder+len("│"):]) {
 				count++
 				continue
@@ -784,8 +785,25 @@ func TestAgentsGraphColumnsHaveEqualWidth(t *testing.T) {
 		}
 		cardCenter := 2*position.col + position.width - 1
 		podCenter := 2*bound.start + bound.width - 1
-		if cardCenter != podCenter {
-			t.Errorf("pod %d card center = %d, want pod center %d", index, cardCenter, podCenter)
+		if absInt(cardCenter-podCenter) > 1 {
+			t.Errorf("pod %d card center = %d, want pod center %d or its nearest cell", index, cardCenter, podCenter)
+		}
+	}
+}
+
+func TestAgentsGraphCardsKeepTheirWidths(t *testing.T) {
+	m := agentsBoardModel(t)
+	for index := range m.agents.data.nodes {
+		if m.agents.data.nodes[index].record.Role == "supervisor" {
+			m.agents.data.nodes[index].pid = "551386"
+		}
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	_ = m.currentScreen().View(200, 57)
+	_, positions := m.agents.graphLayout()
+	for key, want := range map[string]int{"coordinator": 19, "manager-alpha": 21, "manager-beta": 20} {
+		if got := positions[key].width; got != want {
+			t.Errorf("%s card width = %d, want original width %d", key, got, want)
 		}
 	}
 }

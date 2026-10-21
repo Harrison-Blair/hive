@@ -38,6 +38,7 @@ least two groups of different widths.
 | Path | Purpose of the edit |
 | --- | --- |
 | `internal/tui/agents.go` and its tests | AC1, AC2. |
+| `internal/tui/testdata/agents-board/graph-120x40.golden`, `graph-200x57.golden` | AC1. Only the column widths that AC1 changes. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0. |
 | `.hive/spec/hive-tui/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
@@ -117,3 +118,4 @@ Other changes to the Agents screen. `main`.
 
 - 2026-10-21: V4 uses `git diff dev...HEAD`, because `dev` gets friction
   commits after the branch starts.
+- 2026-10-21: the manager added the two graph goldens to the source table.
