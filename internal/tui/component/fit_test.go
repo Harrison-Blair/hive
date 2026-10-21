@@ -119,8 +119,13 @@ func TestFitWave4(t *testing.T) {
 		}
 	}
 	checkBorder(t, "Card", Card{Name: long, Sub: long, State: "idle", Selected: true}.View(), CardWidth, CardHeight)
+	longNames := []ChatMessage{
+		{Time: "09:00", Name: long, Kind: ChatEvent, Text: long},
+		{Time: "09:00", Name: long, Kind: ChatAgent, Text: "ok"},
+		{Time: "09:00", Name: long, Kind: ChatUser, Text: "ok"},
+	}
 	for width := 30; width <= maxFitWidth; width++ {
-		lines, err := ChatLines(append(chatSample, ChatMessage{Time: "09:00", Name: long, Kind: ChatEvent, Text: long}), width)
+		lines, err := ChatLines(append(chatSample, longNames...), width)
 		if err != nil {
 			t.Fatal(err)
 		}

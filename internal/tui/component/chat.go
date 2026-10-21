@@ -89,7 +89,8 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 	}
 
 	if !wide {
-		head := dimStyle.Render(m.Time) + " " + nameStyle.Render(m.Name)
+		name := ansi.Truncate(m.Name, max(wrap-lipgloss.Width(m.Time)-1, 0), "…")
+		head := dimStyle.Render(m.Time) + " " + nameStyle.Render(name)
 		return append([]string{head}, body...), nil
 	}
 	gutter := dimStyle.Render(m.Time) + "  " + nameStyle.Render(fitCell(m.Name, chatNameWidth)) + " "
