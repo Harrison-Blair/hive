@@ -29,17 +29,17 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              ┃
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  Choice  │ Answer                       │ Pros            │ Cons             ┃
-k|rfaaaaaaaaarffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffffffd
-b|00111111111011111111111111111111111111111101111111111111111101111111111111110000
-t|│ ─────────┼──────────────────────────────┼─────────────────┼───────────────   ┃
-k|rfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffd
+t|│  Choice  │ Answer                           │ Pros            │ Cons         ┃
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  A (REC) │ Record that bare hive start… │ No tab pile-up  │ Field change     ┃
-k|rffffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffffffd
+t|│ ─────────┼──────────────────────────────────┼─────────────────┼───────────── ┃
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfd
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  B       │ Leave the old tab            │ Smallest change │ Tabs pile up     ┃
-k|rffffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffffffd
+t|│  A (REC) │ Record that bare hive started it │ No tab pile-up  │ Field change ┃
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│  B       │ Leave the old tab                │ Smallest change │ Tabs pile up ┃
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
@@ -50,11 +50,11 @@ b|000011111111111100000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ 14:24 you  1A, 2A, 3B                                                        │
-k|rfdddddfuuuffuuuuuuuuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│ 14:24 you                                                                    │
+k|rfdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│ 1A, 2A, 3B                                                                   │
+k|rfuuuuuuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
