@@ -22,7 +22,7 @@ next task writes the other fixtures.
 - `/home/penguin/source/hive/.hive/spec/tui-v2/design/TooSmall.dc.html`
 
 This task draws the current screens with fixture data. It does not change the
-look of a screen to match a board. The visual check confirms that demo mode
+look of a screen to match a board. The visual check checks that demo mode
 and normal mode draw the same screen from the same data. A difference from a
 board that the current screens also show is not a fail of this task. Record
 it.
