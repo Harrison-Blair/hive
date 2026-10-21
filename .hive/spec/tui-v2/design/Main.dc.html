@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive Agents screen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 728px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="40"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":728}}'>
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
+function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
+function frame(t, active, region, hints) {
+  var w = t.w;
+  put(t, 0, 0, ' hive  ~/source/hive', 'fg', 1);
+  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 12, 0, '●', 'working', 1); put(t, rx + 35, 0, '●', 'working', 1);
+  put(t, 0, 2, rep('─', w), 'border');
+  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
+  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === active) { put(t, x, 1, lab, 'accent', 1); put(t, x, 2, rep('━', lab.length), 'accent'); } else put(t, x, 1, lab, 'dim'); x += lab.length + 1; });
+  var tag = ' [' + region + '] ';
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
+}
+function agents(t, selected) {
+  frame(t, 0, 'graph', '←↑↓→ move · enter details · a attach · p peek · r restart · t task · h hide stopped · ? help');
+  box(t, 0, 3, 120, 36, 'accent', 'project agents', 'accent');
+  box(t, 28, 5, 64, 16, 'border', 'hive · g1-tui-restart · done', 'dim');
+  function card(x, y, dot, dk, name, sub, sel) { box(t, x, y, 26, 4, sel ? 'accent' : 'border'); put(t, x + 2, y + 1, dot, dk); put(t, x + 4, y + 1, fit(name, 20), sel ? 'accent' : (dk === 'dim' ? 'dim' : 'fg'), sel ? 1 : 0); put(t, x + 2, y + 2, fit(sub, 22), 'dim'); }
+  card(47, 7, '◐', 'accent', 'manager-hive', 'claude · idle · nudged 4m', selected === 'manager');
+  card(33, 14, '○', 'dim', 't4-worker-1', 'pi · stopped · task 4', false);
+  card(63, 14, '○', 'dim', 't4-verifier-1', 'pi · stopped · pass', false);
+  put(t, 60, 10, '┬', selected === 'manager' ? 'accent' : 'border');
+  put(t, 60, 11, '│', 'border');
+  put(t, 46, 12, '╭' + rep('─', 13) + '┴' + rep('─', 15) + '╮', 'border');
+  put(t, 46, 13, '│', 'border'); put(t, 76, 13, '│', 'border');
+  put(t, 46, 14, '┴', 'border'); put(t, 76, 14, '┴', 'border');
+  put(t, 30, 19, '2 stopped shown · h hides them', 'dim');
+  put(t, 2, 37, '── spawn   ● working   ◐ idle   ○ stopped   one column per project, all the same width', 'dim');
+}
+class Component extends DCLogic {
+  renderVals() {
+    var t = T(120, 40);
+    agents(t, 'manager');
+    return { rows: rows(t) };
+  }
+}
+</script>
+</body>
+</html>
