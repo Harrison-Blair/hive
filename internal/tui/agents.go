@@ -903,8 +903,13 @@ func (s agentsState) graphLayout() ([]string, map[string]graphPosition) {
 	nodes := s.nodeMap()
 	rowCount := 0
 	width := 0
+	columnWidth := 0
 	for _, group := range s.data.groups {
-		podLines, nodeRows, podWidth, cardWidth := s.graphPod(group, nodes)
+		_, _, podWidth, _ := s.graphPod(group, nodes)
+		columnWidth = max(columnWidth, podWidth)
+	}
+	for _, group := range s.data.groups {
+		podLines, nodeRows, podWidth, cardWidth := s.graphPodAtWidth(group, nodes, columnWidth)
 		pods = append(pods, pod{lines: podLines, positions: nodeRows, width: podWidth, cardWidth: cardWidth, column: width})
 		rowCount = max(rowCount, len(podLines))
 		width += podWidth + 3
@@ -1060,10 +1065,15 @@ func (s agentsState) graphColorStyles(lines []string, positions map[string]graph
 	if len(lines) > 0 && strings.Contains(ansi.Strip(lines[0]), "┌") {
 		busRows = 2
 	}
-	column := 0
+	columnWidth := 0
 	nodes := s.nodeMap()
 	for _, group := range s.data.groups {
-		pod, _, width, _ := s.graphPod(group, nodes)
+		_, _, width, _ := s.graphPod(group, nodes)
+		columnWidth = max(columnWidth, width)
+	}
+	column := 0
+	for _, group := range s.data.groups {
+		pod, _, width, _ := s.graphPodAtWidth(group, nodes, columnWidth)
 		for row, line := range pod {
 			graphRow := busRows + row
 			if row == 0 || row == len(pod)-1 {
@@ -1141,6 +1151,10 @@ func colorGraphLine(line string, styles []string) string {
 }
 
 func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]string, map[string]int, int, int) {
+	return s.graphPodAtWidth(group, nodes, 0)
+}
+
+func (s agentsState) graphPodAtWidth(group agentGroup, nodes map[string]agentNode, columnWidth int) ([]string, map[string]int, int, int) {
 	nodeList := make([]agentNode, 0, len(group.keys))
 	var appendNodes func(agentNode)
 	appendNodes = func(node agentNode) {
@@ -1158,6 +1172,9 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 		second := s.graphNodeSubLabel(node)
 		cardWidth = max(cardWidth, lipgloss.Width(first)+4, lipgloss.Width(second)+4)
 	}
+	if cardWidth%2 != 0 {
+		cardWidth++
+	}
 	title := "≡ " + group.title
 	hasDelegationStem := len(nodeList) != 0 && (nodeList[0].record.Role == "coordinator" || nodeList[0].record.Role == "manager")
 	width := max(24, lipgloss.Width(title)+6, cardWidth+4, 2*(lipgloss.Width("≡ "+group.id)+6))
@@ -1167,7 +1184,9 @@ func (s agentsState) graphPod(group agentGroup, nodes map[string]agentNode) ([]s
 	if s.graphViewWidth > 0 && width > s.graphViewWidth {
 		width = max(s.graphViewWidth, cardWidth+4)
 	}
-	if (width-cardWidth)%2 != 0 {
+	if columnWidth > 0 {
+		width = max(width, columnWidth)
+	} else if (width-cardWidth)%2 != 0 {
 		width++
 	}
 	lines := []string{
