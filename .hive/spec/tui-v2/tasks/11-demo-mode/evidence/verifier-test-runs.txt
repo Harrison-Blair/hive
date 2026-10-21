@@ -1,0 +1,1538 @@
+
+## base-red.txt
+=== RUN   TestDemoActionsChangeNoFileAndStartNoProcess
+    root_demo_test.go:52: status = 2; want 0; output "hive: unknown flag: --demo\n"
+--- FAIL: TestDemoActionsChangeNoFileAndStartNoProcess (0.00s)
+=== RUN   TestDemoFlagsAreHiddenFromHelp
+--- PASS: TestDemoFlagsAreHiddenFromHelp (0.00s)
+=== RUN   TestDemoBadSizeNamesTheValue
+=== RUN   TestDemoBadSizeNamesTheValue/12x
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "12x"
+=== RUN   TestDemoBadSizeNamesTheValue/x40
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "x40"
+=== RUN   TestDemoBadSizeNamesTheValue/120x40x2
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "120x40x2"
+=== RUN   TestDemoBadSizeNamesTheValue/0x40
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "0x40"
+=== RUN   TestDemoBadSizeNamesTheValue/abcxdef
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "abcxdef"
+=== RUN   TestDemoBadSizeNamesTheValue/120*40
+    root_demo_test.go:140: stderr = "hive: unknown flag: --demo\n"; want the value "120*40"
+--- FAIL: TestDemoBadSizeNamesTheValue (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/12x (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/x40 (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/120x40x2 (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/0x40 (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/abcxdef (0.00s)
+    --- FAIL: TestDemoBadSizeNamesTheValue/120*40 (0.00s)
+=== RUN   TestSizeWithoutDemoFails
+    root_demo_test.go:151: status = 2, stderr "hive: unknown flag: --size\n"; want --size needs --demo
+--- FAIL: TestSizeWithoutDemoFails (0.00s)
+=== RUN   TestDemoUnknownFixtureFieldNamesTheField
+    root_demo_test.go:164: status = 2, stderr "hive: unknown flag: --demo\n"; want an error that names "colour"
+--- FAIL: TestDemoUnknownFixtureFieldNamesTheField (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/cmd	0.007s
+FAIL
+# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
+internal/tui/demo_test.go:20:58: undefined: demoSize
+internal/tui/demo_test.go:22:17: undefined: loadDemoFixture
+internal/tui/demo_test.go:26:7: undefined: newDemoModel
+internal/tui/demo_test.go:26:34: undefined: demoState
+internal/tui/demo_test.go:49:14: undefined: parseDemoFixture
+internal/tui/demo_test.go:78:17: undefined: parseDemoFixture
+internal/tui/demo_test.go:83:15: undefined: parseDemoFixture
+internal/tui/demo_test.go:89:24: undefined: ParseDemoSize
+internal/tui/demo_test.go:94:19: undefined: ParseDemoSize
+internal/tui/demo_test.go:245:110: undefined: demoFixture
+internal/tui/demo_test.go:94:19: too many errors
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+FAIL
+
+## help-red.txt
+=== RUN   TestDemoFlagsAreHiddenFromHelp
+    root_demo_test.go:122: help lists --demo:
+        hive
+        
+        Usage:
+          hive [flags]
+          hive [command]
+        
+        Available Commands:
+          agent       manage agent sessions
+          chat        send, reply to, and read chat messages
+          completion  Generate the autocompletion script for the specified shell
+          doctor      Check the environment
+          goal        manage project goals
+          handoff     manage a role handoff
+          help        Help about any command
+          inbox       read and send inbox records
+          init        write the global hive home config
+          land        deliver a verified task branch
+          logs        read the daily log files
+          memory      manage agent memory
+          project     manage registered projects
+          supervise   run the supervisor of this home
+          task        manage task records
+          version     Print the hive version
+          worktree    manage task worktrees
+        
+        Flags:
+              --demo string   open the TUI in demo mode from a fixture file
+          -h, --help          help for hive
+              --json          write JSON output
+              --no-startup    open the TUI and start no coordinator, no supervisor, and no tab
+        
+        Use "hive [command] --help" for more information about a command.
+--- FAIL: TestDemoFlagsAreHiddenFromHelp (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/cmd	0.004s
+FAIL
+
+## mutation-red.txt
+
+### unknown exit=1
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/top_level
+    demo_test.go:51: error = <nil>; want one that names "colour"
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/ui
+    demo_test.go:51: error = <nil>; want one that names "tab"
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/record
+    demo_test.go:51: error = <nil>; want one that names "nickname"
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/supervisor
+    demo_test.go:51: error = <nil>; want one that names "uptime"
+--- FAIL: TestDemoFixtureUnknownFieldNamesTheField (0.00s)
+    --- FAIL: TestDemoFixtureUnknownFieldNamesTheField/top_level (0.00s)
+    --- FAIL: TestDemoFixtureUnknownFieldNamesTheField/ui (0.00s)
+    --- FAIL: TestDemoFixtureUnknownFieldNamesTheField/record (0.00s)
+    --- FAIL: TestDemoFixtureUnknownFieldNamesTheField/supervisor (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.003s
+FAIL
+
+### bad-values exit=1
+=== RUN   TestDemoFixtureBadValuesFail
+=== RUN   TestDemoFixtureBadValuesFail/"ui.screen"
+    demo_test.go:79: error = <nil>; want one that names "ui.screen"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.view"
+    demo_test.go:79: error = <nil>; want one that names "ui.view"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.zone"
+    demo_test.go:79: error = <nil>; want one that names "clock.zone"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.time"
+    demo_test.go:79: error = <nil>; want one that names "clock.time"
+=== RUN   TestDemoFixtureBadValuesFail/"terminal"
+    demo_test.go:79: error = <nil>; want one that names "terminal"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.overlay"
+    demo_test.go:79: error = <nil>; want one that names "ui.overlay"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.prompt.kind"
+    demo_test.go:79: error = <nil>; want one that names "ui.prompt.kind"
+--- FAIL: TestDemoFixtureBadValuesFail (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"ui.screen" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"ui.view" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"clock.zone" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"clock.time" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"terminal" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"ui.overlay" (0.00s)
+    --- FAIL: TestDemoFixtureBadValuesFail/"ui.prompt.kind" (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.004s
+FAIL
+
+### parse-size exit=1
+=== RUN   TestParseDemoSize
+    demo_test.go:91: ParseDemoSize(120x40) = 121, 40, <nil>
+--- FAIL: TestParseDemoSize (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.003s
+FAIL
+
+### clock exit=1
+=== RUN   TestDemoMainShowsFixtureDataAtTheFixtureClock
+    demo_test.go:108: view does not contain "14:22":
+        ⬢ hive  1 project  3 agents  1 working  2 idle  supervisor ●  needs you 0                                          19:12
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ AGENTS                     ││ ▶ [ TREE ]  GRAPH  TABLE                                                               │
+        │ ▾ home                     ││ ▾ home                                                                                 │
+        │   ● coordinator            ││   ├─ ● coordinator · working · 8h                                                      │
+        │   ● supervisor             ││   └─ ● supervisor · working · 9h                                                       │
+        │ ▾ hive · 0 working         ││ ▾ hive                                                                                 │
+        │   ▶ ○ manager-hive         ││   └─ ▶ ○ manager-hive · idle · 8h                                                      │
+        │     ✓ t4-worker-1          ││      ├─ ✓ t4-worker-1 · stopped · 9h · 4 landed · ede94f3                              │
+        │     × t4-verifier-1        ││      └─ × t4-verifier-1 · stopped · 8h                                                 │
+        │                            ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+        │                            ││ │ manager-hive  parent coordinator  model claude-opus-5-5  task ?  ?  pane w58:p6    │ │
+        │                            ││ │ next ?                                                                             │ │
+        │                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │ ────────────────────────── ││                                                                                        │
+        │ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                        │
+        │ 5 TASKS · 6 FRICTION       ││                                                                                        │
+        │ 7 HEALTH · 8 LOGS          ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        ←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat 
+--- FAIL: TestDemoMainShowsFixtureDataAtTheFixtureClock (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.005s
+FAIL
+
+### size-large exit=1
+=== RUN   TestDemoSizeDrawsAtTheSizeInALargerPane
+    demo_test.go:126: view has 50 lines; want 40
+--- FAIL: TestDemoSizeDrawsAtTheSizeInALargerPane (0.01s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.012s
+FAIL
+
+### size-small exit=1
+=== RUN   TestDemoSizeShowsTooSmallInASmallerPane
+    demo_test.go:143: view does not contain "terminal too small":
+        ⬢ hive  1 project  3 agents  1 working  2 idle  supervisor ●  needs you 0                      14:22
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────╮
+        │ AGENTS                     ││ ▶ [ TREE ]  GRAPH  TABLE                                           │
+        │ ▾ home                     ││ ▾ home                                                             │
+        │   ● coordinator            ││   ├─ ● coordinator · working · 1m                                  │
+        │   ● supervisor             ││   └─ ● supervisor · working · 21m                                  │
+        │ ▾ hive · 0 working         ││ ▾ hive                                                             │
+        │   ▶ ○ manager-hive         ││   └─ ▶ ○ manager-hive · idle · 4m                                  │
+        │     ✓ t4-worker-1          ││      ├─ ✓ t4-worker-1 · stopped · 10m · 4 landed · ede94f3         │
+        │     × t4-verifier-1        ││      └─ × t4-verifier-1 · stopped · 6m                             │
+        │                            ││ ╭────────────────────────────────────────────────────────────────╮ │
+        │                            ││ │ manager-hive  parent coordinator  model claude-opus-5-5        │ │
+        │                            ││ │ task ?  ?  pane w58:p6  next ?                                 │ │
+        │                            ││ ╰────────────────────────────────────────────────────────────────╯ │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │                            ││                                                                    │
+        │ ────────────────────────── ││                                                                    │
+        │ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                    │
+        │ 5 TASKS · 6 FRICTION       ││                                                                    │
+        │ 7 HEALTH · 8 LOGS          ││                                                                    │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────╯
+                                                                                                            
+                                                                                                            
+        ←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supe…
+--- FAIL: TestDemoSizeShowsTooSmallInASmallerPane (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.009s
+FAIL
+
+### board exit=1
+=== RUN   TestDemoTooSmallMatchesItsBoardGrid
+    demo_test.go:175: too-small view differs from TooSmall.grid:
+        row 4 col 9: want '╭' accent normal, got ' ' fg normal
+        row 4 col 10: want '─' accent normal, got '╭' accent normal
+        row 4 col 11: want ' ' accent bold, got '─' accent normal
+        row 4 col 12: want 't' accent bold, got ' ' accent bold
+        row 4 col 13: want 'e' accent bold, got 't' accent bold
+        row 4 col 14: want 'r' accent bold, got 'e' accent bold
+        row 4 col 15: want 'm' accent bold, got 'r' accent bold
+        row 4 col 16: want 'i' accent bold, got 'm' accent bold
+        row 4 col 17: want 'n' accent bold, got 'i' accent bold
+        row 4 col 18: want 'a' accent bold, got 'n' accent bold
+        row 4 col 19: want 'l' accent bold, got 'a' accent bold
+        row 4 col 20: want ' ' accent bold, got 'l' accent bold
+        row 4 col 21: want 't' accent bold, got ' ' accent bold
+        row 4 col 22: want 'o' accent bold, got 't' accent bold
+        row 4 col 24: want ' ' accent bold, got 'o' accent bold
+        row 4 col 25: want 's' accent bold, got ' ' accent bold
+        row 4 col 26: want 'm' accent bold, got 's' accent bold
+        row 4 col 27: want 'a' accent bold, got 'm' accent bold
+        row 4 col 28: want 'l' accent bold, got 'a' accent bold
+        row 4 col 30: want ' ' accent bold, got 'l' accent bold
+        row 4 col 31: want '─' accent normal, got ' ' accent bold
+        row 4 col 50: want '╮' accent normal, got '─' accent normal
+        row 4 col 51: want ' ' fg normal, got '╮' accent normal
+        row 5 col 9: want '│' accent normal, got ' ' fg normal
+        row 5 col 10: want ' ' fg normal, got '│' accent normal
+        row 5 col 50: want '│' accent normal, got ' ' fg normal
+        row 5 col 51: want ' ' fg normal, got '│' accent normal
+        row 6 col 9: want '│' accent normal, got ' ' fg normal
+        row 6 col 10: want ' ' fg normal, got '│' accent normal
+        row 6 col 50: want '│' accent normal, got ' ' fg normal
+        row 6 col 51: want ' ' fg normal, got '│' accent normal
+        row 7 col 9: want '│' accent normal, got ' ' fg normal
+        row 7 col 10: want ' ' fg normal, got '│' accent normal
+        row 7 col 50: want '│' accent normal, got ' ' fg normal
+        row 7 col 51: want ' ' fg normal, got '│' accent normal
+        row 8 col 9: want '│' accent normal, got ' ' fg normal
+        row 8 col 10: want ' ' fg normal, got '│' accent normal
+        row 8 col 50: want '│' accent normal, got ' ' fg normal
+        row 8 col 51: want ' ' fg normal, got '│' accent normal
+        row 9 col 9: want '│' accent normal, got ' ' fg normal
+        row 9 col 10: want ' ' fg normal, got '│' accent normal
+        row 9 col 50: want '│' accent normal, got ' ' fg normal
+        row 9 col 51: want ' ' fg normal, got '│' accent normal
+        row 10 col 9: want '│' accent normal, got ' ' fg normal
+        row 10 col 10: want ' ' fg normal, got '│' accent normal
+        row 10 col 50: want '│' accent normal, got ' ' fg normal
+        row 10 col 51: want ' ' fg normal, got '│' accent normal
+        row 11 col 9: want '╰' accent normal, got ' ' fg normal
+        row 11 col 10: want '─' accent normal, got '╰' accent normal
+        row 11 col 50: want '╯' accent normal, got '─' accent normal
+        row 11 col 51: want ' ' fg normal, got '╯' accent normal
+--- FAIL: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.005s
+FAIL
+
+### notice exit=1
+=== RUN   TestDemoActionKeysShowTheNotice
+    demo_test.go:188: key "a": view does not show "demo mode: no action":
+        ⬢ hive  1 project  3 agents  1 working  2 idle  supervisor ●  needs you 0                                          14:22
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ AGENTS                     ││ ▶ [ TREE ]  GRAPH  TABLE                                                               │
+        │ ▾ home                     ││ ▾ home                                                                                 │
+        │   ● coordinator            ││   ├─ ● coordinator · working · 1m                                                      │
+        │   ● supervisor             ││   └─ ● supervisor · working · 21m                                                      │
+        │ ▾ hive · 0 working         ││ ▾ hive                                                                                 │
+        │   ▶ ○ manager-hive         ││   └─ ▶ ○ manager-hive · idle · 4m                                                      │
+        │     ✓ t4-worker-1          ││      ├─ ✓ t4-worker-1 · stopped · 10m · 4 landed · ede94f3                             │
+        │     × t4-verifier-1        ││      └─ × t4-verifier-1 · stopped · 6m                                                 │
+        │                            ││ ╭────────────────────────────────────────────────────────────────────────────────────╮ │
+        │                            ││ │ manager-hive  parent coordinator  model claude-opus-5-5  task ?  ?  pane w58:p6    │ │
+        │                            ││ │ next ?                                                                             │ │
+        │                            ││ ╰────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │ ────────────────────────── ││                                                                                        │
+        │ 1 CHAT · 3 GOALS · 4 QUEUE ││                                                                                        │
+        │ 5 TASKS · 6 FRICTION       ││                                                                                        │
+        │ 7 HEALTH · 8 LOGS          ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        ←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat 
+--- FAIL: TestDemoActionKeysShowTheNotice (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.006s
+FAIL
+
+### logs exit=1
+=== RUN   TestDemoLogsShowOnlyFixtureEvents
+    demo_test.go:236: logs view lacks the fixture event:
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Logs                                                                                   │
+        │   1 Chat                   ││ logs · 2026-10-21.jsonl                                                                │
+        │   2 Agents                 ││ ▶ level: info component: all project: all agent: all text: - follow: on day:           │
+        │   3 Goals                  ││ 2026-10-21 request: all                                                                │
+        │   4 Queue                  ││ no events today                                                                        │
+        │   5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │ ▶ 8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+        level: info  component: all  project: all  agent: all  text: -  follow: on  day: 2026-10-21  request: all               
+        1–8 screens · l level · c component · p project · a agent · / search · r request · [ ] day · f follow · g/G scroll · en…
+--- FAIL: TestDemoLogsShowOnlyFixtureEvents (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.006s
+FAIL
+
+## actions-red.txt
+=== RUN   TestDemoActionsChangeNoFileAndStartNoProcess
+    root_demo_test.go:63: demo mode changed /tmp/TestDemoActionsChangeNoFileAndStartNoProcess1083099771/002/.hive/state/lock; want only the log file
+--- FAIL: TestDemoActionsChangeNoFileAndStartNoProcess (2.01s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/cmd	2.018s
+FAIL
+
+## repair-red.txt
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture
+    demo_test.go:344: view does not show "fixture brief text":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ brief.md                                                                               │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture
+    demo_test.go:344: view does not show "demo mode: no file":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ brief.md                                                                               │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture
+    demo_test.go:344: view does not show "fixture evidence text":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ VERIFIED.md                                                                            │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture
+    demo_test.go:344: view does not show "demo mode: no file":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ VERIFIED.md                                                                            │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture
+    demo_test.go:344: view does not show "fixture design text":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ README.md                                                                              │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture
+    demo_test.go:344: view does not show "demo mode: no file":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Tasks                                                                                  │
+        │   1 Chat                   ││ README.md                                                                              │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │ ▶ 5 Tasks                  ││                                                                                        │
+        │   6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move                  
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture
+    demo_test.go:344: view does not show "fixture friction text":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Friction                                                                               │
+        │   1 Chat                   ││ demo-entry.md                                                                          │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │   5 Tasks                  ││                                                                                        │
+        │ ▶ 6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab open/resolved · enter read · ask in Chat · ↑/↓ move                                                                 
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture
+    demo_test.go:344: view does not show "demo mode: no file":
+        ⬢ hive · 1 project · 3 live agents · 1 working / 2 idle · supervisor fresh · needs_user 0 · 14:22                       
+        ╭────────────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────╮
+        │ SCREENS                    ││ Friction                                                                               │
+        │   1 Chat                   ││ demo-entry.md                                                                          │
+        │   2 Agents                 ││ live file text                                                                         │
+        │   3 Goals                  ││                                                                                        │
+        │   4 Queue                  ││                                                                                        │
+        │   5 Tasks                  ││                                                                                        │
+        │ ▶ 6 Friction               ││                                                                                        │
+        │   7 Health                 ││                                                                                        │
+        │   8 Logs                   ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        │                            ││                                                                                        │
+        ╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                
+                                                                                                                                
+        tab open/resolved · enter read · ask in Chat · ↑/↓ move                                                                 
+--- FAIL: TestDemoOpensFilesOnlyFromTheFixture (0.02s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture (0.00s)
+    --- FAIL: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.025s
+FAIL
+
+## cli-green.txt
+=== RUN   TestDemoActionsChangeNoFileAndStartNoProcess
+--- PASS: TestDemoActionsChangeNoFileAndStartNoProcess (2.01s)
+=== RUN   TestDemoFlagsAreHiddenFromHelp
+--- PASS: TestDemoFlagsAreHiddenFromHelp (0.00s)
+=== RUN   TestDemoBadSizeNamesTheValue
+=== RUN   TestDemoBadSizeNamesTheValue/12x
+=== RUN   TestDemoBadSizeNamesTheValue/x40
+=== RUN   TestDemoBadSizeNamesTheValue/120x40x2
+=== RUN   TestDemoBadSizeNamesTheValue/0x40
+=== RUN   TestDemoBadSizeNamesTheValue/abcxdef
+=== RUN   TestDemoBadSizeNamesTheValue/120*40
+--- PASS: TestDemoBadSizeNamesTheValue (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/12x (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/x40 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/120x40x2 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/0x40 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/abcxdef (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/120*40 (0.00s)
+=== RUN   TestSizeWithoutDemoFails
+--- PASS: TestSizeWithoutDemoFails (0.00s)
+=== RUN   TestDemoUnknownFixtureFieldNamesTheField
+--- PASS: TestDemoUnknownFixtureFieldNamesTheField (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/cmd	2.015s
+
+## tui-green.txt
+=== RUN   TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts
+--- PASS: TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts (0.05s)
+=== RUN   TestAgentsHistoryToggleShowsAllGenerations
+--- PASS: TestAgentsHistoryToggleShowsAllGenerations (0.04s)
+=== RUN   TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime
+--- PASS: TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime (0.01s)
+=== RUN   TestAgentsScreenRendersTopologyTabsAndDetail
+--- PASS: TestAgentsScreenRendersTopologyTabsAndDetail (0.04s)
+=== RUN   TestAgentsLoadsLongAgentKeysAsNodesAndParents
+--- PASS: TestAgentsLoadsLongAgentKeysAsNodesAndParents (0.04s)
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40
+--- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes (0.31s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24 (0.16s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40 (0.16s)
+=== RUN   TestAgentsScreenLogsTabAndSelectionActions
+--- PASS: TestAgentsScreenLogsTabAndSelectionActions (0.03s)
+=== RUN   TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale
+--- PASS: TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale (0.06s)
+=== RUN   TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents
+--- PASS: TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents (0.26s)
+=== RUN   TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent
+--- PASS: TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent (0.04s)
+=== RUN   TestAgentsRefreshKeepsSelectionByAgentKey
+--- PASS: TestAgentsRefreshKeepsSelectionByAgentKey (0.36s)
+=== RUN   TestAgentsProjectsFollowProjectRecordOrder
+--- PASS: TestAgentsProjectsFollowProjectRecordOrder (0.04s)
+=== RUN   TestAgentsPeekReadsInCommandAndEscClosesIt
+--- PASS: TestAgentsPeekReadsInCommandAndEscClosesIt (0.03s)
+=== RUN   TestAgentsHeaderUsesBoardLabels
+--- PASS: TestAgentsHeaderUsesBoardLabels (0.35s)
+=== RUN   TestAgentsBoardGoldenFrames
+=== RUN   TestAgentsBoardGoldenFrames/120x40/tree
+=== RUN   TestAgentsBoardGoldenFrames/120x40/graph
+=== RUN   TestAgentsBoardGoldenFrames/120x40/table
+=== RUN   TestAgentsBoardGoldenFrames/200x57/tree
+=== RUN   TestAgentsBoardGoldenFrames/200x57/graph
+=== RUN   TestAgentsBoardGoldenFrames/200x57/table
+--- PASS: TestAgentsBoardGoldenFrames (2.39s)
+    --- PASS: TestAgentsBoardGoldenFrames/120x40/tree (0.36s)
+    --- PASS: TestAgentsBoardGoldenFrames/120x40/graph (0.38s)
+    --- PASS: TestAgentsBoardGoldenFrames/120x40/table (0.41s)
+    --- PASS: TestAgentsBoardGoldenFrames/200x57/tree (0.39s)
+    --- PASS: TestAgentsBoardGoldenFrames/200x57/graph (0.45s)
+    --- PASS: TestAgentsBoardGoldenFrames/200x57/table (0.41s)
+=== RUN   TestAgentsBoardDetailShowsTaskStatusAndNextTask
+--- PASS: TestAgentsBoardDetailShowsTaskStatusAndNextTask (0.35s)
+=== RUN   TestAgentsGhostsRequireAnOpenTask
+--- PASS: TestAgentsGhostsRequireAnOpenTask (0.50s)
+=== RUN   TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge
+--- PASS: TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge (0.38s)
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_manager
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/read_nudged_manager
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_manager_without_nudge
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_coordinator
+--- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox (1.57s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_manager (0.38s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/read_nudged_manager (0.38s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_manager_without_nudge (0.42s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_coordinator (0.39s)
+=== RUN   TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers
+--- PASS: TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers (0.38s)
+=== RUN   TestAgentsGraphConnectsSiblingWorkersToManagerStem
+--- PASS: TestAgentsGraphConnectsSiblingWorkersToManagerStem (0.37s)
+=== RUN   TestAgentsGraphColumnsHaveEqualWidth
+--- PASS: TestAgentsGraphColumnsHaveEqualWidth (0.45s)
+=== RUN   TestAgentsGraphCardsKeepTheirWidths
+--- PASS: TestAgentsGraphCardsKeepTheirWidths (0.44s)
+=== RUN   TestAgentsGraphSingleColumnKeepsItsPod
+--- PASS: TestAgentsGraphSingleColumnKeepsItsPod (0.50s)
+=== RUN   TestAgentsGraphLongCardFitsInEqualColumns
+--- PASS: TestAgentsGraphLongCardFitsInEqualColumns (1.51s)
+=== RUN   TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls
+--- PASS: TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls (0.38s)
+=== RUN   TestAgentsBoardTaskShortcutOpensSelectedTask
+--- PASS: TestAgentsBoardTaskShortcutOpensSelectedTask (0.40s)
+=== RUN   TestAgentsBoardKeyHintsMatchTheBoard
+--- PASS: TestAgentsBoardKeyHintsMatchTheBoard (0.35s)
+=== RUN   TestAgentsGraphPodTitleSharesTopBorder
+--- PASS: TestAgentsGraphPodTitleSharesTopBorder (0.33s)
+=== RUN   TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem
+--- PASS: TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem (0.37s)
+=== RUN   TestAgentsGraphColorsMatchBoard
+--- PASS: TestAgentsGraphColorsMatchBoard (0.41s)
+=== RUN   TestAgentsExplorerUsesIndentationWithoutConnectors
+--- PASS: TestAgentsExplorerUsesIndentationWithoutConnectors (0.42s)
+=== RUN   TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren
+--- PASS: TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren (0.38s)
+=== RUN   TestAgentsGraphDelegationBusUsesOpenEndGlyphs
+--- PASS: TestAgentsGraphDelegationBusUsesOpenEndGlyphs (0.37s)
+=== RUN   TestAgentsTreeLastVisibleChildUsesBottomConnector
+--- PASS: TestAgentsTreeLastVisibleChildUsesBottomConnector (0.36s)
+=== RUN   TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator
+--- PASS: TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator (0.36s)
+=== RUN   TestAgentsGraphDelegationStemJoinsPodBorder
+--- PASS: TestAgentsGraphDelegationStemJoinsPodBorder (0.38s)
+=== RUN   TestAgentsGraphNodeCardsStayInsetInLongTitlePods
+--- PASS: TestAgentsGraphNodeCardsStayInsetInLongTitlePods (0.44s)
+=== RUN   TestAgentsGraphPodsHaveRoundedCorners
+--- PASS: TestAgentsGraphPodsHaveRoundedCorners (0.38s)
+=== RUN   TestAgentsGraphNodeHasOneCellOfPadding
+--- PASS: TestAgentsGraphNodeHasOneCellOfPadding (0.37s)
+=== RUN   TestAgentsHeaderUsesSpacesAndRightAlignsTime
+--- PASS: TestAgentsHeaderUsesSpacesAndRightAlignsTime (0.40s)
+=== RUN   TestAgentsDetailFieldsUseSpaces
+--- PASS: TestAgentsDetailFieldsUseSpaces (0.40s)
+=== RUN   TestAgentsProgramUsesStringReader
+--- PASS: TestAgentsProgramUsesStringReader (0.01s)
+=== RUN   TestChatScreenShowsCoordinatorHeading
+--- PASS: TestChatScreenShowsCoordinatorHeading (0.00s)
+=== RUN   TestChatStartFromProjectsShowsRefusalAndBlocksInput
+--- PASS: TestChatStartFromProjectsShowsRefusalAndBlocksInput (0.00s)
+=== RUN   TestChatRefusedSendShowsNoticeAndKeepsDraft
+--- PASS: TestChatRefusedSendShowsNoticeAndKeepsDraft (0.02s)
+=== RUN   TestChatLoadsRecentConversationAndCoordinatorState
+--- PASS: TestChatLoadsRecentConversationAndCoordinatorState (0.01s)
+=== RUN   TestChatFrameFitsLargeConversationAndWrapsAtWords
+=== RUN   TestChatFrameFitsLargeConversationAndWrapsAtWords/120x40
+=== RUN   TestChatFrameFitsLargeConversationAndWrapsAtWords/200x57
+--- PASS: TestChatFrameFitsLargeConversationAndWrapsAtWords (0.01s)
+    --- PASS: TestChatFrameFitsLargeConversationAndWrapsAtWords/120x40 (0.00s)
+    --- PASS: TestChatFrameFitsLargeConversationAndWrapsAtWords/200x57 (0.01s)
+=== RUN   TestChatNarrowViewportWrapsWordsAndBreaksLongWords
+--- PASS: TestChatNarrowViewportWrapsWordsAndBreaksLongWords (0.00s)
+=== RUN   TestChatPagesScrollTheConversation
+--- PASS: TestChatPagesScrollTheConversation (0.00s)
+=== RUN   TestChatNoiseAndEventFoldingDoNotMarkRecordsRead
+--- PASS: TestChatNoiseAndEventFoldingDoNotMarkRecordsRead (0.01s)
+=== RUN   TestChatNoiseLevelsFilterInboxKinds
+=== RUN   TestChatNoiseLevelsFilterInboxKinds/landings_and_decisions
+=== RUN   TestChatNoiseLevelsFilterInboxKinds/decisions_only
+=== RUN   TestChatNoiseLevelsFilterInboxKinds/all
+=== RUN   TestChatNoiseLevelsFilterInboxKinds/returns_to_landings_and_decisions
+--- PASS: TestChatNoiseLevelsFilterInboxKinds (0.03s)
+    --- PASS: TestChatNoiseLevelsFilterInboxKinds/landings_and_decisions (0.00s)
+    --- PASS: TestChatNoiseLevelsFilterInboxKinds/decisions_only (0.00s)
+    --- PASS: TestChatNoiseLevelsFilterInboxKinds/all (0.00s)
+    --- PASS: TestChatNoiseLevelsFilterInboxKinds/returns_to_landings_and_decisions (0.00s)
+=== RUN   TestChatInputKeepsDraftAndTreatsScreenNumbersAsText
+--- PASS: TestChatInputKeepsDraftAndTreatsScreenNumbersAsText (0.01s)
+=== RUN   TestChatSendRunsInBackgroundAndKeepsFailedDraft
+--- PASS: TestChatSendRunsInBackgroundAndKeepsFailedDraft (0.03s)
+=== RUN   TestChatProgramRunsWithStringInput
+--- PASS: TestChatProgramRunsWithStringInput (0.00s)
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/top_level
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/ui
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/record
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/supervisor
+--- PASS: TestDemoFixtureUnknownFieldNamesTheField (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/top_level (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/ui (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/record (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/supervisor (0.00s)
+=== RUN   TestDemoFixtureBadValuesFail
+=== RUN   TestDemoFixtureBadValuesFail/"ui.screen"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.view"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.zone"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.time"
+=== RUN   TestDemoFixtureBadValuesFail/"terminal"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.overlay"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.prompt.kind"
+--- PASS: TestDemoFixtureBadValuesFail (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.screen" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.view" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.zone" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.time" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"terminal" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.overlay" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.prompt.kind" (0.00s)
+=== RUN   TestParseDemoSize
+--- PASS: TestParseDemoSize (0.00s)
+=== RUN   TestDemoMainShowsFixtureDataAtTheFixtureClock
+--- PASS: TestDemoMainShowsFixtureDataAtTheFixtureClock (0.00s)
+=== RUN   TestDemoSizeDrawsAtTheSizeInALargerPane
+--- PASS: TestDemoSizeDrawsAtTheSizeInALargerPane (0.00s)
+=== RUN   TestDemoSizeShowsTooSmallInASmallerPane
+--- PASS: TestDemoSizeShowsTooSmallInASmallerPane (0.00s)
+=== RUN   TestDemoTooSmallMatchesItsBoardGrid
+--- PASS: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
+=== RUN   TestDemoActionKeysShowTheNotice
+--- PASS: TestDemoActionKeysShowTheNotice (0.01s)
+=== RUN   TestDemoLogsShowOnlyFixtureEvents
+--- PASS: TestDemoLogsShowOnlyFixtureEvents (0.00s)
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture
+--- PASS: TestDemoOpensFilesOnlyFromTheFixture (0.02s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture (0.00s)
+=== RUN   TestViewingEscapeClearsAppliedTextFilter
+--- PASS: TestViewingEscapeClearsAppliedTextFilter (0.00s)
+=== RUN   TestLogRefreshKeepsFileOrder
+--- PASS: TestLogRefreshKeepsFileOrder (0.00s)
+=== RUN   TestRunHomeReportsOutputFailure
+=== RUN   TestRunHomeReportsOutputFailure/short=false
+=== RUN   TestRunHomeReportsOutputFailure/short=true
+--- PASS: TestRunHomeReportsOutputFailure (0.04s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=false (0.02s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=true (0.02s)
+=== RUN   TestRunHomeReportsInputFailure
+--- PASS: TestRunHomeReportsInputFailure (0.00s)
+=== RUN   TestRunHomeReportsFileWriterFailure
+--- PASS: TestRunHomeReportsFileWriterFailure (0.02s)
+=== RUN   TestRunHomeFiniteEOFStops
+--- PASS: TestRunHomeFiniteEOFStops (2.00s)
+=== RUN   TestHeaderRejectsOutOfRangePIDs
+=== RUN   TestHeaderRejectsOutOfRangePIDs/self
+=== RUN   TestHeaderRejectsOutOfRangePIDs/zero
+=== RUN   TestHeaderRejectsOutOfRangePIDs/negative
+=== RUN   TestHeaderRejectsOutOfRangePIDs/exited
+=== RUN   TestHeaderRejectsOutOfRangePIDs/plus_2^32
+=== RUN   TestHeaderRejectsOutOfRangePIDs/max_int32_plus_one
+=== RUN   TestHeaderRejectsOutOfRangePIDs/max_int64
+--- PASS: TestHeaderRejectsOutOfRangePIDs (0.39s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/self (0.35s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/zero (0.01s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/negative (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/exited (0.01s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/plus_2^32 (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/max_int32_plus_one (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/max_int64 (0.00s)
+=== RUN   TestHeaderErrorDoesNotStopShell
+--- PASS: TestHeaderErrorDoesNotStopShell (0.00s)
+=== RUN   TestRunHomeFiniteFDPipeStops
+--- PASS: TestRunHomeFiniteFDPipeStops (2.00s)
+=== RUN   TestRunHomeFiniteFDFileStops
+--- PASS: TestRunHomeFiniteFDFileStops (2.01s)
+=== RUN   TestActionLogRefusalShowsError
+=== RUN   TestActionLogRefusalShowsError/first-open/daily-link
+=== RUN   TestActionLogRefusalShowsError/first-open/daily-fifo
+=== RUN   TestActionLogRefusalShowsError/first-open/linked-log-dir
+=== RUN   TestActionLogRefusalShowsError/rotation/daily-link
+=== RUN   TestActionLogRefusalShowsError/rotation/daily-fifo
+=== RUN   TestActionLogRefusalShowsError/rotation/linked-log-dir
+--- PASS: TestActionLogRefusalShowsError (0.01s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/daily-link (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/daily-fifo (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/linked-log-dir (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/daily-link (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/daily-fifo (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/linked-log-dir (0.00s)
+=== RUN   TestHealthyActionLogIsWrittenOnce
+--- PASS: TestHealthyActionLogIsWrittenOnce (0.00s)
+=== RUN   TestNewRejectsLinkedDailyLogWithoutWrite
+--- PASS: TestNewRejectsLinkedDailyLogWithoutWrite (0.00s)
+=== RUN   TestNewRejectsDailyFIFOWithoutBlocking
+--- PASS: TestNewRejectsDailyFIFOWithoutBlocking (0.00s)
+=== RUN   TestNewRejectsLinkedLogDirectoryWithoutWrite
+--- PASS: TestNewRejectsLinkedLogDirectoryWithoutWrite (0.00s)
+=== RUN   TestGoalsScreenRendersWaveProgressAndUnassignedTasks
+--- PASS: TestGoalsScreenRendersWaveProgressAndUnassignedTasks (0.03s)
+=== RUN   TestQueueScreenShowsTransitiveStopsAndIgnoresProjectCycle
+--- PASS: TestQueueScreenShowsTransitiveStopsAndIgnoresProjectCycle (0.03s)
+=== RUN   TestGoalsOpenTasksForSelectedWave
+--- PASS: TestGoalsOpenTasksForSelectedWave (0.03s)
+=== RUN   TestGoalsOpenTasksResetsProjectFilter
+--- PASS: TestGoalsOpenTasksResetsProjectFilter (0.03s)
+=== RUN   TestGoalsOpenWaveDesign
+=== RUN   TestGoalsOpenWaveDesign/one_feature
+=== RUN   TestGoalsOpenWaveDesign/first_feature_wins
+=== RUN   TestGoalsOpenWaveDesign/no_feature
+=== RUN   TestGoalsOpenWaveDesign/missing_file
+--- PASS: TestGoalsOpenWaveDesign (0.14s)
+    --- PASS: TestGoalsOpenWaveDesign/one_feature (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/first_feature_wins (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/no_feature (0.04s)
+    --- PASS: TestGoalsOpenWaveDesign/missing_file (0.04s)
+=== RUN   TestGoalsAndQueueStatesHavePlainTextSignals
+--- PASS: TestGoalsAndQueueStatesHavePlainTextSignals (0.03s)
+=== RUN   TestQueueHeaderShowsRunStopAndWaitCounts
+--- PASS: TestQueueHeaderShowsRunStopAndWaitCounts (0.03s)
+=== RUN   TestQueueShowsEveryRegisteredProjectWithoutProjectCycle
+--- PASS: TestQueueShowsEveryRegisteredProjectWithoutProjectCycle (0.03s)
+=== RUN   TestQueueArrowsSelectTasksAndEnterOpensSelectedTask
+--- PASS: TestQueueArrowsSelectTasksAndEnterOpensSelectedTask (0.02s)
+=== RUN   TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects
+--- PASS: TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects (0.04s)
+=== RUN   TestGoalsSortsActiveBeforeDoneAndCountsOnlyPushedDeliveries
+--- PASS: TestGoalsSortsActiveBeforeDoneAndCountsOnlyPushedDeliveries (0.03s)
+=== RUN   TestGoalsAndQueuePanelsFitStandardFrame
+--- PASS: TestGoalsAndQueuePanelsFitStandardFrame (0.03s)
+=== RUN   TestGoalsQueueProgramUsesStringReader
+--- PASS: TestGoalsQueueProgramUsesStringReader (0.03s)
+=== RUN   TestHealthScreenFramesPanelsAndSeparatesWarnings
+--- PASS: TestHealthScreenFramesPanelsAndSeparatesWarnings (0.00s)
+=== RUN   TestHealthScreenRendersChecksAndKeepsSelectionAcrossRefresh
+--- PASS: TestHealthScreenRendersChecksAndKeepsSelectionAcrossRefresh (0.01s)
+=== RUN   TestHealthRStartsBackgroundRefreshWithoutOtherActions
+--- PASS: TestHealthRStartsBackgroundRefreshWithoutOtherActions (0.31s)
+=== RUN   TestHealthProgramUsesStringReader
+--- PASS: TestHealthProgramUsesStringReader (0.01s)
+=== RUN   TestIdleTickDoesNotReloadUnchangedData
+--- PASS: TestIdleTickDoesNotReloadUnchangedData (0.00s)
+=== RUN   TestIdleTickReloadsChangedScreenOnce
+--- PASS: TestIdleTickReloadsChangedScreenOnce (0.00s)
+=== RUN   TestHeaderRefreshReusesUnchangedScreenRender
+--- PASS: TestHeaderRefreshReusesUnchangedScreenRender (0.00s)
+=== RUN   TestMinuteRefreshUpdatesOnlyTheHeader
+--- PASS: TestMinuteRefreshUpdatesOnlyTheHeader (0.00s)
+=== RUN   TestLogsLongFilterKeepsPanelFrameAtTerminalSize
+=== RUN   TestLogsLongFilterKeepsPanelFrameAtTerminalSize/120x40
+=== RUN   TestLogsLongFilterKeepsPanelFrameAtTerminalSize/200x57
+--- PASS: TestLogsLongFilterKeepsPanelFrameAtTerminalSize (0.01s)
+    --- PASS: TestLogsLongFilterKeepsPanelFrameAtTerminalSize/120x40 (0.00s)
+    --- PASS: TestLogsLongFilterKeepsPanelFrameAtTerminalSize/200x57 (0.00s)
+=== RUN   TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen
+--- PASS: TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen (0.89s)
+=== RUN   TestLogsScreenRendersFilteredRows
+--- PASS: TestLogsScreenRendersFilteredRows (0.00s)
+=== RUN   TestLogsScreenFoldsRequestsAndShowsSelectedJSON
+--- PASS: TestLogsScreenFoldsRequestsAndShowsSelectedJSON (0.00s)
+=== RUN   TestLogsScreenCyclesInfoLevelToWarn
+--- PASS: TestLogsScreenCyclesInfoLevelToWarn (0.00s)
+=== RUN   TestLogsScreenCyclesMetadataSearchAndDay
+--- PASS: TestLogsScreenCyclesMetadataSearchAndDay (0.00s)
+=== RUN   TestLogsScreenKeepsSelectionAcrossRefresh
+--- PASS: TestLogsScreenKeepsSelectionAcrossRefresh (0.00s)
+=== RUN   TestLogsScreenDayNavigationLoadsSelectedFile
+--- PASS: TestLogsScreenDayNavigationLoadsSelectedFile (0.00s)
+=== RUN   TestRunHomeLogsKeysOnStringReader
+--- PASS: TestRunHomeLogsKeysOnStringReader (2.00s)
+=== RUN   TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey
+--- PASS: TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey (0.01s)
+=== RUN   TestAgentsRestartMissingCoordinatorPaneTakesStalePath
+--- PASS: TestAgentsRestartMissingCoordinatorPaneTakesStalePath (0.02s)
+=== RUN   TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation
+--- PASS: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.00s)
+=== RUN   TestAgentsHistoryCanShowStoppedRestartGeneration
+--- PASS: TestAgentsHistoryCanShowStoppedRestartGeneration (0.00s)
+=== RUN   TestAgentsRestartLiveSupervisorAsksForConfirmation
+--- PASS: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.00s)
+=== RUN   TestAgentsRestartResultIsRenderedAndLogged
+--- PASS: TestAgentsRestartResultIsRenderedAndLogged (0.00s)
+=== RUN   TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation
+--- PASS: TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation (0.00s)
+=== RUN   TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint
+--- PASS: TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint (0.34s)
+=== RUN   TestSupervisorHeaderOldProcess
+--- PASS: TestSupervisorHeaderOldProcess (0.00s)
+=== RUN   TestAgentsRestartKeyExplainsUnsupportedNode
+--- PASS: TestAgentsRestartKeyExplainsUnsupportedNode (0.00s)
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Chat
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Goals
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs
+--- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground (0.44s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Chat (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents (0.43s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Goals (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs (0.00s)
+=== RUN   TestAgentBoardShowsDistinctStatusColorAndDimWorkingCount
+--- PASS: TestAgentBoardShowsDistinctStatusColorAndDimWorkingCount (0.41s)
+=== RUN   TestAgentGraphDetailStripNameIsHoneyBold
+--- PASS: TestAgentGraphDetailStripNameIsHoneyBold (0.40s)
+=== RUN   TestAgentGraphBoardRendersTabsLegendHeaderAndDetails
+--- PASS: TestAgentGraphBoardRendersTabsLegendHeaderAndDetails (0.45s)
+=== RUN   TestScreenKeysSelectAllEightScreens
+--- PASS: TestScreenKeysSelectAllEightScreens (0.00s)
+=== RUN   TestNarrowShellFitsAndShowsCompactSidebar
+--- PASS: TestNarrowShellFitsAndShowsCompactSidebar (0.00s)
+=== RUN   TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice
+--- PASS: TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice (0.00s)
+=== RUN   TestSlowScreenLoadDoesNotBlockKeysOrStartTwice
+--- PASS: TestSlowScreenLoadDoesNotBlockKeysOrStartTwice (0.00s)
+=== RUN   TestQuitNeedsTwoCtrlCWithinThreeSeconds
+--- PASS: TestQuitNeedsTwoCtrlCWithinThreeSeconds (0.00s)
+=== RUN   TestQuitNoticeExpiresAndOtherKeyClearsIt
+--- PASS: TestQuitNoticeExpiresAndOtherKeyClearsIt (0.00s)
+=== RUN   TestQDoesNotQuitOnAnyScreen
+--- PASS: TestQDoesNotQuitOnAnyScreen (0.00s)
+=== RUN   TestAttachUsesBackgroundFocusAndReportsError
+--- PASS: TestAttachUsesBackgroundFocusAndReportsError (0.00s)
+=== RUN   TestRunHomeHandlesScreenAndQuitKeys
+--- PASS: TestRunHomeHandlesScreenAndQuitKeys (0.01s)
+=== RUN   TestEightScreensDoNotPaintTerminalBackground
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Agents
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Goals
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Queue
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Tasks
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Friction
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Health
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Logs
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat_input_
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat_input_selection_marker_draft
+--- PASS: TestEightScreensDoNotPaintTerminalBackground (0.01s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Agents (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Goals (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Queue (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Tasks (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Friction (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Health (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Logs (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat_input_ (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat_input_selection_marker_draft (0.00s)
+=== RUN   TestStartupCreatesCoordinatorAndSupervisorTabs
+--- PASS: TestStartupCreatesCoordinatorAndSupervisorTabs (0.00s)
+=== RUN   TestStartupKeepsLiveCoordinatorAndFreshSupervisor
+--- PASS: TestStartupKeepsLiveCoordinatorAndFreshSupervisor (0.01s)
+=== RUN   TestStartupStartsSupervisorWhenClaimIsStale
+--- PASS: TestStartupStartsSupervisorWhenClaimIsStale (0.01s)
+=== RUN   TestStartupSkipsHerdrWhenEnvironmentIsMissing
+--- PASS: TestStartupSkipsHerdrWhenEnvironmentIsMissing (0.00s)
+=== RUN   TestStartupFailureShowsInFooterAndDoesNotStopTUI
+--- PASS: TestStartupFailureShowsInFooterAndDoesNotStopTUI (0.01s)
+=== RUN   TestStartupNoStartupSkipsEachStepAndLogsReason
+--- PASS: TestStartupNoStartupSkipsEachStepAndLogsReason (0.00s)
+=== RUN   TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing
+--- PASS: TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing (0.00s)
+=== RUN   TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord
+--- PASS: TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord (0.01s)
+=== RUN   TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails
+--- PASS: TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails (0.00s)
+=== RUN   TestTasksScreenShowsEvidencePanelAndDefinitions
+--- PASS: TestTasksScreenShowsEvidencePanelAndDefinitions (0.03s)
+=== RUN   TestTasksScreenVOpensVerifiedEvidence
+--- PASS: TestTasksScreenVOpensVerifiedEvidence (0.03s)
+=== RUN   TestTasksScreenDOpensSelectedTaskDependencyGraph
+--- PASS: TestTasksScreenDOpensSelectedTaskDependencyGraph (0.03s)
+=== RUN   TestLoadTasksFindsLongTaskID
+--- PASS: TestLoadTasksFindsLongTaskID (0.00s)
+=== RUN   TestTasksScreenRendersLandedTaskAndVerificationHistory
+--- PASS: TestTasksScreenRendersLandedTaskAndVerificationHistory (0.03s)
+=== RUN   TestTasksScreenArrowDownSelectsNextTask
+--- PASS: TestTasksScreenArrowDownSelectsNextTask (0.03s)
+=== RUN   TestTasksScreenShowsDetailsAtDefaultTerminalSize
+--- PASS: TestTasksScreenShowsDetailsAtDefaultTerminalSize (0.03s)
+=== RUN   TestTasksProjectFilterAndFailedTab
+--- PASS: TestTasksProjectFilterAndFailedTab (0.03s)
+=== RUN   TestFileViewsMatchTerminalFrames
+=== RUN   TestFileViewsMatchTerminalFrames/120x40
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/b
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/v
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/d
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Friction/file
+=== RUN   TestFileViewsMatchTerminalFrames/200x57
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/b
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/v
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/d
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Friction/file
+--- PASS: TestFileViewsMatchTerminalFrames (0.17s)
+    --- PASS: TestFileViewsMatchTerminalFrames/120x40 (0.08s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/b (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/v (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/d (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Friction/file (0.00s)
+    --- PASS: TestFileViewsMatchTerminalFrames/200x57 (0.09s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/b (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/v (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/d (0.03s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Friction/file (0.00s)
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel/120x40
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel/200x57
+--- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel (0.01s)
+    --- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel/120x40 (0.00s)
+    --- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel/200x57 (0.00s)
+=== RUN   TestFrictionScreenLoadsEntriesAndOpensSelectedEntry
+--- PASS: TestFrictionScreenLoadsEntriesAndOpensSelectedEntry (0.00s)
+=== RUN   TestRunHomeShowsTasksFromStringReader
+--- PASS: TestRunHomeShowsTasksFromStringReader (2.03s)
+=== RUN   TestHeaderShowsProjectAgentAndNeedsUserCounts
+--- PASS: TestHeaderShowsProjectAgentAndNeedsUserCounts (0.38s)
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/300x80
+--- PASS: TestFramesMatchTerminalSizesOnEveryScreen (0.14s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/300x80 (0.01s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/300x80 (0.01s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/300x80 (0.01s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/300x80 (0.01s)
+=== RUN   TestHeaderInvalidStoreShowsBoundedError
+--- PASS: TestHeaderInvalidStoreShowsBoundedError (0.00s)
+=== RUN   TestKeysFilterLevelFollowAndQuit
+--- PASS: TestKeysFilterLevelFollowAndQuit (1.07s)
+=== RUN   TestFollowReadsAppendedLineOnTick
+--- PASS: TestFollowReadsAppendedLineOnTick (0.00s)
+=== RUN   TestFollowControlsViewport
+--- PASS: TestFollowControlsViewport (0.00s)
+=== RUN   TestDailyFileRolloverSelectsCurrentDay
+--- PASS: TestDailyFileRolloverSelectsCurrentDay (0.00s)
+=== RUN   TestFollowKeepsIncompleteLineUntilNewline
+--- PASS: TestFollowKeepsIncompleteLineUntilNewline (0.00s)
+=== RUN   TestDailyFileWaitsForFirstFile
+--- PASS: TestDailyFileWaitsForFirstFile (0.00s)
+=== RUN   TestDailyFileInvalidTypeShowsError
+--- PASS: TestDailyFileInvalidTypeShowsError (0.00s)
+=== RUN   TestScreenLoadErrorShowsInFooter
+--- PASS: TestScreenLoadErrorShowsInFooter (0.00s)
+=== RUN   TestStopClosesWriterMoreThanOnce
+--- PASS: TestStopClosesWriterMoreThanOnce (0.00s)
+=== RUN   TestQuitKeysRequireTwoCtrlCPresses
+--- PASS: TestQuitKeysRequireTwoCtrlCPresses (0.00s)
+=== RUN   TestOtherKeysDoNotQuit
+--- PASS: TestOtherKeysDoNotQuit (0.00s)
+=== RUN   TestViewNamesHive
+--- PASS: TestViewNamesHive (0.00s)
+=== RUN   TestRunQuits
+--- PASS: TestRunQuits (0.00s)
+=== RUN   TestRunResolvesFixtureHome
+--- PASS: TestRunResolvesFixtureHome (0.01s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	33.643s
+
+## final-cli-green.txt
+=== RUN   TestDemoActionsChangeNoFileAndStartNoProcess
+--- PASS: TestDemoActionsChangeNoFileAndStartNoProcess (2.01s)
+=== RUN   TestDemoFlagsAreHiddenFromHelp
+--- PASS: TestDemoFlagsAreHiddenFromHelp (0.00s)
+=== RUN   TestDemoBadSizeNamesTheValue
+=== RUN   TestDemoBadSizeNamesTheValue/12x
+=== RUN   TestDemoBadSizeNamesTheValue/x40
+=== RUN   TestDemoBadSizeNamesTheValue/120x40x2
+=== RUN   TestDemoBadSizeNamesTheValue/0x40
+=== RUN   TestDemoBadSizeNamesTheValue/abcxdef
+=== RUN   TestDemoBadSizeNamesTheValue/120*40
+--- PASS: TestDemoBadSizeNamesTheValue (0.01s)
+    --- PASS: TestDemoBadSizeNamesTheValue/12x (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/x40 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/120x40x2 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/0x40 (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/abcxdef (0.00s)
+    --- PASS: TestDemoBadSizeNamesTheValue/120*40 (0.00s)
+=== RUN   TestSizeWithoutDemoFails
+--- PASS: TestSizeWithoutDemoFails (0.00s)
+=== RUN   TestDemoUnknownFixtureFieldNamesTheField
+--- PASS: TestDemoUnknownFixtureFieldNamesTheField (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/cmd	2.031s
+
+## final-demo-green.txt
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/top_level
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/ui
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/record
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/supervisor
+--- PASS: TestDemoFixtureUnknownFieldNamesTheField (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/top_level (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/ui (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/record (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/supervisor (0.00s)
+=== RUN   TestDemoFixtureBadValuesFail
+=== RUN   TestDemoFixtureBadValuesFail/"ui.screen"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.view"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.zone"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.time"
+=== RUN   TestDemoFixtureBadValuesFail/"terminal"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.overlay"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.prompt.kind"
+--- PASS: TestDemoFixtureBadValuesFail (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.screen" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.view" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.zone" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.time" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"terminal" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.overlay" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.prompt.kind" (0.00s)
+=== RUN   TestParseDemoSize
+--- PASS: TestParseDemoSize (0.00s)
+=== RUN   TestDemoMainShowsFixtureDataAtTheFixtureClock
+--- PASS: TestDemoMainShowsFixtureDataAtTheFixtureClock (0.00s)
+=== RUN   TestDemoSizeDrawsAtTheSizeInALargerPane
+--- PASS: TestDemoSizeDrawsAtTheSizeInALargerPane (0.00s)
+=== RUN   TestDemoSizeShowsTooSmallInASmallerPane
+--- PASS: TestDemoSizeShowsTooSmallInASmallerPane (0.00s)
+=== RUN   TestDemoTooSmallMatchesItsBoardGrid
+--- PASS: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
+=== RUN   TestDemoActionKeysShowTheNotice
+--- PASS: TestDemoActionKeysShowTheNotice (0.01s)
+=== RUN   TestDemoLogsShowOnlyFixtureEvents
+--- PASS: TestDemoLogsShowOnlyFixtureEvents (0.00s)
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture
+--- PASS: TestDemoOpensFilesOnlyFromTheFixture (0.02s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.048s
+
+## renderer-green.txt
+=== RUN   TestVerifierDemoAndNormalRenderers
+--- PASS: TestVerifierDemoAndNormalRenderers (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.007s
+
+## Renderer comparison probe
+package tui
+
+import (
+ "testing"
+ "time"
+ tea "charm.land/bubbletea/v2"
+)
+
+func TestVerifierDemoAndNormalRenderers(t *testing.T) {
+ f, err := loadDemoFixture(designDir+"/Main.fixture.json")
+ if err != nil { t.Fatal(err) }
+ home := t.TempDir()
+ demo := newDemoModel(home, &demoState{fixture:f, size:demoSize{Width:120,Height:40}})
+ defer demo.Stop()
+ t.Chdir(home)
+ normal := New(home, func() time.Time { return f.now })
+ defer normal.Stop()
+ // Give the normal model exactly the same loader output and current UI state.
+ // The normal model keeps demo == nil and uses its normal View path.
+ normal.useDemoLoaders(f)
+ normal.applyDemoUI(f.UI)
+ normal.Update(tea.WindowSizeMsg{Width:120,Height:40})
+ for _, load := range []tea.Cmd{normal.startHeaderLoad(),normal.startCurrentScreenLoad()} { normal.Update(load()) }
+ if demo.View().Content != normal.View().Content { t.Fatalf("demo:\n%q\nnormal:\n%q",demo.View().Content,normal.View().Content) }
+}
