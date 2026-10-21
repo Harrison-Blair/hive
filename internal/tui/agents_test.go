@@ -164,14 +164,19 @@ func countAgentRows(lines []string, name string) int {
 	count := 0
 	for _, line := range lines {
 		plain := ansi.Strip(line)
-		index := strings.Index(plain, name+" ·")
-		if strings.Contains(plain, "│ │") && strings.Contains(plain, name) {
-			prefix := plain[:strings.Index(plain, name)]
-			if hasAgentMarkAnywhere(prefix) {
+		graphIndex := strings.Index(plain, name)
+		if graphIndex >= 0 {
+			end := graphIndex + len(name)
+			prefix := plain[:graphIndex]
+			cardBorder := strings.LastIndex(prefix, "│")
+			if strings.Count(plain, "│") >= 4 &&
+				(end == len(plain) || strings.ContainsRune(" ·│", rune(plain[end]))) && cardBorder >= 0 &&
+				hasAgentMarkAnywhere(prefix[cardBorder+len("│"):]) {
 				count++
+				continue
 			}
-			continue
 		}
+		index := strings.Index(plain, name+" ·")
 		if index < 0 {
 			continue
 		}
@@ -749,6 +754,143 @@ func TestAgentsGraphConnectsSiblingWorkersToManagerStem(t *testing.T) {
 	}
 }
 
+func TestAgentsGraphColumnsHaveEqualWidth(t *testing.T) {
+	m := agentsBoardModel(t)
+	nativeWidths := make([]int, 0, len(m.agents.data.groups))
+	for _, group := range m.agents.data.groups {
+		_, _, width, _ := m.agents.graphPod(group, m.agents.nodeMap())
+		nativeWidths = append(nativeWidths, width)
+	}
+	if nativeWidths[0] == nativeWidths[1] {
+		t.Fatalf("fixture has equal home and alpha pod widths: %v", nativeWidths)
+	}
+
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	view := ansi.Strip(m.currentScreen().View(200, 57))
+	if !strings.Contains(view, "[ GRAPH ]") {
+		t.Fatalf("Update and View did not select the graph:\n%s", view)
+	}
+	lines, positions := m.agents.graphLayout()
+	bounds := agentsGraphPodBounds(lines, len(m.agents.data.groups))
+	if len(bounds) != len(m.agents.data.groups) {
+		t.Fatalf("found %d graph pods, want %d:\n%s", len(bounds), len(m.agents.data.groups), strings.Join(lines, "\n"))
+	}
+	for index, bound := range bounds {
+		if bound.width != bounds[0].width {
+			t.Fatalf("graph pod %d has width %d, want widest width %d; native widths %v:\n%s", index, bound.width, bounds[0].width, nativeWidths, strings.Join(lines, "\n"))
+		}
+		position, ok := positions[m.agents.data.groups[index].keys[0]]
+		if !ok {
+			t.Fatalf("graph omits the first node of pod %d", index)
+		}
+		cardCenter := 2*position.col + position.width - 1
+		podCenter := 2*bound.start + bound.width - 1
+		if absInt(cardCenter-podCenter) > 1 {
+			t.Errorf("pod %d card center = %d, want pod center %d or its nearest cell", index, cardCenter, podCenter)
+		}
+	}
+}
+
+func TestAgentsGraphCardsKeepTheirWidths(t *testing.T) {
+	m := agentsBoardModel(t)
+	for index := range m.agents.data.nodes {
+		if m.agents.data.nodes[index].record.Role == "supervisor" {
+			m.agents.data.nodes[index].pid = "551386"
+		}
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	_ = m.currentScreen().View(200, 57)
+	_, positions := m.agents.graphLayout()
+	for key, want := range map[string]int{"coordinator": 19, "manager-alpha": 21, "manager-beta": 20} {
+		if got := positions[key].width; got != want {
+			t.Errorf("%s card width = %d, want original width %d", key, got, want)
+		}
+	}
+}
+
+func TestAgentsGraphSingleColumnKeepsItsPod(t *testing.T) {
+	m := agentsBoardModel(t)
+	m.agents.data.groups = m.agents.data.groups[:1]
+	m.agents.data.groups[0].keys = []string{"coordinator", "supervisor"}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	view := ansi.Strip(m.currentScreen().View(120, 40))
+	if !strings.Contains(view, "≡ home") || !strings.Contains(view, "coordinator") {
+		t.Fatalf("single-column graph omits its pod or agent:\n%s", view)
+	}
+	lines, _ := m.agents.graphLayout()
+	bounds := agentsGraphPodBounds(lines, 1)
+	if len(bounds) != 1 {
+		t.Fatalf("single-column graph has %d pods, want one:\n%s", len(bounds), strings.Join(lines, "\n"))
+	}
+}
+
+func TestAgentsGraphLongCardFitsInEqualColumns(t *testing.T) {
+	m := agentsBoardModel(t)
+	const longName = "worker-with-a-much-longer-name-than-other-agents"
+	for index := range m.agents.data.nodes {
+		if m.agents.data.nodes[index].record.Key == "worker-alpha" {
+			m.agents.data.nodes[index].record.Name = longName
+		}
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	if m.agents.selectedKey != "worker-alpha" {
+		t.Fatalf("selection = %q, want worker-alpha", m.agents.selectedKey)
+	}
+	view := ansi.Strip(m.currentScreen().View(120, 40))
+	if !strings.Contains(view, "▶ ● "+longName) {
+		t.Fatalf("selected long card is cut or lost its selection marker:\n%s", view)
+	}
+	lines, _ := m.agents.graphLayout()
+	bounds := agentsGraphPodBounds(lines, len(m.agents.data.groups))
+	if len(bounds) != len(m.agents.data.groups) {
+		t.Fatalf("found %d graph pods, want %d:\n%s", len(bounds), len(m.agents.data.groups), strings.Join(lines, "\n"))
+	}
+	for index, bound := range bounds {
+		if bound.width != bounds[0].width {
+			t.Fatalf("long card pod %d has width %d, want equal width %d:\n%s", index, bound.width, bounds[0].width, strings.Join(lines, "\n"))
+		}
+	}
+}
+
+type agentsGraphPodBound struct {
+	start int
+	width int
+}
+
+func agentsGraphPodBounds(lines []string, want int) []agentsGraphPodBound {
+	for _, line := range lines {
+		cells := []rune(ansi.Strip(line))
+		starts := make([]int, 0, want)
+		for column, cell := range cells {
+			if cell == '╭' {
+				starts = append(starts, column)
+			}
+		}
+		if len(starts) != want {
+			continue
+		}
+		bounds := make([]agentsGraphPodBound, 0, want)
+		for index, start := range starts {
+			limit := len(cells)
+			if index+1 < len(starts) {
+				limit = starts[index+1]
+			}
+			for column := start + 1; column < limit; column++ {
+				if cells[column] == '╮' {
+					bounds = append(bounds, agentsGraphPodBound{start: start, width: column - start + 1})
+					break
+				}
+			}
+		}
+		if len(bounds) == want {
+			return bounds
+		}
+	}
+	return nil
+}
+
 func TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.agents.tab = agentsGraph
@@ -865,19 +1007,24 @@ func TestAgentsGraphColorsMatchBoard(t *testing.T) {
 
 	graphLines, graphPositions := m.agents.graphLayout()
 	podBorders := make(map[[2]int]bool)
+	columnWidth := 0
+	nodes := m.agents.nodeMap()
+	for _, group := range m.agents.data.groups {
+		_, _, podWidth, _ := m.agents.graphPod(group, nodes)
+		columnWidth = max(columnWidth, podWidth)
+	}
 	podColumn := 0
 	for _, group := range m.agents.data.groups {
-		pod, _, podWidth, _ := m.agents.graphPod(group, m.agents.nodeMap())
+		pod, _, _, _ := m.agents.graphPod(group, nodes)
 		for row := range pod {
-			for column := 0; column < podWidth; column++ {
-				if row == 0 || row == len(pod)-1 || column == 0 || column == podWidth-1 {
+			for column := 0; column < columnWidth; column++ {
+				if row == 0 || row == len(pod)-1 || column == 0 || column == columnWidth-1 {
 					podBorders[[2]int{2 + row, podColumn + column}] = true
 				}
 			}
 		}
-		podColumn += podWidth + 3
+		podColumn += columnWidth + 3
 	}
-	nodes := m.agents.nodeMap()
 	for row, graphLine := range graphLines {
 		plain := ansi.Strip(graphLine)
 		column := 0
