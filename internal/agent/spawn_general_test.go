@@ -492,3 +492,26 @@ func TestGeneralSpawnStalledPromptIsNotSentAgain(t *testing.T) {
 		t.Fatalf("record status = %q; want unresolved", stored.Status)
 	}
 }
+
+func TestGeneralSpawnAllowTrustDialogIdleStartKeepsPrompt(t *testing.T) {
+	home := testHome(t)
+	writeGeneralParent(t, home)
+	t.Setenv("HERDR_PANE_ID", "w1:p9")
+	dir := t.TempDir()
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	scriptGeneralNewTab(fake, sleep, dir, "x", "codex", "idle")
+	options := generalOptions("x", "codex", dir)
+	options.AllowTrustDialog = true
+
+	envelope := Spawn(context.Background(), home, options)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	if stored := readAgent(t, home, "x"); !strings.HasPrefix(stored.FirstPrompt, "⬢ You are the general agent x.") {
+		t.Fatalf("kept prompt = %q; want the first prompt", stored.FirstPrompt)
+	}
+	if prompts := fake.recorded("agent.prompt"); len(prompts) != 0 {
+		t.Fatalf("agent.prompt requests = %d; want 0", len(prompts))
+	}
+}
