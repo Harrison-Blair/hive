@@ -164,14 +164,18 @@ func countAgentRows(lines []string, name string) int {
 	count := 0
 	for _, line := range lines {
 		plain := ansi.Strip(line)
-		index := strings.Index(plain, name+" ·")
-		if strings.Contains(plain, "│ │") && strings.Contains(plain, name) {
-			prefix := plain[:strings.Index(plain, name)]
-			if hasAgentMarkAnywhere(prefix) {
+		graphIndex := strings.Index(plain, name)
+		if graphIndex >= 0 {
+			end := graphIndex + len(name)
+			prefix := plain[:graphIndex]
+			cardBorder := strings.LastIndex(prefix, "│")
+			if (end == len(plain) || strings.ContainsRune(" ·│", rune(plain[end]))) && cardBorder >= 0 &&
+				hasAgentMarkAnywhere(prefix[cardBorder+len("│"):]) {
 				count++
+				continue
 			}
-			continue
 		}
+		index := strings.Index(plain, name+" ·")
 		if index < 0 {
 			continue
 		}
