@@ -1,0 +1,55 @@
+ hive
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                             ╭─ terminal too small ───────────────────╮
+                             │                                        │
+                             │          this pane is 100×55           │
+                             │       hive needs at least 120×40       │
+                             │                                        │
+                             │     resize or zoom the herdr pane      │
+                             │                                        │
+                             ╰────────────────────────────────────────╯
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ctrl+c ×2 quit

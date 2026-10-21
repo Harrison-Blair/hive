@@ -51,15 +51,15 @@ function screen(t) {
   put(t, 2, 5, 'Interrogate, round 2', 'accent', 1);
   segs(t, 2, 7, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has']]);
   segs(t, 2, 8, [['spawned=false', 'code'], ['. '], ['agent stop', 'code'], [' refuses it.']]);
-  var cols = [9, 30, 17, 15];
+  var cols = [9, 34, 17, 13];
   var y = 10;
   function trow(cells, b) { var x = 2; cells.forEach(function (c, i) { put(t, x, y, ' ' + fit(c, cols[i] - 1), b && i === 0 ? 'accent' : 'fg', b); x += cols[i]; if (i < cols.length - 1) { put(t, x, y, '│', 'border'); x += 1; } }); y += 1; }
-  trow(['Choice', 'Answer', 'Pros', 'Cons'], 1);
+  trow(['Choice', 'Answer', 'Pros', 'Cons'], 0);
   var s = ''; cols.forEach(function (c, i) { s += rep('─', c) + (i < cols.length - 1 ? '┼' : ''); }); put(t, 2, y, s, 'border'); y += 1;
-  trow(['A (REC)', 'Record that bare hive start…', 'No tab pile-up', 'Field change'], 0);
+  trow(['A (REC)', 'Record that bare hive started it', 'No tab pile-up', 'Field change'], 0);
   trow(['B', 'Leave the old tab', 'Smallest change', 'Tabs pile up'], 0);
   put(t, 2, 15, '• ', 'accent'); put(t, 4, 15, 'Recommended:', 'fg', 1); put(t, 17, 15, 'A, hive closes only panes it started.', 'fg');
-  put(t, 2, 17, '14:24', 'dim'); put(t, 8, 17, 'you', 'user', 1); put(t, 13, 17, '1A, 2A, 3B', 'user');
+  put(t, 2, 17, '14:24', 'dim'); put(t, 8, 17, 'you', 'user', 1); put(t, 2, 18, '1A, 2A, 3B', 'user');
   vline(t, 79, 8, 6, '┃', 'dim');
   box(t, 0, 20, 80, 3, 'accent', 'message', 'accent'); put(t, 2, 21, '> ', 'user'); put(t, 4, 21, '█', 'accent');
 }

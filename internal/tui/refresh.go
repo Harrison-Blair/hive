@@ -24,7 +24,7 @@ type refreshCheckMsg struct {
 }
 
 func (m *Model) startRefreshCheck() tea.Cmd {
-	if m.refreshChecking {
+	if m.refreshChecking || m.demo != nil {
 		return nil
 	}
 	m.refreshChecking = true

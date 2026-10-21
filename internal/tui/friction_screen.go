@@ -100,13 +100,17 @@ func loadFriction(home string) (frictionData, error) {
 			data.entries = append(data.entries, entry)
 		}
 	}
-	sort.SliceStable(data.entries, func(i, j int) bool {
-		if data.entries[i].opened == data.entries[j].opened {
-			return data.entries[i].file < data.entries[j].file
-		}
-		return data.entries[i].opened > data.entries[j].opened
-	})
+	sortFrictionEntries(data.entries)
 	return data, nil
+}
+
+func sortFrictionEntries(entries []frictionEntry) {
+	sort.SliceStable(entries, func(i, j int) bool {
+		if entries[i].opened == entries[j].opened {
+			return entries[i].file < entries[j].file
+		}
+		return entries[i].opened > entries[j].opened
+	})
 }
 
 func parseFrictionEntry(file, path, contents string, resolved bool) frictionEntry {
@@ -510,13 +514,18 @@ func (m *Model) startFrictionFileRead(state *frictionState, path, title string) 
 	state.fileTitle = title
 	state.fileContent = ""
 	return func() tea.Msg {
-		data, err := os.ReadFile(path)
-		return frictionFileMsg{title: title, content: string(data), err: err}
+		content, err := m.readScreenFile(path)
+		return frictionFileMsg{title: title, content: content, err: err}
 	}
 }
 
 func (m *Model) acceptFrictionFile(msg frictionFileMsg) {
 	m.friction.fileLoading = false
+	if errors.Is(msg.err, errDemoNoFile) {
+		m.friction.fileContent = demoNoFile
+		m.demo.notice = demoNoFile
+		return
+	}
 	if msg.err != nil {
 		m.friction.fileContent = "error: " + boundedError(msg.err.Error())
 		return

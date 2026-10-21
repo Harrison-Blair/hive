@@ -44,27 +44,27 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                       Choice  │ Answer                               │ Pros                 │ Cons                   │
-k|rffffffffffffffffffffffaaaaaaaaarffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffrffffffffffffffffffffffffr
-b|000000000000000000000001111111110111111111111111111111111111111111111110111111111111111111111101111111111111111110000000
-t|│                      ─────────┼──────────────────────────────────────┼──────────────────────┼──────────────────      │
-k|rffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffr
+t|│                       Choice            │ Answer                            │ Pros             │ Cons                │
+k|rfffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                       A (REC) │ Record that bare hive started it     │ No tab pile-up       │ Field change           │
-k|rfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffrffffffffffffffffffffffffr
+t|│                      ───────────────────┼───────────────────────────────────┼──────────────────┼───────────────────  │
+k|rffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                       B       │ Leave the old tab, open a new one    │ Smallest change      │ Dead tabs pile up      │
-k|rfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffrffffffffffffffffffffffffr
+t|│                       A (REC)           │ Record that bare hive started it  │ No tab pile-up   │ Field change        │
+k|rfffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                       C       │ Reuse the same pane                  │ One tab always       │ Must exit harness      │
-k|rfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffrffffffffffffffffffffffffr
+t|│                       B                 │ Leave the old tab, open a new one │ Smallest change  │ Dead tabs pile up   │
+k|rfffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                       C                 │ Reuse the same pane               │ One tab always   │ Must exit harness   │
+k|rfffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      ┃
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                      • Recommended: A, because hive may close only panes it started.                                 ┃
 k|rffffffffffffffffffffffaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
-b|000000000000000000000000011111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b|000000000000000000000000011111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                      • Reply like 1A, 2A, 3A, or simplify N.                                                         ┃
 k|rffffffffffffffffffffffaafffffffffffccccccccccfffffccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
