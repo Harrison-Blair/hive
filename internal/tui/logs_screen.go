@@ -237,9 +237,13 @@ func (m *Model) pasteLogFilter(text string) {
 }
 
 // acceptLogEvents takes the events of a load. The selection keeps its event
-// across a refresh. Follow selects the newest row, and a fixture selection
-// selects the event with that time.
+// across a refresh. When the load brings a new newest row, follow selects
+// it. A fixture selection selects the event with that time.
 func (m *Model) acceptLogEvents(events []logs.Event) {
+	newest := ""
+	if before := m.filteredLogRows(); len(before) > 0 {
+		newest = before[len(before)-1].key
+	}
 	m.events = events
 	rows := m.filteredLogRows()
 	if m.logPendingTime != "" {
@@ -249,7 +253,7 @@ func (m *Model) acceptLogEvents(events []logs.Event) {
 			}
 		}
 		m.logPendingTime = ""
-	} else if m.follow {
+	} else if m.follow && (len(rows) == 0 || rows[len(rows)-1].key != newest) {
 		m.logSelectedKey = ""
 		if len(rows) > 0 {
 			m.logSelectedKey = rows[len(rows)-1].key

@@ -548,3 +548,27 @@ func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
 	m, _ = raise(t, m, key('k', "k"))
 	requireView(t, m, `"reason": "V4 diff scope; Design section missin…`)
 }
+
+// Follow selects the newest event when a load brings a new newest event. A
+// load with the same newest event keeps the selection, so a refresh of the
+// Logs fixture keeps its selected event.
+func TestLogsFollowKeepsTheSelectionWithoutNewEvents(t *testing.T) {
+	demo := newTestDemoModel(t, "Logs.fixture.json", demoSize{})
+	requireView(t, demo, "event 13:38:02")
+	events := append([]logs.Event(nil), demo.events...)
+	demo, _ = raise(t, demo, screenLoadMsg{request: logsDataRequest, events: events})
+	requireView(t, demo, "event 13:38:02")
+
+	m := logsModelAt(t, 120, 40)
+	m, _ = raise(t, m, key('k', "k"))
+	m, _ = raise(t, m, key('f', "f"))
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	more := logsFixture(t, day)
+	line := logsFixtureEvent(t, day.Add(time.Minute), "INFO", "task", "landed", nil)
+	var fields map[string]any
+	if err := json.Unmarshal([]byte(line), &fields); err != nil {
+		t.Fatal(err)
+	}
+	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: append(more, logs.Event{Raw: []byte(line), Fields: fields})})
+	requireView(t, m, "▶ 12:01:00 INFO  task      landed")
+}
