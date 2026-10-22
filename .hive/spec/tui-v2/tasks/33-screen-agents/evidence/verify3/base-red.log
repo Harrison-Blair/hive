@@ -1,0 +1,81 @@
+# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
+internal/tui/agents_screen_test.go:84:6: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:92:6: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:96:43: undefined: agentsNoneText
+internal/tui/agents_screen_test.go:187:7: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:188:65: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:196:7: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:197:67: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:243:8: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:244:49: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:257:8: m.graph undefined (type *Model has no field or method graph)
+internal/tui/agents_screen_test.go:257:8: too many errors
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+--- FAIL: TestCardSelectedHeavyBorder (0.00s)
+    card_test.go:36: 52 cells differ from the expected grid:
+        row 0 col 0: want '┏' accent normal, got '╭' accent normal
+        row 0 col 1: want '━' accent normal, got '─' accent normal
+        row 0 col 2: want '━' accent normal, got '─' accent normal
+        row 0 col 3: want '━' accent normal, got '─' accent normal
+        row 0 col 4: want '━' accent normal, got '─' accent normal
+        row 0 col 5: want '━' accent normal, got '─' accent normal
+        row 0 col 6: want '━' accent normal, got '─' accent normal
+        row 0 col 7: want '━' accent normal, got '─' accent normal
+        row 0 col 8: want '━' accent normal, got '─' accent normal
+        row 0 col 9: want '━' accent normal, got '─' accent normal
+        row 0 col 10: want '━' accent normal, got '─' accent normal
+        row 0 col 11: want '━' accent normal, got '─' accent normal
+        row 0 col 12: want '━' accent normal, got '─' accent normal
+        row 0 col 13: want '━' accent normal, got '─' accent normal
+        row 0 col 14: want '━' accent normal, got '─' accent normal
+        row 0 col 15: want '━' accent normal, got '─' accent normal
+        row 0 col 16: want '━' accent normal, got '─' accent normal
+        row 0 col 17: want '━' accent normal, got '─' accent normal
+        row 0 col 18: want '━' accent normal, got '─' accent normal
+        row 0 col 19: want '━' accent normal, got '─' accent normal
+        row 0 col 20: want '━' accent normal, got '─' accent normal
+        row 0 col 21: want '━' accent normal, got '─' accent normal
+        row 0 col 22: want '━' accent normal, got '─' accent normal
+        row 0 col 23: want '┓' accent normal, got '╮' accent normal
+        row 1 col 0: want '┃' accent normal, got '│' accent normal
+        row 1 col 23: want '┃' accent normal, got '│' accent normal
+        row 2 col 0: want '┃' accent normal, got '│' accent normal
+        row 2 col 23: want '┃' accent normal, got '│' accent normal
+        row 3 col 0: want '┗' accent normal, got '╰' accent normal
+        row 3 col 1: want '━' accent normal, got '─' accent normal
+        row 3 col 2: want '━' accent normal, got '─' accent normal
+        row 3 col 3: want '━' accent normal, got '─' accent normal
+        row 3 col 4: want '━' accent normal, got '─' accent normal
+        row 3 col 5: want '━' accent normal, got '─' accent normal
+        row 3 col 6: want '━' accent normal, got '─' accent normal
+        row 3 col 7: want '━' accent normal, got '─' accent normal
+        row 3 col 8: want '━' accent normal, got '─' accent normal
+        row 3 col 9: want '━' accent normal, got '─' accent normal
+        row 3 col 10: want '━' accent normal, got '─' accent normal
+        row 3 col 11: want '━' accent normal, got '─' accent normal
+        row 3 col 12: want '━' accent normal, got '─' accent normal
+        row 3 col 13: want '━' accent normal, got '─' accent normal
+        row 3 col 14: want '━' accent normal, got '─' accent normal
+        row 3 col 15: want '━' accent normal, got '─' accent normal
+        row 3 col 16: want '━' accent normal, got '─' accent normal
+        row 3 col 17: want '━' accent normal, got '─' accent normal
+        row 3 col 18: want '━' accent normal, got '─' accent normal
+        row 3 col 19: want '━' accent normal, got '─' accent normal
+        row 3 col 20: want '━' accent normal, got '─' accent normal
+        row 3 col 21: want '━' accent normal, got '─' accent normal
+        row 3 col 22: want '━' accent normal, got '─' accent normal
+        row 3 col 23: want '┛' accent normal, got '╯' accent normal
+        
+        rendered:
+        [38;2;245;185;66m╭[m[38;2;245;185;66m──────────────────────[m[38;2;245;185;66m╮[m
+        [38;2;245;185;66m│[m [38;2;110;230;154m●[m [1;38;2;245;185;66mmanager-hive[m       [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m [38;2;163;157;144mclaude · working[m     [38;2;245;185;66m│[m
+        [38;2;245;185;66m╰[m[38;2;245;185;66m[m[38;2;245;185;66m──────────────────────╯[m
+--- FAIL: TestFitWave4 (0.84s)
+    fit_test.go:130: Selected card 24x4: broken top border "╭──────────────────────╮"
+    fit_test.go:130: Selected card 24x4: broken side border "│ ◐ wide·text wide·te… │"
+    fit_test.go:130: Selected card 24x4: broken side border "│ wide·text wide·text… │"
+    fit_test.go:130: Selected card 24x4: broken bottom border "╰──────────────────────╯"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.862s
+FAIL
