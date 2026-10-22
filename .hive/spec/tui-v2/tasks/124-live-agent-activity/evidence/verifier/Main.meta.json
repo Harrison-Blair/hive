@@ -1,0 +1,15 @@
+{
+  "pane_id": "w1:p1",
+  "workspace_id": "w1",
+  "tab_id": "w1:t1",
+  "source": "visible",
+  "format": "ansi",
+  "revision": 0,
+  "truncated": false,
+  "scroll": {
+    "max_offset_from_bottom": 0,
+    "offset_from_bottom": 0,
+    "viewport_rows": 59
+  },
+  "stable_reads_500ms": true
+}

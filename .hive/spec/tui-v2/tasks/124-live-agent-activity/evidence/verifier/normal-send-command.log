@@ -1,0 +1,5 @@
+[penguin@iceberg 124-live-agent-activity]$ HIVE_HOME='/home/penguin/source/hive/projects/hive/worktrees/124-live-agent-
+activity/.hive/tmp/verify124/home' .hive/tmp/verify124/hive agent send --agent manager-alpha-g1 'verifier scratch send'
+ --timeout 5
+hive: agent_not_ready: agent w1:p2 is no longer the pane foreground process
+[penguin@iceberg 124-live-agent-activity]$

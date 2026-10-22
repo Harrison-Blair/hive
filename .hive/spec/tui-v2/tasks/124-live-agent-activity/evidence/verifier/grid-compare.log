@@ -1,0 +1,70 @@
+AgentDetailsGeneral.grid
+120x40: 4800 cells match
+AgentDetails.grid
+120x40: 4800 cells match
+AgentsCoordinatorChild.grid
+120x40: 4800 cells match
+AgentsHiddenParent.grid
+120x40: 4800 cells match
+AgentsHome.grid
+120x40: 4800 cells match
+AgentsMany.grid
+120x40: 4800 cells match
+AgentsNested.grid
+120x40: 4800 cells match
+ChatEvents.grid
+120x40: 4800 cells match
+Chat.grid
+120x40: 4800 cells match
+ChatStatus.grid
+120x40: 4800 cells match
+CompactAgents.grid
+80x24: 1920 cells match
+CompactAgentsHome.grid
+80x24: 1920 cells match
+CompactChat.grid
+80x24: 1920 cells match
+CompactChatStatus.grid
+80x24: 1920 cells match
+CompactFriction.grid
+80x24: 1920 cells match
+Compact.grid
+80x24: 1920 cells match
+CompactHealth.grid
+80x24: 1920 cells match
+CompactLiveOverview.grid
+80x24: 1920 cells match
+CompactLivePod.grid
+80x24: 1920 cells match
+CompactLogs.grid
+80x24: 1920 cells match
+Components.grid
+120x67: 8040 cells match
+Friction.grid
+120x40: 4800 cells match
+FrictionResolved.grid
+120x40: 4800 cells match
+HealthAgentsGeneral.grid
+120x40: 4800 cells match
+HealthAgents.grid
+120x40: 4800 cells match
+Health.grid
+120x40: 4800 cells match
+Help.grid
+120x40: 4800 cells match
+LiveOverview.grid
+120x40: 4800 cells match
+LivePod.grid
+120x40: 4800 cells match
+Logs.grid
+120x40: 4800 cells match
+Main.grid
+120x40: 4800 cells match
+TooSmall.grid
+60x16: 960 cells match
+WorkGoals.grid
+120x40: 4800 cells match
+Work.grid
+120x40: 4800 cells match
+WorkQueue.grid
+120x40: 4800 cells match

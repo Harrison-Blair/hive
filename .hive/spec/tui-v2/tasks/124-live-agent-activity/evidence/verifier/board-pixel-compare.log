@@ -1,0 +1,15 @@
+LiveOverview: staged/copy PNG pixels equal=True
+LivePod: staged/copy PNG pixels equal=True
+CompactLiveOverview: staged/copy PNG pixels equal=True
+CompactLivePod: staged/copy PNG pixels equal=True
+Main: staged/copy PNG pixels equal=True
+AgentsMany: staged/copy PNG pixels equal=True
+AgentDetails: staged/copy PNG pixels equal=True
+CompactAgents: staged/copy PNG pixels equal=True
+AgentsHome: staged/copy PNG pixels equal=True
+AgentsNested: staged/copy PNG pixels equal=True
+AgentsHiddenParent: staged/copy PNG pixels equal=True
+AgentsCoordinatorChild: staged/copy PNG pixels equal=True
+CompactAgentsHome: staged/copy PNG pixels equal=True
+AgentDetailsGeneral: staged/copy PNG pixels equal=True
+Help: staged/copy PNG pixels equal=True
