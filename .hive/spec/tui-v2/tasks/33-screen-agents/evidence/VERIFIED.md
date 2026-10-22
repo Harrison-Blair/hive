@@ -1,171 +1,166 @@
 # Verification: 33-screen-agents
 
-Verifier: `t33-verifier-3`. Task commit: `4b7007774f94d99e8658238430f534819f15a10e`.
+Verifier: `t33-verifier-4`. Tested commit: `00763bde`.
 
-## Verdict: fail
+## Verdict: pass
 
-The required merge at the start of V-gate failed. The merge target was
-`origin/dev` at `d3e1aa2c4b2f0a63cef6e417ca86a40bedbff6e4`.
-`internal/tui/shell_test.go` and `testdata/ste-baseline.json` have conflicts.
-The verifier aborted the merge. A worker must repair the task. This verdict
-does not depend on a later change to `dev`.
-
-The selection repair passes the plain-text check. The selected card has a
-heavy border. The idle symbol does not serve as the selection signal.
-
-## Items
+This run checks the merge repair. The manager limited this run to the diff
+since `4c5ffad3`, the removed-test mappings, five board checks, a deliberate
+token break, one live Main check, and V-gate. The earlier independent runs
+remain in `verify3/`. The earlier merge failure is repaired.
 
 | Item | Result | Observation |
 | --- | --- | --- |
-| V1 | fail | Incomplete base-code proof. The independent green run, full Help check, and deliberate token and key breaks behaved as expected. The complete new screen test file cannot compile on base because the graph state is absent. Per-test behavioral red proof remains incomplete. |
-| V2 | pass | All five new live captures have zero differing cells under the space-cell rule. The key checks and plain-text selection check pass. |
-| V-gate | fail | The required merge has two conflicts. All five gate commands pass on the unmerged task commit. No pass of the integrated code is claimed. |
+| V1 | pass | The Agents and component test run passes. All five board checks pass. The deliberate idle-token break fails tests. The removed-test mappings keep the required behavior. The manager accepts the earlier base compile failure as red when a deliberate break fails the test. |
+| V2 | pass | A new Main live capture has zero differing cells under the space-cell rule. The new Main key checks pass. The manager accepts the earlier five-board live run, heavy-selection check, and key-break proof in `verify3/`. |
+| V-gate | pass | One fetch and merge of dev: already up to date at `361b8848`. Diff scope is allowed. All five gate commands exit 0. The first two print nothing. No flake rerun was needed. |
 
-## V1: independent runs
+## Merge repair review
 
-Full output: `verify3/green.log`, `base-red.log`, `help-red.log`,
-`token-red.log`, and `key-red.log`.
+Reviewed `4c5ffad3..00763bde`, the combined merge diffs, and the final code.
 
-Green command:
+- `e578f8b1` keeps both shell-test expectations: Agents has `no project agents`;
+  Chat has `no chat yet`. The STE baseline keeps both task entries.
+- `656bac63` keeps both removals from `legacyDetails`. No legacy details
+  case remains. The frame uses each screen's panel hook.
+- The Agents `t` action uses the new Tasks state. It closes the file state
+  and selects the task. Both the model test and the new live check pass.
+- The board tests use dev's `checkBoardGolden`. No duplicate compare helper
+  remains in the Agents screen test file.
+- Health has its own Agents panel. The removed TREE, GRAPH, and TABLE
+  renderers have no caller. The shared loader, peek, and restart remain.
+- The README change is in `Manager decisions`. The diff against dev contains
+  only the brief's source paths and this task's evidence.
+
+### Removed-test mappings
+
+Reviewed each row of `merge-repair.md`, including the initially failing tests
+and the other removed old-view tests. No required kept behavior lacks a
+new-screen test. The replacement tests were read and run in this verification.
+They assert fixed expected text, state, cells, or log fields.
+
+| Kept behavior | New-screen proof rerun |
+| --- | --- |
+| Current generation only; stopped current agent remains | `TestAgentsGraphShowsTheCurrentGenerationOnly` |
+| Hide and show stopped agents; no children after hide | `TestAgentsHHidesStoppedAgents` |
+| Long agent key and missing parent record | `TestAgentsPodHoldsAgentsWithoutAParentRecord` |
+| Selection, hide, and attach action logs | `TestAgentsKeysLogTheirActions` |
+| Stale agent and stale supervisor show unknown | `TestAgentsCardsShowUnknownWhenTheSupervisorIsStale` |
+| Forty workers keep selection visible | `TestAgentsFitEachSize/forty_workers` |
+| Vi and arrow movement | `TestAgentsUpDownMoveInThePod`, `TestAgentsArrowsScrollThePods` |
+| Refresh keeps selected key | `TestAgentsNormalModeLoadsAndRefreshes` |
+| Project record order | `TestAgentsPodsFollowProjectRecordOrder` |
+| Unread nudged manager; read, absent, and worker exclusions | `TestAgentsDetailsShowAnUnreadNudge` |
+| Equal columns, card size, padding, border, tokens, goal and status text | `TestAgentsBoardsMatchTheirGrids`, component card tests |
+| Mixed-weight joints and visible selection without colour | `TestAgentsSelectedCardJoints`, `TestAgentsGraphShowsProjectAgentsOnly` |
+| Long text fits; borders stay whole | `TestAgentsFitEachSize/long_text` |
+| Popup fields and actions, task action, footer hints | Board checks, `TestAgentsDetailsPopupKeys`, `TestAgentsTOpensTheTask`, `TestAgentsCompactFooter` |
+
+The old topology tabs, history view, active-task ghost restriction, inferred
+parent text, nudge edges, old detail strip, task-status and next-task fields,
+and old working-count label are removed by the decisions listed in the
+worker's mapping table. Their replacements follow decision 14, the approved
+boards, and the task 33 Manager decisions. The supervisor PID and age tests
+are kept as loader checks. The changed peek and generation-fallback tests
+also remain and pass. The full race gate includes restart and Health tests.
+
+## V1 commands and output
+
+`verify4/green.log` contains this independent run, exit 0:
 
 ```sh
 go test ./internal/tui ./internal/tui/component -run 'TestAgents|TestHelpMatchesItsBoard|TestCard|TestFitWave4' -count=1 -v
 ```
 
-Exit 0. This includes all four Agents golden checks, the full Help grid,
-35 responsive cases, movement, popup, action, footer, and scratch-home
-normal-mode record and refresh tests. It also includes the heavy card and
-mixed-weight joint checks.
-
-Base run: a scratch worktree at local `dev`, `f1847c7b`, received the new
-screen tests, the frame tests, and the two changed component test files.
-The screen package failed to compile: `m.graph` and `agentsNoneText` are
-absent. The component tests failed for behavior: the base draws rounded
-selected borders instead of heavy borders. With the new screen test file
-removed, the full Help test failed with 294 cells that differ. A later
-attempt to isolate the base screen tests had unused imports; it supplies
-no additional proof. No behavioral base proof is claimed for each test.
-
-Deliberate breaks were made only in a second scratch worktree of the task:
-
-- Idle dot: `accentStyle.Render("◐")` changed to `dimStyle.Render("◐")`.
-  All four Agents golden cases failed. The project-agent test reported a
-  dim idle dot instead of accent. The component golden test also failed.
-- Hide key: `case "h":` changed to `case "H":`.
-  `TestAgentsHHidesStoppedAgents` failed: `h` did not hide stopped agents.
-
-Both files were restored after their red run. No task source changed.
-
-## V2: independent live run
-
-Built with `go build -o .hive/tmp/verify33/hive .`. Herdr client and server
-were 0.9.5, protocol 22. The verifier made scratch tab `wAG:t2`, pane
-`wAG:p2`, in its own workspace. The pane had 57 rows and no scroll offset.
-The command for each board was:
+Deliberate break: in `internal/tui/component/card.go`, change the idle dot
+from `accentStyle.Render("◐")` to `dimStyle.Render("◐")`. Run:
 
 ```sh
-HIVE_HOME=SCRATCH_HOME COLORTERM=truecolor SCRATCH_BINARY --demo WORKTREE/.hive/spec/tui-v2/design/BOARD.fixture.json --size WxH
+go test ./internal/tui ./internal/tui/component -run 'TestAgentsBoardsMatchTheirGrids|TestAgentsGraphShowsProjectAgentsOnly|TestHelpMatchesItsBoard|TestCard' -count=1 -v
 ```
 
-Demo mode implies no startup. The scratch home contained a home marker.
-No real home record was used by these runs. Sizes: CompactAgents 80×24;
-the other four boards 120×40.
-
-Each capture used `herdr pane read wAG:p2 --source visible --format ansi`.
-Two reads 500 ms apart had to be equal. The captured viewport had all
-required rows; pane metadata records offset 0. The CLI returns ANSI text
-rather than a JSON read envelope with a truncation field. There was no
-truncation notice. The converter cropped the top-left board rectangle.
-The comparison used `internal/lib/cellgrid` and ignored token and weight
-only when both cells were spaces.
-
-| Board | Strict differences | Space-cell differences | Live-rule differences |
-| --- | --- | --- | --- |
-| Main | 3438 | 3438 | 0 |
-| AgentsMany | 2193 | 2193 | 0 |
-| AgentDetails | 942 | 942 | 0 |
-| CompactAgents | 779 | 779 | 0 |
-| Help | 1420 | 1420 | 0 |
-
-`verify3/` holds each ANSI capture, pane metadata, screen PNG, new board
-PNG, and colour-free plain text. The comparison program is the existing
-`evidence/screens/compare-program.go.txt`, rebuilt independently.
-`verify3/live.log` records the comparisons and key assertions. Its final
-Firefox error was a missing scratch profile directory. The verifier then
-created new profile directories and captured all twelve PNG files.
-The PNGs were opened and compared. Font metrics and browser canvas edges
-differ; terminal cells agree.
-
-The new board captures used each absolute board path from the brief and:
+Exit 1, as required. The four Agents board cases, the idle-dot assertion,
+and the idle card golden fail. Full output: `verify4/token-red.log`.
+The source was restored; `git diff --quiet -- internal/tui/component/card.go`
+exits 0. After the restore and dev merge, this command exits 0:
 
 ```sh
-firefox --headless --no-remote --profile SCRATCH --window-size=1220,780 --screenshot OUT.png file://BOARD.dc.html
+go test ./internal/tui -run 'TestAgentsBoardsMatchTheirGrids|TestHelpMatchesItsBoard' -count=1 -v
 ```
 
-Screen captures used a scratch ANSI-to-HTML conversion and the same
-Firefox command. No colour was used to check the `.plain.txt` files.
+`verify4/restored-green.log` records Main, AgentsMany, AgentDetails,
+CompactAgents, and the full Help check. The base compile red, component
+behavioral red, full Help red, and hide-key break of the earlier independent
+run remain in `verify3/`. The eight repair-test break results are recorded
+in `merge-repair/breaks.txt`; this run reviewed those results and reran their
+green tests. It does not claim a new execution of those eight breaks.
 
-### Keys
+## V2 Main live check
 
-- Main: `h` hides two stopped agents; a second `h` shows them. `r` leaves
-  the graph unchanged. Down and right move the heavy selection border to
-  the two children. Enter opens details. `r` also leaves details unchanged.
-  Escape closes details. Attach and peek show `demo mode: no action`.
-  `t` opens task `4-agents-equal-columns` in Work Tasks.
-- AgentsMany: `k` selects the manager with joint `┡`. `j` and four right
-  keys show projects 2–5. Four left keys restore projects 1–4.
-- AgentDetails: arrow and page input are accepted; escape closes details.
-  Herdr rejected `pgdn` and `pagedown` as key names before the final run.
-  The final run sent the terminal page sequences with `pane send-text`.
-- CompactAgents: enter opens details; escape closes them; `?` opens help;
-  escape restores graph focus and its compact hints.
-- Help: arrow input stays in help. Both `?` and escape close help.
-- The first Ctrl+C shows the quit notice. The second returns to the shell.
+Built the tested task with `go build`. Herdr client and server: 0.9.5,
+protocol 22. Owned scratch tab `wAQ:t2`, pane `wAQ:p2`, 57 visible rows.
+The command used an absolute scratch binary and fixture path:
+
+```sh
+HIVE_HOME=SCRATCH_HOME HIVE_NO_STARTUP=1 COLORTERM=truecolor SCRATCH_BINARY --demo WORKTREE/.hive/spec/tui-v2/design/Main.fixture.json --size 120x40
+```
+
+The scratch home had its own marker. No real record was used. Two reads
+500 ms apart were equal (`Main-first.ansi`, `Main.ansi`). Both used
+`herdr pane read wAQ:p2 --source visible --format ansi`. Metadata is in
+`Main-pane.json`: scroll offset 0. The CLI gives ANSI text, with no JSON
+truncation field; the capture had all required rows and no truncation notice.
+The comparison cropped the top-left 120×40 cells. It used the existing
+comparison source in `evidence/screens/compare-program.go.txt`, rebuilt for
+this run.
+
+`verify4/live-diff.log`:
+
+```text
+Main.grid: strict differences 3438, space-cell token or bold only 3438, differences under the live rule 0
+```
+
+The new live keys pass (`verify4/keys.log` and key captures): `h` hides two
+stopped agents; `h` shows them again; down and enter open the worker popup;
+esc returns to graph hints; `t` opens Work Tasks with
+`4-agents-equal-columns` selected. Two Ctrl+C keys return to the shell.
 
 ### Visual check
 
+New PNGs: `verify4/Main-board.png` and `verify4/Main-live.png`. The board
+capture used the absolute approved path and Firefox with a new scratch
+profile, `--headless --no-remote --window-size=1220,780 --screenshot`.
+The live PNG used an ANSI SGR to HTML pre conversion and a separate new
+profile. Both PNGs were opened and compared. Browser font metrics, margins,
+and canvas edges differ. The terminal cell comparison has zero differences.
+`verify4/Main-plain.txt` checks the states with no colour.
+
 | Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
-| Header | coordinator working, supervisor live, needs you count, clock | matches | Main, AgentsMany, AgentDetails, Help |
-| Compact header | coord, sup, needs you, clock | matches | CompactAgents |
-| Active tab | `1 Agents` with `━` underline | matches | All five boards |
-| Outer graph title | `project agents · N projects` | matches | Singular form on Main and CompactAgents |
-| Pod title | Project name | matches | One or four visible equal-width pods |
-| Goal line | Goal and status or wave | matches | Task 33 manager decisions |
-| Needs-user state | `needs you · approve mer…` | matches | AgentsMany |
-| Working agent | `●`, `working` | matches | AgentsMany |
-| Idle agent | `◐`, `idle` | matches | Accent token also checked by cell comparison |
-| Stopped agent | `○`, `stopped`, result | matches | Main and AgentsMany |
-| Selected card | `┏━┓┃┗┛` | matches | User option A; visible in colour-free capture |
-| Tree manager joint | `┯` | matches | Main and CompactAgents |
-| Tree child joint | `┷` | matches | New main-down capture |
-| Rail child joint | `┨` | matches | AgentsMany |
-| Rail manager joint | `┡` | matches | New many-k capture |
-| Tree connectors | `│`, bus, `┴` | matches | Main and CompactAgents |
-| Rail connectors | `│`, `├┤`, `╰┤` | matches | AgentsMany |
-| No children | `no workers` | matches | AgentsMany docs pod |
-| Stopped toggle | `h hides N stopped`, `h shows N stopped` | matches | Live hide and show check |
-| Legend | Spawn and state glyphs with words | matches | Wide graphs |
-| Horizontal scroll | Projects range, arrows, heavy bottom mark | matches | AgentsMany and right/left checks |
-| Graph footer | `[graph]` and action hints | matches | Wide and compact hints |
-| Details title and fields | Name, `esc closes`, role, project, status, record fields | matches | AgentDetails |
-| Details sections | `ACTIONS`, `RECENT` | matches | AgentDetails |
-| Details footer | `[details]`, attach, peek, task, scroll, close | matches | Wide and compact popups |
-| Help headings and map | `GLOBAL`, `ACTIONS`, `FILTER FIELDS`, `CHAT` | matches | Full Help board |
-| Help footer | `[help]`, scroll and close hints | matches | Help |
-| Screen behind popup or help | Graph text remains; focus word changes to details or help | matches | Full screen has the board dim token |
+| Header | coordinator working, supervisor live, needs you 0, clock | matches | Fixed fixture |
+| Active tab | `1 Agents`, `━` underline | matches | Full grid check |
+| Outer panel | `project agents · 1 project` | matches | Singular title |
+| Project pod | `hive`, goal and done status | matches | Centred pod |
+| Manager card | `◐`, `idle`, age | matches | Accent idle token also checked |
+| Selected card | Heavy `┏━┓┃┗┛` border | matches | Visible in plain text |
+| Tree joints and bus | `┯`, `│`, branch and child joints | matches | Fixed tree layout |
+| Worker cards | `○`, `stopped`, done or pass | matches | Two stopped agents |
+| Hide notice | `h hides 2 stopped` | matches | Live hide and show also pass |
+| Legend | Spawn, working, idle, stopped words and glyphs | matches | State does not depend on colour |
+| Footer | `[graph]`, movement and action hints | matches | Popup and task routes also checked |
+
+Other boards and focus states retain the independently checked visual rows
+and captures in `verify3/`, accepted by the manager for this repair scope.
 
 ## V-gate
 
-`verify3/merge.log` contains the failed integration attempt. The verifier
-fetched `origin/dev` once and ran `git merge --no-edit origin/dev` once.
-It did not resolve source conflicts. `git merge --abort` restored the task.
-`verify3/scope.log` is the diff stat against that fetched target. It has
-only the allowed source paths and task evidence, but it is not a completed
-merge result.
+At the start of V-gate, fetched `origin dev` and ran
+`git merge --no-edit origin/dev` once. Result: already up to date.
+`origin/dev` and local `dev` were `361b8848`. No conflict or merge-note
+exception was needed. `verify4/merge.log` records the output.
+`verify4/scope.log` records `git diff dev...HEAD --stat`.
 
-`verify3/gate.log` contains all output and exit statuses of the five gate
-commands on the restored task commit:
+Full output and exit statuses: `verify4/gate.log`.
 
 ```sh
 gofmt -l $(git ls-files -co --exclude-standard '*.go')
@@ -175,14 +170,14 @@ golangci-lint run ./...
 go test -race ./...
 ```
 
-All exit 0. The first two print nothing. No flake rerun was required.
-These results do not prove the code after a conflict repair.
+All exit 0. The first two print nothing. The linter reports `0 issues.`
+No known flake occurred.
 
 ## Cleanup
 
-The scratch live tab was closed after its foreground process returned to
-bash. The workspace again has only verifier tab `wAG:t1`. Both scratch Git
-worktrees were removed. The temporary binary, comparison program, browser
-profiles, scratch home, scripts, and extra logs were removed after the
-results were copied here. Final captures and logs remain in `verify3/`.
-No worker evidence file or plan tracker changed.
+The owned live process returned to the shell. The owned scratch tab was
+closed and focus returned to `wAQ:t1`. `verify4/cleanup.json` shows only the
+verifier tab in this workspace. The scratch binary, comparison program,
+home, browser profiles, HTML, and repair diff were removed. Final logs,
+ANSI captures, plain text, and PNG evidence remain in `verify4/`.
+No task source, worker evidence, or plan tracker was changed by this run.
