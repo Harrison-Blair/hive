@@ -1,6 +1,7 @@
 package component
 
 import (
+	"image/color"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -18,11 +19,13 @@ const (
 // and a title in the top border (decisions 6, 27). Lines are the body rows,
 // styled by the caller. Panel cuts a long line with … and pads a short one.
 // VMark and HMark draw the scroll marks of decision 5 on the right and the
-// bottom border. Heavy draws the border with heavy lines (┏━┓┃┗┛).
+// bottom border. Heavy draws the border with heavy lines (┏━┓┃┗┛). Edge,
+// when set, is the colour of the border of a panel without focus.
 type Panel struct {
 	Title   string
 	Focused bool
 	Heavy   bool
+	Edge    color.Color
 	Lines   []string
 	VMark   ScrollMark
 	HMark   ScrollMark
@@ -37,6 +40,9 @@ func (p Panel) View(width, height int) string {
 		b = lipgloss.ThickBorder()
 	}
 	edge, mark := borderStyle, dimStyle
+	if p.Edge != nil {
+		edge = lipgloss.NewStyle().Foreground(p.Edge)
+	}
 	if p.Focused {
 		edge, mark = accentStyle, accentStyle
 	}

@@ -38,7 +38,7 @@ b|000000000000000000000111111111110000000000000000000000000000001111110000000000
 t|│                 │  [ ]        previous / next view          r     restart · Health › Agents        │                 │
 k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
-t|│                 │  ↑↓ j k     move                          h     hide stopped agents              │                 │
+t|│                 │  ↑↓ j k     move                          h     show or hide stopped agents      │                 │
 k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
 t|│                 │  ←→         move on the graph             t     open task                        │                 │

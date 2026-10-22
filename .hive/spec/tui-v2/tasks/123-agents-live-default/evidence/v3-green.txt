@@ -1,0 +1,18 @@
+--- PASS: TestAgentsHMovesTheChildOfAHiddenParent (0.00s)
+--- PASS: TestGeneralAgentBoardsMatchTheirGrids (0.01s)
+--- PASS: TestAgentsBoardsMatchTheirGrids (0.01s)
+--- PASS: TestAgentsDemoActionsShowTheNotice (0.00s)
+--- PASS: TestAgentsNormalModeLoadsAndRefreshes (0.34s)
+--- PASS: TestAgentsGraphShowsTheCurrentGenerationOnly (0.00s)
+--- PASS: TestAgentsKeysLogTheirActions (0.00s)
+--- PASS: TestAgentsHideStoppedAtStart (0.00s)
+--- PASS: TestAgentsWorkingCardBorder (0.00s)
+--- PASS: TestAgentsBoardKeyHintsMatchTheBoard (0.52s)
+--- PASS: TestFrameRowsMatchMain (0.00s)
+--- PASS: TestFrameRowsMatchEachScreenBoard (0.03s)
+--- PASS: TestHelpMatchesItsBoard (0.00s)
+--- PASS: TestHealthAgentsHTogglesStoppedAgents (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.942s
+--- PASS: TestCardWorkingBorder (0.00s)
+--- PASS: TestKeyHintsGolden (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.010s

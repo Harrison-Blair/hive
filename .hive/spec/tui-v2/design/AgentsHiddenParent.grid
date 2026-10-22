@@ -21,46 +21,46 @@ t|│ │ g2-tui-v2 · wave A                 │ │ g4-rate-limits · wave B  
 k|afrfddddddddddddddddddfffffffffffffffffrfrfdddddddddddddddddddddddffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ╭──────────────────────╮           │ │ ╭──────────────────────╮           │ │ ┏━━━━━━━━━━━━━━━━━━━━━━┓           │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaafffffffffffrfa
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaafffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │ ● manager-hive       │           │ │ │ ● manager-api        │           │ │ ┃ ● t4-review-1        ┃           │ │
-k|afrfrfwffffffffffffffffffffrfffffffffffrfrfrfwffffffffffffffffffffrfffffffffffrfrfafwfaaaaaaaaaaaffffffffafffffffffffrfa
+k|afrfwfwffffffffffffffffffffwfffffffffffrfrfwfwffffffffffffffffffffwfffffffffffrfrfafwfaaaaaaaaaaaffffffffafffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111100000000000000000000000
 t|│ │ │ claude · working · … │           │ │ │ codex · working · 2m │           │ │ ┃ pi · working · 4m    ┃           │ │
-k|afrfrfddddddddddddddddddddfrfffffffffffrfrfrfddddddddddddddddddddfrfffffffffffrfrfafdddddddddddddddddffffafffffffffffrfa
+k|afrfwfddddddddddddddddddddfwfffffffffffrfrfwfddddddddddddddddddddfwfffffffffffrfrfafdddddddddddddddddffffafffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ├──────────────────────╯           │ │ ├──────────────────────╯           │ │ ┗━━━━━━━━━━━━━━━━━━━━━━┛           │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaafffffffffffrfa
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaafffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                                  │ │ │                                  │ │                                    │ │
 k|afrfrffffffffffffffffffffffffffffffffffrfrfrffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╭──────────────────────╮          │ │ │╭──────────────────────╮          │ │                                    │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ├┤ ● t5-worker-1        │          │ │ ├┤ ● t3-worker-1        │          │ │                                    │ │
-k|afrfrrfwffffffffffffffffffffrffffffffffrfrfrrfwffffffffffffffffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwfwffffffffffffffffffffwffffffffffrfrfrwfwffffffffffffffffffffwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ││ pi · working · 3m    │          │ │ ││ codex · working      │          │ │                                    │ │
-k|afrfrrfdddddddddddddddddffffrffffffffffrfrfrrfdddddddddddddddffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwfdddddddddddddddddffffwffffffffffrfrfrwfdddddddddddddddffffffwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╰──────────────────────╯          │ │ │╰──────────────────────╯          │ │                                    │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                                  │ │ │                                  │ │                                    │ │
 k|afrfrffffffffffffffffffffffffffffffffffrfrfrffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╭──────────────────────╮          │ │ │╭──────────────────────╮          │ │                                    │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ╰┤ ● t6-worker-1        │          │ │ ╰┤ ◐ t3-verifier-1      │          │ │                                    │ │
-k|afrfrrfwffffffffffffffffffffrffffffffffrfrfrrfaffffffffffffffffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrfrwfwffffffffffffffffffffwffffffffffrfrfrrfaffffffffffffffffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │  │ pi · working · 1m    │          │ │  │ pi · idle · 6m       │          │ │                                    │ │
-k|afrffrfdddddddddddddddddffffrffffffffffrfrffrfddddddddddddddfffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrffwfdddddddddddddddddffffwffffffffffrfrffrfddddddddddddddfffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │  ╰──────────────────────╯          │ │  ╰──────────────────────╯          │ │                                    │ │
-k|afrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+k|afrffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                                    │ │                                    │ │                                    │ │
 k|afrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
@@ -116,6 +116,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help                               
+t| [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help                                    
 k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

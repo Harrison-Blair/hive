@@ -302,7 +302,7 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.popupOpen || m.focusState() != "graph" {
 		t.Fatalf("esc did not close the popup: focus %q", m.focusState())
 	}
-	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help")
+	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help")
 }
 
 // Decision 35: a and p on the graph show the demo notice.
@@ -366,6 +366,8 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Role: "worker", Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
 	m, cmd = raise(t, m, key('R', "R"))
 	m = deliverAgentCommands(t, m, cmd)
+	requireView(t, m, "h shows 1 stopped")
+	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "○ t3-alpha-worker", "h hides 1 stopped")
 	if m.graph.selected != "t1-alpha-worker" {
 		t.Fatalf("selection %q after R; want t1-alpha-worker", m.graph.selected)
@@ -386,12 +388,13 @@ func openAgents(t *testing.T, home string, clock *testClock) *Model {
 }
 
 // The graph shows the current generation of each agent. A replaced
-// generation is not on the graph. A stopped current agent is on it.
+// generation is not on the graph. A stopped current agent is on it after h.
 func TestAgentsGraphShowsTheCurrentGenerationOnly(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	writeAgentRecord(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "idle", Parent: "manager-current"})
 	writeAgentRecord(t, home, records.Agent{Key: "worker-new", Name: "worker-new", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", Replaces: "worker-old"})
 	m := openAgents(t, home, clock)
+	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "manager-current", "● live-worker", "● worker-new", "○ active-ghost", "○ landed-ghost", "h hides 2 stopped")
 	view := ansi.Strip(m.View().Content)
 	for _, old := range []string{"manager-old", "worker-old"} {
@@ -495,7 +498,7 @@ func TestAgentsKeysLogTheirActions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"action":"agent selection"`, `"action":"agent hide stopped"`, `"hide_stopped":true`, `"action":"agent attach"`} {
+	for _, want := range []string{`"action":"agent selection"`, `"action":"agent hide stopped"`, `"hide_stopped":false`, `"action":"agent attach"`} {
 		if !strings.Contains(string(data), want) {
 			t.Fatalf("TUI log omits %q:\n%s", want, data)
 		}
@@ -515,4 +518,64 @@ func requireWholeAgentsBorders(t *testing.T, view string) {
 			t.Fatalf("line %d has a broken heavy border: %q\n%s", index+1, line, view)
 		}
 	}
+}
+
+// Decision 58: in normal mode the graph hides each stopped agent at start.
+// h shows them and h hides them again. An unresolved agent stays visible.
+func TestAgentsHideStoppedAtStart(t *testing.T) {
+	home, clock := agentsGenerationFixture(t)
+	writeAgentRecord(t, home, records.Agent{Key: "lost-worker", Name: "lost-worker", Role: "worker", Project: "demo", Task: "14-lost", Status: records.AgentUnresolved, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:30Z"})
+	m := openAgents(t, home, clock)
+	requireView(t, m, "manager-current", "● live-worker", "lost-worker", "h shows 2 stopped")
+	rejectView(t, m, "active-ghost", "landed-ghost")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "lost-worker", "○ active-ghost", "○ landed-ghost", "h hides 2 stopped")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "lost-worker", "h shows 2 stopped")
+	rejectView(t, m, "active-ghost", "landed-ghost")
+}
+
+// Decision 60: a working card and each joint on its border are in working.
+// An idle and a stopped card, their joints, and the rail outside a card keep
+// border. A selected working card keeps the heavy accent border. The cells
+// are those of AgentsHome.grid, column hive.
+func TestAgentsWorkingCardBorder(t *testing.T) {
+	m := newTestDemoModel(t, "AgentsHome.fixture.json", demoSize{})
+	type cell struct {
+		row, col int
+		r        rune
+		token    cellgrid.Token
+	}
+	check := func(m *Model, cells []cell) {
+		t.Helper()
+		got := renderGrid(t, m, 120, 40)
+		for _, want := range cells {
+			if c := got.At(want.row, want.col); c.Rune != want.r || c.Token != want.token {
+				t.Errorf("row %d col %d: got %q %s, want %q %s", want.row, want.col, c.Rune, c.Token, want.r, want.token)
+			}
+		}
+	}
+	check(m, []cell{
+		{7, 4, '╭', cellgrid.Working},  // manager-hive, working
+		{10, 4, '├', cellgrid.Working}, // joint on the working manager card
+		{12, 5, '╭', cellgrid.Border},  // t4-verifier-1, stopped
+		{13, 4, '├', cellgrid.Border},  // rail outside the card
+		{13, 5, '┤', cellgrid.Border},  // joint on the stopped card
+		{17, 5, '╭', cellgrid.Working}, // t5-worker-1, working
+		{18, 4, '├', cellgrid.Border},  // rail outside the working card
+		{18, 5, '┤', cellgrid.Working}, // joint on the working card
+		{20, 28, '╯', cellgrid.Working},
+		{23, 4, '╰', cellgrid.Border},  // rail outside t6-worker-1
+		{23, 5, '┤', cellgrid.Working}, // joint on t6-worker-1, working
+		{17, 44, '╭', cellgrid.Border}, // t3-verifier-1, idle
+		{18, 44, '┤', cellgrid.Border}, // joint on the idle card
+	})
+	m.graph.selected = "t5-worker-1"
+	m.invalidateView()
+	check(m, []cell{
+		{17, 5, '┏', cellgrid.Accent},
+		{18, 5, '┨', cellgrid.Accent},
+		{20, 28, '┛', cellgrid.Accent},
+		{18, 4, '├', cellgrid.Border},
+	})
 }

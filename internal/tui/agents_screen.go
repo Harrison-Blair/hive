@@ -523,14 +523,17 @@ func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
 }
 
 // junction sets a connector cell on the border of the card of node: light in
-// border, or for the selected card, which has a heavy border, the
-// mixed-weight rune heavy in accent.
+// border, or in working for a working card (decision 60), or for the selected
+// card, which has a heavy border, the mixed-weight rune heavy in accent.
 func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy rune) {
-	if node.record.Key == m.graph.selected {
+	switch {
+	case node.record.Key == m.graph.selected:
 		c.set(x, y, heavy, cellgrid.Accent)
-		return
+	case node.status == "working":
+		c.set(x, y, light, cellgrid.Working)
+	default:
+		c.set(x, y, light, cellgrid.Border)
 	}
-	c.set(x, y, light, cellgrid.Border)
 }
 
 // drawCard draws the card of one agent with component.Card.

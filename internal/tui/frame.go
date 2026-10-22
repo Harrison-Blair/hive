@@ -57,7 +57,7 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Agents",
 		regions: []string{"graph"},
 		hints: map[string][]string{
-			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h hide stopped", "? help"},
+			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped", "? help"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
@@ -488,7 +488,7 @@ func helpLines() []string {
 		pair("1–6", "switch screen", "a", "attach to pane"),
 		pair("tab", "next region", "p", "peek pane"),
 		pair("[ ]", "previous / next view", "r", "restart · Health › Agents"),
-		pair("↑↓ j k", "move", "h", "hide stopped agents"),
+		pair("↑↓ j k", "move", "h", "show or hide stopped agents"),
 		pair("←→", "move on the graph", "t", "open task"),
 		pair("pgup pgdn", "page", "b", "task brief"),
 		pair("g G", "top / end", "v", "VERIFIED.md"),

@@ -21,31 +21,31 @@ t|│ │ g4-rate-limits · wave B           │ │                            
 k|afrfdddddddddddddddddddddddfffffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ╭──────────────────────╮          │ │ ┏━━━━━━━━━━━━━━━━━━━━━━┓          │  ┃
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │ ● manager-api        │          │ │ ┃ ● plan-review-1      ┃          │  ┃
-k|afrfrfwffffffffffffffffffffrffffffffffrfrfafwfaaaaaaaaaaaaaffffffaffffffffffrffa
+k|afrfwfwffffffffffffffffffffwffffffffffrfrfafwfaaaaaaaaaaaaaffffffaffffffffffrffa
 b|00000000000000000000000000000000000000000000001111111111111000000000000000000000
 t|│ │ │ codex · working · 2m │          │ │ ┃ pi · working · 2m    ┃          │  ┃
-k|afrfrfddddddddddddddddddddfrffffffffffrfrfafdddddddddddddddddffffaffffffffffrffa
+k|afrfwfddddddddddddddddddddfwffffffffffrfrfafdddddddddddddddddffffaffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ├──────────────────────╯          │ │ ┗━━━━━━━━━━━━━━━━━━━━━━┛          │  ┃
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                                 │ │                                   │  ┃
 k|afrfrfffffffffffffffffffffffffffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╭──────────────────────╮         │ │                                   │  ┃
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ├┤ ● t3-worker-1        │         │ │                                   │  ┃
-k|afrfrrfwffffffffffffffffffffrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+k|afrfrwfwffffffffffffffffffffwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ││ codex · working      │         │ │                                   │  ┃
-k|afrfrrfdddddddddddddddffffffrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+k|afrfrwfdddddddddddddddffffffwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╰──────────────────────╯         │ │                                   │  ┃
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                                 │ │                                   │  ┃
 k|afrfrfffffffffffffffffffffffffffffffffrfrfffffffffffffffffffffffffffffffffffrffa

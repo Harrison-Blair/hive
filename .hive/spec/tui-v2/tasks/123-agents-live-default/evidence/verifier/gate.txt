@@ -1,0 +1,187 @@
+$ git diff dev...HEAD --stat
+ .hive/spec/tui-v2/README.md                        |   10 +
+ .hive/spec/tui-v2/design/AgentDetails.dc.html      |    1 +
+ .../spec/tui-v2/design/AgentDetailsGeneral.dc.html |    1 +
+ .../tui-v2/design/AgentsCoordinatorChild.dc.html   |    3 +-
+ .../spec/tui-v2/design/AgentsCoordinatorChild.grid |   10 +-
+ .../spec/tui-v2/design/AgentsHiddenParent.dc.html  |    3 +-
+ .hive/spec/tui-v2/design/AgentsHiddenParent.grid   |   26 +-
+ .hive/spec/tui-v2/design/AgentsHome.dc.html        |    3 +-
+ .hive/spec/tui-v2/design/AgentsHome.grid           |   34 +-
+ .hive/spec/tui-v2/design/AgentsMany.dc.html        |    3 +-
+ .hive/spec/tui-v2/design/AgentsMany.grid           |   26 +-
+ .hive/spec/tui-v2/design/AgentsNested.dc.html      |    3 +-
+ .hive/spec/tui-v2/design/AgentsNested.grid         |   40 +-
+ .hive/spec/tui-v2/design/CompactAgents.dc.html     |    1 +
+ .hive/spec/tui-v2/design/CompactAgentsHome.dc.html |    1 +
+ .hive/spec/tui-v2/design/CompactAgentsHome.grid    |   16 +-
+ .hive/spec/tui-v2/design/Help.dc.html              |    4 +-
+ .hive/spec/tui-v2/design/Help.grid                 |    2 +-
+ .hive/spec/tui-v2/design/Main.dc.html              |    3 +-
+ .hive/spec/tui-v2/design/Main.grid                 |    2 +-
+ .../tui-v2/tasks/123-agents-live-default/brief.md  |  226 +++
+ .../123-agents-live-default/evidence/V-gate.log    |   88 ++
+ .../123-agents-live-default/evidence/V-gate.md     |   44 +
+ .../tasks/123-agents-live-default/evidence/V1.md   |   56 +
+ .../tasks/123-agents-live-default/evidence/V2.md   |   45 +
+ .../tasks/123-agents-live-default/evidence/V3.md   |   60 +
+ .../tasks/123-agents-live-default/evidence/V4.md   |   44 +
+ .../tasks/123-agents-live-default/evidence/V5.md   |   64 +
+ .../evidence/captures/AgentDetails-120x40.ansi     |   40 +
+ .../evidence/captures/AgentDetails-120x40.diff.txt |    1 +
+ .../evidence/captures/AgentDetails-120x40.png      |  Bin 0 -> 97233 bytes
+ .../captures/AgentDetailsGeneral-120x40.ansi       |   40 +
+ .../captures/AgentDetailsGeneral-120x40.diff.txt   |    1 +
+ .../captures/AgentDetailsGeneral-120x40.png        |  Bin 0 -> 87835 bytes
+ .../captures/AgentsCoordinatorChild-120x40.ansi    |   40 +
+ .../AgentsCoordinatorChild-120x40.diff.txt         |    1 +
+ .../captures/AgentsCoordinatorChild-120x40.png     |  Bin 0 -> 74848 bytes
+ .../captures/AgentsHiddenParent-120x40.ansi        |   40 +
+ .../captures/AgentsHiddenParent-120x40.diff.txt    |    1 +
+ .../captures/AgentsHiddenParent-120x40.png         |  Bin 0 -> 89107 bytes
+ .../captures/AgentsHiddenParent-80x24.ansi         |   24 +
+ .../evidence/captures/AgentsHiddenParent-80x24.png |  Bin 0 -> 55680 bytes
+ .../captures/AgentsHiddenParent-h1-120x40.ansi     |   40 +
+ .../captures/AgentsHiddenParent-h1-120x40.png      |  Bin 0 -> 93992 bytes
+ .../captures/AgentsHiddenParent-h1-120x40.txt      |   32 +
+ .../captures/AgentsHiddenParent-h2-120x40.ansi     |   40 +
+ .../captures/AgentsHiddenParent-h2-120x40.diff.txt |    1 +
+ .../captures/AgentsHiddenParent-h2-120x40.png      |  Bin 0 -> 89107 bytes
+ .../evidence/captures/AgentsHome-120x40.ansi       |   40 +
+ .../evidence/captures/AgentsHome-120x40.diff.txt   |    1 +
+ .../evidence/captures/AgentsHome-120x40.png        |  Bin 0 -> 100467 bytes
+ .../evidence/captures/AgentsHome-80x24.ansi        |   24 +
+ .../evidence/captures/AgentsHome-80x24.png         |  Bin 0 -> 62674 bytes
+ .../evidence/captures/AgentsMany-120x40.ansi       |   40 +
+ .../evidence/captures/AgentsMany-120x40.diff.txt   |    1 +
+ .../evidence/captures/AgentsMany-120x40.png        |  Bin 0 -> 116198 bytes
+ .../evidence/captures/AgentsNested-120x40.ansi     |   40 +
+ .../evidence/captures/AgentsNested-120x40.diff.txt |    1 +
+ .../evidence/captures/AgentsNested-120x40.png      |  Bin 0 -> 97495 bytes
+ .../evidence/captures/AgentsNested-80x24.ansi      |   24 +
+ .../evidence/captures/AgentsNested-80x24.png       |  Bin 0 -> 52061 bytes
+ .../evidence/captures/CompactAgents-80x24.ansi     |   24 +
+ .../evidence/captures/CompactAgents-80x24.diff.txt |    1 +
+ .../evidence/captures/CompactAgents-80x24.png      |  Bin 0 -> 46025 bytes
+ .../captures/CompactAgentsHome-120x40.ansi         |   40 +
+ .../evidence/captures/CompactAgentsHome-120x40.png |  Bin 0 -> 95770 bytes
+ .../evidence/captures/CompactAgentsHome-80x24.ansi |   24 +
+ .../captures/CompactAgentsHome-80x24.diff.txt      |    1 +
+ .../evidence/captures/CompactAgentsHome-80x24.png  |  Bin 0 -> 55832 bytes
+ .../evidence/captures/Help-120x40.ansi             |   40 +
+ .../evidence/captures/Help-120x40.diff.txt         |    1 +
+ .../evidence/captures/Help-120x40.png              |  Bin 0 -> 119053 bytes
+ .../evidence/captures/Main-120x40.ansi             |   40 +
+ .../evidence/captures/Main-120x40.diff.txt         |    1 +
+ .../evidence/captures/Main-120x40.png              |  Bin 0 -> 61614 bytes
+ .../evidence/captures/Main-80x24.ansi              |   24 +
+ .../evidence/captures/Main-80x24.png               |  Bin 0 -> 46025 bytes
+ .../evidence/captures/V5-cardcheck.txt             |   72 +
+ .../evidence/v2-grid-diff.txt                      | 1356 ++++++++++++++++++
+ .../123-agents-live-default/evidence/v3-green.txt  |   18 +
+ .../123-agents-live-default/evidence/v3-red.txt    | 1503 ++++++++++++++++++++
+ internal/tui/agents.go                             |    2 +-
+ internal/tui/agents_screen.go                      |   13 +-
+ internal/tui/agents_screen_test.go                 |   69 +-
+ internal/tui/agents_test.go                        |    2 +-
+ internal/tui/component/card.go                     |    7 +-
+ internal/tui/component/card_test.go                |   22 +
+ internal/tui/component/keyhints_test.go            |    2 +-
+ internal/tui/component/panel.go                    |    8 +-
+ internal/tui/frame.go                              |    4 +-
+ internal/tui/tui.go                                |    1 +
+ testdata/ste-baseline.json                         |    1 +
+ 92 files changed, 4466 insertions(+), 101 deletions(-)
+
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+exit: 0
+
+$ go mod tidy -diff
+exit: 0
+
+$ go vet ./...
+exit: 0
+
+$ golangci-lint run ./...
+0 issues.
+exit: 0
+
+$ go test -race ./...
+ok  	github.com/Harrison-Blair/hive	17.041s
+ok  	github.com/Harrison-Blair/hive/cmd	3.504s
+?   	github.com/Harrison-Blair/hive/cmd/agent	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/list	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/agent/register	1.108s
+ok  	github.com/Harrison-Blair/hive/cmd/agent/report	1.165s
+ok  	github.com/Harrison-Blair/hive/cmd/agent/resolve	1.249s
+?   	github.com/Harrison-Blair/hive/cmd/agent/send	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/show	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/agent/spawn	1.162s
+?   	github.com/Harrison-Blair/hive/cmd/agent/stop	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/chat	1.153s
+?   	github.com/Harrison-Blair/hive/cmd/common	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/doctor	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/goal	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/handoff	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/handoff/write	1.555s
+?   	github.com/Harrison-Blair/hive/cmd/homeinit	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/inbox	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/land	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/logs	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/memory	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/memory/write	1.552s
+?   	github.com/Harrison-Blair/hive/cmd/project	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/register	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/supervise	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/task	1.166s
+?   	github.com/Harrison-Blair/hive/cmd/task/assign	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/cancel	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/complete	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/task/create	1.093s
+ok  	github.com/Harrison-Blair/hive/cmd/task/edit	1.148s
+?   	github.com/Harrison-Blair/hive/cmd/task/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/reopen	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/verify	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/version	1.077s
+?   	github.com/Harrison-Blair/hive/cmd/worktree	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/worktree/create	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/worktree/remove	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/agent	4.394s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.192s
+?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/chat	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/doctor	4.706s
+?   	github.com/Harrison-Blair/hive/internal/goal	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/handoff	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/homeinit	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/inbox	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/land	2.070s
+ok  	github.com/Harrison-Blair/hive/internal/lib/cellgrid	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/gitx	1.071s
+ok  	github.com/Harrison-Blair/hive/internal/lib/harness	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/home	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/identity	1.028s
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/log	(cached)
+?   	github.com/Harrison-Blair/hive/internal/lib/marker	[no test files]
+?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/lib/panelock	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/process	1.007s
+ok  	github.com/Harrison-Blair/hive/internal/lib/records	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/run	4.159s
+ok  	github.com/Harrison-Blair/hive/internal/lib/scope	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/version	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/logs	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/memory	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/project	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/supervise	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/task	1.736s
+ok  	github.com/Harrison-Blair/hive/internal/tui	24.626s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/worktree	1.949s
+exit: 0

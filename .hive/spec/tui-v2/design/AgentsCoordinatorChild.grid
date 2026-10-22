@@ -21,16 +21,16 @@ t|│ │ g1-tui-restart · done                                 │ │        
 k|afrfdddddddddddddddddddddfffffffffffffffffffffffffffffffffrfrfffffffffffffffffffffffffffffffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │               ╭──────────────────────╮                │ │ ╭──────────────────────╮                              │  │
-k|afrfffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffrffa
+k|afrfffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │               │ ◐ manager-hive       │                │ │ │ ● plan-review-1      │                              │  │
-k|afrfffffffffffffffrfaffffffffffffffffffffrffffffffffffffffrfrfrfwffffffffffffffffffffrffffffffffffffffffffffffffffffrffa
+k|afrfffffffffffffffrfaffffffffffffffffffffrffffffffffffffffrfrfwfwffffffffffffffffffffwffffffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │               │ claude · idle · 4m   │                │ │ │ pi · working · 2m    │                              │  │
-k|afrfffffffffffffffrfddddddddddddddddddfffrffffffffffffffffrfrfrfdddddddddddddddddffffrffffffffffffffffffffffffffffffrffa
+k|afrfffffffffffffffrfddddddddddddddddddfffrffffffffffffffffrfrfwfdddddddddddddddddffffwffffffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │               ╰───────────┬──────────╯                │ │ ├──────────────────────╯                              │  │
-k|afrfffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffrfrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffrffa
+k|afrfffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                           │                           │ │ │                                                     │  │
 k|afrfffffffffffffffffffffffffffrfffffffffffffffffffffffffffrfrfrfffffffffffffffffffffffffffffffffffffffffffffffffffffrffa
@@ -116,6 +116,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help                               
+t| [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help                                    
 k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -369,7 +369,7 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	return "←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat"
+	return "←↑↓→ move · tab view · enter peek · a attach · h stopped · t task · r restart coordinator/supervisor · ask in Chat"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
