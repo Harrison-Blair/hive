@@ -13,10 +13,6 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// workGoalsPanels is the Goals view of the Work tab (decision 16): the list
-// of goals and the details of the selected goal.
-var workGoalsPanels = screenPanels{list: (*Model).goalsList, details: (*Model).goalDetails}
-
 // The columns of the goals list and of the waves table of the details.
 const (
 	goalIDWidth     = 24

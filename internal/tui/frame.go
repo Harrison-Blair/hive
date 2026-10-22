@@ -30,7 +30,8 @@ const (
 // sit side by side, and below 120 columns the details region is a full-width
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
-// or "focus".
+// or "focus". Panels gives the list and the details of each view that wave 6
+// replaced. The key is the view name.
 type frameScreen struct {
 	label       string
 	views       []string
@@ -41,10 +42,9 @@ type frameScreen struct {
 	panels      map[string]screenPanels
 }
 
-// screenPanels draws one view of a screen that wave 6 put in the registry.
-// List draws the list region at exactly width×height cells. Details gives
-// the title and the lines of the details of the selected item. Panels has
-// one entry for each such view, by view name.
+// screenPanels draws one view of a list and details screen. The list gives
+// the list region at width×height cells. The details give the title and the
+// lines of the details region for a panel of width cells.
 type screenPanels struct {
 	list    func(m *Model, width, height int, focused bool) string
 	details func(m *Model, width int) (string, []string)
@@ -92,7 +92,9 @@ var screenRegistry = [tabCount]frameScreen{
 			"details":       {"↑↓ scroll", "esc back to list"},
 			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
 		},
-		panels: map[string]screenPanels{"Goals": workGoalsPanels},
+		panels: map[string]screenPanels{
+			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
+		},
 	},
 	tabFriction: {
 		label:       "Friction",
@@ -432,8 +434,11 @@ func (m *Model) legacyPanel(width, height int, focused bool) string {
 
 // detailsPanel draws the details of the selected item of the current screen.
 func (m *Model) detailsPanel(width, height int, focused bool, suffix string) string {
-	title, lines := m.legacyDetails(width)
 	tab := m.activeTab()
+	title, lines := m.legacyDetails(width)
+	if panels, ok := screenRegistry[tab].panels[m.viewName()]; ok {
+		title, lines = panels.details(m, width)
+	}
 	body := max(height-2, 0)
 	m.detailsOffset[tab] = min(max(m.detailsOffset[tab], 0), max(len(lines)-body, 0))
 	return component.Details{Title: title + suffix, Focused: focused, Lines: lines, Offset: m.detailsOffset[tab]}.View(width, height)
@@ -446,9 +451,6 @@ func (m *Model) legacyName() string {
 // legacyDetails gives the title and the lines of the details of the
 // selected item of the current screen, until wave 6 replaces the screen.
 func (m *Model) legacyDetails(width int) (string, []string) {
-	if panels, ok := screenRegistry[m.activeTab()].panels[m.viewName()]; ok {
-		return panels.details(m, width)
-	}
 	switch m.screenIndex {
 	case 1:
 		return m.agentDetails()
