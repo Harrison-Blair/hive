@@ -23,7 +23,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A completed task cannot be reopened or edited](entries/completed-task-cannot-reopen.md) | Open |  |
 | [A failed verification is lost when the next verification passes](entries/verify-fail-lost-on-pass.md) | Open |  |
 | [store.List skips an agent record with a key longer than 18 characters](entries/resolved/store-list-skips-long-keys.md) | Resolved 2026-10-20 | Task 101 keeps long keys |
-| [Hive cannot spawn a reviewer or another one-off agent](entries/no-reviewer-role.md) | Open |  |
+| [Hive cannot spawn a reviewer or another one-off agent](entries/resolved/no-reviewer-role.md) | Resolved 2026-10-21 | Goal g3-general-agent adds the role agent, hive agent report, and the hive-agent skill |
 | [A new task can go only in a feature that has a README](entries/old-features-lack-readme.md) | Open |  |
 | [A supervisor nudge splits a message that the user types](entries/nudge-interrupts-user-typing.md) | Open |  |
 | [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/no-agent-dashboard.md) | Open |  |
