@@ -57,7 +57,6 @@ function screen(t) {
     put(t, 28, y, fit(r[1], 10), r[3]);
     put(t, 38, y, r[2], 'dim');
   });
-  put(t, 2, 9, 'g2-tui-v2 is example data', 'dim');
   box(t, 52, 4, 68, 35, 'border', 'g1-tui-restart', 'accent');
   var kv = [['title', 'TUI restart and stale coordinator startup'], ['status', 'done'], ['project', 'hive'], ['grant', 'grants.md 2026-10-18 hive delivery on dev'], ['manager', 'manager-hive']];
   kv.forEach(function (p, i) { put(t, 54, 6 + i, fit(p[0], 10), 'dim'); put(t, 64, 6 + i, fit(p[1], 54), i === 1 ? 'done' : 'fg'); });
