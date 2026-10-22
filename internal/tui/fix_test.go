@@ -313,7 +313,7 @@ func TestActionLogRefusalShowsError(t *testing.T) {
 			m := newTestLogsModel(t, home, clock)
 			if item.rotation {
 				var cmd tea.Cmd
-				m, cmd = raise(t, m, key('l', "l"))
+				m, cmd = raise(t, m, key('f', "f"))
 				if cmd != nil {
 					_ = cmd()
 				}
@@ -346,7 +346,7 @@ func TestActionLogRefusalShowsError(t *testing.T) {
 			}
 			start := time.Now()
 			var actionCmd tea.Cmd
-			m, actionCmd = raise(t, m, key('l', "l"))
+			m, actionCmd = raise(t, m, key('f', "f"))
 			if actionCmd != nil {
 				m, _ = raise(t, m, actionCmd())
 			}
@@ -379,7 +379,7 @@ func TestHealthyActionLogIsWrittenOnce(t *testing.T) {
 	clock := fixedClock(t, day)
 	m := newTestLogsModel(t, home, clock)
 	before := countLogLines(t, home)
-	_, cmd := raise(t, m, key('l', "l"))
+	_, cmd := raise(t, m, key('f', "f"))
 	if cmd != nil {
 		_ = cmd()
 	}
@@ -396,7 +396,7 @@ func TestHealthyActionLogIsWrittenOnce(t *testing.T) {
 	if err := json.Unmarshal([]byte(lines[len(lines)-1]), &event); err != nil {
 		t.Fatal(err)
 	}
-	if event["msg"] != "tui action" || event["action"] != "level" || event["component"] != "tui" {
+	if event["msg"] != "tui action" || event["action"] != "follow" || event["component"] != "tui" {
 		t.Fatalf("healthy action event fields = %v", event)
 	}
 }
