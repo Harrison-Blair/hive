@@ -1,5 +1,32 @@
 # Independent verification: 34-screen-chat
 
+## Merge repair verification: t34-verifier-4
+
+Date: 2026-10-22. Verdict: **pass**.
+
+Verified merge: `f582e234bef0cd1a162cdc472f49926b64c35ee1`.
+Merged dev once at the start of V-gate: `61b16c310c5d94467038598ff4fdacadc68e1e9e`.
+The merge had no conflict. This verdict applies to that snapshot.
+The manager permitted earlier V1 and V2 to carry forward.
+Evidence for this run is in `merge-repair-verifier/`.
+
+| Item | Result | Evidence and observation |
+| --- | --- | --- |
+| Merge repair scope | pass | Reviewed the first-parent changes since `5682e84c`. The non-merge commit changes evidence only. Merge `0c7cb692` keeps the Chat expectation `no chat yet` and the Goals expectation `goals · 0`. The STE baseline keeps both brief entries and one Friction entry. Other source changes come from dev. The new dev merge has no manual resolution. See `resolution.txt` and `review.txt`. |
+| V1 Tests | pass | Earlier V1 carries forward. Both Chat golden checks pass in `golden-green.txt`. A deliberate change of the earlier-count note from `dimStyle` to `titleStyle` makes `TestChatMatchesItsBoard` fail with differing cells in `token-red.txt` (exit 1). After restoration, both checks pass in `golden-restored.txt` (exit 0). No source mutation remains. |
+| V2 Live check | pass | Earlier V2 carries forward under the manager instruction. This run makes no new live or visual claim. Chat source and tests have no delta from `5682e84c`; see `chat-delta.txt`. |
+| V-gate Diff scope and gate | pass | `merge.txt` records the one dev merge. `scope.txt` records `git diff dev...HEAD --stat` at that snapshot. The scope stays within the approved Chat changes and evidence. `gate.txt` records all five gate commands: format and tidy print nothing, vet exits 0, lint reports `0 issues.`, and race tests exit 0. No flake retry was needed. |
+
+The shared `checkBoard` helper remains in `friction_test.go`. The duplicate
+helper removal was already present in the approved baseline. This repair
+does not change the Chat golden helper calls or comparison behavior.
+
+Cleanup: restored the deliberate token change and checked the source diff.
+No scratch pane, process, binary, or home was made. Only evidence remains.
+The earlier verification records follow.
+
+---
+
 ## Land repair verification: t34-verifier-3
 
 Date: 2026-10-22. Verdict: **fail**.
