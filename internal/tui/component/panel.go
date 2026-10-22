@@ -20,7 +20,8 @@ const (
 // styled by the caller. Panel cuts a long line with … and pads a short one.
 // VMark and HMark draw the scroll marks of decision 5 on the right and the
 // bottom border. Heavy draws the border with heavy lines (┏━┓┃┗┛). Edge,
-// when set, is the colour of the border of a panel without focus.
+// when set, is the colour of the border of a panel without focus. Bleed
+// draws the lines over the padding cells too: each line has width-2 cells.
 type Panel struct {
 	Title   string
 	Focused bool
@@ -29,6 +30,7 @@ type Panel struct {
 	Lines   []string
 	VMark   ScrollMark
 	HMark   ScrollMark
+	Bleed   bool
 }
 
 // View renders the panel at exactly width×height cells.
@@ -47,14 +49,17 @@ func (p Panel) View(width, height int) string {
 		edge, mark = accentStyle, accentStyle
 	}
 	inner := width - 2
-	body := lipgloss.NewStyle().Padding(0, 1).Width(inner)
+	body, room := lipgloss.NewStyle().Padding(0, 1).Width(inner), inner-2
+	if p.Bleed {
+		body, room = lipgloss.NewStyle().Width(inner), inner
+	}
 
 	rows := make([]string, 0, height)
 	rows = append(rows, edge.Render(b.TopLeft)+p.top(inner, b, edge)+edge.Render(b.TopRight))
 	for i := range height - 2 {
 		line := ""
 		if i < len(p.Lines) {
-			line = ansi.Truncate(p.Lines[i], inner-2, "…")
+			line = ansi.Truncate(p.Lines[i], room, "…")
 		}
 		right := edge.Render(b.Right)
 		if p.VMark.covers(i) {

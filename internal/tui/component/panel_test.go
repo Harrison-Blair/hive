@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // TestPanelGolden renders the two panels of the Panel section,
@@ -22,5 +23,15 @@ func TestPanelGolden(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			checkGolden(t, tc.panel.View(tc.r.w, tc.r.h), sheet, tc.r)
 		})
+	}
+}
+
+// TestPanelBleedFillsThePadding: with Bleed, a line also fills the padding
+// cell on each side, so a clipped graph meets the border.
+func TestPanelBleedFillsThePadding(t *testing.T) {
+	got := ansi.Strip(Panel{Bleed: true, Lines: []string{"──────", "ab"}}.View(8, 4))
+	want := "╭──────╮\n│──────│\n│ab    │\n╰──────╯"
+	if got != want {
+		t.Fatalf("view:\n%s\nwant:\n%s", got, want)
 	}
 }

@@ -48,6 +48,11 @@ var Sizes = map[string][2]int{
 	"LivePod":             {120, 40},
 	"CompactLiveOverview": {80, 24},
 	"CompactLivePod":      {80, 24},
+	// The tree boards of task 125-pod-tree-scroll.
+	"TreeWide":          {120, 40},
+	"TreeNested":        {120, 40},
+	"CompactTreeWide":   {80, 24},
+	"CompactTreeNested": {80, 24},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a

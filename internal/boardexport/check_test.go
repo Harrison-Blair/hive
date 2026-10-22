@@ -97,6 +97,22 @@ func TestCheckAcceptsTheLiveBoards(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsTheTreeBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"TreeWide", 120, 40},
+		{"TreeNested", 120, 40},
+		{"CompactTreeWide", 80, 24},
+		{"CompactTreeNested", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func TestCheckFailsABadSymbol(t *testing.T) {
 	g := fill("ab★", "fff")
 	err := Check("TooSmall", g)
