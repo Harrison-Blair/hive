@@ -292,7 +292,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 			c.text(left, next+1, text, cellgrid.Dim, false)
 			break
 		}
-		c.set(center, next-1, '┬', m.junction(manager))
+		m.junction(c, center, next-1, manager, '┬', '┯')
 		c.set(center, next, '│', cellgrid.Border)
 		slot := content / len(pod.children)
 		var centers []int
@@ -322,7 +322,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 		for index, child := range pod.children {
 			cx := centers[index] - component.CardWidth/2
 			m.drawCard(c, child, cx, next+3)
-			c.set(centers[index], next+3, '┴', m.junction(child))
+			m.junction(c, centers[index], next+3, child, '┴', '┷')
 		}
 		next += 3 + component.CardHeight
 	default:
@@ -330,7 +330,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 		m.drawCard(c, manager, left, top)
 		next = top + component.CardHeight
 		if len(pod.children) > 0 {
-			c.set(left, next-1, '├', m.junction(manager))
+			m.junction(c, left, next-1, manager, '├', '┡')
 		}
 		for index, child := range pod.children {
 			lastChild := index == len(pod.children)-1
@@ -344,7 +344,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 				c.set(left, next+3, '│', cellgrid.Border)
 				c.set(left, next+4, '│', cellgrid.Border)
 			}
-			c.set(left+1, next+2, '┤', m.junction(child))
+			m.junction(c, left+1, next+2, child, '┤', '┨')
 			next += 5
 		}
 	}
@@ -353,12 +353,15 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 	}
 }
 
-// junction gives the token of a connector cell on the border of a card.
-func (m *Model) junction(node agentNode) cellgrid.Token {
+// junction sets a connector cell on the border of the card of node: light in
+// border, or for the selected card, which has a heavy border, the
+// mixed-weight rune heavy in accent.
+func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy rune) {
 	if node.record.Key == m.graph.selected {
-		return cellgrid.Accent
+		c.set(x, y, heavy, cellgrid.Accent)
+		return
 	}
-	return cellgrid.Border
+	c.set(x, y, light, cellgrid.Border)
 }
 
 // drawCard draws the card of one agent with component.Card.

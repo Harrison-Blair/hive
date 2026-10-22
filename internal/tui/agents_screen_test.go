@@ -198,6 +198,33 @@ func TestAgentsArrowsScrollThePods(t *testing.T) {
 	}
 }
 
+// A light connector meets the heavy border of the selected card with a
+// mixed-weight joint (manager decision): ┯ below a tree manager, ┷ above a
+// tree child, ┡ on the corner of a rail manager, and ┨ beside a rail child.
+func TestAgentsSelectedCardJoints(t *testing.T) {
+	for _, tc := range []struct {
+		fixture, name string
+		keys          []tea.KeyPressMsg
+		row, col      int // the joint cell relative to the first cell of the name
+		want          rune
+	}{
+		{"Main.fixture.json", "manager-hive", nil, 2, 8, '┯'},
+		{"Main.fixture.json", "t4-worker-1", []tea.KeyPressMsg{key(tea.KeyDown, "")}, -1, 8, '┷'},
+		{"AgentsMany.fixture.json", "t5-worker-1", nil, 0, -4, '┨'},
+		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('k', "k")}, 2, -4, '┡'},
+	} {
+		m := newTestDemoModel(t, tc.fixture, demoSize{})
+		for _, k := range tc.keys {
+			m, _ = raise(t, m, k)
+		}
+		grid := renderGrid(t, m, 120, 40)
+		row, col := findText(t, grid, tc.name)
+		if got := grid.At(row+tc.row, col+tc.col); got.Rune != tc.want || got.Token != cellgrid.Accent {
+			t.Errorf("%s %s: joint is %+v, want an accent %q", tc.fixture, tc.name, got, tc.want)
+		}
+	}
+}
+
 // ↑ and ↓ move between the manager and the children of a pod.
 func TestAgentsUpDownMoveInThePod(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
@@ -352,8 +379,15 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 
 // requireWholeAgentsBorders is requireWholeBorders for the graph. On the rail,
 // "├─" is the corner of a manager card and "├┤" and "╰┤" join a child card.
+// "┡━", "├┨", and "╰┨" are the same joints on the heavy border of the
+// selected card. Each ┏ needs a ┓, and each ┗ needs a ┛, in the same line.
 func requireWholeAgentsBorders(t *testing.T, view string) {
 	t.Helper()
-	view = strings.NewReplacer("├┤", "││", "╰┤", "││", "├─", "╰─").Replace(view)
+	view = strings.NewReplacer("├┤", "││", "╰┤", "││", "├─", "╰─", "├┨", "│┃", "╰┨", "│┃", "┡━", "┗━").Replace(view)
 	requireWholeBorders(t, view)
+	for index, line := range strings.Split(view, "\n") {
+		if strings.Count(line, "┏") != strings.Count(line, "┓") || strings.Count(line, "┗") != strings.Count(line, "┛") {
+			t.Fatalf("line %d has a broken heavy border: %q\n%s", index+1, line, view)
+		}
+	}
 }
