@@ -303,3 +303,66 @@ ok  	github.com/Harrison-Blair/hive/internal/tui/component	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/worktree	(cached)
 exit 0
 ```
+
+## Merge repair 2: dev at 61b16c31 (tasks 35 and 39)
+
+Merge commit `20b54e01`. The merge of `origin/dev` at `61b16c31` had
+conflicts in 3 files:
+
+- `internal/tui/frame.go`: The Work registry entry keeps the `Goals` and
+  `Queue` panels of dev and the `Tasks` panel of this branch. `legacyDetails`
+  keeps only `case 1` (Agents). Dev removed the Goals and Health cases. This
+  branch removed the Tasks case.
+- `internal/tui/goals_queue.go`: Dev moved the legacy goals screen to
+  `work_goals.go`. The change of this branch in that block removed only the
+  `tasks.tab` and `tasks.projectIndex` lines. The resolution takes the
+  version of dev, and removes the same 3 lines from `work_goals.go`.
+- `testdata/ste-baseline.json`: keeps each entry of both sides (35, 36, 37,
+  38, 39, all at 0).
+
+Golden checks after the merge:
+
+```sh
+go test ./internal/tui/ -run 'TestWorkTasks|TestCompact|TestWorkGoalsMatchesItsBoard|TestWorkQueueMatchesItsBoard' -v
+```
+
+```text
+--- PASS: TestCompactHealthMatchesItsBoard (0.00s)
+--- PASS: TestCompactLogsMatchesItsBoard (0.00s)
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+--- PASS: TestWorkQueueMatchesItsBoard (0.00s)
+--- PASS: TestWorkTasksMatchesWorkBoard (0.00s)
+--- PASS: TestWorkTasksMatchesCompactBoard (0.00s)
+... (all TestWorkTasks* PASS)
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.246s
+```
+
+Live check of Work, binary `go build .` at `20b54e01`, scratch home
+`.hive/tmp/m3/home`, `HIVE_NO_STARTUP=1`, scratch herdr tab `t37-m3-work`
+(closed after the check; `herdr tab list --workspace wAJ` then showed only
+`t37-worker-3`):
+
+```sh
+COLORTERM=truecolor hive37 --demo .hive/spec/tui-v2/design/Work.fixture.json --size 120x40
+herdr pane read wAJ:p2 --source visible --format ansi > work.ansi
+go run ./.hive/tmp/m3/livecmp work.ansi .hive/spec/tui-v2/design/Work.grid
+```
+
+```text
+0 cells differ
+```
+
+Keys: `j` selects `2-stale-coordinator-startup`; `b` shows `brief.md` with
+`demo mode: no file`; `esc` shows the task details again; `[` shows
+`[Queue]` (`queue · hive · 4 tasks · 1 stop`); `[` shows `[Goals]`
+(`goals · 1`, details `g1-tui-restart`); `[` shows `[Tasks]` again.
+
+Gate after the merge:
+
+```text
+gofmt -l ...        (no output)
+go mod tidy -diff   (no output)
+go vet ./...        ok
+golangci-lint run   0 issues.
+go test -race ./... every package ok (internal/tui 49.221s), exit 0
+```
