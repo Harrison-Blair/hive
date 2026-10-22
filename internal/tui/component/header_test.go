@@ -51,3 +51,11 @@ func TestHeaderCutsLongHome(t *testing.T) {
 		t.Errorf("View(120) = %q, want prefix %q", got, want)
 	}
 }
+
+// TestHeaderNeedsYouCountIsAccent renders row 0 of AgentsMany.dc.html, where
+// one task needs the user and the count is accent and bold.
+func TestHeaderNeedsYouCountIsAccent(t *testing.T) {
+	h := sampleHeader
+	h.NeedsYou = 1
+	checkGolden(t, h.View(120), "AgentsMany", rect{0, 0, 120, 1})
+}
