@@ -1,0 +1,10 @@
+=== RUN   TestWorkGoalsMatchesItsBoard
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+=== RUN   TestWorkQueueMatchesItsBoard
+--- PASS: TestWorkQueueMatchesItsBoard (0.00s)
+=== RUN   TestWorkTasksMatchesWorkBoard
+--- PASS: TestWorkTasksMatchesWorkBoard (0.00s)
+=== RUN   TestWorkTasksMatchesCompactBoard
+--- PASS: TestWorkTasksMatchesCompactBoard (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.026s
