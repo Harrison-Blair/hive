@@ -11,101 +11,101 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|001111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      ┃
+t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                               ╭──────────────────────╮                                               ┃
+t|│                                               ╭──────────────────────╮                                               │
 k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                               │ ● coordinator        │                                               ┃
+t|│                                               │ ● coordinator        │                                               │
 k|afffffffffffffffffffffffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                               │ claude · working · … │                                               ┃
+t|│                                               │ claude · working · … │                                               │
 k|afffffffffffffffffffffffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                               ╰───────────┬──────────╯                                               ┃
+t|│                                               ╰───────────┬──────────╯                                               │
 k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                         ╭─────────────────╯                                                          ┃
-k|afffffffffffffffffffffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│                                                           │                                                          │
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ hive ──────┼────────────────────────────────────────────────╮                           ┃
-k|afffffffffffffffffffffffffffrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa
-b|000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ g2-tui-v2 … │                                                │                           ┃
-k|afffffffffffffffffffffffffffrfdddddddddddfrffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  ╭─ hive ─────────────────────────────────┼───────────────────────────────────────╮                  │
+k|affffffffffffffffffrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffa
+b|000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                  │ g2-tui-v2 · wave A                     │                                       │                  │
+k|affffffffffffffffffrfddddddddddddddddddfffffffffffffffffffffrfffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ╭───────────┴──────────╮                                     │                           ┃
-k|afffffffffffffffffffffffffffrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ╭───────────┴──────────╮                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ ● manager-hive       │                                     │                           ┃
-k|afffffffffffffffffffffffffffrfwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            │ ● manager-hive       │                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwfwffffffffffffffffffffwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ claude · working · … │                                     │                           ┃
-k|afffffffffffffffffffffffffffrfwfddddddddddddddddddddfwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            │ claude · working · … │                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwfddddddddddddddddddddfwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ├──────────────────────╯                                     │                           ┃
-k|afffffffffffffffffffffffffffrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ╰───────────┬──────────╯                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │                                                            │                           ┃
-k|afffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                                        │                                       │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │╭──────────────────────╮                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │              ╭─────────────────────────┼─────────────────────────╮             │                  │
+k|affffffffffffffffffrffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ├┤ ○ t4-verifier-1      │                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrrfdfdddddddddddddffffffrffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │              │                         │                         │             │                  │
+k|affffffffffffffffffrffffffffffffffrfffffffffffffffffffffffffrfffffffffffffffffffffffffrfffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ││ pi · stopped · pass  │                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrrfdddddddddddddddddddffrffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │  ╭───────────┴──────────╮  ╭───────────┴──────────╮  ╭───────────┴──────────╮  │                  │
+k|affffffffffffffffffrffrrrrrrrrrrrrrrrrrrrrrrrrffwwwwwwwwwwwwwwwwwwwwwwwwffwwwwwwwwwwwwwwwwwwwwwwwwffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │╰──────────────────────╯                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │  │ ○ t4-verifier-1      │  │ ● t5-worker-1        │  │ ● t6-worker-1        │  │                  │
+k|affffffffffffffffffrffrfdfdddddddddddddffffffrffwfwffffffffffffffffffffwffwfwffffffffffffffffffffwffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │                                                            │                           ┃
-k|afffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │  │ pi · stopped · pass  │  │ pi · working · 3m    │  │ pi · working · 1m    │  │                  │
+k|affffffffffffffffffrffrfdddddddddddddddddddffrffwfdddddddddddddddddffffwffwfdddddddddddddddddffffwffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │╭──────────────────────╮                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │  ╰──────────────────────╯  ╰───────────┬──────────╯  ╰──────────────────────╯  │                  │
+k|affffffffffffffffffrffrrrrrrrrrrrrrrrrrrrrrrrrffwwwwwwwwwwwwwwwwwwwwwwwwffwwwwwwwwwwwwwwwwwwwwwwwwffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ├┤ ● t5-worker-1        │                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrwfwffffffffffffffffffffwffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                                        │                                       │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ││ pi · working · 3m    │                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrwfdddddddddddddddddffffwffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ╭───────────┴──────────╮                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │╰┬─────────────────────╯                                    │                           ┃
-k|afffffffffffffffffffffffffffrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            │ ● t5-research-1      │                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwfwffffffffffffffffffffwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ │                                                          │                           ┃
-k|afffffffffffffffffffffffffffrfrfrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            │ pi · working · 1m    │                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwfdddddddddddddddddffffwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ │╭──────────────────────╮                                  │                           ┃
-k|afffffffffffffffffffffffffffrfrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ╰───────────┬──────────╯                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ ╰┤ ● t5-research-1      │                                  │                           ┃
-k|afffffffffffffffffffffffffffrfrfrwfwffffffffffffffffffffwffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                                        │                                       │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │  │ pi · working · 1m    │                                  │                           ┃
-k|afffffffffffffffffffffffffffrfrffwfdddddddddddddddddffffwffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ┏━━━━━━━━━━━┷━━━━━━━━━━┓                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │  ╰┬─────────────────────╯                                  │                           ┃
-k|afffffffffffffffffffffffffffrfrffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ┃ ◐ t5-research-2      ┃                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffafafaaaaaaaaaaaaaffffffaffffffffffffffffffffffffffffrffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000011111111111110000000000000000000000000000000000000000000000000000000
+t|│                  │                            ┃ pi · idle · 0m       ┃                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffafddddddddddddddfffffffaffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │   │                                                        │                           │
-k|afffffffffffffffffffffffffffrfrfffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                            ┗━━━━━━━━━━━━━━━━━━━━━━┛                            │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │   │┏━━━━━━━━━━━━━━━━━━━━━━┓                                │                           │
-k|afffffffffffffffffffffffffffrfrfffraaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │                                                                                │                  │
+k|affffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │   ╰┨ ◐ t5-research-2      ┃                                │                           │
-k|afffffffffffffffffffffffffffrfrfffrafafaaaaaaaaaaaaaffffffaffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │    ┃ pi · idle · 0m       ┃                                │                           │
-k|afffffffffffffffffffffffffffrfrffffafddddddddddddddfffffffaffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  │ h hides 1 stopped                                                              │                  │
+k|affffffffffffffffffrfdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │    ┗━━━━━━━━━━━━━━━━━━━━━━┛                                │                           │
-k|afffffffffffffffffffffffffffrfrffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                  ╰────────────────────────────────────────────────────────────────────────────────╯                  │
+k|affffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa

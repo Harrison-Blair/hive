@@ -529,11 +529,11 @@ func TestAgentsKeysLogTheirActions(t *testing.T) {
 // its border runs into the edge cell.
 func requireWholeAgentsBorders(t *testing.T, view string) {
 	t.Helper()
-	view = closeClippedBoxes(view)
 	// The line of the coordinator card bends once on its row to the manager
 	// card of the one-pod view (decision 65).
 	view = coordinatorBend.ReplaceAllString(view, "")
 	view = strings.NewReplacer("├┤", "││", "╰┤", "││", "├─", "╰─", "├┨", "│┃", "╰┨", "│┃", "┡━", "┗━").Replace(view)
+	view = closeClippedBoxes(view)
 	requireWholeBorders(t, view)
 	for index, line := range strings.Split(view, "\n") {
 		if strings.Count(line, "┏") != strings.Count(line, "┓") || strings.Count(line, "┗") != strings.Count(line, "┛") {
