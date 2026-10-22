@@ -8,7 +8,8 @@ import (
 )
 
 // TestPopupGolden renders the popup of AgentDetails.dc.html lines 54-64 on a
-// screen of the size of the box, so the box covers the screen.
+// screen of the size of the box, so the box covers the screen. The TARGET
+// rows of the board move RECENT up one row and end each dim run at its text.
 func TestPopupGolden(t *testing.T) {
 	dim := lipgloss.NewStyle().Foreground(Dim)
 	accent := lipgloss.NewStyle().Foreground(Accent)
@@ -20,11 +21,11 @@ func TestPopupGolden(t *testing.T) {
 	lines = append(lines, "", DetailSection("ACTIONS"),
 		key.Render("a")+"  attach to pane",
 		key.Render("p")+"  peek pane",
-		dim.Bold(true).Render("t")+"  "+dim.Render("open task · none"),
-		"", "", DetailSection("RECENT"),
+		dim.Bold(true).Render("t")+dim.Render("  open task · none"),
+		"", DetailSection("RECENT"),
 		fitCell("14:08 inbox 28 sent to coordinator", 54))
 	for _, s := range []string{"14:07 land 4-agents-equal-columns · ede94f3e", "13:58 land 3-tui-restart · 3ccd93fb", "13:44 land 2-stale-coordinator-startup · 0e079272"} {
-		lines = append(lines, dim.Render(fitCell(s, 54)))
+		lines = append(lines, dim.Render(s))
 	}
 	p := Popup{Details: Details{Title: "manager-hive · esc closes", Lines: lines}, Width: 60, Height: 27}
 	screen := strings.TrimSuffix(strings.Repeat(strings.Repeat(" ", 60)+"\n", 27), "\n")

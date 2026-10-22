@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -71,5 +72,39 @@ func TestListScrollMark(t *testing.T) {
 	want = "╭──────────╮\n│   ID     │\n│   r1     │\n│ ▶ r2     ┃\n╰──────────╯"
 	if got := ansi.Strip(l.View(12, 5)); got != want {
 		t.Errorf("rows that do not fit:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// TestListRowCells checks the user decisions 4 and 7 of 2026-10-21 and the
+// Friction decision of the manager: "▶" is accent bold, the space after it
+// is fg and not bold, and the first cell is accent bold over its full column.
+// Column 2 of each other row is fg and not bold.
+func TestListRowCells(t *testing.T) {
+	l := List{Columns: []Column{{Title: "ID", Width: 6}, {Title: "S"}}, Rows: [][]Cell{{{Text: "ab"}, {Text: "x"}}, {{Text: "cd"}, {Text: "y"}}}}
+	g, err := cellgrid.Convert(strings.Join(strings.Split(l.View(14, 5), "\n")[2:4], "\n"), 14, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []struct {
+		row, col int
+		rune     rune
+		token    cellgrid.Token
+		bold     bool
+	}{
+		{0, 2, '▶', cellgrid.Accent, true},
+		{0, 3, ' ', cellgrid.FG, false},
+		{0, 4, 'a', cellgrid.Accent, true},
+		{0, 5, 'b', cellgrid.Accent, true},
+		{0, 9, ' ', cellgrid.Accent, true},
+		{0, 10, 'x', cellgrid.FG, false},
+		{1, 2, ' ', cellgrid.FG, false},
+		{1, 3, ' ', cellgrid.FG, false},
+		{1, 4, 'c', cellgrid.FG, false},
+	}
+	for _, w := range want {
+		c := g.At(w.row, w.col)
+		if c.Rune != w.rune || c.Token != w.token || c.Bold != w.bold {
+			t.Errorf("row %d col %d = %q %s bold %t; want %q %s bold %t", w.row, w.col, c.Rune, c.Token, c.Bold, w.rune, w.token, w.bold)
+		}
 	}
 }

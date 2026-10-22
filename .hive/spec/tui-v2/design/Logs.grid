@@ -23,95 +23,95 @@ b|001111111111111100000000000000000000000000000000000000000000000000111111111111
 t|│                                                              ││                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:19:40 DEBUG inbox     record sent to coordinator        ││ {                                                    ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:19:40 DEBUG supervise nudge coordinator · inbox 2       ││   "time": "2026-10-21T13:38:02.114Z",                ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiifffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:21:02 DEBUG agent     spawn worker t2-worker-1          ││   "level": "WARN",                                   ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:21:09 DEBUG herdr     agent.start w5T:p1 · 812ms        ││   "msg": "verify fail",                              ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiffffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:24:51 DEBUG task      status assigned → working         ││   "component": "task",                               ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:33:17 DEBUG task      status working → completed        ││   "command": "task verify",                          ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:33:18 DEBUG agent     stop t2-worker-1 · pane closed    ││   "project_id": "hive",                              ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:33:40 DEBUG agent     spawn verifier t2-verifier-1      ││   "task_id": "2-stale-coordinator-startup",          ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ▶ 13:38:02 WARN  task      verify fail · V4 diff scope       ││   "agent_id": "t2-verifier-1",                       ┃
-k|rfafaaaaaaaafaaaaaaiiiiiiiiiiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafrafffiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffa
+t|│   13:04:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││ {                                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:05:24 DEBUG task      status read 4-agents-equal-colum… ││   "time": "2026-10-21T13:38:02.114Z",                │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:06:12 DEBUG agent     list · 5 agents                   ││   "level": "WARN",                                   │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:07:00 DEBUG inbox     record read by manager-hive       ││   "msg": "verify fail",                              │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:07:48 DEBUG supervise scan agents · 5 records           ││   "component": "task",                               │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:08:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││   "command": "task verify",                          │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:09:24 DEBUG task      status read 4-agents-equal-colum… ││   "project_id": "hive",                              │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:10:12 DEBUG agent     list · 5 agents                   ││   "task_id": "2-stale-coordinator-startup",          │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:11:00 DEBUG inbox     record read by manager-hive       ││   "agent_id": "t2-verifier-1",                       │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:11:48 DEBUG supervise scan agents · 5 records           ││   "request_id": "r-7f31c2",                          │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:12:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││   "duration_ms": 412,                                │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:13:24 DEBUG task      status read 4-agents-equal-colum… ││   "items": {                                         │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:14:12 DEBUG agent     list · 5 agents                   ││     "V1": "pass",                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:15:00 DEBUG inbox     record read by manager-hive       ││     "V2": "pass",                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:19:40 DEBUG inbox     record sent to coordinator        ││     "V3": "pass",                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:19:40 DEBUG supervise nudge coordinator · inbox 2       ││     "V4": "fail",                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:21:02 DEBUG agent     spawn worker t2-worker-1          ││     "V5": "pass"                                     │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:21:09 DEBUG herdr     agent.start w5T:p1 · 812ms        ││   },                                                 │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:24:51 DEBUG task      status assigned → working         ││   "reason": "V4 diff scope; Design section missin…   │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiifffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:33:17 DEBUG task      status working → completed        ││   "truncated": false                                 │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:33:18 DEBUG agent     stop t2-worker-1 · pane closed    ││ }                                                    │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   13:33:40 DEBUG agent     spawn verifier t2-verifier-1      ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ 13:38:02 WARN  task      verify fail · V4 diff scope       ││                                                      │
+k|rfafaaaaaaaafaaaaaaiiiiiiiiiiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000011111100000000001111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000
-t|│   13:38:30 DEBUG agent     spawn worker t2-worker-2          ││   "request_id": "r-7f31c2",                          ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:44:12 DEBUG task      status completed → verified       ││   "duration_ms": 412,                                ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:44:20 DEBUG land      merge task/2 into dev · 0e079272  ││   "items": {                                         ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:44:22 DEBUG land      push dev · 1.9s                   ││     "V1": "pass",                                    ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:44:23 DEBUG worktree  remove 2-stale-coordinator-start… ││     "V2": "pass",                                    ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:44:25 DEBUG inbox     record sent to coordinator        ││     "V3": "pass",                                    ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   13:45:01 DEBUG agent     spawn worker t3-worker-1          ││     "V4": "fail",                                    ┃
-k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
-b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││     "V5": "pass"                                     ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:38:30 DEBUG agent     spawn worker t2-worker-2          ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││   },                                                 ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:44:12 DEBUG task      status completed → verified       ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││   "reason": "V4 diff scope; Design section missin…   ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrafffiiiiiiiifffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:44:20 DEBUG land      merge task/2 into dev · 0e079272  ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││   "truncated": false                                 ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffa
+t|│   13:44:22 DEBUG land      push dev · 1.9s                   ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││ }                                                    ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:44:23 DEBUG worktree  remove 2-stale-coordinator-start… ││                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:44:25 DEBUG inbox     record sent to coordinator        ┃│                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ┃│                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                              ││                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│   13:45:01 DEBUG agent     spawn worker t3-worker-1          ┃│                                                      │
+k|rfffddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffdaffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
