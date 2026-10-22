@@ -37,3 +37,10 @@ a merge conflict in `testdata/ste-baseline.json`. The manager reopened task 9,
 a worker merged `dev`, and a second verifier ran. The conflict added one
 worker and one verifier. CP5 task `6-cp5-record` had the same conflict after
 `13-remove-bootstrap` landed.
+
+**Again (2026-10-22):** goal `g7-releases` ran four tasks of wave 2 at the
+same time (`50` to `53`). Each one added its brief copy to
+`testdata/ste-baseline.json`. After `52-readme` landed, `hive land` for task
+50 failed. A repair worker and a second verifier ran. Then `51` landed first,
+and the land of task 50 failed again. Task 50 needed two repair workers and
+two extra verifiers for one baseline row.
