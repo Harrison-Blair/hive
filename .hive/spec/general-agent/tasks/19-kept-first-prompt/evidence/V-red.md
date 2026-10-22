@@ -5,7 +5,7 @@
 | Task | 19-kept-first-prompt |
 | Item | V-red |
 | Proves | AC1, AC2, AC3 |
-| Commit | f1d6673f |
+| Commit | f1d6673f; guard runs at 1e791a74 |
 | Date | 2026-10-21 |
 | Agent | worker, claude, claude-opus-5-5 |
 
@@ -189,7 +189,69 @@ exit 1
 
 ```
 
+## Guard tests
+
+The brief has an exception for guard tests (Changes, 2026-10-21). A guard
+test checks that hive sends nothing. It can pass on the base, because the
+base sends no kept first prompt. To prove each guard test, the guard was
+removed on purpose. Each test must then fail.
+
+| Guard test | Guard | Base | Guard removed |
+| --- | --- | --- | --- |
+| `TestKeptFirstPromptWaitsWhileBlocked` | Send only when the agent status is idle or done | pass | fail: `prompts = 1; want none while blocked` |
+| `TestKeptFirstPromptFailedAttemptWriteDoesNotSend` | No send when the step 2 write fails | pass | fail: `prompts = 1; want none after a failed attempt write` |
+
+Each run below is on the merge of `origin/dev` at `1e791a74`. Each break
+changed one guard in `internal/supervise/firstprompt.go`, ran the test, and
+restored the file with `git checkout`. `git status --short` printed nothing
+after the last restore.
+
+```text
+commit 1e791a74
+## G1: remove the status guard of TestKeptFirstPromptWaitsWhileBlocked
+guard (lines 37-39):
+		if record.AgentStatus != "idle" && record.AgentStatus != "done" {
+			continue
+		}
+break: line 37 becomes `if false {`
+$ go test -count=1 ./internal/supervise/ -run TestKeptFirstPromptWaitsWhileBlocked
+--- FAIL: TestKeptFirstPromptWaitsWhileBlocked (0.02s)
+    firstprompt_test.go:101: prompts = 1; want none while blocked
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/supervise	0.028s
+FAIL
+exit 1
+
+## G2: remove the failed attempt write guard of TestKeptFirstPromptFailedAttemptWriteDoesNotSend
+guard (lines 63-66):
+	if err != nil {
+		s.logger.Debug("supervisor first prompt attempt write failed", ...)
+		return nil
+	}
+break: line 65 becomes `attempted = true`, so the send continues
+$ go test -count=1 ./internal/supervise/ -run TestKeptFirstPromptFailedAttemptWriteDoesNotSend
+--- FAIL: TestKeptFirstPromptFailedAttemptWriteDoesNotSend (0.02s)
+    firstprompt_test.go:172: prompts = 1; want none after a failed attempt write
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/supervise	0.020s
+FAIL
+exit 1
+
+## Guards restored
+$ go test -count=1 ./internal/supervise/ -run "TestKeptFirstPromptWaitsWhileBlocked|TestKeptFirstPromptFailedAttemptWriteDoesNotSend" -v
+--- PASS: TestKeptFirstPromptWaitsWhileBlocked (0.01s)
+--- PASS: TestKeptFirstPromptFailedAttemptWriteDoesNotSend (0.01s)
+ok  	github.com/Harrison-Blair/hive/internal/supervise	0.021s
+exit 0
+```
+
+The breaks B3 and B2 above at `f1d6673f` gave the same failures.
+
 ## Result
 
-Each new test fails on the base for the correct reason and passes on the task
-branch. Each of the six breaks fails at least one new test.
+Nine new tests fail on the base for the correct reason. The two guard tests
+`TestKeptFirstPromptWaitsWhileBlocked` and
+`TestKeptFirstPromptFailedAttemptWriteDoesNotSend` pass on the base, which the
+guard test exception of the brief permits. Each guard test fails when its
+guard is removed on purpose (G1, G2). Each new test passes on the task branch.
+Each of the six breaks B1 to B6 fails at least one new test.
