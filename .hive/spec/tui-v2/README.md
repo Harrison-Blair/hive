@@ -205,6 +205,14 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The worker made these decisions in task `39-screen-health`:
+
+- Registry: a `frameScreen` has the optional fields `panel` and `details`. `panel` draws the list region. `details` gives the title and the lines of the details region. The frame uses them in place of `legacyPanel` and `legacyDetails`. A screen without them keeps its current screen.
+- Health: the file `internal/tui/health.go` holds the screen. Each view has its own selection. One load gives the checks of `hive doctor` and the agent records, so Home and Agents show the same data. The details show the time of the last load.
+- Restart: `r` in Health › Agents calls `requestRestart`, with the behavior of task `3-tui-restart`. The Agents screen has no `r` key. The restart prompt box is in the details of the selected agent, as the HealthAgents board shows.
+- Rows: the Health lists draw their rows in a `Panel`. The columns and the colours of the space cells come from the Health boards. The selected row follows the rule of `List`.
+- Component fixes: none.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
