@@ -1,5 +1,5 @@
 import socket,json,os,subprocess,time,pathlib
-root=pathlib.Path.cwd();d=root/'.hive/tmp/t39merge3'; pane='wA8:p3'
+root=pathlib.Path.cwd();d=root/'.hive/tmp/t39merge4'; pane='wA8:p4'
 def call(method,params):
  s=socket.socket(socket.AF_UNIX);s.settimeout(10);s.connect(os.environ['HERDR_SOCKET_PATH']);s.sendall((json.dumps(dict(id='t39merge',method=method,params=params))+'\n').encode());r=json.loads(s.makefile().readline());s.close();assert 'error' not in r,r;return r
 assert call('ping',{})['result']['protocol']==22

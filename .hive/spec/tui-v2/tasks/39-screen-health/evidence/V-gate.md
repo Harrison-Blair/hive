@@ -136,22 +136,23 @@ ok  	github.com/Harrison-Blair/hive/internal/worktree	(cached)
 exit 0
 ```
 
-## Merge repair: `dev` at `86f48a68`, then `5a4b29e6`
+## Merge repair: `dev` at `86f48a68`, then `5a4b29e6`, then `7ea7497d`
 
 ### Conflicts and resolution
 
 | File | Resolution |
 | --- | --- |
-| `testdata/ste-baseline.json` | Keep both entries: `39-screen-health/brief.md` and `40-screen-logs/brief.md`, each 0. |
+| `testdata/ste-baseline.json` | Keep each entry: `35-screen-work-goals`, `38-screen-friction`, `39-screen-health`, and `40-screen-logs`, each 0. |
 | `internal/tui/shell_test.go` | Keep the `dev` rows for Friction (`open · 0`) and Logs (`events · 0`). Keep the Health rows of this task (`checks ·`, `agents ·`). |
 | `internal/tui/frame.go` | Each side removed one case of `legacyDetails`: `dev` removed case 5 (Friction now has `panels`), this task removed case 6 (Health now has `panels`). The resolution removes both cases. |
 
 Commits: `6bc34906` merges `86f48a68`. `2b6e8bb2` merges `5a4b29e6` (task 45),
-with no conflict.
+with no conflict. `0a1e3f82` merges `7ea7497d` (task 35), with a conflict in
+`testdata/ste-baseline.json` only.
 
 ### Diff scope
 
-`git diff origin/dev...HEAD --stat` at `2b6e8bb2`, without the task folder:
+`git diff origin/dev...HEAD --stat` at `0a1e3f82`, without the task folder:
 
 ```text
  .hive/spec/tui-v2/README.md           |   8 +
@@ -176,6 +177,6 @@ as before the merge.
 
 ### Gate
 
-Full output: `merge3/gate.txt`, at `2b6e8bb2`. `gofmt -l` and
+Full output: `merge3/gate.txt`, at `0a1e3f82`. `gofmt -l` and
 `go mod tidy -diff` print nothing. `go vet` exits 0. `golangci-lint` gives
 `0 issues.` `go test -race ./...` exits 0, with each package `ok`.
