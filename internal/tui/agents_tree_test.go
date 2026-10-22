@@ -223,11 +223,20 @@ func TestTreeScrollsVertically(t *testing.T) {
 }
 
 // Decision 77: the view scrolls only to keep the selection on the screen.
-// pgup and pgdn do not move it.
+// pgup and pgdn do not move it. Each board starts scrolled: the ends of its
+// thumb are the cells of its grid.
 func TestTreePageKeysDoNotScroll(t *testing.T) {
-	for _, board := range []string{"CompactTreeWide", "CompactTreeNested", "TreeWide"} {
-		t.Run(board, func(t *testing.T) {
-			m := liveModel(t, board, nil)
+	for _, tc := range []struct {
+		board string
+		thumb []liveCell
+	}{
+		{"CompactTreeWide", []liveCell{{16, 22, '─', cellgrid.Accent}, {17, 22, '━', cellgrid.Accent}, {61, 22, '━', cellgrid.Accent}, {62, 22, '─', cellgrid.Accent}}},
+		{"CompactTreeNested", []liveCell{{79, 6, '│', cellgrid.Accent}, {79, 7, '┃', cellgrid.Accent}, {79, 18, '┃', cellgrid.Accent}, {79, 19, '│', cellgrid.Accent}}},
+		{"TreeWide", []liveCell{{1, 38, '━', cellgrid.Accent}, {103, 38, '━', cellgrid.Accent}, {104, 38, '─', cellgrid.Accent}}},
+	} {
+		t.Run(tc.board, func(t *testing.T) {
+			m := liveModel(t, tc.board, nil)
+			requireCells(t, m, tc.thumb...)
 			want := m.View().Content
 			for _, press := range []rune{tea.KeyPgDown, tea.KeyPgDown, tea.KeyPgUp, tea.KeyPgUp, tea.KeyPgUp} {
 				m, _ = raise(t, m, key(press, ""))
