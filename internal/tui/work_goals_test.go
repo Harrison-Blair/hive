@@ -223,6 +223,22 @@ func TestGoalsKeysAndHints(t *testing.T) {
 	requireView(t, m, "[list]")
 }
 
+// AC1, AC4: the Goals view has no s key. Only the Queue view shows stops,
+// as the WorkGoals and WorkQueue boards show. s keeps a goal with no stops
+// and does not change the view or the footer.
+func TestGoalsHasNoStopsOnlyKey(t *testing.T) {
+	home := goalsQueueFixture(t)
+	writeRecord(t, home, []string{"goals"}, "g2-no-stops", records.Goal{ID: "g2-no-stops", Project: "demo", Title: "No stops", Status: "active"})
+	m := goalsModel(t, home, 120, 40)
+	before := m.View().Content
+	requireView(t, m, "g1-demo", "g2-no-stops")
+	rejectView(t, m, "s stops only")
+	m, _ = raise(t, m, key('s', "s"))
+	if after := m.View().Content; after != before {
+		t.Fatalf("s changed the Goals view:\n%s", ansi.Strip(after))
+	}
+}
+
 // AC4: o on a goal with no design shows the notice in the footer at each
 // width, and t opens the first task of the current wave in Tasks.
 func TestGoalsDesignNoticeAndTaskKey(t *testing.T) {

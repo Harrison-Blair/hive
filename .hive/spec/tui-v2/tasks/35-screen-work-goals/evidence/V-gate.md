@@ -147,3 +147,11 @@ ok  	github.com/Harrison-Blair/hive/internal/tui/component	21.054s
 ok  	github.com/Harrison-Blair/hive/internal/worktree	5.498s
 exit 0
 ```
+
+## Repair after verification 1 (2026-10-21)
+
+`git fetch origin` and `git merge origin/dev` reported `Already up to date`.
+The repair changes only the brief copy, `work_goals_test.go`, and evidence.
+The earlier verifier evidence stays in `VERIFIED.md` and `verifier/`.
+Full gate output: `gate-after-repair.txt`. `gofmt -l` and `go mod tidy -diff`
+print nothing. Each of the five commands exits 0.

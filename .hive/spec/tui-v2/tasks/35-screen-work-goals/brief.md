@@ -50,7 +50,8 @@ Do not edit other files.
 ### AC1 The screen (decisions 16)
 
 - The Goals view is a list with details (decision 16). `o` opens the goal
-  design. `s` shows stops only.
+  design. The Goals view has no `s` key. Only the Queue view shows stops,
+  as the `WorkGoals` and `WorkQueue` boards show.
 - Change only the Goals view of the Work entry in the registry. The Queue
   view and the Tasks view are other tasks.
 
@@ -137,4 +138,4 @@ The other screens.
 
 ## Changes
 
-None.
+- 2026-10-21: the Goals view has no `s` key, as the boards show.
