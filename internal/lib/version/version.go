@@ -2,12 +2,16 @@
 package version
 
 import (
+	"regexp"
 	"runtime"
 	"runtime/debug"
 )
 
 // Version is "dev" unless a release build sets it with -ldflags -X.
 var Version = "dev"
+
+// releaseVersion matches vX.Y.Z and vX.Y.Z-rc.N with no other suffix.
+var releaseVersion = regexp.MustCompile(`^v\d+\.\d+\.\d+(-rc\.\d+)?$`)
 
 // BuildInfo contains the version and build data for hive.
 type BuildInfo struct {
@@ -34,6 +38,9 @@ func info(readBuildInfo func() (*debug.BuildInfo, bool)) BuildInfo {
 	}
 
 	result.Go = buildInfo.GoVersion
+	if result.Version == "dev" && releaseVersion.MatchString(buildInfo.Main.Version) {
+		result.Version = buildInfo.Main.Version
+	}
 	for _, setting := range buildInfo.Settings {
 		switch setting.Key {
 		case "vcs.revision":
