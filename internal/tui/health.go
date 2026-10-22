@@ -381,7 +381,7 @@ func healthMarker(selected bool) string {
 	if selected {
 		return titleStyle.Render("▶") + " "
 	}
-	return titleStyle.Render(" ") + " "
+	return "  "
 }
 
 // healthPanel draws the list region of the active Health view.
