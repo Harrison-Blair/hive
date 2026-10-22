@@ -352,6 +352,16 @@ func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 		}
 		return nil
 	}
+	if m.detailsFocused() {
+		// The details region takes g and G for its top and end.
+		switch key {
+		case "g":
+			m.detailsOffset[tabFriction] = 0
+		case "G":
+			m.detailsOffset[tabFriction] = 1 << 16
+		}
+		return nil
+	}
 	delta := 0
 	switch key {
 	case "up", "k":
