@@ -12,8 +12,8 @@ const (
 )
 
 // Card is one agent node of the Agents graph (decision 10). State is a state
-// word, as for Header. A selected card has an accent border and its name in
-// accent and bold. A stopped agent has its name in dim.
+// word, as for Header. A selected card has a heavy accent border and its name
+// in accent and bold (user decision 2026-10-21, option A). A stopped agent has its name in dim.
 type Card struct {
 	Name     string
 	Sub      string
@@ -36,7 +36,7 @@ func (c Card) View() string {
 		dot + " " + name.Render(ansi.Truncate(c.Name, room-2, "…")),
 		dimStyle.Render(ansi.Truncate(c.Sub, room, "…")),
 	}
-	return Panel{Focused: c.Selected, Lines: lines}.View(CardWidth, CardHeight)
+	return Panel{Focused: c.Selected, Heavy: c.Selected, Lines: lines}.View(CardWidth, CardHeight)
 }
 
 // cardDot gives the dot of an agent state, as stateDot does, but not bold.

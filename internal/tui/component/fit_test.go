@@ -71,22 +71,30 @@ func TestFitPanels(t *testing.T) {
 
 func checkBorder(t *testing.T, name, view string, width, height int) {
 	t.Helper()
+	checkBorderOf(t, name, view, width, height, lipgloss.RoundedBorder())
+}
+
+// checkBorderOf checks that view has a whole border of b. A scroll mark can
+// replace a cell of the right or the bottom border.
+func checkBorderOf(t *testing.T, name, view string, width, height int, b lipgloss.Border) {
+	t.Helper()
+	tl, h, tr, v := []rune(b.TopLeft)[0], []rune(b.Top)[0], []rune(b.TopRight)[0], []rune(b.Left)[0]
 	rows := checkRows(t, name, view, width, height)
 	if len(rows) != height {
 		return
 	}
 	r := []rune(rows[0])
-	if r[0] != '╭' || r[1] != '─' || r[len(r)-1] != '╮' || r[len(r)-2] != '─' {
+	if r[0] != tl || r[1] != h || r[len(r)-1] != tr || r[len(r)-2] != h {
 		t.Errorf("%s %dx%d: broken top border %q", name, width, height, rows[0])
 	}
 	for _, row := range rows[1 : height-1] {
 		r := []rune(row)
-		if r[0] != '│' || (r[len(r)-1] != '│' && r[len(r)-1] != '┃') {
+		if r[0] != v || (r[len(r)-1] != v && r[len(r)-1] != '┃') {
 			t.Errorf("%s %dx%d: broken side border %q", name, width, height, row)
 		}
 	}
 	last := rows[height-1]
-	if !strings.HasPrefix(last, "╰") || !strings.HasSuffix(last, "╯") || strings.Trim(last, "╰╯─━") != "" {
+	if !strings.HasPrefix(last, b.BottomLeft) || !strings.HasSuffix(last, b.BottomRight) || strings.Trim(last, b.BottomLeft+b.BottomRight+b.Bottom+"━") != "" {
 		t.Errorf("%s %dx%d: broken bottom border %q", name, width, height, last)
 	}
 }
@@ -118,7 +126,8 @@ func TestFitWave4(t *testing.T) {
 			checkRows(t, "Popup", Popup{Details: details, Width: 60, Height: 27}.View(screen, width, h), width, h)
 		}
 	}
-	checkBorder(t, "Card", Card{Name: long, Sub: long, State: "idle", Selected: true}.View(), CardWidth, CardHeight)
+	checkBorder(t, "Card", Card{Name: long, Sub: long, State: "idle"}.View(), CardWidth, CardHeight)
+	checkBorderOf(t, "Selected card", Card{Name: long, Sub: long, State: "idle", Selected: true}.View(), CardWidth, CardHeight, lipgloss.ThickBorder())
 	longNames := []ChatMessage{
 		{Time: "09:00", Name: long, Kind: ChatEvent, Text: long},
 		{Time: "09:00", Name: long, Kind: ChatAgent, Text: "ok"},

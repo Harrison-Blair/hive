@@ -1,0 +1,42 @@
+## current: internal/tui/agents_screen.go: 'node.record.Role == "manager" || !node.current' -> 'node.record.Role == "manager"'
+--- FAIL: TestAgentsGraphShowsTheCurrentGenerationOnly (0.06s)
+    agents_screen_test.go:392: view does not contain "h hides 2 stopped":
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.077s
+## nudge: internal/tui/agents.go: '		if node.current {
+			node.nudgedAt' -> '		if false {
+			node.nudgedAt'
+--- FAIL: TestAgentsDetailsShowAnUnreadNudge (1.62s)
+    --- FAIL: TestAgentsDetailsShowAnUnreadNudge/unread_nudged_manager (0.47s)
+        agents_screen_test.go:423: popup shows the nudge = false, want true:
+FAIL	github.com/Harrison-Blair/hive/internal/tui	1.638s
+## nudge-current: internal/tui/agents.go: 'if !currentAgents[record.Key] || record.Name == "" || checked[record.Name] || (record.Role != "coordinator" && record.Role != "manager")' -> 'if !currentAgents[record.Key] || record.Name == "" || checked[record.Name]'
+--- FAIL: TestAgentsDetailsShowAnUnreadNudge (1.60s)
+    --- FAIL: TestAgentsDetailsShowAnUnreadNudge/nudged_worker (0.37s)
+        agents_screen_test.go:423: popup shows the nudge = true, want false:
+FAIL	github.com/Harrison-Blair/hive/internal/tui	1.621s
+## no-parent: internal/tui/agents_screen.go: '			if m.graph.hideStopped && node.stopped {' -> '			if node.record.Parent == "" {
+				continue
+			}
+			if m.graph.hideStopped && node.stopped {'
+--- FAIL: TestAgentsPodHoldsAgentsWithoutAParentRecord (0.04s)
+    agents_screen_test.go:435: view does not contain "● legacy-verifier":
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.055s
+## order: internal/tui/agents_screen.go: '		pods = append(pods, pod)' -> '		pods = append([]graphPod{pod}, pods...)'
+--- FAIL: TestAgentsPodsFollowProjectRecordOrder (0.05s)
+    agents_screen_test.go:447: pods are missing or out of order: alpha 1254, demo 1151, zeta 1048:
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.065s
+## unknown: internal/tui/agents.go: '	if !supervisorLive {
+		return "unknown"
+	}' -> ''
+--- FAIL: TestAgentsCardsShowUnknownWhenTheSupervisorIsStale (0.06s)
+    agents_screen_test.go:460: view does not contain "claude · unknown":
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.073s
+## log: internal/tui/agents_screen.go: '			return m.logAction("agent selection", slog.String("agent_id", m.graph.selected))' -> '			return func() tea.Msg { return nil }'
+--- FAIL: TestAgentsKeysLogTheirActions (0.05s)
+    agents_screen_test.go:492: TUI log omits "\"action\":\"agent selection\"":
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.062s
+## tall: internal/tui/agents_screen.go: '		m.graph.top = min(max(m.graph.top, row+component.CardHeight-room), row)' -> '		m.graph.top = 0'
+--- FAIL: TestAgentsFitEachSize (0.03s)
+    --- FAIL: TestAgentsFitEachSize/forty_workers/80x24 (0.00s)
+        agents_screen_test.go:125: view does not show "t40-p1-worker":
+    --- FAIL: TestAgentsFitEachSize/forty_workers/80x25 (0.00s)

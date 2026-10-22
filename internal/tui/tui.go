@@ -79,6 +79,7 @@ type Model struct {
 	goalsQueueLoader     func(string) (goalsQueueData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
+	graph                graphState
 	health               healthState
 	goalsQueue           goalsQueueState
 	tasksLoader          func(string) (tasksData, error)

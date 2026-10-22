@@ -153,29 +153,15 @@ func TestDemoRestartPromptYesDoesNotRestart(t *testing.T) {
 	requireView(t, m, demoNotice)
 }
 
-// The Help view matches its board (AC5). The header, the tab bar, the
-// footer, and the help box match cell for cell. The box of the board is in
-// rows 6-34 and columns 18-101. Each other cell of the content area,
-// columns 17 and 102 included, matches only in its token, because the
-// Agents screen behind the box is wave 6 work.
+// The Help view matches its board cell for cell (AC5), with the Agents
+// screen behind the box.
 func TestHelpMatchesItsBoard(t *testing.T) {
 	want := readBoardGrid(t, "Help")
 	m := newTestDemoModel(t, "Help.fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
-	var diffs []cellgrid.Diff
-	for row := range want.Height {
-		for col := range want.Width {
-			w, g := want.At(row, col), got.At(row, col)
-			frame := row <= 2 || row == want.Height-1
-			box := row >= 6 && row <= 34 && col >= 18 && col <= 101
-			if frame || box {
-				if w != g {
-					diffs = append(diffs, cellgrid.Diff{Row: row, Col: col, Want: w, Got: g})
-				}
-			} else if w.Token != g.Token {
-				diffs = append(diffs, cellgrid.Diff{Row: row, Col: col, Want: w, Got: g})
-			}
-		}
+	diffs, err := cellgrid.Compare(want, got, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
 	if len(diffs) != 0 {
 		t.Fatalf("%d cells differ from Help.grid:\n%s", len(diffs), cellgrid.FormatDiffs(diffs))

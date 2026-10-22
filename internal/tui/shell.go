@@ -15,13 +15,12 @@ const (
 )
 
 var (
-	headerStyle   = lipgloss.NewStyle().Bold(true)
-	workingStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
-	doneStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
-	infoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
-	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
-	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
-	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
+	headerStyle  = lipgloss.NewStyle().Bold(true)
+	workingStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
+	doneStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
+	infoStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
+	titleStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
+	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
 )
 
 type dataRequest uint8

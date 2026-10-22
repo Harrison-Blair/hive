@@ -7,109 +7,12 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/charmbracelet/x/ansi"
 )
-
-func TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts(t *testing.T) {
-	home, clock := agentsGenerationFixture(t)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-
-	want := []string{"coordinator-current", "supervisor-current", "manager-current", "live-worker", "active-ghost"}
-	all := []string{
-		"coordinator-old", "coordinator-current", "supervisor-old", "supervisor-current",
-		"manager-old", "manager-current", "live-worker", "active-ghost", "landed-ghost",
-	}
-	for _, tab := range []agentsTab{agentsTree, agentsGraph, agentsTable} {
-		m.agents.tab = tab
-		lines, _ := m.agents.contentLines()
-		for _, name := range want {
-			if got := countAgentRows(lines, name); got != 1 {
-				t.Errorf("tab %d has %d rows for %q, want one:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
-			}
-		}
-		for _, name := range all {
-			if containsAgentName(want, name) {
-				continue
-			}
-			if got := countAgentRows(lines, name); got != 0 {
-				t.Errorf("tab %d has %d rows for hidden generation %q:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
-			}
-		}
-		var dimGhost string
-		switch tab {
-		case agentsTree:
-			dimGhost = dimStyle.Render("× active-ghost · stopped · 3m")
-		case agentsGraph:
-			dimGhost = dimStyle.Render("× active-ghost")
-		case agentsTable:
-			dimGhost = dimStyle.Render("active-ghost · worker · demo · 11-active · — · — · stopped · 3m · manager-current")
-		}
-		if !strings.Contains(strings.Join(lines, "\n"), dimGhost) {
-			t.Errorf("tab %d does not dim the active-task ghost: %s", tab, ansi.Strip(strings.Join(lines, "\n")))
-		}
-	}
-}
-
-func TestAgentsHistoryToggleShowsAllGenerations(t *testing.T) {
-	home, clock := agentsGenerationFixture(t)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
-		t.Fatalf("default footer does not show the stopped-agent hint: %s", m.currentScreen().KeyHints())
-	}
-	m, _ = raise(t, m, key('h', "h"))
-	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
-		t.Fatalf("footer does not keep the stopped-agent hint: %s", m.currentScreen().KeyHints())
-	}
-
-	want := []string{
-		"coordinator-old", "coordinator-current", "supervisor-old", "supervisor-current",
-		"manager-old", "manager-current", "live-worker", "active-ghost", "landed-ghost",
-	}
-	for _, tab := range []agentsTab{agentsTree, agentsGraph, agentsTable} {
-		m.agents.tab = tab
-		lines, _ := m.agents.contentLines()
-		for _, name := range want {
-			if got := countAgentRows(lines, name); got != 1 {
-				t.Errorf("tab %d has %d history rows for %q, want one:\n%s", tab, got, name, ansi.Strip(strings.Join(lines, "\n")))
-			}
-		}
-		var landedExample string
-		switch tab {
-		case agentsTree:
-			landedExample = "✓ landed-ghost · stopped · 4m · 12 landed · abc1234"
-		case agentsGraph:
-			landedExample = "✓ landed-ghost"
-		case agentsTable:
-			landedExample = "✓ landed-ghost · worker · demo · 12-landed · — · — · stopped · 4m · manager-current · 12 landed · abc1234"
-		}
-		if !strings.Contains(ansi.Strip(strings.Join(lines, "\n")), landedExample) {
-			t.Errorf("tab %d omits the landed ghost label %q: %s", tab, landedExample, ansi.Strip(strings.Join(lines, "\n")))
-		}
-		var dimExample string
-		switch tab {
-		case agentsTree:
-			dimExample = dimStyle.Render("○ coordinator-old · idle · 1m")
-		case agentsGraph:
-			dimExample = dimStyle.Render("○ coordinator-old")
-		case agentsTable:
-			dimExample = dimStyle.Render("coordinator-old · coordinator · — · — · — · — · idle · 1m · none")
-		}
-		if !strings.Contains(strings.Join(lines, "\n"), dimExample) {
-			t.Errorf("tab %d does not dim old generations: %s", tab, ansi.Strip(strings.Join(lines, "\n")))
-		}
-	}
-}
 
 func TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime(t *testing.T) {
 	home := newTestHome(t)
@@ -125,10 +28,14 @@ func TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	state := agentsState{data: data}
-	visible := state.visibleNodes()
-	if len(visible) != 1 || visible[0].record.Key != "legacy-c" {
-		t.Fatalf("visible legacy generations = %#v, want only record legacy-c", visible)
+	var current []string
+	for _, node := range data.nodes {
+		if node.current {
+			current = append(current, node.record.Key)
+		}
+	}
+	if len(current) != 1 || current[0] != "legacy-c" {
+		t.Fatalf("current legacy generations = %q, want only record legacy-c", current)
 	}
 }
 
@@ -160,110 +67,6 @@ func agentsGenerationFixture(t *testing.T) (string, *testClock) {
 	return home, clock
 }
 
-func countAgentRows(lines []string, name string) int {
-	count := 0
-	for _, line := range lines {
-		plain := ansi.Strip(line)
-		graphIndex := strings.Index(plain, name)
-		if graphIndex >= 0 {
-			end := graphIndex + len(name)
-			prefix := plain[:graphIndex]
-			cardBorder := strings.LastIndex(prefix, "│")
-			if strings.Count(plain, "│") >= 4 &&
-				(end == len(plain) || strings.ContainsRune(" ·│", rune(plain[end]))) && cardBorder >= 0 &&
-				hasAgentMarkAnywhere(prefix[cardBorder+len("│"):]) {
-				count++
-				continue
-			}
-		}
-		index := strings.Index(plain, name+" ·")
-		if index < 0 {
-			continue
-		}
-		prefix := plain[:index]
-		if index == 0 || strings.HasSuffix(prefix, "▶ ") || hasAgentMark(prefix) {
-			count++
-		}
-	}
-	return count
-}
-
-func hasAgentMarkAnywhere(prefix string) bool {
-	for _, mark := range []string{"● ", "○ ", "! ", "× ", "? ", "✓ "} {
-		if strings.Contains(prefix, mark) {
-			return true
-		}
-	}
-	return strings.Contains(prefix, "▶ ")
-}
-
-func hasAgentMark(prefix string) bool {
-	for _, mark := range []string{"● ", "○ ", "! ", "× ", "? ", "✓ "} {
-		if strings.HasSuffix(prefix, mark) {
-			return true
-		}
-	}
-	return false
-}
-
-func containsAgentName(names []string, name string) bool {
-	for _, item := range names {
-		if item == name {
-			return true
-		}
-	}
-	return false
-}
-
-func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "[ TREE ]", "home", "coordinator", "supervisor", "demo · Active demo goal", "manager-demo", "worker-1", "legacy-verifier")
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	_ = m.currentScreen().View(120, 30)
-	for range 4 {
-		m, _ = raise(t, m, key('j', "j"))
-	}
-	requireAgentsView(t, m, "[ GRAPH ]", "parent manager-demo", "model model-worker", "task 10-build", "pane w1:p4")
-	view := ansi.Strip(m.currentScreen().View(120, 30))
-	for _, want := range []string{
-		"≡ home", "≡ demo ·", "coordinator", "manager-demo", "legacy-verifier", "worker-1",
-		"cc idle · 3m", "edges: ─ delegates · ┄ nudges · ⋯ replaced",
-	} {
-		if !strings.Contains(view, want) {
-			t.Errorf("graph omits board element %q:\n%s", want, view)
-		}
-	}
-	if strings.Contains(view, "coordinator ──▶ manager-demo") {
-		t.Fatalf("graph still lists edges as text below the pods:\n%s", view)
-	}
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	requireAgentsView(t, m, "[ TABLE ]", "name", "role", "project", "task", "harness", "model", "status", "age", "parent", "worker-1 · worker · demo · 10-build · pi · model-worker · blocked · 4m · manager-demo")
-}
-
-func TestAgentsLoadsLongAgentKeysAsNodesAndParents(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	managerKey := "manager-stenographer-g7"
-	writeAgentRecord(t, home, records.Agent{Key: managerKey, Name: "long-manager", Role: "manager", Project: "demo", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle"})
-	writeAgentRecord(t, home, records.Agent{Key: "long-key-worker", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: managerKey})
-
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	requireAgentsView(t, m, "long-manager · manager · demo", "long-key-worker · worker · demo · 11-build · pi · — · working · ? · long-manager")
-	if len(managerKey) <= 18 {
-		t.Fatalf("fixture key %q must exceed the legacy ID limit", managerKey)
-	}
-}
-
 func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 	for _, size := range []struct {
 		width  int
@@ -287,161 +90,18 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 					t.Fatalf("line %d is %d cells; want %d:\n%s", index, got, size.width, strings.Join(lines, "\n"))
 				}
 			}
-			if !strings.HasPrefix(lines[frameRows-1], "╭─ agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
+			if !strings.HasPrefix(lines[frameRows-1], "╭─ project agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
 				t.Fatalf("Agents panel does not fill the content area:\n%s", strings.Join(lines, "\n"))
 			}
 		})
 	}
 }
 
-func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, cmd = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	if cmd == nil {
-		t.Fatal("tab action did not log")
-	}
-	m = deliverAgentCommands(t, m, cmd)
-	m, cmd = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	if cmd == nil {
-		t.Fatal("selection action did not log")
-	}
-	m = deliverAgentCommands(t, m, cmd)
-	m, cmd = raise(t, m, key('h', "h"))
-	if cmd == nil {
-		t.Fatal("stopped visibility action did not log")
-	}
-	m = deliverAgentCommands(t, m, cmd)
-	m, cmd = raise(t, m, key('a', "a"))
-	if cmd == nil {
-		t.Fatal("attach action did not return a command")
-	}
-	batch, ok := cmd().(tea.BatchMsg)
-	if !ok || len(batch) != 2 {
-		t.Fatalf("attach action did not batch its log with attach: %#v", batch)
-	}
-	_, _ = raise(t, m, batch[0]())
-	data, err := os.ReadFile(dailyPath(home, clock.now()))
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, want := range []string{`"action":"agent tab"`, `"tab":"graph"`, `"action":"agent selection"`, `"agent_id":"supervisor"`, `"action":"agent history visibility"`, `"history":true`, `"action":"agent attach"`, `"pane_id":"w1:p2"`} {
-		if !strings.Contains(string(data), want) {
-			t.Fatalf("TUI log omits %q:\n%s", want, data)
-		}
-	}
-}
-
-func TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale(t *testing.T) {
-	home, clock := agentsFixture(t, 4)
-	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "working", "idle", "blocked", "supervisor · idle", "stale-worker · unknown")
-	rejectAgentsView(t, m, "× old-worker", "stopped")
-	m, _ = raise(t, m, key('h', "h"))
-	requireAgentsView(t, m, "× old-worker", "× old-verifier", "stopped")
-	view := m.currentScreen().View(120, 30)
-	for _, stopped := range []string{"× old-worker · stopped · 6m", "× old-verifier · stopped · 7m"} {
-		if !strings.Contains(view, dimStyle.Render(stopped)) {
-			t.Fatalf("stopped agent is not dim: %s", stopped)
-		}
-	}
-	m, _ = raise(t, m, key('h', "h"))
-	rejectAgentsView(t, m, "× old-worker")
-
-	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
-	writeAgentRecord(t, home, records.Agent{Key: "idle-worker", Name: "idle-worker", Role: "worker", Project: "demo", Task: "11-idle", Harness: "pi", Model: "model-idle", PaneID: "w1:p5", Status: records.AgentLive, AgentStatus: "done", Parent: "manager-demo", StatusChangedAt: "2026-05-22T11:56:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "no-age", Name: "no-age", Role: "worker", Project: "demo", Task: "13-no-age", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
-	m = refreshAgents(t, m)
-	requireAgentsView(t, m, "unknown", "idle-worker", "no-age", "?")
-	for _, node := range m.agents.visibleNodes() {
-		if node.record.Role == "supervisor" && node.status != "unknown" {
-			t.Fatalf("stale supervisor status = %q, want unknown", node.status)
-		}
-	}
-}
-
-func TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents(t *testing.T) {
-	home, clock := agentsFixture(t, 40)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	_ = m.currentScreen().View(70, 12)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
-	for range 44 {
-		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	}
-	view := ansi.Strip(m.currentScreen().View(70, 12))
-	if !strings.Contains(view, "▶ ● worker-39") {
-		t.Fatalf("selected graph node is not in view:\n%s", view)
-	}
-	if strings.Contains(view, "worker-00") {
-		t.Fatalf("graph did not scroll to the selected node:\n%s", view)
-	}
-}
-
-func TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	m, _ = raise(t, m, key('j', "j"))
-	m, _ = raise(t, m, key('j', "j"))
-	requireAgentsView(t, m, "manager-demo", "parent inferred")
-	m, _ = raise(t, m, key('j', "j"))
-	requireAgentsView(t, m, "legacy-verifier", "parent inferred")
-	m, _ = raise(t, m, key('j', "j"))
-	requireAgentsView(t, m, "worker-1  parent manager-demo")
-	m, _ = raise(t, m, key('k', "k"))
-	requireAgentsView(t, m, "legacy-verifier  parent inferred")
-}
-
-func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	for range 4 {
-		m, _ = raise(t, m, key('j', "j"))
-	}
-	requireAgentsView(t, m, "worker-1  parent manager-demo")
-	writeAgentRecord(t, home, records.Agent{Key: "aaa-worker", Name: "aaa-worker", Role: "worker", Project: "demo", Harness: "pi", PaneID: "w1:p8", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo"})
-	m = refreshAgents(t, m)
-	requireAgentsView(t, m, "worker-1  parent manager-demo")
-}
-
-func TestAgentsProjectsFollowProjectRecordOrder(t *testing.T) {
-	home, clock := agentsFixture(t, 0)
-	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
-	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
-	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('1', "1"))
-	m = deliverAgentCommands(t, m, cmd)
-	view := ansi.Strip(m.currentScreen().View(120, 30))
-	alpha := strings.Index(view, "▾ alpha")
-	demo := strings.Index(view, "▾ demo · Active demo goal")
-	zeta := strings.Index(view, "▾ zeta")
-	if alpha < 0 || demo <= alpha || zeta <= demo {
-		t.Fatalf("project groups are missing or out of order:\n%s", view)
-	}
-}
-
 func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// At 120×40 the peek panel has room for each of the 20 lines.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	bin := t.TempDir()
@@ -456,31 +116,37 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	}
 	t.Setenv("HERDR_ARGS", argsPath)
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	// Decision 14: p peeks at the pane.
+	// Decision 14: p peeks at the pane of the selected agent. The
+	// coordinator is not on the graph, so the manager is selected.
 	_, cmd = raise(t, m, key('p', "p"))
 	if cmd == nil {
 		t.Fatal("p did not start pane read")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "PEEK · w1:p1", "line 06", "line 25")
-	rejectAgentsView(t, m, "line 05", "line 01")
+	requireView(t, m, "peek w1:p3 · esc closes", "line 06", "line 25")
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, "line 05") || strings.Contains(view, "line 01") {
+		t.Fatalf("peek shows more than the last 20 lines:\n%s", view)
+	}
 	args, err := os.ReadFile(argsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, argument := range []string{"pane", "read", "w1:p1", "--lines", "20", "--format", "text"} {
+	for _, argument := range []string{"pane", "read", "w1:p3", "--lines", "20", "--format", "text"} {
 		if !strings.Contains(string(args), argument) {
 			t.Fatalf("herdr pane read args omitted %q: %s", argument, args)
 		}
 	}
 	m, cmd = raise(t, m, key(tea.KeyEscape, "esc"))
 	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "[ TREE ]")
+	if m.agents.peekOpen {
+		t.Fatal("esc did not close the peek")
+	}
+	requireView(t, m, "╭─ project agents ")
 	logData, err := os.ReadFile(dailyPath(home, clock.now()))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"action":"agent peek"`, `"action":"agent peek close"`, `"pane_id":"w1:p1"`} {
+	for _, want := range []string{`"action":"agent peek"`, `"action":"agent peek close"`, `"pane_id":"w1:p3"`} {
 		if !strings.Contains(string(logData), want) {
 			t.Fatalf("Agents log omits %q:\n%s", want, logData)
 		}
@@ -511,133 +177,6 @@ func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	}
 }
 
-func TestAgentsBoardGoldenFrames(t *testing.T) {
-	sizes := []struct {
-		name   string
-		width  int
-		height int
-	}{{name: "120x40", width: 120, height: 40}, {name: "200x57", width: 200, height: 57}}
-	tabs := []struct {
-		name string
-		tab  agentsTab
-	}{{name: "tree", tab: agentsTree}, {name: "graph", tab: agentsGraph}, {name: "table", tab: agentsTable}}
-
-	for _, size := range sizes {
-		for _, tab := range tabs {
-			t.Run(size.name+"/"+tab.name, func(t *testing.T) {
-				m := agentsBoardModel(t)
-				m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC) }
-				for index := range m.agents.data.nodes {
-					if m.agents.data.nodes[index].record.Role == "supervisor" {
-						m.agents.data.nodes[index].pid = "551386"
-					}
-				}
-				m.agents.tab = tab.tab
-				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
-				// The header shows the home. The test home is a new folder on
-				// each run, so the golden frame uses a fixed home.
-				m.home = "/fixture/hive"
-				frame := ansi.Strip(m.View().Content)
-				// Decisions 1 and 3: the tab bar replaces the screen list, and
-				// the content area shows the current Agents screen in one panel.
-				if strings.Contains(frame, "SCREENS") || !strings.Contains(frame, "╭─ agents ") {
-					t.Fatalf("Agents does not use the frame layout:\n%s", frame)
-				}
-				lines := strings.Split(frame, "\n")
-				if len(lines) != size.height {
-					t.Fatalf("frame has %d lines, want %d", len(lines), size.height)
-				}
-				for index, line := range lines {
-					if got := ansi.StringWidth(line); got != size.width {
-						t.Fatalf("line %d has width %d, want %d: %q", index+1, got, size.width, line)
-					}
-				}
-				goldenPath := filepath.Join("testdata", "agents-board", tab.name+"-"+size.name+".golden")
-				golden, err := os.ReadFile(goldenPath)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if got := strings.TrimSuffix(frame, "\n"); got != strings.TrimSuffix(string(golden), "\n") {
-					t.Fatalf("Agents frame differs from %s:\n%s", goldenPath, got)
-				}
-			})
-		}
-	}
-}
-
-func TestAgentsBoardDetailShowsTaskStatusAndNextTask(t *testing.T) {
-	m := agentsBoardModel(t)
-	for range 3 {
-		m, _ = raise(t, m, key('j', "j"))
-	}
-	if m.agents.selectedKey != "worker-alpha" {
-		t.Fatalf("selection = %q, want worker-alpha", m.agents.selectedKey)
-	}
-	view := ansi.Strip(m.currentScreen().View(120, 36))
-	for _, want := range []string{
-		"worker-alpha  parent manager-alpha", "model model-alpha", "task 10-alpha  assigned",
-		"pane w1:p4", "next 11-next", "╭", "╰",
-	} {
-		if !strings.Contains(view, want) {
-			t.Errorf("Agents detail omits %q:\n%s", want, view)
-		}
-	}
-	unknown := agentsState{data: agentsData{nodes: []agentNode{{record: records.Agent{Name: "unknown"}, status: "unknown"}}}}
-	if got := unknown.detailLine(unknown.data.nodes[0]); !strings.Contains(got, "parent ?  model ?  task ?  ?  pane ?  next ?") {
-		t.Fatalf("unknown detail values are not marked with ?: %s", got)
-	}
-}
-
-func TestAgentsGhostsRequireAnOpenTask(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeRecord(t, m.home, []string{"goals"}, "g1-alpha", records.Goal{
-		ID: "g1-alpha", Project: "alpha", Title: "Alpha goal", Status: "active",
-		Waves: []records.GoalWave{{ID: "wave-a", Tasks: []string{"21-verified-active", "23-landed"}}},
-	})
-	for _, task := range []records.Task{
-		{ID: "20-cancelled", Project: "alpha", Status: "cancelled"},
-		{ID: "21-verified-active", Project: "alpha", Status: "verified"},
-		{ID: "22-verified-unassigned", Project: "alpha", Status: "verified"},
-		{ID: "23-landed", Project: "alpha", Status: "verified", Delivery: &records.Delivery{Commit: "abc1234", Pushed: true}},
-		{ID: "24-completed", Project: "alpha", Status: "completed"},
-	} {
-		writeRecord(t, m.home, []string{"tasks"}, task.ID, task)
-	}
-	for _, record := range []records.Agent{
-		{Key: "ghost-cancelled", Name: "ghost-cancelled", Role: "worker", Project: "alpha", Task: "20-cancelled", Parent: "manager-alpha", Status: records.AgentStopped},
-		{Key: "ghost-verified-active", Name: "ghost-verified-active", Role: "worker", Project: "alpha", Task: "21-verified-active", Parent: "manager-alpha", Status: records.AgentStopped},
-		{Key: "ghost-verified-unassigned", Name: "ghost-verified-unassigned", Role: "worker", Project: "alpha", Task: "22-verified-unassigned", Parent: "manager-alpha", Status: records.AgentStopped},
-		{Key: "ghost-landed", Name: "ghost-landed", Role: "worker", Project: "alpha", Task: "23-landed", Parent: "manager-alpha", Status: records.AgentStopped},
-		{Key: "ghost-completed", Name: "ghost-completed", Role: "worker", Project: "alpha", Task: "24-completed", Parent: "manager-alpha", Status: records.AgentStopped},
-	} {
-		writeAgentRecord(t, m.home, record)
-	}
-	m = refreshAgents(t, m)
-	for _, name := range []string{"ghost-beta", "ghost-verified-active", "ghost-completed"} {
-		if !containsAgentName(agentNames(m.agents.visibleNodes()), name) {
-			t.Errorf("open task ghost %q is hidden", name)
-		}
-	}
-	for _, name := range []string{"ghost-cancelled", "ghost-verified-unassigned", "ghost-landed"} {
-		if containsAgentName(agentNames(m.agents.visibleNodes()), name) {
-			t.Errorf("closed task ghost %q is visible without history", name)
-		}
-	}
-	explorerLines, _ := m.agents.explorerLines()
-	explorer := strings.Join(explorerLines, "\n")
-	for _, name := range []string{"ghost-cancelled", "ghost-verified-unassigned", "ghost-landed"} {
-		if strings.Contains(explorer, name) {
-			t.Errorf("closed task ghost %q is visible in the explorer without history", name)
-		}
-	}
-	m, _ = raise(t, m, key('h', "h"))
-	for _, name := range []string{"ghost-cancelled", "ghost-verified-unassigned", "ghost-landed"} {
-		if !containsAgentName(agentNames(m.agents.visibleNodes()), name) {
-			t.Errorf("history hides stopped agent %q", name)
-		}
-	}
-}
-
 func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 	m := agentsBoardModel(t)
 	pidStart, err := process.Start(int64(os.Getpid()))
@@ -653,282 +192,21 @@ func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 	})
 	m = refreshAgents(t, m)
 	var supervisor agentNode
-	for _, node := range m.agents.visibleNodes() {
-		if node.record.Key == "supervisor-g16" {
+	for _, node := range m.agents.data.nodes {
+		if node.current && node.record.Key == "supervisor-g16" {
 			supervisor = node
 			break
 		}
 	}
 	if supervisor.record.Key == "" {
-		t.Fatal("live supervisor generation 16 is not visible")
+		t.Fatal("live supervisor generation 16 is not current")
 	}
 	if supervisor.status != "working" || supervisor.age != "50m" {
 		t.Fatalf("supervisor status/age = %q/%q, want working/50m", supervisor.status, supervisor.age)
 	}
-	m.agents.tab = agentsGraph
-	lines, _ := m.agents.graphLines()
-	view := strings.Join(lines, "\n")
-	if !strings.Contains(view, fmt.Sprintf("pid %d · 50m", os.Getpid())) {
-		t.Fatalf("supervisor graph row does not show its pid and age:\n%s", view)
-	}
-}
-
-func agentNames(nodes []agentNode) []string {
-	names := make([]string, 0, len(nodes))
-	for _, node := range nodes {
-		names = append(names, node.record.Name)
-	}
-	return names
-}
-
-func TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox(t *testing.T) {
-	cases := []struct {
-		name     string
-		role     string
-		readAt   string
-		nudgedAt string
-		wantEdge bool
-	}{
-		{name: "unread nudged manager", role: "manager-alpha", nudgedAt: "2026-10-20T11:59:00Z", wantEdge: true},
-		{name: "read nudged manager", role: "manager-alpha", readAt: "2026-10-20T11:59:00Z", nudgedAt: "2026-10-20T11:58:00Z"},
-		{name: "unread manager without nudge", role: "manager-alpha"},
-		{name: "unread nudged coordinator", role: "coordinator", nudgedAt: "2026-10-20T11:59:00Z", wantEdge: true},
-	}
-	for _, test := range cases {
-		t.Run(test.name, func(t *testing.T) {
-			m := agentsBoardModel(t)
-			writeRecord(t, m.home, []string{"inbox", test.role}, "1", records.Inbox{
-				Seq: 1, Role: test.role, Kind: records.InboxCompleted, Agent: "worker-alpha",
-				Text: "completed", ReadAt: test.readAt, NudgedAt: test.nudgedAt,
-			})
-			m = refreshAgents(t, m)
-			m.agents.tab = agentsGraph
-			lines, _ := m.agents.graphLines()
-			graph := strings.Join(lines, "\n")
-			hasNudge := false
-			for index, line := range lines {
-				plain := ansi.Strip(line)
-				if !strings.Contains(plain, "nudges") {
-					continue
-				}
-				hasNudge = strings.Contains(plain, "┄") || index > 0 && strings.Contains(ansi.Strip(lines[index-1]), "┄")
-			}
-			if hasNudge != test.wantEdge {
-				t.Fatalf("nudge edge present = %t, want %t:\n%s", hasNudge, test.wantEdge, graph)
-			}
-			if strings.Contains(graph, "supervisor ┄┄▶ "+test.role) {
-				t.Fatalf("graph still lists the nudge as text:\n%s", graph)
-			}
-			view := ansi.Strip(m.currentScreen().View(90, 32))
-			if !strings.Contains(view, "edges: ─ delegates · ┄ nudges · ⋯ replaced") {
-				t.Fatalf("graph view omits the edge legend:\n%s", view)
-			}
-		})
-	}
-}
-
-func TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeAgentRecord(t, m.home, records.Agent{
-		Key: "verifier-alpha", Name: "verifier-alpha", Role: "verifier", Project: "alpha",
-		Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working",
-	})
-	for _, role := range []string{"worker-alpha", "verifier-alpha"} {
-		writeRecord(t, m.home, []string{"inbox", role}, "1", records.Inbox{
-			Seq: 1, Role: role, Kind: records.InboxCompleted, NudgedAt: "2026-10-20T11:59:00Z",
-		})
-	}
-	m = refreshAgents(t, m)
-	m.agents.tab = agentsGraph
-	lines, _ := m.agents.graphLines()
-	graph := strings.Join(lines, "\n")
-	if strings.Contains(graph, "nudges") {
-		t.Fatalf("drawn graph has a nudge route for a worker or verifier:\n%s", graph)
-	}
-}
-
-func TestAgentsGraphConnectsSiblingWorkersToManagerStem(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeAgentRecord(t, m.home, records.Agent{
-		Key: "worker-alpha-sibling", Name: "worker-alpha-sibling", Role: "worker", Project: "alpha",
-		Task: "11-next", Harness: "pi", Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working",
-	})
-	m = refreshAgents(t, m)
-	m.agents.tab = agentsGraph
-	lines, positions := m.agents.graphLines()
-	for _, key := range []string{"manager-alpha", "worker-alpha", "worker-alpha-sibling"} {
-		if _, ok := positions[key]; !ok {
-			t.Fatalf("graph position missing %q: %#v", key, positions)
-		}
-	}
-	graph := strings.Join(lines, "\n")
-	for _, connector := range []string{"┬", "┴"} {
-		if !strings.Contains(graph, connector) {
-			t.Fatalf("graph is missing manager stem connector %q:\n%s", connector, graph)
-		}
-	}
-}
-
-func TestAgentsGraphColumnsHaveEqualWidth(t *testing.T) {
-	m := agentsBoardModel(t)
-	nativeWidths := make([]int, 0, len(m.agents.data.groups))
-	for _, group := range m.agents.data.groups {
-		_, _, width, _ := m.agents.graphPod(group, m.agents.nodeMap())
-		nativeWidths = append(nativeWidths, width)
-	}
-	if nativeWidths[0] == nativeWidths[1] {
-		t.Fatalf("fixture has equal home and alpha pod widths: %v", nativeWidths)
-	}
-
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	view := ansi.Strip(m.currentScreen().View(200, 57))
-	if !strings.Contains(view, "[ GRAPH ]") {
-		t.Fatalf("Update and View did not select the graph:\n%s", view)
-	}
-	lines, positions := m.agents.graphLayout()
-	bounds := agentsGraphPodBounds(lines, len(m.agents.data.groups))
-	if len(bounds) != len(m.agents.data.groups) {
-		t.Fatalf("found %d graph pods, want %d:\n%s", len(bounds), len(m.agents.data.groups), strings.Join(lines, "\n"))
-	}
-	for index, bound := range bounds {
-		if bound.width != bounds[0].width {
-			t.Fatalf("graph pod %d has width %d, want widest width %d; native widths %v:\n%s", index, bound.width, bounds[0].width, nativeWidths, strings.Join(lines, "\n"))
-		}
-		position, ok := positions[m.agents.data.groups[index].keys[0]]
-		if !ok {
-			t.Fatalf("graph omits the first node of pod %d", index)
-		}
-		cardCenter := 2*position.col + position.width - 1
-		podCenter := 2*bound.start + bound.width - 1
-		if absInt(cardCenter-podCenter) > 1 {
-			t.Errorf("pod %d card center = %d, want pod center %d or its nearest cell", index, cardCenter, podCenter)
-		}
-	}
-}
-
-func TestAgentsGraphCardsKeepTheirWidths(t *testing.T) {
-	m := agentsBoardModel(t)
-	for index := range m.agents.data.nodes {
-		if m.agents.data.nodes[index].record.Role == "supervisor" {
-			m.agents.data.nodes[index].pid = "551386"
-		}
-	}
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	_ = m.currentScreen().View(200, 57)
-	_, positions := m.agents.graphLayout()
-	for key, want := range map[string]int{"coordinator": 19, "manager-alpha": 21, "manager-beta": 20} {
-		if got := positions[key].width; got != want {
-			t.Errorf("%s card width = %d, want original width %d", key, got, want)
-		}
-	}
-}
-
-func TestAgentsGraphSingleColumnKeepsItsPod(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.agents.data.groups = m.agents.data.groups[:1]
-	m.agents.data.groups[0].keys = []string{"coordinator", "supervisor"}
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	view := ansi.Strip(m.currentScreen().View(120, 40))
-	if !strings.Contains(view, "≡ home") || !strings.Contains(view, "coordinator") {
-		t.Fatalf("single-column graph omits its pod or agent:\n%s", view)
-	}
-	lines, _ := m.agents.graphLayout()
-	bounds := agentsGraphPodBounds(lines, 1)
-	if len(bounds) != 1 {
-		t.Fatalf("single-column graph has %d pods, want one:\n%s", len(bounds), strings.Join(lines, "\n"))
-	}
-}
-
-func TestAgentsGraphLongCardFitsInEqualColumns(t *testing.T) {
-	m := agentsBoardModel(t)
-	const longName = "worker-with-a-much-longer-name-than-other-agents"
-	for index := range m.agents.data.nodes {
-		if m.agents.data.nodes[index].record.Key == "worker-alpha" {
-			m.agents.data.nodes[index].record.Name = longName
-		}
-	}
-	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
-	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	if m.agents.selectedKey != "worker-alpha" {
-		t.Fatalf("selection = %q, want worker-alpha", m.agents.selectedKey)
-	}
-	view := ansi.Strip(m.currentScreen().View(120, 40))
-	if !strings.Contains(view, "▶ ● "+longName) {
-		t.Fatalf("selected long card is cut or lost its selection marker:\n%s", view)
-	}
-	lines, _ := m.agents.graphLayout()
-	bounds := agentsGraphPodBounds(lines, len(m.agents.data.groups))
-	if len(bounds) != len(m.agents.data.groups) {
-		t.Fatalf("found %d graph pods, want %d:\n%s", len(bounds), len(m.agents.data.groups), strings.Join(lines, "\n"))
-	}
-	for index, bound := range bounds {
-		if bound.width != bounds[0].width {
-			t.Fatalf("long card pod %d has width %d, want equal width %d:\n%s", index, bound.width, bounds[0].width, strings.Join(lines, "\n"))
-		}
-	}
-}
-
-type agentsGraphPodBound struct {
-	start int
-	width int
-}
-
-func agentsGraphPodBounds(lines []string, want int) []agentsGraphPodBound {
-	for _, line := range lines {
-		cells := []rune(ansi.Strip(line))
-		starts := make([]int, 0, want)
-		for column, cell := range cells {
-			if cell == '╭' {
-				starts = append(starts, column)
-			}
-		}
-		if len(starts) != want {
-			continue
-		}
-		bounds := make([]agentsGraphPodBound, 0, want)
-		for index, start := range starts {
-			limit := len(cells)
-			if index+1 < len(starts) {
-				limit = starts[index+1]
-			}
-			for column := start + 1; column < limit; column++ {
-				if cells[column] == '╮' {
-					bounds = append(bounds, agentsGraphPodBound{start: start, width: column - start + 1})
-					break
-				}
-			}
-		}
-		if len(bounds) == want {
-			return bounds
-		}
-	}
-	return nil
-}
-
-func TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.agents.tab = agentsGraph
-	_ = m.currentScreen().View(90, 32)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
-	if m.agents.selectedKey != "manager-alpha" {
-		t.Fatalf("right selected %q, want manager-alpha", m.agents.selectedKey)
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	if m.agents.selectedKey != "worker-alpha" {
-		t.Fatalf("down selected %q, want worker-alpha", m.agents.selectedKey)
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
-	if m.agents.selectedKey != "ghost-beta" {
-		t.Fatalf("right selected %q, want ghost-beta", m.agents.selectedKey)
-	}
-	view := ansi.Strip(m.currentScreen().View(90, 32))
-	if !strings.Contains(view, "▶ × ghost-beta") || m.agents.graphOffset == 0 {
-		t.Fatalf("graph did not scroll with the selected node (offset %d):\n%s", m.agents.graphOffset, view)
+	// Health › Agents shows the pid in the details of the supervisor.
+	if want := fmt.Sprint(os.Getpid()); supervisor.pid != want {
+		t.Fatalf("supervisor pid = %q, want the claim pid %s", supervisor.pid, want)
 	}
 }
 
@@ -962,334 +240,6 @@ func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	}
 }
 
-func TestAgentsGraphPodTitleSharesTopBorder(t *testing.T) {
-	m := agentsBoardModel(t)
-	nodes := m.agents.nodeMap()
-	homePod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], nodes)
-	if !strings.HasPrefix(homePod[0], "╭─ ≡ home ─") || strings.Contains(homePod[1], "≡ home") {
-		t.Fatalf("home pod title is not on the top border:\n%s", strings.Join(homePod, "\n"))
-	}
-	alphaPod, _, _, _ := m.agents.graphPod(m.agents.data.groups[1], nodes)
-	want := "╭─ ≡ alpha · Alpha goal for long graph ─┬"
-	if !strings.HasPrefix(alphaPod[0], want) {
-		t.Fatalf("alpha pod title = %q, want prefix %q", alphaPod[0], want)
-	}
-}
-
-func TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem(t *testing.T) {
-	m := agentsBoardModel(t)
-	group := agentGroup{id: "stenographer", title: "stenographer · a goal with a long title", keys: []string{"manager-alpha"}}
-	pod, _, _, _ := m.agents.graphPod(group, m.agents.nodeMap())
-	want := "╭─ ≡ stenographer · a goal with a long title ─┬"
-	if !strings.HasPrefix(pod[0], want) {
-		t.Fatalf("long pod title = %q, want prefix %q", pod[0], want)
-	}
-}
-
-func TestAgentsGraphColorsMatchBoard(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.agents.tab = agentsGraph
-	view := agentsScreen{model: m}.View(176, 48)
-	lines := strings.Split(view, "\n")
-	_, positions := m.agents.graphLayout()
-	check := func(label string, row, column int, want string) {
-		t.Helper()
-		if row < 0 || row >= len(lines) {
-			t.Errorf("%s row %d is outside the rendered graph", label, row)
-			return
-		}
-		if got := foregroundAtCell(lines[row], column); got != want {
-			t.Errorf("%s SGR foreground = %q, want %q", label, got, want)
-		}
-	}
-	checkGlyph := func(label, glyph, want string) {
-		t.Helper()
-		for row, line := range lines {
-			plain := ansi.Strip(line)
-			index := strings.Index(plain, glyph)
-			if index >= 0 {
-				check(label, row, ansi.StringWidth(plain[:index]), want)
-				return
-			}
-		}
-		t.Errorf("%s glyph %q is missing", label, glyph)
-	}
-
-	checkGlyph("pod border", "╭", "38;2;111;183;255")
-	checkGlyph("delegation edge", "┌", "38;2;110;230;154")
-	manager := positions["manager-alpha"]
-	check("live node border", manager.row, manager.col, "38;2;110;230;154")
-	worker := positions["worker-alpha"]
-	check("live dot", 1+worker.row, worker.col+2, "38;2;110;230;154")
-	check("cc harness", 2+manager.row, manager.col+2, "38;2;245;185;66")
-	check("pi harness", 2+worker.row, worker.col+2, "38;2;111;183;255")
-
-	graphLines, graphPositions := m.agents.graphLayout()
-	podBorders := make(map[[2]int]bool)
-	columnWidth := 0
-	nodes := m.agents.nodeMap()
-	for _, group := range m.agents.data.groups {
-		_, _, podWidth, _ := m.agents.graphPod(group, nodes)
-		columnWidth = max(columnWidth, podWidth)
-	}
-	podColumn := 0
-	for _, group := range m.agents.data.groups {
-		pod, _, _, _ := m.agents.graphPod(group, nodes)
-		for row := range pod {
-			for column := 0; column < columnWidth; column++ {
-				if row == 0 || row == len(pod)-1 || column == 0 || column == columnWidth-1 {
-					podBorders[[2]int{2 + row, podColumn + column}] = true
-				}
-			}
-		}
-		podColumn += columnWidth + 3
-	}
-	for row, graphLine := range graphLines {
-		plain := ansi.Strip(graphLine)
-		column := 0
-		for _, glyph := range plain {
-			if strings.ContainsRune("─│┌┐└┘┬┴├┤┼┄⋯╭╮╰╯", glyph) {
-				want := "38;2;110;230;154"
-				if podBorders[[2]int{row, column}] {
-					want = "38;2;111;183;255"
-				}
-				for key, position := range graphPositions {
-					nodeBorder := row == position.row-1 || row == position.row+2 ||
-						(row == position.row || row == position.row+1) &&
-							(column == position.col || column == position.col+position.width-1)
-					if column < position.col || column >= position.col+position.width || !nodeBorder {
-						continue
-					}
-					node := nodes[key]
-					if key == m.agents.selectedKey {
-						want = "38;2;245;185;66"
-					} else if node.record.Status != records.AgentLive || node.stopped {
-						want = ""
-					}
-					break
-				}
-				viewRow := row + 1 - m.agents.scrollOffset
-				viewColumn := column - m.agents.graphOffset
-				if viewRow >= 0 && viewRow < len(lines) && viewColumn >= 0 && viewColumn < ansi.StringWidth(lines[viewRow]) {
-					check(fmt.Sprintf("graph glyph %q at row %d column %d", glyph, row, column), viewRow, viewColumn, want)
-				}
-			}
-			column += ansi.StringWidth(string(glyph))
-		}
-	}
-}
-
-func foregroundAtCell(line string, target int) string {
-	foreground := ""
-	column := 0
-	for index := 0; index < len(line); {
-		if line[index] == '\x1b' && index+1 < len(line) && line[index+1] == '[' {
-			end := index + 2
-			for end < len(line) && line[end] != 'm' {
-				end++
-			}
-			if end == len(line) {
-				return foreground
-			}
-			parameters := strings.Split(line[index+2:end], ";")
-			for part := 0; part < len(parameters); part++ {
-				switch parameters[part] {
-				case "", "0", "39":
-					foreground = ""
-				case "38":
-					if part+4 < len(parameters) && parameters[part+1] == "2" {
-						foreground = strings.Join(parameters[part:part+5], ";")
-						part += 4
-					}
-				}
-			}
-			index = end + 1
-			continue
-		}
-		r, size := utf8.DecodeRuneInString(line[index:])
-		width := ansi.StringWidth(string(r))
-		if target >= column && target < column+width {
-			return foreground
-		}
-		column += width
-		index += size
-	}
-	return ""
-}
-
-func TestAgentsExplorerUsesIndentationWithoutConnectors(t *testing.T) {
-	m := agentsBoardModel(t)
-	lines, _ := m.agents.explorerLines()
-	explorer := ansi.Strip(strings.Join(lines, "\n"))
-	for _, want := range []string{"  ▶ ● coordinator", "  ○ supervisor", "  ○ manager-alpha", "    ● worker-alpha"} {
-		if !strings.Contains(explorer, want) {
-			t.Errorf("Agents explorer omits %q:\n%s", want, explorer)
-		}
-	}
-	if got := strings.Count(explorer, "supervisor"); got != 1 {
-		t.Fatalf("Agents explorer has %d supervisor rows, want one:\n%s", got, explorer)
-	}
-	if strings.Contains(explorer, "├─") || strings.Contains(explorer, "└─") || strings.Contains(explorer, "┄┄") {
-		t.Fatalf("Agents explorer draws connectors:\n%s", explorer)
-	}
-}
-
-func TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeRecord(t, m.home, []string{"tasks"}, "20-ghost", records.Task{ID: "20-ghost", Project: "beta", Status: "cancelled"})
-	data, err := loadAgents(m.home, m.now())
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.agents.accept(data)
-	m.agents.tab = agentsGraph
-	lines, positions := m.agents.graphLayout()
-	manager, ok := positions["manager-beta"]
-	if !ok {
-		t.Fatal("graph omits manager-beta")
-	}
-	cardBottom := ansi.Strip(ansi.Cut(lines[manager.row+2], manager.col, manager.col+manager.width))
-	if strings.Contains(cardBottom, "┴") {
-		t.Fatalf("manager-beta draws a stem with no visible child: %s", cardBottom)
-	}
-}
-
-func TestAgentsGraphDelegationBusUsesOpenEndGlyphs(t *testing.T) {
-	m := agentsBoardModel(t)
-	lines, positions := m.agents.graphLayout()
-	bus := []rune(ansi.Strip(lines[0]))
-	for _, test := range []struct {
-		key  string
-		want rune
-	}{{key: "coordinator", want: '┌'}, {key: "manager-alpha", want: '┬'}, {key: "manager-beta", want: '┐'}} {
-		position := positions[test.key]
-		column := position.col + position.width/2
-		if got := bus[column]; got != test.want {
-			t.Errorf("delegation bus at %s = %q, want %q: %s", test.key, got, test.want, string(bus))
-		}
-	}
-}
-
-func TestAgentsTreeLastVisibleChildUsesBottomConnector(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeAgentRecord(t, m.home, records.Agent{
-		Key: "z-hidden-worker", Name: "hidden-worker", Role: "worker", Project: "alpha",
-		Parent: "manager-alpha", Status: records.AgentStopped,
-	})
-	m = refreshAgents(t, m)
-	lines, positions := m.agents.treeLines()
-	row, ok := positions["worker-alpha"]
-	if !ok {
-		t.Fatal("TREE omits worker-alpha")
-	}
-	if !strings.Contains(ansi.Strip(lines[row]), "└─ ● worker-alpha") {
-		t.Fatalf("last visible worker has the wrong connector: %s", lines[row])
-	}
-}
-
-func TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.agents.tab = agentsGraph
-	lines, _ := m.agents.graphLines()
-	graph := ansi.Strip(strings.Join(lines, "\n"))
-	for _, want := range []string{"cc idle · 3m", "pi 10-alpha"} {
-		if !strings.Contains(graph, want) {
-			t.Errorf("graph omits subtitle %q:\n%s", want, graph)
-		}
-	}
-	for _, unwanted := range []string{"cc · idle", "pi · 10-alpha"} {
-		if strings.Contains(graph, unwanted) {
-			t.Errorf("graph has extra subtitle separator %q:\n%s", unwanted, graph)
-		}
-	}
-}
-
-func TestAgentsGraphDelegationStemJoinsPodBorder(t *testing.T) {
-	m := agentsBoardModel(t)
-	writeAgentRecord(t, m.home, records.Agent{
-		Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha",
-		Harness: "claude", Model: "model-manager-alpha", PaneID: "w1:p3",
-		Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:57:00Z",
-	})
-	m = refreshAgents(t, m)
-	lines, positions := m.agents.graphLayout()
-	if !strings.Contains(ansi.Strip(lines[4]), "┄ inferred") {
-		t.Fatalf("inferred manager label is missing from its row: %s", ansi.Strip(lines[4]))
-	}
-	manager := positions["manager-alpha"]
-	column := manager.col + manager.width/2
-	topOfNode := manager.row - 1
-	for row := 0; row <= topOfNode; row++ {
-		want := '│'
-		if row == 0 || row == 2 || row == topOfNode {
-			want = '┬'
-		}
-		line := []rune(ansi.Strip(lines[row]))
-		if got := line[column]; got != want {
-			t.Fatalf("delegation stem at row %d = %q, want %q: %s", row, got, want, string(line))
-		}
-	}
-}
-
-func TestAgentsGraphNodeCardsStayInsetInLongTitlePods(t *testing.T) {
-	m := agentsBoardModel(t)
-	_, _, podWidth, cardWidth := m.agents.graphPod(m.agents.data.groups[1], m.agents.nodeMap())
-	if gap := podWidth - cardWidth; gap < 6 {
-		t.Fatalf("alpha node cards have only %d cells of total pod margin, want at least 6", gap)
-	}
-}
-
-func TestAgentsGraphPodsHaveRoundedCorners(t *testing.T) {
-	m := agentsBoardModel(t)
-	pod, _, _, _ := m.agents.graphPod(m.agents.data.groups[0], m.agents.nodeMap())
-	for _, test := range []struct {
-		line int
-		col  int
-		want rune
-	}{{line: 0, col: 0, want: '╭'}, {line: 0, col: -1, want: '╮'}, {line: -1, col: 0, want: '╰'}, {line: -1, col: -1, want: '╯'}} {
-		line := test.line
-		if line < 0 {
-			line = len(pod) + line
-		}
-		column := test.col
-		if column < 0 {
-			column = len([]rune(pod[line])) + column
-		}
-		if got := []rune(pod[line])[column]; got != test.want {
-			t.Errorf("pod corner at line %d column %d = %q, want %q: %s", line, column, got, test.want, pod[line])
-		}
-	}
-}
-
-func TestAgentsGraphNodeHasOneCellOfPadding(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.agents.tab = agentsGraph
-	lines, _ := m.agents.graphLines()
-	for _, line := range lines {
-		plain := ansi.Strip(line)
-		name := "▶ ● coordinator"
-		start := strings.Index(plain, name)
-		if start < 0 {
-			continue
-		}
-		runes := []rune(plain)
-		runeStart := len([]rune(plain[:start]))
-		if runeStart < 2 || runes[runeStart-1] != ' ' || runes[runeStart-2] != '│' {
-			t.Fatalf("coordinator node has no left padding: %s", plain)
-		}
-		end := runeStart + len([]rune(name))
-		rightBorder := end
-		for rightBorder < len(runes) && runes[rightBorder] != '│' {
-			rightBorder++
-		}
-		if rightBorder == len(runes) || rightBorder == end || runes[rightBorder-1] != ' ' {
-			t.Fatalf("coordinator node has no right padding: %s", plain)
-		}
-		return
-	}
-	t.Fatal("graph has no coordinator node")
-}
-
 func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.width = 120
@@ -1302,25 +252,6 @@ func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
 	}
 	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00 ") {
 		t.Fatalf("Agents header time is not at the right edge: width=%d line=%q", ansi.StringWidth(line), line)
-	}
-}
-
-func TestAgentsDetailFieldsUseSpaces(t *testing.T) {
-	m := agentsBoardModel(t)
-	var worker agentNode
-	for _, node := range m.agents.data.nodes {
-		if node.record.Key == "worker-alpha" {
-			worker = node
-			break
-		}
-	}
-	want := "worker-alpha  parent manager-alpha  model model-alpha  task 10-alpha  assigned  pane w1:p4  next 11-next"
-	if got := m.agents.detailLine(worker); got != want {
-		t.Fatalf("Agents detail = %q, want %q", got, want)
-	}
-	strip := strings.Join(agentDetailStrip(want, 120), "\n")
-	if !strings.Contains(ansi.Strip(strip), "worker-alpha  parent manager-alpha  model model-alpha") {
-		t.Fatalf("Agents detail strip does not keep space separators:\n%s", strip)
 	}
 }
 
@@ -1364,7 +295,7 @@ func agentsBoardModel(t *testing.T) *Model {
 	}
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	m.screenIndex = 1
+	m.selectScreen(tabAgents, 0)
 	cmd := m.startCurrentScreenLoad()
 	if cmd == nil {
 		t.Fatal("Agents screen did not request data")
@@ -1376,13 +307,12 @@ func agentsBoardModel(t *testing.T) *Model {
 func TestAgentsProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	// Decisions 6 and 22: tab moves the region, and ] ] select the TABLE
-	// view of the current Agents screen until wave 6.
-	if err := RunHome(home, strings.NewReader("1]]\x03\x03"), &out); err != nil {
+	// Decision 10: with no project, Agents shows the notice.
+	if err := RunHome(home, strings.NewReader("1\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	if !strings.Contains(out.String(), "[ TABLE ]") {
-		t.Fatalf("program output did not render the Agents table:\n%s", out.String())
+	if !strings.Contains(out.String(), agentsNoneText) {
+		t.Fatalf("program output did not render the Agents notice:\n%s", out.String())
 	}
 }
 
@@ -1447,24 +377,4 @@ func deliverAgentCommands(t *testing.T, model *Model, cmd tea.Cmd) *Model {
 	}
 	model, next := raise(t, model, msg)
 	return deliverAgentCommands(t, model, next)
-}
-
-func requireAgentsView(t *testing.T, model *Model, wants ...string) {
-	t.Helper()
-	view := ansi.Strip(model.currentScreen().View(120, 30))
-	for _, want := range wants {
-		if !strings.Contains(view, want) {
-			t.Fatalf("Agents view does not contain %q:\n%s", want, view)
-		}
-	}
-}
-
-func rejectAgentsView(t *testing.T, model *Model, unwanted ...string) {
-	t.Helper()
-	view := ansi.Strip(model.currentScreen().View(120, 30))
-	for _, item := range unwanted {
-		if strings.Contains(view, item) {
-			t.Fatalf("Agents view contains %q:\n%s", item, view)
-		}
-	}
 }

@@ -1,0 +1,14 @@
+=== RUN   TestAgentsBoardsMatchTheirGrids
+=== RUN   TestAgentsBoardsMatchTheirGrids/Main
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentsMany
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentDetails
+=== RUN   TestAgentsBoardsMatchTheirGrids/CompactAgents
+--- PASS: TestAgentsBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/Main (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentsMany (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentDetails (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/CompactAgents (0.00s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.034s

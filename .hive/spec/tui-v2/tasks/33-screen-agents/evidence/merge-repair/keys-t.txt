@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+  Goals    Queue   [Tasks]                                                                            [ ] switch view
+╭─ tasks · 1 ──────────────────────────────────────╮╭─ 4-agents-equal-columns ─────────────────────────────────────────╮
+│   ID                        STATUS    WAVE       ││                                                                  │
+│ ▶ 4-agents-equal-columns    landed    C          ││ title     Equal column width in the Agents graph                 │
+│                                                  ││ status    landed                                                 │
+│                                                  ││ goal      g1-tui-restart · wave C                                │
+│                                                  ││ worker    t4-worker-1 · stopped                                  │
+│                                                  ││ verifier  t4-verifier-1 · pass                                   │
+│                                                  ││ branch    —                                                      │
+│                                                  ││ merge     ede94f3e on dev                                        │
+│                                                  ││ depends   3-tui-restart                                          │
+│                                                  ││                                                                  │
+│                                                  ││ ACCEPTANCE                                                       │
+│                                                  ││ no acceptance criteria                                           │
+│                                                  ││                                                                  │
+│                                                  ││ EVIDENCE                                                         │
+│                                                  ││ b brief.md    v VERIFIED.md   d deps graph                       │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help

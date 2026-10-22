@@ -99,8 +99,8 @@ func TestParseDemoSize(t *testing.T) {
 
 func TestDemoMainShowsFixtureDataAtTheFixtureClock(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
-	if m.agents.selectedKey != "manager-hive-g2" {
-		t.Fatalf("selected agent = %q; want the fixture selection manager-hive-g2", m.agents.selectedKey)
+	if m.graph.selected != "manager-hive-g2" {
+		t.Fatalf("selected agent = %q; want the fixture selection manager-hive-g2", m.graph.selected)
 	}
 	first := ansi.Strip(m.View().Content)
 	for _, want := range []string{"14:22", "~/source/hive", "manager-hive", "t4-worker-1", "t4-verifier-1"} {

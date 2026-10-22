@@ -1,0 +1,18 @@
+{
+  "agent_status": "unknown",
+  "cwd": "/home/penguin/source/hive/projects/hive/worktrees/33-screen-agents",
+  "focused": false,
+  "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/33-screen-agents",
+  "pane_id": "wAG:p2",
+  "revision": 1,
+  "scroll": {
+    "max_offset_from_bottom": 0,
+    "offset_from_bottom": 0,
+    "viewport_rows": 57
+  },
+  "tab_id": "wAG:t2",
+  "terminal_id": "term_65e65186441921fe",
+  "terminal_title": "penguin@raft: ~/source/hive/projects/hive/worktrees/33-screen-agents",
+  "terminal_title_stripped": "penguin@raft: ~/source/hive/projects/hive/worktrees/33-screen-agents",
+  "workspace_id": "wAG"
+}
