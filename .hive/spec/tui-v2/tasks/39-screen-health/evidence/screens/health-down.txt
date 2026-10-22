@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+───────────────────────────────────────────━━━━━━━━━━───────────────────────────────────────────────────────────────────
+ [Home]   Agents                                                                                      [ ] switch view
+╭─ checks · 17 · 1 warn ───────────────────────────╮╭─ git ────────────────────────────────────────────────────────────╮
+│   CHECK                   RESULT                 ││                                                                  │
+│   ✓ herdr socket          protocol 22            ││ result    ok · 2.43.0                                            │
+│   ✓ herdr pane            w58:p4                 ││ source    hive doctor                                            │
+│   ✓ home                  ~/source/hive          ││ checked   14:22:05 · R to check again                            │
+│   ✓ state store           76 records             ││                                                                  │
+│   ✓ starting agents       0                      ││ DETAIL                                                           │
+│   ! unresolved agents     1                      ││ git version 2.43.0                                               │
+│ ▶ ✓ git                   2.43.0                 ││                                                                  │
+│   ✓ supervisor            live · pid 1620686     ││                                                                  │
+│   ✓ supervisor binary     current                ││                                                                  │
+│   ✓ stale worktrees       none                   ││                                                                  │
+│   ✓ unpushed branches     none                   ││                                                                  │
+│   ✓ harness claude        found                  ││                                                                  │
+│   ✓ harness codex         found                  ││                                                                  │
+│   ✓ harness opencode      found                  ││                                                                  │
+│   ✓ harness pi            found                  ││                                                                  │
+│   ✓ harness cursor-agent  found                  ││                                                                  │
+│   ✓ gh                    2.102.0                ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · tab region · [ ] view · enter open · R refresh · ? help
