@@ -109,6 +109,7 @@
   ".hive/spec/releases/tasks/50-release-version/brief.md": 0,
   ".hive/spec/releases/tasks/51-release-workflow/brief.md": 0,
   ".hive/spec/releases/tasks/52-readme/brief.md": 0,
+  ".hive/spec/releases/tasks/53-module-case/brief.md": 0,
   ".hive/spec/repair-flow/tasks/17-verifier-project/brief.md": 0,
   ".hive/spec/repair-flow/tasks/18-task-reopen/brief.md": 0,
   ".hive/spec/repair-flow/tasks/19-worker-respawn/brief.md": 0,
