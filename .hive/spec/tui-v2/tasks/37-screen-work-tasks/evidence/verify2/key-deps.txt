@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+  Goals    Queue   [Tasks]                                                                            [ ] switch view
+╭─ tasks · 4 ──────────────────────────────────────╮╭─ dependency graph · 3-tui-restart ───────────────────────────────╮
+│   ID                        STATUS    WAVE       ││ NEEDS                                                            │
+│   4-agents-equal-columns    landed    C          ││ 3-tui-restart ← 2-stale-coordinator-startup · landed             │
+│ ▶ 3-tui-restart             landed    B          ││                                                                  │
+│   2-stale-coordinator-star… landed    A          ││ BLOCKS                                                           │
+│   1-cp5-end-to-end          assigned  —          ││ 3-tui-restart → 4-agents-equal-columns · landed                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help
