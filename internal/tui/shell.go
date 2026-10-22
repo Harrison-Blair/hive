@@ -15,14 +15,12 @@ const (
 )
 
 var (
-	headerStyle   = lipgloss.NewStyle().Bold(true)
-	workingStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
-	doneStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
-	infoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
-	panelStyle    = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(colorBorder)).Padding(0, 1)
-	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
-	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
-	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
+	headerStyle  = lipgloss.NewStyle().Bold(true)
+	workingStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
+	doneStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
+	infoStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
+	titleStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
+	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
 )
 
 type dataRequest uint8
@@ -50,7 +48,7 @@ func (m *Model) makeScreens() []screen {
 		agentsScreen{model: m},
 		goalsScreen{model: m},
 		queueScreen{model: m},
-		tasksScreen{model: m},
+		workTasksScreen{model: m},
 		frictionScreen{model: m},
 		healthScreen{model: m},
 		logsScreen{model: m},

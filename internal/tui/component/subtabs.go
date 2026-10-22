@@ -10,10 +10,13 @@ import (
 const subTabsHint = "[ ] switch view"
 
 // SubTabs is the row of the views of a screen (decisions 16 to 18). Active
-// is the zero-based index of the active view.
+// is the zero-based index of the active view. Hint, when set, takes the place
+// of the view hint and ends 2 cells before the right edge, as the Compact
+// board shows "list › details" while the details overlay is open.
 type SubTabs struct {
 	Views  []string
 	Active int
+	Hint   string
 }
 
 // View renders the views at exactly width cells. The active view is in
@@ -34,6 +37,9 @@ func (s SubTabs) View(width int) string {
 		}
 	}
 	hint := dimStyle.Render(subTabsHint) + "   "
+	if s.Hint != "" {
+		hint = dimStyle.Render(s.Hint) + "  "
+	}
 	gap := width - lipgloss.Width(b.String()) - lipgloss.Width(hint)
 	return fitRow(b.String()+strings.Repeat(" ", max(gap, 1))+hint, width)
 }

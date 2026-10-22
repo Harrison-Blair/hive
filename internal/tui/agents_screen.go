@@ -493,9 +493,10 @@ func (m *Model) agentAction(key string, node agentNode) tea.Cmd {
 	case key == "t" && record.Task != "":
 		m.popupOpen = false
 		m.selectScreen(tabWork, 2)
-		m.tasks.tab = tasksAll
 		m.tasks.selectedID = record.Task
 		m.tasks.scrollOffset = 0
+		m.tasks.fileOpen = false
+		m.tasks.fileLoading = false
 		m.screenLoading = false
 		return batch(m.logAction("agent open task", slog.String("task_id", record.Task)), m.startCurrentScreenLoad())
 	}

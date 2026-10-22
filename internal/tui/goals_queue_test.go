@@ -27,8 +27,8 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 	m, cmd = raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
 
-	if m.screenIndex != 4 || m.tasks.tab != tasksAll || m.tasks.selectedID != "1-alpha" {
-		t.Fatalf("Goals did not open the selected wave tasks at the first task: screen=%d tab=%d task=%q", m.screenIndex, m.tasks.tab, m.tasks.selectedID)
+	if m.screenIndex != 4 || m.tasks.selectedID != "1-alpha" {
+		t.Fatalf("Goals did not open the selected wave tasks at the first task: screen=%d task=%q", m.screenIndex, m.tasks.selectedID)
 	}
 	view := ansi.Strip(m.currentScreen().View(160, 30))
 	if !strings.Contains(view, "▶ 1-alpha") {
@@ -36,7 +36,10 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 	}
 }
 
-func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
+// The Tasks view has no project filter (decision 23 gives p to peek), so p
+// in Tasks hides no task. After t in Goals, the view lists the tasks of each
+// project with the first wave task selected.
+func TestGoalsOpenTasksListsEachProject(t *testing.T) {
 	home := goalsQueueFixture(t)
 	writeRecord(t, home, []string{"projects"}, "other", records.Project{ID: "other", Path: "/repo/other", Base: "dev"})
 	writeRecord(t, home, []string{"tasks"}, "8-other", records.Task{ID: "8-other", Project: "other", Title: "Other task", Status: "created", DependsOn: []string{}})
@@ -44,11 +47,9 @@ func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
 	m, cmd := openWorkView(t, m, 2)
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('p', "p"))
-	m, _ = raise(t, m, key('p', "p"))
-	if got := m.tasks.projectFilter(); got != "other" {
-		t.Fatalf("Tasks filter setup failed: got %q, want other", got)
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "8-other") || !strings.Contains(view, "1-alpha") {
+		t.Fatalf("p in Tasks hid the tasks of a project:\n%s", view)
 	}
-
 	// Decision 22: [ selects the previous view, so [ [ gives Goals.
 	for range 2 {
 		m, cmd = raise(t, m, key('[', "["))
@@ -57,12 +58,12 @@ func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
 	m, cmd = raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
 
-	if m.tasks.projectIndex != 0 || m.tasks.selectedID != "1-alpha" {
-		t.Fatalf("Goals did not reset the Tasks project filter and select the first wave task: project=%q task=%q", m.tasks.projectFilter(), m.tasks.selectedID)
+	if m.tasks.selectedID != "1-alpha" {
+		t.Fatalf("Goals did not select the first wave task: task=%q", m.tasks.selectedID)
 	}
 	view := ansi.Strip(m.currentScreen().View(160, 30))
-	if !strings.Contains(view, "project: all") || !strings.Contains(view, "▶ 1-alpha") {
-		t.Fatalf("Tasks screen did not show the selected first wave task with all projects:\n%s", view)
+	if !strings.Contains(view, "8-other") || !strings.Contains(view, "▶ 1-alpha") {
+		t.Fatalf("Tasks view did not list the tasks of each project with the first wave task selected:\n%s", view)
 	}
 }
 
@@ -120,7 +121,7 @@ func TestGoalsOpenWaveDesign(t *testing.T) {
 			if m.screenIndex != 4 || !m.tasks.fileOpen || m.tasks.fileTitle != "README.md" || !strings.Contains(m.tasks.fileContent, tt.wantDesign) {
 				t.Fatalf("Goals did not open the wave feature design: screen=%d open=%t title=%q content=%q", m.screenIndex, m.tasks.fileOpen, m.tasks.fileTitle, m.tasks.fileContent)
 			}
-			view := ansi.Strip(m.currentScreen().View(160, 30))
+			view := ansi.Strip(m.View().Content)
 			if !strings.Contains(view, tt.wantDesign) {
 				t.Fatalf("shared file viewer omitted the wave design %q:\n%s", tt.wantDesign, view)
 			}

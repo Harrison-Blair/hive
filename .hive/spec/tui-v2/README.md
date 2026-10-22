@@ -221,6 +221,18 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The worker made these decisions in task `37-screen-work-tasks`:
+
+- Hook: the Tasks view uses the `panels` hook of task `36-screen-work-queue`. The field `back` of `screenPanels` closes a part of the details on `esc`, before `esc` gives the focus to the list.
+- Tasks view: the file `internal/tui/work_tasks.go`. It replaces `task_screen.go`. The list shows all tasks with the columns ID, STATUS, and WAVE. It has no status tabs and no project filter, because decision 23 gives `p` to peek.
+- Details from 120 columns: a blank line, then the fields title, status, goal, worker, verifier, branch, merge, and depends. A value that is not in the records shows `—`. Below 120 columns, the details show the fields status, goal, verifier, and merge, as the Compact board shows.
+- ACCEPTANCE lists the AC rows of the table in `brief.md`. The mark is `✓` in `done` when the last verification is a pass, and `○` in `dim` for each other result. EVIDENCE shows the key line and then the V rows of the table in `VERIFIED.md`. The command column of a V row is 38 cells.
+- `b`, `v`, and `d` show the brief, `VERIFIED.md`, or the dependencies in the details region. Below 120 columns they open the overlay. A new selection closes the file. The task loader reads `brief.md` and `VERIFIED.md`. Demo mode reads them from `files` in the fixture.
+- Details: the view uses `component.Details`, with the overflow rule of task `42-wave6-board-redraw`.
+- While the details overlay is open below 120 columns, the view row shows the hint `list › details`. It ends 2 cells before the right edge.
+- Component changes: `List.Fill` gives the padding of each cell the style of the cell. `SubTabs.Hint` replaces the view hint.
+- Refresh of the Tasks view watches the agent records and the task folder of each task. The details show the worker status and the files of the task.
+
 The worker made these decisions in task `34-screen-chat`:
 
 - Screen: `internal/tui/chat.go` replaces `chat_screen.go` and its tests. The registry entry of the Chat tab does not change. `scrollChatFeed` moves from `frame.go` to `chat.go`.

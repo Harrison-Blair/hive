@@ -146,14 +146,13 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Tasks", selected: "selected-task", also: []string{"[all 1]", "project: all"}, states: []string{"assigned"},
+			name: "Tasks", honey: []string{"▶", "selected-task"}, states: []string{"assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 4)
 				// Decision 8: the list panel has 13/30 of the width, so the
 				// pane is 200 columns wide to show the Tasks columns.
 				m.width = 200
-				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}, projects: []string{"demo"}}
-				m.tasks.tab = tasksAll
+				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}}
 				m.tasks.selectedID = "selected-task"
 				return m
 			},

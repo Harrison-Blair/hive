@@ -1,0 +1,1756 @@
+=== RUN   TestWorkTasksNormalModeShowsRecordDetails
+    tasks_friction_test.go:67: Tasks view does not contain "tasks · 5":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "▶ 79-tui-shell              landed    wave-c":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "80-queued-task            created   —":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "90-qmeter-task":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "title     TUI shell":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "status    landed":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "goal      g1-tui · wave wave-c":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "worker    t79-worker-2 · stopped":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "verifier  t79-verifier-2 · pass":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "branch    task/79-tui-shell":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "merge     7204d699 ":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "depends   81-agents-screen":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "✓ AC1 the shell loads":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:67: Tasks view does not contain "V1 go test ./internal/tui/...":
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+    tasks_friction_test.go:73: b did not open the task brief in the details:
+         hive  /tmp/TestWorkTasksNormalModeShowsRecordDetai… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksNormalModeShowsRecordDetails (0.04s)
+=== RUN   TestWorkTasksArrowDownSelectsNextTask
+    tasks_friction_test.go:95: initial view does not select the first task:
+         hive  /tmp/TestWorkTasksArrowDownSelectsNextTask26… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 81-agents-screen ───────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 81-agents-screen · Agents screen                                 │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: 79-tui-shell                                             │
+        │ ▶ 81-agents-scr… Agents scre…                    ││ branch: -                                                        │
+        │   82-failed-task Failed task                 hi… ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 81-agents-screen · Agents screen                 ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: 79-tui-shell                             ││ evidence: -                                                      │
+        │ branch: -                                        ││ current pass · - ·                                               │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current pass · - ·                               ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksArrowDownSelectsNextTask (0.03s)
+=== RUN   TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize
+    tasks_friction_test.go:109: 80x24 Tasks view does not show the list alone:
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                    [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 2]  queued 2  landed 1  failed 1  all 5                            │
+        │ ▶ project: all                                                               │
+        │ ID             title                       project   status     agent · ver… │
+        │ ▶ 81-agents-scr… Agents screen               hive      verified    · pass    │
+        │   82-failed-task Failed task                 hive      assigned   worker-fa… │
+        │ ┤ task details ├                                                             │
+        │ 81-agents-screen · Agents screen                                             │
+        │ needs: -                                                                     │
+        │ blocks: 79-tui-shell                                                         │
+        │ branch: -                                                                    │
+        │ feature: -                                                                   │
+        │ grant: -                                                                     │
+        │ needs user: -                                                                │
+        │ ┤ evidence ├                                                                 │
+        │ brief: -                                                                     │
+        │ evidence: -                                                                  │
+        │ current pass · - ·                                                           │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+--- FAIL: TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize (0.05s)
+=== RUN   TestWorkTasksRefreshKeepsSelection
+    tasks_friction_test.go:141: refresh did not keep the selection with each project listed:
+         hive  /tmp/TestWorkTasksRefreshKeepsSelection23387… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 82-failed-task ─────────────────────────────────────────────────╮
+        │ ▶ [active 2]  …                                  ││ 82-failed-task · Failed task                                     │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: -                                                        │
+        │   81-agents-scr… Agents screen               hi… ││ branch: -                                                        │
+        │ ▶ 82-failed-task Failed task…                    ││ feature: -                                                       │
+        │ ┤ task details ├                                 ││ grant: -                                                         │
+        │ 82-failed-task · Failed task                     ││ needs user: -                                                    │
+        │ needs: -                                         ││ brief: -                                                         │
+        │ blocks: -                                        ││ evidence: -                                                      │
+        │ branch: -                                        ││ current fail · V1 fail: assertion · 2026-10-20T09:00:00Z         │
+        │ feature: -                                       ││                                                                  │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ current fail · V1 fail: assertion · 2026-10-20T… ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksRefreshKeepsSelection (0.03s)
+=== RUN   TestWorkTasksMatchesWorkBoard
+    work_tasks_test.go:34: convert: row 5 col 16: escape sequence "[38;2;163;15…" is not SGR
+        [1m hive  ~/source/hive[m                                    [1mcoordinator [m[1;38;2;110;230;154m●[m[1m working   supervisor [m[1;38;2;110;230;154m●[m[1m live   needs you [m[1m0[m[1m   14:22 [m
+         [38;2;163;157;144m 1 Agents [m [38;2;163;157;144m 2 Chat [m [1;38;2;245;185;66m 3 Work [m [38;2;163;157;144m 4 Friction [m [38;2;163;157;144m 5 Health [m [38;2;163;157;144m 6 Logs [m                                                          
+        [38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;245;185;66m━━━━━━━━[m[38;2;61;58;51m─[m[38;2;61;58;51m────────────[m[38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m─────────────────────────────────────────────────────────[m
+         [38;2;163;157;144m Goals [m  [38;2;163;157;144m Queue [m  [1;38;2;245;185;66m[Tasks][m                                                                            [38;2;163;157;144m[ ] switch view[m   
+        [38;2;245;185;66m╭[m[38;2;245;185;66m─[m[1;38;2;245;185;66m tasks [m[38;2;245;185;66m──────────────────────────────────────────[m[38;2;245;185;66m╮[m[38;2;61;58;51m╭[m[38;2;61;58;51m─[m[1;38;2;245;185;66m 1-cp5-end-to-end [m[38;2;61;58;51m───────────────────────────────────────────────[m[38;2;61;58;51m╮[m
+        [38;2;245;185;66m│[m [1;38;2;245;185;66m▶ [active 1][m  [38;2;163;15…                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m [1;38;2;245;185;66m1-cp5-end-to-end · CP5 v1 end to end[m                             [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m [1;38;2;245;185;66m▶ project: all[m                                   [38;2;245;185;66m│[m[38;2;61;58;51m│[m needs: -                                                         [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m ID             title                       proj… [38;2;245;185;66m│[m[38;2;61;58;51m│[m blocks: -                                                        [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m [1;38;2;245;185;66m▶ 1-cp5-end-to-… CP5 v1 end …                    [38;2;245;185;66m│[m[38;2;61;58;51m│[m branch: task/1-cp5-end-to-end                                    [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m ┤ task details ├                                 [38;2;245;185;66m│[m[38;2;61;58;51m│[m feature: -                                                       [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m [1;38;2;245;185;66m1-cp5-end-to-end · CP5 v1 end to end[m             [38;2;245;185;66m│[m[38;2;61;58;51m│[m grant: -                                                         [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m needs: -                                         [38;2;245;185;66m│[m[38;2;61;58;51m│[m needs user: -                                                    [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m blocks: -                                        [38;2;245;185;66m│[m[38;2;61;58;51m│[m brief: -                                                         [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m branch: task/1-cp5-end-to-end                    [38;2;245;185;66m│[m[38;2;61;58;51m│[m evidence: -                                                      [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m feature: -                                       [38;2;245;185;66m│[m[38;2;61;58;51m│[m verification history: -                                          [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m grant: -                                         [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m needs user: -                                    [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m ┤ evidence ├                                     [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m brief: -                                         [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m evidence: -                                      [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m verification history: -                          [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m landed = delivery commit set and pushed · verif… [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m[38;2;61;58;51m│[m                                                                  [38;2;61;58;51m│[m
+        [38;2;245;185;66m╰[m[38;2;245;185;66m[m[38;2;245;185;66m──────────────────────────────────────────────────╯[m[38;2;61;58;51m╰[m[38;2;163;157;144m[m[38;2;61;58;51m──────────────────────────────────────────────────────────────────╯[m
+        [1;38;2;245;185;66m [list] [m[38;2;163;157;144m↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           [m
+--- FAIL: TestWorkTasksMatchesWorkBoard (0.00s)
+=== RUN   TestWorkTasksMatchesCompactBoard
+    work_tasks_test.go:40: 601 cells differ from Compact.grid:
+        row 3 col 62: want ' ' fg normal, got '[' dim normal
+        row 3 col 63: want ' ' fg normal, got ' ' dim normal
+        row 3 col 64: want 'l' dim normal, got ']' dim normal
+        row 3 col 65: want 'i' dim normal, got ' ' dim normal
+        row 3 col 67: want 't' dim normal, got 'w' dim normal
+        row 3 col 68: want ' ' dim normal, got 'i' dim normal
+        row 3 col 69: want '›' dim normal, got 't' dim normal
+        row 3 col 70: want ' ' dim normal, got 'c' dim normal
+        row 3 col 71: want 'd' dim normal, got 'h' dim normal
+        row 3 col 72: want 'e' dim normal, got ' ' dim normal
+        row 3 col 73: want 't' dim normal, got 'v' dim normal
+        row 3 col 74: want 'a' dim normal, got 'i' dim normal
+        row 3 col 75: want 'i' dim normal, got 'e' dim normal
+        row 3 col 76: want 'l' dim normal, got 'w' dim normal
+        row 3 col 77: want 's' dim normal, got ' ' fg normal
+        row 4 col 3: want '3' accent bold, got '1' accent bold
+        row 4 col 5: want 't' accent bold, got 'c' accent bold
+        row 4 col 6: want 'u' accent bold, got 'p' accent bold
+        row 4 col 7: want 'i' accent bold, got '5' accent bold
+        row 4 col 9: want 'r' accent bold, got 'e' accent bold
+        row 4 col 10: want 'e' accent bold, got 'n' accent bold
+        row 4 col 11: want 's' accent bold, got 'd' accent bold
+        row 4 col 12: want 't' accent bold, got '-' accent bold
+        row 4 col 13: want 'a' accent bold, got 't' accent bold
+        row 4 col 14: want 'r' accent bold, got 'o' accent bold
+        row 4 col 15: want 't' accent bold, got '-' accent bold
+        row 4 col 16: want ' ' accent bold, got 'e' accent bold
+        row 4 col 17: want '·' accent bold, got 'n' accent bold
+        row 4 col 18: want ' ' accent bold, got 'd' accent bold
+        row 4 col 19: want 'e' accent bold, got ' ' accent bold
+        row 4 col 20: want 's' accent bold, got '·' accent bold
+        row 4 col 21: want 'c' accent bold, got ' ' accent bold
+        row 4 col 22: want ' ' accent bold, got 'e' accent bold
+        row 4 col 23: want 'b' accent bold, got 's' accent bold
+        row 4 col 24: want 'a' accent bold, got 'c' accent bold
+        row 4 col 25: want 'c' accent bold, got ' ' accent bold
+        row 4 col 26: want 'k' accent bold, got 'b' accent bold
+        row 4 col 27: want ' ' accent bold, got 'a' accent bold
+        row 4 col 28: want '─' accent normal, got 'c' accent bold
+        row 4 col 29: want '─' accent normal, got 'k' accent bold
+        row 4 col 30: want '─' accent normal, got ' ' accent bold
+        row 5 col 2: want 's' dim normal, got '1' accent bold
+        row 5 col 3: want 't' dim normal, got '-' accent bold
+        row 5 col 4: want 'a' dim normal, got 'c' accent bold
+        row 5 col 5: want 't' dim normal, got 'p' accent bold
+        row 5 col 6: want 'u' dim normal, got '5' accent bold
+        row 5 col 7: want 's' dim normal, got '-' accent bold
+        row 5 col 8: want ' ' dim normal, got 'e' accent bold
+        row 5 col 9: want ' ' dim normal, got 'n' accent bold
+        row 5 col 10: want ' ' dim normal, got 'd' accent bold
+        row 5 col 11: want ' ' dim normal, got '-' accent bold
+        row 5 col 12: want 'l' done normal, got 't' accent bold
+        row 5 col 13: want 'a' done normal, got 'o' accent bold
+        row 5 col 14: want 'n' done normal, got '-' accent bold
+        row 5 col 15: want 'd' done normal, got 'e' accent bold
+        row 5 col 16: want 'e' done normal, got 'n' accent bold
+        row 5 col 17: want 'd' done normal, got 'd' accent bold
+        row 5 col 18: want ' ' done normal, got ' ' accent bold
+        row 5 col 19: want ' ' done normal, got '·' accent bold
+        row 5 col 20: want ' ' done normal, got ' ' accent bold
+        row 5 col 21: want ' ' done normal, got 'C' accent bold
+        row 5 col 22: want ' ' done normal, got 'P' accent bold
+        row 5 col 23: want ' ' done normal, got '5' accent bold
+        row 5 col 24: want ' ' done normal, got ' ' accent bold
+        row 5 col 25: want ' ' done normal, got 'v' accent bold
+        row 5 col 26: want ' ' done normal, got '1' accent bold
+        row 5 col 27: want ' ' done normal, got ' ' accent bold
+        row 5 col 28: want ' ' done normal, got 'e' accent bold
+        row 5 col 29: want ' ' done normal, got 'n' accent bold
+        row 5 col 30: want ' ' done normal, got 'd' accent bold
+        row 5 col 31: want ' ' done normal, got ' ' accent bold
+        row 5 col 32: want ' ' done normal, got 't' accent bold
+        row 5 col 33: want ' ' done normal, got 'o' accent bold
+        row 5 col 34: want ' ' done normal, got ' ' accent bold
+        row 5 col 35: want ' ' done normal, got 'e' accent bold
+        row 5 col 36: want ' ' done normal, got 'n' accent bold
+        row 5 col 37: want ' ' done normal, got 'd' accent bold
+        row 5 col 38: want ' ' done normal, got ' ' fg normal
+        row 5 col 39: want ' ' done normal, got ' ' fg normal
+        row 5 col 40: want ' ' done normal, got ' ' fg normal
+        row 5 col 41: want ' ' done normal, got ' ' fg normal
+        row 5 col 42: want ' ' done normal, got ' ' fg normal
+        row 5 col 43: want ' ' done normal, got ' ' fg normal
+        row 5 col 44: want ' ' done normal, got ' ' fg normal
+        row 5 col 45: want ' ' done normal, got ' ' fg normal
+        row 5 col 46: want ' ' done normal, got ' ' fg normal
+        row 5 col 47: want ' ' done normal, got ' ' fg normal
+        row 5 col 48: want ' ' done normal, got ' ' fg normal
+        row 5 col 49: want ' ' done normal, got ' ' fg normal
+        row 5 col 50: want ' ' done normal, got ' ' fg normal
+        row 5 col 51: want ' ' done normal, got ' ' fg normal
+        row 5 col 52: want ' ' done normal, got ' ' fg normal
+        row 5 col 53: want ' ' done normal, got ' ' fg normal
+        row 5 col 54: want ' ' done normal, got ' ' fg normal
+        row 5 col 55: want ' ' done normal, got ' ' fg normal
+        row 5 col 56: want ' ' done normal, got ' ' fg normal
+        row 5 col 57: want ' ' done normal, got ' ' fg normal
+        row 5 col 58: want ' ' done normal, got ' ' fg normal
+        row 5 col 59: want ' ' done normal, got ' ' fg normal
+        row 5 col 60: want ' ' done normal, got ' ' fg normal
+        row 5 col 61: want ' ' done normal, got ' ' fg normal
+        row 5 col 62: want ' ' done normal, got ' ' fg normal
+        row 5 col 63: want ' ' done normal, got ' ' fg normal
+        row 5 col 64: want ' ' done normal, got ' ' fg normal
+        row 5 col 65: want ' ' done normal, got ' ' fg normal
+        row 5 col 66: want ' ' done normal, got ' ' fg normal
+        row 5 col 67: want ' ' done normal, got ' ' fg normal
+        row 5 col 68: want ' ' done normal, got ' ' fg normal
+        row 5 col 69: want ' ' done normal, got ' ' fg normal
+        row 5 col 70: want ' ' done normal, got ' ' fg normal
+        row 5 col 71: want ' ' done normal, got ' ' fg normal
+        row 5 col 72: want ' ' done normal, got ' ' fg normal
+        row 5 col 73: want ' ' done normal, got ' ' fg normal
+        row 5 col 74: want ' ' done normal, got ' ' fg normal
+        row 5 col 75: want ' ' done normal, got ' ' fg normal
+        row 5 col 76: want ' ' done normal, got ' ' fg normal
+        row 5 col 77: want ' ' done normal, got ' ' fg normal
+        row 5 col 79: want '┃' accent normal, got '│' accent normal
+        row 6 col 2: want 'g' dim normal, got 'n' fg normal
+        row 6 col 3: want 'o' dim normal, got 'e' fg normal
+        row 6 col 4: want 'a' dim normal, got 'e' fg normal
+        row 6 col 5: want 'l' dim normal, got 'd' fg normal
+        row 6 col 6: want ' ' dim normal, got 's' fg normal
+        row 6 col 7: want ' ' dim normal, got ':' fg normal
+        row 6 col 8: want ' ' dim normal, got ' ' fg normal
+        row 6 col 9: want ' ' dim normal, got '-' fg normal
+        row 6 col 10: want ' ' dim normal, got ' ' fg normal
+        row 6 col 11: want ' ' dim normal, got ' ' fg normal
+        row 6 col 12: want 'g' fg normal, got ' ' fg normal
+        row 6 col 13: want '1' fg normal, got ' ' fg normal
+        row 6 col 14: want '-' fg normal, got ' ' fg normal
+        row 6 col 15: want 't' fg normal, got ' ' fg normal
+        row 6 col 16: want 'u' fg normal, got ' ' fg normal
+        row 6 col 17: want 'i' fg normal, got ' ' fg normal
+        row 6 col 18: want '-' fg normal, got ' ' fg normal
+        row 6 col 19: want 'r' fg normal, got ' ' fg normal
+        row 6 col 20: want 'e' fg normal, got ' ' fg normal
+        row 6 col 21: want 's' fg normal, got ' ' fg normal
+        row 6 col 22: want 't' fg normal, got ' ' fg normal
+        row 6 col 23: want 'a' fg normal, got ' ' fg normal
+        row 6 col 24: want 'r' fg normal, got ' ' fg normal
+        row 6 col 25: want 't' fg normal, got ' ' fg normal
+        row 6 col 27: want '·' fg normal, got ' ' fg normal
+        row 6 col 29: want 'w' fg normal, got ' ' fg normal
+        row 6 col 30: want 'a' fg normal, got ' ' fg normal
+        row 6 col 31: want 'v' fg normal, got ' ' fg normal
+        row 6 col 32: want 'e' fg normal, got ' ' fg normal
+        row 6 col 34: want 'B' fg normal, got ' ' fg normal
+        row 6 col 79: want '┃' accent normal, got '│' accent normal
+        row 7 col 2: want 'v' dim normal, got 'b' fg normal
+        row 7 col 3: want 'e' dim normal, got 'l' fg normal
+        row 7 col 4: want 'r' dim normal, got 'o' fg normal
+        row 7 col 5: want 'i' dim normal, got 'c' fg normal
+        row 7 col 6: want 'f' dim normal, got 'k' fg normal
+        row 7 col 7: want 'i' dim normal, got 's' fg normal
+        row 7 col 8: want 'e' dim normal, got ':' fg normal
+        row 7 col 9: want 'r' dim normal, got ' ' fg normal
+        row 7 col 10: want ' ' dim normal, got '-' fg normal
+        row 7 col 11: want ' ' dim normal, got ' ' fg normal
+        row 7 col 12: want 't' fg normal, got ' ' fg normal
+        row 7 col 13: want '3' fg normal, got ' ' fg normal
+        row 7 col 14: want '-' fg normal, got ' ' fg normal
+        row 7 col 15: want 'v' fg normal, got ' ' fg normal
+        row 7 col 16: want 'e' fg normal, got ' ' fg normal
+        row 7 col 17: want 'r' fg normal, got ' ' fg normal
+        row 7 col 18: want 'i' fg normal, got ' ' fg normal
+        row 7 col 19: want 'f' fg normal, got ' ' fg normal
+        row 7 col 20: want 'i' fg normal, got ' ' fg normal
+        row 7 col 21: want 'e' fg normal, got ' ' fg normal
+        row 7 col 22: want 'r' fg normal, got ' ' fg normal
+        row 7 col 23: want '-' fg normal, got ' ' fg normal
+        row 7 col 24: want '1' fg normal, got ' ' fg normal
+        row 7 col 26: want '·' fg normal, got ' ' fg normal
+        row 7 col 28: want 'p' fg normal, got ' ' fg normal
+        row 7 col 29: want 'a' fg normal, got ' ' fg normal
+        row 7 col 30: want 's' fg normal, got ' ' fg normal
+        row 7 col 31: want 's' fg normal, got ' ' fg normal
+        row 7 col 79: want '┃' accent normal, got '│' accent normal
+        row 8 col 2: want 'm' dim normal, got 'b' fg normal
+        row 8 col 3: want 'e' dim normal, got 'r' fg normal
+        row 8 col 4: want 'r' dim normal, got 'a' fg normal
+        row 8 col 5: want 'g' dim normal, got 'n' fg normal
+        row 8 col 6: want 'e' dim normal, got 'c' fg normal
+        row 8 col 7: want ' ' dim normal, got 'h' fg normal
+        row 8 col 8: want ' ' dim normal, got ':' fg normal
+        row 8 col 9: want ' ' dim normal, got ' ' fg normal
+        row 8 col 10: want ' ' dim normal, got 't' fg normal
+        row 8 col 11: want ' ' dim normal, got 'a' fg normal
+        row 8 col 12: want '3' fg normal, got 's' fg normal
+        row 8 col 13: want 'c' fg normal, got 'k' fg normal
+        row 8 col 14: want 'c' fg normal, got '/' fg normal
+        row 8 col 15: want 'd' fg normal, got '1' fg normal
+        row 8 col 16: want '9' fg normal, got '-' fg normal
+        row 8 col 17: want '3' fg normal, got 'c' fg normal
+        row 8 col 18: want 'f' fg normal, got 'p' fg normal
+        row 8 col 19: want 'b' fg normal, got '5' fg normal
+        row 8 col 20: want ' ' fg normal, got '-' fg normal
+        row 8 col 21: want 'o' fg normal, got 'e' fg normal
+        row 8 col 23: want ' ' fg normal, got 'd' fg normal
+        row 8 col 24: want 'd' fg normal, got '-' fg normal
+        row 8 col 25: want 'e' fg normal, got 't' fg normal
+        row 8 col 26: want 'v' fg normal, got 'o' fg normal
+        row 8 col 27: want ' ' fg normal, got '-' fg normal
+        row 8 col 28: want ' ' fg normal, got 'e' fg normal
+        row 8 col 29: want ' ' fg normal, got 'n' fg normal
+        row 8 col 30: want ' ' fg normal, got 'd' fg normal
+        row 8 col 79: want '┃' accent normal, got '│' accent normal
+        row 9 col 2: want ' ' fg normal, got 'f' fg normal
+        row 9 col 3: want ' ' fg normal, got 'e' fg normal
+        row 9 col 4: want ' ' fg normal, got 'a' fg normal
+        row 9 col 5: want ' ' fg normal, got 't' fg normal
+        row 9 col 6: want ' ' fg normal, got 'u' fg normal
+        row 9 col 7: want ' ' fg normal, got 'r' fg normal
+        row 9 col 8: want ' ' fg normal, got 'e' fg normal
+        row 9 col 9: want ' ' fg normal, got ':' fg normal
+        row 9 col 11: want ' ' fg normal, got '-' fg normal
+        row 9 col 79: want '┃' accent normal, got '│' accent normal
+        row 10 col 2: want 'A' accent bold, got 'g' fg normal
+        row 10 col 3: want 'C' accent bold, got 'r' fg normal
+        row 10 col 4: want 'C' accent bold, got 'a' fg normal
+        row 10 col 5: want 'E' accent bold, got 'n' fg normal
+        row 10 col 6: want 'P' accent bold, got 't' fg normal
+        row 10 col 7: want 'T' accent bold, got ':' fg normal
+        row 10 col 8: want 'A' accent bold, got ' ' fg normal
+        row 10 col 9: want 'N' accent bold, got '-' fg normal
+        row 10 col 10: want 'C' accent bold, got ' ' fg normal
+        row 10 col 11: want 'E' accent bold, got ' ' fg normal
+        row 10 col 79: want '┃' accent normal, got '│' accent normal
+        row 11 col 2: want '✓' done normal, got 'n' fg normal
+        row 11 col 3: want ' ' fg normal, got 'e' fg normal
+        row 11 col 4: want 'A' fg normal, got 'e' fg normal
+        row 11 col 5: want 'C' fg normal, got 'd' fg normal
+        row 11 col 6: want '1' fg normal, got 's' fg normal
+        row 11 col 8: want 'r' fg normal, got 'u' fg normal
+        row 11 col 9: want ' ' fg normal, got 's' fg normal
+        row 11 col 10: want 'r' fg normal, got 'e' fg normal
+        row 11 col 11: want 'e' fg normal, got 'r' fg normal
+        row 11 col 12: want 's' fg normal, got ':' fg normal
+        row 11 col 13: want 't' fg normal, got ' ' fg normal
+        row 11 col 14: want 'a' fg normal, got '-' fg normal
+        row 11 col 15: want 'r' fg normal, got ' ' fg normal
+        row 11 col 16: want 't' fg normal, got ' ' fg normal
+        row 11 col 17: want 's' fg normal, got ' ' fg normal
+        row 11 col 19: want 'a' fg normal, got ' ' fg normal
+        row 11 col 21: want 'c' fg normal, got ' ' fg normal
+        row 11 col 22: want 'o' fg normal, got ' ' fg normal
+        row 11 col 23: want 'o' fg normal, got ' ' fg normal
+        row 11 col 24: want 'r' fg normal, got ' ' fg normal
+        row 11 col 25: want 'd' fg normal, got ' ' fg normal
+        row 11 col 26: want 'i' fg normal, got ' ' fg normal
+        row 11 col 27: want 'n' fg normal, got ' ' fg normal
+        row 11 col 28: want 'a' fg normal, got ' ' fg normal
+        row 11 col 29: want 't' fg normal, got ' ' fg normal
+        row 11 col 30: want 'o' fg normal, got ' ' fg normal
+        row 11 col 31: want 'r' fg normal, got ' ' fg normal
+        row 11 col 33: want 'o' fg normal, got ' ' fg normal
+        row 11 col 34: want 'r' fg normal, got ' ' fg normal
+        row 11 col 36: want 's' fg normal, got ' ' fg normal
+        row 11 col 37: want 'u' fg normal, got ' ' fg normal
+        row 11 col 38: want 'p' fg normal, got ' ' fg normal
+        row 11 col 39: want 'e' fg normal, got ' ' fg normal
+        row 11 col 40: want 'r' fg normal, got ' ' fg normal
+        row 11 col 41: want 'v' fg normal, got ' ' fg normal
+        row 11 col 42: want 'i' fg normal, got ' ' fg normal
+        row 11 col 43: want 's' fg normal, got ' ' fg normal
+        row 11 col 44: want 'o' fg normal, got ' ' fg normal
+        row 11 col 45: want 'r' fg normal, got ' ' fg normal
+        row 11 col 46: want ',' fg normal, got ' ' fg normal
+        row 11 col 48: want 'c' fg normal, got ' ' fg normal
+        row 11 col 49: want 'o' fg normal, got ' ' fg normal
+        row 11 col 50: want 'n' fg normal, got ' ' fg normal
+        row 11 col 51: want 'f' fg normal, got ' ' fg normal
+        row 11 col 52: want 'i' fg normal, got ' ' fg normal
+        row 11 col 53: want 'r' fg normal, got ' ' fg normal
+        row 11 col 54: want 'm' fg normal, got ' ' fg normal
+        row 11 col 55: want 's' fg normal, got ' ' fg normal
+        row 11 col 57: want 'o' fg normal, got ' ' fg normal
+        row 11 col 58: want 'n' fg normal, got ' ' fg normal
+        row 11 col 59: want 'l' fg normal, got ' ' fg normal
+        row 11 col 60: want 'y' fg normal, got ' ' fg normal
+        row 11 col 62: want 'w' fg normal, got ' ' fg normal
+        row 11 col 63: want 'h' fg normal, got ' ' fg normal
+        row 11 col 64: want 'e' fg normal, got ' ' fg normal
+        row 11 col 65: want 'n' fg normal, got ' ' fg normal
+        row 11 col 67: want 'l' fg normal, got ' ' fg normal
+        row 11 col 68: want 'i' fg normal, got ' ' fg normal
+        row 11 col 69: want 'v' fg normal, got ' ' fg normal
+        row 11 col 70: want 'e' fg normal, got ' ' fg normal
+        row 11 col 79: want '┃' accent normal, got '│' accent normal
+        row 12 col 2: want '✓' done normal, got 'b' fg normal
+        row 12 col 3: want ' ' fg normal, got 'r' fg normal
+        row 12 col 4: want 'A' fg normal, got 'i' fg normal
+        row 12 col 5: want 'C' fg normal, got 'e' fg normal
+        row 12 col 6: want '2' fg normal, got 'f' fg normal
+        row 12 col 7: want ' ' fg normal, got ':' fg normal
+        row 12 col 8: want 'c' fg normal, got ' ' fg normal
+        row 12 col 9: want 'o' fg normal, got '-' fg normal
+        row 12 col 10: want 'o' fg normal, got ' ' fg normal
+        row 12 col 11: want 'r' fg normal, got ' ' fg normal
+        row 12 col 12: want 'd' fg normal, got ' ' fg normal
+        row 12 col 13: want 'i' fg normal, got ' ' fg normal
+        row 12 col 14: want 'n' fg normal, got ' ' fg normal
+        row 12 col 15: want 'a' fg normal, got ' ' fg normal
+        row 12 col 16: want 't' fg normal, got ' ' fg normal
+        row 12 col 17: want 'o' fg normal, got ' ' fg normal
+        row 12 col 18: want 'r' fg normal, got ' ' fg normal
+        row 12 col 20: want 'r' fg normal, got ' ' fg normal
+        row 12 col 21: want 'e' fg normal, got ' ' fg normal
+        row 12 col 22: want 's' fg normal, got ' ' fg normal
+        row 12 col 23: want 't' fg normal, got ' ' fg normal
+        row 12 col 24: want 'a' fg normal, got ' ' fg normal
+        row 12 col 25: want 'r' fg normal, got ' ' fg normal
+        row 12 col 26: want 't' fg normal, got ' ' fg normal
+        row 12 col 28: want 'c' fg normal, got ' ' fg normal
+        row 12 col 29: want 'l' fg normal, got ' ' fg normal
+        row 12 col 30: want 'o' fg normal, got ' ' fg normal
+        row 12 col 31: want 's' fg normal, got ' ' fg normal
+        row 12 col 32: want 'e' fg normal, got ' ' fg normal
+        row 12 col 33: want 's' fg normal, got ' ' fg normal
+        row 12 col 35: want 'o' fg normal, got ' ' fg normal
+        row 12 col 36: want 'n' fg normal, got ' ' fg normal
+        row 12 col 37: want 'l' fg normal, got ' ' fg normal
+        row 12 col 38: want 'y' fg normal, got ' ' fg normal
+        row 12 col 40: want 'a' fg normal, got ' ' fg normal
+        row 12 col 42: want 'p' fg normal, got ' ' fg normal
+        row 12 col 43: want 'a' fg normal, got ' ' fg normal
+        row 12 col 44: want 'n' fg normal, got ' ' fg normal
+        row 12 col 45: want 'e' fg normal, got ' ' fg normal
+        row 12 col 47: want 't' fg normal, got ' ' fg normal
+        row 12 col 48: want 'h' fg normal, got ' ' fg normal
+        row 12 col 49: want 'a' fg normal, got ' ' fg normal
+        row 12 col 50: want 't' fg normal, got ' ' fg normal
+        row 12 col 52: want 'h' fg normal, got ' ' fg normal
+        row 12 col 53: want 'i' fg normal, got ' ' fg normal
+        row 12 col 54: want 'v' fg normal, got ' ' fg normal
+        row 12 col 55: want 'e' fg normal, got ' ' fg normal
+        row 12 col 57: want 's' fg normal, got ' ' fg normal
+        row 12 col 58: want 't' fg normal, got ' ' fg normal
+        row 12 col 59: want 'a' fg normal, got ' ' fg normal
+        row 12 col 60: want 'r' fg normal, got ' ' fg normal
+        row 12 col 61: want 't' fg normal, got ' ' fg normal
+        row 12 col 62: want 'e' fg normal, got ' ' fg normal
+        row 12 col 63: want 'd' fg normal, got ' ' fg normal
+        row 12 col 79: want '┃' accent normal, got '│' accent normal
+        row 13 col 2: want '✓' done normal, got 'e' fg normal
+        row 13 col 3: want ' ' fg normal, got 'v' fg normal
+        row 13 col 4: want 'A' fg normal, got 'i' fg normal
+        row 13 col 5: want 'C' fg normal, got 'd' fg normal
+        row 13 col 6: want '3' fg normal, got 'e' fg normal
+        row 13 col 7: want ' ' fg normal, got 'n' fg normal
+        row 13 col 8: want 's' fg normal, got 'c' fg normal
+        row 13 col 9: want 'u' fg normal, got 'e' fg normal
+        row 13 col 10: want 'p' fg normal, got ':' fg normal
+        row 13 col 11: want 'e' fg normal, got ' ' fg normal
+        row 13 col 12: want 'r' fg normal, got '-' fg normal
+        row 13 col 13: want 'v' fg normal, got ' ' fg normal
+        row 13 col 14: want 'i' fg normal, got ' ' fg normal
+        row 13 col 15: want 's' fg normal, got ' ' fg normal
+        row 13 col 16: want 'o' fg normal, got ' ' fg normal
+        row 13 col 17: want 'r' fg normal, got ' ' fg normal
+        row 13 col 19: want 'r' fg normal, got ' ' fg normal
+        row 13 col 20: want 'e' fg normal, got ' ' fg normal
+        row 13 col 21: want 's' fg normal, got ' ' fg normal
+        row 13 col 22: want 't' fg normal, got ' ' fg normal
+        row 13 col 23: want 'a' fg normal, got ' ' fg normal
+        row 13 col 24: want 'r' fg normal, got ' ' fg normal
+        row 13 col 25: want 't' fg normal, got ' ' fg normal
+        row 13 col 27: want 'r' fg normal, got ' ' fg normal
+        row 13 col 28: want 'u' fg normal, got ' ' fg normal
+        row 13 col 29: want 'n' fg normal, got ' ' fg normal
+        row 13 col 30: want 's' fg normal, got ' ' fg normal
+        row 13 col 32: want 'h' fg normal, got ' ' fg normal
+        row 13 col 33: want 'i' fg normal, got ' ' fg normal
+        row 13 col 34: want 'v' fg normal, got ' ' fg normal
+        row 13 col 35: want 'e' fg normal, got ' ' fg normal
+        row 13 col 37: want 's' fg normal, got ' ' fg normal
+        row 13 col 38: want 'u' fg normal, got ' ' fg normal
+        row 13 col 39: want 'p' fg normal, got ' ' fg normal
+        row 13 col 40: want 'e' fg normal, got ' ' fg normal
+        row 13 col 41: want 'r' fg normal, got ' ' fg normal
+        row 13 col 42: want 'v' fg normal, got ' ' fg normal
+        row 13 col 43: want 'i' fg normal, got ' ' fg normal
+        row 13 col 44: want 's' fg normal, got ' ' fg normal
+        row 13 col 45: want 'e' fg normal, got ' ' fg normal
+        row 13 col 47: want 'i' fg normal, got ' ' fg normal
+        row 13 col 48: want 'n' fg normal, got ' ' fg normal
+        row 13 col 50: want 'a' fg normal, got ' ' fg normal
+        row 13 col 52: want 'n' fg normal, got ' ' fg normal
+        row 13 col 53: want 'e' fg normal, got ' ' fg normal
+        row 13 col 54: want 'w' fg normal, got ' ' fg normal
+        row 13 col 56: want 't' fg normal, got ' ' fg normal
+        row 13 col 57: want 'a' fg normal, got ' ' fg normal
+        row 13 col 58: want 'b' fg normal, got ' ' fg normal
+        row 13 col 79: want '┃' accent normal, got '│' accent normal
+        row 14 col 2: want '✓' done normal, got 'v' fg normal
+        row 14 col 3: want ' ' fg normal, got 'e' fg normal
+        row 14 col 4: want 'A' fg normal, got 'r' fg normal
+        row 14 col 5: want 'C' fg normal, got 'i' fg normal
+        row 14 col 6: want '4' fg normal, got 'f' fg normal
+        row 14 col 7: want ' ' fg normal, got 'i' fg normal
+        row 14 col 8: want 'o' fg normal, got 'c' fg normal
+        row 14 col 9: want 'l' fg normal, got 'a' fg normal
+        row 14 col 10: want 'd' fg normal, got 't' fg normal
+        row 14 col 11: want ' ' fg normal, got 'i' fg normal
+        row 14 col 12: want 'r' fg normal, got 'o' fg normal
+        row 14 col 13: want 'e' fg normal, got 'n' fg normal
+        row 14 col 14: want 'c' fg normal, got ' ' fg normal
+        row 14 col 15: want 'o' fg normal, got 'h' fg normal
+        row 14 col 16: want 'r' fg normal, got 'i' fg normal
+        row 14 col 17: want 'd' fg normal, got 's' fg normal
+        row 14 col 18: want 's' fg normal, got 't' fg normal
+        row 14 col 19: want ' ' fg normal, got 'o' fg normal
+        row 14 col 20: want 'g' fg normal, got 'r' fg normal
+        row 14 col 21: want 'e' fg normal, got 'y' fg normal
+        row 14 col 22: want 't' fg normal, got ':' fg normal
+        row 14 col 24: want 's' fg normal, got '-' fg normal
+        row 14 col 25: want 't' fg normal, got ' ' fg normal
+        row 14 col 26: want 'a' fg normal, got ' ' fg normal
+        row 14 col 27: want 'l' fg normal, got ' ' fg normal
+        row 14 col 28: want 'e' fg normal, got ' ' fg normal
+        row 14 col 30: want 'o' fg normal, got ' ' fg normal
+        row 14 col 31: want 'r' fg normal, got ' ' fg normal
+        row 14 col 33: want 's' fg normal, got ' ' fg normal
+        row 14 col 34: want 't' fg normal, got ' ' fg normal
+        row 14 col 35: want 'o' fg normal, got ' ' fg normal
+        row 14 col 36: want 'p' fg normal, got ' ' fg normal
+        row 14 col 37: want 'p' fg normal, got ' ' fg normal
+        row 14 col 38: want 'e' fg normal, got ' ' fg normal
+        row 14 col 39: want 'd' fg normal, got ' ' fg normal
+        row 14 col 40: want ',' fg normal, got ' ' fg normal
+        row 14 col 42: want 's' fg normal, got ' ' fg normal
+        row 14 col 43: want 't' fg normal, got ' ' fg normal
+        row 14 col 44: want 'a' fg normal, got ' ' fg normal
+        row 14 col 45: want 'y' fg normal, got ' ' fg normal
+        row 14 col 47: want 'o' fg normal, got ' ' fg normal
+        row 14 col 48: want 'n' fg normal, got ' ' fg normal
+        row 14 col 50: want 'd' fg normal, got ' ' fg normal
+        row 14 col 51: want 'i' fg normal, got ' ' fg normal
+        row 14 col 52: want 's' fg normal, got ' ' fg normal
+        row 14 col 53: want 'k' fg normal, got ' ' fg normal
+        row 14 col 54: want ',' fg normal, got ' ' fg normal
+        row 14 col 56: want 'h' fg normal, got ' ' fg normal
+        row 14 col 58: want 'h' fg normal, got ' ' fg normal
+        row 14 col 59: want 'i' fg normal, got ' ' fg normal
+        row 14 col 60: want 'd' fg normal, got ' ' fg normal
+        row 14 col 61: want 'e' fg normal, got ' ' fg normal
+        row 14 col 62: want 's' fg normal, got ' ' fg normal
+        row 14 col 64: want 't' fg normal, got ' ' fg normal
+        row 14 col 65: want 'h' fg normal, got ' ' fg normal
+        row 14 col 66: want 'e' fg normal, got ' ' fg normal
+        row 14 col 67: want 'm' fg normal, got ' ' fg normal
+        row 14 col 79: want '┃' accent normal, got '│' accent normal
+        row 15 col 2: want '✓' done normal, got ' ' fg normal
+        row 15 col 4: want 'A' fg normal, got ' ' fg normal
+        row 15 col 5: want 'C' fg normal, got ' ' fg normal
+        row 15 col 6: want '5' fg normal, got ' ' fg normal
+        row 15 col 8: want 'h' fg normal, got ' ' fg normal
+        row 15 col 9: want 'e' fg normal, got ' ' fg normal
+        row 15 col 10: want 'a' fg normal, got ' ' fg normal
+        row 15 col 11: want 'd' fg normal, got ' ' fg normal
+        row 15 col 12: want 'e' fg normal, got ' ' fg normal
+        row 15 col 13: want 'r' fg normal, got ' ' fg normal
+        row 15 col 15: want 's' fg normal, got ' ' fg normal
+        row 15 col 16: want 'h' fg normal, got ' ' fg normal
+        row 15 col 17: want 'o' fg normal, got ' ' fg normal
+        row 15 col 18: want 'w' fg normal, got ' ' fg normal
+        row 15 col 19: want 's' fg normal, got ' ' fg normal
+        row 15 col 21: want 'o' fg normal, got ' ' fg normal
+        row 15 col 22: want 'l' fg normal, got ' ' fg normal
+        row 15 col 23: want 'd' fg normal, got ' ' fg normal
+        row 15 col 25: want 'a' fg normal, got ' ' fg normal
+        row 15 col 26: want 'n' fg normal, got ' ' fg normal
+        row 15 col 27: want 'd' fg normal, got ' ' fg normal
+        row 15 col 29: want 'r' fg normal, got ' ' fg normal
+        row 15 col 31: want 't' fg normal, got ' ' fg normal
+        row 15 col 32: want 'o' fg normal, got ' ' fg normal
+        row 15 col 34: want 'r' fg normal, got ' ' fg normal
+        row 15 col 35: want 'e' fg normal, got ' ' fg normal
+        row 15 col 36: want 's' fg normal, got ' ' fg normal
+        row 15 col 37: want 't' fg normal, got ' ' fg normal
+        row 15 col 38: want 'a' fg normal, got ' ' fg normal
+        row 15 col 39: want 'r' fg normal, got ' ' fg normal
+        row 15 col 40: want 't' fg normal, got ' ' fg normal
+        row 15 col 42: want 'f' fg normal, got ' ' fg normal
+        row 15 col 43: want 'o' fg normal, got ' ' fg normal
+        row 15 col 44: want 'r' fg normal, got ' ' fg normal
+        row 15 col 46: want 'a' fg normal, got ' ' fg normal
+        row 15 col 47: want 'n' fg normal, got ' ' fg normal
+        row 15 col 49: want 'o' fg normal, got ' ' fg normal
+        row 15 col 50: want 'l' fg normal, got ' ' fg normal
+        row 15 col 51: want 'd' fg normal, got ' ' fg normal
+        row 15 col 53: want 's' fg normal, got ' ' fg normal
+        row 15 col 54: want 'u' fg normal, got ' ' fg normal
+        row 15 col 55: want 'p' fg normal, got ' ' fg normal
+        row 15 col 56: want 'e' fg normal, got ' ' fg normal
+        row 15 col 57: want 'r' fg normal, got ' ' fg normal
+        row 15 col 58: want 'v' fg normal, got ' ' fg normal
+        row 15 col 59: want 'i' fg normal, got ' ' fg normal
+        row 15 col 60: want 's' fg normal, got ' ' fg normal
+        row 15 col 61: want 'o' fg normal, got ' ' fg normal
+        row 15 col 62: want 'r' fg normal, got ' ' fg normal
+        row 15 col 79: want '┃' accent normal, got '│' accent normal
+        row 16 col 2: want '✓' done normal, got ' ' fg normal
+        row 16 col 4: want 'A' fg normal, got ' ' fg normal
+        row 16 col 5: want 'C' fg normal, got ' ' fg normal
+        row 16 col 6: want '6' fg normal, got ' ' fg normal
+        row 16 col 8: want 'c' fg normal, got ' ' fg normal
+        row 16 col 9: want 'o' fg normal, got ' ' fg normal
+        row 16 col 10: want 'o' fg normal, got ' ' fg normal
+        row 16 col 11: want 'r' fg normal, got ' ' fg normal
+        row 16 col 12: want 'd' fg normal, got ' ' fg normal
+        row 16 col 13: want 'i' fg normal, got ' ' fg normal
+        row 16 col 14: want 'n' fg normal, got ' ' fg normal
+        row 16 col 15: want 'a' fg normal, got ' ' fg normal
+        row 16 col 16: want 't' fg normal, got ' ' fg normal
+        row 16 col 17: want 'o' fg normal, got ' ' fg normal
+        row 16 col 18: want 'r' fg normal, got ' ' fg normal
+        row 16 col 20: want 's' fg normal, got ' ' fg normal
+        row 16 col 21: want 't' fg normal, got ' ' fg normal
+        row 16 col 22: want 'a' fg normal, got ' ' fg normal
+        row 16 col 23: want 'r' fg normal, got ' ' fg normal
+        row 16 col 24: want 't' fg normal, got ' ' fg normal
+        row 16 col 26: want 'w' fg normal, got ' ' fg normal
+        row 16 col 27: want 'a' fg normal, got ' ' fg normal
+        row 16 col 28: want 'i' fg normal, got ' ' fg normal
+        row 16 col 29: want 't' fg normal, got ' ' fg normal
+        row 16 col 30: want 's' fg normal, got ' ' fg normal
+        row 16 col 32: want 'f' fg normal, got ' ' fg normal
+        row 16 col 33: want 'o' fg normal, got ' ' fg normal
+        row 16 col 34: want 'r' fg normal, got ' ' fg normal
+        row 16 col 36: want 'h' fg normal, got ' ' fg normal
+        row 16 col 37: want 'e' fg normal, got ' ' fg normal
+        row 16 col 38: want 'r' fg normal, got ' ' fg normal
+        row 16 col 39: want 'd' fg normal, got ' ' fg normal
+        row 16 col 40: want 'r' fg normal, got ' ' fg normal
+        row 16 col 42: want 'r' fg normal, got ' ' fg normal
+        row 16 col 43: want 'e' fg normal, got ' ' fg normal
+        row 16 col 44: want 'a' fg normal, got ' ' fg normal
+        row 16 col 45: want 'd' fg normal, got ' ' fg normal
+        row 16 col 46: want 'i' fg normal, got ' ' fg normal
+        row 16 col 47: want 'n' fg normal, got ' ' fg normal
+        row 16 col 48: want 'e' fg normal, got ' ' fg normal
+        row 16 col 49: want 's' fg normal, got ' ' fg normal
+        row 16 col 50: want 's' fg normal, got ' ' fg normal
+        row 16 col 79: want '┃' accent normal, got '│' accent normal
+        row 17 col 79: want '┃' accent normal, got '│' accent normal
+        row 18 col 2: want 'E' accent bold, got ' ' fg normal
+        row 18 col 3: want 'V' accent bold, got ' ' fg normal
+        row 18 col 4: want 'I' accent bold, got ' ' fg normal
+        row 18 col 5: want 'D' accent bold, got ' ' fg normal
+        row 18 col 6: want 'E' accent bold, got ' ' fg normal
+        row 18 col 7: want 'N' accent bold, got ' ' fg normal
+        row 18 col 8: want 'C' accent bold, got ' ' fg normal
+        row 18 col 9: want 'E' accent bold, got ' ' fg normal
+        row 18 col 79: want '┃' accent normal, got '│' accent normal
+        row 19 col 2: want 'b' accent bold, got ' ' fg normal
+        row 19 col 4: want 'b' fg normal, got ' ' fg normal
+        row 19 col 5: want 'r' fg normal, got ' ' fg normal
+        row 19 col 6: want 'i' fg normal, got ' ' fg normal
+        row 19 col 7: want 'e' fg normal, got ' ' fg normal
+        row 19 col 8: want 'f' fg normal, got ' ' fg normal
+        row 19 col 9: want '.' fg normal, got ' ' fg normal
+        row 19 col 10: want 'm' fg normal, got ' ' fg normal
+        row 19 col 11: want 'd' fg normal, got ' ' fg normal
+        row 19 col 16: want 'v' accent bold, got ' ' fg normal
+        row 19 col 18: want 'V' fg normal, got ' ' fg normal
+        row 19 col 19: want 'E' fg normal, got ' ' fg normal
+        row 19 col 20: want 'R' fg normal, got ' ' fg normal
+        row 19 col 21: want 'I' fg normal, got ' ' fg normal
+        row 19 col 22: want 'F' fg normal, got ' ' fg normal
+        row 19 col 23: want 'I' fg normal, got ' ' fg normal
+        row 19 col 24: want 'E' fg normal, got ' ' fg normal
+        row 19 col 25: want 'D' fg normal, got ' ' fg normal
+        row 19 col 26: want '.' fg normal, got ' ' fg normal
+        row 19 col 27: want 'm' fg normal, got ' ' fg normal
+        row 19 col 28: want 'd' fg normal, got ' ' fg normal
+        row 19 col 32: want 'd' accent bold, got ' ' fg normal
+        row 19 col 34: want 'd' fg normal, got ' ' fg normal
+        row 19 col 35: want 'e' fg normal, got ' ' fg normal
+        row 19 col 36: want 'p' fg normal, got ' ' fg normal
+        row 19 col 37: want 's' fg normal, got ' ' fg normal
+        row 19 col 39: want 'g' fg normal, got ' ' fg normal
+        row 19 col 40: want 'r' fg normal, got ' ' fg normal
+        row 19 col 41: want 'a' fg normal, got ' ' fg normal
+        row 19 col 42: want 'p' fg normal, got ' ' fg normal
+        row 19 col 43: want 'h' fg normal, got ' ' fg normal
+        row 19 col 79: want '┃' accent normal, got '│' accent normal
+        row 21 col 2: want '↓' dim normal, got ' ' fg normal
+        row 21 col 3: want ' ' dim normal, got ' ' fg normal
+        row 21 col 4: want '2' dim normal, got ' ' fg normal
+        row 21 col 5: want ' ' dim normal, got ' ' fg normal
+        row 21 col 6: want 'm' dim normal, got ' ' fg normal
+        row 21 col 7: want 'o' dim normal, got ' ' fg normal
+        row 21 col 8: want 'r' dim normal, got ' ' fg normal
+        row 21 col 9: want 'e' dim normal, got ' ' fg normal
+        row 21 col 10: want ' ' dim normal, got ' ' fg normal
+        row 21 col 11: want 'l' dim normal, got ' ' fg normal
+        row 21 col 12: want 'i' dim normal, got ' ' fg normal
+        row 21 col 13: want 'n' dim normal, got ' ' fg normal
+        row 21 col 14: want 'e' dim normal, got ' ' fg normal
+        row 21 col 15: want 's' dim normal, got ' ' fg normal
+--- FAIL: TestWorkTasksMatchesCompactBoard (0.00s)
+=== RUN   TestWorkTasksFitsEachSize
+=== RUN   TestWorkTasksFitsEachSize/79x24
+=== RUN   TestWorkTasksFitsEachSize/80x24
+    work_tasks_test.go:77: selected task is not visible:
+         hive                                     coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                    [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 1]  queued 0  landed 3  failed 0  all 4                            │
+        │ ▶ project: all                                                               │
+        │ ID             title                       project   status     agent · ver… │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end to end           hive      a…                    │
+        │ ┤ task details ├                                                             │
+        │ 1-cp5-end-to-end · CP5 v1 end to end                                         │
+        │ needs: -                                                                     │
+        │ blocks: -                                                                    │
+        │ branch: task/1-cp5-end-to-end                                                │
+        │ feature: -                                                                   │
+        │ grant: -                                                                     │
+        │ needs user: -                                                                │
+        │ ┤ evidence ├                                                                 │
+        │ brief: -                                                                     │
+        │ evidence: -                                                                  │
+        │ verification history: -                                                      │
+        │ landed = delivery commit set and pushed · verified = verification passed     │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestWorkTasksFitsEachSize/80x25
+    work_tasks_test.go:77: selected task is not visible:
+         hive                                     coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                    [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 1]  queued 0  landed 3  failed 0  all 4                            │
+        │ ▶ project: all                                                               │
+        │ ID             title                       project   status     agent · ver… │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end to end           hive      a…                    │
+        │ ┤ task details ├                                                             │
+        │ 1-cp5-end-to-end · CP5 v1 end to end                                         │
+        │ needs: -                                                                     │
+        │ blocks: -                                                                    │
+        │ branch: task/1-cp5-end-to-end                                                │
+        │ feature: -                                                                   │
+        │ grant: -                                                                     │
+        │ needs user: -                                                                │
+        │ ┤ evidence ├                                                                 │
+        │ brief: -                                                                     │
+        │ evidence: -                                                                  │
+        │ verification history: -                                                      │
+        │ landed = delivery commit set and pushed · verified = verification passed     │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestWorkTasksFitsEachSize/119x40
+    work_tasks_test.go:77: selected task is not visible:
+         hive                                                                            coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                                                               
+        ───────────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                           [ ] switch view   
+        ╭─ tasks ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 1]  queued 0  landed 3  failed 0  all 4                                                                   │
+        │ ▶ project: all                                                                                                      │
+        │ ID             title                       project   status     agent · verification                                │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end to end           hive      assigned   cp5-worker-01 · running                           │
+        │ ┤ task details ├                                                                                                    │
+        │ 1-cp5-end-to-end · CP5 v1 end to end                                                                                │
+        │ needs: -                                                                                                            │
+        │ blocks: -                                                                                                           │
+        │ branch: task/1-cp5-end-to-end                                                                                       │
+        │ feature: -                                                                                                          │
+        │ grant: -                                                                                                            │
+        │ needs user: -                                                                                                       │
+        │ ┤ evidence ├                                                                                                        │
+        │ brief: -                                                                                                            │
+        │ evidence: -                                                                                                         │
+        │ verification history: -                                                                                             │
+        │ landed = delivery commit set and pushed · verified = verification passed                                            │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                                                         
+=== RUN   TestWorkTasksFitsEachSize/119x41
+    work_tasks_test.go:77: selected task is not visible:
+         hive                                                                            coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                                                               
+        ───────────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                           [ ] switch view   
+        ╭─ tasks ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 1]  queued 0  landed 3  failed 0  all 4                                                                   │
+        │ ▶ project: all                                                                                                      │
+        │ ID             title                       project   status     agent · verification                                │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end to end           hive      assigned   cp5-worker-01 · running                           │
+        │ ┤ task details ├                                                                                                    │
+        │ 1-cp5-end-to-end · CP5 v1 end to end                                                                                │
+        │ needs: -                                                                                                            │
+        │ blocks: -                                                                                                           │
+        │ branch: task/1-cp5-end-to-end                                                                                       │
+        │ feature: -                                                                                                          │
+        │ grant: -                                                                                                            │
+        │ needs user: -                                                                                                       │
+        │ ┤ evidence ├                                                                                                        │
+        │ brief: -                                                                                                            │
+        │ evidence: -                                                                                                         │
+        │ verification history: -                                                                                             │
+        │ landed = delivery commit set and pushed · verified = verification passed                                            │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                                                         
+=== RUN   TestWorkTasksFitsEachSize/120x40
+    work_tasks_test.go:77: selected task is not visible:
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 1-cp5-end-to-end ───────────────────────────────────────────────╮
+        │ ▶ [active 1]  …                                  ││ 1-cp5-end-to-end · CP5 v1 end to end                             │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: -                                                        │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end …                    ││ branch: task/1-cp5-end-to-end                                    │
+        │ ┤ task details ├                                 ││ feature: -                                                       │
+        │ 1-cp5-end-to-end · CP5 v1 end to end             ││ grant: -                                                         │
+        │ needs: -                                         ││ needs user: -                                                    │
+        │ blocks: -                                        ││ brief: -                                                         │
+        │ branch: task/1-cp5-end-to-end                    ││ evidence: -                                                      │
+        │ feature: -                                       ││ verification history: -                                          │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ verification history: -                          ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+=== RUN   TestWorkTasksFitsEachSize/120x41
+    work_tasks_test.go:77: selected task is not visible:
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 1-cp5-end-to-end ───────────────────────────────────────────────╮
+        │ ▶ [active 1]  …                                  ││ 1-cp5-end-to-end · CP5 v1 end to end                             │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: -                                                        │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end …                    ││ branch: task/1-cp5-end-to-end                                    │
+        │ ┤ task details ├                                 ││ feature: -                                                       │
+        │ 1-cp5-end-to-end · CP5 v1 end to end             ││ grant: -                                                         │
+        │ needs: -                                         ││ needs user: -                                                    │
+        │ blocks: -                                        ││ brief: -                                                         │
+        │ branch: task/1-cp5-end-to-end                    ││ evidence: -                                                      │
+        │ feature: -                                       ││ verification history: -                                          │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ verification history: -                          ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksFitsEachSize (0.01s)
+    --- PASS: TestWorkTasksFitsEachSize/79x24 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/80x24 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/80x25 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/119x40 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/119x41 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/120x40 (0.00s)
+    --- FAIL: TestWorkTasksFitsEachSize/120x41 (0.00s)
+=== RUN   TestWorkTasksEmptyData
+    work_tasks_test.go:120: empty list at 80 columns:
+         hive                                     coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                    [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────────────────────────────────╮
+        │ ▶ [active 0]  queued 0  landed 0  failed 0  all 0                            │
+        │ ▶ project: all                                                               │
+        │ ID             title                       project   status     agent · ver… │
+        │   no tasks                                                                   │
+        │ ┤ task details ├                                                             │
+        │ no task selected                                                             │
+        │ ┤ evidence ├                                                                 │
+        │ no task selected                                                             │
+        │ landed = delivery commit set and pushed · verified = verification passed     │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+--- FAIL: TestWorkTasksEmptyData (0.00s)
+=== RUN   TestWorkTasksCutsLongText
+    work_tasks_test.go:142: long ID is not cut to its column:
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ long-id-long-id-long-id-long-id-long-id-long-id-long-id-long-… ─╮
+        │ ▶ [active 1]  …                                  ││ long-id-long-id-long-id-long-id-long-id-long-id-long-id-long-id… │
+        │ ▶ project: all                                   ││ needs: dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-… │
+        │ ID             title                       proj… ││ blocks: -                                                        │
+        │ ▶ long-id-long-… a long titl…                    ││ branch: -                                                        │
+        │ ┤ task details ├                                 ││ feature: -                                                       │
+        │ long-id-long-id-long-id-long…                    ││ grant: -                                                         │
+        │ needs: dep-dep-dep-dep-dep-dep-dep-dep-dep-dep-… ││ needs user: -                                                    │
+        │ blocks: -                                        ││ brief: -                                                         │
+        │ branch: -                                        ││ evidence: -                                                      │
+        │ feature: -                                       ││ verification history: -                                          │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ verification history: -                          ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksCutsLongText (0.00s)
+=== RUN   TestWorkTasksMoveKeys
+    work_tasks_test.go:168: down selected "1-cp5-end-to-end", want "2-stale-coordinator-startup"
+--- FAIL: TestWorkTasksMoveKeys (0.00s)
+=== RUN   TestWorkTasksFileKeys
+    work_tasks_test.go:185: view does not contain "╭─ brief.md ─":
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks ──────────────────────────────────────────╮╭─ 1-cp5-end-to-end ───────────────────────────────────────────────╮
+        │ ▶ [active 1]  …                                  ││ 1-cp5-end-to-end · CP5 v1 end to end                             │
+        │ ▶ project: all                                   ││ needs: -                                                         │
+        │ ID             title                       proj… ││ blocks: -                                                        │
+        │ ▶ 1-cp5-end-to-… CP5 v1 end …                    ││ branch: task/1-cp5-end-to-end                                    │
+        │ ┤ task details ├                                 ││ feature: -                                                       │
+        │ 1-cp5-end-to-end · CP5 v1 end to end             ││ grant: -                                                         │
+        │ needs: -                                         ││ needs user: -                                                    │
+        │ blocks: -                                        ││ brief: -                                                         │
+        │ branch: task/1-cp5-end-to-end                    ││ evidence: -                                                      │
+        │ feature: -                                       ││ verification history: -                                          │
+        │ grant: -                                         ││                                                                  │
+        │ needs user: -                                    ││                                                                  │
+        │ ┤ evidence ├                                     ││                                                                  │
+        │ brief: -                                         ││                                                                  │
+        │ evidence: -                                      ││                                                                  │
+        │ verification history: -                          ││                                                                  │
+        │ landed = delivery commit set and pushed · verif… ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksFileKeys (0.00s)
+=== RUN   TestWorkTasksOverlayKeys
+    work_tasks_test.go:221: view does not contain "│ goal      g1-tui-restart · wave B":
+         hive                                     coord ● · sup ● · needs you 0 · 14:22 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                    [ ] switch view   
+        ╭─ 1-cp5-end-to-end · esc back ────────────────────────────────────────────────╮
+        │ 1-cp5-end-to-end · CP5 v1 end to end                                         │
+        │ needs: -                                                                     │
+        │ blocks: -                                                                    │
+        │ branch: task/1-cp5-end-to-end                                                │
+        │ feature: -                                                                   │
+        │ grant: -                                                                     │
+        │ needs user: -                                                                │
+        │ brief: -                                                                     │
+        │ evidence: -                                                                  │
+        │ verification history: -                                                      │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [details] ↑↓ scroll · esc back to list · b brief · v verified · d deps         
+--- FAIL: TestWorkTasksOverlayKeys (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.190s
+FAIL
