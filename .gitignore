@@ -25,6 +25,7 @@
 !.claude/skills/hive-manager
 !.claude/skills/hive-worker
 !.claude/skills/hive-verifier
+!.claude/skills/hive-agent
 
 # Test fixtures
 !**/testdata/**

@@ -1,4 +1,5 @@
 {
+  ".agents/skills/hive-agent/SKILL.md": 0,
   ".agents/skills/hive-coordinator/SKILL.md": 0,
   ".agents/skills/hive-manager/SKILL.md": 0,
   ".agents/skills/hive-verifier/SKILL.md": 0,
@@ -22,6 +23,9 @@
   ".hive/spec/general-agent/tasks/16-identity-inboxes/brief.md": 0,
   ".hive/spec/general-agent/tasks/17-coordinator-start/brief.md": 0,
   ".hive/spec/general-agent/tasks/18-general-spawn/brief.md": 0,
+  ".hive/spec/general-agent/tasks/19-kept-first-prompt/brief.md": 0,
+  ".hive/spec/general-agent/tasks/20-agent-report/brief.md": 0,
+  ".hive/spec/general-agent/tasks/30-agent-skill-link/brief.md": 0,
   ".hive/spec/hive-tui/tasks/101-store-list-long-keys/brief.md": 0,
   ".hive/spec/hive-tui/tasks/102-selection-marker/brief.md": 0,
   ".hive/spec/hive-tui/tasks/105-verified-close/brief.md": 0,

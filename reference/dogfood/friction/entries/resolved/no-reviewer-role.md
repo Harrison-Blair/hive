@@ -1,8 +1,8 @@
 ---
 title: "Hive cannot spawn a reviewer or another one-off agent"
-status: "Open"
+status: "Resolved 2026-10-21"
 opened: 2026-10-19
-decision: ""
+decision: "Goal g3-general-agent adds the role agent: hive agent spawn --role agent with --prompt or --prompt-file, an inbox by name, hive agent report to the recorded parent, and the hive-agent skill (tasks 14 to 20 and 30). The wave 7 dogfood run passed."
 ---
 
 **Summary:**
@@ -71,3 +71,19 @@ background shell. The wait gave a correct completion signal for each pass.
 The coordinator then read the result with `herdr pane read`. Hive still had
 no record of the agent. The spec `general-agent` (goal `g3-general-agent`)
 plans the fix.
+
+**Resolution 2026-10-21:**
+Goal `g3-general-agent` landed waves 1 to 5 on `dev` (last merge 875f68ee).
+The coordinator ran the wave 7 dogfood after a rebuild of `hive` and a
+supervisor restart from Health > Agents.
+
+1. `hive agent spawn --role agent --name plan-review-g3 --harness pi --model openai-codex/gpt-6.1-sol --prompt-file FILE` made tab `w58:t9` in the coordinator workspace. The record has role `agent` and parent `coordinator-g2`.
+2. The agent started in the home root. It did not run coordinator startup. The coordinator claim stayed on `coordinator-g2`, generation 2.
+3. The agent sent a plan review of decisions 39 and 40 with `hive agent report`. The record came to the coordinator inbox as kind `report`, and the supervisor sent a nudge.
+4. The coordinator sent a follow-up with `hive agent send --agent plan-review-g3 TEXT`. The agent sent a second report, and the supervisor sent a second nudge.
+5. `hive agent stop --agent plan-review-g3` closed tab `w58:t9` and set the status to stopped. No repository file changed.
+
+One small finding: `hive agent send NAME TEXT` and `hive agent stop NAME`
+fail. Each command takes the name only through `--agent`. The entry
+`agent-send-flag-means-target.md` records the `--agent` flag.
+

@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // writeGeneralParent writes the live registered caller boss in pane w1:p9.
@@ -235,6 +237,46 @@ func TestGeneralSpawnAllowTrustDialogKeepsPromptAndDoesNotSend(t *testing.T) {
 	}
 	if prompts := fake.recorded("agent.prompt"); len(prompts) != 0 {
 		t.Fatalf("agent.prompt requests = %d; want 0", len(prompts))
+	}
+}
+
+// TestGeneralSpawnBlockedRecordsBlockedStatusAndNudgesParent covers decision
+// 15: a trust dialog gives a live record with the agent status blocked and a
+// blocked record in the inbox of the parent. Hive does not answer the dialog.
+func TestGeneralSpawnBlockedRecordsBlockedStatusAndNudgesParent(t *testing.T) {
+	home := testHome(t)
+	writeGeneralParent(t, home)
+	t.Setenv("HERDR_PANE_ID", "w1:p9")
+	dir := t.TempDir()
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	scriptGeneralNewTab(fake, sleep, dir, "x", "codex", "blocked")
+	options := generalOptions("x", "codex", dir)
+	options.AllowTrustDialog = true
+
+	Spawn(context.Background(), home, options)
+	stored := readAgent(t, home, "x")
+	if stored.Status != records.AgentLive || stored.AgentStatus != "blocked" {
+		t.Fatalf("record status %q agent status %q; want live and blocked", stored.Status, stored.AgentStatus)
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var held []records.Inbox
+	if err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		held, err = inbox.AllHeld(locked, "boss")
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if len(held) != 1 || held[0].Kind != records.InboxBlocked || held[0].Agent != "x" {
+		t.Fatalf("parent inbox = %+v; want one blocked record for x", held)
+	}
+	for _, method := range []string{"agent.prompt", "pane.send_text", "pane.send_keys"} {
+		if requests := fake.recorded(method); len(requests) != 0 {
+			t.Fatalf("%s requests = %d; want 0", method, len(requests))
+		}
 	}
 }
 

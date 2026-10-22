@@ -12,6 +12,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -303,6 +304,52 @@ func (general *generalSpawn) cleanupTab(ctx context.Context, logger *slog.Logger
 	}
 	logger.Debug("general agent tab closed", "command", "agent spawn", "tab_id", general.tabID, "pane_id", general.paneID)
 	return output.Effect{Resource: "tab", Path: general.tabID, Action: "closed"}
+}
+
+// blockGeneralRecord sets a general agent at a trust dialog live with the
+// agent status blocked, and writes a blocked record to the inbox of its parent
+// in the same store write (decision 15). Hive does not answer the dialog.
+func blockGeneralRecord(home string, record records.Agent, message string) (records.Agent, []output.Effect, error) {
+	registry, err := store.Open(home)
+	if err != nil {
+		return record, nil, err
+	}
+	updated := record
+	var effects []output.Effect
+	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		var current records.Agent
+		if err := locked.ReadIn([]string{"agents"}, record.Key, &current); err != nil {
+			return err
+		}
+		if err := checkCurrentRecordChecked(locked, current, record, record.Status, true); err != nil {
+			return err
+		}
+		agents, err := loadAgents(locked)
+		if err != nil {
+			return err
+		}
+		byKey := make(map[string]records.Agent, len(agents))
+		for _, agent := range agents {
+			byKey[agent.Key] = agent
+		}
+		appended := inbox.AppendHeld(locked, inbox.AppendOptions{Role: ParentInbox(byKey, current), Kind: records.InboxBlocked, Task: current.Task, Agent: current.Name, Text: "blocked"})
+		if appended.Outcome != "ok" {
+			return fmt.Errorf("blocked record: %v", appended.Error)
+		}
+		now := time.Now().UTC().Format(time.RFC3339Nano)
+		current.Status = records.AgentLive
+		current.LastError = message
+		current.AgentStatus = "blocked"
+		current.StatusChangedAt = now
+		current.UpdatedAt = now
+		if err := locked.WriteIn([]string{"agents"}, current.Key, current); err != nil {
+			return err
+		}
+		updated = current
+		effects = append(append(effects, appended.Effects...), output.Effect{Resource: "agent", Path: statePath("agents", current.Key), Action: "updated"})
+		return nil
+	})
+	return updated, effects, err
 }
 
 // keepGeneralPrompt keeps the first prompt in the record of a blocked agent.

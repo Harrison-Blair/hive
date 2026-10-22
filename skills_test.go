@@ -18,6 +18,7 @@ var skillFiles = []string{
 	".agents/skills/hive-manager/SKILL.md",
 	".agents/skills/hive-worker/SKILL.md",
 	".agents/skills/hive-verifier/SKILL.md",
+	".agents/skills/hive-agent/SKILL.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
 }
@@ -265,6 +266,20 @@ func TestWorkerAndVerifierRequireNoStartup(t *testing.T) {
 			if !strings.Contains(string(data), want) {
 				t.Errorf("%s does not contain %q", file, want)
 			}
+		}
+	}
+}
+
+// TestGeneralAgentSkill checks that the hive-agent skill states the work, the
+// report, and that the agent has no task (decision 23).
+func TestGeneralAgentSkill(t *testing.T) {
+	data, err := os.ReadFile(".agents/skills/hive-agent/SKILL.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"## Work", "## Report", "You have no task.", "hive agent report --file PATH", "hive --no-startup"} {
+		if !strings.Contains(string(data), want) {
+			t.Errorf("hive-agent skill does not contain %q", want)
 		}
 	}
 }

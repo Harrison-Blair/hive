@@ -789,3 +789,15 @@ func TestAppendUsesTheLockedCounter(t *testing.T) {
 		t.Fatalf("Next() calls = %d; want the grouped counter once", seam.nexts)
 	}
 }
+
+func TestAppendReportKindKeepsPath(t *testing.T) {
+	home := t.TempDir()
+	envelope := Append(home, AppendOptions{Role: "boss", Kind: "report", Agent: "rev", Text: "head", Path: "/work/result.md"})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v; want ok", envelope)
+	}
+	all, err := All(home, "boss")
+	if err != nil || len(all) != 1 || all[0].Kind != "report" || all[0].Path != "/work/result.md" || all[0].Text != "head" {
+		t.Fatalf("records = %#v, %v; want one report record with its path", all, err)
+	}
+}
