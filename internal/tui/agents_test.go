@@ -19,7 +19,7 @@ func TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 
 	want := []string{"coordinator-current", "supervisor-current", "manager-current", "live-worker", "active-ghost"}
@@ -62,7 +62,7 @@ func TestAgentsHistoryToggleShowsAllGenerations(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
 		t.Fatalf("default footer does not show the stopped-agent hint: %s", m.currentScreen().KeyHints())
@@ -218,10 +218,11 @@ func containsAgentName(names []string, name string) bool {
 func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	requireAgentsView(t, m, "[ TREE ]", "home", "coordinator", "supervisor", "demo · Active demo goal", "manager-demo", "worker-1", "legacy-verifier")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	_ = m.currentScreen().View(120, 30)
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
@@ -239,7 +240,8 @@ func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	if strings.Contains(view, "coordinator ──▶ manager-demo") {
 		t.Fatalf("graph still lists edges as text below the pods:\n%s", view)
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	requireAgentsView(t, m, "[ TABLE ]", "name", "role", "project", "task", "harness", "model", "status", "age", "parent", "worker-1 · worker · demo · 10-build · pi · model-worker · blocked · 4m · manager-demo")
 }
 
@@ -251,10 +253,11 @@ func TestAgentsLoadsLongAgentKeysAsNodesAndParents(t *testing.T) {
 
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	requireAgentsView(t, m, "long-manager · manager · demo", "long-key-worker · worker · demo · 11-build · pi · — · working · ? · long-manager")
 	if len(managerKey) <= 18 {
 		t.Fatalf("fixture key %q must exceed the legacy ID limit", managerKey)
@@ -271,22 +274,22 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 			m := newTestModel(t, home, clock)
 			m.width, m.height, m.screenIndex = size.width, size.height, 1
 			m.layout()
-			m, cmd := raise(t, m, key('2', "2"))
+			m, cmd := raise(t, m, key('1', "1"))
 			m = deliverAgentCommands(t, m, cmd)
 
-			headerRows := strings.Count(ansi.Strip(headerStyle.Width(size.width).Render(m.headerLine())), "\n") + 1
-			bodyHeight := size.height - headerRows - statusRows - 5
-			sidebarWidth := 24
-			if size.width >= 100 {
-				sidebarWidth = 30
+			// Decisions 1 and 3: the frame has no sidebar. The Agents panel
+			// fills the content area, and the view is exactly the pane.
+			lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+			if len(lines) != size.height {
+				t.Fatalf("view has %d lines; want %d", len(lines), size.height)
 			}
-			sidebar := m.renderSidebar(sidebarWidth, bodyHeight)
-			mainWidth := size.width - sidebarWidth
-			panel := m.renderPanel("Agents", m.currentScreen().View(mainWidth, bodyHeight), mainWidth, bodyHeight)
-			sidebarLines := strings.Count(ansi.Strip(sidebar), "\n") + 1
-			panelLines := strings.Count(ansi.Strip(panel), "\n") + 1
-			if panelLines != sidebarLines {
-				t.Fatalf("Agents panel has %d rendered lines; sidebar has %d (body %d, screen %d)\n%s", panelLines, sidebarLines, bodyHeight, strings.Count(ansi.Strip(m.currentScreen().View(mainWidth, bodyHeight)), "\n")+1, ansi.Strip(panel))
+			for index, line := range lines {
+				if got := ansi.StringWidth(line); got != size.width {
+					t.Fatalf("line %d is %d cells; want %d:\n%s", index, got, size.width, strings.Join(lines, "\n"))
+				}
+			}
+			if !strings.HasPrefix(lines[frameRows-1], "╭─ agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
+				t.Fatalf("Agents panel does not fill the content area:\n%s", strings.Join(lines, "\n"))
 			}
 		})
 	}
@@ -296,9 +299,10 @@ func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
-	m, cmd = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, cmd = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	if cmd == nil {
 		t.Fatal("tab action did not log")
 	}
@@ -338,7 +342,7 @@ func TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale(t *test
 	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	requireAgentsView(t, m, "working", "idle", "blocked", "supervisor · idle", "stale-worker · unknown")
 	rejectAgentsView(t, m, "× old-worker", "stopped")
@@ -369,9 +373,10 @@ func TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents(t *testing.T) {
 	home, clock := agentsFixture(t, 40)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	_ = m.currentScreen().View(70, 12)
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
 	for range 44 {
@@ -390,7 +395,7 @@ func TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent(t *testing.T
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('j', "j"))
 	m, _ = raise(t, m, key('j', "j"))
@@ -407,7 +412,7 @@ func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
@@ -423,7 +428,7 @@ func TestAgentsProjectsFollowProjectRecordOrder(t *testing.T) {
 	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
 	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
 	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	view := ansi.Strip(m.currentScreen().View(120, 30))
 	alpha := strings.Index(view, "▾ alpha")
@@ -438,7 +443,7 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('2', "2"))
+	m, cmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, cmd)
 	bin := t.TempDir()
 	argsPath := filepath.Join(bin, "args")
@@ -452,9 +457,10 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	}
 	t.Setenv("HERDR_ARGS", argsPath)
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	_, cmd = raise(t, m, key(tea.KeyEnter, "enter"))
+	// Decision 14: p peeks at the pane.
+	_, cmd = raise(t, m, key('p', "p"))
 	if cmd == nil {
-		t.Fatal("enter did not start pane read")
+		t.Fatal("p did not start pane read")
 	}
 	m = deliverAgentCommands(t, m, cmd)
 	requireAgentsView(t, m, "PEEK · w1:p1", "line 06", "line 25")
@@ -489,10 +495,15 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	m := agentsBoardModel(t)
 	frame := ansi.Strip(m.View().Content)
-	for _, want := range []string{"5 agents", "2 working", "3 idle", "supervisor ●", "needs you 0"} {
+	// Decision 2: the header shows the state of the coordinator and the
+	// supervisor, and needs you. The header state keeps the agent counts.
+	for _, want := range []string{"sup ●", "needs you 0"} {
 		if !strings.Contains(frame, want) {
 			t.Errorf("Agents header omits %q:\n%s", want, frame)
 		}
+	}
+	if m.header.agents != 5 || m.header.working != 2 || m.header.idle != 3 {
+		t.Errorf("header counts = %d agents, %d working, %d idle; want 5, 2, 3", m.header.agents, m.header.working, m.header.idle)
 	}
 	for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
 		if strings.Contains(frame, unwanted) {
@@ -524,9 +535,14 @@ func TestAgentsBoardGoldenFrames(t *testing.T) {
 				}
 				m.agents.tab = tab.tab
 				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
+				// The header shows the home. The test home is a new folder on
+				// each run, so the golden frame uses a fixed home.
+				m.home = "/fixture/hive"
 				frame := ansi.Strip(m.View().Content)
-				if strings.Contains(frame, "SCREENS") || !strings.Contains(frame, "AGENTS") {
-					t.Fatalf("Agents does not use the board explorer layout:\n%s", frame)
+				// Decisions 1 and 3: the tab bar replaces the screen list, and
+				// the content area shows the current Agents screen in one panel.
+				if strings.Contains(frame, "SCREENS") || !strings.Contains(frame, "╭─ agents ") {
+					t.Fatalf("Agents does not use the frame layout:\n%s", frame)
 				}
 				lines := strings.Split(frame, "\n")
 				if len(lines) != size.height {
@@ -765,7 +781,8 @@ func TestAgentsGraphColumnsHaveEqualWidth(t *testing.T) {
 		t.Fatalf("fixture has equal home and alpha pod widths: %v", nativeWidths)
 	}
 
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	view := ansi.Strip(m.currentScreen().View(200, 57))
 	if !strings.Contains(view, "[ GRAPH ]") {
 		t.Fatalf("Update and View did not select the graph:\n%s", view)
@@ -798,7 +815,8 @@ func TestAgentsGraphCardsKeepTheirWidths(t *testing.T) {
 			m.agents.data.nodes[index].pid = "551386"
 		}
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	_ = m.currentScreen().View(200, 57)
 	_, positions := m.agents.graphLayout()
 	for key, want := range map[string]int{"coordinator": 19, "manager-alpha": 21, "manager-beta": 20} {
@@ -812,7 +830,8 @@ func TestAgentsGraphSingleColumnKeepsItsPod(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.agents.data.groups = m.agents.data.groups[:1]
 	m.agents.data.groups[0].keys = []string{"coordinator", "supervisor"}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	view := ansi.Strip(m.currentScreen().View(120, 40))
 	if !strings.Contains(view, "≡ home") || !strings.Contains(view, "coordinator") {
 		t.Fatalf("single-column graph omits its pod or agent:\n%s", view)
@@ -832,7 +851,8 @@ func TestAgentsGraphLongCardFitsInEqualColumns(t *testing.T) {
 			m.agents.data.nodes[index].record.Name = longName
 		}
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
+	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	if m.agents.selectedKey != "worker-alpha" {
@@ -1275,11 +1295,13 @@ func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.width = 120
 	m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.Local) }
-	line := ansi.Strip(m.agentsHeaderLine())
-	if !strings.HasPrefix(line, "⬢ hive  2 projects  5 agents  2 working  3 idle  supervisor ●  needs you 0") {
-		t.Fatalf("Agents header groups are not separated by spaces: %s", line)
+	// Decision 2: the header shows the home, the agent states, needs you,
+	// and the clock.
+	line := ansi.Strip(m.headerView().View(m.width))
+	if !strings.HasPrefix(line, " hive  ") || !strings.Contains(line, "needs you 0   12:00 ") {
+		t.Fatalf("Agents header does not have the long form of decision 2: %s", line)
 	}
-	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00") {
+	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00 ") {
 		t.Fatalf("Agents header time is not at the right edge: width=%d line=%q", ansi.StringWidth(line), line)
 	}
 }
@@ -1355,7 +1377,9 @@ func agentsBoardModel(t *testing.T) *Model {
 func TestAgentsProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	if err := RunHome(home, strings.NewReader("2\t\t\x03\x03"), &out); err != nil {
+	// Decisions 6 and 22: tab moves the region, and ] ] select the TABLE
+	// view of the current Agents screen until wave 6.
+	if err := RunHome(home, strings.NewReader("1]]\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
 	if !strings.Contains(out.String(), "[ TABLE ]") {

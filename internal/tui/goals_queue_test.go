@@ -38,7 +38,7 @@ func TestQueueScreenShowsTransitiveStopsAndIgnoresProjectCycle(t *testing.T) {
 	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed", Status: "created", DependsOn: []string{}})
 
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('4', "4"))
+	m, cmd := openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
 	view := ansi.Strip(m.currentScreen().View(200, 40))
 	for _, line := range []string{
@@ -111,7 +111,7 @@ func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
 	writeRecord(t, home, []string{"projects"}, "other", records.Project{ID: "other", Path: "/repo/other", Base: "dev"})
 	writeRecord(t, home, []string{"tasks"}, "8-other", records.Task{ID: "8-other", Project: "other", Title: "Other task", Status: "created", DependsOn: []string{}})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('5', "5"))
+	m, cmd := openWorkView(t, m, 2)
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('p', "p"))
 	m, _ = raise(t, m, key('p', "p"))
@@ -119,8 +119,11 @@ func TestGoalsOpenTasksResetsProjectFilter(t *testing.T) {
 		t.Fatalf("Tasks filter setup failed: got %q, want other", got)
 	}
 
-	m, cmd = raise(t, m, key('3', "3"))
-	m = deliverAgentCommands(t, m, cmd)
+	// Decision 22: [ selects the previous view, so [ [ gives Goals.
+	for range 2 {
+		m, cmd = raise(t, m, key('[', "["))
+		m = deliverAgentCommands(t, m, cmd)
+	}
 	m, cmd = raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
 
@@ -218,7 +221,7 @@ func TestGoalsAndQueueStatesHavePlainTextSignals(t *testing.T) {
 		}
 	}
 
-	m, cmd = raise(t, m, key('4', "4"))
+	m, cmd = openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
 	queue := ansi.Strip(m.currentScreen().View(200, 40))
 	for _, text := range []string{
@@ -237,14 +240,15 @@ func TestQueueHeaderShowsRunStopAndWaitCounts(t *testing.T) {
 	home := goalsQueueFixture(t)
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
 	m = deliverAgentCommands(t, m, m.startHeaderLoad())
-	m, cmd := raise(t, m, key('4', "4"))
+	m, cmd := openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
 
-	view := ansi.Strip(m.View().Content)
-	want := "⬢ hive · runs without you 3 · stops 1 · waits behind a stop 1"
-	if !strings.Contains(view, want) {
-		t.Fatalf("Queue header omitted its task counts %q:\n%s", want, view)
+	// Decision 2: the header of each screen shows the agent states and
+	// needs you. The header state keeps the Queue counts for the Queue view.
+	if m.header.queueRun != 3 || m.header.queueStops != 1 || m.header.queueWaits != 1 {
+		t.Fatalf("Queue counts = runs %d, stops %d, waits %d; want 3, 1, 1", m.header.queueRun, m.header.queueStops, m.header.queueWaits)
 	}
+	rejectView(t, m, "runs without you")
 }
 
 func TestQueueShowsEveryRegisteredProjectWithoutProjectCycle(t *testing.T) {
@@ -253,7 +257,7 @@ func TestQueueShowsEveryRegisteredProjectWithoutProjectCycle(t *testing.T) {
 	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
 	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed", Status: "created", DependsOn: []string{}})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('4', "4"))
+	m, cmd := openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
 
 	view := ansi.Strip(m.currentScreen().View(200, 40))
@@ -271,8 +275,10 @@ func TestQueueShowsEveryRegisteredProjectWithoutProjectCycle(t *testing.T) {
 func TestQueueArrowsSelectTasksAndEnterOpensSelectedTask(t *testing.T) {
 	home := goalsQueueFixture(t)
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('4', "4"))
+	m, cmd := openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
+	// Decision 8: from 120 columns enter goes to the list.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, cmd = raise(t, m, key(tea.KeyEnter, "enter"))
 	m = deliverAgentCommands(t, m, cmd)
@@ -309,7 +315,7 @@ func TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects(t *testing.T) {
 		t.Fatalf("Goals refresh lost its selected goal:\n%s", view)
 	}
 
-	m, cmd = raise(t, m, key('4', "4"))
+	m, cmd = openWorkView(t, m, 1)
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('p', "p"))
 	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed updated", Status: "assigned", DependsOn: []string{}})
@@ -350,14 +356,15 @@ func TestGoalsSortsActiveBeforeDoneAndCountsOnlyPushedDeliveries(t *testing.T) {
 func TestGoalsAndQueuePanelsFitStandardFrame(t *testing.T) {
 	home := goalsQueueFixture(t)
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	for _, keyText := range []string{"3", "4"} {
-		m, cmd := raise(t, m, key(rune(keyText[0]), keyText))
+	// Decision 5: Goals and Queue are views 0 and 1 of the Work tab.
+	for _, view := range []int{0, 1} {
+		m, cmd := openWorkView(t, m, view)
 		m = deliverAgentCommands(t, m, cmd)
 		content := m.currentScreen().View(56, 14)
-		if keyText == "3" && !strings.Contains(ansi.Strip(content), "Goal one") {
+		if view == 0 && !strings.Contains(ansi.Strip(content), "Goal one") {
 			t.Fatalf("Goals frame omitted its goal panel:\n%s", ansi.Strip(content))
 		}
-		if keyText == "4" && (!strings.Contains(ansi.Strip(content), "1-alpha") || !strings.Contains(m.currentScreen().KeyHints(), "order comes from the dependencies")) {
+		if view == 1 && (!strings.Contains(ansi.Strip(content), "1-alpha") || !strings.Contains(m.currentScreen().KeyHints(), "order comes from the dependencies")) {
 			t.Fatalf("Queue frame omitted its task rows or footer hint:\n%s", ansi.Strip(content))
 		}
 		for _, line := range strings.Split(ansi.Strip(content), "\n") {
@@ -379,7 +386,8 @@ func TestGoalsQueueProgramUsesStringReader(t *testing.T) {
 	if err := RunHome(home, strings.NewReader("3\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	if !strings.Contains(out.String(), "▶ 3 Goals") || !strings.Contains(out.String(), "unassigned") {
+	// Decision 3: the sub-tab row marks the active view with brackets.
+	if !strings.Contains(out.String(), "[Goals]") || !strings.Contains(out.String(), "unassigned") {
 		t.Fatalf("program output did not render the Goals screen:\n%s", out.String())
 	}
 }
@@ -408,4 +416,17 @@ func goalsQueueFixture(t *testing.T) string {
 		ID: "82-goals-queue-screens", Project: "demo", Title: "Long ID", Status: "assigned", DependsOn: []string{},
 	})
 	return home
+}
+
+// openWorkView selects the Work tab and its view. Decision 5 puts Goals,
+// Queue, and Tasks in the views of the Work tab, and decision 22 gives ] to
+// the next view. It gives the command of the last key.
+func openWorkView(t *testing.T, m *Model, view int) (*Model, tea.Cmd) {
+	t.Helper()
+	m, cmd := raise(t, m, key('3', "3"))
+	for range view {
+		m = deliverAgentCommands(t, m, cmd)
+		m, cmd = raise(t, m, key(']', "]"))
+	}
+	return m, cmd
 }

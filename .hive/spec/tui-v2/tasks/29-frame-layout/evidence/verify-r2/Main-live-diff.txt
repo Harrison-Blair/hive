@@ -1,0 +1,1 @@
+Main-live vs Main: strict 67, space attributes 67, live differences 0

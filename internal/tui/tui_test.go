@@ -214,7 +214,10 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	requireView(t, m, "⬢ hive", "0 projects", "0 live agents", "supervisor stale", "needs_user 0", "12:00")
+	// Decision 2: the header shows the agent states and needs you. The
+	// header state keeps the counts.
+	requireView(t, m, " hive ", "sup ○", "needs you 0", "12:00")
+	requireHeaderCounts(t, m.header, 0, 0, 0, 0)
 
 	pidStart, err := process.Start(int64(os.Getpid()))
 	if err != nil {
@@ -235,7 +238,8 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	})
 	writeRecord(t, home, []string{"tasks"}, "1-first", records.Task{ID: "1-first", Project: "demo", Title: "first", NeedsUser: "choose"})
 	m = loadHeader(t, m)
-	requireView(t, m, "1 project", "2 live agents", "1 working / 1 idle", "supervisor fresh", "needs_user 1")
+	requireView(t, m, "sup ●", "needs you 1")
+	requireHeaderCounts(t, m.header, 1, 2, 1, 1)
 
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
 		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "idle",
@@ -244,7 +248,16 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,
 	})
 	m = loadHeader(t, m)
-	requireView(t, m, "working unknown / idle unknown", "supervisor stale", "needs_user 1")
+	requireView(t, m, "sup ○", "needs you 1")
+	requireHeaderCounts(t, m.header, 1, 2, 0, 0)
+}
+
+func requireHeaderCounts(t *testing.T, state headerState, projects, agents, working, idle int) {
+	t.Helper()
+	if state.projects != projects || state.agents != agents || state.working != working || state.idle != idle {
+		t.Fatalf("header counts = %d projects, %d agents, %d working, %d idle; want %d, %d, %d, %d",
+			state.projects, state.agents, state.working, state.idle, projects, agents, working, idle)
+	}
 }
 
 func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
@@ -272,6 +285,13 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
 
 				lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+				if size.width < minimumWidth || size.height < minimumHeight {
+					// Decision 7: below 80×24 the view is the too-small notice.
+					if !strings.Contains(strings.Join(lines, "\n"), "terminal too small") {
+						t.Fatalf("%s view below 80×24 is not the too-small notice", screen)
+					}
+					return
+				}
 				if len(lines) != size.height {
 					t.Errorf("%s frame has %d lines, want %d", screen, len(lines), size.height)
 				}
@@ -310,7 +330,7 @@ func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	requireView(t, m, "⬢ hive", "error:")
+	requireView(t, m, " hive ", "error:")
 	rejectView(t, m, "0 agents")
 }
 
@@ -397,14 +417,15 @@ func TestFollowControlsViewport(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 7, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
-	lines := make([]string, 0, 10)
-	for index := 1; index <= 10; index++ {
+	lines := make([]string, 0, 40)
+	for index := 1; index <= 40; index++ {
 		lines = append(lines, eventJSON(t, day, "INFO", fmt.Sprintf("line %02d", index)))
 	}
 	path := dailyPath(home, day)
 	writeEvents(t, path, lines...)
 	m := newTestLogsModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 10})
+	// Decision 7: 80×24 is the smallest frame.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	if !m.viewport.AtBottom() {
 		t.Fatalf("follow on left the viewport away from the end")
 	}
@@ -416,7 +437,7 @@ func TestFollowControlsViewport(t *testing.T) {
 		t.Fatal("test needs a scrolled viewport")
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line eleven"))
-	m = tickUntilCount(t, m, 11)
+	m = tickUntilCount(t, m, 41)
 	if got := m.viewport.YOffset(); got != before {
 		t.Fatalf("follow off moved the viewport from %d to %d", before, got)
 	}
@@ -544,6 +565,9 @@ func TestOtherKeysDoNotQuit(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 4, 14, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
+	// Decision 24: a printable key in the Chat feed types in the input, so
+	// the check uses the Agents screen.
+	m.screenIndex = 1
 	_, cmd := raise(t, m, key('x', "x"))
 	if cmd != nil {
 		t.Fatalf("got command %T; want none", cmd())

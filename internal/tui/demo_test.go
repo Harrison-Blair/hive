@@ -103,7 +103,7 @@ func TestDemoMainShowsFixtureDataAtTheFixtureClock(t *testing.T) {
 		t.Fatalf("selected agent = %q; want the fixture selection manager-hive-g2", m.agents.selectedKey)
 	}
 	first := ansi.Strip(m.View().Content)
-	for _, want := range []string{"14:22", "1 project", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
+	for _, want := range []string{"14:22", "~/source/hive", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("view does not contain %q:\n%s", want, first)
 		}
@@ -178,11 +178,24 @@ func TestDemoTooSmallMatchesItsBoardGrid(t *testing.T) {
 
 func TestDemoActionKeysShowTheNotice(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
+	// Decision 14: p peeks at the pane, and enter opens the details popup.
+	// Decision 19: restart is in Health › Agents, so r on Agents does nothing.
+	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, demoNotice) || m.agents.restartConfirm {
+		t.Fatalf("r on the Agents tab acted:\n%s", view)
+	}
 	for _, key := range []tea.KeyPressMsg{
 		{Code: 'a', Text: "a"},
-		{Code: tea.KeyEnter},
+		{Code: 'p', Text: "p"},
 		{Code: 'r', Text: "r"},
 	} {
+		if key.Text == "r" {
+			m.Update(tea.KeyPressMsg{Code: '5', Text: "5"})
+			m.Update(tea.KeyPressMsg{Code: ']', Text: "]"})
+			if m.activeTab() != tabHealth || m.screenIndex != 1 {
+				t.Fatalf("5 ] did not select Health › Agents: tab %d, screen %d", m.activeTab(), m.screenIndex)
+			}
+		}
 		m.Update(key)
 		if view := ansi.Strip(m.View().Content); !strings.Contains(view, demoNotice) {
 			t.Fatalf("key %q: view does not show %q:\n%s", key.String(), demoNotice, view)
@@ -195,7 +208,7 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 			t.Fatalf("notice stays after the next key:\n%s", view)
 		}
 	}
-	m.Update(tea.KeyPressMsg{Code: '1', Text: "1"})
+	m.Update(tea.KeyPressMsg{Code: '2', Text: "2"})
 	m.Update(tea.KeyPressMsg{Code: 'i', Text: "i"})
 	m.Update(tea.KeyPressMsg{Code: 'h', Text: "h"})
 	if cmd := m.updateKey(tea.KeyPressMsg{Code: tea.KeyEnter}); m.chatSending {

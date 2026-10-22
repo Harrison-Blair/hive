@@ -30,7 +30,6 @@ import (
 const (
 	defaultWidth  = 80
 	defaultHeight = 24
-	statusRows    = 3
 )
 
 type mode int
@@ -108,14 +107,6 @@ type Model struct {
 	screenRefreshPending bool
 	lastHealthRefresh    time.Time
 
-	viewCache        string
-	viewCacheValid   bool
-	viewDirty        bool
-	viewMinute       string
-	viewHeader       string
-	viewHeaderHeight int
-	viewHeaderDirty  bool
-
 	screenViewCache      string
 	screenViewCacheValid bool
 	screenViewWidth      int
@@ -124,8 +115,17 @@ type Model struct {
 
 	screens     []screen
 	screenIndex int
-	quitNotice  bool
-	quitAt      time.Time
+
+	tab           int
+	views         [tabCount]int
+	regionFocus   [tabCount]int
+	detailsOffset [tabCount]int
+	helpOpen      bool
+	helpOffset    int
+	popupOpen     bool
+	popupOffset   int
+	quitNotice    bool
+	quitAt        time.Time
 
 	inputEnded <-chan struct{}
 	width      int
@@ -309,7 +309,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.header = msg.state
 		m.headerErr = ""
 		m.layout()
-		m.invalidateShellView()
 		if m.headerRefreshPending {
 			m.headerRefreshPending = false
 			return m, m.startHeaderLoad()
@@ -452,48 +451,17 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 	if m.demo != nil {
 		m.demo.notice = ""
 	}
-	if m.screenIndex == 0 && m.chatInputActive {
-		return m.currentScreen().Update(press)
-	}
-	if m.mode != editing && len(press.String()) == 1 && press.String()[0] >= '1' && press.String()[0] <= '8' {
-		index := int(press.String()[0] - '1')
-		m.screenIndex = index
-		return batch(m.logAction("screen select", slog.Int("screen", index+1)), m.startCurrentScreenLoad())
-	}
-	return m.currentScreen().Update(press)
+	return m.updateFrameKey(press)
 }
 
-// View renders the header, sidebar, current screen, and footer.
+// View renders the frame of the current screen, or the too-small notice.
 func (m *Model) View() tea.View {
-	if m.demo != nil {
-		if pane, need, small := m.demoTooSmall(); small {
-			view := tea.NewView(tooSmallView(pane, need))
-			view.AltScreen = true
-			return view
-		}
+	if pane, need, small := m.tooSmall(); small {
+		view := tea.NewView(tooSmallView(pane, need))
+		view.AltScreen = true
+		return view
 	}
-	minute := m.now().Format("2006-01-02 15:04")
-	if !m.viewCacheValid || m.viewDirty {
-		m.viewCache = m.shellView()
-		m.viewCacheValid = true
-		m.viewDirty = false
-		m.viewHeader = m.shellHeader()
-		m.viewHeaderHeight = lipgloss.Height(m.viewHeader)
-		m.viewHeaderDirty = false
-		m.viewMinute = minute
-	} else if m.viewHeaderDirty || m.viewMinute != minute {
-		header := m.shellHeader()
-		if lipgloss.Height(header) != m.viewHeaderHeight {
-			m.viewCache = m.shellView()
-			m.viewHeaderHeight = lipgloss.Height(header)
-		} else {
-			m.viewCache = header + m.viewCache[len(m.viewHeader):]
-		}
-		m.viewHeader = header
-		m.viewHeaderDirty = false
-		m.viewMinute = minute
-	}
-	content := m.viewCache
+	content := m.frameView()
 	if m.demo != nil {
 		content = clipView(content, m.width, m.height)
 	}
@@ -501,7 +469,7 @@ func (m *Model) View() tea.View {
 	view.AltScreen = true
 	if m.screenIndex == 0 && m.chatInputActive {
 		if cursor := m.chatInput.Cursor(); cursor != nil {
-			content := ansi.Strip(m.viewCache)
+			content := ansi.Strip(content)
 			inputLines := strings.Split(ansi.Strip(m.chatInput.View()), "\n")
 			inputLine := strings.TrimRight(inputLines[0], " ")
 			if index := strings.Index(content, inputLine); index >= 0 {
@@ -517,33 +485,12 @@ func (m *Model) View() tea.View {
 }
 
 func (m *Model) invalidateView() {
-	m.viewDirty = true
 	m.screenViewCacheValid = false
 }
 
-func (m *Model) invalidateShellView() { m.viewHeaderDirty = true }
-
 func (m *Model) layout() {
-	width := m.width
-	if width < 1 {
-		width = defaultWidth
-	}
-	headerRows := lipgloss.Height(headerStyle.Width(width).Render(m.activeHeaderLine()))
-	bodyHeight := m.height - headerRows - statusRows
-	if bodyHeight < 1 {
-		bodyHeight = 1
-	}
-	sidebarWidth := 24
-	if width >= 100 {
-		sidebarWidth = 30
-	}
-	if sidebarWidth > width-12 {
-		sidebarWidth = width - 12
-	}
-	if sidebarWidth < 12 {
-		sidebarWidth = 12
-	}
-	mainWidth := width - sidebarWidth
+	mainWidth := max(m.width, 1)
+	bodyHeight := max(m.height-frameRows, 1)
 	contentWidth := mainWidth - 4
 	contentHeight := bodyHeight - 3
 	chatEventWidth := mainWidth / 3

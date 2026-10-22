@@ -1,0 +1,32 @@
+from pathlib import Path
+import re,html,subprocess,concurrent.futures
+root=Path.cwd(); tmp=root/'.hive/tmp/verify29r2'; ev=root/'.hive/spec/tui-v2/tasks/29-frame-layout/evidence/verify-r2'
+def render(s):
+ out=[];color='#ddd';bold=False
+ for part in re.split(r'(\x1b\[[0-9;]*m)',s):
+  if not part.startswith('\x1b['):out.append('<span style="color:'+color+';font-weight:'+('bold' if bold else 'normal')+'">'+html.escape(part)+'</span>');continue
+  codes=[int(x or 0) for x in part[2:-1].split(';')];i=0
+  while i<len(codes):
+   c=codes[i]
+   if c==0:color='#ddd';bold=False
+   elif c==1:bold=True
+   elif c==22:bold=False
+   elif c==39:color='#ddd'
+   elif c==38 and i+4<len(codes) and codes[i+1]==2:color='#%02x%02x%02x'%tuple(codes[i+2:i+5]);i+=4
+   elif c==38 and i+2<len(codes) and codes[i+1]==5:color='#aaa';i+=2
+   i+=1
+ return '<html><body style="background:#191816;margin:12px"><pre style="font:14px/18px monospace">'+''.join(out)+'</pre></body></html>'
+jobs=[]
+for f in ev.glob('*.ansi'):
+ if f.stem.endswith('shell'):continue
+ lines=f.read_text().splitlines(); h=24 if f.stem.startswith('Compact') else 16 if f.stem.startswith('TooSmall') else 40
+ htmlpath=tmp/(f.stem+'.html');htmlpath.write_text(render('\n'.join(lines[:h])));jobs.append((f.stem+'-live',htmlpath))
+for board in ['Main','Help','CompactAgents','Compact','TooSmall']:jobs.append((board+'-board',root/'.hive/spec/tui-v2/design'/(board+'.dc.html')))
+def shot(job):
+ name,f=job;profile=tmp/('profile-'+name);profile.mkdir(exist_ok=True)
+ p=subprocess.run(['firefox','--headless','--no-remote','--profile',str(profile),'--window-size=1220,780','--screenshot',str(ev/(name+'.png')),f.as_uri()],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=60)
+ assert p.returncode==0,(name,p.stdout)
+ assert (ev/(name+'.png')).exists(),name
+ return name
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+ for name in pool.map(shot,jobs): print(name)

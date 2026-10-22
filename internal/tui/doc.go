@@ -1,7 +1,8 @@
 // Package tui is the hive terminal interface that bare `hive` opens.
 //
 // tui.go defines the root model, its lifecycle, and the program runner.
-// shell.go defines the screen interface, frame, palette, and placeholder screens.
+// shell.go defines the screen interface, the palette, and the list of current screens.
+// frame.go defines the screen registry, the frame, the focus, the key routes, and the help overlay.
 // chat_screen.go loads and renders chat and coordinator inbox data, and handles Chat input.
 // agents.go loads and renders agent topology, and handles pane actions.
 // goals_queue.go loads and renders goal and queue records.

@@ -27,18 +27,23 @@ var headerStyle = lipgloss.NewStyle().Bold(true)
 
 // View renders the header at exactly width cells. From LongFormWidth it
 // shows the home on the left and the state words on the right. Below it, it
-// shows only the dots of the states. The header cuts a long home with ….
+// shows only the dots of the states. A needs-you count above 0 is accent.
+// The header cuts a long home with ….
 func (h Header) View(width int) string {
 	coord, sup := stateDot(h.Coordinator), stateDot(h.Supervisor)
 	bold := headerStyle.Render
+	needs := bold(fmt.Sprint(h.NeedsYou))
+	if h.NeedsYou > 0 {
+		needs = headerStyle.Foreground(Accent).Render(fmt.Sprint(h.NeedsYou))
+	}
 	var left, right string
 	if width >= LongFormWidth {
 		right = bold("coordinator ") + coord + bold(" "+h.Coordinator+"   supervisor ") + sup +
-			bold(fmt.Sprintf(" %s   needs you %d   %s ", h.Supervisor, h.NeedsYou, h.Clock))
+			bold(" "+h.Supervisor+"   needs you ") + needs + bold("   "+h.Clock+" ")
 		room := width - lipgloss.Width(right) - lipgloss.Width(" hive  ") - 1
 		left = bold(" hive  " + ansi.Truncate(h.Home, max(room, 0), "…"))
 	} else {
-		right = bold("coord ") + coord + bold(" · sup ") + sup + bold(fmt.Sprintf(" · needs you %d · %s ", h.NeedsYou, h.Clock))
+		right = bold("coord ") + coord + bold(" · sup ") + sup + bold(" · needs you ") + needs + bold(" · "+h.Clock+" ")
 		left = bold(" hive")
 	}
 	gap := width - lipgloss.Width(left) - lipgloss.Width(right)

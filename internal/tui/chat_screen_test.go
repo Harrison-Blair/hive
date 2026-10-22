@@ -25,7 +25,7 @@ func TestChatScreenShowsCoordinatorHeading(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, key('2', "2"))
 	requireView(t, m, "coordinator", "hive events")
 }
 
@@ -46,6 +46,9 @@ func TestChatStartFromProjectsShowsRefusalAndBlocksInput(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	m := New(home, clock.now)
 	t.Cleanup(m.Stop)
+	// Decision 4: the refusal is in the one footer row, so the pane is wide
+	// enough to show all of it.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 200, Height: 40})
 	requireView(t, m, "chat send is for the user only", "rule 2")
 	m, cmd := raise(t, m, key('i', "i"))
 	if cmd != nil || m.chatInputActive {
@@ -229,20 +232,21 @@ func TestChatNarrowViewportWrapsWordsAndBreaksLongWords(t *testing.T) {
 func TestChatPagesScrollTheConversation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
-	for index := 1; index <= 20; index++ {
+	for index := 1; index <= 40; index++ {
 		at := time.Date(2026, 10, 20, 0, index, 0, 0, time.UTC).Format(time.RFC3339)
 		appendChatFixture(t, home, chatlib.Entry{
 			ID: fmt.Sprintf("c%d", index), At: at, From: "coordinator", Text: fmt.Sprintf("line-%02d", index),
 		})
 	}
 	m := newTestModel(t, home, clock)
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 14})
+	// Decision 7: 80×24 is the smallest frame, so the feed has 40 lines.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 24})
 	m = loadChat(t, m)
-	requireView(t, m, "line-20")
+	requireView(t, m, "line-40")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyPgUp})
-	rejectView(t, m, "line-20")
+	rejectView(t, m, "line-40")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyPgDown})
-	requireView(t, m, "line-20")
+	requireView(t, m, "line-40")
 }
 
 func TestChatNoiseAndEventFoldingDoNotMarkRecordsRead(t *testing.T) {
@@ -263,18 +267,18 @@ func TestChatNoiseAndEventFoldingDoNotMarkRecordsRead(t *testing.T) {
 	m = loadChat(t, m)
 	requireView(t, m, "2 hive events", "older event", "newer event")
 
-	m, _ = raise(t, m, key('n', "n"))
+	m, _ = pressScreenKey(t, m, key('n', "n"))
 	requireView(t, m, "noise: decisions only", "2 hive events", "older event", "newer event")
-	m, _ = raise(t, m, key('n', "n"))
+	m, _ = pressScreenKey(t, m, key('n', "n"))
 	allEvents := ansi.Strip(m.View().Content)
 	if strings.Index(allEvents, "newer-sender") > strings.Index(allEvents, "older-sender") {
 		t.Fatalf("hive events are not newest first:\n%s", allEvents)
 	}
 	requireView(t, m, "2 hive events", "newer event")
 
-	m, _ = raise(t, m, key('e', "e"))
+	m, _ = pressScreenKey(t, m, key('e', "e"))
 	requireView(t, m, "hive event ·", "expanded detail")
-	m, _ = raise(t, m, key('e', "e"))
+	m, _ = pressScreenKey(t, m, key('e', "e"))
 	requireView(t, m, "── 2 hive events ──")
 	rejectView(t, m, "expanded detail")
 	readBack, err := inboxlib.All(home, "coordinator")
@@ -334,20 +338,20 @@ func TestChatNoiseLevelsFilterInboxKinds(t *testing.T) {
 		rejectView(t, m, "exited: E")
 	})
 
-	m, _ = raise(t, m, key('n', "n"))
+	m, _ = pressScreenKey(t, m, key('n', "n"))
 	t.Run("decisions only", func(t *testing.T) {
 		assertKinds(t, []string{"message", "blocked", "unresolved"})
 		requireView(t, m, "noise: decisions only", "3 hive events", "decision: D", "blocked: B", "unresolved: U")
 		rejectView(t, m, "completed: C", "verified: V", "exited: E", "quiet: Q")
 	})
 
-	m, _ = raise(t, m, key('n', "n"))
+	m, _ = pressScreenKey(t, m, key('n', "n"))
 	t.Run("all", func(t *testing.T) {
 		assertKinds(t, []string{"message", "completed", "verified", "blocked", "exited", "quiet", "unresolved"})
 		requireView(t, m, "noise: all", "7 hive events", "decision: D", "completed: C", "verified: V", "blocked: B", "exited: E", "quiet: Q", "unresolved: U")
 	})
 
-	m, _ = raise(t, m, key('n', "n"))
+	m, _ = pressScreenKey(t, m, key('n', "n"))
 	t.Run("returns to landings and decisions", func(t *testing.T) {
 		assertKinds(t, []string{"message", "blocked", "unresolved", "completed", "verified", "quiet"})
 		requireView(t, m, "noise: landings and decisions", "6 hive events", "decision: D", "blocked: B", "unresolved: U", "completed: C", "verified: V", "quiet: Q")
@@ -359,9 +363,10 @@ func TestChatInputKeepsDraftAndTreatsScreenNumbersAsText(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	requireView(t, m, "i write", "pgup/pgdown scroll", "e expand", "n noise", "1–8 screens")
+	// Decision 21: the footer shows the keys of the feed, then of the input.
+	requireView(t, m, "[feed]", "i type", "pgup/pgdn feed")
 	m, _ = raise(t, m, key('i', "i"))
-	requireView(t, m, "enter send", "shift+enter newline", "esc keep draft")
+	requireView(t, m, "[input]", "enter send", "esc leave input")
 	for _, character := range "line1" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}
@@ -376,10 +381,13 @@ func TestChatInputKeepsDraftAndTreatsScreenNumbersAsText(t *testing.T) {
 	for number := rune('1'); number <= '8'; number++ {
 		m, _ = raise(t, m, key(number, string(number)))
 	}
-	requireView(t, m, "▶ 1 Chat", "line1", "line2", "line312345678")
+	if m.activeTab() != tabChat {
+		t.Fatalf("a number key in the Chat input changed the tab to %d", m.activeTab())
+	}
+	requireView(t, m, "line1", "line2", "line312345678")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	requireView(t, m, "line1", "line2", "line312345678")
-	rejectView(t, m, "enter send ·")
+	rejectView(t, m, "[input]")
 	m, _ = raise(t, m, key('i', "i"))
 	requireView(t, m, "line1", "line2", "line312345678")
 	m, _ = raise(t, m, ctrlC())
@@ -556,3 +564,18 @@ func (f *blockingChatHerdr) handle(conn net.Conn) {
 }
 
 func (f *blockingChatHerdr) releasePrompt() { f.once.Do(func() { close(f.release) }) }
+
+// pressScreenKey gives a key to the current screen of the tab. The frame
+// gives some keys a new meaning: decision 24 gives a printable key in the
+// Chat feed to the input, and decision 6 gives tab to the regions. A test of
+// a key of a current screen calls the screen directly until wave 6 replaces
+// the screen.
+func pressScreenKey(t *testing.T, m *Model, press tea.KeyPressMsg) (*Model, tea.Cmd) {
+	t.Helper()
+	cmd := m.currentScreen().Update(press)
+	if cmd != nil {
+		m, _ = raise(t, m, cmd())
+	}
+	m.invalidateView()
+	return m, cmd
+}

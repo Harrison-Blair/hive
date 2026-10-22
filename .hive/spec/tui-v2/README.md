@@ -183,6 +183,28 @@ The worker made these decisions in task `11-demo-mode`:
   - `ui`: the fields `screen`, `view`, `focus`, `selection`, `scroll` by region, `filter`, `overlay`, `popup`, `prompt`, `hide_stopped`, `stops_only`, `follow`, `log_day`, `chat_noise`, and `chat_input`.
 - The evidence of task `11-demo-mode` gives each field and each board that uses it.
 
+The worker made these decisions in task `29-frame-layout`:
+
+- Registry: `screenRegistry` in `internal/tui/frame.go` has one `frameScreen` for each tab. A `frameScreen` has the `label`, the `views`, the `regions`, the flag `listDetails`, and the key hints for each focus state in `hints` and `compact`. A hint key is `view/focus` or `focus`. The `compact` hints apply below 120 columns.
+- Content: `contentView` gives the content area for the size and the focus. For a tab with `listDetails`, the list and the details sit side by side from 120 columns. The list has 13/30 of the width. Below 120 columns, `enter` gives the focus to the details, and the details fill the content area. Wave 6 puts a screen in the registry and replaces `legacyPanel` and `legacyDetails` for that tab.
+- Current screens until wave 6:
+
+| Tab | View | Current screen |
+| --- | --- | --- |
+| 1 Agents | — | Agents. `[` and `]` change its TREE, GRAPH, and TABLE views. |
+| 2 Chat | — | Chat |
+| 3 Work | Goals, Queue, Tasks | Goals, Queue, Tasks |
+| 4 Friction | Open, Resolved | Friction, with its open and resolved tabs |
+| 5 Health | Home, Agents | Health, Agents. The restart key `r` works only in Health › Agents. |
+| 6 Logs | — | Logs. `<` and `>` change the day. |
+
+- A key of a current screen that the frame does not route goes to that screen. The frame takes `tab`, so the status tabs of the current Tasks screen have no key until wave 6.
+- Below 120 columns, the details region of Work, Friction, Health, and Logs is an overlay. The overlay takes `esc`, `↑` `↓` `j` `k` `pgup` `pgdn`, and the action keys of decision 23. Each other key does nothing, as decision 21 gives. From 120 columns, the details region is a region of the screen, and each key stays global.
+
+The manager made this decision in task `29-frame-layout`:
+
+- A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.

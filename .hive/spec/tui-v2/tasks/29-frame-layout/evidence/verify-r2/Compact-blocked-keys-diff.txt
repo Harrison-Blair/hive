@@ -1,0 +1,1 @@
+Compact-blocked-keys vs Compact: strict 37, space attributes 37, live differences 0

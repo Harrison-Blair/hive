@@ -19,19 +19,16 @@ func TestLogsLongFilterKeepsPanelFrameAtTerminalSize(t *testing.T) {
 		width       int
 		height      int
 		filterWords int
-		wantBottom  string
 	}{
 		{
 			width:       120,
 			height:      40,
 			filterWords: 2,
-			wantBottom:  "╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────╯",
 		},
 		{
 			width:       200,
 			height:      57,
 			filterWords: 10,
-			wantBottom:  "╰────────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯",
 		},
 	} {
 		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
@@ -50,8 +47,11 @@ func TestLogsLongFilterKeepsPanelFrameAtTerminalSize(t *testing.T) {
 					t.Fatalf("frame line %d has width %d cells, want %d:\n%s", index+1, width, size.width, view)
 				}
 			}
-			if got := lines[size.height-4]; got != size.wantBottom {
-				t.Fatalf("last line of the Logs panel is %q, want %q:\n%s", got, size.wantBottom, view)
+			// Decisions 1 and 8: the footer is one row, and from 120 columns
+			// the events and the JSON panels sit side by side.
+			got := lines[size.height-2]
+			if strings.Trim(got, "╰─╯") != "" || strings.Count(got, "╯╰") != 1 || !strings.HasPrefix(got, "╰") || !strings.HasSuffix(got, "╯") {
+				t.Fatalf("last line of the Logs panels is %q, want two bottom borders:\n%s", got, view)
 			}
 		})
 	}
@@ -131,8 +131,10 @@ func TestLogsScreenFoldsRequestsAndShowsSelectedJSON(t *testing.T) {
 	m, _ = raise(t, m, key('k', "k"))
 	m, _ = raise(t, m, key('k', "k"))
 
+	// Decision 8: below 120 columns enter opens the JSON details over the
+	// events.
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	view = ansi.Strip(logsScreen{model: m}.View(120, 30))
+	view = ansi.Strip(m.View().Content)
 	if !strings.Contains(view, `"msg": "command start"`) {
 		t.Fatalf("enter did not show selected event JSON:\n%s", view)
 	}
@@ -196,10 +198,11 @@ func TestLogsScreenCyclesMetadataSearchAndDay(t *testing.T) {
 		}
 	}
 
-	m, cmd := raise(t, m, key(']', "]"))
+	// Decision 23: < and > select the day.
+	m, cmd := raise(t, m, key('>', ">"))
 	view = ansi.Strip(m.View().Content)
 	if !strings.Contains(view, "day: 2026-04-07") {
-		t.Fatalf("right bracket did not select the next day:\n%s", view)
+		t.Fatalf("> did not select the next day:\n%s", view)
 	}
 	if cmd == nil {
 		t.Fatal("day change did not request a background refresh")
@@ -235,7 +238,7 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "second day")
 	m.logger = nil
-	m, cmd := raise(t, m, key('[', "["))
+	m, cmd := raise(t, m, key('<', "<"))
 	if cmd == nil {
 		t.Fatal("day change did not start a background read")
 	}
@@ -263,14 +266,16 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		_ = sendInput.Close()
 	})
 
-	if _, err := sendInput.Write([]byte("8")); err != nil {
+	// Decision 5: 6 selects Logs. The renderer writes only the changed cells
+	// of a row, so the test looks for the Logs panel title.
+	if _, err := sendInput.Write([]byte("6")); err != nil {
 		t.Fatalf("send screen key: %v", err)
 	}
-	waitForOutput(t, output, "▶ 8 Logs", "task queued")
+	waitForOutput(t, output, "─ logs ", "task queued")
 	if _, err := sendInput.Write([]byte("l")); err != nil {
 		t.Fatalf("send level key: %v", err)
 	}
-	view := waitForOutput(t, output, "▶ 8 Logs", "warn", "no events today")
+	view := waitForOutput(t, output, "─ logs ", "warn", "no events today")
 	if err := sendInput.Close(); err != nil {
 		t.Fatalf("close input: %v", err)
 	}
@@ -278,12 +283,8 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		t.Fatalf("RunHome: %v", err)
 	}
 	eventAt := strings.Index(view, "task queued")
-	if !strings.Contains(view, "▶ 8 Logs") || eventAt < 0 || !strings.Contains(view[eventAt:], "warnno events today") {
+	if eventAt < 0 || !strings.Contains(view[eventAt:], "no events today") {
 		t.Fatalf("program output did not show Logs with the warn filter applied:\n%s", view)
-	}
-	screenView := ansi.Strip(output.String())
-	if !strings.Contains(screenView, "▶ 8 Logs") {
-		t.Fatalf("program output did not show Logs:\n%s", screenView)
 	}
 	events, _, err := logs.NewReader(home).Read(t.Context(), day)
 	if err != nil {

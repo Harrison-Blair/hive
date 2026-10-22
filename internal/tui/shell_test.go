@@ -17,70 +17,64 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-func TestScreenKeysSelectAllEightScreens(t *testing.T) {
+// TestScreenKeysSelectAllSixScreens presses 1 to 6 and [ ] (decisions 3,
+// 22). Each tab shows the current screen of its view until wave 6.
+func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
-	for index, name := range []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"} {
-		number := rune('1' + index)
-		m, _ = raise(t, m, key(number, string(number)))
-		selected := "▶ " + string(number) + " " + name
-		if name == "Agents" {
-			selected = "AGENTS"
+	for _, step := range []struct {
+		key    string
+		tab    int
+		screen string
+		shows  string
+	}{
+		{"1", tabAgents, "Agents", "[ TREE ]"},
+		{"2", tabChat, "Chat", "coordinator"},
+		{"3", tabWork, "Goals", "unassigned"},
+		{"]", tabWork, "Queue", "no open tasks"},
+		{"]", tabWork, "Tasks", "active 0"},
+		{"4", tabFriction, "Friction", "open 0"},
+		{"5", tabHealth, "Health", "home"},
+		{"]", tabHealth, "Agents", "[ TREE ]"},
+		{"6", tabLogs, "Logs", "logs ·"},
+	} {
+		m, _ = raise(t, m, key(rune(step.key[0]), step.key))
+		view := ansi.Strip(m.View().Content)
+		if m.activeTab() != step.tab || m.legacyName() != step.screen {
+			t.Fatalf("key %q gave tab %d screen %s; want tab %d screen %s", step.key, m.activeTab(), m.legacyName(), step.tab, step.screen)
 		}
-		if !strings.Contains(m.View().Content, selected) {
-			t.Fatalf("key %q did not select %s:\n%s", number, name, m.View().Content)
-		}
-		if name == "Chat" {
-			if !strings.Contains(m.View().Content, "coordinator") {
-				t.Fatalf("Chat screen does not show the coordinator:\n%s", m.View().Content)
-			}
-		} else if name == "Agents" {
-			if !strings.Contains(m.View().Content, "[ TREE ]") {
-				t.Fatalf("Agents screen does not show its tree tab:\n%s", m.View().Content)
-			}
-		} else if name == "Health" {
-			if !strings.Contains(m.View().Content, "home") || !strings.Contains(m.View().Content, "agents") {
-				t.Fatalf("Health screen does not show its panels:\n%s", m.View().Content)
-			}
-		} else if name == "Tasks" {
-			if !strings.Contains(m.View().Content, "active 0") {
-				t.Fatalf("Tasks screen does not show its task tabs:\n%s", m.View().Content)
-			}
-		} else if name == "Friction" {
-			if !strings.Contains(m.View().Content, "open 0") {
-				t.Fatalf("Friction screen does not show its entry tabs:\n%s", m.View().Content)
-			}
-		} else if name == "Goals" && !strings.Contains(m.View().Content, "unassigned") {
-			t.Fatalf("Goals screen does not show its unassigned panel:\n%s", m.View().Content)
-		} else if name == "Queue" && !strings.Contains(m.View().Content, "no open tasks") {
-			t.Fatalf("Queue screen does not show its empty state:\n%s", m.View().Content)
+		label := strconv.Itoa(step.tab+1) + " " + screenRegistry[step.tab].label
+		tabRow := strings.Split(view, "\n")[1]
+		if !strings.Contains(tabRow, label) || !strings.Contains(view, step.shows) {
+			t.Fatalf("key %q view omits %q or %q:\n%s", step.key, label, step.shows, view)
 		}
 	}
 }
 
-func TestNarrowShellFitsAndShowsCompactSidebar(t *testing.T) {
+// TestNarrowShellFitsAndShowsTheTabBar checks the frame at 80×24
+// (decisions 1, 3): the short header, the tab bar, and no sidebar.
+func TestNarrowShellFitsAndShowsTheTabBar(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	view := m.View().Content
-	if got := lipgloss.Height(view); got > 24 {
-		t.Fatalf("rendered shell height %d exceeds 24:\n%s", got, view)
+	if got := lipgloss.Height(view); got != 24 {
+		t.Fatalf("rendered shell height %d; want 24:\n%s", got, view)
 	}
-	for _, text := range []string{"hive", "SCREENS", "▶ 1 Chat"} {
-		if !strings.Contains(view, text) {
-			t.Fatalf("narrow shell omitted %q:\n%s", text, view)
+	plain := ansi.Strip(view)
+	for _, text := range []string{" hive ", "coord ", "  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs"} {
+		if !strings.Contains(plain, text) {
+			t.Fatalf("narrow shell omitted %q:\n%s", text, plain)
 		}
 	}
-	for _, name := range []string{"1 Chat", "2 Agents", "3 Goals", "4 Queue", "5 Tasks", "6 Friction", "7 Health", "8 Logs"} {
-		if !strings.Contains(view, name) {
-			t.Fatalf("compact sidebar does not show %q:\n%s", name, view)
-		}
+	if strings.Contains(plain, "SCREENS") {
+		t.Fatalf("narrow shell shows the old sidebar:\n%s", plain)
 	}
 	for _, line := range strings.Split(view, "\n") {
-		if got := lipgloss.Width(line); got > 80 {
-			t.Fatalf("rendered line width %d exceeds 80: %q", got, line)
+		if got := lipgloss.Width(line); got != 80 {
+			t.Fatalf("rendered line width %d; want 80: %q", got, line)
 		}
 	}
 }
@@ -111,9 +105,9 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("header load did not start")
 	}
-	m, keyCmd := raise(t, m, key('2', "2"))
+	m, keyCmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, keyCmd)
-	if !strings.Contains(m.View().Content, "AGENTS") {
+	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ agents ") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}
 	m.screenIndex = 7
@@ -158,11 +152,11 @@ func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("screen load did not start")
 	}
-	m, _ = raise(t, m, key('2', "2"))
-	if !strings.Contains(m.View().Content, "AGENTS") {
+	m, _ = raise(t, m, key('1', "1"))
+	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ agents ") {
 		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
 	}
-	m, _ = raise(t, m, key('8', "8"))
+	m, _ = raise(t, m, key('6', "6"))
 	_, refresh := raise(t, m, tickMsg{})
 	runRefreshLoads(t, refresh)
 	select {
@@ -224,7 +218,7 @@ func TestQuitNoticeExpiresAndOtherKeyClearsIt(t *testing.T) {
 	rejectView(t, m, "press ctrl+c again to quit")
 	m, _ = raise(t, m, ctrlC())
 	requireView(t, m, "press ctrl+c again to quit")
-	m, _ = raise(t, m, key('2', "2"))
+	m, _ = raise(t, m, key('1', "1"))
 	rejectView(t, m, "press ctrl+c again to quit")
 }
 
@@ -259,7 +253,7 @@ func TestRunHomeHandlesScreenAndQuitKeys(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
 	done := make(chan error, 1)
-	go func() { done <- RunHome(home, strings.NewReader("28\x03\x03"), &out) }()
+	go func() { done <- RunHome(home, strings.NewReader("16\x03\x03"), &out) }()
 	select {
 	case err := <-done:
 		if err != nil {
@@ -286,7 +280,7 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			output := m.View().Content
 			assertNoPaintedBackgroundSGR(t, output)
 			if !strings.Contains(output, "38;2;245;185;66") {
-				t.Errorf("%s sidebar omits the honey foreground color:\n%s", name, output)
+				t.Errorf("%s tab bar omits the honey foreground color:\n%s", name, output)
 			}
 		})
 	}
@@ -301,7 +295,8 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			m.invalidateView()
 			view := m.View()
 			assertNoPaintedBackgroundSGR(t, view.Content)
-			if !strings.Contains(view.Content, "esc keep draft") {
+			// Decision 21: the Chat input footer shows the keys of the input.
+			if !strings.Contains(view.Content, "esc leave input") {
 				t.Error("active Chat footer omits its input controls")
 			}
 			if view.Cursor == nil {
