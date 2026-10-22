@@ -1,0 +1,2 @@
+.hive/spec/tui-v2/design/Chat.grid: strict differences 2644; live differences 0
+.hive/spec/tui-v2/design/CompactChat.grid: strict differences 675; live differences 0

@@ -1,0 +1,40 @@
+=== RUN   TestChatMatchesItsBoard
+--- PASS: TestChatMatchesItsBoard (0.01s)
+=== RUN   TestCompactChatMatchesItsBoard
+--- PASS: TestCompactChatMatchesItsBoard (0.00s)
+=== RUN   TestChatFixtureScrollPutsTheMessageAtTheTop
+--- PASS: TestChatFixtureScrollPutsTheMessageAtTheTop (0.01s)
+=== RUN   TestChatLoadsRecentConversationAndInboxEvents
+--- PASS: TestChatLoadsRecentConversationAndInboxEvents (0.02s)
+=== RUN   TestChatNoiseLevelsFilterInboxKinds
+--- PASS: TestChatNoiseLevelsFilterInboxKinds (0.00s)
+=== RUN   TestChatKeysScrollTheFeed
+--- PASS: TestChatKeysScrollTheFeed (0.02s)
+=== RUN   TestChatKeysFollowTheFocusRules
+--- PASS: TestChatKeysFollowTheFocusRules (0.01s)
+=== RUN   TestChatCompactFooterHints
+--- PASS: TestChatCompactFooterHints (0.00s)
+=== RUN   TestDemoChatSendShowsTheNotice
+--- PASS: TestDemoChatSendShowsTheNotice (0.01s)
+=== RUN   TestChatFitsEachSize
+=== RUN   TestChatFitsEachSize/80x24
+=== RUN   TestChatFitsEachSize/80x25
+=== RUN   TestChatFitsEachSize/119x40
+=== RUN   TestChatFitsEachSize/120x40
+=== RUN   TestChatFitsEachSize/120x41
+--- PASS: TestChatFitsEachSize (0.04s)
+    --- PASS: TestChatFitsEachSize/80x24 (0.01s)
+    --- PASS: TestChatFitsEachSize/80x25 (0.01s)
+    --- PASS: TestChatFitsEachSize/119x40 (0.01s)
+    --- PASS: TestChatFitsEachSize/120x40 (0.01s)
+    --- PASS: TestChatFitsEachSize/120x41 (0.01s)
+=== RUN   TestChatStartFromProjectsShowsRefusalAndBlocksInput
+--- PASS: TestChatStartFromProjectsShowsRefusalAndBlocksInput (0.00s)
+=== RUN   TestChatRefusedSendShowsNoticeAndKeepsDraft
+--- PASS: TestChatRefusedSendShowsNoticeAndKeepsDraft (0.01s)
+=== RUN   TestChatSendRunsInBackgroundAndKeepsFailedDraft
+--- PASS: TestChatSendRunsInBackgroundAndKeepsFailedDraft (0.02s)
+=== RUN   TestChatProgramRunsWithStringInput
+--- PASS: TestChatProgramRunsWithStringInput (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.154s
