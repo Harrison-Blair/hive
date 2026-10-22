@@ -1,0 +1,46 @@
+// Command livecmp compares a herdr ANSI pane capture with a board grid.
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+)
+
+func main() {
+	gf, err := os.Open(os.Args[2])
+	if err != nil {
+		panic(err)
+	}
+	want, err := cellgrid.ReadGrid(gf)
+	if err != nil {
+		panic(err)
+	}
+	raw, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		panic(err)
+	}
+	lines := strings.Split(strings.TrimRight(string(raw), "\n"), "\n")
+	if len(lines) > want.Height {
+		lines = lines[:want.Height]
+	}
+	got, err := cellgrid.Convert(strings.Join(lines, "\n"), want.Width, want.Height)
+	if err != nil {
+		panic(err)
+	}
+	diffs, err := cellgrid.Compare(want, got, nil)
+	if err != nil {
+		panic(err)
+	}
+	n := 0
+	for _, d := range diffs {
+		if d.Want.Rune == ' ' && d.Got.Rune == ' ' {
+			continue // decision 43
+		}
+		n++
+		fmt.Printf("row %d col %d: want %q got %q\n", d.Row, d.Col, d.Want.Rune, d.Got.Rune)
+	}
+	fmt.Printf("%d cells differ\n", n)
+}
