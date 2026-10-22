@@ -30,7 +30,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		shows  string
 	}{
 		{"1", tabAgents, "Agents", "[ TREE ]"},
-		{"2", tabChat, "Chat", "coordinator"},
+		{"2", tabChat, "Chat", "no chat yet"},
 		{"3", tabWork, "Goals", "goals · 0"},
 		{"]", tabWork, "Queue", "no tasks"},
 		{"]", tabWork, "Tasks", "active 0"},
@@ -276,7 +276,6 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 	for index, name := range []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"} {
 		t.Run(name, func(t *testing.T) {
 			m.screenIndex = index
-			m.layout()
 			output := m.View().Content
 			assertNoPaintedBackgroundSGR(t, output)
 			if !strings.Contains(output, "38;2;245;185;66") {
@@ -302,18 +301,15 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			if view.Cursor == nil {
 				t.Fatal("active Chat input omits the real terminal cursor")
 			}
+			// The Input component draws the cursor cell █ after the text,
+			// and the real terminal cursor sits on it.
 			plain := ansi.Strip(view.Content)
-			wantText := "Type a message"
-			cursorOffset := 0
-			if draft != "" {
-				wantText = draft
-				cursorOffset = len(draft)
-			}
+			wantText := "> " + draft + "█"
 			textIndex := strings.Index(plain, wantText)
 			if textIndex < 0 {
-				t.Fatalf("active Chat input omits %q", wantText)
+				t.Fatalf("active Chat input omits %q:\n%s", wantText, plain)
 			}
-			prefix := plain[:textIndex+cursorOffset]
+			prefix := plain[:strings.Index(plain[textIndex:], "█")+textIndex]
 			lineStart := strings.LastIndex(prefix, "\n") + 1
 			want := tea.Position{X: ansi.StringWidth(prefix[lineStart:]), Y: strings.Count(prefix, "\n")}
 			if got := view.Cursor.Position; got != want {
@@ -325,7 +321,7 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 				if row < 1 || !strings.Contains(lines[row-1], "╭") {
 					t.Errorf("Chat composer omits its top border:\n%s", plain)
 				}
-				if row+4 >= len(lines) || !strings.Contains(lines[row+4], "╰") {
+				if row+1 >= len(lines) || !strings.Contains(lines[row+1], "╰") {
 					t.Errorf("Chat composer omits its bottom border:\n%s", plain)
 				}
 			}
@@ -336,11 +332,6 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 func fixtureBackgroundScreens(m *Model, now time.Time) {
 	m.chatData = chatScreenData{
 		entries: []chatlib.Entry{{ID: "c1", At: now.Format(time.RFC3339Nano), From: "coordinator", Text: "fixture chat"}},
-		coordinator: records.Agent{
-			Name: "coordinator", Harness: "fixture", Model: "fixture", PaneID: "fixture-pane",
-			Status: records.AgentLive, AgentStatus: "working",
-		},
-		coordinatorFound: true,
 	}
 	m.rebuildChat()
 

@@ -1,0 +1,16 @@
+--- PASS: TestChatMatchesItsBoard (0.01s)
+--- PASS: TestCompactChatMatchesItsBoard (0.01s)
+--- PASS: TestChatFixtureScrollPutsTheMessageAtTheTop (0.01s)
+--- PASS: TestChatLoadsRecentConversationAndInboxEvents (0.01s)
+--- PASS: TestChatNoiseLevelsFilterInboxKinds (0.00s)
+--- PASS: TestChatKeysScrollTheFeed (0.01s)
+--- PASS: TestChatKeysFollowTheFocusRules (0.01s)
+--- PASS: TestChatCompactFooterHints (0.00s)
+--- PASS: TestDemoChatSendShowsTheNotice (0.01s)
+--- PASS: TestChatFitsEachSize (0.04s)
+--- PASS: TestChatStartFromProjectsShowsRefusalAndBlocksInput (0.00s)
+--- PASS: TestChatRefusedSendShowsNoticeAndKeepsDraft (0.01s)
+--- PASS: TestChatSendRunsInBackgroundAndKeepsFailedDraft (0.03s)
+--- PASS: TestChatProgramRunsWithStringInput (0.01s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.187s
