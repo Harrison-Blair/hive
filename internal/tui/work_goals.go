@@ -133,7 +133,7 @@ func (m *Model) goalsList(width, height int, focused bool) string {
 // goalRow gives one row of the goals list: the marker, the ID, the status,
 // and the done waves of all waves.
 func goalRow(goal records.Goal, selected bool) string {
-	marker, id := titleStyle.Render(" ")+" ", padCell(cutCell(goal.ID, goalIDWidth-1), goalIDWidth)
+	marker, id := "  ", padCell(cutCell(goal.ID, goalIDWidth-1), goalIDWidth)
 	if selected {
 		marker, id = titleStyle.Render("▶")+" ", titleStyle.Render(id)
 	}

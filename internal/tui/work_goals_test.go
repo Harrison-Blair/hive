@@ -211,12 +211,12 @@ func TestGoalsKeysAndHints(t *testing.T) {
 		}
 		requireView(t, m, "─ "+step.want+" ─")
 	}
-	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · / filter · ? help")
+	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	requireView(t, m, "[details] ↑↓ scroll · tab region · esc back to list · ? help")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "[list] ↑↓ move · enter details · [ ] view · / filter · ?")
+	requireView(t, m, "[list] ↑↓ move · enter details · [ ] view · ?")
 	m, _ = raise(t, m, key(0, "enter"))
 	requireView(t, m, "[details] ↑↓ scroll · esc back to list", "─ g1-demo · esc back ─")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
