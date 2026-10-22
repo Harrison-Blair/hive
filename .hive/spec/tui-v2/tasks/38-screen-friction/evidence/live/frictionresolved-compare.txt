@@ -1,11 +1,1 @@
-FrictionResolved.grid: strict differences 1634, space-cell token or bold only 1624, differences under the live rule 10
-row 16 col 36: want 's' fg normal, got '…' fg normal
-row 16 col 37: want '…' fg normal, got ' ' fg normal
-row 18 col 36: want 's' fg normal, got '…' fg normal
-row 18 col 37: want 'k' fg normal, got ' ' fg normal
-row 21 col 36: want 'j' fg normal, got '…' fg normal
-row 21 col 37: want '…' fg normal, got ' ' fg normal
-row 24 col 36: want 'k' fg normal, got '…' fg normal
-row 24 col 37: want '…' fg normal, got ' ' fg normal
-row 25 col 36: want 'e' fg normal, got '…' fg normal
-row 25 col 37: want '…' fg normal, got ' ' fg normal
+FrictionResolved.grid: strict differences 1624, space-cell token or bold only 1624, differences under the live rule 0

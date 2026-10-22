@@ -1,1 +1,0 @@
-CompactFriction.grid: strict differences 408, space-cell token or bold only 408, differences under the live rule 0
