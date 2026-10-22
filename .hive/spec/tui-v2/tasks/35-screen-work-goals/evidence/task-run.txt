@@ -1,0 +1,11 @@
+b2dd38f1 fix(tui): draw the unselected Goals marker in fg as the redrawn board gives
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+--- PASS: TestGoalsDetailsShowWavesTasksAndStops (0.03s)
+--- PASS: TestGoalsSortAndCountOnlyPushedDeliveries (0.05s)
+--- PASS: TestGoalsSelectedRowIsAccentBold (0.00s)
+--- PASS: TestGoalsFitEachSize (1.73s)
+--- PASS: TestGoalsKeysAndHints (0.04s)
+--- PASS: TestGoalsDesignNoticeAndTaskKey (0.02s)
+--- PASS: TestGoalsRefreshReloadsRecords (0.03s)
+--- PASS: TestGoalsProgramUsesStringReader (0.04s)
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.965s

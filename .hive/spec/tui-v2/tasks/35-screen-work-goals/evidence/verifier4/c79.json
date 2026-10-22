@@ -1,0 +1,30 @@
+{
+  "read": {
+    "pane_id": "wA2:p2",
+    "workspace_id": "wA2",
+    "tab_id": "wA2:t2",
+    "source": "visible",
+    "format": "ansi",
+    "text": "\u001b[0m\u001b[1m hive\u001b[0m\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u256d\u2500\u001b[0m\u001b[1m\u001b[38;2;245;185;66m terminal too small \u001b[0m\u001b[38;2;245;185;66m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502                                        \u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m           this pane is 79\u00d724           \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m        hive needs at least 80\u00d724       \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502                                        \u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m      \u001b[0m\u001b[38;2;163;157;144mresize or zoom the herdr pane\u001b[0m     \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2502                                        \u2502\u001b[0m\r\n                  \u001b[0m\u001b[38;2;245;185;66m\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\u001b[0m\u001b[38;2;163;157;144m ctrl+c \u00d72 quit\u001b[0m",
+    "revision": 0,
+    "truncated": false
+  },
+  "pane": {
+    "pane_id": "wA2:p2",
+    "terminal_id": "term_65e64d45cabd01de",
+    "workspace_id": "wA2",
+    "tab_id": "wA2:t2",
+    "focused": false,
+    "cwd": "/home/penguin/source/hive/projects/hive/worktrees/35-screen-work-goals",
+    "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/35-screen-work-goals",
+    "terminal_title": "penguin@raft: ~/source/hive/projects/hive/worktrees/35-screen-work-goals",
+    "terminal_title_stripped": "penguin@raft: ~/source/hive/projects/hive/worktrees/35-screen-work-goals",
+    "agent_status": "unknown",
+    "scroll": {
+      "offset_from_bottom": 0,
+      "max_offset_from_bottom": 0,
+      "viewport_rows": 57
+    },
+    "revision": 1
+  }
+}

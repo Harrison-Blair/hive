@@ -1,0 +1,82 @@
+=== RUN   TestGoalsOpenTasksForSelectedWave
+--- PASS: TestGoalsOpenTasksForSelectedWave (0.03s)
+=== RUN   TestGoalsOpenTasksResetsProjectFilter
+--- PASS: TestGoalsOpenTasksResetsProjectFilter (0.04s)
+=== RUN   TestGoalsOpenWaveDesign
+=== RUN   TestGoalsOpenWaveDesign/one_feature
+=== RUN   TestGoalsOpenWaveDesign/first_feature_wins
+=== RUN   TestGoalsOpenWaveDesign/no_feature
+=== RUN   TestGoalsOpenWaveDesign/missing_file
+--- PASS: TestGoalsOpenWaveDesign (0.13s)
+    --- PASS: TestGoalsOpenWaveDesign/one_feature (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/first_feature_wins (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/no_feature (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/missing_file (0.03s)
+=== RUN   TestGoalsRefreshKeepsGoalSelection
+--- PASS: TestGoalsRefreshKeepsGoalSelection (0.04s)
+=== RUN   TestGoalsPanelsFitStandardFrame
+--- PASS: TestGoalsPanelsFitStandardFrame (0.02s)
+=== RUN   TestWorkGoalsMatchesItsBoard
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+=== RUN   TestGoalsDetailsShowWavesTasksAndStops
+--- PASS: TestGoalsDetailsShowWavesTasksAndStops (0.02s)
+=== RUN   TestGoalsSortAndCountOnlyPushedDeliveries
+--- PASS: TestGoalsSortAndCountOnlyPushedDeliveries (0.04s)
+=== RUN   TestGoalsSelectedRowIsAccentBold
+--- PASS: TestGoalsSelectedRowIsAccentBold (0.00s)
+=== RUN   TestGoalsFitEachSize
+=== RUN   TestGoalsFitEachSize/long/79x24
+=== RUN   TestGoalsFitEachSize/long/80x24
+=== RUN   TestGoalsFitEachSize/long/80x25
+=== RUN   TestGoalsFitEachSize/long/119x40
+=== RUN   TestGoalsFitEachSize/long/120x40
+=== RUN   TestGoalsFitEachSize/long/120x24
+=== RUN   TestGoalsFitEachSize/long/120x25
+=== RUN   TestGoalsFitEachSize/fixture/79x24
+=== RUN   TestGoalsFitEachSize/fixture/80x24
+=== RUN   TestGoalsFitEachSize/fixture/80x25
+=== RUN   TestGoalsFitEachSize/fixture/119x40
+=== RUN   TestGoalsFitEachSize/fixture/120x40
+=== RUN   TestGoalsFitEachSize/fixture/120x24
+=== RUN   TestGoalsFitEachSize/fixture/120x25
+=== RUN   TestGoalsFitEachSize/empty/79x24
+=== RUN   TestGoalsFitEachSize/empty/80x24
+=== RUN   TestGoalsFitEachSize/empty/80x25
+=== RUN   TestGoalsFitEachSize/empty/119x40
+=== RUN   TestGoalsFitEachSize/empty/120x40
+=== RUN   TestGoalsFitEachSize/empty/120x24
+=== RUN   TestGoalsFitEachSize/empty/120x25
+--- PASS: TestGoalsFitEachSize (1.45s)
+    --- PASS: TestGoalsFitEachSize/long/79x24 (0.18s)
+    --- PASS: TestGoalsFitEachSize/long/80x24 (0.18s)
+    --- PASS: TestGoalsFitEachSize/long/80x25 (0.18s)
+    --- PASS: TestGoalsFitEachSize/long/119x40 (0.18s)
+    --- PASS: TestGoalsFitEachSize/long/120x40 (0.17s)
+    --- PASS: TestGoalsFitEachSize/long/120x24 (0.19s)
+    --- PASS: TestGoalsFitEachSize/long/120x25 (0.18s)
+    --- PASS: TestGoalsFitEachSize/fixture/79x24 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x24 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x25 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/119x40 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x40 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x24 (0.02s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x25 (0.02s)
+    --- PASS: TestGoalsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x25 (0.00s)
+=== RUN   TestGoalsKeysAndHints
+--- PASS: TestGoalsKeysAndHints (0.04s)
+=== RUN   TestGoalsHasNoStopsOnlyKey
+--- PASS: TestGoalsHasNoStopsOnlyKey (0.03s)
+=== RUN   TestGoalsDesignNoticeAndTaskKey
+--- PASS: TestGoalsDesignNoticeAndTaskKey (0.03s)
+=== RUN   TestGoalsRefreshReloadsRecords
+--- PASS: TestGoalsRefreshReloadsRecords (0.03s)
+=== RUN   TestGoalsProgramUsesStringReader
+--- PASS: TestGoalsProgramUsesStringReader (0.03s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.942s

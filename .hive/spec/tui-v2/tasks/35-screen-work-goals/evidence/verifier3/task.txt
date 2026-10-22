@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+ [Goals]   Queue    Tasks                                                                             [ ] switch view
+╭─ goals · 2 ──────────────────────────────────────╮╭─ g2-tui-v2 ──────────────────────────────────────────────────────╮
+│   GOAL                    STATUS    WAVES        ││                                                                  │
+│ ▶ g2-tui-v2               planned   0/5          ││ title     TUI v2 redesign                                        │
+│   g1-tui-restart          done      3/3          ││ status    planned                                                │
+│                                                  ││ project   hive                                                   │
+│                                                  ││ grant     grants.md 2026-10-21 tui-v2 delivery on dev and PR 47… │
+│                                                  ││ manager   manager-hive                                           │
+│                                                  ││                                                                  │
+│                                                  ││ WAVES                                                            │
+│                                                  ││ WAVE TITLE                      DONE WHEN  LANDED  STATUS        │
+│                                                  ││ A    Spec                       dev        0/0     ○ open        │
+│                                                  ││ B    Harness                    dev        0/0     ○ open        │
+│                                                  ││ C    Components                 dev        0/0     ○ open        │
+│                                                  ││ D    Frame and layout           dev        0/0     ○ open        │
+│                                                  ││ E    Screens                    dev        0/0     ○ open        │
+│                                                  ││                                                                  │
+│                                                  ││ TASKS                                                            │
+│                                                  ││ no tasks                                                         │
+│                                                  ││                                                                  │
+│                                                  ││ NEEDS YOU                                                        │
+│                                                  ││ nothing                                                          │
+│                                                  ││                                                                  │
+│                                                  ││ o goal design   t open task in Tasks                             │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help
