@@ -24,8 +24,9 @@ const maxErrorBytes = 300
 const defaultLogFilter = "level:info"
 
 // The cells of the event list columns: the marker, the time, the level, and
-// the component, each with its gap. The message takes the cells that are
-// left.
+// the component. The marker, the time, and the level include one blank cell
+// after the text. The component cuts a longer name at 10 cells. The message
+// takes the cells that are left.
 const (
 	logMarkerCells    = 2
 	logTimeCells      = 9
