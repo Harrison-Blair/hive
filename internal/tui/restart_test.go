@@ -22,7 +22,7 @@ func TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey(t *testing.T) 
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
 			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", Status: records.AgentLive},
@@ -73,7 +73,7 @@ func TestAgentsRestartMissingCoordinatorPaneTakesStalePath(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
 		supervisorLive: true,
@@ -108,7 +108,7 @@ func TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
 		supervisorLive: true,
@@ -153,24 +153,28 @@ func runCoordinatorRestartCheck(t *testing.T, model *Model, command tea.Cmd) *Mo
 	return model
 }
 
-func TestAgentsHistoryCanShowStoppedRestartGeneration(t *testing.T) {
+// TestHealthAgentsHTogglesStoppedAgents checks the h key of Health › Agents.
+// The HealthAgents board shows a stopped agent until h hides it.
+func TestHealthAgentsHTogglesStoppedAgents(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
 			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", Status: records.AgentStopped},
 			status: "stopped", current: true, stopped: true,
 		}},
 	})
-	if strings.Contains(m.currentScreen().View(120, 30), "coordinator · stopped") {
-		t.Fatal("stopped coordinator is visible before history is enabled")
-	}
+	m.width, m.height = 120, 40
+	requireView(t, m, "coordinator-g1", "○ stopped", "agents · 1 · h hides 1 stopped")
 	m, _ = raise(t, m, key('h', "h"))
-	requireAgentsView(t, m, "coordinator")
+	rejectView(t, m, "coordinator-g1")
+	requireView(t, m, "agents · 0 · h shows 1 stopped", "no agents")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "coordinator-g1")
 }
 
 func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
@@ -179,7 +183,7 @@ func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{
 			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", PaneID: "w1:p3", Status: records.AgentLive},
@@ -235,7 +239,7 @@ func TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
 			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentStale},
@@ -329,7 +333,7 @@ func TestAgentsRestartKeyExplainsUnsupportedNode(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// Decision 19: restart is in Health › Agents.
 	m.selectScreen(tabHealth, 1)
-	m.agents.accept(agentsData{
+	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "demo", title: "demo", keys: []string{"manager-demo"}}},
 		nodes: []agentNode{{
 			record: records.Agent{Key: "manager-demo", Name: "manager-demo", Role: "manager", Status: records.AgentLive},
@@ -339,5 +343,5 @@ func TestAgentsRestartKeyExplainsUnsupportedNode(t *testing.T) {
 	})
 
 	m, _ = raise(t, m, key('r', "r"))
-	requireView(t, m, "restart applies only to the coordinator and the supervisor")
+	requireView(t, m, "restart: coordinator and supervisor only")
 }

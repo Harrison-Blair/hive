@@ -1,0 +1,57 @@
+ hive  ~/source/hive/projects/hive/worktrees/39-screen-health/.hive/tmp/t39repair/home                                                        coordinator ◐ idle   supervisor ○ stopped   needs you 0   22:42
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+───────────────────────────────────────────━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Home   [Agents]                                                                                                                                                                           [ ] switch view
+╭─ agents · 4 · h hides 1 stopped ──────────────────────────────────────────────────────╮╭─ t1-worker-1 ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   AGENT                 ROLE        STATE                                             ││                                                                                                                   │
+│   coordinator-g1        coordinator ◐ idle                                            ││ role      worker                                                                                                  │
+│   supervisor-g1         supervisor  ○ stopped                                         ││ state     idle                                                                                                    │
+│   manager-scratch       manager     ◐ idle                                            ││ project   scratch                                                                                                 │
+│ ▶ t1-worker-1           worker      ◐ idle                                            ││ task      1-scratch                                                                                               │
+│                                                                                       ││ harness   claude                                                                                                  │
+│                                                                                       ││ pane      t39-nonexistent:p7                                                                                      │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││ ACTIONS                                                                                                           │
+│                                                                                       ││ a attach to the pane                                                                                              │
+│                                                                                       ││ p peek at the pane                                                                                                │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││ r restarts only the coordinator and the supervisor.                                                               │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+│                                                                                       ││                                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────╯╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [list] restart: coordinator and supervisor only

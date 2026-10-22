@@ -1,0 +1,24 @@
+{
+  "id": "verify39",
+  "result": {
+    "type": "pane_info",
+    "pane": {
+      "pane_id": "w9G:p2",
+      "terminal_id": "term_65e649c3109ee1be",
+      "workspace_id": "w9G",
+      "tab_id": "w9G:t2",
+      "focused": false,
+      "cwd": "/home/penguin/source/hive/projects/hive/worktrees/39-screen-health",
+      "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/39-screen-health",
+      "terminal_title": "penguin@raft: ~/source/hive/projects/hive/worktrees/39-screen-health",
+      "terminal_title_stripped": "penguin@raft: ~/source/hive/projects/hive/worktrees/39-screen-health",
+      "agent_status": "unknown",
+      "scroll": {
+        "offset_from_bottom": 0,
+        "max_offset_from_bottom": 0,
+        "viewport_rows": 57
+      },
+      "revision": 1
+    }
+  }
+}

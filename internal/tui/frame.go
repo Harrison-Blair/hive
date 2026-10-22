@@ -130,6 +130,10 @@ var screenRegistry = [tabCount]frameScreen{
 			"Agents/list": {"↑↓ move", "enter details", "[ ] view", "r restart", "R refresh", "?"},
 			"details":     {"↑↓ scroll", "esc back to list"},
 		},
+		panels: map[string]screenPanels{
+			"Home":   {list: (*Model).healthPanel, details: (*Model).healthDetails},
+			"Agents": {list: (*Model).healthPanel, details: (*Model).healthDetails},
+		},
 	},
 	tabLogs: {
 		label:       "Logs",
@@ -170,16 +174,12 @@ func (s frameScreen) keyHints(view, focus string, wide bool) []string {
 	return nil
 }
 
-// activeTab gives the tab of the current screen. Health › Agents shows the
-// current Agents screen until wave 6, so the tab field tells it apart.
+// activeTab gives the tab of the current screen.
 func (m *Model) activeTab() int {
 	switch m.screenIndex {
 	case 0:
 		return tabChat
 	case 1:
-		if m.tab == tabHealth {
-			return tabHealth
-		}
 		return tabAgents
 	case 2, 3, 4:
 		return tabWork
@@ -199,9 +199,7 @@ func (m *Model) activeView() int {
 	case tabFriction:
 		return int(m.friction.tab)
 	case tabHealth:
-		if m.screenIndex == 1 {
-			return 1
-		}
+		return m.views[tabHealth]
 	}
 	return 0
 }
@@ -232,9 +230,6 @@ func (m *Model) selectScreen(tab, view int) {
 		}
 	case tabHealth:
 		m.screenIndex = 6
-		if view == 1 {
-			m.screenIndex = 1
-		}
 	default:
 		m.screenIndex = 7
 	}
@@ -361,7 +356,7 @@ func (m *Model) footerNotice() string {
 		return m.demo.notice
 	case m.agents.restartConfirm:
 		return ""
-	case m.screenIndex == 1 && m.agents.restartNotice != "":
+	case m.screenIndex == 6 && m.agents.restartNotice != "":
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
@@ -467,12 +462,6 @@ func (m *Model) legacyDetails() (string, []string) {
 			title = item.record.ID
 		}
 		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
-	case 6:
-		check, ok := m.health.selectedCheck()
-		if !ok {
-			return "details", []string{"no check selected"}
-		}
-		return check.Name, []string{component.DetailField("status", string(check.Status)), component.DetailField("detail", check.Detail)}
 	}
 	return "details", nil
 }

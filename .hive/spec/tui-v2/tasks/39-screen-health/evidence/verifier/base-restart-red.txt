@@ -1,0 +1,81 @@
+--- FAIL: TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey (0.00s)
+    restart_test.go:40: pane.get requests = 0; want 1
+--- FAIL: TestAgentsRestartMissingCoordinatorPaneTakesStalePath (0.01s)
+    restart_test.go:88: pane.get requests = 0; want 1 before the restart decision
+--- FAIL: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.00s)
+    restart_test.go:123: pane.get requests = 0; want 1 before the restart decision
+--- FAIL: TestHealthAgentsHTogglesStoppedAgents (0.00s)
+    restart_test.go:172: view does not contain "coordinator-g1":
+         hive  /tmp/TestHealthAgentsHTogglesStoppedAgents42… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ───────────────────────────────────────────━━━━━━━━━━───────────────────────────────────────────────────────────────────
+          Home   [Agents]                                                                                     [ ] switch view   
+        ╭─ agents ─────────────────────────────────────────╮╭─ details ────────────────────────────────────────────────────────╮
+        │ ▶ [ TREE ]  GRAPH  TABLE                         ││ no agent selected                                                │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · r restart · R refresh · ? help                                   
+--- FAIL: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.00s)
+    restart_test.go:197: supervisor restart state = confirm false, running false, cmd true; want confirmation
+--- FAIL: TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation (0.00s)
+    restart_test.go:252: stale restart state = running false, confirm false, cmd true; want immediate restart
+--- FAIL: TestAgentsRestartKeyExplainsUnsupportedNode (0.00s)
+    restart_test.go:346: view does not contain "restart: coordinator and supervisor only":
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────────────────────────━━━━━━━━━━───────────────────────────────
+          Home   [Agents]                                             [ ] switch view   
+        ╭─ agents ─────────────────────────────────────────────────────────────────────╮
+        │ ▶ [ TREE ]  GRAPH  TABLE                                                     │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] restart applies only to the coordinator and the supervisor              
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.410s
+FAIL
