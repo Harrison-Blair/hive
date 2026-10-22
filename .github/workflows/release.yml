@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check-tag:
+    name: Check the tag
+    runs-on: ubuntu-latest
+    outputs:
+      kind: ${{ steps.check.outputs.kind }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check the tag
+        id: check
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          kind="$(bash .github/scripts/check-tag.sh "$TAG")"
+          echo "kind=$kind" >> "$GITHUB_OUTPUT"
+
+  gate:
+    name: Gate
+    needs: check-tag
+    uses: ./.github/workflows/ci.yml
+
+  package:
+    name: Build and package
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Package the archives
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash .github/scripts/package.sh "$TAG" dist
+
+      - name: Keep the archives
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  check-archives:
+    name: Check the ${{ matrix.arch }} archive
+    needs: package
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Get the archives
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Check the archives against checksums.txt
+        working-directory: dist
+        run: sha256sum --check checksums.txt
+
+      - name: Check the version of the binary
+        working-directory: dist
+        env:
+          TAG: ${{ github.ref_name }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          mkdir bin
+          tar -xzf "hive_${TAG}_linux_${ARCH}.tar.gz" -C bin
+          version="$(bin/hive version)"
+          echo "$version"
+          if [[ "$version" != "hive $TAG ("* ]]; then
+            echo "hive version printed \"$version\", want hive $TAG" >&2
+            exit 1
+          fi
+
+  publish:
+    name: Publish the release
+    needs: [check-tag, check-archives]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+      KIND: ${{ needs.check-tag.outputs.kind }}
+    steps:
+      - name: Get the archives
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Make a draft release
+        run: |
+          prerelease=()
+          if [[ "$KIND" == prerelease ]]; then
+            prerelease=(--prerelease)
+          fi
+          header="Install hive $TAG with the [install steps](https://github.com/$GH_REPO/blob/$TAG/README.md#install). Use the binary and the home checkout of the same tag."
+          gh release create "$TAG" --verify-tag --draft --title "$TAG" \
+            --generate-notes --notes "$header" "${prerelease[@]}"
+
+      - name: Upload each file
+        run: |
+          gh release upload "$TAG" \
+            "dist/hive_${TAG}_linux_amd64.tar.gz" \
+            "dist/hive_${TAG}_linux_arm64.tar.gz" \
+            dist/checksums.txt
+
+      - name: Publish the draft
+        run: |
+          gh release edit "$TAG" --draft=false
+          echo "Published [$TAG](https://github.com/$GH_REPO/releases/tag/$TAG)" >> "$GITHUB_STEP_SUMMARY"
