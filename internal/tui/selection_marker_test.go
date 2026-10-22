@@ -122,13 +122,6 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		model    func(*testing.T) *Model
 	}{
 		{
-			name: "Chat", selected: "noise: landings and decisions", states: []string{"not live"},
-			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 0)
-				return m
-			},
-		},
-		{
 			name: "Agents", selected: "● coordinator", also: []string{"[ GRAPH ]"}, states: []string{"● coordinator", "○ supervisor"},
 			model: func(t *testing.T) *Model {
 				m := agentsBoardModel(t)

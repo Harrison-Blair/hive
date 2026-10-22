@@ -1,0 +1,20 @@
+Reviewed baseline: 5682e84c63e86ccc9a9df6373efff9414ad0c82b
+Verified merge: f582e234bef0cd1a162cdc472f49926b64c35ee1
+Merged dev snapshot: 61b16c310c5d94467038598ff4fdacadc68e1e9e
+
+First-parent changes:
+f582e234 Merge branch 'dev' into task/34-screen-chat
+0c7cb692 merge(tui): merge dev into task/34-screen-chat after the Work Goals screen
+be0c3e8e docs(tui): record Chat land repair verification block
+
+Chat source/test delta since approved baseline (expected empty):
+
+New dev merge resolution delta (expected empty):
+
+Goals code difference from merged Goals dev (expected empty):
+
+Current golden helpers:
+internal/tui/health_test.go:20:func checkBoardGolden(t *testing.T, board string) {
+internal/tui/friction_test.go:17:func checkBoard(t *testing.T, board string) {
+
+Remaining source mutation (expected empty):

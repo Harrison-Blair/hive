@@ -273,7 +273,6 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 			home, clock := agentsFixture(t, 40)
 			m := newTestModel(t, home, clock)
 			m.width, m.height, m.screenIndex = size.width, size.height, 1
-			m.layout()
 			m, cmd := raise(t, m, key('1', "1"))
 			m = deliverAgentCommands(t, m, cmd)
 

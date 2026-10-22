@@ -1,0 +1,6 @@
+=== RUN   TestChatMatchesItsBoard
+--- PASS: TestChatMatchesItsBoard (0.01s)
+=== RUN   TestCompactChatMatchesItsBoard
+--- PASS: TestCompactChatMatchesItsBoard (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.026s

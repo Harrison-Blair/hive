@@ -217,6 +217,16 @@ The worker made these decisions in task `37-screen-work-tasks`:
 - Component changes: `List.Fill` gives the padding of each cell the style of the cell. `SubTabs.Hint` replaces the view hint.
 - Refresh of the Tasks view watches the agent records and the task folder of each task. The details show the worker status and the files of the task.
 
+The worker made these decisions in task `34-screen-chat`:
+
+- Screen: `internal/tui/chat.go` replaces `chat_screen.go` and its tests. The registry entry of the Chat tab does not change. `scrollChatFeed` moves from `frame.go` to `chat.go`.
+- Feed: `component.ChatLines` gives the lines of each message. A blank line separates two messages. From 120 columns, the first body row of the feed is blank, and the title is `chat · noise LEVEL`. The top border also shows ` ↑ N earlier ` in `dim` from the middle column. N is the count of messages above the view. Below 120 columns, the title is `chat`.
+- Scroll: `ui.scroll.feed.top` gives the index of the message at the top of the feed. The feed then does not follow its end. In normal mode, the feed follows its end. `pgup` and `pgdn` page the feed. In the feed, `↑` `↓` `j` `k` move it by one line, `g` goes to the top, and `G` goes to the end and follows it. `component.Thumb` gives the scroll mark. Its total is the count of feed lines.
+- Noise: the levels are `quiet`, `normal`, and `all`, from `ui.chat_noise`. The default is `normal`. They show the inbox kinds of the earlier levels "decisions only", "landings and decisions", and "all". No key changes the level, because decision 24 gives each printable key in the feed to the input. The screen has no keys `n` and `e`, which the earlier screen had. Each event folds to one line, as decision 15 gives.
+- Name: when a user message is not sent, its delivery shows after the name, for example `you · pending`. The time uses the form `15:04` in the zone of the clock.
+- Input: `component.Input` draws the input and its cursor cell `█`. While the input has the focus, the terminal cursor is on that cell. The input shows no placeholder text, as the boards give.
+- Removed: the coordinator line and the column of hive events of the earlier screen. The header shows the coordinator state.
+
 The worker made these decisions in task `38-screen-friction`:
 
 - Screen: the file `internal/tui/friction.go`. It replaces `friction_screen.go` and keeps its loader.

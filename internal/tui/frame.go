@@ -768,14 +768,3 @@ func (m *Model) updateChatFeedKey(press tea.KeyPressMsg) tea.Cmd {
 	}
 	return m.currentScreen().Update(press)
 }
-
-// scrollChatFeed pages the chat feed and keeps follow when it reaches the end.
-func (m *Model) scrollChatFeed(press tea.KeyPressMsg) tea.Cmd {
-	m.chatFollow = false
-	updated, cmd := m.chatViewport.Update(press)
-	m.chatViewport = updated
-	if m.chatViewport.AtBottom() {
-		m.chatFollow = true
-	}
-	return cmd
-}

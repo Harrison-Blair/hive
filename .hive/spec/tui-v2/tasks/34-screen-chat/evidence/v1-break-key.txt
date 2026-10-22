@@ -1,0 +1,5 @@
+--- FAIL: TestChatKeysScrollTheFeed (0.01s)
+    chat_test.go:201: view does not contain "line-40":
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.034s
+FAIL
