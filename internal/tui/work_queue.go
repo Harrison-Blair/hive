@@ -286,9 +286,8 @@ func (r queueTreeRow) nameAt() int {
 
 // line draws one task row: the tree mark, the task ID, and the status.
 func (r queueTreeRow) line(selected bool) string {
-	lead, rest := queueBorderStyle.Render("  "), ""
+	lead, rest := "  ", ""
 	if r.depth > 0 {
-		lead = "  "
 		rest = strings.Repeat(" ", 2*r.depth-2) + queueBorderStyle.Render("└▶") + " "
 	}
 	nameStyle := queuePlainStyle

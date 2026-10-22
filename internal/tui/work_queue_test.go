@@ -161,7 +161,7 @@ func TestQueueKeys(t *testing.T) {
 // the overlay, and t still works in it.
 func TestQueueFocusStates(t *testing.T) {
 	m := queueModel(t, goalsQueueFixture(t), 120, 40)
-	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · / filter · ? help")
+	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help")
 	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
 	requireView(t, m, "[details] ↑↓ scroll · tab region · esc back to list · ? help")
 	m, _ = raise(t, m, key(tea.KeyEscape, "esc"))
