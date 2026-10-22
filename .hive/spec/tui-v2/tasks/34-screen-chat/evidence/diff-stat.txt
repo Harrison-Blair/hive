@@ -1,9 +1,11 @@
-$ git diff origin/dev...HEAD --stat
  .hive/spec/tui-v2/README.md                        |  10 +
  .hive/spec/tui-v2/tasks/34-screen-chat/brief.md    | 144 +++++
+ .../tui-v2/tasks/34-screen-chat/evidence/V-gate.md |  75 +++
  .../tui-v2/tasks/34-screen-chat/evidence/V1.md     | 118 ++++
  .../tui-v2/tasks/34-screen-chat/evidence/V2.md     | 102 ++++
+ .../tasks/34-screen-chat/evidence/VERIFIED.md      |  43 ++
  .../tasks/34-screen-chat/evidence/compare.txt      |   4 +
+ .../tasks/34-screen-chat/evidence/diff-stat.txt    |  72 +++
  .../tasks/34-screen-chat/evidence/gate-run-1.txt   |  97 ++++
  .../tasks/34-screen-chat/evidence/gate-run-2.txt   |  88 +++
  .../34-screen-chat/evidence/screens/chat-2.ansi    |  40 ++
@@ -59,14 +61,16 @@ $ git diff origin/dev...HEAD --stat
  .../tasks/34-screen-chat/evidence/v1-break-key.txt |   5 +
  .../34-screen-chat/evidence/v1-break-token.txt     |   8 +
  .../tasks/34-screen-chat/evidence/v1-green.txt     |  16 +
+ .../34-screen-chat/evidence/verifier/green.txt     |  40 ++
  internal/tui/chat.go                               | 401 ++++++++++++++
  internal/tui/chat_screen.go                        | 497 -----------------
  internal/tui/chat_screen_test.go                   | 581 --------------------
  internal/tui/chat_test.go                          | 598 +++++++++++++++++++++
  internal/tui/demo.go                               |  14 +-
+ internal/tui/doc.go                                |   2 +-
  internal/tui/frame.go                              |  11 -
  internal/tui/selection_marker_test.go              |   7 -
  internal/tui/shell_test.go                         |  22 +-
  internal/tui/tui.go                                |  98 +---
  testdata/ste-baseline.json                         |   1 +
- 70 files changed, 2476 insertions(+), 1190 deletions(-)
+ 75 files changed, 2707 insertions(+), 1191 deletions(-)

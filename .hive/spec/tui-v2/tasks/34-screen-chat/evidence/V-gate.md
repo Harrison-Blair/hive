@@ -73,3 +73,81 @@ exit 0
 ```
 
 Each package printed `ok` or `no test files`. See `gate-run-2.txt`.
+
+## Repair after the verify fail (merge of task 36)
+
+Task `36-screen-work-queue` landed on `dev` at `e7cdbd09`. The verifier
+evidence of the first verify stays in this folder (`VERIFIED.md`,
+`verifier/`).
+
+### Merge
+
+`git merge origin/dev` (`e7cdbd09`) gave two conflicts. The merge commit is
+`34b7757f`.
+
+- `.hive/spec/tui-v2/README.md`, section `Manager decisions`: both sides
+  added a block of worker decisions. The merge keeps both blocks, first
+  `34-screen-chat`, then `36-screen-work-queue`, with a blank line between
+  them.
+- `testdata/ste-baseline.json`: both sides added a brief entry with 0. The
+  merge keeps both entries in sorted order.
+
+The merge commit also changes one line in `internal/tui/doc.go`: the file map
+named `chat_screen.go`, which this task removed. It now names `chat.go`.
+
+### Diff scope
+
+Command: `git diff origin/dev...HEAD --stat` at `34b7757f` plus this
+evidence. Output: `diff-stat.txt`. Outside this evidence folder, only these
+files changed:
+
+```text
+.hive/spec/tui-v2/README.md            (section Manager decisions only)
+.hive/spec/tui-v2/tasks/34-screen-chat/brief.md
+internal/tui/chat.go
+internal/tui/chat_screen.go            (removed)
+internal/tui/chat_screen_test.go       (removed)
+internal/tui/chat_test.go
+internal/tui/demo.go
+internal/tui/doc.go                    (file map line of chat.go)
+internal/tui/frame.go
+internal/tui/selection_marker_test.go
+internal/tui/shell_test.go
+internal/tui/tui.go
+testdata/ste-baseline.json             (one entry)
+```
+
+Each file is in the source table of the brief.
+
+### Golden checks
+
+Output: `golden-rerun.txt`. `TestChatMatchesItsBoard`,
+`TestCompactChatMatchesItsBoard`, and `TestChatFitsEachSize` pass. Each test
+of `internal/tui` and `internal/tui/component` that matches `Chat`, `Board`,
+or `FitsEachSize` passes.
+
+### Live check
+
+`V2.md`, section `Repair rerun`: no cell differs under the space cell rule
+for `Chat` and `CompactChat`.
+
+### Gate run 3: pass
+
+Full output: `gate-run-3.txt`, at `34b7757f`.
+
+```text
+$ gofmt -l
+exit 0
+$ go mod tidy -diff
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race ./...
+exit 0
+```
+
+`gofmt -l` and `go mod tidy -diff` printed nothing. Each package printed `ok`
+or `no test files`.
