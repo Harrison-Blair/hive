@@ -1,0 +1,8 @@
+=== RUN   TestHealthAgentsMatchesItsBoard
+--- PASS: TestHealthAgentsMatchesItsBoard (0.00s)
+=== RUN   TestHealthMatchesItsBoard
+--- PASS: TestHealthMatchesItsBoard (0.00s)
+=== RUN   TestCompactHealthMatchesItsBoard
+--- PASS: TestCompactHealthMatchesItsBoard (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.023s

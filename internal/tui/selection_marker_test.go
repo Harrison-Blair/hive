@@ -175,7 +175,9 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Health", selected: "home", states: []string{"✓", "✕ herdr socket"},
+			// The Health board puts the check glyph between the marker and
+			// the name, so the test reads the marker and the name apart.
+			name: "Health", honey: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{

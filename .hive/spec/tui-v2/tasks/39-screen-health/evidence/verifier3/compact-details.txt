@@ -1,0 +1,24 @@
+ hive                                     coord ● · sup ● · needs you 0 · 14:22
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────────────────────────────────━━━━━━━━━━───────────────────────────────
+  Home   [Agents]                                             [ ] switch view
+╭─ coordinator-g2 · esc back ──────────────────────────────────────────────────╮
+│                                                                              │
+│ role      coordinator                                                        │
+│ state     working                                                            │
+│ pane      w58:p4 · tab coordinator                                           │
+│ started   by bare hive                                                       │
+│                                                                              │
+│ ACTIONS                                                                      │
+│ r restart · starts a new coordinator in a new tab                            │
+│ a attach to the pane                                                         │
+│ p peek at the pane                                                           │
+│                                                                              │
+│                                                                              │
+│ r asks to confirm only when the agent is live.                               │
+│ A stale or stopped agent restarts at once.                                   │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [details] ↑↓ scroll · esc back to list

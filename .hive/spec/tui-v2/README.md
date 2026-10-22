@@ -242,6 +242,14 @@ The worker made these decisions in task `36-screen-work-queue`:
 - Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
 - The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
 
+The worker made these decisions in task `39-screen-health`:
+
+- Registry: Health uses the field `panels` of task `36-screen-work-queue`. The views Home and Agents have entries with the same functions.
+- Health: the file `internal/tui/health.go` holds the screen. Each view has its own selection. One load gives the checks of `hive doctor` and the agent records, so Home and Agents show the same data. The details show the time of the last load.
+- Restart: `r` in Health › Agents calls `requestRestart`, with the behavior of task `3-tui-restart`. The Agents screen has no `r` key. The restart prompt box is in the details of the selected agent, as the HealthAgents board shows.
+- Rows: the Health lists draw their rows in a `Panel`. The columns and the colours of the space cells come from the Health boards. The selected row follows the rule of `List`.
+- Component fixes: none.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
