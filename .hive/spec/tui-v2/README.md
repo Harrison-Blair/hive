@@ -221,6 +221,20 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The manager made this decision in task `40-screen-logs`:
+
+- A row of the Logs event list shows the `msg` of the event. When the event has the field `reason`, the row also shows ` · ` and the text of the reason before the first `;`. The JSON panel shows the full reason.
+
+The worker made these decisions in task `40-screen-logs`:
+
+- Screen: the file `internal/tui/logs_screen.go`. The frame gives the content area of tab 6 to `logsContent`. From 120 columns, the event list has 8/15 of the width.
+- Filter: the filter bar text is the applied filter. The default text is `level:info`. `level:` gives the lowest level. `agent:` matches the agent ID, or the agent name before its generation. Each other typed field must be equal to the field of the event. Each word of free text must be in the row text.
+- Selection: when a load gives a new newest event, follow selects it. When the newest event does not change, the selection stays. When no row shows, the selected event stays, and it shows again with the rows. A day change selects the first row.
+- Keys: `/` opens the filter bar with the applied text. `esc` in the event list sets the default filter. `f` changes follow. `↑`, `k`, `pgup`, and `g` set follow to off. `G` sets follow to on.
+- This task removes the old keys `l`, `c`, `p`, `a`, and `r` of the Logs screen. Decisions 21 to 25 give these keys other meanings or give the typed fields.
+- The JSON panel cuts each line to the panel width less 6 cells, with `…`. When the lines do not fit, the last body row shows `↓ N more lines`.
+- Component change: `FilterBar` has the fields `Focused` and `Status`. `Status` is at the end of the bar. The Logs screen shows the follow mark and the day there.
+
 The worker made these decisions in task `36-screen-work-queue`:
 
 - Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.
