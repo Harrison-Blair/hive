@@ -155,3 +155,32 @@ The repair changes only the brief copy, `work_goals_test.go`, and evidence.
 The earlier verifier evidence stays in `VERIFIED.md` and `verifier/`.
 Full gate output: `gate-after-repair.txt`. `gofmt -l` and `go mod tidy -diff`
 print nothing. Each of the five commands exits 0.
+
+## Repair after verification 3: merge of dev with task 36 (2026-10-21)
+
+`git merge origin/dev` (`e7cdbd09`, with task 36) at `f6c961e5`. `V1.md`
+gives the resolution of each conflict.
+
+```text
+$ git diff origin/dev...HEAD --stat -- . ':!.hive/spec/tui-v2/tasks/35-screen-work-goals/evidence'
+ .../tui-v2/tasks/35-screen-work-goals/brief.md     | 141 ++++++++
+ internal/tui/frame.go                              |  13 +-
+ internal/tui/goals_queue.go                        | 357 ++-------------------
+ internal/tui/goals_queue_test.go                   |  97 +-----
+ internal/tui/selection_marker_test.go              |   9 -
+ internal/tui/shell_test.go                         |   2 +-
+ internal/tui/work_goals.go                         | 261 +++++++++++++++
+ internal/tui/work_goals_test.go                    | 286 +++++++++++++++++
+ testdata/ste-baseline.json                         |   1 +
+ 9 files changed, 726 insertions(+), 441 deletions(-)
+```
+
+Each other changed file is evidence of this task. Each file is in the source
+table of the brief. `.hive/spec/tui-v2/README.md` has no change from this
+task.
+
+Full gate output at `f6c961e5`: `gate-after-merge.txt`. `gofmt -l` and
+`go mod tidy -diff` print nothing. `golangci-lint` gives `0 issues.` Each
+package of `go test -race ./...` gives `ok` or no test files. Each of the five
+commands exits 0. The verifier evidence in `VERIFIED.md`, `verifier/`, and
+`verifier3/` stays.
