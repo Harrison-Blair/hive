@@ -524,3 +524,27 @@ func TestLogsNormalModeDrawsTheDemoContent(t *testing.T) {
 		}
 	}
 }
+
+// Manager decision: an event with a reason shows its msg, " · ", and the
+// reason text before the first ";". The JSON panel keeps the full reason.
+func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	m := logsModelAt(t, 120, 40)
+	events := []string{
+		logsFixtureEvent(t, day, "WARN", "task", "verify fail", map[string]any{"reason": "V4 diff scope; Design section missing"}),
+		logsFixtureEvent(t, day.Add(time.Second), "WARN", "task", "verify fail", map[string]any{"reason": "no evidence"}),
+	}
+	loaded := make([]logs.Event, len(events))
+	for index, line := range events {
+		var fields map[string]any
+		if err := json.Unmarshal([]byte(line), &fields); err != nil {
+			t.Fatal(err)
+		}
+		loaded[index] = logs.Event{Raw: []byte(line), Fields: fields}
+	}
+	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: loaded})
+	requireView(t, m, "12:00:00 WARN  task      verify fail · V4 diff scope ", "verify fail · no evidence ")
+	rejectView(t, m, "verify fail · V4 diff scope;")
+	m, _ = raise(t, m, key('k', "k"))
+	requireView(t, m, `"reason": "V4 diff scope; Design section missin…`)
+}
