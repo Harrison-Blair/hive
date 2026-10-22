@@ -20,12 +20,12 @@ type goalsQueueData struct {
 }
 
 type goalsQueueState struct {
-	data             goalsQueueData
-	selectedGoal     string
-	selectedTaskID   string
-	goalOffset       int
-	designNotice     string
-	showStops        bool
+	data           goalsQueueData
+	selectedGoal   string
+	selectedTaskID string
+	goalOffset     int
+	designNotice   string
+	showStops      bool
 }
 
 func loadGoalsQueue(home string) (goalsQueueData, error) {
