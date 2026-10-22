@@ -135,3 +135,47 @@ ok  	github.com/Harrison-Blair/hive/internal/tui/component	22.183s
 ok  	github.com/Harrison-Blair/hive/internal/worktree	(cached)
 exit 0
 ```
+
+## Merge repair: `dev` at `86f48a68`, then `5a4b29e6`
+
+### Conflicts and resolution
+
+| File | Resolution |
+| --- | --- |
+| `testdata/ste-baseline.json` | Keep both entries: `39-screen-health/brief.md` and `40-screen-logs/brief.md`, each 0. |
+| `internal/tui/shell_test.go` | Keep the `dev` rows for Friction (`open · 0`) and Logs (`events · 0`). Keep the Health rows of this task (`checks ·`, `agents ·`). |
+| `internal/tui/frame.go` | Each side removed one case of `legacyDetails`: `dev` removed case 5 (Friction now has `panels`), this task removed case 6 (Health now has `panels`). The resolution removes both cases. |
+
+Commits: `6bc34906` merges `86f48a68`. `2b6e8bb2` merges `5a4b29e6` (task 45),
+with no conflict.
+
+### Diff scope
+
+`git diff origin/dev...HEAD --stat` at `2b6e8bb2`, without the task folder:
+
+```text
+ .hive/spec/tui-v2/README.md           |   8 +
+ internal/tui/agents.go                |  34 --
+ internal/tui/demo.go                  |   8 +-
+ internal/tui/demo_test.go             |   4 +-
+ internal/tui/frame.go                 |  25 +-
+ internal/tui/health.go                | 659 ++++++++++++++++++++++++++++++++++
+ internal/tui/health_screen.go         | 190 ----------
+ internal/tui/health_screen_test.go    | 176 ---------
+ internal/tui/health_test.go           | 320 +++++++++++++++++
+ internal/tui/restart_test.go          |  30 +-
+ internal/tui/selection_marker_test.go |   4 +-
+ internal/tui/shell_test.go            |   4 +-
+ internal/tui/tui.go                   |   8 +-
+ testdata/ste-baseline.json            |   1 +
+ 14 files changed, 1031 insertions(+), 440 deletions(-)
+```
+
+The README lines are the task decisions of `78e4a00f`. The scope is the same
+as before the merge.
+
+### Gate
+
+Full output: `merge3/gate.txt`, at `2b6e8bb2`. `gofmt -l` and
+`go mod tidy -diff` print nothing. `go vet` exits 0. `golangci-lint` gives
+`0 issues.` `go test -race ./...` exits 0, with each package `ok`.

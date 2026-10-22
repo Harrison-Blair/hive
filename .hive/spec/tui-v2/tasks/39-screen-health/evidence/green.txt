@@ -1,22 +1,154 @@
+=== RUN   TestHealthyActionLogIsWrittenOnce
 --- PASS: TestHealthyActionLogIsWrittenOnce (0.00s)
+=== RUN   TestDemoRestartPromptYesDoesNotRestart
 --- PASS: TestDemoRestartPromptYesDoesNotRestart (0.02s)
---- PASS: TestHealthAgentsMatchesItsBoard (0.02s)
+=== RUN   TestHealthAgentsMatchesItsBoard
+--- PASS: TestHealthAgentsMatchesItsBoard (0.03s)
+=== RUN   TestHealthMatchesItsBoard
 --- PASS: TestHealthMatchesItsBoard (0.02s)
+=== RUN   TestCompactHealthMatchesItsBoard
 --- PASS: TestCompactHealthMatchesItsBoard (0.01s)
---- PASS: TestHealthFitsEachSize (1.11s)
---- PASS: TestHealthKeysAndFooterHints (0.11s)
---- PASS: TestHealthRestartPromptKeys (0.03s)
+=== RUN   TestHealthFitsEachSize
+=== RUN   TestHealthFitsEachSize/Health/board/79x24
+=== RUN   TestHealthFitsEachSize/Health/board/80x24
+=== RUN   TestHealthFitsEachSize/Health/board/80x25
+=== RUN   TestHealthFitsEachSize/Health/board/119x40
+=== RUN   TestHealthFitsEachSize/Health/board/119x41
+=== RUN   TestHealthFitsEachSize/Health/board/120x40
+=== RUN   TestHealthFitsEachSize/Health/board/120x41
+=== RUN   TestHealthFitsEachSize/Health/empty/79x24
+=== RUN   TestHealthFitsEachSize/Health/empty/80x24
+=== RUN   TestHealthFitsEachSize/Health/empty/80x25
+=== RUN   TestHealthFitsEachSize/Health/empty/119x40
+=== RUN   TestHealthFitsEachSize/Health/empty/119x41
+=== RUN   TestHealthFitsEachSize/Health/empty/120x40
+=== RUN   TestHealthFitsEachSize/Health/empty/120x41
+=== RUN   TestHealthFitsEachSize/Health/long/79x24
+=== RUN   TestHealthFitsEachSize/Health/long/80x24
+=== RUN   TestHealthFitsEachSize/Health/long/80x25
+=== RUN   TestHealthFitsEachSize/Health/long/119x40
+=== RUN   TestHealthFitsEachSize/Health/long/119x41
+=== RUN   TestHealthFitsEachSize/Health/long/120x40
+=== RUN   TestHealthFitsEachSize/Health/long/120x41
+=== RUN   TestHealthFitsEachSize/Health/many/79x24
+=== RUN   TestHealthFitsEachSize/Health/many/80x24
+=== RUN   TestHealthFitsEachSize/Health/many/80x25
+=== RUN   TestHealthFitsEachSize/Health/many/119x40
+=== RUN   TestHealthFitsEachSize/Health/many/119x41
+=== RUN   TestHealthFitsEachSize/Health/many/120x40
+=== RUN   TestHealthFitsEachSize/Health/many/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/120x41
+--- PASS: TestHealthFitsEachSize (1.42s)
+    --- PASS: TestHealthFitsEachSize/Health/board/79x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/Health/board/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/board/80x25 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/board/119x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/board/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/board/120x40 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/board/120x41 (0.05s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/80x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/80x25 (0.01s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/119x40 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/120x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/120x41 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/long/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/long/80x25 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/long/119x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/long/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/Health/long/120x40 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/long/120x41 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/many/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/many/80x25 (0.02s)
+    --- PASS: TestHealthFitsEachSize/Health/many/119x40 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/many/119x41 (0.04s)
+    --- PASS: TestHealthFitsEachSize/Health/many/120x40 (0.05s)
+    --- PASS: TestHealthFitsEachSize/Health/many/120x41 (0.05s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/80x25 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/119x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/120x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/120x41 (0.04s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/79x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/80x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/80x25 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/119x40 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/119x41 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/120x40 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/120x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/79x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/80x25 (0.01s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/119x40 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/120x40 (0.04s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/120x41 (0.04s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/79x24 (0.01s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/80x24 (0.02s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/80x25 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/119x40 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/119x41 (0.03s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/120x40 (0.05s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/120x41 (0.05s)
+=== RUN   TestHealthKeysAndFooterHints
+--- PASS: TestHealthKeysAndFooterHints (0.15s)
+=== RUN   TestHealthRestartPromptKeys
+--- PASS: TestHealthRestartPromptKeys (0.04s)
+=== RUN   TestHealthRIsOnlyRestartInAgentsView
 --- PASS: TestHealthRIsOnlyRestartInAgentsView (0.00s)
---- PASS: TestHealthNormalModeRefreshKeepsSelection (0.33s)
---- PASS: TestHealthProgramUsesStringReader (0.06s)
+=== RUN   TestHealthNormalModeRefreshKeepsSelection
+--- PASS: TestHealthNormalModeRefreshKeepsSelection (0.41s)
+=== RUN   TestHealthProgramUsesStringReader
+--- PASS: TestHealthProgramUsesStringReader (0.07s)
+=== RUN   TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey
 --- PASS: TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey (0.02s)
+=== RUN   TestAgentsRestartMissingCoordinatorPaneTakesStalePath
 --- PASS: TestAgentsRestartMissingCoordinatorPaneTakesStalePath (0.02s)
---- PASS: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.01s)
---- PASS: TestHealthAgentsHTogglesStoppedAgents (0.03s)
+=== RUN   TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation
+--- PASS: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.02s)
+=== RUN   TestHealthAgentsHTogglesStoppedAgents
+--- PASS: TestHealthAgentsHTogglesStoppedAgents (0.04s)
+=== RUN   TestAgentsRestartLiveSupervisorAsksForConfirmation
 --- PASS: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.01s)
+=== RUN   TestAgentsRestartResultIsRenderedAndLogged
 --- PASS: TestAgentsRestartResultIsRenderedAndLogged (0.01s)
+=== RUN   TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation
 --- PASS: TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation (0.01s)
---- PASS: TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint (0.39s)
+=== RUN   TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint
+--- PASS: TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint (0.47s)
+=== RUN   TestAgentsRestartKeyExplainsUnsupportedNode
 --- PASS: TestAgentsRestartKeyExplainsUnsupportedNode (0.01s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	3.332s
+ok  	github.com/Harrison-Blair/hive/internal/tui	3.911s
