@@ -71,14 +71,14 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "/ filter", "? help"},
-			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "/ filter", "? help"},
-			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "/ filter", "? help"},
+			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "? help"},
+			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "? help"},
+			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
 			"details":       {"↑↓ scroll", "tab region", "esc back to list", "? help"},
 			"Tasks/details": {"↑↓ scroll", "tab region", "esc back to list", "b brief", "v verified", "d deps", "? help"},
 		},
 		compact: map[string][]string{
-			"list":          {"↑↓ move", "enter details", "[ ] view", "/ filter", "?"},
+			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
 			"details":       {"↑↓ scroll", "esc back to list"},
 			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
 		},
@@ -89,11 +89,11 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "/ filter", "g/G top/end", "? help"},
+			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "g/G top/end", "? help"},
 			"details": {"↑↓ scroll", "tab region", "esc back to list", "? help"},
 		},
 		compact: map[string][]string{
-			"list":    {"↑↓ move", "enter details", "[ ] view", "/ filter", "?"},
+			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
 			"details": {"↑↓ scroll", "esc back to list"},
 		},
 	},
