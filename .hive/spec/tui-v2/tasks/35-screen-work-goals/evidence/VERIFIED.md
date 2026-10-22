@@ -1,80 +1,128 @@
 # Verification: 35-screen-work-goals
 
-Verdict: **fail**. Verifier: `t35-verifier-3`. Date: 2026-10-22.
-Code tested: `631e5541`. Evidence below is in `verifier3/`.
+Verdict: **pass**. Verifier: `t35-verifier-4`. Date: 2026-10-22.
+Tested code: `d639457bcec3d828f34bb3e09b6965c3725daf6c`.
+Evidence paths below are relative to `verifier4/`.
 
-The updated brief says that Goals has no `s` key. This verification uses that rule.
+The current brief gives Goals no `s` key. Queue keeps its `s` key.
+This report replaces the previous failed verdict after the merge repair.
 
 | Item | Result | Evidence |
 | --- | --- | --- |
-| V1 Tests | pass | `base.txt`: all 10 new tests fail against `dev` at `e7cdbd09`. `green.txt` and `restored-green.txt`: all Goals tests pass on the task code. `mutations.txt`: a planned-status token change, removal of `j`, and an added `s` action each fail the corresponding test. |
-| V2 Live check | fail | The 120×40 board comparison passes: `live-diff.txt` reports zero differences under the space-cell rule. Live keys and PNG review pass as recorded below. The check stopped at the merge conflict before compact live checks and the remaining keys. No complete V2 pass is claimed. |
-| V-gate Diff scope and gate | fail | The five gate commands pass on `631e5541`; full output is in `gate.txt`. Format and tidy print nothing. The required merge of current `dev` at `e7cdbd09` fails in six files. See `merge-conflicts.txt`. No post-merge gate is possible. |
+| V1 Tests | pass | `base.txt`: each of the ten new tests fails on base `13210c3f`. `green.txt`, `restored-green.txt`, and `green-after-merge.txt`: each passes on the task code. `token-mutation.txt` and `key-mutation.txt`: each deliberate change fails its test. |
+| V2 Live check | pass | `live-diff.txt`: zero live-rule differences at 120×40. Fresh captures at 119×40, 80×24, and 79×24 check the compact layout, overlay, scrolling, and too-small notice. `keys.txt`, ANSI, plain text, JSON, and PNG files record the checks. |
+| V-gate Diff scope and gate | pass | `merge-latest.txt`: clean merge of dev at `fbca94d5`. `scope-after-merge.txt`: only permitted source files, brief, baseline, and evidence. `gate-after-merge.txt`: all five commands exit 0. Format and tidy print nothing. |
 
-## Blocking finding
+## V1: independent runs
 
-`git fetch origin && git merge origin/dev` first produced `631e5541` without a conflict. During verification, task 36 landed on `dev`. The required `git merge dev` then failed in:
+Command on base and task:
 
-- `internal/tui/frame.go`
-- `internal/tui/goals_queue.go`
-- `internal/tui/goals_queue_test.go`
-- `internal/tui/selection_marker_test.go`
-- `internal/tui/shell_test.go`
-- `testdata/ste-baseline.json`
+```sh
+go test ./internal/tui/ -run 'TestWorkGoals|TestGoals' -count=1 -v
+```
 
-The verifier ran `git merge --abort`. A repair worker must merge current `dev`, keep both Work screens, and rerun verification. No source repair was made by the verifier.
+The detached base worktree had the new test file and a test-only shim for
+`goalIDWidth` and `cutCell`. These names are necessary to compile the tests.
+All ten new tests fail on behavior. Existing passing base tests do not count
+as red runs. The golden test fails on the old screen layout.
 
-## Test commands and results
+The token mutation changes `planned` from `infoStyle` to `dimStyle`.
+`go test ./internal/tui/ -run '^TestWorkGoalsMatchesItsBoard$' -count=1 -v`
+fails with ten differing cells. The key mutation removes `j` from move down.
+`go test ./internal/tui/ -run '^TestGoalsKeysAndHints$' -count=1 -v` fails:
+`key "j" selected "g2-two"; want "g3-three"`.
+Both mutations were restored. The full Goals suite passes again. No source
+mutation remains.
 
-Command on both base and task: `go test ./internal/tui/ -run 'TestWorkGoals|TestGoals' -count=1 -v`.
+The normal-mode tests use scratch homes. They check record loading, refresh,
+selection, design opening, task opening, and the program on a string reader.
+The responsive tests check empty data and long text at 79×24, 80×24, 80×25,
+119×40, 120×40, 120×24, and 120×25. They check line widths, whole borders,
+and visible selection before and after `enter`.
 
-The detached base worktree had only the new test file and a test-only shim for `goalIDWidth` and `cutCell`. These two helpers are required to compile the tests. Each of the ten new tests fails on behavior, including the first golden test and the no-`s` test. Existing base tests also ran; their passes are not counted as red runs.
+## V2: live run
 
-Mutation commands used the same package with `-count=1 -v` and these exact `-run` filters:
+The verifier built the task binary again after the latest dev merge.
+Only scratch tab `wA2:t2`, pane `wA2:p2`, was used. The pane had 57 rows and
+was wider than 120 columns. The command used a scratch `HIVE_HOME`,
+`HIVE_NO_STARTUP=1`, and `COLORTERM=truecolor`:
 
-- `^TestWorkGoalsMatchesItsBoard$`: planned uses dim instead of info; exit 1.
-- `^TestGoalsKeysAndHints$`: remove `j` from move-down; exit 1.
-- `^TestGoalsHasNoStopsOnlyKey$`: add an `s` action that changes the footer; exit 1.
+```sh
+hive --demo ABSOLUTE_WORKGOALS_FIXTURE --size 120x40
+```
 
-Each mutation was restored in a `finally` block. The complete Goals suite then passed again. Normal-mode record and refresh tests use scratch homes and start no live coordinator or supervisor.
+The same command ran at 119×40, 80×24, and 79×24. `live.py` records the
+commands and keys. `capture.py` records the capture method. Each capture
+uses two equal reads 500 ms apart, `source: visible`, and `format: ansi`.
+Each JSON record has `truncated: false` and scroll offset 0. Each ANSI file
+contains the top-left W×H cells. `compare.go.txt` records the converter call.
 
-## Live observations
+The 120×40 comparison has 2992 strict differences, all token or weight
+changes on space cells. It has **zero differences under the space-cell rule**.
+The model golden test compares space cells fully and passes.
 
-The verifier built a binary from the tested task code and started only scratch tab `w9N:t2`, pane `w9N:p2`. The scratch home was `.hive/tmp/verify35/home`. The command set `HIVE_HOME` to that folder, `COLORTERM=truecolor`, and `HIVE_NO_STARTUP=1`, then ran `hive --demo ABSOLUTE_WORKGOALS_FIXTURE --size 120x40`.
-
-For each capture, two `pane.read` calls 500 ms apart returned equal ANSI text. Each JSON record shows `truncated: false` and a scroll offset of 0. The verifier cropped the top-left 120×40 cells and used `internal/lib/cellgrid` to compare the capture with the board. There are 2992 strict differences, all token or weight differences in space cells, and zero live-rule differences. `start.ansi`, `start.json`, and `live-diff.txt` hold the results. `capture.py` and `compare.go.txt` preserve the scratch tools.
-
-| Key | Observation |
+| Keys or size | Observation |
 | --- | --- |
-| `s` | Plain text stays identical to the start capture; no stops hint. |
-| `up`, `g` | Select `g2-tui-v2`. |
-| `j`, `G` | Select `g1-tui-restart`. |
-| `tab` | Details gets the focus; footer shows `[details]` and scroll hints. |
-| `esc` | List gets the focus; list hints return. |
-| `o` | Footer shows `no design for this wave` for the completed goal. |
-| `t` on g2 | No change: its open wave has no tasks. The nonempty-task action passes in the model test. |
-| `ctrl+c` twice | The scratch program exits. |
+| `up`, `k`, `g` | Select `g2-tui-v2`. |
+| `down`, `j`, `G` | Select `g1-tui-restart`. |
+| `s` | No view change at 120, 119, or 80 columns. No Goals stops hint. |
+| `tab`, `esc` | Details gains focus; `esc` returns to the list. Footer names the focus and its keys. |
+| `o` | Footer says `no design for this wave`. The fixture has no available design. |
+| `t` | No task opens for the fixture goal with no open wave. The normal-mode test checks opening a task from a nonempty wave. |
+| `]`, `[` | Queue opens with its stops hint; Goals returns with its design and task hints. |
+| `?`, `esc`, `R` | Help opens and closes; refresh keeps the Goals view. |
+| 119×40 | Full-width list; `enter` opens full-width details; `esc` returns. Selected goal stays visible. |
+| 80×24 | Same overlay flow. Details shows `↓ 6 more lines`; `down` changes it to `↓ 5 more lines`. Borders stay whole. |
+| 79×24 | Too-small notice names 79×24 and the minimum 80×24. Header and quit hint remain. |
+| `ctrl+c` twice | Each scratch run exits to its shell. |
 
-## Visual review
+The live driver could not send page keys: herdr rejects `pgdn`, `pagedown`,
+`PageDown`, and `page_down`. No live page-key result is claimed. The live
+scroll check uses `down`.
 
-The verifier captured the approved absolute-path board again with Firefox and a new scratch profile, and rendered the live ANSI as an HTML preformatted block for a second Firefox PNG. See `board.png` and `start.png`. Font metrics and page padding differ; the cell contents match. The `*.txt` files remove ANSI colour for the state check.
+## Visual check
+
+The verifier captured the approved board again from
+`/home/penguin/source/hive/.hive/spec/tui-v2/design/WorkGoals.dc.html` with
+Firefox, a new scratch profile, and a 1220×780 window. The approved HTML and
+grid agree byte for byte with the worktree copies. `board.png` is that
+capture. Each live PNG renders the captured ANSI as an HTML `pre`.
+The board and terminal PNGs use different font metrics and padding.
+Cell positions and contents agree. Plain-text files remove colour.
 
 | Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
-| Header | `coordinator ● working`, `supervisor ● live`, `needs you 0`, clock | matches | Fixed fixture data. |
-| Main tabs | `3 Work`, underline `━` | matches | Active tab has text and an underline. |
-| Work views | `[Goals]`, Queue, Tasks | matches | Brackets identify the active view. |
-| List panel and header | `goals · 2`, GOAL, STATUS, WAVES | matches | Cell comparison passes. |
-| Unselected row | `g2-tui-v2`, `planned`, `0/5` | matches | State uses a word and counts. |
-| Selected row | `▶ g1-tui-restart`, `done`, `3/3` | matches | Marker and state word survive colour removal. |
-| Details title and fields | `g1-tui-restart`, title, status, project, grant, manager | matches | Labels and values match. |
-| Waves table | A, B, C; `1/1`; `✓ done` | matches | Glyph and word show the state. |
+| Header | `coordinator ● working`, `supervisor ● live`, needs-you count, clock | matches | Fixed fixture data. |
+| Main tabs | `3 Work`, `━` underline | matches | Text and underline identify the active tab. |
+| Work views | `[Goals]`, Queue, Tasks | matches | Brackets identify the view. |
+| List title and columns | `goals · 2`, GOAL, STATUS, WAVES | matches | Cell comparison passes. |
+| Unselected goal | `g2-tui-v2`, `planned`, `0/5` | matches | Status is a word. |
+| Selected goal | `▶ g1-tui-restart`, `done`, `3/3` | matches | Marker, word, and count remain without colour. |
+| Details title | `g1-tui-restart` | matches | Selected goal ID. |
+| Details fields | title, status, project, grant, manager | matches | Labels and values agree. |
+| Waves table | A, B, C; `1/1`; `✓ done` | matches | Glyph, word, and count show each state. |
 | Tasks | task IDs, `merge`, commit IDs | matches | Delivery uses words and IDs. |
-| Needs you | `NEEDS YOU`, `nothing` | matches | State uses a word. |
-| Action line | `o goal design`, `t open task in Tasks` | matches | Both hints match the board. |
-| Footer | `[list]`, move, region, view, open, design, task, help | matches | No `s` hint, as the updated brief requires. |
-| Focus after tab | `[details]`, scroll hints | matches | Focus also has a plain-text label. |
+| Needs you | `NEEDS YOU`, `nothing` | matches | State has a word. |
+| Action line | `o goal design`, `t open task in Tasks` | matches | Hints agree. |
+| Footer | `[list]`, movement, region, view, open, design, task, help | matches | No `s` hint, as the current brief requires. |
+| Details focus | `[details]`, scroll and exit hints | matches | Focus has a text label. |
+| Compact list and overlay | `▶`, selected ID, `esc back`, `↓ N more lines` | matches | Responsive form follows decisions 9 and 46. |
+| Too-small view | `terminal too small`, dimensions, quit hint | matches | Decision 7. |
 
-## Cleanup and limits
+## Merge, gate, and cleanup
 
-The scratch tab is closed. The detached base worktree, binary, scratch home, browser profiles, generated HTML, and scratch scripts were removed after the evidence tools were copied. `cleanup.txt` records the remaining tabs and worktrees and confirms the scratch folder is absent. Source files have no verifier edits. No coordinator or supervisor was started. Compact live checks and verification after the conflict repair remain required.
+The initial `git merge dev` was already up to date. The later merge of
+`origin/dev` at `fbca94d5` made `d639457b` without a conflict. Both Goals and
+Queue registry entries remain. The merged Logs screen remains. A final
+fetch and merge before the verdict was already up to date.
+
+Full gate output is in `gate-after-merge.txt`. All five commands pass:
+`gofmt -l`, `go mod tidy -diff`, `go vet ./...`, `golangci-lint run ./...`,
+and `go test -race ./...`. No retry was necessary.
+
+The scratch program exited. The owned tab was closed. The detached base
+worktree, binary, scratch home, browser profiles, generated HTML, and scratch
+tools were removed after their evidence was saved. `cleanup.txt` records
+the remaining tabs and worktrees. `.hive/tmp/verify35v4` is absent. No live
+coordinator or supervisor was started. No verifier source edit remains.
+User sign-off under decision 47 remains a later step.

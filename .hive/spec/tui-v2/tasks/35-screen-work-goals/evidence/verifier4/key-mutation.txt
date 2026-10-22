@@ -1,0 +1,6 @@
+=== RUN   TestGoalsKeysAndHints
+    work_goals_test.go:210: key "j" selected "g2-two"; want "g3-three"
+--- FAIL: TestGoalsKeysAndHints (0.06s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.105s
+FAIL
