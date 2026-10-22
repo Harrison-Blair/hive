@@ -18,56 +18,56 @@ t|│   CHECK                   RESULT                 ││                   
 k|afffddddddddddddddddddddddddddddddfffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ herdr socket          protocol 22            ││ result    warn · 1 agent                                         │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafr
-b|001010000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111100
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafr
+b|000010000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111100
 t|│   ✓ herdr pane            w58:p4                 ││ source    hive doctor                                            │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ home                  ~/source/hive          ││ checked   14:22:05 · R to check again                            │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ state store           76 records             ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ starting agents       0                      ││ AGENTS                                                           │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000
 t|│ ▶ ! unresolved agents     1                      ││ ID                ROLE      STATE       PANE                     │
 k|afafafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafarfddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffr
 b|001010111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ git                   2.43.0                 ││ cp5-worker-01     worker    unresolved  gone                     │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfffffffffffffffffffffffffffffaaaaaaaaaaaaddddfffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfffffffffffffffffffffffffffffaaaaaaaaaaaaddddfffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ supervisor            live · pid 1620686     ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ supervisor binary     current                ││ WHAT IT MEANS                                                    │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000111111111111100000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000111111111111100000000000000000000000000000000000000000000000000000
 t|│   ✓ stale worktrees       none                   ││ The record says the agent is live, but hive cannot find its      │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ unpushed branches     none                   ││ pane. Hive does not change the record by itself.                 │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ harness claude        found                  ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ harness codex         found                  ││ NEXT STEP                                                        │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000111111111000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000111111111000000000000000000000000000000000000000000000000000000000
 t|│   ✓ harness opencode      found                  ││ Ask the coordinator in 2 Chat. Health only shows state.          │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarfdddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarfdddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ harness pi            found                  ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ harness cursor-agent  found                  ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   ✓ gh                    2.102.0                ││                                                                  │
-k|afafofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffofffffffffffffffffffffffddddddddddddddddddddddfarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││                                                                  │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -44,15 +44,15 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function work(t) {
-  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · / filter · ? help');
+  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help');
   subtabs(t, 3, ['Goals', 'Queue', 'Tasks'], 2);
   box(t, 0, 4, 52, 35, 'accent', 'tasks · 4', 'accent');
   put(t, 4, 5, fit('ID', 26) + fit('STATUS', 10) + 'WAVE', 'dim');
   var list = [['4-agents-equal-columns', 'landed', 'C'], ['3-tui-restart', 'landed', 'B'], ['2-stale-coordinator-startup', 'landed', 'A'], ['1-cp5-end-to-end', 'assigned', '—']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
-    put(t, 2, y, sel ? '▶ ' : '  ', 'accent', 1);
-    put(t, 4, y, fit(r[0], 25), sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 4, y, fit(r[0], 26), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 30, y, fit(r[1], 10), r[1] === 'landed' ? 'done' : 'info');
     put(t, 40, y, r[2], 'dim');
   });
@@ -67,7 +67,7 @@ function work(t) {
   put(t, 68, 24, 'v', 'accent', 1); put(t, 70, 24, 'VERIFIED.md', 'fg');
   put(t, 84, 24, 'd', 'accent', 1); put(t, 86, 24, 'deps graph', 'fg');
   put(t, 54, 26, 'V1 go test -race ./internal/tui/...      pass', 'dim');
-  put(t, 54, 27, 'V3 live restart in a scratch home       pass', 'dim');
+  put(t, 54, 27, 'V3 live restart in a scratch home        pass', 'dim');
 }
 class Component extends DCLogic {
   renderVals() {

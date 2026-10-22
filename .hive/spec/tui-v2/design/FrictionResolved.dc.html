@@ -45,18 +45,17 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 3, 'list', '↑↓ move · tab region · [ ] view · enter open · / filter · g/G top/end · ? help');
+  frame(t, 3, 'list', '↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help');
   subtabs(t, 3, ['Open', 'Resolved'], 1);
   box(t, 0, 4, 52, 35, 'accent', 'resolved · 20', 'accent');
   put(t, 4, 5, fit('ENTRY', 34) + 'RESOLVED', 'dim');
   var list = [['stale-coordinator-blocks-startup', '10-21'], ['supervisor-runs-stale-binary', '10-21'], ['spec-task-needs-allowlist-first', '10-20'], ['store-list-skips-long-keys', '10-20'], ['verified-task-cannot-cancel', '10-20'], ['agent-spawn-skips-first-prompt', '10-19'], ['any-agent-read-another-role-inbox', '10-19'], ['exited-agent-name-blocks-reuse', '10-19'], ['full-pi-bootstrap-flow', '10-19'], ['idle-session-supervisor-nudges', '10-19'], ['manager-blocked-by-harness-permission', '10-19'], ['manager-spawn-shell-ready-race', '10-19'], ['no-hive-path-repairs-verified-task', '10-19'], ['shell-ready-spawn-race', '10-19'], ['task-edit-brief-command', '10-19'], ['verifier-spawn-pane-requires-project', '10-19'], ['verifier-verdict-without-commit', '10-19'], ['verify-fail-no-reverify-workspace', '10-19'], ['verify-fail-repair-worker-no-workspace', '10-19'], ['worker-spawn-keeps-old-acting-agent', '10-19']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
-    put(t, 4, y, fit(r[0], 33), sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 4, y, fit(r[0], 34), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 38, y, r[1], 'dim');
   });
-  vline(t, 51, 6, 14, '┃', 'accent');
   box(t, 52, 4, 68, 35, 'border', 'supervisor-runs-stale-binary', 'accent');
   var kv = [['title', 'The supervisor keeps running an old hive binary'], ['status', 'Resolved 2026-10-21'], ['opened', '2026-10-19'], ['decision', 'Task 3 adds r restart and an old-binary mark'], ['file', 'entries/resolved/supervisor-runs-stale-binary.md']];
   kv.forEach(function (p, i) { put(t, 54, 6 + i, fit(p[0], 10), 'dim'); put(t, 64, 6 + i, fit(p[1], 54), i === 1 ? 'done' : 'fg'); });
@@ -65,7 +64,9 @@ function screen(t) {
   sum.forEach(function (s, i) { put(t, 54, 13 + i, s, 'fg'); });
   put(t, 54, 20, 'RESOLVED BY', 'accent', 1);
   put(t, 54, 21, '3-tui-restart', 'fg'); put(t, 70, 21, 'merge 3ccd93fb', 'dim');
-  put(t, 54, 23, '↓ 9 more lines', 'dim');
+  put(t, 54, 23, 'REPRODUCTION', 'accent', 1);
+  var rep2 = ['1. Start hive supervise.', '2. Land a change to the supervisor and run go install or', '   go build for hive.', '3. Run hive doctor. It reports the old supervisor as live.', '4. Trigger the changed behavior. The supervisor uses the old', '   code.', 'No skill told an agent to restart the supervisor after a', 'rebuild.'];
+  rep2.forEach(function (s, i) { put(t, 54, 24 + i, s, 'fg'); });
 }
 
 class Component extends DCLogic {

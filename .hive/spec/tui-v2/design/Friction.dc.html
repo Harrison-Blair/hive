@@ -44,14 +44,14 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 3, 'list', '↑↓ move · tab region · [ ] view · enter open · / filter · g/G top/end · ? help');
+  frame(t, 3, 'list', '↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help');
   subtabs(t, 3, ['Open', 'Resolved'], 0);
   box(t, 0, 4, 52, 35, 'accent', 'open · 15', 'accent');
   put(t, 4, 5, fit('ENTRY', 34) + 'OPENED', 'dim');
   var list = [['agent-send-flag-means-target', '10-21'], ['agent-can-send-user-chat', '10-20'], ['completed-task-cannot-reopen', '10-20'], ['local-gate-misses-ci-tidy', '10-20'], ['scratch-hive-starts-real-agents', '10-20'], ['ste-baseline-row-conflicts', '10-20'], ['verify-fail-lost-on-pass', '10-20'], ['worker-has-no-inbox', '10-20'], ['bypass-still-prompts-dangerous-rm', '10-19'], ['no-agent-dashboard', '10-19'], ['no-reviewer-role', '10-19'], ['nudge-interrupts-user-typing', '10-19'], ['old-features-lack-readme', '10-19'], ['verified-md-path-unspecified', '10-19'], ['worker-gate-adds-golangci-lint', '10-19']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 4;
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 4, y, fit(r[0], 34), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 38, y, r[1], 'dim');
   });
@@ -68,8 +68,11 @@ function screen(t) {
   put(t, 54, 26, '2026-10-20  worker of 101 left 4 supervisors, 8 tabs', 'dim');
   put(t, 54, 27, '2026-10-20  t91-worker-1 closed the user TUI tab', 'dim');
   put(t, 54, 28, '2026-10-21  third scratch hive tab leak', 'dim');
-  put(t, 54, 30, '↓ 12 more lines', 'dim');
-  vline(t, 119, 6, 18, '┃', 'dim');
+  put(t, 54, 30, 'MITIGATION', 'accent', 1);
+  var mit = ['Task 8-no-startup of feature tui-v2 adds the switch', 'hive --no-startup and the variable HIVE_NO_STARTUP=1, from', 'decision 34 of the spec. With either one, bare hive opens the', 'TUI. It makes no tab, starts no coordinator and no supervisor,', 'and does not rename the tab.', 'The worker skill and the verifier skill tell each agent to run'];
+  mit.forEach(function (s, i) { put(t, 54, 31 + i, s, 'fg'); });
+  put(t, 54, 37, '↓ 5 more lines', 'dim');
+  vline(t, 119, 5, 28, '┃', 'dim');
 }
 class Component extends DCLogic {
   renderVals() {

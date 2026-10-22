@@ -11,44 +11,47 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ project agents · 1 project ─────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00111111111111111111111111111100000000000000000000000000000000000000000000000000
-t|│ ╭─ hive · g1-tui-restart ──────────────────────────────────────────────────╮ │
-k|afrrdddddddddddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
-b|00001111111111111111111111100000000000000000000000000000000000000000000000000000
-t|│ │                                                                          │ │
-k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ╭─ hive ───────────────────────────────────────────────────────────────────╮ │
+k|afrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|00001111110000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ g1-tui-restart · done                                                    │ │
+k|afrfdddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                         ╭──────────────────────╮                         │ │
 k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                         │ ◐ manager-hive       │                         │ │
-k|afrfffffffffffffffffffffffffafafaaaaaaaaaaaaaaaaaafafffffffffffffffffffffffffrfa
-b|00000000000000000000000000000000111111111111111111000000000000000000000000000000
+k|afrfffffffffffffffffffffffffafafaaaaaaaaaaaafffffffafffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000111111111111000000000000000000000000000000000000
 t|│ │                         │ claude · idle · 4m   │                         │ │
-k|afrfffffffffffffffffffffffffafddddddddddddddddddddfafffffffffffffffffffffffffrfa
+k|afrfffffffffffffffffffffffffafddddddddddddddddddfffafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ╰──────────────────────╯                         │ │
+t|│ │                         ╰───────────┬──────────╯                         │ │
 k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                                     │                                    │ │
 k|afrfffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │             ╭───────────────────────┴───────────────────────╮            │ │
-k|afrfffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffrfa
+t|│ │                   ╭─────────────────┴─────────────────╮                  │ │
+k|afrfffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ╭──────────────────────╮                        ╭──────────────────────╮ │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfrfa
+t|│ │                   │                                   │                  │ │
+k|afrfffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │ ○ t4-worker-1        │                        │ ○ t4-verifier-1      │ │ │
-k|afrfrfdffffffffffffffffffffrffffffffffffffffffffffffrfdffffffffffffffffffffrfrfa
+t|│ │       ╭───────────┴──────────╮            ╭───────────┴──────────╮       │ │
+k|afrfffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │ pi · stopped         │                        │ pi · stopped         │ │ │
-k|afrfrfddddddddddddddddddddfrffffffffffffffffffffffffrfddddddddddddddddddddfrfrfa
+t|│ │       │ ○ t4-worker-1        │            │ ○ t4-verifier-1      │       │ │
+k|afrfffffffrfdfdddddddddddffffffffrffffffffffffrfdfdddddddddddddffffffrfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ╰──────────────────────╯                        ╰──────────────────────╯ │ │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfrfa
+t|│ │       │ pi · stopped · done  │            │ pi · stopped · pass  │       │ │
+k|afrfffffffrfdddddddddddddddddddffrffffffffffffrfdddddddddddddddddddffrfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                                                                          │ │
-k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
+t|│ │       ╰──────────────────────╯            ╰──────────────────────╯       │ │
+k|afrfffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                                                                          │ │
 k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
@@ -56,14 +59,11 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ h hides 2 stopped                                                        │ │
 k|afrfdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                                                                          │ │
-k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                                                                          │ │
-k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ╰──────────────────────────────────────────────────────────────────────────╯ │
 k|afrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
