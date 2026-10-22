@@ -20,16 +20,16 @@ b|000011111100000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ g1-tui-restart · done                                                    │ │
 k|afrfdddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ╭──────────────────────╮                         │ │
+t|│ │                         ┏━━━━━━━━━━━━━━━━━━━━━━┓                         │ │
 k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         │ ◐ manager-hive       │                         │ │
+t|│ │                         ┃ ◐ manager-hive       ┃                         │ │
 k|afrfffffffffffffffffffffffffafafaaaaaaaaaaaafffffffafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000111111111111000000000000000000000000000000000000
-t|│ │                         │ claude · idle · 4m   │                         │ │
+t|│ │                         ┃ claude · idle · 4m   ┃                         │ │
 k|afrfffffffffffffffffffffffffafddddddddddddddddddfffafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ╰───────────┬──────────╯                         │ │
+t|│ │                         ┗━━━━━━━━━━━┯━━━━━━━━━━┛                         │ │
 k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                                     │                                    │ │
