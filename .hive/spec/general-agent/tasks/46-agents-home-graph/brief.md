@@ -15,7 +15,8 @@ Agents graph and in Health › Agents. The user gave the rules of the boards on
 2026-10-21. This task adds these rules to the Agents renderer of task
 `33-screen-agents`. It adds one fixture for each new board. It writes the
 target rows of each new board. The coordinator then paints the boards from
-the target rows. A later task exports the grids and adds the golden checks.
+the target rows. After the user approval, this task also copies the boards, exports the
+grids, and adds the golden checks.
 
 ## Design
 
@@ -32,11 +33,17 @@ No new board exists yet. This task makes the target rows for the new boards.
 | --- | --- |
 | `internal/tui/` and its tests | AC1-AC3. Only the Agents graph, the details popup, and Health › Agents. |
 | `.hive/spec/tui-v2/design/*.fixture.json` | AC4. Seven new fixtures. Do not change a current fixture. |
+| `.hive/spec/tui-v2/design/*.dc.html`, `canvas.json`, `*.grid` | AC5. The eight approved boards and their grids. |
+| `.hive/spec/tui-v2/README.md` | AC5. Only seven new rows in the board table. |
+| `internal/boardexport/check.go` and its tests | AC5. Only seven new entries in `Sizes`. |
+| `internal/tui/` tests that count the boards | AC5. Only the count of boards. |
 | `.hive/spec/general-agent/README.md` | Only the section `Manager decisions`, when it exists, or a new section with that name. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0. |
 | `.hive/spec/general-agent/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
 
-Do not edit other files. Do not edit a board, a grid, or the exporter.
+Do not edit other files. Do not change the logic of the exporter. Copy each
+board. Do not
+change a board by hand.
 
 ## Requirements
 
@@ -88,11 +95,29 @@ Do not edit other files. Do not edit a board, a grid, or the exporter.
 - A rule of AC1-AC3 can change a cell of a current board, for example the
   text `no child agents` or the order of children. Then render that current
   board too and add its changed rows to the report, with the cells that
-  change. The coordinator repaints it with the new boards. Do not complete
-  the task until the grids of the changed current boards are on `dev`. Then
-  merge `dev`, and each golden check must pass.
+  change. The coordinator repaints it with the new boards. AC5 adds the
+  new grids in this task.
 - First failing test: a model test that a general agent with no parent card
   is in the `home` column.
+
+### AC5 Boards, grids, and golden checks
+
+- On 2026-10-22 the user approved the seven new boards and the change of
+  `AgentsMany` (artifact version 45). Copy the eight boards and `canvas.json`
+  from `/home/penguin/source/hive/plans/tui-v2/design/` over the copies in
+  the worktree. `cmp` gives no difference.
+- Add the seven new boards with their sizes to the board table of the
+  `tui-v2` spec, to `Sizes` in `internal/boardexport/check.go`, and to each
+  test that counts the boards. Change only data, not logic.
+- Run the exporter of task `10-board-export` on the design folder. Commit the
+  seven new grids and the changed `AgentsMany.grid`. Each other grid stays
+  the same.
+- Add a golden check for each of the seven new boards, as for the current
+  boards. Each golden check passes.
+- The coordinator found one error in the report: section (a) gives no scroll
+  mark for `AgentsNested`, but its rows show a cut pod and a `┃` mark on
+  column 119, rows 4-34. The rows and the board win. Correct the report and
+  any text that gives the old claim.
 
 ## Acceptance criteria
 
@@ -102,6 +127,7 @@ Do not edit other files. Do not edit a board, a grid, or the exporter.
 | AC2 | Children and nesting follow the rules | V1, V2 |
 | AC3 | The popup and Health follow the rules | V1, V2 |
 | AC4 | Seven fixtures load, the report gives their rows and each changed current row, and each golden check passes | V1, V2 |
+| AC5 | The board copies equal the approved boards, and each golden check passes | V1, V-gate |
 
 ## Verification items
 
@@ -151,9 +177,13 @@ Do not edit other files. Do not edit a board, a grid, or the exporter.
 
 ## Out of scope
 
-The board drawings. The grids and the golden checks of the new boards.
+The board drawings.
 
 ## Changes
 
+- 2026-10-22: AC5 adds the seven boards to the spec table, to `Sizes`, and to
+  the board counts.
+- 2026-10-22: AC5 adds the approved boards, their grids, and the golden
+  checks to this task.
 - 2026-10-21: AC4 allows a current board to change by a user rule. The report
   gives its rows, and the task completes after its grid is on `dev`.

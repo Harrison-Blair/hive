@@ -33,6 +33,13 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `Help.dc.html` | `?` help overlay | 120×40 |
 | `TooSmall.dc.html` | too-small notice | 60×16 |
 | `Components.dc.html` | component sheet | 120×67 |
+| `AgentsHome.dc.html` | 1 Agents, home column | 120×40 |
+| `AgentsNested.dc.html` | 1 Agents, nested child of a worker | 120×40 |
+| `AgentsHiddenParent.dc.html` | 1 Agents, child moved to home by `h` | 120×40 |
+| `AgentsCoordinatorChild.dc.html` | 1 Agents, child of the coordinator | 120×40 |
+| `CompactAgentsHome.dc.html` | 1 Agents, home page | 80×24 |
+| `AgentDetailsGeneral.dc.html` | 1 Agents, details popup of a general agent | 120×40 |
+| `HealthAgentsGeneral.dc.html` | 5 Health, Agents view, general agent | 120×40 |
 
 ## Out of scope
 

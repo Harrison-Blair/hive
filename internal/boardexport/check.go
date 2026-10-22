@@ -32,6 +32,14 @@ var Sizes = map[string][2]int{
 	"Help":             {120, 40},
 	"TooSmall":         {60, 16},
 	"Components":       {120, 67},
+	// The general agent boards of task 46-agents-home-graph.
+	"AgentsHome":             {120, 40},
+	"AgentsNested":           {120, 40},
+	"AgentsHiddenParent":     {120, 40},
+	"AgentsCoordinatorChild": {120, 40},
+	"CompactAgentsHome":      {80, 24},
+	"AgentDetailsGeneral":    {120, 40},
+	"HealthAgentsGeneral":    {120, 40},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a

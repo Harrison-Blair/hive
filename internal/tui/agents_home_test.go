@@ -364,3 +364,11 @@ func requireTimesAtOrBefore(t *testing.T, path string, clock time.Time) {
 	}
 	walk(value)
 }
+
+// AC5, decision 42: the demo view of each general agent board matches its
+// golden grid cell for cell.
+func TestGeneralAgentBoardsMatchTheirGrids(t *testing.T) {
+	for _, board := range []string{"AgentsHome", "AgentsNested", "AgentsHiddenParent", "AgentsCoordinatorChild", "CompactAgentsHome", "AgentDetailsGeneral", "HealthAgentsGeneral"} {
+		t.Run(board, func(t *testing.T) { checkBoardGolden(t, board) })
+	}
+}

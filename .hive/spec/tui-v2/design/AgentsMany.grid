@@ -35,32 +35,32 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                        │ │ │                        │ │ │                        │ │                          │  │
 k|afrfrffffffffffffffffffffffffrfrfrffffffffffffffffffffffffrfrfrffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │┏━━━━━━━━━━━━━━━━━━━━━━┓│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ no workers               │  │
-k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfddddddddddfffffffffffffffrffa
+t|│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ no child agents          │  │
+k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfdddddddddddddddffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ├┨ ● t5-worker-1        ┃│ │ ├┤ ● t3-worker-1        ││ │ ╰┤ ○ t8-worker-1        ││ │                          │  │
-k|afrfrafwfaaaaaaaaaaaffffffffarfrfrrfwffffffffffffffffffffrrfrfrrfdfdddddddddddffffffffrrfrffffffffffffffffffffffffffrffa
-b|000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │┃ pi · working · 3m    ┃│ │ ││ codex · working      ││ │  │ pi · stopped · done  ││ │                          │  │
-k|afrfrafdddddddddddddddddffffarfrfrrfdddddddddddddddffffffrrfrffrfdddddddddddddddddddffrrfrffffffffffffffffffffffffffrffa
+t|│ │ ├┤ ○ t4-verifier-1      ││ │ ├┤ ● t3-worker-1        ││ │ ╰┤ ○ t8-worker-1        ││ │                          │  │
+k|afrfrrfdfdddddddddddddffffffrrfrfrrfwffffffffffffffffffffrrfrfrrfdfdddddddddddffffffffrrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │┗━━━━━━━━━━━━━━━━━━━━━━┛│ │ │╰──────────────────────╯│ │  ╰──────────────────────╯│ │                          │  │
-k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrffa
+t|│ │ ││ pi · stopped · pass  ││ │ ││ codex · working      ││ │  │ pi · stopped · done  ││ │                          │  │
+k|afrfrrfdddddddddddddddddddffrrfrfrrfdddddddddddddddffffffrrfrffrfdddddddddddddddddddffrrfrffffffffffffffffffffffffffrffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │╰──────────────────────╯│ │ │╰──────────────────────╯│ │  ╰──────────────────────╯│ │                          │  │
+k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                        │ │ │                        │ │                          │ │                          │  │
 k|afrfrffffffffffffffffffffffffrfrfrffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ h hides 1 stopped        │ │                          │  │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfdddddddddddddddddffffffffrfrffffffffffffffffffffffffffrffa
+t|│ │ │┏━━━━━━━━━━━━━━━━━━━━━━┓│ │ │╭──────────────────────╮│ │ h hides 1 stopped        │ │                          │  │
+k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfdddddddddddddddddffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ├┤ ● t6-worker-1        ││ │ ╰┤ ◐ t3-verifier-1      ││ │                          │ │                          │  │
-k|afrfrrfwffffffffffffffffffffrrfrfrrfaffffffffffffffffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
+t|│ │ ├┨ ● t5-worker-1        ┃│ │ ╰┤ ◐ t3-verifier-1      ││ │                          │ │                          │  │
+k|afrfrafwfaaaaaaaaaaaffffffffarfrfrrfaffffffffffffffffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
+b|000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │┃ pi · working · 3m    ┃│ │  │ pi · idle · 6m       ││ │                          │ │                          │  │
+k|afrfrafdddddddddddddddddffffarfrffrfddddddddddddddfffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ││ pi · working · 1m    ││ │  │ pi · idle · 6m       ││ │                          │ │                          │  │
-k|afrfrrfdddddddddddddddddffffrrfrffrfddddddddddddddfffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╰──────────────────────╯│ │  ╰──────────────────────╯│ │                          │ │                          │  │
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
+t|│ │ │┗━━━━━━━━━━━━━━━━━━━━━━┛│ │  ╰──────────────────────╯│ │                          │ │                          │  │
+k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                        │ │                          │ │                          │ │                          │  │
 k|afrfrffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
@@ -68,11 +68,11 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │╭──────────────────────╮│ │                          │ │                          │ │                          │  │
 k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ╰┤ ○ t4-verifier-1      ││ │                          │ │                          │ │                          │  │
-k|afrfrrfdfdddddddddddddffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
+t|│ │ ╰┤ ● t6-worker-1        ││ │                          │ │                          │ │                          │  │
+k|afrfrrfwffffffffffffffffffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  │ pi · stopped · pass  ││ │                          │ │                          │ │                          │  │
-k|afrffrfdddddddddddddddddddffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
+t|│ │  │ pi · working · 1m    ││ │                          │ │                          │ │                          │  │
+k|afrffrfdddddddddddddddddffffrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │  ╰──────────────────────╯│ │                          │ │                          │ │                          │  │
 k|afrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
