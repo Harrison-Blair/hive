@@ -50,3 +50,6 @@ For all other files, the coordinator and manager never change a project source f
 | [A verify fail leaves no workspace and no verifier for a re-verify](entries/resolved/verify-fail-no-reverify-workspace.md) | Resolved 2026-10-19 | By design. The manager skill fix landed in 17-verifier-project (e7031497): after a verify fail, spawn a fresh verifier with no --pane. |
 | [Shell-ready race in worker and verifier spawns](entries/resolved/shell-ready-spawn-race.md) | Resolved 2026-10-19 |  |
 | [Manager spawn fails with `agent_pane_busy` right after `workspace.create`](entries/resolved/manager-spawn-shell-ready-race.md) | Resolved 2026-10-19 |  |
+| [The user cannot answer a structured question in the Chat screen](entries/chat-has-no-question-prompt.md) | Open |  |
+| [The Chat message box does not grow or scroll while the user types](entries/chat-input-does-not-grow.md) | Open |  |
+| [A supervisor restart does not stop the old supervisor or close its tab](entries/supervisor-restart-keeps-old-supervisor.md) | Open |  |
