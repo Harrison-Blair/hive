@@ -73,3 +73,21 @@ func TestListScrollMark(t *testing.T) {
 		t.Errorf("rows that do not fit:\n%s\nwant:\n%s", got, want)
 	}
 }
+
+// TestListHint checks the hint row of CompactFriction.dc.html line 62: the
+// hint is dim on the last body row and ends one cell before the padding.
+// The hint row takes one row line.
+func TestListHint(t *testing.T) {
+	l := List{Columns: []Column{{Title: "ID"}}, Hint: "enter"}
+	for i := range 3 {
+		l.Rows = append(l.Rows, []Cell{{Text: fmt.Sprintf("r%d", i)}})
+	}
+	want := "╭────────────╮\n│   ID       │\n│ ▶ r0       ┃\n│   r1       │\n│     enter  │\n╰────────────╯"
+	got := l.View(14, 6)
+	if ansi.Strip(got) != want {
+		t.Errorf("View:\n%s\nwant:\n%s", ansi.Strip(got), want)
+	}
+	if hint := strings.Split(got, "\n")[4]; !strings.Contains(hint, dimStyle.Render("enter")) {
+		t.Errorf("hint row %q has no dim hint", hint)
+	}
+}
