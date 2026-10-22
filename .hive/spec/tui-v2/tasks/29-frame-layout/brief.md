@@ -37,7 +37,7 @@ is not part of this task.
   content area for a size and a focus. Choose the exact API and record it in
   the spec section `Manager decisions`.
 - Until wave 6 replaces a screen, the content area shows the current screen
-  of that tab. No current screen is removed in this task. Record which
+  of that tab. This task removes no current screen. Record which
   current screen each tab shows.
 - The frame uses the components of `internal/tui/component/`.
 
