@@ -9,16 +9,19 @@ const (
 	InboxQuiet      = "quiet"
 	InboxUnresolved = "unresolved"
 	InboxMessage    = "message"
+	InboxReport     = "report"
 )
 
 // Inbox is one durable record in the inbox of a role.
 type Inbox struct {
-	Seq              uint64 `json:"seq"`
-	Role             string `json:"role"`
-	Kind             string `json:"kind"`
-	Task             string `json:"task"`
-	Agent            string `json:"agent"`
-	Text             string `json:"text"`
+	Seq   uint64 `json:"seq"`
+	Role  string `json:"role"`
+	Kind  string `json:"kind"`
+	Task  string `json:"task"`
+	Agent string `json:"agent"`
+	Text  string `json:"text"`
+	// Path is the absolute path of the file of a report record.
+	Path             string `json:"path,omitempty"`
 	CreatedAt        string `json:"created_at"`
 	ReadAt           string `json:"read_at"`
 	NudgedAt         string `json:"nudged_at"`

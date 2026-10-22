@@ -52,4 +52,6 @@ type Agent struct {
 	ProcessName          string `json:"process_name,omitempty"`
 	ProcessStart         uint64 `json:"process_start,omitempty"`
 	AgentSessionRef      string `json:"agent_session_ref,omitempty"`
+	// ReportedAt is the time of the last hive agent report of a general agent.
+	ReportedAt string `json:"reported_at,omitempty"`
 }

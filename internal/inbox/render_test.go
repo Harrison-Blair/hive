@@ -47,3 +47,19 @@ func TestReadTextKeepsSafeTextUnchanged(t *testing.T) {
 		t.Fatalf("ReadText() = %q; want %q", got, want)
 	}
 }
+
+func TestReadTextShowsTheReportPath(t *testing.T) {
+	envelope := output.Envelope{Result: inboxlib.Result{Records: []records.Inbox{{
+		Seq:       3,
+		Role:      "boss",
+		Kind:      records.InboxReport,
+		Agent:     "rev",
+		CreatedAt: "2026-01-01T00:00:00Z",
+		Text:      "head",
+		Path:      "/work/result.md",
+	}}}}
+	want := "3\treport\trev\t2026-01-01T00:00:00Z\thead\t/work/result.md\n"
+	if got := ReadText(envelope); got != want {
+		t.Fatalf("ReadText() = %q; want %q", got, want)
+	}
+}
