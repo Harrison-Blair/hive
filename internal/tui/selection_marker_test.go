@@ -163,6 +163,9 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			name: "Tasks", selected: "selected-task", also: []string{"[all 1]", "project: all"}, states: []string{"assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 4)
+				// Decision 8: the list panel has 13/30 of the width, so the
+				// pane is 200 columns wide to show the Tasks columns.
+				m.width = 200
 				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}, projects: []string{"demo"}}
 				m.tasks.tab = tasksAll
 				m.tasks.selectedID = "selected-task"
@@ -268,7 +271,9 @@ func TestAgentGraphDetailStripNameIsHoneyBold(t *testing.T) {
 func TestAgentGraphBoardRendersTabsLegendHeaderAndDetails(t *testing.T) {
 	m := agentsBoardModel(t)
 	m.width = 120
-	m.header = headerState{supervisor: "fresh", projects: 2, agents: 6, working: 6, needsUser: 0}
+	// The AgentsMany board shows a needs-you count above 0 in accent. A
+	// count of 0 uses fg, as the Main board does.
+	m.header = headerState{supervisor: "fresh", projects: 2, agents: 6, working: 6, needsUser: 1}
 	m.agents.tab = agentsGraph
 	m.agents.selectedKey = "coordinator"
 	view := agentsScreen{model: m}.View(120, 40)
@@ -294,10 +299,11 @@ func TestAgentGraphBoardRendersTabsLegendHeaderAndDetails(t *testing.T) {
 	if got := foregroundAtCell(lines[0], ansi.StringWidth(plain[:strings.Index(plain, "edges:")])); got != "38;2;163;157;144" {
 		t.Errorf("Agents legend foreground = %q, want dim", got)
 	}
-	header := m.agentsHeaderLine()
+	// Decision 2: the header shows the state dots and the needs-you count.
+	header := m.headerView().View(m.width)
 	plainHeader := ansi.Strip(header)
-	if got := foregroundAtCell(header, ansi.StringWidth(plainHeader[:strings.Index(plainHeader, "6 working")])); got != "38;2;110;230;154" {
-		t.Errorf("Agents working count foreground = %q, want working green", got)
+	if got := foregroundAtCell(header, ansi.StringWidth(plainHeader[:strings.Index(plainHeader, "●")])); got != "38;2;110;230;154" {
+		t.Errorf("Agents live supervisor dot foreground = %q, want working green", got)
 	}
 	needsIndex := strings.Index(plainHeader, "needs you ") + len("needs you ")
 	if got := foregroundAtCell(header, ansi.StringWidth(plainHeader[:needsIndex])); got != wantHoney {

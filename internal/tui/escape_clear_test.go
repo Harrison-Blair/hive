@@ -39,7 +39,12 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 	m, _ = raise(t, m, key('f', "f"))
 	m, _ = raise(t, m, key('g', "g"))
 	m, _ = raise(t, m, key('G', "G"))
-	requireView(t, m, "level: info", "text: project", "follow: on")
+	// Decision 4: the footer has no status row, and the filter line wraps
+	// in the 80-column panel, so the test reads the follow state.
+	requireView(t, m, "level: info", "text: project")
+	if !m.follow {
+		t.Fatal("follow=off before viewing Escape; want on")
+	}
 	rejectView(t, m, "other beta", "delta")
 
 	before := countLogLines(t, home)
@@ -64,7 +69,7 @@ func TestViewingEscapeClearsAppliedTextFilter(t *testing.T) {
 		t.Fatalf("viewing Escape log event = %v", event)
 	}
 
-	requireView(t, m, "level: info", "text: -", "follow: on", "project alpha", "other beta", "project gamma", "delta")
+	requireView(t, m, "level: info", "text: -", "project alpha", "other beta", "project gamma", "delta")
 	rejectView(t, m, "project debug")
 	if m.textFilter != "" {
 		t.Fatalf("textFilter=%q after viewing Escape; want empty", m.textFilter)

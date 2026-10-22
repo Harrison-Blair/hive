@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"charm.land/lipgloss/v2"
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
@@ -26,6 +25,7 @@ var supervisorBinaryCache struct {
 }
 
 type headerState struct {
+	coordinator   string
 	supervisor    string
 	supervisorOld bool
 	projects      int
@@ -96,6 +96,12 @@ func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project
 		if record.Status != records.AgentLive {
 			continue
 		}
+		if record.Role == "coordinator" {
+			state.coordinator = "live"
+			if record.AgentStatus != "" {
+				state.coordinator = record.AgentStatus
+			}
+		}
 		state.agents++
 		if state.supervisor == "fresh" {
 			if record.AgentStatus == "working" {
@@ -143,106 +149,4 @@ func supervisorBinaryIsOld(home string, claim records.Claim) bool {
 	supervisorBinaryCache.key = key
 	supervisorBinaryCache.old = old
 	return old
-}
-
-func (m *Model) agentsHeaderLine() string {
-	state := m.header
-	projectLabel := "projects"
-	if state.projects == 1 {
-		projectLabel = "project"
-	}
-	agentLabel := "agents"
-	if state.agents == 1 {
-		agentLabel = "agent"
-	}
-	workCounts := fmt.Sprintf("%s  %d idle", workingStyle.Render(fmt.Sprintf("%d working", state.working)), state.idle)
-	if state.supervisor != "fresh" {
-		workCounts = dimStyle.Render("working unknown  idle unknown")
-	}
-	supervisor := dimStyle.Render("○")
-	if state.supervisor == "fresh" {
-		supervisor = workingStyle.Render("●")
-	}
-	if state.supervisorOld {
-		supervisor = dimStyle.Render("old")
-	}
-	counts := fmt.Sprintf("⬢ hive  %d %s  %d %s  %s", state.projects, projectLabel, state.agents, agentLabel, workCounts)
-	needsUser := lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Render(fmt.Sprint(state.needsUser))
-	status := fmt.Sprintf("supervisor %s", supervisor)
-	if state.supervisorOld {
-		status += " · r to restart"
-	}
-	status += fmt.Sprintf("  needs you %s", needsUser)
-	timeLabel := m.now().Format("15:04")
-	width := m.width
-	if width < 1 {
-		width = defaultWidth
-	}
-	if width < 100 {
-		padding := max(1, width-lipgloss.Width(status)-lipgloss.Width(timeLabel))
-		return counts + "\n" + status + strings.Repeat(" ", padding) + timeLabel
-	}
-	line := counts + "  " + status
-	padding := max(1, width-lipgloss.Width(line)-lipgloss.Width(timeLabel))
-	return line + strings.Repeat(" ", padding) + timeLabel
-}
-
-func (m *Model) activeHeaderLine() string {
-	if m.screenIndex == 1 {
-		return m.agentsHeaderLine()
-	}
-	if m.screenIndex == 3 && m.headerErr == "" {
-		return m.queueHeaderLine()
-	}
-	return m.headerLine()
-}
-
-func (m *Model) queueHeaderLine() string {
-	line := fmt.Sprintf("⬢ hive · runs without you %d · stops %d · waits behind a stop %d", m.header.queueRun, m.header.queueStops, m.header.queueWaits)
-	timeLabel := m.now().Format("15:04")
-	if m.width < 100 {
-		return line + "\n" + timeLabel
-	}
-	padding := max(1, m.width-lipgloss.Width(line)-lipgloss.Width(timeLabel))
-	return line + strings.Repeat(" ", padding) + timeLabel
-}
-
-func (m *Model) headerLine() string {
-	state := m.header
-	if m.headerErr != "" {
-		return fmt.Sprintf("⬢ hive · error: %s\n%s", m.headerErr, m.now().Format("15:04"))
-	}
-	supervisorStyle := dimStyle
-	if state.supervisor == "fresh" {
-		supervisorStyle = workingStyle
-	}
-	projectLabel := "projects"
-	if state.projects == 1 {
-		projectLabel = "project"
-	}
-	agentLabel := "live agents"
-	if state.agents == 1 {
-		agentLabel = "live agent"
-	}
-	workCount := workingStyle.Render(fmt.Sprintf("%d working", state.working))
-	idleCount := doneStyle.Render(fmt.Sprintf("%d idle", state.idle))
-	if state.supervisor != "fresh" {
-		workCount = dimStyle.Render("working unknown")
-		idleCount = dimStyle.Render("idle unknown")
-	}
-	counts := fmt.Sprintf("⬢ hive · %d %s · %d %s · %s / %s",
-		state.projects, projectLabel, state.agents, agentLabel, workCount, idleCount)
-	supervisorLabel := state.supervisor
-	if state.supervisorOld {
-		supervisorLabel = "old"
-	}
-	status := fmt.Sprintf("supervisor %s · needs_user %s · %s",
-		supervisorStyle.Render(supervisorLabel), infoStyle.Render(fmt.Sprint(state.needsUser)), m.now().Format("15:04"))
-	if state.supervisorOld {
-		status += " · r to restart"
-	}
-	if m.width < 100 {
-		return counts + "\n" + status
-	}
-	return counts + " · " + status
 }

@@ -27,7 +27,10 @@ func TestHealthScreenFramesPanelsAndSeparatesWarnings(t *testing.T) {
 	}}
 	m, _ = raise(t, m, screenLoadMsg{request: healthDataRequest, health: result})
 
-	view := ansi.Strip(m.View().Content)
+	// Decision 8: the list panel is narrow from 120 columns, so the test
+	// reads the current Health screen at the content width. The frame draws
+	// the outer panels.
+	view := ansi.Strip(m.currentScreen().View(120, 40-frameRows-1))
 	for _, want := range []string{
 		"┤ home ├", "┤ agents ├", "┤ warnings ├",
 		"! supervisor binary: old executable", "✕ herdr socket: socket missing",
@@ -37,8 +40,8 @@ func TestHealthScreenFramesPanelsAndSeparatesWarnings(t *testing.T) {
 			t.Errorf("health view omitted %q:\n%s", want, view)
 		}
 	}
-	if got := strings.Count(view, "╭"); got != 5 {
-		t.Errorf("health view has %d framed panels, want outer frames and 3 health panels:\n%s", got, view)
+	if got := strings.Count(view, "╭"); got != 3 {
+		t.Errorf("health view has %d framed panels, want 3 health panels:\n%s", got, view)
 	}
 	if strings.Contains(view, "┤ capacity ├") {
 		t.Errorf("health view shows an out-of-scope capacity panel:\n%s", view)
@@ -109,11 +112,18 @@ func TestHealthRStartsBackgroundRefreshWithoutOtherActions(t *testing.T) {
 		t.Fatalf("r returned %T, want health data from a shell request", message)
 	}
 	m, _ = raise(t, m, loaded)
-	assertHealthLines(t, m, "supervisor binary", "stale worktrees", "ask in Chat")
+	// Decision 21: the footer shows the hints of the registry. The check of
+	// KeyHints below keeps "ask in Chat" for the current Health screen.
+	assertHealthLines(t, m, "supervisor binary", "stale worktrees")
 	if _, err := os.Stat(marker); !os.IsNotExist(err) {
 		t.Fatalf("TUI ran the hive binary; marker stat error = %v", err)
 	}
-	for _, press := range []tea.KeyPressMsg{key('R', "R"), key('w', "w"), key('c', "c")} {
+	// Decision 22: R refreshes on each screen.
+	m.screenLoading = false
+	if _, cmd = raise(t, m, key('R', "R")); cmd == nil || !m.screenLoading {
+		t.Fatalf("R returned command %v with loading=%t, want a refresh", cmd != nil, m.screenLoading)
+	}
+	for _, press := range []tea.KeyPressMsg{key('w', "w"), key('c', "c")} {
 		m.screenLoading = false
 		m, cmd = raise(t, m, press)
 		if cmd != nil || m.screenLoading {
@@ -134,10 +144,12 @@ func TestHealthRStartsBackgroundRefreshWithoutOtherActions(t *testing.T) {
 func TestHealthProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	if err := RunHome(home, strings.NewReader("7r\x03\x03"), &out); err != nil {
+	// Decisions 3, 5, and 21: 5 selects Health, the sub-tab row marks the
+	// Home view, and the footer names the list region.
+	if err := RunHome(home, strings.NewReader("5r\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	for _, want := range []string{"▶ 7 Health", "capacity", "ask in Chat"} {
+	for _, want := range []string{"[Home]", "capacity", "[list]"} {
 		if !strings.Contains(ansi.Strip(out.String()), want) {
 			t.Fatalf("program output omitted %q:\n%s", want, ansi.Strip(out.String()))
 		}

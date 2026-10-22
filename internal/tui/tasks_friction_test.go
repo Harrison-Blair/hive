@@ -40,9 +40,11 @@ func TestTasksScreenRendersLandedTaskAndVerificationHistory(t *testing.T) {
 		t.Fatal("Tasks screen did not request data")
 	}
 	m, _ = raise(t, m, cmd())
+	// Decision 6: tab moves the region, so the test gives tab to the
+	// current Tasks screen.
 	m, _ = raise(t, m, key('x', "x"))
 	for range 2 {
-		m, cmd = raise(t, m, key(0, "tab"))
+		m, cmd = pressScreenKey(t, m, key(0, "tab"))
 		if cmd == nil {
 			t.Fatal("tab change did not log the action")
 		}
@@ -64,6 +66,8 @@ func TestTasksScreenRendersLandedTaskAndVerificationHistory(t *testing.T) {
 			t.Errorf("Tasks view does not contain line %q:\n%s", line, view)
 		}
 	}
+	// Decision 8: from 120 columns enter goes to the list.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, cmd = raise(t, m, key(0, "enter"))
 	m = deliverAgentCommands(t, m, cmd)
 	if got := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(got, "# VERIFIED") {
@@ -91,8 +95,10 @@ func TestTasksScreenArrowDownSelectsNextTask(t *testing.T) {
 		t.Fatal("Tasks screen did not request data")
 	}
 	m, _ = raise(t, m, cmd())
+	// Decision 6: tab moves the region, so the test gives tab to the
+	// current Tasks screen.
 	for range 2 {
-		m, _ = raise(t, m, key(0, "tab"))
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	if !strings.Contains(view, "▶ 78-landed-task") {
@@ -116,8 +122,10 @@ func TestTasksScreenShowsDetailsAtDefaultTerminalSize(t *testing.T) {
 		t.Fatal("Tasks screen did not request data")
 	}
 	m, _ = raise(t, m, cmd())
+	// Decision 6: tab moves the region, so the test gives tab to the
+	// current Tasks screen.
 	for range 2 {
-		m, _ = raise(t, m, key(0, "tab"))
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 	view := ansi.Strip(m.View().Content)
 	for _, text := range []string{"79-tui-shell", "landed", "needs:", "branch:", "feature:", "grant:", "needs user:", "evidence:"} {
@@ -137,8 +145,10 @@ func TestTasksProjectFilterAndFailedTab(t *testing.T) {
 		t.Fatal("Tasks screen did not request data")
 	}
 	m, _ = raise(t, m, cmd())
+	// Decision 6: tab moves the region, so the test gives tab to the
+	// current Tasks screen.
 	for range 3 {
-		m, _ = raise(t, m, key(0, "tab"))
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 	view := ansi.Strip(m.currentScreen().View(120, 36))
 	for _, line := range []string{"[failed 1]", "82-failed-task", "V1 fail"} {
@@ -179,8 +189,10 @@ func TestFileViewsMatchTerminalFrames(t *testing.T) {
 						t.Fatal("Tasks screen did not request data")
 					}
 					m, _ = raise(t, m, cmd())
+					// Decision 6: tab moves the region, so the test gives
+					// tab to the current Tasks screen.
 					for range 2 {
-						m, _ = raise(t, m, key(0, "tab"))
+						m, _ = pressScreenKey(t, m, key(0, "tab"))
 					}
 					m, cmd = raise(t, m, key(rune(keyText[0]), keyText))
 					if keyText != "d" && cmd == nil {
@@ -225,8 +237,9 @@ func assertModelFrameSize(t *testing.T, m *Model, width, height int) {
 			t.Errorf("frame line %d has display width %d, want %d: %q", index+1, got, width, line)
 		}
 	}
-	if !strings.HasSuffix(lines[height-4], "╯") {
-		t.Errorf("main panel bottom border is not on line %d: %q", height-3, lines[height-4])
+	// Decision 1: the footer is one row, below the content area.
+	if !strings.HasSuffix(lines[height-2], "╯") {
+		t.Errorf("main panel bottom border is not on line %d: %q", height-1, lines[height-2])
 	}
 }
 
@@ -274,11 +287,15 @@ func TestFrictionScreenShowsSelectedDetailsInRightPanel(t *testing.T) {
 					rightmostDetail = column
 				}
 			}
-			if rightmostDetail <= listColumn || rightmostDetail < size.width/2 {
+			// Decision 8: the details panel starts after the list, at 13/30
+			// of the width.
+			if rightmostDetail <= listColumn || rightmostDetail < size.width*13/30 {
 				t.Fatalf("selected entry details are not in a right-hand panel (list column %d, detail columns %v):\n%s", listColumn, detailColumns, view)
 			}
-			if !strings.Contains(view, "decision") {
-				t.Fatalf("Friction list lost its decision column:\n%s", view)
+			// Decision 8: the list panel is narrow from 120 columns, so the
+			// test reads the current Friction screen at the content width.
+			if full := ansi.Strip(m.currentScreen().View(size.width, size.height-frameRows)); !strings.Contains(full, "decision") {
+				t.Fatalf("Friction list lost its decision column:\n%s", full)
 			}
 		})
 	}
@@ -320,6 +337,9 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 			t.Errorf("default-size Friction view omits %q:\n%s", text, smallView)
 		}
 	}
+	// Decision 8: below 120 columns enter opens the details overlay, and
+	// from 120 columns enter goes to the list.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, cmd = raise(t, m, key(0, "enter"))
 	if cmd == nil {
 		t.Fatal("enter did not request the selected entry")
@@ -333,10 +353,12 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 	if strings.Contains(ansi.Strip(m.currentScreen().View(120, 36)), "**Reproduction steps:**") {
 		t.Fatal("esc did not close the entry reader")
 	}
-	m, cmd = raise(t, m, key(0, "tab"))
+	// Decision 22: ] selects the next view of the Friction tab.
+	m, cmd = raise(t, m, key(']', "]"))
 	if cmd == nil {
-		t.Fatal("tab did not log the friction category change")
+		t.Fatal("] did not log the friction category change")
 	}
+	m = deliverAgentCommands(t, m, cmd)
 	view = ansi.Strip(m.currentScreen().View(120, 36))
 	if !strings.Contains(view, "▶ [resolved 2]") || !strings.Contains(view, "▶ 2026-10-19   Newest fixed issue") {
 		t.Fatalf("resolved entries are missing or not sorted newest first:\n%s", view)
@@ -355,11 +377,12 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 func TestRunHomeShowsTasksFromStringReader(t *testing.T) {
 	home := writeTasksFixture(t)
 	var output strings.Builder
-	if err := RunHome(home, strings.NewReader("5"), &output); err != nil {
+	// Decisions 5 and 22: 3 selects Work, and ] ] select its Tasks view.
+	if err := RunHome(home, strings.NewReader("3]]"), &output); err != nil {
 		t.Fatal(err)
 	}
 	view := ansi.Strip(output.String())
-	for _, text := range []string{"▶ 5 Tasks", "tab filter"} {
+	for _, text := range []string{"[Tasks]", "─ tasks ", "active 2"} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("program output does not contain %q:\n%s", text, view)
 		}

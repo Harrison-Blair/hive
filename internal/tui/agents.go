@@ -70,7 +70,6 @@ type agentsState struct {
 	scrollHeight   int
 	graphOffset    int
 	graphViewWidth int
-	explorerOffset int
 	peekPane       string
 	peekText       string
 	peekOpen       bool

@@ -18,7 +18,8 @@ func TestTasksScreenShowsEvidencePanelAndDefinitions(t *testing.T) {
 	cmd := m.startCurrentScreenLoad()
 	m, _ = raise(t, m, cmd())
 	for range 2 {
-		m, _ = raise(t, m, key(0, "tab"))
+		// Decision 6: tab moves the region. The test gives tab to the current Tasks screen.
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 
 	view := ansi.Strip(m.currentScreen().View(200, 50))
@@ -44,7 +45,8 @@ func TestTasksScreenVOpensVerifiedEvidence(t *testing.T) {
 	cmd := m.startCurrentScreenLoad()
 	m, _ = raise(t, m, cmd())
 	for range 2 {
-		m, _ = raise(t, m, key(0, "tab"))
+		// Decision 6: tab moves the region. The test gives tab to the current Tasks screen.
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 
 	m, cmd = raise(t, m, key('v', "v"))
@@ -68,7 +70,8 @@ func TestTasksScreenDOpensSelectedTaskDependencyGraph(t *testing.T) {
 	cmd := m.startCurrentScreenLoad()
 	m, _ = raise(t, m, cmd())
 	for range 2 {
-		m, _ = raise(t, m, key(0, "tab"))
+		// Decision 6: tab moves the region. The test gives tab to the current Tasks screen.
+		m, _ = pressScreenKey(t, m, key(0, "tab"))
 	}
 
 	m, cmd = raise(t, m, key('d', "d"))
