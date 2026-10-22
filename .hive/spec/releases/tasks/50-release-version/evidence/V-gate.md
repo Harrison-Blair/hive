@@ -121,3 +121,21 @@ exit 0
 ## Result
 
 `gofmt -l` and `go mod tidy -diff` print nothing. The other commands exit 0.
+
+## Repair 2026-10-22
+
+`hive land` had a merge conflict in `testdata/ste-baseline.json` after
+`52-readme` landed. The worker merged `origin/dev` into the task branch in
+merge commit `7ea79096`. The resolution keeps each `dev` entry and adds the
+entry `.hive/spec/releases/tasks/50-release-version/brief.md` with 0 next to
+the entry `.hive/spec/releases/tasks/52-readme/brief.md` with 0. No other
+file changed. The gate ran again after the merge:
+
+```text
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+$ go mod tidy -diff
+$ go vet ./...          exit 0
+$ golangci-lint run ./...
+0 issues.
+$ go test -race ./...   exit 0, no failed package
+```
