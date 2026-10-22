@@ -88,6 +88,11 @@ Do not edit other files.
   code. Then break the behavior on purpose once and run the tests again.
 - Expected: each new test fails on the base for the correct reason and passes
   on the task branch. The broken behavior fails a test.
+- Exception: a guard test that checks that hive sends nothing can pass on
+  the base, because the base sends no kept first prompt. Examples are
+  `TestKeptFirstPromptWaitsWhileBlocked` and
+  `TestKeptFirstPromptFailedAttemptWriteDoesNotSend`. To prove a guard test,
+  remove its guard on purpose. The test must fail.
 
 ### V-gate Diff scope and gate
 
@@ -100,4 +105,5 @@ Do not edit other files.
 
 ## Changes
 
-None.
+- 2026-10-21: after a verify fail (t19-verifier-1), V-red has an exception
+  for guard tests.
