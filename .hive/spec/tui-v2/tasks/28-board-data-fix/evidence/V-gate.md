@@ -5,24 +5,21 @@ Proves AC1, AC2, AC3.
 | Item | Value |
 | --- | --- |
 | Task | 28-board-data-fix |
-| Commit | ac55a7ed plus this evidence |
+| Commit | 7c76d5b7 (merge of dev at ae14fe29) |
 | Date | 2026-10-21 |
 | Agent | t28-worker-1, Claude Code, claude-opus-5-5 |
 
 ## Merge of dev
 
-`git fetch origin dev && git merge origin/dev` printed `Already up to date.`
-The task branch contains `origin/dev`.
+The first merge printed `Already up to date.` Then `dev` advanced to
+ae14fe29 (task 18-general-spawn). The worker merged `origin/dev` again
+(merge commit 7c76d5b7, no conflict) and ran the gate again.
+`git merge-base --is-ancestor origin/dev HEAD` exits 0.
 
 ## Diff scope
 
 ```text
-$ git diff origin/dev --stat   # with the evidence staged
- .../general-agent/tasks/18-general-spawn/brief.md  | 136 ------
- .../tasks/18-general-spawn/evidence/V-gate.md      | 151 ------
- .../tasks/18-general-spawn/evidence/V-red.md       | 201 --------
- .../tasks/18-general-spawn/evidence/V1.md          | 208 ---------
- .../tasks/18-general-spawn/evidence/VERIFIED.md    | 433 -----------------
+$ git diff origin/dev --stat
  .hive/spec/tui-v2/design/AgentDetails.dc.html      |   2 +-
  .hive/spec/tui-v2/design/AgentDetails.fixture.json |  10 +-
  .hive/spec/tui-v2/design/AgentDetails.grid         |   8 +-
@@ -39,7 +36,7 @@ $ git diff origin/dev --stat   # with the evidence staged
  .hive/spec/tui-v2/design/CompactChat.grid          |   2 +-
  .../tui-v2/design/CompactFriction.fixture.json     |   2 +-
  .hive/spec/tui-v2/design/CompactLogs.dc.html       |   6 +-
- .hive/spec/tui-v2/design/CompactLogs.fixture.json  | 188 ++++----
+ .hive/spec/tui-v2/design/CompactLogs.fixture.json  | 188 ++++++++---------
  .hive/spec/tui-v2/design/CompactLogs.grid          |   8 +-
  .hive/spec/tui-v2/design/Components.fixture.json   |   2 +-
  .hive/spec/tui-v2/design/Friction.fixture.json     |   2 +-
@@ -49,31 +46,22 @@ $ git diff origin/dev --stat   # with the evidence staged
  .hive/spec/tui-v2/design/HealthAgents.fixture.json |   2 +-
  .hive/spec/tui-v2/design/HealthAgents.grid         |   2 +-
  .hive/spec/tui-v2/design/Help.fixture.json         |   2 +-
- .hive/spec/tui-v2/design/Logs.dc.html              |  38 +-
- .hive/spec/tui-v2/design/Logs.fixture.json         | 188 ++++----
- .hive/spec/tui-v2/design/Logs.grid                 |  38 +-
+ .hive/spec/tui-v2/design/Logs.dc.html              |  38 ++--
+ .hive/spec/tui-v2/design/Logs.fixture.json         | 188 ++++++++---------
+ .hive/spec/tui-v2/design/Logs.grid                 |  38 ++--
  .hive/spec/tui-v2/design/Main.fixture.json         |   2 +-
  .hive/spec/tui-v2/design/Work.fixture.json         |   2 +-
  .hive/spec/tui-v2/design/WorkGoals.fixture.json    |   2 +-
  .hive/spec/tui-v2/design/WorkQueue.fixture.json    |   2 +-
- .hive/spec/tui-v2/tasks/28-board-data-fix/brief.md | 134 ++++++
- .../tasks/28-board-data-fix/evidence/V-gate.md     |   0
- .../tui-v2/tasks/28-board-data-fix/evidence/V1.md  |  73 +++
- .../tui-v2/tasks/28-board-data-fix/evidence/V2.md  | 113 +++++
- .../tui-v2/tasks/28-board-data-fix/evidence/V3.md  |  85 ++++
- cmd/agent/spawn/general_cli_test.go                |  91 ----
- cmd/agent/spawn/spawn.go                           |  18 +-
- internal/agent/register.go                         |  11 -
- internal/agent/spawn.go                            |  58 +--
- internal/agent/spawn_general.go                    | 377 ---------------
- internal/agent/spawn_general_test.go               | 517 ---------------------
- internal/agent/stop.go                             |  29 --
- internal/agent/stop_general_test.go                |  81 ----
- internal/lib/records/agent.go                      |  23 +-
+ .hive/spec/tui-v2/tasks/28-board-data-fix/brief.md | 134 ++++++++++++
+ .../tasks/28-board-data-fix/evidence/V-gate.md     | 235 +++++++++++++++++++++
+ .../tui-v2/tasks/28-board-data-fix/evidence/V1.md  |  73 +++++++
+ .../tui-v2/tasks/28-board-data-fix/evidence/V2.md  | 113 ++++++++++
+ .../tui-v2/tasks/28-board-data-fix/evidence/V3.md  |  85 ++++++++
  internal/tui/component/chat_test.go                |   4 +-
  internal/tui/component/popup_test.go               |   4 +-
- testdata/ste-baseline.json                         |   2 +-
- 55 files changed, 707 insertions(+), 2586 deletions(-)
+ testdata/ste-baseline.json                         |   1 +
+ 41 files changed, 917 insertions(+), 276 deletions(-)
 ```
 
 Each file is in the source table of the brief (the seven boards, their
@@ -140,7 +128,7 @@ $ go test ./internal/tui/component -run 'TestChatGolden|TestCompactChatGolden|Te
 ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.040s
 ```
 
-## Full gate at ac55a7ed
+## Full gate at 7c76d5b7, after the merge of dev
 
 ```text
 $ gofmt -l $(git ls-files -co --exclude-standard '*.go')
@@ -153,17 +141,17 @@ $ golangci-lint run ./...
 0 issues.
 exit 0
 $ go test -race ./...
-ok  	github.com/Harrison-Blair/hive	25.465s
-ok  	github.com/Harrison-Blair/hive/cmd	(cached)
+ok  	github.com/Harrison-Blair/hive	36.413s
+ok  	github.com/Harrison-Blair/hive/cmd	7.148s
 ?   	github.com/Harrison-Blair/hive/cmd/agent	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/agent/list	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/agent/register	(cached)
-ok  	github.com/Harrison-Blair/hive/cmd/agent/resolve	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/agent/register	1.209s
+ok  	github.com/Harrison-Blair/hive/cmd/agent/resolve	1.478s
 ?   	github.com/Harrison-Blair/hive/cmd/agent/send	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/agent/show	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/agent/spawn	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/agent/spawn	1.467s
 ?   	github.com/Harrison-Blair/hive/cmd/agent/stop	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/chat	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/chat	1.162s
 ?   	github.com/Harrison-Blair/hive/cmd/common	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/doctor	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/goal	[no test files]
@@ -180,43 +168,43 @@ ok  	github.com/Harrison-Blair/hive/cmd/memory/write	(cached)
 ?   	github.com/Harrison-Blair/hive/cmd/project/register	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/project/show	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/supervise	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/task	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/task	1.407s
 ?   	github.com/Harrison-Blair/hive/cmd/task/assign	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/task/cancel	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/task/complete	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/task/create	(cached)
-ok  	github.com/Harrison-Blair/hive/cmd/task/edit	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/task/create	1.099s
+ok  	github.com/Harrison-Blair/hive/cmd/task/edit	1.215s
 ?   	github.com/Harrison-Blair/hive/cmd/task/list	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/task/reopen	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/task/show	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/task/verify	[no test files]
-ok  	github.com/Harrison-Blair/hive/cmd/version	(cached)
+ok  	github.com/Harrison-Blair/hive/cmd/version	1.042s
 ?   	github.com/Harrison-Blair/hive/cmd/worktree	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/worktree/create	[no test files]
 ?   	github.com/Harrison-Blair/hive/cmd/worktree/remove	[no test files]
-ok  	github.com/Harrison-Blair/hive/internal/agent	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/agent	17.748s
 ok  	github.com/Harrison-Blair/hive/internal/boardexport	(cached)
 ?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
-ok  	github.com/Harrison-Blair/hive/internal/chat	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/doctor	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/chat	1.550s
+ok  	github.com/Harrison-Blair/hive/internal/doctor	5.551s
 ?   	github.com/Harrison-Blair/hive/internal/goal	[no test files]
 ok  	github.com/Harrison-Blair/hive/internal/handoff	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/homeinit	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/inbox	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/inbox	1.406s
 ok  	github.com/Harrison-Blair/hive/internal/land	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/cellgrid	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/gitx	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/harness	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/home	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/lib/identity	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/identity	1.396s
 ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/log	(cached)
 ?   	github.com/Harrison-Blair/hive/internal/lib/marker	[no test files]
 ?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
 ok  	github.com/Harrison-Blair/hive/internal/lib/panelock	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/process	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/lib/records	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/lib/records	1.044s
 ok  	github.com/Harrison-Blair/hive/internal/lib/run	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/scope	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/lib/store	(cached)
@@ -224,11 +212,11 @@ ok  	github.com/Harrison-Blair/hive/internal/lib/version	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/logs	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/memory	(cached)
 ok  	github.com/Harrison-Blair/hive/internal/project	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/supervise	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/task	(cached)
-ok  	github.com/Harrison-Blair/hive/internal/tui	75.371s
-ok  	github.com/Harrison-Blair/hive/internal/tui/component	29.125s
-ok  	github.com/Harrison-Blair/hive/internal/worktree	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/supervise	3.487s
+ok  	github.com/Harrison-Blair/hive/internal/task	11.409s
+ok  	github.com/Harrison-Blair/hive/internal/tui	83.996s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	(cached)
+ok  	github.com/Harrison-Blair/hive/internal/worktree	6.960s
 exit 0
 ```
 
