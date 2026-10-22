@@ -26,8 +26,8 @@ The visual check compares the live screen with each board above.
 
 - Put the screen in its own file in `internal/tui/`, named for the screen.
   Change only the registry entry of this tab in `frame.go`.
-- Use the components of `internal/tui/component/`. A component fix that the
-  screen needs is allowed. Record each one.
+- Use the components of `internal/tui/component/`. You can make a component fix that the
+  screen needs. Record each one.
 - Remove the code of the current screen of this tab when no other code uses
   it: `task_screen.go` and its tests. Keep each behavior that a decision of the spec does not
   change.
