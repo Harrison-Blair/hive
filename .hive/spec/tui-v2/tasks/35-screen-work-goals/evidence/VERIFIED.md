@@ -1,5 +1,47 @@
 # Verification: 35-screen-work-goals
 
+## Land repair verification
+
+Verdict: **pass**. Verifier: `t35-verifier-5`. Date: 2026-10-22.
+Tested code: `0b2cff085da589b7309edf9ce59d3f19ac3e7cdf`.
+Merged current dev `5a4b29e68930c21359d8db3119b6a765f04514c6`.
+A second fetch and merge before the final gate reported `Already up to date.`
+Evidence for this run is in `verifier5/`.
+
+The manager approved reuse of V1 and V2 from `d286dcfe` if the deleted
+`checkBoard` was a duplicate of the shared helper and a fresh token mutation
+failed the WorkGoals golden test. Both conditions pass. The prior report
+below remains as evidence of V1, V2, and the visual check. This repair run
+did not repeat the live capture or the base and key mutation runs.
+
+| Item | Result | Evidence |
+| --- | --- | --- |
+| V1 Tests | pass | Prior independent V1 results carry forward under the manager decision. `helper.txt` proves the helpers are identical and WorkGoals calls the shared helper. `token-mutation.txt` fails on ten cells. `green.txt` passes after restoration. |
+| V2 Live check | pass | Prior independent V2 and visual results carry forward under the manager decision. No Goals renderer or key change remains in this repair. |
+| WorkGoals golden check | pass | Changed the planned status token from info to dim. The exact golden command failed with ten differing cells and exit 1. Restored the token. The Goals suite, including the golden test, passed with exit 0. |
+| V-gate Diff scope and gate | pass | `scope.txt` lists only permitted source, brief, baseline, and task evidence. `gate.txt` records all five exact gate commands and their full output. All exit 0. Format and tidy print nothing. No retry was needed. |
+
+Commit `69c8811f` merges dev and resolves the STE baseline. Commit `31764f81`
+also deletes the duplicate helper from `work_goals_test.go` and adds gate
+evidence. The deleted helper is byte-for-byte identical to the helper in
+`friction_test.go` that dev supplied. `TestWorkGoalsMatchesItsBoard` calls
+that shared helper. The additional dev merge brings the selected-card board
+changes; it does not change the WorkGoals board or renderer.
+
+Fresh commands:
+
+```sh
+go test ./internal/tui/ -run '^TestWorkGoalsMatchesItsBoard$' -count=1 -v
+go test ./internal/tui/ -run 'TestWorkGoals|TestGoals' -count=1 -v
+```
+
+The first command ran with the deliberate token change. The second ran
+after restoration. No source mutation remains. This run created no scratch
+pane, home, profile, or binary. All new files are verification evidence.
+User sign-off remains a later step.
+
+## Prior independent verification
+
 Verdict: **pass**. Verifier: `t35-verifier-4`. Date: 2026-10-22.
 Tested code: `d639457bcec3d828f34bb3e09b6965c3725daf6c`.
 Evidence paths below are relative to `verifier4/`.
