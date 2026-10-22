@@ -1,5 +1,53 @@
 # Independent verification: 34-screen-chat
 
+## Land repair verification: t34-verifier-3
+
+Date: 2026-10-22. Verdict: **fail**.
+
+The manager limited this run to the repair after `5bbe5781` and permitted
+V1 to carry forward. Evidence for this run is in `repair-verifier/`.
+
+| Item | Result | Evidence and observation |
+| --- | --- | --- |
+| Repair scope | pass | Reviewed both repair merges and their combined diffs. The README keeps the Chat, Logs, and Friction decisions. `tui.go` keeps the Chat feed and Logs fields and removes the unused viewports and layout method. The duplicate `checkBoard` helper was removed; the Friction helper keeps the same grid comparison. Other source changes come from dev. The two non-merge commits change evidence only. |
+| V1 Tests | pass | Prior V1 carries forward under the manager instruction. `green.txt` runs all Chat tests again. `token-red.txt` records a deliberate change from `dimStyle` to `titleStyle` for the earlier-count note: the Chat golden fails. After restoration, both golden checks pass in `golden-restored.txt`. No mutation remains. |
+| V2 Live check | pass | Built commit `5682e84c` and ran Chat at 120x40 in scratch pane `wAB:p2`, tab `wAB:t2`, with a scratch home. Two reads 500 ms apart agree. The pane has scroll offset 0 and 57 visible rows; the CLI supplies no truncated field. `compare.txt` reports zero differences under the live-space rule. `keys.txt` checks esc to feed, printable input, and demo send refusal. ANSI captures, pane metadata, and fresh board/live PNGs are included. |
+| V-gate Diff scope and gate | fail | The full gate passed on `5682e84c`, after merging dev `5a4b29e6`. Format and tidy printed nothing; vet, lint, and race tests exited 0. No flake retry was needed. At the final refresh, dev advanced to `7ea7497d`. Its merge conflicts in `internal/tui/shell_test.go` and `testdata/ste-baseline.json`. Thus the required gate on current dev cannot pass in this run. See `merge.txt`, `scope.txt`, and `gate.txt`. |
+
+The failed final merge was aborted. The earlier clean dev merge remains on
+this branch. A worker must repair the two conflicts. A fresh verifier must
+then run the checks against the merged code.
+
+### Visual review
+
+Compared the fresh Chat board and live PNGs. The HTML wrappers have different
+margins and line heights. The cell comparison checks the terminal content.
+The plain capture is `repair-verifier/Chat-plain.txt`.
+
+| Board element | state without colour | Result | Cause or decision |
+| --- | --- | --- | --- |
+| Header | coordinator working; supervisor live; needs you 0; 14:22 | matches | Fixed fixture |
+| Tab bar | 2 Chat; underline | matches | Decision 3 |
+| Feed title and earlier count | chat · noise normal; ↑ 42 earlier | matches | Chat decisions |
+| Time and name gutter | you; coordinator; times | matches | Decision 30 |
+| User messages | you; message text | matches | Decision 15 |
+| Folded event | · manager-hi…; event text | matches | Decision 15 |
+| Markdown heading and strong text | Interrogate, round 2; Recommended | matches | Decisions 28–31 |
+| Inline code and code block | spawned=false; hive agent stop manager-hive | matches | Decisions 29, 31 |
+| Table | Choice; Answer; Pros; Cons; rule glyphs | matches | Decision 32 |
+| List | • | matches | Decision 29 |
+| Feed outline and scroll mark | border glyphs; ┃ | matches | Decisions 5, 27 |
+| Input panel | message; >; █ | matches | Decision 15 |
+| Focus and footer | [input]; [feed]; focus key hints | matches | Decisions 4, 21 |
+| Demo refusal | demo mode: no action | matches | Decision 35 |
+| Blank-cell styles | space | overridden | Manager live-space rule |
+
+Closed the scratch tab. Removed the scratch binary, home, HTML, helper, and
+browser profiles. `tabs-after-cleanup.json` shows only the original agent tab.
+Final evidence remains. The previous verification record follows.
+
+---
+
 Verifier: `t34-verifier-2`. Date: 2026-10-22.
 Verdict: **pass**.
 
