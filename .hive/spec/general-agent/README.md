@@ -110,6 +110,18 @@ The friction entry `reference/dogfood/friction/entries/no-reviewer-role.md` reco
 - The format of the inbox key for a general agent, inside the current name pattern.
 - The exact first prompt text, inside decision 5.
 
+### Agents graph (task 46-agents-home-graph)
+
+- The children of a card are in order of `started_at`, for all roles together. This rule changes the order of the pod `hive` on the board `AgentsMany`.
+- A pod with a manager uses the rail form when a card of the pod has a level of 2 or more. The manager is level 0. A child of the manager is level 1.
+- A card of level L is on content column `2L-1`. Its rail is on content column `2L-2`. A card on the rail has 5 rows: a `│` row, then the card with `├┤` on its second row. The last child of a card has `╰┤`. The rail of each ancestor continues past the cards of a lower level when that ancestor has a next sibling.
+- The first child of a level 0 card has `├` on the bottom-left corner of that card. The first child of a card of level 1 or more has `┬` on the bottom border of that card, above the rail. The joint is `┡` or `┯` in accent when the selection is on that card.
+- The pod `home` has the title ` home ` and no goal text. Each card of level 0 is on content column 0. The first card starts on the row of a manager card. One empty row is between two cards of level 0.
+- A stopped general agent that `h` hides counts in the stopped text of the pod of its parent card. When the parent card is not on the graph, it counts in `home`.
+- The scroll line is `←→ at the edge scrolls · projects A–B of N`. N is the number of projects. B is the last project on the screen. When `home` is on the screen, the text ` · home` follows. The right edge shows `home →` when `home` is the next column.
+- Each general agent record is one agent identity. Two general agents with the same parent are both current.
+- In demo mode, `r` on an agent that is not the coordinator or the supervisor shows `restart: coordinator and supervisor only`. On the coordinator or the supervisor, `r` shows the demo notice.
+
 ## Waves
 
 1. **Spec.** Land this README as `.hive/spec/general-agent/README.md`. Add that path to `steFiles` with a baseline of 0.

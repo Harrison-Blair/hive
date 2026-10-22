@@ -1,0 +1,50 @@
+import subprocess,pathlib,shutil
+root=pathlib.Path.cwd(); scratch=root/'.hive/tmp/verify46'; evidence=root/'.hive/spec/general-agent/tasks/46-agents-home-graph/evidence/verifier'
+def run(args, name):
+ p=subprocess.run(args,cwd=scratch,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT); (evidence/name).write_text('$ '+' '.join(args)+'\n'+p.stdout+f'\nexit {p.returncode}\n'); return p
+pattern='TestAgentsHome|TestAgentsNest|TestAgentsChildren|TestAgentsHMoves|TestAgentsCoordinatorChildren|TestAgentsManagerWithout|TestAgentsArrowsReach|TestAgentsCompactHome|TestAgentsDetailsOfAGeneral|TestHealthAgentsRestartRefuses|TestGeneralAgentBoard'
+subprocess.run(['git','checkout','--detach','dev'],cwd=scratch,check=True)
+for f in ['internal/tui/agents_home_test.go','internal/tui/agents_screen_test.go']:
+ shutil.copy(root/f,scratch/f)
+for f in (root/'.hive/spec/tui-v2/design').glob('*'):
+ if not (scratch/'.hive/spec/tui-v2/design'/f.name).exists(): shutil.copy(f,scratch/'.hive/spec/tui-v2/design'/f.name)
+args=['go','test','./internal/tui','-count=1','-run',pattern,'-v']
+run(args,'base-compile.txt')
+f=scratch/'internal/tui/agents_screen.go'; f.write_text(f.read_text().replace('type graphPod struct {','type graphPod struct {\n levels []int'))
+run(args,'base.txt')
+subprocess.run(['git','reset','--hard','HEAD'],cwd=scratch,check=True)
+for name in subprocess.check_output(['git','ls-files','--others','--exclude-standard'],cwd=scratch,text=True).splitlines():
+ (scratch/name).unlink()
+subprocess.run(['git','checkout','--detach','task/46-agents-home-graph'],cwd=scratch,check=True)
+run(args,'green.txt')
+mutations=[
+('B1 home placement','agents_screen.go','if len(home.children) > 0 {','if false {'),
+('B2 project count','agents_screen.go','return len(pods) - 1','return len(pods)'),
+('B3 empty home','agents_screen.go','if len(home.children) > 0 {','if true {'),
+('B4 no project notice','agents_screen.go','if projects == 0 {','if len(pods) == 0 {'),
+('B5 home last','agents_screen.go','out = append(out, home)','out = append([]graphPod{home}, out...)'),
+('B6 parent wins','agents_screen.go','index, ok := podOf[node.record.Parent]','index, ok := podOf["absent"]'),
+('B7 creation order','agents_screen.go','return compareAgentTimes(a.record.StartedAt, b.record.StartedAt)','return -compareAgentTimes(a.record.StartedAt, b.record.StartedAt)'),
+('B8 indent','agents_screen.go','rail := left + 2*(level-1)','rail := left + 3*(level-1)'),
+('B9 nested rail','agents_screen.go','!p.nested()','true'),
+('B10 hide parent','agents_screen.go','if hidden(node) {\n\t\t\t\tpod.hidden++','if false {\n\t\t\t\tpod.hidden++'),
+('B11 no child text','agents_screen.go','text := "no child agents"','text := "no workers"'),
+('B12 coordinator child','agents_screen.go','if node.current && node.record.Role == generalRole {','if node.current && node.record.Role == generalRole && node.record.Parent != "coordinator-g1" {'),
+('B13 distinct identity','agents.go','if record.Role == generalRole {','if false {'),
+('B14 empty fields','agents_screen.go','if value == "" {\n\t\t\treturn ""','if value == "" {\n\t\t\treturn component.DetailField(label, value)'),
+('B15 restart notice','health.go','if m.demo != nil && (!ok || restartable) {','if m.demo != nil {'),
+('B16 Health role','health.go','fitHealthCell(node.record.Role, roleWidth)','fitHealthCell("worker", roleWidth)'),
+('B17 nested joint','agents_screen.go',"light, heavy = '┬', '┯'","light, heavy = '─', '━'"),
+('B18 scroll home','agents_screen.go','scroll += " · home"','scroll += ""'),
+]
+summary=[]
+for name,file,old,new in mutations:
+ path=scratch/'internal/tui'/file; original=path.read_text(); assert old in original,name
+ try:
+  path.write_text(original.replace(old,new,1)); p=run(args,name.split()[0]+'.txt')
+  failed=[x for x in p.stdout.splitlines() if x.startswith('--- FAIL')]
+  summary.append(name+f': exit {p.returncode}; '+'; '.join(failed))
+  assert p.returncode and failed,name+' did not fail a test'
+ finally: path.write_text(original)
+(evidence/'mutations.txt').write_text('\n'.join(summary)+'\n')
+run(args,'restored-green.txt')

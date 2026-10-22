@@ -1,1 +1,403 @@
-{"v": 3, "createdOnFiles": {"v": 1, "at": "2026-10-21T15:30:00Z"}, "title": "Hive TUI Redesign", "launch": {"view": "canvas"}, "pages": [], "boards": {"Main.dc.html": {"x": 0, "y": 0, "w": 984, "h": 728, "title": "1 Agents · 120×40"}, "AgentsMany.dc.html": {"x": 1064, "y": 0, "w": 984, "h": 728, "title": "1 Agents · 5 projects (example data)"}, "AgentDetails.dc.html": {"x": 2128, "y": 0, "w": 984, "h": 728, "title": "1 Agents · details popup (enter)"}, "Chat.dc.html": {"x": 3192, "y": 0, "w": 984, "h": 728, "title": "2 Chat · 120×40"}, "Work.dc.html": {"x": 4256, "y": 0, "w": 984, "h": 728, "title": "3 Work · Tasks · 120×40"}, "Logs.dc.html": {"x": 0, "y": 848, "w": 984, "h": 728, "title": "6 Logs · JSON panel · 120×40"}, "Help.dc.html": {"x": 1064, "y": 848, "w": 984, "h": 728, "title": "? Help overlay · 120×40"}, "Compact.dc.html": {"x": 2128, "y": 848, "w": 672, "h": 456, "title": "Work details overlay · 80×24"}, "TooSmall.dc.html": {"x": 2880, "y": 848, "w": 516, "h": 320, "title": "Too small · 60×16"}, "Components.dc.html": {"x": 0, "y": 1696, "w": 984, "h": 1187, "title": "Components"}, "Friction.dc.html": {"x": 3476, "y": 848, "w": 984, "h": 728, "title": "4 Friction · Open · 120×40"}, "Health.dc.html": {"x": 4540, "y": 848, "w": 984, "h": 728, "title": "5 Health · Home · 120×40"}, "HealthAgents.dc.html": {"x": 5604, "y": 848, "w": 984, "h": 728, "title": "5 Health · Agents · r restart · 120×40"}, "WorkGoals.dc.html": {"x": 1064, "y": 1696, "w": 984, "h": 728, "title": "3 Work · Goals · 120×40"}, "WorkQueue.dc.html": {"x": 2128, "y": 1696, "w": 984, "h": 728, "title": "3 Work · Queue · 120×40"}, "FrictionResolved.dc.html": {"x": 3192, "y": 1696, "w": 984, "h": 728, "title": "4 Friction · Resolved · 120×40"}, "CompactAgents.dc.html": {"x": 1064, "y": 2544, "w": 672, "h": 456, "title": "1 Agents · 80×24"}, "CompactChat.dc.html": {"x": 1816, "y": 2544, "w": 672, "h": 456, "title": "2 Chat · 80×24"}, "CompactFriction.dc.html": {"x": 2568, "y": 2544, "w": 672, "h": 456, "title": "4 Friction · list · 80×24"}, "CompactHealth.dc.html": {"x": 3320, "y": 2544, "w": 672, "h": 456, "title": "5 Health · Agents · 80×24"}, "CompactLogs.dc.html": {"x": 4072, "y": 2544, "w": 672, "h": 456, "title": "6 Logs · details overlay · 80×24"}}, "order": ["Main.dc.html", "AgentsMany.dc.html", "AgentDetails.dc.html", "Chat.dc.html", "Work.dc.html", "Friction.dc.html", "Health.dc.html", "HealthAgents.dc.html", "Logs.dc.html", "Help.dc.html", "Compact.dc.html", "TooSmall.dc.html", "Components.dc.html", "WorkGoals.dc.html", "WorkQueue.dc.html", "FrictionResolved.dc.html", "CompactAgents.dc.html", "CompactChat.dc.html", "CompactFriction.dc.html", "CompactHealth.dc.html", "CompactLogs.dc.html"], "notes": {}, "designSystems": []}
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AgentDetails.dc.html": {
+      "h": 728,
+      "title": "1 Agents · details popup (enter)",
+      "w": 984,
+      "x": 2128,
+      "y": 0
+    },
+    "AgentsMany.dc.html": {
+      "h": 728,
+      "title": "1 Agents · 5 projects (example data)",
+      "w": 984,
+      "x": 1064,
+      "y": 0
+    },
+    "Chat.dc.html": {
+      "h": 728,
+      "title": "2 Chat · 120×40",
+      "w": 984,
+      "x": 3192,
+      "y": 0
+    },
+    "Compact.dc.html": {
+      "h": 456,
+      "title": "Work details overlay · 80×24",
+      "w": 672,
+      "x": 2128,
+      "y": 848
+    },
+    "CompactAgents.dc.html": {
+      "h": 456,
+      "title": "1 Agents · 80×24",
+      "w": 672,
+      "x": 1064,
+      "y": 2544
+    },
+    "CompactChat.dc.html": {
+      "h": 456,
+      "title": "2 Chat · 80×24",
+      "w": 672,
+      "x": 1816,
+      "y": 2544
+    },
+    "CompactFriction.dc.html": {
+      "h": 456,
+      "title": "4 Friction · list · 80×24",
+      "w": 672,
+      "x": 2568,
+      "y": 2544
+    },
+    "CompactHealth.dc.html": {
+      "h": 456,
+      "title": "5 Health · Agents · 80×24",
+      "w": 672,
+      "x": 3320,
+      "y": 2544
+    },
+    "CompactLogs.dc.html": {
+      "h": 456,
+      "title": "6 Logs · details overlay · 80×24",
+      "w": 672,
+      "x": 4072,
+      "y": 2544
+    },
+    "Components.dc.html": {
+      "h": 1187,
+      "title": "Components",
+      "w": 984,
+      "x": 0,
+      "y": 1696
+    },
+    "Friction.dc.html": {
+      "h": 728,
+      "title": "4 Friction · Open · 120×40",
+      "w": 984,
+      "x": 3476,
+      "y": 848
+    },
+    "FrictionResolved.dc.html": {
+      "h": 728,
+      "title": "4 Friction · Resolved · 120×40",
+      "w": 984,
+      "x": 3192,
+      "y": 1696
+    },
+    "Health.dc.html": {
+      "h": 728,
+      "title": "5 Health · Home · 120×40",
+      "w": 984,
+      "x": 4540,
+      "y": 848
+    },
+    "HealthAgents.dc.html": {
+      "h": 728,
+      "title": "5 Health · Agents · r restart · 120×40",
+      "w": 984,
+      "x": 5604,
+      "y": 848
+    },
+    "Help.dc.html": {
+      "h": 728,
+      "title": "? Help overlay · 120×40",
+      "w": 984,
+      "x": 1064,
+      "y": 848
+    },
+    "Logs.dc.html": {
+      "h": 728,
+      "title": "6 Logs · JSON panel · 120×40",
+      "w": 984,
+      "x": 0,
+      "y": 848
+    },
+    "Main.dc.html": {
+      "h": 728,
+      "title": "1 Agents · 120×40",
+      "w": 984,
+      "x": 0,
+      "y": 0
+    },
+    "TooSmall.dc.html": {
+      "h": 320,
+      "title": "Too small · 60×16",
+      "w": 516,
+      "x": 2880,
+      "y": 848
+    },
+    "Work.dc.html": {
+      "h": 728,
+      "title": "3 Work · Tasks · 120×40",
+      "w": 984,
+      "x": 4256,
+      "y": 0
+    },
+    "WorkGoals.dc.html": {
+      "h": 728,
+      "title": "3 Work · Goals · 120×40",
+      "w": 984,
+      "x": 1064,
+      "y": 1696
+    },
+    "WorkQueue.dc.html": {
+      "h": 728,
+      "title": "3 Work · Queue · 120×40",
+      "w": 984,
+      "x": 2128,
+      "y": 1696
+    },
+    "AgentDetails.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 1 Agents · details popup (enter) · dev 2adaf0ab",
+      "w": 984,
+      "x": 2128,
+      "y": 3100
+    },
+    "AgentsMany.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 1 Agents · 5 projects (example data) · dev 2adaf0ab",
+      "w": 984,
+      "x": 1064,
+      "y": 3100
+    },
+    "Chat.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 2 Chat · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 3192,
+      "y": 3100
+    },
+    "Compact.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · Work details overlay · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 2128,
+      "y": 3948
+    },
+    "CompactAgents.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · 1 Agents · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 1064,
+      "y": 5644
+    },
+    "CompactChat.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · 2 Chat · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 1816,
+      "y": 5644
+    },
+    "CompactFriction.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · 4 Friction · list · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 2568,
+      "y": 5644
+    },
+    "CompactHealth.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · 5 Health · Agents · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 3320,
+      "y": 5644
+    },
+    "CompactLogs.live.dc.html": {
+      "h": 456,
+      "title": "LIVE · 6 Logs · details overlay · 80×24 · dev 2adaf0ab",
+      "w": 672,
+      "x": 4072,
+      "y": 5644
+    },
+    "Friction.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 4 Friction · Open · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 3476,
+      "y": 3948
+    },
+    "FrictionResolved.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 4 Friction · Resolved · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 3192,
+      "y": 4796
+    },
+    "Health.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 5 Health · Home · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 4540,
+      "y": 3948
+    },
+    "HealthAgents.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 5 Health · Agents · r restart · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 5604,
+      "y": 3948
+    },
+    "Help.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · ? Help overlay · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 1064,
+      "y": 3948
+    },
+    "Logs.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 6 Logs · JSON panel · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 0,
+      "y": 3948
+    },
+    "Main.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 1 Agents · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 0,
+      "y": 3100
+    },
+    "TooSmall.live.dc.html": {
+      "h": 320,
+      "title": "LIVE · Too small · 60×16 · dev 2adaf0ab",
+      "w": 516,
+      "x": 2880,
+      "y": 3948
+    },
+    "Work.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 3 Work · Tasks · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 4256,
+      "y": 3100
+    },
+    "WorkGoals.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 3 Work · Goals · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 1064,
+      "y": 4796
+    },
+    "WorkQueue.live.dc.html": {
+      "h": 728,
+      "title": "LIVE · 3 Work · Queue · 120×40 · dev 2adaf0ab",
+      "w": 984,
+      "x": 2128,
+      "y": 4796
+    },
+    "AgentsHome.dc.html": {
+      "h": 728,
+      "title": "1 Agents · home column · 120×40",
+      "w": 984,
+      "x": 0,
+      "y": 6300
+    },
+    "AgentsNested.dc.html": {
+      "h": 728,
+      "title": "1 Agents · nested child of a worker · 120×40",
+      "w": 984,
+      "x": 1064,
+      "y": 6300
+    },
+    "AgentsHiddenParent.dc.html": {
+      "h": 728,
+      "title": "1 Agents · h hides parent, child in home · 120×40",
+      "w": 984,
+      "x": 2128,
+      "y": 6300
+    },
+    "AgentsCoordinatorChild.dc.html": {
+      "h": 728,
+      "title": "1 Agents · child of the coordinator · 120×40",
+      "w": 984,
+      "x": 3192,
+      "y": 6300
+    },
+    "CompactAgentsHome.dc.html": {
+      "h": 456,
+      "title": "1 Agents · home page · 80×24",
+      "w": 672,
+      "x": 4256,
+      "y": 6300
+    },
+    "AgentDetailsGeneral.dc.html": {
+      "h": 728,
+      "title": "1 Agents · general agent popup · 120×40",
+      "w": 984,
+      "x": 5008,
+      "y": 6300
+    },
+    "HealthAgentsGeneral.dc.html": {
+      "h": 728,
+      "title": "5 Health · Agents · general agent · 120×40",
+      "w": 984,
+      "x": 6072,
+      "y": 6300
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-21T15:30:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {},
+  "order": [
+    "Main.dc.html",
+    "AgentsMany.dc.html",
+    "AgentDetails.dc.html",
+    "Chat.dc.html",
+    "Work.dc.html",
+    "Friction.dc.html",
+    "Health.dc.html",
+    "HealthAgents.dc.html",
+    "Logs.dc.html",
+    "Help.dc.html",
+    "Compact.dc.html",
+    "TooSmall.dc.html",
+    "Components.dc.html",
+    "WorkGoals.dc.html",
+    "WorkQueue.dc.html",
+    "FrictionResolved.dc.html",
+    "CompactAgents.dc.html",
+    "CompactChat.dc.html",
+    "CompactFriction.dc.html",
+    "CompactHealth.dc.html",
+    "CompactLogs.dc.html",
+    "AgentDetails.live.dc.html",
+    "AgentsMany.live.dc.html",
+    "Chat.live.dc.html",
+    "Compact.live.dc.html",
+    "CompactAgents.live.dc.html",
+    "CompactChat.live.dc.html",
+    "CompactFriction.live.dc.html",
+    "CompactHealth.live.dc.html",
+    "CompactLogs.live.dc.html",
+    "Friction.live.dc.html",
+    "FrictionResolved.live.dc.html",
+    "Health.live.dc.html",
+    "HealthAgents.live.dc.html",
+    "Help.live.dc.html",
+    "Logs.live.dc.html",
+    "Main.live.dc.html",
+    "TooSmall.live.dc.html",
+    "Work.live.dc.html",
+    "WorkGoals.live.dc.html",
+    "WorkQueue.live.dc.html",
+    "AgentsHome.dc.html",
+    "AgentsNested.dc.html",
+    "AgentsHiddenParent.dc.html",
+    "AgentsCoordinatorChild.dc.html",
+    "CompactAgentsHome.dc.html",
+    "AgentDetailsGeneral.dc.html",
+    "HealthAgentsGeneral.dc.html"
+  ],
+  "pages": [],
+  "title": "Hive TUI Redesign"
+}

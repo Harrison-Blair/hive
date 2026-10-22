@@ -54,7 +54,10 @@ type graphPod struct {
 	group    agentGroup
 	manager  *agentNode
 	children []agentNode
+	levels   []int
 	hidden   int
+	// homeColumn marks the home pod: the general agents with no parent card.
+	homeColumn bool
 }
 
 // nodes gives the agents of the pod in the order of the selection.
@@ -69,14 +72,23 @@ func (p graphPod) nodes() []agentNode {
 // tree reports that the children of the pod fit side by side in content
 // width cells.
 func (p graphPod) tree(content int) bool {
-	return p.manager != nil && (len(p.children) == 0 || content/len(p.children) >= treeSlot)
+	return p.manager != nil && !p.nested() && (len(p.children) == 0 || content/len(p.children) >= treeSlot)
 }
 
-// agentsPods gives one pod for each project, in the order of the records.
-// The coordinator and the supervisor are in no pod (decision 14).
+// agentsPods gives one pod for each project, in the order of the records,
+// and the home pod last when it has a card. The coordinator and the
+// supervisor are in no pod (decision 14). A general agent is under the card
+// of its parent when that card is on the graph, otherwise in home (decision
+// 39 of general-agent).
 func (m *Model) agentsPods() []graphPod {
 	nodes := m.agents.nodeMap()
+	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.stopped }
+	// kids gives the children of each card on the graph.
+	kids := make(map[string][]agentNode)
+	// podOf gives the pod index of each card on the graph.
+	podOf := make(map[string]int)
 	var pods []graphPod
+	var roots [][]agentNode
 	for _, group := range m.agents.data.groups {
 		if group.id == "home" {
 			continue
@@ -86,22 +98,136 @@ func (m *Model) agentsPods() []graphPod {
 			node := nodes[key]
 			if node.record.Role == "manager" && node.current && pod.manager == nil {
 				pod.manager = &node
+				podOf[key] = len(pods)
 			}
 		}
+		var top []agentNode
 		for _, key := range group.keys {
 			node := nodes[key]
-			if node.record.Role == "manager" || !node.current {
+			if node.record.Role == "manager" || node.record.Role == generalRole || !node.current {
 				continue
 			}
-			if m.graph.hideStopped && node.stopped {
+			if hidden(node) {
 				pod.hidden++
 				continue
 			}
-			pod.children = append(pod.children, node)
+			top = append(top, node)
+			podOf[key] = len(pods)
+		}
+		if pod.manager != nil {
+			kids[pod.manager.record.Key] = top
+			top = nil
 		}
 		pods = append(pods, pod)
+		roots = append(roots, top)
 	}
-	return pods
+	var pending []agentNode
+	for _, node := range m.agents.data.nodes {
+		if node.current && node.record.Role == generalRole {
+			pending = append(pending, node)
+		}
+	}
+	home := graphPod{group: agentGroup{id: "home"}, homeColumn: true}
+	homeIndex := len(pods)
+	// place puts each pending general agent under its parent card, until
+	// no more agent moves. A hidden agent counts in the pod of its parent.
+	place := func(hiddenIn func(index int) *graphPod) {
+		for moved := true; moved; {
+			moved = false
+			rest := pending[:0:0]
+			for _, node := range pending {
+				index, ok := podOf[node.record.Parent]
+				switch {
+				case !ok:
+					rest = append(rest, node)
+					continue
+				case hidden(node):
+					hiddenIn(index).hidden++
+				default:
+					kids[node.record.Parent] = append(kids[node.record.Parent], node)
+					podOf[node.record.Key] = index
+				}
+				moved = true
+			}
+			pending = rest
+		}
+	}
+	place(func(index int) *graphPod { return &pods[index] })
+	// The rest go to home. A home agent whose parent is also in home is
+	// under it there.
+	waiting := make(map[string]bool, len(pending))
+	for _, node := range pending {
+		waiting[node.record.Key] = true
+	}
+	var homeRoots []agentNode
+	rest := pending[:0:0]
+	for _, node := range pending {
+		switch {
+		case waiting[node.record.Parent]:
+			rest = append(rest, node)
+		case hidden(node):
+			home.hidden++
+		default:
+			homeRoots = append(homeRoots, node)
+			podOf[node.record.Key] = homeIndex
+		}
+	}
+	pending = rest
+	place(func(int) *graphPod { return &home })
+	// Each agent that is left is in a loop of parents. It is a root.
+	homeRoots = append(homeRoots, pending...)
+	var out []graphPod
+	for index, pod := range pods {
+		if pod.manager != nil {
+			pod.children, pod.levels = flattenCards(kids, kids[pod.manager.record.Key], 1)
+		} else {
+			pod.children, pod.levels = flattenCards(kids, roots[index], 0)
+		}
+		out = append(out, pod)
+	}
+	home.children, home.levels = flattenCards(kids, homeRoots, 0)
+	if len(home.children) > 0 {
+		out = append(out, home)
+	}
+	return out
+}
+
+// generalRole is the role of a general agent.
+const generalRole = "agent"
+
+// flattenCards gives the cards of a subtree in the order of the selection:
+// each card, then its children in order of creation time. It also gives the
+// level of each card.
+func flattenCards(kids map[string][]agentNode, cards []agentNode, level int) ([]agentNode, []int) {
+	cards = slices.Clone(cards)
+	slices.SortStableFunc(cards, func(a, b agentNode) int { return compareAgentTimes(a.record.StartedAt, b.record.StartedAt) })
+	var nodes []agentNode
+	var levels []int
+	for _, card := range cards {
+		nodes = append(nodes, card)
+		levels = append(levels, level)
+		children, childLevels := flattenCards(kids, kids[card.record.Key], level+1)
+		nodes = append(nodes, children...)
+		levels = append(levels, childLevels...)
+	}
+	return nodes, levels
+}
+
+// projectPods gives the number of project pods: each pod except home.
+func projectPods(pods []graphPod) int {
+	if len(pods) > 0 && pods[len(pods)-1].homeColumn {
+		return len(pods) - 1
+	}
+	return len(pods)
+}
+
+// nested reports that a card of the pod is the child of a child.
+func (p graphPod) nested() bool {
+	low := 1
+	if p.manager == nil {
+		low = 0
+	}
+	return slices.ContainsFunc(p.levels, func(level int) bool { return level > low })
 }
 
 // selectedAgent gives the selected agent of the graph. When the selection is
@@ -138,8 +264,9 @@ func agentsColumns(pods, width int, wide bool) (int, int) {
 // agentsGraphView renders the Agents screen at exactly width×height cells.
 func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	pods := m.agentsPods()
-	title := fmt.Sprintf("project agents · %d projects", len(pods))
-	if len(pods) == 1 {
+	projects := projectPods(pods)
+	title := fmt.Sprintf("project agents · %d projects", projects)
+	if projects == 1 {
 		title = "project agents · 1 project"
 	}
 	panel := component.Panel{Title: title, Focused: focused}
@@ -149,7 +276,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		panel.Lines = strings.Split(renderAgentPeek(&m.agents, bodyWidth, bodyHeight), "\n")
 		return panel.View(width, height)
 	}
-	if len(pods) == 0 {
+	if projects == 0 {
 		panel.Lines = []string{"", component.Notice{Text: agentsNoneText}.View(bodyWidth)}
 		return panel.View(width, height)
 	}
@@ -201,7 +328,12 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		row++
 	}
 	if scrolls {
-		canvas.text(0, row, fmt.Sprintf("%s · projects %d–%d of %d", agentsScrolls, m.graph.left+1, m.graph.left+visible, len(pods)), cellgrid.Dim, false)
+		end := min(m.graph.left+visible, projects)
+		scroll := fmt.Sprintf("%s · projects %d–%d of %d", agentsScrolls, min(m.graph.left+1, end), end, projects)
+		if m.graph.left+visible > projects {
+			scroll += " · home"
+		}
+		canvas.text(0, row, scroll, cellgrid.Dim, false)
 		var edges []string
 		if m.graph.left > 0 {
 			edges = append(edges, "← "+pods[m.graph.left-1].group.id)
@@ -222,6 +354,8 @@ func (m *Model) podLines(pod graphPod, width int) int {
 	content := width - 4
 	rows := 1 // the goal line
 	switch {
+	case pod.homeColumn:
+		rows += 5*len(pod.children) - 1
 	case pod.manager == nil:
 		rows += 2 + 5*len(pod.children)
 	case pod.tree(content):
@@ -271,13 +405,11 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 	top++
 	var next int
 	switch {
+	case pod.homeColumn:
+		next = m.drawRail(c, pod, left, top-1)
 	case pod.manager == nil:
 		c.text(left, top+1, "no manager", cellgrid.Dim, false)
-		next = top + 2
-		for _, child := range pod.children {
-			m.drawCard(c, child, left, next+1)
-			next += 5
-		}
+		next = m.drawRail(c, pod, left, top+2)
 	case pod.tree(content):
 		manager := *pod.manager
 		mx := left + (content-component.CardWidth)/2
@@ -285,7 +417,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 		center := mx + component.CardWidth/2
 		next = top + component.CardHeight
 		if len(pod.children) == 0 {
-			text := "no workers"
+			text := "no child agents"
 			if note := pod.note(); note != "" {
 				text = note
 			}
@@ -326,31 +458,68 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 		}
 		next += 3 + component.CardHeight
 	default:
-		manager := *pod.manager
-		m.drawCard(c, manager, left, top)
-		next = top + component.CardHeight
-		if len(pod.children) > 0 {
-			m.junction(c, left, next-1, manager, '├', '┡')
-		}
-		for index, child := range pod.children {
-			lastChild := index == len(pod.children)-1
-			c.set(left, next, '│', cellgrid.Border)
-			c.set(left, next+1, '│', cellgrid.Border)
-			m.drawCard(c, child, left+1, next+1)
-			if lastChild {
-				c.set(left, next+2, '╰', cellgrid.Border)
-			} else {
-				c.set(left, next+2, '├', cellgrid.Border)
-				c.set(left, next+3, '│', cellgrid.Border)
-				c.set(left, next+4, '│', cellgrid.Border)
-			}
-			m.junction(c, left+1, next+2, child, '┤', '┨')
-			next += 5
-		}
+		m.drawCard(c, *pod.manager, left, top)
+		next = m.drawRail(c, pod, left, top+component.CardHeight)
 	}
 	if note := pod.note(); note != "" && len(pod.children) > 0 {
 		c.text(left, next+1, note, cellgrid.Dim, false)
 	}
+}
+
+// drawRail draws the children of a pod in the rail form from row next and
+// gives the first row below them. A card of level 0 is on content column
+// left. A card of level L is on a rail at left+2(L-1), with 5 rows for each
+// card: a │ row, then the card with ├┤ or ╰┤ on its second row.
+func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
+	// continues reports that a later card of the pod has level, before a
+	// card of a lower level.
+	continues := func(index, level int) bool {
+		for _, later := range pod.levels[index+1:] {
+			if later <= level {
+				return later == level
+			}
+		}
+		return false
+	}
+	for index, child := range pod.children {
+		level := pod.levels[index]
+		if level == 0 {
+			m.drawCard(c, child, left, next+1)
+			next += 5
+			continue
+		}
+		rail := left + 2*(level-1)
+		if index == 0 || pod.levels[index-1] < level {
+			parent, light, heavy := pod.manager, '├', '┡'
+			if index > 0 {
+				parent = &pod.children[index-1]
+			}
+			if level > 1 {
+				light, heavy = '┬', '┯'
+			}
+			m.junction(c, rail, next-1, *parent, light, heavy)
+		}
+		for ancestor := 1; ancestor < level; ancestor++ {
+			if continues(index, ancestor) {
+				for row := next; row < next+5; row++ {
+					c.set(left+2*(ancestor-1), row, '│', cellgrid.Border)
+				}
+			}
+		}
+		c.set(rail, next, '│', cellgrid.Border)
+		c.set(rail, next+1, '│', cellgrid.Border)
+		m.drawCard(c, child, rail+1, next+1)
+		if continues(index, level) {
+			c.set(rail, next+2, '├', cellgrid.Border)
+			c.set(rail, next+3, '│', cellgrid.Border)
+			c.set(rail, next+4, '│', cellgrid.Border)
+		} else {
+			c.set(rail, next+2, '╰', cellgrid.Border)
+		}
+		m.junction(c, rail+1, next+2, child, '┤', '┨')
+		next += 5
+	}
+	return next
 }
 
 // junction sets a connector cell on the border of the card of node: light in

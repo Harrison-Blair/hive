@@ -159,11 +159,12 @@ func (s healthScreen) move(delta int) tea.Cmd {
 // behavior of task 3-tui-restart. It asks first only when the agent is live
 // (decision 19).
 func (m *Model) requestRestart(node agentNode, ok bool) tea.Cmd {
-	if m.demo != nil {
+	state := &m.agents
+	restartable := node.record.Role == "coordinator" || node.record.Role == "supervisor"
+	if m.demo != nil && (!ok || restartable) {
 		return m.demoBlocked("restart")
 	}
-	state := &m.agents
-	if !ok || (node.record.Role != "coordinator" && node.record.Role != "supervisor") {
+	if !ok || !restartable {
 		state.restartNotice = healthRestartOnly
 		return m.logAction("agent restart request", slog.String("result", "unsupported target"))
 	}

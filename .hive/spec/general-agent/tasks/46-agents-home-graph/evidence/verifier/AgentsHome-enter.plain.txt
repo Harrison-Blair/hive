@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ ╭─ hive ─────────────────────────────╮ ╭─ example-api ──────────────────────╮ ╭─ home ─────────────────────────────╮ │
+│ │ g2-tui-v2 · wave A                 │ │ g4-rate-limits · wave B            │ │                                    │ │
+│ │ ╭──────────────────────╮  ╭─ plan-review-1 · esc closes ─────────────────────────────╮───────────────╮           │ │
+│ │ │ ● manager-hive       │  │                                                          │-check-1       │           │ │
+│ │ │ claude · working · … │  │  role      agent                                         │ · stopped · … │           │ │
+│ │ ├──────────────────────╯  │  status    ● live · working                              │───────────────╯           │ │
+│ │ │                         │  harness   pi                                            │                           │ │
+│ │ │╭──────────────────────╮ │  model     openai-codex/gpt-6.1-sol                      │━━━━━━━━━━━━━━━┓           │ │
+│ │ ├┤ ○ t4-verifier-1      │ │  pane      w80:p1                                        │-review-1      ┃           │ │
+│ │ ││ pi · stopped · pass  │ │  tab       plan-review-1                                 │orking · 2m    ┃           │ │
+│ │ │╰──────────────────────╯ │  parent    coordinator-g2                                │━━━━━━━━━━━━━━━┛           │ │
+│ │ │                         │                                                          │                           │ │
+│ │ │╭──────────────────────╮ │  ACTIONS                                                 │1 stopped                  │ │
+│ │ ├┤ ● t5-worker-1        │ │  a  attach to pane                                       │                           │ │
+│ │ ││ pi · working · 3m    │ │  p  peek pane                                            │                           │ │
+│ │ │╰──────────────────────╯ │  t  open task · none                                     │                           │ │
+│ │ │                         │                                                          │                           │ │
+│ │ │╭──────────────────────╮ │                                                          │                           │ │
+│ │ ╰┤ ● t6-worker-1        │ │                                                          │                           │ │
+│ │  │ pi · working · 1m    │ │                                                          │                           │ │
+│ │  ╰──────────────────────╯ │                                                          │                           │ │
+│ │                           │                                                          │                           │ │
+│ │ h hides 1 stopped         │                                                          │                           │ │
+│ ╰───────────────────────────│                                                          │───────────────────────────╯ │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             ╰──────────────────────────────────────────────────────────╯                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close
