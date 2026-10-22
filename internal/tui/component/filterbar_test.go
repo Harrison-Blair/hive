@@ -45,3 +45,32 @@ func TestFilterBarLongTextKeepsCursor(t *testing.T) {
 		t.Errorf("row %q, want the end of the text and the cursor", row)
 	}
 }
+
+// TestFilterBarStatus checks the status text at the end of the bar: the
+// filter text keeps the start of the row, the status ends at the padding,
+// and a long applied filter is cut with … before the status.
+func TestFilterBarStatus(t *testing.T) {
+	f := FilterBar{Text: "level:debug proj:hive", Status: "< 2026-10-21 >  "}
+	row := ansi.Strip(strings.Split(f.View(44), "\n")[1])
+	if want := "│ / level:debug proj:hive < 2026-10-21 >   │"; row != want {
+		t.Errorf("row %q, want %q", row, want)
+	}
+	f.Text = strings.Repeat("word ", 10)
+	row = ansi.Strip(strings.Split(f.View(40), "\n")[1])
+	if want := "│ / word word word w… < 2026-10-21 >   │"; row != want {
+		t.Errorf("row %q, want %q", row, want)
+	}
+}
+
+// TestFilterBarFocused checks that the focused bar has the accent border
+// (decision 6).
+func TestFilterBarFocused(t *testing.T) {
+	focused := strings.Split(FilterBar{Text: "x", Editing: true, Focused: true}.View(30), "\n")[0]
+	applied := strings.Split(FilterBar{Text: "x"}.View(30), "\n")[0]
+	if !strings.HasPrefix(focused, accentStyle.Render("╭")) {
+		t.Errorf("focused border %q, want accent", focused)
+	}
+	if !strings.HasPrefix(applied, borderStyle.Render("╭")) {
+		t.Errorf("applied border %q, want border", applied)
+	}
+}

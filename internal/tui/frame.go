@@ -396,6 +396,8 @@ func (m *Model) contentView(width, height int) string {
 	switch {
 	case tab == tabChat:
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
+	case tab == tabLogs:
+		body = m.logsContent(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := width * 13 / 30
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
@@ -433,7 +435,7 @@ func (m *Model) legacyPanel(width, height int, focused bool) string {
 // detailsPanel draws the details of the selected item of the current screen.
 func (m *Model) detailsPanel(width, height int, focused bool, suffix string) string {
 	tab := m.activeTab()
-	title, lines := m.legacyDetails(width)
+	title, lines := m.legacyDetails()
 	if panels, ok := screenRegistry[tab].panels[m.viewName()]; ok {
 		title, lines = panels.details(m, width)
 	}
@@ -448,7 +450,7 @@ func (m *Model) legacyName() string {
 
 // legacyDetails gives the title and the lines of the details of the
 // selected item of the current screen, until wave 6 replaces the screen.
-func (m *Model) legacyDetails(width int) (string, []string) {
+func (m *Model) legacyDetails() (string, []string) {
 	switch m.screenIndex {
 	case 1:
 		return m.agentDetails()
@@ -481,8 +483,7 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 		}
 		return check.Name, []string{component.DetailField("status", string(check.Status)), component.DetailField("detail", check.Detail)}
 	}
-	lines := strings.Split(m.detailView(width, 1<<16), "\n")
-	return "json", lines
+	return "details", nil
 }
 
 // agentDetails gives the details of the selected agent.

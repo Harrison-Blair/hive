@@ -358,12 +358,20 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.health.selected = ui.Selection
 	case "logs":
 		m.screenIndex = 7
+		m.textFilter = ui.Filter.Text
+		m.logPendingTime = ui.Selection
+		m.logOffset = ui.Scroll["events"].Top
+		m.detailsOffset[tabLogs] = ui.Scroll["json"].Top
+		if ui.Filter.Open {
+			m.mode = editing
+			m.filterDraft = ui.Filter.Text
+		}
 	}
 	m.agents.showHistory = !ui.HideStopped
 	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {
-		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, time.Local)
+		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, m.now().Location())
 		m.logDate = day
 		m.logDatePinned = true
 	}
@@ -566,7 +574,6 @@ func newDemoModel(home string, state *demoState) *Model {
 	now := state.fixture.now
 	m := newModel(home, func() time.Time { return now }, state)
 	m.demoResize(state.fixture.Terminal.Width, state.fixture.Terminal.Height)
-	m.layout()
 	// The demo loaders read only memory, so the model holds its data before
 	// the first frame and the first key.
 	for _, load := range []tea.Cmd{m.startHeaderLoad(), m.startCurrentScreenLoad()} {

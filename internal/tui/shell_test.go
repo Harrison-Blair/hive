@@ -37,7 +37,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		{"4", tabFriction, "Friction", "open 0"},
 		{"5", tabHealth, "Health", "home"},
 		{"]", tabHealth, "Agents", "[ TREE ]"},
-		{"6", tabLogs, "Logs", "logs ·"},
+		{"6", tabLogs, "Logs", "events · 0"},
 	} {
 		m, _ = raise(t, m, key(rune(step.key[0]), step.key))
 		view := ansi.Strip(m.View().Content)
@@ -276,7 +276,6 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 	for index, name := range []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"} {
 		t.Run(name, func(t *testing.T) {
 			m.screenIndex = index
-			m.layout()
 			output := m.View().Content
 			assertNoPaintedBackgroundSGR(t, output)
 			if !strings.Contains(output, "38;2;245;185;66") {

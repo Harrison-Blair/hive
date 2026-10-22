@@ -10,7 +10,7 @@
 // friction_screen.go loads and renders dogfood friction entries.
 // health_screen.go loads and renders doctor checks.
 // header.go loads and renders project, agent, supervisor, task, and clock data.
-// logview.go renders and filters log lines and handles log keys.
+// logs_screen.go loads, filters, and renders log events, and handles Logs keys.
 // tick.go schedules refreshes and carries background load results.
 // demo.go loads a demo fixture, feeds the screens from it, and draws the too-small notice.
 package tui
