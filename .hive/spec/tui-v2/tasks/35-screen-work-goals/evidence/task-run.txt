@@ -1,0 +1,11 @@
+43e88c58 Merge remote-tracking branch 'origin/dev' into task/35-screen-work-goals
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+--- PASS: TestGoalsDetailsShowWavesTasksAndStops (0.04s)
+--- PASS: TestGoalsSortAndCountOnlyPushedDeliveries (0.04s)
+--- PASS: TestGoalsSelectedRowIsAccentBold (0.00s)
+--- PASS: TestGoalsFitEachSize (1.82s)
+--- PASS: TestGoalsKeysAndHints (0.05s)
+--- PASS: TestGoalsDesignNoticeAndTaskKey (0.03s)
+--- PASS: TestGoalsRefreshReloadsRecords (0.05s)
+--- PASS: TestGoalsProgramUsesStringReader (0.04s)
+ok  	github.com/Harrison-Blair/hive/internal/tui	2.093s
