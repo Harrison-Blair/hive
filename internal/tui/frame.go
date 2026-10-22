@@ -94,6 +94,7 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 		panels: map[string]screenPanels{
 			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
+			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
 		},
 	},
 	tabFriction: {
@@ -454,13 +455,6 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 	switch m.screenIndex {
 	case 1:
 		return m.agentDetails()
-	case 3:
-		for _, task := range m.goalsQueue.data.tasks {
-			if task.ID == m.goalsQueue.selectedTaskID {
-				return task.ID, []string{component.DetailField("title", task.Title), component.DetailField("status", taskStatusLabel(task.Status)), component.DetailField("project", task.Project)}
-			}
-		}
-		return "details", []string{"no task selected"}
 	case 4:
 		title := "details"
 		if item, ok := m.tasks.selected(); ok {
