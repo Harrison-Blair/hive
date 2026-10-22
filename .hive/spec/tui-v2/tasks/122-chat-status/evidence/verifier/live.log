@@ -1,0 +1,264 @@
+[
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatStatus.fixture.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "ChatStatus-120x40",
+    "size": "120x40",
+    "grid": "ChatStatus",
+    "result": "4800 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "capture": "ChatStatus-open",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "capture": "ChatStatus-esc",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatEvents.fixture.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "ChatEvents-120x40",
+    "size": "120x40",
+    "grid": "ChatEvents",
+    "result": "4800 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChatStatus.fixture.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "CompactChatStatus-80x24",
+    "size": "80x24",
+    "grid": "CompactChatStatus",
+    "result": "1920 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Chat.fixture.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Chat-120x40",
+    "size": "120x40",
+    "grid": "Chat",
+    "result": "4800 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChat.fixture.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "CompactChat-80x24",
+    "size": "80x24",
+    "grid": "CompactChat",
+    "result": "1920 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Help.fixture.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Help-120x40",
+    "size": "120x40",
+    "grid": "Help",
+    "result": "4800 cells compared; 0 differences (space styles ignored per decision 54)."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatStatus.fixture.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "ChatStatus-80x24",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatEvents.fixture.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "ChatEvents-80x24",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChatStatus.fixture.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "CompactChatStatus-120x40",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-1.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-1",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-2.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-2",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-3.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-3",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-4.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-4",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-5.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-5",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-6.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-6",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-7.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-7",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-8.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-8",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-9.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-9",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-10.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-10",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-120x40-11.json --size 120x40",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-120x40-11",
+    "size": "120x40",
+    "grid": null,
+    "result": "120x40 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-80x24-1.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-80x24-1",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-80x24-2.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-80x24-2",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-80x24-3.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-80x24-3",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-80x24-4.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-80x24-4",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  },
+  {
+    "command": "COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier-122/input-80x24-5.json --size 80x24",
+    "pane": "wVH:p2"
+  },
+  {
+    "capture": "Input-80x24-5",
+    "size": "80x24",
+    "grid": null,
+    "result": "80x24 capture converted; no approved grid at this size."
+  }
+]

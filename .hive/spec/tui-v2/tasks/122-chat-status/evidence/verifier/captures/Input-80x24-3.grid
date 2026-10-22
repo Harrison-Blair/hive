@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111111111111111111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat ───────────────────────────────────────────────────────────────────────╮
+k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:02 you                                                                    │
+k|rfdddddfuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuur
+b|00000000111111111111111111111111111111111111111111111111111111111111111111111110
+t|│ can we interrogate and design the working status thing for the chat window?  │
+k|rfuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:05 ▸ manager-stenographer g2-live-scroll DONE: task 121-live-transcript-… │
+k|rfddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:06 coordinator                                                            │
+k|rfdddddfiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiir
+b|00000000111111111111111111111111111111111111111111111111111111111111111111111110
+t|│ Interrogate, summary                                                         │
+k|rfaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+b|00111111111111111111111111111111111111111111111111111111111111111111111111111110
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ Working status                                                               │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00111111111111111111111111111111111111111111111111111111111111111111111111111110
+t|│ • The input border shows the coordinator state: ● working 2m, ○ idle 5m, or  ┃
+k|rfaaffffffffffffffffffffffffffffffffffffffffffffffccccccccccccffcccccccccffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▲ blocked 1m.                                                                │
+k|rfccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ • While your last message is pending, the border adds · queued.              │
+k|rfaaffffffffffffffffffffffffffffffffffffffffffffffffffffccccccccfffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 2m · queued ────────────────────────────────────────────╮
+k|aaaaaaaaaaaddwffffffffffffdddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > input row 1                                                                │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuua
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   input row 2                                                                │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuua
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   input row 3█                                                               │
+k|afuuuuuuuuuuuuuaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed          
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

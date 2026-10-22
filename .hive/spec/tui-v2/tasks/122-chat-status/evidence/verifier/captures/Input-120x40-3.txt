@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 42 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:02  you           can we interrogate and design the working status thing for the chat window?                     │
+│                                                                                                                      │
+│ 14:05  ▸ manager-st… g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit pas…  │
+│                                                                                                                      │
+│ 14:06  coordinator   Interrogate, summary                                                                            │
+│                                                                                                                      │
+│                      Working status                                                                                  │
+│                      • The input border shows the coordinator state: ● working 2m, ○ idle 5m, or ▲ blocked 1m.       │
+│                      • While your last message is pending, the border adds · queued.                                 │
+│                                                                                                                      │
+│                      Message bar                                                                                     │
+│                      • The input wraps and grows to 1/3 of the screen, then scrolls inside.                          │
+│                                                                                                                      │
+│                      Events                                                                                          │
+│                      • Events stay dim and folded (▸). ctrl+o opens all of them (▾).                                 │
+│                                                                                                                      │
+│                      Reply yes to confirm, or name the line to change.                                               │
+│                                                                                                                      │
+│ 14:09  ▸ manager-hi… quiet                                                                                           │
+│                                                                                                                      ┃
+│ 14:21  you · pending yes                                                                                             ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ message · ● working 2m · queued ────────────────────────────────────────────────────────────────────────────────────╮
+│ > input row 1                                                                                                        │
+│   input row 2                                                                                                        │
+│   input row 3█                                                                                                       │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [input] enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region   

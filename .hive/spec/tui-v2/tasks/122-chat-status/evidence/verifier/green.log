@@ -1,0 +1,58 @@
+$ go test ./internal/tui -run ^(TestChatInputBorderShowsCoordinatorStatusAndQueuedMark|TestChatInputShowsStatusGlyphAndWholeMinuteAge|TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves|TestChatCtrlOOpensAndFoldsEventsFromBothRegions)$ -count=1 -v
+=== RUN   TestChatInputBorderShowsCoordinatorStatusAndQueuedMark
+--- PASS: TestChatInputBorderShowsCoordinatorStatusAndQueuedMark (0.00s)
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_zero
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_one
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_fifty-nine
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/idle
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/blocked
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/other
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_time
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_live_coordinator
+--- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_zero (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_one (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_fifty-nine (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/idle (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/blocked (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/other (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_time (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_live_coordinator (0.00s)
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/120x40
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/80x24
+--- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves (0.00s)
+    --- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/120x40 (0.00s)
+    --- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/80x24 (0.00s)
+=== RUN   TestChatCtrlOOpensAndFoldsEventsFromBothRegions
+--- PASS: TestChatCtrlOOpensAndFoldsEventsFromBothRegions (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.017s
+exit=0
+
+$ go test ./internal/tui/component -run ^(TestInputGrowsToFitWrappedText|TestInputShowsWrappedTextAndCursor|TestHeaderBlockedStateUsesWarningGlyph)$ -count=1 -v
+=== RUN   TestHeaderBlockedStateUsesWarningGlyph
+--- PASS: TestHeaderBlockedStateUsesWarningGlyph (0.00s)
+=== RUN   TestInputGrowsToFitWrappedText
+--- PASS: TestInputGrowsToFitWrappedText (0.00s)
+=== RUN   TestInputShowsWrappedTextAndCursor
+--- PASS: TestInputShowsWrappedTextAndCursor (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.006s
+exit=0
+
+$ go test ./internal/boardexport -run ^(TestCheckAcceptsChatStatusSymbols|TestCheckAcceptsNewChatBoardSizes)$ -count=1 -v
+=== RUN   TestCheckAcceptsChatStatusSymbols
+--- PASS: TestCheckAcceptsChatStatusSymbols (0.00s)
+=== RUN   TestCheckAcceptsNewChatBoardSizes
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatStatus
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatEvents
+=== RUN   TestCheckAcceptsNewChatBoardSizes/CompactChatStatus
+--- PASS: TestCheckAcceptsNewChatBoardSizes (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatStatus (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatEvents (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/CompactChatStatus (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
+exit=0
