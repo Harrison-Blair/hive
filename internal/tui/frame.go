@@ -38,6 +38,16 @@ type frameScreen struct {
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
+	panels      map[string]screenPanels
+}
+
+// screenPanels draws one view of a screen that wave 6 put in the registry.
+// List draws the list region at exactly width×height cells. Details gives
+// the title and the lines of the details of the selected item. Panels has
+// one entry for each such view, by view name.
+type screenPanels struct {
+	list    func(m *Model, width, height int, focused bool) string
+	details func(m *Model, width int) (string, []string)
 }
 
 // screenRegistry holds the six screens of the tab bar.
@@ -82,6 +92,7 @@ var screenRegistry = [tabCount]frameScreen{
 			"details":       {"↑↓ scroll", "esc back to list"},
 			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
 		},
+		panels: map[string]screenPanels{"Goals": workGoalsPanels},
 	},
 	tabFriction: {
 		label:       "Friction",
@@ -347,6 +358,8 @@ func (m *Model) footerNotice() string {
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
+	case m.screenIndex == 2 && m.goalsQueue.designNotice != "":
+		return m.goalsQueue.designNotice
 	}
 	if err := m.footerError(); err != "" {
 		return "error: " + err
@@ -410,6 +423,9 @@ func (m *Model) contentView(width, height int) string {
 // legacyPanel draws the current screen of the tab in one panel. The panel
 // has the accent border when its region has the focus.
 func (m *Model) legacyPanel(width, height int, focused bool) string {
+	if panels, ok := screenRegistry[m.activeTab()].panels[m.viewName()]; ok {
+		return panels.list(m, width, height, focused)
+	}
 	lines := strings.Split(m.currentScreen().View(width, height), "\n")
 	return component.Panel{Title: strings.ToLower(m.legacyName()), Focused: focused, Lines: lines}.View(width, height)
 }
@@ -430,19 +446,12 @@ func (m *Model) legacyName() string {
 // legacyDetails gives the title and the lines of the details of the
 // selected item of the current screen, until wave 6 replaces the screen.
 func (m *Model) legacyDetails(width int) (string, []string) {
+	if panels, ok := screenRegistry[m.activeTab()].panels[m.viewName()]; ok {
+		return panels.details(m, width)
+	}
 	switch m.screenIndex {
 	case 1:
 		return m.agentDetails()
-	case 2:
-		goal, wave := m.goalsQueue.selectedWave()
-		if goal == nil {
-			return "details", []string{"no goal selected"}
-		}
-		lines := []string{component.DetailField("title", goal.Title), component.DetailField("status", goal.Status)}
-		if wave != nil {
-			lines = append(lines, component.DetailField("wave", wave.ID+" "+wave.Title))
-		}
-		return goal.ID, lines
 	case 3:
 		for _, task := range m.goalsQueue.data.tasks {
 			if task.ID == m.goalsQueue.selectedTaskID {

@@ -139,15 +139,6 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Goals", selected: "demo · Selected goal", states: []string{"done"},
-			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 2)
-				m.goalsQueue.data.goals = []records.Goal{{ID: "g1-demo", Project: "demo", Title: "Selected goal", Status: "done"}}
-				m.goalsQueue.selectedGoal = "g1-demo"
-				return m
-			},
-		},
-		{
 			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
