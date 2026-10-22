@@ -55,3 +55,4 @@ For all other files, the coordinator and manager never change a project source f
 | [A supervisor restart does not stop the old supervisor or close its tab](entries/supervisor-restart-keeps-old-supervisor.md) | Open |  |
 | [The Chat screen does not show that the coordinator is working](entries/chat-shows-no-coordinator-activity.md) | Open |  |
 | [Attach on the supervisor fails with agent_not_found, and the error stays in the footer](entries/attach-fails-on-supervisor.md) | Open |  |
+| [The user must ask an agent to change a hive setting](entries/config-needs-an-agent.md) | Open |  |
