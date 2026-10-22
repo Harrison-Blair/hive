@@ -184,3 +184,13 @@ Full gate output at `f6c961e5`: `gate-after-merge.txt`. `gofmt -l` and
 package of `go test -race ./...` gives `ok` or no test files. Each of the five
 commands exits 0. The verifier evidence in `VERIFIED.md`, `verifier/`, and
 `verifier3/` stays.
+
+### Second merge: task 43 (2026-10-21)
+
+Before `hive task complete`, `origin/dev` moved to `13210c3f` (task 43).
+The merge at `e10795a3` had no conflict. Task 43 changes the Friction boards, the
+Work (Tasks) board, and `testdata/ste-baseline.json`. It does not change
+`WorkGoals.dc.html`, `WorkGoals.grid`, or a Go file, so the golden and live
+checks above stay true. `git diff origin/dev...HEAD --stat` gives the same 9
+files outside the evidence. Full gate output: `gate-after-merge2.txt`. Each of
+the five commands exits 0. `gofmt -l` and `go mod tidy -diff` print nothing.
