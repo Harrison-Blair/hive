@@ -43,11 +43,16 @@ var Sizes = map[string][2]int{
 	"CompactAgentsHome":      {80, 24},
 	"AgentDetailsGeneral":    {120, 40},
 	"HealthAgentsGeneral":    {120, 40},
+	// The live agent boards of task 124-live-agent-activity.
+	"LiveOverview":        {120, 40},
+	"LivePod":             {120, 40},
+	"CompactLiveOverview": {80, 24},
+	"CompactLivePod":      {80, 24},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a
 // printable ASCII character.
-const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×▸▾▲"
+const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×▸▾▲┰┸┺┹╃┻◀▼"
 
 // tokens maps each token name of decision 26 to its token.
 var tokens = func() map[string]cellgrid.Token {

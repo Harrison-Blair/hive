@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"os"
 	"strings"
 	"time"
 
@@ -76,7 +77,11 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	if record.Status != records.AgentLive {
 		return failed("agent", "agent is "+record.Status)
 	}
-	logger.Debug("agent prompt", "command", "agent send", "agent_id", record.Key, "pane_id", record.PaneID, hivelog.Body(options.Text))
+	attrs := []any{"command", "agent send", "agent_id", record.Key, "pane_id", record.PaneID}
+	if sender := paneAgent(home, os.Getenv("HERDR_PANE_ID")); sender != "" {
+		attrs = append(attrs, "from", sender)
+	}
+	logger.Debug("agent prompt", append(attrs, hivelog.Body(options.Text))...)
 
 	text := options.Text
 	if !strings.HasPrefix(text, marker.Prefix) {
@@ -109,6 +114,24 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	}
 	logger.Debug("agent prompt end", "command", "agent send", "agent_id", record.Key, "outcome", envelope.Outcome, "status", reply.AgentStatus)
 	return envelope
+}
+
+// paneAgent gives the name of the live agent record of pane (decision 72),
+// or "" when no record has that pane.
+func paneAgent(home, pane string) string {
+	if pane == "" {
+		return ""
+	}
+	listed, ok := List(home, ListOptions{}).Result.([]records.Agent)
+	if !ok {
+		return ""
+	}
+	for _, record := range listed {
+		if record.PaneID == pane && record.Status == records.AgentLive {
+			return record.Name
+		}
+	}
+	return ""
 }
 
 func isUserTagged(text string) bool {
