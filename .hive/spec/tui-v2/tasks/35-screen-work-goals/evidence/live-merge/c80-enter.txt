@@ -1,0 +1,24 @@
+ hive                                     coord ● · sup ● · needs you 0 · 14:22 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs 
+───────────────────━━━━━━━━─────────────────────────────────────────────────────
+ [Goals]   Queue    Tasks                                     [ ] switch view
+╭─ g1-tui-restart · esc back ──────────────────────────────────────────────────╮
+│                                                                              ┃
+│ title     TUI restart and stale coordinator startup                          ┃
+│ status    done                                                               ┃
+│ project   hive                                                               ┃
+│ grant     grants.md 2026-10-18 hive delivery on dev                          ┃
+│ manager   manager-hive                                                       ┃
+│                                                                              ┃
+│ WAVES                                                                        ┃
+│ WAVE TITLE                      DONE WHEN  LANDED  STATUS                    ┃
+│ A    Stale coordinator startup  dev        1/1     ✓ done                    ┃
+│ B    TUI restart                dev        1/1     ✓ done                    ┃
+│ C    Agents graph columns       dev        1/1     ✓ done                    ┃
+│                                                                              │
+│ TASKS                                                                        │
+│ A   2-stale-coordinator-startup   merge 0e079272                             │
+│ B   3-tui-restart                 merge 3ccd93fb                             │
+│ ↓ 6 more lines                                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [details] ↑↓ scroll · esc back to list       
