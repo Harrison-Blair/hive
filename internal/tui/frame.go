@@ -30,7 +30,8 @@ const (
 // sit side by side, and below 120 columns the details region is a full-width
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
-// or "focus".
+// or "focus". A screen of wave 6 draws its list region with panel and gives
+// its details with details. A screen without them keeps its current screen.
 type frameScreen struct {
 	label       string
 	views       []string
@@ -38,6 +39,8 @@ type frameScreen struct {
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
+	panel       func(m *Model, width, height int, focused bool) string
+	details     func(m *Model, width int) (string, []string)
 }
 
 // screenRegistry holds the six screens of the tab bar.
@@ -112,6 +115,8 @@ var screenRegistry = [tabCount]frameScreen{
 			"Agents/list": {"↑↓ move", "enter details", "[ ] view", "r restart", "R refresh", "?"},
 			"details":     {"↑↓ scroll", "esc back to list"},
 		},
+		panel:   (*Model).healthPanel,
+		details: (*Model).healthDetails,
 	},
 	tabLogs: {
 		label:       "Logs",
@@ -152,16 +157,12 @@ func (s frameScreen) keyHints(view, focus string, wide bool) []string {
 	return nil
 }
 
-// activeTab gives the tab of the current screen. Health › Agents shows the
-// current Agents screen until wave 6, so the tab field tells it apart.
+// activeTab gives the tab of the current screen.
 func (m *Model) activeTab() int {
 	switch m.screenIndex {
 	case 0:
 		return tabChat
 	case 1:
-		if m.tab == tabHealth {
-			return tabHealth
-		}
 		return tabAgents
 	case 2, 3, 4:
 		return tabWork
@@ -181,9 +182,7 @@ func (m *Model) activeView() int {
 	case tabFriction:
 		return int(m.friction.tab)
 	case tabHealth:
-		if m.screenIndex == 1 {
-			return 1
-		}
+		return m.views[tabHealth]
 	}
 	return 0
 }
@@ -214,9 +213,6 @@ func (m *Model) selectScreen(tab, view int) {
 		}
 	case tabHealth:
 		m.screenIndex = 6
-		if view == 1 {
-			m.screenIndex = 1
-		}
 	default:
 		m.screenIndex = 7
 	}
@@ -343,7 +339,7 @@ func (m *Model) footerNotice() string {
 		return m.demo.notice
 	case m.agents.restartConfirm:
 		return ""
-	case m.screenIndex == 1 && m.agents.restartNotice != "":
+	case m.screenIndex == 6 && m.agents.restartNotice != "":
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
@@ -385,7 +381,7 @@ func (m *Model) contentView(width, height int) string {
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := width * 13 / 30
-		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
+		list := strings.Split(m.listPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
 		details := strings.Split(m.detailsPanel(width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
 		for index := range list {
 			list[index] += details[index]
@@ -394,7 +390,7 @@ func (m *Model) contentView(width, height int) string {
 	case entry.listDetails && m.detailsFocused():
 		body = m.detailsPanel(width, bodyHeight, focus == entry.regions[1], " · esc back")
 	default:
-		body = m.legacyPanel(width, bodyHeight, focus == entry.regions[0])
+		body = m.listPanel(width, bodyHeight, focus == entry.regions[0])
 	}
 	content := strings.Join(append(rows, body), "\n")
 	switch {
@@ -407,6 +403,14 @@ func (m *Model) contentView(width, height int) string {
 	return content
 }
 
+// listPanel draws the list region of the active screen.
+func (m *Model) listPanel(width, height int, focused bool) string {
+	if panel := screenRegistry[m.activeTab()].panel; panel != nil {
+		return panel(m, width, height, focused)
+	}
+	return m.legacyPanel(width, height, focused)
+}
+
 // legacyPanel draws the current screen of the tab in one panel. The panel
 // has the accent border when its region has the focus.
 func (m *Model) legacyPanel(width, height int, focused bool) string {
@@ -416,8 +420,11 @@ func (m *Model) legacyPanel(width, height int, focused bool) string {
 
 // detailsPanel draws the details of the selected item of the current screen.
 func (m *Model) detailsPanel(width, height int, focused bool, suffix string) string {
-	title, lines := m.legacyDetails(width)
 	tab := m.activeTab()
+	title, lines := m.legacyDetails(width)
+	if details := screenRegistry[tab].details; details != nil {
+		title, lines = details(m, width)
+	}
 	body := max(height-2, 0)
 	m.detailsOffset[tab] = min(max(m.detailsOffset[tab], 0), max(len(lines)-body, 0))
 	return component.Details{Title: title + suffix, Focused: focused, Lines: lines, Offset: m.detailsOffset[tab]}.View(width, height)
@@ -462,12 +469,6 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 			title = entry.file
 		}
 		return title, m.friction.detailLines()
-	case 6:
-		check, ok := m.health.selectedCheck()
-		if !ok {
-			return "details", []string{"no check selected"}
-		}
-		return check.Name, []string{component.DetailField("status", string(check.Status)), component.DetailField("detail", check.Detail)}
 	}
 	lines := strings.Split(m.detailView(width, 1<<16), "\n")
 	return "json", lines

@@ -598,40 +598,6 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 		state.graphOffset = 0
 		state.keepSelectedVisible()
 		return s.model.logAction("agent tab", slog.String("tab", []string{"tree", "graph", "table"}[state.tab]))
-	case "r":
-		if s.model.demo != nil {
-			return s.model.demoBlocked("restart")
-		}
-		node, ok := state.selected()
-		if !ok || (node.record.Role != "coordinator" && node.record.Role != "supervisor") {
-			state.restartNotice = "restart applies only to the coordinator and the supervisor"
-			return s.model.logAction("agent restart request", slog.String("result", "unsupported target"))
-		}
-		if node.record.Status == records.AgentStarting {
-			state.restartNotice = "cannot restart an agent while it is starting"
-			return s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("result", "agent is starting"))
-		}
-		state.restartNotice = ""
-		state.restartTarget = node.record
-		if node.record.Role == "coordinator" && node.record.Status == records.AgentLive {
-			state.restartRunning = true
-			state.restartNotice = "checking coordinator pane"
-			return batch(
-				s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "checking pane")),
-				s.model.startCoordinatorRestartCheck(node.record),
-			)
-		}
-		if node.record.Status == records.AgentLive && (node.record.Role != "supervisor" || state.data.supervisorLive) {
-			state.restartConfirm = true
-			state.restartNotice = "restart " + node.record.Role + "? y/n"
-			return s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "confirmation required"))
-		}
-		state.restartRunning = true
-		state.restartNotice = "restarting"
-		return batch(
-			s.model.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "started immediately")),
-			s.model.startAgentRestart(node.record),
-		)
 	case "h":
 		state.showHistory = !state.showHistory
 		if _, ok := state.selected(); !ok {

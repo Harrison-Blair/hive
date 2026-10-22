@@ -117,6 +117,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		name     string
 		selected string
 		also     []string
+		bold     []string
 		states   []string
 		model    func(*testing.T) *Model
 	}{
@@ -182,7 +183,9 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Health", selected: "home", states: []string{"✓", "✕ herdr socket"},
+			// The Health board puts the check glyph between the marker and
+			// the name, so the test reads the marker and the name apart.
+			name: "Health", bold: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{
@@ -209,7 +212,12 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
-			requireHoneySelection(t, raw, tt.selected)
+			if tt.selected != "" {
+				requireHoneySelection(t, raw, tt.selected)
+			}
+			for _, text := range tt.bold {
+				requireHoneyBoldText(t, raw, text)
+			}
 			for _, selected := range tt.also {
 				requireHoneySelection(t, raw, selected)
 			}

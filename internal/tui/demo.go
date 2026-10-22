@@ -361,7 +361,12 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		}
 	case "health":
 		m.screenIndex = 6
-		m.health.selected = ui.Selection
+		m.health.hideStopped = ui.HideStopped
+		if ui.View == "agents" {
+			m.health.selectedAgent = ui.Selection
+		} else {
+			m.health.selected = ui.Selection
+		}
 	case "logs":
 		m.screenIndex = 7
 	}
@@ -394,7 +399,6 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 		view = 1
 	case ui.Screen == "health" && ui.View == "agents":
 		tab, view = tabHealth, 1
-		m.agents.selectedKey = ui.Selection
 	}
 	m.selectScreen(tab, view)
 	if index := slices.Index(screenRegistry[tab].regions, ui.Focus); index > 0 {

@@ -337,6 +337,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
 			m.health.accept(msg.health)
+			m.health.acceptAgents(msg.agents)
+			m.health.checkedAt = m.now()
 			m.lastHealthRefresh = m.now()
 		case chatDataRequest:
 			m.chatData = msg.chat
@@ -566,9 +568,11 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
 		}
 	case healthDataRequest:
-		loader, home, logger := m.healthLoader, m.home, m.logger
+		// Health › Agents lists the agents beside the checks (decision 18).
+		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
 		return func() tea.Msg {
-			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger)}
+			agents, err := agentsLoader(home, now())
+			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger), agents: agents, err: err}
 		}
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home
