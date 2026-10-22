@@ -45,19 +45,18 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · o design · t task · / filter · ? help');
+  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help');
   subtabs(t, 3, ['Goals', 'Queue', 'Tasks'], 0);
   box(t, 0, 4, 52, 35, 'accent', 'goals · 2', 'accent');
   put(t, 4, 5, fit('GOAL', 24) + fit('STATUS', 10) + 'WAVES', 'dim');
   var list = [['g2-tui-v2', 'planned', '0/5', 'info'], ['g1-tui-restart', 'done', '3/3', 'done']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 4, y, fit(r[0], 24), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 28, y, fit(r[1], 10), r[3]);
     put(t, 38, y, r[2], 'dim');
   });
-  put(t, 2, 9, 'g2-tui-v2 is example data', 'dim');
   box(t, 52, 4, 68, 35, 'border', 'g1-tui-restart', 'accent');
   var kv = [['title', 'TUI restart and stale coordinator startup'], ['status', 'done'], ['project', 'hive'], ['grant', 'grants.md 2026-10-18 hive delivery on dev'], ['manager', 'manager-hive']];
   kv.forEach(function (p, i) { put(t, 54, 6 + i, fit(p[0], 10), 'dim'); put(t, 64, 6 + i, fit(p[1], 54), i === 1 ? 'done' : 'fg'); });

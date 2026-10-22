@@ -55,7 +55,7 @@ function chat(t) {
   event('14:19', 'manager-hive', 'goal g1-tui-restart created · wave A started · worker t2-worker-1 live');
   who('14:21', 'coordinator', 'info');
   put(t, X, y, 'Interrogate, round 2', 'accent', 1); y += 2;
-  put(t, X, y, '1. What happens to the old tab on restart?', 'fg', 1); y += 1;
+  put(t, X, y, '1. What happens to the old tab on restart?', 'fg', 1); y += 2;
   segs(t, X, y, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has '], ['spawned=false', 'code'], ['. '], ['agent stop', 'code'], [' refuses it.']]); y += 2;
   var cols = [19, 35, 18, 19];
   function trow(cells, k, b) { var x = X; cells.forEach(function (c, i) { put(t, x, y, ' ' + fit(c, cols[i] - 1), i === 0 && b ? 'accent' : k, b); x += cols[i]; if (i < cols.length - 1) { put(t, x, y, '│', 'border'); x += 1; } }); y += 1; }
@@ -73,7 +73,7 @@ function chat(t) {
   put(t, X + 2, y + 1, 'hive agent spawn --role manager', 'code');
   y += 3;
   userMsg('14:22', '1A, 2A, 3B');
-  vline(t, 119, 20, 14, '┃', 'dim');
+  vline(t, 119, 27, 8, '┃', 'dim');
 }
 class Component extends DCLogic {
   renderVals() {
