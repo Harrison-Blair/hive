@@ -15,27 +15,10 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
-	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/charmbracelet/x/ansi"
 )
-
-// checkBoard renders the demo model of board at its board size and compares
-// the whole grid with the golden grid of the board (decision 42).
-func checkBoard(t *testing.T, board string) {
-	t.Helper()
-	want := readBoardGrid(t, board)
-	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
-	got := renderGrid(t, m, want.Width, want.Height)
-	diffs, err := cellgrid.Compare(want, got, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(diffs) != 0 {
-		t.Fatalf("%d cells differ from %s.grid:\n%s\nrendered:\n%s", len(diffs), board, cellgrid.FormatDiffs(diffs), m.View().Content)
-	}
-}
 
 func TestChatMatchesItsBoard(t *testing.T) {
 	checkBoard(t, "Chat")

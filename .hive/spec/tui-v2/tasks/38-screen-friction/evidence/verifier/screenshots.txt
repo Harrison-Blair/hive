@@ -1,0 +1,16 @@
+*** You are running in headless mode.
+Gtk-Message: 22:44:34.292: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:44:35.747: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:44:37.230: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:44:38.719: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:44:40.141: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:44:41.498: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:45:38.348: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+*** You are running in headless mode.
+Gtk-Message: 22:45:40.493: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
