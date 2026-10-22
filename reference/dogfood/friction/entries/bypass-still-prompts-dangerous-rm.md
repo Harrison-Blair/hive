@@ -37,3 +37,11 @@ dialog on `rm -rf $S/*` in its final commit step, and t110-verifier-2 on
 with `herdr pane send-keys <pane> Down`, then `Return` (`Enter` did not
 register). `hive agent send` refuses while the pane is blocked
 (`agent_blocked`).
+
+**Possible recurrence 2026-10-21 (hive 19):** the manager got a `blocked`
+record with no reason for t19-worker-1 during its cleanup step. When the
+manager read the pane, it showed no dialog. The worker was in
+`hive task complete`, and the `completed` record came a short time later.
+The cause is not known. The record can be the same dialog with an
+automatic deny, or a short false `blocked` state. The blocked record still
+gives no reason.
