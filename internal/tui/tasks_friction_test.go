@@ -253,7 +253,7 @@ func TestFrictionScreenShowsSelectedDetailsInRightPanel(t *testing.T) {
 			writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "FRICTION.md"), "# Friction\n")
 			writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "selected.md"), "---\ntitle: \"Selected issue detail\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"Keep this decision.\"\n---\n\n**Summary:**\nThe selected issue summary.\n")
 			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-			m.screenIndex = 5
+			m.selectScreen(tabFriction, 0)
 			m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
 			cmd := m.startCurrentScreenLoad()
 			if cmd == nil {
@@ -262,40 +262,25 @@ func TestFrictionScreenShowsSelectedDetailsInRightPanel(t *testing.T) {
 			m, _ = raise(t, m, cmd())
 
 			view := ansi.Strip(m.View().Content)
-			listColumn := -1
-			var detailColumns []int
+			listColumn, detailColumn := -1, -1
 			for _, line := range strings.Split(view, "\n") {
-				if index := strings.Index(line, "opened       title"); index >= 0 {
+				if index := strings.Index(line, "ENTRY"); index >= 0 && strings.Contains(line, "OPENED") {
 					listColumn = ansi.StringWidth(line[:index])
 				}
-				for start := 0; ; {
-					index := strings.Index(line[start:], "Selected issue detail")
-					if index < 0 {
-						break
-					}
-					index += start
-					detailColumns = append(detailColumns, ansi.StringWidth(line[:index]))
-					start = index + len("Selected issue detail")
+				if index := strings.Index(line, "Selected issue detail"); index >= 0 {
+					detailColumn = ansi.StringWidth(line[:index])
 				}
 			}
 			if listColumn < 0 {
-				t.Fatal("Friction list header is missing")
-			}
-			rightmostDetail := -1
-			for _, column := range detailColumns {
-				if column > rightmostDetail {
-					rightmostDetail = column
-				}
+				t.Fatalf("Friction list header is missing:\n%s", view)
 			}
 			// Decision 8: the details panel starts after the list, at 13/30
 			// of the width.
-			if rightmostDetail <= listColumn || rightmostDetail < size.width*13/30 {
-				t.Fatalf("selected entry details are not in a right-hand panel (list column %d, detail columns %v):\n%s", listColumn, detailColumns, view)
+			if detailColumn <= listColumn || detailColumn < size.width*13/30 {
+				t.Fatalf("selected entry details are not in a right-hand panel (list column %d, detail column %d):\n%s", listColumn, detailColumn, view)
 			}
-			// Decision 8: the list panel is narrow from 120 columns, so the
-			// test reads the current Friction screen at the content width.
-			if full := ansi.Strip(m.currentScreen().View(size.width, size.height-frameRows)); !strings.Contains(full, "decision") {
-				t.Fatalf("Friction list lost its decision column:\n%s", full)
+			if !strings.Contains(view, "▶ selected") || !strings.Contains(view, "The selected issue summary.") {
+				t.Fatalf("Friction view omits the selected entry or its summary:\n%s", view)
 			}
 		})
 	}
@@ -307,69 +292,79 @@ func TestFrictionScreenLoadsEntriesAndOpensSelectedEntry(t *testing.T) {
 	writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "open-one.md"), "---\ntitle: \"Open issue\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"\"\n---\n\n**Summary:**\nA missing dashboard.\n\n**Reproduction steps:**\n1. Start hive.\n")
 	writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "invalid.md"), "No front matter\n")
 	writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "resolved", "fixed.md"), "---\ntitle: \"Fixed issue\"\nstatus: \"Resolved 2026-10-20\"\nopened: 2026-10-18\ndecision: \"Fixed in task 9.\"\n---\n\n**Summary:**\nThe fix works.\n")
-	writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "resolved", "newer.md"), "---\ntitle: \"Newest fixed issue\"\nstatus: \"Resolved 2026-10-20\"\nopened: 2026-10-19\ndecision: \"Fixed today.\"\n---\n\n**Summary:**\nThe newest fix works.\n")
+	writeText(t, filepath.Join(home, "reference", "dogfood", "friction", "entries", "resolved", "newer.md"), "---\ntitle: \"Newest fixed issue\"\nstatus: \"Resolved 2026-10-21\"\nopened: 2026-10-19\ndecision: \"Fixed today.\"\n---\n\n**Summary:**\nThe newest fix works.\n")
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 5
+	m.selectScreen(tabFriction, 0)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	cmd := m.startCurrentScreenLoad()
 	if cmd == nil {
 		t.Fatal("Friction screen did not request data")
 	}
 	m, _ = raise(t, m, cmd())
-	view := ansi.Strip(m.currentScreen().View(120, 36))
+	view := ansi.Strip(m.View().Content)
 	for _, line := range []string{
-		"▶ [open 2]  resolved 2",
-		"? invalid.md",
+		"open · 2",
+		"▶ open-one",
+		"  invalid ",
 		"Open issue",
-		"Summary",
+		"SUMMARY",
 		"A missing dashboard.",
-		"Reproduction steps",
+		"REPRODUCTION STEPS",
 		"1. Start hive.",
 	} {
 		if !strings.Contains(view, line) {
 			t.Errorf("Friction view does not contain line %q:\n%s", line, view)
 		}
 	}
+	// An entry with no front matter shows ? in its fields.
+	m, _ = raise(t, m, key(0, "down"))
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "? invalid.md") {
+		t.Errorf("invalid entry details omit \"? invalid.md\":\n%s", view)
+	}
+	m, _ = raise(t, m, key(0, "up"))
+	// Decision 9: below 120 columns enter opens the details overlay.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
+	m, _ = raise(t, m, key(0, "enter"))
 	smallView := ansi.Strip(m.View().Content)
-	for _, text := range []string{"Open issue", "status: Open", "file: open-one.md", "Summary", "Reproduction steps"} {
+	for _, text := range []string{"Open issue", "status    Open", "file      entries/open-one.md", "SUMMARY", "REPRODUCTION STEPS"} {
 		if !strings.Contains(smallView, text) {
-			t.Errorf("default-size Friction view omits %q:\n%s", text, smallView)
+			t.Errorf("default-size Friction overlay omits %q:\n%s", text, smallView)
 		}
 	}
-	// Decision 8: below 120 columns enter opens the details overlay, and
-	// from 120 columns enter goes to the list.
+	m, _ = raise(t, m, key(0, "esc"))
+	// From 120 columns enter opens the entry file in the details region.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, cmd = raise(t, m, key(0, "enter"))
 	if cmd == nil {
 		t.Fatal("enter did not request the selected entry")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "**Reproduction steps:**") {
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "**Reproduction steps:**") {
 		t.Fatalf("entry reader did not show the full file:\n%s", view)
 	}
 	m, _ = raise(t, m, key(0, "esc"))
-	if strings.Contains(ansi.Strip(m.currentScreen().View(120, 36)), "**Reproduction steps:**") {
+	if strings.Contains(ansi.Strip(m.View().Content), "**Reproduction steps:**") {
 		t.Fatal("esc did not close the entry reader")
 	}
-	// Decision 22: ] selects the next view of the Friction tab.
+	// Decision 22: ] selects the next view of the Friction tab. The newest
+	// resolved date is first.
 	m, cmd = raise(t, m, key(']', "]"))
 	if cmd == nil {
 		t.Fatal("] did not log the friction category change")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "▶ [resolved 2]") || !strings.Contains(view, "▶ 2026-10-19   Newest fixed issue") {
+	view = ansi.Strip(m.View().Content)
+	if !strings.Contains(view, "resolved · 2") || !strings.Contains(view, "▶ newer ") || !strings.Contains(view, "  fixed ") {
 		t.Fatalf("resolved entries are missing or not sorted newest first:\n%s", view)
 	}
+	m, _ = raise(t, m, key(0, "down"))
 	cmd = m.startCurrentScreenLoad()
 	if cmd == nil {
 		t.Fatal("Friction refresh did not request data")
 	}
 	m, _ = raise(t, m, cmd())
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "▶ 2026-10-19   Newest fixed issue") {
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "▶ fixed ") {
 		t.Fatalf("refresh did not preserve friction selection:\n%s", view)
 	}
 }

@@ -1,0 +1,24 @@
+[0m[1m hive                                     coord [0m[1m[38;2;110;230;154m●[0m[1m · sup [0m[1m[38;2;110;230;154m●[0m[1m · needs you 0 · 14:22 [0m
+ [0m[38;2;163;157;144m 1 Agents  2 Chat  3 Work [0m[1m[38;2;245;185;66m 4 Friction [0m[38;2;163;157;144m 5 Health  6 Logs [0m
+[0m[38;2;61;58;51m───────────────────────────[0m[38;2;245;185;66m━━━━━━━━━━━━[0m[38;2;61;58;51m─────────────────────────────────────────[0m
+ [0m[1m[38;2;245;185;66m[Open][0m  [0m[38;2;163;157;144m Resolved                                            [ ] switch view[0m
+[0m[38;2;245;185;66m╭─[0m[1m[38;2;245;185;66m scratch-hive-starts-real-agents · esc back [0m[38;2;245;185;66m─────────────────────────────────╮[0m
+[0m[38;2;245;185;66m│[0m                                                                              [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;163;157;144mtitle     [0mBare hive in a scratch home starts real tabs                       [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;163;157;144mstatus    [0m[1m[38;2;245;185;66mOpen                                                              [0m [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;163;157;144mopened    [0m2026-10-20                                                         [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;163;157;144mseen      [0m3 times · last 2026-10-21                                          [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;163;157;144mfile      [0mentries/scratch-hive-starts-real-agents.md                         [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m                                                                              [0m[38;2;245;185;66m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[1m[38;2;245;185;66mSUMMARY                                                                      [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m Bare hive runs the startup of G9: in herdr, it starts a                      [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m coordinator and a supervisor in their own tabs when they are                 [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m missing. A worker or verifier that runs bare hive with                       [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m HIVE_HOME set to a scratch home gets no live coordinator and a               [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m stale supervisor claim, so each run starts a new coordinator                 [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m tab and a new hive supervise process in the caller workspace.                [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m                                                                              [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m [0m[1m[38;2;245;185;66mREPRODUCTION                                                                 [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│ [0m[38;2;163;157;144m↓ 21 more lines                                                            [0m  [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m╰──────────────────────────────────────────────────────────────────────────────╯[0m
+[0m[1m[38;2;245;185;66m [details] [0m[38;2;163;157;144m↑↓ scroll · esc back to list       [0m
