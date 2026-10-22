@@ -47,6 +47,10 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `LivePod.dc.html` | 1 Agents, one-pod view with a lit line | 120×40 |
 | `CompactLiveOverview.dc.html` | 1 Agents, pods overview with a lit line | 80×24 |
 | `CompactLivePod.dc.html` | 1 Agents, one-pod view with a lit line | 80×24 |
+| `TreeWide.dc.html` | 1 Agents, one-pod tree wider than the region | 120×40 |
+| `TreeNested.dc.html` | 1 Agents, one-pod tree with a nested child | 120×40 |
+| `CompactTreeWide.dc.html` | 1 Agents, one-pod tree that scrolls sideways | 80×24 |
+| `CompactTreeNested.dc.html` | 1 Agents, one-pod tree that scrolls vertically | 80×24 |
 
 ## Out of scope
 
@@ -326,7 +330,7 @@ The boards `LiveOverview`, `LivePod`, `CompactLiveOverview`, and `CompactLivePod
 
 62. The Agents screen has two levels of selection. The overview shows all pods with the tree, the rail, and the pod width rules of decision 10. In the overview, you select a full pod. The home pod is a pod as a project is. A selected pod has a heavy `accent` border (`┏ ━ ┓ ┃ ┗ ┛`) and an `accent` bold title. The title of a pod that is not selected stays `dim` bold. In the overview, a card is not selectable and has no heavy border. `←` and `→` select the pod on the left and on the right. At the edge of a page, `←` and `→` scroll the pages. `enter` on a pod opens the one-pod view of that pod. In the one-pod view, you select one agent with the keys of decision 14. The arrows stay in the pod. `esc` goes back to the overview with the same pod selected.
 
-63. The one-pod view shows one pod at the center of the body. The pod width rule of decision 10 for one pod applies. The pod is at most 64 cells wide from 120 columns. Below 120 columns, it has the full body width. The pod uses the tree or the rail by the rule of decision 10. The box title is `project agents · POD`, for example `project agents · hive`.
+63. The one-pod view shows one pod at the center of the body. The pod width rule of decision 10 for one pod applies. The pod is at most 64 cells wide from 120 columns. Below 120 columns, it has the full body width. The pod uses the tree or the rail by the rule of decision 10. The box title is `project agents · POD`, for example `project agents · hive`. Decision 74 replaces the rail in the one-pod view.
 
 64. With one project and no home pod, the Agents screen opens the one-pod view at once. `esc` does nothing in this case. The footer does not show `esc pods`. It shows the graph hints of decision 14.
 
@@ -348,6 +352,19 @@ The boards `LiveOverview`, `LivePod`, `CompactLiveOverview`, and `CompactLivePod
 
 73. The user approved new boards for `Main`, `AgentsMany`, `AgentDetails`, `CompactAgents`, `AgentsHome`, `AgentsNested`, `AgentsHiddenParent`, `AgentsCoordinatorChild`, `CompactAgentsHome`, `AgentDetailsGeneral`, and `Help` on 2026-10-22. Their new grids replace the old grids. The approved boards show two cases of decision 65. The first case is the drop 1 cell after a long pod title. The second case is the line that turns on the bus row in a rail pod of the one-pod view.
 
+### One-pod tree
+
+The boards `TreeWide`, `TreeNested`, `CompactTreeWide`, and `CompactTreeNested` show these decisions.
+
+74. This decision replaces the rail of decision 63 in the one-pod view. The one-pod view always draws the pod as a tree. The overview keeps the tree and the rail of decision 10. A nested child is one more tree level below its parent. The parent card has the joint `┬` on its bottom border. One `│` row is below the joint. The child card has the joint `┴` on its top border, or `┷` on a selected card. When a parent has more than one child, its children use a bus, as at level 1. The bus has one `│` row, the bus row `╭─┴─╮`, and one more `│` row. The children of the manager always use the bus. Each card is at the center of its span. A span has one slot for each card at the bottom of its subtree. A slot is the content width divided by the number of slots of the tree, with a minimum of 26 cells. When the tree is wider than the content width of decision 63, the pod is as wide as the tree. The coordinator card and its line stay above the manager card (decision 65). They move with the tree when the view scrolls sideways. In a pod with no manager, the top cards are on one row, and no line goes to them.
+
+75. When the tree is wider than the region, the view scrolls sideways and keeps the selected card on the screen. The region includes the padding cell on each side of the body, so a cut card border or pod border meets the region border. From 120 columns, the view moves only as far as necessary. Below 120 columns, the selected card is at the center of the region when possible. The top cards are the children of the manager, or the cards with no parent. The last body row shows `←→ at the edge scrolls · children A–B of N` in `dim` on the left. A to B are the top cards that are fully on the screen. N is the number of top cards. A card that is only partly on the screen counts as hidden. On the right, the row shows the name of the next hidden top card on the right and `→`. When no top card is hidden on the right, the right text is `←` and the name of the nearest hidden top card on the left. From 120 columns, the legend moves up one row. The bottom border shows the `━` thumb of `component.Thumb`. The track is the inner cells of the bottom border. The total is the pod width and one cell.
+
+76. When the tree is higher than the region, the view scrolls vertically and keeps the selected card on the screen. The view moves only as far as necessary. The right border shows the `┃` thumb.
+
+77. The view scrolls only to keep the selection on the screen. There is no free scroll of the view. `pgup`, `pgdn`, and the wheel do not move it. The user chose this. In the tree, `↑` selects the parent card, `↓` selects the first child, and `←` and `→` select the card before or after on the same level.
+
+78. The boards `AgentsNested` and `AgentsCoordinatorChild` show the one-pod view with the rail. Decision 74 draws them as trees. The boards `TreeWide`, `TreeNested`, and `CompactTreeWide` break 3 rules that exist. The evidence of task `125-pod-tree-scroll` lists the 3 cases in `board-rule-cases.md`. The code follows the rules. For these 5 boards, the grids of the code replace the old grids after the user approves the new boards.
 
 ## Waves
 

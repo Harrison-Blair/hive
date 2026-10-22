@@ -134,11 +134,15 @@ scroll of the view: no `pgup`, `pgdn`, or wheel scroll. The user chose this.
 - Write each test first and see it fail for the correct reason.
 - The golden check passes for each of the 4 new boards, for the 2 boards of
   AC6, and for each other board that passes on `dev`.
-- Model tests with literal expected glyphs, tokens, and text: a nested
-  child; several nested children with a bus; sideways scroll that follows
-  `←` and `→` across all children; the scroll line text at the left edge, in
-  the middle, and at the right edge; vertical scroll that follows `↓` and
-  `↑`; `pgup` and `pgdn` do not move the view; the thumbs at both widths.
+- Model tests with literal expected glyphs, tokens, and text:
+  - a nested child.
+  - several nested children with a bus.
+  - sideways scroll that follows `←` and `→` across all children.
+  - the scroll line text at the left edge, in the middle, and at the right
+    edge.
+  - vertical scroll that follows `↓` and `↑`.
+  - `pgup` and `pgdn` do not move the view.
+  - the thumbs at both widths.
 
 ## Acceptance criteria
 
@@ -147,7 +151,7 @@ scroll of the view: no `pgup`, `pgdn`, or wheel scroll. The user chose this.
 | AC1 | Board copies, grids, fixtures | V1, V2 |
 | AC2 | The spec has decisions 74 to 78 | V-gate |
 | AC3 to AC5 | The one-pod view matches the boards and the rules | V3, V4, V5 |
-| AC6 | The 2 boards have approved new grids | V2, V4, V5 |
+| AC6 | The 2 boards use approved new grids | V2, V4, V5 |
 | AC7 | The tests fail on the base and pass on the task branch | V3 |
 
 ## Verification items
@@ -165,7 +169,7 @@ scroll of the view: no `pgup`, `pgdn`, or wheel scroll. The user chose this.
 - Proves: AC1, AC6.
 - Command: run the exporter on the design folder. Compare each grid with the
   committed grid, cell by cell, with `internal/lib/cellgrid`.
-- Expected: the 4 new grids and the 2 approved grids are committed. No other
+- Expected: a commit has the 4 new grids and the 2 approved grids. No other
   grid changes.
 
 ### V3 Tests red and green
