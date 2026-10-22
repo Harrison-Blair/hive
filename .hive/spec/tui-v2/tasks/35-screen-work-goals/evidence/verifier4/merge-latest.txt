@@ -1,0 +1,103 @@
+Auto-merging internal/tui/frame.go
+Auto-merging internal/tui/selection_marker_test.go
+Auto-merging internal/tui/shell_test.go
+Auto-merging testdata/ste-baseline.json
+Merge made by the 'ort' strategy.
+ .hive/spec/tui-v2/README.md                        |   14 +
+ .hive/spec/tui-v2/tasks/40-screen-logs/brief.md    |  141 +
+ .../tui-v2/tasks/40-screen-logs/evidence/V-gate.md |  120 +
+ .../tui-v2/tasks/40-screen-logs/evidence/V1.md     |  135 +
+ .../tui-v2/tasks/40-screen-logs/evidence/V2.md     |   72 +
+ .../tasks/40-screen-logs/evidence/VERIFIED.md      |  107 +
+ .../40-screen-logs/evidence/screens/compact-1.png  |  Bin 0 -> 97898 bytes
+ .../40-screen-logs/evidence/screens/compact-3.png  |  Bin 0 -> 51754 bytes
+ .../40-screen-logs/evidence/screens/compact-4.png  |  Bin 0 -> 31025 bytes
+ .../evidence/screens/compact-board.png             |  Bin 0 -> 60906 bytes
+ .../40-screen-logs/evidence/screens/logs-2.png     |  Bin 0 -> 201189 bytes
+ .../40-screen-logs/evidence/screens/logs-4.png     |  Bin 0 -> 197141 bytes
+ .../40-screen-logs/evidence/screens/logs-6.png     |  Bin 0 -> 83830 bytes
+ .../40-screen-logs/evidence/screens/logs-board.png |  Bin 0 -> 215228 bytes
+ .../evidence/verify/CompactLogs-board.png          |  Bin 0 -> 66705 bytes
+ .../evidence/verify/CompactLogs-diff.txt           |    1 +
+ .../evidence/verify/CompactLogs-live.png           |  Bin 0 -> 64272 bytes
+ .../evidence/verify/CompactLogs-plain.txt          |   24 +
+ .../evidence/verify/CompactLogs.ansi               |   24 +
+ .../evidence/verify/CompactLogs.json               |   42 +
+ .../40-screen-logs/evidence/verify/Logs-board.png  |  Bin 0 -> 224457 bytes
+ .../40-screen-logs/evidence/verify/Logs-diff.txt   |    1 +
+ .../40-screen-logs/evidence/verify/Logs-live.png   |  Bin 0 -> 225366 bytes
+ .../40-screen-logs/evidence/verify/Logs-plain.txt  |   40 +
+ .../tasks/40-screen-logs/evidence/verify/Logs.ansi |   40 +
+ .../tasks/40-screen-logs/evidence/verify/Logs.json |   42 +
+ .../40-screen-logs/evidence/verify/cleanup.json    |    1 +
+ .../tasks/40-screen-logs/evidence/verify/gate.txt  |   93 +
+ .../40-screen-logs/evidence/verify/golden-base.txt | 3108 ++++++++++++++++++++
+ .../evidence/verify/keys-compact.txt               |  350 +++
+ .../40-screen-logs/evidence/verify/keys-wide.txt   |  988 +++++++
+ .../evidence/verify/mutation-key.txt               |   47 +
+ .../evidence/verify/mutation-token-dim.txt         |   41 +
+ .../evidence/verify/mutation-token.txt             |   41 +
+ .../evidence/verify/mutations-restored.txt         |    1 +
+ .../tasks/40-screen-logs/evidence/verify/scope.txt |   32 +
+ .../40-screen-logs/evidence/verify/tests-base.txt  |   13 +
+ .../40-screen-logs/evidence/verify/tests-green.txt | 1278 ++++++++
+ internal/tui/component/filterbar.go                |   23 +-
+ internal/tui/component/filterbar_test.go           |   29 +
+ internal/tui/demo.go                               |   10 +-
+ internal/tui/doc.go                                |    2 +-
+ internal/tui/escape_clear_test.go                  |   89 -
+ internal/tui/fix_test.go                           |    8 +-
+ internal/tui/frame.go                              |    9 +-
+ internal/tui/logs_golden_test.go                   |   32 +
+ internal/tui/logs_screen.go                        |  639 ++++
+ internal/tui/logs_screen_test.go                   |  581 ++--
+ internal/tui/logview.go                            |  529 ----
+ internal/tui/refresh.go                            |    2 +-
+ internal/tui/selection_marker_test.go              |    4 +-
+ internal/tui/shell.go                              |   56 -
+ internal/tui/shell_test.go                         |    2 +-
+ internal/tui/tui.go                                |   67 +-
+ internal/tui/tui_test.go                           |   75 +-
+ testdata/ste-baseline.json                         |    1 +
+ 56 files changed, 7993 insertions(+), 961 deletions(-)
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/brief.md
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/V-gate.md
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/V1.md
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/V2.md
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/VERIFIED.md
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/compact-1.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/compact-3.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/compact-4.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/compact-board.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/logs-2.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/logs-4.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/logs-6.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/screens/logs-board.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs-board.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs-diff.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs-live.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs-plain.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs.ansi
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/CompactLogs.json
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs-board.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs-diff.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs-live.png
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs-plain.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs.ansi
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/Logs.json
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/cleanup.json
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/gate.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/golden-base.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/keys-compact.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/keys-wide.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/mutation-key.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/mutation-token-dim.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/mutation-token.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/mutations-restored.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/scope.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/tests-base.txt
+ create mode 100644 .hive/spec/tui-v2/tasks/40-screen-logs/evidence/verify/tests-green.txt
+ delete mode 100644 internal/tui/escape_clear_test.go
+ create mode 100644 internal/tui/logs_golden_test.go
+ create mode 100644 internal/tui/logs_screen.go
+ delete mode 100644 internal/tui/logview.go

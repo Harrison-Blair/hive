@@ -1,0 +1,3 @@
+package main
+import("fmt";"os";"github.com/Harrison-Blair/hive/internal/lib/cellgrid")
+func main(){f,e:=os.Open(".hive/spec/tui-v2/design/WorkGoals.grid");if e!=nil{panic(e)};defer f.Close();want,e:=cellgrid.ReadGrid(f);if e!=nil{panic(e)}; b,e:=os.ReadFile(os.Args[1]);if e!=nil{panic(e)};got,e:=cellgrid.Convert(string(b),120,40);if e!=nil{panic(e)}; strict,e:=cellgrid.Compare(want,got,nil);if e!=nil{panic(e)};for i,c:=range got.Cells{if c.Rune==' ' && want.Cells[i].Rune==' '{got.Cells[i].Token=want.Cells[i].Token;got.Cells[i].Bold=want.Cells[i].Bold}};diff,e:=cellgrid.Compare(want,got,nil);if e!=nil{panic(e)};fmt.Printf("strict differences: %d; live-rule differences: %d\n%s",len(strict),len(diff),cellgrid.FormatDiffs(diff));if len(diff)>0{os.Exit(1)}}
