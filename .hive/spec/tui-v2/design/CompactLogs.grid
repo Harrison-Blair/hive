@@ -11,19 +11,19 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ filter ─────────────────────────────────────────────────────────────────────╮
 k|rraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00111111110000000000000000000000000000000000000000000000000000000000000000000000
-t|│ / level:debug agent:manager-hive                        < 2026-10-21 >       │
-k|rfafddddddffffffddddddffffffffffffffffffffffffffffffffffffaffffffffffffafffffffr
+t|│ / level:debug proj:hive                                 < 2026-10-21 >       │
+k|rfafddddddffffffdddddfffffffffffffffffffffffffffffffffffffaffffffffffffafffffffr
 b|00100000000000000000000000000000000000000000000000000000001000000000000100000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ event 14:38:02 · esc back ──────────────────────────────────────────────────╮
+t|╭─ event 13:38:02 · esc back ──────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00111111111111111111111111111000000000000000000000000000000000000000000000000000
 t|│ {                                                                            ┃
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   "time": "2026-10-21T14:38:02.114Z",                                        ┃
+t|│   "time": "2026-10-21T13:38:02.114Z",                                        ┃
 k|afffiiiiiifffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   "level": "WARN",                                                           ┃

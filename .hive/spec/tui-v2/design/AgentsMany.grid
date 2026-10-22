@@ -17,7 +17,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ╭─ hive ───────────────────╮ ╭─ example-api ────────────╮ ╭─ example-web ────────────╮ ╭─ example-docs ───────────╮  │
 k|afrrffffffrrrrrrrrrrrrrrrrrrrrfrrdddddddddddddrrrrrrrrrrrrrfrrdddddddddddddrrrrrrrrrrrrrfrrddddddddddddddrrrrrrrrrrrrffa
 b|000011111100000000000000000000000111111111111100000000000000001111111111111000000000000000011111111111111000000000000000
-t|│ │ g2-tui-v2 · wave A       │ │ [goal] · wave B          │ │ needs you · approve mer… │ │ [goal] · wave A          │  │
+t|│ │ g2-tui-v2 · wave A       │ │ g4-rate-limits · wave B  │ │ needs you · approve mer… │ │ g2-guides · wave A       │  │
 k|afrfddddddddddddddddddddddddfrfrfddddddddddddddddddddddddfrfrfaaaaaaaaaaaaaaaaaaaaaaaafrfrfddddddddddddddddddddddddfrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ ╭──────────────────────╮ │ │ ╭──────────────────────╮ │ │ ╭──────────────────────╮ │ │ ╭──────────────────────╮ │  │
