@@ -6,28 +6,10 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/x/ansi"
 
-	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/tui/component"
 )
-
-// checkBoard compares the demo view of the fixture of board with its golden
-// grid, cell for cell (decision 42).
-func checkBoard(t *testing.T, board string) {
-	t.Helper()
-	want := readBoardGrid(t, board)
-	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
-	got := renderGrid(t, m, want.Width, want.Height)
-	diffs, err := cellgrid.Compare(want, got, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(diffs) != 0 {
-		t.Fatalf("%d cells differ from %s.grid:\n%s", len(diffs), board, cellgrid.FormatDiffs(diffs))
-	}
-}
 
 // AC2: the Tasks view matches the Work board.
 func TestWorkTasksMatchesWorkBoard(t *testing.T) {
@@ -40,22 +22,6 @@ func TestWorkTasksMatchesCompactBoard(t *testing.T) {
 	checkBoard(t, "Compact")
 }
 
-// requireFits fails when view is not width×height cells or has a broken
-// border (decision 46).
-func requireFits(t *testing.T, view string, width, height int) {
-	t.Helper()
-	lines := strings.Split(view, "\n")
-	if len(lines) != height {
-		t.Fatalf("view has %d lines, want %d:\n%s", len(lines), height, view)
-	}
-	for index, line := range lines {
-		if got := ansi.StringWidth(line); got != width {
-			t.Fatalf("line %d has width %d, want %d: %q", index+1, got, width, line)
-		}
-	}
-	requireWholeBorders(t, view)
-}
-
 // AC2: decision 46. At 79 columns the TUI shows the too-small notice. At 80
 // and 119 columns the Tasks view shows the list, and the overlay after
 // enter. From 120 columns the list and the details sit side by side. Each
@@ -65,14 +31,11 @@ func TestWorkTasksFitsEachSize(t *testing.T) {
 		t.Run(fmt.Sprintf("%dx%d", size.Width, size.Height), func(t *testing.T) {
 			m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
 			m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.Width, Height: size.Height})
-			view := ansi.Strip(m.View().Content)
 			if size.Width < minimumWidth {
-				if !strings.Contains(view, "terminal too small") {
-					t.Fatalf("view at %d columns is not the too-small notice:\n%s", size.Width, view)
-				}
+				requireView(t, m, "terminal too small")
 				return
 			}
-			requireFits(t, view, size.Width, size.Height)
+			view := requireFits(t, m, size.Width, size.Height)
 			if !strings.Contains(view, "▶ 3-tui-restart") {
 				t.Fatalf("selected task is not visible:\n%s", view)
 			}
@@ -86,8 +49,7 @@ func TestWorkTasksFitsEachSize(t *testing.T) {
 				t.Fatalf("details show before enter below 120 columns:\n%s", view)
 			}
 			m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
-			view = ansi.Strip(m.View().Content)
-			requireFits(t, view, size.Width, size.Height)
+			view = requireFits(t, m, size.Width, size.Height)
 			if !strings.Contains(view, "╭─ 3-tui-restart · esc back") || !strings.Contains(view, "list › details") {
 				t.Fatalf("enter did not open the details overlay:\n%s", view)
 			}
@@ -114,8 +76,7 @@ func demoWithTasks(t *testing.T, width, height int, tasks ...records.Task) *Mode
 func TestWorkTasksEmptyData(t *testing.T) {
 	for _, width := range []int{80, 120} {
 		m := demoWithTasks(t, width, 24)
-		view := ansi.Strip(m.View().Content)
-		requireFits(t, view, width, 24)
+		view := requireFits(t, m, width, 24)
 		if !strings.Contains(view, "tasks · 0") {
 			t.Fatalf("empty list at %d columns:\n%s", width, view)
 		}
@@ -124,7 +85,7 @@ func TestWorkTasksEmptyData(t *testing.T) {
 		}
 		m, _ = raise(t, m, key('j', "j"))
 		m, _ = raise(t, m, key('b', "b"))
-		requireFits(t, ansi.Strip(m.View().Content), width, 24)
+		requireFits(t, m, width, 24)
 	}
 }
 
@@ -136,8 +97,7 @@ func TestWorkTasksCutsLongText(t *testing.T) {
 		if size.Width < component.LongFormWidth {
 			m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
 		}
-		view := ansi.Strip(m.View().Content)
-		requireFits(t, view, size.Width, size.Height)
+		view := requireFits(t, m, size.Width, size.Height)
 		if !strings.Contains(view, "▶ long-id-long-id-long-id-… assigned") && size.Width >= component.LongFormWidth {
 			t.Fatalf("long ID is not cut to its column:\n%s", view)
 		}

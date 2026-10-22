@@ -210,16 +210,6 @@ func taskStatusStyle(task records.Task) lipgloss.Style {
 	return infoStyle
 }
 
-func clipCell(text string, width int) string {
-	if lipgloss.Width(text) <= width {
-		return text
-	}
-	if width < 2 {
-		return text[:width]
-	}
-	return text[:width-1] + "…"
-}
-
 // orDash gives text, or — when text is empty.
 func orDash(text string) string {
 	if text == "" {
