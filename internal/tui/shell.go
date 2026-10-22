@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"strings"
-
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
@@ -45,60 +43,6 @@ type screen interface {
 	KeyHints() string
 	DataRequest() dataRequest
 }
-
-type logsScreen struct{ model *Model }
-
-func (s logsScreen) Update(msg tea.Msg) tea.Cmd {
-	press, ok := msg.(tea.KeyPressMsg)
-	if !ok {
-		return nil
-	}
-	if s.model.mode == editing {
-		return s.model.updateEditing(press)
-	}
-	cmd := s.model.updateViewing(press)
-	updated, viewportCmd := s.model.viewport.Update(press)
-	s.model.viewport = updated
-	return batch(cmd, viewportCmd)
-}
-
-func (s logsScreen) View(width, height int) string {
-	m := s.model
-	if width < 1 {
-		width = 1
-	}
-	filterLines := wrapFilterLine(m.statusLine(), width-4-lipgloss.Width("▶ "))
-	if len(filterLines) > 0 {
-		levelFilter := "level: " + m.level
-		filterLines[0] = selectedStyle.Render("▶ "+levelFilter) + strings.TrimPrefix(filterLines[0], levelFilter)
-	}
-	listWidth := width
-	if m.logDetail && width >= 72 {
-		listWidth = width * 2 / 3
-	}
-	m.viewport.SetWidth(max(1, listWidth-4))
-	m.viewport.SetHeight(max(1, height-len(filterLines)-4))
-	m.viewport.EnsureVisible(m.logSelection, 0, 1)
-	left := "logs · " + m.logDate.Format("2006-01-02") + ".jsonl\n" + strings.Join(filterLines, "\n") + "\n" + m.bodyView()
-	if m.mode == editing {
-		left += "\n" + m.input.View()
-	}
-	if !m.logDetail {
-		return left
-	}
-	if width < 72 {
-		return left + "\n" + m.detailView(width, max(1, height/3))
-	}
-	detailWidth := width - listWidth - 1
-	detail := panelStyle.Width(max(1, detailWidth-4)).Height(max(1, height-2)).Render(m.detailView(detailWidth, height-4))
-	return lipgloss.JoinHorizontal(lipgloss.Top, left, detail)
-}
-
-func (s logsScreen) KeyHints() string {
-	return "1–8 screens · l level · c component · p project · a agent · / search · r request · [ ] day · f follow · g/G scroll · enter JSON · esc back"
-}
-
-func (s logsScreen) DataRequest() dataRequest { return logsDataRequest }
 
 func (m *Model) makeScreens() []screen {
 	return []screen{

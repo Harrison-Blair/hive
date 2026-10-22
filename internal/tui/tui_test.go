@@ -334,6 +334,9 @@ func TestHeaderInvalidStoreShowsBoundedError(t *testing.T) {
 	rejectView(t, m, "0 agents")
 }
 
+// The filter bar takes each printable key while it is open (decision 21):
+// enter applies the text, and esc closes the bar and keeps the applied
+// filter. The typed field level: sets the lowest level (decision 25).
 func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
@@ -348,21 +351,25 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	)
 	m := newTestLogsModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "alpha gq", "beta", "gamma gq", "epsilon gq")
+	requireView(t, m, "/ level:info ", "alpha gq", "beta", "gamma gq", "epsilon gq")
 	rejectView(t, m, "zeta")
 
 	// Editing must not let viewing-mode keys act.
 	m, _ = raise(t, m, key('/', "/"))
-	for _, code := range []rune{'f', 'l', 'G'} {
+	requireView(t, m, "[filter] enter apply · esc close")
+	for _, code := range []rune{'f', 'G'} {
 		m, _ = raise(t, m, key(code, string(code)))
 	}
-	requireView(t, m, "text: -", "level: info", "follow: on")
+	requireView(t, m, "/ level:infofG█")
+	if !m.follow {
+		t.Fatal("f in the filter bar turned follow off")
+	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "level: info", "follow: on")
+	requireView(t, m, "[events]", "/ level:info ", "beta")
 
 	// A q in editing mode is a printable character, not a quit.
 	m, _ = raise(t, m, key('/', "/"))
-	for _, code := range []rune{'g', 'q'} {
+	for _, code := range " gq" {
 		var cmd tea.Cmd
 		m, cmd = raise(t, m, key(code, string(code)))
 		if cmd != nil {
@@ -372,22 +379,25 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 		}
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	requireView(t, m, "alpha gq", "gamma gq", "epsilon gq", "text: gq")
+	requireView(t, m, "/ level:info gq ", "alpha gq", "gamma gq", "epsilon gq")
 	rejectView(t, m, "beta", "delta", "zeta")
 
-	// Escape clears the input and the applied filter.
-	m, _ = raise(t, m, key('/', "/"))
-	m, _ = raise(t, m, key('z', "z"))
-	m, _ = raise(t, m, key('z', "z"))
+	// Escape in the event list clears the applied filter.
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "beta", "delta", "text: -", "level: info")
+	requireView(t, m, "/ level:info ", "beta", "delta")
 	rejectView(t, m, "zeta")
 
-	// l cycles info, warn, error, debug, and info again.
-	for _, want := range []string{"level: warn", "level: error", "level: debug", "level: info"} {
-		m, _ = raise(t, m, key('l', "l"))
-		requireView(t, m, want)
+	// Backspace and a typed level field.
+	m, _ = raise(t, m, key('/', "/"))
+	for range "info" {
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
 	}
+	for _, code := range "warn" {
+		m, _ = raise(t, m, key(code, string(code)))
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
+	requireView(t, m, "/ level:warn ", "gamma gq", "epsilon gq")
+	rejectView(t, m, "alpha gq", "beta", "delta", "zeta")
 
 	m, cmd := raise(t, m, key('q', "q"))
 	if cmd != nil {
@@ -413,7 +423,10 @@ func TestFollowReadsAppendedLineOnTick(t *testing.T) {
 	requireView(t, m, "second on tick")
 }
 
-func TestFollowControlsViewport(t *testing.T) {
+// Follow selects the newest event on each load. With follow off, a load
+// keeps the selected event. g selects the first event, and G selects the
+// newest event and turns follow on.
+func TestFollowControlsSelection(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 4, 7, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
@@ -426,31 +439,27 @@ func TestFollowControlsViewport(t *testing.T) {
 	m := newTestLogsModel(t, home, clock)
 	// Decision 7: 80×24 is the smallest frame.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	if !m.viewport.AtBottom() {
-		t.Fatalf("follow on left the viewport away from the end")
-	}
+	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
 
 	m, _ = raise(t, m, key('f', "f"))
-	requireView(t, m, "follow: off")
-	before := m.viewport.YOffset()
-	if before == 0 {
-		t.Fatal("test needs a scrolled viewport")
+	if m.follow {
+		t.Fatal("f did not turn follow off")
 	}
-	appendEvent(t, path, eventJSON(t, day, "INFO", "line eleven"))
+	appendEvent(t, path, eventJSON(t, day, "INFO", "line 41"))
 	m = tickUntilCount(t, m, 41)
-	if got := m.viewport.YOffset(); got != before {
-		t.Fatalf("follow off moved the viewport from %d to %d", before, got)
-	}
+	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
 
 	m, _ = raise(t, m, key('g', "g"))
-	if !m.viewport.AtTop() {
-		t.Fatal("g did not move the viewport to the first line")
-	}
+	requireView(t, m, "▶ 12:00:00 INFO  -         line 01")
+	rejectView(t, m, "line 40")
 	m, _ = raise(t, m, key('G', "G"))
-	if !m.viewport.AtBottom() {
-		t.Fatal("G did not move the viewport to the last line")
+	requireView(t, m, "▶ 12:00:00 INFO  -         line 41")
+	if !m.follow {
+		t.Fatal("G did not turn follow on")
 	}
-	requireView(t, m, "follow: on")
+	appendEvent(t, path, eventJSON(t, day, "INFO", "line 42"))
+	m = tickUntilCount(t, m, 42)
+	requireView(t, m, "▶ 12:00:00 INFO  -         line 42")
 }
 
 func TestDailyFileRolloverSelectsCurrentDay(t *testing.T) {

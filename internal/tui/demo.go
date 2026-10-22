@@ -367,12 +367,20 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.health.selected = ui.Selection
 	case "logs":
 		m.screenIndex = 7
+		m.textFilter = ui.Filter.Text
+		m.logPendingTime = ui.Selection
+		m.logOffset = ui.Scroll["events"].Top
+		m.detailsOffset[tabLogs] = ui.Scroll["json"].Top
+		if ui.Filter.Open {
+			m.mode = editing
+			m.filterDraft = ui.Filter.Text
+		}
 	}
 	m.agents.showHistory = !ui.HideStopped
 	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {
-		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, time.Local)
+		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, m.now().Location())
 		m.logDate = day
 		m.logDatePinned = true
 	}
