@@ -238,3 +238,42 @@ func TestTreePageKeysDoNotScroll(t *testing.T) {
 		})
 	}
 }
+
+// Rule A of decision 78: in the one-pod view of home, the coordinator line
+// goes down through the pod top border (┼) and the empty goal row to the
+// top card, as it goes to the manager card of a project pod.
+func TestHomeTreeCoordinatorLineGoesToTheTopCard(t *testing.T) {
+	m := liveModel(t, "AgentsCoordinatorChild", nil)
+	requireCells(t, m,
+		liveCell{60, 8, '┬', cellgrid.Working}, liveCell{60, 9, '│', cellgrid.Border},
+		liveCell{60, 10, '┼', cellgrid.Border}, liveCell{60, 11, '│', cellgrid.Border},
+		liveCell{48, 12, '╭', cellgrid.Working}, liveCell{60, 12, '┴', cellgrid.Working})
+	if got := m.graph.up["plan-review-1"]; got != "coordinator-g2" {
+		t.Fatalf("the line above plan-review-1 comes from %q; want coordinator-g2", got)
+	}
+}
+
+// Rule A of decision 78: with several top cards in home, the coordinator
+// line uses a bus below the pod top border, as at a tree level: the │ goal
+// row, the bus ╭─┴─╮, one more │ row, and the joint ┴ on each top card.
+func TestHomeTreeCoordinatorLineUsesABus(t *testing.T) {
+	m := liveModel(t, "AgentsCoordinatorChild", addAgent("plan-review-3", "coordinator-g2", "working", "2026-10-21T14:05:00Z"))
+	grid := renderGrid(t, m, m.width, m.height)
+	_, first := findText(t, grid, "plan-review-1")
+	_, second := findText(t, grid, "plan-review-3")
+	// The first cell of the name is 4 cells right of the card.
+	a, b := first-4+12, second-4+12
+	joint := (a + b) / 2
+	requireCells(t, m,
+		liveCell{joint, 8, '┬', cellgrid.Working}, liveCell{joint, 10, '┼', cellgrid.Border},
+		liveCell{joint, 11, '│', cellgrid.Border},
+		liveCell{a, 12, '╭', cellgrid.Border}, liveCell{joint, 12, '┴', cellgrid.Border},
+		liveCell{b, 12, '╮', cellgrid.Border}, liveCell{a, 13, '│', cellgrid.Border},
+		liveCell{b, 13, '│', cellgrid.Border}, liveCell{a, 14, '┴', cellgrid.Working},
+		liveCell{b, 14, '┴', cellgrid.Working})
+	for _, key := range []string{"plan-review-1", "plan-review-3"} {
+		if got := m.graph.up[key]; got != "coordinator-g2" {
+			t.Fatalf("the line above %s comes from %q; want coordinator-g2", key, got)
+		}
+	}
+}

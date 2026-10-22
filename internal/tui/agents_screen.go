@@ -78,11 +78,11 @@ type graphState struct {
 // point is one cell of a canvas.
 type point struct{ x, y int }
 
-// treeRoot is one top card of the tree of the one-pod view: its name and its
-// canvas column.
+// treeRoot is one top card of the tree of the one-pod view: its key, its
+// name, and the canvas column and row of the card.
 type treeRoot struct {
-	name string
-	x    int
+	key, name string
+	x, y      int
 }
 
 // podKey gives the graph key of a pod.
@@ -572,6 +572,8 @@ func (m *Model) treeScrollText(inner int) (string, string) {
 // drop 1 column or less from the joint moves to the joint. In the one-pod
 // view, the line goes down through the pod top border to the top joint of
 // the manager card, or to the pod top border when the pod has no manager.
+// In home, the line goes to each top card, with a bus above the cards when
+// there are several (rule A of decision 78).
 func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, cx int, shown []graphPod, drops []int, podTop int) {
 	m.drawCard(c, node, cx, 0)
 	joint := cx + component.CardWidth/2
@@ -583,6 +585,18 @@ func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, cx int, shown []g
 		target := point{joint, podTop}
 		if pod.manager != nil {
 			target = m.graph.managerTop
+		}
+		if pod.homeColumn && len(m.graph.roots) > 0 {
+			for _, top := range m.graph.roots {
+				center := top.x + component.CardWidth/2
+				path := []point{{joint, bus - 1}, {joint, bus}, {center, bus}, {center, top.y}}
+				if len(m.graph.roots) > 1 {
+					path = []point{{joint, bus - 1}, {joint, top.y - 2}, {center, top.y - 2}, {center, top.y}}
+				}
+				m.graph.up[top.key] = root
+				m.graph.lines[[2]string{root, top.key}] = m.connect(c, path)
+			}
+			return
 		}
 		cells := m.connect(c, []point{{joint, bus - 1}, {joint, bus}, {target.x, bus}, target})
 		if pod.manager != nil {
@@ -870,6 +884,9 @@ func layoutTree(pod graphPod, content int) treeLayout {
 	for level := low; level <= slices.Max(append(slices.Clone(pod.levels), low-1)); level++ {
 		gap := 1
 		switch {
+		case level == low && pod.homeColumn && len(roots) > 1:
+			// The bus of the coordinator line (rule A of decision 78).
+			gap = 2
 		case level == low && pod.manager == nil:
 			gap = 0
 		case level == low:
@@ -908,7 +925,7 @@ func (m *Model) drawTree(c *cellCanvas, pod graphPod, left, top, content int) in
 		m.drawCard(c, child, left+tree.x[index], top+tree.y[index])
 		kids[tree.parent[index]] = append(kids[tree.parent[index]], index)
 		if tree.parent[index] < 0 && m.graph.onePod {
-			m.graph.roots = append(m.graph.roots, treeRoot{name: child.record.Name, x: left + tree.x[index]})
+			m.graph.roots = append(m.graph.roots, treeRoot{key: child.record.Key, name: child.record.Name, x: left + tree.x[index], y: top + tree.y[index]})
 		}
 	}
 	for parent := -1; parent < len(pod.children); parent++ {

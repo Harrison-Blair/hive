@@ -29,13 +29,13 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                           │                                                          │
 k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ home ────────────────────────┴──────────────────────────────╮                           │
+t|│                           ╭─ home ────────────────────────┼──────────────────────────────╮                           │
 k|afffffffffffffffffffffffffffrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                                                              │                           │
-k|afffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                               │                              │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ╭──────────────────────╮                   │                           │
+t|│                           │                   ╭───────────┴──────────╮                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │                   │ ● plan-review-1      │                   │                           │
