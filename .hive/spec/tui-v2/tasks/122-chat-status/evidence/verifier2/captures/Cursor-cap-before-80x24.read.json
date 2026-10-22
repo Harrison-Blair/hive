@@ -1,0 +1,43 @@
+{
+  "read": {
+    "id": "verify122-2",
+    "result": {
+      "type": "pane_read",
+      "read": {
+        "pane_id": "wVK:p2",
+        "workspace_id": "wVK",
+        "tab_id": "wVK:t1",
+        "source": "visible",
+        "format": "ansi",
+        "text": "\u001b[0m\u001b[1m hive                                     coord \u001b[0m\u001b[1m\u001b[38;2;110;230;154m\u25cf\u001b[0m\u001b[1m \u00b7 sup \u001b[0m\u001b[1m\u001b[38;2;110;230;154m\u25cf\u001b[0m\u001b[1m \u00b7 needs you 0 \u00b7 14:22 \u001b[0m\r\n \u001b[0m\u001b[38;2;163;157;144m 1 Agents \u001b[0m\u001b[1m\u001b[38;2;245;185;66m 2 Chat \u001b[0m\u001b[38;2;163;157;144m 3 Work  4 Friction  5 Health  6 Logs \u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u001b[0m\u001b[38;2;245;185;66m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u256d\u2500\u001b[0m\u001b[1m\u001b[38;2;245;185;66m chat \u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:02\u001b[0m \u001b[0m\u001b[1m\u001b[38;2;233;207;155myou                                                                    \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155mcan we interrogate and design the working status thing for the chat window?\u001b[0m  \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:05 \u25b8 manager-stenographer g2-live-scroll DONE: task 121-live-transcript-\u2026\u001b[0m \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:06\u001b[0m \u001b[0m\u001b[1m\u001b[38;2;111;183;255mcoordinator                                                            \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[1m\u001b[38;2;245;185;66mInterrogate, summary                                                         \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[1mWorking status                                                               \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;245;185;66m\u2022 \u001b[0mThe input border shows the coordinator state: \u001b[0m\u001b[38;2;159;208;255m\u25cf working 2m\u001b[0m, \u001b[0m\u001b[38;2;159;208;255m\u25cb idle 5m\u001b[0m, or  \u001b[0m\u001b[38;2;163;157;144m\u2503\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;159;208;255m\u25b2 blocked 1m\u001b[0m.                                                                \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;245;185;66m\u2022 \u001b[0mWhile your last message is pending, the border adds \u001b[0m\u001b[38;2;159;208;255m\u00b7 queued\u001b[0m.              \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u256d\u2500\u001b[0m\u001b[1m\u001b[38;2;245;185;66m message \u001b[0m\u001b[38;2;163;157;144m\u00b7 \u001b[0m\u001b[38;2;110;230;154m\u25cf\u001b[0m working 2m \u001b[0m\u001b[38;2;163;157;144m\u00b7 queued \u001b[0m\u001b[38;2;245;185;66m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\u001b[0m \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\u001b[0m \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\u001b[0m \u001b[0m\u001b[38;2;163;157;144m\u2503\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155m  xEND\u001b[0m\u001b[38;2;245;185;66m\u2588                                                                      \u001b[0m\u001b[38;2;163;157;144m\u2503\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\r\n\u001b[0m\u001b[1m\u001b[38;2;245;185;66m [input] \u001b[0m\u001b[38;2;163;157;144menter send \u00b7 ctrl+o events \u00b7 esc leave input \u00b7 pgup/pgdn feed          \u001b[0m",
+        "revision": 0,
+        "truncated": false
+      }
+    }
+  },
+  "pane": {
+    "id": "cli:pane:get",
+    "result": {
+      "pane": {
+        "agent_status": "unknown",
+        "cwd": "/home/penguin/source/hive/projects/hive/worktrees/122-chat-status",
+        "focused": false,
+        "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/122-chat-status",
+        "pane_id": "wVK:p2",
+        "revision": 1,
+        "scroll": {
+          "max_offset_from_bottom": 0,
+          "offset_from_bottom": 0,
+          "viewport_rows": 46
+        },
+        "tab_id": "wVK:t1",
+        "terminal_id": "term_65e7406993e7016",
+        "terminal_title": "penguin@iceberg:~/source/hive/projects/hive/worktrees/122-chat-status",
+        "terminal_title_stripped": "penguin@iceberg:~/source/hive/projects/hive/worktrees/122-chat-status",
+        "workspace_id": "wVK"
+      },
+      "type": "pane_info"
+    }
+  },
+  "stable_read_interval_ms": 500
+}

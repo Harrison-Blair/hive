@@ -92,8 +92,8 @@ b|000000000000000000000111100000000000000000000000000000000000000000000000000000
 t|│                 │  i or enter types in chat · esc leaves the input · 1–6 work again                │                 │
 k|rrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                 │                                                                                  │                 │
-k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+t|│                 │  ctrl+o opens or folds all chat events                                           │                 │
+k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 │  r restart: coordinator or supervisor, asks first only when live                 │                 │
 k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffarrrrrrrrrrrrrrrrrr

@@ -18,6 +18,9 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `CompactAgents.dc.html` | 1 Agents | 80×24 |
 | `Chat.dc.html` | 2 Chat | 120×40 |
 | `CompactChat.dc.html` | 2 Chat | 80×24 |
+| `ChatStatus.dc.html` | 2 Chat, working status and growing input | 120×40 |
+| `ChatEvents.dc.html` | 2 Chat, open events | 120×40 |
+| `CompactChatStatus.dc.html` | 2 Chat, blocked status and capped input | 80×24 |
 | `WorkGoals.dc.html` | 3 Work, Goals view | 120×40 |
 | `WorkQueue.dc.html` | 3 Work, Queue view | 120×40 |
 | `Work.dc.html` | 3 Work, Tasks view | 120×40 |
@@ -56,7 +59,7 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 2. From 120 columns, the header shows the home on the left. On the right it shows the coordinator state, the supervisor state, the needs-you count, and the clock. Below 120 columns, the header uses the short form on the 80×24 boards.
 3. The tab bar shows the labels `1 Agents`, `2 Chat`, `3 Work`, `4 Friction`, `5 Health`, and `6 Logs`. Each label has one space on each side. At 120 columns and wider, one more space separates the labels. Below 120 columns, the labels touch. The active tab is accent and bold, with a `━` underline.
 4. The footer shows `[region]` in accent, then the key hints of the focused region in dim.
-5. Only regions scroll. A region draws its scroll mark `┃` on its right border. A region that scrolls sideways draws `━` on its bottom border. The scroll mark uses `accent` in the focused region and `dim` in the other regions. An overlay or a popup dims the full screen behind it, including the header and the tab bar.
+5. Only regions scroll. A region draws its scroll mark `┃` on its right border. A region that scrolls sideways draws `━` on its bottom border. The scroll mark uses `accent` in the focused region and `dim` in the other regions. On Chat, use `dim` for scroll marks in every focus region. An overlay or a popup dims the full screen behind it, including the header and the tab bar.
 6. One region has focus. The focused region has an accent border. `tab` moves the focus to the next region.
 
 ### Fit to screen
@@ -67,7 +70,7 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 10. Agents gives each project one column of equal width. The minimum column width is 26 cells. Each card is 24×4 cells. The idle dot is `◐` in `accent` on each screen. When the columns do not fit, the graph scrolls sideways and keeps the selected card visible. With no project, Agents shows the notice "no project agents".
 11. A resize never breaks a border. A resize with an overlay open keeps the overlay and its scroll position.
 12. Each component measures text with `lipgloss.Width`. No component measures text with `len`.
-13. Components use only the symbols in this list: `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┼ ┴ ┬ └ ━ ┃ ┏ ┓ ┗ ┛ ┯ ┷ ┡ ┨ ● ◐ ○ ▶ ✓ • · – — … ↑ ↓ ← → › █ ×`. Each symbol takes one cell. Wave 2 checks that each exported board uses only these symbols. A test checks that `lipgloss.Width` gives 1 for each symbol. The TUI supports terminals that draw ambiguous-width characters as one cell. A new symbol needs a change to this list.
+13. Components use only the symbols in this list: `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┼ ┴ ┬ └ ━ ┃ ┏ ┓ ┗ ┛ ┯ ┷ ┡ ┨ ● ◐ ○ ▶ ✓ • · – — … ↑ ↓ ← → › █ × ▸ ▾ ▲`. Each symbol takes one cell. Wave 2 checks that each exported board uses only these symbols. A test checks that `lipgloss.Width` gives 1 for each symbol. The TUI supports terminals that draw ambiguous-width characters as one cell. A new symbol needs a change to this list.
 
 ### Screens
 
@@ -294,6 +297,14 @@ The worker made these decisions in task `39-screen-health`:
 - Restart: `r` in Health › Agents calls `requestRestart`, with the behavior of task `3-tui-restart`. The Agents screen has no `r` key. The restart prompt box is in the details of the selected agent, as the HealthAgents board shows.
 - Rows: the Health lists draw their rows in a `Panel`. The columns and the colours of the space cells come from the Health boards. The selected row follows the rule of `List`.
 - Component fixes: none.
+
+### Chat status and events
+
+55. The input border shows the coordinator status after ` message `. Show `· ` in dim, then the status glyph, the status word, and the whole-minute age. Use `●` in `working` for working. Use `○` in dim for idle. Use `▲` in accent for blocked. For another `agent_status` value, use `○` in dim and show the value as the word. When no live coordinator record exists, show `○ none`. Omit the age when `status_changed_at` has no value. Read `agent_status` and `status_changed_at` from the live coordinator record. Calculate age from `status_changed_at` to the TUI clock. Round down to whole minutes. When the latest user chat entry has delivery `pending`, add `· queued` in dim after the status. Below 120 columns, the header shows `▲` in accent for a blocked coordinator. At 120 columns and wider, the header shows the glyph and status word.
+
+56. Wrap input text at spaces. Break a word that is wider than the text width at the line edge. Grow the input panel by one row for each text row. Limit the panel, including its borders, to one third of the content rows. Round down. Content rows are between the tab rule and the footer. The limit is 12 rows at 120×40 and 6 rows at 80×24. When the text needs more rows than the limit, scroll inside the panel. Keep the cursor row visible. Draw the scroll mark on the right border. Keep the input height when focus moves to the feed. Shrink the feed by the same number of rows. The empty input has one text row.
+
+57. A folded event has one dim line. Use `▸` instead of `·` before its name. `ctrl+o` opens or folds all events from the feed or the input. An open event starts with `▾`. Show its full text in dim. Wrap the text to the feed width. Start each source line on a new row. Start continuation text in the message text column. Fold all events when the TUI starts. Do not keep the toggle state. Do not add a noise key. Show `ctrl+o` in the key hints of the feed and input. The Help board shows `ctrl+o opens or folds all chat events`.
 
 ## Waves
 

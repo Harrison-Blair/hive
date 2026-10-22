@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111111111111111111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat ───────────────────────────────────────────────────────────────────────╮
+k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:21 coordinator                                                            │
+k|rfdddddfiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiir
+b|00000000111111111111111111111111111111111111111111111111111111111111111111111110
+t|│ Interrogate, round 2                                                         │
+k|rfaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+b|00111111111111111111111111111111111111111111111111111111111111111111111111111110
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ Bare hive makes the coordinator tab, but its record has spawned=false. agent │
+k|rfffffffffffffffffffffcccccccccccfffffffffffffffffffffffffcccccccccccccffcccccfr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ stop refuses it.                                                             │
+k|rfccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│  Choice  │ Answer                           │ Pros            │ Cons         │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ─────────┼──────────────────────────────────┼─────────────────┼───────────── │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│  A (REC) │ Record that bare hive started it │ No tab pile-up  │ Field change │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│  B       │ Leave the old tab                │ Smallest change │ Tabs pile up │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ • Recommended: A, hive closes only panes it started.                         │
+k|rfaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00001111111111110000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:22 you                                                                    │
+k|rfdddddfuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuur
+b|00000000111111111111111111111111111111111111111111111111111111111111111111111110
+t|│ 1A, 2A, 3B                                                                   ┃
+k|rfuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuud
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaddwffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > █                                                                          │
+k|afuuaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed          
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

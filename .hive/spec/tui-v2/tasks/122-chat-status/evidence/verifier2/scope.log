@@ -1,0 +1,462 @@
+ .hive/spec/tui-v2/README.md                        |   15 +-
+ .hive/spec/tui-v2/design/Chat.dc.html              |    5 +-
+ .hive/spec/tui-v2/design/Chat.grid                 |    8 +-
+ .hive/spec/tui-v2/design/ChatEvents.dc.html        |   75 +
+ .hive/spec/tui-v2/design/ChatEvents.fixture.json   |  434 +++
+ .hive/spec/tui-v2/design/ChatEvents.grid           |  121 +
+ .hive/spec/tui-v2/design/ChatStatus.dc.html        |   89 +
+ .hive/spec/tui-v2/design/ChatStatus.fixture.json   |  410 +++
+ .hive/spec/tui-v2/design/ChatStatus.grid           |  121 +
+ .hive/spec/tui-v2/design/CompactChat.dc.html       |    4 +-
+ .hive/spec/tui-v2/design/CompactChat.grid          |    6 +-
+ .hive/spec/tui-v2/design/CompactChatStatus.dc.html |   78 +
+ .../tui-v2/design/CompactChatStatus.fixture.json   |  260 ++
+ .hive/spec/tui-v2/design/CompactChatStatus.grid    |   73 +
+ .hive/spec/tui-v2/design/Help.dc.html              |    1 +
+ .hive/spec/tui-v2/design/Help.grid                 |    4 +-
+ .hive/spec/tui-v2/tasks/122-chat-status/brief.md   |  272 ++
+ .../tasks/122-chat-status/evidence/V-gate.log      |   88 +
+ .../tasks/122-chat-status/evidence/V-gate.md       |   21 +
+ .../tui-v2/tasks/122-chat-status/evidence/V1.md    |    7 +
+ .../tasks/122-chat-status/evidence/V2.diff.txt     |  189 ++
+ .../tui-v2/tasks/122-chat-status/evidence/V2.md    |    9 +
+ .../tui-v2/tasks/122-chat-status/evidence/V3.md    |   40 +
+ .../tui-v2/tasks/122-chat-status/evidence/V4.md    |   39 +
+ .../tui-v2/tasks/122-chat-status/evidence/V5.md    |   42 +
+ .../tasks/122-chat-status/evidence/VERIFIED.md     |  224 ++
+ .../evidence/captures/Chat-120x40.ansi             |   40 +
+ .../evidence/captures/Chat-120x40.crop.ansi        |   40 +
+ .../evidence/captures/Chat-120x40.diff.txt         |    1 +
+ .../evidence/captures/Chat-120x40.png              |  Bin 0 -> 109354 bytes
+ .../evidence/captures/ChatEvents-120x40.ansi       |   40 +
+ .../evidence/captures/ChatEvents-120x40.crop.ansi  |   40 +
+ .../evidence/captures/ChatEvents-120x40.diff.txt   |    1 +
+ .../evidence/captures/ChatEvents-120x40.png        |  Bin 0 -> 99724 bytes
+ .../evidence/captures/ChatEvents-80x24.ansi        |   24 +
+ .../evidence/captures/ChatEvents-80x24.check.txt   |    1 +
+ .../evidence/captures/ChatEvents-80x24.crop.ansi   |   24 +
+ .../evidence/captures/ChatEvents-80x24.png         |  Bin 0 -> 73211 bytes
+ .../evidence/captures/ChatInput-120x40-10rows.ansi |   40 +
+ .../captures/ChatInput-120x40-10rows.check.txt     |    1 +
+ .../captures/ChatInput-120x40-10rows.crop.ansi     |   40 +
+ .../evidence/captures/ChatInput-120x40-10rows.png  |  Bin 0 -> 106914 bytes
+ .../evidence/captures/ChatInput-120x40-11rows.ansi |   40 +
+ .../captures/ChatInput-120x40-11rows.check.txt     |    1 +
+ .../captures/ChatInput-120x40-11rows.crop.ansi     |   40 +
+ .../evidence/captures/ChatInput-120x40-11rows.png  |  Bin 0 -> 106841 bytes
+ .../evidence/captures/ChatInput-120x40-1rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-1rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-1rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-1rows.png   |  Bin 0 -> 99318 bytes
+ .../evidence/captures/ChatInput-120x40-2rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-2rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-2rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-2rows.png   |  Bin 0 -> 100068 bytes
+ .../evidence/captures/ChatInput-120x40-3rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-3rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-3rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-3rows.png   |  Bin 0 -> 101056 bytes
+ .../evidence/captures/ChatInput-120x40-4rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-4rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-4rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-4rows.png   |  Bin 0 -> 101899 bytes
+ .../evidence/captures/ChatInput-120x40-5rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-5rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-5rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-5rows.png   |  Bin 0 -> 102721 bytes
+ .../evidence/captures/ChatInput-120x40-6rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-6rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-6rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-6rows.png   |  Bin 0 -> 103545 bytes
+ .../evidence/captures/ChatInput-120x40-7rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-7rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-7rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-7rows.png   |  Bin 0 -> 104352 bytes
+ .../evidence/captures/ChatInput-120x40-8rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-8rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-8rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-8rows.png   |  Bin 0 -> 105217 bytes
+ .../evidence/captures/ChatInput-120x40-9rows.ansi  |   40 +
+ .../captures/ChatInput-120x40-9rows.check.txt      |    1 +
+ .../captures/ChatInput-120x40-9rows.crop.ansi      |   40 +
+ .../evidence/captures/ChatInput-120x40-9rows.png   |  Bin 0 -> 106109 bytes
+ .../evidence/captures/ChatInput-80x24-1rows.ansi   |   24 +
+ .../captures/ChatInput-80x24-1rows.check.txt       |    1 +
+ .../captures/ChatInput-80x24-1rows.crop.ansi       |   24 +
+ .../evidence/captures/ChatInput-80x24-1rows.png    |  Bin 0 -> 72238 bytes
+ .../evidence/captures/ChatInput-80x24-2rows.ansi   |   24 +
+ .../captures/ChatInput-80x24-2rows.check.txt       |    1 +
+ .../captures/ChatInput-80x24-2rows.crop.ansi       |   24 +
+ .../evidence/captures/ChatInput-80x24-2rows.png    |  Bin 0 -> 67591 bytes
+ .../evidence/captures/ChatInput-80x24-3rows.ansi   |   24 +
+ .../captures/ChatInput-80x24-3rows.check.txt       |    1 +
+ .../captures/ChatInput-80x24-3rows.crop.ansi       |   24 +
+ .../evidence/captures/ChatInput-80x24-3rows.png    |  Bin 0 -> 67038 bytes
+ .../evidence/captures/ChatInput-80x24-4rows.ansi   |   24 +
+ .../captures/ChatInput-80x24-4rows.check.txt       |    1 +
+ .../captures/ChatInput-80x24-4rows.crop.ansi       |   24 +
+ .../evidence/captures/ChatInput-80x24-4rows.png    |  Bin 0 -> 67854 bytes
+ .../evidence/captures/ChatInput-80x24-5rows.ansi   |   24 +
+ .../captures/ChatInput-80x24-5rows.check.txt       |    1 +
+ .../captures/ChatInput-80x24-5rows.crop.ansi       |   24 +
+ .../evidence/captures/ChatInput-80x24-5rows.png    |  Bin 0 -> 67842 bytes
+ .../evidence/captures/ChatStatus-120x40.ansi       |   40 +
+ .../evidence/captures/ChatStatus-120x40.crop.ansi  |   40 +
+ .../evidence/captures/ChatStatus-120x40.diff.txt   |    1 +
+ .../evidence/captures/ChatStatus-120x40.png        |  Bin 0 -> 121725 bytes
+ .../evidence/captures/ChatStatus-80x24.ansi        |   24 +
+ .../evidence/captures/ChatStatus-80x24.check.txt   |    1 +
+ .../evidence/captures/ChatStatus-80x24.crop.ansi   |   24 +
+ .../evidence/captures/ChatStatus-80x24.png         |  Bin 0 -> 80797 bytes
+ .../captures/ChatStatus-after-esc-120x40.ansi      |   40 +
+ .../captures/ChatStatus-after-esc-120x40.check.txt |    1 +
+ .../captures/ChatStatus-after-esc-120x40.crop.ansi |   40 +
+ .../captures/ChatStatus-after-esc-120x40.png       |  Bin 0 -> 125424 bytes
+ .../captures/ChatStatus-open-events-120x40.ansi    |   40 +
+ .../ChatStatus-open-events-120x40.check.txt        |    1 +
+ .../ChatStatus-open-events-120x40.crop.ansi        |   40 +
+ .../captures/ChatStatus-open-events-120x40.png     |  Bin 0 -> 125877 bytes
+ .../evidence/captures/CompactChat-80x24.ansi       |   24 +
+ .../evidence/captures/CompactChat-80x24.crop.ansi  |   24 +
+ .../evidence/captures/CompactChat-80x24.diff.txt   |    1 +
+ .../evidence/captures/CompactChat-80x24.png        |  Bin 0 -> 65290 bytes
+ .../captures/CompactChatStatus-120x40.ansi         |   40 +
+ .../captures/CompactChatStatus-120x40.check.txt    |    1 +
+ .../captures/CompactChatStatus-120x40.crop.ansi    |   40 +
+ .../evidence/captures/CompactChatStatus-120x40.png |  Bin 0 -> 91254 bytes
+ .../evidence/captures/CompactChatStatus-80x24.ansi |   24 +
+ .../captures/CompactChatStatus-80x24.crop.ansi     |   24 +
+ .../captures/CompactChatStatus-80x24.diff.txt      |    1 +
+ .../evidence/captures/CompactChatStatus-80x24.png  |  Bin 0 -> 74094 bytes
+ .../evidence/captures/Help-120x40.ansi             |   40 +
+ .../evidence/captures/Help-120x40.crop.ansi        |   40 +
+ .../evidence/captures/Help-120x40.diff.txt         |    1 +
+ .../evidence/captures/Help-120x40.png              |  Bin 0 -> 110602 bytes
+ .../evidence/captures/repair/ChatStatus-esc.txt    |   40 +
+ .../evidence/captures/repair/ChatStatus-open.txt   |   40 +
+ .../evidence/captures/repair/boards.diff.txt       |    6 +
+ .../captures/repair/cursor-120x40-before.ansi      |   40 +
+ .../captures/repair/cursor-120x40-before.png       |  Bin 0 -> 116492 bytes
+ .../captures/repair/cursor-120x40-before.txt       |   40 +
+ .../captures/repair/cursor-120x40-insert.ansi      |   40 +
+ .../captures/repair/cursor-120x40-insert.png       |  Bin 0 -> 116485 bytes
+ .../captures/repair/cursor-120x40-insert.txt       |   40 +
+ .../captures/repair/cursor-120x40-left.ansi        |   40 +
+ .../captures/repair/cursor-120x40-left.png         |  Bin 0 -> 116315 bytes
+ .../captures/repair/cursor-120x40-left.txt         |   40 +
+ .../captures/repair/cursor-80x24-before.ansi       |   24 +
+ .../captures/repair/cursor-80x24-before.png        |  Bin 0 -> 59865 bytes
+ .../captures/repair/cursor-80x24-before.txt        |   24 +
+ .../captures/repair/cursor-80x24-insert.ansi       |   24 +
+ .../captures/repair/cursor-80x24-insert.png        |  Bin 0 -> 59858 bytes
+ .../captures/repair/cursor-80x24-insert.txt        |   24 +
+ .../captures/repair/cursor-80x24-left.ansi         |   24 +
+ .../evidence/captures/repair/cursor-80x24-left.png |  Bin 0 -> 59688 bytes
+ .../evidence/captures/repair/cursor-80x24-left.txt |   24 +
+ .../evidence/captures/repair/green.log             |   12 +
+ .../evidence/captures/repair/red-component.log     |   14 +
+ .../evidence/captures/repair/red-model.log         |   16 +
+ .../captures/repair/words-80x24-before.ansi        |   24 +
+ .../captures/repair/words-80x24-before.png         |  Bin 0 -> 58728 bytes
+ .../captures/repair/words-80x24-before.txt         |   24 +
+ .../captures/repair/words-80x24-insert.ansi        |   24 +
+ .../captures/repair/words-80x24-insert.png         |  Bin 0 -> 58783 bytes
+ .../captures/repair/words-80x24-insert.txt         |   24 +
+ .../evidence/captures/repair/words-80x24-left.ansi |   24 +
+ .../evidence/captures/repair/words-80x24-left.png  |  Bin 0 -> 58600 bytes
+ .../evidence/captures/repair/words-80x24-left.txt  |   24 +
+ .../122-chat-status/evidence/verifier/boards.log   |   18 +
+ .../evidence/verifier/captures/Chat-120x40.ansi    |   40 +
+ .../verifier/captures/Chat-120x40.diff.txt         |    1 +
+ .../evidence/verifier/captures/Chat-120x40.grid    |  121 +
+ .../evidence/verifier/captures/Chat-120x40.png     |  Bin 0 -> 105363 bytes
+ .../verifier/captures/Chat-120x40.raw.ansi         |   40 +
+ .../verifier/captures/Chat-120x40.read.json        |   10 +
+ .../evidence/verifier/captures/Chat-120x40.txt     |   40 +
+ .../verifier/captures/ChatEvents-120x40.ansi       |   40 +
+ .../verifier/captures/ChatEvents-120x40.diff.txt   |    1 +
+ .../verifier/captures/ChatEvents-120x40.grid       |  121 +
+ .../verifier/captures/ChatEvents-120x40.png        |  Bin 0 -> 95913 bytes
+ .../verifier/captures/ChatEvents-120x40.raw.ansi   |   40 +
+ .../verifier/captures/ChatEvents-120x40.read.json  |   10 +
+ .../verifier/captures/ChatEvents-120x40.txt        |   40 +
+ .../verifier/captures/ChatEvents-80x24.ansi        |   24 +
+ .../verifier/captures/ChatEvents-80x24.diff.txt    |    1 +
+ .../verifier/captures/ChatEvents-80x24.grid        |   73 +
+ .../verifier/captures/ChatEvents-80x24.png         |  Bin 0 -> 69888 bytes
+ .../verifier/captures/ChatEvents-80x24.raw.ansi    |   24 +
+ .../verifier/captures/ChatEvents-80x24.read.json   |   10 +
+ .../verifier/captures/ChatEvents-80x24.txt         |   24 +
+ .../verifier/captures/ChatStatus-120x40.ansi       |   40 +
+ .../verifier/captures/ChatStatus-120x40.diff.txt   |    1 +
+ .../verifier/captures/ChatStatus-120x40.grid       |  121 +
+ .../verifier/captures/ChatStatus-120x40.png        |  Bin 0 -> 117938 bytes
+ .../verifier/captures/ChatStatus-120x40.raw.ansi   |   40 +
+ .../verifier/captures/ChatStatus-120x40.read.json  |   10 +
+ .../verifier/captures/ChatStatus-120x40.txt        |   40 +
+ .../verifier/captures/ChatStatus-80x24.ansi        |   24 +
+ .../verifier/captures/ChatStatus-80x24.diff.txt    |    1 +
+ .../verifier/captures/ChatStatus-80x24.grid        |   73 +
+ .../verifier/captures/ChatStatus-80x24.png         |  Bin 0 -> 78598 bytes
+ .../verifier/captures/ChatStatus-80x24.raw.ansi    |   24 +
+ .../verifier/captures/ChatStatus-80x24.read.json   |   10 +
+ .../verifier/captures/ChatStatus-80x24.txt         |   24 +
+ .../evidence/verifier/captures/ChatStatus-esc.ansi |   40 +
+ .../verifier/captures/ChatStatus-esc.diff.txt      |    1 +
+ .../evidence/verifier/captures/ChatStatus-esc.grid |  121 +
+ .../evidence/verifier/captures/ChatStatus-esc.png  |  Bin 0 -> 121443 bytes
+ .../verifier/captures/ChatStatus-esc.raw.ansi      |   40 +
+ .../verifier/captures/ChatStatus-esc.read.json     |   10 +
+ .../evidence/verifier/captures/ChatStatus-esc.txt  |   40 +
+ .../verifier/captures/ChatStatus-open.ansi         |   40 +
+ .../verifier/captures/ChatStatus-open.diff.txt     |    1 +
+ .../verifier/captures/ChatStatus-open.grid         |  121 +
+ .../evidence/verifier/captures/ChatStatus-open.png |  Bin 0 -> 121947 bytes
+ .../verifier/captures/ChatStatus-open.raw.ansi     |   40 +
+ .../verifier/captures/ChatStatus-open.read.json    |   10 +
+ .../evidence/verifier/captures/ChatStatus-open.txt |   40 +
+ .../verifier/captures/CompactChat-80x24.ansi       |   24 +
+ .../verifier/captures/CompactChat-80x24.diff.txt   |    1 +
+ .../verifier/captures/CompactChat-80x24.grid       |   73 +
+ .../verifier/captures/CompactChat-80x24.png        |  Bin 0 -> 62135 bytes
+ .../verifier/captures/CompactChat-80x24.raw.ansi   |   24 +
+ .../verifier/captures/CompactChat-80x24.read.json  |   10 +
+ .../verifier/captures/CompactChat-80x24.txt        |   24 +
+ .../captures/CompactChatStatus-120x40.ansi         |   40 +
+ .../captures/CompactChatStatus-120x40.diff.txt     |    1 +
+ .../captures/CompactChatStatus-120x40.grid         |  121 +
+ .../verifier/captures/CompactChatStatus-120x40.png |  Bin 0 -> 87262 bytes
+ .../captures/CompactChatStatus-120x40.raw.ansi     |   40 +
+ .../captures/CompactChatStatus-120x40.read.json    |   10 +
+ .../verifier/captures/CompactChatStatus-120x40.txt |   40 +
+ .../verifier/captures/CompactChatStatus-80x24.ansi |   24 +
+ .../captures/CompactChatStatus-80x24.diff.txt      |    1 +
+ .../verifier/captures/CompactChatStatus-80x24.grid |   73 +
+ .../verifier/captures/CompactChatStatus-80x24.png  |  Bin 0 -> 71193 bytes
+ .../captures/CompactChatStatus-80x24.raw.ansi      |   24 +
+ .../captures/CompactChatStatus-80x24.read.json     |   10 +
+ .../verifier/captures/CompactChatStatus-80x24.txt  |   24 +
+ .../verifier/captures/Cursor-after-left-80x24.ansi |   24 +
+ .../captures/Cursor-after-left-80x24.diff.txt      |    1 +
+ .../verifier/captures/Cursor-after-left-80x24.grid |   73 +
+ .../verifier/captures/Cursor-after-left-80x24.png  |  Bin 0 -> 64419 bytes
+ .../captures/Cursor-after-left-80x24.raw.ansi      |   24 +
+ .../captures/Cursor-after-left-80x24.read.json     |   10 +
+ .../verifier/captures/Cursor-after-left-80x24.txt  |   24 +
+ .../captures/Cursor-before-left-80x24.ansi         |   24 +
+ .../captures/Cursor-before-left-80x24.diff.txt     |    1 +
+ .../captures/Cursor-before-left-80x24.grid         |   73 +
+ .../verifier/captures/Cursor-before-left-80x24.png |  Bin 0 -> 64419 bytes
+ .../captures/Cursor-before-left-80x24.raw.ansi     |   24 +
+ .../captures/Cursor-before-left-80x24.read.json    |   10 +
+ .../verifier/captures/Cursor-before-left-80x24.txt |   24 +
+ .../captures/Cursor-cap-before-120x40.ansi         |   40 +
+ .../captures/Cursor-cap-before-120x40.diff.txt     |    1 +
+ .../captures/Cursor-cap-before-120x40.grid         |  121 +
+ .../verifier/captures/Cursor-cap-before-120x40.png |  Bin 0 -> 103326 bytes
+ .../captures/Cursor-cap-before-120x40.raw.ansi     |   40 +
+ .../captures/Cursor-cap-before-120x40.read.json    |   10 +
+ .../verifier/captures/Cursor-cap-before-120x40.txt |   40 +
+ .../verifier/captures/Cursor-cap-before-80x24.ansi |   24 +
+ .../captures/Cursor-cap-before-80x24.diff.txt      |    1 +
+ .../verifier/captures/Cursor-cap-before-80x24.grid |   73 +
+ .../verifier/captures/Cursor-cap-before-80x24.png  |  Bin 0 -> 64546 bytes
+ .../captures/Cursor-cap-before-80x24.raw.ansi      |   24 +
+ .../captures/Cursor-cap-before-80x24.read.json     |   10 +
+ .../verifier/captures/Cursor-cap-before-80x24.txt  |   24 +
+ .../captures/Cursor-cap-insert-120x40.ansi         |   40 +
+ .../captures/Cursor-cap-insert-120x40.check.txt    |    2 +
+ .../captures/Cursor-cap-insert-120x40.diff.txt     |    1 +
+ .../captures/Cursor-cap-insert-120x40.grid         |  121 +
+ .../verifier/captures/Cursor-cap-insert-120x40.png |  Bin 0 -> 103503 bytes
+ .../captures/Cursor-cap-insert-120x40.raw.ansi     |   40 +
+ .../captures/Cursor-cap-insert-120x40.read.json    |   10 +
+ .../verifier/captures/Cursor-cap-insert-120x40.txt |   40 +
+ .../verifier/captures/Cursor-cap-insert-80x24.ansi |   24 +
+ .../captures/Cursor-cap-insert-80x24.check.txt     |    2 +
+ .../captures/Cursor-cap-insert-80x24.diff.txt      |    1 +
+ .../verifier/captures/Cursor-cap-insert-80x24.grid |   73 +
+ .../verifier/captures/Cursor-cap-insert-80x24.png  |  Bin 0 -> 64720 bytes
+ .../captures/Cursor-cap-insert-80x24.raw.ansi      |   24 +
+ .../captures/Cursor-cap-insert-80x24.read.json     |   10 +
+ .../verifier/captures/Cursor-cap-insert-80x24.txt  |   24 +
+ .../verifier/captures/Cursor-cap-left-120x40.ansi  |   40 +
+ .../captures/Cursor-cap-left-120x40.check.txt      |    2 +
+ .../captures/Cursor-cap-left-120x40.diff.txt       |    1 +
+ .../verifier/captures/Cursor-cap-left-120x40.grid  |  121 +
+ .../verifier/captures/Cursor-cap-left-120x40.png   |  Bin 0 -> 103326 bytes
+ .../captures/Cursor-cap-left-120x40.raw.ansi       |   40 +
+ .../captures/Cursor-cap-left-120x40.read.json      |   10 +
+ .../verifier/captures/Cursor-cap-left-120x40.txt   |   40 +
+ .../verifier/captures/Cursor-cap-left-80x24.ansi   |   24 +
+ .../captures/Cursor-cap-left-80x24.check.txt       |    2 +
+ .../captures/Cursor-cap-left-80x24.diff.txt        |    1 +
+ .../verifier/captures/Cursor-cap-left-80x24.grid   |   73 +
+ .../verifier/captures/Cursor-cap-left-80x24.png    |  Bin 0 -> 64546 bytes
+ .../captures/Cursor-cap-left-80x24.raw.ansi        |   24 +
+ .../captures/Cursor-cap-left-80x24.read.json       |   10 +
+ .../verifier/captures/Cursor-cap-left-80x24.txt    |   24 +
+ .../verifier/captures/Cursor-insert-80x24.ansi     |   24 +
+ .../verifier/captures/Cursor-insert-80x24.diff.txt |    1 +
+ .../verifier/captures/Cursor-insert-80x24.grid     |   73 +
+ .../verifier/captures/Cursor-insert-80x24.png      |  Bin 0 -> 64595 bytes
+ .../verifier/captures/Cursor-insert-80x24.raw.ansi |   24 +
+ .../captures/Cursor-insert-80x24.read.json         |   10 +
+ .../verifier/captures/Cursor-insert-80x24.txt      |   24 +
+ .../verifier/captures/Cursor-longword-80x24.ansi   |   24 +
+ .../captures/Cursor-longword-80x24.diff.txt        |    1 +
+ .../verifier/captures/Cursor-longword-80x24.grid   |   73 +
+ .../verifier/captures/Cursor-longword-80x24.png    |  Bin 0 -> 64419 bytes
+ .../captures/Cursor-longword-80x24.raw.ansi        |   24 +
+ .../captures/Cursor-longword-80x24.read.json       |   10 +
+ .../verifier/captures/Cursor-longword-80x24.txt    |   24 +
+ .../evidence/verifier/captures/Help-120x40.ansi    |   40 +
+ .../verifier/captures/Help-120x40.diff.txt         |    1 +
+ .../evidence/verifier/captures/Help-120x40.grid    |  121 +
+ .../evidence/verifier/captures/Help-120x40.png     |  Bin 0 -> 105684 bytes
+ .../verifier/captures/Help-120x40.raw.ansi         |   40 +
+ .../verifier/captures/Help-120x40.read.json        |   10 +
+ .../evidence/verifier/captures/Help-120x40.txt     |   40 +
+ .../evidence/verifier/captures/Input-120x40-1.ansi |   40 +
+ .../verifier/captures/Input-120x40-1.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-1.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-1.png  |  Bin 0 -> 95873 bytes
+ .../verifier/captures/Input-120x40-1.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-1.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-1.txt  |   40 +
+ .../verifier/captures/Input-120x40-10.ansi         |   40 +
+ .../verifier/captures/Input-120x40-10.diff.txt     |    1 +
+ .../verifier/captures/Input-120x40-10.grid         |  121 +
+ .../evidence/verifier/captures/Input-120x40-10.png |  Bin 0 -> 106944 bytes
+ .../verifier/captures/Input-120x40-10.raw.ansi     |   40 +
+ .../verifier/captures/Input-120x40-10.read.json    |   10 +
+ .../evidence/verifier/captures/Input-120x40-10.txt |   40 +
+ .../verifier/captures/Input-120x40-11.ansi         |   40 +
+ .../verifier/captures/Input-120x40-11.diff.txt     |    1 +
+ .../verifier/captures/Input-120x40-11.grid         |  121 +
+ .../evidence/verifier/captures/Input-120x40-11.png |  Bin 0 -> 106980 bytes
+ .../verifier/captures/Input-120x40-11.raw.ansi     |   40 +
+ .../verifier/captures/Input-120x40-11.read.json    |   10 +
+ .../evidence/verifier/captures/Input-120x40-11.txt |   40 +
+ .../evidence/verifier/captures/Input-120x40-2.ansi |   40 +
+ .../verifier/captures/Input-120x40-2.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-2.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-2.png  |  Bin 0 -> 97050 bytes
+ .../verifier/captures/Input-120x40-2.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-2.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-2.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-3.ansi |   40 +
+ .../verifier/captures/Input-120x40-3.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-3.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-3.png  |  Bin 0 -> 98201 bytes
+ .../verifier/captures/Input-120x40-3.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-3.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-3.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-4.ansi |   40 +
+ .../verifier/captures/Input-120x40-4.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-4.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-4.png  |  Bin 0 -> 99516 bytes
+ .../verifier/captures/Input-120x40-4.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-4.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-4.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-5.ansi |   40 +
+ .../verifier/captures/Input-120x40-5.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-5.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-5.png  |  Bin 0 -> 100754 bytes
+ .../verifier/captures/Input-120x40-5.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-5.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-5.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-6.ansi |   40 +
+ .../verifier/captures/Input-120x40-6.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-6.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-6.png  |  Bin 0 -> 101962 bytes
+ .../verifier/captures/Input-120x40-6.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-6.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-6.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-7.ansi |   40 +
+ .../verifier/captures/Input-120x40-7.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-7.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-7.png  |  Bin 0 -> 103125 bytes
+ .../verifier/captures/Input-120x40-7.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-7.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-7.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-8.ansi |   40 +
+ .../verifier/captures/Input-120x40-8.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-8.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-8.png  |  Bin 0 -> 104379 bytes
+ .../verifier/captures/Input-120x40-8.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-8.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-8.txt  |   40 +
+ .../evidence/verifier/captures/Input-120x40-9.ansi |   40 +
+ .../verifier/captures/Input-120x40-9.diff.txt      |    1 +
+ .../evidence/verifier/captures/Input-120x40-9.grid |  121 +
+ .../evidence/verifier/captures/Input-120x40-9.png  |  Bin 0 -> 105658 bytes
+ .../verifier/captures/Input-120x40-9.raw.ansi      |   40 +
+ .../verifier/captures/Input-120x40-9.read.json     |   10 +
+ .../evidence/verifier/captures/Input-120x40-9.txt  |   40 +
+ .../evidence/verifier/captures/Input-80x24-1.ansi  |   24 +
+ .../verifier/captures/Input-80x24-1.diff.txt       |    1 +
+ .../evidence/verifier/captures/Input-80x24-1.grid  |   73 +
+ .../evidence/verifier/captures/Input-80x24-1.png   |  Bin 0 -> 69696 bytes
+ .../verifier/captures/Input-80x24-1.raw.ansi       |   24 +
+ .../verifier/captures/Input-80x24-1.read.json      |   10 +
+ .../evidence/verifier/captures/Input-80x24-1.txt   |   24 +
+ .../evidence/verifier/captures/Input-80x24-2.ansi  |   24 +
+ .../verifier/captures/Input-80x24-2.diff.txt       |    1 +
+ .../evidence/verifier/captures/Input-80x24-2.grid  |   73 +
+ .../evidence/verifier/captures/Input-80x24-2.png   |  Bin 0 -> 65410 bytes
+ .../verifier/captures/Input-80x24-2.raw.ansi       |   24 +
+ .../verifier/captures/Input-80x24-2.read.json      |   10 +
+ .../evidence/verifier/captures/Input-80x24-2.txt   |   24 +
+ .../evidence/verifier/captures/Input-80x24-3.ansi  |   24 +
+ .../verifier/captures/Input-80x24-3.diff.txt       |    1 +
+ .../evidence/verifier/captures/Input-80x24-3.grid  |   73 +
+ .../evidence/verifier/captures/Input-80x24-3.png   |  Bin 0 -> 65186 bytes
+ .../verifier/captures/Input-80x24-3.raw.ansi       |   24 +
+ .../verifier/captures/Input-80x24-3.read.json      |   10 +
+ .../evidence/verifier/captures/Input-80x24-3.txt   |   24 +
+ .../evidence/verifier/captures/Input-80x24-4.ansi  |   24 +
+ .../verifier/captures/Input-80x24-4.diff.txt       |    1 +
+ .../evidence/verifier/captures/Input-80x24-4.grid  |   73 +
+ .../evidence/verifier/captures/Input-80x24-4.png   |  Bin 0 -> 66334 bytes
+ .../verifier/captures/Input-80x24-4.raw.ansi       |   24 +
+ .../verifier/captures/Input-80x24-4.read.json      |   10 +
+ .../evidence/verifier/captures/Input-80x24-4.txt   |   24 +
+ .../evidence/verifier/captures/Input-80x24-5.ansi  |   24 +
+ .../verifier/captures/Input-80x24-5.diff.txt       |    1 +
+ .../evidence/verifier/captures/Input-80x24-5.grid  |   73 +
+ .../evidence/verifier/captures/Input-80x24-5.png   |  Bin 0 -> 66292 bytes
+ .../verifier/captures/Input-80x24-5.raw.ansi       |   24 +
+ .../verifier/captures/Input-80x24-5.read.json      |   10 +
+ .../evidence/verifier/captures/Input-80x24-5.txt   |   24 +
+ .../evidence/verifier/cursor-live.log              |   46 +
+ .../evidence/verifier/cursor-red.log               |  141 +
+ .../evidence/verifier/cursor-test.txt              |   46 +
+ .../122-chat-status/evidence/verifier/export.log   |    0
+ .../122-chat-status/evidence/verifier/gate.log     |   93 +
+ .../evidence/verifier/green-all.log                | 1818 +++++++++++
+ .../122-chat-status/evidence/verifier/green.log    |   58 +
+ .../evidence/verifier/grids.diff.txt               |  215 ++
+ .../122-chat-status/evidence/verifier/live.log     |  264 ++
+ .../evidence/verifier/red-green-extra.log          | 3449 ++++++++++++++++++++
+ .../122-chat-status/evidence/verifier/red.log      |  515 +++
+ .../122-chat-status/evidence/verifier/scope.log    |  152 +
+ internal/boardexport/check.go                      |   47 +-
+ internal/boardexport/check_test.go                 |   24 +
+ internal/tui/chat.go                               |  118 +-
+ internal/tui/chat_test.go                          |  187 +-
+ internal/tui/component/chat.go                     |   43 +-
+ internal/tui/component/chat_test.go                |   18 +-
+ internal/tui/component/fit_test.go                 |    2 +-
+ internal/tui/component/header.go                   |    4 +-
+ internal/tui/component/header_test.go              |   14 +-
+ internal/tui/component/input.go                    |  138 +-
+ internal/tui/component/input_test.go               |   54 +-
+ internal/tui/component/symbols_test.go             |    6 +-
+ internal/tui/demo.go                               |   32 +-
+ internal/tui/demo_fixtures_test.go                 |    4 +-
+ internal/tui/frame.go                              |   21 +-
+ internal/tui/header.go                             |   27 +-
+ internal/tui/tui.go                                |   14 +
+ testdata/ste-baseline.json                         |    1 +
+ 461 files changed, 20419 insertions(+), 136 deletions(-)

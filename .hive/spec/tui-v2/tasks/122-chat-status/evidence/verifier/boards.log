@@ -1,0 +1,18 @@
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/ChatStatus.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatStatus.dc.html: exit 0
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/ChatEvents.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatEvents.dc.html: exit 0
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/CompactChatStatus.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChatStatus.dc.html: exit 0
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/Chat.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Chat.dc.html: exit 0
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/CompactChat.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChat.dc.html: exit 0
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/Help.dc.html /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Help.dc.html: exit 0
+ChatStatus-staged: capture exit 0; sha256 f99ca89bf0b372c1b6d8fd0b1f426d0077b4bf2f9288afb4026bbb1a2f09f21a
+ChatStatus-copy: capture exit 0; sha256 f99ca89bf0b372c1b6d8fd0b1f426d0077b4bf2f9288afb4026bbb1a2f09f21a
+ChatEvents-staged: capture exit 0; sha256 91d7faa1f12b75e9f520f29d4267aa793f5de2a4fcb0819128f84165fbe7120d
+ChatEvents-copy: capture exit 0; sha256 91d7faa1f12b75e9f520f29d4267aa793f5de2a4fcb0819128f84165fbe7120d
+CompactChatStatus-staged: capture exit 0; sha256 37633e2aff8eaaa1d80c2ed8749c4bef35391af4ecd7b335ff9a5fd38c4f95e8
+CompactChatStatus-copy: capture exit 0; sha256 37633e2aff8eaaa1d80c2ed8749c4bef35391af4ecd7b335ff9a5fd38c4f95e8
+Chat-staged: capture exit 0; sha256 ed45004d046298e7bf56720714604bc08a20aa4be456906c6a586a4b4bccf7a8
+Chat-copy: capture exit 0; sha256 ed45004d046298e7bf56720714604bc08a20aa4be456906c6a586a4b4bccf7a8
+CompactChat-staged: capture exit 0; sha256 a2b803134fb89bec9367cfeb48355b358cae639dac05c3ec8059218b36336e58
+CompactChat-copy: capture exit 0; sha256 a2b803134fb89bec9367cfeb48355b358cae639dac05c3ec8059218b36336e58
+Help-staged: capture exit 0; sha256 3211479c8040c1ffc21b3263e47036e34b10a704b005b6584a7d971a4cf49537
+Help-copy: capture exit 0; sha256 3211479c8040c1ffc21b3263e47036e34b10a704b005b6584a7d971a4cf49537

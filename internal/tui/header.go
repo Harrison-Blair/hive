@@ -25,17 +25,18 @@ var supervisorBinaryCache struct {
 }
 
 type headerState struct {
-	coordinator   string
-	supervisor    string
-	supervisorOld bool
-	projects      int
-	agents        int
-	working       int
-	idle          int
-	needsUser     int
-	queueRun      int
-	queueStops    int
-	queueWaits    int
+	coordinator          string
+	coordinatorChangedAt string
+	supervisor           string
+	supervisorOld        bool
+	projects             int
+	agents               int
+	working              int
+	idle                 int
+	needsUser            int
+	queueRun             int
+	queueStops           int
+	queueWaits           int
 }
 
 func readHeader(home string) (headerState, error) {
@@ -92,15 +93,17 @@ func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project
 		state.supervisor = "fresh"
 		state.supervisorOld = supervisorOld
 	}
+	currentAgents := currentAgentKeys(agents)
 	for _, record := range agents {
 		if record.Status != records.AgentLive {
 			continue
 		}
-		if record.Role == "coordinator" {
+		if record.Role == "coordinator" && currentAgents[record.Key] {
 			state.coordinator = "live"
 			if record.AgentStatus != "" {
 				state.coordinator = record.AgentStatus
 			}
+			state.coordinatorChangedAt = record.StatusChangedAt
 		}
 		state.agents++
 		if state.supervisor == "fresh" {

@@ -1,0 +1,12 @@
+--- PASS: TestChatWrappedInputCursorTracksInsertion (0.01s)
+    --- PASS: TestChatWrappedInputCursorTracksInsertion/compact_cap (0.00s)
+    --- PASS: TestChatWrappedInputCursorTracksInsertion/full_cap (0.00s)
+--- PASS: TestChatWordWrappedInputCursorTracksInsertion (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.015s
+--- PASS: TestInputCursorFollowsLineAndColumn (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/on_the_soft_break_space (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/after_the_soft_break (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/first_row (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/second_line (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/inside_a_broken_word (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.008s

@@ -59,8 +59,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ message ────────────────────────────────────────────────────────────────────╮
-k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaddwffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
 t|│ > █                                                                          │
 k|afuuaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
@@ -68,6 +68,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [input] enter send · esc leave input · pgup/pgdn feed · tab region             
+t| [input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed          
 k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

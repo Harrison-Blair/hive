@@ -68,12 +68,12 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Chat",
 		regions: []string{"feed", "input"},
 		hints: map[string][]string{
-			"feed":  {"i type", "pgup/pgdn scroll", "tab region", "? help"},
-			"input": {"enter send", "shift+enter newline", "esc leave input", "pgup/pgdn scroll feed", "tab region"},
+			"feed":  {"i or type to write", "j/k scroll", "g/G top/end", "ctrl+o open events", "tab region", "? help"},
+			"input": {"enter send", "shift+enter newline", "ctrl+o open events", "esc leave input", "pgup/pgdn scroll feed", "tab region"},
 		},
 		compact: map[string][]string{
-			"feed":  {"i type", "pgup/pgdn feed", "tab region", "?"},
-			"input": {"enter send", "esc leave input", "pgup/pgdn feed", "tab region"},
+			"feed":  {"i type", "pgup/pgdn feed", "ctrl+o events", "tab region", "?"},
+			"input": {"enter send", "ctrl+o events", "esc leave input", "pgup/pgdn feed"},
 		},
 	},
 	tabWork: {
@@ -343,6 +343,17 @@ func (m *Model) footerView(width int) string {
 		hints = filterHints
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), focus, width >= component.LongFormWidth)
+		if tab == tabChat && width >= component.LongFormWidth && (focus == "feed" || focus == "input") {
+			toggleHint := "ctrl+o open events"
+			if m.chatEventsOpen {
+				toggleHint = "ctrl+o fold events"
+			}
+			for i, hint := range hints {
+				if strings.HasPrefix(hint, "ctrl+o ") {
+					hints[i] = toggleHint
+				}
+			}
+		}
 	}
 	if notice := m.footerNotice(); notice != "" {
 		hints = []string{notice}
@@ -495,7 +506,7 @@ func helpLines() []string {
 		"",
 		titleStyle.Render("CHAT"),
 		dimStyle.Render("i or enter types in chat · esc leaves the input · 1–6 work again"),
-		"",
+		dimStyle.Render("ctrl+o opens or folds all chat events"),
 		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
 		"",
 	}

@@ -41,16 +41,17 @@ function frame(t, active, region, hints) {
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
 }
 function chat(t) {
-  frame(t, 1, 'input', 'enter send · shift+enter newline · esc leave input · pgup/pgdn scroll feed · tab region');
+  frame(t, 1, 'input', 'enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region');
   box(t, 0, 3, 120, 33, 'border', 'chat · noise normal', 'accent');
   put(t, 60, 3, ' ↑ 42 earlier ', 'dim');
   box(t, 0, 36, 120, 3, 'accent', 'message', 'accent');
+  segs(t, 11, 36, [['· ', 'dim'], ['●', 'working'], [' working 1m ', 'fg']]);
   put(t, 2, 37, '> 1A, 2A, 3B', 'user');
   put(t, 14, 37, '█', 'accent');
   var X = 23, W = 94, y = 5;
   function who(time, name, k) { put(t, 2, y, time, 'dim'); put(t, 9, y, fit(name, 13), k, 1); }
   function userMsg(time, text) { who(time, 'you', 'user'); wrap(text, W).forEach(function (ln, i) { put(t, X, y + i, ln, 'user'); }); y += wrap(text, W).length + 1; }
-  function event(time, name, text) { put(t, 2, y, time, 'dim'); put(t, 9, y, '· ' + fit(name, 11), 'dim'); put(t, X, y, fit(text, W), 'dim'); y += 2; }
+  function event(time, name, text) { put(t, 2, y, time, 'dim'); put(t, 9, y, '▸ ' + fit(name, 11), 'dim'); put(t, X, y, fit(text, W), 'dim'); y += 2; }
   userMsg('14:02', 'I want to give the user an ability to restart the coordinator or supervisor within the hive UI.');
   event('14:19', 'manager-hive', 'goal g1-tui-restart created · wave A started · worker t2-worker-1 live');
   who('14:21', 'coordinator', 'info');

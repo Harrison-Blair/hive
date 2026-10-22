@@ -55,6 +55,8 @@ type Model struct {
 	chatPaneID        string
 	chatCallerBlocked bool
 	chatNoise         string
+	chatEventsOpen    bool
+	chatStatusAge     string
 	chatErr           string
 	textFilter        string
 	follow            bool
@@ -227,6 +229,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case tickMsg:
+		if m.activeTab() == tabChat {
+			age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
+			if age != m.chatStatusAge {
+				m.chatStatusAge = age
+				m.invalidateView()
+			}
+		}
 		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
 			m.logDate = startOfDay(m.now())
 			m.events = nil
@@ -282,7 +291,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, logCmd
 		}
+		chatStatusChanged := msg.state.coordinator != m.header.coordinator || msg.state.coordinatorChangedAt != m.header.coordinatorChangedAt
 		m.header = msg.state
+		m.chatStatusAge = coordinatorStatusAge(msg.state.coordinatorChangedAt, m.now())
+		if m.activeTab() == tabChat && chatStatusChanged {
+			m.invalidateView()
+		}
 		m.headerErr = ""
 		if m.headerRefreshPending {
 			m.headerRefreshPending = false

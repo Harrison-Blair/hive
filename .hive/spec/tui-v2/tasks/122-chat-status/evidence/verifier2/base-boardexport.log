@@ -1,0 +1,20 @@
+$ go test ./internal/boardexport -run ^TestCheckAccepts(ChatStatusSymbols|NewChatBoardSizes)$ -count=1 -v
+=== RUN   TestCheckAcceptsChatStatusSymbols
+    verifier_new_test.go:6: board TooSmall: row 0 col 0: symbol "▸" is not in the list of decision 13
+--- FAIL: TestCheckAcceptsChatStatusSymbols (0.00s)
+=== RUN   TestCheckAcceptsNewChatBoardSizes
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatStatus
+    verifier_new_test.go:22: board ChatStatus: not in the spec table
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatEvents
+    verifier_new_test.go:22: board ChatEvents: not in the spec table
+=== RUN   TestCheckAcceptsNewChatBoardSizes/CompactChatStatus
+    verifier_new_test.go:22: board CompactChatStatus: not in the spec table
+--- FAIL: TestCheckAcceptsNewChatBoardSizes (0.00s)
+    --- FAIL: TestCheckAcceptsNewChatBoardSizes/ChatStatus (0.00s)
+    --- FAIL: TestCheckAcceptsNewChatBoardSizes/ChatEvents (0.00s)
+    --- FAIL: TestCheckAcceptsNewChatBoardSizes/CompactChatStatus (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
+FAIL
+
+exit: 1
