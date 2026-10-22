@@ -291,3 +291,45 @@ exit 0
 $ go test -race ./...
 exit 0
 ```
+
+## Merge 4: dev at 7ea7497d (Work Goals)
+
+The merge of `origin/dev` at `7ea7497d` had two conflicts. Both sides are kept.
+
+- `testdata/ste-baseline.json`: the entries of `34-screen-chat`,
+  `35-screen-work-goals`, and `38-screen-friction` each occur one time.
+- `internal/tui/shell_test.go`: the Chat row keeps `no chat yet` from this
+  task. The Goals row takes `goals · 0` from dev.
+
+No helper occurs two times. Dev adds `footerRow` and `goalsModel` in
+`work_goals_test.go`. This branch does not have them. `pressScreenKey` of dev
+is in `chat_screen_test.go`, which this task removes. It occurs one time, in
+`chat_test.go`. No helper is removed.
+
+### Diff scope
+
+Output: `diff-stat-4.txt` (`git diff 7ea7497d --stat`). Each file outside the
+evidence is in the source table of the brief.
+
+### Golden checks
+
+Output: `merge4-golden.txt`. `TestChatMatchesItsBoard`,
+`TestCompactChatMatchesItsBoard`, and each other Chat test pass. No test fails.
+
+### Gate run 6: pass
+
+Full output: `gate-run-6.txt`, on the merge tree.
+
+```text
+$ gofmt -l
+exit 0
+$ go mod tidy -diff
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race ./...
+exit 0
+```

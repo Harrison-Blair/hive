@@ -1,0 +1,14 @@
+## token: planned status infoStyle -> dimStyle (work_goals.go:164)
+--- FAIL: TestWorkGoalsMatchesItsBoard (0.01s)
+    work_goals_test.go:33: 10 cells differ from WorkGoals.grid:
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	3.574s
+FAIL
+## key: remove j from the Goals down key (work_goals.go:45)
+--- FAIL: TestGoalsKeysAndHints (0.05s)
+    work_goals_test.go:210: key "j" selected "g2-two"; want "g3-three"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	3.001s
+FAIL
+## restored
+ok  	github.com/Harrison-Blair/hive/internal/tui	3.258s

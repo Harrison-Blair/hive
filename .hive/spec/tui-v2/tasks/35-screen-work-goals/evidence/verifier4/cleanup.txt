@@ -1,0 +1,11 @@
+{"id":"cli:tab:list","result":{"tabs":[{"agent_status":"working","focused":false,"label":"t35-verifier-4","number":1,"pane_count":1,"tab_id":"wA2:t1","workspace_id":"wA2"}],"type":"tab_list"}}
+/home/penguin/source/hive                                                                         fbca94d5 [dev]
+/home/penguin/source/hive/projects/hive/worktrees/33-screen-agents                                ddc64a61 [task/33-screen-agents]
+/home/penguin/source/hive/projects/hive/worktrees/34-screen-chat                                  a0c5bf60 [task/34-screen-chat]
+/home/penguin/source/hive/projects/hive/worktrees/35-screen-work-goals                            d639457b [task/35-screen-work-goals]
+/home/penguin/source/hive/projects/hive/worktrees/37-screen-work-tasks                            021361fc [task/37-screen-work-tasks]
+/home/penguin/source/hive/projects/hive/worktrees/38-screen-friction                              bff0b091 [task/38-screen-friction]
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health                                6746efb0 [task/39-screen-health]
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health/.hive/tmp/verify39v3/base      b145a41f (detached HEAD)
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health/.hive/tmp/verify39v3/mutation  6746efb0 (detached HEAD)
+/home/penguin/source/hive/projects/hive/worktrees/45-selected-card-boards                         d2dd8dec [task/45-selected-card-boards]

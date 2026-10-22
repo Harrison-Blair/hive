@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+ [Goals]   Queue    Tasks                                                                             [ ] switch view
+╭─ goals · 2 ──────────────────────────────────────╮╭─ g1-tui-restart ─────────────────────────────────────────────────╮
+│   GOAL                    STATUS    WAVES        ││                                                                  │
+│   g2-tui-v2               planned   0/5          ││ title     TUI restart and stale coordinator startup              │
+│ ▶ g1-tui-restart          done      3/3          ││ status    done                                                   │
+│                                                  ││ project   hive                                                   │
+│                                                  ││ grant     grants.md 2026-10-18 hive delivery on dev              │
+│                                                  ││ manager   manager-hive                                           │
+│                                                  ││                                                                  │
+│                                                  ││ WAVES                                                            │
+│                                                  ││ WAVE TITLE                      DONE WHEN  LANDED  STATUS        │
+│                                                  ││ A    Stale coordinator startup  dev        1/1     ✓ done        │
+│                                                  ││ B    TUI restart                dev        1/1     ✓ done        │
+│                                                  ││ C    Agents graph columns       dev        1/1     ✓ done        │
+│                                                  ││                                                                  │
+│                                                  ││ TASKS                                                            │
+│                                                  ││ A   2-stale-coordinator-startup   merge 0e079272                 │
+│                                                  ││ B   3-tui-restart                 merge 3ccd93fb                 │
+│                                                  ││ C   4-agents-equal-columns        merge ede94f3e                 │
+│                                                  ││                                                                  │
+│                                                  ││ NEEDS YOU                                                        │
+│                                                  ││ nothing                                                          │
+│                                                  ││                                                                  │
+│                                                  ││ o goal design   t open task in Tasks                             │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+│                                                  ││                                                                  │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [details] ↑↓ scroll · tab region · esc back to list · ? help
