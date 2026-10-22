@@ -1,196 +1,157 @@
 # Verification: 122-chat-status
 
-**Verdict: fail.** The wrapped input cursor does not show the insertion position after Left, at both input caps.
+**Verdict: pass.** Each verification item passes after the cursor repair.
 
-- Verifier: `t122-verifier-1`.
+- Verifier: `t122-verifier-2`.
 - Date: 2026-10-22.
-- Task commit: `e52a04aa`.
-- Base: `dd4ec26ec10f1ff2552c50d0f616524a6a9bbb0f` (`dev`).
-- `git merge dev --no-edit` printed `Already up to date.`
+- Worker evidence commit: `55605fa1` (source repair: `60969662`).
+- Checked task commit after the required merge: `333f56319c17adb0af519037313d8928e4cd6a94`.
+- Merged base: `6f741a6b3a3f61741896919679bc18f144a0abeb` (`dev`).
+- Red-run base: `dd4ec26e`. The later base commits change dogfood documents only.
 - I changed no project source file, worker evidence file, or tracker.
-- Paths below are relative to this evidence folder.
+- Paths below are relative to this evidence folder. New results are in `verifier2/`.
+- The first failed verdict remains in commit `885b4863` and in `verifier/`.
 
 ## Verification items
 
 | Item | Result | Observation and evidence |
 | --- | --- | --- |
-| V1 Boards | pass | All six `cmp` commands exit 0. I captured each staged board and its copy with Firefox. Each pair has the same PNG hash. No image shows `{{`. See `verifier/boards.log`. |
-| V2 Grid diff | pass | Three new grids. `Help.grid` changes in row 31 only. `Chat.grid` changes in rows 8, 36, and 39. `CompactChat.grid` changes in rows 20 and 23. These are the AC7 cells. Each other grid is unchanged. See `verifier/grids.diff.txt`. |
-| V3 Tests red and green | fail | The worker tests fail on base code and pass on task code. An additional model check fails on task code at both caps. It detects the cursor defect below. See `verifier/red.log`, `green.log`, `green-all.log`, `red-green-extra.log`, and `cursor-red.log`. |
-| V4 Live check | pass | The six specified captures match their grids. `ctrl+o` opens the full event text. `esc` keeps the six-row input panel. See `verifier/live.log` and `verifier/captures/`. |
-| V5 Visual alignment | pass | All specified alignment points pass at both sizes. All board-size captures match their grids. Each input height through the cap, and one height past it, keeps the panel join and border columns. See the tables below. The additional cursor check is the V3 failure. |
-| V-gate Diff scope and gate | pass | The source changes stay within the brief. All five gate commands exit 0. `gofmt -l` and `go mod tidy -diff` print nothing. See `verifier/scope.log` and `verifier/gate.log`. |
+| V1 Boards | pass | All six staged boards equal their copies with `cmp`. Fresh Firefox captures of both sets have equal PNG hashes. I inspected the captures. No capture shows `{{`. See `verifier2/boards.log`. |
+| V2 Grid diff | pass | Three new grids. Help changes only in row 31. Chat changes only in rows 8, 36, and 39. CompactChat changes only in rows 20 and 23. These are the AC7 cells. Each other grid is unchanged. All 31 exported grids equal their committed files. See `verifier2/grids.diff.txt` and `export.log`. |
+| V3 Tests red and green | pass | The new behavior tests fail on base code and pass on task code. The repair model tests fail on the code before the repair. All five cursor-component cases fail with an end-only cursor stub and pass with the real helper. The first verifier's independent regression test now passes. See the red and green logs below. |
+| V4 Live check | pass | All six specified board-size captures have zero cell differences. `ctrl+o` opens the full event text from the input and the feed. A second press folds it. `esc` keeps the input height. See `verifier2/live.log` and `captures/`. |
+| V5 Visual alignment | pass | Fresh captures cover each of the three states at both sizes. Each board-size capture matches its grid. The five alignment points pass at both sizes. Each input height through the cap, and one height past it, passes. See the tables below and `verifier2/captures/`. |
+| V-gate Diff scope and gate | pass | After `git merge dev --no-edit`, only the named source files, their tests, and task evidence differ from dev. All five gate commands exit 0. The first two print nothing. See `verifier2/scope.log` and `gate.log`. |
 
-## Failure: cursor and insertion position disagree
+## V1 and V2 procedure
 
-The failure occurs in demo mode and in the model, without a live coordinator or chat send.
-
-1. Use the `ChatStatus` fixture with input focus.
-2. At 80×24, set the input to 445 `x` characters followed by `END`.
-3. At 120×40, use 1,141 `x` characters followed by `END`.
-4. Press Left once.
-5. Type `Z`.
-
-Both inputs exceed their panel caps. The final wrapped text row starts with `xEND`.
-
-| Step | Expected final row | Actual final row |
-| --- | --- | --- |
-| Initial position | `xEND█` | `xEND█` |
-| After Left | `xEN█` (cursor before `D`) | `xEND█` (cursor stays after `D`) |
-| After `Z` | `xENZ█` (cursor remains before `D`) | `xENZD█` (cursor stays after `D`) |
-
-The stored text ends with `xENZD`. Thus insertion occurs before `D`, although the cursor shows a position after `D`.
-
-Evidence:
-
-- `verifier/cursor-test.txt`: independent model check with literal expected text.
-- `verifier/cursor-red.log`: both size cases fail on the task code.
-- `verifier/cursor-live.log`: live commands and captures.
-- `verifier/captures/Cursor-cap-before-{80x24,120x40}.png`.
-- `verifier/captures/Cursor-cap-left-{80x24,120x40}.png`.
-- `verifier/captures/Cursor-cap-insert-{80x24,120x40}.png`.
-- A shorter 75-character prefix also fails at 80×24. The `Cursor-*80x24` captures record that check.
-
-The width calculations disagree:
-
-- `internal/tui/chat.go:289` gives `width-6` to `textarea.SetWidth`.
-- The textarea reserves its two-cell prompt inside that width.
-- `internal/tui/component/input.go:30` wraps the displayed text at `width-6`, without that additional deduction.
-- The renderer then uses the textarea cursor coordinates. Its end-column clamp hides the discrepancy until the user moves the cursor.
-
-I reported the defect to `manager-hive` in inbox record 429. I made no source fix.
-
-### Re-run the failing check
-
-From the worktree root:
-
-```sh
-mkdir -p .hive/tmp/verifier-cursor
-python3 - <<'PY'
-import json
-from pathlib import Path
-r = Path.cwd()
-p = r / '.hive/tmp/verifier-cursor/overlay.json'
-p.write_text(json.dumps({'Replace': {
-    str(r / 'internal/tui/verifier_cursor_test.go'):
-    str(r / '.hive/spec/tui-v2/tasks/122-chat-status/evidence/verifier/cursor-test.txt')
-}}))
-PY
-go test -overlay .hive/tmp/verifier-cursor/overlay.json ./internal/tui \
-  -run '^TestVerifierWrappedInputCursorTracksInsertion$' -count=1 -v
-```
-
-Expected correct behavior: exit 0. Observed task behavior: exit 1 for both size cases.
-
-## V1 and V2 details
-
-I supplied the unchanged design `support.js` beside temporary, byte-identical HTML copies so Firefox could render both sets.
-Each capture used a separate new profile under `.hive/tmp/verifier-122/`:
+For each of ChatStatus, ChatEvents, CompactChatStatus, Chat, CompactChat, and Help:
 
 ```text
+cmp /home/penguin/source/hive/.hive/tmp/g3-chat-status/boards/BOARD.dc.html .hive/spec/tui-v2/design/BOARD.dc.html
 firefox --headless --no-remote --profile PROFILE --window-size=1220,780 --screenshot OUT.png file://BOARD.dc.html
 ```
 
-I ran the exporter without changing the committed grids:
+I put byte-identical board copies and the unchanged `support.js` in scratch folders so both sets render. Each capture used a new profile. Both sets, profiles, and board PNGs were under `.hive/tmp/verifier2/`. I removed them after inspection.
+
+I ran the exporter into a separate scratch output folder:
 
 ```sh
 go run ./internal/boardexport/cmd/boardexport \
-  -out .hive/tmp/verifier-122/exported .hive/spec/tui-v2/design
+  -out .hive/tmp/verifier2/exported .hive/spec/tui-v2/design
 ```
 
-It exits 0. Each exported grid equals its committed grid.
-The comparison with `dev` uses `internal/lib/cellgrid.ReadGrid` and `Compare`, without masks.
-The changed-cell counts are 85 for Chat, 62 for CompactChat, and 37 for Help.
+All 31 exports equal the committed grids. I compared each committed grid with `git show dev:PATH`, using `internal/lib/cellgrid.ReadGrid` and `Compare`, without masks. Chat has 85 changed cells, CompactChat has 62, and Help has 37. The three new grids are ChatStatus, ChatEvents, and CompactChatStatus.
 
-## V3 details
+The three symbol lists agree: 42 symbols. The width test passes for each symbol. The README has all three board rows and decisions 55 to 57. The existing Chat and CompactChat fixtures already give working for one minute.
 
-The base run uses a `git archive dev` copy under `.hive/tmp/verifier-122/base/`.
-I copied the new tests into that copy. The base and task runs use `-count=1 -v`.
-Each named behavior test fails on the base and passes on the task:
+## V3 red and green runs
 
-- `TestChatInputBorderShowsCoordinatorStatusAndQueuedMark`.
-- `TestChatInputShowsStatusGlyphAndWholeMinuteAge`, including all eight status cases.
-- `TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves`, at both sizes.
-- `TestChatCtrlOOpensAndFoldsEventsFromBothRegions`.
-- `TestInputGrowsToFitWrappedText`.
-- `TestInputShowsWrappedTextAndCursor`.
-- `TestHeaderBlockedStateUsesWarningGlyph`.
-- `TestCheckAcceptsChatStatusSymbols`.
-- `TestCheckAcceptsNewChatBoardSizes`.
+I used `git archive` copies below `.hive/tmp/verifier2/` for the red runs. No worktree source changed. Each run uses `-count=1 -v`.
 
-Two base-only adaptations permit behavior checks with the old API:
+| Tests | Red result and log | Green result and log |
+| --- | --- | --- |
+| Status, all eight status/age cases, queued mark, caps at both sizes, focus height, event toggle from both regions | fail, `base-model.log` | pass, `green-all.log` |
+| Input growth, long-word wrapping, explicit newlines, blocked header, open-event text and message column | fail, `base-component.log` | pass, `green-all.log` |
+| New board sizes and symbols | fail, `base-boardexport.log` | pass, `green-all.log` |
+| Three new board golden checks | fail, `base-golden.log` | pass, `green-all.log` |
+| Long-word cursor movement and insertion at both caps; space-wrapped cursor movement and insertion | fail on `885b4863`, `before-fix-model.log` | pass, `green-all.log` |
+| Five component cursor positions | fail with the end-only helper stub, `mutated-cursor.log` | pass, `green-all.log` |
+| First verifier's unchanged independent cursor test | previous fail is in `verifier/cursor-red.log` | pass, `independent-cursor.log` |
+| Minute-boundary refresh and queued-to-sent/failed transitions | fail, `transitions-red.log` | pass, `transitions-green.log` |
 
-- The open-event component test omits the absent `Open: true` initializer. The base fails the full-text expectation.
-- The three new fixture copies omit the unsupported `chat_events_open` field. Their golden checks fail on the base render.
+These logs are in `verifier2/`. The transition test source is `verifier2/transitions-test.txt`. It uses a scratch home and literal expected text. It checks 59 seconds as `0m`, the next tick as `1m`, a pending user entry followed by a coordinator reply, and sent and failed delivery with no queued mark.
 
-The task runs use the original tests and fixtures. The open-event component test and all three new golden checks pass.
-`go test ./internal/tui ./internal/tui/component ./internal/boardexport -count=1 -v` also passes.
-These checks do not detect cursor movement after wrapping. The independent cursor check does detect that defect.
+The main green command is:
 
-## V4 live captures
+```sh
+go test ./internal/tui ./internal/tui/component ./internal/boardexport -count=1 -v
+```
 
-I built the task binary and ran only demo fixtures in owned Herdr pane `wVH:p2`.
-Each run uses `COLORTERM=truecolor`, `--no-startup`, `--demo FILE`, and `--size WxH`.
-I did not change `TERM` for these final captures.
+All 317 top-level tests pass, including all golden checks and responsive checks in these packages.
 
-Each capture has two equal CLI reads at least 500 ms apart.
-The API read reports `truncated: false`. The pane scroll offset is 0.
-I cropped the top-left grid size and converted it with `internal/lib/cellgrid`.
-Decision 54 excludes token and bold differences only when both cells are spaces. Each other cell compares fully. No mask is used.
+Two base-only adaptations permit behavioral red checks with the old API:
+
+- Omit the absent `Open: true` initializer in the open-event component test. The test fails its full-text expectation.
+- Omit the unsupported `chat_events_open` fixture field. The new golden checks fail on the old rendering.
+
+The green run uses the original tests and fixtures. The cursor component test has new API fields, so its red run uses a Go overlay that returns the end position from `inputCursor`. All five cases fail. The overlay changes no source file.
+
+## V4 live checks
+
+I built this branch with `go build -o .hive/tmp/verifier2/hive .`. I used only owned Herdr pane `wVK:p2`. Its size was 207 columns and at least 46 rows. Each demo command has this form:
+
+```text
+COLORTERM=truecolor .hive/tmp/verifier2/hive --no-startup --demo FILE --size WxH
+```
+
+I did not change `TERM`. I started no coordinator or supervisor and sent no chat. Each capture has two equal visible ANSI reads at least 500 ms apart. A separate API read confirms `truncated: false`. The pane scroll offset is 0. Each `.read.json` records this evidence.
+
+I cropped the top-left W×H cells and converted them with `internal/lib/cellgrid`. The approved live-check rule excludes token and bold differences only when both cells are spaces. Each other cell compares fully. No mask is used.
 
 | Capture | Cells | Differences |
 | --- | ---: | ---: |
-| `ChatStatus-120x40` | 4,800 | 0 |
-| `ChatEvents-120x40` | 4,800 | 0 |
-| `CompactChatStatus-80x24` | 1,920 | 0 |
-| `Chat-120x40` | 4,800 | 0 |
-| `CompactChat-80x24` | 1,920 | 0 |
-| `Help-120x40` | 4,800 | 0 |
+| ChatStatus-120x40 | 4,800 | 0 |
+| ChatEvents-120x40 | 4,800 | 0 |
+| CompactChatStatus-80x24 | 1,920 | 0 |
+| Chat-120x40 | 4,800 | 0 |
+| CompactChat-80x24 | 1,920 | 0 |
+| Help-120x40 | 4,800 | 0 |
 
-The live `ChatStatus-open` capture shows `▾`, the complete event text, and the `ctrl+o fold events` hint.
-The following `ChatStatus-esc` capture keeps the input top at row 33 and its four text rows.
+Each capture has ANSI, plain text, a converted grid, read metadata, a diff, and a PNG in `verifier2/captures/`. I rendered the captured SGR colours and bold flags to HTML, then captured the HTML with Firefox.
+
+`ChatStatus-open` shows `▾`, the full event ending `landed on dev at 3807a25.`, and `ctrl+o fold events`. `ChatStatus-esc` keeps the input top at row 33 and its four text rows. `ChatStatus-feed-fold` and `ChatStatus-feed-open` check both toggle directions from the feed.
+
+### Cursor repair: user-visible result
+
+I repeated the first verifier's live reproduction at both caps. At 80×24, the input is 445 `x` characters plus `END`. At 120×40, it is 1,141 `x` characters plus `END`.
+
+| Step | Visible last row at both sizes | Result |
+| --- | --- | --- |
+| Initial position | `xEND█` | pass |
+| Press Left | `xEN█` (the cursor covers D) | pass |
+| Type Z | `xENZ█` (the cursor still covers D) | pass |
+
+The captures are `Cursor-cap-{before,left,insert}-{80x24,120x40}`. The independent model test also checks that the stored text ends with `xENZD`.
 
 ## V5 alignment
 
-The captures include all three board states at 120×40 and 80×24.
-The additional-size captures have no approved grid. Their diff files say this explicitly.
+I inspected fresh PNGs of all three states at both sizes. Each board-size capture matches its approved grid. The additional-size captures have no approved grid; their diff files state this limit.
 
 | Alignment point | 120×40 | 80×24 | Evidence |
 | --- | --- | --- | --- |
-| Panel borders and corners align | pass | pass | All six state captures |
-| Status follows the input title without a broken border | pass | pass | All six state captures |
-| Input right border and scroll mark keep their column | pass | pass | CompactChatStatus and Input captures |
-| Feed bottom and input top have no gap or overlap | pass | pass | Every Input capture |
-| Open event text uses the message text column | pass | pass | ChatEvents captures |
+| Each panel border and corner lines up | pass | pass | All six state captures |
+| Status follows the input title with no broken border | pass | pass | All six state captures |
+| Input right border and scroll mark keep their column | pass | pass | CompactChatStatus and all Input captures |
+| Feed bottom and input top have no gap or overlap | pass | pass | Each Input capture |
+| Open-event text starts in the message text column | pass | pass | Both ChatEvents captures |
 
-`Input-120x40-1` through `Input-120x40-10` cover each text height through the 12-row panel cap.
-`Input-120x40-11` checks overflow.
-`Input-80x24-1` through `Input-80x24-4` cover each text height through the six-row panel cap.
-`Input-80x24-5` checks overflow.
-I checked the PNGs and the border cells at every height.
+`Input-120x40-1` through `Input-120x40-10` cover each text height through the 12-row panel cap. `Input-120x40-11` checks overflow. `Input-80x24-1` through `Input-80x24-4` cover each text height through the six-row panel cap. `Input-80x24-5` checks overflow. Border-cell checks and PNG inspection pass at every height. Overflow keeps the cursor row and the dim right-border scroll mark visible.
 
 ### Board elements and states without colour
+
+I removed ANSI colour codes and checked each state label in the plain text.
 
 | Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
 | ChatStatus header | `coordinator ● working`, `supervisor ● live` | matches | Approved board |
-| ChatStatus tab and feed frame | `2 Chat`, `chat · noise normal`, `↑ 42 earlier` | matches | Grid comparison |
+| ChatStatus tabs and feed frame | `2 Chat`, `chat · noise normal`, `↑ 42 earlier` | matches | Grid comparison |
 | ChatStatus folded events | `▸` and event name | matches | Decision 57 |
 | ChatStatus pending message | `you · pending` | matches | Approved board |
 | ChatStatus input border | `message · ● working 2m · queued` | matches | Decision 55 |
-| ChatStatus growing input and cursor | Four text rows and `█` at text end | matches | Initial board state |
-| ChatStatus scroll and footer | `┃`, `[input]`, `ctrl+o open events` | matches | AC7 and decision 57 |
+| ChatStatus growing input and cursor | Four text rows and `█` | matches | Approved board |
+| ChatStatus scroll and footer | `┃`, `[input]`, `ctrl+o open events` | matches | AC7 |
 | ChatEvents header | `coordinator ○ idle`, `supervisor ● live` | matches | Approved board |
-| ChatEvents tab and feed frame | `2 Chat`, `chat · noise normal`, `↑ 44 earlier` | matches | Grid comparison |
+| ChatEvents tabs and feed frame | `2 Chat`, `chat · noise normal`, `↑ 44 earlier` | matches | Grid comparison |
 | ChatEvents open events | `▾` and full event text | matches | Decision 57 |
-| ChatEvents empty input border | `message · ○ idle 5m`, `>` | matches | No queued mark |
+| ChatEvents input border | `message · ○ idle 5m`, `>` | matches | No queued mark |
 | ChatEvents scroll and footer | `┃`, `[feed]`, `ctrl+o fold events` | matches | Approved board |
 | CompactChatStatus header | `coord ▲`, `sup ●` | matches | Decision 55 |
-| CompactChatStatus tab and feed | `2 Chat`, `chat`, `▸` before event names | matches | Approved board |
+| CompactChatStatus tabs and feed | `2 Chat`, `chat`, `▸` and event names | matches | Approved board |
 | CompactChatStatus input border | `message · ▲ blocked 1m` | matches | Decision 55 |
-| CompactChatStatus capped input | Four visible text rows, `█`, and `┃` | matches | Six-row panel cap |
+| CompactChatStatus capped input | Four visible text rows, `█`, `┃` | matches | Six-row panel cap |
 | CompactChatStatus footer | `[input]`, `ctrl+o events` | matches | AC7 |
-| Chat header, tabs, and feed | `● working`, `2 Chat`, `▸` before event name | matches | AC7 |
+| Chat header, tabs, and feed | `● working`, `2 Chat`, `▸` and event name | matches | AC7 |
 | Chat input and footer | `message · ● working 1m`, `█`, `ctrl+o open events` | matches | AC7 |
 | CompactChat header, tabs, and feed | `coord ●`, `2 Chat`, `chat` | matches | Approved board |
 | CompactChat input and footer | `message · ● working 1m`, `█`, `ctrl+o events` | matches | AC7 |
@@ -198,27 +159,22 @@ I checked the PNGs and the border cells at every height.
 | Help event-toggle row | `ctrl+o opens or folds all chat events` | matches | Row 31 |
 | Help footer | `[help]`, `? or esc close` | matches | Approved board |
 
-I also checked stripped text files for the state glyphs and words. No state depends on colour alone.
-The approved fallback states pass the model tests: another status shows `○` and its word, no coordinator shows `○ none`, and no timestamp omits the age.
+No checked state depends on colour alone. The approved fallback choices also pass the model tests: another status uses `○` and its word, no live coordinator uses `○ none`, and no timestamp omits the age.
 
-## Scope, gate, and cleanup
+## Scope, gate, known limit, and cleanup
 
-The three symbol lists agree. All 42 symbols have width 1.
-The README has the three board rows and decisions 55–57.
-The existing Chat and CompactChat fixtures already specify working for one minute, so their data needs no change.
-The conditional `internal/tui/tui.go` edit holds toggle state, cursor state, and age refresh, as the worker evidence records.
+The conditional `internal/tui/tui.go` changes store the event-toggle state and refresh the status age. The worker records this cause. The cursor repair removes the earlier cursor-coordinate cache. Source changes stay within the brief.
 
-The full gate output is in `verifier/gate.log`:
+The full gate output after the dev merge is in `verifier2/gate.log`:
 
 ```text
-gofmt -l $(git ls-files -co --exclude-standard '*.go')  # no output, exit 0
-go mod tidy -diff                                    # no output, exit 0
-go vet ./...                                         # exit 0
-golangci-lint run ./...                              # 0 issues., exit 0
-go test -race ./...                                  # all packages pass, exit 0
+gofmt -l $(git ls-files -co --exclude-standard '*.go')  # no output; exit 0
+go mod tidy -diff                                    # no output; exit 0
+go vet ./...                                         # no output; exit 0
+golangci-lint run ./...                              # 0 issues.; exit 0
+go test -race ./...                                  # all packages pass; exit 0
 ```
 
-The owned demo processes stopped. I checked that `wVH:p2` contained only its shell before I closed it.
-The final pane list contains only the verifier pane in that workspace.
-I removed the temporary base copy, binary, scripts, browser profiles, board PNGs, and schema capture after recording the results.
-I preserved the final evidence and the pre-existing worker files.
+Known limit: Up and Down can use different word-wrap points from the displayed rows. The user deferred this fix on 2026-10-22. The base records the decision in `reference/dogfood/friction/entries/chat-input-updown-wrap-offset.md` and states that it is outside task 122. This pass does not claim vertical-column alignment for Up and Down. Typing, Left, and the shown insertion point are correct in the checked cases.
+
+I stopped each owned demo process. I confirmed that `wVK:p2` had only its shell before I closed it. The final pane list has only the verifier pane. I removed the scratch archive copies, binaries, scripts, HTML files, board PNGs, browser profiles, contact sheets, and schema capture. I preserved all final evidence and pre-existing files.

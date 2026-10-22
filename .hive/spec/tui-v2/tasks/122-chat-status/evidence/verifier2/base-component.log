@@ -1,0 +1,21 @@
+$ go test ./internal/tui/component -run ^Test(InputGrowsToFitWrappedText|InputShowsWrappedTextAndCursor|HeaderBlockedStateUsesWarningGlyph|OpenEventTextUsesMessageColumnAndKeepsLineBreaks)$ -count=1 -v
+=== RUN   TestInputGrowsToFitWrappedText
+    verifier_new_test.go:6: input has 3 rows; want 7 rows for five wrapped text rows and borders:
+        ╭─ message ──╮
+        │ > … seven█ │
+        ╰────────────╯
+--- FAIL: TestInputGrowsToFitWrappedText (0.00s)
+=== RUN   TestInputShowsWrappedTextAndCursor
+    verifier_new_test.go:16: long input rows = ["╭─ message ────╮" "│ > …xxxxxEND█ │" "╰──────────────╯"]; want five text rows and END█ on the last row
+--- FAIL: TestInputShowsWrappedTextAndCursor (0.00s)
+=== RUN   TestHeaderBlockedStateUsesWarningGlyph
+    verifier_new_test.go:29: compact header = " hive                                     coord ○ · sup ● · needs you 0 · 09:05 "; want blocked glyph ▲
+--- FAIL: TestHeaderBlockedStateUsesWarningGlyph (0.00s)
+=== RUN   TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks
+    verifier_new_test.go:45: open event first line = ["\x1b[38;2;163;157;144m14:24\x1b[m  \x1b[38;2;163;157;144m· manager-hi…\x1b[m \x1b[38;2;163;157;144mfirst event line\x1b[m                                                                              \n\x1b[38;2;163;157;144msecond event line                                                                             \x1b[m"]
+--- FAIL: TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.007s
+FAIL
+
+exit: 1

@@ -1,0 +1,11 @@
+$ go test -overlay /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/independent.json ./internal/tui -run ^TestVerifierWrappedInputCursorTracksInsertion$ -count=1 -v
+=== RUN   TestVerifierWrappedInputCursorTracksInsertion
+=== RUN   TestVerifierWrappedInputCursorTracksInsertion/compact_cap
+=== RUN   TestVerifierWrappedInputCursorTracksInsertion/full_cap
+--- PASS: TestVerifierWrappedInputCursorTracksInsertion (0.01s)
+    --- PASS: TestVerifierWrappedInputCursorTracksInsertion/compact_cap (0.00s)
+    --- PASS: TestVerifierWrappedInputCursorTracksInsertion/full_cap (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.013s
+
+exit: 0

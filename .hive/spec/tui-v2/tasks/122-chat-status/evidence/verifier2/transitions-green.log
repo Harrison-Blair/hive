@@ -1,0 +1,7 @@
+$ go test -overlay /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/transitions.json ./internal/tui -run ^TestVerifierChatStatusTransitions$ -count=1 -v
+=== RUN   TestVerifierChatStatusTransitions
+--- PASS: TestVerifierChatStatusTransitions (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.009s
+
+exit: 0

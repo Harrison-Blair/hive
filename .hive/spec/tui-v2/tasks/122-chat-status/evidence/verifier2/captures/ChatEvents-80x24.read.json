@@ -1,0 +1,43 @@
+{
+  "read": {
+    "id": "verify122-2",
+    "result": {
+      "type": "pane_read",
+      "read": {
+        "pane_id": "wVK:p2",
+        "workspace_id": "wVK",
+        "tab_id": "wVK:t1",
+        "source": "visible",
+        "format": "ansi",
+        "text": "\u001b[0m\u001b[1m hive                                     coord \u001b[0m\u001b[1m\u001b[38;2;163;157;144m\u25cb\u001b[0m\u001b[1m \u00b7 sup \u001b[0m\u001b[1m\u001b[38;2;110;230;154m\u25cf\u001b[0m\u001b[1m \u00b7 needs you 0 \u00b7 14:31 \u001b[0m\r\n \u001b[0m\u001b[38;2;163;157;144m 1 Agents \u001b[0m\u001b[1m\u001b[38;2;245;185;66m 2 Chat \u001b[0m\u001b[38;2;163;157;144m 3 Work  4 Friction  5 Health  6 Logs \u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u001b[0m\u001b[38;2;245;185;66m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u256d\u2500\u001b[0m\u001b[1m\u001b[38;2;245;185;66m chat \u001b[0m\u001b[38;2;245;185;66m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:21\u001b[0m \u001b[0m\u001b[1m\u001b[38;2;233;207;155myou                                                                    \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155myes                                                                          \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:24 \u25be manager-hive                                                         \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mg3-chat-status: task 122-chat-status-boards created (wave A, feature\u001b[0m         \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mtui-v2). Worker t122-worker-1 spawned (claude, claude-opus-5-5). It builds\u001b[0m   \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mthe working status in the input border, the input that grows, and ctrl+o for\u001b[0m \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mevents, to the boards ChatStatus, ChatEvents, and CompactChatStatus.\u001b[0m         \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:26 \u25be manager-stenographer                                                 \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mquiet                                                                        \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502                                                                              \u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144m14:29 \u25be manager-hive                                                         \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mg3-chat-status: task 122-chat-status-boards verified (t122-verifier-1, unit\u001b[0m  \u001b[0m\u001b[38;2;163;157;144m\u2503\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m \u001b[0m\u001b[38;2;163;157;144mpass, visual check against the three boards pass) and landed on dev at\u001b[0m       \u001b[0m\u001b[38;2;245;185;66m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;245;185;66m\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u256d\u2500\u001b[0m\u001b[1m\u001b[38;2;245;185;66m message \u001b[0m\u001b[38;2;163;157;144m\u00b7 \u25cb\u001b[0m idle 5m \u001b[0m\u001b[38;2;61;58;51m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m \u001b[0m\u001b[38;2;233;207;155m>                                                                            \u001b[0m\u001b[38;2;61;58;51m\u2502\u001b[0m\r\n\u001b[0m\u001b[38;2;61;58;51m\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\r\n\u001b[0m\u001b[1m\u001b[38;2;245;185;66m [feed] \u001b[0m\u001b[38;2;163;157;144mi type \u00b7 pgup/pgdn feed \u00b7 ctrl+o events \u00b7 tab region \u00b7 ?\u001b[0m",
+        "revision": 0,
+        "truncated": false
+      }
+    }
+  },
+  "pane": {
+    "id": "cli:pane:get",
+    "result": {
+      "pane": {
+        "agent_status": "unknown",
+        "cwd": "/home/penguin/source/hive/projects/hive/worktrees/122-chat-status",
+        "focused": false,
+        "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/122-chat-status",
+        "pane_id": "wVK:p2",
+        "revision": 1,
+        "scroll": {
+          "max_offset_from_bottom": 0,
+          "offset_from_bottom": 0,
+          "viewport_rows": 46
+        },
+        "tab_id": "wVK:t1",
+        "terminal_id": "term_65e7406993e7016",
+        "terminal_title": "penguin@iceberg:~/source/hive/projects/hive/worktrees/122-chat-status",
+        "terminal_title_stripped": "penguin@iceberg:~/source/hive/projects/hive/worktrees/122-chat-status",
+        "workspace_id": "wVK"
+      },
+      "type": "pane_info"
+    }
+  },
+  "stable_read_interval_ms": 500
+}

@@ -1,0 +1,92 @@
+ChatStatus-120x40: 120x40: 0 differences (blank style excluded)
+ChatStatus-120x40: alignment pass; input top row 33
+ChatStatus-open: 120x40 capture; no approved grid at this size
+ChatStatus-esc: 120x40 capture; no approved grid at this size
+ChatStatus-esc: alignment pass; input top row 33
+ChatStatus-feed-fold: 120x40 capture; no approved grid at this size
+ChatStatus-feed-open: 120x40 capture; no approved grid at this size
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatEvents.fixture.json --size 120x40
+ChatEvents-120x40: 120x40: 0 differences (blank style excluded)
+ChatEvents-120x40: alignment pass; input top row 36
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChatStatus.fixture.json --size 80x24
+CompactChatStatus-80x24: 80x24: 0 differences (blank style excluded)
+CompactChatStatus-80x24: alignment pass; input top row 17
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Chat.fixture.json --size 120x40
+Chat-120x40: 120x40: 0 differences (blank style excluded)
+Chat-120x40: alignment pass; input top row 36
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChat.fixture.json --size 80x24
+CompactChat-80x24: 80x24: 0 differences (blank style excluded)
+CompactChat-80x24: alignment pass; input top row 20
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/Help.fixture.json --size 120x40
+Help-120x40: 120x40: 0 differences (blank style excluded)
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatStatus.fixture.json --size 80x24
+ChatStatus-80x24: 80x24 capture; no approved grid at this size
+ChatStatus-80x24: alignment pass; input top row 17
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/ChatEvents.fixture.json --size 80x24
+ChatEvents-80x24: 80x24 capture; no approved grid at this size
+ChatEvents-80x24: alignment pass; input top row 20
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/spec/tui-v2/design/CompactChatStatus.fixture.json --size 120x40
+CompactChatStatus-120x40: 120x40 capture; no approved grid at this size
+CompactChatStatus-120x40: alignment pass; input top row 33
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-1: 120x40 capture; no approved grid at this size
+Input-120x40-1: alignment pass; input top row 36
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-2: 120x40 capture; no approved grid at this size
+Input-120x40-2: alignment pass; input top row 35
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-3: 120x40 capture; no approved grid at this size
+Input-120x40-3: alignment pass; input top row 34
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-4: 120x40 capture; no approved grid at this size
+Input-120x40-4: alignment pass; input top row 33
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-5: 120x40 capture; no approved grid at this size
+Input-120x40-5: alignment pass; input top row 32
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-6: 120x40 capture; no approved grid at this size
+Input-120x40-6: alignment pass; input top row 31
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-7: 120x40 capture; no approved grid at this size
+Input-120x40-7: alignment pass; input top row 30
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-8: 120x40 capture; no approved grid at this size
+Input-120x40-8: alignment pass; input top row 29
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-9: 120x40 capture; no approved grid at this size
+Input-120x40-9: alignment pass; input top row 28
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-10: 120x40 capture; no approved grid at this size
+Input-120x40-10: alignment pass; input top row 27
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 120x40
+Input-120x40-11: 120x40 capture; no approved grid at this size
+Input-120x40-11: alignment pass; input top row 27
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/cursor.fixture.json --size 120x40
+Cursor-cap-before-120x40: 120x40 capture; no approved grid at this size
+Cursor-cap-before-120x40: alignment pass; input top row 27
+Cursor-cap-left-120x40: 120x40 capture; no approved grid at this size
+Cursor-cap-left-120x40: alignment pass; input top row 27
+Cursor-cap-insert-120x40: 120x40 capture; no approved grid at this size
+Cursor-cap-insert-120x40: alignment pass; input top row 27
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 80x24
+Input-80x24-1: 80x24 capture; no approved grid at this size
+Input-80x24-1: alignment pass; input top row 20
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 80x24
+Input-80x24-2: 80x24 capture; no approved grid at this size
+Input-80x24-2: alignment pass; input top row 19
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 80x24
+Input-80x24-3: 80x24 capture; no approved grid at this size
+Input-80x24-3: alignment pass; input top row 18
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 80x24
+Input-80x24-4: 80x24 capture; no approved grid at this size
+Input-80x24-4: alignment pass; input top row 17
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/input.fixture.json --size 80x24
+Input-80x24-5: 80x24 capture; no approved grid at this size
+Input-80x24-5: alignment pass; input top row 17
+COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/hive --no-startup --demo /home/penguin/source/hive/projects/hive/worktrees/122-chat-status/.hive/tmp/verifier2/cursor.fixture.json --size 80x24
+Cursor-cap-before-80x24: 80x24 capture; no approved grid at this size
+Cursor-cap-before-80x24: alignment pass; input top row 17
+Cursor-cap-left-80x24: 80x24 capture; no approved grid at this size
+Cursor-cap-left-80x24: alignment pass; input top row 17
+Cursor-cap-insert-80x24: 80x24 capture; no approved grid at this size
+Cursor-cap-insert-80x24: alignment pass; input top row 17
