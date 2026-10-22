@@ -174,10 +174,8 @@ func (m *Model) agentsPods() []graphPod {
 	}
 	pending = rest
 	place(func(int) *graphPod { return &home })
-	for _, node := range pending {
-		// A loop of parents: each agent of the loop is a root.
-		homeRoots = append(homeRoots, node)
-	}
+	// Each agent that is left is in a loop of parents. It is a root.
+	homeRoots = append(homeRoots, pending...)
 	var out []graphPod
 	for index, pod := range pods {
 		if pod.manager != nil {
