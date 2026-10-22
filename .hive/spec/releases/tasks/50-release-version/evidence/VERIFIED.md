@@ -112,3 +112,40 @@ No further merge was needed.
 No UI change requires a visual check. No tag was pushed. No GitHub release
 or workflow was changed. This repair check created no scratch files. Git
 status was clean before the evidence edit. No source file was edited.
+
+## Second repair verification
+
+- Date: 2026-10-22
+- Verifier: `t50-verifier-3` (pi)
+- Checked commit: `a26d93a5`
+- Previous verified commit: `527b46bf`
+- Verdict: pass
+
+The manager limited this check to the second merge repair. V1 and V2 carry
+forward with the module-copy limits above. The version source and tests have
+no changes since `527b46bf`.
+
+| Item | Result | Observation |
+| --- | --- | --- |
+| Repair diff | pass | Merge `eaca9acd` has parents `527b46bf` and `d4eb2382` (dev with task 51). The parsed baseline equals the union of both parent baselines. All 149 dev entries keep their values. Brief entries for tasks 50, 51, and 52 each have 0. |
+| V1 | pass | The previous red and green results carry forward. `go test ./internal/lib/version/` exits 0 (cached). |
+| V2 | pass | The previous live build results carry forward per manager instruction. No live build was repeated. |
+| V-gate | pass | All five gate commands exit 0. No retry was needed. |
+
+Checked the merge tree with Git object reads and a Python script. Each
+non-baseline file in the merge matches a parent. The only change after the
+merge is the 17-line repair note in task 50 `V-gate.md`. No UI change
+requires a visual check.
+
+| Exact command | Exit | Output |
+| --- | --- | --- |
+| `go test ./internal/lib/version/` | 0 | Package passes (cached). |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | 0 | empty |
+| `go mod tidy -diff` | 0 | empty |
+| `go vet ./...` | 0 | empty |
+| `golangci-lint run ./...` | 0 | `0 issues.` |
+| `go test -race ./...` | 0 | All packages pass or have no tests. Root: 30.157s; TUI: 37.760s. Some package results are cached. No race report. |
+
+No further dev merge ran. No tag was pushed. No GitHub release or workflow
+was changed by this verification. No scratch files were created. Git status
+was clean before this evidence edit. No source file was edited.
