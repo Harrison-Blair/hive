@@ -154,7 +154,10 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		agents:       agentsState{},
 		headerLoader: readHeader,
 		logLoader: func(_ *logs.Reader, day time.Time) ([]logs.Event, error) {
-			dayReader := logs.NewReaderWithClock(home, func() time.Time { return day })
+			// The reader names the day file in the local zone, so it gets
+			// noon of the same date there.
+			date := time.Date(day.Year(), day.Month(), day.Day(), 12, 0, 0, 0, time.Local)
+			dayReader := logs.NewReaderWithClock(home, func() time.Time { return date })
 			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
