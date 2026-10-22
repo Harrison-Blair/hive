@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · home ──────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                               ╭──────────────────────╮                                               │
+│                                               │ ● coordinator        │                                               │
+│                             ╭─ plan-review-1 · esc closes ─────────────────────────────╮                             │
+│                             │                                                          │                             │
+│                             │  role      agent                                         │                             │
+│                           ╭─│  status    ● live · working                              │─╮                           │
+│                           │ │  harness   pi                                            │ │                           │
+│                           │ │  model     openai-codex/gpt-6.1-sol                      │ │                           │
+│                           │ │  pane      w80:p1                                        │ │                           │
+│                           │ │  tab       plan-review-1                                 │ │                           │
+│                           │ │  parent    coordinator-g2                                │ │                           │
+│                           ╰─│                                                          │─╯                           │
+│                             │  ACTIONS                                                 │                             │
+│                             │  a  attach to pane                                       │                             │
+│                             │  p  peek pane                                            │                             │
+│                             │  t  open task · none                                     │                             │
+│                             │                                                          │                             │
+│                             │  RECENT                                                  │                             │
+│                             │  14:15 agent report plan-review-1                        │                             │
+│                             │  14:02 agent spawn plan-review-1                         │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             ╰──────────────────────────────────────────────────────────╯                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close                                                           

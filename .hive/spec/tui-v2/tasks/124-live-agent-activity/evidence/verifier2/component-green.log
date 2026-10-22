@@ -1,0 +1,183 @@
+$ go test ./internal/tui/component -count=1 -v
+=== RUN   TestBoxRuneOfArms
+--- PASS: TestBoxRuneOfArms (0.00s)
+=== RUN   TestBoxArmsOfRune
+--- PASS: TestBoxArmsOfRune (0.00s)
+=== RUN   TestCardGolden
+=== RUN   TestCardGolden/idle
+=== RUN   TestCardGolden/stopped
+--- PASS: TestCardGolden (0.00s)
+    --- PASS: TestCardGolden/idle (0.00s)
+    --- PASS: TestCardGolden/stopped (0.00s)
+=== RUN   TestCardSelectedHeavyBorder
+--- PASS: TestCardSelectedHeavyBorder (0.00s)
+=== RUN   TestCardCutsLongText
+--- PASS: TestCardCutsLongText (0.00s)
+=== RUN   TestCardWorkingBorder
+--- PASS: TestCardWorkingBorder (0.00s)
+=== RUN   TestChatGolden
+--- PASS: TestChatGolden (0.00s)
+=== RUN   TestCompactChatGolden
+--- PASS: TestCompactChatGolden (0.00s)
+=== RUN   TestChatNarrow
+--- PASS: TestChatNarrow (0.00s)
+=== RUN   TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks
+--- PASS: TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks (0.00s)
+=== RUN   TestChatWrapWidth
+--- PASS: TestChatWrapWidth (0.00s)
+=== RUN   TestDetailsGolden
+--- PASS: TestDetailsGolden (0.00s)
+=== RUN   TestDetailsScrolls
+--- PASS: TestDetailsScrolls (0.00s)
+=== RUN   TestDetailsShowsMoreLinesOnOverflow
+--- PASS: TestDetailsShowsMoreLinesOnOverflow (0.00s)
+=== RUN   TestFilterBarGolden
+--- PASS: TestFilterBarGolden (0.00s)
+=== RUN   TestFilterBarFields
+--- PASS: TestFilterBarFields (0.00s)
+=== RUN   TestFilterBarLongTextKeepsCursor
+--- PASS: TestFilterBarLongTextKeepsCursor (0.00s)
+=== RUN   TestFilterBarStatus
+--- PASS: TestFilterBarStatus (0.00s)
+=== RUN   TestFilterBarFocused
+--- PASS: TestFilterBarFocused (0.00s)
+=== RUN   TestFitFrameRows
+--- PASS: TestFitFrameRows (0.05s)
+=== RUN   TestFitPanels
+--- PASS: TestFitPanels (0.18s)
+=== RUN   TestFitWave4
+--- PASS: TestFitWave4 (0.48s)
+=== RUN   TestHeaderGolden
+=== RUN   TestHeaderGolden/long
+=== RUN   TestHeaderGolden/short
+--- PASS: TestHeaderGolden (0.00s)
+    --- PASS: TestHeaderGolden/long (0.00s)
+    --- PASS: TestHeaderGolden/short (0.00s)
+=== RUN   TestHeaderForms
+--- PASS: TestHeaderForms (0.00s)
+=== RUN   TestHeaderStateDots
+--- PASS: TestHeaderStateDots (0.00s)
+=== RUN   TestHeaderBlockedStateUsesWarningGlyph
+--- PASS: TestHeaderBlockedStateUsesWarningGlyph (0.00s)
+=== RUN   TestHeaderCutsLongHome
+--- PASS: TestHeaderCutsLongHome (0.00s)
+=== RUN   TestHeaderNeedsYouCountIsAccent
+--- PASS: TestHeaderNeedsYouCountIsAccent (0.00s)
+=== RUN   TestInputGolden
+=== RUN   TestInputGolden/components
+=== RUN   TestInputGolden/chat
+--- PASS: TestInputGolden (0.00s)
+    --- PASS: TestInputGolden/components (0.00s)
+    --- PASS: TestInputGolden/chat (0.00s)
+=== RUN   TestInputUnfocused
+--- PASS: TestInputUnfocused (0.00s)
+=== RUN   TestInputGrowsToFitWrappedText
+--- PASS: TestInputGrowsToFitWrappedText (0.00s)
+=== RUN   TestInputShowsWrappedTextAndCursor
+--- PASS: TestInputShowsWrappedTextAndCursor (0.00s)
+=== RUN   TestInputCursorFollowsLineAndColumn
+=== RUN   TestInputCursorFollowsLineAndColumn/on_the_soft_break_space
+=== RUN   TestInputCursorFollowsLineAndColumn/after_the_soft_break
+=== RUN   TestInputCursorFollowsLineAndColumn/first_row
+=== RUN   TestInputCursorFollowsLineAndColumn/second_line
+=== RUN   TestInputCursorFollowsLineAndColumn/inside_a_broken_word
+--- PASS: TestInputCursorFollowsLineAndColumn (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/on_the_soft_break_space (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/after_the_soft_break (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/first_row (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/second_line (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/inside_a_broken_word (0.00s)
+=== RUN   TestKeyHintsGolden
+=== RUN   TestKeyHintsGolden/sheet
+=== RUN   TestKeyHintsGolden/main
+=== RUN   TestKeyHintsGolden/compact
+--- PASS: TestKeyHintsGolden (0.00s)
+    --- PASS: TestKeyHintsGolden/sheet (0.00s)
+    --- PASS: TestKeyHintsGolden/main (0.00s)
+    --- PASS: TestKeyHintsGolden/compact (0.00s)
+=== RUN   TestKeyHintsFit
+--- PASS: TestKeyHintsFit (0.00s)
+=== RUN   TestListGolden
+--- PASS: TestListGolden (0.00s)
+=== RUN   TestListKeepsSelectionVisible
+--- PASS: TestListKeepsSelectionVisible (0.00s)
+=== RUN   TestListScrollMark
+--- PASS: TestListScrollMark (0.00s)
+=== RUN   TestListFillGolden
+--- PASS: TestListFillGolden (0.00s)
+=== RUN   TestListHint
+--- PASS: TestListHint (0.00s)
+=== RUN   TestListRowCells
+--- PASS: TestListRowCells (0.00s)
+=== RUN   TestMarkdownTableUneven
+--- PASS: TestMarkdownTableUneven (0.00s)
+=== RUN   TestMarkdownTableEqualColumns
+--- PASS: TestMarkdownTableEqualColumns (0.00s)
+=== RUN   TestMarkdownTableTooManyColumns
+--- PASS: TestMarkdownTableTooManyColumns (0.00s)
+=== RUN   TestMarkdownTableTokens
+--- PASS: TestMarkdownTableTokens (0.00s)
+=== RUN   TestMarkdownGrid
+--- PASS: TestMarkdownGrid (0.00s)
+=== RUN   TestMarkdownAutoLinks
+--- PASS: TestMarkdownAutoLinks (0.00s)
+=== RUN   TestMarkdownRemovesBlankFirstLine
+--- PASS: TestMarkdownRemovesBlankFirstLine (0.00s)
+=== RUN   TestMarkdownListFitsWidth
+--- PASS: TestMarkdownListFitsWidth (0.00s)
+=== RUN   TestNoticeGrid
+--- PASS: TestNoticeGrid (0.00s)
+=== RUN   TestNoticeCutsLongText
+--- PASS: TestNoticeCutsLongText (0.00s)
+=== RUN   TestPanelGolden
+=== RUN   TestPanelGolden/unfocused
+=== RUN   TestPanelGolden/focused
+--- PASS: TestPanelGolden (0.00s)
+    --- PASS: TestPanelGolden/unfocused (0.00s)
+    --- PASS: TestPanelGolden/focused (0.00s)
+=== RUN   TestPopupGolden
+--- PASS: TestPopupGolden (0.00s)
+=== RUN   TestPopupDimsScreen
+--- PASS: TestPopupDimsScreen (0.00s)
+=== RUN   TestDimScreen
+--- PASS: TestDimScreen (0.00s)
+=== RUN   TestSubTabsGolden
+=== RUN   TestSubTabsGolden/sheet
+=== RUN   TestSubTabsGolden/work
+=== RUN   TestSubTabsGolden/compact
+--- PASS: TestSubTabsGolden (0.00s)
+    --- PASS: TestSubTabsGolden/sheet (0.00s)
+    --- PASS: TestSubTabsGolden/work (0.00s)
+    --- PASS: TestSubTabsGolden/compact (0.00s)
+=== RUN   TestSubTabsText
+--- PASS: TestSubTabsText (0.00s)
+=== RUN   TestSubTabsHint
+--- PASS: TestSubTabsHint (0.00s)
+=== RUN   TestSymbolWidth
+--- PASS: TestSymbolWidth (0.00s)
+=== RUN   TestTabBarGolden
+=== RUN   TestTabBarGolden/sheet
+=== RUN   TestTabBarGolden/work
+=== RUN   TestTabBarGolden/compact
+--- PASS: TestTabBarGolden (0.00s)
+    --- PASS: TestTabBarGolden/sheet (0.00s)
+    --- PASS: TestTabBarGolden/work (0.00s)
+    --- PASS: TestTabBarGolden/compact (0.00s)
+=== RUN   TestTabBarSpacing
+--- PASS: TestTabBarSpacing (0.00s)
+=== RUN   TestTabBarMultiByteGap
+--- PASS: TestTabBarMultiByteGap (0.00s)
+=== RUN   TestViewportGolden
+=== RUN   TestViewportGolden/vertical
+=== RUN   TestViewportGolden/horizontal
+--- PASS: TestViewportGolden (0.00s)
+    --- PASS: TestViewportGolden/vertical (0.00s)
+    --- PASS: TestViewportGolden/horizontal (0.00s)
+=== RUN   TestViewportXOffset
+--- PASS: TestViewportXOffset (0.00s)
+=== RUN   TestThumb
+--- PASS: TestThumb (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.730s
+
+exit: 0

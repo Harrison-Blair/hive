@@ -1,0 +1,1295 @@
+.hive/spec/tui-v2/design/LiveOverview.grid vs .hive/spec/tui-v2/design/LivePod.grid: 4800 cells, 1294 diffs
+row 3 col 20: want '2' accent bold, got 'h' accent bold
+row 3 col 21: want ' ' accent bold, got 'i' accent bold
+row 3 col 22: want 'p' accent bold, got 'v' accent bold
+row 3 col 23: want 'r' accent bold, got 'e' accent bold
+row 3 col 24: want 'o' accent bold, got ' ' accent bold
+row 3 col 25: want 'j' accent bold, got '─' accent normal
+row 3 col 26: want 'e' accent bold, got '─' accent normal
+row 3 col 27: want 'c' accent bold, got '─' accent normal
+row 3 col 28: want 't' accent bold, got '─' accent normal
+row 3 col 29: want 's' accent bold, got '─' accent normal
+row 3 col 30: want ' ' accent bold, got '─' accent normal
+row 8 col 60: want '┰' info normal, got '┬' working normal
+row 9 col 20: want '┏' info normal, got ' ' fg normal
+row 9 col 21: want '━' info normal, got ' ' fg normal
+row 9 col 22: want '◀' info normal, got ' ' fg normal
+row 9 col 23: want '━' info normal, got ' ' fg normal
+row 9 col 24: want '━' info normal, got ' ' fg normal
+row 9 col 25: want '━' info normal, got ' ' fg normal
+row 9 col 26: want '━' info normal, got ' ' fg normal
+row 9 col 27: want '━' info normal, got ' ' fg normal
+row 9 col 28: want '━' info normal, got ' ' fg normal
+row 9 col 29: want '━' info normal, got ' ' fg normal
+row 9 col 30: want '━' info normal, got ' ' fg normal
+row 9 col 31: want '━' info normal, got ' ' fg normal
+row 9 col 32: want '━' info normal, got ' ' fg normal
+row 9 col 33: want '━' info normal, got ' ' fg normal
+row 9 col 34: want '━' info normal, got ' ' fg normal
+row 9 col 35: want '━' info normal, got ' ' fg normal
+row 9 col 36: want '━' info normal, got ' ' fg normal
+row 9 col 37: want '━' info normal, got ' ' fg normal
+row 9 col 38: want '━' info normal, got ' ' fg normal
+row 9 col 39: want '━' info normal, got ' ' fg normal
+row 9 col 40: want '━' info normal, got ' ' fg normal
+row 9 col 41: want '━' info normal, got ' ' fg normal
+row 9 col 42: want '━' info normal, got ' ' fg normal
+row 9 col 43: want '━' info normal, got ' ' fg normal
+row 9 col 44: want '━' info normal, got ' ' fg normal
+row 9 col 45: want '━' info normal, got ' ' fg normal
+row 9 col 46: want '━' info normal, got ' ' fg normal
+row 9 col 47: want '━' info normal, got ' ' fg normal
+row 9 col 48: want '━' info normal, got ' ' fg normal
+row 9 col 49: want '━' info normal, got ' ' fg normal
+row 9 col 50: want '━' info normal, got ' ' fg normal
+row 9 col 51: want '━' info normal, got ' ' fg normal
+row 9 col 52: want '━' info normal, got ' ' fg normal
+row 9 col 53: want '━' info normal, got ' ' fg normal
+row 9 col 54: want '━' info normal, got ' ' fg normal
+row 9 col 55: want '━' info normal, got ' ' fg normal
+row 9 col 56: want '━' info normal, got ' ' fg normal
+row 9 col 57: want '━' info normal, got ' ' fg normal
+row 9 col 58: want '━' info normal, got ' ' fg normal
+row 9 col 59: want '━' info normal, got ' ' fg normal
+row 9 col 60: want '╃' info normal, got '│' border normal
+row 9 col 61: want '─' border normal, got ' ' fg normal
+row 9 col 62: want '─' border normal, got ' ' fg normal
+row 9 col 63: want '─' border normal, got ' ' fg normal
+row 9 col 64: want '─' border normal, got ' ' fg normal
+row 9 col 65: want '─' border normal, got ' ' fg normal
+row 9 col 66: want '─' border normal, got ' ' fg normal
+row 9 col 67: want '─' border normal, got ' ' fg normal
+row 9 col 68: want '─' border normal, got ' ' fg normal
+row 9 col 69: want '─' border normal, got ' ' fg normal
+row 9 col 70: want '─' border normal, got ' ' fg normal
+row 9 col 71: want '─' border normal, got ' ' fg normal
+row 9 col 72: want '─' border normal, got ' ' fg normal
+row 9 col 73: want '─' border normal, got ' ' fg normal
+row 9 col 74: want '─' border normal, got ' ' fg normal
+row 9 col 75: want '─' border normal, got ' ' fg normal
+row 9 col 76: want '─' border normal, got ' ' fg normal
+row 9 col 77: want '─' border normal, got ' ' fg normal
+row 9 col 78: want '─' border normal, got ' ' fg normal
+row 9 col 79: want '─' border normal, got ' ' fg normal
+row 9 col 80: want '─' border normal, got ' ' fg normal
+row 9 col 81: want '─' border normal, got ' ' fg normal
+row 9 col 82: want '─' border normal, got ' ' fg normal
+row 9 col 83: want '─' border normal, got ' ' fg normal
+row 9 col 84: want '─' border normal, got ' ' fg normal
+row 9 col 85: want '─' border normal, got ' ' fg normal
+row 9 col 86: want '─' border normal, got ' ' fg normal
+row 9 col 87: want '─' border normal, got ' ' fg normal
+row 9 col 88: want '─' border normal, got ' ' fg normal
+row 9 col 89: want '─' border normal, got ' ' fg normal
+row 9 col 90: want '─' border normal, got ' ' fg normal
+row 9 col 91: want '─' border normal, got ' ' fg normal
+row 9 col 92: want '─' border normal, got ' ' fg normal
+row 9 col 93: want '─' border normal, got ' ' fg normal
+row 9 col 94: want '─' border normal, got ' ' fg normal
+row 9 col 95: want '─' border normal, got ' ' fg normal
+row 9 col 96: want '─' border normal, got ' ' fg normal
+row 9 col 97: want '─' border normal, got ' ' fg normal
+row 9 col 98: want '╮' border normal, got ' ' fg normal
+row 10 col 2: want '┏' accent normal, got ' ' fg normal
+row 10 col 3: want '━' accent normal, got ' ' fg normal
+row 10 col 4: want ' ' accent bold, got ' ' fg normal
+row 10 col 5: want 'h' accent bold, got ' ' fg normal
+row 10 col 6: want 'i' accent bold, got ' ' fg normal
+row 10 col 7: want 'v' accent bold, got ' ' fg normal
+row 10 col 8: want 'e' accent bold, got ' ' fg normal
+row 10 col 9: want ' ' accent bold, got ' ' fg normal
+row 10 col 10: want '━' accent normal, got ' ' fg normal
+row 10 col 11: want '━' accent normal, got ' ' fg normal
+row 10 col 12: want '━' accent normal, got ' ' fg normal
+row 10 col 13: want '━' accent normal, got ' ' fg normal
+row 10 col 14: want '━' accent normal, got ' ' fg normal
+row 10 col 15: want '━' accent normal, got ' ' fg normal
+row 10 col 16: want '━' accent normal, got ' ' fg normal
+row 10 col 17: want '━' accent normal, got ' ' fg normal
+row 10 col 18: want '━' accent normal, got ' ' fg normal
+row 10 col 19: want '━' accent normal, got ' ' fg normal
+row 10 col 20: want '┻' info normal, got ' ' fg normal
+row 10 col 21: want '━' accent normal, got ' ' fg normal
+row 10 col 22: want '━' accent normal, got ' ' fg normal
+row 10 col 23: want '━' accent normal, got ' ' fg normal
+row 10 col 24: want '━' accent normal, got ' ' fg normal
+row 10 col 25: want '━' accent normal, got ' ' fg normal
+row 10 col 26: want '━' accent normal, got ' ' fg normal
+row 10 col 27: want '━' accent normal, got ' ' fg normal
+row 10 col 28: want '━' accent normal, got '╭' border normal
+row 10 col 29: want '━' accent normal, got '─' border normal
+row 10 col 30: want '━' accent normal, got ' ' dim bold
+row 10 col 31: want '━' accent normal, got 'h' dim bold
+row 10 col 32: want '━' accent normal, got 'i' dim bold
+row 10 col 33: want '━' accent normal, got 'v' dim bold
+row 10 col 34: want '━' accent normal, got 'e' dim bold
+row 10 col 35: want '━' accent normal, got ' ' dim bold
+row 10 col 36: want '━' accent normal, got '─' border normal
+row 10 col 37: want '━' accent normal, got '─' border normal
+row 10 col 38: want '━' accent normal, got '─' border normal
+row 10 col 39: want '┓' accent normal, got '─' border normal
+row 10 col 40: want ' ' fg normal, got '─' border normal
+row 10 col 41: want '╭' border normal, got '─' border normal
+row 10 col 43: want ' ' dim bold, got '─' border normal
+row 10 col 44: want 'e' dim bold, got '─' border normal
+row 10 col 45: want 'x' dim bold, got '─' border normal
+row 10 col 46: want 'a' dim bold, got '─' border normal
+row 10 col 47: want 'm' dim bold, got '─' border normal
+row 10 col 48: want 'p' dim bold, got '─' border normal
+row 10 col 49: want 'l' dim bold, got '─' border normal
+row 10 col 50: want 'e' dim bold, got '─' border normal
+row 10 col 51: want '-' dim bold, got '─' border normal
+row 10 col 52: want 'a' dim bold, got '─' border normal
+row 10 col 53: want 'p' dim bold, got '─' border normal
+row 10 col 54: want 'i' dim bold, got '─' border normal
+row 10 col 55: want ' ' dim bold, got '─' border normal
+row 10 col 60: want '┴' border normal, got '┼' border normal
+row 10 col 78: want '╮' border normal, got '─' border normal
+row 10 col 79: want ' ' fg normal, got '─' border normal
+row 10 col 80: want '╭' border normal, got '─' border normal
+row 10 col 82: want ' ' dim bold, got '─' border normal
+row 10 col 83: want 'h' dim bold, got '─' border normal
+row 10 col 84: want 'o' dim bold, got '─' border normal
+row 10 col 85: want 'm' dim bold, got '─' border normal
+row 10 col 86: want 'e' dim bold, got '─' border normal
+row 10 col 87: want ' ' dim bold, got '─' border normal
+row 10 col 91: want '─' border normal, got '╮' border normal
+row 10 col 92: want '─' border normal, got ' ' fg normal
+row 10 col 93: want '─' border normal, got ' ' fg normal
+row 10 col 94: want '─' border normal, got ' ' fg normal
+row 10 col 95: want '─' border normal, got ' ' fg normal
+row 10 col 96: want '─' border normal, got ' ' fg normal
+row 10 col 97: want '─' border normal, got ' ' fg normal
+row 10 col 98: want '┴' border normal, got ' ' fg normal
+row 10 col 99: want '─' border normal, got ' ' fg normal
+row 10 col 100: want '─' border normal, got ' ' fg normal
+row 10 col 101: want '─' border normal, got ' ' fg normal
+row 10 col 102: want '─' border normal, got ' ' fg normal
+row 10 col 103: want '─' border normal, got ' ' fg normal
+row 10 col 104: want '─' border normal, got ' ' fg normal
+row 10 col 105: want '─' border normal, got ' ' fg normal
+row 10 col 106: want '─' border normal, got ' ' fg normal
+row 10 col 107: want '─' border normal, got ' ' fg normal
+row 10 col 108: want '─' border normal, got ' ' fg normal
+row 10 col 109: want '─' border normal, got ' ' fg normal
+row 10 col 110: want '─' border normal, got ' ' fg normal
+row 10 col 111: want '─' border normal, got ' ' fg normal
+row 10 col 112: want '─' border normal, got ' ' fg normal
+row 10 col 113: want '─' border normal, got ' ' fg normal
+row 10 col 114: want '─' border normal, got ' ' fg normal
+row 10 col 115: want '─' border normal, got ' ' fg normal
+row 10 col 116: want '─' border normal, got ' ' fg normal
+row 10 col 117: want '╮' border normal, got ' ' fg normal
+row 11 col 2: want '┃' accent normal, got ' ' fg normal
+row 11 col 4: want 'g' dim normal, got ' ' fg normal
+row 11 col 5: want '2' dim normal, got ' ' fg normal
+row 11 col 6: want '-' dim normal, got ' ' fg normal
+row 11 col 7: want 't' dim normal, got ' ' fg normal
+row 11 col 8: want 'u' dim normal, got ' ' fg normal
+row 11 col 9: want 'i' dim normal, got ' ' fg normal
+row 11 col 10: want '-' dim normal, got ' ' fg normal
+row 11 col 11: want 'v' dim normal, got ' ' fg normal
+row 11 col 12: want '2' dim normal, got ' ' fg normal
+row 11 col 13: want ' ' dim normal, got ' ' fg normal
+row 11 col 14: want '·' dim normal, got ' ' fg normal
+row 11 col 15: want ' ' dim normal, got ' ' fg normal
+row 11 col 16: want 'w' dim normal, got ' ' fg normal
+row 11 col 17: want 'a' dim normal, got ' ' fg normal
+row 11 col 18: want 'v' dim normal, got ' ' fg normal
+row 11 col 19: want 'e' dim normal, got ' ' fg normal
+row 11 col 20: want ' ' dim normal, got ' ' fg normal
+row 11 col 21: want 'A' dim normal, got ' ' fg normal
+row 11 col 28: want ' ' fg normal, got '│' border normal
+row 11 col 30: want ' ' fg normal, got 'g' dim normal
+row 11 col 31: want ' ' fg normal, got '2' dim normal
+row 11 col 32: want ' ' fg normal, got '-' dim normal
+row 11 col 33: want ' ' fg normal, got 't' dim normal
+row 11 col 34: want ' ' fg normal, got 'u' dim normal
+row 11 col 35: want ' ' fg normal, got 'i' dim normal
+row 11 col 36: want ' ' fg normal, got '-' dim normal
+row 11 col 37: want ' ' fg normal, got 'v' dim normal
+row 11 col 38: want ' ' fg normal, got '2' dim normal
+row 11 col 39: want '┃' accent normal, got ' ' dim normal
+row 11 col 40: want ' ' fg normal, got '·' dim normal
+row 11 col 41: want '│' border normal, got ' ' dim normal
+row 11 col 42: want ' ' fg normal, got 'w' dim normal
+row 11 col 43: want 'g' dim normal, got 'a' dim normal
+row 11 col 44: want '4' dim normal, got 'v' dim normal
+row 11 col 45: want '-' dim normal, got 'e' dim normal
+row 11 col 46: want 'r' dim normal, got ' ' dim normal
+row 11 col 47: want 'a' dim normal, got 'A' dim normal
+row 11 col 48: want 't' dim normal, got ' ' fg normal
+row 11 col 49: want 'e' dim normal, got ' ' fg normal
+row 11 col 50: want '-' dim normal, got ' ' fg normal
+row 11 col 51: want 'l' dim normal, got ' ' fg normal
+row 11 col 52: want 'i' dim normal, got ' ' fg normal
+row 11 col 53: want 'm' dim normal, got ' ' fg normal
+row 11 col 54: want 'i' dim normal, got ' ' fg normal
+row 11 col 55: want 't' dim normal, got ' ' fg normal
+row 11 col 56: want 's' dim normal, got ' ' fg normal
+row 11 col 57: want ' ' dim normal, got ' ' fg normal
+row 11 col 58: want '·' dim normal, got ' ' fg normal
+row 11 col 59: want ' ' dim normal, got ' ' fg normal
+row 11 col 60: want 'w' dim normal, got '│' border normal
+row 11 col 61: want 'a' dim normal, got ' ' fg normal
+row 11 col 62: want 'v' dim normal, got ' ' fg normal
+row 11 col 63: want 'e' dim normal, got ' ' fg normal
+row 11 col 64: want ' ' dim normal, got ' ' fg normal
+row 11 col 65: want 'B' dim normal, got ' ' fg normal
+row 11 col 78: want '│' border normal, got ' ' fg normal
+row 11 col 80: want '│' border normal, got ' ' fg normal
+row 11 col 91: want ' ' fg normal, got '│' border normal
+row 11 col 117: want '│' border normal, got ' ' fg normal
+row 12 col 2: want '┃' accent normal, got ' ' fg normal
+row 12 col 4: want '╭' working normal, got ' ' fg normal
+row 12 col 5: want '─' working normal, got ' ' fg normal
+row 12 col 6: want '─' working normal, got ' ' fg normal
+row 12 col 7: want '─' working normal, got ' ' fg normal
+row 12 col 8: want '─' working normal, got ' ' fg normal
+row 12 col 9: want '─' working normal, got ' ' fg normal
+row 12 col 10: want '─' working normal, got ' ' fg normal
+row 12 col 11: want '─' working normal, got ' ' fg normal
+row 12 col 12: want '─' working normal, got ' ' fg normal
+row 12 col 13: want '─' working normal, got ' ' fg normal
+row 12 col 14: want '─' working normal, got ' ' fg normal
+row 12 col 15: want '─' working normal, got ' ' fg normal
+row 12 col 16: want '─' working normal, got ' ' fg normal
+row 12 col 17: want '─' working normal, got ' ' fg normal
+row 12 col 18: want '─' working normal, got ' ' fg normal
+row 12 col 19: want '─' working normal, got ' ' fg normal
+row 12 col 20: want '─' working normal, got ' ' fg normal
+row 12 col 21: want '─' working normal, got ' ' fg normal
+row 12 col 22: want '─' working normal, got ' ' fg normal
+row 12 col 23: want '─' working normal, got ' ' fg normal
+row 12 col 24: want '─' working normal, got ' ' fg normal
+row 12 col 25: want '─' working normal, got ' ' fg normal
+row 12 col 26: want '─' working normal, got ' ' fg normal
+row 12 col 27: want '╮' working normal, got ' ' fg normal
+row 12 col 28: want ' ' fg normal, got '│' border normal
+row 12 col 39: want '┃' accent normal, got ' ' fg normal
+row 12 col 41: want '│' border normal, got ' ' fg normal
+row 12 col 43: want '╭' working normal, got ' ' fg normal
+row 12 col 44: want '─' working normal, got ' ' fg normal
+row 12 col 45: want '─' working normal, got ' ' fg normal
+row 12 col 46: want '─' working normal, got ' ' fg normal
+row 12 col 47: want '─' working normal, got ' ' fg normal
+row 12 col 48: want '─' working normal, got '╭' working normal
+row 12 col 60: want '─' working normal, got '┴' working normal
+row 12 col 66: want '╮' working normal, got '─' working normal
+row 12 col 67: want ' ' fg normal, got '─' working normal
+row 12 col 68: want ' ' fg normal, got '─' working normal
+row 12 col 69: want ' ' fg normal, got '─' working normal
+row 12 col 70: want ' ' fg normal, got '─' working normal
+row 12 col 71: want ' ' fg normal, got '╮' working normal
+row 12 col 78: want '│' border normal, got ' ' fg normal
+row 12 col 80: want '│' border normal, got ' ' fg normal
+row 12 col 82: want '╭' working normal, got ' ' fg normal
+row 12 col 83: want '─' working normal, got ' ' fg normal
+row 12 col 84: want '─' working normal, got ' ' fg normal
+row 12 col 85: want '─' working normal, got ' ' fg normal
+row 12 col 86: want '─' working normal, got ' ' fg normal
+row 12 col 87: want '─' working normal, got ' ' fg normal
+row 12 col 88: want '─' working normal, got ' ' fg normal
+row 12 col 89: want '─' working normal, got ' ' fg normal
+row 12 col 90: want '─' working normal, got ' ' fg normal
+row 12 col 91: want '─' working normal, got '│' border normal
+row 12 col 92: want '─' working normal, got ' ' fg normal
+row 12 col 93: want '─' working normal, got ' ' fg normal
+row 12 col 94: want '─' working normal, got ' ' fg normal
+row 12 col 95: want '─' working normal, got ' ' fg normal
+row 12 col 96: want '─' working normal, got ' ' fg normal
+row 12 col 97: want '─' working normal, got ' ' fg normal
+row 12 col 98: want '─' working normal, got ' ' fg normal
+row 12 col 99: want '─' working normal, got ' ' fg normal
+row 12 col 100: want '─' working normal, got ' ' fg normal
+row 12 col 101: want '─' working normal, got ' ' fg normal
+row 12 col 102: want '─' working normal, got ' ' fg normal
+row 12 col 103: want '─' working normal, got ' ' fg normal
+row 12 col 104: want '─' working normal, got ' ' fg normal
+row 12 col 105: want '╮' working normal, got ' ' fg normal
+row 12 col 117: want '│' border normal, got ' ' fg normal
+row 13 col 2: want '┃' accent normal, got ' ' fg normal
+row 13 col 4: want '│' working normal, got ' ' fg normal
+row 13 col 6: want '●' working normal, got ' ' fg normal
+row 13 col 8: want 'm' fg normal, got ' ' fg normal
+row 13 col 9: want 'a' fg normal, got ' ' fg normal
+row 13 col 10: want 'n' fg normal, got ' ' fg normal
+row 13 col 11: want 'a' fg normal, got ' ' fg normal
+row 13 col 12: want 'g' fg normal, got ' ' fg normal
+row 13 col 13: want 'e' fg normal, got ' ' fg normal
+row 13 col 14: want 'r' fg normal, got ' ' fg normal
+row 13 col 15: want '-' fg normal, got ' ' fg normal
+row 13 col 16: want 'h' fg normal, got ' ' fg normal
+row 13 col 17: want 'i' fg normal, got ' ' fg normal
+row 13 col 18: want 'v' fg normal, got ' ' fg normal
+row 13 col 19: want 'e' fg normal, got ' ' fg normal
+row 13 col 27: want '│' working normal, got ' ' fg normal
+row 13 col 28: want ' ' fg normal, got '│' border normal
+row 13 col 39: want '┃' accent normal, got ' ' fg normal
+row 13 col 41: want '│' border normal, got ' ' fg normal
+row 13 col 43: want '│' working normal, got ' ' fg normal
+row 13 col 45: want '●' working normal, got ' ' fg normal
+row 13 col 47: want 'm' fg normal, got ' ' fg normal
+row 13 col 48: want 'a' fg normal, got '│' working normal
+row 13 col 49: want 'n' fg normal, got ' ' fg normal
+row 13 col 50: want 'a' fg normal, got '●' working normal
+row 13 col 51: want 'g' fg normal, got ' ' fg normal
+row 13 col 52: want 'e' fg normal, got 'm' fg normal
+row 13 col 53: want 'r' fg normal, got 'a' fg normal
+row 13 col 54: want '-' fg normal, got 'n' fg normal
+row 13 col 56: want 'p' fg normal, got 'g' fg normal
+row 13 col 57: want 'i' fg normal, got 'e' fg normal
+row 13 col 58: want ' ' fg normal, got 'r' fg normal
+row 13 col 59: want ' ' fg normal, got '-' fg normal
+row 13 col 60: want ' ' fg normal, got 'h' fg normal
+row 13 col 61: want ' ' fg normal, got 'i' fg normal
+row 13 col 62: want ' ' fg normal, got 'v' fg normal
+row 13 col 63: want ' ' fg normal, got 'e' fg normal
+row 13 col 66: want '│' working normal, got ' ' fg normal
+row 13 col 71: want ' ' fg normal, got '│' working normal
+row 13 col 78: want '│' border normal, got ' ' fg normal
+row 13 col 80: want '│' border normal, got ' ' fg normal
+row 13 col 82: want '│' working normal, got ' ' fg normal
+row 13 col 84: want '●' working normal, got ' ' fg normal
+row 13 col 86: want 'p' fg normal, got ' ' fg normal
+row 13 col 87: want 'l' fg normal, got ' ' fg normal
+row 13 col 88: want 'a' fg normal, got ' ' fg normal
+row 13 col 89: want 'n' fg normal, got ' ' fg normal
+row 13 col 90: want '-' fg normal, got ' ' fg normal
+row 13 col 91: want 'r' fg normal, got '│' border normal
+row 13 col 92: want 'e' fg normal, got ' ' fg normal
+row 13 col 93: want 'v' fg normal, got ' ' fg normal
+row 13 col 94: want 'i' fg normal, got ' ' fg normal
+row 13 col 95: want 'e' fg normal, got ' ' fg normal
+row 13 col 96: want 'w' fg normal, got ' ' fg normal
+row 13 col 97: want '-' fg normal, got ' ' fg normal
+row 13 col 98: want '1' fg normal, got ' ' fg normal
+row 13 col 105: want '│' working normal, got ' ' fg normal
+row 13 col 117: want '│' border normal, got ' ' fg normal
+row 14 col 2: want '┃' accent normal, got ' ' fg normal
+row 14 col 4: want '│' working normal, got ' ' fg normal
+row 14 col 6: want 'c' dim normal, got ' ' fg normal
+row 14 col 7: want 'l' dim normal, got ' ' fg normal
+row 14 col 8: want 'a' dim normal, got ' ' fg normal
+row 14 col 9: want 'u' dim normal, got ' ' fg normal
+row 14 col 10: want 'd' dim normal, got ' ' fg normal
+row 14 col 11: want 'e' dim normal, got ' ' fg normal
+row 14 col 12: want ' ' dim normal, got ' ' fg normal
+row 14 col 13: want '·' dim normal, got ' ' fg normal
+row 14 col 14: want ' ' dim normal, got ' ' fg normal
+row 14 col 15: want 'w' dim normal, got ' ' fg normal
+row 14 col 16: want 'o' dim normal, got ' ' fg normal
+row 14 col 17: want 'r' dim normal, got ' ' fg normal
+row 14 col 18: want 'k' dim normal, got ' ' fg normal
+row 14 col 19: want 'i' dim normal, got ' ' fg normal
+row 14 col 20: want 'n' dim normal, got ' ' fg normal
+row 14 col 21: want 'g' dim normal, got ' ' fg normal
+row 14 col 22: want ' ' dim normal, got ' ' fg normal
+row 14 col 23: want '·' dim normal, got ' ' fg normal
+row 14 col 24: want ' ' dim normal, got ' ' fg normal
+row 14 col 25: want '…' dim normal, got ' ' fg normal
+row 14 col 27: want '│' working normal, got ' ' fg normal
+row 14 col 28: want ' ' fg normal, got '│' border normal
+row 14 col 39: want '┃' accent normal, got ' ' fg normal
+row 14 col 41: want '│' border normal, got ' ' fg normal
+row 14 col 43: want '│' working normal, got ' ' fg normal
+row 14 col 45: want 'c' dim normal, got ' ' fg normal
+row 14 col 46: want 'o' dim normal, got ' ' fg normal
+row 14 col 47: want 'd' dim normal, got ' ' fg normal
+row 14 col 48: want 'e' dim normal, got '│' working normal
+row 14 col 49: want 'x' dim normal, got ' ' fg normal
+row 14 col 50: want ' ' dim normal, got 'c' dim normal
+row 14 col 51: want '·' dim normal, got 'l' dim normal
+row 14 col 52: want ' ' dim normal, got 'a' dim normal
+row 14 col 53: want 'w' dim normal, got 'u' dim normal
+row 14 col 54: want 'o' dim normal, got 'd' dim normal
+row 14 col 55: want 'r' dim normal, got 'e' dim normal
+row 14 col 56: want 'k' dim normal, got ' ' dim normal
+row 14 col 57: want 'i' dim normal, got '·' dim normal
+row 14 col 58: want 'n' dim normal, got ' ' dim normal
+row 14 col 59: want 'g' dim normal, got 'w' dim normal
+row 14 col 60: want ' ' dim normal, got 'o' dim normal
+row 14 col 61: want '·' dim normal, got 'r' dim normal
+row 14 col 62: want ' ' dim normal, got 'k' dim normal
+row 14 col 63: want '2' dim normal, got 'i' dim normal
+row 14 col 64: want 'm' dim normal, got 'n' dim normal
+row 14 col 65: want ' ' fg normal, got 'g' dim normal
+row 14 col 66: want '│' working normal, got ' ' dim normal
+row 14 col 67: want ' ' fg normal, got '·' dim normal
+row 14 col 68: want ' ' fg normal, got ' ' dim normal
+row 14 col 69: want ' ' fg normal, got '…' dim normal
+row 14 col 71: want ' ' fg normal, got '│' working normal
+row 14 col 78: want '│' border normal, got ' ' fg normal
+row 14 col 80: want '│' border normal, got ' ' fg normal
+row 14 col 82: want '│' working normal, got ' ' fg normal
+row 14 col 84: want 'p' dim normal, got ' ' fg normal
+row 14 col 85: want 'i' dim normal, got ' ' fg normal
+row 14 col 86: want ' ' dim normal, got ' ' fg normal
+row 14 col 87: want '·' dim normal, got ' ' fg normal
+row 14 col 88: want ' ' dim normal, got ' ' fg normal
+row 14 col 89: want 'w' dim normal, got ' ' fg normal
+row 14 col 90: want 'o' dim normal, got ' ' fg normal
+row 14 col 91: want 'r' dim normal, got '│' border normal
+row 14 col 92: want 'k' dim normal, got ' ' fg normal
+row 14 col 93: want 'i' dim normal, got ' ' fg normal
+row 14 col 94: want 'n' dim normal, got ' ' fg normal
+row 14 col 95: want 'g' dim normal, got ' ' fg normal
+row 14 col 96: want ' ' dim normal, got ' ' fg normal
+row 14 col 97: want '·' dim normal, got ' ' fg normal
+row 14 col 98: want ' ' dim normal, got ' ' fg normal
+row 14 col 99: want '2' dim normal, got ' ' fg normal
+row 14 col 100: want 'm' dim normal, got ' ' fg normal
+row 14 col 105: want '│' working normal, got ' ' fg normal
+row 14 col 117: want '│' border normal, got ' ' fg normal
+row 15 col 2: want '┃' accent normal, got ' ' fg normal
+row 15 col 4: want '├' working normal, got ' ' fg normal
+row 15 col 5: want '─' working normal, got ' ' fg normal
+row 15 col 6: want '─' working normal, got ' ' fg normal
+row 15 col 7: want '─' working normal, got ' ' fg normal
+row 15 col 8: want '─' working normal, got ' ' fg normal
+row 15 col 9: want '─' working normal, got ' ' fg normal
+row 15 col 10: want '─' working normal, got ' ' fg normal
+row 15 col 11: want '─' working normal, got ' ' fg normal
+row 15 col 12: want '─' working normal, got ' ' fg normal
+row 15 col 13: want '─' working normal, got ' ' fg normal
+row 15 col 14: want '─' working normal, got ' ' fg normal
+row 15 col 15: want '─' working normal, got ' ' fg normal
+row 15 col 16: want '─' working normal, got ' ' fg normal
+row 15 col 17: want '─' working normal, got ' ' fg normal
+row 15 col 18: want '─' working normal, got ' ' fg normal
+row 15 col 19: want '─' working normal, got ' ' fg normal
+row 15 col 20: want '─' working normal, got ' ' fg normal
+row 15 col 21: want '─' working normal, got ' ' fg normal
+row 15 col 22: want '─' working normal, got ' ' fg normal
+row 15 col 23: want '─' working normal, got ' ' fg normal
+row 15 col 24: want '─' working normal, got ' ' fg normal
+row 15 col 25: want '─' working normal, got ' ' fg normal
+row 15 col 26: want '─' working normal, got ' ' fg normal
+row 15 col 27: want '╯' working normal, got ' ' fg normal
+row 15 col 28: want ' ' fg normal, got '│' border normal
+row 15 col 39: want '┃' accent normal, got ' ' fg normal
+row 15 col 41: want '│' border normal, got ' ' fg normal
+row 15 col 43: want '├' working normal, got ' ' fg normal
+row 15 col 44: want '─' working normal, got ' ' fg normal
+row 15 col 45: want '─' working normal, got ' ' fg normal
+row 15 col 46: want '─' working normal, got ' ' fg normal
+row 15 col 47: want '─' working normal, got ' ' fg normal
+row 15 col 48: want '─' working normal, got '╰' working normal
+row 15 col 60: want '─' working normal, got '┰' info normal
+row 15 col 66: want '╯' working normal, got '─' working normal
+row 15 col 67: want ' ' fg normal, got '─' working normal
+row 15 col 68: want ' ' fg normal, got '─' working normal
+row 15 col 69: want ' ' fg normal, got '─' working normal
+row 15 col 70: want ' ' fg normal, got '─' working normal
+row 15 col 71: want ' ' fg normal, got '╯' working normal
+row 15 col 78: want '│' border normal, got ' ' fg normal
+row 15 col 80: want '│' border normal, got ' ' fg normal
+row 15 col 82: want '╰' working normal, got ' ' fg normal
+row 15 col 83: want '─' working normal, got ' ' fg normal
+row 15 col 84: want '─' working normal, got ' ' fg normal
+row 15 col 85: want '─' working normal, got ' ' fg normal
+row 15 col 86: want '─' working normal, got ' ' fg normal
+row 15 col 87: want '─' working normal, got ' ' fg normal
+row 15 col 88: want '─' working normal, got ' ' fg normal
+row 15 col 89: want '─' working normal, got ' ' fg normal
+row 15 col 90: want '─' working normal, got ' ' fg normal
+row 15 col 91: want '─' working normal, got '│' border normal
+row 15 col 92: want '─' working normal, got ' ' fg normal
+row 15 col 93: want '─' working normal, got ' ' fg normal
+row 15 col 94: want '─' working normal, got ' ' fg normal
+row 15 col 95: want '─' working normal, got ' ' fg normal
+row 15 col 96: want '─' working normal, got ' ' fg normal
+row 15 col 97: want '─' working normal, got ' ' fg normal
+row 15 col 98: want '─' working normal, got ' ' fg normal
+row 15 col 99: want '─' working normal, got ' ' fg normal
+row 15 col 100: want '─' working normal, got ' ' fg normal
+row 15 col 101: want '─' working normal, got ' ' fg normal
+row 15 col 102: want '─' working normal, got ' ' fg normal
+row 15 col 103: want '─' working normal, got ' ' fg normal
+row 15 col 104: want '─' working normal, got ' ' fg normal
+row 15 col 105: want '╯' working normal, got ' ' fg normal
+row 15 col 117: want '│' border normal, got ' ' fg normal
+row 16 col 2: want '┃' accent normal, got ' ' fg normal
+row 16 col 4: want '│' border normal, got ' ' fg normal
+row 16 col 28: want ' ' fg normal, got '│' border normal
+row 16 col 39: want '┃' accent normal, got ' ' fg normal
+row 16 col 41: want '│' border normal, got ' ' fg normal
+row 16 col 43: want '│' border normal, got ' ' fg normal
+row 16 col 60: want ' ' fg normal, got '┃' info normal
+row 16 col 78: want '│' border normal, got ' ' fg normal
+row 16 col 80: want '│' border normal, got ' ' fg normal
+row 16 col 91: want ' ' fg normal, got '│' border normal
+row 16 col 117: want '│' border normal, got ' ' fg normal
+row 17 col 2: want '┃' accent normal, got ' ' fg normal
+row 17 col 4: want '│' border normal, got ' ' fg normal
+row 17 col 5: want '╭' working normal, got ' ' fg normal
+row 17 col 6: want '─' working normal, got ' ' fg normal
+row 17 col 7: want '─' working normal, got ' ' fg normal
+row 17 col 8: want '─' working normal, got ' ' fg normal
+row 17 col 9: want '─' working normal, got ' ' fg normal
+row 17 col 10: want '─' working normal, got ' ' fg normal
+row 17 col 11: want '─' working normal, got ' ' fg normal
+row 17 col 12: want '─' working normal, got ' ' fg normal
+row 17 col 13: want '─' working normal, got ' ' fg normal
+row 17 col 14: want '─' working normal, got ' ' fg normal
+row 17 col 15: want '─' working normal, got ' ' fg normal
+row 17 col 16: want '─' working normal, got ' ' fg normal
+row 17 col 17: want '─' working normal, got ' ' fg normal
+row 17 col 18: want '─' working normal, got ' ' fg normal
+row 17 col 19: want '─' working normal, got ' ' fg normal
+row 17 col 20: want '─' working normal, got ' ' fg normal
+row 17 col 21: want '─' working normal, got ' ' fg normal
+row 17 col 22: want '─' working normal, got ' ' fg normal
+row 17 col 23: want '─' working normal, got ' ' fg normal
+row 17 col 24: want '─' working normal, got ' ' fg normal
+row 17 col 25: want '─' working normal, got ' ' fg normal
+row 17 col 26: want '─' working normal, got ' ' fg normal
+row 17 col 27: want '─' working normal, got ' ' fg normal
+row 17 col 28: want '╮' working normal, got '│' border normal
+row 17 col 39: want '┃' accent normal, got ' ' fg normal
+row 17 col 41: want '│' border normal, got ' ' fg normal
+row 17 col 43: want '│' border normal, got ' ' fg normal
+row 17 col 44: want '╭' working normal, got ' ' fg normal
+row 17 col 45: want '─' working normal, got '╭' border normal
+row 17 col 46: want '─' working normal, got '─' border normal
+row 17 col 47: want '─' working normal, got '─' border normal
+row 17 col 48: want '─' working normal, got '─' border normal
+row 17 col 49: want '─' working normal, got '─' border normal
+row 17 col 50: want '─' working normal, got '─' border normal
+row 17 col 51: want '─' working normal, got '─' border normal
+row 17 col 52: want '─' working normal, got '─' border normal
+row 17 col 53: want '─' working normal, got '─' border normal
+row 17 col 54: want '─' working normal, got '─' border normal
+row 17 col 55: want '─' working normal, got '─' border normal
+row 17 col 56: want '─' working normal, got '─' border normal
+row 17 col 57: want '─' working normal, got '─' border normal
+row 17 col 58: want '─' working normal, got '─' border normal
+row 17 col 59: want '─' working normal, got '─' border normal
+row 17 col 60: want '─' working normal, got '┺' info normal
+row 17 col 61: want '─' working normal, got '━' info normal
+row 17 col 62: want '─' working normal, got '━' info normal
+row 17 col 63: want '─' working normal, got '━' info normal
+row 17 col 64: want '─' working normal, got '━' info normal
+row 17 col 65: want '─' working normal, got '━' info normal
+row 17 col 66: want '─' working normal, got '━' info normal
+row 17 col 67: want '╮' working normal, got '━' info normal
+row 17 col 68: want ' ' fg normal, got '━' info normal
+row 17 col 69: want ' ' fg normal, got '━' info normal
+row 17 col 70: want ' ' fg normal, got '━' info normal
+row 17 col 71: want ' ' fg normal, got '━' info normal
+row 17 col 72: want ' ' fg normal, got '━' info normal
+row 17 col 73: want ' ' fg normal, got '━' info normal
+row 17 col 74: want ' ' fg normal, got '━' info normal
+row 17 col 75: want ' ' fg normal, got '┓' info normal
+row 17 col 78: want '│' border normal, got ' ' fg normal
+row 17 col 80: want '│' border normal, got ' ' fg normal
+row 17 col 82: want 'h' dim normal, got ' ' fg normal
+row 17 col 83: want ' ' dim normal, got ' ' fg normal
+row 17 col 84: want 's' dim normal, got ' ' fg normal
+row 17 col 85: want 'h' dim normal, got ' ' fg normal
+row 17 col 86: want 'o' dim normal, got ' ' fg normal
+row 17 col 87: want 'w' dim normal, got ' ' fg normal
+row 17 col 88: want 's' dim normal, got ' ' fg normal
+row 17 col 89: want ' ' dim normal, got ' ' fg normal
+row 17 col 90: want '1' dim normal, got ' ' fg normal
+row 17 col 91: want ' ' dim normal, got '│' border normal
+row 17 col 92: want 's' dim normal, got ' ' fg normal
+row 17 col 93: want 't' dim normal, got ' ' fg normal
+row 17 col 94: want 'o' dim normal, got ' ' fg normal
+row 17 col 95: want 'p' dim normal, got ' ' fg normal
+row 17 col 96: want 'p' dim normal, got ' ' fg normal
+row 17 col 97: want 'e' dim normal, got ' ' fg normal
+row 17 col 98: want 'd' dim normal, got ' ' fg normal
+row 17 col 117: want '│' border normal, got ' ' fg normal
+row 18 col 2: want '┃' accent normal, got ' ' fg normal
+row 18 col 4: want '├' border normal, got ' ' fg normal
+row 18 col 5: want '┤' working normal, got ' ' fg normal
+row 18 col 7: want '●' working normal, got ' ' fg normal
+row 18 col 9: want 't' fg normal, got ' ' fg normal
+row 18 col 10: want '5' fg normal, got ' ' fg normal
+row 18 col 11: want '-' fg normal, got ' ' fg normal
+row 18 col 12: want 'w' fg normal, got ' ' fg normal
+row 18 col 13: want 'o' fg normal, got ' ' fg normal
+row 18 col 14: want 'r' fg normal, got ' ' fg normal
+row 18 col 15: want 'k' fg normal, got ' ' fg normal
+row 18 col 16: want 'e' fg normal, got ' ' fg normal
+row 18 col 17: want 'r' fg normal, got ' ' fg normal
+row 18 col 18: want '-' fg normal, got ' ' fg normal
+row 18 col 19: want '1' fg normal, got ' ' fg normal
+row 18 col 28: want '│' working normal, got '│' border normal
+row 18 col 39: want '┃' accent normal, got ' ' fg normal
+row 18 col 41: want '│' border normal, got ' ' fg normal
+row 18 col 43: want '├' border normal, got ' ' fg normal
+row 18 col 44: want '┤' working normal, got ' ' fg normal
+row 18 col 45: want ' ' fg normal, got '│' border normal
+row 18 col 46: want '●' working normal, got ' ' fg normal
+row 18 col 48: want 't' fg normal, got ' ' fg normal
+row 18 col 49: want '3' fg normal, got ' ' fg normal
+row 18 col 50: want '-' fg normal, got ' ' fg normal
+row 18 col 51: want 'w' fg normal, got ' ' fg normal
+row 18 col 52: want 'o' fg normal, got ' ' fg normal
+row 18 col 53: want 'r' fg normal, got ' ' fg normal
+row 18 col 54: want 'k' fg normal, got ' ' fg normal
+row 18 col 55: want 'e' fg normal, got ' ' fg normal
+row 18 col 56: want 'r' fg normal, got ' ' fg normal
+row 18 col 57: want '-' fg normal, got ' ' fg normal
+row 18 col 58: want '1' fg normal, got ' ' fg normal
+row 18 col 67: want '│' working normal, got ' ' fg normal
+row 18 col 75: want ' ' fg normal, got '▼' info normal
+row 18 col 78: want '│' border normal, got ' ' fg normal
+row 18 col 80: want '│' border normal, got ' ' fg normal
+row 18 col 91: want ' ' fg normal, got '│' border normal
+row 18 col 117: want '│' border normal, got ' ' fg normal
+row 19 col 2: want '┃' accent normal, got ' ' fg normal
+row 19 col 4: want '│' border normal, got ' ' fg normal
+row 19 col 5: want '│' working normal, got ' ' fg normal
+row 19 col 7: want 'p' dim normal, got ' ' fg normal
+row 19 col 8: want 'i' dim normal, got ' ' fg normal
+row 19 col 9: want ' ' dim normal, got ' ' fg normal
+row 19 col 10: want '·' dim normal, got ' ' fg normal
+row 19 col 11: want ' ' dim normal, got ' ' fg normal
+row 19 col 12: want 'w' dim normal, got ' ' fg normal
+row 19 col 13: want 'o' dim normal, got ' ' fg normal
+row 19 col 14: want 'r' dim normal, got ' ' fg normal
+row 19 col 15: want 'k' dim normal, got ' ' fg normal
+row 19 col 16: want 'i' dim normal, got ' ' fg normal
+row 19 col 17: want 'n' dim normal, got ' ' fg normal
+row 19 col 18: want 'g' dim normal, got ' ' fg normal
+row 19 col 19: want ' ' dim normal, got ' ' fg normal
+row 19 col 20: want '·' dim normal, got ' ' fg normal
+row 19 col 21: want ' ' dim normal, got ' ' fg normal
+row 19 col 22: want '3' dim normal, got ' ' fg normal
+row 19 col 23: want 'm' dim normal, got ' ' fg normal
+row 19 col 28: want '│' working normal, got '│' border normal
+row 19 col 33: want ' ' fg normal, got '┏' accent normal
+row 19 col 34: want ' ' fg normal, got '━' accent normal
+row 19 col 35: want ' ' fg normal, got '━' accent normal
+row 19 col 36: want ' ' fg normal, got '━' accent normal
+row 19 col 37: want ' ' fg normal, got '━' accent normal
+row 19 col 38: want ' ' fg normal, got '━' accent normal
+row 19 col 39: want '┃' accent normal, got '━' accent normal
+row 19 col 40: want ' ' fg normal, got '━' accent normal
+row 19 col 41: want '│' border normal, got '━' accent normal
+row 19 col 42: want ' ' fg normal, got '━' accent normal
+row 19 col 43: want '│' border normal, got '━' accent normal
+row 19 col 44: want '│' working normal, got '━' accent normal
+row 19 col 45: want ' ' fg normal, got '┷' accent normal
+row 19 col 46: want 'c' dim normal, got '━' accent normal
+row 19 col 47: want 'o' dim normal, got '━' accent normal
+row 19 col 48: want 'd' dim normal, got '━' accent normal
+row 19 col 49: want 'e' dim normal, got '━' accent normal
+row 19 col 50: want 'x' dim normal, got '━' accent normal
+row 19 col 51: want ' ' dim normal, got '━' accent normal
+row 19 col 52: want '·' dim normal, got '━' accent normal
+row 19 col 53: want ' ' dim normal, got '━' accent normal
+row 19 col 54: want 'w' dim normal, got '━' accent normal
+row 19 col 55: want 'o' dim normal, got '━' accent normal
+row 19 col 56: want 'r' dim normal, got '┓' accent normal
+row 19 col 57: want 'k' dim normal, got ' ' fg normal
+row 19 col 58: want 'i' dim normal, got ' ' fg normal
+row 19 col 59: want 'n' dim normal, got ' ' fg normal
+row 19 col 60: want 'g' dim normal, got ' ' fg normal
+row 19 col 63: want ' ' fg normal, got '╭' working normal
+row 19 col 64: want ' ' fg normal, got '─' working normal
+row 19 col 65: want ' ' fg normal, got '─' working normal
+row 19 col 66: want ' ' fg normal, got '─' working normal
+row 19 col 67: want '│' working normal, got '─' working normal
+row 19 col 68: want ' ' fg normal, got '─' working normal
+row 19 col 69: want ' ' fg normal, got '─' working normal
+row 19 col 70: want ' ' fg normal, got '─' working normal
+row 19 col 71: want ' ' fg normal, got '─' working normal
+row 19 col 72: want ' ' fg normal, got '─' working normal
+row 19 col 73: want ' ' fg normal, got '─' working normal
+row 19 col 74: want ' ' fg normal, got '─' working normal
+row 19 col 75: want ' ' fg normal, got '┸' info normal
+row 19 col 76: want ' ' fg normal, got '─' working normal
+row 19 col 77: want ' ' fg normal, got '─' working normal
+row 19 col 78: want '│' border normal, got '─' working normal
+row 19 col 79: want ' ' fg normal, got '─' working normal
+row 19 col 80: want '│' border normal, got '─' working normal
+row 19 col 81: want ' ' fg normal, got '─' working normal
+row 19 col 82: want ' ' fg normal, got '─' working normal
+row 19 col 83: want ' ' fg normal, got '─' working normal
+row 19 col 84: want ' ' fg normal, got '─' working normal
+row 19 col 85: want ' ' fg normal, got '─' working normal
+row 19 col 86: want ' ' fg normal, got '╮' working normal
+row 19 col 91: want ' ' fg normal, got '│' border normal
+row 19 col 117: want '│' border normal, got ' ' fg normal
+row 20 col 2: want '┃' accent normal, got ' ' fg normal
+row 20 col 4: want '│' border normal, got ' ' fg normal
+row 20 col 5: want '╰' working normal, got ' ' fg normal
+row 20 col 6: want '─' working normal, got ' ' fg normal
+row 20 col 7: want '─' working normal, got ' ' fg normal
+row 20 col 8: want '─' working normal, got ' ' fg normal
+row 20 col 9: want '─' working normal, got ' ' fg normal
+row 20 col 10: want '─' working normal, got ' ' fg normal
+row 20 col 11: want '─' working normal, got ' ' fg normal
+row 20 col 12: want '─' working normal, got ' ' fg normal
+row 20 col 13: want '─' working normal, got ' ' fg normal
+row 20 col 14: want '─' working normal, got ' ' fg normal
+row 20 col 15: want '─' working normal, got ' ' fg normal
+row 20 col 16: want '─' working normal, got ' ' fg normal
+row 20 col 17: want '─' working normal, got ' ' fg normal
+row 20 col 18: want '─' working normal, got ' ' fg normal
+row 20 col 19: want '─' working normal, got ' ' fg normal
+row 20 col 20: want '─' working normal, got ' ' fg normal
+row 20 col 21: want '─' working normal, got ' ' fg normal
+row 20 col 22: want '─' working normal, got ' ' fg normal
+row 20 col 23: want '─' working normal, got ' ' fg normal
+row 20 col 24: want '─' working normal, got ' ' fg normal
+row 20 col 25: want '─' working normal, got ' ' fg normal
+row 20 col 26: want '─' working normal, got ' ' fg normal
+row 20 col 27: want '─' working normal, got ' ' fg normal
+row 20 col 28: want '╯' working normal, got '│' border normal
+row 20 col 33: want ' ' fg normal, got '┃' accent normal
+row 20 col 35: want ' ' fg normal, got '●' working normal
+row 20 col 37: want ' ' fg normal, got 't' accent bold
+row 20 col 38: want ' ' fg normal, got '5' accent bold
+row 20 col 39: want '┃' accent normal, got '-' accent bold
+row 20 col 40: want ' ' fg normal, got 'w' accent bold
+row 20 col 41: want '│' border normal, got 'o' accent bold
+row 20 col 42: want ' ' fg normal, got 'r' accent bold
+row 20 col 43: want '│' border normal, got 'k' accent bold
+row 20 col 44: want '╰' working normal, got 'e' accent bold
+row 20 col 45: want '─' working normal, got 'r' accent bold
+row 20 col 46: want '─' working normal, got '-' accent bold
+row 20 col 47: want '─' working normal, got '1' accent bold
+row 20 col 48: want '─' working normal, got ' ' fg normal
+row 20 col 49: want '─' working normal, got ' ' fg normal
+row 20 col 50: want '─' working normal, got ' ' fg normal
+row 20 col 51: want '─' working normal, got ' ' fg normal
+row 20 col 52: want '─' working normal, got ' ' fg normal
+row 20 col 53: want '─' working normal, got ' ' fg normal
+row 20 col 54: want '─' working normal, got ' ' fg normal
+row 20 col 55: want '─' working normal, got ' ' fg normal
+row 20 col 56: want '─' working normal, got '┃' accent normal
+row 20 col 57: want '─' working normal, got ' ' fg normal
+row 20 col 58: want '─' working normal, got ' ' fg normal
+row 20 col 59: want '─' working normal, got ' ' fg normal
+row 20 col 60: want '─' working normal, got ' ' fg normal
+row 20 col 61: want '─' working normal, got ' ' fg normal
+row 20 col 62: want '─' working normal, got ' ' fg normal
+row 20 col 63: want '─' working normal, got '│' working normal
+row 20 col 64: want '─' working normal, got ' ' fg normal
+row 20 col 65: want '─' working normal, got '●' working normal
+row 20 col 66: want '─' working normal, got ' ' fg normal
+row 20 col 67: want '╯' working normal, got 't' fg normal
+row 20 col 68: want ' ' fg normal, got '6' fg normal
+row 20 col 69: want ' ' fg normal, got '-' fg normal
+row 20 col 70: want ' ' fg normal, got 'w' fg normal
+row 20 col 71: want ' ' fg normal, got 'o' fg normal
+row 20 col 72: want ' ' fg normal, got 'r' fg normal
+row 20 col 73: want ' ' fg normal, got 'k' fg normal
+row 20 col 74: want ' ' fg normal, got 'e' fg normal
+row 20 col 75: want ' ' fg normal, got 'r' fg normal
+row 20 col 76: want ' ' fg normal, got '-' fg normal
+row 20 col 77: want ' ' fg normal, got '1' fg normal
+row 20 col 78: want '│' border normal, got ' ' fg normal
+row 20 col 80: want '│' border normal, got ' ' fg normal
+row 20 col 86: want ' ' fg normal, got '│' working normal
+row 20 col 91: want ' ' fg normal, got '│' border normal
+row 20 col 117: want '│' border normal, got ' ' fg normal
+row 21 col 2: want '┃' accent normal, got ' ' fg normal
+row 21 col 4: want '│' border normal, got ' ' fg normal
+row 21 col 28: want ' ' fg normal, got '│' border normal
+row 21 col 33: want ' ' fg normal, got '┃' accent normal
+row 21 col 35: want ' ' fg normal, got 'p' dim normal
+row 21 col 36: want ' ' fg normal, got 'i' dim normal
+row 21 col 37: want ' ' fg normal, got ' ' dim normal
+row 21 col 38: want ' ' fg normal, got '·' dim normal
+row 21 col 39: want '┃' accent normal, got ' ' dim normal
+row 21 col 40: want ' ' fg normal, got 'w' dim normal
+row 21 col 41: want '│' border normal, got 'o' dim normal
+row 21 col 42: want ' ' fg normal, got 'r' dim normal
+row 21 col 43: want '│' border normal, got 'k' dim normal
+row 21 col 44: want ' ' fg normal, got 'i' dim normal
+row 21 col 45: want ' ' fg normal, got 'n' dim normal
+row 21 col 46: want ' ' fg normal, got 'g' dim normal
+row 21 col 47: want ' ' fg normal, got ' ' dim normal
+row 21 col 48: want ' ' fg normal, got '·' dim normal
+row 21 col 49: want ' ' fg normal, got ' ' dim normal
+row 21 col 50: want ' ' fg normal, got '3' dim normal
+row 21 col 51: want ' ' fg normal, got 'm' dim normal
+row 21 col 56: want ' ' fg normal, got '┃' accent normal
+row 21 col 63: want ' ' fg normal, got '│' working normal
+row 21 col 65: want ' ' fg normal, got 'p' dim normal
+row 21 col 66: want ' ' fg normal, got 'i' dim normal
+row 21 col 67: want ' ' fg normal, got ' ' dim normal
+row 21 col 68: want ' ' fg normal, got '·' dim normal
+row 21 col 69: want ' ' fg normal, got ' ' dim normal
+row 21 col 70: want ' ' fg normal, got 'w' dim normal
+row 21 col 71: want ' ' fg normal, got 'o' dim normal
+row 21 col 72: want ' ' fg normal, got 'r' dim normal
+row 21 col 73: want ' ' fg normal, got 'k' dim normal
+row 21 col 74: want ' ' fg normal, got 'i' dim normal
+row 21 col 75: want ' ' fg normal, got 'n' dim normal
+row 21 col 76: want ' ' fg normal, got 'g' dim normal
+row 21 col 77: want ' ' fg normal, got ' ' dim normal
+row 21 col 78: want '│' border normal, got '·' dim normal
+row 21 col 79: want ' ' fg normal, got ' ' dim normal
+row 21 col 80: want '│' border normal, got '1' dim normal
+row 21 col 81: want ' ' fg normal, got 'm' dim normal
+row 21 col 86: want ' ' fg normal, got '│' working normal
+row 21 col 91: want ' ' fg normal, got '│' border normal
+row 21 col 117: want '│' border normal, got ' ' fg normal
+row 22 col 2: want '┃' accent normal, got ' ' fg normal
+row 22 col 4: want '│' border normal, got ' ' fg normal
+row 22 col 5: want '╭' working normal, got ' ' fg normal
+row 22 col 6: want '─' working normal, got ' ' fg normal
+row 22 col 7: want '─' working normal, got ' ' fg normal
+row 22 col 8: want '─' working normal, got ' ' fg normal
+row 22 col 9: want '─' working normal, got ' ' fg normal
+row 22 col 10: want '─' working normal, got ' ' fg normal
+row 22 col 11: want '─' working normal, got ' ' fg normal
+row 22 col 12: want '─' working normal, got ' ' fg normal
+row 22 col 13: want '─' working normal, got ' ' fg normal
+row 22 col 14: want '─' working normal, got ' ' fg normal
+row 22 col 15: want '─' working normal, got ' ' fg normal
+row 22 col 16: want '─' working normal, got ' ' fg normal
+row 22 col 17: want '─' working normal, got ' ' fg normal
+row 22 col 18: want '─' working normal, got ' ' fg normal
+row 22 col 19: want '─' working normal, got ' ' fg normal
+row 22 col 20: want '─' working normal, got ' ' fg normal
+row 22 col 21: want '─' working normal, got ' ' fg normal
+row 22 col 22: want '─' working normal, got ' ' fg normal
+row 22 col 23: want '─' working normal, got ' ' fg normal
+row 22 col 24: want '─' working normal, got ' ' fg normal
+row 22 col 25: want '─' working normal, got ' ' fg normal
+row 22 col 26: want '─' working normal, got ' ' fg normal
+row 22 col 27: want '─' working normal, got ' ' fg normal
+row 22 col 28: want '╮' working normal, got '│' border normal
+row 22 col 33: want ' ' fg normal, got '┗' accent normal
+row 22 col 34: want ' ' fg normal, got '━' accent normal
+row 22 col 35: want ' ' fg normal, got '━' accent normal
+row 22 col 36: want ' ' fg normal, got '━' accent normal
+row 22 col 37: want ' ' fg normal, got '━' accent normal
+row 22 col 38: want ' ' fg normal, got '━' accent normal
+row 22 col 39: want '┃' accent normal, got '━' accent normal
+row 22 col 40: want ' ' fg normal, got '━' accent normal
+row 22 col 41: want '│' border normal, got '━' accent normal
+row 22 col 42: want ' ' fg normal, got '━' accent normal
+row 22 col 43: want '│' border normal, got '━' accent normal
+row 22 col 44: want '╭' border normal, got '━' accent normal
+row 22 col 45: want '─' border normal, got '━' accent normal
+row 22 col 46: want '─' border normal, got '━' accent normal
+row 22 col 47: want '─' border normal, got '━' accent normal
+row 22 col 48: want '─' border normal, got '━' accent normal
+row 22 col 49: want '─' border normal, got '━' accent normal
+row 22 col 50: want '─' border normal, got '━' accent normal
+row 22 col 51: want '─' border normal, got '━' accent normal
+row 22 col 52: want '─' border normal, got '━' accent normal
+row 22 col 53: want '─' border normal, got '━' accent normal
+row 22 col 54: want '─' border normal, got '━' accent normal
+row 22 col 55: want '─' border normal, got '━' accent normal
+row 22 col 56: want '─' border normal, got '┛' accent normal
+row 22 col 57: want '─' border normal, got ' ' fg normal
+row 22 col 58: want '─' border normal, got ' ' fg normal
+row 22 col 59: want '─' border normal, got ' ' fg normal
+row 22 col 60: want '─' border normal, got ' ' fg normal
+row 22 col 61: want '─' border normal, got ' ' fg normal
+row 22 col 62: want '─' border normal, got ' ' fg normal
+row 22 col 63: want '─' border normal, got '╰' working normal
+row 22 col 64: want '─' border normal, got '─' working normal
+row 22 col 65: want '─' border normal, got '─' working normal
+row 22 col 66: want '─' border normal, got '─' working normal
+row 22 col 67: want '╮' border normal, got '─' working normal
+row 22 col 68: want ' ' fg normal, got '─' working normal
+row 22 col 69: want ' ' fg normal, got '─' working normal
+row 22 col 70: want ' ' fg normal, got '─' working normal
+row 22 col 71: want ' ' fg normal, got '─' working normal
+row 22 col 72: want ' ' fg normal, got '─' working normal
+row 22 col 73: want ' ' fg normal, got '─' working normal
+row 22 col 74: want ' ' fg normal, got '─' working normal
+row 22 col 75: want ' ' fg normal, got '─' working normal
+row 22 col 76: want ' ' fg normal, got '─' working normal
+row 22 col 77: want ' ' fg normal, got '─' working normal
+row 22 col 78: want '│' border normal, got '─' working normal
+row 22 col 79: want ' ' fg normal, got '─' working normal
+row 22 col 80: want '│' border normal, got '─' working normal
+row 22 col 81: want ' ' fg normal, got '─' working normal
+row 22 col 82: want ' ' fg normal, got '─' working normal
+row 22 col 83: want ' ' fg normal, got '─' working normal
+row 22 col 84: want ' ' fg normal, got '─' working normal
+row 22 col 85: want ' ' fg normal, got '─' working normal
+row 22 col 86: want ' ' fg normal, got '╯' working normal
+row 22 col 91: want ' ' fg normal, got '│' border normal
+row 22 col 117: want '│' border normal, got ' ' fg normal
+row 23 col 2: want '┃' accent normal, got ' ' fg normal
+row 23 col 4: want '╰' border normal, got ' ' fg normal
+row 23 col 5: want '┤' working normal, got ' ' fg normal
+row 23 col 7: want '●' working normal, got ' ' fg normal
+row 23 col 9: want 't' fg normal, got ' ' fg normal
+row 23 col 10: want '6' fg normal, got ' ' fg normal
+row 23 col 11: want '-' fg normal, got ' ' fg normal
+row 23 col 12: want 'w' fg normal, got ' ' fg normal
+row 23 col 13: want 'o' fg normal, got ' ' fg normal
+row 23 col 14: want 'r' fg normal, got ' ' fg normal
+row 23 col 15: want 'k' fg normal, got ' ' fg normal
+row 23 col 16: want 'e' fg normal, got ' ' fg normal
+row 23 col 17: want 'r' fg normal, got ' ' fg normal
+row 23 col 18: want '-' fg normal, got ' ' fg normal
+row 23 col 19: want '1' fg normal, got ' ' fg normal
+row 23 col 28: want '│' working normal, got '│' border normal
+row 23 col 39: want '┃' accent normal, got ' ' fg normal
+row 23 col 41: want '│' border normal, got ' ' fg normal
+row 23 col 43: want '╰' border normal, got ' ' fg normal
+row 23 col 44: want '┤' border normal, got ' ' fg normal
+row 23 col 46: want '◐' accent normal, got ' ' fg normal
+row 23 col 48: want 't' fg normal, got ' ' fg normal
+row 23 col 49: want '3' fg normal, got ' ' fg normal
+row 23 col 50: want '-' fg normal, got ' ' fg normal
+row 23 col 51: want 'v' fg normal, got ' ' fg normal
+row 23 col 52: want 'e' fg normal, got ' ' fg normal
+row 23 col 53: want 'r' fg normal, got ' ' fg normal
+row 23 col 54: want 'i' fg normal, got ' ' fg normal
+row 23 col 55: want 'f' fg normal, got ' ' fg normal
+row 23 col 56: want 'i' fg normal, got ' ' fg normal
+row 23 col 57: want 'e' fg normal, got ' ' fg normal
+row 23 col 58: want 'r' fg normal, got ' ' fg normal
+row 23 col 59: want '-' fg normal, got ' ' fg normal
+row 23 col 60: want '1' fg normal, got ' ' fg normal
+row 23 col 67: want '│' border normal, got ' ' fg normal
+row 23 col 78: want '│' border normal, got ' ' fg normal
+row 23 col 80: want '│' border normal, got ' ' fg normal
+row 23 col 91: want ' ' fg normal, got '│' border normal
+row 23 col 117: want '│' border normal, got ' ' fg normal
+row 24 col 2: want '┃' accent normal, got ' ' fg normal
+row 24 col 5: want '│' working normal, got ' ' fg normal
+row 24 col 7: want 'p' dim normal, got ' ' fg normal
+row 24 col 8: want 'i' dim normal, got ' ' fg normal
+row 24 col 9: want ' ' dim normal, got ' ' fg normal
+row 24 col 10: want '·' dim normal, got ' ' fg normal
+row 24 col 11: want ' ' dim normal, got ' ' fg normal
+row 24 col 12: want 'w' dim normal, got ' ' fg normal
+row 24 col 13: want 'o' dim normal, got ' ' fg normal
+row 24 col 14: want 'r' dim normal, got ' ' fg normal
+row 24 col 15: want 'k' dim normal, got ' ' fg normal
+row 24 col 16: want 'i' dim normal, got ' ' fg normal
+row 24 col 17: want 'n' dim normal, got ' ' fg normal
+row 24 col 18: want 'g' dim normal, got ' ' fg normal
+row 24 col 19: want ' ' dim normal, got ' ' fg normal
+row 24 col 20: want '·' dim normal, got ' ' fg normal
+row 24 col 21: want ' ' dim normal, got ' ' fg normal
+row 24 col 22: want '1' dim normal, got ' ' fg normal
+row 24 col 23: want 'm' dim normal, got ' ' fg normal
+row 24 col 28: want '│' working normal, got '│' border normal
+row 24 col 30: want ' ' fg normal, got 'h' dim normal
+row 24 col 31: want ' ' fg normal, got ' ' dim normal
+row 24 col 32: want ' ' fg normal, got 's' dim normal
+row 24 col 33: want ' ' fg normal, got 'h' dim normal
+row 24 col 34: want ' ' fg normal, got 'o' dim normal
+row 24 col 35: want ' ' fg normal, got 'w' dim normal
+row 24 col 36: want ' ' fg normal, got 's' dim normal
+row 24 col 37: want ' ' fg normal, got ' ' dim normal
+row 24 col 38: want ' ' fg normal, got '1' dim normal
+row 24 col 39: want '┃' accent normal, got ' ' dim normal
+row 24 col 40: want ' ' fg normal, got 's' dim normal
+row 24 col 41: want '│' border normal, got 't' dim normal
+row 24 col 42: want ' ' fg normal, got 'o' dim normal
+row 24 col 43: want ' ' fg normal, got 'p' dim normal
+row 24 col 44: want '│' border normal, got 'p' dim normal
+row 24 col 45: want ' ' fg normal, got 'e' dim normal
+row 24 col 46: want 'p' dim normal, got 'd' dim normal
+row 24 col 47: want 'i' dim normal, got ' ' fg normal
+row 24 col 48: want ' ' dim normal, got ' ' fg normal
+row 24 col 49: want '·' dim normal, got ' ' fg normal
+row 24 col 50: want ' ' dim normal, got ' ' fg normal
+row 24 col 51: want 'i' dim normal, got ' ' fg normal
+row 24 col 52: want 'd' dim normal, got ' ' fg normal
+row 24 col 53: want 'l' dim normal, got ' ' fg normal
+row 24 col 54: want 'e' dim normal, got ' ' fg normal
+row 24 col 55: want ' ' dim normal, got ' ' fg normal
+row 24 col 56: want '·' dim normal, got ' ' fg normal
+row 24 col 57: want ' ' dim normal, got ' ' fg normal
+row 24 col 58: want '6' dim normal, got ' ' fg normal
+row 24 col 59: want 'm' dim normal, got ' ' fg normal
+row 24 col 67: want '│' border normal, got ' ' fg normal
+row 24 col 78: want '│' border normal, got ' ' fg normal
+row 24 col 80: want '│' border normal, got ' ' fg normal
+row 24 col 91: want ' ' fg normal, got '│' border normal
+row 24 col 117: want '│' border normal, got ' ' fg normal
+row 25 col 2: want '┃' accent normal, got ' ' fg normal
+row 25 col 5: want '╰' working normal, got ' ' fg normal
+row 25 col 6: want '─' working normal, got ' ' fg normal
+row 25 col 7: want '─' working normal, got ' ' fg normal
+row 25 col 8: want '─' working normal, got ' ' fg normal
+row 25 col 9: want '─' working normal, got ' ' fg normal
+row 25 col 10: want '─' working normal, got ' ' fg normal
+row 25 col 11: want '─' working normal, got ' ' fg normal
+row 25 col 12: want '─' working normal, got ' ' fg normal
+row 25 col 13: want '─' working normal, got ' ' fg normal
+row 25 col 14: want '─' working normal, got ' ' fg normal
+row 25 col 15: want '─' working normal, got ' ' fg normal
+row 25 col 16: want '─' working normal, got ' ' fg normal
+row 25 col 17: want '─' working normal, got ' ' fg normal
+row 25 col 18: want '─' working normal, got ' ' fg normal
+row 25 col 19: want '─' working normal, got ' ' fg normal
+row 25 col 20: want '─' working normal, got ' ' fg normal
+row 25 col 21: want '─' working normal, got ' ' fg normal
+row 25 col 22: want '─' working normal, got ' ' fg normal
+row 25 col 23: want '─' working normal, got ' ' fg normal
+row 25 col 24: want '─' working normal, got ' ' fg normal
+row 25 col 25: want '─' working normal, got ' ' fg normal
+row 25 col 26: want '─' working normal, got ' ' fg normal
+row 25 col 27: want '─' working normal, got ' ' fg normal
+row 25 col 28: want '╯' working normal, got '╰' border normal
+row 25 col 29: want ' ' fg normal, got '─' border normal
+row 25 col 30: want ' ' fg normal, got '─' border normal
+row 25 col 31: want ' ' fg normal, got '─' border normal
+row 25 col 32: want ' ' fg normal, got '─' border normal
+row 25 col 33: want ' ' fg normal, got '─' border normal
+row 25 col 34: want ' ' fg normal, got '─' border normal
+row 25 col 35: want ' ' fg normal, got '─' border normal
+row 25 col 36: want ' ' fg normal, got '─' border normal
+row 25 col 37: want ' ' fg normal, got '─' border normal
+row 25 col 38: want ' ' fg normal, got '─' border normal
+row 25 col 39: want '┃' accent normal, got '─' border normal
+row 25 col 40: want ' ' fg normal, got '─' border normal
+row 25 col 41: want '│' border normal, got '─' border normal
+row 25 col 42: want ' ' fg normal, got '─' border normal
+row 25 col 43: want ' ' fg normal, got '─' border normal
+row 25 col 44: want '╰' border normal, got '─' border normal
+row 25 col 67: want '╯' border normal, got '─' border normal
+row 25 col 68: want ' ' fg normal, got '─' border normal
+row 25 col 69: want ' ' fg normal, got '─' border normal
+row 25 col 70: want ' ' fg normal, got '─' border normal
+row 25 col 71: want ' ' fg normal, got '─' border normal
+row 25 col 72: want ' ' fg normal, got '─' border normal
+row 25 col 73: want ' ' fg normal, got '─' border normal
+row 25 col 74: want ' ' fg normal, got '─' border normal
+row 25 col 75: want ' ' fg normal, got '─' border normal
+row 25 col 76: want ' ' fg normal, got '─' border normal
+row 25 col 77: want ' ' fg normal, got '─' border normal
+row 25 col 78: want '│' border normal, got '─' border normal
+row 25 col 79: want ' ' fg normal, got '─' border normal
+row 25 col 80: want '│' border normal, got '─' border normal
+row 25 col 81: want ' ' fg normal, got '─' border normal
+row 25 col 82: want ' ' fg normal, got '─' border normal
+row 25 col 83: want ' ' fg normal, got '─' border normal
+row 25 col 84: want ' ' fg normal, got '─' border normal
+row 25 col 85: want ' ' fg normal, got '─' border normal
+row 25 col 86: want ' ' fg normal, got '─' border normal
+row 25 col 87: want ' ' fg normal, got '─' border normal
+row 25 col 88: want ' ' fg normal, got '─' border normal
+row 25 col 89: want ' ' fg normal, got '─' border normal
+row 25 col 90: want ' ' fg normal, got '─' border normal
+row 25 col 91: want ' ' fg normal, got '╯' border normal
+row 25 col 117: want '│' border normal, got ' ' fg normal
+row 26 col 2: want '┃' accent normal, got ' ' fg normal
+row 26 col 39: want '┃' accent normal, got ' ' fg normal
+row 26 col 41: want '│' border normal, got ' ' fg normal
+row 26 col 78: want '│' border normal, got ' ' fg normal
+row 26 col 80: want '│' border normal, got ' ' fg normal
+row 26 col 117: want '│' border normal, got ' ' fg normal
+row 27 col 2: want '┃' accent normal, got ' ' fg normal
+row 27 col 4: want 'h' dim normal, got ' ' fg normal
+row 27 col 5: want ' ' dim normal, got ' ' fg normal
+row 27 col 6: want 's' dim normal, got ' ' fg normal
+row 27 col 7: want 'h' dim normal, got ' ' fg normal
+row 27 col 8: want 'o' dim normal, got ' ' fg normal
+row 27 col 9: want 'w' dim normal, got ' ' fg normal
+row 27 col 10: want 's' dim normal, got ' ' fg normal
+row 27 col 11: want ' ' dim normal, got ' ' fg normal
+row 27 col 12: want '1' dim normal, got ' ' fg normal
+row 27 col 13: want ' ' dim normal, got ' ' fg normal
+row 27 col 14: want 's' dim normal, got ' ' fg normal
+row 27 col 15: want 't' dim normal, got ' ' fg normal
+row 27 col 16: want 'o' dim normal, got ' ' fg normal
+row 27 col 17: want 'p' dim normal, got ' ' fg normal
+row 27 col 18: want 'p' dim normal, got ' ' fg normal
+row 27 col 19: want 'e' dim normal, got ' ' fg normal
+row 27 col 20: want 'd' dim normal, got ' ' fg normal
+row 27 col 39: want '┃' accent normal, got ' ' fg normal
+row 27 col 41: want '│' border normal, got ' ' fg normal
+row 27 col 78: want '│' border normal, got ' ' fg normal
+row 27 col 80: want '│' border normal, got ' ' fg normal
+row 27 col 117: want '│' border normal, got ' ' fg normal
+row 28 col 2: want '┗' accent normal, got ' ' fg normal
+row 28 col 3: want '━' accent normal, got ' ' fg normal
+row 28 col 4: want '━' accent normal, got ' ' fg normal
+row 28 col 5: want '━' accent normal, got ' ' fg normal
+row 28 col 6: want '━' accent normal, got ' ' fg normal
+row 28 col 7: want '━' accent normal, got ' ' fg normal
+row 28 col 8: want '━' accent normal, got ' ' fg normal
+row 28 col 9: want '━' accent normal, got ' ' fg normal
+row 28 col 10: want '━' accent normal, got ' ' fg normal
+row 28 col 11: want '━' accent normal, got ' ' fg normal
+row 28 col 12: want '━' accent normal, got ' ' fg normal
+row 28 col 13: want '━' accent normal, got ' ' fg normal
+row 28 col 14: want '━' accent normal, got ' ' fg normal
+row 28 col 15: want '━' accent normal, got ' ' fg normal
+row 28 col 16: want '━' accent normal, got ' ' fg normal
+row 28 col 17: want '━' accent normal, got ' ' fg normal
+row 28 col 18: want '━' accent normal, got ' ' fg normal
+row 28 col 19: want '━' accent normal, got ' ' fg normal
+row 28 col 20: want '━' accent normal, got ' ' fg normal
+row 28 col 21: want '━' accent normal, got ' ' fg normal
+row 28 col 22: want '━' accent normal, got ' ' fg normal
+row 28 col 23: want '━' accent normal, got ' ' fg normal
+row 28 col 24: want '━' accent normal, got ' ' fg normal
+row 28 col 25: want '━' accent normal, got ' ' fg normal
+row 28 col 26: want '━' accent normal, got ' ' fg normal
+row 28 col 27: want '━' accent normal, got ' ' fg normal
+row 28 col 28: want '━' accent normal, got ' ' fg normal
+row 28 col 29: want '━' accent normal, got ' ' fg normal
+row 28 col 30: want '━' accent normal, got ' ' fg normal
+row 28 col 31: want '━' accent normal, got ' ' fg normal
+row 28 col 32: want '━' accent normal, got ' ' fg normal
+row 28 col 33: want '━' accent normal, got ' ' fg normal
+row 28 col 34: want '━' accent normal, got ' ' fg normal
+row 28 col 35: want '━' accent normal, got ' ' fg normal
+row 28 col 36: want '━' accent normal, got ' ' fg normal
+row 28 col 37: want '━' accent normal, got ' ' fg normal
+row 28 col 38: want '━' accent normal, got ' ' fg normal
+row 28 col 39: want '┛' accent normal, got ' ' fg normal
+row 28 col 41: want '╰' border normal, got ' ' fg normal
+row 28 col 42: want '─' border normal, got ' ' fg normal
+row 28 col 43: want '─' border normal, got ' ' fg normal
+row 28 col 44: want '─' border normal, got ' ' fg normal
+row 28 col 45: want '─' border normal, got ' ' fg normal
+row 28 col 46: want '─' border normal, got ' ' fg normal
+row 28 col 47: want '─' border normal, got ' ' fg normal
+row 28 col 48: want '─' border normal, got ' ' fg normal
+row 28 col 49: want '─' border normal, got ' ' fg normal
+row 28 col 50: want '─' border normal, got ' ' fg normal
+row 28 col 51: want '─' border normal, got ' ' fg normal
+row 28 col 52: want '─' border normal, got ' ' fg normal
+row 28 col 53: want '─' border normal, got ' ' fg normal
+row 28 col 54: want '─' border normal, got ' ' fg normal
+row 28 col 55: want '─' border normal, got ' ' fg normal
+row 28 col 56: want '─' border normal, got ' ' fg normal
+row 28 col 57: want '─' border normal, got ' ' fg normal
+row 28 col 58: want '─' border normal, got ' ' fg normal
+row 28 col 59: want '─' border normal, got ' ' fg normal
+row 28 col 60: want '─' border normal, got ' ' fg normal
+row 28 col 61: want '─' border normal, got ' ' fg normal
+row 28 col 62: want '─' border normal, got ' ' fg normal
+row 28 col 63: want '─' border normal, got ' ' fg normal
+row 28 col 64: want '─' border normal, got ' ' fg normal
+row 28 col 65: want '─' border normal, got ' ' fg normal
+row 28 col 66: want '─' border normal, got ' ' fg normal
+row 28 col 67: want '─' border normal, got ' ' fg normal
+row 28 col 68: want '─' border normal, got ' ' fg normal
+row 28 col 69: want '─' border normal, got ' ' fg normal
+row 28 col 70: want '─' border normal, got ' ' fg normal
+row 28 col 71: want '─' border normal, got ' ' fg normal
+row 28 col 72: want '─' border normal, got ' ' fg normal
+row 28 col 73: want '─' border normal, got ' ' fg normal
+row 28 col 74: want '─' border normal, got ' ' fg normal
+row 28 col 75: want '─' border normal, got ' ' fg normal
+row 28 col 76: want '─' border normal, got ' ' fg normal
+row 28 col 77: want '─' border normal, got ' ' fg normal
+row 28 col 78: want '╯' border normal, got ' ' fg normal
+row 28 col 80: want '╰' border normal, got ' ' fg normal
+row 28 col 81: want '─' border normal, got ' ' fg normal
+row 28 col 82: want '─' border normal, got ' ' fg normal
+row 28 col 83: want '─' border normal, got ' ' fg normal
+row 28 col 84: want '─' border normal, got ' ' fg normal
+row 28 col 85: want '─' border normal, got ' ' fg normal
+row 28 col 86: want '─' border normal, got ' ' fg normal
+row 28 col 87: want '─' border normal, got ' ' fg normal
+row 28 col 88: want '─' border normal, got ' ' fg normal
+row 28 col 89: want '─' border normal, got ' ' fg normal
+row 28 col 90: want '─' border normal, got ' ' fg normal
+row 28 col 91: want '─' border normal, got ' ' fg normal
+row 28 col 92: want '─' border normal, got ' ' fg normal
+row 28 col 93: want '─' border normal, got ' ' fg normal
+row 28 col 94: want '─' border normal, got ' ' fg normal
+row 28 col 95: want '─' border normal, got ' ' fg normal
+row 28 col 96: want '─' border normal, got ' ' fg normal
+row 28 col 97: want '─' border normal, got ' ' fg normal
+row 28 col 98: want '─' border normal, got ' ' fg normal
+row 28 col 99: want '─' border normal, got ' ' fg normal
+row 28 col 100: want '─' border normal, got ' ' fg normal
+row 28 col 101: want '─' border normal, got ' ' fg normal
+row 28 col 102: want '─' border normal, got ' ' fg normal
+row 28 col 103: want '─' border normal, got ' ' fg normal
+row 28 col 104: want '─' border normal, got ' ' fg normal
+row 28 col 105: want '─' border normal, got ' ' fg normal
+row 28 col 106: want '─' border normal, got ' ' fg normal
+row 28 col 107: want '─' border normal, got ' ' fg normal
+row 28 col 108: want '─' border normal, got ' ' fg normal
+row 28 col 109: want '─' border normal, got ' ' fg normal
+row 28 col 110: want '─' border normal, got ' ' fg normal
+row 28 col 111: want '─' border normal, got ' ' fg normal
+row 28 col 112: want '─' border normal, got ' ' fg normal
+row 28 col 113: want '─' border normal, got ' ' fg normal
+row 28 col 114: want '─' border normal, got ' ' fg normal
+row 28 col 115: want '─' border normal, got ' ' fg normal
+row 28 col 116: want '─' border normal, got ' ' fg normal
+row 28 col 117: want '╯' border normal, got ' ' fg normal
+row 39 col 10: want '→' dim normal, got '↑' dim normal
+row 39 col 11: want ' ' dim normal, got '↓' dim normal
+row 39 col 12: want 's' dim normal, got '→' dim normal
+row 39 col 13: want 'e' dim normal, got ' ' dim normal
+row 39 col 14: want 'l' dim normal, got 'm' dim normal
+row 39 col 15: want 'e' dim normal, got 'o' dim normal
+row 39 col 16: want 'c' dim normal, got 'v' dim normal
+row 39 col 17: want 't' dim normal, got 'e' dim normal
+row 39 col 19: want 'p' dim normal, got '·' dim normal
+row 39 col 20: want 'o' dim normal, got ' ' dim normal
+row 39 col 21: want 'd' dim normal, got 'e' dim normal
+row 39 col 22: want ' ' dim normal, got 'n' dim normal
+row 39 col 23: want '·' dim normal, got 't' dim normal
+row 39 col 24: want ' ' dim normal, got 'e' dim normal
+row 39 col 25: want '↑' dim normal, got 'r' dim normal
+row 39 col 27: want 'c' dim normal, got 'd' dim normal
+row 39 col 28: want 'o' dim normal, got 'e' dim normal
+row 39 col 29: want 'o' dim normal, got 't' dim normal
+row 39 col 30: want 'r' dim normal, got 'a' dim normal
+row 39 col 31: want 'd' dim normal, got 'i' dim normal
+row 39 col 32: want 'i' dim normal, got 'l' dim normal
+row 39 col 33: want 'n' dim normal, got 's' dim normal
+row 39 col 34: want 'a' dim normal, got ' ' dim normal
+row 39 col 35: want 't' dim normal, got '·' dim normal
+row 39 col 36: want 'o' dim normal, got ' ' dim normal
+row 39 col 37: want 'r' dim normal, got 'a' dim normal
+row 39 col 39: want '·' dim normal, got 'a' dim normal
+row 39 col 40: want ' ' dim normal, got 't' dim normal
+row 39 col 41: want 'e' dim normal, got 't' dim normal
+row 39 col 42: want 'n' dim normal, got 'a' dim normal
+row 39 col 43: want 't' dim normal, got 'c' dim normal
+row 39 col 44: want 'e' dim normal, got 'h' dim normal
+row 39 col 45: want 'r' dim normal, got ' ' dim normal
+row 39 col 46: want ' ' dim normal, got '·' dim normal
+row 39 col 47: want 'o' dim normal, got ' ' dim normal
+row 39 col 49: want 'e' dim normal, got ' ' dim normal
+row 39 col 50: want 'n' dim normal, got 'p' dim normal
+row 39 col 51: want ' ' dim normal, got 'e' dim normal
+row 39 col 52: want 'p' dim normal, got 'e' dim normal
+row 39 col 53: want 'o' dim normal, got 'k' dim normal
+row 39 col 54: want 'd' dim normal, got ' ' dim normal
+row 39 col 55: want ' ' dim normal, got '·' dim normal
+row 39 col 56: want '·' dim normal, got ' ' dim normal
+row 39 col 57: want ' ' dim normal, got 't' dim normal
+row 39 col 58: want 'h' dim normal, got ' ' dim normal
+row 39 col 59: want ' ' dim normal, got 't' dim normal
+row 39 col 60: want 's' dim normal, got 'a' dim normal
+row 39 col 61: want 't' dim normal, got 's' dim normal
+row 39 col 62: want 'o' dim normal, got 'k' dim normal
+row 39 col 63: want 'p' dim normal, got ' ' dim normal
+row 39 col 64: want 'p' dim normal, got '·' dim normal
+row 39 col 65: want 'e' dim normal, got ' ' dim normal
+row 39 col 66: want 'd' dim normal, got 'e' dim normal
+row 39 col 67: want ' ' dim normal, got 's' dim normal
+row 39 col 68: want '·' dim normal, got 'c' dim normal
+row 39 col 70: want '?' dim normal, got 'p' dim normal
+row 39 col 71: want ' ' dim normal, got 'o' dim normal
+row 39 col 72: want 'h' dim normal, got 'd' dim normal
+row 39 col 73: want 'e' dim normal, got 's' dim normal
+row 39 col 74: want 'l' dim normal, got ' ' dim normal
+row 39 col 75: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want ' ' dim normal, got 'h' dim normal
+row 39 col 79: want ' ' dim normal, got 's' dim normal
+row 39 col 80: want ' ' dim normal, got 't' dim normal
+row 39 col 81: want ' ' dim normal, got 'o' dim normal
+row 39 col 82: want ' ' dim normal, got 'p' dim normal
+row 39 col 83: want ' ' dim normal, got 'p' dim normal
+row 39 col 84: want ' ' dim normal, got 'e' dim normal
+row 39 col 85: want ' ' dim normal, got 'd' dim normal
+row 39 col 87: want ' ' dim normal, got '·' dim normal
+row 39 col 89: want ' ' dim normal, got '?' dim normal
+row 39 col 91: want ' ' dim normal, got 'h' dim normal
+row 39 col 92: want ' ' dim normal, got 'e' dim normal
+row 39 col 93: want ' ' dim normal, got 'l' dim normal
+row 39 col 94: want ' ' dim normal, got 'p' dim normal

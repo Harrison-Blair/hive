@@ -1,0 +1,15 @@
+CompactLiveOverview: staged and spec PNGs are pixel-equal
+CompactLivePod: staged and spec PNGs are pixel-equal
+LiveOverview: staged and spec PNGs are pixel-equal
+LivePod: staged and spec PNGs are pixel-equal
+AgentDetails: staged and spec PNGs are pixel-equal
+AgentDetailsGeneral: staged and spec PNGs are pixel-equal
+AgentsCoordinatorChild: staged and spec PNGs are pixel-equal
+AgentsHiddenParent: staged and spec PNGs are pixel-equal
+AgentsHome: staged and spec PNGs are pixel-equal
+AgentsMany: staged and spec PNGs are pixel-equal
+AgentsNested: staged and spec PNGs are pixel-equal
+CompactAgents: staged and spec PNGs are pixel-equal
+CompactAgentsHome: staged and spec PNGs are pixel-equal
+Help: staged and spec PNGs are pixel-equal
+Main: staged and spec PNGs are pixel-equal

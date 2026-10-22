@@ -1,0 +1,16 @@
+{
+  "pane_id": "wVS:p2",
+  "workspace_id": "wVS",
+  "tab_id": "wVS:t2",
+  "source": "visible",
+  "format": "ansi",
+  "revision": 0,
+  "truncated": false,
+  "scroll": {
+    "max_offset_from_bottom": 0,
+    "offset_from_bottom": 0,
+    "viewport_rows": 57
+  },
+  "captured_at": 1792709721.9245088,
+  "stable_reads_500ms": true
+}

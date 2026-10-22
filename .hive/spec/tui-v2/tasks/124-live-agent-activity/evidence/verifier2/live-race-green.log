@@ -1,0 +1,4 @@
+$ go test -race ./internal/tui -run ^TestLive -count=50
+ok  	github.com/Harrison-Blair/hive/internal/tui	30.284s
+
+exit: 0

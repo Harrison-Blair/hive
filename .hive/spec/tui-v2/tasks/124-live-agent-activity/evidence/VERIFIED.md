@@ -1,173 +1,174 @@
 # Verification — 124-live-agent-activity
 
-Date: 2026-10-22. Agent: `t124-verifier-1`.
-Implementation: `e934afdf`. Base: `26ff49cd` (`dev`).
-Verdict: **fail**. V3 has an intermittent arrow-direction failure.
+Date: 2026-10-22. Verifier: `t124-verifier-2`.
+Implementation: `ff154fd0`. Base: `26ff49cd` (`dev` and `origin/dev`).
+Verdict: **pass**.
 
-All paths below are relative to this evidence folder. The verifier did not
-change an implementation file, a worker evidence file, or the tracker.
+The verifier repeated each item after the fix. The previous failure at
+`ab1b7fab` is resolved. Its captures and logs remain in `verifier/`.
+The new evidence is in `verifier2/`. Paths below refer to that folder.
+The verifier changed no implementation file, worker evidence file, or tracker.
 
 ## Items
 
 | Item | Result | Command and observation |
 | --- | --- | --- |
-| V1 Boards | pass | `cmp` of all 4 Live boards and the 11 approved replacement boards returns 0. Both sources of each board were captured with Firefox. The staged source used the spec copy of `support.js` in a scratch folder. No PNG shows `{{`. See `verifier/board-copies.log` and `verifier/board-pixel-compare.log`. |
-| V2 Grids | pass | `go run ./internal/boardexport/cmd/boardexport -out .hive/tmp/verify124/exported .hive/spec/tui-v2/design`. All 35 exported grids match the committed grids with `cellgrid.Compare`, with no masks. Each of the 11 replacement grids also matches `new-grids/` by `cmp`. The other 20 grids are unchanged from `dev`. See `verifier/grid-compare.log` and `verifier/unchanged-grids.log`. |
-| V3 Tests red and green | fail | All 13 `TestLive*` tests fail on the base. The sender test fails because `from` is absent. The exporter test rejects `┰`. Each passes in the first task-branch run. But `TestLiveSendEventGivesTheReceiverByKey` fails in 13 of 100 repeats, and in 9 of 100 repeats with `-race`. See the finding below and `verifier/*-red.log`, `verifier/*-green.log`, and `verifier/receiver-key*-repeat.log`. |
-| V4 Live check | pass | The executable ran all 15 fixtures with `COLORTERM=truecolor`, `--demo FILE`, and `--size WxH`. Each capture matches its golden grid. The requested keys move selection as specified. A scratch inbox record lights its line after the next refresh and the line is dark at 6.5 seconds. A scratch `agent send` event has `from: worker-alpha`, and its line lights and goes dark. See the live details below. The additional live reproduction of the V3 failure is recorded separately. |
-| V5 Visual alignment | pass | The four Live captures match their grids at 120×40 and 80×24. Each required point passes in these board states. The 11 replacement screen captures also match. The verifier viewed the board and terminal PNGs side by side. See the tables below and `verifier/BOARD.png`, `.ansi`, `.diff.txt`, and `.meta.json`. |
-| V-gate Scope and gate | pass | `git merge dev` reports already up to date. `git diff dev...HEAD --stat` was checked. Changes are within the brief and the later board approval. The five gate commands exit 0. `gofmt -l` and `go mod tidy -diff` print nothing; lint reports `0 issues.`. Full output: `verifier/gate.log`. This single gate pass does not remove the repeated test failure in V3. |
+| V1 Boards | pass | `cmp` gives no difference for the 4 staged Live boards and the 11 approved replacement boards. Firefox captured each staged board and each spec copy with a new profile. Each pair is pixel-equal. No capture shows `{{`. See `board-copies.log` and `board-pixel-compare.log`. |
+| V2 Grids | pass | `go run ./internal/boardexport/cmd/boardexport -out .hive/tmp/verify124b/exported .hive/spec/tui-v2/design`. All 35 exported grids match the committed grids through `cellgrid.Compare`, without masks. All 11 replacement grids match `new-grids/` through `cmp`. The other 20 grids remain equal to `dev`. See `export.log`, `grid-compare.log`, and `unchanged-grids.log`. |
+| V3 Tests red and green | pass | The 13 initial `TestLive*` tests fail on `dev` for the missing behavior. The sender test fails because `from` is absent. The exporter test rejects `┰`. Each passes on the task branch. The new grouping test fails on `ab1b7fab` and passes on `ff154fd0`. Repeated runs also pass. See the test table below. |
+| V4 Live check | pass | All 15 demo screens match their grids. The requested keys move selection as specified. A scratch inbox record lights its line, which is dark after 6.2 seconds. A scratch `agent send` event has `from: worker-alpha`. Its line lights and is dark after 6.5 seconds. See the live details below. |
+| V5 Visual alignment | pass | The four Live screens match their grids at 120×40 and 80×24. The 11 replacement screens also match. The verifier viewed the board and screen PNGs. All 15 pairs are pixel-equal with the same HTML font and cell styling. See `screen-pixel-compare.log`, each `BOARD.png`, and each `BOARD.diff.txt`. |
+| V-gate Diff scope and gate | pass | `git merge dev` reports already up to date. The diff stays within the brief and the later board approval. All five gate commands exit 0. `gofmt -l` and `go mod tidy -diff` print nothing. Lint reports `0 issues.`. See `merge-dev.log`, `scope-stat.txt`, and the full output in `gate.log`. |
 
-## Finding: an older message can reverse the newest message arrow
+## V3: repeated tests
 
-**AC7, AC10, and decision 67.** The newest message on a line must give the
-arrow. A record key and an agent name can name the same card.
+The verifier extracted `git archive dev` into a scratch folder.
+It copied the new Live tests, sender tests, exporter tests, and Live fixtures there.
+A test-only declaration supplied the absent `agentsLitMsg` type.
+No feature implementation entered that base run.
+The grouping test ran separately against `ab1b7fab` with the current test file.
 
-Reproduction on the unmodified task branch:
+| Command | Base or broken result | Task branch result | Evidence |
+| --- | --- | --- | --- |
+| `go test ./internal/tui -run '^TestLive' -count=1 -v` | All 13 initial tests fail on `dev`. | All 14 tests pass, including the grouping test. | `live-red.log`, `live-green.log` |
+| `go test ./internal/agent -run '^TestSendLogsTheSender$' -count=1 -v` | The matching-pane case fails. The two absence cases pass. | All three cases pass. | `sender-red.log`, `sender-green.log` |
+| `go test ./internal/boardexport -run '^TestCheckAcceptsTheLiveBoards$' -count=1 -v` | The symbol check fails on `dev`. | pass | `export-red.log`, `export-green.log` |
+| `go test ./internal/tui -run '^TestLiveMessagesGroupByCard$' -count=20 -v` | All 20 runs fail on `ab1b7fab`. Both cases return two messages. | All 20 runs pass. | `group-red.log`, `group-green.log` |
+| `go test ./internal/tui -run '^TestLiveSendEventGivesTheReceiverByKey$' -count=200` | 31 of 200 runs fail on `ab1b7fab`. | All 500 runs pass with `-count=500`. | `receiver-red.log`, `receiver-green.log` |
+| `go test -race ./internal/tui -run '^TestLiveSendEventGivesTheReceiverByKey$' -count=200` | The red run above proves the wrong arrow. | All 200 runs pass. | `receiver-race-green.log` |
+| `go test -race ./internal/tui -run '^TestLive' -count=50` | The base run above proves the missing behavior. | All 50 runs pass. | `live-race-green.log` |
+| `go test ./internal/tui/component -count=1 -v` | Both new joint tests fail with test-only functions that return no glyph or arms. | All component tests pass. | `component-stub-red.log`, `component-green.log` |
+
+The grid comparator also rejects LivePod as an expected LiveOverview grid.
+Its differing cells are in `comparator-red.log`.
+
+The fixed-clock tests check t, t+4s, t+5s, and a new message at t+3s.
+They check literal glyphs and tokens, including tree paths and lit rails.
+They also check selection, the coordinator, the single-project case, merged drops,
+unknown senders, and footers at both widths.
+The full gate includes the golden checks for all 35 boards.
+
+## V4: executable and keys
+
+Build command: `go build -o .hive/tmp/verify124b/hive .`.
+Server: herdr 0.9.5, protocol 22 (`herdr-ping.json`).
+Owned demo pane: `wVS:p2`, with 57 visible rows and sufficient width.
+Each fixture ran with this command:
 
 ```sh
-go test ./internal/tui -run '^TestLiveSendEventGivesTheReceiverByKey$' -count=100
-go test -race ./internal/tui -run '^TestLiveSendEventGivesTheReceiverByKey$' -count=100
+TERM=vt100 COLORTERM=truecolor HIVE_NO_STARTUP=1 .hive/tmp/verify124b/hive --demo FILE --size WxH
 ```
 
-Both commands exit 1. This is the worker's existing test.
-
-- The fixture has an older message from `manager-hive` to `t6-worker-1`.
-- The newer send event is from `t6-worker-1` to `manager-hive-g2`.
-- Both destinations name the same manager card.
-- Expected: `▲` in `info` at column 60, row 16; `┃` in `info` at column 75,
-  row 18. Coordinates are zero-based.
-- Intermittent result: `┃` at (60,16) and `▼` at (75,18). The arrow points
-  to the worker, which was the receiver of the older message.
-
-Cause: `internal/tui/agents_screen.go:1161` (`litMessages`) groups messages
-by their raw sender and receiver strings. It does not first resolve these
-strings to card keys. Thus these two messages remain in separate map
-entries. `lightLines` at line 1285 draws both paths in map iteration order.
-`graphKey` resolves their names later, after the newest-message choice.
-The older path can be drawn last.
-
-The verifier also reproduced the fault in the actual executable. Fixture:
-`verifier/reply-key.fixture.json`. It adds the newer event at
-`14:21:59.5Z` to LivePod. The fixed clock is `14:22:00Z`.
-
-```sh
-COLORTERM=truecolor .hive/tmp/verify124/hive --demo .hive/spec/tui-v2/tasks/124-live-agent-activity/evidence/verifier/reply-key.fixture.json --size 120x40
-```
-
-The seventh fresh run showed the wrong arrow. Evidence:
-`verifier/reply-key-live.ansi`, `.png`, `.meta.json`, and `.diff.txt`.
-The expected grid is `verifier/reply-key.expected.grid`: LivePod with only
-the two literal arrow cells above changed. The live comparison reports
-exactly those two differing cells. No implementation fix was made.
-
-## Red runs and comparison checks
-
-The verifier extracted `git archive dev` into a scratch folder. The new
-live test file and the updated sender and exporter test files were copied
-there. The four Live fixtures and grids were also copied there. A test-only
-`type agentsLitMsg struct{}` declaration let the base compile. No feature
-code was added to the base. All 13 live tests fail for missing behavior.
-The no-record and outside-herdr sender subtests already pass on the base;
-the matching-pane subtest fails, as expected.
-
-Commands: `go test ./internal/tui -run '^TestLive' -count=1 -v`,
-`go test ./internal/agent -run '^TestSendLogsTheSender$' -count=1 -v`, and
-`go test ./internal/boardexport -run '^TestCheckAcceptsTheLiveBoards$' -count=1 -v`.
-The same commands were run on the task branch. Component joint tests also
-pass (`verifier/component-green.log`). The grid comparator was checked
-against a deliberately wrong grid; it reports differences
-(`verifier/comparator-red.log`).
-
-## Live details
-
-The first owned pane in the normal session had only 119 columns. Its reads
-were rejected as evidence. The verifier then made the isolated herdr
-session `verify124-scratch`, with an owned 180×60 client PTY. The demo pane
-had enough space for each board. Server: herdr 0.9.5, protocol 22.
-
-Each demo read uses `pane.read`, `source: visible`, `format: ansi`. Two reads
-500 ms apart were equal. Each read has `truncated: false` and scroll offset
-0. The converter crops the top-left board cells and compares with
-`cellgrid.Compare`. Only invisible styles of space cells are ignored, as
-the spec permits. All non-space cells retain glyph, token, and bold checks.
+Each capture used `pane.read`, `source: visible`, `format: ansi`.
+Two reads 500 ms apart gave equal text.
+Every read has `truncated: false` and scroll offset 0.
+The converter crops the top-left board cells and uses `cellgrid.Compare`.
+The live comparison ignores only invisible styles where both cells are spaces,
+as the spec permits. Model golden checks compare each cell fully.
 No mask was added. Metadata is beside each capture.
 
-The four new boards, all 10 AC11 boards, and Help match their grids.
-`verifier/capture-results.json` lists each result. Each demo quit with two
-`ctrl+c` presses.
+| Screens | Size | Result |
+| --- | --- | --- |
+| LiveOverview, LivePod | 120×40 | 0 differing cells each |
+| CompactLiveOverview, CompactLivePod | 80×24 | 0 differing cells each |
+| Main, AgentsMany, AgentDetails, AgentsHome, AgentsNested, AgentsHiddenParent, AgentsCoordinatorChild, AgentDetailsGeneral, Help | 120×40 | 0 differing cells each |
+| CompactAgents, CompactAgentsHome | 80×24 | 0 differing cells each |
 
-| Key in LiveOverview | Observed result |
-| --- | --- |
-| `→` | example-api pod has the heavy border |
-| `↑` | coordinator card has the heavy border |
-| `↓` | example-api pod is selected again |
-| `enter` | one-pod view of example-api; footer has `esc pods` |
-| `esc` | overview; example-api is still selected |
+The previous live regression fixture also ran 30 times in fresh processes.
+All 30 captures match `verifier/reply-key.expected.grid`.
+The newest reply gives `▲` at (60,16) and `┃` at (75,18).
+See `live-runs.log`, the 30 `reply-key-NN.diff.txt` files,
+and the final capture `reply-key-30.ansi` and `.png`.
 
-Captures: `verifier/key1-right.ansi` through `verifier/key5-esc.ansi`, with
-plain-text copies and metadata.
+| Key in LiveOverview | Observation | Result |
+| --- | --- | --- |
+| `→` | The example-api pod has the heavy border. | pass |
+| `↑` | The coordinator card has the heavy border. Its lit joint remains `info`. | pass |
+| `↓` | The example-api pod is selected again. | pass |
+| `enter` | The example-api one-pod view opens. The footer has `esc pods`. | pass |
+| `esc` | The overview opens with example-api still selected. | pass |
 
-Normal mode used `HIVE_HOME=.hive/tmp/verify124/home` and
-`HIVE_NO_STARTUP=1`. No inbox record or test prompt was sent in the real
-home. A new inbox record was not yet visible in a read before the next
-2-second refresh. It was lit at 2.5 and 3.5 seconds, and dark at 6.5 seconds.
-The send event was lit at 1.5 seconds and dark after another 6 seconds.
-`verifier/normal-points.log` checks 20 literal glyph/token cells in these
-four captures.
+Captures: `key1-right.ansi` through `key5-esc.ansi`, with plain text and metadata.
+Each demo quit with two `ctrl+c` presses.
 
-The scratch send command returned `agent_not_ready`: the receiver was an
-owned input-loop process, with no live agent harness. No prompt was
-delivered. The log event and the lit line still prove the specified AC9
-field and event-loader behavior. Successful harness delivery is not
-claimed. See `verifier/normal-send-command.log` and
-`verifier/normal-send-event.json`.
+## V4: normal mode in a scratch home
 
-## Visual points
+Home: `.hive/tmp/verify124b/home`.
+Normal TUI pane: `wVS:p3`. Sender pane: `wVS:p4`.
+The normal TUI used `HIVE_HOME` for this home and `HIVE_NO_STARTUP=1`.
+It ran without a demo fixture. No Chat input was opened.
+No test inbox record or test prompt entered the real home.
 
-These results apply to the approved board states. The reply-key regression
-above fails the arrow rule in an additional message state.
+1. The verifier wrote an inbox record from coordinator to manager-beta.
+   The immediate read preceded the next refresh and still showed the dark line.
+   At 2.503 seconds, the path is heavy `info` with `▶` toward beta.
+   At 6.205 seconds, the path is light `border` again.
+2. The verifier ran `agent send` from the pane of the worker-alpha record.
+   The event has `from: worker-alpha` and `agent_id: manager-alpha-g1`.
+   At 2.493 seconds, the path is heavy `info` with `▲` toward manager-alpha.
+   At 6.495 seconds, the path is light again.
+
+`normal-points.log` checks 22 literal glyph/token cells in these captures.
+The inbox record and send event are saved as JSON.
+The receiver pane held an owned shell, with no harness ready for a prompt.
+The send command therefore failed and marked its scratch record unresolved.
+The event and line checks pass. Successful harness delivery is not claimed.
+See `normal-send-command.log` for the command result.
+
+## V5: visual points
+
+The verifier captured all 15 boards and screens again.
+Board PNGs used new Firefox profiles under `.hive/tmp/verify124b/`.
+The staged copies used the spec `support.js` in a scratch folder.
+Screen PNGs came from the ANSI captures, with the board font and cell styling.
+`screen-pixel-compare.log` records pixel equality for all 15 pairs.
+The screen PNGs remain in `verifier2/`. The board PNGs were removed after the check.
 
 | Point | 120×40 | 80×24 |
 | --- | --- | --- |
-| Panel, pod, card borders, and corners line up | pass | pass |
-| Coordinator line meets the pod and manager joints without a gap | pass | pass |
-| Lit path is heavy, `info`, continuous, and has one receiver arrow | pass | pass |
-| Selected pod or card has a heavy `accent` border | pass | pass |
-| Legend and footer agree with the board | pass | pass |
+| Panel, pod, and card borders and corners line up. | pass | pass |
+| Coordinator lines meet the pod and manager joints without gaps. | pass | pass |
+| Lit paths are heavy, continuous, and `info`, with one receiver arrow. | pass | pass |
+| Selected pods or cards have heavy `accent` borders. | pass | pass |
+| Legend and footer text agree with the boards. | pass | pass |
 
-| Board element | State without colour | Result | Cause or decision |
+| Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
-| Header | coordinator `● working`; supervisor `● live`; needs-you count | matches | fixed fixture data |
-| Tab bar and active rule | `1 Agents`, underline `━` | matches | frame cells match |
-| Graph panel | title, rounded border | matches | overview or pod title |
-| Coordinator card | name and `●`; heavy border when selected | matches | decisions 60 and 65 |
-| Coordinator bus and pod drops | `┬`, `┴`, `┼`; mixed joints when lit | matches | decision 65 |
-| Pod selection | heavy `┏━┓┃┗┛` border | matches | decision 62 |
-| Agent cards | `● working`, `◐ idle`, `○ stopped` | matches | glyph and state word remain |
-| Tree and rail | connecting box glyphs | matches | all 15 grid comparisons pass |
-| Lit path | heavy `━┃` and `◀` or `▼` | matches | four Live board states |
-| Message legend | `━ ▶ message, lit 5s` | matches | present at 120; absent at 80 |
-| Stopped count | `h shows` or `h hides` and count | matches | plain text |
-| Page and scroll marks | edge text; `━` and `┃` | matches | compact and many-pod cases |
-| Footer | key words and arrow glyphs | matches | decision 70 |
-| Details popup | title, field names, ACTIONS, RECENT | matches | both details boards |
-| Help overlay | key words and descriptions | overridden | manager inbox 9 approves the replacement Help board |
+| Header | coordinator `● working`, supervisor `● live`, needs-you count | matches | Fixed fixture data. |
+| Tab bar | `1 Agents` and `━` underline | matches | Frame cells agree. |
+| Graph panel | Rounded border and project title | matches | Overview or one-pod title. |
+| Coordinator card | Name, `●`, and state word | matches | Decisions 60 and 65. |
+| Coordinator selection | Heavy card border | matches | Key capture `key2-up`. |
+| Coordinator bus and pod drops | `┬`, `┴`, `┼`, and mixed lit joints | matches | Decision 65. |
+| Selected pod | Heavy `┏━┓┃┗┛` border | matches | Decision 62. |
+| Manager and child cards | `● working`, `◐ idle`, `○ stopped` | matches | Glyphs and words remain without colour. |
+| Tree and rail | Connected box glyphs | matches | All 15 grid checks pass. |
+| Lit path | Heavy line and `◀`, `▼`, or `▲` receiver arrow | matches | Live boards and the repeated reply case. |
+| Selected agent | Heavy card border and bold name | matches | One-pod views. |
+| Goal and wave | Goal ID and wave word | matches | Fixed fixture data. |
+| Stopped count | `h shows` or `h hides` and count | matches | Plain text. |
+| Page and scroll marks | Edge text and line glyphs | matches | Compact and many-pod cases. |
+| Legend | `━ ▶ message, lit 5s` | matches | Present at 120 columns. |
+| Footer | Key glyphs and words | matches | Decision 70. |
+| Details popup | Named fields, ACTIONS, and RECENT | matches | Both details boards. |
+| Help overlay | Key glyphs and descriptions | overridden | Manager inbox 9 approves the replacement Help board. It matches the new grid. |
 
-The verifier checked plain-text captures with colour removed. The four
-Live PNGs also have `-no-colour.png` copies. Each state retains its glyph,
-word, or border weight. Colour is not its only signal.
+The four Live screens also have `-no-colour.png` captures.
+The verifier checked their plain text with colour removed.
+Each state retains a word, glyph, or border weight.
 
 ## Scope and cleanup
 
-Manager inbox 9 (`verifier/board-approval.json`) approves the 11 replacement
-boards, including Help, and both layout exceptions. This decision explains
-the extra Help files and README decision 73. The other 20 grids do not
-change. `tui.go` schedules line-expiry redraws. `refresh.go` watches send log
-events. These edits are within the conditional source list.
+Manager inbox 9 approves all 11 replacement boards and both layout exceptions.
+Its record remains in `verifier/board-approval.json`.
+This approval explains Help and spec decision 73.
+Decisions 62 to 72 are present. Decision 14 says that decision 65 replaces it.
+The other 20 grids do not change.
+`tui.go` schedules line-expiry redraws. `refresh.go` watches send log events.
+Both changes fall within the conditional source list.
 
-The verifier removed the scratch home, base copy, exporter output, tools,
-board PNGs, and Firefox profiles after recording the result. All owned demo
-processes, the input loop, the scratch client and server, and the temporary
-normal-session tab were closed. Cleanup was checked. Final captures and
-logs remain in `verifier/`.
+The verifier closed only its panes `wVS:p2`, `wVS:p3`, and `wVS:p4`.
+All three held shells before closure. Only the verifier pane remains in that workspace.
+The verifier removed its scratch home, base copies, tools, exporter output,
+Firefox profiles, board PNGs, and temporary HTML files.
+`cleanup.log` records the check. Final screen captures and logs remain in `verifier2/`.
