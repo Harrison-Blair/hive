@@ -1,0 +1,87 @@
+--- FAIL: TestQueueStopsOnly (0.03s)
+    work_queue_test.go:111: view does not contain "│ ▶ 2-beta ":
+         hive  /tmp/TestQueueStopsOnly2253617407/001         coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals   [Queue]   Tasks                                                                             [ ] switch view   
+        ╭─ queue · demo · 5 tasks · 1 stop ────────────────╮╭─ 1-alpha ────────────────────────────────────────────────────────╮
+        │                                                  ││                                                                  │
+        │ GRANT  Goal grant                                ││ title     Alpha                                                  │
+        │                                                  ││ status    assigned                                               │
+        │ ▶ 1-alpha                             assigned   ││ goal      g1-demo · wave A                                       │
+        │   └▶ 2-beta                           created    ││ grant     Goal grant                                             │
+        │      ! stop: choose a color                      ││ worker    none                                                   │
+        │     └▶ 3-gamma                        created    ││ depends   none                                                   │
+        │                                                  ││                                                                  │
+        │ NO GRANT                                         ││ t open task in Tasks  s show stops only                          │
+        │                                                  ││                                                                  │
+        │   4-free                              created    ││                                                                  │
+        │   82-goals-queue-screens              assigned   ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help                                   
+--- FAIL: TestQueueEmptyData (0.00s)
+    work_queue_test.go:122: view does not contain "│ no stops ":
+         hive  /tmp/TestQueueEmptyData3418584865/001         coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals   [Queue]   Tasks                                                                             [ ] switch view   
+        ╭─ queue · 0 tasks · 0 stops ──────────────────────╮╭─ details ────────────────────────────────────────────────────────╮
+        │                                                  ││                                                                  │
+        │ no tasks                                         ││ no task selected                                                 │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help                                   
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.055s
+FAIL

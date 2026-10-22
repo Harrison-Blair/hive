@@ -366,11 +366,11 @@ func (m *Model) workTasksList(width, height int, focused bool) string {
 	return m.workTasksListModel(focused).View(width, height)
 }
 
-// workTasksDetails renders the details region of the Tasks view: the details
-// of the selected task, or its open file. Below 120 columns the details use
-// the short form of the Compact board, with no blank first line and only the
-// fields status, goal, verifier, and merge.
-func (m *Model) workTasksDetails(width, height int, focused bool, suffix string) string {
+// workTasksDetails gives the title and the lines of the details region of the
+// Tasks view: the details of the selected task, or its open file. Below 120
+// columns the details use the short form of the Compact board, with no blank
+// first line and only the fields status, goal, verifier, and merge.
+func (m *Model) workTasksDetails(width int) (string, []string) {
 	state := &m.tasks
 	inner := max(width-4, 1)
 	wide := m.width >= component.LongFormWidth
@@ -390,9 +390,7 @@ func (m *Model) workTasksDetails(width, height int, focused bool, suffix string)
 		title = item.record.ID
 		lines = taskDetailLines(state.data, item, inner, wide)
 	}
-	body := max(height, component.PanelMinHeight) - 2
-	m.detailsOffset[tabWork] = min(max(m.detailsOffset[tabWork], 0), max(len(lines)-body, 0))
-	return component.Details{Title: title + suffix, Focused: focused, Lines: lines, Offset: m.detailsOffset[tabWork]}.View(width, height)
+	return title, lines
 }
 
 // taskDetailLines gives the details of one task at inner cells: the fields,

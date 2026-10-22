@@ -280,7 +280,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		}, now), nil
 	}
 	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
-		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks)), nil
+		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks), slices.Clone(data.Agents)), nil
 	}
 	m.tasksLoader = func(string) (tasksData, error) {
 		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{

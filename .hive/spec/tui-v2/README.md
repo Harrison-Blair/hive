@@ -207,7 +207,7 @@ The manager made this decision in task `29-frame-layout`:
 
 The worker made these decisions in task `37-screen-work-tasks`:
 
-- Hook: `frameScreen.panels` gives the `list` and the `details` of a view by its name. `back` closes a part of the details on `esc` before `esc` gives the focus to the list. The Tasks view of Work sets this hook. `contentView` uses the hook for each view that has one.
+- Hook: the Tasks view uses the `panels` hook of task `36-screen-work-queue`. The field `back` of `screenPanels` closes a part of the details on `esc`, before `esc` gives the focus to the list.
 - Tasks view: the file `internal/tui/work_tasks.go`. It replaces `task_screen.go`. The list shows all tasks with the columns ID, STATUS, and WAVE. It has no status tabs and no project filter, because decision 23 gives `p` to peek.
 - Details from 120 columns: a blank line, then the fields title, status, goal, worker, verifier, branch, merge, and depends. A value that is not in the records shows `—`. Below 120 columns, the details show the fields status, goal, verifier, and merge, as the Compact board shows.
 - ACCEPTANCE lists the AC rows of the table in `brief.md`. The mark is `✓` in `done` when the last verification is a pass, and `○` in `dim` for each other result. EVIDENCE shows the key line and then the V rows of the table in `VERIFIED.md`. The command column of a V row is 38 cells.
@@ -216,6 +216,16 @@ The worker made these decisions in task `37-screen-work-tasks`:
 - While the details overlay is open below 120 columns, the view row shows the hint `list › details`. It ends 2 cells before the right edge.
 - Component changes: `List.Fill` gives the padding of each cell the style of the cell. `SubTabs.Hint` replaces the view hint.
 - Refresh of the Tasks view watches the agent records and the task folder of each task. The details show the worker status and the files of the task.
+
+The worker made these decisions in task `36-screen-work-queue`:
+
+- Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.
+- Queue list: the list shows each task of each project, also a landed task. The title gives the project when there is one project, the task count, and the stop count.
+- Queue groups: the tasks of a project are in groups by grant. The grant of a task is the grant of its goal, then the grant of its delivery. The group `NO GRANT` is last. With more than one project, each group heading starts with the project. A project with no tasks shows `PROJECT · no tasks`.
+- Queue tree: in a group, a task is below the first task of the group that it depends on. A task in a dependency cycle starts a tree.
+- Queue stop: an open task stops when it has a needs-user text, or when its acting agent has the status `unresolved`. A stop row `! stop: REASON` follows the task row. `s` shows only the stopped tasks, each at depth 0.
+- Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
+- The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
 
 ## Waves
 

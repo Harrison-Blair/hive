@@ -117,8 +117,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		name     string
 		selected string
 		also     []string
+		honey    []string
 		states   []string
-		split    bool
 		model    func(*testing.T) *Model
 	}{
 		{
@@ -149,7 +149,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
+			// The Queue board draws the marker and the task in two runs.
+			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
 				m.goalsQueue.data = goalsQueueData{
@@ -161,7 +162,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Tasks", selected: "selected-task", split: true, states: []string{"assigned"},
+			name: "Tasks", honey: []string{"▶", "selected-task"}, states: []string{"assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 4)
 				// Decision 8: the list panel has 13/30 of the width, so the
@@ -209,13 +210,11 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
-			if tt.split {
-				// User decision 7 of 2026-10-21: the space after ▶ in a
-				// List row is fg, so the marker and the name are two runs.
-				requireHoneyBoldText(t, raw, "▶")
-				requireHoneyBoldText(t, raw, tt.selected)
-			} else {
+			if tt.selected != "" {
 				requireHoneySelection(t, raw, tt.selected)
+			}
+			for _, text := range tt.honey {
+				requireHoneyBoldText(t, raw, text)
 			}
 			for _, selected := range tt.also {
 				requireHoneySelection(t, raw, selected)
