@@ -8,13 +8,13 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+t|╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │
+t|│                                               ╭──────────────────────╮                                               │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 ╭─ keys · ? or esc closes ─────────────────────────────────────────────────────────╮                 │
@@ -110,7 +110,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

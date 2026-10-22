@@ -346,6 +346,8 @@ The boards `LiveOverview`, `LivePod`, `CompactLiveOverview`, and `CompactLivePod
 
 72. The `agent prompt` log event of `hive agent send` has the field `from` with the name of the acting agent. The acting agent is the agent record with a `pane_id` equal to the `HERDR_PANE_ID` of the caller. When no record agrees, the event has no `from` field, and the message lights nothing.
 
+73. The user approved new boards for `Main`, `AgentsMany`, `AgentDetails`, `CompactAgents`, `AgentsHome`, `AgentsNested`, `AgentsHiddenParent`, `AgentsCoordinatorChild`, `CompactAgentsHome`, `AgentDetailsGeneral`, and `Help` on 2026-10-22. Their new grids replace the old grids. The approved boards show two cases of decision 65. The first case is the drop 1 cell after a long pod title. The second case is the line that turns on the bus row in a rail pod of the one-pod view.
+
 
 ## Waves
 

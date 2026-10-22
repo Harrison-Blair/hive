@@ -8,19 +8,34 @@ b|011111111110000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+t|╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-b|001111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b|001111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │
+t|│                                               ╭──────────────────────╮                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ ● coordinator        │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ claude · working · … │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╰───────────┬──────────╯                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                           │                                                          │
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╭─ hive ────────────────────────┼──────────────────────────────╮                           │
 k|afffffffffffffffffffffffffffrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ g1-tui-restart · done                                        │                           │
-k|afffffffffffffffffffffffffffrfdddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │ g1-tui-restart · done         │                              │                           │
+k|afffffffffffffffffffffffffffrfdddddddddddddddddddddfffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ┏━━━━━━━━━━━━━━━━━━━━━━┓                   │                           │
+t|│                           │                   ┏━━━━━━━━━━━┷━━━━━━━━━━┓                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │                   ┃ ◐ manager-hive       ┃                   │                           │
@@ -95,23 +110,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
-k|afddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+k|afddddddddddddddddddddddddddddddddddddddddddddiiidddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
