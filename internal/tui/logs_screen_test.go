@@ -572,3 +572,20 @@ func TestLogsFollowKeepsTheSelectionWithoutNewEvents(t *testing.T) {
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: append(more, logs.Event{Raw: []byte(line), Fields: fields})})
 	requireView(t, m, "▶ 12:01:00 INFO  task      landed")
 }
+
+// A filter that hides each row keeps the selected event. When the rows show
+// again, the same event is selected.
+func TestLogsSelectionSurvivesAnEmptyFilter(t *testing.T) {
+	m := logsModelAt(t, 120, 40)
+	m, _ = raise(t, m, key('k', "k"))
+	m, _ = raise(t, m, key('j', "j"))
+	requireView(t, m, "▶ 12:00:03 WARN  herdr     network retry", "follow ○")
+	m, _ = raise(t, m, key('/', "/"))
+	for _, r := range " nothing-matches" {
+		m, _ = raise(t, m, key(r, string(r)))
+	}
+	m, _ = raise(t, m, key(0, "enter"))
+	requireView(t, m, "no events today")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	requireView(t, m, "▶ 12:00:03 WARN  herdr     network retry")
+}

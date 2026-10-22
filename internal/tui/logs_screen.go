@@ -263,7 +263,8 @@ func (m *Model) acceptLogEvents(events []logs.Event) {
 }
 
 // refreshLogSelection finds the selected event in the filtered rows. When
-// the filter hides it, the selection moves to the nearest row.
+// the filter hides it, the selection moves to the nearest row. With no rows,
+// the selected event stays, so it shows again with the rows.
 func (m *Model) refreshLogSelection() {
 	rows := m.filteredLogRows()
 	for index, row := range rows {
@@ -274,7 +275,6 @@ func (m *Model) refreshLogSelection() {
 	}
 	if len(rows) == 0 {
 		m.logSelection = 0
-		m.logSelectedKey = ""
 		return
 	}
 	m.logSelection = min(max(m.logSelection, 0), len(rows)-1)
