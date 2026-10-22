@@ -54,3 +54,4 @@ For all other files, the coordinator and manager never change a project source f
 | [The Chat message box does not grow or scroll while the user types](entries/chat-input-does-not-grow.md) | Open |  |
 | [A supervisor restart does not stop the old supervisor or close its tab](entries/supervisor-restart-keeps-old-supervisor.md) | Open |  |
 | [The Chat screen does not show that the coordinator is working](entries/chat-shows-no-coordinator-activity.md) | Open |  |
+| [Attach on the supervisor fails with agent_not_found, and the error stays in the footer](entries/attach-fails-on-supervisor.md) | Open |  |
