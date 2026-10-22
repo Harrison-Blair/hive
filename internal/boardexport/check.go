@@ -52,7 +52,7 @@ var Sizes = map[string][2]int{
 
 // symbols is the symbol list of decision 13. A cell can also hold a
 // printable ASCII character.
-const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×▸▾▲┰┸┺┹╃┻◀▼"
+const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×▸▾▲┰┸┺┹╃┻◀▼┟┠┥╅"
 
 // tokens maps each token name of decision 26 to its token.
 var tokens = func() map[string]cellgrid.Token {

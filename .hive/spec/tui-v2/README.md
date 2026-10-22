@@ -43,6 +43,10 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `CompactAgentsHome.dc.html` | 1 Agents, home page | 80×24 |
 | `AgentDetailsGeneral.dc.html` | 1 Agents, details popup of a general agent | 120×40 |
 | `HealthAgentsGeneral.dc.html` | 5 Health, Agents view, general agent | 120×40 |
+| `LiveOverview.dc.html` | 1 Agents, pods overview with a lit line | 120×40 |
+| `LivePod.dc.html` | 1 Agents, one-pod view with a lit line | 120×40 |
+| `CompactLiveOverview.dc.html` | 1 Agents, pods overview with a lit line | 80×24 |
+| `CompactLivePod.dc.html` | 1 Agents, one-pod view with a lit line | 80×24 |
 
 ## Out of scope
 
@@ -70,11 +74,11 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 10. Agents gives each project one column of equal width. The minimum column width is 26 cells. Each card is 24×4 cells. The idle dot is `◐` in `accent` on each screen. When the columns do not fit, the graph scrolls sideways and keeps the selected card visible. With no project, Agents shows the notice "no project agents".
 11. A resize never breaks a border. A resize with an overlay open keeps the overlay and its scroll position.
 12. Each component measures text with `lipgloss.Width`. No component measures text with `len`.
-13. Components use only the symbols in this list: `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┼ ┴ ┬ └ ━ ┃ ┏ ┓ ┗ ┛ ┯ ┷ ┡ ┨ ● ◐ ○ ▶ ✓ • · – — … ↑ ↓ ← → › █ × ▸ ▾ ▲`. Each symbol takes one cell. Wave 2 checks that each exported board uses only these symbols. A test checks that `lipgloss.Width` gives 1 for each symbol. The TUI supports terminals that draw ambiguous-width characters as one cell. A new symbol needs a change to this list.
+13. Components use only the symbols in this list: `─ │ ╭ ╮ ╰ ╯ ├ ┤ ┼ ┴ ┬ └ ━ ┃ ┏ ┓ ┗ ┛ ┯ ┷ ┡ ┨ ● ◐ ○ ▶ ✓ • · – — … ↑ ↓ ← → › █ × ▸ ▾ ▲ ┰ ┸ ┺ ┹ ╃ ┻ ◀ ▼ ┟ ┠ ┥ ╅`. Each symbol takes one cell. Wave 2 checks that each exported board uses only these symbols. A test checks that `lipgloss.Width` gives 1 for each symbol. The TUI supports terminals that draw ambiguous-width characters as one cell. A new symbol needs a change to this list.
 
 ### Screens
 
-14. **Agents** shows a full-width graph of project agents only. The coordinator and the supervisor are not on the graph. `enter` opens the details popup. `p` peeks at the pane. `a` attaches. `h` hides stopped agents.
+14. Decision 65 replaces this decision. **Agents** shows a full-width graph of project agents only. The coordinator and the supervisor are not on the graph. `enter` opens the details popup. `p` peeks at the pane. `a` attaches. `h` hides stopped agents.
 15. **Chat** shows a scrolling feed and a fixed input. User text uses the `user` color. Agent replies render as markdown with Glamour. Events fold to one dim line.
 16. **Work** has the views Goals, Queue, and Tasks. Each view is a list with details. `b` opens the brief. `v` opens `VERIFIED.md`. `d` shows the dependencies. `o` opens the goal design. `s` shows stops only.
 17. **Friction** has the views Open and Resolved. Each view is a list with details.
@@ -315,6 +319,33 @@ The worker made these decisions in task `39-screen-health`:
 60. When the agent of a card has the state `working`, the card draws its rounded border in the token `working`. A selected card keeps the heavy `accent` border, also when its agent has the state `working`. A card of each other state keeps the token `border`. Each joint on the border of a working card, for example `├`, `┤`, `┴`, `┬`, and `╰`, has the token `working`. A rail or a tree line outside a card keeps the token `border`.
 
 61. The key hint of `h` in the graph footer is `h stopped`. The Help line for `h` is `show or hide stopped agents`.
+
+### Live agent activity
+
+The boards `LiveOverview`, `LivePod`, `CompactLiveOverview`, and `CompactLivePod` show these decisions.
+
+62. The Agents screen has two levels of selection. The overview shows all pods with the tree, the rail, and the pod width rules of decision 10. In the overview, you select a full pod. The home pod is a pod as a project is. A selected pod has a heavy `accent` border (`┏ ━ ┓ ┃ ┗ ┛`) and an `accent` bold title. The title of a pod that is not selected stays `dim` bold. In the overview, a card is not selectable and has no heavy border. `←` and `→` select the pod on the left and on the right. At the edge of a page, `←` and `→` scroll the pages. `enter` on a pod opens the one-pod view of that pod. In the one-pod view, you select one agent with the keys of decision 14. The arrows stay in the pod. `esc` goes back to the overview with the same pod selected.
+
+63. The one-pod view shows one pod at the center of the body. The pod width rule of decision 10 for one pod applies. The pod is at most 64 cells wide from 120 columns. Below 120 columns, it has the full body width. The pod uses the tree or the rail by the rule of decision 10. The box title is `project agents · POD`, for example `project agents · hive`.
+
+64. With one project and no home pod, the Agents screen opens the one-pod view at once. `esc` does nothing in this case. The footer does not show `esc pods`. It shows the graph hints of decision 14.
+
+65. This decision replaces decision 14. The coordinator card is at the top center of the body, in the overview and in the one-pod view. It is a card as the other cards are, with the colour rules of decision 60. From 120 columns, one blank row is above the coordinator card. Below 120 columns, no blank row is above it, and no blank row is above the footer lines of the body. The coordinator joint is at the card x+12. In the overview, one bus row is below the coordinator card. A line goes from the coordinator joint to the bus row. From the bus row, a line goes to the top border of each pod on the page. Each pod drop is at the center of its pod, with `┴` on the pod top border. When the pod title is wider than the left half of the pod, the drop is 1 cell after the title. A drop 1 column or less from the coordinator joint moves to the column of the joint. Then the two lines merge (`┼`, `╃`). The bus goes only to the pods on the visible page. In the one-pod view, the line goes down from the coordinator joint through the pod top border (`┼`). It stops at the top joint of the manager card. When the manager card is not below the joint, the line turns on the bus row to the center of the manager card. When the pod has no manager, the line stops on the pod top border. In the one-pod view, the goal line ends before the line. The line has the token `border` when it is not lit. In the overview, `↑` selects the coordinator card, and `↓` selects the last selected pod again. `esc` does nothing there. `enter` on the coordinator card opens its details popup. In the one-pod view, the coordinator card is not selectable. The box title of the overview stays `project agents · N projects`. The supervisor has no card. `enter` opens the details popup of a card. `p` peeks at the pane. `a` attaches. `h` hides stopped agents.
+
+66. A message lights the line from its sender to its receiver. Each inbox record is a message: the field `agent` is the sender, the field `role` is the receiver, and the field `created_at` is the time. Each `agent prompt` log event of `hive agent send` is a message: the field `from` of decision 72 is the sender, and the field `agent_id` is the receiver. A message with a sender or a receiver that has no card on the graph lights nothing. The user, the supervisor, and an unknown name have no card. A lit line uses heavy glyphs in the token `info`, for example `━ ┃ ┏ ┓ ┰ ┸ ┺ ┹ ╃ ┻`. On a joint of a card border, `info` wins over the colour of decision 60. A joint with arms that are not lit uses the mixed glyph with heavy arms only on the lit side. On a rail, a lit joint uses the mixed glyph with the lit arms heavy, for example `┟ ┠ ┡ ┥`. The line has one arrow in `info` (`◀ ▶ ▲ ▼`) that points to the receiver. The arrow is on the straight cell nearest to the receiver. On a horizontal run, one `━` stays between the corner and the arrow. When two cards have no direct line, the full path through their nearest common parent lights. In the overview, a line from or to a card in a pod lights up to the pod border.
+
+67. A line stays lit for 5 seconds after the time of the message. A new message on the same line starts the 5 seconds again. When two messages on one line are in the 5 seconds, the newest message gives the arrow. Lines light in the overview and in the one-pod view. In normal mode, the TUI draws the screen again when a lit line goes dark. A change to the log file of the day loads the Agents data again.
+
+68. The fixture of each Live board gives the message that lights its line. Demo mode uses the fixture clock, so a lit line in demo mode stays lit.
+
+69. The legend from 120 columns is `── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project`. `━ ▶` has the token `info`. The other text is `dim`.
+
+70. The footer of the overview is `←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help` from 120 columns and `←→ select pod · ↑ coordinator · enter open · ?` below 120 columns. The footer of the one-pod view is `←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped · ? help` from 120 columns and `←↑↓→ move · enter details · esc pods · ?` below 120 columns.
+
+71. The Help overlay does not change. Its keys agree with decisions 62 to 70.
+
+72. The `agent prompt` log event of `hive agent send` has the field `from` with the name of the acting agent. The acting agent is the agent record with a `pane_id` equal to the `HERDR_PANE_ID` of the caller. When no record agrees, the event has no `from` field, and the message lights nothing.
+
 
 ## Waves
 

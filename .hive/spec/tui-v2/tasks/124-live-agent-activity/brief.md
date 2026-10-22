@@ -227,10 +227,15 @@ approves them.
 - Model tests with a fixed clock: a line is lit at t, lit at t+4s, and not
   lit at t+5s. A new message at t+3s keeps it lit at t+7s. Use literal
   expected glyphs and tokens.
-- Model tests also cover: pod selection with `←` `→`, `enter` and `esc`;
-  `↑` and `↓` with the coordinator card; the one-project case; the drop
-  merge; a lit path with no direct line; a lit rail; a message with no card
-  for the sender; the footers at both widths.
+- Model tests also cover these items:
+  - pod selection with `←` `→`, `enter`, and `esc`
+  - `↑` and `↓` with the coordinator card
+  - the one-project case
+  - the drop merge
+  - a lit path with no direct line
+  - a lit rail
+  - a message with no card for the sender
+  - the footers at both widths
 - A test of `internal/agent` checks the `from` field with and without a
   record for the pane.
 
@@ -239,11 +244,11 @@ approves them.
 | ID | Criterion | Proven by |
 | --- | --- | --- |
 | AC1 | Board copies, grids, symbols, fixtures | V1, V2 |
-| AC2 | The spec has decisions 62 to 72 and decision 14 is replaced | V-gate |
+| AC2 | The spec has decisions 62 to 72, and decision 65 replaces decision 14 | V-gate |
 | AC3 to AC8 | The Agents screen matches the boards and the rules | V3, V4, V5 |
 | AC9 | `hive agent send` logs `from` | V3, V4 |
 | AC10 | The tests fail on the base and pass on the task branch | V3 |
-| AC11 | The 10 boards that exist have approved new grids | V2, V4, V5 |
+| AC11 | The user approves the new grids of the 10 boards that exist | V2, V4, V5 |
 
 ## Verification items
 
