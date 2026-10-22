@@ -133,6 +133,33 @@ func TestLiveSendEventGivesTheReceiverByKey(t *testing.T) {
 	requireCells(t, m, liveCell{60, 16, '▲', cellgrid.Info}, liveCell{75, 18, '┃', cellgrid.Info}, liveCell{75, 19, '┸', cellgrid.Info})
 }
 
+// A record key and an agent name of one card name one line: the newest
+// message of the line wins, in each order of the messages.
+func TestLiveMessagesGroupByCard(t *testing.T) {
+	for _, tc := range []struct {
+		name             string
+		older, newer     [2]string
+		wantFrom, wantTo string
+	}{
+		{"name then key", [2]string{"manager-hive", "t6-worker-1"}, [2]string{"t6-worker-1", "manager-hive-g2"}, "t6-worker-1", "manager-hive-g2"},
+		{"key then name", [2]string{"t6-worker-1", "manager-hive-g2"}, [2]string{"manager-hive", "t6-worker-1"}, "manager-hive-g2", "t6-worker-1"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := liveModel(t, "LivePod", func(f *demoFixture) {
+				f.Data.Logs = []json.RawMessage{
+					promptEvent(t, f.now.Add(-2*time.Second), tc.older[0], tc.older[1]),
+					promptEvent(t, f.now.Add(-time.Second), tc.newer[0], tc.newer[1]),
+				}
+			})
+			m.View()
+			got := m.litMessages()
+			if len(got) != 1 || got[0].from != tc.wantFrom || got[0].to != tc.wantTo {
+				t.Fatalf("lit messages = %+v; want one message %s to %s", got, tc.wantFrom, tc.wantTo)
+			}
+		})
+	}
+}
+
 // The real TUI draws again when a line goes dark: the expiry message
 // clears the cached view.
 func TestLiveLineGoesDarkOnTheExpiryMessage(t *testing.T) {

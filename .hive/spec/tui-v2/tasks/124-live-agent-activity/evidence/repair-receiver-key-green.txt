@@ -1,0 +1,402 @@
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.292s

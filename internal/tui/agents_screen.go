@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"cmp"
 	"fmt"
 	"image/color"
 	"log/slog"
@@ -1156,18 +1157,34 @@ func recentAgentEvents(events []logs.Event, zone *time.Location) map[string][]st
 // litWindow is the time that a line stays lit after a message (decision 67).
 const litWindow = 5 * time.Second
 
-// litMessages gives the messages that light a line now: for each pair of
-// agents, the newest message of the last 5 seconds.
-func (m *Model) litMessages() []agentMessage {
+// recentMessages gives the messages of the last 5 seconds.
+func (m *Model) recentMessages() []agentMessage {
 	now := m.now()
-	newest := make(map[[2]string]agentMessage)
+	var out []agentMessage
 	for _, message := range m.agents.data.messages {
-		if message.at.After(now) || !now.Before(message.at.Add(litWindow)) {
+		if !message.at.After(now) && now.Before(message.at.Add(litWindow)) {
+			out = append(out, message)
+		}
+	}
+	return out
+}
+
+// litMessages gives the messages that light a line now, with the card keys
+// of the last view as sender and receiver: for each line, the newest
+// message of the last 5 seconds, oldest first. A record key and an agent
+// name of one card name one line.
+func (m *Model) litMessages() []agentMessage {
+	newest := make(map[[2]string]agentMessage)
+	for _, message := range m.recentMessages() {
+		from, okFrom := m.graphKey(message.from)
+		to, okTo := m.graphKey(message.to)
+		if !okFrom || !okTo || from == to {
 			continue
 		}
-		pair := [2]string{message.from, message.to}
-		if pair[1] < pair[0] {
-			pair = [2]string{message.to, message.from}
+		message.from, message.to = from, to
+		pair := [2]string{from, to}
+		if to < from {
+			pair = [2]string{to, from}
 		}
 		if old, ok := newest[pair]; !ok || message.at.After(old.at) {
 			newest[pair] = message
@@ -1177,6 +1194,9 @@ func (m *Model) litMessages() []agentMessage {
 	for _, message := range newest {
 		out = append(out, message)
 	}
+	slices.SortFunc(out, func(a, b agentMessage) int {
+		return cmp.Or(a.at.Compare(b.at), strings.Compare(a.from, b.from), strings.Compare(a.to, b.to))
+	})
 	return out
 }
 
@@ -1198,7 +1218,7 @@ func (m *Model) litTick() tea.Cmd {
 // nextLitExpiry gives the time at which the next lit line goes dark.
 func (m *Model) nextLitExpiry() (time.Time, bool) {
 	var next time.Time
-	for _, message := range m.litMessages() {
+	for _, message := range m.recentMessages() {
 		if end := message.at.Add(litWindow); next.IsZero() || end.Before(next) {
 			next = end
 		}
@@ -1284,12 +1304,7 @@ func (m *Model) graphPath(from, to string) []point {
 // receiver that points to the receiver.
 func (m *Model) lightLines(c *cellCanvas) {
 	for _, message := range m.litMessages() {
-		from, okFrom := m.graphKey(message.from)
-		to, okTo := m.graphKey(message.to)
-		if !okFrom || !okTo || from == to {
-			continue
-		}
-		path := m.graphPath(from, to)
+		path := m.graphPath(message.from, message.to)
 		if len(path) < 2 {
 			continue
 		}

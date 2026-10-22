@@ -21,3 +21,7 @@ folder:
 Full gate output from the worktree root: `V-gate.log`. `gofmt -l` and
 `go mod tidy -diff` print nothing. `go vet` passes. `golangci-lint`
 reports 0 issues. `go test -race ./...` passes in each package.
+
+## Repair
+
+The repair after the verification fail is in `REPAIR.md`.

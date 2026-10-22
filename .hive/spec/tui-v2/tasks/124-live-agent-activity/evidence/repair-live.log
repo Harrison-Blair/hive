@@ -1,0 +1,66 @@
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+0 diffs
+reply-key fresh runs: 20 of 20 match reply-key.expected.grid
+== LiveOverview
+0 diffs
+LiveOverview rc=0
+== LivePod
+0 diffs
+LivePod rc=0
+== CompactLiveOverview
+0 diffs
+CompactLiveOverview rc=0
+== CompactLivePod
+0 diffs
+CompactLivePod rc=0
+== Main 120x40
+0 diffs
+Main 120x40 rc=0
+== AgentsMany 120x40
+0 diffs
+AgentsMany 120x40 rc=0
+== CompactAgents 80x24
+0 diffs
+CompactAgents 80x24 rc=0
+== AgentDetails 120x40
+0 diffs
+AgentDetails 120x40 rc=0
+== AgentsHome 120x40
+0 diffs
+AgentsHome 120x40 rc=0
+== AgentsNested 120x40
+0 diffs
+AgentsNested 120x40 rc=0
+== AgentsHiddenParent 120x40
+0 diffs
+AgentsHiddenParent 120x40 rc=0
+== AgentsCoordinatorChild 120x40
+0 diffs
+AgentsCoordinatorChild 120x40 rc=0
+== CompactAgentsHome 80x24
+0 diffs
+CompactAgentsHome 80x24 rc=0
+== AgentDetailsGeneral 120x40
+0 diffs
+AgentDetailsGeneral 120x40 rc=0
+== Help 120x40
+0 diffs
+Help 120x40 rc=0
