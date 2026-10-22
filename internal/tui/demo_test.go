@@ -320,8 +320,7 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 		{name: "brief from fixture", key: "b", livePath: taskDir + "brief.md", ui: tasksUI,
 			files: map[string]string{taskDir + "brief.md": "fixture brief text"}, want: "fixture brief text"},
 		{name: "brief not in fixture", key: "b", livePath: taskDir + "brief.md", ui: tasksUI, want: demoNoFile},
-		// The tasks screen lists VERIFIED.md first, so enter opens it.
-		{name: "evidence from fixture", key: "enter", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI,
+		{name: "evidence from fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI,
 			files: map[string]string{taskDir + "evidence/VERIFIED.md": "fixture evidence text"}, want: "fixture evidence text"},
 		{name: "verification not in fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI, want: demoNoFile},
 		{name: "design from fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI,
@@ -342,11 +341,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 			}
 			m := newDemoModel(root, &demoState{fixture: demoFileFixture(t, root, tc.ui, friction, tc.files)})
 			t.Cleanup(m.Stop)
-			if tc.ui["view"] == "tasks" {
-				// The fixture task is landed, so only the tab all lists it.
-				m.tasks.tab = tasksAll
-				m.tasks.acceptSelection()
-			}
 			key := tea.KeyPressMsg{Code: rune(tc.key[0]), Text: tc.key}
 			if tc.key == "enter" {
 				key = tea.KeyPressMsg{Code: tea.KeyEnter}

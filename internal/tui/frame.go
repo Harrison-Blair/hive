@@ -30,7 +30,8 @@ const (
 // sit side by side, and below 120 columns the details region is a full-width
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
-// or "focus".
+// or "focus". Panels gives the list and the details of each view that wave
+// 6 has replaced, by view name.
 type frameScreen struct {
 	label       string
 	views       []string
@@ -38,6 +39,16 @@ type frameScreen struct {
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
+	panels      map[string]viewPanels
+}
+
+// viewPanels draws the list and the details of one view. Back closes a part
+// of the details on esc, before esc gives the focus to the list, and reports
+// that it closed one.
+type viewPanels struct {
+	list    func(m *Model, width, height int, focused bool) string
+	details func(m *Model, width, height int, focused bool, suffix string) string
+	back    func(m *Model) bool
 }
 
 // screenRegistry holds the six screens of the tab bar.
@@ -71,16 +82,19 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "/ filter", "? help"},
-			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "/ filter", "? help"},
-			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "/ filter", "? help"},
+			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "? help"},
+			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "? help"},
+			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
 			"details":       {"↑↓ scroll", "tab region", "esc back to list", "? help"},
 			"Tasks/details": {"↑↓ scroll", "tab region", "esc back to list", "b brief", "v verified", "d deps", "? help"},
 		},
 		compact: map[string][]string{
-			"list":          {"↑↓ move", "enter details", "[ ] view", "/ filter", "?"},
+			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
 			"details":       {"↑↓ scroll", "esc back to list"},
 			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
+		},
+		panels: map[string]viewPanels{
+			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
 		},
 	},
 	tabFriction: {
@@ -374,15 +388,33 @@ func (m *Model) contentView(width, height int) string {
 	entry := screenRegistry[tab]
 	var rows []string
 	bodyHeight := height
+	overlay := entry.listDetails && m.detailsFocused() && width < component.LongFormWidth
 	if len(entry.views) > 0 {
-		rows = append(rows, component.SubTabs{Views: entry.views, Active: m.activeView()}.View(width))
+		subTabs := component.SubTabs{Views: entry.views, Active: m.activeView()}
+		if overlay {
+			subTabs.Hint = "list › details"
+		}
+		rows = append(rows, subTabs.View(width))
 		bodyHeight--
 	}
 	focus := m.focusState()
+	panels, replaced := entry.panels[m.viewName()]
 	var body string
 	switch {
 	case tab == tabChat:
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
+	case replaced && width >= component.LongFormWidth:
+		listWidth := width * 13 / 30
+		list := strings.Split(panels.list(m, listWidth, bodyHeight, focus == entry.regions[0]), "\n")
+		details := strings.Split(panels.details(m, width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
+		for index := range list {
+			list[index] += details[index]
+		}
+		body = strings.Join(list, "\n")
+	case replaced && overlay:
+		body = panels.details(m, width, bodyHeight, true, " · esc back")
+	case replaced:
+		body = panels.list(m, width, bodyHeight, focus == entry.regions[0])
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := width * 13 / 30
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
@@ -450,12 +482,6 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 			}
 		}
 		return "details", []string{"no task selected"}
-	case 4:
-		title := "details"
-		if item, ok := m.tasks.selected(); ok {
-			title = item.record.ID
-		}
-		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
 	case 5:
 		title := "details"
 		if entry, ok := m.friction.selected(); ok {
@@ -675,6 +701,9 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	if entry.listDetails && m.detailsFocused() {
 		switch key {
 		case "esc":
+			if panels, ok := entry.panels[m.viewName()]; ok && panels.back != nil && panels.back(m) {
+				return m.logAction("details back")
+			}
 			m.regionFocus[tab] = 0
 			return m.logAction("focus region", slogString("region", entry.regions[0]))
 		case "up", "k":

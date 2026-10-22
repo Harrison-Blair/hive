@@ -26,9 +26,10 @@ type Cell struct {
 
 // List is a Panel of rows in fixed columns with a dim header row (decisions
 // 8, 16 to 20). The selected row has the marker ▶ and its first cell in
-// accent and bold. Offset is the first visible row; View moves it so that the
-// selected row is visible. When the rows do not fit, the panel draws the
-// scroll mark of decision 5.
+// accent and bold over the full column. Offset is the first visible row;
+// View moves it so that the selected row is visible. When the rows do not
+// fit, the panel draws the scroll mark of decision 5. With Fill, the padding
+// of each cell has the style of the cell, as the Work board shows.
 type List struct {
 	Title    string
 	Focused  bool
@@ -36,6 +37,7 @@ type List struct {
 	Rows     [][]Cell
 	Selected int
 	Offset   int
+	Fill     bool
 }
 
 // View renders the list at exactly width×height cells.
@@ -92,7 +94,8 @@ func (l List) header() string {
 func (l List) row(i int) string {
 	var b strings.Builder
 	if i == l.Selected {
-		b.WriteString(titleStyle.Render(listMarker))
+		// User decision 7 of 2026-10-21: the space after ▶ is fg.
+		b.WriteString(titleStyle.Render(strings.TrimSpace(listMarker)) + " ")
 	} else {
 		b.WriteString("  ")
 	}
@@ -106,11 +109,18 @@ func (l List) row(i int) string {
 		}
 		w := l.Columns[j].Width
 		if j == 0 && i == l.Selected {
-			b.WriteString(titleStyle.Render(fitCell(c.Text, w-1)) + " ")
+			// User decision 4: the selected name is accent and bold over
+			// the full column.
+			b.WriteString(titleStyle.Render(fitCell(c.Text, w-1) + " "))
 			continue
 		}
 		text := ansi.Truncate(c.Text, max(w-1, 0), "…")
-		b.WriteString(c.Style.Render(text) + strings.Repeat(" ", max(w-lipgloss.Width(text), 0)))
+		pad := strings.Repeat(" ", max(w-lipgloss.Width(text), 0))
+		if l.Fill {
+			b.WriteString(c.Style.Render(text + pad))
+			continue
+		}
+		b.WriteString(c.Style.Render(text) + pad)
 	}
 	return b.String()
 }

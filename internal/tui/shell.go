@@ -106,7 +106,7 @@ func (m *Model) makeScreens() []screen {
 		agentsScreen{model: m},
 		goalsScreen{model: m},
 		queueScreen{model: m},
-		tasksScreen{model: m},
+		workTasksScreen{model: m},
 		frictionScreen{model: m},
 		healthScreen{model: m},
 		logsScreen{model: m},

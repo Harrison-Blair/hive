@@ -7,6 +7,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 )
 
 // sampleList is the sample of the List section, Components.dc.html lines
@@ -71,5 +73,37 @@ func TestListScrollMark(t *testing.T) {
 	want = "╭──────────╮\n│   ID     │\n│   r1     │\n│ ▶ r2     ┃\n╰──────────╯"
 	if got := ansi.Strip(l.View(12, 5)); got != want {
 		t.Errorf("rows that do not fit:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// TestListFillGolden renders the tasks list of the Work board, rows 4-38 and
+// columns 0-51. With Fill, the padding of each cell has the style of the
+// cell.
+func TestListFillGolden(t *testing.T) {
+	l := sampleList()
+	info := lipgloss.NewStyle().Foreground(Info)
+	l.Rows = append(l.Rows, []Cell{{Text: "1-cp5-end-to-end"}, {Text: "assigned", Style: info}, {Text: "—", Style: lipgloss.NewStyle().Foreground(Dim)}})
+	l.Fill = true
+	checkGolden(t, l.View(52, 35), "Work", rect{4, 0, 52, 35})
+}
+
+// TestListSelectedRowFillsItsColumn checks user decisions 4 and 7 of
+// 2026-10-21: the marker ▶ is accent and bold, the space after it is fg and
+// not bold, and the selected name is accent and bold over the full column,
+// its gap included.
+func TestListSelectedRowFillsItsColumn(t *testing.T) {
+	l := List{Columns: []Column{{Title: "ID", Width: 6}, {Title: "S"}}, Rows: [][]Cell{{{Text: "ab"}, {Text: "x"}}}}
+	g, err := cellgrid.Convert(l.View(16, 4), 16, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[int]cellgrid.Cell{2: {Rune: '▶', Token: cellgrid.Accent, Bold: true}, 3: {Rune: ' ', Token: cellgrid.FG}, 10: {Rune: 'x', Token: cellgrid.FG}}
+	for col, r := range "ab    " {
+		want[4+col] = cellgrid.Cell{Rune: r, Token: cellgrid.Accent, Bold: true}
+	}
+	for col, cell := range want {
+		if got := g.At(2, col); got != cell {
+			t.Errorf("col %d: got %+v, want %+v", col, got, cell)
+		}
 	}
 }

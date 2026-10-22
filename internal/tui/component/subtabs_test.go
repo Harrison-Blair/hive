@@ -31,3 +31,14 @@ func TestSubTabsText(t *testing.T) {
 		t.Errorf("View(90) = %q, want %q", got, want)
 	}
 }
+
+// TestSubTabsHint checks the hint of the Compact board, row 3: while the
+// details overlay is open, "list › details" in dim ends 2 cells before the
+// right edge.
+func TestSubTabsHint(t *testing.T) {
+	got := ansi.Strip(SubTabs{Views: []string{"Goals", "Queue", "Tasks"}, Active: 2, Hint: "list › details"}.View(80))
+	want := "  Goals    Queue   [Tasks]" + spaces(38) + "list › details  "
+	if got != want {
+		t.Errorf("View(80) = %q, want %q", got, want)
+	}
+}

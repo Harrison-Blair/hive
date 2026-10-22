@@ -943,8 +943,8 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 	if m.screenIndex != 4 {
 		t.Fatalf("screen index = %d, want Tasks screen index 4", m.screenIndex)
 	}
-	if m.tasks.selectedID != "10-alpha" || m.tasks.tab != tasksAll {
-		t.Fatalf("Tasks selection = %q in tab %d, want task 10-alpha in all", m.tasks.selectedID, m.tasks.tab)
+	if m.tasks.selectedID != "10-alpha" {
+		t.Fatalf("Tasks selection = %q, want task 10-alpha", m.tasks.selectedID)
 	}
 	if cmd == nil {
 		t.Fatal("t did not load the Tasks screen")

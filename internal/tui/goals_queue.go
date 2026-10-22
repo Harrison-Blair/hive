@@ -216,8 +216,6 @@ func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
 		}
 		taskID := wave.Tasks[0]
 		s.model.screenIndex = 4
-		s.model.tasks.tab = tasksAll
-		s.model.tasks.projectIndex = 0
 		s.model.tasks.selectedID = taskID
 		s.model.tasks.scrollOffset = 0
 		s.model.tasks.fileOpen = false
@@ -253,7 +251,6 @@ func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
 		}
 		state.designNotice = ""
 		s.model.screenIndex = 4
-		s.model.tasks.tab = tasksAll
 		s.model.tasks.fileOpen = false
 		s.model.tasks.fileLoading = false
 		s.model.screenLoading = false
@@ -291,8 +288,6 @@ func (s queueScreen) Update(msg tea.Msg) tea.Cmd {
 		}
 		taskID := state.selectedTaskID
 		s.model.screenIndex = 4
-		s.model.tasks.tab = tasksAll
-		s.model.tasks.projectIndex = 0
 		s.model.tasks.selectedID = taskID
 		s.model.tasks.scrollOffset = 0
 		s.model.tasks.fileOpen = false

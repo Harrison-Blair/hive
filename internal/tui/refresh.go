@@ -88,6 +88,7 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 		return []string{filepath.Join(home, ".hive", "README.md"), state}
 	case tasksDataRequest:
 		paths := []string{
+			filepath.Join(state, "agents"),
 			filepath.Join(state, "goals"),
 			filepath.Join(state, "projects"),
 			filepath.Join(state, "tasks"),
@@ -96,7 +97,7 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 			if item.projectPath == "" || item.record.Feature == "" {
 				continue
 			}
-			paths = append(paths, filepath.Join(item.projectPath, ".hive", "spec", item.record.Feature, "tasks", item.record.ID, "evidence"))
+			paths = append(paths, filepath.Join(item.projectPath, taskDir(item.record)))
 		}
 		sort.Strings(paths)
 		return paths

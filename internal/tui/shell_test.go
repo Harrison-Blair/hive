@@ -33,7 +33,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		{"2", tabChat, "Chat", "coordinator"},
 		{"3", tabWork, "Goals", "unassigned"},
 		{"]", tabWork, "Queue", "no open tasks"},
-		{"]", tabWork, "Tasks", "active 0"},
+		{"]", tabWork, "Tasks", "tasks · 0"},
 		{"4", tabFriction, "Friction", "open 0"},
 		{"5", tabHealth, "Health", "home"},
 		{"]", tabHealth, "Agents", "[ TREE ]"},
@@ -359,7 +359,7 @@ func fixtureBackgroundScreens(m *Model, now time.Time) {
 	}
 	task := records.Task{ID: "100-fixture", Project: "hive", Title: "Fixture task", Status: "assigned", DependsOn: []string{}}
 	m.goalsQueue.accept(goalsQueueData{goals: []records.Goal{goal}, tasks: []records.Task{task}})
-	m.tasks.accept(tasksData{items: []taskItem{{record: task}}, projects: []string{"hive"}})
+	m.tasks.accept(tasksData{items: []taskItem{{record: task}}})
 	m.friction.accept(frictionData{entries: []frictionEntry{{
 		file: "fixture.md", path: "entries/fixture.md", title: "Fixture friction", status: "Open",
 		opened: "2026-10-20", body: "Fixture summary.", valid: true,

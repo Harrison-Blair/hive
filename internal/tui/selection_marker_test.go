@@ -118,6 +118,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		selected string
 		also     []string
 		states   []string
+		split    bool
 		model    func(*testing.T) *Model
 	}{
 		{
@@ -160,14 +161,13 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Tasks", selected: "selected-task", also: []string{"[all 1]", "project: all"}, states: []string{"assigned"},
+			name: "Tasks", selected: "selected-task", split: true, states: []string{"assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 4)
 				// Decision 8: the list panel has 13/30 of the width, so the
 				// pane is 200 columns wide to show the Tasks columns.
 				m.width = 200
-				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}, projects: []string{"demo"}}
-				m.tasks.tab = tasksAll
+				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}}
 				m.tasks.selectedID = "selected-task"
 				return m
 			},
@@ -209,7 +209,14 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
-			requireHoneySelection(t, raw, tt.selected)
+			if tt.split {
+				// User decision 7 of 2026-10-21: the space after ▶ in a
+				// List row is fg, so the marker and the name are two runs.
+				requireHoneyBoldText(t, raw, "▶")
+				requireHoneyBoldText(t, raw, tt.selected)
+			} else {
+				requireHoneySelection(t, raw, tt.selected)
+			}
 			for _, selected := range tt.also {
 				requireHoneySelection(t, raw, selected)
 			}
