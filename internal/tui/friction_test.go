@@ -2,8 +2,10 @@ package tui
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
@@ -204,4 +206,24 @@ func TestFrictionKeys(t *testing.T) {
 	if got := footerText(m); got != " [details] ↑↓ scroll · esc back to list" {
 		t.Fatalf("compact details footer = %q", got)
 	}
+}
+
+// AC3: in normal mode the record loader reads the entries of a scratch home,
+// and R refreshes them. The renderer is the one of demo mode.
+func TestFrictionNormalModeRefresh(t *testing.T) {
+	home := newTestHome(t)
+	root := filepath.Join(home, "reference", "dogfood", "friction")
+	writeText(t, filepath.Join(root, "FRICTION.md"), "# Friction\n")
+	writeText(t, filepath.Join(root, "entries", "first.md"), "---\ntitle: \"First issue\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"\"\n---\n\n**Summary:**\nThe first.\n")
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	m, cmd := raise(t, m, key('4', "4"))
+	m = deliverAgentCommands(t, m, cmd)
+	requireView(t, m, "open · 1", "▶ first", "First issue")
+	writeText(t, filepath.Join(root, "entries", "second.md"), "---\ntitle: \"Second issue\"\nstatus: \"Open\"\nopened: 2026-10-20\ndecision: \"\"\n---\n\n**Occurrences:**\n2026-10-20  one\n2026-10-21  two\n")
+	m, cmd = raise(t, m, key('R', "R"))
+	m = deliverAgentCommands(t, m, cmd)
+	requireView(t, m, "open · 2", "  second ", "▶ first")
+	m, _ = raise(t, m, key('k', "k"))
+	requireView(t, m, "▶ second", "seen      2 times · last 2026-10-21", "OCCURRENCES")
 }
