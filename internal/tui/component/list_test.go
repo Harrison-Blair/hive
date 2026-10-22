@@ -75,6 +75,17 @@ func TestListScrollMark(t *testing.T) {
 	}
 }
 
+// TestListFillGolden renders the tasks list of the Work board, rows 4-38 and
+// columns 0-51. With Fill, the padding of each cell has the style of the
+// cell.
+func TestListFillGolden(t *testing.T) {
+	l := sampleList()
+	info := lipgloss.NewStyle().Foreground(Info)
+	l.Rows = append(l.Rows, []Cell{{Text: "1-cp5-end-to-end"}, {Text: "assigned", Style: info}, {Text: "—", Style: lipgloss.NewStyle().Foreground(Dim)}})
+	l.Fill = true
+	checkGolden(t, l.View(52, 35), "Work", rect{4, 0, 52, 35})
+}
+
 // TestListHint checks the hint row of CompactFriction.dc.html line 62: the
 // hint is dim on the last body row and ends one cell before the padding.
 // The hint row takes one row line.

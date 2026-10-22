@@ -48,6 +48,7 @@ type frameScreen struct {
 type screenPanels struct {
 	list    func(m *Model, width, height int, focused bool) string
 	details func(m *Model, width int) (string, []string)
+	back    func(m *Model) bool
 }
 
 // screenRegistry holds the six screens of the tab bar.
@@ -95,6 +96,7 @@ var screenRegistry = [tabCount]frameScreen{
 		panels: map[string]screenPanels{
 			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
 			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
+			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
 		},
 	},
 	tabFriction: {
@@ -389,8 +391,13 @@ func (m *Model) contentView(width, height int) string {
 	entry := screenRegistry[tab]
 	var rows []string
 	bodyHeight := height
+	overlay := entry.listDetails && m.detailsFocused() && width < component.LongFormWidth
 	if len(entry.views) > 0 {
-		rows = append(rows, component.SubTabs{Views: entry.views, Active: m.activeView()}.View(width))
+		subTabs := component.SubTabs{Views: entry.views, Active: m.activeView()}
+		if overlay {
+			subTabs.Hint = "list › details"
+		}
+		rows = append(rows, subTabs.View(width))
 		bodyHeight--
 	}
 	focus := m.focusState()
@@ -456,12 +463,6 @@ func (m *Model) legacyDetails() (string, []string) {
 	switch m.screenIndex {
 	case 1:
 		return m.agentDetails()
-	case 4:
-		title := "details"
-		if item, ok := m.tasks.selected(); ok {
-			title = item.record.ID
-		}
-		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
 	}
 	return "details", nil
 }
@@ -668,6 +669,9 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	if entry.listDetails && m.detailsFocused() {
 		switch key {
 		case "esc":
+			if panels, ok := entry.panels[m.viewName()]; ok && panels.back != nil && panels.back(m) {
+				return m.logAction("details back")
+			}
 			m.regionFocus[tab] = 0
 			return m.logAction("focus region", slogString("region", entry.regions[0]))
 		case "up", "k":

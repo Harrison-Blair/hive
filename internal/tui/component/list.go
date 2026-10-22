@@ -29,8 +29,9 @@ type Cell struct {
 // accent and bold over its full column, and the space after the marker is fg
 // (user decisions 2026-10-21). Offset is the first visible row; View moves it
 // so that the selected row is visible. When the rows do not fit, the panel
-// draws the scroll mark of decision 5. A Hint shows in dim at the right of
-// the last body row and takes one row line.
+// draws the scroll mark of decision 5. With Fill, the padding of each cell
+// has the style of the cell, as the Work board shows. A Hint shows in dim at
+// the right of the last body row and takes one row line.
 type List struct {
 	Title    string
 	Focused  bool
@@ -38,6 +39,7 @@ type List struct {
 	Rows     [][]Cell
 	Selected int
 	Offset   int
+	Fill     bool
 	Hint     string
 }
 
@@ -126,7 +128,12 @@ func (l List) row(i int) string {
 			continue
 		}
 		text := ansi.Truncate(c.Text, max(w-1, 0), "…")
-		b.WriteString(c.Style.Render(text) + strings.Repeat(" ", max(w-lipgloss.Width(text), 0)))
+		pad := strings.Repeat(" ", max(w-lipgloss.Width(text), 0))
+		if l.Fill {
+			b.WriteString(c.Style.Render(text + pad))
+			continue
+		}
+		b.WriteString(c.Style.Render(text) + pad)
 	}
 	return b.String()
 }

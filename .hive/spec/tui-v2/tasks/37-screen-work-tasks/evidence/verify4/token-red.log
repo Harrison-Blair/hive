@@ -1,0 +1,9 @@
+--- FAIL: TestWorkTasksMatchesWorkBoard (0.00s)
+    work_tasks_test.go:16: 4 cells differ from Work.grid:
+        row 6 col 40: want 'C' dim normal, got 'C' info normal
+        row 7 col 40: want 'B' dim normal, got 'B' info normal
+        row 8 col 40: want 'A' dim normal, got 'A' info normal
+        row 9 col 40: want '—' dim normal, got '—' info normal
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.019s
+FAIL

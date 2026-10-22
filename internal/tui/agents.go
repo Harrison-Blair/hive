@@ -641,7 +641,6 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 	case "t":
 		if selected, ok := state.selected(); ok && selected.record.Task != "" {
 			s.model.screenIndex = 4
-			s.model.tasks.tab = tasksAll
 			s.model.tasks.selectedID = selected.record.Task
 			s.model.tasks.scrollOffset = 0
 			s.model.screenLoading = false

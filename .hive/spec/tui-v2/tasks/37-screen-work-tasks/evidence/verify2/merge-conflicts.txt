@@ -1,0 +1,354 @@
+diff --cc internal/tui/frame.go
+index af6989b6,1f5e9864..00000000
+--- a/internal/tui/frame.go
++++ b/internal/tui/frame.go
+@@@ -94,8 -93,8 +94,9 @@@ var screenRegistry = [tabCount]frameScr
+  			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
+  		},
+  		panels: map[string]screenPanels{
++ 			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
+  			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
+ +			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
+  		},
+  	},
+  	tabFriction: {
+@@@ -465,16 -461,12 +468,25 @@@ func (m *Model) legacyDetails() (string
+  	switch m.screenIndex {
+  	case 1:
+  		return m.agentDetails()
+++<<<<<<< HEAD
+ +	case 2:
+ +		goal, wave := m.goalsQueue.selectedWave()
+ +		if goal == nil {
+ +			return "details", []string{"no goal selected"}
+ +		}
+ +		lines := []string{component.DetailField("title", goal.Title), component.DetailField("status", goal.Status)}
+ +		if wave != nil {
+ +			lines = append(lines, component.DetailField("wave", wave.ID+" "+wave.Title))
+ +		}
+ +		return goal.ID, lines
+++=======
++ 	case 4:
++ 		title := "details"
++ 		if item, ok := m.tasks.selected(); ok {
++ 			title = item.record.ID
++ 		}
++ 		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
+++>>>>>>> origin/dev
+  	case 6:
+  		check, ok := m.health.selectedCheck()
+  		if !ok {
+diff --cc internal/tui/goals_queue.go
+index 45892e1f,c83363ad..00000000
+--- a/internal/tui/goals_queue.go
++++ b/internal/tui/goals_queue.go
+@@@ -155,288 -162,6 +162,290 @@@ func (s *goalsQueueState) moveGoal(delt
+  	return true
+  }
+  
+++<<<<<<< HEAD
+ +func (s *goalsQueueState) keepGoalVisible() {
+ +	if s.goalScrollHeight < 1 {
+ +		return
+ +	}
+ +	width := s.goalViewWidth
+ +	if width < 1 {
+ +		width = 200
+ +	}
+ +	blocks, positions := s.goalBlocks(width)
+ +	start, ok := positions[s.selectedGoal]
+ +	if !ok {
+ +		return
+ +	}
+ +	end := start + lipgloss.Height(blocks[goalBlockIndex(s.data.goals, s.selectedGoal)])
+ +	if start < s.goalScrollOffset {
+ +		s.goalScrollOffset = start
+ +	} else if end > s.goalScrollOffset+s.goalScrollHeight {
+ +		s.goalScrollOffset = end - s.goalScrollHeight
+ +	}
+ +	if s.goalScrollOffset < 0 {
+ +		s.goalScrollOffset = 0
+ +	}
+ +}
+ +
+ +func goalBlockIndex(goals []records.Goal, id string) int {
+ +	for i, goal := range goals {
+ +		if goal.ID == id {
+ +			return i
+ +		}
+ +	}
+ +	return 0
+ +}
+ +
+ +type goalsScreen struct{ model *Model }
+ +
+ +func (goalsScreen) DataRequest() dataRequest { return goalsQueueDataRequest }
+ +
+ +func (goalsScreen) KeyHints() string {
+ +	return "↑/↓ select goal · t tasks · o design · ask in Chat · 1–8 screens"
+ +}
+ +
+ +func (s goalsScreen) Update(msg tea.Msg) tea.Cmd {
+ +	press, ok := msg.(tea.KeyPressMsg)
+ +	if !ok {
+ +		return nil
+ +	}
+ +	state := &s.model.goalsQueue
+ +	state.designNotice = ""
+ +	var moved bool
+ +	switch press.String() {
+ +	case "up", "k":
+ +		moved = state.moveGoal(-1)
+ +	case "down", "j":
+ +		moved = state.moveGoal(1)
+ +	case "t":
+ +		goal, wave := state.selectedWave()
+ +		if goal == nil || wave == nil || len(wave.Tasks) == 0 {
+ +			return nil
+ +		}
+ +		taskID := wave.Tasks[0]
+ +		s.model.screenIndex = 4
+ +		s.model.tasks.selectedID = taskID
+ +		s.model.tasks.scrollOffset = 0
+ +		s.model.tasks.fileOpen = false
+ +		s.model.tasks.fileLoading = false
+ +		s.model.screenLoading = false
+ +		return batch(s.model.logAction("goal open wave tasks", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("task_id", taskID)), s.model.startCurrentScreenLoad())
+ +	case "o":
+ +		goal, wave := state.selectedWave()
+ +		if goal == nil || wave == nil {
+ +			state.designNotice = "no design for this wave"
+ +			return s.model.logAction("goal design unavailable")
+ +		}
+ +		tasks := state.taskMap()
+ +		feature := ""
+ +		for _, id := range wave.Tasks {
+ +			if task, ok := tasks[id]; ok && task.Feature != "" {
+ +				feature = task.Feature
+ +				break
+ +			}
+ +		}
+ +		if feature == "" {
+ +			state.designNotice = "no design for this wave"
+ +			return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID))
+ +		}
+ +		path := filepath.Join(s.model.home, ".hive", "spec", feature, "README.md")
+ +		// Demo mode reads no live file. The fixture text or the demo notice
+ +		// takes the place of this check.
+ +		if s.model.demo == nil {
+ +			if _, err := os.Stat(path); os.IsNotExist(err) {
+ +				state.designNotice = "no design for this wave"
+ +				return s.model.logAction("goal design unavailable", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature))
+ +			}
+ +		}
+ +		state.designNotice = ""
+ +		s.model.screenIndex = 4
+ +		s.model.tasks.fileOpen = false
+ +		s.model.tasks.fileLoading = false
+ +		s.model.screenLoading = false
+ +		read := s.model.startTaskFileRead(&s.model.tasks, path, "README.md")
+ +		return batch(s.model.logAction("goal design open", slog.String("goal_id", goal.ID), slog.String("wave_id", wave.ID), slog.String("feature", feature)), read)
+ +	}
+ +	if moved {
+ +		return s.model.logAction("goal selection", slog.String("goal_id", state.selectedGoal))
+ +	}
+ +	return nil
+ +}
+ +
+ +func (s goalsScreen) View(width, height int) string {
+ +	state := &s.model.goalsQueue
+ +	blocks, positions := state.goalBlocks(width)
+ +	state.goalViewWidth = width
+ +	lines := strings.Split(strings.Join(blocks, "\n\n"), "\n")
+ +	state.goalScrollHeight = height - 2
+ +	if state.goalScrollHeight < 1 {
+ +		state.goalScrollHeight = 1
+ +	}
+ +	if start, ok := positions[state.selectedGoal]; ok {
+ +		if start < state.goalScrollOffset {
+ +			state.goalScrollOffset = start
+ +		}
+ +		end := start + lipgloss.Height(blocks[goalBlockIndex(state.data.goals, state.selectedGoal)])
+ +		if end > state.goalScrollOffset+state.goalScrollHeight {
+ +			state.goalScrollOffset = end - state.goalScrollHeight
+ +		}
+ +	}
+ +	if state.goalScrollOffset < 0 {
+ +		state.goalScrollOffset = 0
+ +	}
+ +	if state.goalScrollOffset >= len(lines) {
+ +		state.goalScrollOffset = 0
+ +	}
+ +	end := min(len(lines), state.goalScrollOffset+state.goalScrollHeight)
+ +	content := strings.Join(lines[state.goalScrollOffset:end], "\n")
+ +	if state.designNotice != "" {
+ +		return state.designNotice + "\n" + content
+ +	}
+ +	return content
+ +}
+ +
+ +func (s goalsQueueState) goalBlocks(width int) ([]string, map[string]int) {
+ +	cardWidth := width - 4
+ +	if cardWidth < 1 {
+ +		cardWidth = 1
+ +	}
+ +	blocks := make([]string, 0, len(s.data.goals)+1)
+ +	positions := make(map[string]int, len(s.data.goals))
+ +	line := 0
+ +	for _, goal := range s.data.goals {
+ +		positions[goal.ID] = line
+ +		lines := goalLines(goal, s.taskMap(), goal.ID == s.selectedGoal)
+ +		block := panelStyle.Width(cardWidth).Render(strings.Join(lines, "\n"))
+ +		if goal.Status != "active" && goal.ID != s.selectedGoal {
+ +			block = dimStyle.Render(block)
+ +		}
+ +		blocks = append(blocks, block)
+ +		line += lipgloss.Height(block) + 1
+ +	}
+ +	unassigned := s.unassignedTasks()
+ +	lines := []string{titleStyle.Render("unassigned")}
+ +	if len(unassigned) == 0 {
+ +		lines = append(lines, "(none)")
+ +	} else {
+ +		for _, project := range sortedTaskProjects(unassigned) {
+ +			ids := make([]string, 0)
+ +			for _, task := range unassigned {
+ +				if task.Project == project {
+ +					ids = append(ids, taskMark(task)+" "+task.ID)
+ +				}
+ +			}
+ +			lines = append(lines, project+": "+strings.Join(ids, "  "))
+ +		}
+ +	}
+ +	blocks = append(blocks, panelStyle.Width(cardWidth).Render(strings.Join(lines, "\n")))
+ +	return blocks, positions
+ +}
+ +
+ +func goalLines(goal records.Goal, tasks map[string]records.Task, selected bool) []string {
+ +	current := "—"
+ +	for _, wave := range goal.Waves {
+ +		if wave.Status != "done" {
+ +			current = doneWhenLabel(wave.DoneWhen)
+ +			break
+ +		}
+ +	}
+ +	goalStatus := goal.Status
+ +	if goalStatus == "" {
+ +		goalStatus = "unknown"
+ +	}
+ +	goalLine := goal.Project + " · " + goal.Title + " · " + goalStatus + " · done when: " + current
+ +	if selected {
+ +		goalLine = selectedStyle.Render("▶ " + goalLine)
+ +	} else {
+ +		goalLine = titleStyle.Render("  " + goalLine)
+ +	}
+ +	lines := []string{goalLine}
+ +	for _, wave := range goal.Waves {
+ +		landed := 0
+ +		for _, id := range wave.Tasks {
+ +			if task, ok := tasks[id]; ok && taskLanded(task) {
+ +				landed++
+ +			}
+ +		}
+ +		segments := []string{doneStyle.Render("dispatch ✓")}
+ +		waveStatus := wave.Status
+ +		if waveStatus == "" {
+ +			waveStatus = "unknown"
+ +		}
+ +		progressMark := "▶"
+ +		taskStyle := workingStyle
+ +		if landed == len(wave.Tasks) {
+ +			progressMark, taskStyle = "✓", doneStyle
+ +		}
+ +		segments = append(segments, taskStyle.Render(fmt.Sprintf("tasks %d/%d %s", landed, len(wave.Tasks), progressMark)))
+ +		points := []struct{ key, label string }{
+ +			{key: "local", label: "local implementation"},
+ +			{key: "dev", label: "landed on dev"},
+ +			{key: "pr", label: "PR open"},
+ +			{key: "main", label: "merged to main"},
+ +			{key: "release", label: "release published"},
+ +		}
+ +		currentIndex := -1
+ +		for i, point := range points {
+ +			if point.key == wave.DoneWhen {
+ +				currentIndex = i
+ +				break
+ +			}
+ +		}
+ +		if currentIndex < 0 {
+ +			segments = append(segments, selectedStyle.Render("◎ "+doneWhenLabel(wave.DoneWhen)))
+ +		} else {
+ +			for i := currentIndex; i < len(points); i++ {
+ +				point := points[i]
+ +				text := point.label
+ +				if i == currentIndex {
+ +					text = selectedStyle.Render("◎ " + text)
+ +				} else {
+ +					text = dimStyle.Render(text)
+ +				}
+ +				segments = append(segments, text)
+ +			}
+ +		}
+ +		stageLine := strings.Join(segments, doneStyle.Render(" ─▶ "))
+ +		lines = append(lines, titleStyle.Render("wave "+wave.ID+" · "+wave.Title+" · "+waveStatus), stageLine)
+ +		if wave.NeedsUser != "" {
+ +			lines = append(lines, "✋ "+wave.NeedsUser)
+ +		}
+ +		if len(wave.Tasks) == 0 {
+ +			lines = append(lines, "(no tasks)")
+ +		} else {
+ +			marks := make([]string, 0, len(wave.Tasks))
+ +			for _, id := range wave.Tasks {
+ +				if task, ok := tasks[id]; ok {
+ +					marks = append(marks, taskMark(task)+" "+id)
+ +				} else {
+ +					marks = append(marks, "· "+id)
+ +				}
+ +			}
+ +			lines = append(lines, strings.Join(marks, "  "))
+ +		}
+ +	}
+ +	return lines
+ +}
+ +
+ +func doneWhenLabel(point string) string {
+ +	switch point {
+ +	case "local":
+ +		return "local implementation"
+ +	case "dev":
+ +		return "landed on dev"
+ +	case "pr":
+ +		return "PR open"
+ +	case "main":
+ +		return "merged to main"
+ +	case "release":
+ +		return "release published"
+ +	default:
+ +		return point
+ +	}
+ +}
+ +
+++=======
+++>>>>>>> origin/dev
+  func (s goalsQueueState) taskMap() map[string]records.Task {
+  	result := make(map[string]records.Task, len(s.data.tasks))
+  	for _, task := range s.data.tasks {
+diff --cc testdata/ste-baseline.json
+index 60fdee40,6a33ed10..00000000
+--- a/testdata/ste-baseline.json
++++ b/testdata/ste-baseline.json
+@@@ -123,9 -123,9 +123,13 @@@
+    ".hive/spec/tui-v2/tasks/27-chat-board-fix/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/28-board-data-fix/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/29-frame-layout/brief.md": 0,
+-   ".hive/spec/tui-v2/tasks/38-screen-friction/brief.md": 0,
++   ".hive/spec/tui-v2/tasks/35-screen-work-goals/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/36-screen-work-queue/brief.md": 0,
+++<<<<<<< HEAD
+ +  ".hive/spec/tui-v2/tasks/37-screen-work-tasks/brief.md": 0,
+++=======
++   ".hive/spec/tui-v2/tasks/38-screen-friction/brief.md": 0,
+++>>>>>>> origin/dev
+    ".hive/spec/tui-v2/tasks/40-screen-logs/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/41-workgoals-board-fix/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/42-wave6-board-redraw/brief.md": 0,

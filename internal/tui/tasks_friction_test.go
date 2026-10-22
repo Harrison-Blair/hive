@@ -30,145 +30,115 @@ func TestLoadTasksFindsLongTaskID(t *testing.T) {
 	t.Fatalf("loadTasks() omitted task %q", id)
 }
 
-func TestTasksScreenRendersLandedTaskAndVerificationHistory(t *testing.T) {
+// loadWorkTasks opens the Tasks view in normal mode at width×height and
+// loads the records of home (decision 38).
+func loadWorkTasks(t *testing.T, home string, width, height int) *Model {
+	t.Helper()
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: width, Height: height})
+	m, cmd := openWorkView(t, m, 2)
+	return deliverAgentCommands(t, m, cmd)
+}
+
+// AC3: normal mode reads the task, goal, project, and agent records and the
+// files of the task, and the same renderer shows them.
+func TestWorkTasksNormalModeShowsRecordDetails(t *testing.T) {
 	home := writeTasksFixture(t)
-	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 4
-	cmd := m.startCurrentScreenLoad()
-	if cmd == nil {
-		t.Fatal("Tasks screen did not request data")
-	}
-	m, _ = raise(t, m, cmd())
-	// Decision 6: tab moves the region, so the test gives tab to the
-	// current Tasks screen.
-	m, _ = raise(t, m, key('x', "x"))
-	for range 2 {
-		m, cmd = pressScreenKey(t, m, key(0, "tab"))
-		if cmd == nil {
-			t.Fatal("tab change did not log the action")
-		}
-	}
-	view := ansi.Strip(m.currentScreen().View(120, 36))
+	writeRecord(t, home, []string{"agents"}, "t79-worker-2", records.Agent{Key: "t79-worker-2", Name: "t79-worker-2", Role: "worker", Status: "stopped"})
+	m := loadWorkTasks(t, home, 120, 40)
+	view := ansi.Strip(m.View().Content)
 	for _, line := range []string{
-		"active 2  queued 2  ▶ [landed 1]  failed 1  all 5",
-		"▶ 79-tui-shell   TUI shell                   hive      landed     t79-worker-2 · pass 7204d69",
-		"needs: 81-agents-screen ✓",
-		"blocks: -",
-		"branch: task/79-tui-shell",
-		"feature: hive-tui",
-		"grant: grants.md 2026-10-20 hive TUI goal",
-		"needs user: -",
-		"evidence: VERIFIED.md, V1.md",
-		"V1 fail · V1 failed: missing shell load · 2026-10-20T10:00:00Z",
+		"tasks · 5",
+		"▶ 79-tui-shell              landed    wave-c",
+		"80-queued-task            created   —",
+		"90-qmeter-task",
+		"title     TUI shell",
+		"status    landed",
+		"goal      g1-tui · wave wave-c",
+		"worker    t79-worker-2 · stopped",
+		"verifier  t79-verifier-2 · pass",
+		"branch    task/79-tui-shell",
+		"merge     7204d699 ",
+		"depends   81-agents-screen",
+		"✓ AC1 the shell loads",
+		"V1 go test ./internal/tui/...",
 	} {
 		if !strings.Contains(view, line) {
-			t.Errorf("Tasks view does not contain line %q:\n%s", line, view)
+			t.Errorf("Tasks view does not contain %q:\n%s", line, view)
 		}
 	}
-	// Decision 8: from 120 columns enter goes to the list.
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd = raise(t, m, key(0, "enter"))
+	m, cmd := raise(t, m, key('b', "b"))
 	m = deliverAgentCommands(t, m, cmd)
-	if got := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(got, "# VERIFIED") {
-		t.Fatalf("enter did not open VERIFIED.md:\n%s", got)
+	if got := ansi.Strip(m.View().Content); !strings.Contains(got, "╭─ brief.md ─") || !strings.Contains(got, "# TUI shell brief") {
+		t.Fatalf("b did not open the task brief in the details:\n%s", got)
 	}
 	m, _ = raise(t, m, key(0, "esc"))
-	m, cmd = raise(t, m, key('b', "b"))
+	if got := ansi.Strip(m.View().Content); strings.Contains(got, "# TUI shell brief") || !strings.Contains(got, "title     TUI shell") {
+		t.Fatalf("esc did not close the brief:\n%s", got)
+	}
+	m, cmd = raise(t, m, key('v', "v"))
 	m = deliverAgentCommands(t, m, cmd)
-	if got := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(got, "# TUI shell brief") {
-		t.Fatalf("b did not open the task brief:\n%s", got)
+	if got := ansi.Strip(m.View().Content); !strings.Contains(got, "# VERIFIED") {
+		t.Fatalf("v did not open VERIFIED.md:\n%s", got)
 	}
 }
 
-func TestTasksScreenArrowDownSelectsNextTask(t *testing.T) {
+// AC4: ↓ selects the next task and its details show.
+func TestWorkTasksArrowDownSelectsNextTask(t *testing.T) {
 	home := writeTasksFixture(t)
 	writeRecord(t, home, []string{"tasks"}, "78-landed-task", records.Task{
 		ID: "78-landed-task", Project: "hive", Title: "Earlier landed task", Status: "verified",
 		Delivery: &records.Delivery{Commit: "1234567890abcdef", Pushed: true},
 	})
-	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 4
-	cmd := m.startCurrentScreenLoad()
-	if cmd == nil {
-		t.Fatal("Tasks screen did not request data")
-	}
-	m, _ = raise(t, m, cmd())
-	// Decision 6: tab moves the region, so the test gives tab to the
-	// current Tasks screen.
-	for range 2 {
-		m, _ = pressScreenKey(t, m, key(0, "tab"))
-	}
-	view := ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "▶ 78-landed-task") {
-		t.Fatalf("initial view does not select the first landed task:\n%s", view)
+	m := loadWorkTasks(t, home, 120, 40)
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "▶ 78-landed-task") {
+		t.Fatalf("initial view does not select the first task:\n%s", view)
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "▶ 79-tui-shell") {
-		t.Fatalf("arrow-down did not select the next landed task:\n%s", view)
-	}
-}
-
-func TestTasksScreenShowsDetailsAtDefaultTerminalSize(t *testing.T) {
-	home := writeTasksFixture(t)
-	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 4
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	cmd := m.startCurrentScreenLoad()
-	if cmd == nil {
-		t.Fatal("Tasks screen did not request data")
-	}
-	m, _ = raise(t, m, cmd())
-	// Decision 6: tab moves the region, so the test gives tab to the
-	// current Tasks screen.
-	for range 2 {
-		m, _ = pressScreenKey(t, m, key(0, "tab"))
-	}
 	view := ansi.Strip(m.View().Content)
-	for _, text := range []string{"79-tui-shell", "landed", "needs:", "branch:", "feature:", "grant:", "needs user:", "evidence:"} {
-		if !strings.Contains(view, text) {
-			t.Errorf("default-size Tasks view omits %q:\n%s", text, view)
-		}
+	if !strings.Contains(view, "▶ 79-tui-shell") || !strings.Contains(view, "╭─ 79-tui-shell ─") {
+		t.Fatalf("arrow-down did not select the next task and show its details:\n%s", view)
 	}
 }
 
-func TestTasksProjectFilterAndFailedTab(t *testing.T) {
-	home := writeTasksFixture(t)
-	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
-	m := newTestModel(t, home, clock)
-	m.screenIndex = 4
-	cmd := m.startCurrentScreenLoad()
-	if cmd == nil {
-		t.Fatal("Tasks screen did not request data")
+// AC1: at 80×24 the list fills the content area, and enter opens the
+// details overlay with the short form of the Compact board.
+func TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize(t *testing.T) {
+	m := loadWorkTasks(t, writeTasksFixture(t), 80, 24)
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "▶ 79-tui-shell") || strings.Contains(view, "ACCEPTANCE") {
+		t.Fatalf("80x24 Tasks view does not show the list alone:\n%s", view)
 	}
-	m, _ = raise(t, m, cmd())
-	// Decision 6: tab moves the region, so the test gives tab to the
-	// current Tasks screen.
-	for range 3 {
-		m, _ = pressScreenKey(t, m, key(0, "tab"))
-	}
-	view := ansi.Strip(m.currentScreen().View(120, 36))
-	for _, line := range []string{"[failed 1]", "82-failed-task", "V1 fail"} {
-		if !strings.Contains(view, line) {
-			t.Errorf("failed Tasks view does not contain %q:\n%s", line, view)
+	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
+	view := ansi.Strip(m.View().Content)
+	for _, text := range []string{"╭─ 79-tui-shell · esc back", "list › details", "status    landed", "goal      g1-tui · wave wave-c", "verifier  t79-verifier-2 · pass", "merge     7204d699", "ACCEPTANCE", "EVIDENCE", "[details]"} {
+		if !strings.Contains(view, text) {
+			t.Errorf("80x24 overlay omits %q:\n%s", text, view)
 		}
 	}
-	m, _ = raise(t, m, key('p', "p"))
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "project: hive") || strings.Contains(view, "90-qmeter-task") {
-		t.Fatalf("project filter did not select hive:\n%s", view)
+	if strings.Contains(view, "title     ") || strings.Contains(view, "branch    ") {
+		t.Errorf("80x24 overlay shows a field of the wide form:\n%s", view)
 	}
-	cmd = m.startCurrentScreenLoad()
-	if cmd == nil {
-		t.Fatal("Tasks refresh did not request data")
+	m, _ = raise(t, m, key(0, "esc"))
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, "ACCEPTANCE") || !strings.Contains(view, "[list]") {
+		t.Fatalf("esc did not close the overlay:\n%s", view)
 	}
-	m, _ = raise(t, m, cmd())
-	view = ansi.Strip(m.currentScreen().View(120, 36))
-	if !strings.Contains(view, "▶ 82-failed-task") {
-		t.Fatalf("refresh did not preserve task selection:\n%s", view)
+}
+
+// AC3: a refresh keeps the selected task, and the list has no project
+// filter.
+func TestWorkTasksRefreshKeepsSelection(t *testing.T) {
+	m := loadWorkTasks(t, writeTasksFixture(t), 120, 40)
+	for range 3 {
+		m, _ = raise(t, m, key('j', "j"))
+	}
+	if m.tasks.selectedID != "82-failed-task" {
+		t.Fatalf("j j j selected %q, want 82-failed-task", m.tasks.selectedID)
+	}
+	m, cmd := raise(t, m, key('R', "R"))
+	m = deliverAgentCommands(t, m, cmd)
+	view := ansi.Strip(m.View().Content)
+	if !strings.Contains(view, "▶ 82-failed-task") || !strings.Contains(view, "verifier  verifier-fail · fail") || !strings.Contains(view, "90-qmeter-task") {
+		t.Fatalf("refresh did not keep the selection with each project listed:\n%s", view)
 	}
 }
 
@@ -408,8 +378,8 @@ func writeTasksFixture(t *testing.T) string {
 	writeRecord(t, home, []string{"tasks"}, "81-agents-screen", records.Task{ID: "81-agents-screen", Project: "hive", Title: "Agents screen", Status: "verified", Verification: &records.Verification{Agent: "t81-verifier-1", Result: "pass"}})
 	evidence := filepath.Join(home, ".hive", "spec", "hive-tui", "tasks", "79-tui-shell", "evidence")
 	writeText(t, filepath.Join(evidence, "V1.md"), "# V1\n")
-	writeText(t, filepath.Join(evidence, "VERIFIED.md"), "# VERIFIED\n")
-	writeText(t, filepath.Join(home, ".hive", "spec", "hive-tui", "tasks", "79-tui-shell", "brief.md"), "# TUI shell brief\n")
+	writeText(t, filepath.Join(evidence, "VERIFIED.md"), "# VERIFIED\n\n| Item | Command | Result |\n| --- | --- | --- |\n| V1 | go test ./internal/tui/... | pass |\n")
+	writeText(t, filepath.Join(home, ".hive", "spec", "hive-tui", "tasks", "79-tui-shell", "brief.md"), "# TUI shell brief\n\n| ID | Criterion | Proven by |\n| --- | --- | --- |\n| AC1 | the shell loads | V1 |\n")
 	return home
 }
 

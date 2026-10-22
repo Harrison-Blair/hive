@@ -151,9 +151,10 @@ func TestQueueKeys(t *testing.T) {
 	}
 	m, cmd := raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
-	if m.viewName() != "Tasks" || m.tasks.selectedID != "2-beta" || m.tasks.tab != tasksAll {
-		t.Fatalf("t gave view %s task %q tab %d, want Tasks 2-beta all", m.viewName(), m.tasks.selectedID, m.tasks.tab)
+	if m.viewName() != "Tasks" || m.tasks.selectedID != "2-beta" {
+		t.Fatalf("t gave view %s task %q, want Tasks 2-beta", m.viewName(), m.tasks.selectedID)
 	}
+	requireView(t, m, "▶ 2-beta")
 }
 
 // AC4: from 120 columns enter gives the focus to the details, and the

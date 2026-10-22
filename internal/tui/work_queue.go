@@ -98,8 +98,6 @@ func (s queueScreen) Update(msg tea.Msg) tea.Cmd {
 		taskID := state.selectedTaskID
 		m.regionFocus[tabWork] = 0
 		m.selectScreen(tabWork, 2)
-		m.tasks.tab = tasksAll
-		m.tasks.projectIndex = 0
 		m.tasks.selectedID = taskID
 		m.tasks.scrollOffset = 0
 		m.tasks.fileOpen = false

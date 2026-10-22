@@ -283,8 +283,11 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks), slices.Clone(data.Agents)), nil
 	}
 	m.tasksLoader = func(string) (tasksData, error) {
-		return buildTasks(data.Tasks, data.Projects, data.Goals, func(item taskItem) ([]string, error) {
-			return slices.Clone(data.Evidence[item.record.ID]), nil
+		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{
+			evidence: func(item taskItem) ([]string, error) { return slices.Clone(data.Evidence[item.record.ID]), nil },
+			read: func(_ taskItem, rel string) (string, error) {
+				return data.Files[filepath.ToSlash(rel)], nil
+			},
 		})
 	}
 	m.frictionLoader = func(string) (frictionData, error) {
