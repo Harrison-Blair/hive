@@ -43,11 +43,15 @@ type Agent struct {
 	TabCreatedByHive bool `json:"tab_created_by_hive,omitempty"`
 	// FirstPrompt is the kept first prompt of a general agent that spawn did
 	// not send. The supervisor sends it.
-	FirstPrompt     string `json:"first_prompt,omitempty"`
-	ProcessPID      int64  `json:"process_pid,omitempty"`
-	ProcessName     string `json:"process_name,omitempty"`
-	ProcessStart    uint64 `json:"process_start,omitempty"`
-	AgentSessionRef string `json:"agent_session_ref,omitempty"`
+	FirstPrompt string `json:"first_prompt,omitempty"`
+	// FirstPromptAttemptAt and FirstPromptSentAt are steps 2 and 4 of the
+	// supervisor send of a kept first prompt.
+	FirstPromptAttemptAt string `json:"first_prompt_attempt_at,omitempty"`
+	FirstPromptSentAt    string `json:"first_prompt_sent_at,omitempty"`
+	ProcessPID           int64  `json:"process_pid,omitempty"`
+	ProcessName          string `json:"process_name,omitempty"`
+	ProcessStart         uint64 `json:"process_start,omitempty"`
+	AgentSessionRef      string `json:"agent_session_ref,omitempty"`
 	// ReportedAt is the time of the last hive agent report of a general agent.
 	ReportedAt string `json:"reported_at,omitempty"`
 }

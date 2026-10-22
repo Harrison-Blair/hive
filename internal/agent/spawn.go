@@ -355,8 +355,14 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 
 	if status == "blocked" {
 		message := "agent blocked: accept the dialog in " + paneID
-		updated, effect, _ = setRecordStatus(home, record, record.Status, records.AgentLive, message, "updated")
-		effects = appendEffect(effects, effect)
+		if options.general != nil {
+			var blockedEffects []output.Effect
+			updated, blockedEffects, _ = blockGeneralRecord(home, record, message)
+			effects = append(effects, blockedEffects...)
+		} else {
+			updated, effect, _ = setRecordStatus(home, record, record.Status, records.AgentLive, message, "updated")
+			effects = appendEffect(effects, effect)
+		}
 		envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
