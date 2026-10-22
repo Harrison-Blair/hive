@@ -106,16 +106,25 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 	}
 }
 
-// The Tasks view has no project filter (decision 23 gives p to peek). After
-// t in Goals, it lists the tasks of each project with the first wave task
-// selected.
+// The Tasks view has no project filter (decision 23 gives p to peek), so p
+// in Tasks hides no task. After t in Goals, the view lists the tasks of each
+// project with the first wave task selected.
 func TestGoalsOpenTasksListsEachProject(t *testing.T) {
 	home := goalsQueueFixture(t)
 	writeRecord(t, home, []string{"projects"}, "other", records.Project{ID: "other", Path: "/repo/other", Base: "dev"})
 	writeRecord(t, home, []string{"tasks"}, "8-other", records.Task{ID: "8-other", Project: "other", Title: "Other task", Status: "created", DependsOn: []string{}})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := openWorkView(t, m, 0)
+	m, cmd := openWorkView(t, m, 2)
 	m = deliverAgentCommands(t, m, cmd)
+	m, _ = raise(t, m, key('p', "p"))
+	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "8-other") || !strings.Contains(view, "1-alpha") {
+		t.Fatalf("p in Tasks hid the tasks of a project:\n%s", view)
+	}
+	// Decision 22: [ selects the previous view, so [ [ gives Goals.
+	for range 2 {
+		m, cmd = raise(t, m, key('[', "["))
+		m = deliverAgentCommands(t, m, cmd)
+	}
 	m, cmd = raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
 
