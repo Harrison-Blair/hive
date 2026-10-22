@@ -235,6 +235,10 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 }
 
 func agentIdentity(record records.Agent) string {
+	// Each general agent is its own identity: many can share a parent.
+	if record.Role == generalRole {
+		return "key\x00" + record.Key
+	}
 	if record.Parent == "" && record.Replaces == "" {
 		return "name\x00" + record.Name
 	}

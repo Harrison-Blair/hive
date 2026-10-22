@@ -206,7 +206,7 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 		{"Main.fixture.json", "manager-hive", nil, 2, 8, '┯'},
 		{"Main.fixture.json", "t4-worker-1", []tea.KeyPressMsg{key(tea.KeyDown, "")}, -1, 8, '┷'},
 		{"AgentsMany.fixture.json", "t5-worker-1", nil, 0, -4, '┨'},
-		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('k', "k")}, 2, -4, '┡'},
+		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('k', "k"), key('k', "k")}, 2, -4, '┡'},
 	} {
 		m := newTestDemoModel(t, tc.fixture, demoSize{})
 		for _, k := range tc.keys {
@@ -220,7 +220,9 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}
 }
 
-// ↑ and ↓ move between the manager and the children of a pod.
+// ↑ and ↓ move between the manager and the children of a pod. The
+// children are in order of creation time (user decision 2 of
+// general-agent): t4-verifier-1, t5-worker-1, t6-worker-1.
 func TestAgentsUpDownMoveInThePod(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
 	for _, step := range []struct {
@@ -228,10 +230,11 @@ func TestAgentsUpDownMoveInThePod(t *testing.T) {
 		want string
 	}{
 		{key('j', "j"), "t6-worker-1"},
-		{key(tea.KeyDown, ""), "t4-verifier-1"},
-		{key(tea.KeyDown, ""), "t4-verifier-1"},
-		{key('k', "k"), "t6-worker-1"},
-		{key(tea.KeyUp, ""), "t5-worker-1"},
+		{key(tea.KeyDown, ""), "t6-worker-1"},
+		{key('k', "k"), "t5-worker-1"},
+		{key(tea.KeyUp, ""), "t4-verifier-1"},
+		{key(tea.KeyDown, ""), "t5-worker-1"},
+		{key(tea.KeyUp, ""), "t4-verifier-1"},
 		{key(tea.KeyUp, ""), "manager-hive-g2"},
 	} {
 		m, _ = raise(t, m, step.key)
