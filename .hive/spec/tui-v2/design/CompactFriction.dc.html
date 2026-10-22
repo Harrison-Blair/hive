@@ -53,7 +53,7 @@ function screen(t) {
   list.slice(0, 16).forEach(function (r, i) {
     var y = 6 + i, sel = i === 4;
     put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
-    put(t, 4, y, fit(r[0], 38), sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 4, y, fit(r[0], sel ? 38 : 37), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 42, y, r[1], 'dim'); put(t, 54, y, r[2], 'dim');
   });
   put(t, 58, 21, 'enter opens details', 'dim');
