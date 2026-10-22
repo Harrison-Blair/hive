@@ -1,88 +1,80 @@
 # Verification: 19-kept-first-prompt
 
-Verdict: **fail**. V-red differs from its expected output. No runtime defect was observed in these checks.
+Verdict: **pass**. This verdict replaces the first verdict after the brief added the guard-test exception.
 
-Verifier: independent pi session in pane `w8D:p1`.
-Task code: `7288d2fc`. Verified merge: `499d53c4` (includes current local `dev`).
-Date: 2026-10-22 UTC.
+Verifier: `t19-verifier-2`, independent pi session, pane `w8K:p1`.
+Code: `7ae66e6c`. Date: 2026-10-22 UTC.
 
 | Item | Result | Observation |
 | --- | --- | --- |
-| V1 | pass | A new codex directory showed a trust dialog. The live blocked record kept the prompt. The parent inbox received one blocked record. After manual dialog answers, the supervisor sent one prompt. Both times were present. |
-| V-red | fail | All 11 new tests pass on task code. Nine fail on the base with the required compile scaffolding. `TestKeptFirstPromptWaitsWhileBlocked` and `TestKeptFirstPromptFailedAttemptWriteDoesNotSend` pass on that base. The brief requires each new test to fail on the base. Both guard tests fail with deliberate guard breaks. |
-| V-gate | pass | Merged `dev` before the scope check. Only allowed source files, the brief, the STE baseline, and task evidence differ. All five gate commands exit 0. Formatting and module checks print nothing. |
+| V1 | pass | A new Codex directory showed a trust dialog. Spawn kept a live blocked record and sent a blocked record to the parent inbox. After manual dialog answers, the supervisor sent the first prompt once. Both times were present. |
+| V-red | pass | All 11 new tests pass on task code. Nine fail on base code with the required compile scaffolding. The two guard tests pass on the base, as the revised brief permits. Each guard test fails when its guard is removed. Restoring the guards makes all supervisor tests pass. |
+| V-gate | pass | `git merge dev --no-edit` reports Already up to date. Only allowed source files, the brief, the STE baseline, and evidence differ. All five gate commands pass. Formatting and module checks print nothing. |
 
 ## V-red
 
-Base: `ae14fe29`, in a detached scratch worktree. Copied the three changed test files from the task.
+Used a detached scratch worktree at base `ae14fe29`. Copied the three changed test files. Ran:
 
 ```sh
 go test -count=1 -v ./internal/agent/ ./internal/lib/records/ -run 'GeneralSpawnBlocked|FirstPromptTimes'
 ```
 
-Both new tests fail on assertions. For supervise, added only the task record fields and a no-op `firstPromptRule` to compile the tests against the base. Then ran:
+Both new tests fail on assertions. Added only the two record fields and a no-op `firstPromptRule` to compile the supervisor tests. Ran:
 
 ```sh
 go test -count=1 -v ./internal/supervise/ -run KeptFirstPrompt
 ```
 
-Seven supervisor tests fail on assertions; two guard tests pass. This agrees with the detailed worker output, but differs from the brief and the final claim in `V-red.md` that each new test fails on the base.
+Seven tests fail on assertions. `TestKeptFirstPromptWaitsWhileBlocked` and `TestKeptFirstPromptFailedAttemptWriteDoesNotSend` pass, under the guard-test exception.
 
-Green command on the task merge:
+Ran the green command in the task worktree:
 
 ```sh
 go test -count=1 -v ./internal/supervise/ ./internal/agent/ ./internal/lib/records/ -run 'KeptFirstPrompt|GeneralSpawnBlocked|FirstPromptTimes'
 ```
 
-All 11 tests pass.
+All 11 tests pass. In the scratch checkout, copied the task supervisor source and record type. Removed the idle/done status guard. Also changed the failed attempt write path to continue with `attempted = true`. Ran the supervisor command again. The blocked guard test fails with `prompts = 1; want none while blocked`. The write guard test fails with `prompts = 1; want none after a failed attempt write`. Restored the task source and ran again: all nine supervisor tests pass. No task source was changed.
 
-Deliberate breaks ran only in the scratch checkout with task source copied in. Removed the idle/done status guard. Also let a failed attempt write continue to the send. Ran the supervisor command again. The blocked-status test fails with `prompts = 1; want none while blocked`. The failed-attempt-write test fails with `prompts = 1; want none after a failed attempt write`. These results establish that both guard tests detect broken behavior. They do not establish a base failure.
+## V1
 
-Full test and gate output is in `verifier-runs.md`.
+Versions: herdr 0.9.5, protocol 22; Codex 0.160.1.
+Built with `go build -o .hive/tmp/t19-reverify/hive .`.
+Created a temp home at `.hive/tmp/t19-reverify/home` and a new Git repository at `/tmp/hive-t19-reverify-NXrCyc`. Created workspace `w8M` without focus.
 
-## V1: independent live run
-
-Versions: herdr 0.9.5, protocol 22; codex-cli 0.160.1.
-
-Built the task binary with `go build -o .hive/tmp/verify-hive .`.
-Created a temp home at `.hive/tmp/verify-home`, with its own `.hive/README.md` marker. Created an empty Git repository at `/tmp/hive-t19-verifier-GnxRe2`. The real home was not used for the live commands.
-
-Created workspace `w8F`, label `t19-verifier-live`, without focus. Its shell pane `w8F:p1` ran these commands with `HIVE_HOME` set to the temp home and the absolute path to the built binary:
+Pane `w8M:p1` set `HIVE_HOME` to the temp home, registered `reverify-boss`, then ran the built binary:
 
 ```sh
-hive agent register --role agent --name verify-boss
-hive agent spawn --role agent --name verify-child --harness codex --model gpt-6.1-sol --allow-trust-dialog --cwd /tmp/hive-t19-verifier-GnxRe2 --prompt 'Reply with the single word READY. Do not run a tool.'
+hive agent spawn --role agent --name reverify-child --harness codex --model gpt-6.1-sol --allow-trust-dialog --cwd /tmp/hive-t19-reverify-NXrCyc --prompt 'Reply with the single word READY. Do not run a tool.'
 ```
 
-Spawn exits 1 with a blocked message. The record has `status: live`, `agent_status: blocked`, the complete first prompt, and no attempt or sent time. The parent inbox has one record with `kind: blocked`, `agent: verify-child`.
+Spawn exits 1 with a blocked message. The child record is live, has agent status blocked, and keeps the complete prompt with neither timestamp. The parent inbox holds one blocked record for the child.
 
-In the created child pane `w8F:p2`, manually selected Skip at the update notice, Trust and continue at the folder dialog, and Continue without trusting at the hook dialog. Hive did not answer the dialogs. Herdr then reports `done` for the idle child.
+In child pane `w8M:p2`, manually selected Skip for the update notice, Trust and continue for the empty repository, and Continue without trusting for hooks. Hive sent no dialog answer. Herdr then reported `done`.
 
-Created supervisor tab `w8F:t3`, pane `w8F:p3`. Ran the built binary as `hive supervise` with the temp `HIVE_HOME`. The supervisor prints:
+Started `hive supervise` in owned pane `w8M:p3`, with the temp home. It printed one `first prompt reverify-child` line. The child received one complete prompt and replied READY. The record has:
 
 ```text
-supervisor live, generation 1
-exited record for coordinator
-first prompt verify-child
+first_prompt_attempt_at: 2026-10-22T00:20:15.459999791Z
+first_prompt_sent_at:    2026-10-22T00:20:15.766145049Z
 ```
 
-The parent is a shell with no harness, so reconcile marks it exited. The child pane shows one complete first prompt and one `READY` response.
+After 24 seconds, the temp logs contain exactly one `agent.prompt` request and its reply, with request ID `r-0f91f778`. The child capture contains one role line. The supervisor also marks the shell-only parent exited during reconcile; this behavior is outside this task.
 
-The record remains live and has:
+## Gate and scope
 
-```text
-first_prompt_attempt_at: 2026-10-22T00:12:04.746970477Z
-first_prompt_sent_at:    2026-10-22T00:12:05.053338275Z
+Ran these commands from the task worktree root:
+
+```sh
+git diff dev...HEAD --stat
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go mod tidy -diff
+go vet ./...
+golangci-lint run ./...
+go test -race ./...
 ```
 
-After more supervisor passes, the temp log has exactly one `agent.prompt` request and one matching reply (`request_id: r-c7a8b2f8`). The supervisor still shows one first-prompt line. The captured pane has one first-prompt role line.
+Formatting and module checks print nothing. Vet prints nothing. Lint prints `0 issues.`. Race tests pass for all packages. Full gate and test output is in `reverify-runs.md`.
 
 ## Cleanup
 
-Stopped `verify-child` through `hive agent stop --agent verify-child` in the temp home. It exits 0 and closes its pane and tab. Sent Ctrl-C to the owned supervisor pane and confirmed the shell prompt. Closed workspace `w8F`; the workspace list has no matching ID or label.
-
-Removed only the trust entry for the scratch repository from the Codex config. The config then matches the pre-check backup byte for byte. Removed the scratch Git worktree, temp repository, temp home, binary, captures, and config backup after recording the results. No task source was changed for mutation tests.
-
-## Required follow-up
-
-Reconcile V-red with the observed guard-test results. The brief requires base failure for every new test. The two guard tests instead prove their sensitivity through deliberate breaks. This verdict does not waive that requirement.
+Stopped the child with `hive agent stop --agent reverify-child` in the temp home; it exits 0 and closes the child pane and tab. Sent Ctrl-C to the owned supervisor and confirmed the shell prompt. Closed workspace `w8M` and confirmed its absence. Removed only the new repository trust entry; the Codex config matches the pre-check backup byte for byte. Removed the scratch worktree, temp repository, temp home, binary, captures, and backup after recording the evidence. The task source remains unchanged.
