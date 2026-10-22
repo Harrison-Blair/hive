@@ -3,7 +3,7 @@
 // tui.go defines the root model, its lifecycle, and the program runner.
 // shell.go defines the screen interface, the palette, and the list of current screens.
 // frame.go defines the screen registry, the frame, the focus, the key routes, and the help overlay.
-// chat_screen.go loads and renders chat and coordinator inbox data, and handles Chat input.
+// chat.go loads and renders chat and coordinator inbox data, and handles Chat input.
 // agents.go loads and renders agent topology, and handles pane actions.
 // goals_queue.go loads and renders goal and queue records.
 // task_screen.go loads and renders task records and evidence.

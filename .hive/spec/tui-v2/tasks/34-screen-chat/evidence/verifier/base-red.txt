@@ -1,0 +1,302 @@
+=== RUN   TestChatMatchesItsBoard
+    chat_test.go:41: convert: row 35 col 4: code "37": unsupported SGR parameter 37
+        [1m hive  ~/source/hive[m                                    [1mcoordinator [m[1;38;2;110;230;154m●[m[1m working   supervisor [m[1;38;2;110;230;154m●[m[1m live   needs you [m[1m0[m[1m   14:22 [m
+         [38;2;163;157;144m 1 Agents [m [1;38;2;245;185;66m 2 Chat [m [38;2;163;157;144m 3 Work [m [38;2;163;157;144m 4 Friction [m [38;2;163;157;144m 5 Health [m [38;2;163;157;144m 6 Logs [m                                                          
+        [38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m─[m[38;2;245;185;66m━━━━━━━━[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────────[m[38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m─────────────────────────────────────────────────────────[m
+        [38;2;61;58;51m╭──────────────────────────────────────────────────────────────────────────────────╮[m[38;2;61;58;51m╭──────────────────────────────────╮[m
+        [38;2;61;58;51m│[m [1;38;2;245;185;66mcoordinator[m                                                                      [38;2;61;58;51m│[m[38;2;61;58;51m│[m [1;38;2;245;185;66mhive events[m                      [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;110;230;154mlive[m · claude · working                                                          [38;2;61;58;51m│[m[38;2;61;58;51m│[m Oct 21 10:19 · manager-hive:     [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m claude-opus-5-5 · w58:p4                                                         [38;2;61;58;51m│[m[38;2;61;58;51m│[m goal g1-tui-restart created ·    [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   I want to give the user an ability to restart the coordinator or supervisor    [38;2;61;58;51m│[m[38;2;61;58;51m│[m wave A started · worker t2-      [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m within the hive UI.                                                              [38;2;61;58;51m│[m[38;2;61;58;51m│[m worker-1 live                    [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m ── 1 hive events ──                                                              [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m coordinator · Oct 21 10:21 ↳ c43                                                 [38;2;61;58;51m│[m[38;2;61;58;51m│[m [1;38;2;245;185;66m▶ noise: landings and decisions[m  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   ## Interrogate, round 2                                                        [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                                                                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   **1. What happens to the old tab on restart?**                                 [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                                                                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   Bare hive makes the `coordinator` tab, but its record has `spawned=false`.     [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m `agent stop` refuses it.                                                         [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                                                                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | Choice | Answer | Pros | Cons |                                              [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | --- | --- | --- | --- |                                                      [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | A (REC) | Record that bare hive started it | No tab pile-up | Field change | [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | B | Leave the old tab, open a new one | Smallest change | Dead tabs pile up  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m |                                                                                [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | C | Reuse the same pane | One tab always | Must exit harness |               [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                                                                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   - **Recommended:** A, because hive may close only panes it started.            [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   - Reply like `1A, 2A, 3A`, or `simplify N`.                                    [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                                                                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   ```                                                                            [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   hive agent stop manager-hive                                                   [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   hive agent spawn --role manager                                                [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   ```                                                                            [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m you · Oct 21 10:22                                                               [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   1A, 2A, 3B                                                                     [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m╭──────────────────────────────────────────────────────────────────────────────╮[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [37m[m1A, 2A, 3B                                                                   [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [37m[m[30m                                                                            [m [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [37m[m[30m                                                                            [m [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [37m[m[30m                                                                            [m [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m╰──────────────────────────────────╯[m
+        [1;38;2;245;185;66m [input] [m[38;2;163;157;144menter send · shift+enter newline · esc leave input · pgup/pgdn scroll feed · tab region                        [m
+--- FAIL: TestChatMatchesItsBoard (0.01s)
+=== RUN   TestCompactChatMatchesItsBoard
+    chat_test.go:45: convert: row 19 col 4: code "37": unsupported SGR parameter 37
+        [1m hive[m                                     [1mcoord [m[1;38;2;110;230;154m●[m[1m · sup [m[1;38;2;110;230;154m●[m[1m · needs you [m[1m0[m[1m · 14:22 [m
+         [38;2;163;157;144m 1 Agents [m[1;38;2;245;185;66m 2 Chat [m[38;2;163;157;144m 3 Work [m[38;2;163;157;144m 4 Friction [m[38;2;163;157;144m 5 Health [m[38;2;163;157;144m 6 Logs [m                       
+        [38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m[m[38;2;245;185;66m━━━━━━━━[m[38;2;61;58;51m[m[38;2;61;58;51m────────[m[38;2;61;58;51m[m[38;2;61;58;51m────────────[m[38;2;61;58;51m[m[38;2;61;58;51m──────────[m[38;2;61;58;51m[m[38;2;61;58;51m────────[m[38;2;61;58;51m[m[38;2;61;58;51m───────────────────────[m
+        [38;2;61;58;51m╭──────────────────────────────────────────╮[m[38;2;61;58;51m╭──────────────────────────────────╮[m
+        [38;2;61;58;51m│[m [1;38;2;245;185;66mcoordinator[m                              [38;2;61;58;51m│[m[38;2;61;58;51m│[m [1;38;2;245;185;66mhive events[m                      [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;110;230;154mlive[m · claude · working                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m Oct 21 10:19 · manager-hive:     [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m claude-opus-5-5 · w58:p4                 [38;2;61;58;51m│[m[38;2;61;58;51m│[m goal g1-tui-restart created ·    [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | A (REC) | Record that bare hive      [38;2;61;58;51m│[m[38;2;61;58;51m│[m wave A started · worker t2-      [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m started it | No tab pile-up | Field      [38;2;61;58;51m│[m[38;2;61;58;51m│[m worker-1 live                    [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m change                                   [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m |                                        [38;2;61;58;51m│[m[38;2;61;58;51m│[m [1;38;2;245;185;66m▶ noise: landings and decisions[m  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   | B | Leave the old tab | Smallest     [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m change | Tabs pile up |                  [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m                                          [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   - **Recommended:** A, hive closes only [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m panes it started.                        [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m you · Oct 21 10:22                       [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m   1A, 2A, 3B                             [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m╭──────────────────────────────────────╮[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [37m[m[38;5;240mT[m[38;5;240mype a message[m                       [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [38;5;240m[37m[m[m[30m [m                                    [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [38;5;240m[37m[m[m[30m [m                                    [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m│[m                                  [38;2;61;58;51m│[m
+        [38;2;61;58;51m│[m [38;2;245;185;66m│[m [38;5;240m[37m[m[m[30m [m                                    [38;2;245;185;66m│[m [38;2;61;58;51m│[m[38;2;61;58;51m╰──────────────────────────────────╯[m
+        [1;38;2;245;185;66m [input] [m[38;2;163;157;144menter send · esc leave input · pgup/pgdn feed · tab region             [m
+--- FAIL: TestCompactChatMatchesItsBoard (0.00s)
+=== RUN   TestChatFixtureScrollPutsTheMessageAtTheTop
+    chat_test.go:69: feed title row = "╭──────────────────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────╮"
+--- FAIL: TestChatFixtureScrollPutsTheMessageAtTheTop (0.00s)
+=== RUN   TestChatLoadsRecentConversationAndInboxEvents
+    chat_test.go:100: view does not contain "│ 08:00  you · pending first message":
+         hive  /tmp/TestChatLoadsRecentConversationAndInbox… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭──────────────────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────╮
+        │ coordinator                                                                      ││ hive events                      │
+        │ not live · no coordinator                                                        ││ Oct 19 08:30 · worker-one:       │
+        │ you · Oct 19 08:00 [pending]                                                     ││ message first line               │
+        │   first message                                                                  ││                                  │
+        │ ── 1 hive events ──                                                              ││ ▶ noise: landings and decisions  │
+        │ coordinator · Oct 19 09:00 ↳ c2                                                  ││                                  │
+        │   **answer**                                                                     ││                                  │
+        │ you · Oct 19 10:00                                                               ││                                  │
+        │   delivered message                                                              ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        ╰──────────────────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
+         [feed] i type · pgup/pgdn scroll · tab region · ? help                                                                 
+--- FAIL: TestChatLoadsRecentConversationAndInboxEvents (0.01s)
+=== RUN   TestChatNoiseLevelsFilterInboxKinds
+--- PASS: TestChatNoiseLevelsFilterInboxKinds (0.00s)
+=== RUN   TestChatKeysScrollTheFeed
+    chat_test.go:192: view does not contain "line-01":
+         hive  /tmp/TestChatKeysScrollTheFeed4910881/001     coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭──────────────────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────╮
+        │ coordinator                                                                      ││ hive events                      │
+        │ not live · no coordinator                                                        ││ no events                        │
+        │ coordinator · Oct 20 06:27                                                       ││                                  │
+        │   line-27                                                                        ││ ▶ noise: landings and decisions  │
+        │ coordinator · Oct 20 06:28                                                       ││                                  │
+        │   line-28                                                                        ││                                  │
+        │ coordinator · Oct 20 06:29                                                       ││                                  │
+        │   line-29                                                                        ││                                  │
+        │ coordinator · Oct 20 06:30                                                       ││                                  │
+        │   line-30                                                                        ││                                  │
+        │ coordinator · Oct 20 06:31                                                       ││                                  │
+        │   line-31                                                                        ││                                  │
+        │ coordinator · Oct 20 06:32                                                       ││                                  │
+        │   line-32                                                                        ││                                  │
+        │ coordinator · Oct 20 06:33                                                       ││                                  │
+        │   line-33                                                                        ││                                  │
+        │ coordinator · Oct 20 06:34                                                       ││                                  │
+        │   line-34                                                                        ││                                  │
+        │ coordinator · Oct 20 06:35                                                       ││                                  │
+        │   line-35                                                                        ││                                  │
+        │ coordinator · Oct 20 06:36                                                       ││                                  │
+        │   line-36                                                                        ││                                  │
+        │ coordinator · Oct 20 06:37                                                       ││                                  │
+        │   line-37                                                                        ││                                  │
+        │ coordinator · Oct 20 06:38                                                       ││                                  │
+        │   line-38                                                                        ││                                  │
+        │ coordinator · Oct 20 06:39                                                       ││                                  │
+        │   line-39                                                                        ││                                  │
+        │ coordinator · Oct 20 06:40                                                       ││                                  │
+        │   line-40                                                                        ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        ╰──────────────────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
+         [feed] i type · pgup/pgdn scroll · tab region · ? help                                                                 
+--- FAIL: TestChatKeysScrollTheFeed (0.01s)
+=== RUN   TestChatKeysFollowTheFocusRules
+    chat_test.go:228: view does not contain "> x█":
+         hive  /tmp/TestChatKeysFollowTheFocusRules18821495… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭──────────────────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────╮
+        │ coordinator                                                                      ││ hive events                      │
+        │ not live · no coordinator                                                        ││ no events                        │
+        │ coordinator · Oct 20 06:01                                                       ││                                  │
+        │   line-01                                                                        ││ ▶ noise: landings and decisions  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │                                                                                  ││                                  │
+        │ ╭──────────────────────────────────────────────────────────────────────────────╮ ││                                  │
+        │ │ x                                                                            │ ││                                  │
+        │ │                                                                              │ ││                                  │
+        │ │                                                                              │ ││                                  │
+        │ │                                                                              │ ││                                  │
+        │ ╰──────────────────────────────────────────────────────────────────────────────╯ ││                                  │
+        ╰──────────────────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
+         [input] enter send · shift+enter newline · esc leave input · pgup/pgdn scroll feed · tab region                        
+--- FAIL: TestChatKeysFollowTheFocusRules (0.00s)
+=== RUN   TestChatCompactFooterHints
+--- PASS: TestChatCompactFooterHints (0.00s)
+=== RUN   TestDemoChatSendShowsTheNotice
+    chat_test.go:294: view does not contain "> 1A, 2A, 3B█":
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭──────────────────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────╮
+        │ coordinator                                                                      ││ hive events                      │
+        │ live · claude · working                                                          ││ Oct 21 10:19 · manager-hive:     │
+        │ claude-opus-5-5 · w58:p4                                                         ││ goal g1-tui-restart created ·    │
+        │   I want to give the user an ability to restart the coordinator or supervisor    ││ wave A started · worker t2-      │
+        │ within the hive UI.                                                              ││ worker-1 live                    │
+        │ ── 1 hive events ──                                                              ││                                  │
+        │ coordinator · Oct 21 10:21 ↳ c43                                                 ││ ▶ noise: landings and decisions  │
+        │   ## Interrogate, round 2                                                        ││                                  │
+        │                                                                                  ││                                  │
+        │   **1. What happens to the old tab on restart?**                                 ││                                  │
+        │                                                                                  ││                                  │
+        │   Bare hive makes the `coordinator` tab, but its record has `spawned=false`.     ││                                  │
+        │ `agent stop` refuses it.                                                         ││                                  │
+        │                                                                                  ││                                  │
+        │   | Choice | Answer | Pros | Cons |                                              ││                                  │
+        │   | --- | --- | --- | --- |                                                      ││                                  │
+        │   | A (REC) | Record that bare hive started it | No tab pile-up | Field change | ││                                  │
+        │   | B | Leave the old tab, open a new one | Smallest change | Dead tabs pile up  ││                                  │
+        │ |                                                                                ││                                  │
+        │   | C | Reuse the same pane | One tab always | Must exit harness |               ││                                  │
+        │                                                                                  ││                                  │
+        │   - **Recommended:** A, because hive may close only panes it started.            ││                                  │
+        │   - Reply like `1A, 2A, 3A`, or `simplify N`.                                    ││                                  │
+        │                                                                                  ││                                  │
+        │   ```                                                                            ││                                  │
+        │   hive agent stop manager-hive                                                   ││                                  │
+        │   hive agent spawn --role manager                                                ││                                  │
+        │   ```                                                                            ││                                  │
+        │ you · Oct 21 10:22                                                               ││                                  │
+        │   1A, 2A, 3B                                                                     ││                                  │
+        │ ╭──────────────────────────────────────────────────────────────────────────────╮ ││                                  │
+        │ │ 1A, 2A, 3B                                                                   │ ││                                  │
+        │ │                                                                              │ ││                                  │
+        │ │                                                                              │ ││                                  │
+        │ │                                                                              │ │╰──────────────────────────────────╯
+         [input] demo mode: no action                                                                                           
+--- FAIL: TestDemoChatSendShowsTheNotice (0.00s)
+=== RUN   TestChatFitsEachSize
+=== RUN   TestChatFitsEachSize/80x24
+    chat_test.go:336: row 19 has a broken border "│                                          ││                                  │"
+=== RUN   TestChatFitsEachSize/80x25
+    chat_test.go:336: row 20 has a broken border "│                                          ││                                  │"
+=== RUN   TestChatFitsEachSize/119x40
+    chat_test.go:336: row 35 has a broken border "│                                                                                 ││                                  │"
+=== RUN   TestChatFitsEachSize/120x40
+    chat_test.go:336: row 35 has a broken border "│                                                                                  ││                                  │"
+=== RUN   TestChatFitsEachSize/120x41
+    chat_test.go:336: row 36 has a broken border "│                                                                                  ││                                  │"
+--- FAIL: TestChatFitsEachSize (0.01s)
+    --- FAIL: TestChatFitsEachSize/80x24 (0.00s)
+    --- FAIL: TestChatFitsEachSize/80x25 (0.00s)
+    --- FAIL: TestChatFitsEachSize/119x40 (0.00s)
+    --- FAIL: TestChatFitsEachSize/120x40 (0.00s)
+    --- FAIL: TestChatFitsEachSize/120x41 (0.00s)
+=== RUN   TestChatStartFromProjectsShowsRefusalAndBlocksInput
+--- PASS: TestChatStartFromProjectsShowsRefusalAndBlocksInput (0.00s)
+=== RUN   TestChatRefusedSendShowsNoticeAndKeepsDraft
+--- PASS: TestChatRefusedSendShowsNoticeAndKeepsDraft (0.02s)
+=== RUN   TestChatSendRunsInBackgroundAndKeepsFailedDraft
+--- PASS: TestChatSendRunsInBackgroundAndKeepsFailedDraft (0.06s)
+=== RUN   TestChatProgramRunsWithStringInput
+    chat_test.go:470: program output omitted Chat:
+        [>4m[?1049h[?25l[?2004h[>4;2m[>1u[H[2J hive[37X[1;43Hcoord ○ · sup ○ · needs you 0 · 22:41[K
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs 
+        ───────────━━━━━━━━─────────────────────────────────────────────────────────────
+        ╭──────────────────────────────────────────╮╭──────────────────────────────────╮
+        │ coordinator[30X[5;44H││ hive events[22X[80G│
+        │ not live · no coordinator[16X[6;44H││ no events[24X[80G│
+        │ no chat yet[30X[7;44H││[34X[80G│
+        │[42X[8;44H││ ▶ noise: landings and decisions  │
+        │[42X[9;44H││[34X[80G│
+        │[42X[10;44H││[34X[80G│
+        │[42X[11;44H││[34X[80G│
+        │[42X[12;44H││[34X[80G│
+        │[42X[13;44H││[34X[80G│
+        │[42X[14;44H││[34X[80G│
+        │[42X[15;44H││[34X[80G│
+        │[42X[16;44H││[34X[80G│
+        │[42X[17;44H││[34X[80G│
+        │[42X[18;44H││[34X[80G│
+        │[42X[19;44H││[34X[80G│
+        │[42X[20;44H││[34X[80G│
+        │[42X[21;44H││[34X[80G│
+        │[42X[22;44H││[34X[80G│
+        ╰──────────────────────────────────────────╯╰──────────────────────────────────╯
+         [feed] not in herdr: no coordinator or supervisor started[K[>4m[<1u[24;1H[?1049l[?25h[?2004l[?2026$p[?2027$p
+--- FAIL: TestChatProgramRunsWithStringInput (0.02s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.180s
+FAIL

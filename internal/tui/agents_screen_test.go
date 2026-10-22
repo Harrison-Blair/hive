@@ -23,18 +23,7 @@ var agentsBoards = []string{"Main", "AgentsMany", "AgentDetails", "CompactAgents
 // cell for cell.
 func TestAgentsBoardsMatchTheirGrids(t *testing.T) {
 	for _, board := range agentsBoards {
-		t.Run(board, func(t *testing.T) {
-			want := readBoardGrid(t, board)
-			m := newTestDemoModel(t, board+".fixture.json", demoSize{})
-			got := renderGrid(t, m, want.Width, want.Height)
-			diffs, err := cellgrid.Compare(want, got, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(diffs) != 0 {
-				t.Fatalf("%d cells differ from %s.grid:\n%s", len(diffs), board, cellgrid.FormatDiffs(diffs))
-			}
-		})
+		t.Run(board, func(t *testing.T) { checkBoardGolden(t, board) })
 	}
 }
 
@@ -91,6 +80,12 @@ func agentsDataSets(t *testing.T) map[string]func(t *testing.T) (*Model, string)
 			m := agentsModel(t, agentsSource{projects: projects, agents: agents, goals: []records.Goal{goal}})
 			m.graph.selected = agents[3].Key
 			return m, "t3-very-long-proj…"
+		},
+		"forty workers": func(t *testing.T) (*Model, string) {
+			projects, agents := agentsProject("p1", "pi", 40)
+			m := agentsModel(t, agentsSource{projects: projects, agents: agents})
+			m.graph.selected = "t40-p1-worker"
+			return m, "t40-p1-worker"
 		},
 		"empty": func(t *testing.T) (*Model, string) {
 			return agentsModel(t, agentsSource{}), agentsNoneText
@@ -375,6 +370,133 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	m, _ = raise(t, m, key(tea.KeyUp, ""))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	requireView(t, m, "RECENT", "14:10 task land 1-alpha")
+}
+
+// openAgents opens the Agents tab of a normal-mode model at 120×40 and
+// loads its records.
+func openAgents(t *testing.T, home string, clock *testClock) *Model {
+	t.Helper()
+	m := newTestModel(t, home, clock)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	m, cmd := raise(t, m, key('1', "1"))
+	return deliverAgentCommands(t, m, cmd)
+}
+
+// The graph shows the current generation of each agent. A replaced
+// generation is not on the graph. A stopped current agent is on it.
+func TestAgentsGraphShowsTheCurrentGenerationOnly(t *testing.T) {
+	home, clock := agentsGenerationFixture(t)
+	writeAgentRecord(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "idle", Parent: "manager-current"})
+	writeAgentRecord(t, home, records.Agent{Key: "worker-new", Name: "worker-new", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", Replaces: "worker-old"})
+	m := openAgents(t, home, clock)
+	requireView(t, m, "manager-current", "● live-worker", "● worker-new", "○ active-ghost", "○ landed-ghost", "h hides 2 stopped")
+	view := ansi.Strip(m.View().Content)
+	for _, old := range []string{"manager-old", "worker-old"} {
+		if strings.Contains(view, old) {
+			t.Fatalf("the graph shows the replaced generation %s:\n%s", old, view)
+		}
+	}
+}
+
+// The details popup shows the nudge of the supervisor only for a current
+// coordinator or manager with an unread nudged inbox item.
+func TestAgentsDetailsShowAnUnreadNudge(t *testing.T) {
+	for _, tc := range []struct {
+		name, inbox, selected, readAt, nudgedAt string
+		want                                    bool
+	}{
+		{name: "unread nudged manager", inbox: "manager-alpha", selected: "manager-alpha", nudgedAt: "2026-10-20T11:59:00Z", want: true},
+		{name: "read nudged manager", inbox: "manager-alpha", selected: "manager-alpha", readAt: "2026-10-20T11:59:00Z", nudgedAt: "2026-10-20T11:58:00Z"},
+		{name: "unread manager without nudge", inbox: "manager-alpha", selected: "manager-alpha"},
+		{name: "nudged worker", inbox: "worker-alpha", selected: "worker-alpha", nudgedAt: "2026-10-20T11:59:00Z"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := agentsBoardModel(t)
+			writeRecord(t, m.home, []string{"inbox", tc.inbox}, "1", records.Inbox{
+				Seq: 1, Role: tc.inbox, Kind: records.InboxCompleted, Agent: "worker-alpha",
+				Text: "completed", ReadAt: tc.readAt, NudgedAt: tc.nudgedAt,
+			})
+			m = refreshAgents(t, m)
+			m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+			m.graph.selected = tc.selected
+			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			view := ansi.Strip(m.View().Content)
+			if !strings.Contains(view, tc.selected+" · esc closes") {
+				t.Fatalf("the popup of %s is not open:\n%s", tc.selected, view)
+			}
+			if got := strings.Contains(view, "1m ago by supervisor"); got != tc.want {
+				t.Fatalf("popup shows the nudge = %t, want %t:\n%s", got, tc.want, view)
+			}
+		})
+	}
+}
+
+// A worker or verifier without a parent record, or with a long agent key,
+// sits in the pod of its project.
+func TestAgentsPodHoldsAgentsWithoutAParentRecord(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	writeAgentRecord(t, home, records.Agent{Key: "worker-stenographer-long-key-g7", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working"})
+	m := openAgents(t, home, clock)
+	requireView(t, m, "project agents · 1 project", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
+}
+
+// The pods follow the order of the project records.
+func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
+	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
+	m := openAgents(t, home, clock)
+	view := ansi.Strip(m.View().Content)
+	alpha, demo, zeta := strings.Index(view, " alpha "), strings.Index(view, " demo "), strings.Index(view, " zeta ")
+	if alpha < 0 || demo <= alpha || zeta <= demo {
+		t.Fatalf("pods are missing or out of order: alpha %d, demo %d, zeta %d:\n%s", alpha, demo, zeta, view)
+	}
+}
+
+// A stale agent is unknown. When the supervisor claim is stale, each card
+// is unknown.
+func TestAgentsCardsShowUnknownWhenTheSupervisorIsStale(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
+	m := openAgents(t, home, clock)
+	requireView(t, m, "claude · idle · 3m", "pi · unknown")
+	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
+	m = refreshAgents(t, m)
+	requireView(t, m, "claude · unknown", "codex · unknown · 5m")
+}
+
+// Each key of the graph logs its user action.
+func TestAgentsKeysLogTheirActions(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	m := openAgents(t, home, clock)
+	m, cmd := raise(t, m, key(tea.KeyDown, ""))
+	if cmd == nil {
+		t.Fatal("the selection did not log")
+	}
+	m = deliverAgentCommands(t, m, cmd)
+	m, cmd = raise(t, m, key('h', "h"))
+	if cmd == nil {
+		t.Fatal("h did not log")
+	}
+	m = deliverAgentCommands(t, m, cmd)
+	m, cmd = raise(t, m, key('a', "a"))
+	if cmd == nil {
+		t.Fatal("a did not return a command")
+	}
+	batch, ok := cmd().(tea.BatchMsg)
+	if !ok || len(batch) != 2 {
+		t.Fatalf("a did not batch its log with the attach: %#v", batch)
+	}
+	_, _ = raise(t, m, batch[0]())
+	data, err := os.ReadFile(dailyPath(home, clock.now()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"action":"agent selection"`, `"action":"agent hide stopped"`, `"hide_stopped":true`, `"action":"agent attach"`} {
+		if !strings.Contains(string(data), want) {
+			t.Fatalf("TUI log omits %q:\n%s", want, data)
+		}
+	}
 }
 
 // requireWholeAgentsBorders is requireWholeBorders for the graph. On the rail,

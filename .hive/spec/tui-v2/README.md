@@ -221,6 +221,16 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The worker made these decisions in task `34-screen-chat`:
+
+- Screen: `internal/tui/chat.go` replaces `chat_screen.go` and its tests. The registry entry of the Chat tab does not change. `scrollChatFeed` moves from `frame.go` to `chat.go`.
+- Feed: `component.ChatLines` gives the lines of each message. A blank line separates two messages. From 120 columns, the first body row of the feed is blank, and the title is `chat · noise LEVEL`. The top border also shows ` ↑ N earlier ` in `dim` from the middle column. N is the count of messages above the view. Below 120 columns, the title is `chat`.
+- Scroll: `ui.scroll.feed.top` gives the index of the message at the top of the feed. The feed then does not follow its end. In normal mode, the feed follows its end. `pgup` and `pgdn` page the feed. In the feed, `↑` `↓` `j` `k` move it by one line, `g` goes to the top, and `G` goes to the end and follows it. `component.Thumb` gives the scroll mark. Its total is the count of feed lines.
+- Noise: the levels are `quiet`, `normal`, and `all`, from `ui.chat_noise`. The default is `normal`. They show the inbox kinds of the earlier levels "decisions only", "landings and decisions", and "all". No key changes the level, because decision 24 gives each printable key in the feed to the input. The screen has no keys `n` and `e`, which the earlier screen had. Each event folds to one line, as decision 15 gives.
+- Name: when a user message is not sent, its delivery shows after the name, for example `you · pending`. The time uses the form `15:04` in the zone of the clock.
+- Input: `component.Input` draws the input and its cursor cell `█`. While the input has the focus, the terminal cursor is on that cell. The input shows no placeholder text, as the boards give.
+- Removed: the coordinator line and the column of hive events of the earlier screen. The header shows the coordinator state.
+
 The worker made these decisions in task `38-screen-friction`:
 
 - Screen: the file `internal/tui/friction.go`. It replaces `friction_screen.go` and keeps its loader.
@@ -257,6 +267,14 @@ The worker made these decisions in task `36-screen-work-queue`:
 - Queue stop: an open task stops when it has a needs-user text, or when its acting agent has the status `unresolved`. A stop row `! stop: REASON` follows the task row. `s` shows only the stopped tasks, each at depth 0.
 - Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
 - The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
+
+The worker made these decisions in task `39-screen-health`:
+
+- Registry: Health uses the field `panels` of task `36-screen-work-queue`. The views Home and Agents have entries with the same functions.
+- Health: the file `internal/tui/health.go` holds the screen. Each view has its own selection. One load gives the checks of `hive doctor` and the agent records, so Home and Agents show the same data. The details show the time of the last load.
+- Restart: `r` in Health › Agents calls `requestRestart`, with the behavior of task `3-tui-restart`. The Agents screen has no `r` key. The restart prompt box is in the details of the selected agent, as the HealthAgents board shows.
+- Rows: the Health lists draw their rows in a `Panel`. The columns and the colours of the space cells come from the Health boards. The selected row follows the rule of `List`.
+- Component fixes: none.
 
 ## Waves
 

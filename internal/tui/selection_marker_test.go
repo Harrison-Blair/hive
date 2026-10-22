@@ -122,23 +122,13 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		model    func(*testing.T) *Model
 	}{
 		{
-			name: "Chat", selected: "noise: landings and decisions", states: []string{"not live"},
-			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 0)
-				return m
-			},
-		},
-		{
-			name: "Agents", selected: "● coordinator", also: []string{"[ GRAPH ]"}, states: []string{"● coordinator", "○ supervisor"},
+			// The selected card has a bold accent name and a heavy border
+			// (user decision 2026-10-21, option A).
+			name: "Agents", honey: []string{"manager-alpha"}, states: []string{"◐ manager-alpha", "● worker-alpha", "┏━"},
 			model: func(t *testing.T) *Model {
 				m := agentsBoardModel(t)
 				m.width, m.height = 120, 40
-				// Health › Agents keeps the current Agents screen until its
-				// wave 6 task. The Agents tab draws cards (decision 10).
-				m.selectScreen(tabHealth, 1)
-				m.regionFocus[tabHealth] = 0
-				m.agents.tab = agentsGraph
-				m.agents.selectedKey = "coordinator"
+				m.graph.selected = "manager-alpha"
 				return m
 			},
 		},
@@ -178,7 +168,9 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Health", selected: "home", states: []string{"✓", "✕ herdr socket"},
+			// The Health board puts the check glyph between the marker and
+			// the name, so the test reads the marker and the name apart.
+			name: "Health", honey: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{
@@ -225,113 +217,4 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestAgentBoardShowsDistinctStatusColorAndDimWorkingCount(t *testing.T) {
-	m := agentsBoardModel(t)
-	lines, _ := m.agents.explorerLines()
-	joined := strings.Join(lines, "\n")
-	for _, text := range []string{"alpha · 1 working", "● coordinator", "○ supervisor", "● worker-alpha"} {
-		if !strings.Contains(ansi.Strip(joined), text) {
-			t.Fatalf("Agents explorer omits plain-text signal %q:\n%s", text, ansi.Strip(joined))
-		}
-	}
-	var dotLine, countLine string
-	for _, line := range lines {
-		plain := ansi.Strip(line)
-		if strings.Contains(plain, "● worker-alpha") {
-			dotLine = line
-		}
-		if strings.Contains(plain, "alpha · 1 working") {
-			countLine = line
-		}
-	}
-	plainDot := ansi.Strip(dotLine)
-	if got := foregroundAtCell(dotLine, ansi.StringWidth(plainDot[:strings.Index(plainDot, "●")])); got != "38;2;110;230;154" {
-		t.Errorf("live explorer status foreground = %q, want working green", got)
-	}
-	plainCount := ansi.Strip(countLine)
-	countIndex := strings.Index(plainCount, "1 working")
-	if got := foregroundAtCell(countLine, ansi.StringWidth(plainCount[:countIndex])); got != "38;2;163;157;144" {
-		t.Errorf("explorer working count foreground = %q, want dim", got)
-	}
-}
-
-func TestAgentGraphDetailStripNameIsHoneyBold(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.width = 120
-	m.agents.tab = agentsGraph
-	m.agents.selectedKey = "coordinator"
-	view := agentsScreen{model: m}.View(120, 40)
-	lines := strings.Split(view, "\n")
-	detail := lines[len(lines)-2]
-	if !strings.Contains(ansi.Strip(detail), "coordinator") {
-		t.Fatalf("Agents detail strip omits the selected agent name: %s", ansi.Strip(detail))
-	}
-	requireHoneyBoldText(t, detail, "coordinator")
-}
-
-func TestAgentGraphBoardRendersTabsLegendHeaderAndDetails(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.width = 120
-	// The AgentsMany board shows a needs-you count above 0 in accent. A
-	// count of 0 uses fg, as the Main board does.
-	m.header = headerState{supervisor: "fresh", projects: 2, agents: 6, working: 6, needsUser: 1}
-	m.agents.tab = agentsGraph
-	m.agents.selectedKey = "coordinator"
-	view := agentsScreen{model: m}.View(120, 40)
-	lines := strings.Split(view, "\n")
-	plain := ansi.Strip(lines[0])
-	markerIndex := strings.Index(plain, "▶")
-	if markerIndex < 0 || !strings.Contains(plain, "▶ [ GRAPH ]") || !strings.Contains(plain, "TREE") || !strings.Contains(plain, "TABLE") {
-		t.Fatalf("Agents tab line lacks separate selected state:\n%s", lines[0])
-	}
-	if got := foregroundAtCell(lines[0], ansi.StringWidth(plain[:markerIndex])); got != wantHoney {
-		t.Errorf("selected tab foreground = %q, want honey", got)
-	}
-	if got := foregroundAtCell(lines[0], ansi.StringWidth(plain[:strings.Index(plain, "TREE")])); got != "38;2;163;157;144" {
-		t.Errorf("unselected tab foreground = %q, want dim", got)
-	}
-	legend := "edges: ─ delegates · ┄ nudges · ⋯ replaced"
-	if !strings.Contains(plain, legend) || strings.Index(plain, legend) < strings.Index(plain, "TABLE") {
-		t.Errorf("Agents legend does not follow and align after the tabs:\n%s", lines[0])
-	}
-	if ansi.StringWidth(plain[:strings.Index(plain, legend)])+ansi.StringWidth(legend) != ansi.StringWidth(plain) {
-		t.Errorf("Agents legend is not right-aligned:\n%s", lines[0])
-	}
-	if got := foregroundAtCell(lines[0], ansi.StringWidth(plain[:strings.Index(plain, "edges:")])); got != "38;2;163;157;144" {
-		t.Errorf("Agents legend foreground = %q, want dim", got)
-	}
-	// Decision 2: the header shows the state dots and the needs-you count.
-	header := m.headerView().View(m.width)
-	plainHeader := ansi.Strip(header)
-	if got := foregroundAtCell(header, ansi.StringWidth(plainHeader[:strings.Index(plainHeader, "●")])); got != "38;2;110;230;154" {
-		t.Errorf("Agents live supervisor dot foreground = %q, want working green", got)
-	}
-	needsIndex := strings.Index(plainHeader, "needs you ") + len("needs you ")
-	if got := foregroundAtCell(header, ansi.StringWidth(plainHeader[:needsIndex])); got != wantHoney {
-		t.Errorf("Agents needs-you count foreground = %q, want honey", got)
-	}
-	plainView := ansi.Strip(view)
-	if !strings.Contains(plainView, "coordinator  parent ?") {
-		t.Errorf("Agents detail strip omits selected agent state:\n%s", plainView)
-	}
-	_, positions := m.agents.graphLayout()
-	selected := positions[m.agents.selectedKey]
-	if got := foregroundAtCell(lines[1+selected.row-1-m.agents.scrollOffset], selected.col-m.agents.graphOffset); got != wantHoney {
-		t.Errorf("selected node border foreground = %q, want honey", got)
-	}
-	if got := foregroundAtCell(lines[len(lines)-3], 0); got != wantHoney {
-		t.Errorf("Agents detail strip border foreground = %q, want honey", got)
-	}
-	detail := lines[len(lines)-2]
-	plainDetail := ansi.Strip(detail)
-	parent := strings.Index(plainDetail, "parent")
-	if got := foregroundAtCell(detail, ansi.StringWidth(plainDetail[:parent])); got != "38;2;163;157;144" {
-		t.Errorf("Agents detail label foreground = %q, want dim", got)
-	}
-	if got := foregroundAtCell(detail, ansi.StringWidth(plainDetail[:parent+len("parent ")])); got != "" {
-		t.Errorf("Agents detail value foreground = %q, want terminal default", got)
-	}
-	requireHoneyBoldText(t, view, "coordinator")
 }

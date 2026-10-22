@@ -308,13 +308,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		return doctor.Result{Checks: slices.Clone(data.Checks)}
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
-		coordinators := []records.Agent{}
-		for _, record := range data.Agents {
-			if record.Role == "coordinator" {
-				coordinators = append(coordinators, record)
-			}
-		}
-		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), coordinators, now), nil
+		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), now), nil
 	}
 	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
 		return demoLogEvents(data.Logs), nil
@@ -341,7 +335,6 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.screenIndex = 0
 	case "agents":
 		m.screenIndex = 1
-		m.agents.selectedKey = ui.Selection
 		m.graph.selected = ui.Selection
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
@@ -368,7 +361,12 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		}
 	case "health":
 		m.screenIndex = 6
-		m.health.selected = ui.Selection
+		m.health.hideStopped = ui.HideStopped
+		if ui.View == "agents" {
+			m.health.selectedAgent = ui.Selection
+		} else {
+			m.health.selected = ui.Selection
+		}
 	case "logs":
 		m.screenIndex = 7
 		m.textFilter = ui.Filter.Text
@@ -380,7 +378,6 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 			m.filterDraft = ui.Filter.Text
 		}
 	}
-	m.agents.showHistory = !ui.HideStopped
 	m.graph.hideStopped = ui.HideStopped
 	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
@@ -396,6 +393,12 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.chatInputActive = true
 		m.chatInput.Focus()
 	}
+	if ui.ChatNoise != "" {
+		m.chatNoise = ui.ChatNoise
+	}
+	if scroll, ok := ui.Scroll["feed"]; ok {
+		m.chatFeed.topItem = scroll.Top
+	}
 	m.applyDemoFrame(ui)
 }
 
@@ -410,7 +413,6 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 		view = 1
 	case ui.Screen == "health" && ui.View == "agents":
 		tab, view = tabHealth, 1
-		m.agents.selectedKey = ui.Selection
 	}
 	m.selectScreen(tab, view)
 	if index := slices.Index(screenRegistry[tab].regions, ui.Focus); index > 0 {
@@ -582,7 +584,6 @@ func newDemoModel(home string, state *demoState) *Model {
 	now := state.fixture.now
 	m := newModel(home, func() time.Time { return now }, state)
 	m.demoResize(state.fixture.Terminal.Width, state.fixture.Terminal.Height)
-	m.layout()
 	// The demo loaders read only memory, so the model holds its data before
 	// the first frame and the first key.
 	for _, load := range []tea.Cmd{m.startHeaderLoad(), m.startCurrentScreenLoad()} {

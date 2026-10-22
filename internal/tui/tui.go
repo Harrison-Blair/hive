@@ -8,21 +8,17 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
 	"charm.land/bubbles/v2/textarea"
-	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/logs"
-	"github.com/charmbracelet/x/ansi"
 	xterm "github.com/charmbracelet/x/term"
 )
 
@@ -50,28 +46,25 @@ type Model struct {
 	filterDraft string
 	mode        mode
 
-	chatData           chatScreenData
-	chatContent        []string
-	chatViewport       viewport.Model
-	chatInput          textarea.Model
-	chatInputActive    bool
-	chatSending        bool
-	chatCallerCwd      string
-	chatPaneID         string
-	chatCallerBlocked  bool
-	chatEventsExpanded bool
-	chatNoise          string
-	chatFollow         bool
-	chatErr            string
-	textFilter         string
-	follow             bool
-	logDate            time.Time
-	logDatePinned      bool
-	logSelection       int
-	logSelectedKey     string
-	logOffset          int
-	logPendingTime     string
-	logErr             string
+	chatData          chatScreenData
+	chatFeed          chatFeed
+	chatInput         textarea.Model
+	chatInputActive   bool
+	chatSending       bool
+	chatCallerCwd     string
+	chatPaneID        string
+	chatCallerBlocked bool
+	chatNoise         string
+	chatErr           string
+	textFilter        string
+	follow            bool
+	logDate           time.Time
+	logDatePinned     bool
+	logSelection      int
+	logSelectedKey    string
+	logOffset         int
+	logPendingTime    string
+	logErr            string
 
 	header               headerState
 	headerErr            string
@@ -146,8 +139,8 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		textFilter:   defaultLogFilter,
 		logDate:      startOfDay(now()),
 		follow:       true,
-		chatNoise:    "messages",
-		chatFollow:   true,
+		chatNoise:    chatNoiseNormal,
+		chatFeed:     chatFeed{topItem: -1, follow: true},
 		chatLoader:   loadChatScreenData,
 		width:        defaultWidth,
 		height:       defaultHeight,
@@ -184,8 +177,6 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		}
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
-	m.chatViewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
-	m.chatViewport.SoftWrap = true
 	m.chatInput = newChatInput()
 	m.screens = m.makeScreens()
 
@@ -209,7 +200,6 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	} else {
 		m.refreshSnapshot = snapshotRefreshState(home, m.logDate, m.tasks.data)
 	}
-	m.layout()
 	return m
 }
 
@@ -235,7 +225,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.demo != nil {
 			m.demoResize(msg.Width, msg.Height)
 		}
-		m.layout()
 		return m, nil
 	case tickMsg:
 		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
@@ -286,7 +275,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			m.invalidateView()
 			m.headerErr = boundedError(msg.err.Error())
-			m.layout()
 			logCmd := m.logError("header", msg.err)
 			if m.headerRefreshPending {
 				m.headerRefreshPending = false
@@ -296,7 +284,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.header = msg.state
 		m.headerErr = ""
-		m.layout()
 		if m.headerRefreshPending {
 			m.headerRefreshPending = false
 			return m, m.startHeaderLoad()
@@ -325,13 +312,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
 			m.health.accept(msg.health)
+			m.health.acceptAgents(msg.agents)
+			m.health.checkedAt = m.now()
 			m.lastHealthRefresh = m.now()
 		case chatDataRequest:
 			m.chatData = msg.chat
 			m.rebuildChat()
-			if m.chatFollow {
-				m.chatViewport.GotoBottom()
-			}
 		case tasksDataRequest:
 			m.tasks.accept(msg.tasks)
 		case frictionDataRequest:
@@ -455,52 +441,12 @@ func (m *Model) View() tea.View {
 	}
 	view := tea.NewView(content)
 	view.AltScreen = true
-	if m.screenIndex == 0 && m.chatInputActive {
-		if cursor := m.chatInput.Cursor(); cursor != nil {
-			content := ansi.Strip(content)
-			inputLines := strings.Split(ansi.Strip(m.chatInput.View()), "\n")
-			inputLine := strings.TrimRight(inputLines[0], " ")
-			if index := strings.Index(content, inputLine); index >= 0 {
-				prefix := content[:index]
-				lineStart := strings.LastIndex(prefix, "\n") + 1
-				cursor.X += lipgloss.Width(prefix[lineStart:])
-				cursor.Y += strings.Count(prefix, "\n")
-				view.Cursor = cursor
-			}
-		}
-	}
+	view.Cursor = m.chatCursor(content)
 	return view
 }
 
 func (m *Model) invalidateView() {
 	m.screenViewCacheValid = false
-}
-
-func (m *Model) layout() {
-	mainWidth := max(m.width, 1)
-	bodyHeight := max(m.height-frameRows, 1)
-	chatEventWidth := mainWidth / 3
-	if chatEventWidth < 18 {
-		chatEventWidth = 18
-	}
-	if chatEventWidth > 32 {
-		chatEventWidth = 32
-	}
-	if chatEventWidth > mainWidth-12 {
-		chatEventWidth = mainWidth - 12
-	}
-	chatWidth := mainWidth - chatEventWidth - 3 - 4
-	chatHeight := bodyHeight - 7
-	if chatWidth < 1 {
-		chatWidth = 1
-	}
-	if chatHeight < 1 {
-		chatHeight = 1
-	}
-	m.chatViewport.SetWidth(chatWidth)
-	m.chatViewport.SetHeight(chatHeight)
-	m.chatInput.SetWidth(chatWidth)
-	m.chatInput.SetHeight(4)
 }
 
 func (m *Model) startHeaderLoad() tea.Cmd {
@@ -541,9 +487,11 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
 		}
 	case healthDataRequest:
-		loader, home, logger := m.healthLoader, m.home, m.logger
+		// Health › Agents lists the agents beside the checks (decision 18).
+		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
 		return func() tea.Msg {
-			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger)}
+			agents, err := agentsLoader(home, now())
+			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger), agents: agents, err: err}
 		}
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home

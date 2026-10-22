@@ -1,0 +1,39 @@
+internal/tui/shell_test.go
+testdata/ste-baseline.json
+diff --cc internal/tui/shell_test.go
+index 27f5bebc,9f933757..00000000
+--- a/internal/tui/shell_test.go
++++ b/internal/tui/shell_test.go
+@@@ -35,9 -35,9 +35,15 @@@ func TestScreenKeysSelectAllSixScreens(
+  		{"]", tabWork, "Queue", "no tasks"},
+  		{"]", tabWork, "Tasks", "active 0"},
+  		{"4", tabFriction, "Friction", "open 0"},
+++<<<<<<< HEAD
+ +		{"5", tabHealth, "Health", "checks ·"},
+ +		{"]", tabHealth, "Health", "agents ·"},
+ +		{"6", tabLogs, "Logs", "logs ·"},
+++=======
++ 		{"5", tabHealth, "Health", "home"},
++ 		{"]", tabHealth, "Agents", "[ TREE ]"},
++ 		{"6", tabLogs, "Logs", "events · 0"},
+++>>>>>>> dev
+  	} {
+  		m, _ = raise(t, m, key(rune(step.key[0]), step.key))
+  		view := ansi.Strip(m.View().Content)
+diff --cc testdata/ste-baseline.json
+index 69fa42b7,cf7c6664..00000000
+--- a/testdata/ste-baseline.json
++++ b/testdata/ste-baseline.json
+@@@ -124,7 -124,7 +124,11 @@@
+    ".hive/spec/tui-v2/tasks/28-board-data-fix/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/29-frame-layout/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/36-screen-work-queue/brief.md": 0,
+++<<<<<<< HEAD
+ +  ".hive/spec/tui-v2/tasks/39-screen-health/brief.md": 0,
+++=======
++   ".hive/spec/tui-v2/tasks/40-screen-logs/brief.md": 0,
+++>>>>>>> dev
+    ".hive/spec/tui-v2/tasks/41-workgoals-board-fix/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/42-wave6-board-redraw/brief.md": 0,
+    ".hive/spec/tui-v2/tasks/43-board-slip-batch-1/brief.md": 0,
+fbca94d5f9bd9f180806a9abdd938bc0e75c3836

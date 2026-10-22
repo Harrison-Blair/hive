@@ -1,0 +1,20 @@
+Chat-send: demo mode: no action
+Chat-feed: [feed]
+Chat-type: 1A, 2A, 3Bx█
+Chat-tab: [feed]
+Chat-help: [help]
+Chat-work: [list]
+Chat-return: [feed]
+Chat-top: 13:00
+Chat-page-down: 15 earlier
+Chat-page-up: 13:00
+Chat-move: 1 earlier
+Chat-end: 39 earlier
+Chat-quit: press ctrl+c again to quit
+CompactChat-type: hi█
+CompactChat-send: demo mode: no action
+CompactChat-feed: [feed]
+CompactChat-page-up: 13:39
+CompactChat-end: 14:21
+CompactChat-input: [input]
+CompactChat-tab: [feed]

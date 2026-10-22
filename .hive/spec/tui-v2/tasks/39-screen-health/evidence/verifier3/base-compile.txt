@@ -1,0 +1,14 @@
+# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
+internal/tui/health_v3_test.go:175:23: undefined: healthAgents
+internal/tui/health_v3_test.go:195:23: undefined: healthHome
+internal/tui/health_v3_test.go:233:28: undefined: healthHome
+internal/tui/health_v3_test.go:234:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/health_v3_test.go:249:28: undefined: healthHome
+internal/tui/restart_test.go:25:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/restart_test.go:76:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/restart_test.go:111:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/restart_test.go:164:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/restart_test.go:186:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/restart_test.go:186:11: too many errors
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+FAIL
