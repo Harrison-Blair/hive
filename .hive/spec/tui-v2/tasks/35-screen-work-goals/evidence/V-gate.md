@@ -194,3 +194,19 @@ Work (Tasks) board, and `testdata/ste-baseline.json`. It does not change
 checks above stay true. `git diff origin/dev...HEAD --stat` gives the same 9
 files outside the evidence. Full gate output: `gate-after-merge2.txt`. Each of
 the five commands exits 0. `gofmt -l` and `go mod tidy -diff` print nothing.
+
+### Land repair: task 38 (2026-10-21)
+
+`hive land` conflicted with `dev` after task 38 (Friction, `86f48a68`) landed.
+The merge of `origin/dev` (`5a4b29e6`) at `69c8811f` had one text conflict, in
+`testdata/ste-baseline.json`. The resolution keeps both entries:
+`35-screen-work-goals/brief.md` and `38-screen-friction/brief.md`, each with a
+count of 0. The merged tree then did not compile, because
+`internal/tui/work_goals_test.go` and `internal/tui/friction_test.go` both
+declare the same `checkBoard` helper. The two bodies are the same. The repair
+removes the copy from `work_goals_test.go`. `TestWorkGoalsMatchesItsBoard` and
+`TestFrictionMatchesItsBoards` both pass on the shared helper. No test changes.
+Full gate output: `gate-after-merge3.txt`. Each of the five commands exits 0.
+`gofmt -l` and `go mod tidy -diff` print nothing. `golangci-lint` gives
+`0 issues.` The verifier evidence (`VERIFIED.md`, `verifier/`, `verifier3/`,
+`verifier4/`) stays.
