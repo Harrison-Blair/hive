@@ -9,13 +9,13 @@ t|───────────────────━━━━━━━
 k|rrrrrrrrrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|  Goals    Queue   [Tasks]                                      list › details  
-k|fddddddddddddddddddaaaaaaaffffffffffffffffffffffffffffffffffffffddddddddddddddff
+k|fdddddddffdddddddffaaaaaaaffffffffffffffffffffffffffffffffffffffddddddddddddddff
 b|00000000000000000001111111000000000000000000000000000000000000000000000000000000
 t|╭─ 3-tui-restart · esc back ───────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00111111111111111111111111110000000000000000000000000000000000000000000000000000
 t|│ status    landed                                                             ┃
-k|afddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofffa
+k|afddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ goal      g1-tui-restart · wave B                                            ┃
 k|afddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
@@ -50,20 +50,20 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ✓ AC6 coordinator start waits for herdr readiness                            ┃
 k|afoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
+t|│                                                                              ┃
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ EVIDENCE                                                                     │
+t|│ EVIDENCE                                                                     ┃
 k|afaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00111111110000000000000000000000000000000000000000000000000000000000000000000000
-t|│ b brief.md    v VERIFIED.md   d deps graph                                   │
+t|│ b brief.md    v VERIFIED.md   d deps graph                                   ┃
 k|afafffffffffffffafffffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffa
 b|00100000000000001000000000000000100000000000000000000000000000000000000000000000
-t|│ ↓ 3 more lines                                                               │
-k|afddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ↓ 2 more lines                                                               │
+k|afddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

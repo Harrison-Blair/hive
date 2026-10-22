@@ -21,25 +21,25 @@ t|│ ▶ coordinator-g2        coordinator   ● working     w58:p4            
 k|afafaaaaaaaaaaaaaaaaaaaaaaddddddddddddddwfffffffffffffddddddfffffffffffffffffffa
 b|00101111111111111111111111000000000000000000000000000000000000000000000000000000
 t|│   supervisor-g4         supervisor    ● live        w58:p5                   │
-k|afafffffffffffffffffffffffddddddddddddddwfffffffffffffddddddfffffffffffffffffffa
-b|00100000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffffffffffffffffffffffffddddddddddddddwfffffffffffffddddddfffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   manager-hive          manager       ◐ idle        w58:p6                   │
-k|afafffffffffffffffffffffffddddddddddddddafffffffffffffddddddfffffffffffffffffffa
-b|00100000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffffffffffffffffffffffffddddddddddddddafffffffffffffddddddfffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   cp5-worker-01         worker        ● unresolved  gone                     │
-k|afafffffffffffffffffffffffddddddddddddddafffffffffffffddddfffffffffffffffffffffa
-b|00100000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffffffffffffffffffffffffddddddddddddddafffffffffffffddddfffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   t4-worker-1           worker        ○ stopped     —                        │
-k|afafffffffffffffffffffffffdddddddddddddddfdddddddddddddffffffffffffffffffffffffa
-b|00100000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+k|afffffffffffffffffffffffffdddddddddddddddfdddddddddddddffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ r restarts the coordinator or supervisor. It asks first only when it is live.│
-k|afddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddda
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ r restarts the coordinator or supervisor. It asks first only when live.      │
+k|afdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ h hides 1 stopped agent.                                                     │
 k|afddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffa
