@@ -228,7 +228,9 @@ func TestGoalsKeysAndHints(t *testing.T) {
 func TestGoalsDesignNoticeAndTaskKey(t *testing.T) {
 	m := goalsModel(t, goalsQueueFixture(t), 80, 24)
 	m, _ = raise(t, m, key('o', "o"))
-	requireView(t, m, "no design for this wave")
+	if footer := footerRow(m); !strings.Contains(footer, "[list] no design for this wave") {
+		t.Fatalf("footer = %q; want the design notice", footer)
+	}
 	m, _ = raise(t, m, key('j', "j"))
 	rejectView(t, m, "no design for this wave")
 	m, cmd := raise(t, m, key('t', "t"))
@@ -236,6 +238,12 @@ func TestGoalsDesignNoticeAndTaskKey(t *testing.T) {
 	if m.screenIndex != 4 || m.tasks.selectedID != "1-alpha" {
 		t.Fatalf("t gave screen %d task %q; want Tasks and 1-alpha", m.screenIndex, m.tasks.selectedID)
 	}
+}
+
+// footerRow gives the plain text of the last row of the view.
+func footerRow(m *Model) string {
+	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+	return lines[len(lines)-1]
 }
 
 // AC3: refresh in normal mode reloads the goal records and keeps the
