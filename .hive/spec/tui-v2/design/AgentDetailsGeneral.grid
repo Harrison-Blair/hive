@@ -8,58 +8,58 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+t|╭─ project agents · home ──────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ╭─ hive ────────────────────────────────────────────────╮ ╭─ home ────────────────────────────────────────────────╮  │
+t|│                                               ╭──────────────────────╮                                               │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ g1-tui-restart · done                                 │ │                                                       │  │
+t|│                                               │ ● coordinator        │                                               │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │               ╭───────────╭─ plan-review-1 · esc closes ─────────────────────────────╮                          │  │
+t|│                             ╭─ plan-review-1 · esc closes ─────────────────────────────╮                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000001111111111111111111111111111000000000000000000000000000000000000000000000000000000000000
-t|│ │               │ ◐ manager-│                                                          │                          │  │
+t|│                             │                                                          │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │               │ claude · i│  role      agent                                         │                          │  │
+t|│                             │  role      agent                                         │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │               ╰───────────│  status    ● live · working                              │                          │  │
+t|│                           ╭─│  status    ● live · working                              │─╮                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddwfffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                           │  harness   pi                                            │                          │  │
+t|│                           │ │  harness   pi                                            │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │              ╭────────────│  model     openai-codex/gpt-6.1-sol                      │                          │  │
+t|│                           │ │  model     openai-codex/gpt-6.1-sol                      │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │              │            │  pane      w80:p1                                        │                          │  │
+t|│                           │ │  pane      w80:p1                                        │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  ╭───────────┴──────────╮ │  tab       plan-review-1                                 │                          │  │
+t|│                           │ │  tab       plan-review-1                                 │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  │ ○ t4-worker-1        │ │  parent    coordinator-g2                                │                          │  │
+t|│                           │ │  parent    coordinator-g2                                │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  │ pi · stopped · done  │ │                                                          │                          │  │
+t|│                           ╰─│                                                          │─╯                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  ╰──────────────────────╯ │  ACTIONS                                                 │                          │  │
+t|│                             │  ACTIONS                                                 │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                           │  a  attach to pane                                       │                          │  │
+t|│                             │  a  attach to pane                                       │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ h hides 2 stopped         │  p  peek pane                                            │                          │  │
+t|│                             │  p  peek pane                                            │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ╰───────────────────────────│  t  open task · none                                     │──────────────────────────╯  │
+t|│                             │  t  open task · none                                     │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddfffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │                                                          │                             │
@@ -110,7 +110,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

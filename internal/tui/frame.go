@@ -58,10 +58,14 @@ var screenRegistry = [tabCount]frameScreen{
 		regions: []string{"graph"},
 		hints: map[string][]string{
 			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped", "? help"},
+			"pods":    {"←→ select pod", "↑ coordinator", "enter open pod", "h stopped", "? help"},
+			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped", "? help"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
 			"graph": {"←↑↓→ move", "enter details", "a attach", "p peek", "?"},
+			"pods":  {"←→ select pod", "↑ coordinator", "enter open", "?"},
+			"pod":   {"←↑↓→ move", "enter details", "esc pods", "?"},
 		},
 	},
 	tabChat: {
@@ -328,6 +332,23 @@ func (m *Model) headerView() component.Header {
 	}
 }
 
+// hintKey gives the key of the hints of focus. On the Agents graph it is
+// pods for the overview and pod for the one-pod view of decision 62. With
+// one project the one-pod view has no esc pods, so it keeps the graph hints.
+func (m *Model) hintKey(tab int, focus string) string {
+	if tab != tabAgents || focus != "graph" {
+		return focus
+	}
+	pods := m.agentsPods()
+	switch {
+	case len(pods) == 0 || len(pods) == 1 && projectPods(pods) == 1:
+		return focus
+	case m.inPodView(pods):
+		return "pod"
+	}
+	return "pods"
+}
+
 // footerView gives the footer of decision 4: the focus state and its key
 // hints. A notice takes the place of the hints.
 func (m *Model) footerView(width int) string {
@@ -342,7 +363,7 @@ func (m *Model) footerView(width int) string {
 	case "filter":
 		hints = filterHints
 	default:
-		hints = screenRegistry[tab].keyHints(m.viewName(), focus, width >= component.LongFormWidth)
+		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 		if tab == tabChat && width >= component.LongFormWidth && (focus == "feed" || focus == "input") {
 			toggleHint := "ctrl+o open events"
 			if m.chatEventsOpen {

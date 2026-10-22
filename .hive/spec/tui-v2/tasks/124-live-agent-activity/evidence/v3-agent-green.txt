@@ -1,0 +1,2 @@
+--- PASS: TestSendLogsTheSender (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/agent	0.003s

@@ -1,0 +1,15 @@
+AgentDetails: pixel-equal
+AgentDetailsGeneral: pixel-equal
+AgentsCoordinatorChild: pixel-equal
+AgentsHiddenParent: pixel-equal
+AgentsHome: pixel-equal
+AgentsMany: pixel-equal
+AgentsNested: pixel-equal
+CompactAgents: pixel-equal
+CompactAgentsHome: pixel-equal
+CompactLiveOverview: pixel-equal
+CompactLivePod: pixel-equal
+Help: pixel-equal
+LiveOverview: pixel-equal
+LivePod: pixel-equal
+Main: pixel-equal

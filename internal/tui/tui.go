@@ -323,6 +323,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.request {
 		case agentsDataRequest:
 			m.agents.accept(msg.agents)
+			if tick := m.litTick(); tick != nil {
+				return m, batch(tick, m.finishScreenRefresh())
+			}
 		case goalsQueueDataRequest:
 			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
@@ -345,11 +348,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
-		if m.screenRefreshPending {
-			m.screenRefreshPending = false
-			return m, m.startCurrentScreenLoad()
-		}
-		return m, nil
+		return m, m.finishScreenRefresh()
+	case agentsLitMsg:
+		m.graph.litAt = time.Time{}
+		m.invalidateView()
+		return m, m.litTick()
 	case taskFileMsg:
 		m.invalidateView()
 		m.acceptTaskFile(msg)
@@ -458,6 +461,16 @@ func (m *Model) View() tea.View {
 	view.AltScreen = true
 	view.Cursor = m.chatCursor(content)
 	return view
+}
+
+// finishScreenRefresh starts the screen load that a refresh asked for while
+// a load ran.
+func (m *Model) finishScreenRefresh() tea.Cmd {
+	if !m.screenRefreshPending {
+		return nil
+	}
+	m.screenRefreshPending = false
+	return m.startCurrentScreenLoad()
 }
 
 func (m *Model) invalidateView() {

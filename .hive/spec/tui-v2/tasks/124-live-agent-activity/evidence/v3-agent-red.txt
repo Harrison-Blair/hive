@@ -1,0 +1,6 @@
+--- FAIL: TestSendLogsTheSender (0.00s)
+    --- FAIL: TestSendLogsTheSender/record_for_the_pane (0.00s)
+        send_test.go:322: from = <nil>; want manager-hive
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/agent	0.003s
+FAIL

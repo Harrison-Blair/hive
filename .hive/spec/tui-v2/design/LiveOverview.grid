@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|faaaaaaaaaafddddddddfddddddddfddddddddddddfddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|011111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|001111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╭──────────────────────╮                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ ● coordinator-g8     │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ claude · working · … │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╰───────────┰──────────╯                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwiwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                   ┏━◀━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╃─────────────────────────────────────╮                    │
+k|afffffffffffffffffffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiirrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┏━ hive ━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━┓ ╭─ example-api ────┴─────────────────╮ ╭─ home ──────────┴──────────────────╮ │
+k|afaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaaafrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrrrfrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|000011111100000000000000000000000000000000011111111111110000000000000000000000000011111100000000000000000000000000000000
+t|│ ┃ g2-tui-v2 · wave A                 ┃ │ g4-rate-limits · wave B            │ │                                    │ │
+k|afafddddddddddddddddddfffffffffffffffffafrfdddddddddddddddddddddddffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ ╭──────────────────────╮           ┃ │ ╭──────────────────────╮           │ │ ╭──────────────────────╮           │ │
+k|afafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │ ● manager-hive       │           ┃ │ │ ● manager-api        │           │ │ │ ● plan-review-1      │           │ │
+k|afafwfwffffffffffffffffffffwfffffffffffafrfwfwffffffffffffffffffffwfffffffffffrfrfwfwffffffffffffffffffffwfffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │ claude · working · … │           ┃ │ │ codex · working · 2m │           │ │ │ pi · working · 2m    │           │ │
+k|afafwfddddddddddddddddddddfwfffffffffffafrfwfddddddddddddddddddddfwfffffffffffrfrfwfdddddddddddddddddffffwfffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ ├──────────────────────╯           ┃ │ ├──────────────────────╯           │ │ ╰──────────────────────╯           │ │
+k|afafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │                                  ┃ │ │                                  │ │                                    │ │
+k|afafrffffffffffffffffffffffffffffffffffafrfrffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │╭──────────────────────╮          ┃ │ │╭──────────────────────╮          │ │ h shows 1 stopped                  │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfdddddddddddddddddffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ ├┤ ● t5-worker-1        │          ┃ │ ├┤ ● t3-worker-1        │          │ │                                    │ │
+k|afafrwfwffffffffffffffffffffwffffffffffafrfrwfwffffffffffffffffffffwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ ││ pi · working · 3m    │          ┃ │ ││ codex · working      │          │ │                                    │ │
+k|afafrwfdddddddddddddddddffffwffffffffffafrfrwfdddddddddddddddffffffwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │╰──────────────────────╯          ┃ │ │╰──────────────────────╯          │ │                                    │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │                                  ┃ │ │                                  │ │                                    │ │
+k|afafrffffffffffffffffffffffffffffffffffafrfrffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ │╭──────────────────────╮          ┃ │ │╭──────────────────────╮          │ │                                    │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ ╰┤ ● t6-worker-1        │          ┃ │ ╰┤ ◐ t3-verifier-1      │          │ │                                    │ │
+k|afafrwfwffffffffffffffffffffwffffffffffafrfrrfaffffffffffffffffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃  │ pi · working · 1m    │          ┃ │  │ pi · idle · 6m       │          │ │                                    │ │
+k|afaffwfdddddddddddddddddffffwffffffffffafrffrfddddddddddddddfffffffrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃  ╰──────────────────────╯          ┃ │  ╰──────────────────────╯          │ │                                    │ │
+k|afaffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃                                    ┃ │                                    │ │                                    │ │
+k|afaffffffffffffffffffffffffffffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┃ h shows 1 stopped                  ┃ │                                    │ │                                    │ │
+k|afafdddddddddddddddddffffffffffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰────────────────────────────────────╯ ╰────────────────────────────────────╯ │
+k|afaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+k|afddddddddddddddddddddddddddddddddddddddddddddiiidddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

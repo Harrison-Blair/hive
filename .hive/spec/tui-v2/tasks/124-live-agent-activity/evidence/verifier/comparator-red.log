@@ -1,0 +1,7 @@
+row 3 col 20: want 'h' accent bold, got '2' accent bold
+row 3 col 21: want 'i' accent bold, got ' ' accent bold
+row 3 col 22: want 'v' accent bold, got 'p' accent bold
+row 3 col 23: want 'e' accent bold, got 'r' accent bold
+row 3 col 24: want ' ' accent bold, got 'o' accent bold
+... (differing-cell rows omitted) ...
+1294 differing cells

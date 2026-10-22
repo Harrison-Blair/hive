@@ -77,6 +77,26 @@ func TestCheckAcceptsTheHeavyBorder(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsTheLiveBoards(t *testing.T) {
+	g := fill("┰┸┺┹╃┻◀▼", "aaaaaaaa")
+	if err := Check("TooSmall", g); err != nil {
+		t.Fatal(err)
+	}
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"LiveOverview", 120, 40},
+		{"LivePod", 120, 40},
+		{"CompactLiveOverview", 80, 24},
+		{"CompactLivePod", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func TestCheckFailsABadSymbol(t *testing.T) {
 	g := fill("ab★", "fff")
 	err := Check("TooSmall", g)

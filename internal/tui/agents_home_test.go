@@ -221,6 +221,8 @@ func TestAgentsManagerWithoutChildrenShowsNoChildAgents(t *testing.T) {
 }
 
 // AC1 and AC2: the arrows reach the nested child and the home column.
+// Decision 62 replaces → from a card to the next pod: → selects the home pod
+// in the overview, and enter opens it.
 func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	m := agentsModel(t, homeSource(
 		generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
@@ -228,13 +230,20 @@ func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "t1-alpha-worker"
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	if m.graph.selected != "helper-1" {
 		t.Fatalf("↓ from the worker selects %q; want helper-1", m.graph.selected)
 	}
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
+	if m.graph.selected != "helper-1" {
+		t.Fatalf("→ in the one-pod view selects %q; want helper-1", m.graph.selected)
+	}
+	m, _ = raise(t, m, key(tea.KeyEscape, ""))
+	m, _ = raise(t, m, key(tea.KeyRight, ""))
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	if m.graph.selected != "review-1" {
-		t.Fatalf("→ from helper-1 selects %q; want review-1", m.graph.selected)
+		t.Fatalf("→ and enter from the alpha pod select %q; want review-1", m.graph.selected)
 	}
 }
 
@@ -253,10 +262,10 @@ func TestAgentsCompactHomeIsTheLastPage(t *testing.T) {
 	for range 3 {
 		m, _ = raise(t, m, key(tea.KeyRight, ""))
 	}
-	if m.graph.selected != "review-1" {
-		t.Fatalf("3 × → selects %q; want review-1", m.graph.selected)
+	if m.graph.pod != "home" {
+		t.Fatalf("3 × → selects the pod %q; want home", m.graph.pod)
 	}
-	requireView(t, m, "● review-1", "─ home ─", "projects 3–3 of 3 · home", "← beta")
+	requireView(t, m, "● review-1", "━ home ━", "projects 3–3 of 3 · home", "← beta")
 }
 
 // AC3: the details popup of a general agent has the fields of another agent
@@ -265,6 +274,7 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m := agentsModel(t, homeSource(generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "review-1"
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "model", "gpt", "parent", "coordinator-g1")
 	_, lines := m.agentDetailsPopup()
@@ -304,11 +314,11 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		wants         []string
 		home          map[string]bool // key: in home
 	}{
-		{"AgentsHome", 120, 40, []string{"project agents · 2 projects", "─ home ─", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
+		{"AgentsHome", 120, 40, []string{"project agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
 		{"AgentsNested", 120, 40, []string{"t5-research-1", "t5-research-2"}, map[string]bool{"t5-research-1": false, "t5-research-2": false}},
-		{"AgentsHiddenParent", 120, 40, []string{"─ home ─", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
-		{"AgentsCoordinatorChild", 120, 40, []string{"project agents · 1 project", "─ home ─", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
-		{"CompactAgentsHome", 80, 24, []string{"─ home ─", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
+		{"AgentsHiddenParent", 120, 40, []string{"━ home ━", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
+		{"AgentsCoordinatorChild", 120, 40, []string{"project agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
+		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
 		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "coordinator-g2", "14:15 agent report plan-review-1"}, nil},
 		{"HealthAgentsGeneral", 120, 40, []string{"▶ plan-review-1", "agent"}, nil},
 	} {

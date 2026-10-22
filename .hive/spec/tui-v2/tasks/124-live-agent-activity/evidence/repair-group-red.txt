@@ -1,0 +1,163 @@
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+    agents_live_test.go:157: lit messages = [{from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189318 loc:<nil>}} {from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message t6-worker-1 to manager-hive-g2
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+    agents_live_test.go:157: lit messages = [{from:t6-worker-1 to:manager-hive-g2 at:{wall:0 ext:63928189318 loc:<nil>}} {from:manager-hive to:t6-worker-1 at:{wall:0 ext:63928189319 loc:<nil>}}]; want one message manager-hive-g2 to t6-worker-1
+--- FAIL: TestLiveMessagesGroupByCard (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- FAIL: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.058s
+FAIL

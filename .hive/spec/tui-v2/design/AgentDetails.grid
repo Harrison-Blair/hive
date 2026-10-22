@@ -8,28 +8,28 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+t|╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │
+t|│                                               ╭──────────────────────╮                                               │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ g1-tui-restart · done                                        │                           │
+t|│                                               │ ● coordinator        │                                               │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ╭─ manager-hive · esc closes ──────────────────────────────╮ │                           │
+t|│                             ╭─ manager-hive · esc closes ──────────────────────────────╮                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000001111111111111111111111111110000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │                                                          │ │                           │
+t|│                             │                                                          │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │  role      manager                                       │ │                           │
+t|│                             │  role      manager                                       │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │  project   hive                                          │ │                           │
+t|│                           ╭─│  project   hive                                          │─╮                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │ │  status    ◐ live · idle                                 │ │                           │
@@ -59,22 +59,22 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │ │  replaces  manager-hive-g1                               │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╰─│                                                          │─╯                           │
+t|│                           │ │                                                          │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  ACTIONS                                                 │                             │
+t|│                           │ │  ACTIONS                                                 │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  a  attach to pane                                       │                             │
+t|│                           │ │  a  attach to pane                                       │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  p  peek pane                                            │                             │
+t|│                           │ │  p  peek pane                                            │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │  t  open task · none                                     │                             │
+t|│                           │ │  t  open task · none                                     │ │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddfffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │                                                          │                             │
+t|│                           ╰─│                                                          │─╯                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  RECENT                                                  │                             │
@@ -110,7 +110,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -275,5 +276,51 @@ func TestSendEmptyText(t *testing.T) {
 	}
 	if len(fake.recorded("agent.prompt")) != 0 {
 		t.Fatalf("agent.prompt ran for empty text")
+	}
+}
+
+// Decision 72: the agent prompt event names the acting agent in the field
+// from. The acting agent is the agent record of the caller pane.
+func TestSendLogsTheSender(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		pane     string
+		wantFrom any
+	}{
+		{"record for the pane", "w9:p3", "manager-hive"},
+		{"no record for the pane", "w9:p8", nil},
+		{"outside herdr", "", nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			home := testHome(t)
+			writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
+			manager := liveRecord("manager-hive-g2", "manager-hive")
+			manager.Role, manager.Task, manager.PaneID = "manager", "", "w9:p3"
+			writeRecord(t, home, manager)
+			t.Setenv("HERDR_PANE_ID", tc.pane)
+			fake := newFakeHerdr(t)
+			fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
+			if envelope := Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: "ping"}); envelope.Outcome != "ok" {
+				t.Fatalf("envelope = %#v", envelope)
+			}
+			var event map[string]any
+			for line := range strings.SplitSeq(readLog(t, home), "\n") {
+				if strings.Contains(line, `"msg":"agent prompt"`) {
+					if err := json.Unmarshal([]byte(line), &event); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			if event == nil {
+				t.Fatal("no agent prompt event")
+			}
+			from, ok := event["from"]
+			if tc.wantFrom == nil && ok {
+				t.Fatalf("from = %v; want no field", from)
+			}
+			if tc.wantFrom != nil && from != tc.wantFrom {
+				t.Fatalf("from = %v; want %v", from, tc.wantFrom)
+			}
+		})
 	}
 }

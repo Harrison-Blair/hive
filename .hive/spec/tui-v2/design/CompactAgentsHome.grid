@@ -11,56 +11,56 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ project agents · 2 projects ────────────────────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00111111111111111111111111111110000000000000000000000000000000000000000000000000
-t|│                                                                              ┃
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│                           ╭──────────────────────╮                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ╭─ example-api ─────────────────────╮ ╭─ home ────────────────────────────╮  ┃
-k|afrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrrfrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffa
+t|│                           │ ● coordinator        │                           ┃
+k|afffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ claude · working · … │                           ┃
+k|afffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╰───────────┬──────────╯                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                   ╭───────────────────┴─────────────────╮                    ┃
+k|afffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ╭─ example-api ───┴─────────────────╮ ┏━ home ━━━━━━━━━━┷━━━━━━━━━━━━━━━━━┓  ┃
+k|afrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrrfaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffa
 b|00001111111111111000000000000000000000000011111100000000000000000000000000000000
-t|│ │ g4-rate-limits · wave B           │ │                                   │  ┃
-k|afrfdddddddddddddddddddddddfffffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ g4-rate-limits · wave B           │ ┃                                   ┃  ┃
+k|afrfdddddddddddddddddddddddfffffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ╭──────────────────────╮          │ │ ┏━━━━━━━━━━━━━━━━━━━━━━┓          │  ┃
-k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
+t|│ │ ╭──────────────────────╮          │ ┃ ╭──────────────────────╮          ┃  ┃
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │ ● manager-api        │          │ │ ┃ ● plan-review-1      ┃          │  ┃
-k|afrfwfwffffffffffffffffffffwffffffffffrfrfafwfaaaaaaaaaaaaaffffffaffffffffffrffa
-b|00000000000000000000000000000000000000000000001111111111111000000000000000000000
-t|│ │ │ codex · working · 2m │          │ │ ┃ pi · working · 2m    ┃          │  ┃
-k|afrfwfddddddddddddddddddddfwffffffffffrfrfafdddddddddddddddddffffaffffffffffrffa
+t|│ │ │ ● manager-api        │          │ ┃ │ ● plan-review-1      │          ┃  ┃
+k|afrfwfwffffffffffffffffffffwffffffffffrfafwfwffffffffffffffffffffwffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ├──────────────────────╯          │ │ ┗━━━━━━━━━━━━━━━━━━━━━━┛          │  ┃
-k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfrfaaaaaaaaaaaaaaaaaaaaaaaaffffffffffrffa
+t|│ │ │ codex · working · 2m │          │ ┃ │ pi · working · 2m    │          ┃  ┃
+k|afrfwfddddddddddddddddddddfwffffffffffrfafwfdddddddddddddddddffffwffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │                                 │ │                                   │  ┃
-k|afrfrfffffffffffffffffffffffffffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ ├──────────────────────╯          │ ┃ ╰──────────────────────╯          ┃  ┃
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╭──────────────────────╮         │ │                                   │  ┃
-k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ │                                 │ ┃                                   ┃  ┃
+k|afrfrfffffffffffffffffffffffffffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ├┤ ● t3-worker-1        │         │ │                                   │  ┃
-k|afrfrwfwffffffffffffffffffffwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ │╭──────────────────────╮         │ ┃                                   ┃  ┃
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ││ codex · working      │         │ │                                   │  ┃
-k|afrfrwfdddddddddddddddffffffwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ ├┤ ● t3-worker-1        │         │ ┃                                   ┃  │
+k|afrfrwfwffffffffffffffffffffwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╰──────────────────────╯         │ │                                   │  ┃
-k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ ││ codex · working      │         │ ┃                                   ┃  │
+k|afrfrwfdddddddddddddddffffffwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │                                 │ │                                   │  ┃
-k|afrfrfffffffffffffffffffffffffffffffffrfrfffffffffffffffffffffffffffffffffffrffa
+t|│ │ │╰──────────────────────╯         │ ┃                                   ┃  │
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╭──────────────────────╮         │ │                                   │  ┃
-k|afrfrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ╰┤ ◐ t3-verifier-1      │         │ │                                   │  ┃
-k|afrfrrfaffffffffffffffffffffrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │  │ pi · idle · 6m       │         │ │                                   │  │
-k|afrffrfddddddddddddddfffffffrfffffffffrfrfffffffffffffffffffffffffffffffffffrffa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│ │ │                                 │ ┃                                   ┃  │
+k|afrfrfffffffffffffffffffffffffffffffffrfafffffffffffffffffffffffffffffffffffaffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ←→ at the edge scrolls · projects 2–2 of 2 · home                     ← hive │
 k|afdddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffddddddfa
@@ -68,6 +68,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [graph] ←↑↓→ move · enter details · a attach · p peek · ?                      
+t| [graph] ←→ select pod · ↑ coordinator · enter open · ?                         
 k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

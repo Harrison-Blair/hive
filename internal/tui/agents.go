@@ -44,6 +44,14 @@ type agentsData struct {
 	nodes          []agentNode
 	groups         []agentGroup
 	supervisorLive bool
+	messages       []agentMessage
+}
+
+// agentMessage is one message between two agents (decision 66): an inbox
+// record, or an agent prompt event of hive agent send.
+type agentMessage struct {
+	from, to string
+	at       time.Time
 }
 
 type agentsState struct {
@@ -99,6 +107,13 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		return agentsData{}, fmt.Errorf("logs: %w", err)
 	}
 	source.events = events
+	for _, name := range messageInboxNames(agents) {
+		items, err := inbox.All(home, name)
+		if err != nil {
+			return agentsData{}, fmt.Errorf("%s inbox: %w", name, err)
+		}
+		source.inbox = append(source.inbox, items...)
+	}
 	return buildAgents(source, now), nil
 }
 
@@ -112,6 +127,53 @@ type agentsSource struct {
 	supervisorClaim records.Claim
 	unread          map[string][]records.Inbox
 	events          []logs.Event
+	// inbox holds each inbox record of a card, read or not: the lit lines
+	// of decision 66.
+	inbox []records.Inbox
+}
+
+// messageInboxNames gives the inbox key of each current agent with a card:
+// its name, and "coordinator" for the coordinator.
+func messageInboxNames(agents []records.Agent) []string {
+	current := currentAgentKeys(agents)
+	names := []string{}
+	checked := make(map[string]bool)
+	for _, record := range agents {
+		name := record.Name
+		if record.Role == "coordinator" {
+			name = "coordinator"
+		}
+		if !current[record.Key] || name == "" || checked[name] || record.Role == "supervisor" {
+			continue
+		}
+		checked[name] = true
+		names = append(names, name)
+	}
+	return names
+}
+
+// agentMessages gives the messages of the inbox records and of the agent
+// prompt events of hive agent send.
+func agentMessages(items []records.Inbox, events []logs.Event) []agentMessage {
+	var out []agentMessage
+	for _, item := range items {
+		if sent, err := time.Parse(time.RFC3339Nano, item.CreatedAt); err == nil {
+			out = append(out, agentMessage{from: item.Agent, to: item.Role, at: sent})
+		}
+	}
+	for _, event := range events {
+		message, _ := event.Fields["msg"].(string)
+		command, _ := event.Fields["command"].(string)
+		from, _ := event.Fields["from"].(string)
+		to, _ := event.Fields["agent_id"].(string)
+		stamp, _ := event.Fields["time"].(string)
+		sent, err := time.Parse(time.RFC3339Nano, stamp)
+		if message != "agent prompt" || command != "agent send" || from == "" || to == "" || err != nil {
+			continue
+		}
+		out = append(out, agentMessage{from: from, to: to, at: sent})
+	}
+	return out
 }
 
 // inboxAgentNames returns the current coordinator and manager names. Their
@@ -153,7 +215,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			goalTitle[goal.Project] = goal.Title
 		}
 	}
-	data := agentsData{groups: []agentGroup{{id: "home", title: "home"}}, supervisorLive: fresh}
+	data := agentsData{groups: []agentGroup{{id: "home", title: "home"}}, supervisorLive: fresh, messages: agentMessages(source.inbox, source.events)}
 	groupByProject := make(map[string]int, len(projects))
 	for _, project := range projects {
 		groupByProject[project.ID] = len(data.groups)

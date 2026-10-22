@@ -1,0 +1,45 @@
+LiveOverview: cmp exit=0 
+LivePod: cmp exit=0 
+CompactLiveOverview: cmp exit=0 
+CompactLivePod: cmp exit=0 
+Main: cmp exit=0 
+AgentsMany: cmp exit=0 
+AgentDetails: cmp exit=0 
+CompactAgents: cmp exit=0 
+AgentsHome: cmp exit=0 
+AgentsNested: cmp exit=0 
+AgentsHiddenParent: cmp exit=0 
+AgentsCoordinatorChild: cmp exit=0 
+CompactAgentsHome: cmp exit=0 
+AgentDetailsGeneral: cmp exit=0 
+Help: cmp exit=0 
+LiveOverview-staged: captured
+LiveOverview-copy: captured
+LivePod-staged: captured
+LivePod-copy: captured
+CompactLiveOverview-staged: captured
+CompactLiveOverview-copy: captured
+CompactLivePod-staged: captured
+CompactLivePod-copy: captured
+Main-staged: captured
+Main-copy: captured
+AgentsMany-staged: captured
+AgentsMany-copy: captured
+AgentDetails-staged: captured
+AgentDetails-copy: captured
+CompactAgents-staged: captured
+CompactAgents-copy: captured
+AgentsHome-staged: captured
+AgentsHome-copy: captured
+AgentsNested-staged: captured
+AgentsNested-copy: captured
+AgentsHiddenParent-staged: captured
+AgentsHiddenParent-copy: captured
+AgentsCoordinatorChild-staged: captured
+AgentsCoordinatorChild-copy: captured
+CompactAgentsHome-staged: captured
+CompactAgentsHome-copy: captured
+AgentDetailsGeneral-staged: captured
+AgentDetailsGeneral-copy: captured
+Help-staged: captured
+Help-copy: captured
