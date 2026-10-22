@@ -139,3 +139,20 @@ $ golangci-lint run ./...
 0 issues.
 $ go test -race ./...   exit 0, no failed package
 ```
+
+## Repair 2 2026-10-22
+
+`hive land` had a merge conflict in `testdata/ste-baseline.json` after
+`51-release-workflow` landed (`dev` `d4eb2382`). The worker merged
+`origin/dev` into the task branch in merge commit `eaca9acd`. The resolution
+keeps each entry of both sides. The entries of the briefs of `50`, `51`, and
+`52` each have 0. No other file changed. The gate ran again after the merge:
+
+```text
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+$ go mod tidy -diff
+$ go vet ./...          exit 0
+$ golangci-lint run ./...
+0 issues.
+$ go test -race ./...   exit 0, no failed package
+```
