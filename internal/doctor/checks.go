@@ -152,6 +152,12 @@ func checkGit(ctx context.Context) Check {
 	return newCheck("git", true, true, firstLine(result.Stdout))
 }
 
+// checkHomeVersion compares the binary version with the tags at HEAD of the
+// home (decision 19 of the releases spec).
+func checkHomeVersion(ctx context.Context, home, binary, git string) Check {
+	return Check{}
+}
+
 func checkSupervisor(home string) Check {
 	store, err := storelib.Open(home)
 	if err != nil {

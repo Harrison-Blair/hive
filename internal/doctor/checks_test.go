@@ -140,8 +140,8 @@ func TestRunChecksWithFakeHerdr(t *testing.T) {
 	if ownerless := findCheck(t, result, "ownerless inbox records"); ownerless.Status != StatusOK || ownerless.Required || ownerless.Detail != "0" {
 		t.Fatalf("ownerless inbox records = %+v, want an optional ok", ownerless)
 	}
-	if len(result.Checks) != 18 {
-		t.Fatalf("checks = %d, want 18", len(result.Checks))
+	if len(result.Checks) != 19 {
+		t.Fatalf("checks = %d, want 19", len(result.Checks))
 	}
 }
 
