@@ -62,11 +62,14 @@ function popup(t) {
   put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, 'a attach · p peek · t task · ↑↓ scroll · esc close', 'dim');
 }
+var TARGET = [[3,"╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮",[[0,119,"border",0]]],[5,"│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │",[[0,119,"border",0]]],[6,"│                           │ g1-tui-restart · done                                        │                           │",[[0,119,"border",0]]],[24,"│                             │  t  open task · none                                     │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,33,"dim",1],[34,51,"dim",0],[52,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[26,"│                             │  RECENT                                                  │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,38,"accent",1],[39,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[27,"│                             │  14:08 inbox 28 sent to coordinator                      │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[28,"│                             │  14:07 land 4-agents-equal-columns · ede94f3e            │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,76,"dim",0],[77,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[29,"│                             │  13:58 land 3-tui-restart · 3ccd93fb                     │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,67,"dim",0],[68,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[30,"│                             │  13:44 land 2-stale-coordinator-startup · 0e079272       │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,81,"dim",0],[82,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[31,"│                             │                                                          │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[37,"│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │",[[0,119,"border",0]]]];
+function paint(t) { TARGET.forEach(function (r) { r[2].forEach(function (u) { put(t, u[0], r[0], r[1].slice(u[0], u[1] + 1), u[2], u[3]); }); }); }
 class Component extends DCLogic {
   renderVals() {
     var t = T(120, 40);
     background(t);
     popup(t);
+    paint(t);
     return { rows: rows(t) };
   }
 }

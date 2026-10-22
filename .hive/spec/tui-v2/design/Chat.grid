@@ -38,6 +38,9 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                      1. What happens to the old tab on restart?                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000001111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                      Bare hive makes the coordinator tab, but its record has spawned=false. agent stop refuses it.   │
 k|rffffffffffffffffffffffffffffffffffffffffffcccccccccccfffffffffffffffffffffffffcccccccccccccffccccccccccfffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -59,23 +62,23 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                       C                 │ Reuse the same pane               │ One tab always   │ Must exit harness   │
 k|rfffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                      • Recommended: A, because hive may close only panes it started.                                 ┃
-k|rffffffffffffffffffffffaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                      • Recommended: A, because hive may close only panes it started.                                 │
+k|rffffffffffffffffffffffaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000011111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                      • Reply like 1A, 2A, 3A, or simplify N.                                                         ┃
-k|rffffffffffffffffffffffaafffffffffffccccccccccfffffccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                      • Reply like 1A, 2A, 3A, or simplify N.                                                         │
+k|rffffffffffffffffffffffaafffffffffffccccccccccfffffccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                        hive agent stop manager-hive                                                                  ┃
-k|rffffffffffffffffffffffffccccccccccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                        hive agent stop manager-hive                                                                  │
+k|rffffffffffffffffffffffffccccccccccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                        hive agent spawn --role manager                                                               ┃
-k|rffffffffffffffffffffffffcccccccccccccccccccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                        hive agent spawn --role manager                                                               │
+k|rffffffffffffffffffffffffcccccccccccccccccccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      ┃
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
@@ -100,9 +103,6 @@ k|rfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      ┃
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
