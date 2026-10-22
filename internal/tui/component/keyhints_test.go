@@ -17,7 +17,7 @@ func TestKeyHintsGolden(t *testing.T) {
 		checkGolden(t, k.View(72), sheet, rect{64, 0, 72, 1})
 	})
 	t.Run("main", func(t *testing.T) {
-		k := KeyHints{Region: "graph", Hints: append(graphHints[:5:5], "h hide stopped", "? help")}
+		k := KeyHints{Region: "graph", Hints: append(graphHints[:5:5], "h stopped", "? help")}
 		checkGolden(t, k.View(120), "Main", rect{39, 0, 120, 1})
 	})
 	t.Run("compact", func(t *testing.T) {

@@ -1,6 +1,7 @@
 package component
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/x/ansi"
@@ -43,5 +44,26 @@ func TestCardCutsLongText(t *testing.T) {
 	want := "╭──────────────────────╮\n│ ◐ a-very-long-agent… │\n│ claude · idle · nud… │\n╰──────────────────────╯"
 	if got := ansi.Strip(c.View()); got != want {
 		t.Errorf("View:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// TestCardWorkingBorder checks decision 60: the card of a working agent has
+// its rounded border in working. Each other state keeps border, and a
+// selected working card keeps the heavy accent border
+// (TestCardSelectedHeavyBorder).
+func TestCardWorkingBorder(t *testing.T) {
+	c := Card{Name: "t3-worker-2", Sub: "claude · working", State: "working"}
+	want := "hive-grid 1 24 4\n" +
+		"t|╭──────────────────────╮\n" + "k|wwwwwwwwwwwwwwwwwwwwwwww\n" + "b|000000000000000000000000\n" +
+		"t|│ ● t3-worker-2        │\n" + "k|wfwffffffffffffffffffffw\n" + "b|000000000000000000000000\n" +
+		"t|│ claude · working     │\n" + "k|wfddddddddddddddddfffffw\n" + "b|000000000000000000000000\n" +
+		"t|╰──────────────────────╯\n" + "k|wwwwwwwwwwwwwwwwwwwwwwww\n" + "b|000000000000000000000000\n"
+	checkHandGrid(t, c.View(), want)
+	for _, state := range []string{"idle", "stopped", "blocked"} {
+		c := Card{Name: "t3-worker-2", Sub: "claude · " + state, State: state}
+		top := strings.SplitN(c.View(), "\n", 2)[0]
+		if !strings.Contains(top, "38;2;61;58;51m╭") {
+			t.Errorf("%s card top border %q, want the token border", state, top)
+		}
 	}
 }

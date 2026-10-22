@@ -306,6 +306,16 @@ The worker made these decisions in task `39-screen-health`:
 
 57. A folded event has one dim line. Use `▸` instead of `·` before its name. `ctrl+o` opens or folds all events from the feed or the input. An open event starts with `▾`. Show its full text in dim. Wrap the text to the feed width. Start each source line on a new row. Start continuation text in the message text column. Fold all events when the TUI starts. Do not keep the toggle state. Do not add a noise key. Show `ctrl+o` in the key hints of the feed and input. The Help board shows `ctrl+o opens or folds all chat events`.
 
+### Agents default and working cards
+
+58. At each TUI start, the Agents screen hides each stopped agent. A stopped agent has the status `stopped` or `exited`. `h` shows the stopped agents. `h` hides them again. While `h` hides them, the stopped text of the pod is `h shows N stopped`. While `h` shows them, the stopped text is `h hides N stopped`. An unresolved agent stays on the graph. Demo mode reads `hide_stopped` from the fixture. A fixture without this field shows the stopped agents.
+
+59. Health › Agents does not change. It shows the stopped agents at start. Its `h` key hides them and shows them again.
+
+60. When the agent of a card has the state `working`, the card draws its rounded border in the token `working`. A selected card keeps the heavy `accent` border, also when its agent has the state `working`. A card of each other state keeps the token `border`. Each joint on the border of a working card, for example `├`, `┤`, `┴`, `┬`, and `╰`, has the token `working`. A rail or a tree line outside a card keeps the token `border`.
+
+61. The key hint of `h` in the graph footer is `h stopped`. The Help line for `h` is `show or hide stopped agents`.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
