@@ -46,3 +46,28 @@ func TestInputShowsWrappedTextAndCursor(t *testing.T) {
 		t.Fatalf("multiline input rows = %q; want the second line and cursor", multi)
 	}
 }
+
+// TestInputCursorFollowsLineAndColumn checks that the cursor shows on the
+// wrapped row of its line and rune column. The text width is 8 cells.
+func TestInputCursorFollowsLineAndColumn(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		text      string
+		line, col int
+		row       int
+		want      string
+	}{
+		{"on the soft break space", "one two three", 0, 7, 1, "> one two█"},
+		{"after the soft break", "one two three", 0, 8, 2, "  █hree"},
+		{"first row", "one two three", 0, 1, 1, "> o█e two"},
+		{"second line", "ab\ncd", 1, 1, 2, "  c█"},
+		{"inside a broken word", "xxxxxxxxxxyy", 0, 9, 2, "  x█yy"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rows := strings.Split(ansi.Strip(Input{Text: tc.text, Focused: true, HasCursor: true, CursorLine: tc.line, CursorColumn: tc.col}.View(14)), "\n")
+			if !strings.Contains(rows[tc.row], tc.want) {
+				t.Errorf("row %d = %q; want %q in rows %q", tc.row, rows[tc.row], tc.want, rows)
+			}
+		})
+	}
+}

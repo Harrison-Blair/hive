@@ -46,30 +46,27 @@ type Model struct {
 	filterDraft string
 	mode        mode
 
-	chatData             chatScreenData
-	chatFeed             chatFeed
-	chatInput            textarea.Model
-	chatInputActive      bool
-	chatSending          bool
-	chatCallerCwd        string
-	chatPaneID           string
-	chatCallerBlocked    bool
-	chatNoise            string
-	chatEventsOpen       bool
-	chatStatusAge        string
-	chatInputCursorRow   int
-	chatInputCursorCol   int
-	chatInputCursorValid bool
-	chatErr              string
-	textFilter           string
-	follow               bool
-	logDate              time.Time
-	logDatePinned        bool
-	logSelection         int
-	logSelectedKey       string
-	logOffset            int
-	logPendingTime       string
-	logErr               string
+	chatData          chatScreenData
+	chatFeed          chatFeed
+	chatInput         textarea.Model
+	chatInputActive   bool
+	chatSending       bool
+	chatCallerCwd     string
+	chatPaneID        string
+	chatCallerBlocked bool
+	chatNoise         string
+	chatEventsOpen    bool
+	chatStatusAge     string
+	chatErr           string
+	textFilter        string
+	follow            bool
+	logDate           time.Time
+	logDatePinned     bool
+	logSelection      int
+	logSelectedKey    string
+	logOffset         int
+	logPendingTime    string
+	logErr            string
 
 	header               headerState
 	headerErr            string

@@ -286,14 +286,9 @@ func (m *Model) chatInputView(width, contentHeight int) string {
 	m.chatInput.DynamicHeight = true
 	m.chatInput.MinHeight = 1
 	m.chatInput.MaxHeight = 0
-	m.chatInput.SetWidth(max(width-6, 1))
-	if m.chatInputActive {
-		if cursor := m.chatInput.Cursor(); cursor != nil {
-			m.chatInputCursorRow = cursor.Y
-			m.chatInputCursorCol = cursor.X
-			m.chatInputCursorValid = true
-		}
-	}
+	// The textarea keeps its two-cell prompt inside this width, so its rows
+	// for up and down are width-6 cells, as the rows of the Input component.
+	m.chatInput.SetWidth(max(width-4, 3))
 	status := m.header.coordinator
 	if status == "" {
 		status = "none"
@@ -301,8 +296,8 @@ func (m *Model) chatInputView(width, contentHeight int) string {
 	age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
 	return component.Input{
 		Text: m.chatInput.Value(), Focused: m.chatInputActive, Height: panelCap,
-		CursorRow: m.chatInputCursorRow, CursorCol: m.chatInputCursorCol,
-		HasCursor: m.chatInputCursorValid, Status: status, Age: age,
+		CursorLine: m.chatInput.Line(), CursorColumn: m.chatInput.Column(),
+		HasCursor: true, Status: status, Age: age,
 		Queued: m.lastUserChatPending(),
 	}.View(width)
 }

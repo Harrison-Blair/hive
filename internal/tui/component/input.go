@@ -12,15 +12,17 @@ var userStyle = lipgloss.NewStyle().Foreground(User)
 // Input is the fixed chat input below the feed (decision 15). It can grow to
 // the height that the caller gives it. Text uses the user token.
 type Input struct {
-	Text      string
-	Focused   bool
-	Height    int
-	CursorRow int
-	CursorCol int
-	HasCursor bool
-	Status    string
-	Age       string
-	Queued    bool
+	Text    string
+	Focused bool
+	Height  int
+	// CursorLine and CursorColumn give the cursor as a line of Text and a
+	// rune column in that line.
+	CursorLine   int
+	CursorColumn int
+	HasCursor    bool
+	Status       string
+	Age          string
+	Queued       bool
 }
 
 // View renders the input at exactly width cells. Height is the maximum panel
@@ -33,10 +35,9 @@ func (in Input) View(width int) string {
 		panelHeight = min(max(in.Height, 3), panelHeight)
 	}
 	visibleRows := max(panelHeight-2, 1)
-	cursorRow, cursorCol := in.CursorRow, in.CursorCol
-	if in.Focused && !in.HasCursor {
-		cursorRow = len(textRows) - 1
-		cursorCol = 2 + lipgloss.Width(textRows[cursorRow])
+	cursorRow, cursorCol := len(textRows)-1, 2+lipgloss.Width(textRows[len(textRows)-1])
+	if in.HasCursor {
+		cursorRow, cursorCol = inputCursor(in.Text, max(width-6, 1), in.CursorLine, in.CursorColumn)
 	}
 	cursorRow = min(max(cursorRow, 0), len(textRows)-1)
 	cursorCol = min(cursorCol, 2+lipgloss.Width(textRows[cursorRow]))
@@ -111,4 +112,35 @@ func inputStatus(state, age string, queued bool) string {
 
 func inputTextLines(text string, width int) []string {
 	return wordWrap(text, width)
+}
+
+// inputCursor gives the wrapped row and the cell column, after the two-cell
+// prompt, of rune column col in line of text. Each wrapped row is a part of
+// its line. A cursor on the space at a soft break shows at the end of the row
+// before it.
+func inputCursor(text string, width, line, col int) (int, int) {
+	row := 0
+	for i, para := range strings.Split(text, "\n") {
+		runes := []rune(para)
+		paraRows := wordWrap(para, width)
+		if i < line {
+			row += len(paraRows)
+			continue
+		}
+		pos, cell := 0, 0
+		for k, r := range paraRows {
+			for pos < len(runes) && !strings.HasPrefix(string(runes[pos:]), r) {
+				pos++
+			}
+			if k > 0 && pos > col {
+				break
+			}
+			end := pos + len([]rune(r))
+			row += min(k, 1)
+			cell = lipgloss.Width(string(runes[pos:min(max(col, pos), end)]))
+			pos = end
+		}
+		return row, 2 + cell
+	}
+	return row, 2
 }

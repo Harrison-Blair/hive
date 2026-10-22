@@ -693,3 +693,62 @@ func (f *blockingChatHerdr) handle(conn net.Conn) {
 }
 
 func (f *blockingChatHerdr) releasePrompt() { f.once.Do(func() { close(f.release) }) }
+
+// At both caps, Left must move the rendered cursor before the final D.
+// The text widths are 74 and 114 cells. Each last wrapped row is xEND.
+func TestChatWrappedInputCursorTracksInsertion(t *testing.T) {
+	for _, tc := range []struct {
+		name                  string
+		width, height, prefix int
+	}{
+		{"compact cap", 80, 24, 445},
+		{"full cap", 120, 40, 1141},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := chatModel(t, tc.width, tc.height, 0)
+			defer m.Stop()
+			m, _ = raise(t, m, key('i', "i"))
+			m.chatInput.SetValue(strings.Repeat("x", tc.prefix) + "END")
+			m.invalidateView()
+			before := ansi.Strip(m.View().Content)
+			if !strings.Contains(before, "xEND█") {
+				t.Fatalf("initial cursor is not after END:\n%s", before)
+			}
+			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyLeft})
+			after := ansi.Strip(m.View().Content)
+			if !strings.Contains(after, "xEN█") {
+				t.Errorf("Left must put the cursor before D; expected xEN█:\n%s", after)
+			}
+			m, _ = raise(t, m, key('Z', "Z"))
+			if !strings.HasSuffix(m.chatInput.Value(), "xENZD") {
+				t.Fatalf("Z was not inserted before D: %q", m.chatInput.Value())
+			}
+			after = ansi.Strip(m.View().Content)
+			if !strings.Contains(after, "xENZ█") {
+				t.Errorf("cursor must stay before D after inserting Z; expected xENZ█:\n%s", after)
+			}
+		})
+	}
+}
+
+// Text that wraps at spaces must keep the cursor on the insertion point.
+// At 80×24 the text width is 74 cells. Each row holds 15 "abcd" words, and
+// the third row is "ZEND".
+func TestChatWordWrappedInputCursorTracksInsertion(t *testing.T) {
+	m := chatModel(t, 80, 24, 0)
+	defer m.Stop()
+	m, _ = raise(t, m, key('i', "i"))
+	m.chatInput.SetValue(strings.Repeat("abcd ", 30) + "END")
+	m.invalidateView()
+	for range 3 {
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyLeft})
+	}
+	m, _ = raise(t, m, key('Z', "Z"))
+	if !strings.HasSuffix(m.chatInput.Value(), "abcd ZEND") {
+		t.Fatalf("Z was not inserted before END: %q", m.chatInput.Value())
+	}
+	view := ansi.Strip(m.View().Content)
+	if !strings.Contains(view, "│   Z█ND ") {
+		t.Errorf("cursor must sit on E after inserting Z; expected Z█ND:\n%s", view)
+	}
+}
