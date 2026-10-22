@@ -23,7 +23,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ▶ 3-tui-restart             landed    B          ││ status    landed                                                 │
 k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaoooooooooodffffffffffarfddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooofr
 b|001011111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   2-stale-coordinator-start…landed    A          ││ goal      g1-tui-restart · wave B                                │
+t|│   2-stale-coordinator-star… landed    A          ││ goal      g1-tui-restart · wave B                                │
 k|afffffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   1-cp5-end-to-end          assigned  —          ││ worker    t3-worker-1 · stopped                                  │
