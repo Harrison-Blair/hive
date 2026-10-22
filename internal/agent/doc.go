@@ -6,5 +6,6 @@
 // supervisor.go starts the singleton supervisor under one held store lock.
 // resolve.go settles an unresolved record by hand and checks the live identity.
 // restart.go restarts the coordinator under a new starting claim, or the supervisor, and updates the old record.
+// report.go sends the result of a general agent to the inbox of its parent and sets reported_at.
 // caller.go finds the caller of one command from the herdr pane (decision 24); route.go gives the inbox key of an agent and the parent inbox of its nudges (decisions 26, 28).
 package agent

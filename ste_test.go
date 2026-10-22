@@ -33,6 +33,7 @@ var steFiles = []string{
 	".agents/skills/hive-manager/SKILL.md",
 	".agents/skills/hive-worker/SKILL.md",
 	".agents/skills/hive-verifier/SKILL.md",
+	".agents/skills/hive-agent/SKILL.md",
 }
 
 const (
