@@ -1,0 +1,7 @@
+[0m[1m[38;5;2mpenguin@raft[0m:[0m[1m[38;5;4m~/source/hive/projects/hive/worktrees/29-frame-layout[0m$ /home/penguin/source/hive/projects/hive/worktrees/29-frame-layout/.hive/tmp/verify29r2/hive --demo /home/penguin/source/hive/projects/hive
+/worktrees/29-frame-layout/.hive/spec/tui-v2/design/Help.fixture.json --size 120x40
+[0m[1m[38;5;2mpenguin@raft[0m:[0m[1m[38;5;4m~/source/hive/projects/hive/worktrees/29-frame-layout[0m$ /home/penguin/source/hive/projects/hive/worktrees/29-frame-layout/.hive/tmp/verify29r2/hive --demo /home/penguin/source/hive/projects/hive
+/worktrees/29-frame-layout/.hive/spec/tui-v2/design/CompactAgents.fixture.json --size 80x24
+[0m[1m[38;5;2mpenguin@raft[0m:[0m[1m[38;5;4m~/source/hive/projects/hive/worktrees/29-frame-layout[0m$ /home/penguin/source/hive/projects/hive/worktrees/29-frame-layout/.hive/tmp/verify29r2/hive --demo /home/penguin/source/hive/projects/hive
+/worktrees/29-frame-layout/.hive/spec/tui-v2/design/Compact.fixture.json --size 80x24
+[0m[1m[38;5;2mpenguin@raft[0m:[0m[1m[38;5;4m~/source/hive/projects/hive/worktrees/29-frame-layout[0m$ 
