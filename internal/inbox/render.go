@@ -20,7 +20,11 @@ func ReadText(envelope output.Envelope) string {
 	}
 	lines := make([]string, 0, len(result.Records))
 	for _, record := range result.Records {
-		lines = append(lines, fmt.Sprintf("%d\t%s\t%s\t%s\t%s", record.Seq, renderValue(record.Kind), renderValue(record.Agent), renderValue(record.CreatedAt), renderValue(record.Text)))
+		line := fmt.Sprintf("%d\t%s\t%s\t%s\t%s", record.Seq, renderValue(record.Kind), renderValue(record.Agent), renderValue(record.CreatedAt), renderValue(record.Text))
+		if record.Path != "" {
+			line += "\t" + renderValue(record.Path)
+		}
+		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n") + "\n"
 }

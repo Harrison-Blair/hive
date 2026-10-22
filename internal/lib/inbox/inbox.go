@@ -39,6 +39,8 @@ type AppendOptions struct {
 	Task  string
 	Agent string
 	Text  string
+	// Path is the absolute file path of a report record.
+	Path string
 }
 
 // Result is the records that a consume call marked and the records that remain unread.
@@ -107,6 +109,7 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 		Task:      options.Task,
 		Agent:     options.Agent,
 		Text:      options.Text,
+		Path:      options.Path,
 		CreatedAt: now().UTC().Format(time.RFC3339Nano),
 		ReadAt:    "",
 		NudgedAt:  "",
@@ -369,7 +372,7 @@ func validateAppend(options AppendOptions) error {
 	}
 	switch kind {
 	case records.InboxCompleted, records.InboxVerified, records.InboxBlocked,
-		records.InboxExited, records.InboxQuiet, records.InboxUnresolved, records.InboxMessage:
+		records.InboxExited, records.InboxQuiet, records.InboxUnresolved, records.InboxMessage, records.InboxReport:
 	default:
 		return fmt.Errorf("invalid inbox kind: %s", displayValue(kind))
 	}
