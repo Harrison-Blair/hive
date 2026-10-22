@@ -74,3 +74,41 @@ The race run included `internal/lib/version`, `internal/task`, `internal/tui`, a
 ## Cleanup
 
 Removed the scratch module copy, proxy, module cache, binaries, saved source, and logs from `.hive/tmp/t50-verifier` after this record was written. No source changes remain from the red run.
+
+## Repair verification
+
+- Date: 2026-10-22
+- Verifier: `t50-verifier-2` (pi)
+- Checked commit: `5458bd55`
+- Verdict: pass
+
+The manager limited this check to the repair after `54035e9e`. V1 and V2
+carry forward from the record above, with the same module-copy limits.
+The version source and tests have no changes since that commit.
+
+| Item | Result | Observation |
+| --- | --- | --- |
+| Repair diff | pass | Merge `7ea79096` has parents `54035e9e` and `77deb3ec` (dev with task 52). Only the baseline changed on both sides. Both brief entries have 0. The later commit adds only the short gate evidence note. |
+| V1 | pass | Previous red and green results carry forward. `go test ./internal/lib/version/` exits 0 (cached). |
+| V2 | pass | Previous live build results carry forward per manager instruction. No live build was repeated in this repair check. |
+| V-gate | pass | All five gate commands exit 0. No retry was needed. |
+
+Checked the merge tree with a Python script and Git object reads. Each file
+outside `testdata/ste-baseline.json` matches the parent that supplies it.
+The parsed baseline equals the union of the two parent baselines. The
+entries for task 50 and task 52 each have value 0. The only change from
+`7ea79096` to `5458bd55` is the repair note in task 50 `V-gate.md`.
+No further merge was needed.
+
+| Exact command | Exit | Output |
+| --- | --- | --- |
+| `go test ./internal/lib/version/` | 0 | Package passes (cached). |
+| `gofmt -l $(git ls-files -co --exclude-standard '*.go')` | 0 | empty |
+| `go mod tidy -diff` | 0 | empty |
+| `go vet ./...` | 0 | empty |
+| `golangci-lint run ./...` | 0 | `0 issues.` |
+| `go test -race ./...` | 0 | All packages pass or have no tests. Root: 26.063s; TUI: 42.654s. Some package results are cached. No race report. |
+
+No UI change requires a visual check. No tag was pushed. No GitHub release
+or workflow was changed. This repair check created no scratch files. Git
+status was clean before the evidence edit. No source file was edited.
