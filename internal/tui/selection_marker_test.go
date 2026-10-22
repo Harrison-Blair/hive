@@ -149,7 +149,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
+			// The Queue board draws the marker and the task in two runs.
+			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
 				m.goalsQueue.data = goalsQueueData{

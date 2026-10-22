@@ -214,10 +214,20 @@ The worker made these decisions in task `40-screen-logs`:
 - Screen: the file `internal/tui/logs_screen.go`. The frame gives the content area of tab 6 to `logsContent`. From 120 columns, the event list has 8/15 of the width.
 - Filter: the filter bar text is the applied filter. The default text is `level:info`. `level:` gives the lowest level. `agent:` matches the agent ID, or the agent name before its generation. Each other typed field must be equal to the field of the event. Each word of free text must be in the row text.
 - Selection: when a load gives a new newest event, follow selects it. When the newest event does not change, the selection stays. When no row shows, the selected event stays, and it shows again with the rows. A day change selects the first row.
-- Keys: `/` opens the filter bar with the applied text. `esc` in the event list sets the default filter. `f` changes follow. When follow is on, each load selects the newest event. `↑`, `k`, `pgup`, and `g` set follow to off. `G` sets follow to on.
+- Keys: `/` opens the filter bar with the applied text. `esc` in the event list sets the default filter. `f` changes follow. `↑`, `k`, `pgup`, and `g` set follow to off. `G` sets follow to on.
 - This task removes the old keys `l`, `c`, `p`, `a`, and `r` of the Logs screen. Decisions 21 to 25 give these keys other meanings or give the typed fields.
 - The JSON panel cuts each line to the panel width less 6 cells, with `…`. When the lines do not fit, the last body row shows `↓ N more lines`.
 - Component change: `FilterBar` has the fields `Focused` and `Status`. `Status` is at the end of the bar. The Logs screen shows the follow mark and the day there.
+
+The worker made these decisions in task `36-screen-work-queue`:
+
+- Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.
+- Queue list: the list shows each task of each project, also a landed task. The title gives the project when there is one project, the task count, and the stop count.
+- Queue groups: the tasks of a project are in groups by grant. The grant of a task is the grant of its goal, then the grant of its delivery. The group `NO GRANT` is last. With more than one project, each group heading starts with the project. A project with no tasks shows `PROJECT · no tasks`.
+- Queue tree: in a group, a task is below the first task of the group that it depends on. A task in a dependency cycle starts a tree.
+- Queue stop: an open task stops when it has a needs-user text, or when its acting agent has the status `unresolved`. A stop row `! stop: REASON` follows the task row. `s` shows only the stopped tasks, each at depth 0.
+- Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
+- The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
 
 ## Waves
 
