@@ -26,8 +26,8 @@ b|001011111111111111111111111100000000000000000000000000000000000000000000000000
 t|│                                                  ││ project   hive                                                   │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ g2-tui-v2 is example data                        ││ grant     grants.md 2026-10-18 hive delivery on dev              │
-k|afdddddddddddddddddddddddddffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│                                                  ││ grant     grants.md 2026-10-18 hive delivery on dev              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││ manager   manager-hive                                           │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
