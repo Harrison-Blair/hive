@@ -52,7 +52,7 @@ function work(t) {
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 1;
     put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
-    put(t, 4, y, fit(r[0], 26), sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 4, y, fit(r[0], sel ? 26 : 25), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 30, y, fit(r[1], 10), r[1] === 'landed' ? 'done' : 'info');
     put(t, 40, y, r[2], 'dim');
   });

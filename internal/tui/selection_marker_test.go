@@ -117,7 +117,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		name     string
 		selected string
 		also     []string
-		bold     []string
+		honey    []string
 		states   []string
 		model    func(*testing.T) *Model
 	}{
@@ -149,7 +149,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
+			// The Queue board draws the marker and the task in two runs.
+			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
 				m.goalsQueue.data = goalsQueueData{
@@ -185,7 +186,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		{
 			// The Health board puts the check glyph between the marker and
 			// the name, so the test reads the marker and the name apart.
-			name: "Health", bold: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
+			name: "Health", honey: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{
@@ -215,7 +216,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			if tt.selected != "" {
 				requireHoneySelection(t, raw, tt.selected)
 			}
-			for _, text := range tt.bold {
+			for _, text := range tt.honey {
 				requireHoneyBoldText(t, raw, text)
 			}
 			for _, selected := range tt.also {

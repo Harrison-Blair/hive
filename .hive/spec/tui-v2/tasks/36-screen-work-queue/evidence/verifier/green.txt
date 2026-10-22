@@ -1,0 +1,60 @@
+=== RUN   TestQueueHeaderShowsRunStopAndWaitCounts
+--- PASS: TestQueueHeaderShowsRunStopAndWaitCounts (0.04s)
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Chat
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Goals
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs
+--- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground (0.52s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Chat (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents (0.50s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Goals (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs (0.00s)
+=== RUN   TestScreenKeysSelectAllSixScreens
+--- PASS: TestScreenKeysSelectAllSixScreens (0.01s)
+=== RUN   TestWorkQueueMatchesItsBoard
+--- PASS: TestWorkQueueMatchesItsBoard (0.00s)
+=== RUN   TestQueueShowsGrantGroupsTreesAndStops
+--- PASS: TestQueueShowsGrantGroupsTreesAndStops (0.06s)
+=== RUN   TestQueueShowsLandedTasks
+--- PASS: TestQueueShowsLandedTasks (0.05s)
+=== RUN   TestQueueDetailsShowTheSelectedTask
+--- PASS: TestQueueDetailsShowTheSelectedTask (0.05s)
+=== RUN   TestQueueStopsOnly
+--- PASS: TestQueueStopsOnly (0.04s)
+=== RUN   TestQueueEmptyData
+--- PASS: TestQueueEmptyData (0.00s)
+=== RUN   TestQueueShowsEachProject
+--- PASS: TestQueueShowsEachProject (0.06s)
+=== RUN   TestQueueKeys
+--- PASS: TestQueueKeys (0.05s)
+=== RUN   TestQueueFocusStates
+--- PASS: TestQueueFocusStates (0.09s)
+=== RUN   TestQueueRefreshKeepsSelection
+--- PASS: TestQueueRefreshKeepsSelection (0.05s)
+=== RUN   TestQueueFitsEachSize
+=== RUN   TestQueueFitsEachSize/79x24
+=== RUN   TestQueueFitsEachSize/80x24
+=== RUN   TestQueueFitsEachSize/80x25
+=== RUN   TestQueueFitsEachSize/119x40
+=== RUN   TestQueueFitsEachSize/119x41
+=== RUN   TestQueueFitsEachSize/120x40
+=== RUN   TestQueueFitsEachSize/120x41
+--- PASS: TestQueueFitsEachSize (0.24s)
+    --- PASS: TestQueueFitsEachSize/79x24 (0.01s)
+    --- PASS: TestQueueFitsEachSize/80x24 (0.01s)
+    --- PASS: TestQueueFitsEachSize/80x25 (0.01s)
+    --- PASS: TestQueueFitsEachSize/119x40 (0.01s)
+    --- PASS: TestQueueFitsEachSize/119x41 (0.01s)
+    --- PASS: TestQueueFitsEachSize/120x40 (0.01s)
+    --- PASS: TestQueueFitsEachSize/120x41 (0.01s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.287s
