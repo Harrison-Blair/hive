@@ -49,8 +49,8 @@ function screen(t) {
   box(t, 0, 3, 80, 17, 'border', 'chat', 'accent');
   put(t, 2, 4, '14:21', 'dim'); put(t, 8, 4, 'coordinator', 'info', 1);
   put(t, 2, 5, 'Interrogate, round 2', 'accent', 1);
-  segs(t, 2, 7, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has']]);
-  segs(t, 2, 8, [['spawned=false', 'code'], ['. '], ['agent stop', 'code'], [' refuses it.']]);
+  segs(t, 2, 7, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has '], ['spawned=false', 'code'], ['. '], ['agent', 'code']]);
+  segs(t, 2, 8, [['stop', 'code'], [' refuses it.']]);
   var cols = [9, 34, 17, 13];
   var y = 10;
   function trow(cells, b) { var x = 2; cells.forEach(function (c, i) { put(t, x, y, ' ' + fit(c, cols[i] - 1), b && i === 0 ? 'accent' : 'fg', b); x += cols[i]; if (i < cols.length - 1) { put(t, x, y, '│', 'border'); x += 1; } }); y += 1; }
@@ -60,7 +60,7 @@ function screen(t) {
   trow(['B', 'Leave the old tab', 'Smallest change', 'Tabs pile up'], 0);
   put(t, 2, 15, '• ', 'accent'); put(t, 4, 15, 'Recommended:', 'fg', 1); put(t, 17, 15, 'A, hive closes only panes it started.', 'fg');
   put(t, 2, 17, '14:22', 'dim'); put(t, 8, 17, 'you', 'user', 1); put(t, 2, 18, '1A, 2A, 3B', 'user');
-  vline(t, 79, 8, 6, '┃', 'dim');
+  vline(t, 79, 18, 1, '┃', 'dim');
   box(t, 0, 20, 80, 3, 'accent', 'message', 'accent'); put(t, 2, 21, '> ', 'user'); put(t, 4, 21, '█', 'accent');
 }
 

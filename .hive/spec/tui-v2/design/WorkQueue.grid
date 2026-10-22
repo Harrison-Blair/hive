@@ -24,7 +24,7 @@ t|│                                                  ││ status    assigned
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   2-stale-coordinator-startup         landed     ││ goal      none                                                   │
-k|afrrffffffffffffffffffffffffffffffffffffoooooooooofarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+k|afffffffffffffffffffffffffffffffffffffffoooooooooofarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   └▶ 3-tui-restart                    landed     ││ grant     none                                                   │
 k|afffrrffffffffffffffffffffffffffffffffffoooooooooofarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
@@ -116,6 +116,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · / filter · ? help                        
+t| [list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help                                   
 k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

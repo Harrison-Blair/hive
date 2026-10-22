@@ -35,7 +35,7 @@ func TestDetailsScrolls(t *testing.T) {
 	}
 }
 
-// TestDetailsShowsMoreLinesOnOverflow checks the user decision of
+// TestDetailsShowsMoreLinesOnOverflow checks the user decision 2 of
 // 2026-10-21: the details show each line that fits, and the last body row
 // shows "↓ N more lines" only when lines stay below the view. The scroll mark
 // is the thumb of the lines that show.
@@ -53,8 +53,13 @@ func TestDetailsShowsMoreLinesOnOverflow(t *testing.T) {
 	if got := ansi.Strip(d.View(20, 5)); got != want {
 		t.Errorf("offset 3:\n%s\nwant:\n%s", got, want)
 	}
-	d.Lines = d.Lines[:3]
+	d.Lines = d.Lines[:4]
 	d.Offset = 0
+	want = "╭─ x ──────────────╮\n│ l0               ┃\n│ l1               │\n│ ↓ 2 more lines   │\n╰──────────────────╯"
+	if got := ansi.Strip(d.View(20, 5)); got != want {
+		t.Errorf("one line over (Thumb(3, 4, 2, 0) is one cell):\n%s\nwant:\n%s", got, want)
+	}
+	d.Lines = d.Lines[:3]
 	want = "╭─ x ──────────────╮\n│ l0               │\n│ l1               │\n│ l2               │\n╰──────────────────╯"
 	if got := ansi.Strip(d.View(20, 5)); got != want {
 		t.Errorf("lines that fit:\n%s\nwant:\n%s", got, want)

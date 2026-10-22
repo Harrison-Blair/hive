@@ -18,17 +18,17 @@ t|│   ID                        STATUS    WAVE       ││                   
 k|afffddddddddddddddddddddddddddddddddddddddddfffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   4-agents-equal-columns    landed    C          ││ title     Restart of the coordinator and the supervisor from th… │
-k|afaaffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ▶ 3-tui-restart             landed    B          ││ status    landed                                                 │
-k|afaaaaaaaaaaaaaaaaaaaaaaaaaaafoooooooooodffffffffffarfddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooofr
-b|001111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   2-stale-coordinator-star… landed    A          ││ goal      g1-tui-restart · wave B                                │
-k|afaaffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaoooooooooodffffffffffarfddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooofr
+b|001011111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   2-stale-coordinator-start…landed    A          ││ goal      g1-tui-restart · wave B                                │
+k|afffffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   1-cp5-end-to-end          assigned  —          ││ worker    t3-worker-1 · stopped                                  │
-k|afaaffffffffffffffffffffffffffiiiiiiiiiidffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|afffffffffffffffffffffffffffffiiiiiiiiiidffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││ verifier  t3-verifier-1 · pass                                   │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -80,8 +80,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││ V1 go test -race ./internal/tui/...      pass                    │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarfdddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                  ││ V3 live restart in a scratch home       pass                     │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffr
+t|│                                                  ││ V3 live restart in a scratch home        pass                    │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfdddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││                                                                  │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
@@ -116,6 +116,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · / filter · ? help                
+t| [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
 k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

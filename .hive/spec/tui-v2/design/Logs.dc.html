@@ -44,7 +44,10 @@ function logs(t) {
   put(t, 2, 4, '/', 'accent', 1); put(t, 4, 4, 'level:', 'dim'); put(t, 10, 4, 'debug', 'fg'); put(t, 16, 4, 'proj:', 'dim'); put(t, 21, 4, 'hive', 'fg');
   put(t, 84, 4, 'follow', 'dim'); put(t, 91, 4, '●', 'working'); put(t, 94, 4, '<', 'accent', 1); put(t, 96, 4, '2026-10-21', 'fg'); put(t, 107, 4, '>', 'accent', 1);
   box(t, 0, 6, 64, 33, 'border', 'events · 312', 'accent');
-  var ev = [
+  var cyc = [['herdr', 'pane.read w58:p6 · 40ms'], ['task', 'status read 4-agents-equal-columns'], ['agent', 'list · 5 agents'], ['inbox', 'record read by manager-hive'], ['supervise', 'scan agents · 5 records']];
+  var ev = [];
+  for (var n = 0; n < 14; n++) { var sec = 13 * 3600 + 4 * 60 + 36 + 48 * n, hh = Math.floor(sec / 3600), mm = Math.floor(sec / 60) % 60, ss = sec % 60; ev.push([[hh, mm, ss].map(function (v) { return (v < 10 ? '0' : '') + v; }).join(':'), 'DEBUG', cyc[n % 5][0], cyc[n % 5][1]]); }
+  ev = ev.concat([
     ['13:19:40', 'DEBUG', 'inbox', 'record sent to coordinator'],
     ['13:19:40', 'DEBUG', 'supervise', 'nudge coordinator · inbox 2'],
     ['13:21:02', 'DEBUG', 'agent', 'spawn worker t2-worker-1'],
@@ -61,20 +64,19 @@ function logs(t) {
     ['13:44:23', 'DEBUG', 'worktree', 'remove 2-stale-coordinator-startup'],
     ['13:44:25', 'DEBUG', 'inbox', 'record sent to coordinator'],
     ['13:45:01', 'DEBUG', 'agent', 'spawn worker t3-worker-1']
-  ];
+  ]);
   ev.forEach(function (e, i) {
-    var y = 8 + i, sel = i === 8;
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
+    var y = 8 + i, sel = i === 22;
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 4, y, e[0], sel ? 'accent' : 'dim');
     put(t, 13, y, fit(e[1], 6), e[1] === 'WARN' ? 'accent' : 'dim', e[1] === 'WARN' ? 1 : 0);
     put(t, 19, y, fit(e[2], 10), 'info');
     put(t, 29, y, fit(e[3], 33), sel ? 'accent' : 'fg', sel ? 1 : 0);
   });
-  put(t, 63, 30, '┃', 'dim'); vline(t, 63, 31, 6, '┃', 'dim');
+  vline(t, 63, 36, 2, '┃', 'dim');
   box(t, 64, 6, 56, 33, 'accent', 'event 13:38:02', 'accent');
   var json = [['{', ''], ['  "time": ', '"2026-10-21T13:38:02.114Z",'], ['  "level": ', '"WARN",'], ['  "msg": ', '"verify fail",'], ['  "component": ', '"task",'], ['  "command": ', '"task verify",'], ['  "project_id": ', '"hive",'], ['  "task_id": ', '"2-stale-coordinator-startup",'], ['  "agent_id": ', '"t2-verifier-1",'], ['  "request_id": ', '"r-7f31c2",'], ['  "duration_ms": ', '412,'], ['  "items": ', '{'], ['    "V1": ', '"pass",'], ['    "V2": ', '"pass",'], ['    "V3": ', '"pass",'], ['    "V4": ', '"fail",'], ['    "V5": ', '"pass"'], ['  },', ''], ['  "reason": ', '"V4 diff scope; Design section missing",'], ['  "truncated": ', 'false'], ['}', '']];
   json.forEach(function (j, i) { var y = 8 + i; var key = j[0]; var m = key.match(/^(\s*)(".*?")(.*)$/); if (m) { put(t, 66, y, m[1], 'fg'); put(t, 66 + m[1].length, y, m[2], 'info'); put(t, 66 + m[1].length + m[2].length, y, m[3] + fit(j[1], 50 - key.length), 'fg'); } else put(t, 66, y, key + j[1], 'fg'); });
-  put(t, 119, 8, '┃', 'accent'); vline(t, 119, 9, 20, '┃', 'accent');
 }
 class Component extends DCLogic {
   renderVals() {
