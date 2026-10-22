@@ -231,3 +231,63 @@ exit 0
 
 `gofmt -l` and `go mod tidy -diff` printed nothing. Each package printed `ok`
 or `no test files`.
+
+## Second merge before land (merge of task 38)
+
+After the commit `c57973b2`, `dev` moved to `86f48a68` (task
+`38-screen-friction`). The merge commit is `1d850724`.
+
+- `.hive/spec/tui-v2/README.md`: both blocks stay. The decisions of task
+  `34-screen-chat` come first, then the decisions of task `38-screen-friction`.
+- `testdata/ste-baseline.json`: both brief entries stay with 0.
+- `internal/tui/chat_test.go`: `friction_test.go` of task 38 has a
+  `checkBoard` helper with the same check as the helper of `chat_test.go`.
+  The two declarations did not compile. The merge removes the helper of
+  `chat_test.go` and its `cellgrid` import. The Chat golden tests now use the
+  helper of `friction_test.go`. Its failure text does not include the
+  rendered view.
+- A deliberate change proves that the golden check still fails: in
+  `chat.go` `borderNote`, `dimStyle` changed to `titleStyle`. Output:
+  `merge3-break-token.txt`:
+
+```text
+--- FAIL: TestChatMatchesItsBoard (0.01s)
+    chat_test.go:24: 14 cells differ from Chat.grid:
+        row 3 col 60: want ' ' dim normal, got ' ' accent bold
+        row 3 col 61: want '↑' dim normal, got '↑' accent bold
+```
+
+The change was then removed. `git diff HEAD -- internal/tui/chat.go` is empty.
+
+### Diff scope
+
+Output: `diff-stat-3.txt` (`git diff origin/dev...HEAD --stat` at
+`86f48a68`, evidence lines removed). The files are the files of
+`diff-stat-2.txt`. Each file is in the source table of the brief.
+
+### Golden checks
+
+Output: `merge3-golden.txt`. Each of the 14 Chat tests passes. Each Friction
+test passes.
+
+### Live check
+
+`V2.md`, section `Repair rerun 3`: no cell differs under the space cell rule.
+
+### Gate run 5: pass
+
+Full output: `gate-run-5.txt`, on the tree of `1d850724`.
+
+```text
+$ gofmt -l
+exit 0
+$ go mod tidy -diff
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race ./...
+exit 0
+```
