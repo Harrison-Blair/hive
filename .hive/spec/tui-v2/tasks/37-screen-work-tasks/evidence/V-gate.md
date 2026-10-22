@@ -366,3 +366,15 @@ go vet ./...        ok
 golangci-lint run   0 issues.
 go test -race ./... every package ok (internal/tui 49.221s), exit 0
 ```
+
+## Merge repair 3: dev at `d3e1aa2c` (task 34)
+
+Gate on the merged tree (`9bd77745`), log `.hive/tmp/m4/gate.log`:
+
+```text
+gofmt -l ...        (no output) exit 0
+go mod tidy -diff   (no output) exit 0
+go vet ./...        exit 0
+golangci-lint run   0 issues. exit 0
+go test -race ./... every package ok (internal/tui 49.196s), exit 0
+```
