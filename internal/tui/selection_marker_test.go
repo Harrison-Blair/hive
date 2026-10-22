@@ -117,11 +117,9 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		name     string
 		selected string
 		also     []string
+		honey    []string
 		states   []string
-		// bold is honey bold text of a selection that has the space after
-		// ▶ in fg (user decision 7 of 2026-10-21).
-		bold  []string
-		model func(*testing.T) *Model
+		model    func(*testing.T) *Model
 	}{
 		{
 			name: "Chat", selected: "noise: landings and decisions", states: []string{"not live"},
@@ -151,7 +149,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
+			// The Queue board draws the marker and the task in two runs.
+			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
 				m.goalsQueue.data = goalsQueueData{
@@ -176,7 +175,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Friction", bold: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
+			name: "Friction", honey: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 5)
 				m.friction.data.entries = []frictionEntry{{file: "issue.md", path: "entries/issue.md", title: "Open issue", status: "Open", opened: "2026-04-05", decision: "Keep", valid: true}}
@@ -215,7 +214,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			if tt.selected != "" {
 				requireHoneySelection(t, raw, tt.selected)
 			}
-			for _, text := range tt.bold {
+			for _, text := range tt.honey {
 				requireHoneyBoldText(t, raw, text)
 			}
 			for _, selected := range tt.also {

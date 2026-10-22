@@ -227,3 +227,28 @@ func TestFrictionNormalModeRefresh(t *testing.T) {
 	m, _ = raise(t, m, key('k', "k"))
 	requireView(t, m, "▶ second", "seen      2 times · last 2026-10-21", "OCCURRENCES")
 }
+
+// AC4: from 120 columns enter opens the entry file in the details region.
+// The keys scroll the file, and esc closes it and shows the entry from its
+// top.
+func TestFrictionFileScrolls(t *testing.T) {
+	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
+	m, cmd := raise(t, m, key(0, "enter"))
+	m = deliverAgentCommands(t, m, cmd)
+	requireView(t, m, "scratch-hive-starts-real-agents.md · esc closes", "title: \"Bare hive in a scratch home starts real tabs\"")
+	// Row 5 is the first body row of the details region.
+	firstRow := func() string { return strings.Split(ansi.Strip(m.View().Content), "\n")[5] }
+	if row := firstRow(); !strings.Contains(row, "││ ---") {
+		t.Fatalf("first file row = %q; want the front matter line ---", row)
+	}
+	m, _ = raise(t, m, key('j', "j"))
+	if row := firstRow(); !strings.Contains(row, "││ title: \"Bare hive") {
+		t.Fatalf("j gave first file row %q; want the title line", row)
+	}
+	m, _ = raise(t, m, key('G', "G"))
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, "more lines") || strings.Contains(view, "title: \"Bare hive") {
+		t.Fatalf("G did not go to the end of the file:\n%s", view)
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	requireView(t, m, "╭─ scratch-hive-starts-real-agents ─", "title     Bare hive in a scratch home starts real tabs")
+}

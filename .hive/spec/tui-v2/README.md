@@ -208,15 +208,25 @@ The manager made this decision in task `29-frame-layout`:
 The worker made these decisions in task `38-screen-friction`:
 
 - Screen: the file `internal/tui/friction.go`. It replaces `friction_screen.go` and keeps its loader.
-- Registry: `frameScreen` has the field `panels`. It gives the list and the details of a wave 6 screen. `contentView` uses it in place of `legacyPanel` and `detailsPanel`.
+- Registry: the Friction entry has a `panels` entry for the views Open and Resolved. Task `36-screen-work-queue` added the field `panels`.
 - List: the column ENTRY shows the file name without `.md`. From 120 columns, the date column shows `MM-DD`. Below 120 columns, the list shows the full date, the column SEEN, and the hint `enter opens details`.
 - Order: the Open view shows the newest opened date first. The Resolved view shows the newest date of the status `Resolved YYYY-MM-DD` first. Entries with the same date show in the order of their names.
 - Seen: the count of lines in the section Occurrences, and the last date of these lines. An entry with no Occurrences section shows 1 and its opened date.
 - Details: the fields title, status, opened, seen or decision, and file. The Open view shows seen. The Resolved view shows decision. Then each section shows with its title in capital letters. Occurrences lines are dim. In Resolved by, the first field has 16 cells, and the remaining text is dim.
-- Keys: from 120 columns, `enter` opens the entry file in the details region, and `esc` closes it. In the details region, `g` and `G` go to the top and the end of the details.
+- Keys: from 120 columns, `enter` opens the entry file in the details region, and `esc` closes it. The file scrolls with the offset of the details region. After `esc`, the details of the entry show from the top. In the details region, `g` and `G` go to the top and the end of the details.
 - Component fix: `Details` shows `↓ N more lines` in the last body row when lines stay below the view. The scroll mark uses the lines that show. This follows the user decision of 2026-10-21.
 - Component fix: `List` has the field `Hint`. The hint shows in dim at the right of the last body row.
 - Component fix: `List` draws the selected first cell in accent and bold over its full column. The space after `▶` is fg. This follows the user decisions 4 and 7 of 2026-10-21.
+
+The worker made these decisions in task `36-screen-work-queue`:
+
+- Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.
+- Queue list: the list shows each task of each project, also a landed task. The title gives the project when there is one project, the task count, and the stop count.
+- Queue groups: the tasks of a project are in groups by grant. The grant of a task is the grant of its goal, then the grant of its delivery. The group `NO GRANT` is last. With more than one project, each group heading starts with the project. A project with no tasks shows `PROJECT · no tasks`.
+- Queue tree: in a group, a task is below the first task of the group that it depends on. A task in a dependency cycle starts a tree.
+- Queue stop: an open task stops when it has a needs-user text, or when its acting agent has the status `unresolved`. A stop row `! stop: REASON` follows the task row. `s` shows only the stopped tasks, each at depth 0.
+- Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
+- The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
 
 ## Waves
 

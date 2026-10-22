@@ -48,7 +48,7 @@ type frictionData struct {
 }
 
 // frictionState is the state of the Friction screen (decision 17). An open
-// entry file shows in the details region and scrolls from fileOffset.
+// entry file shows in the details region and scrolls with its offset.
 type frictionState struct {
 	data         frictionData
 	tab          frictionTab
@@ -58,7 +58,6 @@ type frictionState struct {
 	fileLoading  bool
 	fileTitle    string
 	fileContent  string
-	fileOffset   int
 }
 
 type frictionFileMsg struct {
@@ -336,19 +335,20 @@ func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 			state.fileOpen = false
 			state.fileLoading = false
 			state.fileContent = ""
+			m.detailsOffset[tabFriction] = 0
 			return m.logAction("friction file close", slog.String("file", state.fileTitle))
 		case "up", "k":
-			state.fileOffset = max(state.fileOffset-1, 0)
+			m.detailsOffset[tabFriction]--
 		case "down", "j":
-			state.fileOffset++
+			m.detailsOffset[tabFriction]++
 		case "pgup":
-			state.fileOffset = max(state.fileOffset-page, 0)
+			m.detailsOffset[tabFriction] -= page
 		case "pgdown":
-			state.fileOffset += page
+			m.detailsOffset[tabFriction] += page
 		case "g":
-			state.fileOffset = 0
+			m.detailsOffset[tabFriction] = 0
 		case "G":
-			state.fileOffset = 1 << 16
+			m.detailsOffset[tabFriction] = 1 << 16
 		}
 		return nil
 	}
@@ -395,14 +395,9 @@ func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 	return m.logAction("friction selection", slog.String("file", state.selectedPath))
 }
 
-// View gives the list. The frame draws the screen with frictionPanels.
+// View gives the list. The frame draws the screen with its panels entries.
 func (s frictionScreen) View(width, height int) string {
 	return s.model.frictionList(width, height, true)
-}
-
-// frictionPanels gives the list and the details regions of the screen.
-func frictionPanels(m *Model) (func(int, int, bool) string, func(int, int, bool, string) string) {
-	return m.frictionList, m.frictionDetails
 }
 
 // frictionList draws the entries of the view. From 120 columns the date is
@@ -453,25 +448,21 @@ func (m *Model) frictionList(width, height int, focused bool) string {
 	return list.View(width, height)
 }
 
-// frictionDetails draws the selected entry, or the open entry file.
-func (m *Model) frictionDetails(width, height int, focused bool, suffix string) string {
+// frictionDetails gives the title and the lines of the selected entry, or
+// of the open entry file.
+func (m *Model) frictionDetails(width int) (string, []string) {
 	state := &m.friction
 	if state.fileOpen {
 		text := state.fileContent
 		if state.fileLoading {
 			text = "loading…"
 		}
-		lines := wrapLines(strings.Split(text, "\n"), width-4)
-		state.fileOffset = min(state.fileOffset, max(len(lines)-(height-2), 0))
-		return component.Details{Title: state.fileTitle + " · esc closes", Focused: focused, Lines: lines, Offset: state.fileOffset}.View(width, height)
+		return state.fileTitle + " · esc closes", wrapLines(strings.Split(text, "\n"), width-4)
 	}
-	title, lines := "details", []string{"", "no entry selected"}
 	if entry, ok := state.selected(); ok {
-		title, lines = entry.name(), frictionDetailLines(entry, width)
+		return entry.name(), frictionDetailLines(entry, width)
 	}
-	offset := &m.detailsOffset[tabFriction]
-	*offset = min(max(*offset, 0), max(len(lines)-(height-2), 0))
-	return component.Details{Title: title + suffix, Focused: focused, Lines: lines, Offset: *offset}.View(width, height)
+	return "details", []string{"", "no entry selected"}
 }
 
 // frictionDetailLines gives the fields of the entry, then each section with
@@ -538,7 +529,7 @@ func (m *Model) startFrictionFileRead(state *frictionState, path, title string) 
 	state.fileLoading = true
 	state.fileTitle = title
 	state.fileContent = ""
-	state.fileOffset = 0
+	m.detailsOffset[tabFriction] = 0
 	return func() tea.Msg {
 		content, err := m.readScreenFile(path)
 		return frictionFileMsg{title: title, content: content, err: err}
@@ -558,5 +549,5 @@ func (m *Model) acceptFrictionFile(msg frictionFileMsg) {
 	}
 	m.friction.fileTitle = msg.title
 	m.friction.fileContent = msg.content
-	m.friction.fileOffset = 0
+	m.detailsOffset[tabFriction] = 0
 }
