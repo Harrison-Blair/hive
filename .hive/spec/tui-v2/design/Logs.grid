@@ -11,64 +11,64 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ filter ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|001111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ / level:debug agent:manager-hive                                                  follow ●  < 2026-10-21 >           │
-k|rfafddddddffffffddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffddddddfwffaffffffffffffafffffffffffr
+t|│ / level:debug proj:hive                                                           follow ●  < 2026-10-21 >           │
+k|rfafddddddffffffdddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffddddddfwffaffffffffffffafffffffffffr
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000001000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ events · 312 ───────────────────────────────────────────────╮╭─ event 14:38:02 ─────────────────────────────────────╮
+t|╭─ events · 312 ───────────────────────────────────────────────╮╭─ event 13:38:02 ─────────────────────────────────────╮
 k|rraaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|001111111111111100000000000000000000000000000000000000000000000000111111111111111100000000000000000000000000000000000000
 t|│                                                              ││                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:19:40 DEBUG inbox     record sent to coordinator        ││ {                                                    ┃
+t|│   13:19:40 DEBUG inbox     record sent to coordinator        ││ {                                                    ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffraffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:19:40 DEBUG supervise nudge coordinator · inbox 2       ││   "time": "2026-10-21T14:38:02.114Z",                ┃
+t|│   13:19:40 DEBUG supervise nudge coordinator · inbox 2       ││   "time": "2026-10-21T13:38:02.114Z",                ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiifffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:21:02 DEBUG agent     spawn worker t2-worker-1          ││   "level": "WARN",                                   ┃
+t|│   13:21:02 DEBUG agent     spawn worker t2-worker-1          ││   "level": "WARN",                                   ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:21:09 DEBUG herdr     agent.start w5T:p1 · 812ms        ││   "msg": "verify fail",                              ┃
+t|│   13:21:09 DEBUG herdr     agent.start w5T:p1 · 812ms        ││   "msg": "verify fail",                              ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiffffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:24:51 DEBUG task      status assigned → working         ││   "component": "task",                               ┃
+t|│   13:24:51 DEBUG task      status assigned → working         ││   "component": "task",                               ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:33:17 DEBUG task      status working → completed        ││   "command": "task verify",                          ┃
+t|│   13:33:17 DEBUG task      status working → completed        ││   "command": "task verify",                          ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:33:18 DEBUG agent     stop t2-worker-1 · pane closed    ││   "project_id": "hive",                              ┃
+t|│   13:33:18 DEBUG agent     stop t2-worker-1 · pane closed    ││   "project_id": "hive",                              ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:33:40 DEBUG agent     spawn verifier t2-verifier-1      ││   "task_id": "2-stale-coordinator-startup",          ┃
+t|│   13:33:40 DEBUG agent     spawn verifier t2-verifier-1      ││   "task_id": "2-stale-coordinator-startup",          ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ▶ 14:38:02 WARN  task      verify fail · V4 diff scope       ││   "agent_id": "t2-verifier-1",                       ┃
+t|│ ▶ 13:38:02 WARN  task      verify fail · V4 diff scope       ││   "agent_id": "t2-verifier-1",                       ┃
 k|rfafaaaaaaaafaaaaaaiiiiiiiiiiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafrafffiiiiiiiiiifffffffffffffffffffffffffffffffffffffffffa
 b|001000000000011111100000000001111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000
-t|│   14:38:30 DEBUG agent     spawn worker t2-worker-2          ││   "request_id": "r-7f31c2",                          ┃
+t|│   13:38:30 DEBUG agent     spawn worker t2-worker-2          ││   "request_id": "r-7f31c2",                          ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiifffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:44:12 DEBUG task      status completed → verified       ││   "duration_ms": 412,                                ┃
+t|│   13:44:12 DEBUG task      status completed → verified       ││   "duration_ms": 412,                                ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:44:20 DEBUG land      merge task/2 into dev · 0e079272  ││   "items": {                                         ┃
+t|│   13:44:20 DEBUG land      merge task/2 into dev · 0e079272  ││   "items": {                                         ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffiiiiiiiffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:44:22 DEBUG land      push dev · 1.9s                   ││     "V1": "pass",                                    ┃
+t|│   13:44:22 DEBUG land      push dev · 1.9s                   ││     "V1": "pass",                                    ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:44:23 DEBUG worktree  remove 2-stale-coordinator-start… ││     "V2": "pass",                                    ┃
+t|│   13:44:23 DEBUG worktree  remove 2-stale-coordinator-start… ││     "V2": "pass",                                    ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:44:25 DEBUG inbox     record sent to coordinator        ││     "V3": "pass",                                    ┃
+t|│   13:44:25 DEBUG inbox     record sent to coordinator        ││     "V3": "pass",                                    ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   14:45:01 DEBUG agent     spawn worker t3-worker-1          ││     "V4": "fail",                                    ┃
+t|│   13:45:01 DEBUG agent     spawn worker t3-worker-1          ││     "V4": "fail",                                    ┃
 k|rfafddddddddfddddddiiiiiiiiiiffffffffffffffffffffffffffffffffffrafffffiiiifffffffffffffffffffffffffffffffffffffffffffffa
 b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                              ││     "V5": "pass"                                     ┃

@@ -11,7 +11,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|  Home   [Agents]                                                                                     [ ] switch view   
 k|fddddddffaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
 b|000000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ agents · 5 · h hides 2 stopped ─────────────────╮╭─ supervisor-g4 ──────────────────────────────────────────────────╮
+t|╭─ agents · 5 · h hides 1 stopped ─────────────────╮╭─ supervisor-g4 ──────────────────────────────────────────────────╮
 k|rraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|001111111111111111111111111111111100000000000000000000111111111111111000000000000000000000000000000000000000000000000000
 t|│   AGENT                 ROLE        STATE        ││                                                                  │
