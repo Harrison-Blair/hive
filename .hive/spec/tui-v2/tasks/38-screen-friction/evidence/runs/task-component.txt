@@ -1,0 +1,4 @@
+--- PASS: TestDetailsShowsMoreLinesOnOverflow (0.00s)
+--- PASS: TestListHint (0.00s)
+--- PASS: TestListRowCells (0.00s)
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.032s

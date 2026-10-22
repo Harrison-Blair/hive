@@ -217,6 +217,19 @@ The worker made these decisions in task `37-screen-work-tasks`:
 - Component changes: `List.Fill` gives the padding of each cell the style of the cell. `SubTabs.Hint` replaces the view hint.
 - Refresh of the Tasks view watches the agent records and the task folder of each task. The details show the worker status and the files of the task.
 
+The worker made these decisions in task `38-screen-friction`:
+
+- Screen: the file `internal/tui/friction.go`. It replaces `friction_screen.go` and keeps its loader.
+- Registry: the Friction entry has a `panels` entry for the views Open and Resolved. Task `36-screen-work-queue` added the field `panels`.
+- List: the column ENTRY shows the file name without `.md`. From 120 columns, the date column shows `MM-DD`. Below 120 columns, the list shows the full date, the column SEEN, and the hint `enter opens details`.
+- Order: the Open view shows the newest opened date first. The Resolved view shows the newest date of the status `Resolved YYYY-MM-DD` first. Entries with the same date show in the order of their names.
+- Seen: the count of lines in the section Occurrences, and the last date of these lines. An entry with no Occurrences section shows 1 and its opened date.
+- Details: the fields title, status, opened, seen or decision, and file. The Open view shows seen. The Resolved view shows decision. Then each section shows with its title in capital letters. Occurrences lines are dim. In Resolved by, the first field has 16 cells, and the remaining text is dim.
+- Keys: from 120 columns, `enter` opens the entry file in the details region, and `esc` closes it. The file scrolls with the offset of the details region. After `esc`, the details of the entry show from the top. In the details region, `g` and `G` go to the top and the end of the details.
+- Component fix: `Details` shows `↓ N more lines` in the last body row when lines stay below the view. The scroll mark uses the lines that show. This follows the user decision of 2026-10-21.
+- Component fix: `List` has the field `Hint`. The hint shows in dim at the right of the last body row.
+- Component fix: `List` draws the selected first cell in accent and bold over its full column. The space after `▶` is fg. This follows the user decisions 4 and 7 of 2026-10-21.
+
 The manager made this decision in task `40-screen-logs`:
 
 - A row of the Logs event list shows the `msg` of the event. When the event has the field `reason`, the row also shows ` · ` and the text of the reason before the first `;`. The JSON panel shows the full reason.

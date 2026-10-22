@@ -30,7 +30,8 @@ type Cell struct {
 // (user decisions 2026-10-21). Offset is the first visible row; View moves it
 // so that the selected row is visible. When the rows do not fit, the panel
 // draws the scroll mark of decision 5. With Fill, the padding of each cell
-// has the style of the cell, as the Work board shows.
+// has the style of the cell, as the Work board shows. A Hint shows in dim at
+// the right of the last body row and takes one row line.
 type List struct {
 	Title    string
 	Focused  bool
@@ -39,6 +40,7 @@ type List struct {
 	Selected int
 	Offset   int
 	Fill     bool
+	Hint     string
 }
 
 // View renders the list at exactly width×height cells.
@@ -48,6 +50,14 @@ func (l List) View(width, height int) string {
 	lines := []string{"  " + dimStyle.Render(l.header())}
 	for i := off; i < min(off+visible, len(l.Rows)); i++ {
 		lines = append(lines, l.row(i))
+	}
+	if l.Hint != "" {
+		body := max(height, PanelMinHeight) - 2
+		for len(lines) < body-1 {
+			lines = append(lines, "")
+		}
+		hint := l.Hint + " "
+		lines = append(lines, strings.Repeat(" ", max(width-4-lipgloss.Width(hint), 0))+dimStyle.Render(l.Hint)+" ")
 	}
 	vmark := Thumb(visible, len(l.Rows), visible, off)
 	if vmark.Size > 0 {
@@ -64,8 +74,13 @@ func (l *List) Move(delta, height int) {
 }
 
 // visible gives the number of row lines in a list of height cells: the body
-// rows less the header row.
-func (l List) visible(height int) int { return max(height, PanelMinHeight) - 3 }
+// rows less the header row and the hint row.
+func (l List) visible(height int) int {
+	if l.Hint != "" {
+		return max(height, PanelMinHeight) - 4
+	}
+	return max(height, PanelMinHeight) - 3
+}
 
 // offset gives the first visible row: Offset, moved the least so that the
 // selected row is visible and no row line is empty without need.

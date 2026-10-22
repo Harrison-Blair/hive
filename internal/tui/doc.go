@@ -7,7 +7,7 @@
 // agents.go loads and renders agent topology, and handles pane actions.
 // goals_queue.go loads and renders goal and queue records.
 // work_tasks.go loads task records and files, and draws the Work Tasks view.
-// friction_screen.go loads and renders dogfood friction entries.
+// friction.go loads dogfood friction entries and draws the Friction list and details.
 // health_screen.go loads and renders doctor checks.
 // header.go loads and renders project, agent, supervisor, task, and clock data.
 // logs_screen.go loads, filters, and renders log events, and handles Logs keys.
