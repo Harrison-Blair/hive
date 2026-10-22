@@ -382,7 +382,9 @@ func TestRunHomeShowsTasksFromStringReader(t *testing.T) {
 		t.Fatal(err)
 	}
 	view := ansi.Strip(output.String())
-	for _, text := range []string{"[Tasks]", "─ tasks ", "active 2"} {
+	// The renderer writes only the changed cells of a row, so the test looks
+	// for text that the first Tasks frame writes in full.
+	for _, text := range []string{"[Tasks]", "81-agents-scr", "79-tui-shell"} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("program output does not contain %q:\n%s", text, view)
 		}

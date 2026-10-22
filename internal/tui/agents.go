@@ -564,6 +564,9 @@ func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {
 	if state.restartConfirm {
 		target := state.restartTarget
 		state.restartConfirm = false
+		if key == "y" && s.model.demo != nil {
+			return s.model.demoBlocked("restart")
+		}
 		if key == "y" {
 			state.restartRunning = true
 			state.restartNotice = "restarting"

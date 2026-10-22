@@ -380,6 +380,33 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.chatInputActive = true
 		m.chatInput.Focus()
 	}
+	m.applyDemoFrame(ui)
+}
+
+// applyDemoFrame sets the tab, the view, the focus, the overlay, the popup,
+// and the restart prompt of the frame from the fixture UI state.
+func (m *Model) applyDemoFrame(ui demoUIState) {
+	tab, view := m.activeTab(), 0
+	switch {
+	case tab == tabWork:
+		view = m.screenIndex - 2
+	case tab == tabFriction && ui.View == "resolved":
+		view = 1
+	case ui.Screen == "health" && ui.View == "agents":
+		tab, view = tabHealth, 1
+		m.agents.selectedKey = ui.Selection
+	}
+	m.selectScreen(tab, view)
+	if index := slices.Index(screenRegistry[tab].regions, ui.Focus); index > 0 {
+		m.regionFocus[tab] = index
+	}
+	m.helpOpen = ui.Overlay == "help"
+	m.popupOpen = ui.Popup == "agent-details"
+	if ui.Prompt.Kind == "restart" {
+		m.agents.restartConfirm = true
+		m.agents.restartTarget = records.Agent{Key: ui.Prompt.Target}
+		m.agents.restartNotice = "restart " + ui.Prompt.Target + "? y/n"
+	}
 }
 
 // errDemoNoFile tells that the fixture has no text for a file.

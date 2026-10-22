@@ -94,7 +94,7 @@ Do not edit other files.
   board size. Compare the header rows, the tab bar rows, and the footer row
   with the same rows of the board grid, with `internal/lib/cellgrid`.
 - Compare the whole grid for `TooSmall`. For `Help`, compare the header, the
-  tab bar, the footer, and the help box (rows 6-34, columns 17-102) cell for
+  tab bar, the footer, and the help box (rows 6-34, columns 18-101) cell for
   cell. In each other cell of the content area, compare only the token,
   because the Agents screen behind it is wave 6 work. The wave 6 Agents task
   turns on the full `Help` check.

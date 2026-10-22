@@ -266,15 +266,16 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		_ = sendInput.Close()
 	})
 
-	// Decision 5: 6 selects Logs. The footer names the events region.
+	// Decision 5: 6 selects Logs. The renderer writes only the changed cells
+	// of a row, so the test looks for the Logs panel title.
 	if _, err := sendInput.Write([]byte("6")); err != nil {
 		t.Fatalf("send screen key: %v", err)
 	}
-	waitForOutput(t, output, "[events]", "task queued")
+	waitForOutput(t, output, "─ logs ", "task queued")
 	if _, err := sendInput.Write([]byte("l")); err != nil {
 		t.Fatalf("send level key: %v", err)
 	}
-	view := waitForOutput(t, output, "[events]", "warn", "no events today")
+	view := waitForOutput(t, output, "─ logs ", "warn", "no events today")
 	if err := sendInput.Close(); err != nil {
 		t.Fatalf("close input: %v", err)
 	}
