@@ -57,3 +57,4 @@ For all other files, the coordinator and manager never change a project source f
 | [Attach on the supervisor fails with agent_not_found, and the error stays in the footer](entries/attach-fails-on-supervisor.md) | Open |  |
 | [The user must ask an agent to change a hive setting](entries/config-needs-an-agent.md) | Open |  |
 | [Hive has no command to shut down a session](entries/no-shutdown-command.md) | Open |  |
+| [Up and Down in a wrapped chat input can land one word off](entries/chat-input-updown-wrap-offset.md) | Open | Later: the user deferred a fix on 2026-10-22 |
