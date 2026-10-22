@@ -1,0 +1,77 @@
+import pathlib,subprocess,time,json,socket,os,shlex,re,html
+root=pathlib.Path.cwd(); ev=root/'.hive/spec/general-agent/tasks/46-agents-home-graph/evidence/verifier'; design=root/'.hive/spec/tui-v2/design'; pane='wAT:p2'
+boards=['AgentsHome','AgentsNested','AgentsHiddenParent','AgentsCoordinatorChild','CompactAgentsHome','AgentDetailsGeneral','HealthAgentsGeneral','AgentsMany']
+def rpc(method,params):
+ with socket.socket(socket.AF_UNIX) as s:
+  s.connect(os.environ['HERDR_SOCKET_PATH']); s.sendall((json.dumps(dict(id='v46',method=method,params=params))+'\n').encode()); d=json.loads(s.makefile().readline()); assert 'error' not in d,d; return d['result']
+assert rpc('ping',{})['protocol']==22
+metadata=[]
+def capture(name):
+ time.sleep(.5)
+ def read(): return rpc('pane.read',dict(pane_id=pane,source='visible',format='ansi'))['read']
+ a=read()
+ for i in range(10):
+  time.sleep(.5); b=read()
+  if a['text']==b['text']: break
+  a=b
+ else: raise Exception('unstable')
+ info=rpc('pane.get',dict(pane_id=pane))['pane']; assert not b['truncated']; assert info['scroll']['offset_from_bottom']==0
+ metadata.append(dict(name=name,truncated=b['truncated'],scroll=info['scroll'],stable_ms=500))
+ (ev/(name+'.ansi')).write_text(b['text'])
+ return re.sub(r'\x1b\[[0-9;]*m','',b['text'])
+def keys(*keys):
+ subprocess.run(['herdr','pane','send-keys',pane,*keys],check=True,stdout=subprocess.DEVNULL)
+def require(text,*wants):
+ for w in wants: assert w in text, w+' absent'
+comparisons=[]; observations=[]
+for board in boards:
+ size='80x24' if board.startswith('Compact') else '120x40'
+ command='HIVE_HOME='+shlex.quote(str(root/'.hive/tmp/verify46-home'))+' COLORTERM=truecolor '+shlex.quote(str(root/'.hive/tmp/hive46'))+' --demo '+shlex.quote(str(design/(board+'.fixture.json')))+' --size '+size
+ subprocess.run(['herdr','pane','run',pane,command],check=True,stdout=subprocess.DEVNULL); time.sleep(1)
+ text=capture(board)
+ p=subprocess.run([str(root/'.hive/tmp/compare46'),str(design/(board+'.grid')),str(ev/(board+'.ansi'))],text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT); comparisons.append(p.stdout); assert p.returncode==0,p.stdout
+ if board=='AgentsHome':
+  keys('enter'); require(capture(board+'-enter'),'plan-review-1 · esc closes'); keys('esc','left'); require(capture(board+'-left'),'manager-api'); keys('right'); require(capture(board+'-right'),'plan-review-1')
+ if board=='AgentsNested':
+  keys('up'); require(capture(board+'-up'),'t5-research-1'); keys('up'); capture(board+'-up-up'); keys('down','down','down'); capture(board+'-down3')
+ if board=='AgentsHiddenParent':
+  keys('h'); require(capture(board+'-h'),'t4-verifier-1','t4-review-1','h hides 1 stopped'); keys('h'); require(capture(board+'-hh'),'─ home ─','h shows 1 stopped')
+ if board=='AgentsCoordinatorChild':
+  keys('left'); capture(board+'-left'); keys('right'); capture(board+'-right')
+ if board=='CompactAgentsHome':
+  keys('left','left'); require(capture(board+'-left2'),'home →','projects 1–2 of 2'); keys('right','right'); require(capture(board+'-right2'),'projects 2–2 of 2 · home')
+ if board=='AgentDetailsGeneral':
+  keys('esc'); require(capture(board+'-esc'),'[graph]'); keys('enter'); require(capture(board+'-enter'),'plan-review-1 · esc closes')
+ if board=='HealthAgentsGeneral':
+  keys('r'); require(capture(board+'-r'),'restart: coordinator and supervisor only')
+ observations.append(board+': initial grid matches; applicable keys captured.')
+ keys('ctrl+c','ctrl+c'); time.sleep(.7)
+(ev/'live-compare.txt').write_text(''.join(comparisons)); (ev/'capture-metadata.json').write_text(json.dumps(metadata,indent=2)+'\n'); (ev/'live-observations.txt').write_text('\n'.join(observations)+'\n')
+# Render visible terminal SGR to HTML. Preserve each cell and foreground/bold.
+def terminal_html(raw,width,height):
+ out=[]; color='#ddd9cf'; bold=False
+ for line in raw.splitlines()[:height]:
+  cells=0
+  for bit in re.split(r'(\x1b\[[0-9;]*m)',line):
+   if bit.startswith('\x1b['):
+    codes=[int(c or 0) for c in bit[2:-1].split(';')]; i=0
+    while i<len(codes):
+     c=codes[i]
+     if c==0: color='#ddd9cf'; bold=False
+     elif c==1: bold=True
+     elif c==22: bold=False
+     elif c==39: color='#ddd9cf'
+     elif c==38 and codes[i+1]==2: color='#%02x%02x%02x'%tuple(codes[i+2:i+5]); i+=4
+     i+=1
+   else:
+    text=bit[:max(0,width-cells)]; cells+=len(text); out.append('<span style="color:'+color+';font-weight:'+('700' if bold else '400')+'">'+html.escape(text)+'</span>')
+  out.append('\n')
+ return '<html><body style="margin:0;background:#171612"><pre style="margin:8px;font-family:monospace;font-size:13px;line-height:18px">'+''.join(out)+'</pre></body></html>'
+for board in boards:
+ w,h=(80,24) if board.startswith('Compact') else (120,40)
+ source=root/'.hive/tmp'/('screen-'+board+'.html'); source.write_text(terminal_html((ev/(board+'.ansi')).read_text(),w,h))
+ for kind,path in [('screen',source),('board',design/(board+'.dc.html'))]:
+  profile=root/'.hive/tmp'/('ff-'+kind+'-'+board)
+  profile.mkdir(exist_ok=True)
+  p=subprocess.run(['firefox','--headless','--no-remote','--profile',str(profile),'--window-size=1220,780','--screenshot',str(ev/(board+'-'+kind+'.png')),path.as_uri()],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=45)
+  assert p.returncode==0,p.stdout

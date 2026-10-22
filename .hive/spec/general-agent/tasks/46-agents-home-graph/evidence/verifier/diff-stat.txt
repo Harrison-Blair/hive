@@ -1,0 +1,78 @@
+ .hive/spec/general-agent/README.md                 |  12 +
+ .../tasks/46-agents-home-graph/brief.md            | 189 ++++++++++
+ .../tasks/46-agents-home-graph/evidence/V-gate.md  | 187 ++++++++++
+ .../tasks/46-agents-home-graph/evidence/V1.md      | 201 ++++++++++
+ .../tasks/46-agents-home-graph/evidence/V2.md      |  96 +++++
+ .../screens/AgentDetailsGeneral-1-esc.ansi         |  40 ++
+ .../evidence/screens/AgentDetailsGeneral.ansi      |  40 ++
+ .../evidence/screens/AgentDetailsGeneral.png       | Bin 0 -> 75756 bytes
+ .../screens/AgentsCoordinatorChild-1-up.ansi       |  40 ++
+ .../screens/AgentsCoordinatorChild-2-left.ansi     |  40 ++
+ .../screens/AgentsCoordinatorChild-3-r.ansi        |  40 ++
+ .../evidence/screens/AgentsCoordinatorChild.ansi   |  40 ++
+ .../evidence/screens/AgentsCoordinatorChild.png    | Bin 0 -> 64710 bytes
+ .../evidence/screens/AgentsHiddenParent-1-h.ansi   |  40 ++
+ .../evidence/screens/AgentsHiddenParent-1-h.png    | Bin 0 -> 79697 bytes
+ .../evidence/screens/AgentsHiddenParent-2-h.ansi   |  40 ++
+ .../evidence/screens/AgentsHiddenParent.ansi       |  40 ++
+ .../evidence/screens/AgentsHiddenParent.png        | Bin 0 -> 74590 bytes
+ .../evidence/screens/AgentsHome-1-enter.ansi       |  40 ++
+ .../evidence/screens/AgentsHome-2-esc-left.ansi    |  40 ++
+ .../evidence/screens/AgentsHome-3-right.ansi       |  40 ++
+ .../evidence/screens/AgentsHome.ansi               |  40 ++
+ .../evidence/screens/AgentsHome.png                | Bin 0 -> 86412 bytes
+ .../evidence/screens/AgentsMany.ansi               |  40 ++
+ .../evidence/screens/AgentsMany.png                | Bin 0 -> 102270 bytes
+ .../evidence/screens/AgentsNested-1-up.ansi        |  40 ++
+ .../evidence/screens/AgentsNested-2-up.ansi        |  40 ++
+ .../screens/AgentsNested-3-down-down-down.ansi     |  40 ++
+ .../evidence/screens/AgentsNested-4-enter.ansi     |  40 ++
+ .../evidence/screens/AgentsNested.ansi             |  40 ++
+ .../evidence/screens/AgentsNested.png              | Bin 0 -> 81930 bytes
+ .../evidence/screens/CompactAgentsHome-1-left.ansi |  24 ++
+ .../evidence/screens/CompactAgentsHome-2-left.ansi |  24 ++
+ .../evidence/screens/CompactAgentsHome-2-left.png  | Bin 0 -> 60243 bytes
+ .../screens/CompactAgentsHome-3-right-right.ansi   |  24 ++
+ .../evidence/screens/CompactAgentsHome.ansi        |  24 ++
+ .../evidence/screens/CompactAgentsHome.png         | Bin 0 -> 51868 bytes
+ .../evidence/screens/HealthAgentsGeneral-1-r.ansi  |  40 ++
+ .../evidence/screens/HealthAgentsGeneral-1-r.png   | Bin 0 -> 71732 bytes
+ .../HealthAgentsGeneral-2-up-up-up-up-up-r.ansi    |  40 ++
+ .../evidence/screens/HealthAgentsGeneral.ansi      |  40 ++
+ .../evidence/screens/HealthAgentsGeneral.png       | Bin 0 -> 73037 bytes
+ .../evidence/screens/compare-program.go.txt        |  57 +++
+ .../evidence/screens/compare.txt                   |   8 +
+ .hive/spec/tui-v2/README.md                        |   7 +
+ .../spec/tui-v2/design/AgentDetailsGeneral.dc.html |  37 ++
+ .../tui-v2/design/AgentDetailsGeneral.fixture.json |  53 +++
+ .hive/spec/tui-v2/design/AgentDetailsGeneral.grid  | 121 ++++++
+ .../tui-v2/design/AgentsCoordinatorChild.dc.html   |  37 ++
+ .../design/AgentsCoordinatorChild.fixture.json     |  51 +++
+ .../spec/tui-v2/design/AgentsCoordinatorChild.grid | 121 ++++++
+ .../spec/tui-v2/design/AgentsHiddenParent.dc.html  |  37 ++
+ .../tui-v2/design/AgentsHiddenParent.fixture.json  |  59 +++
+ .hive/spec/tui-v2/design/AgentsHiddenParent.grid   | 121 ++++++
+ .hive/spec/tui-v2/design/AgentsHome.dc.html        |  37 ++
+ .hive/spec/tui-v2/design/AgentsHome.fixture.json   |  60 +++
+ .hive/spec/tui-v2/design/AgentsHome.grid           | 121 ++++++
+ .hive/spec/tui-v2/design/AgentsMany.dc.html        |   2 +-
+ .hive/spec/tui-v2/design/AgentsMany.grid           |  44 +--
+ .hive/spec/tui-v2/design/AgentsNested.dc.html      |  37 ++
+ .hive/spec/tui-v2/design/AgentsNested.fixture.json |  60 +++
+ .hive/spec/tui-v2/design/AgentsNested.grid         | 121 ++++++
+ .hive/spec/tui-v2/design/CompactAgentsHome.dc.html |  37 ++
+ .../tui-v2/design/CompactAgentsHome.fixture.json   |  59 +++
+ .hive/spec/tui-v2/design/CompactAgentsHome.grid    |  73 ++++
+ .../spec/tui-v2/design/HealthAgentsGeneral.dc.html |  37 ++
+ .../tui-v2/design/HealthAgentsGeneral.fixture.json |  67 ++++
+ .hive/spec/tui-v2/design/HealthAgentsGeneral.grid  | 121 ++++++
+ .hive/spec/tui-v2/design/canvas.json               | 404 ++++++++++++++++++++-
+ internal/boardexport/check.go                      |   8 +
+ internal/tui/agents.go                             |   4 +
+ internal/tui/agents_home_test.go                   | 374 +++++++++++++++++++
+ internal/tui/agents_screen.go                      | 245 +++++++++++--
+ internal/tui/agents_screen_test.go                 |  15 +-
+ internal/tui/demo_fixtures_test.go                 |   4 +-
+ internal/tui/health.go                             |   7 +-
+ testdata/ste-baseline.json                         |   1 +
+ 77 files changed, 4235 insertions(+), 73 deletions(-)

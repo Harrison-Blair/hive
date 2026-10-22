@@ -1,0 +1,63 @@
+$ go test ./internal/tui -count=1 -run TestAgentsHome|TestAgentsNest|TestAgentsChildren|TestAgentsHMoves|TestAgentsCoordinatorChildren|TestAgentsManagerWithout|TestAgentsArrowsReach|TestAgentsCompactHome|TestAgentsDetailsOfAGeneral|TestHealthAgentsRestartRefuses|TestGeneralAgentBoard -v
+=== RUN   TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard
+--- PASS: TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard (0.00s)
+=== RUN   TestAgentsHomeColumnIsNotShownWhenEmpty
+--- PASS: TestAgentsHomeColumnIsNotShownWhenEmpty (0.00s)
+=== RUN   TestAgentsHomeAgentsWithNoProjectKeepTheNotice
+--- PASS: TestAgentsHomeAgentsWithNoProjectKeepTheNotice (0.00s)
+=== RUN   TestAgentsNestGeneralAgentsUnderTheirParentCard
+--- PASS: TestAgentsNestGeneralAgentsUnderTheirParentCard (0.00s)
+=== RUN   TestAgentsNestingUsesTheRailForm
+--- PASS: TestAgentsNestingUsesTheRailForm (0.00s)
+=== RUN   TestAgentsChildrenAreInOrderOfCreationTime
+--- PASS: TestAgentsChildrenAreInOrderOfCreationTime (0.00s)
+=== RUN   TestAgentsHMovesTheChildOfAHiddenParent
+--- PASS: TestAgentsHMovesTheChildOfAHiddenParent (0.00s)
+=== RUN   TestAgentsCoordinatorChildrenAreInHome
+--- PASS: TestAgentsCoordinatorChildrenAreInHome (0.00s)
+=== RUN   TestAgentsManagerWithoutChildrenShowsNoChildAgents
+--- PASS: TestAgentsManagerWithoutChildrenShowsNoChildAgents (0.00s)
+=== RUN   TestAgentsArrowsReachNestedAndHomeAgents
+--- PASS: TestAgentsArrowsReachNestedAndHomeAgents (0.00s)
+=== RUN   TestAgentsCompactHomeIsTheLastPage
+--- PASS: TestAgentsCompactHomeIsTheLastPage (0.00s)
+=== RUN   TestAgentsDetailsOfAGeneralAgent
+--- PASS: TestAgentsDetailsOfAGeneralAgent (0.00s)
+=== RUN   TestHealthAgentsRestartRefusesAGeneralAgent
+--- PASS: TestHealthAgentsRestartRefusesAGeneralAgent (0.00s)
+=== RUN   TestGeneralAgentBoardFixtures
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentsNested
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardFixtures/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardFixtures/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardFixtures/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardFixtures (0.02s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/HealthAgentsGeneral (0.00s)
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsNested
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardsMatchTheirGrids (0.04s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHome (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsNested (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.116s
+
+exit 0
