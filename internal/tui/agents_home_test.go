@@ -38,7 +38,7 @@ func podOf(t *testing.T, m *Model, key string) (string, int) {
 			return pod.group.id, 0
 		}
 		for index, node := range pod.children {
-			if node.record.Key == key {
+			if node.record.Key == key && index < len(pod.levels) {
 				return pod.group.id, pod.levels[index]
 			}
 		}
@@ -138,6 +138,19 @@ func TestAgentsNestGeneralAgentsUnderTheirParentCard(t *testing.T) {
 		t.Fatalf("the worker card bottom has %q under the rail; want ┬:\n%s", got, view)
 	}
 	requireWholeAgentsBorders(t, strings.NewReplacer("─┬─", "───").Replace(view))
+}
+
+// AC2: a pod with nesting uses the rail form, also when its children fit
+// side by side in the tree form.
+func TestAgentsNestingUsesTheRailForm(t *testing.T) {
+	m := agentsModel(t, homeSource(generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z")))
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	view := ansi.Strip(m.View().Content)
+	_, manager := cardColumn(t, view, "manager-alpha")
+	_, worker := cardColumn(t, view, "t1-alpha-worker")
+	if worker-manager != 1 {
+		t.Fatalf("the worker is at column %d, the manager at %d; want the rail form:\n%s", worker, manager, view)
+	}
 }
 
 // AC2: the children of a card are in order of creation time, for each role
@@ -254,10 +267,11 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m.graph.selected = "review-1"
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "model", "gpt", "parent", "coordinator-g1")
-	view := ansi.Strip(m.View().Content)
-	for _, absent := range []string{"project ", "goal ", "replaces "} {
-		if strings.Contains(view, "│ "+absent) {
-			t.Fatalf("the popup shows the empty field %q:\n%s", absent, view)
+	_, lines := m.agentDetailsPopup()
+	for _, line := range lines {
+		fields := strings.Fields(ansi.Strip(line))
+		if len(fields) == 1 && (fields[0] == "project" || fields[0] == "nudged" || fields[0] == "goal" || fields[0] == "replaces") {
+			t.Fatalf("the popup shows the empty field %q:\n%s", fields[0], strings.Join(lines, "\n"))
 		}
 	}
 }
