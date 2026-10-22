@@ -52,3 +52,9 @@ and the push also. The manager declined it with `herdr pane send-keys PANE
 esc`, which moved the choice to `No`, then `herdr pane send-keys PANE enter`.
 The key name `Return` did not register. The manager told the worker to commit
 first and to clean up with `"${S:?}"/*`.
+
+2026-10-21, task 40-screen-logs: the dialog came again, although the brief
+Rules now forbid `rm` on a bare variable. The worker ran `rm -f $T/*.ansi` in
+one command with a commit and a live capture. The task went to `blocked`. The
+manager declined it the same way. A rule in a brief does not stop the error.
+A rule in the worker and verifier skills, or a harness hook, is still open.
