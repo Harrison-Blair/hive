@@ -1,0 +1,82 @@
+=== RUN   TestGoalsOpenTasksForSelectedWave
+--- PASS: TestGoalsOpenTasksForSelectedWave (0.04s)
+=== RUN   TestGoalsOpenTasksResetsProjectFilter
+--- PASS: TestGoalsOpenTasksResetsProjectFilter (0.05s)
+=== RUN   TestGoalsOpenWaveDesign
+=== RUN   TestGoalsOpenWaveDesign/one_feature
+=== RUN   TestGoalsOpenWaveDesign/first_feature_wins
+=== RUN   TestGoalsOpenWaveDesign/no_feature
+=== RUN   TestGoalsOpenWaveDesign/missing_file
+--- PASS: TestGoalsOpenWaveDesign (0.19s)
+    --- PASS: TestGoalsOpenWaveDesign/one_feature (0.05s)
+    --- PASS: TestGoalsOpenWaveDesign/first_feature_wins (0.05s)
+    --- PASS: TestGoalsOpenWaveDesign/no_feature (0.05s)
+    --- PASS: TestGoalsOpenWaveDesign/missing_file (0.05s)
+=== RUN   TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects
+--- PASS: TestGoalsRefreshKeepsGoalSelectionAndRefreshesQueueProjects (0.06s)
+=== RUN   TestGoalsAndQueuePanelsFitStandardFrame
+--- PASS: TestGoalsAndQueuePanelsFitStandardFrame (0.04s)
+=== RUN   TestWorkGoalsMatchesItsBoard
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+=== RUN   TestGoalsDetailsShowWavesTasksAndStops
+--- PASS: TestGoalsDetailsShowWavesTasksAndStops (0.05s)
+=== RUN   TestGoalsSortAndCountOnlyPushedDeliveries
+--- PASS: TestGoalsSortAndCountOnlyPushedDeliveries (0.06s)
+=== RUN   TestGoalsSelectedRowIsAccentBold
+--- PASS: TestGoalsSelectedRowIsAccentBold (0.00s)
+=== RUN   TestGoalsFitEachSize
+=== RUN   TestGoalsFitEachSize/fixture/79x24
+=== RUN   TestGoalsFitEachSize/fixture/80x24
+=== RUN   TestGoalsFitEachSize/fixture/80x25
+=== RUN   TestGoalsFitEachSize/fixture/119x40
+=== RUN   TestGoalsFitEachSize/fixture/120x40
+=== RUN   TestGoalsFitEachSize/fixture/120x24
+=== RUN   TestGoalsFitEachSize/fixture/120x25
+=== RUN   TestGoalsFitEachSize/empty/79x24
+=== RUN   TestGoalsFitEachSize/empty/80x24
+=== RUN   TestGoalsFitEachSize/empty/80x25
+=== RUN   TestGoalsFitEachSize/empty/119x40
+=== RUN   TestGoalsFitEachSize/empty/120x40
+=== RUN   TestGoalsFitEachSize/empty/120x24
+=== RUN   TestGoalsFitEachSize/empty/120x25
+=== RUN   TestGoalsFitEachSize/long/79x24
+=== RUN   TestGoalsFitEachSize/long/80x24
+=== RUN   TestGoalsFitEachSize/long/80x25
+=== RUN   TestGoalsFitEachSize/long/119x40
+=== RUN   TestGoalsFitEachSize/long/120x40
+=== RUN   TestGoalsFitEachSize/long/120x24
+=== RUN   TestGoalsFitEachSize/long/120x25
+--- PASS: TestGoalsFitEachSize (2.45s)
+    --- PASS: TestGoalsFitEachSize/fixture/79x24 (0.05s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x24 (0.04s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x25 (0.04s)
+    --- PASS: TestGoalsFitEachSize/fixture/119x40 (0.05s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x40 (0.04s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x24 (0.03s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x25 (0.03s)
+    --- PASS: TestGoalsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/79x24 (0.29s)
+    --- PASS: TestGoalsFitEachSize/long/80x24 (0.34s)
+    --- PASS: TestGoalsFitEachSize/long/80x25 (0.34s)
+    --- PASS: TestGoalsFitEachSize/long/119x40 (0.35s)
+    --- PASS: TestGoalsFitEachSize/long/120x40 (0.29s)
+    --- PASS: TestGoalsFitEachSize/long/120x24 (0.29s)
+    --- PASS: TestGoalsFitEachSize/long/120x25 (0.27s)
+=== RUN   TestGoalsKeysAndHints
+--- PASS: TestGoalsKeysAndHints (0.05s)
+=== RUN   TestGoalsHasNoStopsOnlyKey
+--- PASS: TestGoalsHasNoStopsOnlyKey (0.04s)
+=== RUN   TestGoalsDesignNoticeAndTaskKey
+--- PASS: TestGoalsDesignNoticeAndTaskKey (0.04s)
+=== RUN   TestGoalsRefreshReloadsRecords
+--- PASS: TestGoalsRefreshReloadsRecords (0.05s)
+=== RUN   TestGoalsProgramUsesStringReader
+--- PASS: TestGoalsProgramUsesStringReader (0.06s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	3.231s

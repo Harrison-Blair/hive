@@ -1,0 +1,2243 @@
+=== RUN   TestGoalsScreenRendersWaveProgressAndUnassignedTasks
+--- PASS: TestGoalsScreenRendersWaveProgressAndUnassignedTasks (0.03s)
+=== RUN   TestGoalsOpenTasksForSelectedWave
+--- PASS: TestGoalsOpenTasksForSelectedWave (0.03s)
+=== RUN   TestGoalsOpenTasksResetsProjectFilter
+--- PASS: TestGoalsOpenTasksResetsProjectFilter (0.03s)
+=== RUN   TestGoalsOpenWaveDesign
+=== RUN   TestGoalsOpenWaveDesign/one_feature
+=== RUN   TestGoalsOpenWaveDesign/first_feature_wins
+=== RUN   TestGoalsOpenWaveDesign/no_feature
+=== RUN   TestGoalsOpenWaveDesign/missing_file
+--- PASS: TestGoalsOpenWaveDesign (0.13s)
+    --- PASS: TestGoalsOpenWaveDesign/one_feature (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/first_feature_wins (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/no_feature (0.03s)
+    --- PASS: TestGoalsOpenWaveDesign/missing_file (0.03s)
+=== RUN   TestGoalsStatesHavePlainTextSignals
+--- PASS: TestGoalsStatesHavePlainTextSignals (0.03s)
+=== RUN   TestGoalsRefreshKeepsGoalSelection
+--- PASS: TestGoalsRefreshKeepsGoalSelection (0.04s)
+=== RUN   TestGoalsSortsActiveBeforeDoneAndCountsOnlyPushedDeliveries
+--- PASS: TestGoalsSortsActiveBeforeDoneAndCountsOnlyPushedDeliveries (0.03s)
+=== RUN   TestGoalsPanelsFitStandardFrame
+--- PASS: TestGoalsPanelsFitStandardFrame (0.02s)
+=== RUN   TestGoalsQueueProgramUsesStringReader
+--- PASS: TestGoalsQueueProgramUsesStringReader (0.03s)
+=== RUN   TestWorkGoalsMatchesItsBoard
+    work_goals_test.go:33: 1591 cells differ from WorkGoals.grid:
+        row 4 col 9: want '·' accent bold, got '─' accent normal
+        row 4 col 10: want ' ' accent bold, got '─' accent normal
+        row 4 col 11: want '2' accent bold, got '─' accent normal
+        row 4 col 12: want ' ' accent bold, got '─' accent normal
+        row 5 col 2: want ' ' fg normal, got '│' border normal
+        row 5 col 4: want 'G' dim normal, got 'p' dim normal
+        row 5 col 5: want 'O' dim normal, got 'u' dim normal
+        row 5 col 6: want 'A' dim normal, got 'b' dim normal
+        row 5 col 7: want 'L' dim normal, got 'l' dim normal
+        row 5 col 8: want ' ' dim normal, got 'i' dim normal
+        row 5 col 9: want ' ' dim normal, got 's' dim normal
+        row 5 col 10: want ' ' dim normal, got 'h' dim normal
+        row 5 col 11: want ' ' dim normal, got 'e' dim normal
+        row 5 col 12: want ' ' dim normal, got 'd' dim normal
+        row 5 col 13: want ' ' dim normal, got ' ' fg normal
+        row 5 col 14: want ' ' dim normal, got ' ' fg normal
+        row 5 col 15: want ' ' dim normal, got ' ' fg normal
+        row 5 col 16: want ' ' dim normal, got ' ' fg normal
+        row 5 col 17: want ' ' dim normal, got ' ' fg normal
+        row 5 col 18: want ' ' dim normal, got ' ' fg normal
+        row 5 col 19: want ' ' dim normal, got ' ' fg normal
+        row 5 col 20: want ' ' dim normal, got ' ' fg normal
+        row 5 col 21: want ' ' dim normal, got ' ' fg normal
+        row 5 col 22: want ' ' dim normal, got ' ' fg normal
+        row 5 col 23: want ' ' dim normal, got ' ' fg normal
+        row 5 col 24: want ' ' dim normal, got ' ' fg normal
+        row 5 col 25: want ' ' dim normal, got ' ' fg normal
+        row 5 col 26: want ' ' dim normal, got ' ' fg normal
+        row 5 col 27: want ' ' dim normal, got ' ' fg normal
+        row 5 col 28: want 'S' dim normal, got ' ' fg normal
+        row 5 col 29: want 'T' dim normal, got ' ' fg normal
+        row 5 col 30: want 'A' dim normal, got ' ' fg normal
+        row 5 col 31: want 'T' dim normal, got ' ' fg normal
+        row 5 col 32: want 'U' dim normal, got ' ' fg normal
+        row 5 col 33: want 'S' dim normal, got ' ' fg normal
+        row 5 col 34: want ' ' dim normal, got ' ' fg normal
+        row 5 col 35: want ' ' dim normal, got ' ' fg normal
+        row 5 col 36: want ' ' dim normal, got ' ' fg normal
+        row 5 col 37: want ' ' dim normal, got ' ' fg normal
+        row 5 col 38: want 'W' dim normal, got ' ' fg normal
+        row 5 col 39: want 'A' dim normal, got ' ' fg normal
+        row 5 col 40: want 'V' dim normal, got ' ' fg normal
+        row 5 col 41: want 'E' dim normal, got ' ' fg normal
+        row 5 col 42: want 'S' dim normal, got ' ' fg normal
+        row 5 col 49: want ' ' fg normal, got '│' border normal
+        row 5 col 54: want ' ' fg normal, got 't' dim normal
+        row 5 col 55: want ' ' fg normal, got 'i' dim normal
+        row 5 col 56: want ' ' fg normal, got 't' dim normal
+        row 5 col 57: want ' ' fg normal, got 'l' dim normal
+        row 5 col 58: want ' ' fg normal, got 'e' dim normal
+        row 5 col 59: want ' ' fg normal, got ' ' dim normal
+        row 5 col 60: want ' ' fg normal, got ' ' dim normal
+        row 5 col 61: want ' ' fg normal, got ' ' dim normal
+        row 5 col 62: want ' ' fg normal, got ' ' dim normal
+        row 5 col 63: want ' ' fg normal, got ' ' dim normal
+        row 5 col 64: want ' ' fg normal, got 'T' fg normal
+        row 5 col 65: want ' ' fg normal, got 'U' fg normal
+        row 5 col 66: want ' ' fg normal, got 'I' fg normal
+        row 5 col 68: want ' ' fg normal, got 'r' fg normal
+        row 5 col 69: want ' ' fg normal, got 'e' fg normal
+        row 5 col 70: want ' ' fg normal, got 's' fg normal
+        row 5 col 71: want ' ' fg normal, got 't' fg normal
+        row 5 col 72: want ' ' fg normal, got 'a' fg normal
+        row 5 col 73: want ' ' fg normal, got 'r' fg normal
+        row 5 col 74: want ' ' fg normal, got 't' fg normal
+        row 5 col 76: want ' ' fg normal, got 'a' fg normal
+        row 5 col 77: want ' ' fg normal, got 'n' fg normal
+        row 5 col 78: want ' ' fg normal, got 'd' fg normal
+        row 5 col 80: want ' ' fg normal, got 's' fg normal
+        row 5 col 81: want ' ' fg normal, got 't' fg normal
+        row 5 col 82: want ' ' fg normal, got 'a' fg normal
+        row 5 col 83: want ' ' fg normal, got 'l' fg normal
+        row 5 col 84: want ' ' fg normal, got 'e' fg normal
+        row 5 col 86: want ' ' fg normal, got 'c' fg normal
+        row 5 col 87: want ' ' fg normal, got 'o' fg normal
+        row 5 col 88: want ' ' fg normal, got 'o' fg normal
+        row 5 col 89: want ' ' fg normal, got 'r' fg normal
+        row 5 col 90: want ' ' fg normal, got 'd' fg normal
+        row 5 col 91: want ' ' fg normal, got 'i' fg normal
+        row 5 col 92: want ' ' fg normal, got 'n' fg normal
+        row 5 col 93: want ' ' fg normal, got 'a' fg normal
+        row 5 col 94: want ' ' fg normal, got 't' fg normal
+        row 5 col 95: want ' ' fg normal, got 'o' fg normal
+        row 5 col 96: want ' ' fg normal, got 'r' fg normal
+        row 5 col 98: want ' ' fg normal, got 's' fg normal
+        row 5 col 99: want ' ' fg normal, got 't' fg normal
+        row 5 col 100: want ' ' fg normal, got 'a' fg normal
+        row 5 col 101: want ' ' fg normal, got 'r' fg normal
+        row 5 col 102: want ' ' fg normal, got 't' fg normal
+        row 5 col 103: want ' ' fg normal, got 'u' fg normal
+        row 5 col 104: want ' ' fg normal, got 'p' fg normal
+        row 6 col 2: want ' ' fg normal, got '│' border normal
+        row 6 col 4: want 'g' fg normal, got '(' fg normal
+        row 6 col 5: want '2' fg normal, got 'n' fg normal
+        row 6 col 6: want '-' fg normal, got 'o' fg normal
+        row 6 col 7: want 't' fg normal, got ' ' fg normal
+        row 6 col 8: want 'u' fg normal, got 't' fg normal
+        row 6 col 9: want 'i' fg normal, got 'a' fg normal
+        row 6 col 10: want '-' fg normal, got 's' fg normal
+        row 6 col 11: want 'v' fg normal, got 'k' fg normal
+        row 6 col 12: want '2' fg normal, got 's' fg normal
+        row 6 col 13: want ' ' fg normal, got ')' fg normal
+        row 6 col 28: want 'p' info normal, got ' ' fg normal
+        row 6 col 29: want 'l' info normal, got ' ' fg normal
+        row 6 col 30: want 'a' info normal, got ' ' fg normal
+        row 6 col 31: want 'n' info normal, got ' ' fg normal
+        row 6 col 32: want 'n' info normal, got ' ' fg normal
+        row 6 col 33: want 'e' info normal, got ' ' fg normal
+        row 6 col 34: want 'd' info normal, got ' ' fg normal
+        row 6 col 35: want ' ' info normal, got ' ' fg normal
+        row 6 col 36: want ' ' info normal, got ' ' fg normal
+        row 6 col 37: want ' ' info normal, got ' ' fg normal
+        row 6 col 38: want '0' dim normal, got ' ' fg normal
+        row 6 col 39: want '/' dim normal, got ' ' fg normal
+        row 6 col 40: want '5' dim normal, got ' ' fg normal
+        row 6 col 49: want ' ' fg normal, got '│' border normal
+        row 6 col 54: want 't' dim normal, got 's' dim normal
+        row 6 col 55: want 'i' dim normal, got 't' dim normal
+        row 6 col 56: want 't' dim normal, got 'a' dim normal
+        row 6 col 57: want 'l' dim normal, got 't' dim normal
+        row 6 col 58: want 'e' dim normal, got 'u' dim normal
+        row 6 col 59: want ' ' dim normal, got 's' dim normal
+        row 6 col 64: want 'T' fg normal, got 'd' fg normal
+        row 6 col 65: want 'U' fg normal, got 'o' fg normal
+        row 6 col 66: want 'I' fg normal, got 'n' fg normal
+        row 6 col 67: want ' ' fg normal, got 'e' fg normal
+        row 6 col 68: want 'r' fg normal, got ' ' fg normal
+        row 6 col 69: want 'e' fg normal, got ' ' fg normal
+        row 6 col 70: want 's' fg normal, got ' ' fg normal
+        row 6 col 71: want 't' fg normal, got ' ' fg normal
+        row 6 col 72: want 'a' fg normal, got ' ' fg normal
+        row 6 col 73: want 'r' fg normal, got ' ' fg normal
+        row 6 col 74: want 't' fg normal, got ' ' fg normal
+        row 6 col 76: want 'a' fg normal, got ' ' fg normal
+        row 6 col 77: want 'n' fg normal, got ' ' fg normal
+        row 6 col 78: want 'd' fg normal, got ' ' fg normal
+        row 6 col 80: want 's' fg normal, got ' ' fg normal
+        row 6 col 81: want 't' fg normal, got ' ' fg normal
+        row 6 col 82: want 'a' fg normal, got ' ' fg normal
+        row 6 col 83: want 'l' fg normal, got ' ' fg normal
+        row 6 col 84: want 'e' fg normal, got ' ' fg normal
+        row 6 col 86: want 'c' fg normal, got ' ' fg normal
+        row 6 col 87: want 'o' fg normal, got ' ' fg normal
+        row 6 col 88: want 'o' fg normal, got ' ' fg normal
+        row 6 col 89: want 'r' fg normal, got ' ' fg normal
+        row 6 col 90: want 'd' fg normal, got ' ' fg normal
+        row 6 col 91: want 'i' fg normal, got ' ' fg normal
+        row 6 col 92: want 'n' fg normal, got ' ' fg normal
+        row 6 col 93: want 'a' fg normal, got ' ' fg normal
+        row 6 col 94: want 't' fg normal, got ' ' fg normal
+        row 6 col 95: want 'o' fg normal, got ' ' fg normal
+        row 6 col 96: want 'r' fg normal, got ' ' fg normal
+        row 6 col 98: want 's' fg normal, got ' ' fg normal
+        row 6 col 99: want 't' fg normal, got ' ' fg normal
+        row 6 col 100: want 'a' fg normal, got ' ' fg normal
+        row 6 col 101: want 'r' fg normal, got ' ' fg normal
+        row 6 col 102: want 't' fg normal, got ' ' fg normal
+        row 6 col 103: want 'u' fg normal, got ' ' fg normal
+        row 6 col 104: want 'p' fg normal, got ' ' fg normal
+        row 7 col 2: want '▶' accent bold, got '│' border normal
+        row 7 col 4: want 'g' accent bold, got 'w' accent bold
+        row 7 col 5: want '1' accent bold, got 'a' accent bold
+        row 7 col 6: want '-' accent bold, got 'v' accent bold
+        row 7 col 7: want 't' accent bold, got 'e' accent bold
+        row 7 col 8: want 'u' accent bold, got ' ' accent bold
+        row 7 col 9: want 'i' accent bold, got 'D' accent bold
+        row 7 col 10: want '-' accent bold, got ' ' accent bold
+        row 7 col 11: want 'r' accent bold, got '·' accent bold
+        row 7 col 12: want 'e' accent bold, got ' ' accent bold
+        row 7 col 13: want 's' accent bold, got 'F' accent bold
+        row 7 col 14: want 't' accent bold, got 'r' accent bold
+        row 7 col 16: want 'r' accent bold, got 'm' accent bold
+        row 7 col 17: want 't' accent bold, got 'e' accent bold
+        row 7 col 19: want ' ' accent bold, got 'a' accent bold
+        row 7 col 20: want ' ' accent bold, got 'n' accent bold
+        row 7 col 21: want ' ' accent bold, got 'd' accent bold
+        row 7 col 23: want ' ' accent bold, got 'l' accent bold
+        row 7 col 24: want ' ' accent bold, got 'a' accent bold
+        row 7 col 25: want ' ' accent bold, got 'y' accent bold
+        row 7 col 26: want ' ' accent bold, got 'o' accent bold
+        row 7 col 27: want ' ' accent bold, got 'u' accent bold
+        row 7 col 28: want 'd' done normal, got 't' accent bold
+        row 7 col 29: want 'o' done normal, got ' ' accent bold
+        row 7 col 30: want 'n' done normal, got '·' accent bold
+        row 7 col 31: want 'e' done normal, got ' ' accent bold
+        row 7 col 32: want ' ' done normal, got 'o' accent bold
+        row 7 col 33: want ' ' done normal, got 'p' accent bold
+        row 7 col 34: want ' ' done normal, got 'e' accent bold
+        row 7 col 35: want ' ' done normal, got 'n' accent bold
+        row 7 col 36: want ' ' done normal, got ' ' fg normal
+        row 7 col 37: want ' ' done normal, got ' ' fg normal
+        row 7 col 38: want '3' dim normal, got ' ' fg normal
+        row 7 col 39: want '/' dim normal, got ' ' fg normal
+        row 7 col 40: want '3' dim normal, got ' ' fg normal
+        row 7 col 49: want ' ' fg normal, got '│' border normal
+        row 7 col 54: want 's' dim normal, got ' ' fg normal
+        row 7 col 55: want 't' dim normal, got ' ' fg normal
+        row 7 col 56: want 'a' dim normal, got ' ' fg normal
+        row 7 col 57: want 't' dim normal, got ' ' fg normal
+        row 7 col 58: want 'u' dim normal, got ' ' fg normal
+        row 7 col 59: want 's' dim normal, got ' ' fg normal
+        row 7 col 60: want ' ' dim normal, got ' ' fg normal
+        row 7 col 61: want ' ' dim normal, got ' ' fg normal
+        row 7 col 62: want ' ' dim normal, got ' ' fg normal
+        row 7 col 63: want ' ' dim normal, got ' ' fg normal
+        row 7 col 64: want 'd' done normal, got ' ' fg normal
+        row 7 col 65: want 'o' done normal, got ' ' fg normal
+        row 7 col 66: want 'n' done normal, got ' ' fg normal
+        row 7 col 67: want 'e' done normal, got ' ' fg normal
+        row 7 col 68: want ' ' done normal, got ' ' fg normal
+        row 7 col 69: want ' ' done normal, got ' ' fg normal
+        row 7 col 70: want ' ' done normal, got ' ' fg normal
+        row 7 col 71: want ' ' done normal, got ' ' fg normal
+        row 7 col 72: want ' ' done normal, got ' ' fg normal
+        row 7 col 73: want ' ' done normal, got ' ' fg normal
+        row 7 col 74: want ' ' done normal, got ' ' fg normal
+        row 7 col 75: want ' ' done normal, got ' ' fg normal
+        row 7 col 76: want ' ' done normal, got ' ' fg normal
+        row 7 col 77: want ' ' done normal, got ' ' fg normal
+        row 7 col 78: want ' ' done normal, got ' ' fg normal
+        row 7 col 79: want ' ' done normal, got ' ' fg normal
+        row 7 col 80: want ' ' done normal, got ' ' fg normal
+        row 7 col 81: want ' ' done normal, got ' ' fg normal
+        row 7 col 82: want ' ' done normal, got ' ' fg normal
+        row 7 col 83: want ' ' done normal, got ' ' fg normal
+        row 7 col 84: want ' ' done normal, got ' ' fg normal
+        row 7 col 85: want ' ' done normal, got ' ' fg normal
+        row 7 col 86: want ' ' done normal, got ' ' fg normal
+        row 7 col 87: want ' ' done normal, got ' ' fg normal
+        row 7 col 88: want ' ' done normal, got ' ' fg normal
+        row 7 col 89: want ' ' done normal, got ' ' fg normal
+        row 7 col 90: want ' ' done normal, got ' ' fg normal
+        row 7 col 91: want ' ' done normal, got ' ' fg normal
+        row 7 col 92: want ' ' done normal, got ' ' fg normal
+        row 7 col 93: want ' ' done normal, got ' ' fg normal
+        row 7 col 94: want ' ' done normal, got ' ' fg normal
+        row 7 col 95: want ' ' done normal, got ' ' fg normal
+        row 7 col 96: want ' ' done normal, got ' ' fg normal
+        row 7 col 97: want ' ' done normal, got ' ' fg normal
+        row 7 col 98: want ' ' done normal, got ' ' fg normal
+        row 7 col 99: want ' ' done normal, got ' ' fg normal
+        row 7 col 100: want ' ' done normal, got ' ' fg normal
+        row 7 col 101: want ' ' done normal, got ' ' fg normal
+        row 7 col 102: want ' ' done normal, got ' ' fg normal
+        row 7 col 103: want ' ' done normal, got ' ' fg normal
+        row 7 col 104: want ' ' done normal, got ' ' fg normal
+        row 7 col 105: want ' ' done normal, got ' ' fg normal
+        row 7 col 106: want ' ' done normal, got ' ' fg normal
+        row 7 col 107: want ' ' done normal, got ' ' fg normal
+        row 7 col 108: want ' ' done normal, got ' ' fg normal
+        row 7 col 109: want ' ' done normal, got ' ' fg normal
+        row 7 col 110: want ' ' done normal, got ' ' fg normal
+        row 7 col 111: want ' ' done normal, got ' ' fg normal
+        row 7 col 112: want ' ' done normal, got ' ' fg normal
+        row 7 col 113: want ' ' done normal, got ' ' fg normal
+        row 7 col 114: want ' ' done normal, got ' ' fg normal
+        row 7 col 115: want ' ' done normal, got ' ' fg normal
+        row 7 col 116: want ' ' done normal, got ' ' fg normal
+        row 7 col 117: want ' ' done normal, got ' ' fg normal
+        row 8 col 2: want ' ' fg normal, got '│' border normal
+        row 8 col 4: want ' ' fg normal, got 'd' done normal
+        row 8 col 5: want ' ' fg normal, got 'i' done normal
+        row 8 col 6: want ' ' fg normal, got 's' done normal
+        row 8 col 7: want ' ' fg normal, got 'p' done normal
+        row 8 col 8: want ' ' fg normal, got 'a' done normal
+        row 8 col 9: want ' ' fg normal, got 't' done normal
+        row 8 col 10: want ' ' fg normal, got 'c' done normal
+        row 8 col 11: want ' ' fg normal, got 'h' done normal
+        row 8 col 12: want ' ' fg normal, got ' ' done normal
+        row 8 col 13: want ' ' fg normal, got '✓' done normal
+        row 8 col 14: want ' ' fg normal, got ' ' done normal
+        row 8 col 15: want ' ' fg normal, got '─' done normal
+        row 8 col 16: want ' ' fg normal, got '▶' done normal
+        row 8 col 17: want ' ' fg normal, got ' ' done normal
+        row 8 col 18: want ' ' fg normal, got 't' done normal
+        row 8 col 19: want ' ' fg normal, got 'a' done normal
+        row 8 col 20: want ' ' fg normal, got 's' done normal
+        row 8 col 21: want ' ' fg normal, got 'k' done normal
+        row 8 col 22: want ' ' fg normal, got 's' done normal
+        row 8 col 23: want ' ' fg normal, got ' ' done normal
+        row 8 col 24: want ' ' fg normal, got '0' done normal
+        row 8 col 25: want ' ' fg normal, got '/' done normal
+        row 8 col 26: want ' ' fg normal, got '0' done normal
+        row 8 col 27: want ' ' fg normal, got ' ' done normal
+        row 8 col 28: want ' ' fg normal, got '✓' done normal
+        row 8 col 29: want ' ' fg normal, got ' ' done normal
+        row 8 col 30: want ' ' fg normal, got '─' done normal
+        row 8 col 31: want ' ' fg normal, got '▶' done normal
+        row 8 col 32: want ' ' fg normal, got ' ' done normal
+        row 8 col 33: want ' ' fg normal, got '◎' accent bold
+        row 8 col 34: want ' ' fg normal, got ' ' accent bold
+        row 8 col 35: want ' ' fg normal, got 'l' accent bold
+        row 8 col 36: want ' ' fg normal, got 'a' accent bold
+        row 8 col 37: want ' ' fg normal, got 'n' accent bold
+        row 8 col 38: want ' ' fg normal, got 'd' accent bold
+        row 8 col 39: want ' ' fg normal, got 'e' accent bold
+        row 8 col 40: want ' ' fg normal, got 'd' accent bold
+        row 8 col 41: want ' ' fg normal, got ' ' accent bold
+        row 8 col 42: want ' ' fg normal, got 'o' accent bold
+        row 8 col 43: want ' ' fg normal, got 'n' accent bold
+        row 8 col 44: want ' ' fg normal, got ' ' accent bold
+        row 8 col 45: want ' ' fg normal, got 'd' accent bold
+        row 8 col 46: want ' ' fg normal, got 'e' accent bold
+        row 8 col 47: want ' ' fg normal, got 'v' accent bold
+        row 8 col 49: want ' ' fg normal, got '│' border normal
+        row 8 col 54: want 'p' dim normal, got ' ' fg normal
+        row 8 col 55: want 'r' dim normal, got ' ' fg normal
+        row 8 col 56: want 'o' dim normal, got ' ' fg normal
+        row 8 col 57: want 'j' dim normal, got ' ' fg normal
+        row 8 col 58: want 'e' dim normal, got ' ' fg normal
+        row 8 col 59: want 'c' dim normal, got ' ' fg normal
+        row 8 col 60: want 't' dim normal, got ' ' fg normal
+        row 8 col 61: want ' ' dim normal, got ' ' fg normal
+        row 8 col 62: want ' ' dim normal, got ' ' fg normal
+        row 8 col 63: want ' ' dim normal, got ' ' fg normal
+        row 8 col 64: want 'h' fg normal, got ' ' fg normal
+        row 8 col 65: want 'i' fg normal, got ' ' fg normal
+        row 8 col 66: want 'v' fg normal, got ' ' fg normal
+        row 8 col 67: want 'e' fg normal, got ' ' fg normal
+        row 9 col 2: want ' ' fg normal, got '│' border normal
+        row 9 col 4: want ' ' fg normal, got '─' done normal
+        row 9 col 5: want ' ' fg normal, got '▶' done normal
+        row 9 col 6: want ' ' fg normal, got ' ' done normal
+        row 9 col 7: want ' ' fg normal, got 'P' dim normal
+        row 9 col 8: want ' ' fg normal, got 'R' dim normal
+        row 9 col 9: want ' ' fg normal, got ' ' dim normal
+        row 9 col 10: want ' ' fg normal, got 'o' dim normal
+        row 9 col 11: want ' ' fg normal, got 'p' dim normal
+        row 9 col 12: want ' ' fg normal, got 'e' dim normal
+        row 9 col 13: want ' ' fg normal, got 'n' dim normal
+        row 9 col 14: want ' ' fg normal, got ' ' done normal
+        row 9 col 15: want ' ' fg normal, got '─' done normal
+        row 9 col 16: want ' ' fg normal, got '▶' done normal
+        row 9 col 17: want ' ' fg normal, got ' ' done normal
+        row 9 col 18: want ' ' fg normal, got 'm' dim normal
+        row 9 col 19: want ' ' fg normal, got 'e' dim normal
+        row 9 col 20: want ' ' fg normal, got 'r' dim normal
+        row 9 col 21: want ' ' fg normal, got 'g' dim normal
+        row 9 col 22: want ' ' fg normal, got 'e' dim normal
+        row 9 col 23: want ' ' fg normal, got 'd' dim normal
+        row 9 col 24: want ' ' fg normal, got ' ' dim normal
+        row 9 col 25: want ' ' fg normal, got 't' dim normal
+        row 9 col 26: want ' ' fg normal, got 'o' dim normal
+        row 9 col 27: want ' ' fg normal, got ' ' dim normal
+        row 9 col 28: want ' ' fg normal, got 'm' dim normal
+        row 9 col 29: want ' ' fg normal, got 'a' dim normal
+        row 9 col 30: want ' ' fg normal, got 'i' dim normal
+        row 9 col 31: want ' ' fg normal, got 'n' dim normal
+        row 9 col 32: want ' ' fg normal, got ' ' done normal
+        row 9 col 33: want ' ' fg normal, got '─' done normal
+        row 9 col 34: want ' ' fg normal, got '▶' done normal
+        row 9 col 35: want ' ' fg normal, got ' ' done normal
+        row 9 col 36: want ' ' fg normal, got 'r' dim normal
+        row 9 col 37: want ' ' fg normal, got 'e' dim normal
+        row 9 col 38: want ' ' fg normal, got 'l' dim normal
+        row 9 col 39: want ' ' fg normal, got 'e' dim normal
+        row 9 col 40: want ' ' fg normal, got 'a' dim normal
+        row 9 col 41: want ' ' fg normal, got 's' dim normal
+        row 9 col 42: want ' ' fg normal, got 'e' dim normal
+        row 9 col 49: want ' ' fg normal, got '│' border normal
+        row 9 col 54: want 'g' dim normal, got ' ' fg normal
+        row 9 col 55: want 'r' dim normal, got ' ' fg normal
+        row 9 col 56: want 'a' dim normal, got ' ' fg normal
+        row 9 col 57: want 'n' dim normal, got ' ' fg normal
+        row 9 col 58: want 't' dim normal, got ' ' fg normal
+        row 9 col 59: want ' ' dim normal, got ' ' fg normal
+        row 9 col 60: want ' ' dim normal, got ' ' fg normal
+        row 9 col 61: want ' ' dim normal, got ' ' fg normal
+        row 9 col 62: want ' ' dim normal, got ' ' fg normal
+        row 9 col 63: want ' ' dim normal, got ' ' fg normal
+        row 9 col 64: want 'g' fg normal, got ' ' fg normal
+        row 9 col 65: want 'r' fg normal, got ' ' fg normal
+        row 9 col 66: want 'a' fg normal, got ' ' fg normal
+        row 9 col 67: want 'n' fg normal, got ' ' fg normal
+        row 9 col 68: want 't' fg normal, got ' ' fg normal
+        row 9 col 69: want 's' fg normal, got ' ' fg normal
+        row 9 col 70: want '.' fg normal, got ' ' fg normal
+        row 9 col 71: want 'm' fg normal, got ' ' fg normal
+        row 9 col 72: want 'd' fg normal, got ' ' fg normal
+        row 9 col 74: want '2' fg normal, got ' ' fg normal
+        row 9 col 75: want '0' fg normal, got ' ' fg normal
+        row 9 col 76: want '2' fg normal, got ' ' fg normal
+        row 9 col 77: want '6' fg normal, got ' ' fg normal
+        row 9 col 78: want '-' fg normal, got ' ' fg normal
+        row 9 col 79: want '1' fg normal, got ' ' fg normal
+        row 9 col 80: want '0' fg normal, got ' ' fg normal
+        row 9 col 81: want '-' fg normal, got ' ' fg normal
+        row 9 col 82: want '1' fg normal, got ' ' fg normal
+        row 9 col 83: want '8' fg normal, got ' ' fg normal
+        row 9 col 85: want 'h' fg normal, got ' ' fg normal
+        row 9 col 86: want 'i' fg normal, got ' ' fg normal
+        row 9 col 87: want 'v' fg normal, got ' ' fg normal
+        row 9 col 88: want 'e' fg normal, got ' ' fg normal
+        row 9 col 90: want 'd' fg normal, got ' ' fg normal
+        row 9 col 91: want 'e' fg normal, got ' ' fg normal
+        row 9 col 92: want 'l' fg normal, got ' ' fg normal
+        row 9 col 93: want 'i' fg normal, got ' ' fg normal
+        row 9 col 94: want 'v' fg normal, got ' ' fg normal
+        row 9 col 95: want 'e' fg normal, got ' ' fg normal
+        row 9 col 96: want 'r' fg normal, got ' ' fg normal
+        row 9 col 97: want 'y' fg normal, got ' ' fg normal
+        row 9 col 99: want 'o' fg normal, got ' ' fg normal
+        row 9 col 100: want 'n' fg normal, got ' ' fg normal
+        row 9 col 102: want 'd' fg normal, got ' ' fg normal
+        row 9 col 103: want 'e' fg normal, got ' ' fg normal
+        row 9 col 104: want 'v' fg normal, got ' ' fg normal
+        row 10 col 2: want ' ' fg normal, got '│' border normal
+        row 10 col 4: want ' ' fg normal, got 'p' dim normal
+        row 10 col 5: want ' ' fg normal, got 'u' dim normal
+        row 10 col 6: want ' ' fg normal, got 'b' dim normal
+        row 10 col 7: want ' ' fg normal, got 'l' dim normal
+        row 10 col 8: want ' ' fg normal, got 'i' dim normal
+        row 10 col 9: want ' ' fg normal, got 's' dim normal
+        row 10 col 10: want ' ' fg normal, got 'h' dim normal
+        row 10 col 11: want ' ' fg normal, got 'e' dim normal
+        row 10 col 12: want ' ' fg normal, got 'd' dim normal
+        row 10 col 49: want ' ' fg normal, got '│' border normal
+        row 10 col 54: want 'm' dim normal, got ' ' fg normal
+        row 10 col 55: want 'a' dim normal, got ' ' fg normal
+        row 10 col 56: want 'n' dim normal, got ' ' fg normal
+        row 10 col 57: want 'a' dim normal, got ' ' fg normal
+        row 10 col 58: want 'g' dim normal, got ' ' fg normal
+        row 10 col 59: want 'e' dim normal, got ' ' fg normal
+        row 10 col 60: want 'r' dim normal, got ' ' fg normal
+        row 10 col 61: want ' ' dim normal, got ' ' fg normal
+        row 10 col 62: want ' ' dim normal, got ' ' fg normal
+        row 10 col 63: want ' ' dim normal, got ' ' fg normal
+        row 10 col 64: want 'm' fg normal, got ' ' fg normal
+        row 10 col 65: want 'a' fg normal, got ' ' fg normal
+        row 10 col 66: want 'n' fg normal, got ' ' fg normal
+        row 10 col 67: want 'a' fg normal, got ' ' fg normal
+        row 10 col 68: want 'g' fg normal, got ' ' fg normal
+        row 10 col 69: want 'e' fg normal, got ' ' fg normal
+        row 10 col 70: want 'r' fg normal, got ' ' fg normal
+        row 10 col 71: want '-' fg normal, got ' ' fg normal
+        row 10 col 72: want 'h' fg normal, got ' ' fg normal
+        row 10 col 73: want 'i' fg normal, got ' ' fg normal
+        row 10 col 74: want 'v' fg normal, got ' ' fg normal
+        row 10 col 75: want 'e' fg normal, got ' ' fg normal
+        row 11 col 2: want ' ' fg normal, got '│' border normal
+        row 11 col 4: want ' ' fg normal, got '(' fg normal
+        row 11 col 5: want ' ' fg normal, got 'n' fg normal
+        row 11 col 6: want ' ' fg normal, got 'o' fg normal
+        row 11 col 8: want ' ' fg normal, got 't' fg normal
+        row 11 col 9: want ' ' fg normal, got 'a' fg normal
+        row 11 col 10: want ' ' fg normal, got 's' fg normal
+        row 11 col 11: want ' ' fg normal, got 'k' fg normal
+        row 11 col 12: want ' ' fg normal, got 's' fg normal
+        row 11 col 13: want ' ' fg normal, got ')' fg normal
+        row 11 col 49: want ' ' fg normal, got '│' border normal
+        row 12 col 2: want ' ' fg normal, got '│' border normal
+        row 12 col 4: want ' ' fg normal, got 'w' accent bold
+        row 12 col 5: want ' ' fg normal, got 'a' accent bold
+        row 12 col 6: want ' ' fg normal, got 'v' accent bold
+        row 12 col 7: want ' ' fg normal, got 'e' accent bold
+        row 12 col 8: want ' ' fg normal, got ' ' accent bold
+        row 12 col 9: want ' ' fg normal, got 'E' accent bold
+        row 12 col 10: want ' ' fg normal, got ' ' accent bold
+        row 12 col 11: want ' ' fg normal, got '·' accent bold
+        row 12 col 12: want ' ' fg normal, got ' ' accent bold
+        row 12 col 13: want ' ' fg normal, got 'S' accent bold
+        row 12 col 14: want ' ' fg normal, got 'c' accent bold
+        row 12 col 15: want ' ' fg normal, got 'r' accent bold
+        row 12 col 16: want ' ' fg normal, got 'e' accent bold
+        row 12 col 17: want ' ' fg normal, got 'e' accent bold
+        row 12 col 18: want ' ' fg normal, got 'n' accent bold
+        row 12 col 19: want ' ' fg normal, got 's' accent bold
+        row 12 col 20: want ' ' fg normal, got ' ' accent bold
+        row 12 col 21: want ' ' fg normal, got '·' accent bold
+        row 12 col 22: want ' ' fg normal, got ' ' accent bold
+        row 12 col 23: want ' ' fg normal, got 'o' accent bold
+        row 12 col 24: want ' ' fg normal, got 'p' accent bold
+        row 12 col 25: want ' ' fg normal, got 'e' accent bold
+        row 12 col 26: want ' ' fg normal, got 'n' accent bold
+        row 12 col 49: want ' ' fg normal, got '│' border normal
+        row 12 col 54: want 'W' accent bold, got ' ' fg normal
+        row 12 col 55: want 'A' accent bold, got ' ' fg normal
+        row 12 col 56: want 'V' accent bold, got ' ' fg normal
+        row 12 col 57: want 'E' accent bold, got ' ' fg normal
+        row 12 col 58: want 'S' accent bold, got ' ' fg normal
+        row 13 col 2: want ' ' fg normal, got '│' border normal
+        row 13 col 4: want ' ' fg normal, got 'd' done normal
+        row 13 col 5: want ' ' fg normal, got 'i' done normal
+        row 13 col 6: want ' ' fg normal, got 's' done normal
+        row 13 col 7: want ' ' fg normal, got 'p' done normal
+        row 13 col 8: want ' ' fg normal, got 'a' done normal
+        row 13 col 9: want ' ' fg normal, got 't' done normal
+        row 13 col 10: want ' ' fg normal, got 'c' done normal
+        row 13 col 11: want ' ' fg normal, got 'h' done normal
+        row 13 col 12: want ' ' fg normal, got ' ' done normal
+        row 13 col 13: want ' ' fg normal, got '✓' done normal
+        row 13 col 14: want ' ' fg normal, got ' ' done normal
+        row 13 col 15: want ' ' fg normal, got '─' done normal
+        row 13 col 16: want ' ' fg normal, got '▶' done normal
+        row 13 col 17: want ' ' fg normal, got ' ' done normal
+        row 13 col 18: want ' ' fg normal, got 't' done normal
+        row 13 col 19: want ' ' fg normal, got 'a' done normal
+        row 13 col 20: want ' ' fg normal, got 's' done normal
+        row 13 col 21: want ' ' fg normal, got 'k' done normal
+        row 13 col 22: want ' ' fg normal, got 's' done normal
+        row 13 col 23: want ' ' fg normal, got ' ' done normal
+        row 13 col 24: want ' ' fg normal, got '0' done normal
+        row 13 col 25: want ' ' fg normal, got '/' done normal
+        row 13 col 26: want ' ' fg normal, got '0' done normal
+        row 13 col 27: want ' ' fg normal, got ' ' done normal
+        row 13 col 28: want ' ' fg normal, got '✓' done normal
+        row 13 col 29: want ' ' fg normal, got ' ' done normal
+        row 13 col 30: want ' ' fg normal, got '─' done normal
+        row 13 col 31: want ' ' fg normal, got '▶' done normal
+        row 13 col 32: want ' ' fg normal, got ' ' done normal
+        row 13 col 33: want ' ' fg normal, got '◎' accent bold
+        row 13 col 34: want ' ' fg normal, got ' ' accent bold
+        row 13 col 35: want ' ' fg normal, got 'l' accent bold
+        row 13 col 36: want ' ' fg normal, got 'a' accent bold
+        row 13 col 37: want ' ' fg normal, got 'n' accent bold
+        row 13 col 38: want ' ' fg normal, got 'd' accent bold
+        row 13 col 39: want ' ' fg normal, got 'e' accent bold
+        row 13 col 40: want ' ' fg normal, got 'd' accent bold
+        row 13 col 41: want ' ' fg normal, got ' ' accent bold
+        row 13 col 42: want ' ' fg normal, got 'o' accent bold
+        row 13 col 43: want ' ' fg normal, got 'n' accent bold
+        row 13 col 44: want ' ' fg normal, got ' ' accent bold
+        row 13 col 45: want ' ' fg normal, got 'd' accent bold
+        row 13 col 46: want ' ' fg normal, got 'e' accent bold
+        row 13 col 47: want ' ' fg normal, got 'v' accent bold
+        row 13 col 49: want ' ' fg normal, got '│' border normal
+        row 13 col 54: want 'W' dim normal, got ' ' fg normal
+        row 13 col 55: want 'A' dim normal, got ' ' fg normal
+        row 13 col 56: want 'V' dim normal, got ' ' fg normal
+        row 13 col 57: want 'E' dim normal, got ' ' fg normal
+        row 13 col 58: want ' ' dim normal, got ' ' fg normal
+        row 13 col 59: want 'T' dim normal, got ' ' fg normal
+        row 13 col 60: want 'I' dim normal, got ' ' fg normal
+        row 13 col 61: want 'T' dim normal, got ' ' fg normal
+        row 13 col 62: want 'L' dim normal, got ' ' fg normal
+        row 13 col 63: want 'E' dim normal, got ' ' fg normal
+        row 13 col 64: want ' ' dim normal, got ' ' fg normal
+        row 13 col 65: want ' ' dim normal, got ' ' fg normal
+        row 13 col 66: want ' ' dim normal, got ' ' fg normal
+        row 13 col 67: want ' ' dim normal, got ' ' fg normal
+        row 13 col 68: want ' ' dim normal, got ' ' fg normal
+        row 13 col 69: want ' ' dim normal, got ' ' fg normal
+        row 13 col 70: want ' ' dim normal, got ' ' fg normal
+        row 13 col 71: want ' ' dim normal, got ' ' fg normal
+        row 13 col 72: want ' ' dim normal, got ' ' fg normal
+        row 13 col 73: want ' ' dim normal, got ' ' fg normal
+        row 13 col 74: want ' ' dim normal, got ' ' fg normal
+        row 13 col 75: want ' ' dim normal, got ' ' fg normal
+        row 13 col 76: want ' ' dim normal, got ' ' fg normal
+        row 13 col 77: want ' ' dim normal, got ' ' fg normal
+        row 13 col 78: want ' ' dim normal, got ' ' fg normal
+        row 13 col 79: want ' ' dim normal, got ' ' fg normal
+        row 13 col 80: want ' ' dim normal, got ' ' fg normal
+        row 13 col 81: want ' ' dim normal, got ' ' fg normal
+        row 13 col 82: want ' ' dim normal, got ' ' fg normal
+        row 13 col 83: want ' ' dim normal, got ' ' fg normal
+        row 13 col 84: want ' ' dim normal, got ' ' fg normal
+        row 13 col 85: want ' ' dim normal, got ' ' fg normal
+        row 13 col 86: want 'D' dim normal, got ' ' fg normal
+        row 13 col 87: want 'O' dim normal, got ' ' fg normal
+        row 13 col 88: want 'N' dim normal, got ' ' fg normal
+        row 13 col 89: want 'E' dim normal, got ' ' fg normal
+        row 13 col 90: want ' ' dim normal, got ' ' fg normal
+        row 13 col 91: want 'W' dim normal, got ' ' fg normal
+        row 13 col 92: want 'H' dim normal, got ' ' fg normal
+        row 13 col 93: want 'E' dim normal, got ' ' fg normal
+        row 13 col 94: want 'N' dim normal, got ' ' fg normal
+        row 13 col 95: want ' ' dim normal, got ' ' fg normal
+        row 13 col 96: want ' ' dim normal, got ' ' fg normal
+        row 13 col 97: want 'L' dim normal, got ' ' fg normal
+        row 13 col 98: want 'A' dim normal, got ' ' fg normal
+        row 13 col 99: want 'N' dim normal, got ' ' fg normal
+        row 13 col 100: want 'D' dim normal, got ' ' fg normal
+        row 13 col 101: want 'E' dim normal, got ' ' fg normal
+        row 13 col 102: want 'D' dim normal, got ' ' fg normal
+        row 13 col 103: want ' ' dim normal, got ' ' fg normal
+        row 13 col 104: want ' ' dim normal, got ' ' fg normal
+        row 13 col 105: want 'S' dim normal, got ' ' fg normal
+        row 13 col 106: want 'T' dim normal, got ' ' fg normal
+        row 13 col 107: want 'A' dim normal, got ' ' fg normal
+        row 13 col 108: want 'T' dim normal, got ' ' fg normal
+        row 13 col 109: want 'U' dim normal, got ' ' fg normal
+        row 13 col 110: want 'S' dim normal, got ' ' fg normal
+        row 14 col 2: want ' ' fg normal, got '│' border normal
+        row 14 col 4: want ' ' fg normal, got '─' done normal
+        row 14 col 5: want ' ' fg normal, got '▶' done normal
+        row 14 col 6: want ' ' fg normal, got ' ' done normal
+        row 14 col 7: want ' ' fg normal, got 'P' dim normal
+        row 14 col 8: want ' ' fg normal, got 'R' dim normal
+        row 14 col 9: want ' ' fg normal, got ' ' dim normal
+        row 14 col 10: want ' ' fg normal, got 'o' dim normal
+        row 14 col 11: want ' ' fg normal, got 'p' dim normal
+        row 14 col 12: want ' ' fg normal, got 'e' dim normal
+        row 14 col 13: want ' ' fg normal, got 'n' dim normal
+        row 14 col 14: want ' ' fg normal, got ' ' done normal
+        row 14 col 15: want ' ' fg normal, got '─' done normal
+        row 14 col 16: want ' ' fg normal, got '▶' done normal
+        row 14 col 17: want ' ' fg normal, got ' ' done normal
+        row 14 col 18: want ' ' fg normal, got 'm' dim normal
+        row 14 col 19: want ' ' fg normal, got 'e' dim normal
+        row 14 col 20: want ' ' fg normal, got 'r' dim normal
+        row 14 col 21: want ' ' fg normal, got 'g' dim normal
+        row 14 col 22: want ' ' fg normal, got 'e' dim normal
+        row 14 col 23: want ' ' fg normal, got 'd' dim normal
+        row 14 col 24: want ' ' fg normal, got ' ' dim normal
+        row 14 col 25: want ' ' fg normal, got 't' dim normal
+        row 14 col 26: want ' ' fg normal, got 'o' dim normal
+        row 14 col 27: want ' ' fg normal, got ' ' dim normal
+        row 14 col 28: want ' ' fg normal, got 'm' dim normal
+        row 14 col 29: want ' ' fg normal, got 'a' dim normal
+        row 14 col 30: want ' ' fg normal, got 'i' dim normal
+        row 14 col 31: want ' ' fg normal, got 'n' dim normal
+        row 14 col 32: want ' ' fg normal, got ' ' done normal
+        row 14 col 33: want ' ' fg normal, got '─' done normal
+        row 14 col 34: want ' ' fg normal, got '▶' done normal
+        row 14 col 35: want ' ' fg normal, got ' ' done normal
+        row 14 col 36: want ' ' fg normal, got 'r' dim normal
+        row 14 col 37: want ' ' fg normal, got 'e' dim normal
+        row 14 col 38: want ' ' fg normal, got 'l' dim normal
+        row 14 col 39: want ' ' fg normal, got 'e' dim normal
+        row 14 col 40: want ' ' fg normal, got 'a' dim normal
+        row 14 col 41: want ' ' fg normal, got 's' dim normal
+        row 14 col 42: want ' ' fg normal, got 'e' dim normal
+        row 14 col 49: want ' ' fg normal, got '│' border normal
+        row 14 col 54: want 'A' accent bold, got ' ' fg normal
+        row 14 col 55: want ' ' accent bold, got ' ' fg normal
+        row 14 col 56: want ' ' accent bold, got ' ' fg normal
+        row 14 col 57: want ' ' accent bold, got ' ' fg normal
+        row 14 col 59: want 'S' fg normal, got ' ' fg normal
+        row 14 col 60: want 't' fg normal, got ' ' fg normal
+        row 14 col 61: want 'a' fg normal, got ' ' fg normal
+        row 14 col 62: want 'l' fg normal, got ' ' fg normal
+        row 14 col 63: want 'e' fg normal, got ' ' fg normal
+        row 14 col 65: want 'c' fg normal, got ' ' fg normal
+        row 14 col 66: want 'o' fg normal, got ' ' fg normal
+        row 14 col 67: want 'o' fg normal, got ' ' fg normal
+        row 14 col 68: want 'r' fg normal, got ' ' fg normal
+        row 14 col 69: want 'd' fg normal, got ' ' fg normal
+        row 14 col 70: want 'i' fg normal, got ' ' fg normal
+        row 14 col 71: want 'n' fg normal, got ' ' fg normal
+        row 14 col 72: want 'a' fg normal, got ' ' fg normal
+        row 14 col 73: want 't' fg normal, got ' ' fg normal
+        row 14 col 74: want 'o' fg normal, got ' ' fg normal
+        row 14 col 75: want 'r' fg normal, got ' ' fg normal
+        row 14 col 77: want 's' fg normal, got ' ' fg normal
+        row 14 col 78: want 't' fg normal, got ' ' fg normal
+        row 14 col 79: want 'a' fg normal, got ' ' fg normal
+        row 14 col 80: want 'r' fg normal, got ' ' fg normal
+        row 14 col 81: want 't' fg normal, got ' ' fg normal
+        row 14 col 82: want 'u' fg normal, got ' ' fg normal
+        row 14 col 83: want 'p' fg normal, got ' ' fg normal
+        row 14 col 86: want 'd' fg normal, got ' ' fg normal
+        row 14 col 87: want 'e' fg normal, got ' ' fg normal
+        row 14 col 88: want 'v' fg normal, got ' ' fg normal
+        row 14 col 97: want '1' fg normal, got ' ' fg normal
+        row 14 col 98: want '/' fg normal, got ' ' fg normal
+        row 14 col 99: want '1' fg normal, got ' ' fg normal
+        row 14 col 105: want '✓' done normal, got ' ' fg normal
+        row 14 col 107: want 'd' done normal, got ' ' fg normal
+        row 14 col 108: want 'o' done normal, got ' ' fg normal
+        row 14 col 109: want 'n' done normal, got ' ' fg normal
+        row 14 col 110: want 'e' done normal, got ' ' fg normal
+        row 15 col 2: want ' ' fg normal, got '│' border normal
+        row 15 col 4: want ' ' fg normal, got 'p' dim normal
+        row 15 col 5: want ' ' fg normal, got 'u' dim normal
+        row 15 col 6: want ' ' fg normal, got 'b' dim normal
+        row 15 col 7: want ' ' fg normal, got 'l' dim normal
+        row 15 col 8: want ' ' fg normal, got 'i' dim normal
+        row 15 col 9: want ' ' fg normal, got 's' dim normal
+        row 15 col 10: want ' ' fg normal, got 'h' dim normal
+        row 15 col 11: want ' ' fg normal, got 'e' dim normal
+        row 15 col 12: want ' ' fg normal, got 'd' dim normal
+        row 15 col 49: want ' ' fg normal, got '│' border normal
+        row 15 col 54: want 'B' accent bold, got ' ' fg normal
+        row 15 col 55: want ' ' accent bold, got ' ' fg normal
+        row 15 col 56: want ' ' accent bold, got ' ' fg normal
+        row 15 col 57: want ' ' accent bold, got ' ' fg normal
+        row 15 col 59: want 'T' fg normal, got ' ' fg normal
+        row 15 col 60: want 'U' fg normal, got ' ' fg normal
+        row 15 col 61: want 'I' fg normal, got ' ' fg normal
+        row 15 col 63: want 'r' fg normal, got ' ' fg normal
+        row 15 col 64: want 'e' fg normal, got ' ' fg normal
+        row 15 col 65: want 's' fg normal, got ' ' fg normal
+        row 15 col 66: want 't' fg normal, got ' ' fg normal
+        row 15 col 67: want 'a' fg normal, got ' ' fg normal
+        row 15 col 68: want 'r' fg normal, got ' ' fg normal
+        row 15 col 69: want 't' fg normal, got ' ' fg normal
+        row 15 col 86: want 'd' fg normal, got ' ' fg normal
+        row 15 col 87: want 'e' fg normal, got ' ' fg normal
+        row 15 col 88: want 'v' fg normal, got ' ' fg normal
+        row 15 col 97: want '1' fg normal, got ' ' fg normal
+        row 15 col 98: want '/' fg normal, got ' ' fg normal
+        row 15 col 99: want '1' fg normal, got ' ' fg normal
+        row 15 col 105: want '✓' done normal, got ' ' fg normal
+        row 15 col 107: want 'd' done normal, got ' ' fg normal
+        row 15 col 108: want 'o' done normal, got ' ' fg normal
+        row 15 col 109: want 'n' done normal, got ' ' fg normal
+        row 15 col 110: want 'e' done normal, got ' ' fg normal
+        row 16 col 2: want ' ' fg normal, got '│' border normal
+        row 16 col 4: want ' ' fg normal, got '(' fg normal
+        row 16 col 5: want ' ' fg normal, got 'n' fg normal
+        row 16 col 6: want ' ' fg normal, got 'o' fg normal
+        row 16 col 8: want ' ' fg normal, got 't' fg normal
+        row 16 col 9: want ' ' fg normal, got 'a' fg normal
+        row 16 col 10: want ' ' fg normal, got 's' fg normal
+        row 16 col 11: want ' ' fg normal, got 'k' fg normal
+        row 16 col 12: want ' ' fg normal, got 's' fg normal
+        row 16 col 13: want ' ' fg normal, got ')' fg normal
+        row 16 col 49: want ' ' fg normal, got '│' border normal
+        row 16 col 54: want 'C' accent bold, got ' ' fg normal
+        row 16 col 55: want ' ' accent bold, got ' ' fg normal
+        row 16 col 56: want ' ' accent bold, got ' ' fg normal
+        row 16 col 57: want ' ' accent bold, got ' ' fg normal
+        row 16 col 59: want 'A' fg normal, got ' ' fg normal
+        row 16 col 60: want 'g' fg normal, got ' ' fg normal
+        row 16 col 61: want 'e' fg normal, got ' ' fg normal
+        row 16 col 62: want 'n' fg normal, got ' ' fg normal
+        row 16 col 63: want 't' fg normal, got ' ' fg normal
+        row 16 col 64: want 's' fg normal, got ' ' fg normal
+        row 16 col 66: want 'g' fg normal, got ' ' fg normal
+        row 16 col 67: want 'r' fg normal, got ' ' fg normal
+        row 16 col 68: want 'a' fg normal, got ' ' fg normal
+        row 16 col 69: want 'p' fg normal, got ' ' fg normal
+        row 16 col 70: want 'h' fg normal, got ' ' fg normal
+        row 16 col 72: want 'c' fg normal, got ' ' fg normal
+        row 16 col 73: want 'o' fg normal, got ' ' fg normal
+        row 16 col 74: want 'l' fg normal, got ' ' fg normal
+        row 16 col 75: want 'u' fg normal, got ' ' fg normal
+        row 16 col 76: want 'm' fg normal, got ' ' fg normal
+        row 16 col 77: want 'n' fg normal, got ' ' fg normal
+        row 16 col 78: want 's' fg normal, got ' ' fg normal
+        row 16 col 86: want 'd' fg normal, got ' ' fg normal
+        row 16 col 87: want 'e' fg normal, got ' ' fg normal
+        row 16 col 88: want 'v' fg normal, got ' ' fg normal
+        row 16 col 97: want '1' fg normal, got ' ' fg normal
+        row 16 col 98: want '/' fg normal, got ' ' fg normal
+        row 16 col 99: want '1' fg normal, got ' ' fg normal
+        row 16 col 105: want '✓' done normal, got ' ' fg normal
+        row 16 col 107: want 'd' done normal, got ' ' fg normal
+        row 16 col 108: want 'o' done normal, got ' ' fg normal
+        row 16 col 109: want 'n' done normal, got ' ' fg normal
+        row 16 col 110: want 'e' done normal, got ' ' fg normal
+        row 17 col 2: want ' ' fg normal, got '╰' border normal
+        row 17 col 3: want ' ' fg normal, got '─' border normal
+        row 17 col 4: want ' ' fg normal, got '─' border normal
+        row 17 col 5: want ' ' fg normal, got '─' border normal
+        row 17 col 6: want ' ' fg normal, got '─' border normal
+        row 17 col 7: want ' ' fg normal, got '─' border normal
+        row 17 col 8: want ' ' fg normal, got '─' border normal
+        row 17 col 9: want ' ' fg normal, got '─' border normal
+        row 17 col 10: want ' ' fg normal, got '─' border normal
+        row 17 col 11: want ' ' fg normal, got '─' border normal
+        row 17 col 12: want ' ' fg normal, got '─' border normal
+        row 17 col 13: want ' ' fg normal, got '─' border normal
+        row 17 col 14: want ' ' fg normal, got '─' border normal
+        row 17 col 15: want ' ' fg normal, got '─' border normal
+        row 17 col 16: want ' ' fg normal, got '─' border normal
+        row 17 col 17: want ' ' fg normal, got '─' border normal
+        row 17 col 18: want ' ' fg normal, got '─' border normal
+        row 17 col 19: want ' ' fg normal, got '─' border normal
+        row 17 col 20: want ' ' fg normal, got '─' border normal
+        row 17 col 21: want ' ' fg normal, got '─' border normal
+        row 17 col 22: want ' ' fg normal, got '─' border normal
+        row 17 col 23: want ' ' fg normal, got '─' border normal
+        row 17 col 24: want ' ' fg normal, got '─' border normal
+        row 17 col 25: want ' ' fg normal, got '─' border normal
+        row 17 col 26: want ' ' fg normal, got '─' border normal
+        row 17 col 27: want ' ' fg normal, got '─' border normal
+        row 17 col 28: want ' ' fg normal, got '─' border normal
+        row 17 col 29: want ' ' fg normal, got '─' border normal
+        row 17 col 30: want ' ' fg normal, got '─' border normal
+        row 17 col 31: want ' ' fg normal, got '─' border normal
+        row 17 col 32: want ' ' fg normal, got '─' border normal
+        row 17 col 33: want ' ' fg normal, got '─' border normal
+        row 17 col 34: want ' ' fg normal, got '─' border normal
+        row 17 col 35: want ' ' fg normal, got '─' border normal
+        row 17 col 36: want ' ' fg normal, got '─' border normal
+        row 17 col 37: want ' ' fg normal, got '─' border normal
+        row 17 col 38: want ' ' fg normal, got '─' border normal
+        row 17 col 39: want ' ' fg normal, got '─' border normal
+        row 17 col 40: want ' ' fg normal, got '─' border normal
+        row 17 col 41: want ' ' fg normal, got '─' border normal
+        row 17 col 42: want ' ' fg normal, got '─' border normal
+        row 17 col 43: want ' ' fg normal, got '─' border normal
+        row 17 col 44: want ' ' fg normal, got '─' border normal
+        row 17 col 45: want ' ' fg normal, got '─' border normal
+        row 17 col 46: want ' ' fg normal, got '─' border normal
+        row 17 col 47: want ' ' fg normal, got '─' border normal
+        row 17 col 48: want ' ' fg normal, got '─' border normal
+        row 17 col 49: want ' ' fg normal, got '╯' border normal
+        row 18 col 54: want 'T' accent bold, got ' ' fg normal
+        row 18 col 55: want 'A' accent bold, got ' ' fg normal
+        row 18 col 56: want 'S' accent bold, got ' ' fg normal
+        row 18 col 57: want 'K' accent bold, got ' ' fg normal
+        row 18 col 58: want 'S' accent bold, got ' ' fg normal
+        row 19 col 2: want ' ' fg normal, got '╭' border normal
+        row 19 col 3: want ' ' fg normal, got '─' border normal
+        row 19 col 4: want ' ' fg normal, got '─' border normal
+        row 19 col 5: want ' ' fg normal, got '─' border normal
+        row 19 col 6: want ' ' fg normal, got '─' border normal
+        row 19 col 7: want ' ' fg normal, got '─' border normal
+        row 19 col 8: want ' ' fg normal, got '─' border normal
+        row 19 col 9: want ' ' fg normal, got '─' border normal
+        row 19 col 10: want ' ' fg normal, got '─' border normal
+        row 19 col 11: want ' ' fg normal, got '─' border normal
+        row 19 col 12: want ' ' fg normal, got '─' border normal
+        row 19 col 13: want ' ' fg normal, got '─' border normal
+        row 19 col 14: want ' ' fg normal, got '─' border normal
+        row 19 col 15: want ' ' fg normal, got '─' border normal
+        row 19 col 16: want ' ' fg normal, got '─' border normal
+        row 19 col 17: want ' ' fg normal, got '─' border normal
+        row 19 col 18: want ' ' fg normal, got '─' border normal
+        row 19 col 19: want ' ' fg normal, got '─' border normal
+        row 19 col 20: want ' ' fg normal, got '─' border normal
+        row 19 col 21: want ' ' fg normal, got '─' border normal
+        row 19 col 22: want ' ' fg normal, got '─' border normal
+        row 19 col 23: want ' ' fg normal, got '─' border normal
+        row 19 col 24: want ' ' fg normal, got '─' border normal
+        row 19 col 25: want ' ' fg normal, got '─' border normal
+        row 19 col 26: want ' ' fg normal, got '─' border normal
+        row 19 col 27: want ' ' fg normal, got '─' border normal
+        row 19 col 28: want ' ' fg normal, got '─' border normal
+        row 19 col 29: want ' ' fg normal, got '─' border normal
+        row 19 col 30: want ' ' fg normal, got '─' border normal
+        row 19 col 31: want ' ' fg normal, got '─' border normal
+        row 19 col 32: want ' ' fg normal, got '─' border normal
+        row 19 col 33: want ' ' fg normal, got '─' border normal
+        row 19 col 34: want ' ' fg normal, got '─' border normal
+        row 19 col 35: want ' ' fg normal, got '─' border normal
+        row 19 col 36: want ' ' fg normal, got '─' border normal
+        row 19 col 37: want ' ' fg normal, got '─' border normal
+        row 19 col 38: want ' ' fg normal, got '─' border normal
+        row 19 col 39: want ' ' fg normal, got '─' border normal
+        row 19 col 40: want ' ' fg normal, got '─' border normal
+        row 19 col 41: want ' ' fg normal, got '─' border normal
+        row 19 col 42: want ' ' fg normal, got '─' border normal
+        row 19 col 43: want ' ' fg normal, got '─' border normal
+        row 19 col 44: want ' ' fg normal, got '─' border normal
+        row 19 col 45: want ' ' fg normal, got '─' border normal
+        row 19 col 46: want ' ' fg normal, got '─' border normal
+        row 19 col 47: want ' ' fg normal, got '─' border normal
+        row 19 col 48: want ' ' fg normal, got '─' border normal
+        row 19 col 49: want ' ' fg normal, got '╮' border normal
+        row 19 col 54: want 'A' dim normal, got ' ' fg normal
+        row 19 col 58: want '2' fg normal, got ' ' fg normal
+        row 19 col 59: want '-' fg normal, got ' ' fg normal
+        row 19 col 60: want 's' fg normal, got ' ' fg normal
+        row 19 col 61: want 't' fg normal, got ' ' fg normal
+        row 19 col 62: want 'a' fg normal, got ' ' fg normal
+        row 19 col 63: want 'l' fg normal, got ' ' fg normal
+        row 19 col 64: want 'e' fg normal, got ' ' fg normal
+        row 19 col 65: want '-' fg normal, got ' ' fg normal
+        row 19 col 66: want 'c' fg normal, got ' ' fg normal
+        row 19 col 67: want 'o' fg normal, got ' ' fg normal
+        row 19 col 68: want 'o' fg normal, got ' ' fg normal
+        row 19 col 69: want 'r' fg normal, got ' ' fg normal
+        row 19 col 70: want 'd' fg normal, got ' ' fg normal
+        row 19 col 71: want 'i' fg normal, got ' ' fg normal
+        row 19 col 72: want 'n' fg normal, got ' ' fg normal
+        row 19 col 73: want 'a' fg normal, got ' ' fg normal
+        row 19 col 74: want 't' fg normal, got ' ' fg normal
+        row 19 col 75: want 'o' fg normal, got ' ' fg normal
+        row 19 col 76: want 'r' fg normal, got ' ' fg normal
+        row 19 col 77: want '-' fg normal, got ' ' fg normal
+        row 19 col 78: want 's' fg normal, got ' ' fg normal
+        row 19 col 79: want 't' fg normal, got ' ' fg normal
+        row 19 col 80: want 'a' fg normal, got ' ' fg normal
+        row 19 col 81: want 'r' fg normal, got ' ' fg normal
+        row 19 col 82: want 't' fg normal, got ' ' fg normal
+        row 19 col 83: want 'u' fg normal, got ' ' fg normal
+        row 19 col 84: want 'p' fg normal, got ' ' fg normal
+        row 19 col 88: want 'm' dim normal, got ' ' fg normal
+        row 19 col 89: want 'e' dim normal, got ' ' fg normal
+        row 19 col 90: want 'r' dim normal, got ' ' fg normal
+        row 19 col 91: want 'g' dim normal, got ' ' fg normal
+        row 19 col 92: want 'e' dim normal, got ' ' fg normal
+        row 19 col 93: want ' ' dim normal, got ' ' fg normal
+        row 19 col 94: want '0' dim normal, got ' ' fg normal
+        row 19 col 95: want 'e' dim normal, got ' ' fg normal
+        row 19 col 96: want '0' dim normal, got ' ' fg normal
+        row 19 col 97: want '7' dim normal, got ' ' fg normal
+        row 19 col 98: want '9' dim normal, got ' ' fg normal
+        row 19 col 99: want '2' dim normal, got ' ' fg normal
+        row 19 col 100: want '7' dim normal, got ' ' fg normal
+        row 19 col 101: want '2' dim normal, got ' ' fg normal
+        row 20 col 2: want ' ' fg normal, got '│' border normal
+        row 20 col 4: want ' ' fg normal, got '▶' accent bold
+        row 20 col 5: want ' ' fg normal, got ' ' accent bold
+        row 20 col 6: want ' ' fg normal, got 'h' accent bold
+        row 20 col 7: want ' ' fg normal, got 'i' accent bold
+        row 20 col 8: want ' ' fg normal, got 'v' accent bold
+        row 20 col 9: want ' ' fg normal, got 'e' accent bold
+        row 20 col 10: want ' ' fg normal, got ' ' accent bold
+        row 20 col 11: want ' ' fg normal, got '·' accent bold
+        row 20 col 12: want ' ' fg normal, got ' ' accent bold
+        row 20 col 13: want ' ' fg normal, got 'T' accent bold
+        row 20 col 14: want ' ' fg normal, got 'U' accent bold
+        row 20 col 15: want ' ' fg normal, got 'I' accent bold
+        row 20 col 16: want ' ' fg normal, got ' ' accent bold
+        row 20 col 17: want ' ' fg normal, got 'r' accent bold
+        row 20 col 18: want ' ' fg normal, got 'e' accent bold
+        row 20 col 19: want ' ' fg normal, got 's' accent bold
+        row 20 col 20: want ' ' fg normal, got 't' accent bold
+        row 20 col 21: want ' ' fg normal, got 'a' accent bold
+        row 20 col 22: want ' ' fg normal, got 'r' accent bold
+        row 20 col 23: want ' ' fg normal, got 't' accent bold
+        row 20 col 24: want ' ' fg normal, got ' ' accent bold
+        row 20 col 25: want ' ' fg normal, got 'a' accent bold
+        row 20 col 26: want ' ' fg normal, got 'n' accent bold
+        row 20 col 27: want ' ' fg normal, got 'd' accent bold
+        row 20 col 28: want ' ' fg normal, got ' ' accent bold
+        row 20 col 29: want ' ' fg normal, got 's' accent bold
+        row 20 col 30: want ' ' fg normal, got 't' accent bold
+        row 20 col 31: want ' ' fg normal, got 'a' accent bold
+        row 20 col 32: want ' ' fg normal, got 'l' accent bold
+        row 20 col 33: want ' ' fg normal, got 'e' accent bold
+        row 20 col 34: want ' ' fg normal, got ' ' accent bold
+        row 20 col 35: want ' ' fg normal, got 'c' accent bold
+        row 20 col 36: want ' ' fg normal, got 'o' accent bold
+        row 20 col 37: want ' ' fg normal, got 'o' accent bold
+        row 20 col 38: want ' ' fg normal, got 'r' accent bold
+        row 20 col 39: want ' ' fg normal, got 'd' accent bold
+        row 20 col 40: want ' ' fg normal, got 'i' accent bold
+        row 20 col 41: want ' ' fg normal, got 'n' accent bold
+        row 20 col 42: want ' ' fg normal, got 'a' accent bold
+        row 20 col 43: want ' ' fg normal, got 't' accent bold
+        row 20 col 44: want ' ' fg normal, got 'o' accent bold
+        row 20 col 45: want ' ' fg normal, got 'r' accent bold
+        row 20 col 49: want ' ' fg normal, got '│' border normal
+        row 20 col 54: want 'B' dim normal, got ' ' fg normal
+        row 20 col 58: want '3' fg normal, got ' ' fg normal
+        row 20 col 59: want '-' fg normal, got ' ' fg normal
+        row 20 col 60: want 't' fg normal, got ' ' fg normal
+        row 20 col 61: want 'u' fg normal, got ' ' fg normal
+        row 20 col 62: want 'i' fg normal, got ' ' fg normal
+        row 20 col 63: want '-' fg normal, got ' ' fg normal
+        row 20 col 64: want 'r' fg normal, got ' ' fg normal
+        row 20 col 65: want 'e' fg normal, got ' ' fg normal
+        row 20 col 66: want 's' fg normal, got ' ' fg normal
+        row 20 col 67: want 't' fg normal, got ' ' fg normal
+        row 20 col 68: want 'a' fg normal, got ' ' fg normal
+        row 20 col 69: want 'r' fg normal, got ' ' fg normal
+        row 20 col 70: want 't' fg normal, got ' ' fg normal
+        row 20 col 88: want 'm' dim normal, got ' ' fg normal
+        row 20 col 89: want 'e' dim normal, got ' ' fg normal
+        row 20 col 90: want 'r' dim normal, got ' ' fg normal
+        row 20 col 91: want 'g' dim normal, got ' ' fg normal
+        row 20 col 92: want 'e' dim normal, got ' ' fg normal
+        row 20 col 93: want ' ' dim normal, got ' ' fg normal
+        row 20 col 94: want '3' dim normal, got ' ' fg normal
+        row 20 col 95: want 'c' dim normal, got ' ' fg normal
+        row 20 col 96: want 'c' dim normal, got ' ' fg normal
+        row 20 col 97: want 'd' dim normal, got ' ' fg normal
+        row 20 col 98: want '9' dim normal, got ' ' fg normal
+        row 20 col 99: want '3' dim normal, got ' ' fg normal
+        row 20 col 100: want 'f' dim normal, got ' ' fg normal
+        row 20 col 101: want 'b' dim normal, got ' ' fg normal
+        row 21 col 2: want ' ' fg normal, got '│' border normal
+        row 21 col 4: want ' ' fg normal, got 's' accent bold
+        row 21 col 5: want ' ' fg normal, got 't' accent bold
+        row 21 col 6: want ' ' fg normal, got 'a' accent bold
+        row 21 col 7: want ' ' fg normal, got 'r' accent bold
+        row 21 col 8: want ' ' fg normal, got 't' accent bold
+        row 21 col 9: want ' ' fg normal, got 'u' accent bold
+        row 21 col 10: want ' ' fg normal, got 'p' accent bold
+        row 21 col 11: want ' ' fg normal, got ' ' accent bold
+        row 21 col 12: want ' ' fg normal, got '·' accent bold
+        row 21 col 13: want ' ' fg normal, got ' ' accent bold
+        row 21 col 14: want ' ' fg normal, got 'd' accent bold
+        row 21 col 15: want ' ' fg normal, got 'o' accent bold
+        row 21 col 16: want ' ' fg normal, got 'n' accent bold
+        row 21 col 17: want ' ' fg normal, got 'e' accent bold
+        row 21 col 18: want ' ' fg normal, got ' ' accent bold
+        row 21 col 19: want ' ' fg normal, got '·' accent bold
+        row 21 col 20: want ' ' fg normal, got ' ' accent bold
+        row 21 col 21: want ' ' fg normal, got 'd' accent bold
+        row 21 col 22: want ' ' fg normal, got 'o' accent bold
+        row 21 col 23: want ' ' fg normal, got 'n' accent bold
+        row 21 col 24: want ' ' fg normal, got 'e' accent bold
+        row 21 col 25: want ' ' fg normal, got ' ' accent bold
+        row 21 col 26: want ' ' fg normal, got 'w' accent bold
+        row 21 col 27: want ' ' fg normal, got 'h' accent bold
+        row 21 col 28: want ' ' fg normal, got 'e' accent bold
+        row 21 col 29: want ' ' fg normal, got 'n' accent bold
+        row 21 col 30: want ' ' fg normal, got ':' accent bold
+        row 21 col 31: want ' ' fg normal, got ' ' accent bold
+        row 21 col 32: want ' ' fg normal, got '—' accent bold
+        row 21 col 49: want ' ' fg normal, got '│' border normal
+        row 21 col 54: want 'C' dim normal, got ' ' fg normal
+        row 21 col 58: want '4' fg normal, got ' ' fg normal
+        row 21 col 59: want '-' fg normal, got ' ' fg normal
+        row 21 col 60: want 'a' fg normal, got ' ' fg normal
+        row 21 col 61: want 'g' fg normal, got ' ' fg normal
+        row 21 col 62: want 'e' fg normal, got ' ' fg normal
+        row 21 col 63: want 'n' fg normal, got ' ' fg normal
+        row 21 col 64: want 't' fg normal, got ' ' fg normal
+        row 21 col 65: want 's' fg normal, got ' ' fg normal
+        row 21 col 66: want '-' fg normal, got ' ' fg normal
+        row 21 col 67: want 'e' fg normal, got ' ' fg normal
+        row 21 col 68: want 'q' fg normal, got ' ' fg normal
+        row 21 col 69: want 'u' fg normal, got ' ' fg normal
+        row 21 col 70: want 'a' fg normal, got ' ' fg normal
+        row 21 col 71: want 'l' fg normal, got ' ' fg normal
+        row 21 col 72: want '-' fg normal, got ' ' fg normal
+        row 21 col 73: want 'c' fg normal, got ' ' fg normal
+        row 21 col 74: want 'o' fg normal, got ' ' fg normal
+        row 21 col 75: want 'l' fg normal, got ' ' fg normal
+        row 21 col 76: want 'u' fg normal, got ' ' fg normal
+        row 21 col 77: want 'm' fg normal, got ' ' fg normal
+        row 21 col 78: want 'n' fg normal, got ' ' fg normal
+        row 21 col 79: want 's' fg normal, got ' ' fg normal
+        row 21 col 88: want 'm' dim normal, got ' ' fg normal
+        row 21 col 89: want 'e' dim normal, got ' ' fg normal
+        row 21 col 90: want 'r' dim normal, got ' ' fg normal
+        row 21 col 91: want 'g' dim normal, got ' ' fg normal
+        row 21 col 92: want 'e' dim normal, got ' ' fg normal
+        row 21 col 93: want ' ' dim normal, got ' ' fg normal
+        row 21 col 94: want 'e' dim normal, got ' ' fg normal
+        row 21 col 95: want 'd' dim normal, got ' ' fg normal
+        row 21 col 96: want 'e' dim normal, got ' ' fg normal
+        row 21 col 97: want '9' dim normal, got ' ' fg normal
+        row 21 col 98: want '4' dim normal, got ' ' fg normal
+        row 21 col 99: want 'f' dim normal, got ' ' fg normal
+        row 21 col 100: want '3' dim normal, got ' ' fg normal
+        row 21 col 101: want 'e' dim normal, got ' ' fg normal
+        row 22 col 2: want ' ' fg normal, got '│' border normal
+        row 22 col 4: want ' ' fg normal, got 'w' accent bold
+        row 22 col 5: want ' ' fg normal, got 'a' accent bold
+        row 22 col 6: want ' ' fg normal, got 'v' accent bold
+        row 22 col 7: want ' ' fg normal, got 'e' accent bold
+        row 22 col 8: want ' ' fg normal, got ' ' accent bold
+        row 22 col 9: want ' ' fg normal, got 'A' accent bold
+        row 22 col 10: want ' ' fg normal, got ' ' accent bold
+        row 22 col 11: want ' ' fg normal, got '·' accent bold
+        row 22 col 12: want ' ' fg normal, got ' ' accent bold
+        row 22 col 13: want ' ' fg normal, got 'S' accent bold
+        row 22 col 14: want ' ' fg normal, got 't' accent bold
+        row 22 col 15: want ' ' fg normal, got 'a' accent bold
+        row 22 col 16: want ' ' fg normal, got 'l' accent bold
+        row 22 col 17: want ' ' fg normal, got 'e' accent bold
+        row 22 col 18: want ' ' fg normal, got ' ' accent bold
+        row 22 col 19: want ' ' fg normal, got 'c' accent bold
+        row 22 col 20: want ' ' fg normal, got 'o' accent bold
+        row 22 col 21: want ' ' fg normal, got 'o' accent bold
+        row 22 col 22: want ' ' fg normal, got 'r' accent bold
+        row 22 col 23: want ' ' fg normal, got 'd' accent bold
+        row 22 col 24: want ' ' fg normal, got 'i' accent bold
+        row 22 col 25: want ' ' fg normal, got 'n' accent bold
+        row 22 col 26: want ' ' fg normal, got 'a' accent bold
+        row 22 col 27: want ' ' fg normal, got 't' accent bold
+        row 22 col 28: want ' ' fg normal, got 'o' accent bold
+        row 22 col 29: want ' ' fg normal, got 'r' accent bold
+        row 22 col 30: want ' ' fg normal, got ' ' accent bold
+        row 22 col 31: want ' ' fg normal, got 's' accent bold
+        row 22 col 32: want ' ' fg normal, got 't' accent bold
+        row 22 col 33: want ' ' fg normal, got 'a' accent bold
+        row 22 col 34: want ' ' fg normal, got 'r' accent bold
+        row 22 col 35: want ' ' fg normal, got 't' accent bold
+        row 22 col 36: want ' ' fg normal, got 'u' accent bold
+        row 22 col 37: want ' ' fg normal, got 'p' accent bold
+        row 22 col 38: want ' ' fg normal, got ' ' accent bold
+        row 22 col 39: want ' ' fg normal, got '·' accent bold
+        row 22 col 40: want ' ' fg normal, got ' ' accent bold
+        row 22 col 41: want ' ' fg normal, got 'd' accent bold
+        row 22 col 42: want ' ' fg normal, got 'o' accent bold
+        row 22 col 43: want ' ' fg normal, got 'n' accent bold
+        row 22 col 44: want ' ' fg normal, got 'e' accent bold
+        row 22 col 49: want ' ' fg normal, got '│' border normal
+        row 23 col 2: want ' ' fg normal, got '│' border normal
+        row 23 col 4: want ' ' fg normal, got 'd' done normal
+        row 23 col 5: want ' ' fg normal, got 'i' done normal
+        row 23 col 6: want ' ' fg normal, got 's' done normal
+        row 23 col 7: want ' ' fg normal, got 'p' done normal
+        row 23 col 8: want ' ' fg normal, got 'a' done normal
+        row 23 col 9: want ' ' fg normal, got 't' done normal
+        row 23 col 10: want ' ' fg normal, got 'c' done normal
+        row 23 col 11: want ' ' fg normal, got 'h' done normal
+        row 23 col 12: want ' ' fg normal, got ' ' done normal
+        row 23 col 13: want ' ' fg normal, got '✓' done normal
+        row 23 col 14: want ' ' fg normal, got ' ' done normal
+        row 23 col 15: want ' ' fg normal, got '─' done normal
+        row 23 col 16: want ' ' fg normal, got '▶' done normal
+        row 23 col 17: want ' ' fg normal, got ' ' done normal
+        row 23 col 18: want ' ' fg normal, got 't' done normal
+        row 23 col 19: want ' ' fg normal, got 'a' done normal
+        row 23 col 20: want ' ' fg normal, got 's' done normal
+        row 23 col 21: want ' ' fg normal, got 'k' done normal
+        row 23 col 22: want ' ' fg normal, got 's' done normal
+        row 23 col 23: want ' ' fg normal, got ' ' done normal
+        row 23 col 24: want ' ' fg normal, got '1' done normal
+        row 23 col 25: want ' ' fg normal, got '/' done normal
+        row 23 col 26: want ' ' fg normal, got '1' done normal
+        row 23 col 27: want ' ' fg normal, got ' ' done normal
+        row 23 col 28: want ' ' fg normal, got '✓' done normal
+        row 23 col 29: want ' ' fg normal, got ' ' done normal
+        row 23 col 30: want ' ' fg normal, got '─' done normal
+        row 23 col 31: want ' ' fg normal, got '▶' done normal
+        row 23 col 32: want ' ' fg normal, got ' ' done normal
+        row 23 col 33: want ' ' fg normal, got '◎' accent bold
+        row 23 col 34: want ' ' fg normal, got ' ' accent bold
+        row 23 col 35: want ' ' fg normal, got 'l' accent bold
+        row 23 col 36: want ' ' fg normal, got 'a' accent bold
+        row 23 col 37: want ' ' fg normal, got 'n' accent bold
+        row 23 col 38: want ' ' fg normal, got 'd' accent bold
+        row 23 col 39: want ' ' fg normal, got 'e' accent bold
+        row 23 col 40: want ' ' fg normal, got 'd' accent bold
+        row 23 col 41: want ' ' fg normal, got ' ' accent bold
+        row 23 col 42: want ' ' fg normal, got 'o' accent bold
+        row 23 col 43: want ' ' fg normal, got 'n' accent bold
+        row 23 col 44: want ' ' fg normal, got ' ' accent bold
+        row 23 col 45: want ' ' fg normal, got 'd' accent bold
+        row 23 col 46: want ' ' fg normal, got 'e' accent bold
+        row 23 col 47: want ' ' fg normal, got 'v' accent bold
+        row 23 col 49: want ' ' fg normal, got '│' border normal
+        row 23 col 54: want 'N' accent bold, got ' ' fg normal
+        row 23 col 55: want 'E' accent bold, got ' ' fg normal
+        row 23 col 56: want 'E' accent bold, got ' ' fg normal
+        row 23 col 57: want 'D' accent bold, got ' ' fg normal
+        row 23 col 58: want 'S' accent bold, got ' ' fg normal
+        row 23 col 59: want ' ' accent bold, got ' ' fg normal
+        row 23 col 60: want 'Y' accent bold, got ' ' fg normal
+        row 23 col 61: want 'O' accent bold, got ' ' fg normal
+        row 23 col 62: want 'U' accent bold, got ' ' fg normal
+        row 24 col 2: want ' ' fg normal, got '│' border normal
+        row 24 col 4: want ' ' fg normal, got '─' done normal
+        row 24 col 5: want ' ' fg normal, got '▶' done normal
+        row 24 col 6: want ' ' fg normal, got ' ' done normal
+        row 24 col 7: want ' ' fg normal, got 'P' dim normal
+        row 24 col 8: want ' ' fg normal, got 'R' dim normal
+        row 24 col 9: want ' ' fg normal, got ' ' dim normal
+        row 24 col 10: want ' ' fg normal, got 'o' dim normal
+        row 24 col 11: want ' ' fg normal, got 'p' dim normal
+        row 24 col 12: want ' ' fg normal, got 'e' dim normal
+        row 24 col 13: want ' ' fg normal, got 'n' dim normal
+        row 24 col 14: want ' ' fg normal, got ' ' done normal
+        row 24 col 15: want ' ' fg normal, got '─' done normal
+        row 24 col 16: want ' ' fg normal, got '▶' done normal
+        row 24 col 17: want ' ' fg normal, got ' ' done normal
+        row 24 col 18: want ' ' fg normal, got 'm' dim normal
+        row 24 col 19: want ' ' fg normal, got 'e' dim normal
+        row 24 col 20: want ' ' fg normal, got 'r' dim normal
+        row 24 col 21: want ' ' fg normal, got 'g' dim normal
+        row 24 col 22: want ' ' fg normal, got 'e' dim normal
+        row 24 col 23: want ' ' fg normal, got 'd' dim normal
+        row 24 col 24: want ' ' fg normal, got ' ' dim normal
+        row 24 col 25: want ' ' fg normal, got 't' dim normal
+        row 24 col 26: want ' ' fg normal, got 'o' dim normal
+        row 24 col 27: want ' ' fg normal, got ' ' dim normal
+        row 24 col 28: want ' ' fg normal, got 'm' dim normal
+        row 24 col 29: want ' ' fg normal, got 'a' dim normal
+        row 24 col 30: want ' ' fg normal, got 'i' dim normal
+        row 24 col 31: want ' ' fg normal, got 'n' dim normal
+        row 24 col 32: want ' ' fg normal, got ' ' done normal
+        row 24 col 33: want ' ' fg normal, got '─' done normal
+        row 24 col 34: want ' ' fg normal, got '▶' done normal
+        row 24 col 35: want ' ' fg normal, got ' ' done normal
+        row 24 col 36: want ' ' fg normal, got 'r' dim normal
+        row 24 col 37: want ' ' fg normal, got 'e' dim normal
+        row 24 col 38: want ' ' fg normal, got 'l' dim normal
+        row 24 col 39: want ' ' fg normal, got 'e' dim normal
+        row 24 col 40: want ' ' fg normal, got 'a' dim normal
+        row 24 col 41: want ' ' fg normal, got 's' dim normal
+        row 24 col 42: want ' ' fg normal, got 'e' dim normal
+        row 24 col 49: want ' ' fg normal, got '│' border normal
+        row 24 col 54: want 'n' dim normal, got ' ' fg normal
+        row 24 col 55: want 'o' dim normal, got ' ' fg normal
+        row 24 col 56: want 't' dim normal, got ' ' fg normal
+        row 24 col 57: want 'h' dim normal, got ' ' fg normal
+        row 24 col 58: want 'i' dim normal, got ' ' fg normal
+        row 24 col 59: want 'n' dim normal, got ' ' fg normal
+        row 24 col 60: want 'g' dim normal, got ' ' fg normal
+        row 25 col 2: want ' ' fg normal, got '│' border normal
+        row 25 col 4: want ' ' fg normal, got 'p' dim normal
+        row 25 col 5: want ' ' fg normal, got 'u' dim normal
+        row 25 col 6: want ' ' fg normal, got 'b' dim normal
+        row 25 col 7: want ' ' fg normal, got 'l' dim normal
+        row 25 col 8: want ' ' fg normal, got 'i' dim normal
+        row 25 col 9: want ' ' fg normal, got 's' dim normal
+        row 25 col 10: want ' ' fg normal, got 'h' dim normal
+        row 25 col 11: want ' ' fg normal, got 'e' dim normal
+        row 25 col 12: want ' ' fg normal, got 'd' dim normal
+        row 25 col 49: want ' ' fg normal, got '│' border normal
+        row 26 col 2: want ' ' fg normal, got '│' border normal
+        row 26 col 4: want ' ' fg normal, got '✓' fg normal
+        row 26 col 6: want ' ' fg normal, got '2' fg normal
+        row 26 col 7: want ' ' fg normal, got '-' fg normal
+        row 26 col 8: want ' ' fg normal, got 's' fg normal
+        row 26 col 9: want ' ' fg normal, got 't' fg normal
+        row 26 col 10: want ' ' fg normal, got 'a' fg normal
+        row 26 col 11: want ' ' fg normal, got 'l' fg normal
+        row 26 col 12: want ' ' fg normal, got 'e' fg normal
+        row 26 col 13: want ' ' fg normal, got '-' fg normal
+        row 26 col 14: want ' ' fg normal, got 'c' fg normal
+        row 26 col 15: want ' ' fg normal, got 'o' fg normal
+        row 26 col 16: want ' ' fg normal, got 'o' fg normal
+        row 26 col 17: want ' ' fg normal, got 'r' fg normal
+        row 26 col 18: want ' ' fg normal, got 'd' fg normal
+        row 26 col 19: want ' ' fg normal, got 'i' fg normal
+        row 26 col 20: want ' ' fg normal, got 'n' fg normal
+        row 26 col 21: want ' ' fg normal, got 'a' fg normal
+        row 26 col 22: want ' ' fg normal, got 't' fg normal
+        row 26 col 23: want ' ' fg normal, got 'o' fg normal
+        row 26 col 24: want ' ' fg normal, got 'r' fg normal
+        row 26 col 25: want ' ' fg normal, got '-' fg normal
+        row 26 col 26: want ' ' fg normal, got 's' fg normal
+        row 26 col 27: want ' ' fg normal, got 't' fg normal
+        row 26 col 28: want ' ' fg normal, got 'a' fg normal
+        row 26 col 29: want ' ' fg normal, got 'r' fg normal
+        row 26 col 30: want ' ' fg normal, got 't' fg normal
+        row 26 col 31: want ' ' fg normal, got 'u' fg normal
+        row 26 col 32: want ' ' fg normal, got 'p' fg normal
+        row 26 col 49: want ' ' fg normal, got '│' border normal
+        row 26 col 54: want 'o' accent bold, got ' ' fg normal
+        row 26 col 56: want 'g' fg normal, got ' ' fg normal
+        row 26 col 57: want 'o' fg normal, got ' ' fg normal
+        row 26 col 58: want 'a' fg normal, got ' ' fg normal
+        row 26 col 59: want 'l' fg normal, got ' ' fg normal
+        row 26 col 61: want 'd' fg normal, got ' ' fg normal
+        row 26 col 62: want 'e' fg normal, got ' ' fg normal
+        row 26 col 63: want 's' fg normal, got ' ' fg normal
+        row 26 col 64: want 'i' fg normal, got ' ' fg normal
+        row 26 col 65: want 'g' fg normal, got ' ' fg normal
+        row 26 col 66: want 'n' fg normal, got ' ' fg normal
+        row 26 col 70: want 't' accent bold, got ' ' fg normal
+        row 26 col 72: want 'o' fg normal, got ' ' fg normal
+        row 26 col 73: want 'p' fg normal, got ' ' fg normal
+        row 26 col 74: want 'e' fg normal, got ' ' fg normal
+        row 26 col 75: want 'n' fg normal, got ' ' fg normal
+        row 26 col 77: want 't' fg normal, got ' ' fg normal
+        row 26 col 78: want 'a' fg normal, got ' ' fg normal
+        row 26 col 79: want 's' fg normal, got ' ' fg normal
+        row 26 col 80: want 'k' fg normal, got ' ' fg normal
+        row 26 col 82: want 'i' fg normal, got ' ' fg normal
+        row 26 col 83: want 'n' fg normal, got ' ' fg normal
+        row 26 col 85: want 'T' fg normal, got ' ' fg normal
+        row 26 col 86: want 'a' fg normal, got ' ' fg normal
+        row 26 col 87: want 's' fg normal, got ' ' fg normal
+        row 26 col 88: want 'k' fg normal, got ' ' fg normal
+        row 26 col 89: want 's' fg normal, got ' ' fg normal
+        row 27 col 2: want ' ' fg normal, got '│' border normal
+        row 27 col 4: want ' ' fg normal, got 'w' accent bold
+        row 27 col 5: want ' ' fg normal, got 'a' accent bold
+        row 27 col 6: want ' ' fg normal, got 'v' accent bold
+        row 27 col 7: want ' ' fg normal, got 'e' accent bold
+        row 27 col 8: want ' ' fg normal, got ' ' accent bold
+        row 27 col 9: want ' ' fg normal, got 'B' accent bold
+        row 27 col 10: want ' ' fg normal, got ' ' accent bold
+        row 27 col 11: want ' ' fg normal, got '·' accent bold
+        row 27 col 12: want ' ' fg normal, got ' ' accent bold
+        row 27 col 13: want ' ' fg normal, got 'T' accent bold
+        row 27 col 14: want ' ' fg normal, got 'U' accent bold
+        row 27 col 15: want ' ' fg normal, got 'I' accent bold
+        row 27 col 16: want ' ' fg normal, got ' ' accent bold
+        row 27 col 17: want ' ' fg normal, got 'r' accent bold
+        row 27 col 18: want ' ' fg normal, got 'e' accent bold
+        row 27 col 19: want ' ' fg normal, got 's' accent bold
+        row 27 col 20: want ' ' fg normal, got 't' accent bold
+        row 27 col 21: want ' ' fg normal, got 'a' accent bold
+        row 27 col 22: want ' ' fg normal, got 'r' accent bold
+        row 27 col 23: want ' ' fg normal, got 't' accent bold
+        row 27 col 24: want ' ' fg normal, got ' ' accent bold
+        row 27 col 25: want ' ' fg normal, got '·' accent bold
+        row 27 col 26: want ' ' fg normal, got ' ' accent bold
+        row 27 col 27: want ' ' fg normal, got 'd' accent bold
+        row 27 col 28: want ' ' fg normal, got 'o' accent bold
+        row 27 col 29: want ' ' fg normal, got 'n' accent bold
+        row 27 col 30: want ' ' fg normal, got 'e' accent bold
+        row 27 col 49: want ' ' fg normal, got '│' border normal
+        row 28 col 2: want ' ' fg normal, got '│' border normal
+        row 28 col 4: want ' ' fg normal, got 'd' done normal
+        row 28 col 5: want ' ' fg normal, got 'i' done normal
+        row 28 col 6: want ' ' fg normal, got 's' done normal
+        row 28 col 7: want ' ' fg normal, got 'p' done normal
+        row 28 col 8: want ' ' fg normal, got 'a' done normal
+        row 28 col 9: want ' ' fg normal, got 't' done normal
+        row 28 col 10: want ' ' fg normal, got 'c' done normal
+        row 28 col 11: want ' ' fg normal, got 'h' done normal
+        row 28 col 12: want ' ' fg normal, got ' ' done normal
+        row 28 col 13: want ' ' fg normal, got '✓' done normal
+        row 28 col 14: want ' ' fg normal, got ' ' done normal
+        row 28 col 15: want ' ' fg normal, got '─' done normal
+        row 28 col 16: want ' ' fg normal, got '▶' done normal
+        row 28 col 17: want ' ' fg normal, got ' ' done normal
+        row 28 col 18: want ' ' fg normal, got 't' done normal
+        row 28 col 19: want ' ' fg normal, got 'a' done normal
+        row 28 col 20: want ' ' fg normal, got 's' done normal
+        row 28 col 21: want ' ' fg normal, got 'k' done normal
+        row 28 col 22: want ' ' fg normal, got 's' done normal
+        row 28 col 23: want ' ' fg normal, got ' ' done normal
+        row 28 col 24: want ' ' fg normal, got '1' done normal
+        row 28 col 25: want ' ' fg normal, got '/' done normal
+        row 28 col 26: want ' ' fg normal, got '1' done normal
+        row 28 col 27: want ' ' fg normal, got ' ' done normal
+        row 28 col 28: want ' ' fg normal, got '✓' done normal
+        row 28 col 29: want ' ' fg normal, got ' ' done normal
+        row 28 col 30: want ' ' fg normal, got '─' done normal
+        row 28 col 31: want ' ' fg normal, got '▶' done normal
+        row 28 col 32: want ' ' fg normal, got ' ' done normal
+        row 28 col 33: want ' ' fg normal, got '◎' accent bold
+        row 28 col 34: want ' ' fg normal, got ' ' accent bold
+        row 28 col 35: want ' ' fg normal, got 'l' accent bold
+        row 28 col 36: want ' ' fg normal, got 'a' accent bold
+        row 28 col 37: want ' ' fg normal, got 'n' accent bold
+        row 28 col 38: want ' ' fg normal, got 'd' accent bold
+        row 28 col 39: want ' ' fg normal, got 'e' accent bold
+        row 28 col 40: want ' ' fg normal, got 'd' accent bold
+        row 28 col 41: want ' ' fg normal, got ' ' accent bold
+        row 28 col 42: want ' ' fg normal, got 'o' accent bold
+        row 28 col 43: want ' ' fg normal, got 'n' accent bold
+        row 28 col 44: want ' ' fg normal, got ' ' accent bold
+        row 28 col 45: want ' ' fg normal, got 'd' accent bold
+        row 28 col 46: want ' ' fg normal, got 'e' accent bold
+        row 28 col 47: want ' ' fg normal, got 'v' accent bold
+        row 28 col 49: want ' ' fg normal, got '│' border normal
+        row 29 col 2: want ' ' fg normal, got '│' border normal
+        row 29 col 4: want ' ' fg normal, got '─' done normal
+        row 29 col 5: want ' ' fg normal, got '▶' done normal
+        row 29 col 6: want ' ' fg normal, got ' ' done normal
+        row 29 col 7: want ' ' fg normal, got 'P' dim normal
+        row 29 col 8: want ' ' fg normal, got 'R' dim normal
+        row 29 col 9: want ' ' fg normal, got ' ' dim normal
+        row 29 col 10: want ' ' fg normal, got 'o' dim normal
+        row 29 col 11: want ' ' fg normal, got 'p' dim normal
+        row 29 col 12: want ' ' fg normal, got 'e' dim normal
+        row 29 col 13: want ' ' fg normal, got 'n' dim normal
+        row 29 col 14: want ' ' fg normal, got ' ' done normal
+        row 29 col 15: want ' ' fg normal, got '─' done normal
+        row 29 col 16: want ' ' fg normal, got '▶' done normal
+        row 29 col 17: want ' ' fg normal, got ' ' done normal
+        row 29 col 18: want ' ' fg normal, got 'm' dim normal
+        row 29 col 19: want ' ' fg normal, got 'e' dim normal
+        row 29 col 20: want ' ' fg normal, got 'r' dim normal
+        row 29 col 21: want ' ' fg normal, got 'g' dim normal
+        row 29 col 22: want ' ' fg normal, got 'e' dim normal
+        row 29 col 23: want ' ' fg normal, got 'd' dim normal
+        row 29 col 24: want ' ' fg normal, got ' ' dim normal
+        row 29 col 25: want ' ' fg normal, got 't' dim normal
+        row 29 col 26: want ' ' fg normal, got 'o' dim normal
+        row 29 col 27: want ' ' fg normal, got ' ' dim normal
+        row 29 col 28: want ' ' fg normal, got 'm' dim normal
+        row 29 col 29: want ' ' fg normal, got 'a' dim normal
+        row 29 col 30: want ' ' fg normal, got 'i' dim normal
+        row 29 col 31: want ' ' fg normal, got 'n' dim normal
+        row 29 col 32: want ' ' fg normal, got ' ' done normal
+        row 29 col 33: want ' ' fg normal, got '─' done normal
+        row 29 col 34: want ' ' fg normal, got '▶' done normal
+        row 29 col 35: want ' ' fg normal, got ' ' done normal
+        row 29 col 36: want ' ' fg normal, got 'r' dim normal
+        row 29 col 37: want ' ' fg normal, got 'e' dim normal
+        row 29 col 38: want ' ' fg normal, got 'l' dim normal
+        row 29 col 39: want ' ' fg normal, got 'e' dim normal
+        row 29 col 40: want ' ' fg normal, got 'a' dim normal
+        row 29 col 41: want ' ' fg normal, got 's' dim normal
+        row 29 col 42: want ' ' fg normal, got 'e' dim normal
+        row 29 col 49: want ' ' fg normal, got '│' border normal
+        row 30 col 2: want ' ' fg normal, got '│' border normal
+        row 30 col 4: want ' ' fg normal, got 'p' dim normal
+        row 30 col 5: want ' ' fg normal, got 'u' dim normal
+        row 30 col 6: want ' ' fg normal, got 'b' dim normal
+        row 30 col 7: want ' ' fg normal, got 'l' dim normal
+        row 30 col 8: want ' ' fg normal, got 'i' dim normal
+        row 30 col 9: want ' ' fg normal, got 's' dim normal
+        row 30 col 10: want ' ' fg normal, got 'h' dim normal
+        row 30 col 11: want ' ' fg normal, got 'e' dim normal
+        row 30 col 12: want ' ' fg normal, got 'd' dim normal
+        row 30 col 49: want ' ' fg normal, got '│' border normal
+        row 31 col 2: want ' ' fg normal, got '│' border normal
+        row 31 col 4: want ' ' fg normal, got '✓' fg normal
+        row 31 col 6: want ' ' fg normal, got '3' fg normal
+        row 31 col 7: want ' ' fg normal, got '-' fg normal
+        row 31 col 8: want ' ' fg normal, got 't' fg normal
+        row 31 col 9: want ' ' fg normal, got 'u' fg normal
+        row 31 col 10: want ' ' fg normal, got 'i' fg normal
+        row 31 col 11: want ' ' fg normal, got '-' fg normal
+        row 31 col 12: want ' ' fg normal, got 'r' fg normal
+        row 31 col 13: want ' ' fg normal, got 'e' fg normal
+        row 31 col 14: want ' ' fg normal, got 's' fg normal
+        row 31 col 15: want ' ' fg normal, got 't' fg normal
+        row 31 col 16: want ' ' fg normal, got 'a' fg normal
+        row 31 col 17: want ' ' fg normal, got 'r' fg normal
+        row 31 col 18: want ' ' fg normal, got 't' fg normal
+        row 31 col 49: want ' ' fg normal, got '│' border normal
+        row 32 col 2: want ' ' fg normal, got '│' border normal
+        row 32 col 4: want ' ' fg normal, got 'w' accent bold
+        row 32 col 5: want ' ' fg normal, got 'a' accent bold
+        row 32 col 6: want ' ' fg normal, got 'v' accent bold
+        row 32 col 7: want ' ' fg normal, got 'e' accent bold
+        row 32 col 8: want ' ' fg normal, got ' ' accent bold
+        row 32 col 9: want ' ' fg normal, got 'C' accent bold
+        row 32 col 10: want ' ' fg normal, got ' ' accent bold
+        row 32 col 11: want ' ' fg normal, got '·' accent bold
+        row 32 col 12: want ' ' fg normal, got ' ' accent bold
+        row 32 col 13: want ' ' fg normal, got 'A' accent bold
+        row 32 col 14: want ' ' fg normal, got 'g' accent bold
+        row 32 col 15: want ' ' fg normal, got 'e' accent bold
+        row 32 col 16: want ' ' fg normal, got 'n' accent bold
+        row 32 col 17: want ' ' fg normal, got 't' accent bold
+        row 32 col 18: want ' ' fg normal, got 's' accent bold
+        row 32 col 19: want ' ' fg normal, got ' ' accent bold
+        row 32 col 20: want ' ' fg normal, got 'g' accent bold
+        row 32 col 21: want ' ' fg normal, got 'r' accent bold
+        row 32 col 22: want ' ' fg normal, got 'a' accent bold
+        row 32 col 23: want ' ' fg normal, got 'p' accent bold
+        row 32 col 24: want ' ' fg normal, got 'h' accent bold
+        row 32 col 25: want ' ' fg normal, got ' ' accent bold
+        row 32 col 26: want ' ' fg normal, got 'c' accent bold
+        row 32 col 27: want ' ' fg normal, got 'o' accent bold
+        row 32 col 28: want ' ' fg normal, got 'l' accent bold
+        row 32 col 29: want ' ' fg normal, got 'u' accent bold
+        row 32 col 30: want ' ' fg normal, got 'm' accent bold
+        row 32 col 31: want ' ' fg normal, got 'n' accent bold
+        row 32 col 32: want ' ' fg normal, got 's' accent bold
+        row 32 col 33: want ' ' fg normal, got ' ' accent bold
+        row 32 col 34: want ' ' fg normal, got '·' accent bold
+        row 32 col 35: want ' ' fg normal, got ' ' accent bold
+        row 32 col 36: want ' ' fg normal, got 'd' accent bold
+        row 32 col 37: want ' ' fg normal, got 'o' accent bold
+        row 32 col 38: want ' ' fg normal, got 'n' accent bold
+        row 32 col 39: want ' ' fg normal, got 'e' accent bold
+        row 32 col 49: want ' ' fg normal, got '│' border normal
+        row 33 col 2: want ' ' fg normal, got '│' border normal
+        row 33 col 4: want ' ' fg normal, got 'd' done normal
+        row 33 col 5: want ' ' fg normal, got 'i' done normal
+        row 33 col 6: want ' ' fg normal, got 's' done normal
+        row 33 col 7: want ' ' fg normal, got 'p' done normal
+        row 33 col 8: want ' ' fg normal, got 'a' done normal
+        row 33 col 9: want ' ' fg normal, got 't' done normal
+        row 33 col 10: want ' ' fg normal, got 'c' done normal
+        row 33 col 11: want ' ' fg normal, got 'h' done normal
+        row 33 col 12: want ' ' fg normal, got ' ' done normal
+        row 33 col 13: want ' ' fg normal, got '✓' done normal
+        row 33 col 14: want ' ' fg normal, got ' ' done normal
+        row 33 col 15: want ' ' fg normal, got '─' done normal
+        row 33 col 16: want ' ' fg normal, got '▶' done normal
+        row 33 col 17: want ' ' fg normal, got ' ' done normal
+        row 33 col 18: want ' ' fg normal, got 't' done normal
+        row 33 col 19: want ' ' fg normal, got 'a' done normal
+        row 33 col 20: want ' ' fg normal, got 's' done normal
+        row 33 col 21: want ' ' fg normal, got 'k' done normal
+        row 33 col 22: want ' ' fg normal, got 's' done normal
+        row 33 col 23: want ' ' fg normal, got ' ' done normal
+        row 33 col 24: want ' ' fg normal, got '1' done normal
+        row 33 col 25: want ' ' fg normal, got '/' done normal
+        row 33 col 26: want ' ' fg normal, got '1' done normal
+        row 33 col 27: want ' ' fg normal, got ' ' done normal
+        row 33 col 28: want ' ' fg normal, got '✓' done normal
+        row 33 col 29: want ' ' fg normal, got ' ' done normal
+        row 33 col 30: want ' ' fg normal, got '─' done normal
+        row 33 col 31: want ' ' fg normal, got '▶' done normal
+        row 33 col 32: want ' ' fg normal, got ' ' done normal
+        row 33 col 33: want ' ' fg normal, got '◎' accent bold
+        row 33 col 34: want ' ' fg normal, got ' ' accent bold
+        row 33 col 35: want ' ' fg normal, got 'l' accent bold
+        row 33 col 36: want ' ' fg normal, got 'a' accent bold
+        row 33 col 37: want ' ' fg normal, got 'n' accent bold
+        row 33 col 38: want ' ' fg normal, got 'd' accent bold
+        row 33 col 39: want ' ' fg normal, got 'e' accent bold
+        row 33 col 40: want ' ' fg normal, got 'd' accent bold
+        row 33 col 41: want ' ' fg normal, got ' ' accent bold
+        row 33 col 42: want ' ' fg normal, got 'o' accent bold
+        row 33 col 43: want ' ' fg normal, got 'n' accent bold
+        row 33 col 44: want ' ' fg normal, got ' ' accent bold
+        row 33 col 45: want ' ' fg normal, got 'd' accent bold
+        row 33 col 46: want ' ' fg normal, got 'e' accent bold
+        row 33 col 47: want ' ' fg normal, got 'v' accent bold
+        row 33 col 49: want ' ' fg normal, got '│' border normal
+        row 34 col 2: want ' ' fg normal, got '│' border normal
+        row 34 col 4: want ' ' fg normal, got '─' done normal
+        row 34 col 5: want ' ' fg normal, got '▶' done normal
+        row 34 col 6: want ' ' fg normal, got ' ' done normal
+        row 34 col 7: want ' ' fg normal, got 'P' dim normal
+        row 34 col 8: want ' ' fg normal, got 'R' dim normal
+        row 34 col 9: want ' ' fg normal, got ' ' dim normal
+        row 34 col 10: want ' ' fg normal, got 'o' dim normal
+        row 34 col 11: want ' ' fg normal, got 'p' dim normal
+        row 34 col 12: want ' ' fg normal, got 'e' dim normal
+        row 34 col 13: want ' ' fg normal, got 'n' dim normal
+        row 34 col 14: want ' ' fg normal, got ' ' done normal
+        row 34 col 15: want ' ' fg normal, got '─' done normal
+        row 34 col 16: want ' ' fg normal, got '▶' done normal
+        row 34 col 17: want ' ' fg normal, got ' ' done normal
+        row 34 col 18: want ' ' fg normal, got 'm' dim normal
+        row 34 col 19: want ' ' fg normal, got 'e' dim normal
+        row 34 col 20: want ' ' fg normal, got 'r' dim normal
+        row 34 col 21: want ' ' fg normal, got 'g' dim normal
+        row 34 col 22: want ' ' fg normal, got 'e' dim normal
+        row 34 col 23: want ' ' fg normal, got 'd' dim normal
+        row 34 col 24: want ' ' fg normal, got ' ' dim normal
+        row 34 col 25: want ' ' fg normal, got 't' dim normal
+        row 34 col 26: want ' ' fg normal, got 'o' dim normal
+        row 34 col 27: want ' ' fg normal, got ' ' dim normal
+        row 34 col 28: want ' ' fg normal, got 'm' dim normal
+        row 34 col 29: want ' ' fg normal, got 'a' dim normal
+        row 34 col 30: want ' ' fg normal, got 'i' dim normal
+        row 34 col 31: want ' ' fg normal, got 'n' dim normal
+        row 34 col 32: want ' ' fg normal, got ' ' done normal
+        row 34 col 33: want ' ' fg normal, got '─' done normal
+        row 34 col 34: want ' ' fg normal, got '▶' done normal
+        row 34 col 35: want ' ' fg normal, got ' ' done normal
+        row 34 col 36: want ' ' fg normal, got 'r' dim normal
+        row 34 col 37: want ' ' fg normal, got 'e' dim normal
+        row 34 col 38: want ' ' fg normal, got 'l' dim normal
+        row 34 col 39: want ' ' fg normal, got 'e' dim normal
+        row 34 col 40: want ' ' fg normal, got 'a' dim normal
+        row 34 col 41: want ' ' fg normal, got 's' dim normal
+        row 34 col 42: want ' ' fg normal, got 'e' dim normal
+        row 34 col 49: want ' ' fg normal, got '│' border normal
+        row 35 col 2: want ' ' fg normal, got '│' border normal
+        row 35 col 4: want ' ' fg normal, got 'p' dim normal
+        row 35 col 5: want ' ' fg normal, got 'u' dim normal
+        row 35 col 6: want ' ' fg normal, got 'b' dim normal
+        row 35 col 7: want ' ' fg normal, got 'l' dim normal
+        row 35 col 8: want ' ' fg normal, got 'i' dim normal
+        row 35 col 9: want ' ' fg normal, got 's' dim normal
+        row 35 col 10: want ' ' fg normal, got 'h' dim normal
+        row 35 col 11: want ' ' fg normal, got 'e' dim normal
+        row 35 col 12: want ' ' fg normal, got 'd' dim normal
+        row 35 col 49: want ' ' fg normal, got '│' border normal
+        row 36 col 2: want ' ' fg normal, got '│' border normal
+        row 36 col 4: want ' ' fg normal, got '✓' fg normal
+        row 36 col 6: want ' ' fg normal, got '4' fg normal
+        row 36 col 7: want ' ' fg normal, got '-' fg normal
+        row 36 col 8: want ' ' fg normal, got 'a' fg normal
+        row 36 col 9: want ' ' fg normal, got 'g' fg normal
+        row 36 col 10: want ' ' fg normal, got 'e' fg normal
+        row 36 col 11: want ' ' fg normal, got 'n' fg normal
+        row 36 col 12: want ' ' fg normal, got 't' fg normal
+        row 36 col 13: want ' ' fg normal, got 's' fg normal
+        row 36 col 14: want ' ' fg normal, got '-' fg normal
+        row 36 col 15: want ' ' fg normal, got 'e' fg normal
+        row 36 col 16: want ' ' fg normal, got 'q' fg normal
+        row 36 col 17: want ' ' fg normal, got 'u' fg normal
+        row 36 col 18: want ' ' fg normal, got 'a' fg normal
+        row 36 col 19: want ' ' fg normal, got 'l' fg normal
+        row 36 col 20: want ' ' fg normal, got '-' fg normal
+        row 36 col 21: want ' ' fg normal, got 'c' fg normal
+        row 36 col 22: want ' ' fg normal, got 'o' fg normal
+        row 36 col 23: want ' ' fg normal, got 'l' fg normal
+        row 36 col 24: want ' ' fg normal, got 'u' fg normal
+        row 36 col 25: want ' ' fg normal, got 'm' fg normal
+        row 36 col 26: want ' ' fg normal, got 'n' fg normal
+        row 36 col 27: want ' ' fg normal, got 's' fg normal
+        row 36 col 49: want ' ' fg normal, got '│' border normal
+        row 37 col 2: want ' ' fg normal, got '╰' border normal
+        row 37 col 3: want ' ' fg normal, got '─' border normal
+        row 37 col 4: want ' ' fg normal, got '─' border normal
+        row 37 col 5: want ' ' fg normal, got '─' border normal
+        row 37 col 6: want ' ' fg normal, got '─' border normal
+        row 37 col 7: want ' ' fg normal, got '─' border normal
+        row 37 col 8: want ' ' fg normal, got '─' border normal
+        row 37 col 9: want ' ' fg normal, got '─' border normal
+        row 37 col 10: want ' ' fg normal, got '─' border normal
+        row 37 col 11: want ' ' fg normal, got '─' border normal
+        row 37 col 12: want ' ' fg normal, got '─' border normal
+        row 37 col 13: want ' ' fg normal, got '─' border normal
+        row 37 col 14: want ' ' fg normal, got '─' border normal
+        row 37 col 15: want ' ' fg normal, got '─' border normal
+        row 37 col 16: want ' ' fg normal, got '─' border normal
+        row 37 col 17: want ' ' fg normal, got '─' border normal
+        row 37 col 18: want ' ' fg normal, got '─' border normal
+        row 37 col 19: want ' ' fg normal, got '─' border normal
+        row 37 col 20: want ' ' fg normal, got '─' border normal
+        row 37 col 21: want ' ' fg normal, got '─' border normal
+        row 37 col 22: want ' ' fg normal, got '─' border normal
+        row 37 col 23: want ' ' fg normal, got '─' border normal
+        row 37 col 24: want ' ' fg normal, got '─' border normal
+        row 37 col 25: want ' ' fg normal, got '─' border normal
+        row 37 col 26: want ' ' fg normal, got '─' border normal
+        row 37 col 27: want ' ' fg normal, got '─' border normal
+        row 37 col 28: want ' ' fg normal, got '─' border normal
+        row 37 col 29: want ' ' fg normal, got '─' border normal
+        row 37 col 30: want ' ' fg normal, got '─' border normal
+        row 37 col 31: want ' ' fg normal, got '─' border normal
+        row 37 col 32: want ' ' fg normal, got '─' border normal
+        row 37 col 33: want ' ' fg normal, got '─' border normal
+        row 37 col 34: want ' ' fg normal, got '─' border normal
+        row 37 col 35: want ' ' fg normal, got '─' border normal
+        row 37 col 36: want ' ' fg normal, got '─' border normal
+        row 37 col 37: want ' ' fg normal, got '─' border normal
+        row 37 col 38: want ' ' fg normal, got '─' border normal
+        row 37 col 39: want ' ' fg normal, got '─' border normal
+        row 37 col 40: want ' ' fg normal, got '─' border normal
+        row 37 col 41: want ' ' fg normal, got '─' border normal
+        row 37 col 42: want ' ' fg normal, got '─' border normal
+        row 37 col 43: want ' ' fg normal, got '─' border normal
+        row 37 col 44: want ' ' fg normal, got '─' border normal
+        row 37 col 45: want ' ' fg normal, got '─' border normal
+        row 37 col 46: want ' ' fg normal, got '─' border normal
+        row 37 col 47: want ' ' fg normal, got '─' border normal
+        row 37 col 48: want ' ' fg normal, got '─' border normal
+        row 37 col 49: want ' ' fg normal, got '╯' border normal
+--- FAIL: TestWorkGoalsMatchesItsBoard (0.01s)
+=== RUN   TestGoalsDetailsShowWavesTasksAndStops
+    work_goals_test.go:51: view does not contain "goals · 1":
+         hive  /tmp/TestGoalsDetailsShowWavesTasksAndStops3… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestGoalsDetailsShowWavesTasksAndStops (0.02s)
+=== RUN   TestGoalsSortAndCountOnlyPushedDeliveries
+    work_goals_test.go:95: goal g3-planned is not in the order active, planned, other, done:
+         hive  /tmp/TestGoalsSortAndCountOnlyPushedDeliveri… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 1/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ✓ 1-alpha  ▶ 2-beta  · 3-gamma               │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · Done · done · done when: —          │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · Planned · planned · done when: —    │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · Paused · paused · done when: —      │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestGoalsSortAndCountOnlyPushedDeliveries (0.04s)
+=== RUN   TestGoalsSelectedRowIsAccentBold
+    work_goals_test.go:110: row 7 col 2 = '│'; want '▶'
+--- FAIL: TestGoalsSelectedRowIsAccentBold (0.00s)
+=== RUN   TestGoalsFitEachSize
+=== RUN   TestGoalsFitEachSize/fixture/79x24
+=== RUN   TestGoalsFitEachSize/fixture/80x24
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                     [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                    │ │
+        │ │ wave A · Wave alpha · open                                               │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                          │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ unassigned                                                               │ │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens                                 │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestGoalsFitEachSize/fixture/80x25
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                     [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                    │ │
+        │ │ wave A · Wave alpha · open                                               │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                          │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ unassigned                                                               │ │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens                                 │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestGoalsFitEachSize/fixture/119x40
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                                                            coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                                                               
+        ───────────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                            [ ] switch view   
+        ╭─ goals ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                                                           │ │
+        │ │ wave A · Wave alpha · open                                                                                      │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to main ─▶ release published                  │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                                                                 │ │
+        │ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                                                                     │
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │ unassigned                                                                                                      │ │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens                                                                        │ │
+        │ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        │                                                                                                                     │
+        ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                                                         
+=== RUN   TestGoalsFitEachSize/fixture/120x40
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizefixture120x40200506… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+=== RUN   TestGoalsFitEachSize/fixture/120x24
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizefixture120x24357219… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+=== RUN   TestGoalsFitEachSize/fixture/120x25
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizefixture120x25332055… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+=== RUN   TestGoalsFitEachSize/empty/79x24
+=== RUN   TestGoalsFitEachSize/empty/80x24
+=== RUN   TestGoalsFitEachSize/empty/80x25
+=== RUN   TestGoalsFitEachSize/empty/119x40
+=== RUN   TestGoalsFitEachSize/empty/120x40
+=== RUN   TestGoalsFitEachSize/empty/120x24
+=== RUN   TestGoalsFitEachSize/empty/120x25
+=== RUN   TestGoalsFitEachSize/long/79x24
+=== RUN   TestGoalsFitEachSize/long/80x24
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                     [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                    │ │
+        │ │ wave A · Wave alpha · open                                               │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                          │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │   demo · title title title title title title title title title title     │ │
+        │ │ title title title title title title title title title title title title  │ │
+        │ │ title title title title title title title title title title title title  │ │
+        │ │ title title title title title title  · active · done when: landed on dev │ │
+        │ │ wave A · wave wave wave wave wave wave wave wave wave wave wave wave     │ │
+        │ │ wave wave wave wave wave wave wave wave  · open                          │ │
+        │ │ dispatch ✓ ─▶ tasks 0/1 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestGoalsFitEachSize/long/80x25
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                     coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                     [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                    │ │
+        │ │ wave A · Wave alpha · open                                               │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                          │ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                              │
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │   demo · title title title title title title title title title title     │ │
+        │ │ title title title title title title title title title title title title  │ │
+        │ │ title title title title title title title title title title title title  │ │
+        │ │ title title title title title title  · active · done when: landed on dev │ │
+        │ │ wave A · wave wave wave wave wave wave wave wave wave wave wave wave     │ │
+        │ │ wave wave wave wave wave wave wave wave  · open                          │ │
+        │ │ dispatch ✓ ─▶ tasks 0/1 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to     │ │
+        │ │ main ─▶ release published                                                │ │
+        │ │ ▶ 1-alpha                                                                │ │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                  
+=== RUN   TestGoalsFitEachSize/long/119x40
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive                                                                            coord ○ · sup ○ · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                                                               
+        ───────────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                            [ ] switch view   
+        ╭─ goals ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │ ▶ demo · Goal one · active · done when: landed on dev                                                           │ │
+        │ │ wave A · Wave alpha · open                                                                                      │ │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to main ─▶ release published                  │ │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma                                                                                 │ │
+        │ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                                                                     │
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │   demo · title title title title title title title title title title title title title title title title title  │ │
+        │ │ title title title title title title title title title title title title title title title title title title     │ │
+        │ │ title title title title title  · active · done when: landed on dev                                              │ │
+        │ │ wave A · wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave  · │ │
+        │ │ open                                                                                                            │ │
+        │ │ dispatch ✓ ─▶ tasks 0/1 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to main ─▶ release published                  │ │
+        │ │ ▶ 1-alpha                                                                                                       │ │
+        │ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                                                                     │
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │   demo · title title title title title title title title title title title title title title title title title  │ │
+        │ │ title title title title title title title title title title title title title title title title title title     │ │
+        │ │ title title title title title  · active · done when: landed on dev                                              │ │
+        │ │ wave A · wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave  · │ │
+        │ │ open                                                                                                            │ │
+        │ │ dispatch ✓ ─▶ tasks 0/1 ▶ ─▶ ◎ landed on dev ─▶ PR open ─▶ merged to main ─▶ release published                  │ │
+        │ │ ▶ 1-alpha                                                                                                       │ │
+        │ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+        │                                                                                                                     │
+        │ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+        │ │   demo · title title title title title title title title title title title title title title title title title  │ │
+        │ │ title title title title title title title title title title title title title title title title title title     │ │
+        │ │ title title title title title  · active · done when: landed on dev                                              │ │
+        │ │ wave A · wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave wave  · │ │
+        │ │ open                                                                                                            │ │
+        ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · enter details · [ ] view · ?                                                                         
+=== RUN   TestGoalsFitEachSize/long/120x40
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizelong120x40258808651… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · title title title title title title │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title  ·       │ ││                                                                  │
+        │ │ active · done when: landed on dev            │ ││                                                                  │
+        │ │ wave A · wave wave wave wave wave wave wave  │ ││                                                                  │
+        │ │ wave wave wave wave wave wave wave wave wave │ ││                                                                  │
+        │ │ wave wave wave wave  · open                  │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/1 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha                                    │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · title title title title title title │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+=== RUN   TestGoalsFitEachSize/long/120x24
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizelong120x24134380855… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · title title title title title title │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title  ·       │ ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+=== RUN   TestGoalsFitEachSize/long/120x25
+    work_goals_test.go:180: selected goal g1-demo is not visible:
+         hive  /tmp/TestGoalsFitEachSizelong120x25180121317… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · title title title title title title │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title title    │ ││                                                                  │
+        │ │ title title title title title title  ·       │ ││                                                                  │
+        │ │ active · done when: landed on dev            │ ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestGoalsFitEachSize (1.52s)
+    --- PASS: TestGoalsFitEachSize/fixture/79x24 (0.02s)
+    --- FAIL: TestGoalsFitEachSize/fixture/80x24 (0.02s)
+    --- FAIL: TestGoalsFitEachSize/fixture/80x25 (0.03s)
+    --- FAIL: TestGoalsFitEachSize/fixture/119x40 (0.03s)
+    --- FAIL: TestGoalsFitEachSize/fixture/120x40 (0.02s)
+    --- FAIL: TestGoalsFitEachSize/fixture/120x24 (0.02s)
+    --- FAIL: TestGoalsFitEachSize/fixture/120x25 (0.02s)
+    --- PASS: TestGoalsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/79x24 (0.19s)
+    --- FAIL: TestGoalsFitEachSize/long/80x24 (0.19s)
+    --- FAIL: TestGoalsFitEachSize/long/80x25 (0.18s)
+    --- FAIL: TestGoalsFitEachSize/long/119x40 (0.18s)
+    --- FAIL: TestGoalsFitEachSize/long/120x40 (0.19s)
+    --- FAIL: TestGoalsFitEachSize/long/120x24 (0.19s)
+    --- FAIL: TestGoalsFitEachSize/long/120x25 (0.22s)
+=== RUN   TestGoalsKeysAndHints
+    work_goals_test.go:210: key "G" selected "g1-demo"; want "g3-three"
+--- FAIL: TestGoalsKeysAndHints (0.04s)
+=== RUN   TestGoalsHasNoStopsOnlyKey
+    work_goals_test.go:234: view does not contain "g2-no-stops":
+         hive  /tmp/TestGoalsHasNoStopsOnlyKey1655240847/001 coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal one                                               │
+        │ │ ▶ demo · Goal one · active · done when:      │ ││ status    active                                                 │
+        │ │ landed on dev                                │ ││ wave      A Wave alpha                                           │
+        │ │ wave A · Wave alpha · open                   │ ││                                                                  │
+        │ │ dispatch ✓ ─▶ tasks 0/3 ▶ ─▶ ◎ landed on dev │ ││                                                                  │
+        │ │ ─▶ PR open ─▶ merged to main ─▶ release      │ ││                                                                  │
+        │ │ published                                    │ ││                                                                  │
+        │ │ ▶ 1-alpha  ✋ 2-beta  · 3-gamma              │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │   demo · No stops · active · done when: —    │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: · 4-free  ▶ 82-goals-queue-screens     │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestGoalsHasNoStopsOnlyKey (0.03s)
+=== RUN   TestGoalsDesignNoticeAndTaskKey
+    work_goals_test.go:248: footer = " [list] ↑↓ move · enter details · [ ] view · ?                                  "; want the design notice
+--- FAIL: TestGoalsDesignNoticeAndTaskKey (0.02s)
+=== RUN   TestGoalsRefreshReloadsRecords
+    work_goals_test.go:273: view does not contain "goals · 2":
+         hive  /tmp/TestGoalsRefreshReloadsRecords135544673… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals ──────────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────╮ ││ title     Goal renamed                                           │
+        │ │   demo · New · active · done when: —         │ ││ status    done                                                   │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ ▶ demo · Goal renamed · done · done when: —  │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │ ╭──────────────────────────────────────────────╮ ││                                                                  │
+        │ │ unassigned                                   │ ││                                                                  │
+        │ │ demo: ▶ 1-alpha  ✋ 2-beta  · 3-gamma  · 4-  │ ││                                                                  │
+        │ │ free  ▶ 82-goals-queue-screens               │ ││                                                                  │
+        │ ╰──────────────────────────────────────────────╯ ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestGoalsRefreshReloadsRecords (0.03s)
+=== RUN   TestGoalsProgramUsesStringReader
+    work_goals_test.go:284: program output did not render the Goals view:
+        [>4m[?1049h[?25l[?2004h[>4;2m[>1u[H[2J hive[37X[1;43Hcoord ○ · sup ○ · needs you 1 · 22:32[K
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs 
+        ───────────────────━━━━━━━━─────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks [36X[4;63H[ ] switch view
+        ╭─ goals ──────────────────────────────────────────────────────────────────────╮
+        │ ╭──────────────────────────────────────────────────────────────────────────╮ │
+        │ │ unassigned[63X[78G│ │
+        │ │ (none)[67X[78G│ │
+        │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        │[78X[80G│
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [list] not in herdr: no coordinator or supervisor started[K[>4m[<1u[24;1H[?1049l[?25h[?2004l[?2026$p[?2027$p
+--- FAIL: TestGoalsProgramUsesStringReader (0.03s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	2.122s
+FAIL
