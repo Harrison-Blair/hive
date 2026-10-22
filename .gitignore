@@ -19,6 +19,9 @@
 # Repo config
 !.gitignore
 !.github/workflows/ci.yml
+!.github/workflows/release.yml
+!.github/scripts/check-tag.sh
+!.github/scripts/package.sh
 
 # Skill discovery links for Claude Code
 !.claude/skills/hive-coordinator
