@@ -32,7 +32,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		{"1", tabAgents, "Agents", "[ TREE ]"},
 		{"2", tabChat, "Chat", "no chat yet"},
 		{"3", tabWork, "Goals", "unassigned"},
-		{"]", tabWork, "Queue", "no open tasks"},
+		{"]", tabWork, "Queue", "no tasks"},
 		{"]", tabWork, "Tasks", "active 0"},
 		{"4", tabFriction, "Friction", "open 0"},
 		{"5", tabHealth, "Health", "home"},

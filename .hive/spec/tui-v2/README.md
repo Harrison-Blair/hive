@@ -215,6 +215,16 @@ The worker made these decisions in task `34-screen-chat`:
 - Input: `component.Input` draws the input and its cursor cell `█`. While the input has the focus, the terminal cursor is on that cell. The input shows no placeholder text, as the boards give.
 - Removed: the coordinator line and the column of hive events of the earlier screen. The header shows the coordinator state.
 
+The worker made these decisions in task `36-screen-work-queue`:
+
+- Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.
+- Queue list: the list shows each task of each project, also a landed task. The title gives the project when there is one project, the task count, and the stop count.
+- Queue groups: the tasks of a project are in groups by grant. The grant of a task is the grant of its goal, then the grant of its delivery. The group `NO GRANT` is last. With more than one project, each group heading starts with the project. A project with no tasks shows `PROJECT · no tasks`.
+- Queue tree: in a group, a task is below the first task of the group that it depends on. A task in a dependency cycle starts a tree.
+- Queue stop: an open task stops when it has a needs-user text, or when its acting agent has the status `unresolved`. A stop row `! stop: REASON` follows the task row. `s` shows only the stopped tasks, each at depth 0.
+- Queue keys: `t` opens the selected task in Work › Tasks. From 120 columns, `enter` gives the focus to the details.
+- The board replaces the Queue columns `#`, `starts when`, and the states `◆ auto` and `┄ waits`. The header counts of the Queue stay.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
