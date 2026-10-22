@@ -1,0 +1,47 @@
+--- FAIL: TestLogsDayAndFollowKeys (0.00s)
+    logs_screen_test.go:101: view does not contain "follow ○  < 2026-04-06 >":
+         hive  /tmp/TestLogsDayAndFollowKeys1383123184/001   coordinator ○ stopped   supervisor ○ stopped   needs you 0   12:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ──────────────────────────────────────────────────────━━━━━━━━──────────────────────────────────────────────────────────
+        ╭─ filter ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+        │ / level:info                                                                      follow ●  < 2026-04-06 >           │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+        ╭─ events · 2 ─────────────────────────────────────────────────╮╭─ event 12:00:03 ─────────────────────────────────────╮
+        │                                                              ││                                                      │
+        │   12:00:01 INFO  task      queued                            ││ {                                                    │
+        │ ▶ 12:00:03 WARN  herdr     network retry                     ││   "agent_id": "worker-2",                            │
+        │                                                              ││   "component": "herdr",                              │
+        │                                                              ││   "level": "WARN",                                   │
+        │                                                              ││   "msg": "network retry",                            │
+        │                                                              ││   "project_id": "other",                             │
+        │                                                              ││   "request_id": "r-22222222",                        │
+        │                                                              ││   "time": "2026-04-06T12:00:03-04:00"                │
+        │                                                              ││ }                                                    │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        │                                                              ││                                                      │
+        ╰──────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+         [events] ↑↓ move · tab region · enter open · f follow · < > day · / filter · g/G top/end · ? help                      
+--- FAIL: TestFollowControlsSelection (0.00s)
+    tui_test.go:446: f did not turn follow off
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.023s
+FAIL

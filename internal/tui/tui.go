@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"charm.land/bubbles/v2/textarea"
-	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -47,10 +46,9 @@ type Model struct {
 	logger *slog.Logger
 	closer io.Closer
 
-	events   []logs.Event
-	viewport viewport.Model
-	input    textinput.Model
-	mode     mode
+	events      []logs.Event
+	filterDraft string
+	mode        mode
 
 	chatData           chatScreenData
 	chatContent        []string
@@ -65,18 +63,14 @@ type Model struct {
 	chatNoise          string
 	chatFollow         bool
 	chatErr            string
-	level              string
-	componentFilter    string
-	projectFilter      string
-	agentFilter        string
-	requestFilter      string
 	textFilter         string
 	follow             bool
 	logDate            time.Time
 	logDatePinned      bool
 	logSelection       int
 	logSelectedKey     string
-	logDetail          bool
+	logOffset          int
+	logPendingTime     string
 	logErr             string
 
 	header               headerState
@@ -148,8 +142,8 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	m := &Model{
 		home:         home,
 		now:          now,
-		level:        "info",
-		logDate:      startOfDay(now().Local()),
+		textFilter:   defaultLogFilter,
+		logDate:      startOfDay(now()),
 		follow:       true,
 		chatNoise:    "messages",
 		chatFollow:   true,
@@ -160,7 +154,10 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		agents:       agentsState{},
 		headerLoader: readHeader,
 		logLoader: func(_ *logs.Reader, day time.Time) ([]logs.Event, error) {
-			dayReader := logs.NewReaderWithClock(home, func() time.Time { return day })
+			// The reader names the day file in the local zone, so it gets
+			// noon of the same date there.
+			date := time.Date(day.Year(), day.Month(), day.Day(), 12, 0, 0, 0, time.Local)
+			dayReader := logs.NewReaderWithClock(home, func() time.Time { return date })
 			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
@@ -186,15 +183,9 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		}
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
-	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
-	m.viewport.SoftWrap = false
 	m.chatViewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
 	m.chatViewport.SoftWrap = true
 	m.chatInput = newChatInput()
-	m.input = textinput.New()
-	m.input.Prompt = "filter: "
-	m.input.CharLimit = 0
-	m.input.Blur()
 	m.screens = m.makeScreens()
 
 	logClock := now
@@ -247,11 +238,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tickMsg:
 		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
-			m.logDate = startOfDay(m.now().Local())
+			m.logDate = startOfDay(m.now())
 			m.events = nil
 			m.logSelectedKey = ""
 			m.logSelection = 0
-			m.rebuild()
+			m.logOffset = 0
 			m.invalidateView()
 		}
 		if m.inputEnded != nil {
@@ -261,11 +252,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		cmds := []tea.Cmd{m.tick(), m.startRefreshCheck()}
-		if m.follow && m.screenIndex == 7 && m.screenErr == "" {
-			m.viewport.GotoBottom()
-		}
-		return m, batch(cmds...)
+		return m, batch(m.tick(), m.startRefreshCheck())
 	case refreshCheckMsg:
 		m.refreshChecking = false
 		headerChanged := msg.header != m.refreshSnapshot.header
@@ -353,9 +340,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.startCurrentScreenLoad()
 			}
 			m.acceptLogEvents(msg.events)
-			if m.follow {
-				m.viewport.GotoBottom()
-			}
 		default:
 			return m, nil
 		}
@@ -428,6 +412,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.invalidateView()
 		}
 		return m, nil
+	case tea.PasteMsg:
+		m.pasteLogFilter(msg.Content)
+		return m, nil
 	case tea.KeyPressMsg:
 		m.invalidateView()
 		return m, m.updateKey(msg)
@@ -491,8 +478,6 @@ func (m *Model) invalidateView() {
 func (m *Model) layout() {
 	mainWidth := max(m.width, 1)
 	bodyHeight := max(m.height-frameRows, 1)
-	contentWidth := mainWidth - 4
-	contentHeight := bodyHeight - 3
 	chatEventWidth := mainWidth / 3
 	if chatEventWidth < 18 {
 		chatEventWidth = 18
@@ -515,17 +500,6 @@ func (m *Model) layout() {
 	m.chatViewport.SetHeight(chatHeight)
 	m.chatInput.SetWidth(chatWidth)
 	m.chatInput.SetHeight(4)
-	if contentWidth < 1 {
-		contentWidth = 1
-	}
-	if contentHeight < 1 {
-		contentHeight = 1
-	}
-	m.viewport.SetWidth(contentWidth)
-	m.viewport.SetHeight(contentHeight)
-	if m.follow {
-		m.viewport.GotoBottom()
-	}
 }
 
 func (m *Model) startHeaderLoad() tea.Cmd {
@@ -583,7 +557,7 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
 		}
 	default:
-		loader, reader, day := m.logLoader, m.reader, startOfDay(m.logDate.Local())
+		loader, reader, day := m.logLoader, m.reader, startOfDay(m.logDate)
 		return func() tea.Msg {
 			events, err := loader(reader, day)
 			if err == nil {
@@ -621,11 +595,6 @@ func readAgentPane(ctx context.Context, paneID string) (string, error) {
 		return "", fmt.Errorf("herdr pane read %s: %w", paneID, err)
 	}
 	return string(output), nil
-}
-
-func (m *Model) acceptLogEvents(events []logs.Event) {
-	m.events = events
-	m.rebuild()
 }
 
 func (m *Model) logAction(action string, attrs ...slog.Attr) tea.Cmd {
