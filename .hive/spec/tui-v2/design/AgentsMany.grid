@@ -35,16 +35,16 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                        │ │ │                        │ │ │                        │ │                          │  │
 k|afrfrffffffffffffffffffffffffrfrfrffffffffffffffffffffffffrfrfrffffffffffffffffffffffffrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ no workers               │  │
+t|│ │ │┏━━━━━━━━━━━━━━━━━━━━━━┓│ │ │╭──────────────────────╮│ │ │╭──────────────────────╮│ │ no workers               │  │
 k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrfddddddddddfffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ├┤ ● t5-worker-1        ││ │ ├┤ ● t3-worker-1        ││ │ ╰┤ ○ t8-worker-1        ││ │                          │  │
+t|│ │ ├┨ ● t5-worker-1        ┃│ │ ├┤ ● t3-worker-1        ││ │ ╰┤ ○ t8-worker-1        ││ │                          │  │
 k|afrfrafwfaaaaaaaaaaaffffffffarfrfrrfwffffffffffffffffffffrrfrfrrfdfdddddddddddffffffffrrfrffffffffffffffffffffffffffrffa
 b|000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ ││ pi · working · 3m    ││ │ ││ codex · working      ││ │  │ pi · stopped · done  ││ │                          │  │
+t|│ │ │┃ pi · working · 3m    ┃│ │ ││ codex · working      ││ │  │ pi · stopped · done  ││ │                          │  │
 k|afrfrafdddddddddddddddddffffarfrfrrfdddddddddddddddffffffrrfrffrfdddddddddddddddddddffrrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │ │╰──────────────────────╯│ │ │╰──────────────────────╯│ │  ╰──────────────────────╯│ │                          │  │
+t|│ │ │┗━━━━━━━━━━━━━━━━━━━━━━┛│ │ │╰──────────────────────╯│ │  ╰──────────────────────╯│ │                          │  │
 k|afrfraaaaaaaaaaaaaaaaaaaaaaaarfrfrrrrrrrrrrrrrrrrrrrrrrrrrrfrffrrrrrrrrrrrrrrrrrrrrrrrrrfrffffffffffffffffffffffffffrffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │ │                        │ │ │                        │ │                          │ │                          │  │
