@@ -48,3 +48,36 @@ func TestInfoReadsBuildSettings(t *testing.T) {
 		})
 	}
 }
+
+func TestInfoVersionRule(t *testing.T) {
+	tests := []struct {
+		name        string
+		ldflags     string
+		mainVersion string
+		want        string
+	}{
+		{name: "ldflags value wins", ldflags: "v9.9.9", mainVersion: "v1.2.3", want: "v9.9.9"},
+		{name: "release version", ldflags: "dev", mainVersion: "v1.2.3", want: "v1.2.3"},
+		{name: "release candidate", ldflags: "dev", mainVersion: "v1.2.3-rc.4", want: "v1.2.3-rc.4"},
+		{name: "pseudo-version", ldflags: "dev", mainVersion: "v0.0.3-0.20261022041405-6f14e3bd53b9", want: "dev"},
+		{name: "dirty", ldflags: "dev", mainVersion: "v1.2.3+dirty", want: "dev"},
+		{name: "devel", ldflags: "dev", mainVersion: "(devel)", want: "dev"},
+		{name: "empty", ldflags: "dev", mainVersion: "", want: "dev"},
+		{name: "other suffix", ldflags: "dev", mainVersion: "v1.2.3-beta.1", want: "dev"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			saved := Version
+			Version = tt.ldflags
+			t.Cleanup(func() { Version = saved })
+
+			got := info(func() (*debug.BuildInfo, bool) {
+				return &debug.BuildInfo{Main: debug.Module{Version: tt.mainVersion}}, true
+			})
+			if got.Version != tt.want {
+				t.Fatalf("info().Version = %q, want %q", got.Version, tt.want)
+			}
+		})
+	}
+}
