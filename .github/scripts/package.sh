@@ -28,7 +28,7 @@ for arch in amd64 arm64; do
       exit 1
     fi
   fi
-  tar --sort=name --mtime="@$timestamp" --owner=0 --group=0 --numeric-owner \
+  tar --sort=name --mtime="@$timestamp" --owner=0 --group=0 --numeric-owner --mode=a+rX,go-w \
     -cf - -C "$stage" LICENSE hive | gzip -n -9 > "$dist/hive_${tag}_linux_${arch}.tar.gz"
 done
 (
