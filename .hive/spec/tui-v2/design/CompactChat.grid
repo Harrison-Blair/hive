@@ -20,26 +20,26 @@ b|001111111111111111111100000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ Bare hive makes the coordinator tab, but its record has                      │
-k|rfffffffffffffffffffffcccccccccccffffffffffffffffffffffffffffffffffffffffffffffr
+t|│ Bare hive makes the coordinator tab, but its record has spawned=false. agent │
+k|rfffffffffffffffffffffcccccccccccfffffffffffffffffffffffffcccccccccccccffcccccfr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ spawned=false. agent stop refuses it.                                        ┃
-k|rfcccccccccccccffccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│ stop refuses it.                                                             │
+k|rfccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              ┃
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  Choice  │ Answer                           │ Pros            │ Cons         ┃
-k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
+t|│  Choice  │ Answer                           │ Pros            │ Cons         │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ─────────┼──────────────────────────────────┼─────────────────┼───────────── ┃
-k|rfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfd
+t|│ ─────────┼──────────────────────────────────┼─────────────────┼───────────── │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  A (REC) │ Record that bare hive started it │ No tab pile-up  │ Field change ┃
-k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
+t|│  A (REC) │ Record that bare hive started it │ No tab pile-up  │ Field change │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  B       │ Leave the old tab                │ Smallest change │ Tabs pile up ┃
-k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffd
+t|│  B       │ Leave the old tab                │ Smallest change │ Tabs pile up │
+k|rffffffffffrffffffffffffffffffffffffffffffffffrfffffffffffffffffrffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
@@ -53,8 +53,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ 14:22 you                                                                    │
 k|rfdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
-t|│ 1A, 2A, 3B                                                                   │
-k|rfuuuuuuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│ 1A, 2A, 3B                                                                   ┃
+k|rfuuuuuuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr

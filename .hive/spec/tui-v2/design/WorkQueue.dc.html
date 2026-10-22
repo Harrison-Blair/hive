@@ -45,12 +45,12 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · s stops only · t task · / filter · ? help');
+  frame(t, 2, 'list', '↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help');
   subtabs(t, 3, ['Goals', 'Queue', 'Tasks'], 1);
   box(t, 0, 4, 52, 35, 'accent', 'queue · hive · 4 tasks · 1 stop', 'accent');
   put(t, 2, 6, 'GRANT  grants.md 2026-10-18 hive delivery on dev', 'dim');
   var ch = [['2-stale-coordinator-startup', 'landed', 'done', '  '], ['3-tui-restart', 'landed', 'done', '└▶'], ['4-agents-equal-columns', 'landed', 'done', '└▶']];
-  ch.forEach(function (r, i) { var y = 8 + i; put(t, 2 + i * 2, y, r[3], 'border'); put(t, 4 + i * 2 + (i ? 1 : 0), y, fit(r[0], 30), 'fg'); put(t, 40, y, fit(r[1], 10), r[2]); });
+  ch.forEach(function (r, i) { var y = 8 + i; if (r[3].trim()) put(t, 2 + i * 2, y, r[3], 'border'); put(t, 4 + i * 2 + (i ? 1 : 0), y, fit(r[0], 30), 'fg'); put(t, 40, y, fit(r[1], 10), r[2]); });
   put(t, 2, 12, 'NO GRANT', 'dim');
   put(t, 2, 14, '▶', 'accent', 1); put(t, 4, 14, fit('1-cp5-end-to-end', 30), 'accent', 1); put(t, 40, 14, fit('assigned', 10), 'info');
   put(t, 4, 15, '! stop: worker unresolved', 'accent');

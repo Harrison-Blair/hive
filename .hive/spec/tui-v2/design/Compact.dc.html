@@ -40,17 +40,17 @@ function frame(t, active, region, hints) {
 }
 function compact(t) {
   frame(t, 2, 'details', '↑↓ scroll · esc back to list · b brief · v verified · d deps');
-  put(t, 1, 3, ' Goals    Queue   ', 'dim'); put(t, 19, 3, '[Tasks]', 'accent', 1); put(t, 64, 3, 'list › details', 'dim');
+  put(t, 1, 3, ' Goals ', 'dim'); put(t, 10, 3, ' Queue ', 'dim'); put(t, 19, 3, '[Tasks]', 'accent', 1); put(t, 64, 3, 'list › details', 'dim');
   box(t, 0, 4, 80, 19, 'accent', '3-tui-restart · esc back', 'accent');
   var kv = [['status', 'landed'], ['goal', 'g1-tui-restart · wave B'], ['verifier', 't3-verifier-1 · pass'], ['merge', '3ccd93fb on dev']];
-  kv.forEach(function (p, i) { put(t, 2, 5 + i, fit(p[0], 10), 'dim'); put(t, 12, 5 + i, fit(p[1], 64), i === 0 ? 'done' : 'fg'); });
+  kv.forEach(function (p, i) { put(t, 2, 5 + i, fit(p[0], 10), 'dim'); put(t, 12, 5 + i, fit(p[1], 66), i === 0 ? 'done' : 'fg'); });
   put(t, 2, 10, 'ACCEPTANCE', 'accent', 1);
   var ac = ['AC1 r restarts a coordinator or supervisor, confirms only when live', 'AC2 coordinator restart closes only a pane that hive started', 'AC3 supervisor restart runs hive supervise in a new tab', 'AC4 old records get stale or stopped, stay on disk, h hides them', 'AC5 header shows old and r to restart for an old supervisor', 'AC6 coordinator start waits for herdr readiness'];
   ac.forEach(function (s, i) { put(t, 2, 11 + i, '✓', 'done'); put(t, 4, 11 + i, fit(s, 72), 'fg'); });
   put(t, 2, 18, 'EVIDENCE', 'accent', 1);
   put(t, 2, 19, 'b', 'accent', 1); put(t, 4, 19, 'brief.md', 'fg'); put(t, 16, 19, 'v', 'accent', 1); put(t, 18, 19, 'VERIFIED.md', 'fg'); put(t, 32, 19, 'd', 'accent', 1); put(t, 34, 19, 'deps graph', 'fg');
-  put(t, 2, 20, '↓ 3 more lines', 'dim');
-  vline(t, 79, 5, 12, '┃', 'accent');
+  put(t, 2, 21, '↓ 2 more lines', 'dim');
+  vline(t, 79, 5, 15, '┃', 'accent');
 }
 class Component extends DCLogic {
   renderVals() {

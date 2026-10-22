@@ -8,16 +8,16 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+t|╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ hive · g1-tui-restart · done ───────────────────────────────╮                           │
+t|│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                                                              │                           │
+t|│                           │ g1-tui-restart · done                                        │                           │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │ ╭─ manager-hive · esc closes ──────────────────────────────╮ │                           │
@@ -72,11 +72,8 @@ t|│                             │  p  peek pane                             
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  t  open task · none                                     │                             │
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdffddddddddddddddddfffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddfffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                             │                                                          │                             │
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │                                                          │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -87,13 +84,16 @@ t|│                             │  14:08 inbox 28 sent to coordinator       
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  14:07 land 4-agents-equal-columns · ede94f3e            │                             │
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  13:58 land 3-tui-restart · 3ccd93fb                     │                             │
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddfffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │  13:44 land 2-stale-coordinator-startup · 0e079272       │                             │
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddddddddddddddfffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                             │                                                          │                             │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
@@ -110,7 +110,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
