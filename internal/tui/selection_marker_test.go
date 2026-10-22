@@ -118,7 +118,10 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		selected string
 		also     []string
 		states   []string
-		model    func(*testing.T) *Model
+		// bold is honey bold text of a selection that has the space after
+		// ▶ in fg (user decision 7 of 2026-10-21).
+		bold  []string
+		model func(*testing.T) *Model
 	}{
 		{
 			name: "Chat", selected: "noise: landings and decisions", states: []string{"not live"},
@@ -173,7 +176,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Friction", selected: "2026-04-05", also: []string{"[open 1]"}, states: []string{"status: Open"},
+			name: "Friction", bold: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 5)
 				m.friction.data.entries = []frictionEntry{{file: "issue.md", path: "entries/issue.md", title: "Open issue", status: "Open", opened: "2026-04-05", decision: "Keep", valid: true}}
@@ -209,7 +212,12 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
-			requireHoneySelection(t, raw, tt.selected)
+			if tt.selected != "" {
+				requireHoneySelection(t, raw, tt.selected)
+			}
+			for _, text := range tt.bold {
+				requireHoneyBoldText(t, raw, text)
+			}
 			for _, selected := range tt.also {
 				requireHoneySelection(t, raw, selected)
 			}

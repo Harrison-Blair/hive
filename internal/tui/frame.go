@@ -30,7 +30,8 @@ const (
 // sit side by side, and below 120 columns the details region is a full-width
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
-// or "focus".
+// or "focus". Panels, when it is set, draws the list and the details regions
+// of a wave 6 screen in place of the current screen.
 type frameScreen struct {
 	label       string
 	views       []string
@@ -38,6 +39,7 @@ type frameScreen struct {
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
+	panels      func(m *Model) (list func(width, height int, focused bool) string, details func(width, height int, focused bool, suffix string) string)
 }
 
 // screenRegistry holds the six screens of the tab bar.
@@ -88,6 +90,7 @@ var screenRegistry = [tabCount]frameScreen{
 		views:       []string{"Open", "Resolved"},
 		regions:     []string{"list", "details"},
 		listDetails: true,
+		panels:      frictionPanels,
 		hints: map[string][]string{
 			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "/ filter", "g/G top/end", "? help"},
 			"details": {"↑↓ scroll", "tab region", "esc back to list", "? help"},
@@ -379,22 +382,26 @@ func (m *Model) contentView(width, height int) string {
 		bodyHeight--
 	}
 	focus := m.focusState()
+	listPanel, detailsPanel := m.legacyPanel, m.detailsPanel
+	if entry.panels != nil {
+		listPanel, detailsPanel = entry.panels(m)
+	}
 	var body string
 	switch {
 	case tab == tabChat:
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := width * 13 / 30
-		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
-		details := strings.Split(m.detailsPanel(width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
+		list := strings.Split(listPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
+		details := strings.Split(detailsPanel(width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
 		for index := range list {
 			list[index] += details[index]
 		}
 		body = strings.Join(list, "\n")
 	case entry.listDetails && m.detailsFocused():
-		body = m.detailsPanel(width, bodyHeight, focus == entry.regions[1], " · esc back")
+		body = detailsPanel(width, bodyHeight, focus == entry.regions[1], " · esc back")
 	default:
-		body = m.legacyPanel(width, bodyHeight, focus == entry.regions[0])
+		body = listPanel(width, bodyHeight, focus == entry.regions[0])
 	}
 	content := strings.Join(append(rows, body), "\n")
 	switch {
@@ -456,12 +463,6 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 			title = item.record.ID
 		}
 		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
-	case 5:
-		title := "details"
-		if entry, ok := m.friction.selected(); ok {
-			title = entry.file
-		}
-		return title, m.friction.detailLines()
 	case 6:
 		check, ok := m.health.selectedCheck()
 		if !ok {
