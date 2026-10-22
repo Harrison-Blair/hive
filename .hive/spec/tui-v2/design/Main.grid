@@ -20,16 +20,16 @@ b|000000000000000000000000000000111111000000000000000000000000000000000000000000
 t|│                           │ g1-tui-restart · done                                        │                           │
 k|afffffffffffffffffffffffffffrfdddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ╭──────────────────────╮                   │                           │
+t|│                           │                   ┏━━━━━━━━━━━━━━━━━━━━━━┓                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   │ ◐ manager-hive       │                   │                           │
+t|│                           │                   ┃ ◐ manager-hive       ┃                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffafafaaaaaaaaaaaafffffffafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000011111111111100000000000000000000000000000000000000000000000000000000
-t|│                           │                   │ claude · idle · 4m   │                   │                           │
+t|│                           │                   ┃ claude · idle · 4m   ┃                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffafddddddddddddddddddfffafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ╰───────────┬──────────╯                   │                           │
+t|│                           │                   ┗━━━━━━━━━━━┯━━━━━━━━━━┛                   │                           │
 k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │                               │                              │                           │

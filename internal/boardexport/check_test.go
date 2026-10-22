@@ -46,6 +46,13 @@ func TestCheckAcceptsAGoodBoard(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsTheHeavyBorder(t *testing.T) {
+	g := fill("┏━┯━┓┃┗┷┛┡┨", "aaaaaaaaaaa")
+	if err := Check("TooSmall", g); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestCheckFailsABadSymbol(t *testing.T) {
 	g := fill("ab★", "fff")
 	err := Check("TooSmall", g)
