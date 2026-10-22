@@ -108,8 +108,8 @@ t|│   4-agents-equal-columns    landed    C                  │    │ goal  
 k|afffffffffffffffffffffffffffffooooooffffdffffffffffffffffffaffffrfddddddddddfffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ▶ 3-tui-restart             landed    B                  │    │ ACCEPTANCE                                           │
-k|afaaaaaaaaaaaaaaaaaaaaaaaaaaafooooooffffdffffffffffffffffffaffffrfaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffr
-b|001111111111111111111111111110000000000000000000000000000000000000111111111100000000000000000000000000000000000000000000
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaooooooffffdffffffffffffffffffaffffrfaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffr
+b|001011111111111111111111111111000000000000000000000000000000000000111111111100000000000000000000000000000000000000000000
 t|│   2-stale-coordinator-star… landed    A                  │    │ ✓ AC1 r restarts, confirms only when live            │
 k|afffffffffffffffffffffffffffffooooooffffdffffffffffffffffffaffffrfoffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

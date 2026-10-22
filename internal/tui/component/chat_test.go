@@ -9,7 +9,7 @@ import (
 
 // chatReply is the coordinator reply of Chat.dc.html lines 41-62.
 const chatReply = "## Interrogate, round 2\n\n" +
-	"**1. What happens to the old tab on restart?**\n" +
+	"**1. What happens to the old tab on restart?**\n\n" +
 	"Bare hive makes the `coordinator` tab, but its record has `spawned=false`. `agent stop` refuses it.\n\n" +
 	"| Choice | Answer | Pros | Cons |\n| --- | --- | --- | --- |\n" +
 	"| A (REC) | Record that bare hive started it | No tab pile-up | Field change |\n" +
@@ -28,21 +28,21 @@ var chatSample = []ChatMessage{
 }
 
 // TestChatGolden renders the feed of Chat.dc.html for the feed panel of 120
-// cells and compares the text cells, cols 2-117, with Chat.grid rows 5-27.
-// Rows 15-19 hold the table that Glamour draws (decision 32).
+// cells and compares the text cells, cols 2-117, with Chat.grid rows 5-28.
+// Rows 16-20 hold the table that Glamour draws (decision 32).
 func TestChatGolden(t *testing.T) {
 	lines, err := ChatLines(chatSample, 120)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(lines) != 23 {
-		t.Fatalf("%d lines, want 23 (board rows 5-27)", len(lines))
+	if len(lines) != 24 {
+		t.Fatalf("%d lines, want 24 (board rows 5-28)", len(lines))
 	}
 	var rows []string
 	for _, l := range lines {
 		rows = append(rows, fitRow(l, 116))
 	}
-	checkGolden(t, strings.Join(rows, "\n"), "Chat", rect{5, 2, 116, 23})
+	checkGolden(t, strings.Join(rows, "\n"), "Chat", rect{5, 2, 116, 24})
 }
 
 // TestCompactChatGolden renders the feed of CompactChat.dc.html lines 50-62
@@ -51,7 +51,7 @@ func TestChatGolden(t *testing.T) {
 // table that Glamour draws at the inner width 76 (decision 32).
 func TestCompactChatGolden(t *testing.T) {
 	reply := "## Interrogate, round 2\n\n" +
-		"Bare hive makes the `coordinator` tab, but its record has\n`spawned=false`. `agent stop` refuses it.\n\n" +
+		"Bare hive makes the `coordinator` tab, but its record has `spawned=false`. `agent stop` refuses it.\n\n" +
 		"| Choice | Answer | Pros | Cons |\n| --- | --- | --- | --- |\n" +
 		"| A (REC) | Record that bare hive started it | No tab pile-up | Field change |\n" +
 		"| B | Leave the old tab | Smallest change | Tabs pile up |\n\n" +

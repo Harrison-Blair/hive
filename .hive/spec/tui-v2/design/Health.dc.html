@@ -51,7 +51,7 @@ function screen(t) {
   var list = [['ok', 'herdr socket', 'protocol 22'], ['ok', 'herdr pane', 'w58:p4'], ['ok', 'home', '~/source/hive'], ['ok', 'state store', '76 records'], ['ok', 'starting agents', '0'], ['warn', 'unresolved agents', '1'], ['ok', 'git', '2.43.0'], ['ok', 'supervisor', 'live · pid 1620686'], ['ok', 'supervisor binary', 'current'], ['ok', 'stale worktrees', 'none'], ['ok', 'unpushed branches', 'none'], ['ok', 'harness claude', 'found'], ['ok', 'harness codex', 'found'], ['ok', 'harness opencode', 'found'], ['ok', 'harness pi', 'found'], ['ok', 'harness cursor-agent', 'found'], ['ok', 'gh', '2.102.0']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 5, warn = r[0] === 'warn';
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 4, y, warn ? '!' : '✓', warn ? 'accent' : 'done', 1);
     put(t, 6, y, fit(r[1], 22), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 28, y, fit(r[2], 22), warn ? 'accent' : 'dim');
