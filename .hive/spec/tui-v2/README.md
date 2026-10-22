@@ -203,7 +203,7 @@ The worker made these decisions in task `29-frame-layout`:
 
 The worker made these decisions in task `33-screen-agents`. They obey the user decision of 2026-10-21. That decision gives a tree when the children fit side by side, and a rail in the other cases. From 120 columns, one column has a maximum width of 64 cells.
 
-- Screen: the file `internal/tui/agents_screen.go`. Health › Agents keeps the current Agents screen of `agents.go` until its wave 6 task. Thus `agents.go` stays.
+- Screen: the file `internal/tui/agents_screen.go`. Task `39-screen-health` gave Health › Agents its own panel. Thus no code draws the old Agents screen. Task 33 removed its views and their tests. `agents.go` keeps only the shared parts: the record loader, the peek, and the restart.
 - Outer title: `project agents · N projects`. For one project, the title is `project agents · 1 project`.
 - Columns: a pod has a minimum width of 28 cells. One cell separates two pods. The number of pods on the screen is `min(N, (B+1)/29)`, where B is the body width of the panel. The width of each pod is `(B−(V−1))/V`, where V is the number of pods on the screen. From 120 columns, a pod has a maximum width of 64 cells. The pods are at the center of the body. They start on body row 1. Each pod on the screen has the height of the highest pod.
 - Pod: a `border` box. The title ` PROJECT ` is dim and bold. Row 1 is the goal line in dim. For an active goal, the goal line is `GOAL · wave W` for the first wave that is not done. When that wave has `needs_user`, the line is `needs you · TEXT` in accent. When no goal is active, the line is `GOAL · STATUS` for the last goal. When the project has no goal, the row is empty.
