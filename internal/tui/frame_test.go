@@ -308,6 +308,76 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	requireView(t, m, "[list]")
 }
 
+// AC2: in each focus state of decision 21 that does not keep the global
+// keys, a screen key, a view key, or tab does not change the screen or the
+// view. An overlay, a popup, help, and the filter bar also keep the focus.
+func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
+	compact := tea.WindowSizeMsg{Width: 80, Height: 24}
+	enter := key(0, "enter")
+	for _, tt := range []struct {
+		name, board, focus string
+		keepFocus          bool
+		keys               []tea.Msg
+	}{
+		{"help", "Help", "help", true, nil},
+		{"popup", "AgentDetails", "details", true, nil},
+		{"work overlay", "Compact", "details", true, nil},
+		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
+		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
+		{"logs overlay", "CompactLogs", "json", true, nil},
+		{"filter", "Logs", "filter", true, []tea.Msg{tea.KeyPressMsg{Code: tea.KeyEscape}, key('/', "/")}},
+		{"input", "Chat", "input", false, nil},
+		{"restart", "HealthAgents", "restart", false, nil},
+	} {
+		for _, press := range []tea.KeyPressMsg{key('1', "1"), key('2', "2"), key('3', "3"), key('4', "4"), key('5', "5"), key('6', "6"), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
+			t.Run(tt.name+"/"+press.String(), func(t *testing.T) {
+				m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+				for _, msg := range tt.keys {
+					m, _ = raise(t, m, msg)
+				}
+				if m.focusState() != tt.focus {
+					t.Fatalf("focus = %q; want %q", m.focusState(), tt.focus)
+				}
+				tab, view := m.activeTab(), m.activeView()
+				m, _ = raise(t, m, press)
+				if m.activeTab() != tab || m.activeView() != view {
+					t.Fatalf("key %q changed screen %d view %d to screen %d view %d", press.String(), tab, view, m.activeTab(), m.activeView())
+				}
+				if tt.keepFocus && m.focusState() != tt.focus {
+					t.Fatalf("key %q changed focus %q to %q", press.String(), tt.focus, m.focusState())
+				}
+			})
+		}
+	}
+}
+
+// AC2: an action key of the overlay still reaches its screen. In the Work
+// Tasks overlay, d opens the dependency graph.
+func TestOverlayGivesActionKeysToTheScreen(t *testing.T) {
+	m := newTestDemoModel(t, "Compact.fixture.json", demoSize{})
+	m, _ = raise(t, m, key('d', "d"))
+	if !m.tasks.fileOpen || !strings.HasPrefix(m.tasks.fileTitle, "dependency graph") {
+		t.Fatalf("d in the Work overlay gave open %t, title %q; want the dependency graph", m.tasks.fileOpen, m.tasks.fileTitle)
+	}
+	if m.focusState() != "details" {
+		t.Fatalf("focus = %q after b; want details", m.focusState())
+	}
+}
+
+// AC2: from 120 columns the details region sits beside the list, so the
+// screen keys stay global (decision 21).
+func TestWideDetailsKeepsScreenKeys(t *testing.T) {
+	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	if m.focusState() != "details" {
+		t.Fatalf("focus = %q; want details", m.focusState())
+	}
+	m, _ = raise(t, m, key('1', "1"))
+	if m.activeTab() != tabAgents {
+		t.Fatalf("1 in the wide details gave screen %d; want Agents", m.activeTab())
+	}
+}
+
 // AC2: ctrl+c two times quits in each focus state. The first ctrl+c shows
 // the quit notice.
 func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {

@@ -600,6 +600,21 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 	}
+	if entry.listDetails && m.detailsFocused() && m.width < component.LongFormWidth {
+		// Decision 21: the overlay takes its scroll keys and its action
+		// keys, and esc closes it. It drops each other key.
+		switch key {
+		case "esc", "up", "k", "down", "j", "pgup", "pgdown":
+		case "<", ">":
+			if tab != tabLogs {
+				return nil
+			}
+		default:
+			if len(key) != 1 || !strings.Contains(actionKeys, key) {
+				return nil
+			}
+		}
+	}
 	if index, ok := screenKey(key); ok {
 		view := m.views[index]
 		if index == tab {
@@ -726,6 +741,10 @@ func (m *Model) nextRegion() tea.Cmd {
 	m.regionFocus[tab] = (m.regionFocus[tab] + 1) % len(regions)
 	return m.logAction("focus region", slogString("region", regions[m.regionFocus[tab]]))
 }
+
+// actionKeys are the action keys of decision 23 that a details overlay
+// gives to its screen.
+const actionKeys = "aprhtbvdosf"
 
 // chatFeedGlobals are the keys that stay global when the chat feed has the
 // focus (decision 24).

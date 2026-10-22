@@ -199,6 +199,11 @@ The worker made these decisions in task `29-frame-layout`:
 | 6 Logs | — | Logs. `<` and `>` change the day. |
 
 - A key of a current screen that the frame does not route goes to that screen. The frame takes `tab`, so the status tabs of the current Tasks screen have no key until wave 6.
+- Below 120 columns, the details region of Work, Friction, Health, and Logs is an overlay. The overlay takes `esc`, `↑` `↓` `j` `k` `pgup` `pgdn`, and the action keys of decision 23. Each other key does nothing, as decision 21 gives. From 120 columns, the details region is a region of the screen, and each key stays global.
+
+The manager made this decision in task `29-frame-layout`:
+
+- A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
 ## Waves
 

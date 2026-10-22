@@ -40,6 +40,11 @@ is not part of this task.
   of that tab. This task removes no current screen. Record which
   current screen each tab shows.
 - The frame uses the components of `internal/tui/component/`.
+- A live check compares a capture of a pane with a board grid. In a space
+  cell of a live capture, the check does not compare the token or the bold
+  flag, because a terminal does not show them. It compares each other cell
+  fully. The golden check at the model compares each cell fully. Add this
+  rule to the spec section `Manager decisions`.
 
 ## Source files
 
@@ -70,6 +75,8 @@ Do not edit other files.
 - Each key follows the route table of decision 21 for each focus state, and
   decisions 22 to 24. Each key has one meaning.
 - `ctrl+c` two times quits, in each focus state.
+- While an overlay or a popup is open, a screen key such as `1` does not
+  change the screen (decision 21).
 - The restart prompt keeps the behavior of task `3-tui-restart`. Its footer
   follows decision 21.
 
@@ -173,3 +180,6 @@ The content of each screen. Wave 6 does it.
   Agents screen is wave 6 work.
 - 2026-10-21: the source table allows two `cmd/` tests, for the header text
   and the demo keys only.
+- 2026-10-21: after a verify fail (t29-verifier-1), AC2 states the overlay
+  rule for screen keys, and a manager decision sets the live compare of space
+  cells.
