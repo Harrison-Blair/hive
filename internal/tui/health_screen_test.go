@@ -144,12 +144,13 @@ func TestHealthRStartsBackgroundRefreshWithoutOtherActions(t *testing.T) {
 func TestHealthProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	// Decisions 3, 5, and 21: 5 selects Health, the sub-tab row marks the
-	// Home view, and the footer names the list region.
+	// Decisions 3 and 5: 5 selects Health, and the sub-tab row marks the Home
+	// view. The renderer writes only the changed cells of a row, so the footer
+	// region is checked at the model by TestTabMovesTheAccentBorder.
 	if err := RunHome(home, strings.NewReader("5r\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	for _, want := range []string{"[Home]", "capacity", "[list]"} {
+	for _, want := range []string{"[Home]", "capacity"} {
 		if !strings.Contains(ansi.Strip(out.String()), want) {
 			t.Fatalf("program output omitted %q:\n%s", want, ansi.Strip(out.String()))
 		}
