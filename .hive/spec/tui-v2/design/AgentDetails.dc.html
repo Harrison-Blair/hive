@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive agent details popup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 728px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="40"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":728}}'>
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
+function frame(t, active, region, hints) {
+  var w = t.w;
+  put(t, 0, 0, ' hive  ~/source/hive', 'fg', 1);
+  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 12, 0, '●', 'working', 1); put(t, rx + 35, 0, '●', 'working', 1);
+  put(t, 0, 2, rep('─', w), 'border');
+  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
+  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === active) { put(t, x, 1, lab, 'accent', 1); put(t, x, 2, rep('━', lab.length), 'accent'); } else put(t, x, 1, lab, 'dim'); x += lab.length + 1; });
+  var tag = ' [' + region + '] ';
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
+}
+function background(t) {
+  frame(t, 0, 'graph', '');
+  box(t, 0, 3, 120, 36, 'border', 'project agents', 'border');
+  box(t, 28, 5, 64, 16, 'border', 'hive · g1-tui-restart · done', 'border');
+  function card(x, y, name, sub) { box(t, x, y, 24, 4, 'border'); put(t, x + 2, y + 1, name, 'border'); put(t, x + 2, y + 2, sub, 'border'); }
+  card(48, 7, '◐ manager-hive', 'claude · idle · nudged 4m');
+  card(34, 14, '○ t4-worker-1', 'pi · stopped · task 4');
+  card(64, 14, '○ t4-verifier-1', 'pi · stopped · pass');
+  for (var y = 0; y < t.h; y++) for (var x = 0; x < t.w; x++) { t.g[y][x].k = 'border'; t.g[y][x].b = 0; }
+}
+function popup(t) {
+  var bx = 30, by = 7, bw = 60, bh = 27;
+  for (var j = 0; j < bh; j++) put(t, bx, by + j, rep(' ', bw), 'fg');
+  box(t, bx, by, bw, bh, 'accent', 'manager-hive · esc closes', 'accent');
+  var kv = [['role', 'manager'], ['project', 'hive'], ['status', '◐ live · idle'], ['nudged', '4m ago by supervisor'], ['harness', 'claude'], ['model', 'claude-opus-5-5'], ['pane', 'w58:p6'], ['tab', 'manager-hive'], ['goal', 'g1-tui-restart · done'], ['parent', 'coordinator-g2'], ['replaces', 'manager-hive-g1']];
+  kv.forEach(function (p, i) { put(t, bx + 3, by + 2 + i, fit(p[0], 10), 'dim'); put(t, bx + 13, by + 2 + i, fit(p[1], 44), 'fg'); });
+  put(t, bx + 13, by + 4, '◐', 'accent');
+  put(t, bx + 3, by + 14, 'ACTIONS', 'accent', 1);
+  [['a', 'attach to pane'], ['p', 'peek pane'], ['t', 'open task · none']].forEach(function (p, i) { put(t, bx + 3, by + 15 + i, p[0], i === 2 ? 'dim' : 'accent', 1); put(t, bx + 6, by + 15 + i, p[1], i === 2 ? 'dim' : 'fg'); });
+  put(t, bx + 3, by + 20, 'RECENT', 'accent', 1);
+  ['14:08 inbox 28 sent to coordinator', '14:07 land 4-agents-equal-columns · ede94f3e', '13:58 land 3-tui-restart · 3ccd93fb', '13:44 land 2-stale-coordinator-startup · 0e079272'].forEach(function (s, i) { put(t, bx + 3, by + 21 + i, fit(s, 54), i === 0 ? 'fg' : 'dim'); });
+  var tag = ' [details] ';
+  put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, 'a attach · p peek · t task · ↑↓ scroll · esc close', 'dim');
+}
+var TARGET = [[3,"╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮",[[0,119,"border",0]]],[5,"│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │",[[0,119,"border",0]]],[6,"│                           │ g1-tui-restart · done                                        │                           │",[[0,119,"border",0]]],[24,"│                             │  t  open task · none                                     │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,33,"dim",1],[34,51,"dim",0],[52,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[26,"│                             │  RECENT                                                  │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,38,"accent",1],[39,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[27,"│                             │  14:08 inbox 28 sent to coordinator                      │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[28,"│                             │  14:07 land 4-agents-equal-columns · ede94f3e            │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,76,"dim",0],[77,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[29,"│                             │  13:58 land 3-tui-restart · 3ccd93fb                     │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,67,"dim",0],[68,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[30,"│                             │  13:44 land 2-stale-coordinator-startup · 0e079272       │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,32,"fg",0],[33,81,"dim",0],[82,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[31,"│                             │                                                          │                             │",[[0,29,"border",0],[30,30,"accent",0],[31,88,"fg",0],[89,89,"accent",0],[90,119,"border",0]]],[37,"│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │",[[0,119,"border",0]]]];
+function paint(t) { TARGET.forEach(function (r) { r[2].forEach(function (u) { put(t, u[0], r[0], r[1].slice(u[0], u[1] + 1), u[2], u[3]); }); }); }
+class Component extends DCLogic {
+  renderVals() {
+    var t = T(120, 40);
+    background(t);
+    popup(t);
+    paint(t);
+    return { rows: rows(t) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+ .hive/spec/tui-v2/README.md                        |   16 +
+ .hive/spec/tui-v2/tasks/33-screen-agents/brief.md  |  150 +++
+ .../tasks/33-screen-agents/evidence/V-gate.md      |  180 +++
+ .../tui-v2/tasks/33-screen-agents/evidence/V1.md   |  237 ++++
+ .../tui-v2/tasks/33-screen-agents/evidence/V2.md   |   90 ++
+ .../tasks/33-screen-agents/evidence/VERIFIED.md    |  188 +++
+ .../evidence/screens/AgentDetails.ansi             |   40 +
+ .../evidence/screens/AgentDetails.png              |  Bin 0 -> 89786 bytes
+ .../evidence/screens/AgentsMany.ansi               |   40 +
+ .../evidence/screens/AgentsMany.png                |  Bin 0 -> 105077 bytes
+ .../evidence/screens/CompactAgents.ansi            |   24 +
+ .../evidence/screens/CompactAgents.png             |  Bin 0 -> 43710 bytes
+ .../33-screen-agents/evidence/screens/Help.ansi    |   40 +
+ .../33-screen-agents/evidence/screens/Help.png     |  Bin 0 -> 104143 bytes
+ .../33-screen-agents/evidence/screens/Main.ansi    |   40 +
+ .../33-screen-agents/evidence/screens/Main.png     |  Bin 0 -> 55846 bytes
+ .../evidence/screens/ca-enter.ansi                 |   24 +
+ .../33-screen-agents/evidence/screens/ca-enter.png |  Bin 0 -> 57518 bytes
+ .../evidence/screens/compare-program.go.txt        |   57 +
+ .../33-screen-agents/evidence/screens/compare.txt  |    5 +
+ .../33-screen-agents/evidence/screens/m-down.ansi  |   40 +
+ .../33-screen-agents/evidence/screens/m-down.png   |  Bin 0 -> 56574 bytes
+ .../evidence/screens/m2-enter.ansi                 |   40 +
+ .../33-screen-agents/evidence/screens/m2-enter.png |  Bin 0 -> 65495 bytes
+ .../33-screen-agents/evidence/screens/m2-t.ansi    |   40 +
+ .../33-screen-agents/evidence/screens/m2-t.png     |  Bin 0 -> 104103 bytes
+ .../33-screen-agents/evidence/screens/main-h.ansi  |   40 +
+ .../33-screen-agents/evidence/screens/main-h.png   |  Bin 0 -> 48444 bytes
+ .../33-screen-agents/evidence/screens/many-k.ansi  |   40 +
+ .../33-screen-agents/evidence/screens/many-k.png   |  Bin 0 -> 105344 bytes
+ .../33-screen-agents/evidence/screens/many-r4.ansi |   40 +
+ .../33-screen-agents/evidence/screens/many-r4.png  |  Bin 0 -> 90408 bytes
+ .../evidence/verify3/AgentDetails-board.png        |  Bin 0 -> 89812 bytes
+ .../evidence/verify3/AgentDetails.ansi             |   40 +
+ .../evidence/verify3/AgentDetails.metadata.json    |   18 +
+ .../evidence/verify3/AgentDetails.plain.txt        |   40 +
+ .../evidence/verify3/AgentDetails.png              |  Bin 0 -> 89613 bytes
+ .../evidence/verify3/AgentsMany-board.png          |  Bin 0 -> 104468 bytes
+ .../evidence/verify3/AgentsMany.ansi               |   40 +
+ .../evidence/verify3/AgentsMany.metadata.json      |   18 +
+ .../evidence/verify3/AgentsMany.plain.txt          |   40 +
+ .../evidence/verify3/AgentsMany.png                |  Bin 0 -> 105696 bytes
+ .../evidence/verify3/CompactAgents-board.png       |  Bin 0 -> 45875 bytes
+ .../evidence/verify3/CompactAgents.ansi            |   24 +
+ .../evidence/verify3/CompactAgents.metadata.json   |   18 +
+ .../evidence/verify3/CompactAgents.plain.txt       |   24 +
+ .../evidence/verify3/CompactAgents.png             |  Bin 0 -> 43812 bytes
+ .../evidence/verify3/Help-board.png                |  Bin 0 -> 103612 bytes
+ .../33-screen-agents/evidence/verify3/Help.ansi    |   40 +
+ .../evidence/verify3/Help.metadata.json            |   18 +
+ .../evidence/verify3/Help.plain.txt                |   40 +
+ .../33-screen-agents/evidence/verify3/Help.png     |  Bin 0 -> 104038 bytes
+ .../evidence/verify3/Main-board.png                |  Bin 0 -> 56910 bytes
+ .../33-screen-agents/evidence/verify3/Main.ansi    |   40 +
+ .../evidence/verify3/Main.metadata.json            |   18 +
+ .../evidence/verify3/Main.plain.txt                |   42 +-
+ .../33-screen-agents/evidence/verify3/Main.png     |  Bin 0 -> 55796 bytes
+ .../33-screen-agents/evidence/verify3/base-red.log |   81 ++
+ .../evidence/verify3/compact-enter.ansi            |   24 +
+ .../evidence/verify3/compact-enter.metadata.json   |   18 +
+ .../evidence/verify3/compact-esc.ansi              |   24 +
+ .../evidence/verify3/compact-esc.metadata.json     |   18 +
+ .../evidence/verify3/compact-help.ansi             |   24 +
+ .../evidence/verify3/compact-help.metadata.json    |   18 +
+ .../evidence/verify3/details-esc.ansi              |   40 +
+ .../evidence/verify3/details-esc.metadata.json     |   18 +
+ .../33-screen-agents/evidence/verify3/gate.log     |   94 ++
+ .../33-screen-agents/evidence/verify3/green.log    |  232 ++++
+ .../evidence/verify3/help-closed.ansi              |   40 +
+ .../evidence/verify3/help-closed.metadata.json     |   18 +
+ .../evidence/verify3/help-esc.ansi                 |   40 +
+ .../evidence/verify3/help-esc.metadata.json        |   18 +
+ .../33-screen-agents/evidence/verify3/help-red.log |  299 +++++
+ .../33-screen-agents/evidence/verify3/key-red.log  |   45 +
+ .../33-screen-agents/evidence/verify3/live.log     |   33 +
+ .../33-screen-agents/evidence/verify3/main-a.ansi  |   40 +
+ .../evidence/verify3/main-a.metadata.json          |   18 +
+ .../evidence/verify3/main-down.ansi                |   40 +
+ .../evidence/verify3/main-down.metadata.json       |   18 +
+ .../evidence/verify3/main-down.plain.txt           |   42 +-
+ .../evidence/verify3/main-down.png                 |  Bin 0 -> 56546 bytes
+ .../evidence/verify3/main-enter.ansi               |   40 +
+ .../evidence/verify3/main-enter.metadata.json      |   18 +
+ .../evidence/verify3/main-esc.ansi                 |   40 +
+ .../evidence/verify3/main-esc.metadata.json        |   18 +
+ .../33-screen-agents/evidence/verify3/main-h.ansi  |   40 +
+ .../evidence/verify3/main-h.metadata.json          |   18 +
+ .../33-screen-agents/evidence/verify3/main-h2.ansi |   40 +
+ .../evidence/verify3/main-h2.metadata.json         |   18 +
+ .../33-screen-agents/evidence/verify3/main-p.ansi  |   40 +
+ .../evidence/verify3/main-p.metadata.json          |   18 +
+ .../33-screen-agents/evidence/verify3/main-r.ansi  |   40 +
+ .../evidence/verify3/main-r.metadata.json          |   18 +
+ .../evidence/verify3/main-right.ansi               |   40 +
+ .../evidence/verify3/main-right.metadata.json      |   18 +
+ .../33-screen-agents/evidence/verify3/main-t.ansi  |   40 +
+ .../evidence/verify3/main-t.metadata.json          |   18 +
+ .../33-screen-agents/evidence/verify3/many-k.ansi  |   40 +
+ .../evidence/verify3/many-k.metadata.json          |   18 +
+ .../evidence/verify3/many-k.plain.txt              |   40 +
+ .../33-screen-agents/evidence/verify3/many-k.png   |  Bin 0 -> 105678 bytes
+ .../evidence/verify3/many-left.ansi                |   40 +
+ .../evidence/verify3/many-left.metadata.json       |   18 +
+ .../evidence/verify3/many-right.ansi               |   40 +
+ .../evidence/verify3/many-right.metadata.json      |   18 +
+ .../33-screen-agents/evidence/verify3/merge.log    |   12 +
+ .../33-screen-agents/evidence/verify3/popup-r.ansi |   40 +
+ .../evidence/verify3/popup-r.metadata.json         |   18 +
+ .../evidence/verify3/quit-first.ansi               |   40 +
+ .../evidence/verify3/quit-first.metadata.json      |   18 +
+ .../33-screen-agents/evidence/verify3/scope.log    |   55 +
+ .../evidence/verify3/token-red.log                 |   32 +
+ internal/tui/agents.go                             | 1384 +-------------------
+ internal/tui/agents_screen.go                      |  730 +++++++++++
+ internal/tui/agents_screen_test.go                 |  515 ++++++++
+ internal/tui/agents_test.go                        | 1158 +---------------
+ internal/tui/component/card.go                     |    6 +-
+ internal/tui/component/card_test.go                |   20 +-
+ internal/tui/component/fit_test.go                 |   17 +-
+ internal/tui/component/panel.go                    |    6 +-
+ internal/tui/demo.go                               |   28 +-
+ internal/tui/demo_test.go                          |    4 +-
+ internal/tui/fix_test.go                           |    2 +-
+ internal/tui/frame.go                              |   85 +-
+ internal/tui/frame_test.go                         |   24 +-
+ internal/tui/selection_marker_test.go              |  117 +-
+ internal/tui/shell.go                              |   13 +-
+ internal/tui/shell_test.go                         |    6 +-
+ .../tui/testdata/agents-board/graph-120x40.golden  |   40 -
+ .../tui/testdata/agents-board/graph-200x57.golden  |   57 -
+ .../tui/testdata/agents-board/table-200x57.golden  |   57 -
+ .../tui/testdata/agents-board/tree-200x57.golden   |   57 -
+ internal/tui/tui.go                                |    1 +
+ testdata/ste-baseline.json                         |    1 +
+ 134 files changed, 5339 insertions(+), 2955 deletions(-)

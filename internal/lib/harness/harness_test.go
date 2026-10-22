@@ -1,173 +1,110 @@
 package harness
 
 import (
-	"reflect"
-	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
-func TestKinds(t *testing.T) {
-	want := strings.Fields("pi claude codex gemini cursor devin agy cline omp mastracode opencode copilot kimi kiro droid amp grok hermes kilo qodercli qwen letta maki muse")
-	got := Kinds()
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("got %q want %q", got, want)
-	}
-	got[0] = "mutated"
-	if Kinds()[0] != "pi" {
-		t.Fatal("Kinds leaked its backing array")
-	}
-	if !IsKind("claude") || IsKind("mutated") || IsKind("") {
-		t.Fatal("IsKind disagrees with Kinds")
-	}
+type testProfile struct {
+	kind  string
+	args  []string
+	start time.Duration
+	ready time.Duration
+	names []string
 }
 
-func TestKindsAreUnique(t *testing.T) {
-	seen := map[string]bool{}
-	for _, kind := range Kinds() {
-		if seen[kind] {
-			t.Fatalf("kind %q listed twice", kind)
-		}
-		seen[kind] = true
-	}
-}
+func (p testProfile) Kind() string                               { return p.kind }
+func (p testProfile) Args(model string, extra []string) []string { return p.args }
+func (p testProfile) StartTimeout() time.Duration                { return p.start }
+func (p testProfile) ReadyTimeout() time.Duration                { return p.ready }
+func (p testProfile) ProcessNames() []string                     { return p.names }
+func (p testProfile) Trust() Trust                               { return Trust{} }
 
-func TestLookup(t *testing.T) {
-	for _, kind := range Kinds() {
-		p, ok := Lookup(kind)
-		if !ok || p.Kind != kind {
-			t.Fatalf("%s: Lookup gave (%+v, %v)", kind, p, ok)
-		}
+func TestCheckBounds(t *testing.T) {
+	cases := []struct {
+		name  string
+		start time.Duration
+		ready time.Duration
+		want  string
+	}{
+		{name: "three seconds", start: 3 * time.Second, ready: 2 * time.Second, want: "more than 3"},
+		{name: "three hundred one seconds", start: 301 * time.Second, ready: 2 * time.Second, want: "at most 300"},
+		{name: "below ready", start: 10 * time.Second, ready: 11 * time.Second, want: "ready"},
+		{name: "valid equal", start: 10 * time.Second, ready: 10 * time.Second, want: ""},
+		{name: "valid above", start: 120 * time.Second, ready: 10 * time.Second, want: ""},
 	}
-	p, _ := Lookup("hermes")
-	p.InterruptKeys[0] = "mutated"
-	p.Model.Prefix[0] = "mutated"
-	again, _ := Lookup("hermes")
-	if again.InterruptKeys[0] != "ctrl+c" || again.Model.Prefix[0] != "chat" {
-		t.Fatalf("Lookup leaked shared slices: %+v", again)
-	}
-}
-
-func TestLookupUnknown(t *testing.T) {
-	if _, ok := Lookup("nope"); ok {
-		t.Fatal("unknown kind found")
-	}
-	if rows := Capabilities("nope"); rows != nil {
-		t.Fatalf("unknown kind has rows %v", rows)
-	}
-}
-
-// The typed fields pause and spawn read; pinned for every kind so the
-// migration from their switches cannot drift.
-func TestInterruptAndModelPolicy(t *testing.T) {
-	for _, kind := range Kinds() {
-		p, _ := Lookup(kind)
-		keys := []string{"esc"}
-		switch kind {
-		case "amp", "copilot", "opencode", "kilo":
-			keys = []string{"esc", "esc"}
-		case "droid", "grok", "hermes", "mastracode", "qodercli":
-			keys = []string{"ctrl+c"}
-		}
-		if !reflect.DeepEqual(p.InterruptKeys, keys) {
-			t.Errorf("%s keys %q want %q", kind, p.InterruptKeys, keys)
-		}
-		model := ModelPolicy{Flag: "--model"}
-		if slices.Contains(strings.Fields("kiro amp muse mastracode qodercli"), kind) {
-			model.Flag = ""
-		}
-		model.ShortConflict = slices.Contains(strings.Fields("codex gemini cline opencode kimi droid grok hermes kilo qwen letta maki"), kind)
-		if kind == "hermes" {
-			model.Prefix = []string{"chat"}
-		}
-		if !reflect.DeepEqual(p.Model, model) {
-			t.Errorf("%s model %+v want %+v", kind, p.Model, model)
-		}
-	}
-}
-
-func TestResumeTemplates(t *testing.T) {
-	want := map[string][]string{
-		"claude":   {"--resume", "R"},
-		"codex":    {"resume", "R"},
-		"pi":       {"--session", "R"},
-		"opencode": {"--session", "R"},
-		"cursor":   {"--resume", "R"},
-	}
-	for _, kind := range Kinds() {
-		p, _ := Lookup(kind)
-		if args, ok := want[kind]; ok {
-			if p.Resume == nil || !reflect.DeepEqual(p.Resume("R"), args) {
-				t.Errorf("%s resume template wrong", kind)
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			err := Check(testProfile{kind: "demo", start: test.start, ready: test.ready})
+			if test.want == "" {
+				if err != nil {
+					t.Fatalf("Check() error = %v; want nil", err)
+				}
+				return
 			}
-		} else if p.Resume != nil {
-			t.Errorf("%s claims an unverified resume template", kind)
-		}
-	}
-}
-
-func TestCapabilitiesFixedRows(t *testing.T) {
-	names := []Capability{Interrupt, ModelSelect, ModelDiscovery, Resume, SessionRef, LifecycleHooks, UsageTokens, UsageCost}
-	want := "interrupt model_select model_discovery resume session_ref lifecycle_hooks usage_tokens usage_cost"
-	var got []string
-	for _, n := range names {
-		got = append(got, string(n))
-	}
-	if strings.Join(got, " ") != want {
-		t.Fatalf("capability names %q", got)
-	}
-	for _, kind := range Kinds() {
-		rows := Capabilities(kind)
-		if len(rows) != len(names) {
-			t.Fatalf("%s: %d rows", kind, len(rows))
-		}
-		for i, r := range rows {
-			if r.Name != names[i] || !slices.Contains([]Level{Fledge, Native, None, Unknown}, r.Level) || strings.TrimSpace(r.Evidence) == "" {
-				t.Errorf("%s row %d: %+v", kind, i, r)
+			if err == nil {
+				t.Fatalf("Check() error = nil; want text %q", test.want)
 			}
+			if !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("Check() error = %q; want text %q", err, test.want)
+			}
+		})
+	}
+}
+
+func TestLookupKnownAndUnknown(t *testing.T) {
+	profile, err := Lookup("claude")
+	if err != nil {
+		t.Fatalf("Lookup(claude) error = %v; want nil", err)
+	}
+	if profile == nil {
+		t.Fatalf("Lookup(claude) profile = nil; want a profile")
+	}
+	if profile.Kind() != "claude" {
+		t.Fatalf("Kind() = %q; want claude", profile.Kind())
+	}
+	for _, name := range profile.ProcessNames() {
+		switch name {
+		case "node", "python", "sh", "bash":
+			t.Fatalf("ProcessNames() = %q; generic name %q must not identify the harness", profile.ProcessNames(), name)
+		}
+	}
+	if !contains(profile.ProcessNames(), "claude") {
+		t.Fatalf("ProcessNames() = %q; want claude", profile.ProcessNames())
+	}
+	_, err = Lookup("nope")
+	if err == nil {
+		t.Fatalf("Lookup(nope) error = nil; want an unknown harness error")
+	}
+	if !strings.Contains(err.Error(), "unknown harness: nope") {
+		t.Fatalf("Lookup(nope) error = %q; want unknown harness: nope", err)
+	}
+	if !strings.Contains(err.Error(), "claude") {
+		t.Fatalf("Lookup(nope) error = %q; want the known kind list", err)
+	}
+}
+
+func TestEachRegisteredProfilePassesCheck(t *testing.T) {
+	for _, kind := range []string{"claude"} {
+		profile, err := Lookup(kind)
+		if err != nil {
+			t.Fatalf("Lookup(%s) error = %v", kind, err)
+		}
+		if profile == nil {
+			t.Fatalf("Lookup(%s) profile = nil", kind)
+		}
+		if err := Check(profile); err != nil {
+			t.Fatalf("Check(%s) error = %v", kind, err)
 		}
 	}
 }
 
-// Plan D section 2.3: the verified rows for the five installed harnesses.
-func TestInstalledRows(t *testing.T) {
-	want := map[string]string{
-		"claude":   "fledge fledge fledge native fledge native fledge none",
-		"codex":    "fledge fledge fledge native fledge native fledge none",
-		"pi":       "fledge fledge fledge native fledge native fledge fledge",
-		"opencode": "fledge fledge fledge native fledge native fledge fledge",
-		"cursor":   "fledge fledge fledge native fledge native none none",
-	}
-	for kind, levels := range want {
-		if got := levelsOf(Capabilities(kind)); got != levels {
-			t.Errorf("%s: got %q want %q", kind, got, levels)
+func contains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
 		}
 	}
-}
-
-// Uninstalled kinds get only what code already encodes and unknown elsewhere.
-func TestUninstalledRows(t *testing.T) {
-	want := map[string]string{
-		"gemini":     "fledge fledge none unknown none none unknown unknown",
-		"mastracode": "fledge none none unknown native native unknown unknown",
-		"kiro":       "fledge none none unknown none none unknown unknown",
-		"agy":        "fledge fledge none unknown native native unknown unknown",
-	}
-	for kind, levels := range want {
-		rows := Capabilities(kind)
-		if got := levelsOf(rows); got != levels {
-			t.Errorf("%s: got %q want %q", kind, got, levels)
-		}
-		if !strings.Contains(rows[0].Evidence, "default binding, unverified") {
-			t.Errorf("%s interrupt evidence %q", kind, rows[0].Evidence)
-		}
-	}
-}
-
-func levelsOf(rows []Row) string {
-	var levels []string
-	for _, r := range rows {
-		levels = append(levels, string(r.Level))
-	}
-	return strings.Join(levels, " ")
+	return false
 }

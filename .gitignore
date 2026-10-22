@@ -18,8 +18,28 @@
 
 # Repo config
 !.gitignore
-!.fledge/config.toml
-!.github/**
+!.github/workflows/ci.yml
+!.github/workflows/release.yml
+!.github/scripts/check-tag.sh
+!.github/scripts/package.sh
+
+# Skill discovery links for Claude Code
+!.claude/skills/hive-coordinator
+!.claude/skills/hive-manager
+!.claude/skills/hive-worker
+!.claude/skills/hive-verifier
+!.claude/skills/hive-agent
 
 # Test fixtures
 !**/testdata/**
+
+# Personal and runtime data of the home (the checkout is the home). Never tracked.
+/projects/
+/memory/
+/overrides/
+/plans/
+/handoff.md
+.hive/*
+!.hive/README.md
+!.hive/spec/
+!.hive/spec/**

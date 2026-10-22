@@ -1,0 +1,25 @@
+--- FAIL: TestChatMatchesItsBoard (0.01s)
+    chat_test.go:41: convert: row 35 col 4: code "37": unsupported SGR parameter 37
+--- FAIL: TestCompactChatMatchesItsBoard (0.00s)
+    chat_test.go:45: convert: row 19 col 4: code "37": unsupported SGR parameter 37
+--- FAIL: TestChatFixtureScrollPutsTheMessageAtTheTop (0.00s)
+    chat_test.go:69: feed title row = "╭────────────────────────────────────────────────────�
+--- FAIL: TestChatLoadsRecentConversationAndInboxEvents (0.01s)
+    chat_test.go:100: view does not contain "│ 08:00  you · pending first message":
+--- FAIL: TestChatKeysScrollTheFeed (0.01s)
+    chat_test.go:167: view does not contain "line-01":
+--- FAIL: TestChatKeysFollowTheFocusRules (0.00s)
+    chat_test.go:203: view does not contain "> x█":
+--- FAIL: TestDemoChatSendShowsTheNotice (0.00s)
+    chat_test.go:269: view does not contain "> 1A, 2A, 3B█":
+--- FAIL: TestChatFitsEachSize (0.01s)
+        chat_test.go:311: row 19 has a broken border "│                                          ││                                  │"
+        chat_test.go:311: row 20 has a broken border "│                                          ││                                  │"
+        chat_test.go:311: row 35 has a broken border "│                                                                                 ││                                  │"
+        chat_test.go:311: row 35 has a broken border "│                                                                                  ││                                  │"
+        chat_test.go:311: row 36 has a broken border "│                                                                                  ││                                  │"
+--- FAIL: TestChatProgramRunsWithStringInput (0.00s)
+    chat_test.go:445: program output omitted Chat:
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.083s
+FAIL

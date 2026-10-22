@@ -1,43 +1,95 @@
-// Package inbox wires the caller's inbox listing and its read subcommand.
 package inbox
 
 import (
+	"io"
 	"os"
-	"time"
 
-	"github.com/Harrison-Blair/fledge/cmd/inbox/read"
-	"github.com/Harrison-Blair/fledge/internal/inbox"
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	inboxlogic "github.com/Harrison-Blair/hive/internal/inbox"
+	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
+// New creates the inbox command with its send child.
 func New() *cobra.Command {
-	var options inbox.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "inbox", Short: "List your inbox: messages, task assignments, and supervisor wakes", Args: cobra.NoArgs,
-		Long: "List the inbox of the caller's registered agent: unread records first, then read\nones with --all, each group oldest first, with the first line of each body.\n\nMessages to a registered agent are stored here and announced in its pane by a\none-line doorbell. Read the bodies with fledge inbox read.",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			options.Width, options.Now = width(cmd), time.Now()
-			return cli.Finish(inbox.Run(cmd.Context(), libagent.FromEnvironment(0), options), cmd.OutOrStdout(), asJSON, inbox.Render)
-		}}
-	cmd.Flags().BoolVar(&options.All, "all", false, "Include read records")
-	cmd.Flags().BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	cmd.AddCommand(read.New())
-	return cmd
+	command := &cobra.Command{
+		Use:   "inbox",
+		Short: "read and send inbox records",
+		Args:  cobra.NoArgs,
+	}
+	command.Flags().String("role", "", "inbox key")
+	command.Flags().String("agent", "", "reading agent")
+	command.Flags().Bool("all", false, "print each record and set nothing")
+	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
+	command.AddCommand(newSend())
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		role, _ := cmd.Flags().GetString("role")
+		roleFlag := cmd.Flags().Lookup("role")
+		roleSet := roleFlag != nil && roleFlag.Changed
+		agent, _ := cmd.Flags().GetString("agent")
+		all, _ := cmd.Flags().GetBool("all")
+		pane, _ := cmd.Flags().GetString("pane")
+		var envelope output.Envelope
+		original := cmd.OutOrStdout()
+		tracker := &trackingWriter{writer: original}
+		cmd.SetOut(tracker)
+		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
+			envelope = inboxlogic.Read(home, inboxlogic.ReadOptions{
+				Role: role, RoleSet: roleSet, All: all, Agent: agent, PaneID: pane, HerdrPane: os.Getenv("HERDR_PANE_ID"),
+			})
+			return envelope, inboxlogic.ReadText(envelope), nil
+		})
+		cmd.SetOut(original)
+		if tracker.err != nil {
+			ids := inboxlogic.Consumed(envelope)
+			if len(ids) > 0 {
+				reportRole := role
+				if !roleSet {
+					if result, ok := envelope.Result.(inboxlib.Result); ok && len(result.Records) > 0 {
+						reportRole = result.Records[0].Role
+					}
+				}
+				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), reportRole, ids)
+			}
+		}
+		return err
+	}
+	return command
 }
 
-// width is the terminal width of the command's output, or 0 (no limit) when
-// it is not a terminal.
-func width(cmd *cobra.Command) int {
-	f, ok := cmd.OutOrStdout().(*os.File)
-	if !ok {
-		return 0
+func newSend() *cobra.Command {
+	command := &cobra.Command{
+		Use:   "send TEXT",
+		Short: "append a message record",
+		Args:  cobra.ExactArgs(1),
 	}
-	w, _, err := term.GetSize(int(f.Fd()))
-	if err != nil {
-		return 0
+	command.Flags().String("to", "", "inbox key")
+	command.Flags().String("agent", "", "sending agent")
+	command.RunE = func(cmd *cobra.Command, args []string) error {
+		to, _ := cmd.Flags().GetString("to")
+		agent, _ := cmd.Flags().GetString("agent")
+		pane, _ := cmd.Flags().GetString("pane")
+		return common.Run(cmd, "inbox send", func(home string) (output.Envelope, string, error) {
+			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]}, pane, os.Getenv("HERDR_PANE_ID"))
+			return envelope, inboxlogic.SendText(envelope), nil
+		})
 	}
-	return w
+	return command
+}
+
+type trackingWriter struct {
+	writer io.Writer
+	err    error
+}
+
+func (w *trackingWriter) Write(data []byte) (int, error) {
+	n, err := w.writer.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
+	if err != nil && w.err == nil {
+		w.err = err
+	}
+	return n, err
 }

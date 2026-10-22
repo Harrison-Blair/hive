@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive TUI components</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 1187px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="67"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":1187}}'>
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff', user:'#e9cf9b', code:'#9fd0ff'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
+function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
+function cap(t, y, name, spec) { put(t, 0, y, name, 'accent', 1); put(t, name.length + 2, y, spec, 'dim'); }
+function sheet(t) {
+  put(t, 0, 0, 'HIVE TUI COMPONENTS', 'accent', 1); put(t, 21, 0, 'Lip Gloss + Bubbles · each block below is one reusable Go component', 'dim');
+  cap(t, 2, 'Palette', 'terminal default background and foreground · lipgloss.Color');
+  [['fg', 'default'], ['border', '#3d3a33'], ['dim', '#a39d90'], ['accent', '#f5b942'], ['working', '#6ee69a'], ['done', '#7ccf6a'], ['info', '#6fb7ff'], ['user', '#e9cf9b new'], ['code', '#9fd0ff new']].forEach(function (p, i) { put(t, i * 13, 3, '██', p[0]); put(t, i * 13 + 3, 3, p[0], 'fg'); put(t, i * 13 + 3, 4, p[1], 'dim'); });
+  cap(t, 6, 'Header', 'bold · full width · left: home · right: coordinator, supervisor, needs you, clock');
+  put(t, 0, 7, ' hive  ~/source/hive', 'fg', 1);
+  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  put(t, 120 - right.length, 7, right, 'fg', 1); put(t, 120 - right.length + 12, 7, '●', 'working', 1); put(t, 120 - right.length + 35, 7, '●', 'working', 1);
+  cap(t, 9, 'TabBar', 'keys 1–6 · active: accent bold + ━ underline · others dim · rule in border color');
+  put(t, 0, 11, rep('─', 120), 'border');
+  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
+  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === 0) { put(t, x, 10, lab, 'accent', 1); put(t, x, 11, rep('━', lab.length), 'accent'); } else put(t, x, 10, lab, 'dim'); x += lab.length + 1; });
+  cap(t, 13, 'SubTabs', '[ ] switch · active in brackets, accent bold · hint at right');
+  put(t, 1, 14, ' Goals ', 'dim'); put(t, 10, 14, ' Queue ', 'dim'); put(t, 19, 14, '[Tasks]', 'accent', 1); put(t, 102, 14, '[ ] switch view', 'dim');
+  cap(t, 16, 'Panel', 'RoundedBorder · Padding(0,1) · title in top border · focus = accent border · tab moves focus');
+  box(t, 0, 17, 40, 5, 'border', 'unfocused', 'accent'); put(t, 2, 19, 'border #3d3a33', 'dim');
+  box(t, 44, 17, 40, 5, 'accent', 'focused', 'accent'); put(t, 46, 19, 'border #f5b942 · takes the keys', 'dim');
+  cap(t, 23, 'Viewport + ScrollMark', 'only regions scroll · ┃ thumb drawn on the right border · horizontal ━ on the bottom border');
+  box(t, 0, 24, 60, 7, 'accent', 'viewport', 'accent');
+  for (var i = 0; i < 5; i++) put(t, 2, 25 + i, 'line ' + (41 + i) + ' of 120', 'fg');
+  vline(t, 59, 26, 2, '┃', 'accent');
+  box(t, 64, 24, 56, 7, 'border', 'horizontal', 'accent'); put(t, 66, 26, 'projects 1–4 of 5 · ←→ at the edge', 'dim'); put(t, 65, 30, rep('━', 42), 'dim');
+  cap(t, 32, 'List', '▶ selected · fixed columns · truncates with …');
+  box(t, 0, 33, 60, 6, 'accent', 'tasks · 4', 'accent');
+  put(t, 4, 34, fit('ID', 26) + fit('STATUS', 10) + 'WAVE', 'dim');
+  put(t, 2, 35, '  ', 'fg'); put(t, 4, 35, fit('4-agents-equal-columns', 25), 'fg'); put(t, 30, 35, 'landed', 'done'); put(t, 40, 35, 'C', 'dim');
+  put(t, 2, 36, '▶', 'accent', 1); put(t, 4, 36, fit('3-tui-restart', 26), 'accent', 1); put(t, 30, 36, 'landed', 'done'); put(t, 40, 36, 'B', 'dim');
+  put(t, 4, 37, fit('2-stale-coordinator-startup', 25), 'fg'); put(t, 30, 37, 'landed', 'done'); put(t, 40, 37, 'A', 'dim');
+  put(t, 64, 32, 'Details', 'accent', 1); put(t, 73, 32, 'labels dim, 10 cols · sections accent', 'dim');
+  box(t, 64, 33, 56, 6, 'border', '3-tui-restart', 'accent');
+  put(t, 66, 34, fit('status', 10), 'dim'); put(t, 76, 34, 'landed', 'done');
+  put(t, 66, 35, fit('goal', 10), 'dim'); put(t, 76, 35, 'g1-tui-restart · wave B', 'fg');
+  put(t, 66, 36, 'ACCEPTANCE', 'accent', 1);
+  put(t, 66, 37, '✓', 'done'); put(t, 68, 37, 'AC1 r restarts, confirms only when live', 'fg');
+  cap(t, 40, 'FilterBar', '/ opens · typed fields level: comp: proj: agent: task: req: · fixed above the list');
+  box(t, 0, 41, 120, 3, 'border', 'filter', 'accent');
+  put(t, 2, 42, '/', 'accent', 1); put(t, 4, 42, 'level:', 'dim'); put(t, 10, 42, 'warn', 'fg'); put(t, 15, 42, 'agent:', 'dim'); put(t, 21, 42, 'manager-hive', 'fg'); put(t, 34, 42, '█', 'accent');
+  cap(t, 45, 'Input + Chat text', 'fixed at the bottom · user text in user color · agent replies render markdown');
+  box(t, 0, 46, 120, 3, 'accent', 'message', 'accent'); put(t, 2, 47, '> restart the supervisor please', 'user'); put(t, 33, 47, '█', 'accent');
+  cap(t, 50, 'Card', 'graph node · 24×4 · dot = state · one column per project, all the same width');
+  box(t, 0, 51, 24, 4, 'accent'); put(t, 2, 52, '●', 'working'); put(t, 4, 52, 'manager-hive', 'accent', 1); put(t, 2, 53, 'claude · working', 'dim');
+  box(t, 26, 51, 24, 4, 'border'); put(t, 28, 52, '◐', 'accent'); put(t, 30, 52, 't3-verifier-1', 'fg'); put(t, 28, 53, 'pi · idle · 6m', 'dim');
+  box(t, 52, 51, 24, 4, 'border'); put(t, 54, 52, '○', 'dim'); put(t, 56, 52, 't4-worker-1', 'dim'); put(t, 54, 53, 'pi · stopped', 'dim');
+  put(t, 80, 52, 'selected = accent border', 'dim'); put(t, 80, 53, '● working ◐ idle ○ stopped', 'dim');
+  cap(t, 56, 'Popup', 'centered over a dimmed screen · enter opens · esc closes · same Panel + Details inside');
+  box(t, 0, 57, 44, 5, 'accent', 'manager-hive · esc closes', 'accent'); put(t, 2, 59, 'a attach · p peek · t task', 'fg');
+  put(t, 48, 58, 'below 120 columns, every details panel', 'dim'); put(t, 48, 59, 'opens as a full-width overlay instead', 'dim');
+  cap(t, 63, 'KeyHints', 'footer · [region] first in accent · hints dim · always the last row');
+  put(t, 0, 64, ' [graph] ', 'accent', 1); put(t, 9, 64, '←↑↓→ move · enter details · a attach · p peek · t task · ? help', 'dim');
+  cap(t, 66, 'Notice', 'below 80×24 the whole screen shows only the too-small notice');
+}
+class Component extends DCLogic {
+  renderVals() {
+    var t = T(120, 67);
+    sheet(t);
+    return { rows: rows(t) };
+  }
+}
+</script>
+</body>
+</html>

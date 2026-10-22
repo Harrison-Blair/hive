@@ -1,0 +1,49 @@
+hive-grid 1 60 16
+t| hive                                                       
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|111110000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         ╭─ terminal too small ───────────────────╮         
+k|fffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffff
+b|000000000001111111111111111111100000000000000000000000000000
+t|         │                                        │         
+k|fffffffffaffffffffffffffffffffffffffffffffffffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         │           this pane is 60×16           │         
+k|fffffffffaffffffffffffffffffffffffffffffffffffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         │       hive needs at least 80×24        │         
+k|fffffffffaffffffffffffffffffffffffffffffffffffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         │                                        │         
+k|fffffffffaffffffffffffffffffffffffffffffffffffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         │     resize or zoom the herdr pane      │         
+k|fffffffffafffffdddddddddddddddddddddddddddddffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         │                                        │         
+k|fffffffffaffffffffffffffffffffffffffffffffffffffffafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|         ╰────────────────────────────────────────╯         
+k|fffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t|                                                            
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000
+t| ctrl+c ×2 quit                                             
+k|dddddddddddddddfffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000

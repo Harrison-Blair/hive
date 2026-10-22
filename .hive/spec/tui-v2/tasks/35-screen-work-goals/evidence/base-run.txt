@@ -1,0 +1,13 @@
+1eec3103 Merge branch 'task/29-frame-layout' into dev
+--- FAIL: TestWorkGoalsMatchesItsBoard (0.01s)
+--- FAIL: TestGoalsDetailsShowWavesTasksAndStops (0.03s)
+--- FAIL: TestGoalsSortAndCountOnlyPushedDeliveries (0.05s)
+--- FAIL: TestGoalsSelectedRowIsAccentBold (0.00s)
+--- FAIL: TestGoalsFitEachSize (1.52s)
+--- FAIL: TestGoalsKeysAndHints (0.04s)
+--- FAIL: TestGoalsDesignNoticeAndTaskKey (0.02s)
+--- FAIL: TestGoalsRefreshReloadsRecords (0.03s)
+--- FAIL: TestGoalsProgramUsesStringReader (0.03s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	1.770s
+FAIL

@@ -1,24 +1,30 @@
-// Package cancel wires task cancellation.
+// Package cancel wires the task cancel command.
 package cancel
 
 import (
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/task/cancel"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
 	"github.com/spf13/cobra"
 )
 
+// New creates the task cancel command.
 func New() *cobra.Command {
-	var options cancel.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "cancel", Short: "Cancel a task that is not verified, landed, or already cancelled", Args: cobra.NoArgs,
-		Long: "Cancel a created, assigned, or completed task. Verified, landed, and cancelled\ntasks are final. Cancelling does not message or stop the owner and leaves subtasks as they\nare. A cancelled prerequisite counts as satisfied but stays listed on its\ndependents; the output names created tasks it left ready."}
-	f := cmd.Flags()
-	f.StringVar(&options.ID, "id", "", "Task ID")
-	f.StringVar(&options.Reason, "reason", "", "Why the task was cancelled")
-	f.BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	cmd.RunE = func(cmd *cobra.Command, _ []string) error {
-		return cli.Finish(cancel.Run(cmd.Context(), libagent.FromEnvironment(0), options), cmd.OutOrStdout(), asJSON, cancel.Render)
+	command := &cobra.Command{
+		Use:   "cancel",
+		Short: "cancel a task",
+		Args:  cobra.NoArgs,
 	}
-	return cmd
+	flags := command.Flags()
+	flags.String("task", "", "task ID")
+	flags.String("reason", "", "reason of the cancellation")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		return common.Run(cmd, "task cancel", func(home string) (output.Envelope, string, error) {
+			taskID, _ := cmd.Flags().GetString("task")
+			reason, _ := cmd.Flags().GetString("reason")
+			envelope := tasklib.Cancel(home, tasklib.TransitionOptions{Task: taskID, Reason: reason})
+			return envelope, tasklib.TransitionText(envelope), nil
+		})
+	}
+	return command
 }

@@ -1,0 +1,13 @@
+{"id":"cli:tab:list","result":{"tabs":[{"agent_status":"working","focused":false,"label":"t35-verifier-3","number":1,"pane_count":1,"tab_id":"w9N:t1","workspace_id":"w9N"}],"type":"tab_list"}}
+/home/penguin/source/hive                                                                     e7cdbd09 [dev]
+/home/penguin/source/hive/projects/hive/worktrees/33-screen-agents                            e5e24142 [task/33-screen-agents]
+/home/penguin/source/hive/projects/hive/worktrees/34-screen-chat                              34b7757f [task/34-screen-chat]
+/home/penguin/source/hive/projects/hive/worktrees/35-screen-work-goals                        631e5541 [task/35-screen-work-goals]
+/home/penguin/source/hive/projects/hive/worktrees/37-screen-work-tasks                        223197f7 [task/37-screen-work-tasks]
+/home/penguin/source/hive/projects/hive/worktrees/38-screen-friction                          fb9bbba1 [task/38-screen-friction]
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health                            1eadc24a [task/39-screen-health]
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health/.hive/tmp/verify39/base    866bde2a (detached HEAD)
+/home/penguin/source/hive/projects/hive/worktrees/39-screen-health/.hive/tmp/verify39/mutate  1eadc24a (detached HEAD)
+/home/penguin/source/hive/projects/hive/worktrees/40-screen-logs                              e39d0e94 [task/40-screen-logs]
+/home/penguin/source/hive/projects/hive/worktrees/43-board-slip-batch-1                       7000fe19 [task/43-board-slip-batch-1]
+Scratch folder removed

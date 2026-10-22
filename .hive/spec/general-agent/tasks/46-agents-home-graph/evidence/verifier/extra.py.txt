@@ -1,0 +1,10 @@
+exec(open('.hive/tmp/v46tests.py').read().split("subprocess.run(['git','checkout','--detach','dev']")[0])
+mutations=[('B19 card dimensions','component/card.go','CardWidth  = 24','CardWidth  = 25'),('B20 card subline','agents_screen.go','parts := []string{node.record.Harness, node.status}','parts := []string{node.record.Harness}')]
+args=['go','test','./internal/tui','-count=1','-run','TestAgentsHome|TestGeneralAgentBoardsMatchTheirGrids','-v']
+for name,file,old,new in mutations:
+ path=scratch/'internal/tui'/file; original=path.read_text(); assert old in original
+ try:
+  path.write_text(original.replace(old,new,1)); p=run(args,name.split()[0]+'.txt'); failed=[x for x in p.stdout.splitlines() if x.startswith('--- FAIL')]; assert failed and p.returncode
+  with (evidence/'mutations.txt').open('a') as f: f.write(name+f': exit {p.returncode}; '+'; '.join(failed)+'\n')
+ finally: path.write_text(original)
+run(args,'extra-restored-green.txt')

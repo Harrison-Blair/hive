@@ -1,25 +1,56 @@
-// Package version reports the release or development build version.
+// Package version provides hive version and build information.
 package version
 
-import "runtime/debug"
+import (
+	"regexp"
+	"runtime"
+	"runtime/debug"
+)
 
-// release is set by release builds using -ldflags -X. Local builds use Go's
-// embedded module version, including its revision and dirty marker.
-var release string
+// Version is "dev" unless a release build sets it with -ldflags -X.
+var Version = "dev"
 
-// Version returns the best available build version without consulting Git or
-// the runtime working directory.
-func Version() string {
-	info, _ := debug.ReadBuildInfo()
-	return resolve(release, info)
+// releaseVersion matches vX.Y.Z and vX.Y.Z-rc.N with no other suffix.
+var releaseVersion = regexp.MustCompile(`^v\d+\.\d+\.\d+(-rc\.\d+)?$`)
+
+// BuildInfo contains the version and build data for hive.
+type BuildInfo struct {
+	Version  string
+	Commit   string
+	Modified bool
+	Go       string
 }
 
-func resolve(release string, info *debug.BuildInfo) string {
-	if release != "" {
-		return release
+// Info returns the version and build data for hive.
+func Info() BuildInfo {
+	return info(debug.ReadBuildInfo)
+}
+
+func info(readBuildInfo func() (*debug.BuildInfo, bool)) BuildInfo {
+	result := BuildInfo{
+		Version: Version,
+		Commit:  "unknown",
+		Go:      runtime.Version(),
 	}
-	if info != nil && info.Main.Version != "" && info.Main.Version != "(devel)" {
-		return info.Main.Version
+	buildInfo, ok := readBuildInfo()
+	if !ok {
+		return result
 	}
-	return "dev"
+
+	result.Go = buildInfo.GoVersion
+	if result.Version == "dev" && releaseVersion.MatchString(buildInfo.Main.Version) {
+		result.Version = buildInfo.Main.Version
+	}
+	for _, setting := range buildInfo.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			result.Commit = setting.Value
+			if len(result.Commit) > 12 {
+				result.Commit = result.Commit[:12]
+			}
+		case "vcs.modified":
+			result.Modified = setting.Value == "true"
+		}
+	}
+	return result
 }

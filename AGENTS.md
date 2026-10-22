@@ -1,216 +1,137 @@
 # AGENTS.md
 
-> **Note:** This file is the single source of truth for all agent instructions in this
-> repository. Claude Code reads it directly, so there is no `CLAUDE.md`; edit this file
-> instead of adding harness-specific instruction files.
+> This file is the single source of agent instructions for this repository.
+> Claude Code loads `AGENTS.md` when a project has no `CLAUDE.md`. Codex loads it from the checkout root.
+> Edit this file. Do not add `CLAUDE.md` or an instruction file for one harness.
+
+## Role gate
+
+Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant.
+
+Read this section first. A prompt from hive that names a role gives your role. That prompt wins over your working directory. A brief can name another role. The brief wins over your working directory.
+
+| Role evidence | Role | Then read |
+| --- | --- | --- |
+| A `⬢` prompt from hive that names the coordinator | coordinator | [Coordinator](#coordinator) |
+| `projects/<project-id>/` | manager | the project instructions, then your brief |
+| `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
+| The root of this checkout with no prompt from hive | no role | this section |
+
+- Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
+- A session in the root of this checkout with no prompt from hive has no role. It does not run the coordinator startup. It tells the user that it has no role.
+- A session with a brief that names another role does not run coordinator startup.
+- A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
+- When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
+- Claude Code loads this file in every checkout below the root. The role gate applies there too.
 
 ## Project
 
-Fledge is a Go CLI built with Cobra.
+Hive coordinates coding agents in herdr from one home. The user talks to one coordinator. A manager owns each project. Workers do one task each in their own checkout. Hive builds hive: this checkout is the home and the first registered project.
 
-## .gitignore policy
+[.hive/spec/hive-v1/README.md](.hive/spec/hive-v1/README.md) is the design authority. It gives the goals, the features, the architecture, the risks, and the task plan. The branches `plan/hive-v1` and `integration/hive-v1` are history. Do not import them.
 
-`.gitignore` is allowlist-style: it ignores everything (`*`) and then explicitly allows
-Go source, `go.mod`/`go.sum`, Markdown docs, `LICENSE`, `.github/`, test fixtures,
-and the Herdr raw captures in `reference/herdr/raw/` that `RESYNC.md` keeps.
-Keep it small. Only add a new `!` allow rule when a file the project genuinely needs
-is being ignored, and add the narrowest pattern that covers it. Never remove the
-leading `*`.
+## Home layout
 
-## Branching
+```text
+hive/                            the checkout is the home
+├─ AGENTS.md  STE-GLOSSARY.md    instructions          tracked
+├─ main.go  cmd/  internal/      Go source             tracked
+├─ reference/                    API and dogfood docs    tracked
+├─ .hive/README.md               home marker           tracked
+├─ .hive/spec/                   feature specs         tracked
+├─ projects/<project-id>/        project directory     ignored
+│  └─ worktrees/<task-id>/       worktree              ignored
+├─ memory/  overrides/  plans/   personal              ignored
+├─ handoff.md                    coordinator handoff   ignored
+└─ .hive/  state/  logs/  tmp/   runtime               ignored
+```
 
-Develop on `dev` or feature branches off `dev`. Changes reach `main` only through a
-pull request, which the owner approves. Never commit directly to `main`.
-The committed `.fledge/config.toml` names `dev` as the integration branch. Fledge uses
-this value to find merged branches.
+- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md` and `.hive/spec/`. The README file marks the home. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
+- `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
+- Put scratch files in `.hive/tmp/`.
 
-## Releases
+## Coordinator
 
-Stable Git tags (`vMAJOR.MINOR.PATCH`) are the release version source. There is no
-maintained version file. `internal/lib/version.Version()` uses the release value
-injected at build time, then Go's embedded module version, then `dev`. Development
-builds retain Go's revision and dirty metadata without runtime Git access. Cobra
-exposes the version through `--version` and `-V`; there is no `version` subcommand
-or lowercase `-v` alias.
+The coordinator runs in a pane of the hive session. Bare `hive` starts the coordinator and the supervisor in their own tabs. Hive writes the coordinator record before it sends the startup prompt. At startup the coordinator reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` only when the supervisor claim is stale and the `supervisor` tab is gone. It records a preference in `overrides/` when the user states one. The coordinator and a manager can edit files in `reference/dogfood/friction/` directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
 
-`.github/workflows/release.yml` runs only on manual dispatch from `main`. The owner
-chooses `patch`, `minor`, or `major`; that request authorizes publication after CI
-and packaging pass. Merges alone do not release. An agent explicitly asked to
-release may use `gh workflow run release.yml --ref main -f bump=patch` (substitute
-the requested bump), watch the run, and report its release URL. Do not trigger a
-release merely because release automation was implemented or changed.
+## herdr layout
 
-[README.md#releases](README.md#releases) gives the release procedure, the retry
-rules, and the rule for an unfinished draft. Never force-move release tags or
-replace published assets. Run `python3 -B -m unittest discover -s .github/scripts -p '*_test.py'` when changing
-release automation. `fledge update` performs explicit, verified binary updates;
-there are no background update checks.
+- The hive session is the one herdr session that hosts the home. The coordinator and the supervisor run there.
+- Each managed project has one workspace with the label `hive:<project>`. Hive makes it when it spawns the manager, with the project directory as the working directory. The manager runs in the root pane of the first tab.
+- Hive makes each worktree with `worktree.create`. The source is the registered repository path in `cwd`, never the `hive:<project>` workspace. The request gives an explicit `path` below `projects/<project-id>/worktrees/`, the branch `task/<task-id>`, the base branch of the project, and the task ID as the label. The worker starts in the root pane of the first tab of the new workspace.
+- A first tab is never an empty shell. Hive starts the agent in the pane that herdr returns.
+- Hive closes what it made. `agent stop` closes the pane in which hive started the agent, and herdr closes the workspace with its last pane. `worktree remove` closes an open worktree workspace, then removes the worktree with Git. Hive never closes the pane of an agent that it did not start.
 
-## Test-driven development
+## Development
 
-All Go changes are test-first. Write a failing test, run it and confirm it fails for
-the right reason, write the minimal code to pass, refactor, repeat. Before declaring
-a task done, run the formatting check `bash .github/scripts/gofmt-check.sh`,
-`go vet ./...`, and `go test -race ./...` and report the output. The formatting
-check covers existing tracked and new nonignored Go files in this checkout; it
-must not descend into ignored managed worktrees. Never weaken or skip a test to get green.
+These rules apply to a worker on the hive project.
 
-## Instruction text
+### Task flow
 
-Agent instruction text follows the structural ASD-STE100 rules and the one-meaning
-terms in [STE-GLOSSARY.md](STE-GLOSSARY.md). The root `ste_test.go` ratchet checks
-`AGENTS.md` and the built-in profiles against the per-file counts in
-`testdata/ste-baseline.json`, so an edit may lower a count but never raise one.
+Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The manager skill gives the manager flow. The worker skill gives the worker flow. Read `.agents/skills/hive-manager/SKILL.md` for manager work. Read `.agents/skills/hive-worker/SKILL.md` for worker work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A worker edits only named files and new tests beside them.
 
-## Layout
+### Go layout
 
-The module root's `main.go` is the installable entrypoint and delegates to
-`cmd.Execute()`, handling the process exit status, so `go install .` produces a binary
-named `fledge`. `cmd/` is a library package holding the root command and per-subcommand
-wiring. `NewRootCmd()` builds a fresh command tree; `ExecuteWithArgs()` lets tests
-inject arguments and output without changing process globals.
+- `main.go` calls `cmd.Execute()` and sets the exit status. `go build .` makes a binary named `hive`.
+- `cmd/` holds the root command and thin Cobra wiring. `NewRootCmd()` builds a fresh tree. `ExecuteWithArgs()` lets a test inject arguments and streams.
+- Each subcommand has its own folder, `cmd/<name>/` or `cmd/<parent>/<subcommand>/`, with a `New() *cobra.Command` constructor. The parent registers its children. The constructor calls into `internal/`.
+- `internal/<name>/` mirrors the command tree. Each leaf owns its options, orchestration, result types, text rendering, and tests.
+- `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
+- `internal/tui/` holds the Bubble Tea program that bare `hive` runs.
+- `internal/` never imports Cobra or `cmd/`. A child package never imports its parent.
+- Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
-Every subcommand gets its own folder as `cmd/<name>/` or
-`cmd/<parent>/<subcommand>/`, containing thin Cobra wiring: a
-`New() *cobra.Command` constructor that calls into `internal/`. The immediate
-parent registers its children. `internal/` mirrors that command nesting as
-`internal/<name>/` and `internal/<parent>/<subcommand>/`. Each internal command
-leaf owns its options, orchestration, result types, human rendering, and tests.
-Internal parent packages may coordinate their nested components, as `doctor`
-does with `checks`/`report` and `update` with
-`release`/`archive`/`install`/`confirm`; child packages do not import their
-parents. `internal/lib/<capability>/` contains focused shared code used by
-multiple commands or packages; do not create one flat grab-bag lib package and
-do not extract speculative utilities. Internal packages do not import Cobra or
-`cmd/`. The version flags use `cmd/version.Configure()` instead of a standalone
-command.
+### Tests and the gate
 
-Use direct functions and explicit dependencies; do not assemble command trees with
-`init` functions or shared command globals. Keep packages flat until a distinct
-responsibility needs a narrow API. Packages with multiple non-test files have a
-`doc.go` with a package summary and a one-line map of each file.
+- Each Go change is test-first. Write a failing test. Run it. Make sure that it fails for the correct reason. Write the minimal code. Refactor.
+- A test counts only when it fails when the behavior breaks and passes when the behavior is correct. Do not compute the expected value with the logic under test. Do not mock the behavior under test. Mock only an external dependency.
+- Test the TUI at the model. Call `Update` and `View` with messages. Run the program on a string reader for an end-to-end check.
+- Never weaken, skip, or delete a test to get a green run.
+- Before you report a change as done, run the gate from the root and report its output:
 
-## Instructions
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go mod tidy -diff
+go vet ./...
+golangci-lint run ./...
+go test -race ./...
+```
+
+The first command must print nothing. The second command must print nothing. The
+gate acts on tracked and new files only. It must not read a checkout below
+`projects/`.
+
+### Dependencies
+
+Use the standard library first. The TUI can use Bubble Tea, Bubbles, and Lip Gloss. The CLI uses Cobra. Any other dependency needs a stated reason in its commit message.
+
+### Logging
+
+- Each hive process writes log events with `log/slog` as JSON lines to `.hive/logs/YYYY-MM-DD.jsonl` in the home. Level debug is always on.
+- Log each socket request and reply, each state transition, each external process, each user action in the TUI, and each error.
+- Each event carries the fields that apply: `component`, `command`, `request_id`, `project_id`, `task_id`, `agent_id`, `duration_ms`, and `error`.
+- Cap a body at 4 KiB and set `truncated` to true. Never log a secret.
+- Never delete a log file in code.
+
+### Command output
+
+A command prints text for people by default. With `--json` it prints one JSON object with `outcome`, `phase`, `effects`, `error`, and `result`. Known effects are separate from errors. The exit status is 0 only on success. `hive logs --json` prints each log event as one JSON line, because it streams. It is the one exception.
+
+### Instruction text
+
+Write instruction text in ASD-STE100 Strict: this file, skills, role instructions, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
+
+### Git
+
+- Work on `dev` or on a branch from `dev`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
+- Write a commit subject as `type(scope): summary`, for example `feat(tui): add the log view`.
+- Never add an agent as a co-author.
+- An agent commits and pushes its own work. It does not wait for a request from the user. A worker commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
+
+### herdr reference
+
+`reference/herdr/` is the API authority for herdr 0.9.5, protocol 22. Read `reference/herdr/README.md` first. Pin the protocol in code. When the installed herdr is newer, run the procedure in `reference/herdr/RESYNC.md` before you trust a changed behavior.
 
 ### Dogfooding
 
-When working in this repository, use Fledge for every capability it offers, including
-over the harness's own built-in tools. Treat this as dogfooding: exercise the project
-CLI in real work and surface bugs or missing capabilities instead of silently bypassing
-it with another tool.
-
-| Need | Fledge command | Instead of |
-| --- | --- | --- |
-| Launch a sub-agent | `fledge agent spawn` | Claude's Agent tool, Codex subagents |
-| Track and hand off work between agents | `fledge task create`/`depend`/`assign`/`complete`/`verify --commit`/`cancel`/`list`/`get` | harness todo or task lists |
-| Create, list, or remove a checkout | `fledge worktree create`/`list`/`remove` | `git worktree`, Claude `isolation: "worktree"` |
-| Discover, inspect, read, wait on, interrupt, or stop agents | `fledge agent list`/`get`/`read`/`wait`/`pause`/`stop` | raw `herdr` CLI, harness TaskStop |
-| Retire your finished spawned workers and the checkouts their spawns created | `fledge agent cleanup` | stopping each worker and removing each checkout by hand |
-| Message another agent | `fledge agent message` | Claude's SendMessage, raw `herdr` pane input |
-| Read and acknowledge messages sent to you | `fledge inbox`, `fledge inbox read` | message text typed into your pane, harness message notifications |
-| See what needs your attention | `fledge attention` | separate `agent list`, `task list`, and inbox checks by hand |
-| Watch workers without polling | `fledge supervise` starts automatically, with `status`/`stop` | `fledge agent wait` loops, harness idle notifications, timed polls |
-| Land a verified branch, only after the user names that branch explicitly | `fledge task land` | manual `git merge`, `gh pr create`/`gh pr merge` |
-| Type raw input or keys into an agent (slash commands, dialog answers) | `fledge agent send` | raw `herdr pane send-text`/`send-keys` |
-| Register your own running agent, from your own pane | `fledge agent adopt` | — |
-| Rename an agent, relabeling its pane and its own tab | `fledge agent rename` | raw `herdr agent`/`pane`/`tab rename` |
-| Record or recall durable project facts | `fledge memory add`/`list`/`get`/`remove` | harness-native memory |
-| Check the environment | `fledge doctor` | ad hoc probes |
-| Discover models | `fledge agent models` | reading harness config |
-| Update the binary | `fledge update` | manual downloads |
-
-Harness built-ins remain allowed only where Fledge has no equivalent yet, such as
-quick read-only lookups inside a single agent, or where Fledge fails.
-
-Maintain `reference/dogfood/` as the record of dogfooding information for this repository.
-Whenever an agent or one of its subagents hits a Fledge bug, missing capability, or
-workaround, including any fallback to a harness built-in caused by one, append an entry
-to `reference/dogfood/friction.md` using its Issue / Status / Summary / Reproduction steps format.
-
-Before using Fledge, check `--help` for the command groups needed for both the task and
-cleanup (`fledge agent`, `task`, `worktree`). If the installed binary lacks commands
-present in this checkout, build the current source into a temporary directory and use
-that binary consistently for the task, including cleanup.
-
-Agent scratch files inside the repository go under `.fledge/tmp/` (gitignored), and
-proposals under `.fledge/tmp/plans/`. Briefs for `fledge task create` should follow the
-optional template printed by `fledge task template`; fill in its headings, since Fledge
-accepts any nonblank text, including an unfilled skeleton.
-
-Known workarounds: a spawn prompt starts with a sender header, and a message to a
-registered agent arrives as a one-line doorbell that the agent reads with
-`fledge inbox read`. Thus ask an agent in plain words to invoke a skill (a leading slash
-command will not run). See the Open entries in `reference/dogfood/friction.md` for current issues.
-
-Agents in this repository usually run inside a managed Fledge session: a Herdr pane,
-often spawned by an orchestrator and given a Fledge agent record id. Expect messages
-from the orchestrator and other agents. A registered agent gets each message, task
-assignment, and supervisor wake in its inbox, and its pane shows only a one-line doorbell,
-`ᛉ fledge inbox · <kind> from <sender> · id <id> · read: fledge inbox read --id <id>`.
-Run `fledge inbox read` to print each body and its reply command. An unregistered pane
-still gets the body typed after a one-line `ᛉ fledge message from <sender>` header.
-A `fledge task assign` brief adds a line naming the task, its
-title, and `complete with: fledge task complete --id <task> --summary "..."`, and a
-task's creator, when it is another registered agent, receives a short `task completed:`
-notice naming `fledge task get` (which shows the full result) and `fledge task verify`. Treat these as coordination input: reply with
-the reply command that `fledge inbox read` prints (or `--pane <pane>` when it prints none),
-and finish assigned tasks with `fledge task complete`.
-
-Every Fledge `agent` command except `models`, `profiles`, and `capabilities` without
-`--live`, plus `inbox`, `inbox read`, `attention`, `supervise run`,
-`task create`/`assign`/`complete`/`verify`/`import`/`land`, the `worktree`
-commands, and `doctor`, connect to Herdr's local Unix socket. `task create`/`verify`
-connect only when run inside a Herdr pane. `task import` connects only when run inside
-a Herdr pane without `--dry-run`. In Codex's restricted sandbox, request
-`sandbox_permissions: "require_escalated"` on the first invocation of these commands and
-of Herdr session-control commands, with a task-specific justification and a narrow
-command prefix. Do not first run a socket command in the sandbox to rediscover the known
-`connect: operation not permitted` failure. Use the normal approval mechanism; these
-instructions do not override an approval denial or authorize unrelated session changes.
-Help, version, `agent models`/`profiles`, `agent capabilities` without `--live`,
-`task get`/`list`/`cancel`/`depend`/`template`, `task import --dry-run`,
-`supervise status`/`stop`, the `memory` commands, and `update` do not require Herdr
-socket access.
-
-Agent names label panes and tabs so they are identifiable at a glance. Spawn labels the
-agent's pane, and the new tab it opens, with `--name`; pass `--tab` only to give that new
-tab a different label (it never selects an existing tab, and labels may repeat). Spawn has
-no splits; reuse an existing shell only with `--pane`. Profiles are role instructions only,
-so always pass `--harness`, and `--model` and native arguments as needed. An agent started by hand, such as an orchestrator, names itself, which relabels its
-pane and, when alone there, its tab:
-
-```sh
-fledge agent adopt --name orchestrator    # unnamed and unregistered
-fledge agent rename --to orchestrator     # already named
-```
-
-Stop agents when their task is finished instead of leaving idle agents and tabs behind.
-To retire your spawned workers and the checkouts their spawns created, run `fledge agent cleanup`
-(`--dry-run` first to see what it would stop, remove, or hold). To stop one agent:
-
-```sh
-fledge agent stop --name reviewer
-```
-
-Agents that are `working`, `blocked`, or `unknown` require `--force`. When acting as an orchestrator, stop only the workers you spawned, and only after their work and any verification or follow-up have been read.
-
-When acting as an orchestrator, run a feature's verifier in that feature's managed
-worktree (`fledge agent spawn --worktree <feature checkout path>`), not in the primary
-checkout, a separate copy, or a temporary directory. The implementer and verifier take
-turns on the shared checkout: the implementer commits and leaves a clean tree before
-verification starts and makes no edits while it runs; the verifier undoes every
-experimental change, such as mutation tests, and confirms `git status` is clean before
-reporting; repairs go back to the implementer through the orchestrator. Verifiers run
-`fledge task verify` only when no findings remain open. If repairs follow a
-verification, the verifier runs `fledge task verify` again after checking them; this
-replaces the earlier verification, so name the checked commit in `--summary`.
-
-### Memory
-
-Repository memories in `.fledge/memories/`, managed with `fledge memory`, are the
-store for durable, non-obvious facts about this project, Fledge, and Herdr: one fact
-per memory, shared by every checkout and injected into profile-spawned briefs. Check
-`fledge memory list` before rediscovering something, and record new facts with
-`fledge memory add`. Harness-native memory is for the user's personal preferences
-only. Do not store task progress or anything the code, Git history, or this file
-already records.
+When hive offers a capability, use hive for it instead of a harness built-in. Record each bug, missing capability, or workaround in `reference/dogfood/friction/` with its Issue, Status, Summary, and Reproduction steps fields. The coordinator and a manager can edit files in this folder directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file.

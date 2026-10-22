@@ -1,0 +1,232 @@
+=== RUN   TestAgentsBoardsMatchTheirGrids
+=== RUN   TestAgentsBoardsMatchTheirGrids/Main
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentsMany
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentDetails
+=== RUN   TestAgentsBoardsMatchTheirGrids/CompactAgents
+--- PASS: TestAgentsBoardsMatchTheirGrids (0.02s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/Main (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentsMany (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentDetails (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/CompactAgents (0.00s)
+=== RUN   TestAgentsFitEachSize
+=== RUN   TestAgentsFitEachSize/AgentsMany/79x24
+=== RUN   TestAgentsFitEachSize/AgentsMany/80x24
+=== RUN   TestAgentsFitEachSize/AgentsMany/80x25
+=== RUN   TestAgentsFitEachSize/AgentsMany/119x40
+=== RUN   TestAgentsFitEachSize/AgentsMany/119x41
+=== RUN   TestAgentsFitEachSize/AgentsMany/120x40
+=== RUN   TestAgentsFitEachSize/AgentsMany/120x41
+=== RUN   TestAgentsFitEachSize/nine_projects/79x24
+=== RUN   TestAgentsFitEachSize/nine_projects/80x24
+=== RUN   TestAgentsFitEachSize/nine_projects/80x25
+=== RUN   TestAgentsFitEachSize/nine_projects/119x40
+=== RUN   TestAgentsFitEachSize/nine_projects/119x41
+=== RUN   TestAgentsFitEachSize/nine_projects/120x40
+=== RUN   TestAgentsFitEachSize/nine_projects/120x41
+=== RUN   TestAgentsFitEachSize/long_text/79x24
+=== RUN   TestAgentsFitEachSize/long_text/80x24
+=== RUN   TestAgentsFitEachSize/long_text/80x25
+=== RUN   TestAgentsFitEachSize/long_text/119x40
+=== RUN   TestAgentsFitEachSize/long_text/119x41
+=== RUN   TestAgentsFitEachSize/long_text/120x40
+=== RUN   TestAgentsFitEachSize/long_text/120x41
+=== RUN   TestAgentsFitEachSize/empty/79x24
+=== RUN   TestAgentsFitEachSize/empty/80x24
+=== RUN   TestAgentsFitEachSize/empty/80x25
+=== RUN   TestAgentsFitEachSize/empty/119x40
+=== RUN   TestAgentsFitEachSize/empty/119x41
+=== RUN   TestAgentsFitEachSize/empty/120x40
+=== RUN   TestAgentsFitEachSize/empty/120x41
+=== RUN   TestAgentsFitEachSize/Main/79x24
+=== RUN   TestAgentsFitEachSize/Main/80x24
+=== RUN   TestAgentsFitEachSize/Main/80x25
+=== RUN   TestAgentsFitEachSize/Main/119x40
+=== RUN   TestAgentsFitEachSize/Main/119x41
+=== RUN   TestAgentsFitEachSize/Main/120x40
+=== RUN   TestAgentsFitEachSize/Main/120x41
+--- PASS: TestAgentsFitEachSize (0.09s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/119x40 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/119x41 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/120x41 (0.01s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/119x40 (0.01s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/120x41 (0.00s)
+=== RUN   TestAgentsGraphShowsProjectAgentsOnly
+--- PASS: TestAgentsGraphShowsProjectAgentsOnly (0.00s)
+=== RUN   TestAgentsArrowsScrollThePods
+--- PASS: TestAgentsArrowsScrollThePods (0.01s)
+=== RUN   TestAgentsSelectedCardJoints
+--- PASS: TestAgentsSelectedCardJoints (0.02s)
+=== RUN   TestAgentsUpDownMoveInThePod
+--- PASS: TestAgentsUpDownMoveInThePod (0.00s)
+=== RUN   TestAgentsHHidesStoppedAgents
+--- PASS: TestAgentsHHidesStoppedAgents (0.01s)
+=== RUN   TestAgentsDetailsPopupKeys
+--- PASS: TestAgentsDetailsPopupKeys (0.02s)
+=== RUN   TestAgentsDemoActionsShowTheNotice
+--- PASS: TestAgentsDemoActionsShowTheNotice (0.00s)
+=== RUN   TestAgentsTOpensTheTask
+--- PASS: TestAgentsTOpensTheTask (0.00s)
+=== RUN   TestAgentsCompactFooter
+--- PASS: TestAgentsCompactFooter (0.00s)
+=== RUN   TestAgentsNormalModeLoadsAndRefreshes
+--- PASS: TestAgentsNormalModeLoadsAndRefreshes (0.43s)
+=== RUN   TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts
+--- PASS: TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts (0.05s)
+=== RUN   TestAgentsHistoryToggleShowsAllGenerations
+--- PASS: TestAgentsHistoryToggleShowsAllGenerations (0.04s)
+=== RUN   TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime
+--- PASS: TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime (0.01s)
+=== RUN   TestAgentsScreenRendersTopologyTabsAndDetail
+--- PASS: TestAgentsScreenRendersTopologyTabsAndDetail (0.05s)
+=== RUN   TestAgentsLoadsLongAgentKeysAsNodesAndParents
+--- PASS: TestAgentsLoadsLongAgentKeysAsNodesAndParents (0.04s)
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40
+--- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes (0.33s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24 (0.16s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40 (0.17s)
+=== RUN   TestAgentsScreenLogsTabAndSelectionActions
+--- PASS: TestAgentsScreenLogsTabAndSelectionActions (0.03s)
+=== RUN   TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale
+--- PASS: TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale (0.06s)
+=== RUN   TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents
+--- PASS: TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents (0.28s)
+=== RUN   TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent
+--- PASS: TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent (0.04s)
+=== RUN   TestAgentsRefreshKeepsSelectionByAgentKey
+--- PASS: TestAgentsRefreshKeepsSelectionByAgentKey (0.33s)
+=== RUN   TestAgentsProjectsFollowProjectRecordOrder
+--- PASS: TestAgentsProjectsFollowProjectRecordOrder (0.05s)
+=== RUN   TestAgentsPeekReadsInCommandAndEscClosesIt
+--- PASS: TestAgentsPeekReadsInCommandAndEscClosesIt (0.04s)
+=== RUN   TestAgentsHeaderUsesBoardLabels
+--- PASS: TestAgentsHeaderUsesBoardLabels (0.37s)
+=== RUN   TestAgentsBoardDetailShowsTaskStatusAndNextTask
+--- PASS: TestAgentsBoardDetailShowsTaskStatusAndNextTask (0.41s)
+=== RUN   TestAgentsGhostsRequireAnOpenTask
+--- PASS: TestAgentsGhostsRequireAnOpenTask (0.42s)
+=== RUN   TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge
+--- PASS: TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge (0.37s)
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_manager
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/read_nudged_manager
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_manager_without_nudge
+=== RUN   TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_coordinator
+--- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox (1.60s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_manager (0.35s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/read_nudged_manager (0.38s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_manager_without_nudge (0.39s)
+    --- PASS: TestAgentsNudgeEdgesRequireUnreadNudgedRoleInbox/unread_nudged_coordinator (0.47s)
+=== RUN   TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers
+--- PASS: TestAgentsNudgeEdgesDoNotTargetWorkersOrVerifiers (0.35s)
+=== RUN   TestAgentsGraphConnectsSiblingWorkersToManagerStem
+--- PASS: TestAgentsGraphConnectsSiblingWorkersToManagerStem (0.39s)
+=== RUN   TestAgentsGraphColumnsHaveEqualWidth
+--- PASS: TestAgentsGraphColumnsHaveEqualWidth (0.38s)
+=== RUN   TestAgentsGraphCardsKeepTheirWidths
+--- PASS: TestAgentsGraphCardsKeepTheirWidths (0.35s)
+=== RUN   TestAgentsGraphSingleColumnKeepsItsPod
+--- PASS: TestAgentsGraphSingleColumnKeepsItsPod (0.43s)
+=== RUN   TestAgentsGraphLongCardFitsInEqualColumns
+--- PASS: TestAgentsGraphLongCardFitsInEqualColumns (0.35s)
+=== RUN   TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls
+--- PASS: TestAgentsGraphArrowSelectionMovesBetweenPodsAndScrolls (0.39s)
+=== RUN   TestAgentsBoardTaskShortcutOpensSelectedTask
+--- PASS: TestAgentsBoardTaskShortcutOpensSelectedTask (0.35s)
+=== RUN   TestAgentsBoardKeyHintsMatchTheBoard
+--- PASS: TestAgentsBoardKeyHintsMatchTheBoard (0.34s)
+=== RUN   TestAgentsGraphPodTitleSharesTopBorder
+--- PASS: TestAgentsGraphPodTitleSharesTopBorder (0.35s)
+=== RUN   TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem
+--- PASS: TestAgentsGraphLongPodTitleKeepsNameTogetherBeforeStem (0.35s)
+=== RUN   TestAgentsGraphColorsMatchBoard
+--- PASS: TestAgentsGraphColorsMatchBoard (0.36s)
+=== RUN   TestAgentsExplorerUsesIndentationWithoutConnectors
+--- PASS: TestAgentsExplorerUsesIndentationWithoutConnectors (0.37s)
+=== RUN   TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren
+--- PASS: TestAgentsGraphHasNoStemForManagerWithOnlyHiddenChildren (0.41s)
+=== RUN   TestAgentsGraphDelegationBusUsesOpenEndGlyphs
+--- PASS: TestAgentsGraphDelegationBusUsesOpenEndGlyphs (0.35s)
+=== RUN   TestAgentsTreeLastVisibleChildUsesBottomConnector
+--- PASS: TestAgentsTreeLastVisibleChildUsesBottomConnector (0.35s)
+=== RUN   TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator
+--- PASS: TestAgentsGraphNodeSubtitlesHaveNoExtraSeparator (0.36s)
+=== RUN   TestAgentsGraphDelegationStemJoinsPodBorder
+--- PASS: TestAgentsGraphDelegationStemJoinsPodBorder (0.40s)
+=== RUN   TestAgentsGraphNodeCardsStayInsetInLongTitlePods
+--- PASS: TestAgentsGraphNodeCardsStayInsetInLongTitlePods (0.40s)
+=== RUN   TestAgentsGraphPodsHaveRoundedCorners
+--- PASS: TestAgentsGraphPodsHaveRoundedCorners (0.35s)
+=== RUN   TestAgentsGraphNodeHasOneCellOfPadding
+--- PASS: TestAgentsGraphNodeHasOneCellOfPadding (0.36s)
+=== RUN   TestAgentsHeaderUsesSpacesAndRightAlignsTime
+--- PASS: TestAgentsHeaderUsesSpacesAndRightAlignsTime (0.36s)
+=== RUN   TestAgentsDetailFieldsUseSpaces
+--- PASS: TestAgentsDetailFieldsUseSpaces (0.35s)
+=== RUN   TestAgentsProgramUsesStringReader
+--- PASS: TestAgentsProgramUsesStringReader (0.01s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.00s)
+=== RUN   TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey
+--- PASS: TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey (0.00s)
+=== RUN   TestAgentsRestartMissingCoordinatorPaneTakesStalePath
+--- PASS: TestAgentsRestartMissingCoordinatorPaneTakesStalePath (0.01s)
+=== RUN   TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation
+--- PASS: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.01s)
+=== RUN   TestAgentsHistoryCanShowStoppedRestartGeneration
+--- PASS: TestAgentsHistoryCanShowStoppedRestartGeneration (0.00s)
+=== RUN   TestAgentsRestartLiveSupervisorAsksForConfirmation
+--- PASS: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.00s)
+=== RUN   TestAgentsRestartResultIsRenderedAndLogged
+--- PASS: TestAgentsRestartResultIsRenderedAndLogged (0.00s)
+=== RUN   TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation
+--- PASS: TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation (0.00s)
+=== RUN   TestAgentsRestartKeyExplainsUnsupportedNode
+--- PASS: TestAgentsRestartKeyExplainsUnsupportedNode (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	13.633s
+=== RUN   TestCardGolden
+=== RUN   TestCardGolden/idle
+=== RUN   TestCardGolden/stopped
+--- PASS: TestCardGolden (0.00s)
+    --- PASS: TestCardGolden/idle (0.00s)
+    --- PASS: TestCardGolden/stopped (0.00s)
+=== RUN   TestCardSelectedHeavyBorder
+--- PASS: TestCardSelectedHeavyBorder (0.00s)
+=== RUN   TestCardCutsLongText
+--- PASS: TestCardCutsLongText (0.00s)
+=== RUN   TestFitWave4
+--- PASS: TestFitWave4 (0.99s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.013s

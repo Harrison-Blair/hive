@@ -1,0 +1,201 @@
+=== RUN   TestOverlayKeepsScreenAndViewKeys
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/1
+    frame_test.go:344: key "1" changed screen 2 view 2 to screen 0 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/2
+    frame_test.go:344: key "2" changed screen 2 view 2 to screen 1 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/4
+    frame_test.go:344: key "4" changed screen 2 view 2 to screen 3 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/5
+    frame_test.go:344: key "5" changed screen 2 view 2 to screen 4 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/6
+    frame_test.go:344: key "6" changed screen 2 view 2 to screen 5 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/[
+    frame_test.go:344: key "[" changed screen 2 view 2 to screen 2 view 1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/]
+    frame_test.go:344: key "]" changed screen 2 view 2 to screen 2 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/tab
+    frame_test.go:347: key "tab" changed focus "details" to "list"
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/1
+    frame_test.go:344: key "1" changed screen 3 view 0 to screen 0 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/2
+    frame_test.go:344: key "2" changed screen 3 view 0 to screen 1 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/3
+    frame_test.go:344: key "3" changed screen 3 view 0 to screen 2 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/5
+    frame_test.go:344: key "5" changed screen 3 view 0 to screen 4 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/6
+    frame_test.go:344: key "6" changed screen 3 view 0 to screen 5 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/[
+    frame_test.go:344: key "[" changed screen 3 view 0 to screen 3 view 1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/]
+    frame_test.go:344: key "]" changed screen 3 view 0 to screen 3 view 1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/tab
+    frame_test.go:347: key "tab" changed focus "details" to "list"
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/1
+    frame_test.go:344: key "1" changed screen 4 view 0 to screen 0 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/2
+    frame_test.go:344: key "2" changed screen 4 view 0 to screen 1 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/3
+    frame_test.go:344: key "3" changed screen 4 view 0 to screen 2 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/4
+    frame_test.go:344: key "4" changed screen 4 view 0 to screen 3 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/6
+    frame_test.go:344: key "6" changed screen 4 view 0 to screen 5 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/[
+    frame_test.go:344: key "[" changed screen 4 view 0 to screen 4 view 1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/]
+    frame_test.go:344: key "]" changed screen 4 view 0 to screen 4 view 1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/tab
+    frame_test.go:347: key "tab" changed focus "details" to "list"
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/1
+    frame_test.go:344: key "1" changed screen 5 view 0 to screen 0 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/2
+    frame_test.go:344: key "2" changed screen 5 view 0 to screen 1 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/3
+    frame_test.go:344: key "3" changed screen 5 view 0 to screen 2 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/4
+    frame_test.go:344: key "4" changed screen 5 view 0 to screen 3 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/5
+    frame_test.go:344: key "5" changed screen 5 view 0 to screen 4 view 0
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/tab
+    frame_test.go:347: key "tab" changed focus "json" to "events"
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/tab
+--- FAIL: TestOverlayKeepsScreenAndViewKeys (0.12s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/tab (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/1 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/3 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/4 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/5 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/6 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/[ (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/] (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/tab (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/1 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/2 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/4 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/5 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/6 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/[ (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/] (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/tab (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/1 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/2 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/3 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/5 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/6 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/[ (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/] (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/tab (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/1 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/2 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/3 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/4 (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/] (0.00s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/tab (0.00s)
+=== RUN   TestOverlayGivesActionKeysToTheScreen
+--- PASS: TestOverlayGivesActionKeysToTheScreen (0.00s)
+=== RUN   TestWideDetailsKeepsScreenKeys
+--- PASS: TestWideDetailsKeepsScreenKeys (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.136s
+FAIL

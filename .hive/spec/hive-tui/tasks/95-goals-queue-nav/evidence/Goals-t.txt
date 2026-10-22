@@ -1,0 +1,57 @@
+⬢ hive · 3 projects · 0 live agents · working unknown / idle unknown · supervisor stale · needs_user 1 · 16:37
+╭────────────────────────────╮╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ SCREENS                    ││ Tasks                                                                                                                                                                         │
+│   1 Chat                   ││ active 2  queued 3  landed 0  failed 0  [all 5]                                                 ╭───────────────────────────────────────────────────────────────────────────╮ │
+│   2 Agents                 ││ project: all                                                                                    │ task details                                                              │ │
+│   3 Goals                  ││ ID             title                       project   status     agent · verification            │ 95-goals-queue-nav · Goals and Queue navigation                           │ │
+│   4 Queue                  ││   105-session-v… Session view                stenographer assigned    · running                 │ needs: -                                                                  │ │
+│ ▶ 5 Tasks                  ││ > 95-goals-queu… Goals and Queue navigation  hive      assigned    · running                    │ blocks: 96-tasks-evidence-view                                            │ │
+│   6 Friction               ││   96-tasks-evid… Task evidence view          hive      created     · -                          │ branch: -                                                                 │ │
+│   7 Health                 ││   97-friction-d… Friction detail panel       hive      created     · -                          │ feature: hive-tui                                                         │ │
+│   8 Logs                   ││   98-auto-task   Automatic task              hive      created     · -                          │ grant: hive TUI goal                                                      │ │
+│                            ││                                                                                                 │ needs user: -                                                             │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 ╰───────────────────────────────────────────────────────────────────────────╯ │
+│                            ││                                                                                                 ╭───────────────────────────────────────────────────────────────────────────╮ │
+│                            ││                                                                                                 │ ┤ evidence ├                                                              │ │
+│                            ││                                                                                                 │ brief: tasks/95-goals-queue-nav/brief.md                                  │ │
+│                            ││                                                                                                 │ evidence: -                                                               │ │
+│                            ││                                                                                                 │ verification history: -                                                   │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 │                                                                           │ │
+│                            ││                                                                                                 ╰───────────────────────────────────────────────────────────────────────────╯ │
+│                            ││ landed = delivery commit set and pushed · verified = verification passed                                                                                                      │
+╰────────────────────────────╯╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+not in herdr: no coordinator or supervisor started
+error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)
+tab filter · enter evidence · b brief · v verified · d deps graph · p project · ask in Chat · ↑/↓ move

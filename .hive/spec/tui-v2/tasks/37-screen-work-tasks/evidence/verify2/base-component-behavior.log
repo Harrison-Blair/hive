@@ -1,0 +1,62 @@
+=== RUN   TestListFillGolden
+    list_test.go:86: 16 cells differ from Work.grid (board row and column):
+        row 6 col 36: want ' ' done normal, got ' ' fg normal
+        row 6 col 37: want ' ' done normal, got ' ' fg normal
+        row 6 col 38: want ' ' done normal, got ' ' fg normal
+        row 6 col 39: want ' ' done normal, got ' ' fg normal
+        row 7 col 36: want ' ' done normal, got ' ' fg normal
+        row 7 col 37: want ' ' done normal, got ' ' fg normal
+        row 7 col 38: want ' ' done normal, got ' ' fg normal
+        row 7 col 39: want ' ' done normal, got ' ' fg normal
+        row 8 col 28: want 't' fg normal, got '…' fg normal
+        row 8 col 29: want '…' fg normal, got ' ' fg normal
+        row 8 col 36: want ' ' done normal, got ' ' fg normal
+        row 8 col 37: want ' ' done normal, got ' ' fg normal
+        row 8 col 38: want ' ' done normal, got ' ' fg normal
+        row 8 col 39: want ' ' done normal, got ' ' fg normal
+        row 9 col 38: want ' ' info normal, got ' ' fg normal
+        row 9 col 39: want ' ' info normal, got ' ' fg normal
+        
+        rendered:
+        [38;2;245;185;66m╭[m[38;2;245;185;66m─[m[1;38;2;245;185;66m tasks · 4 [m[38;2;245;185;66m──────────────────────────────────────[m[38;2;245;185;66m╮[m
+        [38;2;245;185;66m│[m   [38;2;163;157;144mID                        STATUS    WAVE[m       [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m   4-agents-equal-columns    [38;2;124;207;106mlanded[m    [38;2;163;157;144mC[m          [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m [1;38;2;245;185;66m▶[m [1;38;2;245;185;66m3-tui-restart             [m[38;2;124;207;106mlanded[m    [38;2;163;157;144mB[m          [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m   2-stale-coordinator-star… [38;2;124;207;106mlanded[m    [38;2;163;157;144mA[m          [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m   1-cp5-end-to-end          [38;2;111;183;255massigned[m  [38;2;163;157;144m—[m          [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                  [38;2;245;185;66m│[m
+        [38;2;245;185;66m╰[m[38;2;245;185;66m[m[38;2;245;185;66m──────────────────────────────────────────────────╯[m
+--- FAIL: TestListFillGolden (0.00s)
+=== RUN   TestSubTabsHint
+    subtabs_test.go:42: View(80) = "  Goals    Queue   [Tasks]                                    [ ] switch view   ", want "  Goals    Queue   [Tasks]                                      list › details  "
+--- FAIL: TestSubTabsHint (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.024s
+FAIL

@@ -1,15 +1,19 @@
-// Package worktree wires the worktree command group.
+// Package worktree defines the worktree command and registers its operations.
 package worktree
 
 import (
-	"github.com/Harrison-Blair/fledge/cmd/worktree/create"
-	"github.com/Harrison-Blair/fledge/cmd/worktree/list"
-	"github.com/Harrison-Blair/fledge/cmd/worktree/remove"
+	"github.com/Harrison-Blair/hive/cmd/worktree/create"
+	"github.com/Harrison-Blair/hive/cmd/worktree/remove"
 	"github.com/spf13/cobra"
 )
 
+// New creates the worktree command tree.
 func New() *cobra.Command {
-	cmd := &cobra.Command{Use: "worktree", Short: "List, remove, and create a repository's checkouts", Args: cobra.NoArgs}
-	cmd.AddCommand(list.New(), remove.New(), create.New())
-	return cmd
+	command := &cobra.Command{
+		Use:   "worktree",
+		Short: "manage task worktrees",
+		Args:  cobra.NoArgs,
+	}
+	command.AddCommand(create.New(), remove.New())
+	return command
 }

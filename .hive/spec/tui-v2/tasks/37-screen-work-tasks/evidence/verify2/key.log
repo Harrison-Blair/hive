@@ -1,0 +1,48 @@
+=== RUN   TestWorkTasksFileKeys
+    work_tasks_test.go:152: view does not contain "dependency graph · 3-tui-restart":
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+          Goals    Queue   [Tasks]                                                                            [ ] switch view   
+        ╭─ tasks · 4 ──────────────────────────────────────╮╭─ VERIFIED.md ────────────────────────────────────────────────────╮
+        │   ID                        STATUS    WAVE       ││ # VERIFIED 3-tui-restart                                         │
+        │   4-agents-equal-columns    landed    C          ││                                                                  │
+        │ ▶ 3-tui-restart             landed    B          ││ Result: pass                                                     │
+        │   2-stale-coordinator-star… landed    A          ││                                                                  │
+        │   1-cp5-end-to-end          assigned  —          ││ | Item | Command | Result |                                      │
+        │                                                  ││ | --- | --- | --- |                                              │
+        │                                                  ││ | V1 | go test -race ./internal/tui/... | pass |                 │
+        │                                                  ││ | V3 | live restart in a scratch home | pass |                   │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+--- FAIL: TestWorkTasksFileKeys (0.01s)
+=== RUN   TestWorkTasksOverlayKeys
+--- PASS: TestWorkTasksOverlayKeys (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.028s
+FAIL

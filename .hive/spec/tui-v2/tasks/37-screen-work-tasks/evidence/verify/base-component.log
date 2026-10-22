@@ -1,0 +1,5 @@
+# github.com/Harrison-Blair/hive/internal/tui/component [github.com/Harrison-Blair/hive/internal/tui/component.test]
+internal/tui/component/list_test.go:85:4: l.Fill undefined (type List has no field or method Fill)
+internal/tui/component/subtabs_test.go:39:83: unknown field Hint in struct literal of type SubTabs
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component [build failed]
+FAIL

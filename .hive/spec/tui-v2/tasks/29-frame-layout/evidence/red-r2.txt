@@ -1,0 +1,64 @@
+--- FAIL: TestOverlayKeepsScreenAndViewKeys (0.10s)
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/1 (0.00s)
+        frame_test.go:344: key "1" changed screen 2 view 2 to screen 0 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/2 (0.00s)
+        frame_test.go:344: key "2" changed screen 2 view 2 to screen 1 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/4 (0.00s)
+        frame_test.go:344: key "4" changed screen 2 view 2 to screen 3 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/5 (0.00s)
+        frame_test.go:344: key "5" changed screen 2 view 2 to screen 4 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/6 (0.00s)
+        frame_test.go:344: key "6" changed screen 2 view 2 to screen 5 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/[ (0.00s)
+        frame_test.go:344: key "[" changed screen 2 view 2 to screen 2 view 1
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/] (0.00s)
+        frame_test.go:344: key "]" changed screen 2 view 2 to screen 2 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/work_overlay/tab (0.00s)
+        frame_test.go:347: key "tab" changed focus "details" to "list"
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/1 (0.00s)
+        frame_test.go:344: key "1" changed screen 3 view 0 to screen 0 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/2 (0.00s)
+        frame_test.go:344: key "2" changed screen 3 view 0 to screen 1 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/3 (0.00s)
+        frame_test.go:344: key "3" changed screen 3 view 0 to screen 2 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/5 (0.00s)
+        frame_test.go:344: key "5" changed screen 3 view 0 to screen 4 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/6 (0.00s)
+        frame_test.go:344: key "6" changed screen 3 view 0 to screen 5 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/[ (0.00s)
+        frame_test.go:344: key "[" changed screen 3 view 0 to screen 3 view 1
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/] (0.00s)
+        frame_test.go:344: key "]" changed screen 3 view 0 to screen 3 view 1
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/friction_overlay/tab (0.00s)
+        frame_test.go:347: key "tab" changed focus "details" to "list"
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/1 (0.00s)
+        frame_test.go:344: key "1" changed screen 4 view 0 to screen 0 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/2 (0.00s)
+        frame_test.go:344: key "2" changed screen 4 view 0 to screen 1 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/3 (0.00s)
+        frame_test.go:344: key "3" changed screen 4 view 0 to screen 2 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/4 (0.00s)
+        frame_test.go:344: key "4" changed screen 4 view 0 to screen 3 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/6 (0.00s)
+        frame_test.go:344: key "6" changed screen 4 view 0 to screen 5 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/[ (0.00s)
+        frame_test.go:344: key "[" changed screen 4 view 0 to screen 4 view 1
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/] (0.00s)
+        frame_test.go:344: key "]" changed screen 4 view 0 to screen 4 view 1
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/health_overlay/tab (0.00s)
+        frame_test.go:347: key "tab" changed focus "details" to "list"
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/1 (0.00s)
+        frame_test.go:344: key "1" changed screen 5 view 0 to screen 0 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/2 (0.00s)
+        frame_test.go:344: key "2" changed screen 5 view 0 to screen 1 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/3 (0.00s)
+        frame_test.go:344: key "3" changed screen 5 view 0 to screen 2 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/4 (0.00s)
+        frame_test.go:344: key "4" changed screen 5 view 0 to screen 3 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/5 (0.00s)
+        frame_test.go:344: key "5" changed screen 5 view 0 to screen 4 view 0
+    --- FAIL: TestOverlayKeepsScreenAndViewKeys/logs_overlay/tab (0.00s)
+        frame_test.go:347: key "tab" changed focus "json" to "events"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.112s
+FAIL

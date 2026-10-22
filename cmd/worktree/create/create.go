@@ -1,22 +1,30 @@
-// Package create wires managed checkout creation.
+// Package create wires the worktree create command.
 package create
 
 import (
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/worktree/create"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
+// New creates the worktree create command.
 func New() *cobra.Command {
-	var o create.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "create", Short: "Create a managed checkout on a new branch and open it as a workspace", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, _ []string) error {
-		return cli.Finish(create.Run(cmd.Context(), libagent.FromEnvironment(0), o), cmd.OutOrStdout(), asJSON, create.Render)
-	}}
-	cmd.Flags().StringVar(&o.Branch, "branch", "", "New branch to create")
-	cmd.Flags().StringVar(&o.Base, "base", "", "Ref to start the branch from (default: Herdr's choice)")
-	cmd.Flags().StringVar(&o.Cwd, "cwd", "", "Directory inside the repository (default: current directory)")
-	cmd.Flags().BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	return cmd
+	command := &cobra.Command{
+		Use:   "create",
+		Short: "create the worktree of a task",
+		Args:  cobra.NoArgs,
+	}
+	flags := command.Flags()
+	flags.String("task", "", "task ID")
+	flags.Bool("focus", false, "focus the new workspace")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		return common.Run(cmd, "worktree create", func(home string) (output.Envelope, string, error) {
+			task, _ := cmd.Flags().GetString("task")
+			focus, _ := cmd.Flags().GetBool("focus")
+			envelope := worktreelib.Create(cmd.Context(), home, worktreelib.CreateOptions{Task: task, Focus: focus})
+			return envelope, worktreelib.CreateText(envelope), nil
+		})
+	}
+	return command
 }

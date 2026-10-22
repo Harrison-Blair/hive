@@ -1,0 +1,57 @@
+// Command t33cmp compares the top-left W×H cells of a pane capture with a
+// board grid under the space cell rule. Scratch tool for task 33.
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+	"github.com/charmbracelet/x/ansi"
+)
+
+func main() {
+	gridFile, captureFile := os.Args[1], os.Args[2]
+	f, err := os.Open(gridFile)
+	if err != nil {
+		panic(err)
+	}
+	want, err := cellgrid.ReadGrid(f)
+	if err != nil {
+		panic(err)
+	}
+	raw, err := os.ReadFile(captureFile)
+	if err != nil {
+		panic(err)
+	}
+	lines := strings.Split(strings.ReplaceAll(string(raw), "\r", ""), "\n")
+	if len(lines) < want.Height {
+		panic(fmt.Sprintf("capture has %d rows, board %d", len(lines), want.Height))
+	}
+	lines = lines[:want.Height]
+	for i, line := range lines {
+		lines[i] = ansi.Truncate(line, want.Width, "") + "\x1b[0m"
+	}
+	got, err := cellgrid.Convert(strings.Join(lines, "\n"), want.Width, want.Height)
+	if err != nil {
+		panic(err)
+	}
+	diffs, err := cellgrid.Compare(want, got, nil)
+	if err != nil {
+		panic(err)
+	}
+	var live []cellgrid.Diff
+	for _, d := range diffs {
+		if d.Want.Rune == ' ' && d.Got.Rune == ' ' {
+			continue
+		}
+		live = append(live, d)
+	}
+	fmt.Printf("%s: strict differences %d, space-cell token or bold only %d, differences under the live rule %d\n",
+		gridFile[strings.LastIndex(gridFile, "/")+1:], len(diffs), len(diffs)-len(live), len(live))
+	if len(live) > 0 {
+		fmt.Print(cellgrid.FormatDiffs(live))
+		os.Exit(1)
+	}
+}

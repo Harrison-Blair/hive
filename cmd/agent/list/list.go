@@ -1,24 +1,31 @@
-// Package list wires agent enumeration.
+// Package list wires the agent list command.
 package list
 
 import (
-	"github.com/Harrison-Blair/fledge/internal/agent/list"
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/lib/selector"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
 
+// New creates the agent list command.
 func New() *cobra.Command {
-	var options list.Options
-	cmd := &cobra.Command{Use: "list", Short: "List all live Herdr agents", Args: cobra.NoArgs,
-		Long: "List all live Herdr agents, or only those the filter flags select. Different\nflags AND together; repeating one flag ORs its values. --profile, --task,\n--worktree, --registered, --mine, and --parent match only agents with a live\nrecord in this repository.",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			return cli.Finish(list.Run(cmd.Context(), libagent.FromEnvironment(0), options), cmd.OutOrStdout(), options.JSON, list.Render)
-		}}
-	f := cmd.Flags()
-	selector.BindFlags(f, &options.Filter)
-	f.BoolVar(&options.IDs, "ids", false, "Print one record ID per registered match instead of a table")
-	f.BoolVar(&options.JSON, "json", false, "Emit a structured outcome")
-	return cmd
+	command := &cobra.Command{
+		Use:   "list",
+		Short: "list agent records",
+		Args:  cobra.NoArgs,
+	}
+	command.Flags().String("project", "", "project ID")
+	command.Flags().String("role", "", "agent role")
+	command.Flags().Bool("all", false, "include stale, stopped, and exited records")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		project, _ := cmd.Flags().GetString("project")
+		role, _ := cmd.Flags().GetString("role")
+		all, _ := cmd.Flags().GetBool("all")
+		return common.Run(cmd, "agent list", func(home string) (output.Envelope, string, error) {
+			envelope := agentlib.List(home, agentlib.ListOptions{Project: project, Role: role, All: all})
+			return envelope, agentlib.ListText(envelope), nil
+		})
+	}
+	return command
 }

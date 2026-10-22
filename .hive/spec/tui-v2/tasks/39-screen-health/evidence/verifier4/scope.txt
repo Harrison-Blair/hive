@@ -1,0 +1,168 @@
+f8cb6d08961186284b244e0ef535a5ba30060441
+7ea7497d14e9b3611e445b1520c10fc3d25aecaa
+7ea7497d14e9b3611e445b1520c10fc3d25aecaa
+Already up to date.
+ .hive/spec/tui-v2/README.md                        |    8 +
+ .hive/spec/tui-v2/tasks/39-screen-health/brief.md  |  148 +
+ .../tasks/39-screen-health/evidence/V-gate.md      |  182 ++
+ .../tui-v2/tasks/39-screen-health/evidence/V1.md   |   87 +
+ .../tui-v2/tasks/39-screen-health/evidence/V2.md   |  161 ++
+ .../tasks/39-screen-health/evidence/VERIFIED.md    |  157 ++
+ .../39-screen-health/evidence/base-compile.txt     |    8 +
+ .../39-screen-health/evidence/base-red-restart.txt |   17 +
+ .../tasks/39-screen-health/evidence/base-red.txt   |   40 +
+ .../tasks/39-screen-health/evidence/break-key.txt  |   22 +
+ .../39-screen-health/evidence/break-token.txt      |   22 +
+ .../tasks/39-screen-health/evidence/green.txt      |  154 ++
+ .../evidence/merge3/HealthAgents-esc-j-h.txt       |   40 +
+ .../evidence/merge3/HealthAgents-esc-j.txt         |   40 +
+ .../evidence/merge3/HealthAgents-esc.txt           |   40 +
+ .../evidence/merge3/HealthAgents.ansi              |   40 +
+ .../evidence/merge3/HealthAgents.diff              |    1 +
+ .../evidence/merge3/compare.go.txt                 |    7 +
+ .../39-screen-health/evidence/merge3/gate.txt      |   88 +
+ .../39-screen-health/evidence/merge3/live.py.txt   |   23 +
+ .../evidence/normal/coordinator-cancel.txt         |   57 +
+ .../evidence/normal/coordinator-confirm-y.txt      |   57 +
+ .../evidence/normal/coordinator-prompt.txt         |   57 +
+ .../39-screen-health/evidence/normal/loaded.txt    |   57 +
+ .../evidence/normal/manager-notice.txt             |   57 +
+ .../normal/stale-coordinator-immediate.txt         |   57 +
+ .../evidence/normal/stale-loaded.txt               |   57 +
+ .../evidence/normal/supervisor-immediate.txt       |   57 +
+ .../evidence/normal/worker-notice.txt              |   57 +
+ .../evidence/screens/agents-esc-h.png              |  Bin 0 -> 95694 bytes
+ .../evidence/screens/agents-esc-j-r.png            |  Bin 0 -> 84679 bytes
+ .../evidence/screens/agents-esc-j.png              |  Bin 0 -> 84199 bytes
+ .../evidence/screens/agents-esc-p.png              |  Bin 0 -> 99371 bytes
+ .../evidence/screens/agents-esc-r.png              |  Bin 0 -> 99371 bytes
+ .../evidence/screens/agents-esc.png                |  Bin 0 -> 98929 bytes
+ .../evidence/screens/compact-enter-esc.png         |  Bin 0 -> 66900 bytes
+ .../evidence/screens/compact-enter.png             |  Bin 0 -> 61539 bytes
+ .../screens/compacthealth-enter-escape.txt         |   24 +
+ .../evidence/screens/compacthealth-enter.txt       |   24 +
+ .../evidence/screens/compacthealth.diff            |    1 +
+ .../evidence/screens/compacthealth.png             |  Bin 0 -> 59189 bytes
+ .../39-screen-health/evidence/screens/health-G.png |  Bin 0 -> 109845 bytes
+ .../evidence/screens/health-down-g-enter.txt       |   40 +
+ .../evidence/screens/health-down-g.txt             |   40 +
+ .../evidence/screens/health-down.png               |  Bin 0 -> 108529 bytes
+ .../evidence/screens/health-down.txt               |   40 +
+ .../evidence/screens/health-enter.png              |  Bin 0 -> 133807 bytes
+ .../39-screen-health/evidence/screens/health.diff  |    1 +
+ .../39-screen-health/evidence/screens/health.png   |  Bin 0 -> 108881 bytes
+ .../evidence/screens/healthagents-escape-j-h-r.txt |   40 +
+ .../evidence/screens/healthagents-escape-j-h.txt   |   40 +
+ .../evidence/screens/healthagents-escape-j.txt     |   40 +
+ .../evidence/screens/healthagents-escape.txt       |   40 +
+ .../evidence/screens/healthagents.diff             |    1 +
+ .../evidence/screens/healthagents.png              |  Bin 0 -> 97381 bytes
+ .../evidence/verifier/CompactHealth-board.png      |  Bin 0 -> 59786 bytes
+ .../evidence/verifier/CompactHealth.ansi           |   24 +
+ .../evidence/verifier/CompactHealth.diff           |    1 +
+ .../evidence/verifier/CompactHealth.metadata.json  |   24 +
+ .../evidence/verifier/CompactHealth.png            |  Bin 0 -> 59189 bytes
+ .../evidence/verifier/CompactHealth.read.json      |   16 +
+ .../evidence/verifier/Health-board.png             |  Bin 0 -> 110416 bytes
+ .../39-screen-health/evidence/verifier/Health.ansi |   40 +
+ .../39-screen-health/evidence/verifier/Health.diff |    1 +
+ .../evidence/verifier/Health.metadata.json         |   24 +
+ .../39-screen-health/evidence/verifier/Health.png  |  Bin 0 -> 108881 bytes
+ .../evidence/verifier/Health.read.json             |   16 +
+ .../evidence/verifier/HealthAgents-board.png       |  Bin 0 -> 98129 bytes
+ .../evidence/verifier/HealthAgents.ansi            |   40 +
+ .../evidence/verifier/HealthAgents.diff            |    1 +
+ .../evidence/verifier/HealthAgents.metadata.json   |   24 +
+ .../evidence/verifier/HealthAgents.png             |  Bin 0 -> 97381 bytes
+ .../evidence/verifier/HealthAgents.read.json       |   16 +
+ .../evidence/verifier/agents-cancel.txt            |   40 +
+ .../evidence/verifier/agents-hide.txt              |   40 +
+ .../evidence/verifier/agents-manager-demo.txt      |   40 +
+ .../evidence/verifier/base-red-shim.txt            | 2616 ++++++++++++++++++
+ .../evidence/verifier/base-red.txt                 |   10 +
+ .../evidence/verifier/base-restart-red.txt         |   81 +
+ .../evidence/verifier/compact-back.txt             |   24 +
+ .../evidence/verifier/compact-details.txt          |   24 +
+ .../evidence/verifier/compare.go.txt               |    7 +
+ .../39-screen-health/evidence/verifier/gate.txt    |   88 +
+ .../evidence/verifier/green-final.txt              |    1 +
+ .../39-screen-health/evidence/verifier/green.txt   |    1 +
+ .../evidence/verifier/home-details.txt             |   40 +
+ .../evidence/verifier/home-down.txt                |   40 +
+ .../evidence/verifier/home-end.txt                 |   40 +
+ .../39-screen-health/evidence/verifier/key-red.txt |   87 +
+ .../39-screen-health/evidence/verifier/live.py     |   17 +
+ .../evidence/verifier/normal-confirm-y.txt         |   57 +
+ .../verifier/normal-coordinator-cancel.txt         |   57 +
+ .../verifier/normal-coordinator-prompt.txt         |   57 +
+ .../evidence/verifier/normal-empty.txt             |   57 +
+ .../evidence/verifier/normal-loaded.txt            |   57 +
+ .../evidence/verifier/normal-manager.txt           |   57 +
+ .../evidence/verifier/normal-stale-immediate.txt   |   57 +
+ .../verifier/normal-supervisor-immediate.txt       |   57 +
+ .../evidence/verifier/normal-worker.txt            |   57 +
+ .../39-screen-health/evidence/verifier/scope.txt   |   42 +
+ .../evidence/verifier/scratch-log.jsonl            |  579 ++++
+ .../evidence/verifier/token-red.txt                |  205 ++
+ .../evidence/verifier3/CompactHealth-board.png     |  Bin 0 -> 59786 bytes
+ .../evidence/verifier3/CompactHealth.ansi          |   24 +
+ .../evidence/verifier3/CompactHealth.diff          |    1 +
+ .../evidence/verifier3/CompactHealth.metadata.json |   24 +
+ .../evidence/verifier3/CompactHealth.png           |  Bin 0 -> 59189 bytes
+ .../evidence/verifier3/CompactHealth.read.json     |   16 +
+ .../evidence/verifier3/Health-board.png            |  Bin 0 -> 110416 bytes
+ .../evidence/verifier3/Health.ansi                 |   40 +
+ .../evidence/verifier3/Health.diff                 |    1 +
+ .../evidence/verifier3/Health.metadata.json        |   24 +
+ .../39-screen-health/evidence/verifier3/Health.png |  Bin 0 -> 108881 bytes
+ .../evidence/verifier3/Health.read.json            |   16 +
+ .../evidence/verifier3/HealthAgents-board.png      |  Bin 0 -> 98129 bytes
+ .../evidence/verifier3/HealthAgents.ansi           |   40 +
+ .../evidence/verifier3/HealthAgents.diff           |    1 +
+ .../evidence/verifier3/HealthAgents.metadata.json  |   24 +
+ .../evidence/verifier3/HealthAgents.png            |  Bin 0 -> 97381 bytes
+ .../evidence/verifier3/HealthAgents.read.json      |   16 +
+ .../evidence/verifier3/agents-cancel.txt           |   40 +
+ .../evidence/verifier3/agents-demo.txt             |   40 +
+ .../evidence/verifier3/agents-hide.txt             |   40 +
+ .../evidence/verifier3/base-compile.txt            |   14 +
+ .../evidence/verifier3/base-red.txt                | 2822 ++++++++++++++++++++
+ .../evidence/verifier3/compact-back.txt            |   24 +
+ .../evidence/verifier3/compact-details.txt         |   24 +
+ .../evidence/verifier3/compare.go.txt              |    7 +
+ .../evidence/verifier3/final-merge.txt             |   15 +
+ .../39-screen-health/evidence/verifier3/gate.txt   |   88 +
+ .../39-screen-health/evidence/verifier3/green.txt  |  154 ++
+ .../evidence/verifier3/home-details.txt            |   40 +
+ .../evidence/verifier3/home-down.txt               |   40 +
+ .../evidence/verifier3/home-end.txt                |   40 +
+ .../evidence/verifier3/kept-red.txt                |   57 +
+ .../evidence/verifier3/key-red.txt                 |   87 +
+ .../39-screen-health/evidence/verifier3/keys.py    |   20 +
+ .../39-screen-health/evidence/verifier3/live.py    |   17 +
+ .../evidence/verifier3/merge-conflicts.txt         |   39 +
+ .../evidence/verifier3/normal-cancel.txt           |   57 +
+ .../evidence/verifier3/normal-confirm-y.txt        |   57 +
+ .../evidence/verifier3/normal-loaded.txt           |   57 +
+ .../evidence/verifier3/normal-manager.txt          |   57 +
+ .../evidence/verifier3/normal-prompt.txt           |   57 +
+ .../evidence/verifier3/normal-stale.txt            |   57 +
+ .../evidence/verifier3/normal-supervisor.txt       |   57 +
+ .../evidence/verifier3/normal-worker.txt           |   57 +
+ .../evidence/verifier3/restored-green.txt          |    1 +
+ .../39-screen-health/evidence/verifier3/scope.txt  |  108 +
+ .../evidence/verifier3/token-red.txt               |  205 ++
+ internal/tui/agents.go                             |   34 -
+ internal/tui/demo.go                               |    8 +-
+ internal/tui/demo_test.go                          |    4 +-
+ internal/tui/frame.go                              |   25 +-
+ internal/tui/health.go                             |  659 +++++
+ internal/tui/health_screen.go                      |  190 --
+ internal/tui/health_screen_test.go                 |  176 --
+ internal/tui/health_test.go                        |  320 +++
+ internal/tui/restart_test.go                       |   30 +-
+ internal/tui/selection_marker_test.go              |    4 +-
+ internal/tui/shell_test.go                         |    4 +-
+ internal/tui/tui.go                                |    8 +-
+ testdata/ste-baseline.json                         |    1 +
+ 163 files changed, 12519 insertions(+), 440 deletions(-)

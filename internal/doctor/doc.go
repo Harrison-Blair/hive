@@ -1,5 +1,5 @@
-// Package doctor diagnoses the local Fledge and Herdr environment, read-only.
-// doctor.go defines the dependencies and entry points (Options, Prober,
-// Diagnose, Run); the checks subpackage implements the five checks and the
-// report subpackage defines the report types, rendering, and exit error.
+// Package doctor runs the environment checks of hive.
+//
+// checks.go owns one check function for each line. run.go owns the order and
+// the result. render.go owns the text lines.
 package doctor

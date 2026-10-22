@@ -1,28 +1,75 @@
-// Package complete wires task completion.
+// Package complete wires the task complete command.
 package complete
 
 import (
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/task/complete"
+	"fmt"
+	"io"
+
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
 	"github.com/spf13/cobra"
 )
 
+// New creates the task complete command.
 func New() *cobra.Command {
-	var options complete.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "complete", Short: "Record an assigned task's result as its owner", Args: cobra.NoArgs,
-		Long: "Record an assigned task's result and mark it completed.\n\nThe caller must be the task's owner, identified by the caller pane's agent record,\nunless --force is given. A short notice naming the task and the fledge task get\nand fledge task verify commands is then stored in the inbox of a distinct\nregistered task creator, and its doorbell is rung; the result stays on the task\nrecord. Notification failures never roll completion back; the notice is never\ntyped, and the supervision daemon may ring its doorbell again."}
-	f := cmd.Flags()
-	f.StringVar(&options.ID, "id", "", "Task ID")
-	f.StringVar(&options.Summary, "summary", "", "Result text")
-	f.StringVar(&options.File, "file", "", "UTF-8 result file, or - for stdin")
-	f.BoolVar(&options.Force, "force", false, "Complete a task the caller does not own")
-	f.BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	cmd.RunE = func(cmd *cobra.Command, _ []string) error {
-		options.SummarySet = f.Changed("summary")
-		options.FileSet = f.Changed("file")
-		return cli.Finish(complete.Run(cmd.Context(), libagent.FromEnvironment(0), options, cmd.InOrStdin()), cmd.OutOrStdout(), asJSON, complete.Render)
+	command := &cobra.Command{
+		Use:   "complete",
+		Short: "mark a task complete",
+		Args:  cobra.NoArgs,
 	}
-	return cmd
+	command.Flags().String("task", "", "task ID")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		taskID, _ := cmd.Flags().GetString("task")
+		agent, _ := cmd.Flags().GetString("agent")
+		pane, _ := cmd.Flags().GetString("pane")
+		var envelope output.Envelope
+		var homeUsed string
+		var resolved records.Agent
+		original := cmd.OutOrStdout()
+		tracker := &trackingWriter{writer: original}
+		cmd.SetOut(tracker)
+		err := common.Run(cmd, "task complete", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
+			homeUsed = home
+			options := tasklib.TransitionOptions{Task: taskID, Agent: agent, PaneID: pane, ResolvedActor: &resolved}
+			envelope = tasklib.Complete(home, options)
+			return envelope, tasklib.TransitionText(envelope), nil
+		})
+		cmd.SetOut(original)
+		if homeUsed != "" && tracker.err != nil {
+			actor := agent
+			if resolved.Key != "" {
+				actor = resolved.Key
+			}
+			project := ""
+			if task, ok := envelope.Result.(records.Task); ok {
+				project = task.Project
+			}
+			tasklib.LogOutputFailure(homeUsed, "task complete", project, taskID, actor, tracker.err)
+			_, _ = fmt.Fprint(cmd.ErrOrStderr(), tasklib.FailureReport(envelope, taskID, actor))
+			return &common.StatusError{Status: 1}
+		}
+		return err
+	}
+	return command
+}
+
+type trackingWriter struct {
+	writer io.Writer
+	err    error
+}
+
+func (w *trackingWriter) Write(data []byte) (int, error) {
+	n, err := w.writer.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
+	if err != nil && w.err == nil {
+		w.err = err
+	}
+	return n, err
 }

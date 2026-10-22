@@ -1,0 +1,8 @@
+AgentsHome: initial grid matches; applicable keys captured.
+AgentsNested: initial grid matches; applicable keys captured.
+AgentsHiddenParent: initial grid matches; applicable keys captured.
+AgentsCoordinatorChild: initial grid matches; applicable keys captured.
+CompactAgentsHome: initial grid matches; applicable keys captured.
+AgentDetailsGeneral: initial grid matches; applicable keys captured.
+HealthAgentsGeneral: initial grid matches; applicable keys captured.
+AgentsMany: initial grid matches; applicable keys captured.

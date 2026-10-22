@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddddddddddddddddddddddddddddddaaaaaaaaaaddddddddfffffffffffffffffffffff
+b|00000000000000000000000000000000000000011111111110000000000000000000000000000000
+t|───────────────────────────────────────━━━━━━━━━━───────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Home   [Agents]                                             [ ] switch view   
+k|fddddddffaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|00000000011111111000000000000000000000000000000000000000000000000000000000000000
+t|╭─ agents · 5 ─────────────────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111000000000000000000000000000000000000000000000000000000000000000000
+t|│   AGENT                 ROLE          STATE         PANE                     │
+k|afffddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ coordinator-g2        coordinator   ● working     w58:p4                   │
+k|afafaaaaaaaaaaaaaaaaaaaaaaddddddddddddddwfffffffffffffddddddfffffffffffffffffffa
+b|00101111111111111111111111000000000000000000000000000000000000000000000000000000
+t|│   supervisor-g4         supervisor    ● live        w58:p5                   │
+k|afffffffffffffffffffffffffddddddddddddddwfffffffffffffddddddfffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   manager-hive          manager       ◐ idle        w58:p6                   │
+k|afffffffffffffffffffffffffddddddddddddddafffffffffffffddddddfffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   cp5-worker-01         worker        ● unresolved  gone                     │
+k|afffffffffffffffffffffffffddddddddddddddafffffffffffffddddfffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   t4-worker-1           worker        ○ stopped     —                        │
+k|afffffffffffffffffffffffffdddddddddddddddfdddddddddddddffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ r restarts the coordinator or supervisor. It asks first only when live.      │
+k|afdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ h hides 1 stopped agent.                                                     │
+k|afddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [list] ↑↓ move · enter details · [ ] view · r restart · R refresh · ?          
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111000000000000000000000000000000000000000000000000000000000000000000000000

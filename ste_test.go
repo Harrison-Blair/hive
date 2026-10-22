@@ -18,10 +18,23 @@ import (
 )
 
 // steFiles lists the instruction text the ratchet covers. Each entry is a
-// filepath.Glob pattern. A later wave adds files here.
+// filepath.Glob pattern. Add each new instruction file here with a baseline of 0.
 var steFiles = []string{
 	"AGENTS.md",
-	"internal/lib/profiles/builtin/*.md",
+	".hive/README.md",
+	".hive/spec/hive-v1/05-tracker.md",
+	".hive/spec/tui-v2/README.md",
+	".hive/spec/general-agent/README.md",
+	".hive/spec/releases/README.md",
+	".hive/spec/*/tasks/*/brief.md",
+	".hive/spec/*.md",
+	"internal/agent/templates/project-agents.md",
+	"internal/agent/templates/presets.md",
+	".agents/skills/hive-coordinator/SKILL.md",
+	".agents/skills/hive-manager/SKILL.md",
+	".agents/skills/hive-worker/SKILL.md",
+	".agents/skills/hive-verifier/SKILL.md",
+	".agents/skills/hive-agent/SKILL.md",
 }
 
 const (
@@ -446,7 +459,7 @@ func TestSTESegmentsSkipCode(t *testing.T) {
 		{"fenced code", "```\nx = a; y = b\n```", nil},
 		{"tilde fence", "~~~\nx = a; y = b\n~~~", nil},
 		{"inline code span masked to its own width", "Run `go vet ./...` now.", []steSegment{{1, "Run " + strings.Repeat(" ", len("`go vet ./...`")) + " now."}}},
-		{"table row of only code", "| `--name` | `fledge agent stop` |", nil},
+		{"table row of only code", "| `--name` | `hive agent stop` |", nil},
 		{"table cells split", "| Stop | End an agent. |", []steSegment{{1, " Stop "}, {1, " End an agent. "}}},
 		{"pipe inside a code span does not split a cell", "| `a|b` | Stop |", []steSegment{{1, " Stop "}}},
 	}

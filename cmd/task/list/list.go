@@ -1,29 +1,34 @@
-// Package list wires task listing.
+// Package list wires the task list command.
 package list
 
 import (
-	"strings"
-
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/lib/task"
-	"github.com/Harrison-Blair/fledge/internal/task/list"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
 	"github.com/spf13/cobra"
 )
 
+// New creates the task list command.
 func New() *cobra.Command {
-	var options list.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "list", Short: "List tasks, oldest first", Args: cobra.NoArgs,
-		Long: "List tasks, oldest first. The owner column shows the owner's name while its\nagent record is live, otherwise its record ID. PROGRESS counts a task's direct\nsubtasks, for example \"2/3 verified, 1 cancelled\"; landed subtasks count as\nverified, and cancelled subtasks are shown but not counted toward the total. WAITING lists prerequisites that are not yet\nverified, landed, or cancelled."}
-	f := cmd.Flags()
-	f.StringVar(&options.Status, "status", "", "Only tasks in this state: "+strings.Join(task.Statuses, ", "))
-	f.StringVar(&options.Owner, "owner", "", "Only tasks owned by this agent record ID")
-	f.StringVar(&options.Parent, "parent", "", "Only direct subtasks of this task ID")
-	f.BoolVar(&options.Ready, "ready", false, "Only created tasks whose prerequisites are all satisfied")
-	f.BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	cmd.RunE = func(cmd *cobra.Command, _ []string) error {
-		return cli.Finish(list.Run(cmd.Context(), libagent.FromEnvironment(0), options), cmd.OutOrStdout(), asJSON, list.Render)
+	command := &cobra.Command{
+		Use:   "list",
+		Short: "list task records",
+		Args:  cobra.NoArgs,
 	}
-	return cmd
+	flags := command.Flags()
+	flags.String("project", "", "project ID")
+	flags.String("feature", "", "feature slug")
+	flags.String("status", "", "task status")
+	flags.Bool("ready", false, "keep only created tasks with verified dependencies")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		return common.Run(cmd, "task list", func(home string) (output.Envelope, string, error) {
+			project, _ := cmd.Flags().GetString("project")
+			feature, _ := cmd.Flags().GetString("feature")
+			status, _ := cmd.Flags().GetString("status")
+			ready, _ := cmd.Flags().GetBool("ready")
+			envelope := tasklib.List(home, tasklib.ListOptions{Project: project, Feature: feature, Status: status, Ready: ready})
+			return envelope, tasklib.ListText(envelope), nil
+		})
+	}
+	return command
 }

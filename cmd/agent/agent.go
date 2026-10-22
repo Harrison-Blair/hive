@@ -1,29 +1,25 @@
-// Package agent wires the agent command group.
+// Package agent defines the agent command and registers its operations.
 package agent
 
 import (
-	"github.com/Harrison-Blair/fledge/cmd/agent/adopt"
-	"github.com/Harrison-Blair/fledge/cmd/agent/capabilities"
-	"github.com/Harrison-Blair/fledge/cmd/agent/cleanup"
-	"github.com/Harrison-Blair/fledge/cmd/agent/current"
-	"github.com/Harrison-Blair/fledge/cmd/agent/get"
-	"github.com/Harrison-Blair/fledge/cmd/agent/list"
-	"github.com/Harrison-Blair/fledge/cmd/agent/message"
-	"github.com/Harrison-Blair/fledge/cmd/agent/models"
-	"github.com/Harrison-Blair/fledge/cmd/agent/pause"
-	"github.com/Harrison-Blair/fledge/cmd/agent/profiles"
-	"github.com/Harrison-Blair/fledge/cmd/agent/read"
-	"github.com/Harrison-Blair/fledge/cmd/agent/rename"
-	"github.com/Harrison-Blair/fledge/cmd/agent/send"
-	"github.com/Harrison-Blair/fledge/cmd/agent/spawn"
-	"github.com/Harrison-Blair/fledge/cmd/agent/stop"
-	"github.com/Harrison-Blair/fledge/cmd/agent/usage"
-	"github.com/Harrison-Blair/fledge/cmd/agent/wait"
+	"github.com/Harrison-Blair/hive/cmd/agent/list"
+	"github.com/Harrison-Blair/hive/cmd/agent/register"
+	"github.com/Harrison-Blair/hive/cmd/agent/report"
+	"github.com/Harrison-Blair/hive/cmd/agent/resolve"
+	"github.com/Harrison-Blair/hive/cmd/agent/send"
+	"github.com/Harrison-Blair/hive/cmd/agent/show"
+	"github.com/Harrison-Blair/hive/cmd/agent/spawn"
+	"github.com/Harrison-Blair/hive/cmd/agent/stop"
 	"github.com/spf13/cobra"
 )
 
+// New creates the agent command tree.
 func New() *cobra.Command {
-	cmd := &cobra.Command{Use: "agent", Short: "Spawn, inspect, message, and stop Herdr agents", Args: cobra.NoArgs}
-	cmd.AddCommand(spawn.New(), adopt.New(), rename.New(), list.New(), get.New(), current.New(), message.New(), send.New(), pause.New(), stop.New(), cleanup.New(), models.New(), capabilities.New(), profiles.New(), read.New(), wait.New(), usage.New())
-	return cmd
+	command := &cobra.Command{
+		Use:   "agent",
+		Short: "manage agent sessions",
+		Args:  cobra.NoArgs,
+	}
+	command.AddCommand(register.New(), list.New(), show.New(), spawn.New(), send.New(), stop.New(), resolve.New(), report.New())
+	return command
 }

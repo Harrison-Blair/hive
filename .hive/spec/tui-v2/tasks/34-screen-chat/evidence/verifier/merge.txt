@@ -1,0 +1,20 @@
+Auto-merging testdata/ste-baseline.json
+Merge made by the 'ort' strategy.
+ .hive/spec/tui-v2/design/CompactFriction.dc.html   |   2 +-
+ .hive/spec/tui-v2/design/Friction.dc.html          |   2 +-
+ .hive/spec/tui-v2/design/FrictionResolved.dc.html  |   2 +-
+ .hive/spec/tui-v2/design/FrictionResolved.grid     |  10 +-
+ .hive/spec/tui-v2/design/Work.dc.html              |   2 +-
+ .hive/spec/tui-v2/design/Work.grid                 |   2 +-
+ .../tui-v2/tasks/43-board-slip-batch-1/brief.md    | 109 ++++++++++
+ .../tasks/43-board-slip-batch-1/evidence/V-gate.md | 119 +++++++++++
+ .../tasks/43-board-slip-batch-1/evidence/V1.md     |  39 ++++
+ .../tasks/43-board-slip-batch-1/evidence/V2.md     |  45 +++++
+ .../43-board-slip-batch-1/evidence/VERIFIED.md     | 220 +++++++++++++++++++++
+ testdata/ste-baseline.json                         |   1 +
+ 12 files changed, 543 insertions(+), 10 deletions(-)
+ create mode 100644 .hive/spec/tui-v2/tasks/43-board-slip-batch-1/brief.md
+ create mode 100644 .hive/spec/tui-v2/tasks/43-board-slip-batch-1/evidence/V-gate.md
+ create mode 100644 .hive/spec/tui-v2/tasks/43-board-slip-batch-1/evidence/V1.md
+ create mode 100644 .hive/spec/tui-v2/tasks/43-board-slip-batch-1/evidence/V2.md
+ create mode 100644 .hive/spec/tui-v2/tasks/43-board-slip-batch-1/evidence/VERIFIED.md

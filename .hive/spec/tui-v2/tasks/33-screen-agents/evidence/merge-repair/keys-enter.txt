@@ -1,0 +1,40 @@
+ hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│                           ╭─ hive ───────────────────────────────────────────────────────╮                           │
+│                           │ g1-tui-restart · done                                        │                           │
+│                           │ ╭─ t4-worker-1 · esc closes ───────────────────────────────╮ │                           │
+│                           │ │                                                          │ │                           │
+│                           │ │  role      worker                                        │ │                           │
+│                           │ │  project   hive                                          │ │                           │
+│                           │ │  status    ○ stopped                                     │ │                           │
+│                           │ │  harness   pi                                            │ │                           │
+│                           │ │  pane      w61:p1                                        │ │                           │
+│                           │ │  tab       t4-worker-1                                   │ │                           │
+│                           │ │  goal      g1-tui-restart · done                         │ │                           │
+│                           │ │  parent    manager-hive-g2                               │ │                           │
+│                           │ │                                                          │ │                           │
+│                           │ │  ACTIONS                                                 │ │                           │
+│                           │ │  a  attach to pane                                       │ │                           │
+│                           ╰─│  p  peek pane                                            │─╯                           │
+│                             │  t  open task · 4-agents-equal-columns                   │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             ╰──────────────────────────────────────────────────────────╯                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close

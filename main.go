@@ -1,14 +1,11 @@
-// Command fledge is the Fledge CLI.
 package main
 
 import (
 	"os"
 
-	"github.com/Harrison-Blair/fledge/cmd"
+	"github.com/Harrison-Blair/hive/cmd"
 )
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		os.Exit(cmd.ExitCode(err))
-	}
+	os.Exit(cmd.Execute())
 }

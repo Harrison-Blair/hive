@@ -1,0 +1,1 @@
+FrictionResolved.grid: strict differences 1624, space-cell token or bold only 1624, differences under the live rule 0

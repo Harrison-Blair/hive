@@ -1,347 +1,555 @@
-// Package inbox stores the bodies of messages, task assignments, and
-// supervisor wakes as durable records, one flat state store kind. A recipient
-// gets only a one-line doorbell in its pane and reads the body with fledge
-// inbox read. A body is never typed into a pane; a doorbell may be rung again.
 package inbox
 
 import (
-	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"slices"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/lib/herdr"
-	"github.com/Harrison-Blair/fledge/internal/lib/identity"
-	"github.com/Harrison-Blair/fledge/internal/lib/state"
-	"github.com/Harrison-Blair/fledge/internal/lib/termtext"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
-// Kind is the state store kind holding inbox records.
-const Kind = "inbox"
+// MaxTextBytes is the maximum UTF-8 byte length of one inbox record text.
+const MaxTextBytes = 4096
 
-// The three record kinds.
 const (
-	Message    = "message"
-	Assignment = "assignment"
-	Wake       = "wake"
+	maxFieldBytes  = 512
+	appendLockWait = 10 * time.Second
 )
 
-// SupervisorName is the sender name of every wake.
-const SupervisorName = "fledge supervisor"
+var keyPattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,40}$`)
 
-// From is the sender: its agent record id when registered, its pane name, and
-// its pane. Name is empty for an unnamed agent and null for a pane that hosts
-// no agent. A wake has only Name, SupervisorName.
-type From struct {
-	ID   *string `json:"id"`
-	Name *string `json:"name"`
-	Pane *string `json:"pane"`
+// AppendOptions holds explicit values for one inbox record.
+type AppendOptions struct {
+	Role  string
+	Kind  string
+	Task  string
+	Agent string
+	Text  string
+	// Path is the absolute file path of a report record.
+	Path string
 }
 
-// Sender resolves the caller's pane as libagent.ResolveSender does, without
-// failing on an attribution error, and as an inbox sender that carries the
-// caller's live record id when s, which may be nil, holds one. Only a store
-// failure is returned.
-func Sender(ctx context.Context, c libagent.Client, s *state.Store) (libagent.Sender, From, error) {
-	if c.CallerPane == "" {
-		return libagent.CallerSender("", nil), From{}, nil
+// Result is the records that a consume call marked and the records that remain unread.
+type Result struct {
+	Records   []records.Inbox `json:"records"`
+	Remaining []records.Inbox `json:"remaining,omitempty"`
+}
+
+// MarkFunc marks one record as read and returns the marked record.
+type MarkFunc func(*store.LockedStore, records.Inbox) (records.Inbox, error)
+
+type lockedWriter interface {
+	Next(name string) (uint64, error)
+	WriteIn(collection []string, id string, value any) error
+}
+
+type recordLister interface {
+	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
+}
+
+// Append writes one inbox record.
+func Append(home string, options AppendOptions) output.Envelope {
+	if err := validateAppend(options); err != nil {
+		envelope := failed("validate", err.Error())
+		logAppend(home, options, envelope)
+		return envelope
 	}
-	a, err := c.Get(ctx, c.CallerPane)
-	var remote *herdr.Error
-	switch {
-	case errors.As(err, &remote) && remote.Code == "agent_not_found":
-		sender := libagent.CallerSender(c.CallerPane, nil)
-		return sender, FromSender(sender, nil), nil
-	case err != nil:
-		msg := err.Error()
-		sender := libagent.Sender{Pane: cli.Pointer(c.CallerPane), Kind: "unknown", Error: &msg}
-		return sender, FromSender(sender, nil), nil
+	registry, err := store.Open(home)
+	if err != nil {
+		envelope := failed("store", err.Error())
+		logAppend(home, options, envelope)
+		return envelope
 	}
-	sender := libagent.CallerSender(c.CallerPane, &a)
-	if s == nil {
-		return sender, FromSender(sender, nil), nil
+	var envelope output.Envelope
+	ctx, cancel := context.WithTimeout(context.Background(), appendLockWait)
+	defer cancel()
+	err = registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		envelope = appendLocked(locked, locked, options, time.Now)
+		return nil
+	})
+	if err != nil {
+		envelope = failed("store", err.Error())
 	}
-	rec, err := identity.LiveEndingMismatched(s, a)
-	var id *string
-	if rec != nil {
-		id = &rec.ID
+	logAppend(home, options, envelope)
+	return envelope
+}
+
+func appendLocked(locked *store.LockedStore, writer lockedWriter, options AppendOptions, now func() time.Time) output.Envelope {
+	_ = locked
+	if err := validateAppend(options); err != nil {
+		return failed("validate", err.Error())
 	}
-	return sender, FromSender(sender, id), err
-}
-
-// FromSender is the inbox sender for a resolved prompt sender and the
-// caller's live record id, if any.
-func FromSender(s libagent.Sender, id *string) From {
-	f := From{ID: id, Name: s.Name, Pane: s.Pane}
-	if s.Kind == "unnamed" {
-		f.Name = new(string)
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
 	}
-	return f
-}
-
-// Supervisor is the sender of wakes.
-func Supervisor() From { return From{Name: cli.Pointer(SupervisorName)} }
-
-// IsSupervisor reports whether f is the supervision daemon.
-func (f From) IsSupervisor() bool {
-	return f.ID == nil && f.Pane == nil && f.Name != nil && *f.Name == SupervisorName
-}
-
-// String describes the sender as doorbells and listings show it.
-func (f From) String() string {
-	switch {
-	case f.IsSupervisor():
-		return SupervisorName
-	case f.Pane == nil:
-		return "unknown sender"
-	case f.Name != nil && *f.Name != "":
-		return fmt.Sprintf("%s (%s)", *f.Name, *f.Pane)
-	case f.ID != nil || f.Name != nil:
-		return fmt.Sprintf("unnamed agent (%s)", *f.Pane)
+	seq, err := writer.Next("inbox:" + options.Role)
+	if err != nil {
+		return failed("counter", "next inbox counter: "+err.Error())
 	}
-	return "pane " + *f.Pane
-}
-
-// Ring is one attempt to type the doorbell into Pane. A failed attempt has OK
-// false and the error; it does not count as rung.
-type Ring struct {
-	At    string  `json:"at"`
-	Pane  string  `json:"pane"`
-	OK    bool    `json:"ok"`
-	Error *string `json:"error"`
-}
-
-// Record is one stored message, assignment, or wake addressed to the agent
-// record To. Task is set for assignments and task notices. ReplyTo links a
-// reply to the record it answers; AnsweredAt and AnsweredBy mark a record that
-// its recipient answered, AnsweredBy naming the reply's message id.
-type Record struct {
-	ID         string  `json:"id"`
-	Kind       string  `json:"kind"`
-	From       From    `json:"from"`
-	To         string  `json:"to"`
-	Task       *string `json:"task"`
-	Body       string  `json:"body"`
-	CreatedAt  string  `json:"created_at"`
-	Rings      []Ring  `json:"rings"`
-	ReadAt     *string `json:"read_at"`
-	ReplyTo    *string `json:"reply_to"`
-	AnsweredAt *string `json:"answered_at"`
-	AnsweredBy *string `json:"answered_by"`
-}
-
-// View is a record with its derived state, for listings and JSON output.
-type View struct {
-	Record
-	State string `json:"state"`
-}
-
-// NewView pairs r with its state.
-func NewView(r Record) View { return View{Record: r, State: State(r)} }
-
-// State derives queued (no successful ring), rung (rung and unread), read, or
-// answered.
-func State(r Record) string {
-	switch {
-	case r.AnsweredAt != nil:
-		return "answered"
-	case r.ReadAt != nil:
-		return "read"
-	case Rung(r):
-		return "rung"
+	effects := []output.Effect{counterEffect(options.Role)}
+	record := records.Inbox{
+		Seq:       seq,
+		Role:      options.Role,
+		Kind:      kind,
+		Task:      options.Task,
+		Agent:     options.Agent,
+		Text:      options.Text,
+		Path:      options.Path,
+		CreatedAt: now().UTC().Format(time.RFC3339Nano),
+		ReadAt:    "",
+		NudgedAt:  "",
 	}
-	return "queued"
+	id := strconv.FormatUint(seq, 10)
+	if err := writer.WriteIn([]string{"inbox", options.Role}, id, record); err != nil {
+		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write inbox record: " + err.Error(), Result: nil}
+	}
+	effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(options.Role, seq), Action: "created"})
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
 }
 
-// Rung reports whether any doorbell attempt succeeded.
-func Rung(r Record) bool { return slices.ContainsFunc(r.Rings, func(g Ring) bool { return g.OK }) }
+// Consume marks each unread record of key and returns the marked records.
+func Consume(home, key string) output.Envelope {
+	if err := checkKey(key); err != nil {
+		envelope := failed("validate", err.Error())
+		logConsume(home, key, envelope)
+		return envelope
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		envelope := failed("store", err.Error())
+		logConsume(home, key, envelope)
+		return envelope
+	}
+	var envelope output.Envelope
+	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
+		envelope = consumeLocked(locked, key, markRead, home)
+		return nil
+	})
+	if err != nil {
+		envelope = failed("store", err.Error())
+	}
+	logConsume(home, key, envelope)
+	return envelope
+}
 
-// Unread reports whether r is queued or rung.
-func Unread(r Record) bool { return r.ReadAt == nil && r.AnsweredAt == nil }
+func consumeLocked(locked *store.LockedStore, key string, mark MarkFunc, home ...string) output.Envelope {
+	base := ""
+	if len(home) != 0 {
+		base = home[0]
+	}
+	unread, err := listLocked(locked, key, false, base)
+	if err != nil {
+		return failed("consume", err.Error())
+	}
+	if len(unread) == 0 {
+		return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: Result{Records: []records.Inbox{}}}
+	}
+	marked := make([]records.Inbox, 0, len(unread))
+	effects := make([]output.Effect, 0, len(unread))
+	for i, record := range unread {
+		updated, err := mark(locked, record)
+		if err != nil {
+			if len(marked) == 0 {
+				return failed("consume", "mark inbox record "+strconv.FormatUint(record.Seq, 10)+": "+err.Error())
+			}
+			return output.Envelope{
+				Outcome: "partial",
+				Phase:   "consume",
+				Effects: effects,
+				Error:   "mark inbox record " + strconv.FormatUint(record.Seq, 10) + ": " + err.Error(),
+				Result:  Result{Records: marked, Remaining: append([]records.Inbox(nil), unread[i:]...)},
+			}
+		}
+		marked = append(marked, updated)
+		effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(key, record.Seq), Action: "consumed"})
+	}
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: Result{Records: marked}}
+}
 
-// LastRing returns the latest successful ring, or nil.
-func LastRing(r Record) *Ring {
-	for i := len(r.Rings) - 1; i >= 0; i-- {
-		if r.Rings[i].OK {
-			return &r.Rings[i]
+func markRead(locked *store.LockedStore, record records.Inbox) (records.Inbox, error) {
+	var updated records.Inbox
+	err := locked.UpdateIn([]string{"inbox", record.Role}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
+		if err := json.Unmarshal(raw, &updated); err != nil {
+			return nil, err
+		}
+		updated.ReadAt = time.Now().UTC().Format(time.RFC3339Nano)
+		return json.Marshal(updated)
+	})
+	return updated, err
+}
+
+// Unread returns each unread record of key in sequence order.
+func Unread(home, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	found, err := listLocked(registry, key, false, home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	return found, nil
+}
+
+// All returns each record of key in sequence order.
+func All(home, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	found, err := listLocked(registry, key, true, home)
+	if err != nil {
+		logReadFailure(home, key, err.Error())
+		return nil, err
+	}
+	return found, nil
+}
+
+func listLocked(lister recordLister, key string, all bool, home ...string) ([]records.Inbox, error) {
+	base := ""
+	if len(home) != 0 {
+		base = home[0]
+	}
+	names := []string{}
+	raw, err := lister.ListIn([]string{"inbox", key}, func(filename string) bool {
+		names = append(names, filename)
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
+	found := make([]records.Inbox, 0, len(raw))
+	for i, data := range raw {
+		name := ""
+		if i < len(names) {
+			name = names[i]
+		}
+		path := recordErrorPath(base, key, name)
+		var record records.Inbox
+		if err := json.Unmarshal(data, &record); err != nil {
+			return nil, fmt.Errorf("record invalid: %s: %w", path, err)
+		}
+		id := strings.TrimSuffix(name, ".json")
+		seq, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("record invalid: %s: the sequence name is not numeric", path)
+		}
+		if id != strconv.FormatUint(seq, 10) {
+			return nil, fmt.Errorf("record invalid: %s: the sequence name is not canonical", path)
+		}
+		if record.Seq != seq {
+			return nil, fmt.Errorf("record invalid: %s: sequence %d does not match the record path", path, record.Seq)
+		}
+		if record.Role != key {
+			return nil, fmt.Errorf("record invalid: %s: role %q does not match inbox %q", path, record.Role, key)
+		}
+		if !all && record.ReadAt != "" {
+			continue
+		}
+		found = append(found, record)
+	}
+	sort.Slice(found, func(i, j int) bool { return found[i].Seq < found[j].Seq })
+	return found, nil
+}
+
+func recordErrorPath(home, key, name string) string {
+	if home != "" {
+		return filepath.ToSlash(filepath.Join(home, ".hive", "state", "inbox", key, name))
+	}
+	return filepath.ToSlash(filepath.Join(".hive", "state", "inbox", key, name))
+}
+
+// UnreadCount returns the number of unread records of key.
+func UnreadCount(home, key string) (int, error) {
+	found, err := Unread(home, key)
+	if err != nil {
+		return 0, err
+	}
+	return len(found), nil
+}
+
+// UnreadCountAll returns the unread count of each inbox under the home.
+func UnreadCountAll(home string) (map[string]int, error) {
+	if _, err := store.Open(home); err != nil {
+		logReadFailure(home, "", err.Error())
+		return nil, err
+	}
+	root := filepath.Join(home, ".hive", "state", "inbox")
+	info, err := os.Lstat(root)
+	if errors.Is(err, os.ErrNotExist) {
+		return map[string]int{}, nil
+	}
+	if err != nil {
+		logReadFailure(home, "", err.Error())
+		return nil, err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		message := fmt.Sprintf("store path invalid: %s", root)
+		logReadFailure(home, "", message)
+		return nil, errors.New(message)
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		logReadFailure(home, "", err.Error())
+		return nil, err
+	}
+	counts := map[string]int{}
+	for _, entry := range entries {
+		key := entry.Name()
+		if checkKey(key) != nil {
+			continue
+		}
+		rolePath := filepath.Join(root, key)
+		roleInfo, err := os.Lstat(rolePath)
+		if err != nil {
+			logReadFailure(home, key, err.Error())
+			return nil, err
+		}
+		if roleInfo.Mode()&os.ModeSymlink != 0 || !roleInfo.IsDir() {
+			message := fmt.Sprintf("store path invalid: %s", rolePath)
+			logReadFailure(home, key, message)
+			return nil, errors.New(message)
+		}
+		count, err := UnreadCount(home, key)
+		if err != nil {
+			return nil, err
+		}
+		counts[key] = count
+	}
+	return counts, nil
+}
+
+func checkKey(key string) error {
+	if !keyPattern.MatchString(key) {
+		return fmt.Errorf("invalid inbox key: %s", displayValue(key))
+	}
+	return nil
+}
+
+func boundedText(text string) error {
+	if len(text) > MaxTextBytes {
+		return fmt.Errorf("inbox text is %d bytes; the maximum is %d", len(text), MaxTextBytes)
+	}
+	return nil
+}
+
+func validateAppend(options AppendOptions) error {
+	if err := checkKey(options.Role); err != nil {
+		return err
+	}
+	if err := boundedText(options.Text); err != nil {
+		return err
+	}
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
+	}
+	switch kind {
+	case records.InboxCompleted, records.InboxVerified, records.InboxBlocked,
+		records.InboxExited, records.InboxQuiet, records.InboxUnresolved, records.InboxMessage, records.InboxReport:
+	default:
+		return fmt.Errorf("invalid inbox kind: %s", displayValue(kind))
+	}
+	for _, field := range []struct {
+		label string
+		value string
+	}{
+		{"task", options.Task},
+		{"agent", options.Agent},
+	} {
+		if len(field.value) > maxFieldBytes {
+			return fmt.Errorf("invalid inbox %s: value is longer than %d bytes", field.label, maxFieldBytes)
+		}
+		for _, r := range field.value {
+			if unicode.IsControl(r) {
+				return fmt.Errorf("invalid inbox %s: %q", field.label, field.value)
+			}
 		}
 	}
 	return nil
 }
 
-// Doorbell is the one line typed into the recipient's pane. It names the
-// sender and the record, never the body. An assignment adds its task id and
-// title. Dynamic text is cleaned and kept to one line.
-func Doorbell(r Record, title string) string {
-	line := fmt.Sprintf("ᛉ fledge inbox · %s from %s · id %s · read: fledge inbox read --id %s", r.Kind, oneLine(r.From.String()), r.ID, r.ID)
-	if r.Kind == Assignment && r.Task != nil {
-		line += fmt.Sprintf(" · task: %s · %s", *r.Task, oneLine(title))
+func displayValue(value string) string {
+	if !utf8.ValidString(value) {
+		return strconv.Quote(value)
 	}
-	return line
+	if strings.ContainsAny(value, "\n\r\t") {
+		return strconv.Quote(value)
+	}
+	for _, r := range value {
+		if unicode.IsControl(r) {
+			return strconv.Quote(value)
+		}
+	}
+	return value
 }
 
-func oneLine(s string) string {
-	return strings.Join(strings.Fields(termtext.Clean(s)), " ")
-}
-
-// Now is the timestamp format of every inbox time field, as for tasks.
-func Now() string { return time.Now().UTC().Format(time.RFC3339Nano) }
-
-// Create stores r as a new record with a fresh id, its creation time, and no
-// rings, and returns it.
-func Create(s *state.Store, r Record) (Record, error) {
-	r.CreatedAt, r.Rings = Now(), []Ring{}
-	id, err := s.Create(Kind, func(id string) any { r.ID = id; return r })
+func logInboxEvent(home, message string, attrs ...any) {
+	writer, err := hivelog.NewWriter(home, "inbox", time.Now)
 	if err != nil {
-		return Record{}, err
+		return
 	}
-	r.ID = id
-	return r, nil
+	defer func() { _ = writer.Close() }()
+	slog.New(writer).Debug(message, attrs...)
 }
 
-// Get reads record id, live or archived.
-func Get(s *state.Store, id string) (Record, error) {
-	var r Record
-	err := s.Get(Kind, id, &r)
-	var missing *state.NotFoundError
-	if errors.As(err, &missing) {
-		return Record{}, &cli.Error{Code: "inbox_not_found", Message: fmt.Sprintf("no inbox record with id %s", id)}
+func logReadFailure(home, key, message string) {
+	attrs := []any{"phase", "read", "error", message}
+	if key != "" {
+		attrs = append([]any{"role", key}, attrs...)
 	}
-	return r, err
+	logInboxEvent(home, "inbox operation failed", attrs...)
 }
 
-// List reads every unarchived record, oldest first.
-func List(s *state.Store) ([]Record, error) {
-	ids, err := s.List(Kind)
+func logAppend(home string, options AppendOptions, envelope output.Envelope) {
+	kind := options.Kind
+	if kind == "" {
+		kind = records.InboxMessage
+	}
+	attrs := []any{"role", options.Role, "agent", options.Agent, "agent_id", options.Agent, "kind", kind}
+	sequence := uint64(0)
+	for _, effect := range envelope.Effects {
+		switch effect.Resource {
+		case "counter":
+			logInboxEvent(home, "inbox counter updated", append(attrs, "path", effect.Path)...)
+		case "inbox":
+			sequence = effectSequence(effect.Path)
+			logInboxEvent(home, "inbox record appended", append(attrs, "sequence", sequence)...)
+		}
+	}
+	if envelope.Error == nil {
+		return
+	}
+	errorAttrs := append([]any{}, attrs...)
+	if sequence != 0 {
+		errorAttrs = append(errorAttrs, "sequence", sequence)
+	}
+	errorAttrs = append(errorAttrs, "phase", envelope.Phase, "error", fmt.Sprint(envelope.Error))
+	logInboxEvent(home, "inbox operation failed", errorAttrs...)
+}
+
+func logConsume(home, key string, envelope output.Envelope) {
+	attrs := []any{}
+	if key != "" {
+		attrs = append(attrs, "role", key)
+	}
+	senders := map[uint64]string{}
+	if result, ok := envelope.Result.(Result); ok {
+		for _, record := range result.Records {
+			senders[record.Seq] = record.Agent
+		}
+	}
+	sequence := uint64(0)
+	for _, effect := range envelope.Effects {
+		if effect.Resource != "inbox" || effect.Action != "consumed" {
+			continue
+		}
+		sequence = effectSequence(effect.Path)
+		sender := senders[sequence]
+		markAttrs := append([]any{}, attrs...)
+		markAttrs = append(markAttrs, "sequence", sequence, "agent", sender, "agent_id", sender)
+		logInboxEvent(home, "inbox record consumed", markAttrs...)
+	}
+	if envelope.Error == nil {
+		return
+	}
+	errorAttrs := append([]any{}, attrs...)
+	if sequence != 0 {
+		errorAttrs = append(errorAttrs, "sequence", sequence)
+	}
+	errorAttrs = append(errorAttrs, "phase", envelope.Phase, "error", fmt.Sprint(envelope.Error))
+	logInboxEvent(home, "inbox operation failed", errorAttrs...)
+}
+
+func effectSequence(path string) uint64 {
+	id := strings.TrimSuffix(filepath.Base(path), ".json")
+	seq, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
+		return 0
+	}
+	return seq
+}
+
+func counterEffect(key string) output.Effect {
+	return output.Effect{
+		Resource: "counter",
+		Path:     filepath.ToSlash(filepath.Join(".hive", "state", "counters", "inbox:"+key+".json")),
+		Action:   "updated",
+	}
+}
+
+func recordPath(key string, seq uint64) string {
+	return filepath.ToSlash(filepath.Join(".hive", "state", "inbox", key, strconv.FormatUint(seq, 10)+".json"))
+}
+
+func failed(phase, message string) output.Envelope {
+	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
+}
+
+// HeldWriter is the store write surface of one held inbox append.
+type HeldWriter interface {
+	Next(name string) (uint64, error)
+	WriteIn(collection []string, id string, value any) error
+}
+
+// ValidateAppend checks one inbox append before a caller writes any record.
+func ValidateAppend(options AppendOptions) error {
+	return validateAppend(options)
+}
+
+// AppendHeld appends one record through a held store handle.
+func AppendHeld(writer HeldWriter, options AppendOptions) output.Envelope {
+	return appendLocked(nil, writer, options, time.Now)
+}
+
+// ConsumeHeld marks the unread records through a held store handle.
+func ConsumeHeld(locked *store.LockedStore, key string) output.Envelope {
+	if err := checkKey(key); err != nil {
+		return failed("validate", err.Error())
+	}
+	return consumeLocked(locked, key, markRead)
+}
+
+// AllHeld returns each record of key through a held store handle.
+func AllHeld(locked *store.LockedStore, key string) ([]records.Inbox, error) {
+	if err := checkKey(key); err != nil {
 		return nil, err
 	}
-	rs := make([]Record, 0, len(ids))
-	for _, id := range ids {
-		var r Record
-		if err := s.Get(Kind, id, &r); err != nil {
-			return nil, err
-		}
-		rs = append(rs, r)
-	}
-	slices.SortStableFunc(rs, func(a, b Record) int { return compareCreated(a, b) })
-	return rs, nil
+	return listLocked(locked, key, true)
 }
 
-// ForRecipient lists the unarchived records addressed to agent record to:
-// unread first, then read, each oldest first.
-func ForRecipient(s *state.Store, to string) ([]Record, error) {
-	all, err := List(s)
-	if err != nil {
-		return nil, err
-	}
-	var unread, read []Record
-	for _, r := range all {
-		switch {
-		case r.To != to:
-		case Unread(r):
-			unread = append(unread, r)
-		default:
-			read = append(read, r)
-		}
-	}
-	return append(unread, read...), nil
+// LogAppend writes the log events of one append call.
+func LogAppend(home string, options AppendOptions, envelope output.Envelope) {
+	logAppend(home, options, envelope)
 }
 
-func compareCreated(a, b Record) int {
-	ta, _ := time.Parse(time.RFC3339Nano, a.CreatedAt)
-	tb, _ := time.Parse(time.RFC3339Nano, b.CreatedAt)
-	return cmp.Or(ta.Compare(tb), cmp.Compare(a.ID, b.ID))
-}
-
-// update applies mutate to record id under the store lock.
-func update(s *state.Store, id string, mutate func(*Record) error) (Record, error) {
-	var r Record
-	err := s.Update(Kind, id, &r, func() error { return mutate(&r) })
-	var missing *state.NotFoundError
-	if errors.As(err, &missing) {
-		return Record{}, &cli.Error{Code: "inbox_not_found", Message: fmt.Sprintf("no inbox record with id %s", id)}
-	}
-	return r, err
-}
-
-// AddRing records one doorbell attempt into pane; ringErr is its failure, or
-// nil for a successful ring.
-func AddRing(s *state.Store, id, pane string, ringErr error) (Record, error) {
-	ring := Ring{At: Now(), Pane: pane, OK: ringErr == nil}
-	if ringErr != nil {
-		ring.Error = cli.Pointer(ringErr.Error())
-	}
-	return update(s, id, func(r *Record) error {
-		r.Rings = append(r.Rings, ring)
-		return nil
-	})
-}
-
-// MarkRead sets ReadAt once; a later read keeps the first time.
-func MarkRead(s *state.Store, id string) (Record, error) {
-	return update(s, id, func(r *Record) error {
-		if r.ReadAt == nil {
-			r.ReadAt = cli.Pointer(Now())
-		}
-		return nil
-	})
-}
-
-// CheckRecipient reads record id and fails with inbox_not_recipient unless
-// caller is its To.
-func CheckRecipient(s *state.Store, id, caller string) (Record, error) {
-	r, err := Get(s, id)
-	if err == nil && r.To != caller {
-		err = notRecipient(id)
-	}
-	return r, err
-}
-
-// Answer marks record id answered by reply, the reply's message id, after
-// checking under the lock that caller is its recipient.
-func Answer(s *state.Store, id, caller, reply string) (Record, error) {
-	return update(s, id, func(r *Record) error {
-		if r.To != caller {
-			return notRecipient(id)
-		}
-		r.AnsweredAt, r.AnsweredBy = cli.Pointer(Now()), &reply
-		return nil
-	})
-}
-
-func notRecipient(id string) error {
-	return &cli.Error{Code: "inbox_not_recipient", Message: fmt.Sprintf("inbox record %s is addressed to another agent; only its recipient may reply to it", id)}
-}
-
-// Archive moves the records to or from any of agents out of List's view,
-// keeping each readable by id, and returns the archived ids.
-func Archive(s *state.Store, agents []string) ([]string, error) {
-	var archived []string
-	err := s.Exclusive(func(tx *state.Tx) error {
-		ids, err := tx.List(Kind)
-		if err != nil {
-			return err
-		}
-		for _, id := range ids {
-			var r Record
-			if err := tx.Get(Kind, id, &r); err != nil {
-				return err
-			}
-			if !slices.Contains(agents, r.To) && (r.From.ID == nil || !slices.Contains(agents, *r.From.ID)) {
-				continue
-			}
-			if err := tx.Archive(Kind, id); err != nil {
-				return err
-			}
-			archived = append(archived, id)
-		}
-		return nil
-	})
-	return archived, err
+// LogConsume writes the log events of one consume call.
+func LogConsume(home, key string, envelope output.Envelope) {
+	logConsume(home, key, envelope)
 }

@@ -1,5 +1,7 @@
-// Package harness is the single source of per-harness facts; it imports nothing from Fledge.
-// harness.go derives the documented harness kinds from the registry;
-// registry.go holds one ordered Profile of typed behavior per kind;
-// capabilities.go derives the fixed capability rows from a Profile.
+// Package harness defines the native profile of one harness kind.
+//
+// harness.go owns the Profile interface, the bounds check, and the lookup.
+// registry.go owns the profile registry. claude.go owns the Claude Code profile.
+// codex.go owns the Codex profile. cursor.go owns the Cursor agent profile.
+// opencode.go owns the OpenCode profile. pi.go owns the Pi profile.
 package harness

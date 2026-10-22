@@ -1,27 +1,40 @@
-// Package send wires raw terminal input without a sender header.
+// Package send wires the agent send command.
 package send
 
 import (
-	"github.com/Harrison-Blair/fledge/internal/agent/send"
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
 
+// New creates the agent send command.
 func New() *cobra.Command {
-	var options send.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "send", Short: "Type raw text and press keys in a live agent's terminal, without a sender header", Args: cobra.NoArgs,
-		Long: "Type raw text and press keys in a live agent's terminal, in any agent state.\n\nText is delivered first, as a paste, so it does not submit: a newline inside\nit is typed literally. Keys are pressed after it, in the order given; add\n--key enter to submit. Unknown key names reject the whole send before any\ninput is written. Nothing is prefixed, so the recipient has no reply channel;\nuse agent message for attributed messages. The result reports the agent's\nstatus observed before sending.\n\nExamples:\n  fledge agent send --name worker --text \"/model claude-haiku-4-5\" --key enter\n  (Claude Code's /model also saves the model as the default for new Claude sessions.)\n  fledge agent send --name worker --key down --key enter",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			return cli.Finish(send.Run(cmd.Context(), libagent.FromEnvironment(0), options), cmd.OutOrStdout(), asJSON, send.Render)
-		}}
-	f := cmd.Flags()
-	f.StringVar(&options.Name, "name", "", "Live agent name")
-	f.StringVar(&options.Pane, "pane", "", "Hosting pane ID")
-	f.StringVar(&options.ID, "id", "", "Fledge agent record ID (follows its terminal to a new pane; fails if the terminal is gone)")
-	f.StringVar(&options.Text, "text", "", "Literal text to type as a paste; does not press enter")
-	f.StringArrayVar(&options.Keys, "key", nil, "Logical key to press after the text, such as enter, esc, down, or ctrl+c (repeatable, in order)")
-	f.BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	return cmd
+	command := &cobra.Command{
+		Use:   "send TEXT",
+		Short: "send a prompt to an agent",
+		Args:  cobra.ExactArgs(1),
+	}
+	command.Flags().String("agent", "", "agent name")
+	command.Flags().Bool("wait", false, "wait for a settled status")
+	command.Flags().Int("timeout", 600, "wait timeout in seconds")
+	command.RunE = func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("agent")
+		if name == "" {
+			return common.Usage(cmd, "agent send requires --agent")
+		}
+		wait, _ := cmd.Flags().GetBool("wait")
+		timeout, _ := cmd.Flags().GetInt("timeout")
+		return common.Run(cmd, "agent send", func(home string) (output.Envelope, string, error) {
+			envelope := agentlib.Send(cmd.Context(), home, agentlib.SendOptions{
+				Agent:      name,
+				Text:       args[0],
+				Wait:       wait,
+				Timeout:    timeout,
+				TimeoutSet: cmd.Flags().Lookup("timeout").Changed,
+			})
+			return envelope, agentlib.SendText(envelope), nil
+		})
+	}
+	return command
 }

@@ -1,30 +1,82 @@
-// Package verify wires task verification.
+// Package verify wires the task verify command.
 package verify
 
 import (
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/task/verify"
+	"fmt"
+	"io"
+
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
 	"github.com/spf13/cobra"
 )
 
+// New creates the task verify command.
 func New() *cobra.Command {
-	var options verify.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "verify", Short: "Accept a completed task's result as another agent, or verify it again", Args: cobra.NoArgs,
-		Long: "Accept a completed task's result and mark it verified.\n\nThe caller must be a registered agent other than the owner, and every direct\nsubtask must be verified, landed, or cancelled. --force overrides these checks and lists\nany open subtasks; the verifier (null when unregistered) and forced: true are\nrecorded. This is a workflow guard, not a security boundary.\n\nA created or assigned task that groups subtasks can be verified without being\ncompleted once every direct subtask is verified, landed, or cancelled and at\nleast one is verified or landed; cancel a parent whose subtasks were all cancelled. --force does not\nwiden this: it never verifies a created or assigned task that fails it.\n\nA verified task can be verified again, for example after repairs, with the\nsame checks. The new verification replaces the verifier, note (null when\nomitted), forced flag, time, and bound commit; only the latest is kept.\n\n--commit binds the verification to a Git revision: it is resolved in the\ncaller's checkout and stored as verified_commit, which fledge task land\nrequires. When that checkout has uncommitted changes, verify warns that the\nbound commit is not exactly what was tested. A landed task is final and\ncannot be verified again."}
-	f := cmd.Flags()
-	f.StringVar(&options.ID, "id", "", "Task ID")
-	f.StringVar(&options.Summary, "summary", "", "Verification note")
-	f.StringVar(&options.File, "file", "", "UTF-8 verification note file, or - for stdin")
-	f.StringVar(&options.Commit, "commit", "", "Revision to bind as the verified commit")
-	f.BoolVar(&options.Force, "force", false, "Verify as the owner, as an unregistered caller, or with open subtasks")
-	f.BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	cmd.RunE = func(cmd *cobra.Command, _ []string) error {
-		options.SummarySet = f.Changed("summary")
-		options.FileSet = f.Changed("file")
-		options.CommitSet = f.Changed("commit")
-		return cli.Finish(verify.Run(cmd.Context(), libagent.FromEnvironment(0), options, cmd.InOrStdin()), cmd.OutOrStdout(), asJSON, verify.Render)
+	command := &cobra.Command{
+		Use:   "verify",
+		Short: "record one independent check of a task",
+		Args:  cobra.NoArgs,
 	}
-	return cmd
+	flags := command.Flags()
+	flags.String("task", "", "task ID")
+	flags.Bool("fail", false, "record a failed check")
+	flags.String("reason", "", "reason of a failed check")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		taskID, _ := cmd.Flags().GetString("task")
+		agent, _ := cmd.Flags().GetString("agent")
+		pane, _ := cmd.Flags().GetString("pane")
+		fail, _ := cmd.Flags().GetBool("fail")
+		reason, _ := cmd.Flags().GetString("reason")
+		var envelope output.Envelope
+		var homeUsed string
+		var resolved records.Agent
+		original := cmd.OutOrStdout()
+		tracker := &trackingWriter{writer: original}
+		cmd.SetOut(tracker)
+		err := common.Run(cmd, "task verify", func(home string) (output.Envelope, string, error) {
+			if refused := common.CheckCaller(home, agent); refused != nil {
+				return *refused, "", nil
+			}
+			homeUsed = home
+			options := tasklib.TransitionOptions{
+				Task: taskID, Agent: agent, PaneID: pane, Fail: fail, Reason: reason, ResolvedActor: &resolved,
+			}
+			envelope = tasklib.Verify(home, options)
+			return envelope, tasklib.TransitionText(envelope), nil
+		})
+		cmd.SetOut(original)
+		if homeUsed != "" && tracker.err != nil {
+			actor := agent
+			if resolved.Key != "" {
+				actor = resolved.Key
+			}
+			project := ""
+			if task, ok := envelope.Result.(records.Task); ok {
+				project = task.Project
+			}
+			tasklib.LogOutputFailure(homeUsed, "task verify", project, taskID, actor, tracker.err)
+			_, _ = fmt.Fprint(cmd.ErrOrStderr(), tasklib.FailureReport(envelope, taskID, actor))
+			return &common.StatusError{Status: 1}
+		}
+		return err
+	}
+	return command
+}
+
+type trackingWriter struct {
+	writer io.Writer
+	err    error
+}
+
+func (w *trackingWriter) Write(data []byte) (int, error) {
+	n, err := w.writer.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
+	if err != nil && w.err == nil {
+		w.err = err
+	}
+	return n, err
 }

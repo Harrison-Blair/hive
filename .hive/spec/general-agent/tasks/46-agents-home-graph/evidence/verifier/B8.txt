@@ -1,0 +1,257 @@
+$ go test ./internal/tui -count=1 -run TestAgentsHome|TestAgentsNest|TestAgentsChildren|TestAgentsHMoves|TestAgentsCoordinatorChildren|TestAgentsManagerWithout|TestAgentsArrowsReach|TestAgentsCompactHome|TestAgentsDetailsOfAGeneral|TestHealthAgentsRestartRefuses|TestGeneralAgentBoard -v
+=== RUN   TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard
+--- PASS: TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard (0.00s)
+=== RUN   TestAgentsHomeColumnIsNotShownWhenEmpty
+--- PASS: TestAgentsHomeColumnIsNotShownWhenEmpty (0.00s)
+=== RUN   TestAgentsHomeAgentsWithNoProjectKeepTheNotice
+--- PASS: TestAgentsHomeAgentsWithNoProjectKeepTheNotice (0.00s)
+=== RUN   TestAgentsNestGeneralAgentsUnderTheirParentCard
+    agents_home_test.go:128: cards at 13,35 18,38 23,41; want each child 2 cells right and below its parent:
+         hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                           ╭─ alpha ──────────────────────────────────────────────────────╮                           │
+        │                           │                                                              │                           │
+        │                           │ ┏━━━━━━━━━━━━━━━━━━━━━━┓                                     │                           │
+        │                           │ ┃ ◐ manager-alpha      ┃                                     │                           │
+        │                           │ ┃ pi · idle · 2m       ┃                                     │                           │
+        │                           │ ┡━━━━━━━━━━━━━━━━━━━━━━┛                                     │                           │
+        │                           │ │                                                            │                           │
+        │                           │ │╭──────────────────────╮                                    │                           │
+        │                           │ ╰┤ ● t1-alpha-worker    │                                    │                           │
+        │                           │  │ pi · working · 3m    │                                    │                           │
+        │                           │  ╰─┬────────────────────╯                                    │                           │
+        │                           │    │                                                         │                           │
+        │                           │    │╭──────────────────────╮                                 │                           │
+        │                           │    ╰┤ ● helper-1           │                                 │                           │
+        │                           │     │ pi · working · 3m    │                                 │                           │
+        │                           │     ╰─┬────────────────────╯                                 │                           │
+        │                           │       │                                                      │                           │
+        │                           │       │╭──────────────────────╮                              │                           │
+        │                           │       ╰┤ ● helper-2           │                              │                           │
+        │                           │        │ pi · working · 3m    │                              │                           │
+        │                           │        ╰──────────────────────╯                              │                           │
+        │                           ╰──────────────────────────────────────────────────────────────╯                           │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help                               
+--- FAIL: TestAgentsNestGeneralAgentsUnderTheirParentCard (0.00s)
+=== RUN   TestAgentsNestingUsesTheRailForm
+--- PASS: TestAgentsNestingUsesTheRailForm (0.00s)
+=== RUN   TestAgentsChildrenAreInOrderOfCreationTime
+--- PASS: TestAgentsChildrenAreInOrderOfCreationTime (0.00s)
+=== RUN   TestAgentsHMovesTheChildOfAHiddenParent
+--- PASS: TestAgentsHMovesTheChildOfAHiddenParent (0.00s)
+=== RUN   TestAgentsCoordinatorChildrenAreInHome
+--- PASS: TestAgentsCoordinatorChildrenAreInHome (0.00s)
+=== RUN   TestAgentsManagerWithoutChildrenShowsNoChildAgents
+--- PASS: TestAgentsManagerWithoutChildrenShowsNoChildAgents (0.00s)
+=== RUN   TestAgentsArrowsReachNestedAndHomeAgents
+--- PASS: TestAgentsArrowsReachNestedAndHomeAgents (0.00s)
+=== RUN   TestAgentsCompactHomeIsTheLastPage
+--- PASS: TestAgentsCompactHomeIsTheLastPage (0.00s)
+=== RUN   TestAgentsDetailsOfAGeneralAgent
+--- PASS: TestAgentsDetailsOfAGeneralAgent (0.00s)
+=== RUN   TestHealthAgentsRestartRefusesAGeneralAgent
+--- PASS: TestHealthAgentsRestartRefusesAGeneralAgent (0.00s)
+=== RUN   TestGeneralAgentBoardFixtures
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentsNested
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardFixtures/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardFixtures/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardFixtures/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardFixtures (0.02s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/HealthAgentsGeneral (0.00s)
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsNested
+    agents_home_test.go:372: 109 cells differ from AgentsNested.grid:
+        row 20 col 6: want '┬' border normal, got '─' border normal
+        row 20 col 7: want '─' border normal, got '┬' border normal
+        row 21 col 6: want '│' border normal, got ' ' fg normal
+        row 21 col 7: want ' ' fg normal, got '│' border normal
+        row 22 col 6: want '│' border normal, got ' ' fg normal
+        row 22 col 7: want '╭' border normal, got '│' border normal
+        row 22 col 8: want '─' border normal, got '╭' border normal
+        row 22 col 30: want '╮' border normal, got '─' border normal
+        row 22 col 31: want ' ' fg normal, got '╮' border normal
+        row 23 col 6: want '╰' border normal, got ' ' fg normal
+        row 23 col 7: want '┤' border normal, got '╰' border normal
+        row 23 col 8: want ' ' fg normal, got '┤' border normal
+        row 23 col 9: want '●' working normal, got ' ' fg normal
+        row 23 col 10: want ' ' fg normal, got '●' working normal
+        row 23 col 11: want 't' fg normal, got ' ' fg normal
+        row 23 col 12: want '5' fg normal, got 't' fg normal
+        row 23 col 13: want '-' fg normal, got '5' fg normal
+        row 23 col 14: want 'r' fg normal, got '-' fg normal
+        row 23 col 15: want 'e' fg normal, got 'r' fg normal
+        row 23 col 16: want 's' fg normal, got 'e' fg normal
+        row 23 col 17: want 'e' fg normal, got 's' fg normal
+        row 23 col 18: want 'a' fg normal, got 'e' fg normal
+        row 23 col 19: want 'r' fg normal, got 'a' fg normal
+        row 23 col 20: want 'c' fg normal, got 'r' fg normal
+        row 23 col 21: want 'h' fg normal, got 'c' fg normal
+        row 23 col 22: want '-' fg normal, got 'h' fg normal
+        row 23 col 23: want '1' fg normal, got '-' fg normal
+        row 23 col 24: want ' ' fg normal, got '1' fg normal
+        row 23 col 30: want '│' border normal, got ' ' fg normal
+        row 23 col 31: want ' ' fg normal, got '│' border normal
+        row 24 col 7: want '│' border normal, got ' ' fg normal
+        row 24 col 8: want ' ' fg normal, got '│' border normal
+        row 24 col 9: want 'p' dim normal, got ' ' fg normal
+        row 24 col 10: want 'i' dim normal, got 'p' dim normal
+        row 24 col 11: want ' ' dim normal, got 'i' dim normal
+        row 24 col 12: want '·' dim normal, got ' ' dim normal
+        row 24 col 13: want ' ' dim normal, got '·' dim normal
+        row 24 col 14: want 'w' dim normal, got ' ' dim normal
+        row 24 col 15: want 'o' dim normal, got 'w' dim normal
+        row 24 col 16: want 'r' dim normal, got 'o' dim normal
+        row 24 col 17: want 'k' dim normal, got 'r' dim normal
+        row 24 col 18: want 'i' dim normal, got 'k' dim normal
+        row 24 col 19: want 'n' dim normal, got 'i' dim normal
+        row 24 col 20: want 'g' dim normal, got 'n' dim normal
+        row 24 col 21: want ' ' dim normal, got 'g' dim normal
+        row 24 col 22: want '·' dim normal, got ' ' dim normal
+        row 24 col 23: want ' ' dim normal, got '·' dim normal
+        row 24 col 24: want '1' dim normal, got ' ' dim normal
+        row 24 col 25: want 'm' dim normal, got '1' dim normal
+        row 24 col 26: want ' ' fg normal, got 'm' dim normal
+        row 24 col 30: want '│' border normal, got ' ' fg normal
+        row 24 col 31: want ' ' fg normal, got '│' border normal
+        row 25 col 7: want '╰' border normal, got ' ' fg normal
+        row 25 col 8: want '┬' border normal, got '╰' border normal
+        row 25 col 10: want '─' border normal, got '┬' border normal
+        row 25 col 30: want '╯' border normal, got '─' border normal
+        row 25 col 31: want ' ' fg normal, got '╯' border normal
+        row 26 col 8: want '│' border normal, got ' ' fg normal
+        row 26 col 10: want ' ' fg normal, got '│' border normal
+        row 27 col 8: want '│' border normal, got ' ' fg normal
+        row 27 col 9: want '┏' accent normal, got ' ' fg normal
+        row 27 col 10: want '━' accent normal, got '│' border normal
+        row 27 col 11: want '━' accent normal, got '┏' accent normal
+        row 27 col 32: want '┓' accent normal, got '━' accent normal
+        row 27 col 33: want ' ' fg normal, got '━' accent normal
+        row 27 col 34: want ' ' fg normal, got '┓' accent normal
+        row 28 col 8: want '╰' border normal, got ' ' fg normal
+        row 28 col 9: want '┨' accent normal, got ' ' fg normal
+        row 28 col 10: want ' ' fg normal, got '╰' border normal
+        row 28 col 11: want '◐' accent normal, got '┨' accent normal
+        row 28 col 13: want 't' accent bold, got '◐' accent normal
+        row 28 col 14: want '5' accent bold, got ' ' fg normal
+        row 28 col 15: want '-' accent bold, got 't' accent bold
+        row 28 col 16: want 'r' accent bold, got '5' accent bold
+        row 28 col 17: want 'e' accent bold, got '-' accent bold
+        row 28 col 18: want 's' accent bold, got 'r' accent bold
+        row 28 col 20: want 'a' accent bold, got 's' accent bold
+        row 28 col 21: want 'r' accent bold, got 'e' accent bold
+        row 28 col 22: want 'c' accent bold, got 'a' accent bold
+        row 28 col 23: want 'h' accent bold, got 'r' accent bold
+        row 28 col 24: want '-' accent bold, got 'c' accent bold
+        row 28 col 25: want '2' accent bold, got 'h' accent bold
+        row 28 col 26: want ' ' fg normal, got '-' accent bold
+        row 28 col 27: want ' ' fg normal, got '2' accent bold
+        row 28 col 32: want '┃' accent normal, got ' ' fg normal
+        row 28 col 34: want ' ' fg normal, got '┃' accent normal
+        row 29 col 9: want '┃' accent normal, got ' ' fg normal
+        row 29 col 11: want 'p' dim normal, got '┃' accent normal
+        row 29 col 12: want 'i' dim normal, got ' ' fg normal
+        row 29 col 13: want ' ' dim normal, got 'p' dim normal
+        row 29 col 14: want '·' dim normal, got 'i' dim normal
+        row 29 col 16: want 'i' dim normal, got '·' dim normal
+        row 29 col 17: want 'd' dim normal, got ' ' dim normal
+        row 29 col 18: want 'l' dim normal, got 'i' dim normal
+        row 29 col 19: want 'e' dim normal, got 'd' dim normal
+        row 29 col 20: want ' ' dim normal, got 'l' dim normal
+        row 29 col 21: want '·' dim normal, got 'e' dim normal
+        row 29 col 23: want '0' dim normal, got '·' dim normal
+        row 29 col 24: want 'm' dim normal, got ' ' dim normal
+        row 29 col 25: want ' ' fg normal, got '0' dim normal
+        row 29 col 26: want ' ' fg normal, got 'm' dim normal
+        row 29 col 32: want '┃' accent normal, got ' ' fg normal
+        row 29 col 34: want ' ' fg normal, got '┃' accent normal
+        row 30 col 9: want '┗' accent normal, got ' ' fg normal
+        row 30 col 10: want '━' accent normal, got ' ' fg normal
+        row 30 col 11: want '━' accent normal, got '┗' accent normal
+        row 30 col 32: want '┛' accent normal, got '━' accent normal
+        row 30 col 33: want ' ' fg normal, got '━' accent normal
+        row 30 col 34: want ' ' fg normal, got '┛' accent normal
+        
+        rendered:
+        [1m hive  ~/source/hive[m                                    [1mcoordinator [m[1;38;2;110;230;154m●[m[1m working   supervisor [m[1;38;2;110;230;154m●[m[1m live   needs you [m[1m0[m[1m   14:22 [m
+         [1;38;2;245;185;66m 1 Agents [m [38;2;163;157;144m 2 Chat [m [38;2;163;157;144m 3 Work [m [38;2;163;157;144m 4 Friction [m [38;2;163;157;144m 5 Health [m [38;2;163;157;144m 6 Logs [m                                                          
+        [38;2;61;58;51m─[m[38;2;245;185;66m━━━━━━━━━━[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────────[m[38;2;61;58;51m─[m[38;2;61;58;51m──────────[m[38;2;61;58;51m─[m[38;2;61;58;51m────────[m[38;2;61;58;51m─[m[38;2;61;58;51m─────────────────────────────────────────────────────────[m
+        [38;2;245;185;66m╭[m[38;2;245;185;66m─[m[1;38;2;245;185;66m project agents · 2 projects [m[38;2;245;185;66m────────────────────────────────────────────────────────────────────────────────────────[m[38;2;245;185;66m╮[m
+        [38;2;245;185;66m│[m                                                                                                                      [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m╭─[m[1;38;2;163;157;144m hive [m[38;2;61;58;51m────────────────────────────────────────────────╮[m [38;2;61;58;51m╭─[m[1;38;2;163;157;144m example-api [m[38;2;61;58;51m─────────────────────────────────────────╮[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;163;157;144mg2-tui-v2 · wave A[m                                    [38;2;61;58;51m│[m [38;2;61;58;51m│[m [38;2;163;157;144mg4-rate-limits · wave B[m                               [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m╭──────────────────────╮[m                              [38;2;61;58;51m│[m [38;2;61;58;51m│[m               [38;2;61;58;51m╭──────────────────────╮[m                [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m [38;2;110;230;154m●[m manager-hive       [38;2;61;58;51m│[m                              [38;2;61;58;51m│[m [38;2;61;58;51m│[m               [38;2;61;58;51m│[m [38;2;110;230;154m●[m manager-api        [38;2;61;58;51m│[m                [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m [38;2;163;157;144mclaude · working · …[m [38;2;61;58;51m│[m                              [38;2;61;58;51m│[m [38;2;61;58;51m│[m               [38;2;61;58;51m│[m [38;2;163;157;144mcodex · working · 2m[m [38;2;61;58;51m│[m                [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m├──────────────────────╯[m                              [38;2;61;58;51m│[m [38;2;61;58;51m│[m               [38;2;61;58;51m╰───────────┬──────────╯[m                [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                     [38;2;61;58;51m│[m [38;2;61;58;51m│[m                           [38;2;61;58;51m│[m                           [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│╭──────────────────────╮[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m              [38;2;61;58;51m╭────────────┴────────────╮[m              [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m├┤[m [38;2;163;157;144m○[m [38;2;163;157;144mt4-verifier-1[m      [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m              [38;2;61;58;51m│[m                         [38;2;61;58;51m│[m              [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m││[m [38;2;163;157;144mpi · stopped · pass[m  [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m╭───────────┴──────────╮[m  [38;2;61;58;51m╭───────────┴──────────╮[m   [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│╰──────────────────────╯[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m│[m [38;2;110;230;154m●[m t3-worker-1        [38;2;61;58;51m│[m  [38;2;61;58;51m│[m [38;2;245;185;66m◐[m t3-verifier-1      [38;2;61;58;51m│[m   [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                     [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m│[m [38;2;163;157;144mcodex · working[m      [38;2;61;58;51m│[m  [38;2;61;58;51m│[m [38;2;163;157;144mpi · idle · 6m[m       [38;2;61;58;51m│[m   [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│╭──────────────────────╮[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m╰──────────────────────╯[m  [38;2;61;58;51m╰──────────────────────╯[m   [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m├┤[m [38;2;110;230;154m●[m t5-worker-1        [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m││[m [38;2;163;157;144mpi · working · 3m[m    [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│╰─┬────────────────────╯[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m│[m                                                  [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m│╭──────────────────────╮[m                          [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m╰┤[m [38;2;110;230;154m●[m t5-research-1      [38;2;61;58;51m│[m                          [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m   [38;2;61;58;51m│[m [38;2;163;157;144mpi · working · 1m[m    [38;2;61;58;51m│[m                          [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m   [38;2;61;58;51m╰─┬────────────────────╯[m                          [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m     [38;2;61;58;51m│[m                                               [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m     [38;2;61;58;51m│[m[38;2;245;185;66m┏━━━━━━━━━━━━━━━━━━━━━━┓[m                       [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m     [38;2;61;58;51m╰[m[38;2;245;185;66m┨[m [38;2;245;185;66m◐[m [1;38;2;245;185;66mt5-research-2[m      [38;2;245;185;66m┃[m                       [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m      [38;2;245;185;66m┃[m [38;2;163;157;144mpi · idle · 0m[m       [38;2;245;185;66m┃[m                       [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m      [38;2;245;185;66m┗━━━━━━━━━━━━━━━━━━━━━━┛[m                       [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                     [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m│╭──────────────────────╮[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m [38;2;61;58;51m╰┤[m [38;2;110;230;154m●[m t6-worker-1        [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m│[m [38;2;163;157;144mpi · working · 1m[m    [38;2;61;58;51m│[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m┃[m
+        [38;2;245;185;66m│[m [38;2;61;58;51m│[m  [38;2;61;58;51m╰──────────────────────╯[m                             [38;2;61;58;51m│[m [38;2;61;58;51m│[m                                                       [38;2;61;58;51m│[m  [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m                                                                                                                      [38;2;245;185;66m│[m
+        [38;2;245;185;66m│[m [38;2;163;157;144m── spawn   ● working   ◐ idle   ○ stopped   one column per project[m                                                   [38;2;245;185;66m│[m
+        [38;2;245;185;66m╰[m[38;2;245;185;66m[m[38;2;245;185;66m──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[m
+        [1;38;2;245;185;66m [graph] [m[38;2;163;157;144m←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help                               [m
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral
+--- FAIL: TestGeneralAgentBoardsMatchTheirGrids (0.03s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHome (0.00s)
+    --- FAIL: TestGeneralAgentBoardsMatchTheirGrids/AgentsNested (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.097s
+FAIL
+
+exit 1

@@ -1,0 +1,147 @@
+--- FAIL: TestFrictionMatchesItsBoards (0.01s)
+    --- FAIL: TestFrictionMatchesItsBoards/Friction (0.00s)
+        friction_test.go:34: 139 cells differ from Friction.grid:
+            row 26 col 54: want '2' dim normal, got '2' fg normal
+            row 26 col 55: want '0' dim normal, got '0' fg normal
+            row 26 col 56: want '2' dim normal, got '2' fg normal
+            row 26 col 57: want '6' dim normal, got '6' fg normal
+            row 26 col 58: want '-' dim normal, got '-' fg normal
+            row 26 col 59: want '1' dim normal, got '1' fg normal
+            row 26 col 60: want '0' dim normal, got '0' fg normal
+            row 26 col 61: want '-' dim normal, got '-' fg normal
+            row 26 col 62: want '2' dim normal, got '2' fg normal
+            row 26 col 63: want '0' dim normal, got '0' fg normal
+            row 26 col 64: want ' ' dim normal, got ' ' fg normal
+            row 26 col 65: want ' ' dim normal, got ' ' fg normal
+            row 26 col 66: want 'w' dim normal, got 'w' fg normal
+            row 26 col 67: want 'o' dim normal, got 'o' fg normal
+            row 26 col 68: want 'r' dim normal, got 'r' fg normal
+            row 26 col 69: want 'k' dim normal, got 'k' fg normal
+            row 26 col 70: want 'e' dim normal, got 'e' fg normal
+            row 26 col 71: want 'r' dim normal, got 'r' fg normal
+            row 26 col 72: want ' ' dim normal, got ' ' fg normal
+            row 26 col 73: want 'o' dim normal, got 'o' fg normal
+            row 26 col 74: want 'f' dim normal, got 'f' fg normal
+            row 26 col 75: want ' ' dim normal, got ' ' fg normal
+            row 26 col 76: want '1' dim normal, got '1' fg normal
+            row 26 col 77: want '0' dim normal, got '0' fg normal
+            row 26 col 78: want '1' dim normal, got '1' fg normal
+            row 26 col 79: want ' ' dim normal, got ' ' fg normal
+            row 26 col 80: want 'l' dim normal, got 'l' fg normal
+            row 26 col 81: want 'e' dim normal, got 'e' fg normal
+            row 26 col 82: want 'f' dim normal, got 'f' fg normal
+            row 26 col 83: want 't' dim normal, got 't' fg normal
+            row 26 col 84: want ' ' dim normal, got ' ' fg normal
+            row 26 col 85: want '4' dim normal, got '4' fg normal
+            row 26 col 86: want ' ' dim normal, got ' ' fg normal
+            row 26 col 87: want 's' dim normal, got 's' fg normal
+            row 26 col 88: want 'u' dim normal, got 'u' fg normal
+            row 26 col 89: want 'p' dim normal, got 'p' fg normal
+            row 26 col 90: want 'e' dim normal, got 'e' fg normal
+            row 26 col 91: want 'r' dim normal, got 'r' fg normal
+            row 26 col 92: want 'v' dim normal, got 'v' fg normal
+            row 26 col 93: want 'i' dim normal, got 'i' fg normal
+            row 26 col 94: want 's' dim normal, got 's' fg normal
+            row 26 col 95: want 'o' dim normal, got 'o' fg normal
+            row 26 col 96: want 'r' dim normal, got 'r' fg normal
+            row 26 col 97: want 's' dim normal, got 's' fg normal
+            row 26 col 98: want ',' dim normal, got ',' fg normal
+            row 26 col 99: want ' ' dim normal, got ' ' fg normal
+            row 26 col 100: want '8' dim normal, got '8' fg normal
+            row 26 col 101: want ' ' dim normal, got ' ' fg normal
+            row 26 col 102: want 't' dim normal, got 't' fg normal
+            row 26 col 103: want 'a' dim normal, got 'a' fg normal
+            row 26 col 104: want 'b' dim normal, got 'b' fg normal
+            row 26 col 105: want 's' dim normal, got 's' fg normal
+            row 27 col 54: want '2' dim normal, got '2' fg normal
+            row 27 col 55: want '0' dim normal, got '0' fg normal
+            row 27 col 56: want '2' dim normal, got '2' fg normal
+            row 27 col 57: want '6' dim normal, got '6' fg normal
+            row 27 col 58: want '-' dim normal, got '-' fg normal
+            row 27 col 59: want '1' dim normal, got '1' fg normal
+            row 27 col 60: want '0' dim normal, got '0' fg normal
+            row 27 col 61: want '-' dim normal, got '-' fg normal
+            row 27 col 62: want '2' dim normal, got '2' fg normal
+            row 27 col 63: want '0' dim normal, got '0' fg normal
+            row 27 col 64: want ' ' dim normal, got ' ' fg normal
+            row 27 col 65: want ' ' dim normal, got ' ' fg normal
+            row 27 col 66: want 't' dim normal, got 't' fg normal
+            row 27 col 67: want '9' dim normal, got '9' fg normal
+            row 27 col 68: want '1' dim normal, got '1' fg normal
+            row 27 col 69: want '-' dim normal, got '-' fg normal
+            row 27 col 70: want 'w' dim normal, got 'w' fg normal
+            row 27 col 71: want 'o' dim normal, got 'o' fg normal
+            row 27 col 72: want 'r' dim normal, got 'r' fg normal
+            row 27 col 73: want 'k' dim normal, got 'k' fg normal
+            row 27 col 74: want 'e' dim normal, got 'e' fg normal
+            row 27 col 75: want 'r' dim normal, got 'r' fg normal
+            row 27 col 76: want '-' dim normal, got '-' fg normal
+            row 27 col 77: want '1' dim normal, got '1' fg normal
+            row 27 col 78: want ' ' dim normal, got ' ' fg normal
+            row 27 col 79: want 'c' dim normal, got 'c' fg normal
+            row 27 col 80: want 'l' dim normal, got 'l' fg normal
+            row 27 col 81: want 'o' dim normal, got 'o' fg normal
+            row 27 col 82: want 's' dim normal, got 's' fg normal
+            row 27 col 83: want 'e' dim normal, got 'e' fg normal
+            row 27 col 84: want 'd' dim normal, got 'd' fg normal
+            row 27 col 85: want ' ' dim normal, got ' ' fg normal
+            row 27 col 86: want 't' dim normal, got 't' fg normal
+            row 27 col 87: want 'h' dim normal, got 'h' fg normal
+            row 27 col 88: want 'e' dim normal, got 'e' fg normal
+            row 27 col 89: want ' ' dim normal, got ' ' fg normal
+            row 27 col 90: want 'u' dim normal, got 'u' fg normal
+            row 27 col 91: want 's' dim normal, got 's' fg normal
+            row 27 col 92: want 'e' dim normal, got 'e' fg normal
+            row 27 col 93: want 'r' dim normal, got 'r' fg normal
+            row 27 col 94: want ' ' dim normal, got ' ' fg normal
+            row 27 col 95: want 'T' dim normal, got 'T' fg normal
+            row 27 col 96: want 'U' dim normal, got 'U' fg normal
+            row 27 col 97: want 'I' dim normal, got 'I' fg normal
+            row 27 col 98: want ' ' dim normal, got ' ' fg normal
+            row 27 col 99: want 't' dim normal, got 't' fg normal
+            row 27 col 100: want 'a' dim normal, got 'a' fg normal
+            row 27 col 101: want 'b' dim normal, got 'b' fg normal
+            row 28 col 54: want '2' dim normal, got '2' fg normal
+            row 28 col 55: want '0' dim normal, got '0' fg normal
+            row 28 col 56: want '2' dim normal, got '2' fg normal
+            row 28 col 57: want '6' dim normal, got '6' fg normal
+            row 28 col 58: want '-' dim normal, got '-' fg normal
+            row 28 col 59: want '1' dim normal, got '1' fg normal
+            row 28 col 60: want '0' dim normal, got '0' fg normal
+            row 28 col 61: want '-' dim normal, got '-' fg normal
+            row 28 col 62: want '2' dim normal, got '2' fg normal
+            row 28 col 63: want '1' dim normal, got '1' fg normal
+            row 28 col 64: want ' ' dim normal, got ' ' fg normal
+            row 28 col 65: want ' ' dim normal, got ' ' fg normal
+            row 28 col 66: want 't' dim normal, got 't' fg normal
+            row 28 col 67: want 'h' dim normal, got 'h' fg normal
+            row 28 col 68: want 'i' dim normal, got 'i' fg normal
+            row 28 col 69: want 'r' dim normal, got 'r' fg normal
+            row 28 col 70: want 'd' dim normal, got 'd' fg normal
+            row 28 col 71: want ' ' dim normal, got ' ' fg normal
+            row 28 col 72: want 's' dim normal, got 's' fg normal
+            row 28 col 73: want 'c' dim normal, got 'c' fg normal
+            row 28 col 74: want 'r' dim normal, got 'r' fg normal
+            row 28 col 75: want 'a' dim normal, got 'a' fg normal
+            row 28 col 76: want 't' dim normal, got 't' fg normal
+            row 28 col 77: want 'c' dim normal, got 'c' fg normal
+            row 28 col 78: want 'h' dim normal, got 'h' fg normal
+            row 28 col 79: want ' ' dim normal, got ' ' fg normal
+            row 28 col 80: want 'h' dim normal, got 'h' fg normal
+            row 28 col 81: want 'i' dim normal, got 'i' fg normal
+            row 28 col 82: want 'v' dim normal, got 'v' fg normal
+            row 28 col 83: want 'e' dim normal, got 'e' fg normal
+            row 28 col 84: want ' ' dim normal, got ' ' fg normal
+            row 28 col 85: want 't' dim normal, got 't' fg normal
+            row 28 col 86: want 'a' dim normal, got 'a' fg normal
+            row 28 col 87: want 'b' dim normal, got 'b' fg normal
+            row 28 col 88: want ' ' dim normal, got ' ' fg normal
+            row 28 col 89: want 'l' dim normal, got 'l' fg normal
+            row 28 col 90: want 'e' dim normal, got 'e' fg normal
+            row 28 col 91: want 'a' dim normal, got 'a' fg normal
+            row 28 col 92: want 'k' dim normal, got 'k' fg normal
+--- FAIL: TestFrictionKeys (0.01s)
+    friction_test.go:166: key "G" selected "scratch-hive-starts-real-agents"; want "worker-gate-adds-golangci-lint"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.044s
+FAIL

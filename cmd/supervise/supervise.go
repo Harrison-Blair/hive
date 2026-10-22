@@ -1,17 +1,60 @@
-// Package supervise wires the supervision daemon's run, status, and stop.
+// Package supervise wires the `hive supervise` command.
 package supervise
 
 import (
-	"github.com/Harrison-Blair/fledge/cmd/supervise/run"
-	"github.com/Harrison-Blair/fledge/cmd/supervise/status"
-	"github.com/Harrison-Blair/fledge/cmd/supervise/stop"
+	"io"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/process"
+	superviselib "github.com/Harrison-Blair/hive/internal/supervise"
 	"github.com/spf13/cobra"
 )
 
+// New returns the supervise command.
 func New() *cobra.Command {
-	cmd := &cobra.Command{Use: "supervise", Short: "Run, inspect, or stop the session's supervision daemon", Args: cobra.NoArgs,
-		Long: "The supervision daemon watches a Herdr session's workers and writes wakes to their\nparents' inboxes: blocked, exited, quiet (idle while owning an assigned task), and\nunacknowledged (an inbox message still unread). agent spawn, task assign, and a\nmessage stored but not rung start it automatically; it exits after 60 seconds with\nnothing to watch.",
-		RunE: func(cmd *cobra.Command, _ []string) error { return cmd.Help() }}
-	cmd.AddCommand(run.New(), status.New(), stop.New())
-	return cmd
+	return &cobra.Command{
+		Use:   "supervise",
+		Short: "run the supervisor of this home",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			jsonOutput, err := cmd.Root().PersistentFlags().GetBool("json")
+			if err != nil {
+				return err
+			}
+			return common.Run(cmd, "supervise", func(home string) (output.Envelope, string, error) {
+				writer, err := log.NewWriter(home, "supervise", time.Now)
+				if err != nil {
+					return output.Envelope{Outcome: "failed", Phase: "log", Effects: []output.Effect{}, Error: err.Error(), Result: nil}, "", nil
+				}
+				defer func() { _ = writer.Close() }()
+				logger := slog.New(writer)
+				ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
+				defer stop()
+				out := cmd.OutOrStdout()
+				if jsonOutput {
+					out = io.Discard
+				}
+				pid := int64(os.Getpid())
+				start, _ := process.Start(pid)
+				_, envelope := superviselib.Run(ctx, superviselib.Options{
+					Home:        home,
+					Logger:      logger,
+					Out:         out,
+					PaneID:      os.Getenv("HERDR_PANE_ID"),
+					WorkspaceID: os.Getenv("HERDR_WORKSPACE_ID"),
+					TabID:       os.Getenv("HERDR_TAB_ID"),
+					PID:         pid,
+					PIDStart:    start,
+				})
+				return envelope, "", nil
+			})
+		},
+	}
 }

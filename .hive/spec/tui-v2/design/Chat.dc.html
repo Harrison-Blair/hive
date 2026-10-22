@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive Chat screen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 728px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="40"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":728}}'>
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff', user:'#e9cf9b', code:'#9fd0ff'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function segs(t, x, y, list) { list.forEach(function (s) { put(t, x, y, s[0], s[1] || 'fg', s[2]); x += s[0].length; }); }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
+function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
+function wrap(s, n) { var words = String(s).split(' '), lines = [], cur = ''; words.forEach(function (wd) { if ((cur + (cur ? ' ' : '') + wd).length > n) { lines.push(cur); cur = wd; } else cur = cur + (cur ? ' ' : '') + wd; }); if (cur) lines.push(cur); return lines; }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
+function frame(t, active, region, hints) {
+  var w = t.w;
+  put(t, 0, 0, ' hive  ~/source/hive', 'fg', 1);
+  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 12, 0, '●', 'working', 1); put(t, rx + 35, 0, '●', 'working', 1);
+  put(t, 0, 2, rep('─', w), 'border');
+  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
+  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === active) { put(t, x, 1, lab, 'accent', 1); put(t, x, 2, rep('━', lab.length), 'accent'); } else put(t, x, 1, lab, 'dim'); x += lab.length + 1; });
+  var tag = ' [' + region + '] ';
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
+}
+function chat(t) {
+  frame(t, 1, 'input', 'enter send · shift+enter newline · esc leave input · pgup/pgdn scroll feed · tab region');
+  box(t, 0, 3, 120, 33, 'border', 'chat · noise normal', 'accent');
+  put(t, 60, 3, ' ↑ 42 earlier ', 'dim');
+  box(t, 0, 36, 120, 3, 'accent', 'message', 'accent');
+  put(t, 2, 37, '> 1A, 2A, 3B', 'user');
+  put(t, 14, 37, '█', 'accent');
+  var X = 23, W = 94, y = 5;
+  function who(time, name, k) { put(t, 2, y, time, 'dim'); put(t, 9, y, fit(name, 13), k, 1); }
+  function userMsg(time, text) { who(time, 'you', 'user'); wrap(text, W).forEach(function (ln, i) { put(t, X, y + i, ln, 'user'); }); y += wrap(text, W).length + 1; }
+  function event(time, name, text) { put(t, 2, y, time, 'dim'); put(t, 9, y, '· ' + fit(name, 11), 'dim'); put(t, X, y, fit(text, W), 'dim'); y += 2; }
+  userMsg('14:02', 'I want to give the user an ability to restart the coordinator or supervisor within the hive UI.');
+  event('14:19', 'manager-hive', 'goal g1-tui-restart created · wave A started · worker t2-worker-1 live');
+  who('14:21', 'coordinator', 'info');
+  put(t, X, y, 'Interrogate, round 2', 'accent', 1); y += 2;
+  put(t, X, y, '1. What happens to the old tab on restart?', 'fg', 1); y += 2;
+  segs(t, X, y, [['Bare hive makes the '], ['coordinator', 'code'], [' tab, but its record has '], ['spawned=false', 'code'], ['. '], ['agent stop', 'code'], [' refuses it.']]); y += 2;
+  var cols = [19, 35, 18, 19];
+  function trow(cells, k, b) { var x = X; cells.forEach(function (c, i) { put(t, x, y, ' ' + fit(c, cols[i] - 1), i === 0 && b ? 'accent' : k, b); x += cols[i]; if (i < cols.length - 1) { put(t, x, y, '│', 'border'); x += 1; } }); y += 1; }
+  function tline(m) { var s = ''; cols.forEach(function (c, i) { s += rep('─', c) + (i < cols.length - 1 ? m : ''); }); put(t, X, y, s, 'border'); y += 1; }
+  trow(['Choice', 'Answer', 'Pros', 'Cons'], 'fg', 0);
+  tline('┼');
+  trow(['A (REC)', 'Record that bare hive started it', 'No tab pile-up', 'Field change'], 'fg', 0);
+  trow(['B', 'Leave the old tab, open a new one', 'Smallest change', 'Dead tabs pile up'], 'fg', 0);
+  trow(['C', 'Reuse the same pane', 'One tab always', 'Must exit harness'], 'fg', 0);
+  y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['Recommended:', 'fg', 1], [' A, because hive may close only panes it started.']]); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['Reply like '], ['1A, 2A, 3A', 'code'], [', or '], ['simplify N', 'code'], ['.']]); y += 1;
+  y += 1;
+  put(t, X + 2, y, 'hive agent stop manager-hive', 'code');
+  put(t, X + 2, y + 1, 'hive agent spawn --role manager', 'code');
+  y += 3;
+  userMsg('14:22', '1A, 2A, 3B');
+  vline(t, 119, 27, 8, '┃', 'dim');
+}
+class Component extends DCLogic {
+  renderVals() {
+    var t = T(120, 40);
+    chat(t);
+    return { rows: rows(t) };
+  }
+}
+</script>
+</body>
+</html>

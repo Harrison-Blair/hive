@@ -1,23 +1,30 @@
-// Package remove wires checkout removal.
+// Package remove wires the worktree remove command.
 package remove
 
 import (
-	libagent "github.com/Harrison-Blair/fledge/internal/lib/agent"
-	"github.com/Harrison-Blair/fledge/internal/lib/cli"
-	"github.com/Harrison-Blair/fledge/internal/worktree/remove"
+	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
+	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
+// New creates the worktree remove command.
 func New() *cobra.Command {
-	var o remove.Options
-	var asJSON bool
-	cmd := &cobra.Command{Use: "remove", Short: "Remove a linked checkout, keeping its branch", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, _ []string) error {
-		return cli.Finish(remove.Run(cmd.Context(), libagent.FromEnvironment(0), o), cmd.OutOrStdout(), asJSON, remove.Render)
-	}}
-	cmd.Flags().StringVar(&o.Path, "path", "", "Checkout path to remove")
-	cmd.Flags().StringVar(&o.Branch, "branch", "", "Branch whose checkout to remove")
-	cmd.Flags().BoolVar(&o.Force, "force", false, "Remove even if dirty or unmerged (never while a live agent uses the checkout)")
-	cmd.Flags().StringVar(&o.Cwd, "cwd", "", "Directory inside the repository (default: current directory)")
-	cmd.Flags().BoolVar(&asJSON, "json", false, "Emit a structured outcome")
-	return cmd
+	command := &cobra.Command{
+		Use:   "remove",
+		Short: "remove the worktree of a task",
+		Args:  cobra.NoArgs,
+	}
+	flags := command.Flags()
+	flags.String("task", "", "task ID")
+	flags.Bool("force", false, "skip the dirty and merged guards")
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		return common.Run(cmd, "worktree remove", func(home string) (output.Envelope, string, error) {
+			task, _ := cmd.Flags().GetString("task")
+			force, _ := cmd.Flags().GetBool("force")
+			envelope := worktreelib.Remove(cmd.Context(), home, worktreelib.RemoveOptions{Task: task, Force: force})
+			return envelope, worktreelib.RemoveText(envelope), nil
+		})
+	}
+	return command
 }
