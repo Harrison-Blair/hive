@@ -1,0 +1,15 @@
+Auto-merging .hive/spec/tui-v2/README.md
+Auto-merging internal/tui/demo.go
+Auto-merging internal/tui/frame.go
+CONFLICT (content): Merge conflict in internal/tui/frame.go
+Auto-merging internal/tui/selection_marker_test.go
+Auto-merging internal/tui/shell_test.go
+CONFLICT (content): Merge conflict in internal/tui/shell_test.go
+Auto-merging internal/tui/tui.go
+Auto-merging testdata/ste-baseline.json
+CONFLICT (content): Merge conflict in testdata/ste-baseline.json
+Automatic merge failed; fix conflicts and then commit the result.
+internal/tui/frame.go
+internal/tui/shell_test.go
+testdata/ste-baseline.json
+86f48a68b932bc2d15005c4cef151ed5acba2549

@@ -1,50 +1,67 @@
 # Verification: 39-screen-health
 
-Verifier: `t39-verifier-2`. Date: 2026-10-22.
-Task commit: `1eadc24a`. Verdict: **fail** (integration with current dev).
+Verifier: `t39-verifier-3`. Date: 2026-10-22.
+Task commit: `6746efb0`. Verdict: **fail** (current dev merge).
 
 ## Items
 
 | Item | Result | Observation |
 | --- | --- | --- |
-| V1 Tests | pass | Nine Health tests fail on the base with the test-only compatibility shim. Seven moved restart tests fail on the base. Task tests pass. Separate token and key changes each fail the relevant tests. |
-| V2 Live check | pass | Each live board capture has 0 differing cells under the space-cell rule. Normal-mode restart routing and key checks pass in a scratch home. |
-| V-gate Diff scope and gate | fail | The full gate passed against dev `866bde2a`. A final required merge of current dev `e7cdbd09` has four conflicts. The current integrated result cannot be tested. |
+| V1 Tests | pass | Base red run, task green run, token mutation, key mutation, and kept-behavior mutations ran again. |
+| V2 Live check | pass | Each of the three boards has 0 differing cells under the space-cell rule. Keys and restart routes passed in a scratch home. |
+| V-gate Diff scope and gate | fail | All five gate commands pass on the task commit. The required merge of current dev conflicts in shell_test.go and ste-baseline.json. The integrated result cannot be tested. |
 
-## V1
+New evidence is in `verifier3/`. Earlier evidence is retained.
 
-Independent runs are in `verifier/`:
+## V1 Tests
 
-- `base-red.txt`: the new test file does not compile on base dev `866bde2a`.
-- `base-red-shim.txt`: all nine task tests fail after a test-only shim adds
-  `healthHome = 0`, `healthAgents = 1`, and a no-op `acceptAgents` method.
-  The copied string-reader test has a different name to avoid its base copy.
-  Command: `go test ./internal/tui -run Health -count=1`.
-- `base-restart-red.txt`: seven moved restart tests fail. Command:
-  `go test ./internal/tui -run 'AgentsRestart|HealthAgentsHTogglesStoppedAgents|HeaderMarksOldSupervisor' -count=1`.
-- `green.txt`, `green-final.txt`: `go test ./internal/tui -run 'Health|AgentsRestart' -count=1` passes on the task branch.
-- `token-red.txt`: remove `dimStyle.Render` from the role column. Both agent
-  golden checks fail. Command: `go test ./internal/tui -run 'HealthAgentsMatchesItsBoard|CompactHealthMatchesItsBoard' -count=1`.
-- `key-red.txt`: with the token restored, change `h` to `x`. Both key tests
-  fail. Command: `go test ./internal/tui -run 'HealthKeysAndFooterHints|HealthAgentsHTogglesStoppedAgents' -count=1`.
+Commands and outputs:
 
-The base and mutation runs used two scratch detached worktrees. Neither run
-changed the task source. Both scratch worktrees were removed.
+- `go test -race -count=1 -v ./internal/tui -run 'Health|Restart'`:
+  `green.txt`, pass, including the three golden tests.
+- Copied `health_test.go` and `restart_test.go` to a detached scratch worktree
+  at base `b145a41f`. Renamed the copied string-reader test to avoid its old
+  copy. The first run failed to compile because the new Health view constants
+  and `acceptAgents` do not exist (`base-compile.txt`).
+- Added a test-only compatibility shim: `healthHome = 0`, `healthAgents = 1`,
+  and a no-op `(*healthState).acceptAgents(agentsData)`. This shim adds no
+  behavior. Ran `go test ./internal/tui -run
+  'Health|AgentsRestart|HeaderMarksOldSupervisor' -count=1 -v`.
+  `base-red.txt` shows all nine new Health tests fail. Seven moved restart
+  tests also fail. The board checks fail on cell content or palette tokens.
+- In a second detached scratch worktree at the task commit, removed
+  `dimStyle.Render` from the agent role column. Ran `go test ./internal/tui
+  -run 'HealthAgentsMatchesItsBoard|CompactHealthMatchesItsBoard' -count=1`.
+  Both golden checks fail (`token-red.txt`).
+- Restored the token. Changed the Health `h` key to `x`. Ran `go test
+  ./internal/tui -run 'HealthKeysAndFooterHints|HealthAgentsHTogglesStoppedAgents'
+  -count=1`. Both tests fail (`key-red.txt`).
+- The unchanged restart-result and old-supervisor-header guards pass on the
+  base. Changed the result prefix from `restarted` to `broken`, and the
+  header state word from `old` to `broken`. Both guards fail with `go test
+  ./internal/tui -run
+  'AgentsRestartResultIsRenderedAndLogged|HeaderMarksOldSupervisorBinaryAndShowsRestartHint'
+  -count=1 -v` (`kept-red.txt`). These are kept-behavior guards.
+- Restored all mutations. `go test ./internal/tui -run
+  'Health|AgentsRestart|HeaderMarksOldSupervisor' -count=1` passes
+  (`restored-green.txt`). No flake rerun was needed.
 
-## V2
+Only scratch worktrees received test copies and mutations. No task source
+file changed.
 
-Built the task binary with `go build`. Created scratch tab `w9G:t2`, pane
-`w9G:p2`, in the verifier workspace. The pane was 57 rows and wider than
-120 columns. Each run set `HIVE_HOME` to a scratch home and
-`COLORTERM=truecolor`. Demo commands used each board fixture with
-`--size 120x40` or `--size 80x24`.
+## V2 Live check
 
-`verifier/live.py` records the capture procedure. Each board has two equal
-reads 500 ms apart. The saved socket response has `truncated: false`. Each
-saved pane metadata response has scroll offset 0. Cropped the top-left board
-size with `ansi.Truncate`, then called `cellgrid.Convert` and
-`cellgrid.Compare`. Only the token and bold flag of matching space cells were
-excluded. The converter script is saved as `verifier/compare.go.txt`.
+Built the task binary with `go build`. Started owned scratch tab `wA4:t2`
+and pane `wA4:p2`. The pane had 57 rows and more than 120 columns.
+Each run used a scratch `HIVE_HOME`. Each demo command was:
+
+`COLORTERM=truecolor hive --demo FILE --size WxH`
+
+The script `verifier3/live.py` records the exact paths and commands. It checks
+protocol 22, waits for two equal reads 500 ms apart, rejects a truncated read,
+and checks scroll offset 0. The converter crops the top-left board size and
+compares all cells. It excludes only the token and weight of matching space
+cells, as the Manager decision requires. `compare.go.txt` records this code.
 
 | Board | Size | Result |
 | --- | --- | --- |
@@ -52,89 +69,89 @@ excluded. The converter script is saved as `verifier/compare.go.txt`.
 | HealthAgents | 120×40 | 0 cells differ |
 | CompactHealth | 80×24 | 0 cells differ |
 
-Captures, full socket responses, metadata, diffs, board PNGs, and screen PNGs
-are in `verifier/`. Each PNG was captured again with Firefox headless, a
-separate new profile, and a 1220×780 window. The screen PNG uses an HTML
-`pre` made from the captured cells. Browser font metrics and page padding
-are presentation differences; the cell comparisons above determine accuracy.
+Each board has a new ANSI capture, full read response, pane metadata, diff,
+screen PNG, and board PNG in `verifier3/`. Captured all six PNGs again with
+Firefox headless, a separate new profile for each image, and a 1220×780
+window. Screen HTML uses an ANSI-cell-derived `pre`. Reviewed the six PNGs.
+Page padding, background outside the grid, and browser font metrics differ;
+the terminal cells match.
 
 ### Keys and normal mode
 
-Saved plain-text observations are in `verifier/`.
+`verifier3/keys.py` records the live steps. Plain-text captures record results.
 
-- Home: `down` moves the selection, `G` selects the last check, and `enter`
-  gives focus to details. The details footer changes.
-- HealthAgents: `esc` cancels the restart prompt. `j` moves to the manager.
-  `h` hides the stopped row. Demo `r` shows `demo mode: no action`.
-- CompactHealth: `enter` opens the details overlay; `esc` returns to the list.
-- Normal mode: ran the binary with `--no-startup` in the scratch home.
-  `R` loaded four scratch agent records. No coordinator or supervisor
-  process was live. The coordinator record referred only to the owned scratch
-  pane, which held the TUI. Its `r` key opened the prompt. `n` cancelled it.
-  In another run, `y` accepted it and reached the restart operation.
-- A stopped supervisor record reached the restart operation without a prompt.
-  A stale coordinator record with a nonexistent pane also reached it without
-  a prompt. Each record used workspace `verify39-nonexistent`. Each attempt
-  stopped at `workspace_not_found`, before any agent could start. Successful
-  process launch is covered by the existing automated gate, not this live run.
-- Manager and worker `r` each showed exactly
+- Home: `down` moves to git, `G` moves to gh, and `enter` focuses details.
+- Agents: `esc` cancels the prompt, `j` moves, `h` hides stopped agents,
+  and demo `r` gives `demo mode: no action`.
+- Compact Agents: `enter` opens details; `esc` returns to the list.
+- Normal mode used `--no-startup`. Four scratch agent records loaded with
+  `R`. Coordinator `r` asked for confirmation. `n` cancelled. A separate
+  `y` accepted and reached the restart operation.
+- Manager and worker `r` each gave exactly
   `restart: coordinator and supervisor only`.
-- Each run quit with two `ctrl+c` keys. The scratch log is retained as
-  `verifier/scratch-log.jsonl`.
+- A stopped supervisor and a stale coordinator each reached the restart
+  operation without a prompt. The coordinator live-pane check used only
+  the owned scratch TUI pane. Other pane and workspace targets did not exist.
+  Each accepted restart stopped at `workspace_not_found`, before an agent
+  could start. This live check does not claim successful process launch.
+- Each run quit with two `ctrl+c` keys. No real home record changed.
 
-### Visual review and state without colour
+### Board elements and state without colour
 
-Reviewed all six new PNGs and the plain text of each screen.
+Checked plain text with colour removed. Each state retains a glyph or word.
 
 | Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
-| Wide header | `coordinator ● working`, `supervisor ● live`, count and clock | matches | Health and HealthAgents boards |
-| Compact header | `coord ●`, `sup ●`, count and clock | matches | CompactHealth board |
-| Screen tabs | `5 Health` with `━` underline | matches | Decision 3 |
-| View bar | `[Home]` or `[Agents]`, `[ ] switch view` | matches | Decision 18 |
-| Home list title | `checks · 17 · 1 warn` | matches | Health board |
-| Check columns | `CHECK`, `RESULT`, check names and results | matches | Health board |
-| Check states | `✓`, `!`, and warning text | matches | States remain visible without colour |
-| Home selection | `▶ ! unresolved agents` | matches | Health board |
-| Check detail fields | `result warn · 1 agent`, `source`, `checked` | matches | Health board |
-| Unresolved-agent details | `AGENTS`, `ID`, `ROLE`, `STATE`, `PANE`, `unresolved`, `gone` | matches | Health board |
-| Check explanation | `WHAT IT MEANS`, `NEXT STEP` | matches | Health board |
-| Wide agent-list title | `agents · 5 · h hides 1 stopped` | matches | HealthAgents board |
-| Compact agent-list title | `agents · 5` | matches | CompactHealth board |
-| Agent columns | `AGENT`, `ROLE`, `STATE`, compact `PANE` | matches | Both agent boards |
-| Agent states | `● working`, `● live`, `◐ idle`, `● unresolved`, `○ stopped` | matches | Each state has a word |
-| Agent selection | `▶ supervisor-g4` or `▶ coordinator-g2` | matches | Each board fixture |
-| Agent detail fields | `role`, `state live`, `pid`, `pane`, `binary current`, `started` | matches | HealthAgents board |
-| Actions | `ACTIONS`, `r restart`, `a attach`, `p peek` | matches | HealthAgents board |
-| Restart prompt | `restart supervisor-g4?`, `y restart`, `esc cancel` | matches | HealthAgents board |
-| Restart explanation | live confirmation and stale/stopped immediate restart text | matches | HealthAgents board |
-| Compact notes | restart scope and `h hides 1 stopped agent` | matches | CompactHealth board |
-| List borders | continuous rounded border; selected item remains visible | matches | Golden and responsive tests |
-| Compact details overlay | agent name, `esc back`, `[details]` | matches | Decision 9, live key run |
-| Footer | `[list]`, `[details]`, `[restart]` with focus key hints | matches | Decision 21 |
+| Wide header | coordinator working, supervisor live, needs-you count, clock | matches | Health and HealthAgents |
+| Compact header | coord ●, sup ●, needs-you count, clock | matches | CompactHealth |
+| Tabs | 5 Health and ━ underline | matches | Decision 3 |
+| Views | [Home], [Agents], [ ] switch view | matches | Decision 18 |
+| Home list title | checks · 17 · 1 warn | matches | Health |
+| Check columns | CHECK, RESULT | matches | Health |
+| Check rows and states | ✓, !, check names, result words | matches | Health |
+| Home selection | ▶ ! unresolved agents | matches | Health |
+| Check fields | result warn · 1 agent, source, checked | matches | Health |
+| Unresolved agent table | AGENTS, ID, ROLE, STATE, PANE, unresolved, gone | matches | Health |
+| Explanation | WHAT IT MEANS, NEXT STEP and body | matches | Health |
+| Wide agent title | agents · 5 · h hides 1 stopped | matches | HealthAgents |
+| Compact agent title | agents · 5 | matches | CompactHealth |
+| Agent columns | AGENT, ROLE, STATE, compact PANE | matches | Both agent boards |
+| Agent states | ● working, ● live, ◐ idle, ● unresolved, ○ stopped | matches | Words remain without colour |
+| Agent selection | ▶ supervisor-g4 or ▶ coordinator-g2 | matches | Board fixture |
+| Agent fields | role, state live, pid, pane, binary current, started | matches | HealthAgents |
+| Actions | ACTIONS, r restart, a attach, p peek | matches | HealthAgents |
+| Restart box | restart supervisor-g4?, y restart, esc cancel | matches | HealthAgents |
+| Restart explanation | live confirmation and immediate stale/stopped restart | matches | HealthAgents |
+| Compact notes | restart scope and h hides 1 stopped agent | matches | CompactHealth |
+| Borders | rounded continuous borders | matches | Three grids and responsive tests |
+| Compact details | coordinator-g2, esc back, [details] | matches | Decision 9 and live keys |
+| Footers | [list], [details], [restart] and their key hints | matches | Decision 21 |
 
-## V-gate
+## V-gate and integration finding
 
-`verifier/gate.txt` contains the full output of all five commands. `gofmt -l`
-and `go mod tidy -diff` print nothing. Vet, lint, and race tests exit 0.
-No flake rerun was necessary. `verifier/scope.txt` shows the diff against dev
-`866bde2a`; the changed files are within the brief source table and evidence.
+`verifier3/gate.txt` contains the full output and exit status of each exact
+AGENTS.md gate command. `gofmt -l` and `go mod tidy -diff` print nothing.
+Vet, lint, and race tests exit 0. No rerun was needed.
 
-At the start, `git merge dev --no-edit` reported `Already up to date`.
-During verification, dev advanced to `e7cdbd09`. A final merge failed in:
+The initial `git merge dev --no-edit` and `git merge origin/dev --no-edit`
+reported `Already up to date` at dev `13210c3f`. `verifier3/scope.txt` records
+`git diff dev...HEAD --stat`; source changes are within the brief table.
 
-- `.hive/spec/tui-v2/README.md`
-- `internal/tui/frame.go`
-- `internal/tui/selection_marker_test.go`
+Dev advanced to `fbca94d5` during verification. Repeated the required merge
+before the verdict. It conflicts in:
+
+- `internal/tui/shell_test.go`
 - `testdata/ste-baseline.json`
 
-Ran `git merge --abort`. No conflict resolution or source edit was made.
-Reported the block to `manager-hive` in inbox record 257. A repair worker
-must merge current dev. A fresh verifier must then test the integrated code.
+`merge-conflicts.txt` records the conflicts and `final-merge.txt` records the
+last attempt. Aborted both attempts. The shell test conflict is outside the
+manager's README/ste-baseline-only exception. No conflict resolution was
+made. A repair worker must merge dev and keep both sides of shared files.
+A fresh verifier must test that integrated result.
 
 ## Cleanup
 
-Closed the owned scratch tab. `herdr tab list --workspace w9G` shows only
-`w9G:t1`. Removed both scratch worktrees, the scratch home, binary, browser
-profiles, and remaining scratch files. Verified that `.hive/tmp/verify39`
-does not exist. Final evidence is retained here.
+Closed owned tab `wA4:t2`. The tab list contains only `wA4:t1`.
+Removed both detached scratch worktrees, the scratch home, binary, browser
+profiles, and temporary scripts. Checked that `.hive/tmp/verify39v3` does not
+exist. Retained final evidence in this task's evidence folder.
