@@ -18,10 +18,11 @@ const (
 // and a title in the top border (decisions 6, 27). Lines are the body rows,
 // styled by the caller. Panel cuts a long line with … and pads a short one.
 // VMark and HMark draw the scroll marks of decision 5 on the right and the
-// bottom border.
+// bottom border. Heavy draws the border with heavy lines (┏━┓┃┗┛).
 type Panel struct {
 	Title   string
 	Focused bool
+	Heavy   bool
 	Lines   []string
 	VMark   ScrollMark
 	HMark   ScrollMark
@@ -32,6 +33,9 @@ func (p Panel) View(width, height int) string {
 	width = max(width, PanelMinWidth)
 	height = max(height, PanelMinHeight)
 	b := lipgloss.RoundedBorder()
+	if p.Heavy {
+		b = lipgloss.ThickBorder()
+	}
 	edge, mark := borderStyle, dimStyle
 	if p.Focused {
 		edge, mark = accentStyle, accentStyle

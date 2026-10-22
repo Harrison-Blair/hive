@@ -135,7 +135,8 @@ func TestAgentsFitEachSize(t *testing.T) {
 }
 
 // Decisions 10 and 14: the graph shows the project agents only, and the
-// selected card has an accent border.
+// selected card has a heavy accent border (user decision 2026-10-21,
+// option A).
 func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	view := ansi.Strip(m.View().Content)
@@ -151,8 +152,8 @@ func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	}
 	grid := renderGrid(t, m, 120, 40)
 	row, col := findText(t, grid, "manager-hive")
-	if got := grid.At(row, col-4); got.Rune != '│' || got.Token != cellgrid.Accent {
-		t.Fatalf("the selected card border is %+v, want an accent │", got)
+	if got := grid.At(row, col-4); got.Rune != '┃' || got.Token != cellgrid.Accent {
+		t.Fatalf("the selected card border is %+v, want an accent ┃", got)
 	}
 	if got := grid.At(row, col-2); got.Rune != '◐' || got.Token != cellgrid.Accent {
 		t.Fatalf("the idle dot is %+v, want an accent ◐", got)
