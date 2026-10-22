@@ -31,12 +31,12 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 	}{
 		{"1", tabAgents, "Agents", "[ TREE ]"},
 		{"2", tabChat, "Chat", "coordinator"},
-		{"3", tabWork, "Goals", "unassigned"},
+		{"3", tabWork, "Goals", "goals · 0"},
 		{"]", tabWork, "Queue", "no tasks"},
 		{"]", tabWork, "Tasks", "tasks · 0"},
 		{"4", tabFriction, "Friction", "open · 0"},
-		{"5", tabHealth, "Health", "home"},
-		{"]", tabHealth, "Agents", "[ TREE ]"},
+		{"5", tabHealth, "Health", "checks ·"},
+		{"]", tabHealth, "Health", "agents ·"},
 		{"6", tabLogs, "Logs", "events · 0"},
 	} {
 		m, _ = raise(t, m, key(rune(step.key[0]), step.key))

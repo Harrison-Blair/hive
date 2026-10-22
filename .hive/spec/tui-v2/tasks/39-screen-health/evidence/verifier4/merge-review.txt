@@ -1,0 +1,115 @@
+f8cb6d08 0a1e3f82 docs(tui): rerun Health checks after the dev merge of task 35
+0a1e3f82 326d921c 7ea7497d Merge remote-tracking branch 'origin/dev' into task/39-screen-health
+326d921c 2b6e8bb2 docs(tui): rerun Health checks after the dev merge of tasks 38, 40, and 45
+2b6e8bb2 6bc34906 5a4b29e6 Merge commit '5a4b29e6' into task/39-screen-health
+6bc34906 beb89d07 86f48a68 Merge remote-tracking branch 'origin/dev' into task/39-screen-health
+beb89d07 6746efb0 docs(tui): reverify Health and record current dev merge failure
+commit 6bc3490670b74441fd88d615ed2423f0c23d5fe2
+Merge: beb89d07 86f48a68
+Author: Harrison-Blair <hjblair@me.com>
+Date:   Wed Oct 21 22:54:18 2026 -0400
+
+    Merge remote-tracking branch 'origin/dev' into task/39-screen-health
+
+diff --git a/internal/tui/frame.go b/internal/tui/frame.go
+remerge CONFLICT (content): Merge conflict in internal/tui/frame.go
+index 7a9c7c7e..26288aaf 100644
+--- a/internal/tui/frame.go
++++ b/internal/tui/frame.go
+@@ -469,21 +469,6 @@ func (m *Model) legacyDetails() (string, []string) {
+ 			title = item.record.ID
+ 		}
+ 		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
+-<<<<<<< beb89d07 (docs(tui): reverify Health and record current dev merge failure)
+-	case 5:
+-		title := "details"
+-		if entry, ok := m.friction.selected(); ok {
+-			title = entry.file
+-		}
+-		return title, m.friction.detailLines()
+-=======
+-	case 6:
+-		check, ok := m.health.selectedCheck()
+-		if !ok {
+-			return "details", []string{"no check selected"}
+-		}
+-		return check.Name, []string{component.DetailField("status", string(check.Status)), component.DetailField("detail", check.Detail)}
+->>>>>>> 86f48a68 (Merge branch 'task/38-screen-friction' into dev)
+ 	}
+ 	return "details", nil
+ }
+diff --git a/internal/tui/shell_test.go b/internal/tui/shell_test.go
+remerge CONFLICT (content): Merge conflict in internal/tui/shell_test.go
+index 6aa9621a..cea8f7f4 100644
+--- a/internal/tui/shell_test.go
++++ b/internal/tui/shell_test.go
+@@ -34,17 +34,10 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
+ 		{"3", tabWork, "Goals", "unassigned"},
+ 		{"]", tabWork, "Queue", "no tasks"},
+ 		{"]", tabWork, "Tasks", "active 0"},
+-<<<<<<< beb89d07 (docs(tui): reverify Health and record current dev merge failure)
+-		{"4", tabFriction, "Friction", "open 0"},
++		{"4", tabFriction, "Friction", "open · 0"},
+ 		{"5", tabHealth, "Health", "checks ·"},
+ 		{"]", tabHealth, "Health", "agents ·"},
+-		{"6", tabLogs, "Logs", "logs ·"},
+-=======
+-		{"4", tabFriction, "Friction", "open · 0"},
+-		{"5", tabHealth, "Health", "home"},
+-		{"]", tabHealth, "Agents", "[ TREE ]"},
+ 		{"6", tabLogs, "Logs", "events · 0"},
+->>>>>>> 86f48a68 (Merge branch 'task/38-screen-friction' into dev)
+ 	} {
+ 		m, _ = raise(t, m, key(rune(step.key[0]), step.key))
+ 		view := ansi.Strip(m.View().Content)
+diff --git a/testdata/ste-baseline.json b/testdata/ste-baseline.json
+remerge CONFLICT (content): Merge conflict in testdata/ste-baseline.json
+index 3155a5f8..76529d78 100644
+--- a/testdata/ste-baseline.json
++++ b/testdata/ste-baseline.json
+@@ -125,11 +125,8 @@
+   ".hive/spec/tui-v2/tasks/29-frame-layout/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/38-screen-friction/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/36-screen-work-queue/brief.md": 0,
+-<<<<<<< beb89d07 (docs(tui): reverify Health and record current dev merge failure)
+   ".hive/spec/tui-v2/tasks/39-screen-health/brief.md": 0,
+-=======
+   ".hive/spec/tui-v2/tasks/40-screen-logs/brief.md": 0,
+->>>>>>> 86f48a68 (Merge branch 'task/38-screen-friction' into dev)
+   ".hive/spec/tui-v2/tasks/41-workgoals-board-fix/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/42-wave6-board-redraw/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/43-board-slip-batch-1/brief.md": 0,
+commit 2b6e8bb2420ff09343c7c75ccde3434460a81a14
+Merge: 6bc34906 5a4b29e6
+Author: Harrison-Blair <hjblair@me.com>
+Date:   Wed Oct 21 22:54:18 2026 -0400
+
+    Merge commit '5a4b29e6' into task/39-screen-health
+commit 0a1e3f825c0da50100e96b54711b06a7bc732649
+Merge: 326d921c 7ea7497d
+Author: Harrison-Blair <hjblair@me.com>
+Date:   Wed Oct 21 22:56:12 2026 -0400
+
+    Merge remote-tracking branch 'origin/dev' into task/39-screen-health
+    
+    # Conflicts:
+    #       testdata/ste-baseline.json
+
+diff --git a/testdata/ste-baseline.json b/testdata/ste-baseline.json
+remerge CONFLICT (content): Merge conflict in testdata/ste-baseline.json
+index ff000ddd..5ca295c8 100644
+--- a/testdata/ste-baseline.json
++++ b/testdata/ste-baseline.json
+@@ -125,11 +125,8 @@
+   ".hive/spec/tui-v2/tasks/29-frame-layout/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/35-screen-work-goals/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/36-screen-work-queue/brief.md": 0,
+-<<<<<<< 326d921c (docs(tui): rerun Health checks after the dev merge of tasks 38, 40, and 45)
+-  ".hive/spec/tui-v2/tasks/39-screen-health/brief.md": 0,
+-=======
+   ".hive/spec/tui-v2/tasks/38-screen-friction/brief.md": 0,
+->>>>>>> 7ea7497d (Merge branch 'task/35-screen-work-goals' into dev)
++  ".hive/spec/tui-v2/tasks/39-screen-health/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/40-screen-logs/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/41-workgoals-board-fix/brief.md": 0,
+   ".hive/spec/tui-v2/tasks/42-wave6-board-redraw/brief.md": 0,

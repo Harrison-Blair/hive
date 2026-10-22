@@ -1,0 +1,46 @@
+=== RUN   TestVerifier35StopsOnly
+    verify35_scratch_test.go:15: view contains "g2-no-stops":
+         hive  /tmp/TestVerifier35StopsOnly3704291605/001    coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+         [Goals]   Queue    Tasks                                                                             [ ] switch view   
+        ╭─ goals · 2 ──────────────────────────────────────╮╭─ g1-demo ────────────────────────────────────────────────────────╮
+        │   GOAL                    STATUS    WAVES        ││                                                                  │
+        │ ▶ g1-demo                 active    0/1          ││ title     Goal one                                               │
+        │   g2-no-stops             active    0/0          ││ status    active                                                 │
+        │                                                  ││ project   demo                                                   │
+        │                                                  ││ grant     Goal grant                                             │
+        │                                                  ││ manager   manager-demo                                           │
+        │                                                  ││                                                                  │
+        │                                                  ││ WAVES                                                            │
+        │                                                  ││ WAVE TITLE                      DONE WHEN  LANDED  STATUS        │
+        │                                                  ││ A    Wave alpha                 dev        0/3     ○ open        │
+        │                                                  ││                                                                  │
+        │                                                  ││ TASKS                                                            │
+        │                                                  ││ A   1-alpha                       ▶ assigned                     │
+        │                                                  ││ A   2-beta                        ✋ created                     │
+        │                                                  ││ A   3-gamma                       · created                      │
+        │                                                  ││                                                                  │
+        │                                                  ││ NEEDS YOU                                                        │
+        │                                                  ││ 2-beta  choose a color                                           │
+        │                                                  ││                                                                  │
+        │                                                  ││ o goal design   t open task in Tasks                             │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        │                                                  ││                                                                  │
+        ╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+         [list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help                                       
+--- FAIL: TestVerifier35StopsOnly (0.05s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.078s
+FAIL

@@ -192,8 +192,8 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 		if key.Text == "r" {
 			m.Update(tea.KeyPressMsg{Code: '5', Text: "5"})
 			m.Update(tea.KeyPressMsg{Code: ']', Text: "]"})
-			if m.activeTab() != tabHealth || m.screenIndex != 1 {
-				t.Fatalf("5 ] did not select Health › Agents: tab %d, screen %d", m.activeTab(), m.screenIndex)
+			if m.activeTab() != tabHealth || m.activeView() != healthAgents {
+				t.Fatalf("5 ] did not select Health › Agents: tab %d, view %d", m.activeTab(), m.activeView())
 			}
 		}
 		m.Update(key)

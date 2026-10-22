@@ -1,0 +1,10 @@
+# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
+internal/tui/health_task_test.go:175:23: undefined: healthAgents
+internal/tui/health_task_test.go:195:23: undefined: healthHome
+internal/tui/health_task_test.go:233:28: undefined: healthHome
+internal/tui/health_task_test.go:234:11: m.health.acceptAgents undefined (type healthState has no field or method acceptAgents)
+internal/tui/health_task_test.go:249:28: undefined: healthHome
+internal/tui/health_task_test.go:308:6: TestHealthProgramUsesStringReader redeclared in this block
+	internal/tui/health_screen_test.go:144:6: other declaration of TestHealthProgramUsesStringReader
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+FAIL
