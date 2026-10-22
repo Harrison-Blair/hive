@@ -1,10 +1,7 @@
-start: WorkGoals.grid: strict differences 2981, space-cell token or bold only 2981, differences under the live rule 0
-k: WorkGoals.grid: strict differences 3300, space-cell token or bold only 2963, differences under the live rule 337
-down: WorkGoals.grid: strict differences 2916, space-cell token or bold only 2916, differences under the live rule 0
-j: WorkGoals.grid: strict differences 2916, space-cell token or bold only 2916, differences under the live rule 0
-tab: WorkGoals.grid: strict differences 3409, space-cell token or bold only 2991, differences under the live rule 418
-tab2: WorkGoals.grid: strict differences 2981, space-cell token or bold only 2981, differences under the live rule 0
-o: WorkGoals.grid: strict differences 3062, space-cell token or bold only 2998, differences under the live rule 64
-g: WorkGoals.grid: strict differences 3300, space-cell token or bold only 2963, differences under the live rule 337
-G: WorkGoals.grid: strict differences 2916, space-cell token or bold only 2916, differences under the live rule 0
-t: WorkGoals.grid: strict differences 2916, space-cell token or bold only 2916, differences under the live rule 0
+start: WorkGoals.grid: strict differences 2992, space-cell token or bold only 2992, differences under the live rule 0
+k: WorkGoals.grid: strict differences 3311, space-cell token or bold only 2974, differences under the live rule 337
+down: WorkGoals.grid: strict differences 2927, space-cell token or bold only 2927, differences under the live rule 0
+tab: WorkGoals.grid: strict differences 3409, space-cell token or bold only 2999, differences under the live rule 410
+tab2: WorkGoals.grid: strict differences 2992, space-cell token or bold only 2992, differences under the live rule 0
+o: WorkGoals.grid: strict differences 3062, space-cell token or bold only 3006, differences under the live rule 56
+G: WorkGoals.grid: strict differences 2992, space-cell token or bold only 2992, differences under the live rule 0
