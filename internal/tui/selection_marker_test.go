@@ -117,6 +117,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		name     string
 		selected string
 		also     []string
+		honey    []string
 		states   []string
 		model    func(*testing.T) *Model
 	}{
@@ -151,7 +152,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Queue", selected: "now  1-alpha", states: []string{"▶ assigned"},
+			// The Queue board draws the marker and the task in two runs.
+			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 3)
 				m.goalsQueue.data = goalsQueueData{
@@ -212,7 +214,12 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
-			requireHoneySelection(t, raw, tt.selected)
+			if tt.selected != "" {
+				requireHoneySelection(t, raw, tt.selected)
+			}
+			for _, text := range tt.honey {
+				requireHoneyBoldText(t, raw, text)
+			}
 			for _, selected := range tt.also {
 				requireHoneySelection(t, raw, selected)
 			}
