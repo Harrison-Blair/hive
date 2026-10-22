@@ -72,6 +72,22 @@ func TestKeptFirstPromptSentOneTimeAcrossTwoPasses(t *testing.T) {
 	}
 }
 
+// TestKeptFirstPromptSentWhenDone covers an agent in a tab that nobody saw.
+// herdr gives done, the same ready status as idle.
+func TestKeptFirstPromptSentWhenDone(t *testing.T) {
+	home := testHome(t)
+	keptRecords(t, home, "blocked")
+	ops := keptOps("done")
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.refresh(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if ops.promptCount() != 1 || ops.prompts[0].Text != keptText {
+		t.Fatalf("prompts = %+v; want the kept first prompt", ops.prompts)
+	}
+}
+
 func TestKeptFirstPromptWaitsWhileBlocked(t *testing.T) {
 	home := testHome(t)
 	keptRecords(t, home, "blocked")

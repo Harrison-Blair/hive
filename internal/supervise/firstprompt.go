@@ -19,8 +19,9 @@ func keptPromptPending(record records.Agent) bool {
 }
 
 // firstPromptRule sends each kept first prompt to its idle agent one time
-// (decisions 15 to 17). A record with an attempt and no sent time becomes
-// unresolved.
+// (decisions 15 to 17). herdr gives done for an idle agent in a tab that
+// nobody saw, so done counts as idle. A record with an attempt and no sent
+// time becomes unresolved.
 func (s *Supervisor) firstPromptRule(ctx context.Context) error {
 	for _, key := range sortedKeys(s.agents) {
 		record := s.agents[key]
@@ -33,7 +34,7 @@ func (s *Supervisor) firstPromptRule(ctx context.Context) error {
 			}
 			continue
 		}
-		if record.AgentStatus != "idle" {
+		if record.AgentStatus != "idle" && record.AgentStatus != "done" {
 			continue
 		}
 		if err := s.sendFirstPrompt(ctx, record); err != nil {
