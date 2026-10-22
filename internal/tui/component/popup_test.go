@@ -22,8 +22,8 @@ func TestPopupGolden(t *testing.T) {
 		key.Render("p")+"  peek pane",
 		dim.Bold(true).Render("t")+"  "+dim.Render("open task · none"),
 		"", "", DetailSection("RECENT"),
-		fitCell("15:08 inbox 28 sent to coordinator", 54))
-	for _, s := range []string{"15:07 land 4-agents-equal-columns · ede94f3e", "14:58 land 3-tui-restart · 3ccd93fb", "14:44 land 2-stale-coordinator-startup · 0e079272"} {
+		fitCell("14:08 inbox 28 sent to coordinator", 54))
+	for _, s := range []string{"14:07 land 4-agents-equal-columns · ede94f3e", "13:58 land 3-tui-restart · 3ccd93fb", "13:44 land 2-stale-coordinator-startup · 0e079272"} {
 		lines = append(lines, dim.Render(fitCell(s, 54)))
 	}
 	p := Popup{Details: Details{Title: "manager-hive · esc closes", Lines: lines}, Width: 60, Height: 27}

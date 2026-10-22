@@ -67,9 +67,9 @@ function agents(t) {
   box(t, 0, 3, 120, 36, 'accent', 'project agents · 5 projects', 'accent');
   var projects = [
     {name:'hive', real:true, goal:'g2-tui-v2 · wave A', manager:{name:'manager-hive', state:'working', sub:'claude · working · 1m'}, children:[{name:'t5-worker-1', state:'working', sub:'pi · working · 3m'}, {name:'t6-worker-1', state:'working', sub:'pi · working · 1m'}, {name:'t4-verifier-1', state:'stopped', sub:'pi · stopped · pass'}]},
-    {name:'example-api', goal:'[goal] · wave B', manager:{name:'manager-api', state:'working', sub:'codex · working · 2m'}, children:[{name:'t3-worker-1', state:'working', sub:'codex · working'}, {name:'t3-verifier-1', state:'idle', sub:'pi · idle · 6m'}]},
+    {name:'example-api', goal:'g4-rate-limits · wave B', manager:{name:'manager-api', state:'working', sub:'codex · working · 2m'}, children:[{name:'t3-worker-1', state:'working', sub:'codex · working'}, {name:'t3-verifier-1', state:'idle', sub:'pi · idle · 6m'}]},
     {name:'example-web', goal:'needs you · approve merge', stop:true, manager:{name:'manager-web', state:'idle', sub:'claude · idle · 9m'}, children:[{name:'t8-worker-1', state:'stopped', sub:'pi · stopped · done'}]},
-    {name:'example-docs', goal:'[goal] · wave A', manager:{name:'manager-docs', state:'idle', sub:'pi · idle · 22m'}, children:[]}
+    {name:'example-docs', goal:'g2-guides · wave A', manager:{name:'manager-docs', state:'idle', sub:'pi · idle · 22m'}, children:[]}
   ];
   projects.forEach(function (p, i) { pod(t, 2 + i * 29, p, 't5-worker-1'); });
   put(t, 2, 36, '── spawn   ● working   ◐ idle   ○ stopped   columns share one width', 'dim');

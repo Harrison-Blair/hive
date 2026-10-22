@@ -46,7 +46,7 @@ function subtabs(t, y, names, active) {
 function screen(t) {
   frame(t, 4, 'restart', 'y restart · any other key cancels');
   subtabs(t, 3, ['Home', 'Agents'], 1);
-  box(t, 0, 4, 52, 35, 'border', 'agents · 5 · h hides 2 stopped', 'accent');
+  box(t, 0, 4, 52, 35, 'border', 'agents · 5 · h hides 1 stopped', 'accent');
   put(t, 4, 5, fit('AGENT', 22) + fit('ROLE', 12) + 'STATE', 'dim');
   var list = [['coordinator-g2', 'coordinator', 'working', 'working'], ['supervisor-g4', 'supervisor', 'live', 'working'], ['manager-hive', 'manager', 'idle', 'idle'], ['cp5-worker-01', 'worker', 'unresolved', 'accent'], ['t4-worker-1', 'worker', 'stopped', 'dim']];
   list.forEach(function (r, i) {

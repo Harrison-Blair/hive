@@ -47,10 +47,10 @@ function subtabs(t, y, names, active) {
 function screen(t) {
   frame(t, 5, 'json', '↑↓ scroll · esc back to events · f follow');
   box(t, 0, 3, 80, 3, 'border', 'filter', 'accent');
-  put(t, 2, 4, '/', 'accent', 1); put(t, 4, 4, 'level:', 'dim'); put(t, 10, 4, 'debug', 'fg'); put(t, 16, 4, 'agent:', 'dim'); put(t, 22, 4, 'manager-hive', 'fg');
+  put(t, 2, 4, '/', 'accent', 1); put(t, 4, 4, 'level:', 'dim'); put(t, 10, 4, 'debug', 'fg'); put(t, 16, 4, 'proj:', 'dim'); put(t, 21, 4, 'hive', 'fg');
   put(t, 58, 4, '<', 'accent', 1); put(t, 60, 4, '2026-10-21', 'fg'); put(t, 71, 4, '>', 'accent', 1);
-  box(t, 0, 6, 80, 17, 'accent', 'event 14:38:02 · esc back', 'accent');
-  var json = [['{', ''], ['  "time": ', '"2026-10-21T14:38:02.114Z",'], ['  "level": ', '"WARN",'], ['  "msg": ', '"verify fail",'], ['  "component": ', '"task",'], ['  "command": ', '"task verify",'], ['  "project_id": ', '"hive",'], ['  "task_id": ', '"2-stale-coordinator-startup",'], ['  "agent_id": ', '"t2-verifier-1",'], ['  "request_id": ', '"r-7f31c2",'], ['  "duration_ms": ', '412,'], ['  "reason": ', '"V4 diff scope; Design section missing",'], ['  "truncated": ', 'false'], ['}', '']];
+  box(t, 0, 6, 80, 17, 'accent', 'event 13:38:02 · esc back', 'accent');
+  var json = [['{', ''], ['  "time": ', '"2026-10-21T13:38:02.114Z",'], ['  "level": ', '"WARN",'], ['  "msg": ', '"verify fail",'], ['  "component": ', '"task",'], ['  "command": ', '"task verify",'], ['  "project_id": ', '"hive",'], ['  "task_id": ', '"2-stale-coordinator-startup",'], ['  "agent_id": ', '"t2-verifier-1",'], ['  "request_id": ', '"r-7f31c2",'], ['  "duration_ms": ', '412,'], ['  "reason": ', '"V4 diff scope; Design section missing",'], ['  "truncated": ', 'false'], ['}', '']];
   json.forEach(function (j, i) { var y = 7 + i; var key = j[0]; var m = key.match(/^(\s*)(".*?")(.*)$/); if (m) { put(t, 2, y, m[1], 'fg'); put(t, 2 + m[1].length, y, m[2], 'info'); put(t, 2 + m[1].length + m[2].length, y, m[3] + j[1], 'fg'); } else put(t, 2, y, key + j[1], 'fg'); });
   vline(t, 79, 7, 10, '┃', 'accent');
 }
