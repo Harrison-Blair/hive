@@ -1,0 +1,1464 @@
+export identical: AgentDetailsGeneral.grid
+
+AgentDetailsGeneral.grid
+4800 cells match
+export identical: AgentDetails.grid
+
+AgentDetails.grid
+4800 cells match
+export identical: AgentsCoordinatorChild.grid
+
+AgentsCoordinatorChild.grid
+72 cells differ; changed rows (zero-based): [7 8 9 10 39]
+row 7 col 62: want '╭' border normal, got '╭' working normal
+row 7 col 63: want '─' border normal, got '─' working normal
+row 7 col 64: want '─' border normal, got '─' working normal
+row 7 col 65: want '─' border normal, got '─' working normal
+row 7 col 66: want '─' border normal, got '─' working normal
+row 7 col 67: want '─' border normal, got '─' working normal
+row 7 col 68: want '─' border normal, got '─' working normal
+row 7 col 69: want '─' border normal, got '─' working normal
+row 7 col 70: want '─' border normal, got '─' working normal
+row 7 col 71: want '─' border normal, got '─' working normal
+row 7 col 72: want '─' border normal, got '─' working normal
+row 7 col 73: want '─' border normal, got '─' working normal
+row 7 col 74: want '─' border normal, got '─' working normal
+row 7 col 75: want '─' border normal, got '─' working normal
+row 7 col 76: want '─' border normal, got '─' working normal
+row 7 col 77: want '─' border normal, got '─' working normal
+row 7 col 78: want '─' border normal, got '─' working normal
+row 7 col 79: want '─' border normal, got '─' working normal
+row 7 col 80: want '─' border normal, got '─' working normal
+row 7 col 81: want '─' border normal, got '─' working normal
+row 7 col 82: want '─' border normal, got '─' working normal
+row 7 col 83: want '─' border normal, got '─' working normal
+row 7 col 84: want '─' border normal, got '─' working normal
+row 7 col 85: want '╮' border normal, got '╮' working normal
+row 8 col 62: want '│' border normal, got '│' working normal
+row 8 col 85: want '│' border normal, got '│' working normal
+row 9 col 62: want '│' border normal, got '│' working normal
+row 9 col 85: want '│' border normal, got '│' working normal
+row 10 col 62: want '├' border normal, got '├' working normal
+row 10 col 63: want '─' border normal, got '─' working normal
+row 10 col 64: want '─' border normal, got '─' working normal
+row 10 col 65: want '─' border normal, got '─' working normal
+row 10 col 66: want '─' border normal, got '─' working normal
+row 10 col 67: want '─' border normal, got '─' working normal
+row 10 col 68: want '─' border normal, got '─' working normal
+row 10 col 69: want '─' border normal, got '─' working normal
+row 10 col 70: want '─' border normal, got '─' working normal
+row 10 col 71: want '─' border normal, got '─' working normal
+row 10 col 72: want '─' border normal, got '─' working normal
+row 10 col 73: want '─' border normal, got '─' working normal
+row 10 col 74: want '─' border normal, got '─' working normal
+row 10 col 75: want '─' border normal, got '─' working normal
+row 10 col 76: want '─' border normal, got '─' working normal
+row 10 col 77: want '─' border normal, got '─' working normal
+row 10 col 78: want '─' border normal, got '─' working normal
+row 10 col 79: want '─' border normal, got '─' working normal
+row 10 col 80: want '─' border normal, got '─' working normal
+row 10 col 81: want '─' border normal, got '─' working normal
+row 10 col 82: want '─' border normal, got '─' working normal
+row 10 col 83: want '─' border normal, got '─' working normal
+row 10 col 84: want '─' border normal, got '─' working normal
+row 10 col 85: want '╯' border normal, got '╯' working normal
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: AgentsHiddenParent.grid
+
+AgentsHiddenParent.grid
+280 cells differ; changed rows (zero-based): [7 8 9 10 12 13 14 15 17 18 19 20 39]
+row 7 col 4: want '╭' border normal, got '╭' working normal
+row 7 col 5: want '─' border normal, got '─' working normal
+row 7 col 6: want '─' border normal, got '─' working normal
+row 7 col 7: want '─' border normal, got '─' working normal
+row 7 col 8: want '─' border normal, got '─' working normal
+row 7 col 9: want '─' border normal, got '─' working normal
+row 7 col 10: want '─' border normal, got '─' working normal
+row 7 col 11: want '─' border normal, got '─' working normal
+row 7 col 12: want '─' border normal, got '─' working normal
+row 7 col 13: want '─' border normal, got '─' working normal
+row 7 col 14: want '─' border normal, got '─' working normal
+row 7 col 15: want '─' border normal, got '─' working normal
+row 7 col 16: want '─' border normal, got '─' working normal
+row 7 col 17: want '─' border normal, got '─' working normal
+row 7 col 18: want '─' border normal, got '─' working normal
+row 7 col 19: want '─' border normal, got '─' working normal
+row 7 col 20: want '─' border normal, got '─' working normal
+row 7 col 21: want '─' border normal, got '─' working normal
+row 7 col 22: want '─' border normal, got '─' working normal
+row 7 col 23: want '─' border normal, got '─' working normal
+row 7 col 24: want '─' border normal, got '─' working normal
+row 7 col 25: want '─' border normal, got '─' working normal
+row 7 col 26: want '─' border normal, got '─' working normal
+row 7 col 27: want '╮' border normal, got '╮' working normal
+row 7 col 43: want '╭' border normal, got '╭' working normal
+row 7 col 44: want '─' border normal, got '─' working normal
+row 7 col 45: want '─' border normal, got '─' working normal
+row 7 col 46: want '─' border normal, got '─' working normal
+row 7 col 47: want '─' border normal, got '─' working normal
+row 7 col 48: want '─' border normal, got '─' working normal
+row 7 col 49: want '─' border normal, got '─' working normal
+row 7 col 50: want '─' border normal, got '─' working normal
+row 7 col 51: want '─' border normal, got '─' working normal
+row 7 col 52: want '─' border normal, got '─' working normal
+row 7 col 53: want '─' border normal, got '─' working normal
+row 7 col 54: want '─' border normal, got '─' working normal
+row 7 col 55: want '─' border normal, got '─' working normal
+row 7 col 56: want '─' border normal, got '─' working normal
+row 7 col 57: want '─' border normal, got '─' working normal
+row 7 col 58: want '─' border normal, got '─' working normal
+row 7 col 59: want '─' border normal, got '─' working normal
+row 7 col 60: want '─' border normal, got '─' working normal
+row 7 col 61: want '─' border normal, got '─' working normal
+row 7 col 62: want '─' border normal, got '─' working normal
+row 7 col 63: want '─' border normal, got '─' working normal
+row 7 col 64: want '─' border normal, got '─' working normal
+row 7 col 65: want '─' border normal, got '─' working normal
+row 7 col 66: want '╮' border normal, got '╮' working normal
+row 8 col 4: want '│' border normal, got '│' working normal
+row 8 col 27: want '│' border normal, got '│' working normal
+row 8 col 43: want '│' border normal, got '│' working normal
+row 8 col 66: want '│' border normal, got '│' working normal
+row 9 col 4: want '│' border normal, got '│' working normal
+row 9 col 27: want '│' border normal, got '│' working normal
+row 9 col 43: want '│' border normal, got '│' working normal
+row 9 col 66: want '│' border normal, got '│' working normal
+row 10 col 4: want '├' border normal, got '├' working normal
+row 10 col 5: want '─' border normal, got '─' working normal
+row 10 col 6: want '─' border normal, got '─' working normal
+row 10 col 7: want '─' border normal, got '─' working normal
+row 10 col 8: want '─' border normal, got '─' working normal
+row 10 col 9: want '─' border normal, got '─' working normal
+row 10 col 10: want '─' border normal, got '─' working normal
+row 10 col 11: want '─' border normal, got '─' working normal
+row 10 col 12: want '─' border normal, got '─' working normal
+row 10 col 13: want '─' border normal, got '─' working normal
+row 10 col 14: want '─' border normal, got '─' working normal
+row 10 col 15: want '─' border normal, got '─' working normal
+row 10 col 16: want '─' border normal, got '─' working normal
+row 10 col 17: want '─' border normal, got '─' working normal
+row 10 col 18: want '─' border normal, got '─' working normal
+row 10 col 19: want '─' border normal, got '─' working normal
+row 10 col 20: want '─' border normal, got '─' working normal
+row 10 col 21: want '─' border normal, got '─' working normal
+row 10 col 22: want '─' border normal, got '─' working normal
+row 10 col 23: want '─' border normal, got '─' working normal
+row 10 col 24: want '─' border normal, got '─' working normal
+row 10 col 25: want '─' border normal, got '─' working normal
+row 10 col 26: want '─' border normal, got '─' working normal
+row 10 col 27: want '╯' border normal, got '╯' working normal
+row 10 col 43: want '├' border normal, got '├' working normal
+row 10 col 44: want '─' border normal, got '─' working normal
+row 10 col 45: want '─' border normal, got '─' working normal
+row 10 col 46: want '─' border normal, got '─' working normal
+row 10 col 47: want '─' border normal, got '─' working normal
+row 10 col 48: want '─' border normal, got '─' working normal
+row 10 col 49: want '─' border normal, got '─' working normal
+row 10 col 50: want '─' border normal, got '─' working normal
+row 10 col 51: want '─' border normal, got '─' working normal
+row 10 col 52: want '─' border normal, got '─' working normal
+row 10 col 53: want '─' border normal, got '─' working normal
+row 10 col 54: want '─' border normal, got '─' working normal
+row 10 col 55: want '─' border normal, got '─' working normal
+row 10 col 56: want '─' border normal, got '─' working normal
+row 10 col 57: want '─' border normal, got '─' working normal
+row 10 col 58: want '─' border normal, got '─' working normal
+row 10 col 59: want '─' border normal, got '─' working normal
+row 10 col 60: want '─' border normal, got '─' working normal
+row 10 col 61: want '─' border normal, got '─' working normal
+row 10 col 62: want '─' border normal, got '─' working normal
+row 10 col 63: want '─' border normal, got '─' working normal
+row 10 col 64: want '─' border normal, got '─' working normal
+row 10 col 65: want '─' border normal, got '─' working normal
+row 10 col 66: want '╯' border normal, got '╯' working normal
+row 12 col 5: want '╭' border normal, got '╭' working normal
+row 12 col 6: want '─' border normal, got '─' working normal
+row 12 col 7: want '─' border normal, got '─' working normal
+row 12 col 8: want '─' border normal, got '─' working normal
+row 12 col 9: want '─' border normal, got '─' working normal
+row 12 col 10: want '─' border normal, got '─' working normal
+row 12 col 11: want '─' border normal, got '─' working normal
+row 12 col 12: want '─' border normal, got '─' working normal
+row 12 col 13: want '─' border normal, got '─' working normal
+row 12 col 14: want '─' border normal, got '─' working normal
+row 12 col 15: want '─' border normal, got '─' working normal
+row 12 col 16: want '─' border normal, got '─' working normal
+row 12 col 17: want '─' border normal, got '─' working normal
+row 12 col 18: want '─' border normal, got '─' working normal
+row 12 col 19: want '─' border normal, got '─' working normal
+row 12 col 20: want '─' border normal, got '─' working normal
+row 12 col 21: want '─' border normal, got '─' working normal
+row 12 col 22: want '─' border normal, got '─' working normal
+row 12 col 23: want '─' border normal, got '─' working normal
+row 12 col 24: want '─' border normal, got '─' working normal
+row 12 col 25: want '─' border normal, got '─' working normal
+row 12 col 26: want '─' border normal, got '─' working normal
+row 12 col 27: want '─' border normal, got '─' working normal
+row 12 col 28: want '╮' border normal, got '╮' working normal
+row 12 col 44: want '╭' border normal, got '╭' working normal
+row 12 col 45: want '─' border normal, got '─' working normal
+row 12 col 46: want '─' border normal, got '─' working normal
+row 12 col 47: want '─' border normal, got '─' working normal
+row 12 col 48: want '─' border normal, got '─' working normal
+row 12 col 49: want '─' border normal, got '─' working normal
+row 12 col 50: want '─' border normal, got '─' working normal
+row 12 col 51: want '─' border normal, got '─' working normal
+row 12 col 52: want '─' border normal, got '─' working normal
+row 12 col 53: want '─' border normal, got '─' working normal
+row 12 col 54: want '─' border normal, got '─' working normal
+row 12 col 55: want '─' border normal, got '─' working normal
+row 12 col 56: want '─' border normal, got '─' working normal
+row 12 col 57: want '─' border normal, got '─' working normal
+row 12 col 58: want '─' border normal, got '─' working normal
+row 12 col 59: want '─' border normal, got '─' working normal
+row 12 col 60: want '─' border normal, got '─' working normal
+row 12 col 61: want '─' border normal, got '─' working normal
+row 12 col 62: want '─' border normal, got '─' working normal
+row 12 col 63: want '─' border normal, got '─' working normal
+row 12 col 64: want '─' border normal, got '─' working normal
+row 12 col 65: want '─' border normal, got '─' working normal
+row 12 col 66: want '─' border normal, got '─' working normal
+row 12 col 67: want '╮' border normal, got '╮' working normal
+row 13 col 5: want '┤' border normal, got '┤' working normal
+row 13 col 28: want '│' border normal, got '│' working normal
+row 13 col 44: want '┤' border normal, got '┤' working normal
+row 13 col 67: want '│' border normal, got '│' working normal
+row 14 col 5: want '│' border normal, got '│' working normal
+row 14 col 28: want '│' border normal, got '│' working normal
+row 14 col 44: want '│' border normal, got '│' working normal
+row 14 col 67: want '│' border normal, got '│' working normal
+row 15 col 5: want '╰' border normal, got '╰' working normal
+row 15 col 6: want '─' border normal, got '─' working normal
+row 15 col 7: want '─' border normal, got '─' working normal
+row 15 col 8: want '─' border normal, got '─' working normal
+row 15 col 9: want '─' border normal, got '─' working normal
+row 15 col 10: want '─' border normal, got '─' working normal
+row 15 col 11: want '─' border normal, got '─' working normal
+row 15 col 12: want '─' border normal, got '─' working normal
+row 15 col 13: want '─' border normal, got '─' working normal
+row 15 col 14: want '─' border normal, got '─' working normal
+row 15 col 15: want '─' border normal, got '─' working normal
+row 15 col 16: want '─' border normal, got '─' working normal
+row 15 col 17: want '─' border normal, got '─' working normal
+row 15 col 18: want '─' border normal, got '─' working normal
+row 15 col 19: want '─' border normal, got '─' working normal
+row 15 col 20: want '─' border normal, got '─' working normal
+row 15 col 21: want '─' border normal, got '─' working normal
+row 15 col 22: want '─' border normal, got '─' working normal
+row 15 col 23: want '─' border normal, got '─' working normal
+row 15 col 24: want '─' border normal, got '─' working normal
+row 15 col 25: want '─' border normal, got '─' working normal
+row 15 col 26: want '─' border normal, got '─' working normal
+row 15 col 27: want '─' border normal, got '─' working normal
+row 15 col 28: want '╯' border normal, got '╯' working normal
+row 15 col 44: want '╰' border normal, got '╰' working normal
+row 15 col 45: want '─' border normal, got '─' working normal
+row 15 col 46: want '─' border normal, got '─' working normal
+row 15 col 47: want '─' border normal, got '─' working normal
+row 15 col 48: want '─' border normal, got '─' working normal
+row 15 col 49: want '─' border normal, got '─' working normal
+row 15 col 50: want '─' border normal, got '─' working normal
+row 15 col 51: want '─' border normal, got '─' working normal
+row 15 col 52: want '─' border normal, got '─' working normal
+row 15 col 53: want '─' border normal, got '─' working normal
+row 15 col 54: want '─' border normal, got '─' working normal
+row 15 col 55: want '─' border normal, got '─' working normal
+row 15 col 56: want '─' border normal, got '─' working normal
+row 15 col 57: want '─' border normal, got '─' working normal
+row 15 col 58: want '─' border normal, got '─' working normal
+row 15 col 59: want '─' border normal, got '─' working normal
+row 15 col 60: want '─' border normal, got '─' working normal
+row 15 col 61: want '─' border normal, got '─' working normal
+row 15 col 62: want '─' border normal, got '─' working normal
+row 15 col 63: want '─' border normal, got '─' working normal
+row 15 col 64: want '─' border normal, got '─' working normal
+row 15 col 65: want '─' border normal, got '─' working normal
+row 15 col 66: want '─' border normal, got '─' working normal
+row 15 col 67: want '╯' border normal, got '╯' working normal
+row 17 col 5: want '╭' border normal, got '╭' working normal
+row 17 col 6: want '─' border normal, got '─' working normal
+row 17 col 7: want '─' border normal, got '─' working normal
+row 17 col 8: want '─' border normal, got '─' working normal
+row 17 col 9: want '─' border normal, got '─' working normal
+row 17 col 10: want '─' border normal, got '─' working normal
+row 17 col 11: want '─' border normal, got '─' working normal
+row 17 col 12: want '─' border normal, got '─' working normal
+row 17 col 13: want '─' border normal, got '─' working normal
+row 17 col 14: want '─' border normal, got '─' working normal
+row 17 col 15: want '─' border normal, got '─' working normal
+row 17 col 16: want '─' border normal, got '─' working normal
+row 17 col 17: want '─' border normal, got '─' working normal
+row 17 col 18: want '─' border normal, got '─' working normal
+row 17 col 19: want '─' border normal, got '─' working normal
+row 17 col 20: want '─' border normal, got '─' working normal
+row 17 col 21: want '─' border normal, got '─' working normal
+row 17 col 22: want '─' border normal, got '─' working normal
+row 17 col 23: want '─' border normal, got '─' working normal
+row 17 col 24: want '─' border normal, got '─' working normal
+row 17 col 25: want '─' border normal, got '─' working normal
+row 17 col 26: want '─' border normal, got '─' working normal
+row 17 col 27: want '─' border normal, got '─' working normal
+row 17 col 28: want '╮' border normal, got '╮' working normal
+row 18 col 5: want '┤' border normal, got '┤' working normal
+row 18 col 28: want '│' border normal, got '│' working normal
+row 19 col 5: want '│' border normal, got '│' working normal
+row 19 col 28: want '│' border normal, got '│' working normal
+row 20 col 5: want '╰' border normal, got '╰' working normal
+row 20 col 6: want '─' border normal, got '─' working normal
+row 20 col 7: want '─' border normal, got '─' working normal
+row 20 col 8: want '─' border normal, got '─' working normal
+row 20 col 9: want '─' border normal, got '─' working normal
+row 20 col 10: want '─' border normal, got '─' working normal
+row 20 col 11: want '─' border normal, got '─' working normal
+row 20 col 12: want '─' border normal, got '─' working normal
+row 20 col 13: want '─' border normal, got '─' working normal
+row 20 col 14: want '─' border normal, got '─' working normal
+row 20 col 15: want '─' border normal, got '─' working normal
+row 20 col 16: want '─' border normal, got '─' working normal
+row 20 col 17: want '─' border normal, got '─' working normal
+row 20 col 18: want '─' border normal, got '─' working normal
+row 20 col 19: want '─' border normal, got '─' working normal
+row 20 col 20: want '─' border normal, got '─' working normal
+row 20 col 21: want '─' border normal, got '─' working normal
+row 20 col 22: want '─' border normal, got '─' working normal
+row 20 col 23: want '─' border normal, got '─' working normal
+row 20 col 24: want '─' border normal, got '─' working normal
+row 20 col 25: want '─' border normal, got '─' working normal
+row 20 col 26: want '─' border normal, got '─' working normal
+row 20 col 27: want '─' border normal, got '─' working normal
+row 20 col 28: want '╯' border normal, got '╯' working normal
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: AgentsHome.grid
+
+AgentsHome.grid
+280 cells differ; changed rows (zero-based): [7 8 9 10 12 13 14 15 17 18 19 20 22 23 24 25 39]
+row 7 col 4: want '╭' border normal, got '╭' working normal
+row 7 col 5: want '─' border normal, got '─' working normal
+row 7 col 6: want '─' border normal, got '─' working normal
+row 7 col 7: want '─' border normal, got '─' working normal
+row 7 col 8: want '─' border normal, got '─' working normal
+row 7 col 9: want '─' border normal, got '─' working normal
+row 7 col 10: want '─' border normal, got '─' working normal
+row 7 col 11: want '─' border normal, got '─' working normal
+row 7 col 12: want '─' border normal, got '─' working normal
+row 7 col 13: want '─' border normal, got '─' working normal
+row 7 col 14: want '─' border normal, got '─' working normal
+row 7 col 15: want '─' border normal, got '─' working normal
+row 7 col 16: want '─' border normal, got '─' working normal
+row 7 col 17: want '─' border normal, got '─' working normal
+row 7 col 18: want '─' border normal, got '─' working normal
+row 7 col 19: want '─' border normal, got '─' working normal
+row 7 col 20: want '─' border normal, got '─' working normal
+row 7 col 21: want '─' border normal, got '─' working normal
+row 7 col 22: want '─' border normal, got '─' working normal
+row 7 col 23: want '─' border normal, got '─' working normal
+row 7 col 24: want '─' border normal, got '─' working normal
+row 7 col 25: want '─' border normal, got '─' working normal
+row 7 col 26: want '─' border normal, got '─' working normal
+row 7 col 27: want '╮' border normal, got '╮' working normal
+row 7 col 43: want '╭' border normal, got '╭' working normal
+row 7 col 44: want '─' border normal, got '─' working normal
+row 7 col 45: want '─' border normal, got '─' working normal
+row 7 col 46: want '─' border normal, got '─' working normal
+row 7 col 47: want '─' border normal, got '─' working normal
+row 7 col 48: want '─' border normal, got '─' working normal
+row 7 col 49: want '─' border normal, got '─' working normal
+row 7 col 50: want '─' border normal, got '─' working normal
+row 7 col 51: want '─' border normal, got '─' working normal
+row 7 col 52: want '─' border normal, got '─' working normal
+row 7 col 53: want '─' border normal, got '─' working normal
+row 7 col 54: want '─' border normal, got '─' working normal
+row 7 col 55: want '─' border normal, got '─' working normal
+row 7 col 56: want '─' border normal, got '─' working normal
+row 7 col 57: want '─' border normal, got '─' working normal
+row 7 col 58: want '─' border normal, got '─' working normal
+row 7 col 59: want '─' border normal, got '─' working normal
+row 7 col 60: want '─' border normal, got '─' working normal
+row 7 col 61: want '─' border normal, got '─' working normal
+row 7 col 62: want '─' border normal, got '─' working normal
+row 7 col 63: want '─' border normal, got '─' working normal
+row 7 col 64: want '─' border normal, got '─' working normal
+row 7 col 65: want '─' border normal, got '─' working normal
+row 7 col 66: want '╮' border normal, got '╮' working normal
+row 8 col 4: want '│' border normal, got '│' working normal
+row 8 col 27: want '│' border normal, got '│' working normal
+row 8 col 43: want '│' border normal, got '│' working normal
+row 8 col 66: want '│' border normal, got '│' working normal
+row 9 col 4: want '│' border normal, got '│' working normal
+row 9 col 27: want '│' border normal, got '│' working normal
+row 9 col 43: want '│' border normal, got '│' working normal
+row 9 col 66: want '│' border normal, got '│' working normal
+row 10 col 4: want '├' border normal, got '├' working normal
+row 10 col 5: want '─' border normal, got '─' working normal
+row 10 col 6: want '─' border normal, got '─' working normal
+row 10 col 7: want '─' border normal, got '─' working normal
+row 10 col 8: want '─' border normal, got '─' working normal
+row 10 col 9: want '─' border normal, got '─' working normal
+row 10 col 10: want '─' border normal, got '─' working normal
+row 10 col 11: want '─' border normal, got '─' working normal
+row 10 col 12: want '─' border normal, got '─' working normal
+row 10 col 13: want '─' border normal, got '─' working normal
+row 10 col 14: want '─' border normal, got '─' working normal
+row 10 col 15: want '─' border normal, got '─' working normal
+row 10 col 16: want '─' border normal, got '─' working normal
+row 10 col 17: want '─' border normal, got '─' working normal
+row 10 col 18: want '─' border normal, got '─' working normal
+row 10 col 19: want '─' border normal, got '─' working normal
+row 10 col 20: want '─' border normal, got '─' working normal
+row 10 col 21: want '─' border normal, got '─' working normal
+row 10 col 22: want '─' border normal, got '─' working normal
+row 10 col 23: want '─' border normal, got '─' working normal
+row 10 col 24: want '─' border normal, got '─' working normal
+row 10 col 25: want '─' border normal, got '─' working normal
+row 10 col 26: want '─' border normal, got '─' working normal
+row 10 col 27: want '╯' border normal, got '╯' working normal
+row 10 col 43: want '├' border normal, got '├' working normal
+row 10 col 44: want '─' border normal, got '─' working normal
+row 10 col 45: want '─' border normal, got '─' working normal
+row 10 col 46: want '─' border normal, got '─' working normal
+row 10 col 47: want '─' border normal, got '─' working normal
+row 10 col 48: want '─' border normal, got '─' working normal
+row 10 col 49: want '─' border normal, got '─' working normal
+row 10 col 50: want '─' border normal, got '─' working normal
+row 10 col 51: want '─' border normal, got '─' working normal
+row 10 col 52: want '─' border normal, got '─' working normal
+row 10 col 53: want '─' border normal, got '─' working normal
+row 10 col 54: want '─' border normal, got '─' working normal
+row 10 col 55: want '─' border normal, got '─' working normal
+row 10 col 56: want '─' border normal, got '─' working normal
+row 10 col 57: want '─' border normal, got '─' working normal
+row 10 col 58: want '─' border normal, got '─' working normal
+row 10 col 59: want '─' border normal, got '─' working normal
+row 10 col 60: want '─' border normal, got '─' working normal
+row 10 col 61: want '─' border normal, got '─' working normal
+row 10 col 62: want '─' border normal, got '─' working normal
+row 10 col 63: want '─' border normal, got '─' working normal
+row 10 col 64: want '─' border normal, got '─' working normal
+row 10 col 65: want '─' border normal, got '─' working normal
+row 10 col 66: want '╯' border normal, got '╯' working normal
+row 12 col 44: want '╭' border normal, got '╭' working normal
+row 12 col 45: want '─' border normal, got '─' working normal
+row 12 col 46: want '─' border normal, got '─' working normal
+row 12 col 47: want '─' border normal, got '─' working normal
+row 12 col 48: want '─' border normal, got '─' working normal
+row 12 col 49: want '─' border normal, got '─' working normal
+row 12 col 50: want '─' border normal, got '─' working normal
+row 12 col 51: want '─' border normal, got '─' working normal
+row 12 col 52: want '─' border normal, got '─' working normal
+row 12 col 53: want '─' border normal, got '─' working normal
+row 12 col 54: want '─' border normal, got '─' working normal
+row 12 col 55: want '─' border normal, got '─' working normal
+row 12 col 56: want '─' border normal, got '─' working normal
+row 12 col 57: want '─' border normal, got '─' working normal
+row 12 col 58: want '─' border normal, got '─' working normal
+row 12 col 59: want '─' border normal, got '─' working normal
+row 12 col 60: want '─' border normal, got '─' working normal
+row 12 col 61: want '─' border normal, got '─' working normal
+row 12 col 62: want '─' border normal, got '─' working normal
+row 12 col 63: want '─' border normal, got '─' working normal
+row 12 col 64: want '─' border normal, got '─' working normal
+row 12 col 65: want '─' border normal, got '─' working normal
+row 12 col 66: want '─' border normal, got '─' working normal
+row 12 col 67: want '╮' border normal, got '╮' working normal
+row 13 col 44: want '┤' border normal, got '┤' working normal
+row 13 col 67: want '│' border normal, got '│' working normal
+row 14 col 44: want '│' border normal, got '│' working normal
+row 14 col 67: want '│' border normal, got '│' working normal
+row 15 col 44: want '╰' border normal, got '╰' working normal
+row 15 col 45: want '─' border normal, got '─' working normal
+row 15 col 46: want '─' border normal, got '─' working normal
+row 15 col 47: want '─' border normal, got '─' working normal
+row 15 col 48: want '─' border normal, got '─' working normal
+row 15 col 49: want '─' border normal, got '─' working normal
+row 15 col 50: want '─' border normal, got '─' working normal
+row 15 col 51: want '─' border normal, got '─' working normal
+row 15 col 52: want '─' border normal, got '─' working normal
+row 15 col 53: want '─' border normal, got '─' working normal
+row 15 col 54: want '─' border normal, got '─' working normal
+row 15 col 55: want '─' border normal, got '─' working normal
+row 15 col 56: want '─' border normal, got '─' working normal
+row 15 col 57: want '─' border normal, got '─' working normal
+row 15 col 58: want '─' border normal, got '─' working normal
+row 15 col 59: want '─' border normal, got '─' working normal
+row 15 col 60: want '─' border normal, got '─' working normal
+row 15 col 61: want '─' border normal, got '─' working normal
+row 15 col 62: want '─' border normal, got '─' working normal
+row 15 col 63: want '─' border normal, got '─' working normal
+row 15 col 64: want '─' border normal, got '─' working normal
+row 15 col 65: want '─' border normal, got '─' working normal
+row 15 col 66: want '─' border normal, got '─' working normal
+row 15 col 67: want '╯' border normal, got '╯' working normal
+row 17 col 5: want '╭' border normal, got '╭' working normal
+row 17 col 6: want '─' border normal, got '─' working normal
+row 17 col 7: want '─' border normal, got '─' working normal
+row 17 col 8: want '─' border normal, got '─' working normal
+row 17 col 9: want '─' border normal, got '─' working normal
+row 17 col 10: want '─' border normal, got '─' working normal
+row 17 col 11: want '─' border normal, got '─' working normal
+row 17 col 12: want '─' border normal, got '─' working normal
+row 17 col 13: want '─' border normal, got '─' working normal
+row 17 col 14: want '─' border normal, got '─' working normal
+row 17 col 15: want '─' border normal, got '─' working normal
+row 17 col 16: want '─' border normal, got '─' working normal
+row 17 col 17: want '─' border normal, got '─' working normal
+row 17 col 18: want '─' border normal, got '─' working normal
+row 17 col 19: want '─' border normal, got '─' working normal
+row 17 col 20: want '─' border normal, got '─' working normal
+row 17 col 21: want '─' border normal, got '─' working normal
+row 17 col 22: want '─' border normal, got '─' working normal
+row 17 col 23: want '─' border normal, got '─' working normal
+row 17 col 24: want '─' border normal, got '─' working normal
+row 17 col 25: want '─' border normal, got '─' working normal
+row 17 col 26: want '─' border normal, got '─' working normal
+row 17 col 27: want '─' border normal, got '─' working normal
+row 17 col 28: want '╮' border normal, got '╮' working normal
+row 18 col 5: want '┤' border normal, got '┤' working normal
+row 18 col 28: want '│' border normal, got '│' working normal
+row 19 col 5: want '│' border normal, got '│' working normal
+row 19 col 28: want '│' border normal, got '│' working normal
+row 20 col 5: want '╰' border normal, got '╰' working normal
+row 20 col 6: want '─' border normal, got '─' working normal
+row 20 col 7: want '─' border normal, got '─' working normal
+row 20 col 8: want '─' border normal, got '─' working normal
+row 20 col 9: want '─' border normal, got '─' working normal
+row 20 col 10: want '─' border normal, got '─' working normal
+row 20 col 11: want '─' border normal, got '─' working normal
+row 20 col 12: want '─' border normal, got '─' working normal
+row 20 col 13: want '─' border normal, got '─' working normal
+row 20 col 14: want '─' border normal, got '─' working normal
+row 20 col 15: want '─' border normal, got '─' working normal
+row 20 col 16: want '─' border normal, got '─' working normal
+row 20 col 17: want '─' border normal, got '─' working normal
+row 20 col 18: want '─' border normal, got '─' working normal
+row 20 col 19: want '─' border normal, got '─' working normal
+row 20 col 20: want '─' border normal, got '─' working normal
+row 20 col 21: want '─' border normal, got '─' working normal
+row 20 col 22: want '─' border normal, got '─' working normal
+row 20 col 23: want '─' border normal, got '─' working normal
+row 20 col 24: want '─' border normal, got '─' working normal
+row 20 col 25: want '─' border normal, got '─' working normal
+row 20 col 26: want '─' border normal, got '─' working normal
+row 20 col 27: want '─' border normal, got '─' working normal
+row 20 col 28: want '╯' border normal, got '╯' working normal
+row 22 col 5: want '╭' border normal, got '╭' working normal
+row 22 col 6: want '─' border normal, got '─' working normal
+row 22 col 7: want '─' border normal, got '─' working normal
+row 22 col 8: want '─' border normal, got '─' working normal
+row 22 col 9: want '─' border normal, got '─' working normal
+row 22 col 10: want '─' border normal, got '─' working normal
+row 22 col 11: want '─' border normal, got '─' working normal
+row 22 col 12: want '─' border normal, got '─' working normal
+row 22 col 13: want '─' border normal, got '─' working normal
+row 22 col 14: want '─' border normal, got '─' working normal
+row 22 col 15: want '─' border normal, got '─' working normal
+row 22 col 16: want '─' border normal, got '─' working normal
+row 22 col 17: want '─' border normal, got '─' working normal
+row 22 col 18: want '─' border normal, got '─' working normal
+row 22 col 19: want '─' border normal, got '─' working normal
+row 22 col 20: want '─' border normal, got '─' working normal
+row 22 col 21: want '─' border normal, got '─' working normal
+row 22 col 22: want '─' border normal, got '─' working normal
+row 22 col 23: want '─' border normal, got '─' working normal
+row 22 col 24: want '─' border normal, got '─' working normal
+row 22 col 25: want '─' border normal, got '─' working normal
+row 22 col 26: want '─' border normal, got '─' working normal
+row 22 col 27: want '─' border normal, got '─' working normal
+row 22 col 28: want '╮' border normal, got '╮' working normal
+row 23 col 5: want '┤' border normal, got '┤' working normal
+row 23 col 28: want '│' border normal, got '│' working normal
+row 24 col 5: want '│' border normal, got '│' working normal
+row 24 col 28: want '│' border normal, got '│' working normal
+row 25 col 5: want '╰' border normal, got '╰' working normal
+row 25 col 6: want '─' border normal, got '─' working normal
+row 25 col 7: want '─' border normal, got '─' working normal
+row 25 col 8: want '─' border normal, got '─' working normal
+row 25 col 9: want '─' border normal, got '─' working normal
+row 25 col 10: want '─' border normal, got '─' working normal
+row 25 col 11: want '─' border normal, got '─' working normal
+row 25 col 12: want '─' border normal, got '─' working normal
+row 25 col 13: want '─' border normal, got '─' working normal
+row 25 col 14: want '─' border normal, got '─' working normal
+row 25 col 15: want '─' border normal, got '─' working normal
+row 25 col 16: want '─' border normal, got '─' working normal
+row 25 col 17: want '─' border normal, got '─' working normal
+row 25 col 18: want '─' border normal, got '─' working normal
+row 25 col 19: want '─' border normal, got '─' working normal
+row 25 col 20: want '─' border normal, got '─' working normal
+row 25 col 21: want '─' border normal, got '─' working normal
+row 25 col 22: want '─' border normal, got '─' working normal
+row 25 col 23: want '─' border normal, got '─' working normal
+row 25 col 24: want '─' border normal, got '─' working normal
+row 25 col 25: want '─' border normal, got '─' working normal
+row 25 col 26: want '─' border normal, got '─' working normal
+row 25 col 27: want '─' border normal, got '─' working normal
+row 25 col 28: want '╯' border normal, got '╯' working normal
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: AgentsMany.grid
+
+AgentsMany.grid
+228 cells differ; changed rows (zero-based): [7 8 9 10 12 13 14 15 22 23 24 25 39]
+row 7 col 4: want '╭' border normal, got '╭' working normal
+row 7 col 5: want '─' border normal, got '─' working normal
+row 7 col 6: want '─' border normal, got '─' working normal
+row 7 col 7: want '─' border normal, got '─' working normal
+row 7 col 8: want '─' border normal, got '─' working normal
+row 7 col 9: want '─' border normal, got '─' working normal
+row 7 col 10: want '─' border normal, got '─' working normal
+row 7 col 11: want '─' border normal, got '─' working normal
+row 7 col 12: want '─' border normal, got '─' working normal
+row 7 col 13: want '─' border normal, got '─' working normal
+row 7 col 14: want '─' border normal, got '─' working normal
+row 7 col 15: want '─' border normal, got '─' working normal
+row 7 col 16: want '─' border normal, got '─' working normal
+row 7 col 17: want '─' border normal, got '─' working normal
+row 7 col 18: want '─' border normal, got '─' working normal
+row 7 col 19: want '─' border normal, got '─' working normal
+row 7 col 20: want '─' border normal, got '─' working normal
+row 7 col 21: want '─' border normal, got '─' working normal
+row 7 col 22: want '─' border normal, got '─' working normal
+row 7 col 23: want '─' border normal, got '─' working normal
+row 7 col 24: want '─' border normal, got '─' working normal
+row 7 col 25: want '─' border normal, got '─' working normal
+row 7 col 26: want '─' border normal, got '─' working normal
+row 7 col 27: want '╮' border normal, got '╮' working normal
+row 7 col 33: want '╭' border normal, got '╭' working normal
+row 7 col 34: want '─' border normal, got '─' working normal
+row 7 col 35: want '─' border normal, got '─' working normal
+row 7 col 36: want '─' border normal, got '─' working normal
+row 7 col 37: want '─' border normal, got '─' working normal
+row 7 col 38: want '─' border normal, got '─' working normal
+row 7 col 39: want '─' border normal, got '─' working normal
+row 7 col 40: want '─' border normal, got '─' working normal
+row 7 col 41: want '─' border normal, got '─' working normal
+row 7 col 42: want '─' border normal, got '─' working normal
+row 7 col 43: want '─' border normal, got '─' working normal
+row 7 col 44: want '─' border normal, got '─' working normal
+row 7 col 45: want '─' border normal, got '─' working normal
+row 7 col 46: want '─' border normal, got '─' working normal
+row 7 col 47: want '─' border normal, got '─' working normal
+row 7 col 48: want '─' border normal, got '─' working normal
+row 7 col 49: want '─' border normal, got '─' working normal
+row 7 col 50: want '─' border normal, got '─' working normal
+row 7 col 51: want '─' border normal, got '─' working normal
+row 7 col 52: want '─' border normal, got '─' working normal
+row 7 col 53: want '─' border normal, got '─' working normal
+row 7 col 54: want '─' border normal, got '─' working normal
+row 7 col 55: want '─' border normal, got '─' working normal
+row 7 col 56: want '╮' border normal, got '╮' working normal
+row 8 col 4: want '│' border normal, got '│' working normal
+row 8 col 27: want '│' border normal, got '│' working normal
+row 8 col 33: want '│' border normal, got '│' working normal
+row 8 col 56: want '│' border normal, got '│' working normal
+row 9 col 4: want '│' border normal, got '│' working normal
+row 9 col 27: want '│' border normal, got '│' working normal
+row 9 col 33: want '│' border normal, got '│' working normal
+row 9 col 56: want '│' border normal, got '│' working normal
+row 10 col 4: want '├' border normal, got '├' working normal
+row 10 col 5: want '─' border normal, got '─' working normal
+row 10 col 6: want '─' border normal, got '─' working normal
+row 10 col 7: want '─' border normal, got '─' working normal
+row 10 col 8: want '─' border normal, got '─' working normal
+row 10 col 9: want '─' border normal, got '─' working normal
+row 10 col 10: want '─' border normal, got '─' working normal
+row 10 col 11: want '─' border normal, got '─' working normal
+row 10 col 12: want '─' border normal, got '─' working normal
+row 10 col 13: want '─' border normal, got '─' working normal
+row 10 col 14: want '─' border normal, got '─' working normal
+row 10 col 15: want '─' border normal, got '─' working normal
+row 10 col 16: want '─' border normal, got '─' working normal
+row 10 col 17: want '─' border normal, got '─' working normal
+row 10 col 18: want '─' border normal, got '─' working normal
+row 10 col 19: want '─' border normal, got '─' working normal
+row 10 col 20: want '─' border normal, got '─' working normal
+row 10 col 21: want '─' border normal, got '─' working normal
+row 10 col 22: want '─' border normal, got '─' working normal
+row 10 col 23: want '─' border normal, got '─' working normal
+row 10 col 24: want '─' border normal, got '─' working normal
+row 10 col 25: want '─' border normal, got '─' working normal
+row 10 col 26: want '─' border normal, got '─' working normal
+row 10 col 27: want '╯' border normal, got '╯' working normal
+row 10 col 33: want '├' border normal, got '├' working normal
+row 10 col 34: want '─' border normal, got '─' working normal
+row 10 col 35: want '─' border normal, got '─' working normal
+row 10 col 36: want '─' border normal, got '─' working normal
+row 10 col 37: want '─' border normal, got '─' working normal
+row 10 col 38: want '─' border normal, got '─' working normal
+row 10 col 39: want '─' border normal, got '─' working normal
+row 10 col 40: want '─' border normal, got '─' working normal
+row 10 col 41: want '─' border normal, got '─' working normal
+row 10 col 42: want '─' border normal, got '─' working normal
+row 10 col 43: want '─' border normal, got '─' working normal
+row 10 col 44: want '─' border normal, got '─' working normal
+row 10 col 45: want '─' border normal, got '─' working normal
+row 10 col 46: want '─' border normal, got '─' working normal
+row 10 col 47: want '─' border normal, got '─' working normal
+row 10 col 48: want '─' border normal, got '─' working normal
+row 10 col 49: want '─' border normal, got '─' working normal
+row 10 col 50: want '─' border normal, got '─' working normal
+row 10 col 51: want '─' border normal, got '─' working normal
+row 10 col 52: want '─' border normal, got '─' working normal
+row 10 col 53: want '─' border normal, got '─' working normal
+row 10 col 54: want '─' border normal, got '─' working normal
+row 10 col 55: want '─' border normal, got '─' working normal
+row 10 col 56: want '╯' border normal, got '╯' working normal
+row 12 col 34: want '╭' border normal, got '╭' working normal
+row 12 col 35: want '─' border normal, got '─' working normal
+row 12 col 36: want '─' border normal, got '─' working normal
+row 12 col 37: want '─' border normal, got '─' working normal
+row 12 col 38: want '─' border normal, got '─' working normal
+row 12 col 39: want '─' border normal, got '─' working normal
+row 12 col 40: want '─' border normal, got '─' working normal
+row 12 col 41: want '─' border normal, got '─' working normal
+row 12 col 42: want '─' border normal, got '─' working normal
+row 12 col 43: want '─' border normal, got '─' working normal
+row 12 col 44: want '─' border normal, got '─' working normal
+row 12 col 45: want '─' border normal, got '─' working normal
+row 12 col 46: want '─' border normal, got '─' working normal
+row 12 col 47: want '─' border normal, got '─' working normal
+row 12 col 48: want '─' border normal, got '─' working normal
+row 12 col 49: want '─' border normal, got '─' working normal
+row 12 col 50: want '─' border normal, got '─' working normal
+row 12 col 51: want '─' border normal, got '─' working normal
+row 12 col 52: want '─' border normal, got '─' working normal
+row 12 col 53: want '─' border normal, got '─' working normal
+row 12 col 54: want '─' border normal, got '─' working normal
+row 12 col 55: want '─' border normal, got '─' working normal
+row 12 col 56: want '─' border normal, got '─' working normal
+row 12 col 57: want '╮' border normal, got '╮' working normal
+row 13 col 34: want '┤' border normal, got '┤' working normal
+row 13 col 57: want '│' border normal, got '│' working normal
+row 14 col 34: want '│' border normal, got '│' working normal
+row 14 col 57: want '│' border normal, got '│' working normal
+row 15 col 34: want '╰' border normal, got '╰' working normal
+row 15 col 35: want '─' border normal, got '─' working normal
+row 15 col 36: want '─' border normal, got '─' working normal
+row 15 col 37: want '─' border normal, got '─' working normal
+row 15 col 38: want '─' border normal, got '─' working normal
+row 15 col 39: want '─' border normal, got '─' working normal
+row 15 col 40: want '─' border normal, got '─' working normal
+row 15 col 41: want '─' border normal, got '─' working normal
+row 15 col 42: want '─' border normal, got '─' working normal
+row 15 col 43: want '─' border normal, got '─' working normal
+row 15 col 44: want '─' border normal, got '─' working normal
+row 15 col 45: want '─' border normal, got '─' working normal
+row 15 col 46: want '─' border normal, got '─' working normal
+row 15 col 47: want '─' border normal, got '─' working normal
+row 15 col 48: want '─' border normal, got '─' working normal
+row 15 col 49: want '─' border normal, got '─' working normal
+row 15 col 50: want '─' border normal, got '─' working normal
+row 15 col 51: want '─' border normal, got '─' working normal
+row 15 col 52: want '─' border normal, got '─' working normal
+row 15 col 53: want '─' border normal, got '─' working normal
+row 15 col 54: want '─' border normal, got '─' working normal
+row 15 col 55: want '─' border normal, got '─' working normal
+row 15 col 56: want '─' border normal, got '─' working normal
+row 15 col 57: want '╯' border normal, got '╯' working normal
+row 22 col 5: want '╭' border normal, got '╭' working normal
+row 22 col 6: want '─' border normal, got '─' working normal
+row 22 col 7: want '─' border normal, got '─' working normal
+row 22 col 8: want '─' border normal, got '─' working normal
+row 22 col 9: want '─' border normal, got '─' working normal
+row 22 col 10: want '─' border normal, got '─' working normal
+row 22 col 11: want '─' border normal, got '─' working normal
+row 22 col 12: want '─' border normal, got '─' working normal
+row 22 col 13: want '─' border normal, got '─' working normal
+row 22 col 14: want '─' border normal, got '─' working normal
+row 22 col 15: want '─' border normal, got '─' working normal
+row 22 col 16: want '─' border normal, got '─' working normal
+row 22 col 17: want '─' border normal, got '─' working normal
+row 22 col 18: want '─' border normal, got '─' working normal
+row 22 col 19: want '─' border normal, got '─' working normal
+row 22 col 20: want '─' border normal, got '─' working normal
+row 22 col 21: want '─' border normal, got '─' working normal
+row 22 col 22: want '─' border normal, got '─' working normal
+row 22 col 23: want '─' border normal, got '─' working normal
+row 22 col 24: want '─' border normal, got '─' working normal
+row 22 col 25: want '─' border normal, got '─' working normal
+row 22 col 26: want '─' border normal, got '─' working normal
+row 22 col 27: want '─' border normal, got '─' working normal
+row 22 col 28: want '╮' border normal, got '╮' working normal
+row 23 col 5: want '┤' border normal, got '┤' working normal
+row 23 col 28: want '│' border normal, got '│' working normal
+row 24 col 5: want '│' border normal, got '│' working normal
+row 24 col 28: want '│' border normal, got '│' working normal
+row 25 col 5: want '╰' border normal, got '╰' working normal
+row 25 col 6: want '─' border normal, got '─' working normal
+row 25 col 7: want '─' border normal, got '─' working normal
+row 25 col 8: want '─' border normal, got '─' working normal
+row 25 col 9: want '─' border normal, got '─' working normal
+row 25 col 10: want '─' border normal, got '─' working normal
+row 25 col 11: want '─' border normal, got '─' working normal
+row 25 col 12: want '─' border normal, got '─' working normal
+row 25 col 13: want '─' border normal, got '─' working normal
+row 25 col 14: want '─' border normal, got '─' working normal
+row 25 col 15: want '─' border normal, got '─' working normal
+row 25 col 16: want '─' border normal, got '─' working normal
+row 25 col 17: want '─' border normal, got '─' working normal
+row 25 col 18: want '─' border normal, got '─' working normal
+row 25 col 19: want '─' border normal, got '─' working normal
+row 25 col 20: want '─' border normal, got '─' working normal
+row 25 col 21: want '─' border normal, got '─' working normal
+row 25 col 22: want '─' border normal, got '─' working normal
+row 25 col 23: want '─' border normal, got '─' working normal
+row 25 col 24: want '─' border normal, got '─' working normal
+row 25 col 25: want '─' border normal, got '─' working normal
+row 25 col 26: want '─' border normal, got '─' working normal
+row 25 col 27: want '─' border normal, got '─' working normal
+row 25 col 28: want '╯' border normal, got '╯' working normal
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: AgentsNested.grid
+
+AgentsNested.grid
+332 cells differ; changed rows (zero-based): [7 8 9 10 14 15 16 17 18 19 20 22 23 24 25 32 33 34 35 39]
+row 7 col 4: want '╭' border normal, got '╭' working normal
+row 7 col 5: want '─' border normal, got '─' working normal
+row 7 col 6: want '─' border normal, got '─' working normal
+row 7 col 7: want '─' border normal, got '─' working normal
+row 7 col 8: want '─' border normal, got '─' working normal
+row 7 col 9: want '─' border normal, got '─' working normal
+row 7 col 10: want '─' border normal, got '─' working normal
+row 7 col 11: want '─' border normal, got '─' working normal
+row 7 col 12: want '─' border normal, got '─' working normal
+row 7 col 13: want '─' border normal, got '─' working normal
+row 7 col 14: want '─' border normal, got '─' working normal
+row 7 col 15: want '─' border normal, got '─' working normal
+row 7 col 16: want '─' border normal, got '─' working normal
+row 7 col 17: want '─' border normal, got '─' working normal
+row 7 col 18: want '─' border normal, got '─' working normal
+row 7 col 19: want '─' border normal, got '─' working normal
+row 7 col 20: want '─' border normal, got '─' working normal
+row 7 col 21: want '─' border normal, got '─' working normal
+row 7 col 22: want '─' border normal, got '─' working normal
+row 7 col 23: want '─' border normal, got '─' working normal
+row 7 col 24: want '─' border normal, got '─' working normal
+row 7 col 25: want '─' border normal, got '─' working normal
+row 7 col 26: want '─' border normal, got '─' working normal
+row 7 col 27: want '╮' border normal, got '╮' working normal
+row 7 col 76: want '╭' border normal, got '╭' working normal
+row 7 col 77: want '─' border normal, got '─' working normal
+row 7 col 78: want '─' border normal, got '─' working normal
+row 7 col 79: want '─' border normal, got '─' working normal
+row 7 col 80: want '─' border normal, got '─' working normal
+row 7 col 81: want '─' border normal, got '─' working normal
+row 7 col 82: want '─' border normal, got '─' working normal
+row 7 col 83: want '─' border normal, got '─' working normal
+row 7 col 84: want '─' border normal, got '─' working normal
+row 7 col 85: want '─' border normal, got '─' working normal
+row 7 col 86: want '─' border normal, got '─' working normal
+row 7 col 87: want '─' border normal, got '─' working normal
+row 7 col 88: want '─' border normal, got '─' working normal
+row 7 col 89: want '─' border normal, got '─' working normal
+row 7 col 90: want '─' border normal, got '─' working normal
+row 7 col 91: want '─' border normal, got '─' working normal
+row 7 col 92: want '─' border normal, got '─' working normal
+row 7 col 93: want '─' border normal, got '─' working normal
+row 7 col 94: want '─' border normal, got '─' working normal
+row 7 col 95: want '─' border normal, got '─' working normal
+row 7 col 96: want '─' border normal, got '─' working normal
+row 7 col 97: want '─' border normal, got '─' working normal
+row 7 col 98: want '─' border normal, got '─' working normal
+row 7 col 99: want '╮' border normal, got '╮' working normal
+row 8 col 4: want '│' border normal, got '│' working normal
+row 8 col 27: want '│' border normal, got '│' working normal
+row 8 col 76: want '│' border normal, got '│' working normal
+row 8 col 99: want '│' border normal, got '│' working normal
+row 9 col 4: want '│' border normal, got '│' working normal
+row 9 col 27: want '│' border normal, got '│' working normal
+row 9 col 76: want '│' border normal, got '│' working normal
+row 9 col 99: want '│' border normal, got '│' working normal
+row 10 col 4: want '├' border normal, got '├' working normal
+row 10 col 5: want '─' border normal, got '─' working normal
+row 10 col 6: want '─' border normal, got '─' working normal
+row 10 col 7: want '─' border normal, got '─' working normal
+row 10 col 8: want '─' border normal, got '─' working normal
+row 10 col 9: want '─' border normal, got '─' working normal
+row 10 col 10: want '─' border normal, got '─' working normal
+row 10 col 11: want '─' border normal, got '─' working normal
+row 10 col 12: want '─' border normal, got '─' working normal
+row 10 col 13: want '─' border normal, got '─' working normal
+row 10 col 14: want '─' border normal, got '─' working normal
+row 10 col 15: want '─' border normal, got '─' working normal
+row 10 col 16: want '─' border normal, got '─' working normal
+row 10 col 17: want '─' border normal, got '─' working normal
+row 10 col 18: want '─' border normal, got '─' working normal
+row 10 col 19: want '─' border normal, got '─' working normal
+row 10 col 20: want '─' border normal, got '─' working normal
+row 10 col 21: want '─' border normal, got '─' working normal
+row 10 col 22: want '─' border normal, got '─' working normal
+row 10 col 23: want '─' border normal, got '─' working normal
+row 10 col 24: want '─' border normal, got '─' working normal
+row 10 col 25: want '─' border normal, got '─' working normal
+row 10 col 26: want '─' border normal, got '─' working normal
+row 10 col 27: want '╯' border normal, got '╯' working normal
+row 10 col 76: want '╰' border normal, got '╰' working normal
+row 10 col 77: want '─' border normal, got '─' working normal
+row 10 col 78: want '─' border normal, got '─' working normal
+row 10 col 79: want '─' border normal, got '─' working normal
+row 10 col 80: want '─' border normal, got '─' working normal
+row 10 col 81: want '─' border normal, got '─' working normal
+row 10 col 82: want '─' border normal, got '─' working normal
+row 10 col 83: want '─' border normal, got '─' working normal
+row 10 col 84: want '─' border normal, got '─' working normal
+row 10 col 85: want '─' border normal, got '─' working normal
+row 10 col 86: want '─' border normal, got '─' working normal
+row 10 col 87: want '─' border normal, got '─' working normal
+row 10 col 88: want '┬' border normal, got '┬' working normal
+row 10 col 89: want '─' border normal, got '─' working normal
+row 10 col 90: want '─' border normal, got '─' working normal
+row 10 col 91: want '─' border normal, got '─' working normal
+row 10 col 92: want '─' border normal, got '─' working normal
+row 10 col 93: want '─' border normal, got '─' working normal
+row 10 col 94: want '─' border normal, got '─' working normal
+row 10 col 95: want '─' border normal, got '─' working normal
+row 10 col 96: want '─' border normal, got '─' working normal
+row 10 col 97: want '─' border normal, got '─' working normal
+row 10 col 98: want '─' border normal, got '─' working normal
+row 10 col 99: want '╯' border normal, got '╯' working normal
+row 14 col 63: want '╭' border normal, got '╭' working normal
+row 14 col 64: want '─' border normal, got '─' working normal
+row 14 col 65: want '─' border normal, got '─' working normal
+row 14 col 66: want '─' border normal, got '─' working normal
+row 14 col 67: want '─' border normal, got '─' working normal
+row 14 col 68: want '─' border normal, got '─' working normal
+row 14 col 69: want '─' border normal, got '─' working normal
+row 14 col 70: want '─' border normal, got '─' working normal
+row 14 col 71: want '─' border normal, got '─' working normal
+row 14 col 72: want '─' border normal, got '─' working normal
+row 14 col 73: want '─' border normal, got '─' working normal
+row 14 col 74: want '─' border normal, got '─' working normal
+row 14 col 75: want '┴' border normal, got '┴' working normal
+row 14 col 76: want '─' border normal, got '─' working normal
+row 14 col 77: want '─' border normal, got '─' working normal
+row 14 col 78: want '─' border normal, got '─' working normal
+row 14 col 79: want '─' border normal, got '─' working normal
+row 14 col 80: want '─' border normal, got '─' working normal
+row 14 col 81: want '─' border normal, got '─' working normal
+row 14 col 82: want '─' border normal, got '─' working normal
+row 14 col 83: want '─' border normal, got '─' working normal
+row 14 col 84: want '─' border normal, got '─' working normal
+row 14 col 85: want '─' border normal, got '─' working normal
+row 14 col 86: want '╮' border normal, got '╮' working normal
+row 15 col 63: want '│' border normal, got '│' working normal
+row 15 col 86: want '│' border normal, got '│' working normal
+row 16 col 63: want '│' border normal, got '│' working normal
+row 16 col 86: want '│' border normal, got '│' working normal
+row 17 col 5: want '╭' border normal, got '╭' working normal
+row 17 col 6: want '─' border normal, got '─' working normal
+row 17 col 7: want '─' border normal, got '─' working normal
+row 17 col 8: want '─' border normal, got '─' working normal
+row 17 col 9: want '─' border normal, got '─' working normal
+row 17 col 10: want '─' border normal, got '─' working normal
+row 17 col 11: want '─' border normal, got '─' working normal
+row 17 col 12: want '─' border normal, got '─' working normal
+row 17 col 13: want '─' border normal, got '─' working normal
+row 17 col 14: want '─' border normal, got '─' working normal
+row 17 col 15: want '─' border normal, got '─' working normal
+row 17 col 16: want '─' border normal, got '─' working normal
+row 17 col 17: want '─' border normal, got '─' working normal
+row 17 col 18: want '─' border normal, got '─' working normal
+row 17 col 19: want '─' border normal, got '─' working normal
+row 17 col 20: want '─' border normal, got '─' working normal
+row 17 col 21: want '─' border normal, got '─' working normal
+row 17 col 22: want '─' border normal, got '─' working normal
+row 17 col 23: want '─' border normal, got '─' working normal
+row 17 col 24: want '─' border normal, got '─' working normal
+row 17 col 25: want '─' border normal, got '─' working normal
+row 17 col 26: want '─' border normal, got '─' working normal
+row 17 col 27: want '─' border normal, got '─' working normal
+row 17 col 28: want '╮' border normal, got '╮' working normal
+row 17 col 63: want '╰' border normal, got '╰' working normal
+row 17 col 64: want '─' border normal, got '─' working normal
+row 17 col 65: want '─' border normal, got '─' working normal
+row 17 col 66: want '─' border normal, got '─' working normal
+row 17 col 67: want '─' border normal, got '─' working normal
+row 17 col 68: want '─' border normal, got '─' working normal
+row 17 col 69: want '─' border normal, got '─' working normal
+row 17 col 70: want '─' border normal, got '─' working normal
+row 17 col 71: want '─' border normal, got '─' working normal
+row 17 col 72: want '─' border normal, got '─' working normal
+row 17 col 73: want '─' border normal, got '─' working normal
+row 17 col 74: want '─' border normal, got '─' working normal
+row 17 col 75: want '─' border normal, got '─' working normal
+row 17 col 76: want '─' border normal, got '─' working normal
+row 17 col 77: want '─' border normal, got '─' working normal
+row 17 col 78: want '─' border normal, got '─' working normal
+row 17 col 79: want '─' border normal, got '─' working normal
+row 17 col 80: want '─' border normal, got '─' working normal
+row 17 col 81: want '─' border normal, got '─' working normal
+row 17 col 82: want '─' border normal, got '─' working normal
+row 17 col 83: want '─' border normal, got '─' working normal
+row 17 col 84: want '─' border normal, got '─' working normal
+row 17 col 85: want '─' border normal, got '─' working normal
+row 17 col 86: want '╯' border normal, got '╯' working normal
+row 18 col 5: want '┤' border normal, got '┤' working normal
+row 18 col 28: want '│' border normal, got '│' working normal
+row 19 col 5: want '│' border normal, got '│' working normal
+row 19 col 28: want '│' border normal, got '│' working normal
+row 20 col 5: want '╰' border normal, got '╰' working normal
+row 20 col 6: want '┬' border normal, got '┬' working normal
+row 20 col 7: want '─' border normal, got '─' working normal
+row 20 col 8: want '─' border normal, got '─' working normal
+row 20 col 9: want '─' border normal, got '─' working normal
+row 20 col 10: want '─' border normal, got '─' working normal
+row 20 col 11: want '─' border normal, got '─' working normal
+row 20 col 12: want '─' border normal, got '─' working normal
+row 20 col 13: want '─' border normal, got '─' working normal
+row 20 col 14: want '─' border normal, got '─' working normal
+row 20 col 15: want '─' border normal, got '─' working normal
+row 20 col 16: want '─' border normal, got '─' working normal
+row 20 col 17: want '─' border normal, got '─' working normal
+row 20 col 18: want '─' border normal, got '─' working normal
+row 20 col 19: want '─' border normal, got '─' working normal
+row 20 col 20: want '─' border normal, got '─' working normal
+row 20 col 21: want '─' border normal, got '─' working normal
+row 20 col 22: want '─' border normal, got '─' working normal
+row 20 col 23: want '─' border normal, got '─' working normal
+row 20 col 24: want '─' border normal, got '─' working normal
+row 20 col 25: want '─' border normal, got '─' working normal
+row 20 col 26: want '─' border normal, got '─' working normal
+row 20 col 27: want '─' border normal, got '─' working normal
+row 20 col 28: want '╯' border normal, got '╯' working normal
+row 22 col 7: want '╭' border normal, got '╭' working normal
+row 22 col 8: want '─' border normal, got '─' working normal
+row 22 col 9: want '─' border normal, got '─' working normal
+row 22 col 10: want '─' border normal, got '─' working normal
+row 22 col 11: want '─' border normal, got '─' working normal
+row 22 col 12: want '─' border normal, got '─' working normal
+row 22 col 13: want '─' border normal, got '─' working normal
+row 22 col 14: want '─' border normal, got '─' working normal
+row 22 col 15: want '─' border normal, got '─' working normal
+row 22 col 16: want '─' border normal, got '─' working normal
+row 22 col 17: want '─' border normal, got '─' working normal
+row 22 col 18: want '─' border normal, got '─' working normal
+row 22 col 19: want '─' border normal, got '─' working normal
+row 22 col 20: want '─' border normal, got '─' working normal
+row 22 col 21: want '─' border normal, got '─' working normal
+row 22 col 22: want '─' border normal, got '─' working normal
+row 22 col 23: want '─' border normal, got '─' working normal
+row 22 col 24: want '─' border normal, got '─' working normal
+row 22 col 25: want '─' border normal, got '─' working normal
+row 22 col 26: want '─' border normal, got '─' working normal
+row 22 col 27: want '─' border normal, got '─' working normal
+row 22 col 28: want '─' border normal, got '─' working normal
+row 22 col 29: want '─' border normal, got '─' working normal
+row 22 col 30: want '╮' border normal, got '╮' working normal
+row 23 col 7: want '┤' border normal, got '┤' working normal
+row 23 col 30: want '│' border normal, got '│' working normal
+row 24 col 7: want '│' border normal, got '│' working normal
+row 24 col 30: want '│' border normal, got '│' working normal
+row 25 col 7: want '╰' border normal, got '╰' working normal
+row 25 col 8: want '┬' border normal, got '┬' working normal
+row 25 col 9: want '─' border normal, got '─' working normal
+row 25 col 10: want '─' border normal, got '─' working normal
+row 25 col 11: want '─' border normal, got '─' working normal
+row 25 col 12: want '─' border normal, got '─' working normal
+row 25 col 13: want '─' border normal, got '─' working normal
+row 25 col 14: want '─' border normal, got '─' working normal
+row 25 col 15: want '─' border normal, got '─' working normal
+row 25 col 16: want '─' border normal, got '─' working normal
+row 25 col 17: want '─' border normal, got '─' working normal
+row 25 col 18: want '─' border normal, got '─' working normal
+row 25 col 19: want '─' border normal, got '─' working normal
+row 25 col 20: want '─' border normal, got '─' working normal
+row 25 col 21: want '─' border normal, got '─' working normal
+row 25 col 22: want '─' border normal, got '─' working normal
+row 25 col 23: want '─' border normal, got '─' working normal
+row 25 col 24: want '─' border normal, got '─' working normal
+row 25 col 25: want '─' border normal, got '─' working normal
+row 25 col 26: want '─' border normal, got '─' working normal
+row 25 col 27: want '─' border normal, got '─' working normal
+row 25 col 28: want '─' border normal, got '─' working normal
+row 25 col 29: want '─' border normal, got '─' working normal
+row 25 col 30: want '╯' border normal, got '╯' working normal
+row 32 col 5: want '╭' border normal, got '╭' working normal
+row 32 col 6: want '─' border normal, got '─' working normal
+row 32 col 7: want '─' border normal, got '─' working normal
+row 32 col 8: want '─' border normal, got '─' working normal
+row 32 col 9: want '─' border normal, got '─' working normal
+row 32 col 10: want '─' border normal, got '─' working normal
+row 32 col 11: want '─' border normal, got '─' working normal
+row 32 col 12: want '─' border normal, got '─' working normal
+row 32 col 13: want '─' border normal, got '─' working normal
+row 32 col 14: want '─' border normal, got '─' working normal
+row 32 col 15: want '─' border normal, got '─' working normal
+row 32 col 16: want '─' border normal, got '─' working normal
+row 32 col 17: want '─' border normal, got '─' working normal
+row 32 col 18: want '─' border normal, got '─' working normal
+row 32 col 19: want '─' border normal, got '─' working normal
+row 32 col 20: want '─' border normal, got '─' working normal
+row 32 col 21: want '─' border normal, got '─' working normal
+row 32 col 22: want '─' border normal, got '─' working normal
+row 32 col 23: want '─' border normal, got '─' working normal
+row 32 col 24: want '─' border normal, got '─' working normal
+row 32 col 25: want '─' border normal, got '─' working normal
+row 32 col 26: want '─' border normal, got '─' working normal
+row 32 col 27: want '─' border normal, got '─' working normal
+row 32 col 28: want '╮' border normal, got '╮' working normal
+row 33 col 5: want '┤' border normal, got '┤' working normal
+row 33 col 28: want '│' border normal, got '│' working normal
+row 34 col 5: want '│' border normal, got '│' working normal
+row 34 col 28: want '│' border normal, got '│' working normal
+row 35 col 5: want '╰' border normal, got '╰' working normal
+row 35 col 6: want '─' border normal, got '─' working normal
+row 35 col 7: want '─' border normal, got '─' working normal
+row 35 col 8: want '─' border normal, got '─' working normal
+row 35 col 9: want '─' border normal, got '─' working normal
+row 35 col 10: want '─' border normal, got '─' working normal
+row 35 col 11: want '─' border normal, got '─' working normal
+row 35 col 12: want '─' border normal, got '─' working normal
+row 35 col 13: want '─' border normal, got '─' working normal
+row 35 col 14: want '─' border normal, got '─' working normal
+row 35 col 15: want '─' border normal, got '─' working normal
+row 35 col 16: want '─' border normal, got '─' working normal
+row 35 col 17: want '─' border normal, got '─' working normal
+row 35 col 18: want '─' border normal, got '─' working normal
+row 35 col 19: want '─' border normal, got '─' working normal
+row 35 col 20: want '─' border normal, got '─' working normal
+row 35 col 21: want '─' border normal, got '─' working normal
+row 35 col 22: want '─' border normal, got '─' working normal
+row 35 col 23: want '─' border normal, got '─' working normal
+row 35 col 24: want '─' border normal, got '─' working normal
+row 35 col 25: want '─' border normal, got '─' working normal
+row 35 col 26: want '─' border normal, got '─' working normal
+row 35 col 27: want '─' border normal, got '─' working normal
+row 35 col 28: want '╯' border normal, got '╯' working normal
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: ChatEvents.grid
+
+ChatEvents.grid
+4800 cells match
+export identical: Chat.grid
+
+Chat.grid
+4800 cells match
+export identical: ChatStatus.grid
+
+ChatStatus.grid
+4800 cells match
+export identical: CompactAgents.grid
+
+CompactAgents.grid
+1920 cells match
+export identical: CompactAgentsHome.grid
+
+CompactAgentsHome.grid
+104 cells differ; changed rows (zero-based): [7 8 9 10 12 13 14 15]
+row 7 col 4: want '╭' border normal, got '╭' working normal
+row 7 col 5: want '─' border normal, got '─' working normal
+row 7 col 6: want '─' border normal, got '─' working normal
+row 7 col 7: want '─' border normal, got '─' working normal
+row 7 col 8: want '─' border normal, got '─' working normal
+row 7 col 9: want '─' border normal, got '─' working normal
+row 7 col 10: want '─' border normal, got '─' working normal
+row 7 col 11: want '─' border normal, got '─' working normal
+row 7 col 12: want '─' border normal, got '─' working normal
+row 7 col 13: want '─' border normal, got '─' working normal
+row 7 col 14: want '─' border normal, got '─' working normal
+row 7 col 15: want '─' border normal, got '─' working normal
+row 7 col 16: want '─' border normal, got '─' working normal
+row 7 col 17: want '─' border normal, got '─' working normal
+row 7 col 18: want '─' border normal, got '─' working normal
+row 7 col 19: want '─' border normal, got '─' working normal
+row 7 col 20: want '─' border normal, got '─' working normal
+row 7 col 21: want '─' border normal, got '─' working normal
+row 7 col 22: want '─' border normal, got '─' working normal
+row 7 col 23: want '─' border normal, got '─' working normal
+row 7 col 24: want '─' border normal, got '─' working normal
+row 7 col 25: want '─' border normal, got '─' working normal
+row 7 col 26: want '─' border normal, got '─' working normal
+row 7 col 27: want '╮' border normal, got '╮' working normal
+row 8 col 4: want '│' border normal, got '│' working normal
+row 8 col 27: want '│' border normal, got '│' working normal
+row 9 col 4: want '│' border normal, got '│' working normal
+row 9 col 27: want '│' border normal, got '│' working normal
+row 10 col 4: want '├' border normal, got '├' working normal
+row 10 col 5: want '─' border normal, got '─' working normal
+row 10 col 6: want '─' border normal, got '─' working normal
+row 10 col 7: want '─' border normal, got '─' working normal
+row 10 col 8: want '─' border normal, got '─' working normal
+row 10 col 9: want '─' border normal, got '─' working normal
+row 10 col 10: want '─' border normal, got '─' working normal
+row 10 col 11: want '─' border normal, got '─' working normal
+row 10 col 12: want '─' border normal, got '─' working normal
+row 10 col 13: want '─' border normal, got '─' working normal
+row 10 col 14: want '─' border normal, got '─' working normal
+row 10 col 15: want '─' border normal, got '─' working normal
+row 10 col 16: want '─' border normal, got '─' working normal
+row 10 col 17: want '─' border normal, got '─' working normal
+row 10 col 18: want '─' border normal, got '─' working normal
+row 10 col 19: want '─' border normal, got '─' working normal
+row 10 col 20: want '─' border normal, got '─' working normal
+row 10 col 21: want '─' border normal, got '─' working normal
+row 10 col 22: want '─' border normal, got '─' working normal
+row 10 col 23: want '─' border normal, got '─' working normal
+row 10 col 24: want '─' border normal, got '─' working normal
+row 10 col 25: want '─' border normal, got '─' working normal
+row 10 col 26: want '─' border normal, got '─' working normal
+row 10 col 27: want '╯' border normal, got '╯' working normal
+row 12 col 5: want '╭' border normal, got '╭' working normal
+row 12 col 6: want '─' border normal, got '─' working normal
+row 12 col 7: want '─' border normal, got '─' working normal
+row 12 col 8: want '─' border normal, got '─' working normal
+row 12 col 9: want '─' border normal, got '─' working normal
+row 12 col 10: want '─' border normal, got '─' working normal
+row 12 col 11: want '─' border normal, got '─' working normal
+row 12 col 12: want '─' border normal, got '─' working normal
+row 12 col 13: want '─' border normal, got '─' working normal
+row 12 col 14: want '─' border normal, got '─' working normal
+row 12 col 15: want '─' border normal, got '─' working normal
+row 12 col 16: want '─' border normal, got '─' working normal
+row 12 col 17: want '─' border normal, got '─' working normal
+row 12 col 18: want '─' border normal, got '─' working normal
+row 12 col 19: want '─' border normal, got '─' working normal
+row 12 col 20: want '─' border normal, got '─' working normal
+row 12 col 21: want '─' border normal, got '─' working normal
+row 12 col 22: want '─' border normal, got '─' working normal
+row 12 col 23: want '─' border normal, got '─' working normal
+row 12 col 24: want '─' border normal, got '─' working normal
+row 12 col 25: want '─' border normal, got '─' working normal
+row 12 col 26: want '─' border normal, got '─' working normal
+row 12 col 27: want '─' border normal, got '─' working normal
+row 12 col 28: want '╮' border normal, got '╮' working normal
+row 13 col 5: want '┤' border normal, got '┤' working normal
+row 13 col 28: want '│' border normal, got '│' working normal
+row 14 col 5: want '│' border normal, got '│' working normal
+row 14 col 28: want '│' border normal, got '│' working normal
+row 15 col 5: want '╰' border normal, got '╰' working normal
+row 15 col 6: want '─' border normal, got '─' working normal
+row 15 col 7: want '─' border normal, got '─' working normal
+row 15 col 8: want '─' border normal, got '─' working normal
+row 15 col 9: want '─' border normal, got '─' working normal
+row 15 col 10: want '─' border normal, got '─' working normal
+row 15 col 11: want '─' border normal, got '─' working normal
+row 15 col 12: want '─' border normal, got '─' working normal
+row 15 col 13: want '─' border normal, got '─' working normal
+row 15 col 14: want '─' border normal, got '─' working normal
+row 15 col 15: want '─' border normal, got '─' working normal
+row 15 col 16: want '─' border normal, got '─' working normal
+row 15 col 17: want '─' border normal, got '─' working normal
+row 15 col 18: want '─' border normal, got '─' working normal
+row 15 col 19: want '─' border normal, got '─' working normal
+row 15 col 20: want '─' border normal, got '─' working normal
+row 15 col 21: want '─' border normal, got '─' working normal
+row 15 col 22: want '─' border normal, got '─' working normal
+row 15 col 23: want '─' border normal, got '─' working normal
+row 15 col 24: want '─' border normal, got '─' working normal
+row 15 col 25: want '─' border normal, got '─' working normal
+row 15 col 26: want '─' border normal, got '─' working normal
+row 15 col 27: want '─' border normal, got '─' working normal
+row 15 col 28: want '╯' border normal, got '╯' working normal
+export identical: CompactChat.grid
+
+CompactChat.grid
+1920 cells match
+export identical: CompactChatStatus.grid
+
+CompactChatStatus.grid
+1920 cells match
+export identical: CompactFriction.grid
+
+CompactFriction.grid
+1920 cells match
+export identical: Compact.grid
+
+Compact.grid
+1920 cells match
+export identical: CompactHealth.grid
+
+CompactHealth.grid
+1920 cells match
+export identical: CompactLogs.grid
+
+CompactLogs.grid
+1920 cells match
+export identical: Components.grid
+
+Components.grid
+8040 cells match
+export identical: Friction.grid
+
+Friction.grid
+4800 cells match
+export identical: FrictionResolved.grid
+
+FrictionResolved.grid
+4800 cells match
+export identical: HealthAgentsGeneral.grid
+
+HealthAgentsGeneral.grid
+4800 cells match
+export identical: HealthAgents.grid
+
+HealthAgents.grid
+4800 cells match
+export identical: Health.grid
+
+Health.grid
+4800 cells match
+export identical: Help.grid
+
+Help.grid
+24 cells differ; changed rows (zero-based): [13]
+row 13 col 68: want 'h' fg normal, got 's' fg normal
+row 13 col 69: want 'i' fg normal, got 'h' fg normal
+row 13 col 70: want 'd' fg normal, got 'o' fg normal
+row 13 col 71: want 'e' fg normal, got 'w' fg normal
+row 13 col 73: want 's' fg normal, got 'o' fg normal
+row 13 col 74: want 't' fg normal, got 'r' fg normal
+row 13 col 75: want 'o' fg normal, got ' ' fg normal
+row 13 col 76: want 'p' fg normal, got 'h' fg normal
+row 13 col 77: want 'p' fg normal, got 'i' fg normal
+row 13 col 78: want 'e' fg normal, got 'd' fg normal
+row 13 col 79: want 'd' fg normal, got 'e' fg normal
+row 13 col 81: want 'a' fg normal, got 's' fg normal
+row 13 col 82: want 'g' fg normal, got 't' fg normal
+row 13 col 83: want 'e' fg normal, got 'o' fg normal
+row 13 col 84: want 'n' fg normal, got 'p' fg normal
+row 13 col 85: want 't' fg normal, got 'p' fg normal
+row 13 col 86: want 's' fg normal, got 'e' fg normal
+row 13 col 87: want ' ' fg normal, got 'd' fg normal
+row 13 col 89: want ' ' fg normal, got 'a' fg normal
+row 13 col 90: want ' ' fg normal, got 'g' fg normal
+row 13 col 91: want ' ' fg normal, got 'e' fg normal
+row 13 col 92: want ' ' fg normal, got 'n' fg normal
+row 13 col 93: want ' ' fg normal, got 't' fg normal
+row 13 col 94: want ' ' fg normal, got 's' fg normal
+export identical: Logs.grid
+
+Logs.grid
+4800 cells match
+export identical: Main.grid
+
+Main.grid
+20 cells differ; changed rows (zero-based): [39]
+row 39 col 68: want 'h' dim normal, got 's' dim normal
+row 39 col 69: want 'i' dim normal, got 't' dim normal
+row 39 col 70: want 'd' dim normal, got 'o' dim normal
+row 39 col 71: want 'e' dim normal, got 'p' dim normal
+row 39 col 72: want ' ' dim normal, got 'p' dim normal
+row 39 col 73: want 's' dim normal, got 'e' dim normal
+row 39 col 74: want 't' dim normal, got 'd' dim normal
+row 39 col 75: want 'o' dim normal, got ' ' dim normal
+row 39 col 76: want 'p' dim normal, got '·' dim normal
+row 39 col 77: want 'p' dim normal, got ' ' dim normal
+row 39 col 78: want 'e' dim normal, got '?' dim normal
+row 39 col 79: want 'd' dim normal, got ' ' dim normal
+row 39 col 80: want ' ' dim normal, got 'h' dim normal
+row 39 col 81: want '·' dim normal, got 'e' dim normal
+row 39 col 82: want ' ' dim normal, got 'l' dim normal
+row 39 col 83: want '?' dim normal, got 'p' dim normal
+row 39 col 85: want 'h' dim normal, got ' ' dim normal
+row 39 col 86: want 'e' dim normal, got ' ' dim normal
+row 39 col 87: want 'l' dim normal, got ' ' dim normal
+row 39 col 88: want 'p' dim normal, got ' ' dim normal
+export identical: TooSmall.grid
+
+TooSmall.grid
+960 cells match
+export identical: WorkGoals.grid
+
+WorkGoals.grid
+4800 cells match
+export identical: Work.grid
+
+Work.grid
+4800 cells match
+export identical: WorkQueue.grid
+
+WorkQueue.grid
+4800 cells match

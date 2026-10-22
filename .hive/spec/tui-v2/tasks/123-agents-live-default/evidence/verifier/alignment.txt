@@ -1,0 +1,79 @@
+
+AgentsHiddenParent-120x40.grid: 7 cards with a visible top;  0 failures
+row 7 col 4: ● manager-hive; claude · working · …; expected w; plain-text state ● working; rounded
+row 7 col 43: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 82: ● t4-review-1; pi · working · 4m; expected a; plain-text state ● working; heavy selected
+row 12 col 5: ● t5-worker-1; pi · working · 3m; expected w; plain-text state ● working; rounded
+row 12 col 44: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 17 col 5: ● t6-worker-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+row 17 col 44: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded
+
+AgentsHiddenParent-80x24.grid: 4 cards with a visible top;  0 failures
+row 7 col 4: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 42: ● t4-review-1; pi · working · 4m; expected a; plain-text state ● working; heavy selected
+row 12 col 5: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 17 col 5: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded; bottom row clipped by the approved compact viewport
+
+Main-120x40.grid: 3 cards with a visible top;  0 failures
+row 7 col 48: ◐ manager-hive; claude · idle · 4m; expected a; plain-text state ◐ idle; heavy selected
+row 14 col 33: ○ t4-worker-1; pi · stopped · done; expected r; plain-text state ○ stopped; rounded
+row 14 col 63: ○ t4-verifier-1; pi · stopped · pass; expected r; plain-text state ○ stopped; rounded
+
+Main-80x24.grid: 3 cards with a visible top;  0 failures
+row 7 col 28: ◐ manager-hive; claude · idle · 4m; expected a; plain-text state ◐ idle; heavy selected
+row 14 col 10: ○ t4-worker-1; pi · stopped · done; expected r; plain-text state ○ stopped; rounded
+row 14 col 46: ○ t4-verifier-1; pi · stopped · pass; expected r; plain-text state ○ stopped; rounded
+
+AgentsHome-120x40.grid: 9 cards with a visible top;  0 failures
+row 7 col 4: ● manager-hive; claude · working · …; expected w; plain-text state ● working; rounded
+row 7 col 43: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 82: ○ spec-check-1; claude · stopped · …; expected r; plain-text state ○ stopped; rounded
+row 12 col 5: ○ t4-verifier-1; pi · stopped · pass; expected r; plain-text state ○ stopped; rounded
+row 12 col 44: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 12 col 82: ● plan-review-1; pi · working · 2m; expected a; plain-text state ● working; heavy selected
+row 17 col 5: ● t5-worker-1; pi · working · 3m; expected w; plain-text state ● working; rounded
+row 17 col 44: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded
+row 22 col 5: ● t6-worker-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+
+AgentsHome-80x24.grid: 5 cards with a visible top;  0 failures
+row 7 col 4: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 42: ○ spec-check-1; claude · stopped · …; expected r; plain-text state ○ stopped; rounded
+row 12 col 5: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 12 col 42: ● plan-review-1; pi · working · 2m; expected a; plain-text state ● working; heavy selected
+row 17 col 5: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded; bottom row clipped by the approved compact viewport
+
+AgentsNested-120x40.grid: 9 cards with a visible top;  0 failures
+row 7 col 4: ● manager-hive; claude · working · …; expected w; plain-text state ● working; rounded
+row 7 col 76: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 12 col 5: ○ t4-verifier-1; pi · stopped · pass; expected r; plain-text state ○ stopped; rounded
+row 14 col 63: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 14 col 89: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded
+row 17 col 5: ● t5-worker-1; pi · working · 3m; expected w; plain-text state ● working; rounded
+row 22 col 7: ● t5-research-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+row 27 col 9: ◐ t5-research-2; pi · idle · 0m; expected a; plain-text state ◐ idle; heavy selected
+row 32 col 5: ● t6-worker-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+
+AgentsNested-80x24.grid: 4 cards with a visible top;  0 failures
+row 8 col 5: ● t5-worker-1; pi · working · 3m; expected w; plain-text state ● working; rounded
+row 8 col 43: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded
+row 13 col 7: ● t5-research-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+row 18 col 9: ◐ t5-research-2; pi · idle · 0m; expected a; plain-text state ◐ idle; heavy selected
+
+CompactAgentsHome-120x40.grid: 8 cards with a visible top;  0 failures
+row 7 col 4: ● manager-hive; claude · working · …; expected w; plain-text state ● working; rounded
+row 7 col 43: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 82: ● plan-review-1; pi · working · 2m; expected a; plain-text state ● working; heavy selected
+row 12 col 5: ○ t4-verifier-1; pi · stopped · pass; expected r; plain-text state ○ stopped; rounded
+row 12 col 44: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 17 col 5: ● t5-worker-1; pi · working · 3m; expected w; plain-text state ● working; rounded
+row 17 col 44: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded
+row 22 col 5: ● t6-worker-1; pi · working · 1m; expected w; plain-text state ● working; rounded
+
+CompactAgentsHome-80x24.grid: 4 cards with a visible top;  0 failures
+row 7 col 4: ● manager-api; codex · working · 2m; expected w; plain-text state ● working; rounded
+row 7 col 42: ● plan-review-1; pi · working · 2m; expected a; plain-text state ● working; heavy selected
+row 12 col 5: ● t3-worker-1; codex · working; expected w; plain-text state ● working; rounded
+row 17 col 5: ◐ t3-verifier-1; pi · idle · 6m; expected r; plain-text state ◐ idle; rounded; bottom row clipped by the approved compact viewport
+
+PASS: 56 cards with a visible top across both sizes. Every visible perimeter cell and joint has the literal expected token. At 80 columns, a horizontal-scroll footer reserves rows 20 and 21; the idle card bottom can be below the viewport, as on CompactAgentsHome.grid. Every checked external rail uses border. Each working, idle, and stopped card has its state word and glyph.
+Negative control: recolour working to border in AgentsHome capture: 260 border checks fail.
