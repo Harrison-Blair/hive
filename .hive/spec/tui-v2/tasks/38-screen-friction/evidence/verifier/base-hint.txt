@@ -1,0 +1,4 @@
+# github.com/Harrison-Blair/hive/internal/tui/component [github.com/Harrison-Blair/hive/internal/tui/component.test]
+internal/tui/component/verifier_hint_test.go:7:46: unknown field Hint in struct literal of type List
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component [build failed]
+FAIL
