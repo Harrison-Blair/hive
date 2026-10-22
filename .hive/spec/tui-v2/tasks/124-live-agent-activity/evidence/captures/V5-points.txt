@@ -1,0 +1,32 @@
+== LiveOverview-120x40
+arrow ◀ at col 22 row 9: info
+arrow ▶ at col 48 row 37: info
+legend: ━ info, ▶ info, message dim
+heavy cells by token: map[accent:103 info:45]
+== LiveOverview-80x24
+arrow ◀ at col 22 row 8: info
+heavy cells by token: map[accent:52 info:23]
+== LivePod-120x40
+arrow ▼ at col 75 row 18: info
+arrow ▶ at col 48 row 37: info
+legend: ━ info, ▶ info, message dim
+heavy cells by token: map[accent:52 info:22]
+== LivePod-80x24
+arrow ▼ at col 58 row 17: info
+heavy cells by token: map[accent:52 info:23]
+== CompactLiveOverview-80x24
+arrow ◀ at col 22 row 8: info
+heavy cells by token: map[accent:52 info:23]
+== CompactLiveOverview-120x40
+arrow ◀ at col 22 row 9: info
+arrow ▶ at col 48 row 37: info
+legend: ━ info, ▶ info, message dim
+heavy cells by token: map[accent:103 info:45]
+== CompactLivePod-80x24
+arrow ▼ at col 58 row 17: info
+heavy cells by token: map[accent:52 info:23]
+== CompactLivePod-120x40
+arrow ▼ at col 75 row 18: info
+arrow ▶ at col 48 row 37: info
+legend: ━ info, ▶ info, message dim
+heavy cells by token: map[accent:52 info:22]

@@ -124,6 +124,15 @@ func TestLiveReplyTurnsTheArrow(t *testing.T) {
 	requireCells(t, m, liveCell{60, 16, '▲', cellgrid.Info}, liveCell{75, 18, '┃', cellgrid.Info}, liveCell{75, 19, '┸', cellgrid.Info})
 }
 
+// The agent_id of an agent send event is the record key, as
+// `manager-hive-g2`. It lights the line of the card of that record.
+func TestLiveSendEventGivesTheReceiverByKey(t *testing.T) {
+	m := liveModel(t, "LivePod", func(f *demoFixture) {
+		f.Data.Logs = append(f.Data.Logs, promptEvent(t, f.now.Add(-500*time.Millisecond), "t6-worker-1", "manager-hive-g2"))
+	})
+	requireCells(t, m, liveCell{60, 16, '▲', cellgrid.Info}, liveCell{75, 18, '┃', cellgrid.Info}, liveCell{75, 19, '┸', cellgrid.Info})
+}
+
 // The real TUI draws again when a line goes dark: the expiry message
 // clears the cached view.
 func TestLiveLineGoesDarkOnTheExpiryMessage(t *testing.T) {
