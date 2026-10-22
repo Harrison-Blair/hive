@@ -446,14 +446,14 @@ func (m *Model) logEventsPanel(width, height int, focused bool) string {
 func (m *Model) logRowLine(row logRow, selected bool, messageCells int) string {
 	marker, timeStyle, messageStyle := " ", dimStyle, lipgloss.NewStyle()
 	if selected {
-		marker, timeStyle, messageStyle = "▶", accentTextStyle, titleStyle
+		marker, timeStyle, messageStyle = titleStyle.Render("▶"), accentTextStyle, titleStyle
 	}
 	level := logLevel(row.event)
 	levelStyle := dimStyle
 	if level == "WARN" || level == "ERROR" {
 		levelStyle = titleStyle
 	}
-	return titleStyle.Render(marker) + " " +
+	return marker + " " +
 		timeStyle.Render(logCell(logTime(row.event, m.now().Location()), logTimeCells-1)) + " " +
 		levelStyle.Render(logCell(level, logLevelCells)) +
 		infoStyle.Render(logCell(fieldOrDash(row.event, "component"), logComponentCells)) +
