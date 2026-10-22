@@ -345,11 +345,13 @@ func (m *Model) footerNotice() string {
 		return ""
 	case m.screenIndex == 1 && m.agents.restartNotice != "":
 		return m.agents.restartNotice
+	case m.startupNotice != "":
+		return m.startupNotice
 	}
 	if err := m.footerError(); err != "" {
 		return "error: " + err
 	}
-	return m.startupNotice
+	return ""
 }
 
 func (m *Model) footerError() string {
@@ -632,6 +634,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	}
 	if tab == tabChat {
 		return m.updateChatFeedKey(press)
+	}
+	if tab == tabAgents && key == "r" {
+		// Decision 19: restart is in Health › Agents.
+		return nil
 	}
 	if tab == tabAgents && key == "p" {
 		return m.agentsPeek()

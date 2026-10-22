@@ -20,7 +20,8 @@ func TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey(t *testing.T) 
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	server := newStartupHerdr(t)
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -70,7 +71,8 @@ func TestAgentsRestartMissingCoordinatorPaneTakesStalePath(t *testing.T) {
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
@@ -104,7 +106,8 @@ func TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation(t *testing.T) {
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
@@ -154,7 +157,8 @@ func TestAgentsHistoryCanShowStoppedRestartGeneration(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -173,7 +177,8 @@ func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{
@@ -207,7 +212,8 @@ func TestAgentsRestartResultIsRenderedAndLogged(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m, cmd := raise(t, m, agentRestartMsg{
 		agentKey: "coordinator-g2",
 		result:   agent.RestartResult{Tab: herdr.TabCreated{Tab: herdr.TabInfo{TabID: "w1:t2", Label: "coordinator"}}},
@@ -227,7 +233,8 @@ func TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -297,7 +304,8 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	}
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.width = 120
 	m.header = state
 	// Decisions 2 and 19: the header shows the supervisor state word, and
@@ -319,7 +327,8 @@ func TestAgentsRestartKeyExplainsUnsupportedNode(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m.screenIndex = 1
+	// Decision 19: restart is in Health › Agents.
+	m.selectScreen(tabHealth, 1)
 	m.agents.accept(agentsData{
 		groups: []agentGroup{{id: "demo", title: "demo", keys: []string{"manager-demo"}}},
 		nodes: []agentNode{{

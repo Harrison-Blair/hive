@@ -4,7 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 )
 
@@ -64,4 +66,18 @@ func checkFrameRows(t *testing.T, board string) {
 
 func TestFrameRowsMatchMain(t *testing.T) {
 	checkFrameRows(t, "Main")
+}
+
+// The startup notice takes the footer before an error, as the old footer
+// did. The error then shows when the notice is empty.
+func TestFooterShowsStartupNoticeBeforeError(t *testing.T) {
+	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	m.startupNotice = "not in herdr: no coordinator or supervisor started"
+	m.chatErr = "chat send is for the user only"
+	m.invalidateView()
+	requireView(t, m, "[feed] not in herdr: no coordinator or supervisor started")
+	m.startupNotice = ""
+	m.invalidateView()
+	requireView(t, m, "[feed] error: chat send is for the user only")
 }

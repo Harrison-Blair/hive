@@ -78,7 +78,7 @@ func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 	if !strings.Contains(out.String(), "\x1b[?25l") {
 		t.Fatalf("output %q shows no TUI ran", out.String())
 	}
-	if !strings.Contains(out.String(), "⬢ hive") {
+	if !strings.Contains(out.String(), " hive") {
 		t.Fatalf("output %q does not show the TUI header", out.String())
 	}
 	if strings.Contains(out.String(), `"outcome"`) {
@@ -141,7 +141,7 @@ func TestBareHiveNoStartupMakesNoTabCalls(t *testing.T) {
 			if status != 0 {
 				t.Fatalf("status = %d; want 0; output %q", status, out.String())
 			}
-			if !strings.Contains(out.String(), "⬢ hive") {
+			if !strings.Contains(out.String(), " hive") {
 				t.Fatalf("output %q does not show the TUI header", out.String())
 			}
 			for _, method := range methods() {

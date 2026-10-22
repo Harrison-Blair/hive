@@ -37,7 +37,7 @@ is not part of this task.
   content area for a size and a focus. Choose the exact API and record it in
   the spec section `Manager decisions`.
 - Until wave 6 replaces a screen, the content area shows the current screen
-  of that tab. This task removes no current screen. Record which
+  of that tab. No current screen is removed in this task. Record which
   current screen each tab shows.
 - The frame uses the components of `internal/tui/component/`.
 
@@ -47,6 +47,7 @@ is not part of this task.
 | --- | --- |
 | `internal/tui/` and its tests | AC1-AC6. |
 | `internal/tui/component/` and its tests | Only a fix that the frame needs. Record each one. |
+| `cmd/root_test.go`, `cmd/root_demo_test.go` | AC6. Only the expected header text and the demo key sequence that the new frame changes. |
 | `.hive/spec/tui-v2/README.md` | Only the section `Manager decisions`. |
 | `testdata/ste-baseline.json`, `ste_test.go` | To add the brief copy with 0, and to lower a count. |
 | `.hive/spec/tui-v2/tasks/<task-id>/brief.md` | The brief copy. Commit it. |
@@ -170,3 +171,5 @@ The content of each screen. Wave 6 does it.
 
 - 2026-10-21: AC5 compares only the token behind the Help box, because the
   Agents screen is wave 6 work.
+- 2026-10-21: the source table allows two `cmd/` tests, for the header text
+  and the demo keys only.

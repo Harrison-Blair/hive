@@ -179,11 +179,23 @@ func TestDemoTooSmallMatchesItsBoardGrid(t *testing.T) {
 func TestDemoActionKeysShowTheNotice(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	// Decision 14: p peeks at the pane, and enter opens the details popup.
+	// Decision 19: restart is in Health › Agents, so r on Agents does nothing.
+	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, demoNotice) || m.agents.restartConfirm {
+		t.Fatalf("r on the Agents tab acted:\n%s", view)
+	}
 	for _, key := range []tea.KeyPressMsg{
 		{Code: 'a', Text: "a"},
 		{Code: 'p', Text: "p"},
 		{Code: 'r', Text: "r"},
 	} {
+		if key.Text == "r" {
+			m.Update(tea.KeyPressMsg{Code: '5', Text: "5"})
+			m.Update(tea.KeyPressMsg{Code: ']', Text: "]"})
+			if m.activeTab() != tabHealth || m.screenIndex != 1 {
+				t.Fatalf("5 ] did not select Health › Agents: tab %d, screen %d", m.activeTab(), m.screenIndex)
+			}
+		}
 		m.Update(key)
 		if view := ansi.Strip(m.View().Content); !strings.Contains(view, demoNotice) {
 			t.Fatalf("key %q: view does not show %q:\n%s", key.String(), demoNotice, view)

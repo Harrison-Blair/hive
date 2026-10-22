@@ -16,8 +16,8 @@ const mainFixture = "../.hive/spec/tui-v2/design/Main.fixture.json"
 
 // TestDemoActionsChangeNoFileAndStartNoProcess runs the CLI entry with --demo
 // and presses the chat send, restart, attach, and peek keys. The keys follow
-// the current screen map: enter peeks and a attaches on Agents, r restarts,
-// 1 opens Chat, i focuses the input, and enter sends.
+// the frame map: p peeks and a attaches on Agents, 5 ] opens Health › Agents
+// where r restarts, 2 opens Chat, i focuses the input, and enter sends.
 func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 	home := newRootTestHome(t)
 	methods := newRootFakeHerdr(t)
@@ -46,7 +46,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	before := snapshotFiles(t, home, fixtureDir)
 	var out bytes.Buffer
-	keys := "\rarp1ihi\r"
+	keys := "pa5]r2ihi\r"
 	status := executeWithStreams([]string{"--demo", fixture}, strings.NewReader(keys), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; output %q", status, out.String())
@@ -101,6 +101,10 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 		if !blocked[action] {
 			t.Fatalf("blocked actions = %v; want %q", blocked, action)
 		}
+	}
+
+	if !strings.Contains(out.String(), "demo mode: no action") {
+		t.Fatalf("output %q lacks the demo notice", out.String())
 	}
 
 	if got, err := os.ReadFile(marker); err == nil {
