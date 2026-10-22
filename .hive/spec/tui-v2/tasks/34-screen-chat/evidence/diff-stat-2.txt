@@ -1,0 +1,15 @@
+ .hive/spec/tui-v2/README.md                        |  10 +
+ .hive/spec/tui-v2/tasks/34-screen-chat/brief.md    | 144 +++++
+ internal/tui/agents_test.go                        |   1 -
+ internal/tui/chat.go                               | 401 ++++++++++++++
+ internal/tui/chat_screen.go                        | 497 -----------------
+ internal/tui/chat_screen_test.go                   | 581 --------------------
+ internal/tui/chat_test.go                          | 598 +++++++++++++++++++++
+ internal/tui/demo.go                               |  15 +-
+ internal/tui/doc.go                                |   2 +-
+ internal/tui/frame.go                              |  11 -
+ internal/tui/selection_marker_test.go              |   7 -
+ internal/tui/shell_test.go                         |  23 +-
+ internal/tui/tui.go                                | 100 +---
+ testdata/ste-baseline.json                         |   1 +
+ 119 files changed, 4607 insertions(+), 1200 deletions(-)

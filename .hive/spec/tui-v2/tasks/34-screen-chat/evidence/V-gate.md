@@ -151,3 +151,83 @@ exit 0
 
 `gofmt -l` and `go mod tidy -diff` printed nothing. Each package printed `ok`
 or `no test files`.
+
+## Repair after the land conflict (merge of task 40)
+
+The verify of `72d44ff7` passed. Then `hive land` stopped on a conflict with
+`dev` at `fbca94d5` (task `40-screen-logs`).
+
+### Merge
+
+`git merge origin/dev` at `fbca94d5` gave a conflict in two files. The merge
+commit is `a0c5bf60`.
+
+- `.hive/spec/tui-v2/README.md`: both blocks stay. The decisions of task
+  `34-screen-chat` come first, then the manager and worker decisions of task
+  `40-screen-logs`.
+- `internal/tui/tui.go`: the `Model` fields are the Chat fields of this task
+  (`chatFeed`, `chatNoise`, and the send fields) and the Logs fields of task 40
+  (`textFilter`, `filterDraft`, `logOffset`, `logPendingTime`, and the others).
+  Each side removed one viewport: task 40 removed `viewport` (old Logs) and
+  this task removed `chatViewport` (old Chat). The merge removes both. Then
+  `layout()` had no body, so the merge removes it and its calls in `tui.go`,
+  `demo.go`, `agents_test.go`, and `shell_test.go`. Each removed test line was
+  only a call of `m.layout()` before an assertion. No assertion changed. The
+  `viewport` import of `tui.go` went away.
+
+### Diff scope
+
+Output: `diff-stat-2.txt` (`git diff origin/dev...HEAD --stat`, evidence
+lines removed).
+
+```text
+ .hive/spec/tui-v2/README.md                        |  10 +
+ .hive/spec/tui-v2/tasks/34-screen-chat/brief.md    | 144 +++++
+ internal/tui/agents_test.go                        |   1 -
+ internal/tui/chat.go                               | 401 ++++++++++++++
+ internal/tui/chat_screen.go                        | 497 -----------------
+ internal/tui/chat_screen_test.go                   | 581 --------------------
+ internal/tui/chat_test.go                          | 598 +++++++++++++++++++++
+ internal/tui/demo.go                               |  15 +-
+ internal/tui/doc.go                                |   2 +-
+ internal/tui/frame.go                              |  11 -
+ internal/tui/selection_marker_test.go              |   7 -
+ internal/tui/shell_test.go                         |  23 +-
+ internal/tui/tui.go                                | 100 +---
+ testdata/ste-baseline.json                         |   1 +
+```
+
+Each file is in the source table of the brief.
+
+### Golden checks
+
+Output: `merge2-golden.txt`, from
+`go test -count=1 -v -run 'TestChat|TestCompactChat|TestDemoChat' ./internal/tui/`.
+Each of the 14 tests passes, with `TestChatMatchesItsBoard`,
+`TestCompactChatMatchesItsBoard`, and `TestChatFitsEachSize`.
+
+### Live check
+
+`V2.md`, section `Repair rerun 2`: no cell differs under the space cell rule
+for `Chat` and `CompactChat`.
+
+### Gate run 4: pass
+
+Full output: `gate-run-4.txt`, on the tree of `a0c5bf60`.
+
+```text
+$ gofmt -l
+exit 0
+$ go mod tidy -diff
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race ./...
+exit 0
+```
+
+`gofmt -l` and `go mod tidy -diff` printed nothing. Each package printed `ok`
+or `no test files`.
