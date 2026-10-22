@@ -45,3 +45,10 @@ manager read the pane, it showed no dialog. The worker was in
 The cause is not known. The record can be the same dialog with an
 automatic deny, or a short false `blocked` state. The blocked record still
 gives no reason.
+
+**Recurrence 2026-10-21 (hive 29):** t29-worker-1 chained the evidence
+commit and push with `rm -rf $S/*` in one command. The dialog held the commit
+and the push also. The manager declined it with `herdr pane send-keys PANE
+esc`, which moved the choice to `No`, then `herdr pane send-keys PANE enter`.
+The key name `Return` did not register. The manager told the worker to commit
+first and to clean up with `"${S:?}"/*`.
