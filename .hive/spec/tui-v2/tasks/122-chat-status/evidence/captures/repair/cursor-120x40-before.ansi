@@ -1,0 +1,40 @@
+[0m[1m hive  ~/source/hive[0m                                    [0m[1mcoordinator [0m[1m[38;2;110;230;154m●[0m[1m working   supervisor [0m[1m[38;2;110;230;154m●[0m[1m live   needs you 0   14:22 [0m
+ [0m[38;2;163;157;144m 1 Agents [0m [0m[1m[38;2;245;185;66m 2 Chat [0m [0m[38;2;163;157;144m 3 Work [0m [0m[38;2;163;157;144m 4 Friction [0m [0m[38;2;163;157;144m 5 Health [0m [0m[38;2;163;157;144m 6 Logs [0m
+[0m[38;2;61;58;51m────────────[0m[38;2;245;185;66m━━━━━━━━[0m[38;2;61;58;51m────────────────────────────────────────────────────────────────────────────────────────────────────[0m
+[0m[38;2;61;58;51m╭─[0m[1m[38;2;245;185;66m chat · noise normal [0m[38;2;61;58;51m─────────────────────────────────────[0m[38;2;163;157;144m ↑ 42 earlier [0m[38;2;61;58;51m─────────────────────────────────────────────╮[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m [0m[38;2;163;157;144m14:02[0m  [0m[1m[38;2;233;207;155myou          [0m [0m[38;2;233;207;155mcan we interrogate and design the working status thing for the chat window?[0m                     [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m [0m[38;2;163;157;144m14:05[0m  [0m[38;2;163;157;144m▸ manager-st…[0m [0m[38;2;163;157;144mg2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit pas…[0m  [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m [0m[38;2;163;157;144m14:06[0m  [0m[1m[38;2;111;183;255mcoordinator  [0m [0m[1m[38;2;245;185;66mInterrogate, summary[0m                                                                            [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[1mWorking status[0m                                                                                  [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[38;2;245;185;66m• [0mThe input border shows the coordinator state: [0m[38;2;159;208;255m● working 2m[0m, [0m[38;2;159;208;255m○ idle 5m[0m, or [0m[38;2;159;208;255m▲ blocked 1m[0m.       [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[38;2;245;185;66m• [0mWhile your last message is pending, the border adds [0m[38;2;159;208;255m· queued[0m.                                 [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[1mMessage bar[0m                                                                                     [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[38;2;245;185;66m• [0mThe input wraps and grows to 1/3 of the screen, then scrolls inside.                          [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[1mEvents[0m                                                                                          [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                      [0m[38;2;245;185;66m• [0mEvents stay dim and folded (▸). [0m[38;2;159;208;255mctrl+o[0m opens all of them (▾).                                 [0m[38;2;163;157;144m┃[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;163;157;144m┃[0m
+[0m[38;2;61;58;51m│[0m                      Reply [0m[38;2;159;208;255myes[0m to confirm, or name the line to change.                                               [0m[38;2;163;157;144m┃[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;163;157;144m┃[0m
+[0m[38;2;61;58;51m│[0m [0m[38;2;163;157;144m14:09[0m  [0m[38;2;163;157;144m▸ manager-hi…[0m [0m[38;2;163;157;144mquiet                                                                                         [0m  [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m                                                                                                                      [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m│[0m [0m[38;2;163;157;144m14:21[0m  [0m[1m[38;2;233;207;155myou · pending[0m [0m[38;2;233;207;155myes[0m                                                                                             [0m[38;2;61;58;51m│[0m
+[0m[38;2;61;58;51m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+[0m[38;2;245;185;66m╭─[0m[1m[38;2;245;185;66m message [0m[38;2;163;157;144m· [0m[38;2;110;230;154m●[0m working 2m [0m[38;2;163;157;144m· queued [0m[38;2;245;185;66m────────────────────────────────────────────────────────────────────────────────────╮[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[0m [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m  xEND[0m[38;2;245;185;66m█[0m                                                                                                              [0m[38;2;163;157;144m┃[0m
+[0m[38;2;245;185;66m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+[0m[1m[38;2;245;185;66m [input] [0m[38;2;163;157;144menter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region   [0m

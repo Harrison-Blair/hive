@@ -1,0 +1,16 @@
+=== RUN   TestChatWrappedInputCursorTracksInsertion
+=== RUN   TestChatWrappedInputCursorTracksInsertion/compact_cap
+    chat_test.go:720: Left must put the cursor before D; expected xEN█:
+    chat_test.go:728: cursor must stay before D after inserting Z; expected xENZ█:
+=== RUN   TestChatWrappedInputCursorTracksInsertion/full_cap
+    chat_test.go:720: Left must put the cursor before D; expected xEN█:
+    chat_test.go:728: cursor must stay before D after inserting Z; expected xENZ█:
+--- FAIL: TestChatWrappedInputCursorTracksInsertion (0.01s)
+    --- FAIL: TestChatWrappedInputCursorTracksInsertion/compact_cap (0.00s)
+    --- FAIL: TestChatWrappedInputCursorTracksInsertion/full_cap (0.00s)
+=== RUN   TestChatWordWrappedInputCursorTracksInsertion
+    chat_test.go:752: cursor must sit on E after inserting Z; expected Z█ND:
+--- FAIL: TestChatWordWrappedInputCursorTracksInsertion (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.013s
+FAIL
