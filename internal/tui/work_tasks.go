@@ -390,29 +390,9 @@ func (m *Model) workTasksDetails(width, height int, focused bool, suffix string)
 		title = item.record.ID
 		lines = taskDetailLines(state.data, item, inner, wide)
 	}
-	return taskDetailsPanel(title+suffix, focused, lines, width, height, &m.detailsOffset[tabWork])
-}
-
-// taskDetailsPanel draws lines in a panel from line *offset. Each line that
-// fits shows. When lines are left below the view, the last body row is
-// "↓ N more lines" (decision 2 of 2026-10-21). The scroll mark shows only
-// when the lines do not fit.
-func taskDetailsPanel(title string, focused bool, lines []string, width, height int, offset *int) string {
 	body := max(height, component.PanelMinHeight) - 2
-	*offset = min(max(*offset, 0), max(len(lines)-body, 0))
-	end := min(*offset+body, len(lines))
-	var vmark component.ScrollMark
-	if len(lines) > body {
-		vmark = component.Thumb(body, len(lines), body-1, *offset)
-		if end < len(lines) {
-			end--
-		}
-	}
-	shown := append([]string(nil), lines[*offset:end]...)
-	if rest := len(lines) - end; rest > 0 {
-		shown = append(shown, dimStyle.Render(fmt.Sprintf("↓ %d more lines", rest)))
-	}
-	return component.Panel{Title: title, Focused: focused, Lines: shown, VMark: vmark}.View(width, height)
+	m.detailsOffset[tabWork] = min(max(m.detailsOffset[tabWork], 0), max(len(lines)-body, 0))
+	return component.Details{Title: title + suffix, Focused: focused, Lines: lines, Offset: m.detailsOffset[tabWork]}.View(width, height)
 }
 
 // taskDetailLines gives the details of one task at inner cells: the fields,

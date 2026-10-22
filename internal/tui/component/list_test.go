@@ -6,9 +6,8 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/x/ansi"
-
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // sampleList is the sample of the List section, Components.dc.html lines
@@ -87,23 +86,36 @@ func TestListFillGolden(t *testing.T) {
 	checkGolden(t, l.View(52, 35), "Work", rect{4, 0, 52, 35})
 }
 
-// TestListSelectedRowFillsItsColumn checks user decisions 4 and 7 of
-// 2026-10-21: the marker ▶ is accent and bold, the space after it is fg and
-// not bold, and the selected name is accent and bold over the full column,
-// its gap included.
-func TestListSelectedRowFillsItsColumn(t *testing.T) {
-	l := List{Columns: []Column{{Title: "ID", Width: 6}, {Title: "S"}}, Rows: [][]Cell{{{Text: "ab"}, {Text: "x"}}}}
-	g, err := cellgrid.Convert(l.View(16, 4), 16, 4)
+// TestListRowCells checks the user decisions 4 and 7 of 2026-10-21 and the
+// Friction decision of the manager: "▶" is accent bold, the space after it
+// is fg and not bold, and the first cell is accent bold over its full column.
+// Column 2 of each other row is fg and not bold.
+func TestListRowCells(t *testing.T) {
+	l := List{Columns: []Column{{Title: "ID", Width: 6}, {Title: "S"}}, Rows: [][]Cell{{{Text: "ab"}, {Text: "x"}}, {{Text: "cd"}, {Text: "y"}}}}
+	g, err := cellgrid.Convert(strings.Join(strings.Split(l.View(14, 5), "\n")[2:4], "\n"), 14, 2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := map[int]cellgrid.Cell{2: {Rune: '▶', Token: cellgrid.Accent, Bold: true}, 3: {Rune: ' ', Token: cellgrid.FG}, 10: {Rune: 'x', Token: cellgrid.FG}}
-	for col, r := range "ab    " {
-		want[4+col] = cellgrid.Cell{Rune: r, Token: cellgrid.Accent, Bold: true}
+	want := []struct {
+		row, col int
+		rune     rune
+		token    cellgrid.Token
+		bold     bool
+	}{
+		{0, 2, '▶', cellgrid.Accent, true},
+		{0, 3, ' ', cellgrid.FG, false},
+		{0, 4, 'a', cellgrid.Accent, true},
+		{0, 5, 'b', cellgrid.Accent, true},
+		{0, 9, ' ', cellgrid.Accent, true},
+		{0, 10, 'x', cellgrid.FG, false},
+		{1, 2, ' ', cellgrid.FG, false},
+		{1, 3, ' ', cellgrid.FG, false},
+		{1, 4, 'c', cellgrid.FG, false},
 	}
-	for col, cell := range want {
-		if got := g.At(2, col); got != cell {
-			t.Errorf("col %d: got %+v, want %+v", col, got, cell)
+	for _, w := range want {
+		c := g.At(w.row, w.col)
+		if c.Rune != w.rune || c.Token != w.token || c.Bold != w.bold {
+			t.Errorf("row %d col %d = %q %s bold %t; want %q %s bold %t", w.row, w.col, c.Rune, c.Token, c.Bold, w.rune, w.token, w.bold)
 		}
 	}
 }

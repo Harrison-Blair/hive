@@ -103,11 +103,11 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "/ filter", "g/G top/end", "? help"},
+			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "g/G top/end", "? help"},
 			"details": {"↑↓ scroll", "tab region", "esc back to list", "? help"},
 		},
 		compact: map[string][]string{
-			"list":    {"↑↓ move", "enter details", "[ ] view", "/ filter", "?"},
+			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
 			"details": {"↑↓ scroll", "esc back to list"},
 		},
 	},

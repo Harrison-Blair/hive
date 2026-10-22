@@ -212,9 +212,9 @@ The worker made these decisions in task `37-screen-work-tasks`:
 - Details from 120 columns: a blank line, then the fields title, status, goal, worker, verifier, branch, merge, and depends. A value that is not in the records shows `—`. Below 120 columns, the details show the fields status, goal, verifier, and merge, as the Compact board shows.
 - ACCEPTANCE lists the AC rows of the table in `brief.md`. The mark is `✓` in `done` when the last verification is a pass, and `○` in `dim` for each other result. EVIDENCE shows the key line and then the V rows of the table in `VERIFIED.md`. The command column of a V row is 38 cells.
 - `b`, `v`, and `d` show the brief, `VERIFIED.md`, or the dependencies in the details region. Below 120 columns they open the overlay. A new selection closes the file. The task loader reads `brief.md` and `VERIFIED.md`. Demo mode reads them from `files` in the fixture.
-- Details overflow: each line that fits shows. When lines are below the view, the last body row is `↓ N more lines` in `dim`. The scroll mark is `Thumb(body, lines, body − 1, offset)`.
+- Details: the view uses `component.Details`, with the overflow rule of task `42-wave6-board-redraw`.
 - While the details overlay is open below 120 columns, the view row shows the hint `list › details`. It ends 2 cells before the right edge.
-- Component changes: `List.Fill` gives the padding of each cell the style of the cell. User decisions 4 and 7 set the selected List row. `▶` is accent and bold, and the space after it is `fg`. The first cell is accent and bold over the full column. `SubTabs.Hint` replaces the view hint.
+- Component changes: `List.Fill` gives the padding of each cell the style of the cell. `SubTabs.Hint` replaces the view hint.
 - Refresh of the Tasks view watches the agent records and the task folder of each task. The details show the worker status and the files of the task.
 
 ## Waves

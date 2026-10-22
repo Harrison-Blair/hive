@@ -52,13 +52,13 @@ function screen(t) {
   var list = [['coordinator-g2', 'coordinator', 'working', 'working', 'w58:p4'], ['supervisor-g4', 'supervisor', 'live', 'working', 'w58:p5'], ['manager-hive', 'manager', 'idle', 'idle', 'w58:p6'], ['cp5-worker-01', 'worker', 'unresolved', 'accent', 'gone'], ['t4-worker-1', 'worker', 'stopped', 'dim', '—']];
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 0;
-    put(t, 2, y, sel ? '▶' : ' ', 'accent', 1);
+    put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 4, y, fit(r[0], 22), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 26, y, fit(r[1], 14), 'dim');
     put(t, 40, y, r[3] === 'idle' ? '◐' : (r[3] === 'dim' ? '○' : '●'), r[3] === 'idle' ? 'accent' : r[3]); put(t, 42, y, fit(r[2], 12), r[3] === 'dim' ? 'dim' : 'fg');
     put(t, 54, y, r[4], 'dim');
   });
-  put(t, 2, 13, 'r restarts the coordinator or supervisor. It asks first only when it is live.', 'dim');
+  put(t, 2, 13, 'r restarts the coordinator or supervisor. It asks first only when live.', 'dim');
   put(t, 2, 14, 'h hides 1 stopped agent.', 'dim');
 }
 

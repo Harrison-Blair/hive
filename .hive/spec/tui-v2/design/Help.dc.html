@@ -69,10 +69,13 @@ function help(t) {
   put(t, 0, t.h - 1, rep(' ', t.w), 'dim');
   put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, '↑↓ scroll · ? or esc close', 'dim');
 }
+var TARGET = [[3,"╭─ project agents · 1 project ─────────────────────────────────────────────────────────────────────────────────────────╮",[[0,119,"border",0]]],[37,"│ ── spawn   ● working   ◐ idle   ○ stopped   one column per project                                                   │",[[0,119,"border",0]]]];
+function paint(t) { TARGET.forEach(function (r) { r[2].forEach(function (u) { put(t, u[0], r[0], r[1].slice(u[0], u[1] + 1), u[2], u[3]); }); }); }
 class Component extends DCLogic {
   renderVals() {
     var t = T(120, 40);
     help(t);
+    paint(t);
     return { rows: rows(t) };
   }
 }
