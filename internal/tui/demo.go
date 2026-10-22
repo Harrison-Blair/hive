@@ -307,13 +307,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		return doctor.Result{Checks: slices.Clone(data.Checks)}
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
-		coordinators := []records.Agent{}
-		for _, record := range data.Agents {
-			if record.Role == "coordinator" {
-				coordinators = append(coordinators, record)
-			}
-		}
-		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), coordinators, now), nil
+		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), now), nil
 	}
 	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
 		events := make([]logs.Event, 0, len(data.Logs))
@@ -379,6 +373,12 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	if ui.Screen == "chat" && ui.Focus == "input" {
 		m.chatInputActive = true
 		m.chatInput.Focus()
+	}
+	if ui.ChatNoise != "" {
+		m.chatNoise = ui.ChatNoise
+	}
+	if scroll, ok := ui.Scroll["feed"]; ok {
+		m.chatFeed.topItem = scroll.Top
 	}
 	m.applyDemoFrame(ui)
 }

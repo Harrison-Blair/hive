@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
@@ -16,14 +15,12 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/logs"
-	"github.com/charmbracelet/x/ansi"
 	xterm "github.com/charmbracelet/x/term"
 )
 
@@ -52,32 +49,29 @@ type Model struct {
 	input    textinput.Model
 	mode     mode
 
-	chatData           chatScreenData
-	chatContent        []string
-	chatViewport       viewport.Model
-	chatInput          textarea.Model
-	chatInputActive    bool
-	chatSending        bool
-	chatCallerCwd      string
-	chatPaneID         string
-	chatCallerBlocked  bool
-	chatEventsExpanded bool
-	chatNoise          string
-	chatFollow         bool
-	chatErr            string
-	level              string
-	componentFilter    string
-	projectFilter      string
-	agentFilter        string
-	requestFilter      string
-	textFilter         string
-	follow             bool
-	logDate            time.Time
-	logDatePinned      bool
-	logSelection       int
-	logSelectedKey     string
-	logDetail          bool
-	logErr             string
+	chatData          chatScreenData
+	chatFeed          chatFeed
+	chatInput         textarea.Model
+	chatInputActive   bool
+	chatSending       bool
+	chatCallerCwd     string
+	chatPaneID        string
+	chatCallerBlocked bool
+	chatNoise         string
+	chatErr           string
+	level             string
+	componentFilter   string
+	projectFilter     string
+	agentFilter       string
+	requestFilter     string
+	textFilter        string
+	follow            bool
+	logDate           time.Time
+	logDatePinned     bool
+	logSelection      int
+	logSelectedKey    string
+	logDetail         bool
+	logErr            string
 
 	header               headerState
 	headerErr            string
@@ -151,8 +145,8 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		level:        "info",
 		logDate:      startOfDay(now().Local()),
 		follow:       true,
-		chatNoise:    "messages",
-		chatFollow:   true,
+		chatNoise:    chatNoiseNormal,
+		chatFeed:     chatFeed{topItem: -1, follow: true},
 		chatLoader:   loadChatScreenData,
 		width:        defaultWidth,
 		height:       defaultHeight,
@@ -188,8 +182,6 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.viewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
 	m.viewport.SoftWrap = false
-	m.chatViewport = viewport.New(viewport.WithWidth(1), viewport.WithHeight(1))
-	m.chatViewport.SoftWrap = true
 	m.chatInput = newChatInput()
 	m.input = textinput.New()
 	m.input.Prompt = "filter: "
@@ -341,9 +333,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case chatDataRequest:
 			m.chatData = msg.chat
 			m.rebuildChat()
-			if m.chatFollow {
-				m.chatViewport.GotoBottom()
-			}
 		case tasksDataRequest:
 			m.tasks.accept(msg.tasks)
 		case frictionDataRequest:
@@ -467,20 +456,7 @@ func (m *Model) View() tea.View {
 	}
 	view := tea.NewView(content)
 	view.AltScreen = true
-	if m.screenIndex == 0 && m.chatInputActive {
-		if cursor := m.chatInput.Cursor(); cursor != nil {
-			content := ansi.Strip(content)
-			inputLines := strings.Split(ansi.Strip(m.chatInput.View()), "\n")
-			inputLine := strings.TrimRight(inputLines[0], " ")
-			if index := strings.Index(content, inputLine); index >= 0 {
-				prefix := content[:index]
-				lineStart := strings.LastIndex(prefix, "\n") + 1
-				cursor.X += lipgloss.Width(prefix[lineStart:])
-				cursor.Y += strings.Count(prefix, "\n")
-				view.Cursor = cursor
-			}
-		}
-	}
+	view.Cursor = m.chatCursor(content)
 	return view
 }
 
@@ -493,28 +469,6 @@ func (m *Model) layout() {
 	bodyHeight := max(m.height-frameRows, 1)
 	contentWidth := mainWidth - 4
 	contentHeight := bodyHeight - 3
-	chatEventWidth := mainWidth / 3
-	if chatEventWidth < 18 {
-		chatEventWidth = 18
-	}
-	if chatEventWidth > 32 {
-		chatEventWidth = 32
-	}
-	if chatEventWidth > mainWidth-12 {
-		chatEventWidth = mainWidth - 12
-	}
-	chatWidth := mainWidth - chatEventWidth - 3 - 4
-	chatHeight := bodyHeight - 7
-	if chatWidth < 1 {
-		chatWidth = 1
-	}
-	if chatHeight < 1 {
-		chatHeight = 1
-	}
-	m.chatViewport.SetWidth(chatWidth)
-	m.chatViewport.SetHeight(chatHeight)
-	m.chatInput.SetWidth(chatWidth)
-	m.chatInput.SetHeight(4)
 	if contentWidth < 1 {
 		contentWidth = 1
 	}

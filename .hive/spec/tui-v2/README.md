@@ -205,6 +205,16 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The worker made these decisions in task `34-screen-chat`:
+
+- Screen: `internal/tui/chat.go` replaces `chat_screen.go` and its tests. The registry entry of the Chat tab does not change. `scrollChatFeed` moves from `frame.go` to `chat.go`.
+- Feed: `component.ChatLines` gives the lines of each message. A blank line separates two messages. From 120 columns, the first body row of the feed is blank, and the title is `chat · noise LEVEL`. The top border also shows ` ↑ N earlier ` in `dim` from the middle column. N is the count of messages above the view. Below 120 columns, the title is `chat`.
+- Scroll: `ui.scroll.feed.top` gives the index of the message at the top of the feed. The feed then does not follow its end. In normal mode, the feed follows its end. `pgup` and `pgdn` page the feed. In the feed, `↑` `↓` `j` `k` move it by one line, `g` goes to the top, and `G` goes to the end and follows it. `component.Thumb` gives the scroll mark. Its total is the count of feed lines.
+- Noise: the levels are `quiet`, `normal`, and `all`, from `ui.chat_noise`. The default is `normal`. They show the inbox kinds of the earlier levels "decisions only", "landings and decisions", and "all". No key changes the level, because decision 24 gives each printable key in the feed to the input. The screen has no keys `n` and `e`, which the earlier screen had. Each event folds to one line, as decision 15 gives.
+- Name: when a user message is not sent, its delivery shows after the name, for example `you · pending`. The time uses the form `15:04` in the zone of the clock.
+- Input: `component.Input` draws the input and its cursor cell `█`. While the input has the focus, the terminal cursor is on that cell. The input shows no placeholder text, as the boards give.
+- Removed: the coordinator line and the column of hive events of the earlier screen. The header shows the coordinator state.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.
