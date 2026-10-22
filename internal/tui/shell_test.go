@@ -29,7 +29,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		screen string
 		shows  string
 	}{
-		{"1", tabAgents, "Agents", "[ TREE ]"},
+		{"1", tabAgents, "Agents", "no project agents"},
 		{"2", tabChat, "Chat", "coordinator"},
 		{"3", tabWork, "Goals", "unassigned"},
 		{"]", tabWork, "Queue", "no open tasks"},
@@ -107,7 +107,7 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	}
 	m, keyCmd := raise(t, m, key('1', "1"))
 	m = deliverAgentCommands(t, m, keyCmd)
-	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ agents ") {
+	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}
 	m.screenIndex = 7
@@ -153,7 +153,7 @@ func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 		t.Fatal("screen load did not start")
 	}
 	m, _ = raise(t, m, key('1', "1"))
-	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ agents ") {
+	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
 		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
 	}
 	m, _ = raise(t, m, key('6', "6"))

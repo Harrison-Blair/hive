@@ -132,7 +132,10 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			model: func(t *testing.T) *Model {
 				m := agentsBoardModel(t)
 				m.width, m.height = 120, 40
-				m.screenIndex = 1
+				// Health › Agents keeps the current Agents screen until its
+				// wave 6 task. The Agents tab draws cards (decision 10).
+				m.selectScreen(tabHealth, 1)
+				m.regionFocus[tabHealth] = 0
 				m.agents.tab = agentsGraph
 				m.agents.selectedKey = "coordinator"
 				return m

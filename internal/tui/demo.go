@@ -277,6 +277,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			supervisorLive:  data.Supervisor.Live,
 			supervisorClaim: records.Claim{Key: "supervisor", Agent: data.Supervisor.Agent, PID: data.Supervisor.PID},
 			unread:          unread,
+			events:          demoLogEvents(data.Logs),
 		}, now), nil
 	}
 	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
@@ -316,16 +317,20 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), coordinators, now), nil
 	}
 	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
-		events := make([]logs.Event, 0, len(data.Logs))
-		for _, raw := range data.Logs {
-			var fields map[string]any
-			if err := json.Unmarshal(raw, &fields); err != nil {
-				return nil, err
-			}
-			events = append(events, logs.Event{Raw: slices.Clone([]byte(raw)), Fields: fields})
-		}
-		return events, nil
+		return demoLogEvents(data.Logs), nil
 	}
+}
+
+// demoLogEvents gives the log events of the fixture. The fixture check
+// rejects an event that is not a JSON object.
+func demoLogEvents(raws []json.RawMessage) []logs.Event {
+	events := make([]logs.Event, 0, len(raws))
+	for _, raw := range raws {
+		var fields map[string]any
+		_ = json.Unmarshal(raw, &fields)
+		events = append(events, logs.Event{Raw: slices.Clone([]byte(raw)), Fields: fields})
+	}
+	return events
 }
 
 // applyDemoUI sets the parts of the fixture UI state that the current screens
@@ -337,6 +342,8 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	case "agents":
 		m.screenIndex = 1
 		m.agents.selectedKey = ui.Selection
+		m.graph.selected = ui.Selection
+		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
 		switch ui.View {
 		case "goals":
@@ -366,6 +373,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.screenIndex = 7
 	}
 	m.agents.showHistory = !ui.HideStopped
+	m.graph.hideStopped = ui.HideStopped
 	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {

@@ -17,6 +17,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -43,12 +44,17 @@ type agentNode struct {
 	nextTask    string
 	pid         string
 	nudged      bool
+	nudgedAt    string
+	result      string
+	recent      []string
 }
 
 type agentGroup struct {
-	id    string
-	title string
-	keys  []string
+	id       string
+	title    string
+	keys     []string
+	goal     string
+	goalStop bool
 }
 
 type agentsData struct {
@@ -118,6 +124,11 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return agentsData{}, err
 	}
+	events, _, err := logs.NewReaderWithClock(home, func() time.Time { return now }).Read(context.Background(), time.Time{})
+	if err != nil {
+		return agentsData{}, fmt.Errorf("logs: %w", err)
+	}
+	source.events = events
 	return buildAgents(source, now), nil
 }
 
@@ -131,6 +142,7 @@ type agentsSource struct {
 	supervisorClaim  records.Claim
 	coordinatorClaim string
 	unread           map[string][]records.Inbox
+	events           []logs.Event
 }
 
 // inboxAgentNames returns the current coordinator and manager names. Their
@@ -191,14 +203,16 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 	}
 	currentAgents := currentAgentKeys(agents)
 	nudgedRoles := make(map[string]bool)
+	nudgedAt := make(map[string]string)
 	for _, name := range inboxAgentNames(agents) {
 		for _, item := range source.unread[name] {
 			if item.NudgedAt != "" {
 				nudgedRoles[name] = true
-				break
+				nudgedAt[name] = max(nudgedAt[name], item.NudgedAt)
 			}
 		}
 	}
+	recent := recentAgentEvents(source.events, now.Location())
 	goalTitle := make(map[string]string)
 	for _, goal := range goals {
 		if goal.Status == "active" && goalTitle[goal.Project] == "" {
@@ -213,7 +227,8 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		if goalTitle[project.ID] != "" {
 			title += " · " + goalTitle[project.ID]
 		}
-		data.groups = append(data.groups, agentGroup{id: project.ID, title: title})
+		goal, stop := projectGoalLine(goals, project.ID)
+		data.groups = append(data.groups, agentGroup{id: project.ID, title: title, goal: goal, goalStop: stop})
 	}
 	managerByProject := make(map[string]records.Agent)
 	coordinatorKey := source.coordinatorClaim
@@ -263,14 +278,21 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 				pid = fmt.Sprint(supervisorClaim.PID)
 			}
 		}
-		taskStatus := ""
+		taskStatus, result := "", ""
 		if task, ok := taskByID[record.Task]; ok {
 			taskStatus = task.Status
+			if task.Verification != nil && task.Verification.Agent == record.Key {
+				result = task.Verification.Result
+			}
 		}
 		node := agentNode{
 			record: record, status: status, age: age, parentKey: parentKey, inferred: inferred, stopped: stopped,
 			current: currentAgents[record.Key], ghost: ghost, nudged: currentAgents[record.Key] && nudgedRoles[record.Name],
 			landedGhost: landedGhost, landedLabel: landedLabel, taskStatus: taskStatus, nextTask: nextTasks[record.Task], pid: pid,
+			result: result, recent: recent[record.Key],
+		}
+		if node.nudged {
+			node.nudgedAt = nudgedAt[record.Name]
 		}
 		data.nodes = append(data.nodes, node)
 		data.groups[groupIndex].keys = append(data.groups[groupIndex].keys, record.Key)

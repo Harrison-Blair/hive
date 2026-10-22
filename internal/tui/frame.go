@@ -383,6 +383,8 @@ func (m *Model) contentView(width, height int) string {
 	switch {
 	case tab == tabChat:
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
+	case tab == tabAgents:
+		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := width * 13 / 30
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
@@ -401,8 +403,9 @@ func (m *Model) contentView(width, height int) string {
 	case m.helpOpen:
 		content = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(content, width, height)
 	case tab == tabAgents && m.popupOpen:
-		title, lines := m.agentDetails()
-		content = component.Popup{Details: component.Details{Title: title + " · esc closes", Lines: lines, Offset: m.popupOffset}, Width: 60, Height: 12}.View(content, width, height)
+		title, lines := m.agentDetailsPopup()
+		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
+		content = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(content, width, height)
 	}
 	return content
 }
@@ -473,7 +476,7 @@ func (m *Model) legacyDetails(width int) (string, []string) {
 	return "json", lines
 }
 
-// agentDetails gives the details of the selected agent.
+// agentDetails gives the details of the selected agent of Health › Agents.
 func (m *Model) agentDetails() (string, []string) {
 	node, ok := m.agents.selected()
 	if !ok {
@@ -592,10 +595,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 				m.popupOffset = max(m.popupOffset-1, 0)
 			case "down", "j", "pgdown":
 				m.popupOffset++
-			case "a", "t":
-				return m.currentScreen().Update(press)
-			case "p":
-				return m.agentsPeek()
+			case "a", "p", "t":
+				if node, _, ok := m.selectedAgent(); ok {
+					return m.agentAction(key, node)
+				}
 			}
 			return nil
 		}
@@ -633,9 +636,6 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	case "tab":
 		return m.nextRegion()
 	case "[", "]":
-		if tab == tabAgents {
-			return m.agentsView(key)
-		}
 		if len(entry.views) == 0 {
 			return nil
 		}
@@ -650,20 +650,12 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	if tab == tabChat {
 		return m.updateChatFeedKey(press)
 	}
-	if tab == tabAgents && key == "r" {
-		// Decision 19: restart is in Health › Agents.
-		return nil
-	}
-	if tab == tabAgents && key == "p" {
-		return m.agentsPeek()
-	}
-	if tab == tabAgents && key == "enter" {
-		if _, ok := m.agents.selected(); ok {
-			m.popupOpen = true
-			m.popupOffset = 0
-			return m.logAction("agent details open")
+	if tab == tabAgents {
+		if m.agents.peekOpen {
+			return m.currentScreen().Update(press)
 		}
-		return nil
+		// Decision 19: restart is in Health › Agents, so r does nothing.
+		return m.updateAgentsKey(key)
 	}
 	if tab == tabLogs && (key == "<" || key == ">") {
 		day := "["
@@ -696,27 +688,6 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		return m.logAction("details open", slogString("region", entry.regions[1]))
 	}
 	return m.currentScreen().Update(press)
-}
-
-// agentsView gives [ and ] to the TREE, GRAPH, and TABLE views of the current
-// Agents screen, which change on tab. Wave 6 replaces the screen with the
-// graph of the Agents board.
-func (m *Model) agentsView(key string) tea.Cmd {
-	steps := 1
-	if key == "[" {
-		steps = 2
-	}
-	var cmds []tea.Cmd
-	for range steps {
-		cmds = append(cmds, m.currentScreen().Update(tea.KeyPressMsg{Code: tea.KeyTab}))
-	}
-	return batch(cmds...)
-}
-
-// agentsPeek peeks at the pane of the selected agent (decision 14). The
-// current Agents screen peeks on enter until wave 6.
-func (m *Model) agentsPeek() tea.Cmd {
-	return m.currentScreen().Update(tea.KeyPressMsg{Code: tea.KeyEnter})
 }
 
 // screenKey gives the tab of a key 1 to 6.

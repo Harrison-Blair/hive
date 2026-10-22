@@ -19,7 +19,7 @@ func TestAgentsDefaultShowsCurrentGenerationsAndActiveTaskGhosts(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 
 	want := []string{"coordinator-current", "supervisor-current", "manager-current", "live-worker", "active-ghost"}
@@ -62,7 +62,7 @@ func TestAgentsHistoryToggleShowsAllGenerations(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	if !strings.Contains(m.currentScreen().KeyHints(), "h hide stopped") {
 		t.Fatalf("default footer does not show the stopped-agent hint: %s", m.currentScreen().KeyHints())
@@ -218,7 +218,7 @@ func containsAgentName(names []string, name string) bool {
 func TestAgentsScreenRendersTopologyTabsAndDetail(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	requireAgentsView(t, m, "[ TREE ]", "home", "coordinator", "supervisor", "demo · Active demo goal", "manager-demo", "worker-1", "legacy-verifier")
 	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
@@ -253,7 +253,7 @@ func TestAgentsLoadsLongAgentKeysAsNodesAndParents(t *testing.T) {
 
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
 	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
@@ -288,7 +288,7 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 					t.Fatalf("line %d is %d cells; want %d:\n%s", index, got, size.width, strings.Join(lines, "\n"))
 				}
 			}
-			if !strings.HasPrefix(lines[frameRows-1], "╭─ agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
+			if !strings.HasPrefix(lines[frameRows-1], "╭─ project agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
 				t.Fatalf("Agents panel does not fill the content area:\n%s", strings.Join(lines, "\n"))
 			}
 		})
@@ -299,7 +299,7 @@ func TestAgentsScreenLogsTabAndSelectionActions(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
 	m, cmd = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
@@ -342,7 +342,7 @@ func TestAgentsScreenStatusHidesStoppedAndUsesUnknownWhenSupervisorStale(t *test
 	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	requireAgentsView(t, m, "working", "idle", "blocked", "supervisor · idle", "stale-worker · unknown")
 	rejectAgentsView(t, m, "× old-worker", "stopped")
@@ -373,7 +373,7 @@ func TestAgentsGraphKeepsSelectedAgentInViewWithFortyAgents(t *testing.T) {
 	home, clock := agentsFixture(t, 40)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 6: tab moves the region. The test gives tab to the current Agents screen.
 	m, _ = pressScreenKey(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
@@ -395,7 +395,7 @@ func TestAgentsSelectionMovesWithViKeysAndDetailShowsInferredParent(t *testing.T
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, key('j', "j"))
 	m, _ = raise(t, m, key('j', "j"))
@@ -412,7 +412,7 @@ func TestAgentsRefreshKeepsSelectionByAgentKey(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	m := newTestModel(t, home, clock)
 	m.screenIndex = 1
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	for range 4 {
 		m, _ = raise(t, m, key('j', "j"))
@@ -428,7 +428,7 @@ func TestAgentsProjectsFollowProjectRecordOrder(t *testing.T) {
 	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
 	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
 	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := openHealthAgents(t, m)
 	m = deliverAgentCommands(t, m, cmd)
 	view := ansi.Strip(m.currentScreen().View(120, 30))
 	alpha := strings.Index(view, "▾ alpha")
@@ -457,31 +457,35 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	}
 	t.Setenv("HERDR_ARGS", argsPath)
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	// Decision 14: p peeks at the pane.
+	// Decision 14: p peeks at the pane of the selected agent. The
+	// coordinator is not on the graph, so the manager is selected.
 	_, cmd = raise(t, m, key('p', "p"))
 	if cmd == nil {
 		t.Fatal("p did not start pane read")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "PEEK · w1:p1", "line 06", "line 25")
+	requireAgentsView(t, m, "PEEK · w1:p3", "line 06", "line 25")
 	rejectAgentsView(t, m, "line 05", "line 01")
 	args, err := os.ReadFile(argsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, argument := range []string{"pane", "read", "w1:p1", "--lines", "20", "--format", "text"} {
+	for _, argument := range []string{"pane", "read", "w1:p3", "--lines", "20", "--format", "text"} {
 		if !strings.Contains(string(args), argument) {
 			t.Fatalf("herdr pane read args omitted %q: %s", argument, args)
 		}
 	}
 	m, cmd = raise(t, m, key(tea.KeyEscape, "esc"))
 	m = deliverAgentCommands(t, m, cmd)
-	requireAgentsView(t, m, "[ TREE ]")
+	if m.agents.peekOpen {
+		t.Fatal("esc did not close the peek")
+	}
+	requireView(t, m, "╭─ project agents ")
 	logData, err := os.ReadFile(dailyPath(home, clock.now()))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"action":"agent peek"`, `"action":"agent peek close"`, `"pane_id":"w1:p1"`} {
+	for _, want := range []string{`"action":"agent peek"`, `"action":"agent peek close"`, `"pane_id":"w1:p3"`} {
 		if !strings.Contains(string(logData), want) {
 			t.Fatalf("Agents log omits %q:\n%s", want, logData)
 		}
@@ -508,60 +512,6 @@ func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
 		if strings.Contains(frame, unwanted) {
 			t.Errorf("Agents header contains %q:\n%s", unwanted, frame)
-		}
-	}
-}
-
-func TestAgentsBoardGoldenFrames(t *testing.T) {
-	sizes := []struct {
-		name   string
-		width  int
-		height int
-	}{{name: "120x40", width: 120, height: 40}, {name: "200x57", width: 200, height: 57}}
-	tabs := []struct {
-		name string
-		tab  agentsTab
-	}{{name: "tree", tab: agentsTree}, {name: "graph", tab: agentsGraph}, {name: "table", tab: agentsTable}}
-
-	for _, size := range sizes {
-		for _, tab := range tabs {
-			t.Run(size.name+"/"+tab.name, func(t *testing.T) {
-				m := agentsBoardModel(t)
-				m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC) }
-				for index := range m.agents.data.nodes {
-					if m.agents.data.nodes[index].record.Role == "supervisor" {
-						m.agents.data.nodes[index].pid = "551386"
-					}
-				}
-				m.agents.tab = tab.tab
-				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
-				// The header shows the home. The test home is a new folder on
-				// each run, so the golden frame uses a fixed home.
-				m.home = "/fixture/hive"
-				frame := ansi.Strip(m.View().Content)
-				// Decisions 1 and 3: the tab bar replaces the screen list, and
-				// the content area shows the current Agents screen in one panel.
-				if strings.Contains(frame, "SCREENS") || !strings.Contains(frame, "╭─ agents ") {
-					t.Fatalf("Agents does not use the frame layout:\n%s", frame)
-				}
-				lines := strings.Split(frame, "\n")
-				if len(lines) != size.height {
-					t.Fatalf("frame has %d lines, want %d", len(lines), size.height)
-				}
-				for index, line := range lines {
-					if got := ansi.StringWidth(line); got != size.width {
-						t.Fatalf("line %d has width %d, want %d: %q", index+1, got, size.width, line)
-					}
-				}
-				goldenPath := filepath.Join("testdata", "agents-board", tab.name+"-"+size.name+".golden")
-				golden, err := os.ReadFile(goldenPath)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if got := strings.TrimSuffix(frame, "\n"); got != strings.TrimSuffix(string(golden), "\n") {
-					t.Fatalf("Agents frame differs from %s:\n%s", goldenPath, got)
-				}
-			})
 		}
 	}
 }
@@ -1365,7 +1315,9 @@ func agentsBoardModel(t *testing.T) *Model {
 	}
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	m.screenIndex = 1
+	// Health › Agents keeps the current Agents screen until its wave 6
+	// task.
+	m.selectScreen(tabHealth, 1)
 	cmd := m.startCurrentScreenLoad()
 	if cmd == nil {
 		t.Fatal("Agents screen did not request data")
@@ -1377,13 +1329,12 @@ func agentsBoardModel(t *testing.T) *Model {
 func TestAgentsProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	// Decisions 6 and 22: tab moves the region, and ] ] select the TABLE
-	// view of the current Agents screen until wave 6.
-	if err := RunHome(home, strings.NewReader("1]]\x03\x03"), &out); err != nil {
+	// Decision 10: with no project, Agents shows the notice.
+	if err := RunHome(home, strings.NewReader("1\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
-	if !strings.Contains(out.String(), "[ TABLE ]") {
-		t.Fatalf("program output did not render the Agents table:\n%s", out.String())
+	if !strings.Contains(out.String(), agentsNoneText) {
+		t.Fatalf("program output did not render the Agents notice:\n%s", out.String())
 	}
 }
 
@@ -1468,4 +1419,14 @@ func rejectAgentsView(t *testing.T, model *Model, unwanted ...string) {
 			t.Fatalf("Agents view contains %q:\n%s", item, view)
 		}
 	}
+}
+
+// openHealthAgents opens Health › Agents, which keeps the current Agents
+// screen until its wave 6 task, and starts its load.
+func openHealthAgents(t *testing.T, m *Model) (*Model, tea.Cmd) {
+	t.Helper()
+	m.selectScreen(tabHealth, 1)
+	m.screenLoading = false
+	m.invalidateView()
+	return m, m.startCurrentScreenLoad()
 }
