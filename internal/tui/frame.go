@@ -110,6 +110,10 @@ var screenRegistry = [tabCount]frameScreen{
 			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
 			"details": {"↑↓ scroll", "esc back to list"},
 		},
+		panels: map[string]screenPanels{
+			"Open":     {list: (*Model).frictionList, details: (*Model).frictionDetails},
+			"Resolved": {list: (*Model).frictionList, details: (*Model).frictionDetails},
+		},
 	},
 	tabHealth: {
 		label:       "Health",
@@ -463,12 +467,6 @@ func (m *Model) legacyDetails() (string, []string) {
 			title = item.record.ID
 		}
 		return title, append(m.tasks.detailLines(), m.tasks.evidenceLines()...)
-	case 5:
-		title := "details"
-		if entry, ok := m.friction.selected(); ok {
-			title = entry.file
-		}
-		return title, m.friction.detailLines()
 	case 6:
 		check, ok := m.health.selectedCheck()
 		if !ok {
