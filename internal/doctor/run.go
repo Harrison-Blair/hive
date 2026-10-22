@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/Harrison-Blair/hive/internal/lib/run"
+	"github.com/Harrison-Blair/hive/internal/lib/version"
 )
 
 // Run runs each check in order.
@@ -22,6 +23,7 @@ func Run(ctx context.Context, home string, logger *slog.Logger) Result {
 		checkUnresolvedAgents(home),
 		checkOwnerlessInboxes(home),
 		checkGit(ctx),
+		checkHomeVersion(ctx, home, version.Info().Version, "git"),
 		checkSupervisor(home),
 		checkSupervisorBinary(home),
 		checkStaleWorktrees(home),
