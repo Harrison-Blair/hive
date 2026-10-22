@@ -7,10 +7,10 @@
 // agents.go loads and renders agent topology, and handles pane actions.
 // goals_queue.go loads and renders goal and queue records.
 // task_screen.go loads and renders task records and evidence.
-// friction_screen.go loads and renders dogfood friction entries.
+// friction.go loads dogfood friction entries and draws the Friction list and details.
 // health_screen.go loads and renders doctor checks.
 // header.go loads and renders project, agent, supervisor, task, and clock data.
-// logview.go renders and filters log lines and handles log keys.
+// logs_screen.go loads, filters, and renders log events, and handles Logs keys.
 // tick.go schedules refreshes and carries background load results.
 // demo.go loads a demo fixture, feeds the screens from it, and draws the too-small notice.
 package tui

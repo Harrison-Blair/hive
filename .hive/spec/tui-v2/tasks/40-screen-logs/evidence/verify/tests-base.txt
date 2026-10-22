@@ -1,0 +1,13 @@
+# github.com/Harrison-Blair/hive/internal/tui/component [github.com/Harrison-Blair/hive/internal/tui/component.test]
+internal/tui/component/filterbar_test.go:53:48: unknown field Status in struct literal of type FilterBar
+internal/tui/component/filterbar_test.go:68:63: unknown field Focused in struct literal of type FilterBar
+# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
+internal/tui/logs_screen_test.go:34:4: m.refreshLogSelection undefined (type *Model has no field or method refreshLogSelection)
+internal/tui/logs_screen_test.go:58:6: m.refreshLogSelection undefined (type *Model has no field or method refreshLogSelection)
+internal/tui/logs_screen_test.go:76:13: undefined: parseLogFilter
+internal/tui/logs_screen_test.go:118:4: m.refreshLogSelection undefined (type *Model has no field or method refreshLogSelection)
+internal/tui/logs_screen_test.go:162:4: m.refreshLogSelection undefined (type *Model has no field or method refreshLogSelection)
+internal/tui/logs_screen_test.go:214:8: m.refreshLogSelection undefined (type *Model has no field or method refreshLogSelection)
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component [build failed]
+FAIL

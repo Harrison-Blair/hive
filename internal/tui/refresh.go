@@ -30,7 +30,7 @@ func (m *Model) startRefreshCheck() tea.Cmd {
 	m.refreshChecking = true
 	home := m.home
 	request := m.currentScreen().DataRequest()
-	day := startOfDay(m.logDate.Local())
+	day := startOfDay(m.logDate)
 	tasks := m.tasks.data
 	return func() tea.Msg {
 		return refreshCheckMsg{

@@ -205,6 +205,33 @@ The manager made this decision in task `29-frame-layout`:
 
 - A live check compares a capture of a pane with a board grid. In a space cell of a live capture, the check does not compare the token or the bold flag. A terminal does not show them. It compares each other cell fully. The golden check at the model compares each cell fully.
 
+The worker made these decisions in task `38-screen-friction`:
+
+- Screen: the file `internal/tui/friction.go`. It replaces `friction_screen.go` and keeps its loader.
+- Registry: the Friction entry has a `panels` entry for the views Open and Resolved. Task `36-screen-work-queue` added the field `panels`.
+- List: the column ENTRY shows the file name without `.md`. From 120 columns, the date column shows `MM-DD`. Below 120 columns, the list shows the full date, the column SEEN, and the hint `enter opens details`.
+- Order: the Open view shows the newest opened date first. The Resolved view shows the newest date of the status `Resolved YYYY-MM-DD` first. Entries with the same date show in the order of their names.
+- Seen: the count of lines in the section Occurrences, and the last date of these lines. An entry with no Occurrences section shows 1 and its opened date.
+- Details: the fields title, status, opened, seen or decision, and file. The Open view shows seen. The Resolved view shows decision. Then each section shows with its title in capital letters. Occurrences lines are dim. In Resolved by, the first field has 16 cells, and the remaining text is dim.
+- Keys: from 120 columns, `enter` opens the entry file in the details region, and `esc` closes it. The file scrolls with the offset of the details region. After `esc`, the details of the entry show from the top. In the details region, `g` and `G` go to the top and the end of the details.
+- Component fix: `Details` shows `↓ N more lines` in the last body row when lines stay below the view. The scroll mark uses the lines that show. This follows the user decision of 2026-10-21.
+- Component fix: `List` has the field `Hint`. The hint shows in dim at the right of the last body row.
+- Component fix: `List` draws the selected first cell in accent and bold over its full column. The space after `▶` is fg. This follows the user decisions 4 and 7 of 2026-10-21.
+
+The manager made this decision in task `40-screen-logs`:
+
+- A row of the Logs event list shows the `msg` of the event. When the event has the field `reason`, the row also shows ` · ` and the text of the reason before the first `;`. The JSON panel shows the full reason.
+
+The worker made these decisions in task `40-screen-logs`:
+
+- Screen: the file `internal/tui/logs_screen.go`. The frame gives the content area of tab 6 to `logsContent`. From 120 columns, the event list has 8/15 of the width.
+- Filter: the filter bar text is the applied filter. The default text is `level:info`. `level:` gives the lowest level. `agent:` matches the agent ID, or the agent name before its generation. Each other typed field must be equal to the field of the event. Each word of free text must be in the row text.
+- Selection: when a load gives a new newest event, follow selects it. When the newest event does not change, the selection stays. When no row shows, the selected event stays, and it shows again with the rows. A day change selects the first row.
+- Keys: `/` opens the filter bar with the applied text. `esc` in the event list sets the default filter. `f` changes follow. `↑`, `k`, `pgup`, and `g` set follow to off. `G` sets follow to on.
+- This task removes the old keys `l`, `c`, `p`, `a`, and `r` of the Logs screen. Decisions 21 to 25 give these keys other meanings or give the typed fields.
+- The JSON panel cuts each line to the panel width less 6 cells, with `…`. When the lines do not fit, the last body row shows `↓ N more lines`.
+- Component change: `FilterBar` has the fields `Focused` and `Status`. `Status` is at the end of the bar. The Logs screen shows the follow mark and the day there.
+
 The worker made these decisions in task `36-screen-work-queue`:
 
 - Registry: a `frameScreen` has the field `panels`. Its key is a view name. A `screenPanels` gives the list region and the details of that view. The frame uses `legacyPanel` and `legacyDetails` only for a view with no `panels` entry.

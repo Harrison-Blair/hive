@@ -175,7 +175,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Friction", selected: "2026-04-05", also: []string{"[open 1]"}, states: []string{"status: Open"},
+			name: "Friction", honey: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 5)
 				m.friction.data.entries = []frictionEntry{{file: "issue.md", path: "entries/issue.md", title: "Open issue", status: "Open", opened: "2026-04-05", decision: "Keep", valid: true}}
@@ -197,7 +197,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Logs", selected: "12:00:03 WARN herdr network retry", also: []string{"level: info"}, states: []string{"WARN herdr network retry"},
+			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN  herdr     network retry"},
 			model: func(t *testing.T) *Model {
 				clock := fixedClock(t, time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local))
 				m := newTestLogsModel(t, newTestHome(t), clock)
@@ -213,6 +213,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			m := tt.model(t)
 			m.invalidateView()
 			raw := m.View().Content
+			// The Logs board draws the space after ▶ in fg, so Logs
+			// checks the marker and the message on their own.
 			if tt.selected != "" {
 				requireHoneySelection(t, raw, tt.selected)
 			}

@@ -1,0 +1,34 @@
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.079s
+--- FAIL: TestFrictionFitsEachSize (0.03s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/119x40 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/119x41 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/120x40 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/120x41 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/80x24 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/Friction/80x25 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/119x40 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/119x41 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/120x40 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/120x41 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/80x24 (0.00s)
+    --- FAIL: TestFrictionFitsEachSize/FrictionResolved/80x25 (0.00s)
+--- FAIL: TestFrictionFitsEmptyAndLongData (0.01s)
+    --- FAIL: TestFrictionFitsEmptyAndLongData/empty/120x40 (0.00s)
+    --- FAIL: TestFrictionFitsEmptyAndLongData/empty/80x24 (0.00s)
+    --- FAIL: TestFrictionFitsEmptyAndLongData/long/120x40 (0.00s)
+    --- FAIL: TestFrictionFitsEmptyAndLongData/long/80x24 (0.00s)
+--- FAIL: TestFrictionKeys (0.00s)
+--- FAIL: TestFrictionMatchesItsBoards (0.02s)
+    --- FAIL: TestFrictionMatchesItsBoards/CompactFriction (0.00s)
+    --- FAIL: TestFrictionMatchesItsBoards/Friction (0.01s)
+    --- FAIL: TestFrictionMatchesItsBoards/FrictionResolved (0.01s)
+        friction_test.go:125: view omits "open · 0":
+        friction_test.go:125: view omits "open · 1":
+        friction_test.go:125: view omits "tail":
+        friction_test.go:125: view omits "▶ very-long-entry-name-very-long-":
+    friction_test.go:145: list footer = " [list] ↑↓ move · tab region · [ ] view · enter open · / filter · g/G top/end · ? help"
+        friction_test.go:32: 1020 cells differ from CompactFriction.grid:
+        friction_test.go:32: 2103 cells differ from FrictionResolved.grid:
+        friction_test.go:32: 2695 cells differ from Friction.grid:
+        friction_test.go:74: selected entry "task-edit-brief-command" is not visible:
+        friction_test.go:74: selected entry "worker-gate-adds-golangci-lint" is not visible:
