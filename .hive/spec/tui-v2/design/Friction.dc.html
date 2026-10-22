@@ -52,7 +52,7 @@ function screen(t) {
   list.forEach(function (r, i) {
     var y = 6 + i, sel = i === 4;
     put(t, 2, y, sel ? '▶' : ' ', sel ? 'accent' : 'fg', sel ? 1 : 0);
-    put(t, 4, y, fit(r[0], 34), sel ? 'accent' : 'fg', sel ? 1 : 0);
+    put(t, 4, y, fit(r[0], sel ? 34 : 33), sel ? 'accent' : 'fg', sel ? 1 : 0);
     put(t, 38, y, r[1], 'dim');
   });
   box(t, 52, 4, 68, 35, 'border', 'scratch-hive-starts-real-agents', 'accent');

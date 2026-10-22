@@ -47,13 +47,13 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   idle-session-supervisor-nudges    10-19        ││ ~/go/bin/hive after waves 2, 3, and 4. The supervisor kept the   │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   manager-blocked-by-harness-permis…10-19        ││ old code, so the wave 2 change was not live. hive doctor         │
+t|│   manager-blocked-by-harness-permi… 10-19        ││ old code, so the wave 2 change was not live. hive doctor         │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   manager-spawn-shell-ready-race    10-19        ││ reported the supervisor as live and did not compare its binary   │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   no-hive-path-repairs-verified-task10-19        ││ with the installed one.                                          │
+t|│   no-hive-path-repairs-verified-ta… 10-19        ││ with the installed one.                                          │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   shell-ready-spawn-race            10-19        ││                                                                  │
@@ -62,7 +62,7 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   task-edit-brief-command           10-19        ││ RESOLVED BY                                                      │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarfaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000111111111110000000000000000000000000000000000000000000000000000000
-t|│   verifier-spawn-pane-requires-proj…10-19        ││ 3-tui-restart   merge 3ccd93fb                                   │
+t|│   verifier-spawn-pane-requires-pro… 10-19        ││ 3-tui-restart   merge 3ccd93fb                                   │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarfffffffffffffffffddddddddddddddfffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   verifier-verdict-without-commit   10-19        ││                                                                  │
@@ -71,10 +71,10 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│   verify-fail-no-reverify-workspace 10-19        ││ REPRODUCTION                                                     │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarfaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000111111111111000000000000000000000000000000000000000000000000000000
-t|│   verify-fail-repair-worker-no-work…10-19        ││ 1. Start hive supervise.                                         │
+t|│   verify-fail-repair-worker-no-wor… 10-19        ││ 1. Start hive supervise.                                         │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│   worker-spawn-keeps-old-acting-age…10-19        ││ 2. Land a change to the supervisor and run go install or         │
+t|│   worker-spawn-keeps-old-acting-ag… 10-19        ││ 2. Land a change to the supervisor and run go install or         │
 k|afffffffffffffffffffffffffffffffffffffdddddffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                  ││    go build for hive.                                            │
