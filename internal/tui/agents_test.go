@@ -212,6 +212,8 @@ func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 
 func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 	m := agentsBoardModel(t)
+	// Decision 62: enter opens the pod, and the arrows move in it.
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	for range 3 {
 		m, _ = raise(t, m, key('j', "j"))
 	}

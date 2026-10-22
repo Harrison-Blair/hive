@@ -129,6 +129,8 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 				m := agentsBoardModel(t)
 				m.width, m.height = 120, 40
 				m.graph.selected = "manager-alpha"
+				// Decision 62: a card is selected in the one-pod view.
+				m.graph.podView = true
 				return m
 			},
 		},

@@ -16,6 +16,7 @@
 // filterbar.go holds FilterBar, the filter text of the log screen.
 // input.go holds Input, the message line of the chat.
 // card.go holds Card, the box of one agent.
+// boxjoin.go holds BoxArms and BoxRune, the light and heavy box joints.
 // notice.go holds Notice, a dim line of one notice.
 // popup.go holds Popup and DimScreen, a Details box over a dimmed screen.
 // markdown.go holds RenderMarkdown, an agent reply rendered by Glamour.

@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ● · sup ● · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffff
+b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|faaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|01111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · 2 projects ────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111111111110000000000000000000000000000000000000000000000000
+t|│                           ╭──────────────────────╮                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ ● coordinator        │                           ┃
+k|afffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ claude · working · … │                           ┃
+k|afffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╰───────────┬──────────╯                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                   ╭───────────────────┴─────────────────╮                    ┃
+k|afffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ╭─ example-api ───┴─────────────────╮ ┏━ home ━━━━━━━━━━┷━━━━━━━━━━━━━━━━━┓  ┃
+k|afrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrrfaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffa
+b|00001111111111111000000000000000000000000011111100000000000000000000000000000000
+t|│ │ g4-rate-limits · wave B           │ ┃                                   ┃  ┃
+k|afrfdddddddddddddddddddddddfffffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ ╭──────────────────────╮          │ ┃ ╭──────────────────────╮          ┃  ┃
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │ ● manager-api        │          │ ┃ │ ● plan-review-1      │          ┃  ┃
+k|afrfwfwffffffffffffffffffffwffffffffffrfafwfwffffffffffffffffffffwffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │ codex · working · 2m │          │ ┃ │ pi · working · 2m    │          ┃  ┃
+k|afrfwfddddddddddddddddddddfwffffffffffrfafwfdddddddddddddddddffffwffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ ├──────────────────────╯          │ ┃ ╰──────────────────────╯          ┃  ┃
+k|afrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrfafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │                                 │ ┃                                   ┃  ┃
+k|afrfrfffffffffffffffffffffffffffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │╭──────────────────────╮         │ ┃                                   ┃  ┃
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ ├┤ ● t3-worker-1        │         │ ┃                                   ┃  │
+k|afrfrwfwffffffffffffffffffffwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ ││ codex · working      │         │ ┃                                   ┃  │
+k|afrfrwfdddddddddddddddffffffwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │╰──────────────────────╯         │ ┃                                   ┃  │
+k|afrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ │                                 │ ┃                                   ┃  │
+k|afrfrfffffffffffffffffffffffffffffffffrfafffffffffffffffffffffffffffffffffffaffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ←→ at the edge scrolls · projects 2–2 of 2 · home                     ← hive │
+k|afdddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffddddddfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [graph] ←→ select pod · ↑ coordinator · enter open · ?                         
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

@@ -42,7 +42,7 @@
   },
   "ui": {
     "screen": "agents",
-    "view": "",
+    "view": "pod",
     "focus": "graph",
     "selection": "t5-research-2",
     "scroll": {"graph": {"top": 0, "left": 0}},

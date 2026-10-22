@@ -127,7 +127,7 @@ type demoPrompt struct {
 var (
 	demoScreens = []string{"agents", "chat", "work", "friction", "health", "logs"}
 	demoViews   = map[string][]string{
-		"agents":   {""},
+		"agents":   {"", "pod"},
 		"chat":     {""},
 		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
@@ -263,12 +263,14 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	}
 	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {
 		unread := make(map[string][]records.Inbox, len(data.Inbox))
+		var all []records.Inbox
 		for name, items := range data.Inbox {
 			for _, item := range items {
 				if item.ReadAt == "" {
 					unread[name] = append(unread[name], item)
 				}
 			}
+			all = append(all, items...)
 		}
 		return buildAgents(agentsSource{
 			projects:        data.Projects,
@@ -279,6 +281,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			supervisorClaim: records.Claim{Key: "supervisor", Agent: data.Supervisor.Agent, PID: data.Supervisor.PID},
 			unread:          unread,
 			events:          demoLogEvents(data.Logs),
+			inbox:           all,
 		}, now), nil
 	}
 	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
@@ -340,6 +343,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	case "agents":
 		m.screenIndex = 1
 		m.graph.selected = ui.Selection
+		m.graph.podView = ui.View == "pod"
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
 		switch ui.View {

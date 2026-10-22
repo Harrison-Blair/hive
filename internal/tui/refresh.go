@@ -81,6 +81,9 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 			filepath.Join(state, "goals"),
 			filepath.Join(state, "inbox"),
 			filepath.Join(state, "projects"),
+			// The agent prompt events of hive agent send light a line
+			// (decision 66).
+			filepath.Join(home, ".hive", "logs", day.Format("2006-01-02")+".jsonl"),
 		}
 	case goalsQueueDataRequest:
 		return []string{filepath.Join(state, "goals"), filepath.Join(state, "tasks")}

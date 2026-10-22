@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · home ──────────────────────────────────────────────────────────────────────────────────────────────╮
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╭──────────────────────╮                                               │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ ● coordinator        │                                               │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             ╭─ plan-review-1 · esc closes ─────────────────────────────╮                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000001111111111111111111111111111000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  role      agent                                         │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╭─│  status    ● live · working                              │─╮                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddwfffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ │  harness   pi                                            │ │                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ │  model     openai-codex/gpt-6.1-sol                      │ │                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ │  pane      w80:p1                                        │ │                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ │  tab       plan-review-1                                 │ │                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ │  parent    coordinator-g2                                │ │                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffddddddddddffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╰─│                                                          │─╯                           │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  ACTIONS                                                 │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  a  attach to pane                                       │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  p  peek pane                                            │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffafffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  t  open task · none                                     │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddfffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  RECENT                                                  │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  14:15 agent report plan-review-1                        │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │  14:02 agent spawn plan-review-1                         │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddfffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             │                                                          │                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                             ╰──────────────────────────────────────────────────────────╯                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [details] a attach · p peek · t task · ↑↓ scroll · esc close                                                           
+k|aaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -23,47 +23,47 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           ╰───────────┰──────────╯                           ┃
 k|afffffffffffffffffffffffffffwwwwwwwwwwwwiwwwwwwwwwwwfffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                  ┏━◀━━━━━━━━━━━━━━━━━━┹───────────────╮                      ┃
-k|affffffffffffffffffiiiiiiiiiiiiiiiiiiiiiirrrrrrrrrrrrrrrrffffffffffffffffffffffa
+t|│                   ┏━◀━━━━━━━━━━━━━━━━━┹─────────────────╮                    ┃
+k|afffffffffffffffffffiiiiiiiiiiiiiiiiiiiiirrrrrrrrrrrrrrrrrrffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┏━ hive ━━━━━━━━━┻━━━━━━━━━━━━━━━━━┓ ╭─ example-api ──┴─────────────────╮    ┃
-k|afaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaafrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrffffa
-b|00001111110000000000000000000000000000000111111111111100000000000000000000000000
-t|│ ┃ g2-tui-v2 · wave A               ┃ │ g4-rate-limits · wave B          │    ┃
-k|afafddddddddddddddddddfffffffffffffffafrfdddddddddddddddddddddddffffffffffrffffa
+t|│ ┏━ hive ━━━━━━━━━━┻━━━━━━━━━━━━━━━━━┓ ╭─ example-api ───┴─────────────────╮  ┃
+k|afaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaafrrdddddddddddddrrrrrrrrrrrrrrrrrrrrrrffa
+b|00001111110000000000000000000000000000000011111111111110000000000000000000000000
+t|│ ┃ g2-tui-v2 · wave A                ┃ │ g4-rate-limits · wave B           │  ┃
+k|afafddddddddddddddddddffffffffffffffffafrfdddddddddddddddddddddddfffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ╭──────────────────────╮         ┃ │ ╭──────────────────────╮         │    ┃
-k|afafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrffffa
+t|│ ┃ ╭──────────────────────╮          ┃ │ ╭──────────────────────╮          │  ┃
+k|afafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │ ● manager-hive       │         ┃ │ │ ● manager-api        │         │    ┃
-k|afafwfwffffffffffffffffffffwfffffffffafrfwfwffffffffffffffffffffwfffffffffrffffa
+t|│ ┃ │ ● manager-hive       │          ┃ │ │ ● manager-api        │          │  ┃
+k|afafwfwffffffffffffffffffffwffffffffffafrfwfwffffffffffffffffffffwffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │ claude · working · … │         ┃ │ │ codex · working · 2m │         │    ┃
-k|afafwfddddddddddddddddddddfwfffffffffafrfwfddddddddddddddddddddfwfffffffffrffffa
+t|│ ┃ │ claude · working · … │          ┃ │ │ codex · working · 2m │          │  ┃
+k|afafwfddddddddddddddddddddfwffffffffffafrfwfddddddddddddddddddddfwffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ├──────────────────────╯         ┃ │ ├──────────────────────╯         │    │
-k|afafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrffffa
+t|│ ┃ ├──────────────────────╯          ┃ │ ├──────────────────────╯          │  ┃
+k|afafwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfwwwwwwwwwwwwwwwwwwwwwwwwffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │                                ┃ │ │                                │    │
-k|afafrffffffffffffffffffffffffffffffffafrfrffffffffffffffffffffffffffffffffrffffa
+t|│ ┃ │                                 ┃ │ │                                 │  ┃
+k|afafrfffffffffffffffffffffffffffffffffafrfrfffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╭──────────────────────╮        ┃ │ │╭──────────────────────╮        │    │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffrffffa
+t|│ ┃ │╭──────────────────────╮         ┃ │ │╭──────────────────────╮         │  │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ├┤ ● t5-worker-1        │        ┃ │ ├┤ ● t3-worker-1        │        │    │
-k|afafrwfwffffffffffffffffffffwffffffffafrfrwfwffffffffffffffffffffwffffffffrffffa
+t|│ ┃ ├┤ ● t5-worker-1        │         ┃ │ ├┤ ● t3-worker-1        │         │  │
+k|afafrwfwffffffffffffffffffffwfffffffffafrfrwfwffffffffffffffffffffwfffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ││ pi · working · 3m    │        ┃ │ ││ codex · working      │        │    │
-k|afafrwfdddddddddddddddddffffwffffffffafrfrwfdddddddddddddddffffffwffffffffrffffa
+t|│ ┃ ││ pi · working · 3m    │         ┃ │ ││ codex · working      │         │  │
+k|afafrwfdddddddddddddddddffffwfffffffffafrfrwfdddddddddddddddffffffwfffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╰──────────────────────╯        ┃ │ │╰──────────────────────╯        │    │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwffffffffrffffa
+t|│ ┃ │╰──────────────────────╯         ┃ │ │╰──────────────────────╯         │  │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │                                ┃ │ │                                │    │
-k|afafrffffffffffffffffffffffffffffffffafrfrffffffffffffffffffffffffffffffffrffffa
+t|│ ┃ │                                 ┃ │ │                                 │  │
+k|afafrfffffffffffffffffffffffffffffffffafrfrfffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ←→ at the edge scrolls · projects 1–2 of 3                           home →  │
-k|afddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffddddddffa
+t|│ ←→ at the edge scrolls · projects 1–2 of 2                            home → │
+k|afddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffddddddfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━──────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

@@ -35,7 +35,7 @@
   },
   "ui": {
     "screen": "agents",
-    "view": "",
+    "view": "pod",
     "focus": "graph",
     "selection": "plan-review-1",
     "scroll": {"graph": {"top": 0, "left": 0}, "details": {"top": 0, "left": 0}},

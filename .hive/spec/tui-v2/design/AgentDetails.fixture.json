@@ -40,7 +40,7 @@
   },
   "ui": {
     "screen": "agents",
-    "view": "",
+    "view": "pod",
     "focus": "details",
     "selection": "manager-hive-g2",
     "scroll": {"graph": {"top": 0, "left": 0}, "details": {"top": 0, "left": 0}},

@@ -50,10 +50,10 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                   ╭─────────────────┺━━━━━━━━━━━━━━━━━┓                  │ ┃
 k|afrfffffffffffffffffffrrrrrrrrrrrrrrrrrriiiiiiiiiiiiiiiiiiiffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                   │                                   ▼                  │ │
+t|│ │                   │                                   ▼                  │ ┃
 k|afrfffffffffffffffffffrfffffffffffffffffffffffffffffffffffiffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │       ┏━━━━━━━━━━━┷━━━━━━━━━━┓            ╭───────────┸──────────╮       │ │
+t|│ │       ┏━━━━━━━━━━━┷━━━━━━━━━━┓            ╭───────────┸──────────╮       │ ┃
 k|afrfffffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffwwwwwwwwwwwwiwwwwwwwwwwwfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │       ┃ ● t5-worker-1        ┃            │ ● t6-worker-1        │       │ │

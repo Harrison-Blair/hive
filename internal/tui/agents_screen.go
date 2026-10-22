@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -33,21 +34,45 @@ const (
 
 // The texts of the Agents screen.
 const (
-	agentsLegend   = "── spawn   ● working   ◐ idle   ○ stopped   one column per project"
-	agentsNoneText = "no project agents"
-	agentsScrolls  = "←→ at the edge scrolls"
+	agentsLegend    = "── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project"
+	agentsLegendLit = "━ ▶"
+	agentsNoneText  = "no project agents"
+	agentsScrolls   = "←→ at the edge scrolls"
 )
 
 // graphState is the state of the Agents screen: the selected agent, the
-// first project column and the first pod row on the screen, the row of the
-// selected card in the last view, and the hide flag of h.
+// selected pod and the one-pod view (decision 62), the first project column
+// and the first pod row on the screen, the row of the selected card in the
+// last view, and the hide flag of h.
 type graphState struct {
 	selected    string
+	pod         string
+	podView     bool
 	left        int
 	top         int
 	cardRow     int
 	hideStopped bool
+	// The fields below hold the last view. onePod tells that it is the
+	// one-pod view. focus is the key of the card with the heavy border. up
+	// gives the parent of each card and each pod on the graph: the
+	// coordinator is the root. lines gives the cells of the line from a
+	// parent to a child, parent first. joints gives the joint of each
+	// parent on a rail, and managerTop the top joint of the manager card.
+	onePod     bool
+	focus      string
+	up         map[string]string
+	lines      map[[2]string][]point
+	joints     map[string]point
+	managerTop point
+	// litAt is the time of the lit timer that runs (decision 67).
+	litAt time.Time
 }
+
+// point is one cell of a canvas.
+type point struct{ x, y int }
+
+// podKey gives the graph key of a pod.
+func podKey(pod graphPod) string { return "pod:" + pod.group.id }
 
 // graphPod is one project column: the manager and the agents that it spawned.
 type graphPod struct {
@@ -230,24 +255,86 @@ func (p graphPod) nested() bool {
 	return slices.ContainsFunc(p.levels, func(level int) bool { return level > low })
 }
 
-// selectedAgent gives the selected agent of the graph. When the selection is
-// not on the graph, the first agent is selected.
-func (m *Model) selectedAgent() (agentNode, int, bool) {
-	pods := m.agentsPods()
-	for column, pod := range pods {
-		for _, node := range pod.nodes() {
-			if node.record.Key == m.graph.selected {
-				return node, column, true
+// coordinatorNode gives the current coordinator, which has the card at the
+// top of the screen (decision 65).
+func (m *Model) coordinatorNode() (agentNode, bool) {
+	for _, node := range m.agents.data.nodes {
+		if node.current && node.record.Role == "coordinator" {
+			return node, true
+		}
+	}
+	return agentNode{}, false
+}
+
+// inPodView reports that the screen shows the one-pod view: after enter on
+// a pod, or at once with one project and no home pod (decision 64).
+func (m *Model) inPodView(pods []graphPod) bool {
+	return m.graph.podView || len(pods) == 1 && projectPods(pods) == 1
+}
+
+// podIndex gives the selected pod: the pod of m.graph.pod, else the pod
+// with the id or the card of the selection, else the first pod.
+func (m *Model) podIndex(pods []graphPod) int {
+	found := func() int {
+		for index, pod := range pods {
+			if pod.group.id == m.graph.pod {
+				return index
 			}
 		}
+		for index, pod := range pods {
+			if pod.group.id == m.graph.selected {
+				return index
+			}
+		}
+		for index, pod := range pods {
+			for _, node := range pod.nodes() {
+				if node.record.Key == m.graph.selected {
+					return index
+				}
+			}
+		}
+		return 0
+	}()
+	if found < len(pods) {
+		m.graph.pod = pods[found].group.id
 	}
-	for column, pod := range pods {
-		if nodes := pod.nodes(); len(nodes) > 0 {
-			m.graph.selected = nodes[0].record.Key
-			return nodes[0], column, true
+	return found
+}
+
+// coordinatorSelected reports that the coordinator card is selected in the
+// overview.
+func (m *Model) coordinatorSelected(pods []graphPod) bool {
+	node, ok := m.coordinatorNode()
+	return ok && !m.inPodView(pods) && m.graph.selected == node.record.Key
+}
+
+// selectedAgent gives the selected card and its pod. In the one-pod view,
+// the first card of the pod is selected when the selection is not in it. In
+// the overview, only the coordinator card can be selected; it is in no pod.
+func (m *Model) selectedAgent() (agentNode, int, bool) {
+	pods := m.agentsPods()
+	if len(pods) == 0 {
+		return agentNode{}, 0, false
+	}
+	if m.coordinatorSelected(pods) {
+		node, _ := m.coordinatorNode()
+		return node, -1, true
+	}
+	column := m.podIndex(pods)
+	if !m.inPodView(pods) {
+		return agentNode{}, column, false
+	}
+	nodes := pods[column].nodes()
+	for _, node := range nodes {
+		if node.record.Key == m.graph.selected {
+			return node, column, true
 		}
 	}
-	return agentNode{}, 0, false
+	if len(nodes) > 0 {
+		m.graph.selected = nodes[0].record.Key
+		return nodes[0], column, true
+	}
+	return agentNode{}, column, false
 }
 
 // agentsColumns gives the number of pods on the screen and the pod width for
@@ -261,7 +348,9 @@ func agentsColumns(pods, width int, wide bool) (int, int) {
 	return visible, podWidth
 }
 
-// agentsGraphView renders the Agents screen at exactly width×height cells.
+// agentsGraphView renders the Agents screen at exactly width×height cells:
+// the overview of all pods, or the one-pod view (decisions 62 to 65), with
+// the coordinator card at the top and the lit lines of decisions 66 to 68.
 func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	pods := m.agentsPods()
 	projects := projectPods(pods)
@@ -281,10 +370,28 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		return panel.View(width, height)
 	}
 	wide := width >= component.LongFormWidth
+	selected := m.podIndex(pods)
+	m.graph.onePod = m.inPodView(pods)
+	coordinator, hasCoordinator := m.coordinatorNode()
+	m.graph.focus = ""
+	switch {
+	case m.coordinatorSelected(pods):
+		m.graph.focus = coordinator.record.Key
+	case m.graph.onePod:
+		node, _, _ := m.selectedAgent()
+		m.graph.focus = node.record.Key
+	}
+	var shown []graphPod
 	visible, podWidth := agentsColumns(len(pods), bodyWidth, wide)
-	_, column, _ := m.selectedAgent()
-	m.graph.left = min(max(m.graph.left, column-visible+1, 0), column, len(pods)-visible)
-	scrolls := visible < len(pods)
+	if m.graph.onePod {
+		panel.Title = "project agents · " + pods[selected].group.id
+		shown = pods[selected : selected+1]
+		visible, podWidth = agentsColumns(1, bodyWidth, wide)
+	} else {
+		m.graph.left = min(max(m.graph.left, selected-visible+1, 0), selected, len(pods)-visible)
+		shown = pods[m.graph.left : m.graph.left+visible]
+	}
+	scrolls := !m.graph.onePod && visible < len(pods)
 	footer := 0
 	if wide {
 		footer++
@@ -292,39 +399,61 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	if scrolls {
 		footer++
 	}
-	canvas := newCellCanvas(bodyWidth, bodyHeight)
-	group := visible*podWidth + visible - 1
-	x := (bodyWidth - group) / 2
-	room := bodyHeight - 1 - footer
+	// From 120 columns one blank row is above the coordinator card and one
+	// is above the footer lines. Below 120 columns there is none.
+	gap := 0
+	if wide {
+		gap = 1
+	}
+	room := bodyHeight - footer - gap
 	if footer > 0 {
-		room--
+		room -= gap
+	}
+	head := 0
+	if hasCoordinator {
+		head = component.CardHeight + 1
 	}
 	podHeight := 0
-	shown := pods[m.graph.left : m.graph.left+visible]
 	for _, pod := range shown {
 		podHeight = max(podHeight, m.podLines(pod, podWidth)+2)
 	}
-	// The pods are drawn in full on a tall canvas. When they do not fit,
-	// the region shows room rows from top and keeps the selected card on
-	// the screen.
-	tall := newCellCanvas(bodyWidth, podHeight)
+	// The coordinator card and the pods are drawn in full on a tall canvas.
+	// When they do not fit, the region shows room rows from top and keeps
+	// the selected card on the screen.
+	tall := newCellCanvas(bodyWidth, head+podHeight)
 	m.graph.cardRow = -1
-	for _, pod := range shown {
-		m.drawPod(tall, pod, x, 0, podWidth, podHeight)
+	m.graph.up = make(map[string]string)
+	m.graph.lines = make(map[[2]string][]point)
+	m.graph.joints = make(map[string]point)
+	group := visible*podWidth + visible - 1
+	x := (bodyWidth - group) / 2
+	var drops []int
+	for index, pod := range shown {
+		lit := !m.graph.onePod && m.graph.focus == "" && m.graph.left+index == selected
+		m.drawPod(tall, pod, x, head, podWidth, podHeight, lit)
+		// The drop is at the pod center, or 1 cell after the title when
+		// the title is wider than the left half of the pod.
+		drops = append(drops, max(x+(podWidth-1)/2, x+2+ansi.StringWidth(podTitle(pod, podWidth))+1))
 		x += podWidth + 1
 	}
+	if hasCoordinator {
+		m.drawCoordinator(tall, coordinator, shown, drops, head)
+	}
+	m.lightLines(tall)
 	room = max(room, 0)
 	if row := m.graph.cardRow; row >= 0 {
 		m.graph.top = min(max(m.graph.top, row+component.CardHeight-room), row)
 	}
-	m.graph.top = min(max(m.graph.top, 0), max(podHeight-room, 0))
-	for row := range min(room, podHeight) {
-		copy(canvas.cells[(row+1)*bodyWidth:(row+2)*bodyWidth], tall.cells[(row+m.graph.top)*bodyWidth:(row+m.graph.top+1)*bodyWidth])
+	m.graph.top = min(max(m.graph.top, 0), max(tall.height-room, 0))
+	canvas := newCellCanvas(bodyWidth, bodyHeight)
+	for row := range min(room, tall.height) {
+		copy(canvas.cells[(row+gap)*bodyWidth:(row+gap+1)*bodyWidth], tall.cells[(row+m.graph.top)*bodyWidth:(row+m.graph.top+1)*bodyWidth])
 	}
-	panel.VMark = component.Thumb(bodyHeight, podHeight, room, m.graph.top)
+	panel.VMark = component.Thumb(bodyHeight, tall.height, room, m.graph.top)
 	row := bodyHeight - footer
 	if wide {
 		canvas.text(0, row, agentsLegend, cellgrid.Dim, false)
+		canvas.text(ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), row, agentsLegendLit, cellgrid.Info, false)
 		row++
 	}
 	if scrolls {
@@ -347,6 +476,127 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	}
 	panel.Lines = canvas.lines()
 	return panel.View(width, height)
+}
+
+// drawCoordinator draws the coordinator card at the top center and its line
+// (decision 65). The joint is at the card x+12. In the overview, one bus row
+// below the card goes to a drop at the center of each pod on the page; a
+// drop 1 column or less from the joint moves to the joint. In the one-pod
+// view, the line goes down through the pod top border to the top joint of
+// the manager card, or to the pod top border when the pod has no manager.
+func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, shown []graphPod, drops []int, podTop int) {
+	cx := (c.width - component.CardWidth) / 2
+	m.drawCard(c, node, cx, 0)
+	joint := cx + component.CardWidth/2
+	bus := component.CardHeight
+	c.addArms(joint, bus-1, component.Arms{Down: component.Light})
+	root := node.record.Key
+	if m.graph.onePod {
+		pod := shown[0]
+		target := point{joint, podTop}
+		if pod.manager != nil {
+			target = m.graph.managerTop
+		}
+		cells := m.connect(c, []point{{joint, bus - 1}, {joint, bus}, {target.x, bus}, target})
+		if pod.manager != nil {
+			m.graph.up[pod.manager.record.Key] = root
+			m.graph.lines[[2]string{root, pod.manager.record.Key}] = cells
+			return
+		}
+		m.graph.up[podKey(pod)] = root
+		m.graph.lines[[2]string{root, podKey(pod)}] = cells
+		return
+	}
+	for index, drop := range drops {
+		if drop >= joint-1 && drop <= joint+1 {
+			drops[index] = joint
+		}
+	}
+	low, high := slices.Min(append(drops, joint)), slices.Max(append(drops, joint))
+	for x := low; x <= high; x++ {
+		arms := component.Arms{}
+		if x > low {
+			arms.Left = component.Light
+		}
+		if x < high {
+			arms.Right = component.Light
+		}
+		if x == joint {
+			arms.Up = component.Light
+		}
+		if slices.Contains(drops, x) {
+			arms.Down = component.Light
+		}
+		c.addArms(x, bus, arms)
+	}
+	for index, pod := range shown {
+		drop := drops[index]
+		c.addArms(drop, podTop, component.Arms{Up: component.Light})
+		path := []point{{joint, bus - 1}, {joint, bus}}
+		for x := joint; x != drop; {
+			if x < drop {
+				x++
+			} else {
+				x--
+			}
+			path = append(path, point{x, bus})
+		}
+		m.graph.up[podKey(pod)] = root
+		m.graph.lines[[2]string{root, podKey(pod)}] = append(path, point{drop, podTop})
+	}
+}
+
+// connect draws a line through the corners of path and gives each of its
+// cells, first corner first. Each corner and each end of the line adds the
+// arms of the line to the cell that is there.
+func (m *Model) connect(c *cellCanvas, path []point) []point {
+	cells := []point{path[0]}
+	for _, corner := range path[1:] {
+		for last := cells[len(cells)-1]; last != corner; last = cells[len(cells)-1] {
+			next := last
+			switch {
+			case last.x < corner.x:
+				next.x++
+			case last.x > corner.x:
+				next.x--
+			case last.y < corner.y:
+				next.y++
+			default:
+				next.y--
+			}
+			cells = append(cells, next)
+		}
+	}
+	for index, cell := range cells {
+		var arms component.Arms
+		for _, other := range []int{index - 1, index + 1} {
+			if other >= 0 && other < len(cells) {
+				arms = withArm(arms, cell, cells[other], component.Light)
+			}
+		}
+		c.addArms(cell.x, cell.y, arms)
+	}
+	return cells
+}
+
+// withArm gives arms with the arm of from toward to set to weight.
+func withArm(arms component.Arms, from, to point, weight component.Weight) component.Arms {
+	switch {
+	case to.y < from.y:
+		arms.Up = weight
+	case to.y > from.y:
+		arms.Down = weight
+	case to.x < from.x:
+		arms.Left = weight
+	case to.x > from.x:
+		arms.Right = weight
+	}
+	return arms
+}
+
+// podTitle gives the title of a pod on its top border.
+func podTitle(pod graphPod, width int) string {
+	return " " + ansi.Truncate(pod.group.id, width-6, "…") + " "
 }
 
 // podLines gives the number of rows inside the border of a pod.
@@ -392,17 +642,36 @@ func (p graphPod) note() string {
 	return fmt.Sprintf("h hides %d stopped", stopped)
 }
 
-// drawPod draws one project column at x, y of width×height cells.
-func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
-	c.box(x, y, width, height, cellgrid.Border, false)
-	c.text(x+2, y, " "+ansi.Truncate(pod.group.id, width-6, "…")+" ", cellgrid.Dim, true)
+// drawPod draws one project column at x, y of width×height cells. The
+// selected pod of the overview has a heavy accent border and an accent title
+// (decision 62).
+func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, selected bool) {
+	token, title := cellgrid.Border, cellgrid.Dim
+	if selected {
+		token, title = cellgrid.Accent, cellgrid.Accent
+	}
+	c.box(x, y, width, height, token, selected)
+	c.text(x+2, y, podTitle(pod, width), title, true)
 	left, content, top := x+2, width-4, y+1
 	goal := cellgrid.Dim
 	if pod.group.goalStop {
 		goal = cellgrid.Accent
 	}
-	c.text(left, top, ansi.Truncate(pod.group.goal, content, "…"), goal, false)
+	// In the one-pod view the coordinator line goes down through the goal
+	// row at the center of the manager card.
+	goalRoom := content
+	if m.graph.onePod && pod.manager != nil {
+		center := left + component.CardWidth/2
+		if pod.tree(content) {
+			center = left + (content-component.CardWidth)/2 + component.CardWidth/2
+		}
+		goalRoom = min(content, center-left-1)
+	}
+	c.text(left, top, ansi.Truncate(pod.group.goal, goalRoom, "…"), goal, false)
 	top++
+	if pod.manager != nil {
+		m.graph.up[pod.manager.record.Key] = podKey(pod)
+	}
 	var next int
 	switch {
 	case pod.homeColumn:
@@ -415,6 +684,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 		mx := left + (content-component.CardWidth)/2
 		m.drawCard(c, manager, mx, top)
 		center := mx + component.CardWidth/2
+		m.graph.managerTop = point{center, top}
 		next = top + component.CardHeight
 		if len(pod.children) == 0 {
 			text := "no child agents"
@@ -455,10 +725,23 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int) {
 			cx := centers[index] - component.CardWidth/2
 			m.drawCard(c, child, cx, next+3)
 			m.junction(c, centers[index], next+3, child, '┴', '┷')
+			line := []point{{center, next - 1}, {center, next}, {center, next + 1}}
+			for col := center; col != centers[index]; {
+				if col < centers[index] {
+					col++
+				} else {
+					col--
+				}
+				line = append(line, point{col, next + 1})
+			}
+			line = append(line, point{centers[index], next + 2}, point{centers[index], next + 3})
+			m.graph.up[child.record.Key] = manager.record.Key
+			m.graph.lines[[2]string{manager.record.Key, child.record.Key}] = line
 		}
 		next += 3 + component.CardHeight
 	default:
 		m.drawCard(c, *pod.manager, left, top)
+		m.graph.managerTop = point{left + component.CardWidth/2, top}
 		next = m.drawRail(c, pod, left, top+component.CardHeight)
 	}
 	if note := pod.note(); note != "" && len(pod.children) > 0 {
@@ -481,9 +764,23 @@ func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
 		}
 		return false
 	}
+	// parent gives the card above a card of the rail: the nearest card
+	// before it with a level of one less, or the manager.
+	parent := func(index int) string {
+		for before := index - 1; before >= 0; before-- {
+			if pod.levels[before] == pod.levels[index]-1 {
+				return pod.children[before].record.Key
+			}
+		}
+		if pod.manager != nil {
+			return pod.manager.record.Key
+		}
+		return podKey(pod)
+	}
 	for index, child := range pod.children {
 		level := pod.levels[index]
 		if level == 0 {
+			m.graph.up[child.record.Key] = podKey(pod)
 			m.drawCard(c, child, left, next+1)
 			next += 5
 			continue
@@ -498,6 +795,7 @@ func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
 				light, heavy = '┬', '┯'
 			}
 			m.junction(c, rail, next-1, *parent, light, heavy)
+			m.graph.joints[parent.record.Key] = point{rail, next - 1}
 		}
 		for ancestor := 1; ancestor < level; ancestor++ {
 			if continues(index, ancestor) {
@@ -517,6 +815,14 @@ func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
 			c.set(rail, next+2, '╰', cellgrid.Border)
 		}
 		m.junction(c, rail+1, next+2, child, '┤', '┨')
+		from := parent(index)
+		joint := m.graph.joints[from]
+		var line []point
+		for row := joint.y; row <= next+2; row++ {
+			line = append(line, point{rail, row})
+		}
+		m.graph.up[child.record.Key] = from
+		m.graph.lines[[2]string{from, child.record.Key}] = append(line, point{rail + 1, next + 2})
 		next += 5
 	}
 	return next
@@ -527,7 +833,7 @@ func (m *Model) drawRail(c *cellCanvas, pod graphPod, left, next int) int {
 // card, which has a heavy border, the mixed-weight rune heavy in accent.
 func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy rune) {
 	switch {
-	case node.record.Key == m.graph.selected:
+	case node.record.Key == m.graph.focus:
 		c.set(x, y, heavy, cellgrid.Accent)
 	case node.status == "working":
 		c.set(x, y, light, cellgrid.Working)
@@ -536,9 +842,10 @@ func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy r
 	}
 }
 
-// drawCard draws the card of one agent with component.Card.
+// drawCard draws the card of one agent with component.Card. Only the
+// focus card has the heavy border.
 func (m *Model) drawCard(c *cellCanvas, node agentNode, x, y int) {
-	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.selected}
+	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.focus}
 	if card.Selected {
 		m.graph.cardRow = y
 	}
@@ -578,6 +885,11 @@ func (m *Model) agentDetailsPopup() (string, []string) {
 		}
 		return component.DetailField(label, value)
 	}
+	// The coordinator card is in no pod and has no goal line.
+	goal := ""
+	if column >= 0 {
+		goal = m.agentsPods()[column].group.goal
+	}
 	nudged := ""
 	if node.nudgedAt != "" {
 		nudged = activityAge(node.nudgedAt, m.now()) + " ago by supervisor"
@@ -591,7 +903,7 @@ func (m *Model) agentDetailsPopup() (string, []string) {
 		field("model", record.Model),
 		field("pane", record.PaneID),
 		field("tab", record.Name),
-		field("goal", m.agentsPods()[column].group.goal),
+		field("goal", goal),
 		field("parent", record.Parent),
 		field("replaces", record.Replaces),
 	}
@@ -628,9 +940,14 @@ func stripCardDot(state string) string {
 	return ansi.Cut(line, 2, 3)
 }
 
-// updateAgentsKey handles a key of the Agents graph (decisions 14, 22, 23).
+// updateAgentsKey handles a key of the Agents graph (decisions 14, 22, 23,
+// and 62 to 64).
 func (m *Model) updateAgentsKey(key string) tea.Cmd {
+	pods := m.agentsPods()
 	node, _, ok := m.selectedAgent()
+	if len(pods) > 0 && !m.inPodView(pods) {
+		return m.updatePodsKey(key, pods, node, ok)
+	}
 	switch key {
 	case "left", "right", "up", "down", "j", "k":
 		if m.moveAgentSelection(key) {
@@ -642,6 +959,63 @@ func (m *Model) updateAgentsKey(key string) tea.Cmd {
 			m.popupOffset = 0
 			return m.logAction("agent details open", slog.String("agent_id", node.record.Key))
 		}
+	case "esc":
+		if m.graph.podView {
+			m.graph.podView = false
+			m.graph.selected = m.graph.pod
+			return m.logAction("agent pod close", slog.String("pod", m.graph.pod))
+		}
+	case "h":
+		m.graph.hideStopped = !m.graph.hideStopped
+		return m.logAction("agent hide stopped", slog.Bool("hide_stopped", m.graph.hideStopped))
+	case "a", "p", "t":
+		if ok {
+			return m.agentAction(key, node)
+		}
+	}
+	return nil
+}
+
+// updatePodsKey handles a key of the overview of decision 62: ← and →
+// select a pod, ↑ selects the coordinator card, ↓ selects the pod again,
+// and enter opens the pod or the details of the coordinator.
+func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bool) tea.Cmd {
+	column := m.podIndex(pods)
+	coordinator, hasCoordinator := m.coordinatorNode()
+	selected := m.coordinatorSelected(pods)
+	switch key {
+	case "left", "right":
+		next := column + 1
+		if key == "left" {
+			next = column - 1
+		}
+		if selected || next < 0 || next >= len(pods) {
+			return nil
+		}
+		m.graph.pod = pods[next].group.id
+		m.graph.selected = m.graph.pod
+		return m.logAction("agent pod select", slog.String("pod", m.graph.pod))
+	case "up", "k":
+		if hasCoordinator && !selected {
+			m.graph.selected = coordinator.record.Key
+			return m.logAction("agent selection", slog.String("agent_id", m.graph.selected))
+		}
+	case "down", "j":
+		if selected {
+			m.graph.selected = m.graph.pod
+			return m.logAction("agent pod select", slog.String("pod", m.graph.pod))
+		}
+	case "enter":
+		if selected {
+			m.popupOpen = true
+			m.popupOffset = 0
+			return m.logAction("agent details open", slog.String("agent_id", node.record.Key))
+		}
+		m.graph.podView = true
+		// The first card of the pod is selected when the selection is not
+		// in it.
+		m.selectedAgent()
+		return m.logAction("agent pod open", slog.String("pod", m.graph.pod), slog.String("agent_id", m.graph.selected))
 	case "h":
 		m.graph.hideStopped = !m.graph.hideStopped
 		return m.logAction("agent hide stopped", slog.Bool("hide_stopped", m.graph.hideStopped))
@@ -675,18 +1049,18 @@ func (m *Model) agentAction(key string, node agentNode) tea.Cmd {
 	return nil
 }
 
-// moveAgentSelection moves the selection by one arrow key. In a tree, ← and
-// → move between the children, and ↑ and ↓ move between the manager and the
-// children. At the edge of a pod, ← and → move to the next pod.
+// moveAgentSelection moves the selection in the one-pod view by one arrow
+// key. In a tree, ← and → move between the children, and ↑ and ↓ move
+// between the manager and the children. The selection stays in the pod.
 func (m *Model) moveAgentSelection(key string) bool {
 	node, column, ok := m.selectedAgent()
-	if !ok {
+	if !ok || column < 0 {
 		return false
 	}
 	pods := m.agentsPods()
 	nodes := pods[column].nodes()
 	index := slices.IndexFunc(nodes, func(n agentNode) bool { return n.record.Key == node.record.Key })
-	tree := pods[column].tree(m.podContentWidth(len(pods)))
+	tree := pods[column].tree(m.podContentWidth(1))
 	target := index
 	switch key {
 	case "up", "k":
@@ -701,20 +1075,10 @@ func (m *Model) moveAgentSelection(key string) bool {
 		if key == "left" {
 			step = -1
 		}
-		if tree && index > 0 && index+step > 0 && index+step < len(nodes) {
-			target = index + step
-			break
-		}
-		next := column + step
-		for next >= 0 && next < len(pods) && len(pods[next].nodes()) == 0 {
-			next += step
-		}
-		if next < 0 || next >= len(pods) {
+		if !tree || index == 0 {
 			return false
 		}
-		others := pods[next].nodes()
-		m.graph.selected = others[min(index, len(others)-1)].record.Key
-		return true
+		target = max(index+step, 1)
 	}
 	if target < 0 || target >= len(nodes) || target == index {
 		return false
@@ -789,6 +1153,196 @@ func recentAgentEvents(events []logs.Event, zone *time.Location) map[string][]st
 	return out
 }
 
+// litWindow is the time that a line stays lit after a message (decision 67).
+const litWindow = 5 * time.Second
+
+// litMessages gives the messages that light a line now: for each pair of
+// agents, the newest message of the last 5 seconds.
+func (m *Model) litMessages() []agentMessage {
+	now := m.now()
+	newest := make(map[[2]string]agentMessage)
+	for _, message := range m.agents.data.messages {
+		if message.at.After(now) || !now.Before(message.at.Add(litWindow)) {
+			continue
+		}
+		pair := [2]string{message.from, message.to}
+		if pair[1] < pair[0] {
+			pair = [2]string{message.to, message.from}
+		}
+		if old, ok := newest[pair]; !ok || message.at.After(old.at) {
+			newest[pair] = message
+		}
+	}
+	out := make([]agentMessage, 0, len(newest))
+	for _, message := range newest {
+		out = append(out, message)
+	}
+	return out
+}
+
+// agentsLitMsg tells that a lit line goes dark: the Agents screen draws
+// again.
+type agentsLitMsg struct{}
+
+// litTick starts a timer to the time at which the next lit line goes dark.
+// The demo has a fixed clock and no timer.
+func (m *Model) litTick() tea.Cmd {
+	next, ok := m.nextLitExpiry()
+	if m.demo != nil || !ok || next.Equal(m.graph.litAt) {
+		return nil
+	}
+	m.graph.litAt = next
+	return tea.Tick(next.Sub(m.now()), func(time.Time) tea.Msg { return agentsLitMsg{} })
+}
+
+// nextLitExpiry gives the time at which the next lit line goes dark.
+func (m *Model) nextLitExpiry() (time.Time, bool) {
+	var next time.Time
+	for _, message := range m.litMessages() {
+		if end := message.at.Add(litWindow); next.IsZero() || end.Before(next) {
+			next = end
+		}
+	}
+	return next, !next.IsZero()
+}
+
+// graphKey gives the key of the card of an inbox name or an agent name on
+// the last view: "coordinator" is the coordinator card.
+func (m *Model) graphKey(name string) (string, bool) {
+	for _, node := range m.agents.data.nodes {
+		if !node.current || node.record.Role == "supervisor" {
+			continue
+		}
+		if node.record.Key == name || node.record.Name == name || name == "coordinator" && node.record.Role == "coordinator" {
+			_, onGraph := m.graph.up[node.record.Key]
+			if onGraph || node.record.Role == "coordinator" {
+				return node.record.Key, true
+			}
+		}
+	}
+	return "", false
+}
+
+// graphPath gives the cells of the line from the card of from to the card
+// of to on the last view, through their nearest common parent.
+func (m *Model) graphPath(from, to string) []point {
+	chain := func(key string) []string {
+		out := []string{key}
+		for {
+			parent, ok := m.graph.up[key]
+			if !ok {
+				return out
+			}
+			out = append(out, parent)
+			key = parent
+		}
+	}
+	up, down := chain(from), chain(to)
+	common := ""
+	for _, key := range up {
+		if slices.Contains(down, key) {
+			common = key
+			break
+		}
+	}
+	if common == "" {
+		return nil
+	}
+	// cells gives the cells from the common parent down to key.
+	cells := func(keys []string) []point {
+		var out []point
+		at := slices.Index(keys, common)
+		for index := at; index > 0; index-- {
+			for _, cell := range m.graph.lines[[2]string{keys[index], keys[index-1]}] {
+				if len(out) == 0 || out[len(out)-1] != cell {
+					out = append(out, cell)
+				}
+			}
+		}
+		return out
+	}
+	sender, receiver := cells(up), cells(down)
+	shared := 0
+	for shared < len(sender) && shared < len(receiver) && sender[shared] == receiver[shared] {
+		shared++
+	}
+	// The two lines share their first cells: the path turns at the last
+	// shared cell.
+	pivot := max(shared-1, 0)
+	var path []point
+	for index := len(sender) - 1; index >= pivot; index-- {
+		path = append(path, sender[index])
+	}
+	if shared == 0 {
+		return append(path, receiver...)
+	}
+	return append(path, receiver[pivot+1:]...)
+}
+
+// lightLines draws each lit line of decision 66 on c: heavy arms in info on
+// each cell of the path, and one arrow on a straight cell near the
+// receiver that points to the receiver.
+func (m *Model) lightLines(c *cellCanvas) {
+	for _, message := range m.litMessages() {
+		from, okFrom := m.graphKey(message.from)
+		to, okTo := m.graphKey(message.to)
+		if !okFrom || !okTo || from == to {
+			continue
+		}
+		path := m.graphPath(from, to)
+		if len(path) < 2 {
+			continue
+		}
+		for index, cell := range path {
+			arms := c.arms(cell.x, cell.y)
+			for _, other := range []int{index - 1, index + 1} {
+				if other >= 0 && other < len(path) {
+					arms = withArm(arms, cell, path[other], component.Heavy)
+				}
+			}
+			if r, ok := component.BoxRune(arms); ok {
+				c.set(cell.x, cell.y, r, cellgrid.Info)
+			}
+		}
+		// The arrow is on the first straight cell from the receiver. On a
+		// horizontal line it is one cell further, so that it is not next
+		// to a corner.
+		for index := len(path) - 2; index > 0; index-- {
+			cell := path[index]
+			arms := c.arms(cell.x, cell.y)
+			if !straight(arms) {
+				continue
+			}
+			if arms.Left != component.None && index > 1 && straight(c.arms(path[index-1].x, path[index-1].y)) {
+				index--
+				cell = path[index]
+			}
+			c.set(cell.x, cell.y, arrow(cell, path[index+1]), cellgrid.Info)
+			break
+		}
+	}
+}
+
+// straight reports that arms are one straight line.
+func straight(arms component.Arms) bool {
+	vertical := arms.Up != component.None && arms.Down != component.None && arms.Left == component.None && arms.Right == component.None
+	horizontal := arms.Left != component.None && arms.Right != component.None && arms.Up == component.None && arms.Down == component.None
+	return vertical || horizontal
+}
+
+// arrow gives the arrow that points from cell to next.
+func arrow(cell, next point) rune {
+	switch {
+	case next.y < cell.y:
+		return '▲'
+	case next.y > cell.y:
+		return '▼'
+	case next.x < cell.x:
+		return '◀'
+	}
+	return '▶'
+}
+
 // cellCanvas is a grid of cells that the Agents screen draws on. Each cell
 // has a character, a palette token, and a bold flag.
 type cellCanvas struct {
@@ -828,20 +1382,25 @@ func (c *cellCanvas) text(x, y int, s string, token cellgrid.Token, bold bool) {
 	}
 }
 
-// box draws a rounded border of width×height cells from x, y.
-func (c *cellCanvas) box(x, y, width, height int, token cellgrid.Token, bold bool) {
+// box draws a rounded border of width×height cells from x, y, or a heavy
+// border with square corners.
+func (c *cellCanvas) box(x, y, width, height int, token cellgrid.Token, heavy bool) {
+	glyphs := []string{"─", "│", "╭", "╮", "╰", "╯"}
+	if heavy {
+		glyphs = []string{"━", "┃", "┏", "┓", "┗", "┛"}
+	}
 	for col := x + 1; col < x+width-1; col++ {
-		c.put(col, y, canvasCell{text: "─", token: token, bold: bold})
-		c.put(col, y+height-1, canvasCell{text: "─", token: token, bold: bold})
+		c.put(col, y, canvasCell{text: glyphs[0], token: token})
+		c.put(col, y+height-1, canvasCell{text: glyphs[0], token: token})
 	}
 	for row := y + 1; row < y+height-1; row++ {
-		c.put(x, row, canvasCell{text: "│", token: token, bold: bold})
-		c.put(x+width-1, row, canvasCell{text: "│", token: token, bold: bold})
+		c.put(x, row, canvasCell{text: glyphs[1], token: token})
+		c.put(x+width-1, row, canvasCell{text: glyphs[1], token: token})
 	}
-	c.put(x, y, canvasCell{text: "╭", token: token, bold: bold})
-	c.put(x+width-1, y, canvasCell{text: "╮", token: token, bold: bold})
-	c.put(x, y+height-1, canvasCell{text: "╰", token: token, bold: bold})
-	c.put(x+width-1, y+height-1, canvasCell{text: "╯", token: token, bold: bold})
+	c.put(x, y, canvasCell{text: glyphs[2], token: token})
+	c.put(x+width-1, y, canvasCell{text: glyphs[3], token: token})
+	c.put(x, y+height-1, canvasCell{text: glyphs[4], token: token})
+	c.put(x+width-1, y+height-1, canvasCell{text: glyphs[5], token: token})
 }
 
 // blit copies the cells of a rendered component to x, y.
@@ -879,6 +1438,35 @@ func (c *cellCanvas) lines() []string {
 		out[row] = b.String()
 	}
 	return out
+}
+
+// arms gives the box arms of the cell at x, y.
+func (c *cellCanvas) arms(x, y int) component.Arms {
+	if x < 0 || x >= c.width || y < 0 || y >= c.height {
+		return component.Arms{}
+	}
+	r, _ := utf8.DecodeRuneInString(c.cells[y*c.width+x].text)
+	arms, _ := component.BoxArms(r)
+	return arms
+}
+
+// addArms adds arms to the box glyph at x, y. A blank cell gets a glyph in
+// border. A glyph keeps its token.
+func (c *cellCanvas) addArms(x, y int, add component.Arms) {
+	if x < 0 || x >= c.width || y < 0 || y >= c.height {
+		return
+	}
+	cell := c.cells[y*c.width+x]
+	arms := c.arms(x, y)
+	if arms == (component.Arms{}) {
+		cell.token = cellgrid.Border
+	}
+	arms.Up, arms.Down = max(arms.Up, add.Up), max(arms.Down, add.Down)
+	arms.Left, arms.Right = max(arms.Left, add.Left), max(arms.Right, add.Right)
+	if r, ok := component.BoxRune(arms); ok {
+		cell.text = string(r)
+		c.cells[y*c.width+x] = cell
+	}
 }
 
 // tokenStyle gives the style of a palette token.
