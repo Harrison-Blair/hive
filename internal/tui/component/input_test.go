@@ -14,7 +14,7 @@ func TestInputGolden(t *testing.T) {
 		checkGolden(t, Input{Text: "restart the supervisor please", Focused: true}.View(120), sheet, rect{46, 0, 120, 3})
 	})
 	t.Run("chat", func(t *testing.T) {
-		checkGolden(t, Input{Text: "1A, 2A, 3B", Focused: true}.View(120), "Chat", rect{36, 0, 120, 3})
+		checkGolden(t, Input{Text: "1A, 2A, 3B", Focused: true, Status: "working", Age: "1m"}.View(120), "Chat", rect{36, 0, 120, 3})
 	})
 }
 
@@ -27,17 +27,22 @@ func TestInputUnfocused(t *testing.T) {
 	}
 }
 
-// TestInputShowsEndOfText checks that a long text and a text with newlines
-// show the end of the last line and the cursor.
-func TestInputShowsEndOfText(t *testing.T) {
-	cases := []struct{ text, want string }{
-		{strings.Repeat("x", 40) + "END", "│ > …xxxxxEND█ │"},
-		{"first line\nsecond", "│ > second█    │"},
+func TestInputGrowsToFitWrappedText(t *testing.T) {
+	view := Input{Text: "one two three four five six seven", Focused: true}.View(14)
+	if rows := len(strings.Split(view, "\n")); rows != 7 {
+		t.Fatalf("input has %d rows; want 7 rows for five wrapped text rows and borders:\n%s", rows, ansi.Strip(view))
 	}
-	for _, tc := range cases {
-		row := ansi.Strip(strings.Split(Input{Text: tc.text, Focused: true}.View(16), "\n")[1])
-		if row != tc.want {
-			t.Errorf("Input %q: row %q, want %q", tc.text, row, tc.want)
-		}
+}
+
+// TestInputShowsWrappedTextAndCursor checks that long words and newlines
+// stay visible with the cursor at the end of the text.
+func TestInputShowsWrappedTextAndCursor(t *testing.T) {
+	long := strings.Split(ansi.Strip(Input{Text: strings.Repeat("x", 40) + "END", Focused: true}.View(16)), "\n")
+	if len(long) != 7 || !strings.Contains(long[5], "END█") {
+		t.Fatalf("long input rows = %q; want five text rows and END█ on the last row", long)
+	}
+	multi := strings.Split(ansi.Strip(Input{Text: "first line\nsecond", Focused: true}.View(16)), "\n")
+	if len(multi) != 4 || !strings.Contains(multi[2], "second█") {
+		t.Fatalf("multiline input rows = %q; want the second line and cursor", multi)
 	}
 }

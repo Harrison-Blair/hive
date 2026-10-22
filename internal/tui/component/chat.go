@@ -23,6 +23,7 @@ type ChatMessage struct {
 	Name string
 	Kind ChatKind
 	Text string
+	Open bool
 }
 
 // The gutter of the chat feed from LongFormWidth (decision 30): the time,
@@ -69,11 +70,32 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 	}
 
 	if m.Kind == ChatEvent {
-		if wide {
-			return []string{dimStyle.Render(m.Time) + "  " + dimStyle.Render(fitCell("· "+m.Name, chatNameWidth)) +
-				" " + dimStyle.Render(fitCell(m.Text, wrap))}, nil
+		marker := "▸"
+		if m.Open {
+			marker = "▾"
 		}
-		return []string{dimStyle.Render(ansi.Truncate(m.Time+" · "+m.Name+" "+m.Text, wrap, "…"))}, nil
+		first, _, _ := strings.Cut(m.Text, "\n")
+		if !m.Open {
+			if wide {
+				return []string{dimStyle.Render(m.Time) + "  " + dimStyle.Render(fitCell(marker+" "+m.Name, chatNameWidth)) +
+					" " + dimStyle.Render(fitCell(first, wrap))}, nil
+			}
+			line := ansi.Truncate(m.Time+" "+marker+" "+m.Name+" "+first, wrap, "…")
+			return []string{dimStyle.Render(fitCell(line, wrap))}, nil
+		}
+		body := wordWrap(m.Text, wrap)
+		if wide {
+			lines := []string{dimStyle.Render(m.Time) + "  " + dimStyle.Render(fitCell(marker+" "+m.Name, chatNameWidth)) + " " + dimStyle.Render(body[0])}
+			for _, line := range body[1:] {
+				lines = append(lines, strings.Repeat(" ", chatTextCol)+dimStyle.Render(line))
+			}
+			return lines, nil
+		}
+		lines := []string{dimStyle.Render(m.Time + " " + marker + " " + m.Name)}
+		for _, line := range body {
+			lines = append(lines, dimStyle.Render(line))
+		}
+		return lines, nil
 	}
 
 	var body []string
@@ -82,6 +104,7 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 		if body, err = RenderMarkdown(m.Text, wrap); err != nil {
 			return nil, err
 		}
+		body = compactHeadingListGaps(body)
 	} else {
 		for _, l := range wordWrap(m.Text, wrap) {
 			body = append(body, userStyle.Render(l))
@@ -106,6 +129,20 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 		body = []string{gutter}
 	}
 	return body, nil
+}
+
+// compactHeadingListGaps removes the blank row that Glamour puts between a
+// bold section label and its list.
+func compactHeadingListGaps(lines []string) []string {
+	out := make([]string, 0, len(lines))
+	for i, line := range lines {
+		if ansi.Strip(line) == "" && len(out) > 0 && i+1 < len(lines) &&
+			strings.Contains(out[len(out)-1], "\x1b[1m") && strings.HasPrefix(ansi.Strip(lines[i+1]), "• ") {
+			continue
+		}
+		out = append(out, line)
+	}
+	return out
 }
 
 // wordWrap breaks s at spaces into lines of at most width cells, as the

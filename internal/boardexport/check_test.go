@@ -46,6 +46,30 @@ func TestCheckAcceptsAGoodBoard(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsChatStatusSymbols(t *testing.T) {
+	g := fill("▸▾▲", "fff")
+	if err := Check("TooSmall", g); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCheckAcceptsNewChatBoardSizes(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatStatus", 120, 40},
+		{"ChatEvents", 120, 40},
+		{"CompactChatStatus", 80, 24},
+	} {
+		t.Run(board.name, func(t *testing.T) {
+			if err := checkSize(board.name, board.w, board.h); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func TestCheckAcceptsTheHeavyBorder(t *testing.T) {
 	g := fill("┏━┯━┓┃┗┷┛┡┨", "aaaaaaaaaaa")
 	if err := Check("TooSmall", g); err != nil {

@@ -119,7 +119,7 @@ func TestFitWave4(t *testing.T) {
 			checkBorder(t, "Details", details.View(width, height), width, height)
 		}
 		checkBorder(t, "FilterBar", FilterBar{Text: "level:warn " + long, Editing: width%2 == 0}.View(width), width, 3)
-		checkBorder(t, "Input", Input{Text: long, Focused: width%2 == 0}.View(width), width, 3)
+		checkBorder(t, "Input", Input{Text: long, Focused: width%2 == 0, Height: 3}.View(width), width, 3)
 		checkRows(t, "Notice", Notice{Text: long}.View(width), width, 1)
 		screen := strings.Repeat(long+"\n", 12)
 		for _, h := range []int{3, 12} {

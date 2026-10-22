@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                                     coord ▲ · sup ● · needs you 0 · 14:40 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffafffffffwfffffffffffffffffffffff
+b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat ───────────────────────────────────────────────────────────────────────╮
+k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:31 you                                                                    │
+k|rfdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ thanks, trying it now                                                        │
+k|rfuuuuuuuuuuuuuuuuuuuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:33 ▸ manager-hive quiet                                                   │
+k|rfddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:36 ▸ manager-stenographer g2-live-scroll DONE: task 121-live-transcript-… │
+k|rfddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:38 coordinator                                                            │
+k|rfdddddfiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000111111111110000000000000000000000000000000000000000000000000000000000000
+t|│ I need your approval to run scripts/reinstall.sh. The harness waits          │
+k|rfffffffffffffffffffffffffffffccccccccccccccccccccfffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ on a permission prompt in the coordinator pane.                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:39 you                                                                    ┃
+k|rfdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ok                                                                           ┃
+k|rfuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ▲ blocked 1m ─────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaddaffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|│   Health, Logs. Put breaking changes at the top with a short migration note. │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   Link each line to its task ID so a reader can find the brief. Leave out    │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   changes that touch only tests or docs. Then send me the draft so I can     ┃
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   read it before the tag.█                                                   ┃
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuafffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed          
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

@@ -107,15 +107,35 @@ func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, 
 func newChatInput() textarea.Model {
 	input := textarea.New()
 	input.Prompt = ""
+	input.SetPromptFunc(2, func(info textarea.PromptInfo) string {
+		if info.LineNumber == 0 {
+			return "> "
+		}
+		return "  "
+	})
 	input.ShowLineNumbers = false
 	input.CharLimit = 0
-	input.SetWidth(1 << 12)
 	input.MaxHeight = 0
+	input.EndOfBufferCharacter = ' '
+	input.SetVirtualCursor(false)
+	styles := input.Styles()
+	styles.Focused.Text = lipgloss.NewStyle().Foreground(component.User)
+	styles.Focused.Prompt = lipgloss.NewStyle().Foreground(component.User)
+	styles.Focused.CursorLine = lipgloss.NewStyle()
+	styles.Blurred.Text = lipgloss.NewStyle().Foreground(component.User)
+	styles.Blurred.Prompt = lipgloss.NewStyle().Foreground(component.User)
+	styles.Blurred.CursorLine = lipgloss.NewStyle()
+	input.SetStyles(styles)
 	input.Blur()
 	return input
 }
 
 func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
+	if press.String() == "ctrl+o" {
+		m.chatEventsOpen = !m.chatEventsOpen
+		m.rebuildChat()
+		return m.logAction("chat events toggle", slog.Bool("open", m.chatEventsOpen))
+	}
 	if m.chatInputActive {
 		switch press.String() {
 		case "enter":
@@ -217,7 +237,9 @@ func (m *Model) updateChatSend(msg chatSendMsg) tea.Cmd {
 // border shows the count of the messages above the view.
 func (m *Model) chatView(width, height int) string {
 	wide := width >= component.LongFormWidth
-	feedHeight := max(height-3, component.PanelMinHeight)
+	input := m.chatInputView(width, height)
+	inputHeight := len(strings.Split(input, "\n"))
+	feedHeight := max(height-inputHeight, component.PanelMinHeight)
 	body := feedHeight - 2
 	pad := 0
 	if wide {
@@ -247,16 +269,71 @@ func (m *Model) chatView(width, height int) string {
 	if wide {
 		title = "chat · noise " + m.chatNoise
 	}
-	panel := component.Panel{
-		Title: title, Focused: !m.chatInputActive, Lines: lines,
-		VMark: component.Thumb(body, len(feed.lines)+pad, body, feed.top),
-	}
+	mark := component.Thumb(body, len(feed.lines), body, feed.top)
+	panel := component.Panel{Title: title, Focused: !m.chatInputActive, Lines: lines, VMark: mark}
 	rows := strings.Split(panel.View(width, feedHeight), "\n")
+	for row := max(mark.Start, 0); row < min(mark.Start+mark.Size, feedHeight-2); row++ {
+		rows[row+1] = ansi.Truncate(rows[row+1], width-1, "") + dimStyle.Render("┃")
+	}
 	if wide && earlier > 0 {
 		rows[0] = borderNote(rows[0], fmt.Sprintf(" ↑ %d earlier ", earlier), width/2)
 	}
-	input := component.Input{Text: m.chatInput.Value(), Focused: m.chatInputActive}.View(width)
 	return strings.Join(rows, "\n") + "\n" + input
+}
+
+func (m *Model) chatInputView(width, contentHeight int) string {
+	panelCap := max(contentHeight/3, 3)
+	m.chatInput.DynamicHeight = true
+	m.chatInput.MinHeight = 1
+	m.chatInput.MaxHeight = 0
+	m.chatInput.SetWidth(max(width-6, 1))
+	if m.chatInputActive {
+		if cursor := m.chatInput.Cursor(); cursor != nil {
+			m.chatInputCursorRow = cursor.Y
+			m.chatInputCursorCol = cursor.X
+			m.chatInputCursorValid = true
+		}
+	}
+	status := m.header.coordinator
+	if status == "" {
+		status = "none"
+	}
+	age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
+	return component.Input{
+		Text: m.chatInput.Value(), Focused: m.chatInputActive, Height: panelCap,
+		CursorRow: m.chatInputCursorRow, CursorCol: m.chatInputCursorCol,
+		HasCursor: m.chatInputCursorValid, Status: status, Age: age,
+		Queued: m.lastUserChatPending(),
+	}.View(width)
+}
+
+func coordinatorStatusAge(changedAt string, now time.Time) string {
+	changed, err := time.Parse(time.RFC3339Nano, changedAt)
+	if err != nil {
+		return ""
+	}
+	minutes := int(now.Sub(changed) / time.Minute)
+	if minutes < 0 {
+		minutes = 0
+	}
+	return fmt.Sprintf("%dm", minutes)
+}
+
+func (m *Model) lastUserChatPending() bool {
+	var latest time.Time
+	pending := false
+	for _, entry := range m.chatData.entries {
+		if entry.From != "user" {
+			continue
+		}
+		at, err := time.Parse(time.RFC3339Nano, entry.At)
+		if err != nil || at.Before(latest) {
+			continue
+		}
+		latest = at
+		pending = entry.Delivery == "pending"
+	}
+	return pending
 }
 
 // chatCursor puts the real terminal cursor on the cursor cell of the input
@@ -266,19 +343,16 @@ func (m *Model) chatCursor(content string) *tea.Cursor {
 	if m.activeTab() != tabChat || !m.chatInputActive || m.helpOpen {
 		return nil
 	}
-	lines := strings.Split(ansi.Strip(content), "\n")
-	if len(lines) < 3 {
-		return nil
+	for row, line := range strings.Split(ansi.Strip(content), "\n") {
+		index := strings.LastIndex(line, "█")
+		if index >= 0 {
+			cursor := tea.NewCursor(ansi.StringWidth(line[:index]), row)
+			cursor.Shape = tea.CursorBar
+			cursor.Color = lipgloss.Color(colorAccent)
+			return cursor
+		}
 	}
-	row := lines[len(lines)-3]
-	index := strings.LastIndex(row, "█")
-	if index < 0 {
-		return nil
-	}
-	cursor := tea.NewCursor(ansi.StringWidth(row[:index]), len(lines)-3)
-	cursor.Shape = tea.CursorBar
-	cursor.Color = lipgloss.Color(colorAccent)
-	return cursor
+	return nil
 }
 
 // borderNote draws note in dim over the top border row from cell col.
@@ -296,16 +370,19 @@ func borderNote(row, note string, col int) string {
 func (m *Model) chatLines(width int) ([]string, []int) {
 	var lines []string
 	var starts []int
+	previousFoldedEvent := false
 	for _, msg := range m.chatMessages() {
 		got, err := component.ChatLines([]component.ChatMessage{msg}, width)
 		if err != nil {
 			got = []string{safeChatText(msg.Text)}
 		}
-		if len(lines) > 0 && ansi.Strip(lines[len(lines)-1]) != "" {
+		foldedEvent := msg.Kind == component.ChatEvent && !msg.Open
+		if len(lines) > 0 && ansi.Strip(lines[len(lines)-1]) != "" && (!previousFoldedEvent || !foldedEvent) {
 			lines = append(lines, "")
 		}
 		starts = append(starts, len(lines))
 		lines = append(lines, got...)
+		previousFoldedEvent = foldedEvent
 	}
 	if len(lines) == 0 {
 		lines = []string{dimStyle.Render("no chat yet")}
@@ -342,8 +419,10 @@ func (m *Model) chatMessages() []component.ChatMessage {
 		if err != nil {
 			continue
 		}
-		first, _, _ := strings.Cut(safeChatText(event.Text), "\n")
-		items = append(items, item{at, component.ChatMessage{Time: at.In(zone).Format("15:04"), Name: event.Agent, Kind: component.ChatEvent, Text: first}})
+		items = append(items, item{at, component.ChatMessage{
+			Time: at.In(zone).Format("15:04"), Name: event.Agent, Kind: component.ChatEvent,
+			Text: safeChatText(event.Text), Open: m.chatEventsOpen,
+		}})
 	}
 	sort.SliceStable(items, func(i, j int) bool { return items[i].at.Before(items[j].at) })
 	msgs := make([]component.ChatMessage, len(items))

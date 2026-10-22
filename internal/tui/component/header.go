@@ -58,7 +58,9 @@ func stateDot(state string) string {
 	case "working", "live":
 		return headerStyle.Foreground(Working).Render("●")
 	case "idle":
-		return headerStyle.Foreground(Accent).Render("◐")
+		return headerStyle.Foreground(Dim).Render("○")
+	case "blocked":
+		return headerStyle.Foreground(Accent).Render("▲")
 	default:
 		return headerStyle.Foreground(Dim).Render("○")
 	}

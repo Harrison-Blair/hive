@@ -33,12 +33,22 @@ func TestHeaderForms(t *testing.T) {
 
 func TestHeaderStateDots(t *testing.T) {
 	h := Header{Home: "~", Coordinator: "idle", Supervisor: "stopped", NeedsYou: 2, Clock: "09:05"}
-	want := "coordinator ◐ idle   supervisor ○ stopped   needs you 2   09:05 "
+	want := "coordinator ○ idle   supervisor ○ stopped   needs you 2   09:05 "
 	if got := ansi.Strip(h.View(120)); !strings.HasSuffix(got, want) {
 		t.Errorf("View(120) = %q, want suffix %q", got, want)
 	}
-	if got := ansi.Strip(h.View(80)); !strings.HasSuffix(got, "coord ◐ · sup ○ · needs you 2 · 09:05 ") {
+	if got := ansi.Strip(h.View(80)); !strings.HasSuffix(got, "coord ○ · sup ○ · needs you 2 · 09:05 ") {
 		t.Errorf("View(80) = %q", got)
+	}
+}
+
+func TestHeaderBlockedStateUsesWarningGlyph(t *testing.T) {
+	h := Header{Home: "~", Coordinator: "blocked", Supervisor: "live", Clock: "09:05"}
+	if got := ansi.Strip(h.View(80)); !strings.Contains(got, "coord ▲ · sup ●") {
+		t.Fatalf("compact header = %q; want blocked glyph ▲", got)
+	}
+	if got := ansi.Strip(h.View(120)); !strings.Contains(got, "coordinator ▲ blocked") {
+		t.Fatalf("full header = %q; want blocked glyph and word", got)
 	}
 }
 

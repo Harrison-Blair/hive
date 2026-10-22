@@ -11,27 +11,30 @@ import (
 // Sizes is the board table of the tui-v2 spec: the width and height of each
 // board, by board name.
 var Sizes = map[string][2]int{
-	"Main":             {120, 40},
-	"AgentsMany":       {120, 40},
-	"AgentDetails":     {120, 40},
-	"CompactAgents":    {80, 24},
-	"Chat":             {120, 40},
-	"CompactChat":      {80, 24},
-	"WorkGoals":        {120, 40},
-	"WorkQueue":        {120, 40},
-	"Work":             {120, 40},
-	"Compact":          {80, 24},
-	"Friction":         {120, 40},
-	"FrictionResolved": {120, 40},
-	"CompactFriction":  {80, 24},
-	"Health":           {120, 40},
-	"HealthAgents":     {120, 40},
-	"CompactHealth":    {80, 24},
-	"Logs":             {120, 40},
-	"CompactLogs":      {80, 24},
-	"Help":             {120, 40},
-	"TooSmall":         {60, 16},
-	"Components":       {120, 67},
+	"Main":              {120, 40},
+	"AgentsMany":        {120, 40},
+	"AgentDetails":      {120, 40},
+	"CompactAgents":     {80, 24},
+	"Chat":              {120, 40},
+	"CompactChat":       {80, 24},
+	"ChatStatus":        {120, 40},
+	"ChatEvents":        {120, 40},
+	"CompactChatStatus": {80, 24},
+	"WorkGoals":         {120, 40},
+	"WorkQueue":         {120, 40},
+	"Work":              {120, 40},
+	"Compact":           {80, 24},
+	"Friction":          {120, 40},
+	"FrictionResolved":  {120, 40},
+	"CompactFriction":   {80, 24},
+	"Health":            {120, 40},
+	"HealthAgents":      {120, 40},
+	"CompactHealth":     {80, 24},
+	"Logs":              {120, 40},
+	"CompactLogs":       {80, 24},
+	"Help":              {120, 40},
+	"TooSmall":          {60, 16},
+	"Components":        {120, 67},
 	// The general agent boards of task 46-agents-home-graph.
 	"AgentsHome":             {120, 40},
 	"AgentsNested":           {120, 40},
@@ -44,7 +47,7 @@ var Sizes = map[string][2]int{
 
 // symbols is the symbol list of decision 13. A cell can also hold a
 // printable ASCII character.
-const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×"
+const symbols = "─│╭╮╰╯├┤┼┴┬└━┃┏┓┗┛┯┷┡┨●◐○▶✓•·–—…↑↓←→›█×▸▾▲"
 
 // tokens maps each token name of decision 26 to its token.
 var tokens = func() map[string]cellgrid.Token {

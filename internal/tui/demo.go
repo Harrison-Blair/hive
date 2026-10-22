@@ -91,21 +91,22 @@ type demoFriction struct {
 
 // demoUIState is the UI state of a board.
 type demoUIState struct {
-	Screen      string                `json:"screen"`
-	View        string                `json:"view"`
-	Focus       string                `json:"focus"`
-	Selection   string                `json:"selection"`
-	Scroll      map[string]demoScroll `json:"scroll"`
-	Filter      demoFilter            `json:"filter"`
-	Overlay     string                `json:"overlay"`
-	Popup       string                `json:"popup"`
-	Prompt      demoPrompt            `json:"prompt"`
-	HideStopped bool                  `json:"hide_stopped"`
-	StopsOnly   bool                  `json:"stops_only"`
-	Follow      bool                  `json:"follow"`
-	LogDay      string                `json:"log_day"`
-	ChatNoise   string                `json:"chat_noise"`
-	ChatInput   string                `json:"chat_input"`
+	Screen         string                `json:"screen"`
+	View           string                `json:"view"`
+	Focus          string                `json:"focus"`
+	Selection      string                `json:"selection"`
+	Scroll         map[string]demoScroll `json:"scroll"`
+	Filter         demoFilter            `json:"filter"`
+	Overlay        string                `json:"overlay"`
+	Popup          string                `json:"popup"`
+	Prompt         demoPrompt            `json:"prompt"`
+	HideStopped    bool                  `json:"hide_stopped"`
+	StopsOnly      bool                  `json:"stops_only"`
+	Follow         bool                  `json:"follow"`
+	LogDay         string                `json:"log_day"`
+	ChatNoise      string                `json:"chat_noise"`
+	ChatInput      string                `json:"chat_input"`
+	ChatEventsOpen bool                  `json:"chat_events_open"`
 }
 
 type demoScroll struct {
@@ -399,6 +400,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	if ui.ChatNoise != "" {
 		m.chatNoise = ui.ChatNoise
 	}
+	m.chatEventsOpen = ui.ChatEventsOpen
 	if scroll, ok := ui.Scroll["feed"]; ok {
 		m.chatFeed.topItem = scroll.Top
 	}

@@ -28,6 +28,12 @@ func TestCompactChatMatchesItsBoard(t *testing.T) {
 	checkBoard(t, "CompactChat")
 }
 
+func TestChatStatusBoardsMatch(t *testing.T) {
+	for _, board := range []string{"ChatStatus", "ChatEvents", "CompactChatStatus"} {
+		t.Run(board, func(t *testing.T) { checkBoard(t, board) })
+	}
+}
+
 // pressScreenKey gives a key to the current screen of the tab. The frame
 // gives some keys a new meaning: decision 24 gives a printable key in the
 // Chat feed to the input, and decision 6 gives tab to the regions. A test of
@@ -82,7 +88,7 @@ func TestChatLoadsRecentConversationAndInboxEvents(t *testing.T) {
 	}
 	requireView(t, m,
 		"│ "+local("2026-10-19T12:00:00Z")+"  you · pending first message",
-		"│ "+local("2026-10-19T12:30:00Z")+"  · worker-one  message first line",
+		"│ "+local("2026-10-19T12:30:00Z")+"  ▸ worker-one  message first line",
 		"│ "+local("2026-10-19T13:00:00Z")+"  coordinator   answer",
 		"│ "+local("2026-10-19T14:00:00Z")+"  you           delivered message",
 	)
@@ -203,12 +209,12 @@ func TestChatKeysScrollTheFeed(t *testing.T) {
 // state (decision 21).
 func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
-	requireView(t, m, "[feed] i type · pgup/pgdn scroll · tab region · ? help")
+	requireView(t, m, "[feed] i or type to write · j/k scroll · g/G top/end · ctrl+o open events · tab region · ? help")
 	m, _ = raise(t, m, key('x', "x"))
 	if !m.chatInputActive {
 		t.Fatal("a printable key in the feed did not give the focus to the input")
 	}
-	requireView(t, m, "> x█", "[input] enter send · shift+enter newline · esc leave input · pgup/pgdn scroll feed · tab region")
+	requireView(t, m, "> x█", "[input] enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region")
 	for _, character := range "12?/jkgG" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}
@@ -222,13 +228,13 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	if got := m.chatInput.Value(); got != "x12?/jkgG\ntwo" {
 		t.Fatalf("draft = %q", got)
 	}
-	requireView(t, m, "> two█")
+	requireView(t, m, "  two█")
 
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	if m.chatInputActive {
 		t.Fatal("esc did not give the focus to the feed")
 	}
-	requireView(t, m, "[feed]", "> two")
+	requireView(t, m, "[feed]", "  two")
 	rejectView(t, m, "two█")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if !m.chatInputActive {
@@ -260,9 +266,117 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 // Below 120 columns the footer shows the compact hints of each focus state.
 func TestChatCompactFooterHints(t *testing.T) {
 	m := chatModel(t, 80, 24, 1)
-	requireView(t, m, "[feed] i type · pgup/pgdn feed · tab region · ?")
+	requireView(t, m, "[feed] i type · pgup/pgdn feed · ctrl+o events · tab region · ?")
 	m, _ = raise(t, m, key('i', "i"))
-	requireView(t, m, "[input] enter send · esc leave input · pgup/pgdn feed · tab region")
+	requireView(t, m, "[input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed")
+}
+
+func TestChatInputBorderShowsCoordinatorStatusAndQueuedMark(t *testing.T) {
+	home := newTestHome(t)
+	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+		AgentStatus: "working", StatusChangedAt: "2026-10-20T11:58:00Z",
+	})
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	t.Cleanup(m.Stop)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	state, err := readHeader(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.header = state
+	m.chatData.entries = []chatlib.Entry{{ID: "pending", At: "2026-10-20T11:59:00Z", From: "user", Text: "hello", Delivery: "pending"}}
+	m.invalidateView()
+	got := ansi.Strip(m.View().Content)
+	if !strings.Contains(got, "message · ● working 2m · queued") {
+		t.Fatalf("input border does not show status and pending delivery:\n%s", got)
+	}
+}
+
+func TestChatInputShowsStatusGlyphAndWholeMinuteAge(t *testing.T) {
+	cases := []struct {
+		name, status, changedAt, want string
+	}{
+		{"working zero", "working", "2026-10-20T12:00:00Z", "message · ● working 0m"},
+		{"working one", "working", "2026-10-20T11:59:00Z", "message · ● working 1m"},
+		{"working fifty-nine", "working", "2026-10-20T11:01:00Z", "message · ● working 59m"},
+		{"idle", "idle", "2026-10-20T11:59:00Z", "message · ○ idle 1m"},
+		{"blocked", "blocked", "2026-10-20T12:00:00Z", "message · ▲ blocked 0m"},
+		{"other", "waiting", "2026-10-20T11:59:00Z", "message · ○ waiting 1m"},
+		{"no time", "idle", "", "message · ○ idle"},
+		{"no live coordinator", "", "", "message · ○ none"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			home := newTestHome(t)
+			if tc.name != "no live coordinator" {
+				writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
+					Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+					AgentStatus: tc.status, StatusChangedAt: tc.changedAt,
+				})
+			}
+			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+			defer m.Stop()
+			state, err := readHeader(home)
+			if err != nil {
+				t.Fatal(err)
+			}
+			m.header = state
+			got := ansi.Strip(m.chatView(120, 36))
+			if !strings.Contains(got, tc.want) {
+				t.Fatalf("chat input border lacks %q:\n%s", tc.want, got)
+			}
+		})
+	}
+}
+
+func TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves(t *testing.T) {
+	for _, size := range []struct{ width, height int }{{120, 40}, {80, 24}} {
+		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
+			m := chatModel(t, size.width, size.height, 0)
+			defer m.Stop()
+			m.chatInput.SetValue(strings.Repeat("release notes stay readable ", 60))
+			m.chatInputActive = true
+			m.chatInput.Focus()
+			m.invalidateView()
+			before := strings.Split(ansi.Strip(m.View().Content), "\n")
+			panelCap := (size.height - 4) / 3
+			inputTop := size.height - panelCap - 1
+			cursorRow := inputTop + panelCap - 2
+			if !strings.HasPrefix(before[inputTop], "╭") || !strings.Contains(before[inputTop], "message") {
+				t.Fatalf("capped input starts at row %d, got %q:\n%s", inputTop, before[inputTop], strings.Join(before, "\n"))
+			}
+			lastInputRow := []rune(before[cursorRow])
+			if !strings.Contains(before[cursorRow], "█") || lastInputRow[size.width-1] != '┃' {
+				t.Fatalf("input cursor or scroll mark is not visible at the cap (cursor=%v, height=%d):\n%s", m.chatInput.Cursor(), m.chatInput.Height(), strings.Join(before[inputTop:size.height-1], "\n"))
+			}
+			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+			after := strings.Split(ansi.Strip(m.View().Content), "\n")
+			if !strings.HasPrefix(after[inputTop], "╭") || !strings.HasPrefix(after[size.height-2], "╰") {
+				t.Fatalf("input height changed after esc:\n%s", strings.Join(after[inputTop:size.height-1], "\n"))
+			}
+		})
+	}
+}
+
+func TestChatCtrlOOpensAndFoldsEventsFromBothRegions(t *testing.T) {
+	m := chatModel(t, 120, 40, 0)
+	defer m.Stop()
+	m.chatData.inbox = []records.Inbox{{
+		Seq: 1, Kind: records.InboxMessage, Agent: "manager-hive",
+		Text: "first event line\nsecond event line", CreatedAt: "2026-10-20T11:00:00Z",
+	}}
+	m.rebuildChat()
+	m.invalidateView()
+	requireView(t, m, "▸ manager-hi", "first event line")
+	eventToggle := tea.KeyPressMsg{Code: 'o', Mod: tea.ModCtrl}
+	m, _ = raise(t, m, eventToggle)
+	requireView(t, m, "▾ manager-hi", "first event line", "second event line")
+	m, _ = raise(t, m, eventToggle)
+	requireView(t, m, "▸ manager-hi")
+	m, _ = raise(t, m, key('i', "i"))
+	m, _ = raise(t, m, eventToggle)
+	requireView(t, m, "▾ manager-hi", "second event line")
 }
 
 // Demo mode sends nothing and shows the notice (decision 35).

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive Chat working status</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 728px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="40"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":728}}'>
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff', user:'#e9cf9b', code:'#9fd0ff'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function segs(t, x, y, list) { list.forEach(function (s) { put(t, x, y, s[0], s[1] || 'fg', s[2]); x += s[0].length; }); }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
+function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
+function wrap(s, n) { var words = String(s).split(' '), lines = [], cur = ''; words.forEach(function (wd) { if ((cur + (cur ? ' ' : '') + wd).length > n) { lines.push(cur); cur = wd; } else cur = cur + (cur ? ' ' : '') + wd; }); if (cur) lines.push(cur); return lines; }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
+function frame(t, active, region, hints) {
+  var w = t.w;
+  put(t, 0, 0, ' hive  ~/source/hive', 'fg', 1);
+  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 12, 0, '●', 'working', 1); put(t, rx + 35, 0, '●', 'working', 1);
+  put(t, 0, 2, rep('─', w), 'border');
+  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
+  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === active) { put(t, x, 1, lab, 'accent', 1); put(t, x, 2, rep('━', lab.length), 'accent'); } else put(t, x, 1, lab, 'dim'); x += lab.length + 1; });
+  var tag = ' [' + region + '] ';
+  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
+}
+// The input wraps its text and grows. Its panel is at most 1/3 of the 36
+// content rows (12 rows, 10 text rows). This input has 4 text rows.
+function input(t, y, text, status) {
+  var w = t.w, lines = wrap(text, w - 6), h = lines.length + 2;
+  box(t, 0, y, w, h, 'accent', 'message', 'accent');
+  segs(t, 11, y, status);
+  lines.forEach(function (ln, i) { put(t, 2, y + 1 + i, i === 0 ? '> ' : '  ', 'user'); put(t, 4, y + 1 + i, ln, 'user'); });
+  put(t, 4 + lines[lines.length - 1].length, y + lines.length, '█', 'accent');
+  return h;
+}
+function chat(t) {
+  var text = 'Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen: Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me the draft so I can read it before the tag.';
+  var iy = 39 - (wrap(text, t.w - 6).length + 2);
+  frame(t, 1, 'input', 'enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region');
+  input(t, iy, text, [['· ', 'dim'], ['●', 'working'], [' working 2m ', 'fg'], ['· queued ', 'dim']]);
+  box(t, 0, 3, 120, iy - 3, 'border', 'chat · noise normal', 'accent');
+  put(t, 60, 3, ' ↑ 42 earlier ', 'dim');
+  var X = 23, W = 94, y = 5;
+  function who(time, name, k) { put(t, 2, y, time, 'dim'); put(t, 9, y, fit(name, 13), k, 1); }
+  function userMsg(time, name, text) { who(time, name, 'user'); wrap(text, W).forEach(function (ln, i) { put(t, X, y + i, ln, 'user'); }); y += wrap(text, W).length + 1; }
+  function event(time, name, text) { put(t, 2, y, time, 'dim'); put(t, 9, y, '▸ ' + fit(name, 11), 'dim'); put(t, X, y, fit(text, W), 'dim'); y += 2; }
+  userMsg('14:02', 'you', 'can we interrogate and design the working status thing for the chat window?');
+  event('14:05', 'manager-stenographer', 'g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit pass, visual check pass) and landed on dev at 3807a25.');
+  who('14:06', 'coordinator', 'info');
+  put(t, X, y, 'Interrogate, summary', 'accent', 1); y += 2;
+  put(t, X, y, 'Working status', 'fg', 1); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['The input border shows the coordinator state: '], ['● working 2m', 'code'], [', '], ['○ idle 5m', 'code'], [', or '], ['▲ blocked 1m', 'code'], ['.']]); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['While your last message is pending, the border adds '], ['· queued', 'code'], ['.']]); y += 2;
+  put(t, X, y, 'Message bar', 'fg', 1); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['The input wraps and grows to 1/3 of the screen, then scrolls inside.']]); y += 2;
+  put(t, X, y, 'Events', 'fg', 1); y += 1;
+  segs(t, X, y, [['• ', 'accent'], ['Events stay dim and folded (▸). '], ['ctrl+o', 'code'], [' opens all of them (▾).']]); y += 2;
+  segs(t, X, y, [['Reply '], ['yes', 'code'], [' to confirm, or name the line to change.']]); y += 2;
+  event('14:09', 'manager-hive', 'quiet');
+  userMsg('14:21', 'you · pending', 'yes');
+  vline(t, 119, 24, 6, '┃', 'dim');
+}
+class Component extends DCLogic {
+  renderVals() {
+    var t = T(120, 40);
+    chat(t);
+    return { rows: rows(t) };
+  }
+}
+</script>
+</body>
+</html>

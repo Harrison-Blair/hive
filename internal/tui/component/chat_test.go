@@ -91,11 +91,27 @@ func TestChatNarrow(t *testing.T) {
 		"t|restart the         \n" + "k|uuuuuuuuuuufffffffff\n" + "b|00000000000000000000\n" +
 		"t|coordinator please  \n" + "k|uuuuuuuuuuuuuuuuuuff\n" + "b|00000000000000000000\n" +
 		"t|                    \n" + "k|ffffffffffffffffffff\n" + "b|00000000000000000000\n" +
-		"t|14:19 · manager-hiv…\n" + "k|dddddddddddddddddddd\n" + "b|00000000000000000000\n" +
+		"t|14:19 ▸ manager-hiv…\n" + "k|dddddddddddddddddddd\n" + "b|00000000000000000000\n" +
 		"t|                    \n" + "k|ffffffffffffffffffff\n" + "b|00000000000000000000\n" +
 		"t|14:21 coordinator   \n" + "k|dddddfiiiiiiiiiiifff\n" + "b|00000011111111111000\n" +
 		"t|Done now.           \n" + "k|ffffffffffffffffffff\n" + "b|00000111000000000000\n"
 	checkHandGrid(t, strings.Join(lines, "\n"), want)
+}
+
+func TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks(t *testing.T) {
+	lines, err := ChatLines([]ChatMessage{{
+		Time: "14:24", Name: "manager-hive", Kind: ChatEvent, Open: true,
+		Text: "first event line\nsecond event line",
+	}}, 120)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lines) != 2 || !strings.Contains(ansi.Strip(lines[0]), "▾ manager-hi…") || !strings.HasSuffix(ansi.Strip(lines[0]), "first event line") {
+		t.Fatalf("open event first line = %q", lines)
+	}
+	if got := ansi.Strip(lines[1]); !strings.HasPrefix(got, strings.Repeat(" ", 21)) || !strings.HasSuffix(got, "second event line") {
+		t.Fatalf("open event continuation = %q; want text at message column", got)
+	}
 }
 
 // TestChatWrapWidth checks the gutter from 120 columns: the text starts at

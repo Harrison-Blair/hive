@@ -45,7 +45,7 @@ function subtabs(t, y, names, active) {
   put(t, t.w - 18, y, '[ ] switch view', 'dim');
 }
 function screen(t) {
-  frame(t, 1, 'input', 'enter send · esc leave input · pgup/pgdn feed · tab region');
+  frame(t, 1, 'input', 'enter send · ctrl+o events · esc leave input · pgup/pgdn feed');
   box(t, 0, 3, 80, 17, 'border', 'chat', 'accent');
   put(t, 2, 4, '14:21', 'dim'); put(t, 8, 4, 'coordinator', 'info', 1);
   put(t, 2, 5, 'Interrogate, round 2', 'accent', 1);
@@ -61,7 +61,7 @@ function screen(t) {
   put(t, 2, 15, '• ', 'accent'); put(t, 4, 15, 'Recommended:', 'fg', 1); put(t, 17, 15, 'A, hive closes only panes it started.', 'fg');
   put(t, 2, 17, '14:22', 'dim'); put(t, 8, 17, 'you', 'user', 1); put(t, 2, 18, '1A, 2A, 3B', 'user');
   vline(t, 79, 18, 1, '┃', 'dim');
-  box(t, 0, 20, 80, 3, 'accent', 'message', 'accent'); put(t, 2, 21, '> ', 'user'); put(t, 4, 21, '█', 'accent');
+  box(t, 0, 20, 80, 3, 'accent', 'message', 'accent'); segs(t, 11, 20, [['· ', 'dim'], ['●', 'working'], [' working 1m ', 'fg']]); put(t, 2, 21, '> ', 'user'); put(t, 4, 21, '█', 'accent');
 }
 
 class Component extends DCLogic {
