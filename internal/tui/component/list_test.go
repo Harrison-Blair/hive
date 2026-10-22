@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -89,5 +90,35 @@ func TestListHint(t *testing.T) {
 	}
 	if hint := strings.Split(got, "\n")[4]; !strings.Contains(hint, dimStyle.Render("enter")) {
 		t.Errorf("hint row %q has no dim hint", hint)
+	}
+}
+
+// TestListSelectedRowCells checks the user decisions 4 and 7 of 2026-10-21:
+// "▶" is accent bold, the space after it is fg and not bold, and the first
+// cell is accent bold over its full column.
+func TestListSelectedRowCells(t *testing.T) {
+	l := List{Columns: []Column{{Title: "ID", Width: 6}, {Title: "S"}}, Rows: [][]Cell{{{Text: "ab"}, {Text: "x"}}}}
+	g, err := cellgrid.Convert(strings.Split(l.View(14, 4), "\n")[2], 14, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []struct {
+		col   int
+		rune  rune
+		token cellgrid.Token
+		bold  bool
+	}{
+		{2, '▶', cellgrid.Accent, true},
+		{3, ' ', cellgrid.FG, false},
+		{4, 'a', cellgrid.Accent, true},
+		{5, 'b', cellgrid.Accent, true},
+		{9, ' ', cellgrid.Accent, true},
+		{10, 'x', cellgrid.FG, false},
+	}
+	for _, w := range want {
+		c := g.At(0, w.col)
+		if c.Rune != w.rune || c.Token != w.token || c.Bold != w.bold {
+			t.Errorf("col %d = %q %s bold %t; want %q %s bold %t", w.col, c.Rune, c.Token, c.Bold, w.rune, w.token, w.bold)
+		}
 	}
 }

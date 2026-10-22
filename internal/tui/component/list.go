@@ -26,8 +26,9 @@ type Cell struct {
 
 // List is a Panel of rows in fixed columns with a dim header row (decisions
 // 8, 16 to 20). The selected row has the marker ▶ and its first cell in
-// accent and bold. Offset is the first visible row; View moves it so that the
-// selected row is visible. When the rows do not fit, the panel draws the
+// accent and bold over its full column, and the space after the marker is
+// fg (user decisions 2026-10-21). Offset is the first visible row; View
+// moves it so that the selected row is visible. When the rows do not fit, the panel draws the
 // scroll mark of decision 5. A Hint shows in dim at the right of the last
 // body row and takes one row line.
 type List struct {
@@ -107,7 +108,7 @@ func (l List) header() string {
 func (l List) row(i int) string {
 	var b strings.Builder
 	if i == l.Selected {
-		b.WriteString(titleStyle.Render(listMarker))
+		b.WriteString(titleStyle.Render(strings.TrimSpace(listMarker)) + " ")
 	} else {
 		b.WriteString("  ")
 	}
@@ -121,7 +122,7 @@ func (l List) row(i int) string {
 		}
 		w := l.Columns[j].Width
 		if j == 0 && i == l.Selected {
-			b.WriteString(titleStyle.Render(fitCell(c.Text, w-1)) + " ")
+			b.WriteString(titleStyle.Render(fitCell(c.Text, w-1) + " "))
 			continue
 		}
 		text := ansi.Truncate(c.Text, max(w-1, 0), "…")
