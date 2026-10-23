@@ -1,0 +1,25 @@
+{
+  "id": "a15",
+  "asker": "asker-scratch",
+  "asker_key": "asker-scratch",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T16:45:16.875577218Z",
+  "questions": [
+    {
+      "question": "Which label?",
+      "header": "Label",
+      "options": [
+        {
+          "label": "ROW01\nROW02\nROW03\nROW04\nROW05\nROW06\nROW07\nROW08\nROW09\nROW10\nROW11\nROW12\nROW13\nROW14\nROW15\nROW16\nROW17\nROW18\nROW19\nROW20\nROW21\nROW22\nROW23\nROW24\nROW25\nROW26\nROW27\nROW28\nROW29\nROW30\nFINAL-LABEL-SENTINEL",
+          "description": "a valid multiline label"
+        },
+        {
+          "label": "No",
+          "description": "no"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}

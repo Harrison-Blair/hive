@@ -1,0 +1,20 @@
+package main
+
+import (
+ "fmt"
+ "os"
+ "strconv"
+ "github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+)
+func main() {
+ f,err:=os.Open(os.Args[1]); if err!=nil {panic(err)}; want,err:=cellgrid.ReadGrid(f); if err!=nil {panic(err)}; _=f.Close()
+ var got cellgrid.Grid
+ if len(os.Args)>3 {
+  text,e:=os.ReadFile(os.Args[2]); if e!=nil {panic(e)}
+  w,_:=strconv.Atoi(os.Args[3]); h,_:=strconv.Atoi(os.Args[4]); got,err=cellgrid.Convert(string(text),w,h)
+  if err==nil {for i,c:=range want.Cells {if c.Rune==' ' && got.Cells[i].Rune==' ' {got.Cells[i]=c}}}
+ } else {f,err=os.Open(os.Args[2]); if err!=nil {panic(err)}; got,err=cellgrid.ReadGrid(f); _=f.Close()}
+ if err!=nil {panic(err)}; diffs,err:=cellgrid.Compare(want,got,nil); if err!=nil {panic(err)}
+ fmt.Printf("%s <> %s: %d differing cells (no mask)\n",os.Args[1],os.Args[2],len(diffs))
+ if len(diffs)>0 {fmt.Print(cellgrid.FormatDiffs(diffs)); os.Exit(1)}
+}

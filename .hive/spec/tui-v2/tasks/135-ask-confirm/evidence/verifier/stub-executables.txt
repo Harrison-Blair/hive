@@ -1,0 +1,5 @@
+asker-scratch: pid=214457 argv=['pi', 'asker-scratch'] /proc/PID/exe=/tmp/hv135-verify/bin/pi
+asker-scratch: STUB_READY identity checked before all six deliveries (delivery-run.txt and scripts/v4.py.txt).
+parent-scratch: pid=214115 argv=['pi', 'parent-scratch'] /proc/PID/exe=/tmp/hv135-verify/bin/pi
+parent-scratch: STUB_READY identity checked before all six deliveries (delivery-run.txt and scripts/v4.py.txt).
+stub SHA256=60ed6896fc01fe8eee23cdcd24b47fa4885e568a4daa5dadb1f1a77bb4217c54

@@ -1,0 +1,26 @@
+sh-5.3$ pi asker-scratch
+STUB_READY name=asker-scratch executable=/tmp/hv135-verify/bin/pi pid=214457
+/ask /tmp/hv135-verify/ask.json
+ask a8 open
+⬢ user: answer to ask a8 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+GOT: ⬢ user: answer to ask a8 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+/ask /tmp/hv135-verify/ask.json
+ask a9 open
+/ask /tmp/hv135-verify/ask.json
+ask a10 open
+⬢ hive: the user dismissed ask a10 from asker-scratch · Scope · Order. No answer comes.
+GOT: ⬢ hive: the user dismissed ask a10 from asker-scratch · Scope · Order. No answer comes.
+/ask /tmp/hv135-verify/ask.json
+ask a11 open
+⬢ user: answer to ask a11 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+GOT: ⬢ user: answer to ask a11 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+/ask /tmp/hv135-verify/ask.json
+ask a12 open
+/ask /tmp/hv135-verify/ask.json
+ask a13 open
+⬢ hive: the user dismissed ask a13 from asker-scratch · Scope · Order. No answer comes.
+GOT: ⬢ hive: the user dismissed ask a13 from asker-scratch · Scope · Order. No answer comes.
+/ask /tmp/hv135-verify/short-multiline.json
+ask a14 open
+/ask /tmp/hv135-verify/tall-multiline.json
+ask a15 open

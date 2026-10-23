@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                               ╭──────────────────────╮                                               │
+│                 ╭─ keys · ? or esc closes ─────────────────────────────────────────────────────────╮                 │
+│                 │                                                                                  │                 │
+│                 │  GLOBAL · same on every screen            ACTIONS · one meaning each             │                 │
+│                 │                                                                                  │                 │
+│                 │  1–6        switch screen                 a     attach to pane                   │                 │
+│                 │  tab        next region                   p     peek pane                        │                 │
+│                 │  [ ]        previous / next view          r     restart · Health › Agents        │                 │
+│                 │  ↑↓ j k     move                          h     show or hide stopped agents      │                 │
+│                 │  ←→         move on the graph             t     open task                        │                 │
+│                 │  pgup pgdn  page                          b     task brief                       │                 │
+│                 │  g G        top / end                     v     VERIFIED.md                      │                 │
+│                 │  enter      open / details                d     dependency graph                 │                 │
+│                 │  esc        back / close                  o     goal design                      │                 │
+│                 │  /          filter bar                    s     stops only                       │                 │
+│                 │  ?          this help                     f     follow logs                      │                 │
+│                 │  R          refresh now                   < >   previous / next day              │                 │
+│                 │  ctrl+c ×2  quit                                                                 │                 │
+│                 │                                                                                  │                 │
+│                 │  FILTER FIELDS                                                                   │                 │
+│                 │  level:  comp:  proj:  agent:  task:  req:  text                                 │                 │
+│                 │  example  / level:warn agent:manager-hive restart                                │                 │
+│                 │                                                                                  │                 │
+│                 │  CHAT                                                                            │                 │
+│                 │  i or a click on the input types · ctrl+] or a click on the feed leaves          │                 │
+│                 │  ctrl+o opens or folds all chat events                                           │                 │
+│                 │  r restart: coordinator or supervisor, asks first only when live                 │                 │
+│                 │  ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card     │                 │
+│                 │  ask review: enter on the last question · ↑↓ question · enter send or change     │                 │
+│                 ╰──────────────────────────────────────────────────────────────────────────────────╯                 │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [help] ↑↓ scroll · ? or esc close                                                                                      

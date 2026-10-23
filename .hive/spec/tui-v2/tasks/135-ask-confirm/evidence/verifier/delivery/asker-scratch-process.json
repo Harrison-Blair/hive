@@ -1,0 +1,20 @@
+{
+  "type": "pane_process_info",
+  "process_info": {
+    "pane_id": "wA:p1",
+    "shell_pid": 214422,
+    "foreground_process_group_id": 214457,
+    "foreground_processes": [
+      {
+        "pid": 214457,
+        "name": "pi",
+        "argv": [
+          "pi",
+          "asker-scratch"
+        ],
+        "cmdline": "pi asker-scratch",
+        "cwd": "/tmp/hv135-verify"
+      }
+    ]
+  }
+}

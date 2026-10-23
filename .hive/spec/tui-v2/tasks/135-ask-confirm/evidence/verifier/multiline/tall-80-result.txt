@@ -1,0 +1,1 @@
+width=80; review plus five up and five down captures; FINAL-LABEL-SENTINEL visible=False; ellipsis visible=True

@@ -1,0 +1,40 @@
+ hive  ~/source/hive                          coordinator ● working   supervisor ● live   ? 1 ask   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:02  you           I want a tool for you to ask questions, like the native ask tool, but here in hive.             │
+│                                                                                                                      │
+│ 14:03  coordinator   Interrogate round 1. Who can ask, how the answer gets back, and where the question shows.       │
+│                      Reply like "1A, 2A, 3A".                                                                        │
+│                                                                                                                      │
+│ 14:05  you           A A A                                                                                           │
+│                                                                                                                      │
+│ 14:19  ▸ manager-hi… goal g6-hive-ask created · wave A started · worker t126-worker-1 live                           │
+│                                                                                                                      │
+│ 14:21  manager-hive  ? asked · Model · open below                                                                    │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? manager-hive asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 1 ━┓
+┃   Model → Yes, restart now (REC) · note: verified note                                                               ┃
+┃                                                                                                                      ┃
+┃ › Send                                                                                                               ┃
+┗━ enter send · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter send · x dismiss · J/K next/prev card

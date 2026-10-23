@@ -1,0 +1,41 @@
+from live import *
+import html, concurrent.futures
+B=ROOT/'.hive/tmp/verifier135/boards';B.mkdir(exist_ok=True);H=ROOT/'.hive/tmp/verifier135/html';H.mkdir(exist_ok=True);PFS=ROOT/'.hive/tmp/verifier135/firefox';PFS.mkdir(exist_ok=True)
+boards=['ChatAsk','ChatAskMulti','ChatAskPreview','ChatAskStopped','CompactChatAsk','Help','ChatAskReview','ChatAskReviewMulti','CompactChatAskReview']
+jobs=[]
+for b in boards:jobs.append((ROOT/'.hive/spec/tui-v2/design'/f'{b}.dc.html',B/f'{b}.png'))
+files=list((E/'live').glob('*.ansi'))
+for w in [120,80]:
+ for step in ['03-review','04-highlight-scope','05-edit-scope','06-return-review']:
+  files.append(E/f'flow-{w}x{40 if w==120 else 24}'/(step+'.ansi'))
+ for case in ['answer','stopped','dismiss']:files.append(E/'delivery'/f'{w}-{case}-02-review.ansi')
+ for case in ['short','tall']:files.append(E/'multiline'/f'{case}-{w}-02-review.ansi')
+ for d in ['down-00','down-01','down-02']:files.append(E/f'tall-{w}'/(d+'.ansi'))
+def ansihtml(text):
+ color='#e6e1d6';bold=False;out=[]
+ for part in re.split(r'(\x1b\[[0-9;]*m)',text):
+  if part.startswith('\x1b'):
+   codes=[int(x or 0) for x in part[2:-1].split(';')];i=0
+   while i<len(codes):
+    c=codes[i]
+    if c==0:color='#e6e1d6';bold=False
+    elif c==1:bold=True
+    elif c==22:bold=False
+    elif c==39:color='#e6e1d6'
+    elif c==38 and i+4<len(codes) and codes[i+1]==2:color='#%02x%02x%02x'%tuple(codes[i+2:i+5]);i+=4
+    i+=1
+  elif part:out.append(f'<span style="color:{color};font-weight:{700 if bold else 400}">{html.escape(part)}</span>')
+ return ''.join(out)
+for index,f in enumerate(files):
+ if not f.exists():continue
+ text=f.read_text();w=120 if max(len(s) for s in plain(text).splitlines())>80 else 80;h=len(text.splitlines())
+ p=H/f'capture-{index}.html';p.write_text('<!doctype html><meta charset="utf-8"><style>body{margin:0}pre{margin:0;box-sizing:border-box;padding:41px 24px 7px;background:#171612;border-radius:10px;font-family:"JetBrains Mono",monospace;font-size:13px;line-height:17px;white-space:pre;width:'+str(round(w*7.8)+48)+'px;height:'+str(h*17+48)+'px}</style><pre>'+ansihtml(text)+'</pre>')
+ jobs.append((p,f.with_suffix('.png')))
+def shot(job):
+ src,dst=job;profile=PFS/('profile-'+str(jobs.index(job)));profile.mkdir(exist_ok=True)
+ args=['firefox','--headless','--no-remote','--profile',profile,'--window-size=1220,780','--screenshot',dst,'file://'+str(src)]
+ try:run(args,timeout=50)
+ except Exception as e:return str(e)
+ return str(dst.relative_to(ROOT))
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+ for result in pool.map(shot,jobs):print(result,flush=True)

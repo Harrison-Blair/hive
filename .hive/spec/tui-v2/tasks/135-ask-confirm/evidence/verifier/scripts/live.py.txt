@@ -1,0 +1,68 @@
+import os, subprocess, json, time, socket, re, shlex
+from pathlib import Path
+ROOT=Path('/home/penguin/source/hive/projects/hive/worktrees/135-ask-confirm')
+S=Path('/tmp/hv135-verify'); E=ROOT/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier'; SOCK=S/'config/herdr/sessions/verify135/herdr.sock'
+TUI='w1:p1'; TMUX=['tmux','-L','hv135-verify']; LOG=E/'live-commands.txt'
+def run(args,**kw):
+ with LOG.open('a') as f: f.write('$ '+shlex.join([str(x) for x in args])+'\n')
+ return subprocess.run([str(x) for x in args],check=True,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,**kw).stdout
+
+def rpc(method,params):
+ with LOG.open('a') as f: f.write(json.dumps({'socket':str(SOCK),'method':method,'params':params})+'\n')
+ c=socket.socket(socket.AF_UNIX);c.settimeout(25);c.connect(str(SOCK));c.sendall((json.dumps({'id':'verify135','method':method,'params':params})+'\n').encode());f=c.makefile();r=json.loads(f.readline());c.close()
+ if 'error' in r: raise RuntimeError(r)
+ return r['result']
+def read(pane=TUI):
+ r=rpc('pane.read',{'pane_id':pane,'source':'visible','format':'ansi'}); assert not r['read']['truncated'];return r['read']['text']
+def plain(s):return re.sub(r'\x1b\[[0-9;]*m','',s)
+def stable(pane=TUI):
+ for _ in range(20):
+  a=read(pane);time.sleep(.5);b=read(pane)
+  if a==b:
+   p=rpc('pane.get',{'pane_id':pane})['pane'];assert p['scroll']['offset_from_bottom']==0
+   return b
+ raise AssertionError('unstable pane '+pane)
+def crop(text,w,h):
+ out=[]
+ for line in text.splitlines()[:h]:
+  parts=re.findall(r'\x1b\[[0-9;]*m|[^\x1b]',line);col=0;s=''
+  for p in parts:
+   if p.startswith('\x1b'):s+=p
+   elif col<w:s+=p;col+=1
+   else:break
+  out.append(s+'\x1b[0m')
+ return '\n'.join(out)+'\n'
+def cap(name,w=120,h=40,pane=TUI):
+ text=stable(pane);text=crop(text,w,h);p=E/name;p.parent.mkdir(parents=True,exist_ok=True);p.with_suffix('.ansi').write_text(text);p.with_suffix('.txt').write_text(plain(text));return plain(text)
+def keys(*ks):
+ for k in ks:run(TMUX+['send-keys','-t','live:0.0',k]);time.sleep(.12)
+def text(s):run(TMUX+['send-keys','-t','live:0.0','-l',s]);time.sleep(.2)
+def raw(s):run(TMUX+['send-keys','-t','live:0.0','-H']+[f'{b:02x}' for b in s.encode()]);time.sleep(.2)
+def stop():
+ subprocess.run(TMUX+['kill-server'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);time.sleep(.4)
+def start(fixture=None,w=120,h=40):
+ stop()
+ args=['env','TERM=vt100','COLORTERM=truecolor','HIVE_NO_STARTUP=1',f'HIVE_HOME={S}/home',f'HERDR_SOCKET_PATH={SOCK}','HERDR_PANE_ID=w1:p1',str(S/'bin/hive'),'--no-startup']
+ if fixture:args+=['--demo',str(fixture),'--size',f'{w}x{h}']
+ cmd=shlex.join(TMUX+['-f','/dev/null','new-session','-s','live','-x','140','-y','48',shlex.join(args)])
+ rpc('pane.send_input',{'pane_id':TUI,'text':cmd,'keys':['enter']});time.sleep(1.3)
+ if not fixture:
+  run(TMUX+['set-option','-t','live','status','off']);run(TMUX+['resize-window','-t','live:0','-x',str(w),'-y',str(h)]);time.sleep(.5)
+ assert 'hive' in plain(stable())
+def setup():
+ assert os.getenv('HERDR_ENV')=='1';assert not S.exists();S.mkdir()
+ for p in ['user','config/herdr','state','bin','home/.hive/state/agents']: (S/p).mkdir(parents=True,exist_ok=True)
+ (S/'home/.hive/README.md').write_text('# Scratch verification home\n')
+ (S/'config/herdr/config.toml').write_text('[terminal]\ndefault_shell = "/bin/sh"\n[server]\nheadless_cols = 140\nheadless_rows = 48\n[update]\nmanifest_check = false\n')
+ run(['go','build','-o',S/'bin/hive','.'],cwd=ROOT);run(['go','build','-o',S/'bin/pi',ROOT/'.hive/tmp/verifier135/stub.go'],cwd=ROOT)
+ env={k:v for k,v in os.environ.items() if not k.startswith('HERDR_')};env.update(HOME=str(S/'user'),XDG_CONFIG_HOME=str(S/'config'),XDG_STATE_HOME=str(S/'state'),PATH=str(S/'bin')+':/usr/bin:/bin',HIVE_HOME=str(S/'home'),HIVE_NO_STARTUP='1')
+ server=subprocess.Popen(['/home/penguin/.local/bin/herdr','--session','verify135','server'],env=env,stdout=(S/'server.log').open('w'),stderr=subprocess.STDOUT,start_new_session=True)
+ (S/'server.pid').write_text(str(server.pid))
+ for _ in range(50):
+  if SOCK.exists():break
+  time.sleep(.1)
+ ping=rpc('ping',{});assert ping['protocol']==22 and ping['version']=='0.9.5'
+ (E/'server-ping.json').write_text(json.dumps(ping,indent=2))
+ a=rpc('workspace.create',{'cwd':str(S),'label':'verify135-tui'});assert a['root_pane']['pane_id']==TUI
+ print('setup complete')
+if __name__=='__main__':setup()
