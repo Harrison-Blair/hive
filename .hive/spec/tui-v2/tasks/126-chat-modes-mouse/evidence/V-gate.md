@@ -1,11 +1,11 @@
 # V-gate Diff scope and gate
 
-Proves each criterion. Run on 2026-10-23 by the worker. Result: **pass**.
+Proves each criterion. Run on 2026-10-23 by the worker, again after the repair. Result: **pass**.
 
 ## Merge and diff scope
 
-`git fetch origin` and `git merge origin/dev` gave `Already up to date`
-(`dev` is f7990406). `git diff origin/dev...HEAD --stat` is in
+Repair run: `git merge origin/dev` (bdd2ee46) added one dogfood entry from
+`dev`. Earlier run: `Already up to date` (`dev` was f7990406). `git diff origin/dev...HEAD --stat` is in
 `V-gate-stat.txt`. The changed files are only files of the source table and
 the evidence:
 
@@ -14,13 +14,16 @@ the evidence:
   grids, and the approved boards and grids of AC6 (decision 90).
 - `internal/boardexport/check.go` and `check_test.go`.
 - `internal/tui/*.go` and `internal/tui/component/*.go` with their tests.
-- `testdata/ste-baseline.json` (the brief has 12 STE findings, not 0).
+- `testdata/ste-baseline.json` (the brief copy is at 0 after the repair).
 - `.hive/spec/tui-v2/tasks/126-chat-modes-mouse/` (the brief and the
   evidence).
 
 ## Gate
 
-The full output is in `V-gate.log`. The first run found one lint issue
+The full output of the repair run is in `V-gate.log`. Each command exits
+0, `gofmt -l` and `go mod tidy -diff` print nothing, and lint gives `0 issues.`
+
+Earlier run: The first run found one lint issue
 (QF1001 De Morgan in `mouse.go` line 103). The worker changed the condition
 to its equal form, and the second run passed:
 
