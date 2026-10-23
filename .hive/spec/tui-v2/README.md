@@ -51,6 +51,9 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `TreeNested.dc.html` | 1 Agents, one-pod tree with a nested child | 120×40 |
 | `CompactTreeWide.dc.html` | 1 Agents, one-pod tree that scrolls sideways | 80×24 |
 | `CompactTreeNested.dc.html` | 1 Agents, one-pod tree that scrolls vertically | 80×24 |
+| `ChatNormal.dc.html` | 2 Chat, normal mode | 120×40 |
+| `ChatInput.dc.html` | 2 Chat, input mode | 120×40 |
+| `CompactChatNormal.dc.html` | 2 Chat, normal mode | 80×24 |
 
 ## Out of scope
 
@@ -365,6 +368,30 @@ The boards `TreeWide`, `TreeNested`, `CompactTreeWide`, and `CompactTreeNested` 
 77. The view scrolls only to keep the selection on the screen. There is no free scroll of the view. `pgup`, `pgdn`, and the wheel do not move it. The user chose this. In the tree, `↑` selects the parent card, `↓` selects the first child, and `←` and `→` select the card before or after on the same level.
 
 78. The boards `AgentsNested` and `AgentsCoordinatorChild` show the one-pod view with the rail. Decision 74 draws them as trees. The boards `TreeWide`, `TreeNested`, and `CompactTreeWide` break 3 rules that exist. The evidence of task `125-pod-tree-scroll` lists the 3 cases in `board-rule-cases.md`. The code follows the rules. For these 5 boards, the grids of the code replace the old grids after the user approves the new boards. The user approved the new boards `AgentsNested`, `TreeWide`, `TreeNested`, and `CompactTreeWide` on 2026-10-22. The user approved the new board `AgentsCoordinatorChild`, which shows rule A, on 2026-10-22. The approved code grids of the 3 boards with rule cases and the 2 boards of AC6 replaced the old grids.
+
+### Mouse and chat modes
+
+The boards `ChatNormal`, `ChatInput`, and `CompactChatNormal` show these decisions. The user approved them on 2026-10-22 with the plan `plans/hive-ask.md`.
+
+79. The TUI turns on mouse reports in cell motion mode. This mode gives clicks and wheel steps. To select text for a copy, hold shift and drag. The terminal then selects the text.
+
+80. On each tab, the wheel scrolls the region below the pointer. One wheel step moves the selection of a list by one row. One wheel step scrolls a text region by 3 lines. The text regions are the Chat feed, a details region, the JSON panel, the help overlay, and the details popup. A wheel step over a region that cannot scroll does nothing. The wheel does not move the Agents graph, as decision 77 gives. The wheel does not change the focus.
+
+81. A click on a tab name opens that tab. A click on a region gives the focus to that region. A click on a list row selects that row. A click below the last row selects the last row. The Agents graph has one region, so a click on the graph does nothing. The TUI writes a log event for each mouse action that changes the screen. The event has the cell of the pointer and the focus.
+
+82. This decision replaces decision 24 and the Chat input row of decision 21. Chat has two modes: normal mode and input mode. Normal mode is the default. In normal mode, the feed has the `accent` border, and the input has the `border` border. When the input has no text, it shows `i or click here to type` in `dim`. The footer starts with `[normal]`.
+
+83. In normal mode, `i` starts input mode. A click on the input also starts input mode. `↑`, `↓`, `j`, `k`, and the wheel scroll the feed. `pgup` and `pgdn` page the feed. `g` and `G` go to the top and the end. `ctrl+o` and `?` keep their functions. Each other letter keeps its global function and does not go into the input. `enter`, `esc`, and `tab` do not start input mode.
+
+84. In input mode, the input has the `accent` border and a bold title. The feed has the `border` border. The input shows `> ` and the cursor. The footer starts with `[input]`. Each printable key goes into the input. `enter` sends the text and keeps input mode. `shift+enter` adds a line. `ctrl+]` stops input mode. A click on the feed also stops input mode. The wheel, `pgup`, and `pgdn` scroll the feed. `esc` and `tab` do not change the mode. When input mode stops, the text stays in the input.
+
+85. From 120 columns, the footer hints of normal mode are `i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help`. The footer hints of input mode are `enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll`. Below 120 columns, the hints of normal mode are `i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help`. The hints of input mode are `enter send · ctrl+] leave · wheel or pgup/pgdn scroll`. The CHAT line of the Help board is `i or a click on the input types · ctrl+] or a click on the feed leaves`.
+
+86. The top border of the feed shows ` ↑ N earlier ` at each width, from the middle column. N is the count of messages above the view.
+
+87. The header shows `? N asks` before `needs you` on each tab, also when N is 0. For one ask, the text is `? 1 ask`. Below 120 columns, the header shows `? N`. The count is `accent` and bold when N is more than 0. In the other cases, it is `fg` and bold. The header state holds the count. Task 2 of the goal `g6-hive-ask` sets it.
+
+88. The three boards break 14 rules that exist. The evidence of task `126-chat-modes-mouse` lists the 14 cases in `board-rule-cases.md`. The code follows the rules.
 
 ## Waves
 
