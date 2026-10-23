@@ -1,0 +1,25 @@
+{
+  "id": "a10",
+  "asker": "asker-scratch",
+  "asker_key": "asker-scratch",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T17:42:12.522793905Z",
+  "questions": [
+    {
+      "question": "Which label?",
+      "header": "Label",
+      "options": [
+        {
+          "label": "First line\nSecond line",
+          "description": "a valid multiline label"
+        },
+        {
+          "label": "No",
+          "description": "no"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}

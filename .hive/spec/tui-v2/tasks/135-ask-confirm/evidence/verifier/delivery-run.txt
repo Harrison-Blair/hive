@@ -1,0 +1,8 @@
+verified stub executable and startup output: parent-scratch
+verified stub executable and startup output: asker-scratch
+120 answer pass: ⬢ user: answer to ask a8 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+120 stopped pass: ⬢ user: answer to ask a9 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
+120 dismiss pass: ⬢ hive: the user dismissed ask a10 from asker-scratch · Scope · Order. No answer comes.
+80 answer pass: ⬢ user: answer to ask a11 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+80 stopped pass: ⬢ user: answer to ask a12 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
+80 dismiss pass: ⬢ hive: the user dismissed ask a13 from asker-scratch · Scope · Order. No answer comes.

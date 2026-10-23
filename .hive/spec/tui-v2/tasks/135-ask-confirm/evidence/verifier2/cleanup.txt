@@ -1,0 +1,15 @@
+Owned server: 365373 owned stubs: [383601, 382869]
+Private tmux stop complete
+Private server stop: {'type': 'ok'}
+383601 absent
+382869 absent
+365373 absent
+No owned server or stub process runs
+Private socket absent
+
+Scratch removal checks
+/tmp/hv135-reverify absent
+.hive/tmp/verifier135b absent
+Private tmux server absent
+Private herdr process absent
+Worktree scratch entries: First verdict snapshot: byte equal

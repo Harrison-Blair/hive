@@ -1,0 +1,32 @@
+package tui
+
+import (
+ "fmt"
+ "testing"
+ "strings"
+ "github.com/charmbracelet/x/ansi"
+ "github.com/Harrison-Blair/hive/internal/ask"
+)
+
+func TestVerifierReviewKeepsMultilineLabelInsideDock(t *testing.T) {
+ for _, size := range [][2]int{{120,40},{80,24}} {
+  t.Run(fmt.Sprint(size[0]),func(t *testing.T){
+   a:=oneQuestionAsk("a1","manager-hive")
+   a.Questions[0].Options[0].Label="First line\nSecond line"
+   // This is a valid ask input, with no transport or fixture bypass.
+   data:=[]byte(`{"questions":[{"question":"Which label?","header":"Model","options":[{"label":"First line\nSecond line","description":"two lines"},{"label":"No","description":"no"}]}]}`)
+   if _,err:=ask.Parse(data);err!=nil {t.Fatal(err)}
+   m,calls:=askModel(t,size[0],size[1],a)
+   m=run(t,m,key('1',"1"))
+   requireNoCalls(t,calls,"review")
+   requireView(t,m,"asks · confirm","First line","Second line","[review]")
+   requireFits(t,m,size[0],size[1])
+   inside:=false
+   for _,line:=range strings.Split(ansi.Strip(m.View().Content),"\n") {
+    if strings.HasPrefix(line,"┏") {inside=true;continue}
+    if strings.HasPrefix(line,"┗") {inside=false;continue}
+    if inside && (!strings.HasPrefix(line,"┃") || !strings.HasSuffix(line,"┃")) {t.Fatalf("review body has a broken border: %q",line)}
+   }
+  })
+ }
+}

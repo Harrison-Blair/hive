@@ -1,0 +1,81 @@
+from live import *
+A='asker-scratch';P='parent-scratch'; panes={};ev=E/'delivery';ev.mkdir(exist_ok=True)
+def received(name):
+ f=S/(name+'.received');return f.read_text().splitlines() if f.exists() else []
+def record(id):return json.loads((S/f'home/.hive/state/asks/{id}.json').read_text())
+def waitfor(fn):
+ for _ in range(80):
+  r=fn()
+  if r:return r
+  time.sleep(.15)
+ raise AssertionError('wait timeout')
+def state(name,status):
+ f=S/f'home/.hive/state/agents/{name}.json';j=json.loads(f.read_text());j['status']=status;f.write_text(json.dumps(j))
+def create():
+ state(A,'live');before=set((S/'home/.hive/state/asks').glob('*.json')) if (S/'home/.hive/state/asks').exists() else set()
+ rpc('pane.send_input',{'pane_id':panes[A],'text':f'/ask {S}/ask.json','keys':['enter']})
+ path=waitfor(lambda:next(iter(set((S/'home/.hive/state/asks').glob('*.json'))-before),None));return path.stem
+for name,parent in [(P,''),(A,P)]:
+ info=rpc('workspace.create',{'cwd':str(S),'label':'verify135-'+name});pane=info['root_pane']['pane_id'];panes[name]=pane
+ time.sleep(.4);rpc('agent.start',{'name':name,'kind':'pi','pane_id':pane,'args':[name]})
+ def ready():
+  try:
+   a=rpc('agent.get',{'target':pane})['agent']
+   return a if a.get('interactive_ready') and a['agent_status']=='idle' else None
+  except RuntimeError:return None
+ a=waitfor(ready);process=rpc('pane.process_info',{'pane_id':pane})
+ (ev/f'{name}-process.json').write_text(json.dumps(process,indent=2))
+ fg=process['process_info']['foreground_processes']; found=[p for p in fg if p.get('name')=='pi']
+ assert found,fg
+ for proc in found:assert os.readlink(f'/proc/{proc["pid"]}/exe')==str(S/'bin/pi')
+ screen=plain(stable(pane));(ev/f'{name}-ready.txt').write_text(screen);assert f'STUB_READY name={name} executable={S}/bin/pi' in screen
+ j={'key':name,'name':name,'role':'agent','parent':parent,'status':'live','agent_status':'idle','pane_id':pane,'cwd':str(S),'workspace_id':info['workspace']['workspace_id'],'tab_id':info['tab']['tab_id'],'generation':1,'started_at':'2026-10-23T16:30:00Z','updated_at':'2026-10-23T16:30:00Z'}
+ (S/f'home/.hive/state/agents/{name}.json').write_text(json.dumps(j))
+ print('verified stub executable and startup output:',name,flush=True)
+request={'questions':[{'question':'Which parts?','header':'Scope','multiSelect':True,'options':[{'label':'Ask card','description':'card'},{'label':'Help line','description':'help'},{'label':'Header count','description':'count'}]},{'question':'Which order?','header':'Order','options':[{'label':'Card first','description':'card'},{'label':'Help first','description':'help'}]}]}
+(S/'ask.json').write_text(json.dumps(request));(ev/'request.json').write_text(json.dumps(request,indent=2))
+for w,h in [(120,40),(80,24)]:
+ for case in ['answer','stopped','dismiss']:
+  stop();id=create();before={n:received(n) for n in [A,P]}
+  if case=='stopped':state(A,'stopped')
+  start(None,w,h)
+  if ' [ask]' not in plain(stable()):keys('2')
+  time.sleep(.7);cap(f'delivery/{w}-{case}-01-question',w,h)
+  if case=='answer':
+   text('12');keys('Enter','Tab');text('keep this');keys('Enter')
+  else:
+   text('1');keys('Tab');text('parent path' if case=='stopped' else 'discard this');keys('Enter');text('2')
+  s=cap(f'delivery/{w}-{case}-02-review',w,h);assert ' [review]' in s and '› Send' in s
+  if not (w==80 and case=='stopped'):assert 'asks · confirm' in s
+  r=record(id);assert r['state']=='open' and not r.get('replies') and not r.get('attempts')
+  assert {n:received(n) for n in [A,P]}==before
+  (ev/f'{w}-{case}-before.json').write_text(json.dumps(r,indent=2))
+  for n in [A,P]: (ev/f'{w}-{case}-{n}-before.txt').write_text(plain(stable(panes[n])))
+  if case=='answer':
+   keys('Up','Up');s=cap(f'delivery/{w}-{case}-03-highlight',w,h);assert '› Scope' in s
+   # Force a normal watched-record refresh while the review has a highlighted question.
+   path=S/f'home/.hive/state/asks/{id}.json';path.write_text(json.dumps(record(id),indent=2));time.sleep(2)
+   s=cap(f'delivery/{w}-{case}-04-refreshed',w,h);assert '› Scope' in s and 'note: keep this' in s
+   keys('Enter');cap(f'delivery/{w}-{case}-05-edit-scope',w,h);text('13');keys('Enter')
+   s=cap(f'delivery/{w}-{case}-06-return-review',w,h);assert '› Send' in s and 'Scope → Help line, Header count' in s
+   keys('Up','Enter');text('3');text('Next release');keys('Enter')
+   s=cap(f'delivery/{w}-{case}-07-final-review',w,h);assert '› Send' in s and 'Order → Next release · note: keep this' in s
+   assert record(id)['state']=='open' and {n:received(n) for n in [A,P]}==before
+   expected=f'⬢ user: answer to ask {id} from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this'
+   replies=[{'picks':[2,3]},{'picks':[3],'other':'Next release','note':'keep this'}];target=A;keys('Enter')
+  elif case=='stopped':
+   assert 'Send to parent-scratch' in s
+   expected=f'⬢ user: answer to ask {id} from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first'
+   replies=[{'picks':[1],'note':'parent path'},{'picks':[2]}];target=P;keys('Enter')
+  else:
+   expected=f'⬢ hive: the user dismissed ask {id} from asker-scratch · Scope · Order. No answer comes.';replies=[];target=A;keys('x')
+  r=waitfor(lambda:record(id) if record(id).get('delivered_at') else None)
+  assert r['state']==('dismissed' if case=='dismiss' else 'answered')
+  assert r.get('replies',[])==replies and r['delivered_to']==target and r['attempts']==1,r
+  waitfor(lambda:len(received(target))>len(before[target]));assert received(target)==before[target]+[expected],(received(target),expected)
+  other=P if target==A else A;assert received(other)==before[other]
+  (ev/f'{w}-{case}-after.json').write_text(json.dumps(r,indent=2));(ev/f'{w}-{case}-expected-prompt.txt').write_text(expected+'\n')
+  cap(f'delivery/{w}-{case}-08-closed',w,h)
+  for n in [A,P]: (ev/f'{w}-{case}-{n}-after.txt').write_text(plain(stable(panes[n])))
+  print(w,case,'pass:',expected,flush=True)
+stop();(ev/'result.txt').write_text('Both stub executables and startup output checked before any prompt. At both widths: review and edited review leave the ask open and send nothing; Send delivers exact final multi-picks, Other, and note; record refresh keeps highlighted draft; stopped asker routes only to parent; x delivers exact dismiss only to asker. All six records have one successful delivery.\n')

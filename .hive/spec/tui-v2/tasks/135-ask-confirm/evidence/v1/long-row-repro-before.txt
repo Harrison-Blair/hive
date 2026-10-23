@@ -1,0 +1,22 @@
+== 120x40
+start  first="w591" last="Send"
+up1    first="Model" last="w364"
+up2    first="Model" last="w364"
+up3    first="Model" last="w364"
+up4    first="Model" last="w364"
+down1  first="w591" last="Send"
+down2  first="w591" last="Send"
+down3  first="w591" last="Send"
+down4  first="w591" last="Send"
+never shown: 227 words, w365 .. w590; MIDDLE-SENTINEL shown=false FINAL-SENTINEL shown=true
+== 80x24
+start  first="w818" last="Send"
+up1    first="Model" last="w116"
+up2    first="Model" last="w116"
+up3    first="Model" last="w116"
+up4    first="Model" last="w116"
+down1  first="w818" last="Send"
+down2  first="w818" last="Send"
+down3  first="w818" last="Send"
+down4  first="w818" last="Send"
+never shown: 702 words, w117 .. w817; MIDDLE-SENTINEL shown=false FINAL-SENTINEL shown=true

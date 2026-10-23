@@ -1,0 +1,40 @@
+ hive  /tmp/claude-1000/-home-penguin-sou… coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   12:59
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 12:45  asker-scratch ? asked · Label · asker stopped · open below                                                    │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to parent-scratch ━┓
+┃ › Label → ROW01                                                                                                      ┃
+┃   ROW02                                                                                                              ┃
+┃   ROW03                                                                                                              ┃
+┃   ROW04                                                                                                              ┃
+┃   ROW05                                                                                                              ┃
+┃   ROW06                                                                                                              ┃
+┃   ROW07                                                                                                              ┃
+┃   ROW08                                                                                                              ┃
+┃   ROW09                                                                                                              ┃
+┃   ROW10                                                                                                              ┃
+┃   ROW11                                                                                                              ┃
+┃   ROW12                                                                                                              ┃
+┃   ROW13                                                                                                              ┃
+┃   ROW14                                                                                                              ┃
+┃   ROW15                                                                                                              ┃
+┃   ROW16                                                                                                              ┃
+┗━ enter change · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projec…

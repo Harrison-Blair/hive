@@ -1,0 +1,3 @@
+ ⬢ user: answer to ask a1 from asker-scratch · Scope → Help line, Header count; Order → Help first
+⬢ hive: the user dismissed ask a3 from asker-scratch · Scope · Order. No answer comes.
+GOT: ⬢ hive: the user dismissed ask a3 from asker-scratch · Scope · Order. No answer comes.

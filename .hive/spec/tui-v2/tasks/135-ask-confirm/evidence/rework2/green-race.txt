@@ -1,0 +1,2 @@
+$ go test -race ./internal/tui -count=1 -run TestAsk
+ok  	github.com/Harrison-Blair/hive/internal/tui	2.826s

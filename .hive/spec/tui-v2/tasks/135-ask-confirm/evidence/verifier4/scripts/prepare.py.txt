@@ -1,0 +1,18 @@
+from pathlib import Path
+import shutil
+R=Path.cwd();T=R/'.hive/tmp/verifier135d';E=R/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier4';old=R/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier3/scripts'
+E.mkdir(parents=True);(E/'scripts').mkdir();(T/'exports').mkdir()
+for src in old.glob('*'):
+ text=src.read_text().replace('verifier135c','verifier135d').replace('evidence/verifier3','evidence/verifier4').replace('/tmp/hv135-verify3','/tmp/hv135-verify4').replace('hv135-verify3','hv135-verify4').replace('verify135c','verify135d')
+ # Retain the permanent tests' fixture dependencies under their original evidence paths.
+ text=text.replace("'tasks/135-ask-confirm/evidence/verifier4/multiline'","'tasks/135-ask-confirm/evidence/verifier/multiline'")
+ target=T/src.name.removesuffix('.txt');target.write_text(text)
+ if src.name not in ['no_caption.py.txt','screenshots.py.txt']:(E/'scripts'/src.name).write_text(text)
+# Preserve every failed verdict before replacing the current report.
+for n,commit in [(1,'008e9d2d'),(2,'235892c0'),(3,'cef43222')]:
+ import subprocess
+ (E/f'failed-{n}-VERIFIED.md').write_bytes(subprocess.check_output(['git','show',commit+':.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/VERIFIED.md']))
+# Board-source immutability starts at the most recent failed verdict.
+p=T/'boards.py';p.write_text(p.read_text().replace("'235892c0'","'cef43222'").replace('since second failed verdict 235892c0','since third failed verdict cef43222'))
+shutil.copy2(p,E/'scripts/boards.py.txt')
+print('Verification evidence:',E)

@@ -1,0 +1,2 @@
+80x24: full title, parent destination, Send row/hint and parent delivery pass. Explicit stopped status visible=False.
+120x40: full title, parent destination, Send row/hint and parent delivery pass. Explicit stopped status visible=True.

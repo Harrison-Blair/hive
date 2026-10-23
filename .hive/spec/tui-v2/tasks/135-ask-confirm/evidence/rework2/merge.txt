@@ -1,0 +1,3 @@
+$ git merge-base --is-ancestor origin/dev HEAD
+exit 0
+origin/dev 3fbbb17f docs(dogfood): record existing multiline ask layout defects

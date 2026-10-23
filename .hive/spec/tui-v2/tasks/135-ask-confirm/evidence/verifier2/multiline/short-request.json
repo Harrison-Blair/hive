@@ -1,0 +1,18 @@
+{
+  "questions": [
+    {
+      "question": "Which label?",
+      "header": "Label",
+      "options": [
+        {
+          "label": "First line\nSecond line",
+          "description": "a valid multiline label"
+        },
+        {
+          "label": "No",
+          "description": "no"
+        }
+      ]
+    }
+  ]
+}

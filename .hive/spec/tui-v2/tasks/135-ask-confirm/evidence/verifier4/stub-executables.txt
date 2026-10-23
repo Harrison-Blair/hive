@@ -1,0 +1,39 @@
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+multiline short: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+multiline tall: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+full-80-before: t1: pid=794745 exe=/tmp/hv135-verify4/bin/pi
+full-80-before: p1: pid=794426 exe=/tmp/hv135-verify4/bin/pi
+full-80-send: p1: pid=794426 exe=/tmp/hv135-verify4/bin/pi
+full-120-before: t1: pid=794745 exe=/tmp/hv135-verify4/bin/pi
+full-120-before: p1: pid=794426 exe=/tmp/hv135-verify4/bin/pi
+full-120-send: p1: pid=794426 exe=/tmp/hv135-verify4/bin/pi
+short-80-before: asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+short-80-before: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+short-80-send: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+short-120-before: asker-scratch: pid=768960 exe=/tmp/hv135-verify4/bin/pi
+short-120-before: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+short-120-send: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+state-80-before: asker-scratch-with-long-name-abc: pid=798465 exe=/tmp/hv135-verify4/bin/pi
+state-80-before: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+state-80-send: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+state-120-before: asker-scratch-with-long-name-abc: pid=798465 exe=/tmp/hv135-verify4/bin/pi
+state-120-before: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+state-120-send: parent-scratch: pid=767199 exe=/tmp/hv135-verify4/bin/pi
+long-both-80-before: asker-scratch-with-long-name-abc: pid=798465 exe=/tmp/hv135-verify4/bin/pi
+long-both-80-before: parent-scratch-with-long-name-ab: pid=800709 exe=/tmp/hv135-verify4/bin/pi
+long-both-80-send: parent-scratch-with-long-name-ab: pid=800709 exe=/tmp/hv135-verify4/bin/pi
+long-both-120-before: asker-scratch-with-long-name-abc: pid=798465 exe=/tmp/hv135-verify4/bin/pi
+long-both-120-before: parent-scratch-with-long-name-ab: pid=800709 exe=/tmp/hv135-verify4/bin/pi
+long-both-120-send: parent-scratch-with-long-name-ab: pid=800709 exe=/tmp/hv135-verify4/bin/pi
+sha256 /tmp/hv135-verify4/bin/pi = 36afcaeac3273d51e411c9002830f7b2428e9cf403f07548dddeccf9e4388905

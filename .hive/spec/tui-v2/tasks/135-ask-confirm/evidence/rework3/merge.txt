@@ -1,0 +1,6 @@
+$ git merge origin/dev
+Already up to date.
+$ git rev-parse origin/dev
+3fbbb17f
+$ git merge-base --is-ancestor origin/dev HEAD
+yes

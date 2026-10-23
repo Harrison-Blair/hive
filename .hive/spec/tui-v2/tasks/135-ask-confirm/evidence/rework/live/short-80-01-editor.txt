@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 1 · needs you 0 · 12:58
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ───────────────────────────────────────────────────────────────────────╮
+│ 12:44  asker-sc… ? asked · Label · asker stopped · below			│
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · Label asker stopped · answer goes to parent-scratch ━┓
+┃ Which label?                                                                 ┃
+┃                                                                              ┃
+┃ › 1 [ ] First line
+ Second line                 a valid multiline label                          ┃
+┃   2 [ ] No                          no                                       ┃
+┃   3 [ ] Other: type an answer                                                ┃
+┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [ask] error: chat send is for the user only: only the user can send chat; rule…

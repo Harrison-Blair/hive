@@ -56,8 +56,8 @@ b|001010000000000000000000000000000000000000000000000000000000000000000000000000
 t|┃   4 [ ] Other: type an answer                                                ┃
 k|afafdfdddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00101000000000000000000000000000000000000000000000000000000000000000000000000000
-t|┗━ enter send · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-k|aadddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+t|┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+k|aadddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
 k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
@@ -68,6 +68,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [ask] ↑↓ move · enter send · tab note · x dismiss · J/K card                   
+t| [ask] ↑↓ move · enter review · tab note · x dismiss · J/K card                 
 k|aaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|11111110000000000000000000000000000000000000000000000000000000000000000000000000

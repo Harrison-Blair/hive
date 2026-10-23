@@ -1,0 +1,40 @@
+ hive  /tmp/TestVerifierExistingMultilin… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 06:01  coordinator   line-01                                                                                         │
+│                                                                                                                      │
+│ 06:02  coordinator   line-02                                                                                         │
+│                                                                                                                      │
+│ 07:30  asker-scratch ? asked · Model · asker stopped · open below                                                    │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · Model ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to parent-scratch ━┓
+┃ Restart asker-scratch?                                                                                               ┃
+┃                                                                                                                      ┃
+┃ › 1 [ ] Yes                         stop it                                                                          ┃
+┃   2 [ ] No                          no change                                                                        ┃
+┃   3 [ ] Later                       after the goal                                                                   ┃
+┃   4 [ ] Other: type an answer                                                                                        ┃
+┗━ enter sends to parent-scratch · x dismiss ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · 1..4 pick · enter send to parent · tab note · x dismiss · J/K next/prev card                           

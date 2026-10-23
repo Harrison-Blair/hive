@@ -1,0 +1,4 @@
+short 120 captured
+short 80 captured
+tall 120 captured
+tall 80 captured

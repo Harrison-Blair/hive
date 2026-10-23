@@ -1,0 +1,21 @@
+standard 80: full title: pass
+standard 80: explicit stopped state: pass
+standard 80: full destination: pass
+standard 80: Send selected: pass
+standard 80: full Send hint: pass
+standard 120: full title: pass
+standard 120: explicit stopped state: pass
+standard 120: full destination: pass
+standard 120: Send selected: pass
+standard 120: full Send hint: pass
+neither-caption 80: full title: pass
+neither-caption 80: explicit stopped state: fail
+neither-caption 80: full destination: pass
+neither-caption 80: Send selected: pass
+neither-caption 80: full Send hint: pass
+neither-caption 120: full title: pass
+neither-caption 120: explicit stopped state: pass
+neither-caption 120: full destination: pass
+neither-caption 120: Send selected: pass
+neither-caption 120: full Send hint: pass
+Header and feed words cannot satisfy these card checks.

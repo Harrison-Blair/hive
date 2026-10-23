@@ -1,0 +1,23 @@
+from live import *
+ev=E/'multiline';ev.mkdir(exist_ok=True)
+agent=json.loads((S/'home/.hive/state/agents/asker-scratch.json').read_text());pane=agent['pane_id']
+for case,label in [('short','First line\nSecond line'),('tall','\n'.join([f'ROW{i:02}' for i in range(1,31)]+['FINAL-LABEL-SENTINEL']))]:
+ request={'questions':[{'question':'Which label?','header':'Label','options':[{'label':label,'description':'a valid multiline label'},{'label':'No','description':'no'}]}]}
+ f=S/f'{case}-multiline.json';f.write_text(json.dumps(request));(ev/f'{case}-request.json').write_text(json.dumps(request,indent=2))
+ before=set((S/'home/.hive/state/asks').glob('*.json'))
+ rpc('pane.send_input',{'pane_id':pane,'text':f'/ask {f}','keys':['enter']})
+ for _ in range(50):
+  added=set((S/'home/.hive/state/asks').glob('*.json'))-before
+  if added:break
+  time.sleep(.1)
+ assert len(added)==1;record=added.pop();(ev/f'{case}-accepted-record.json').write_text(record.read_text())
+ for w,h in [(120,40),(80,24)]:
+  start(None,w,h);s=cap(f'multiline/{case}-{w}-01-editor',w,h)
+  if ' [ask]' not in s:keys('2')
+  text('1');s=cap(f'multiline/{case}-{w}-02-review',w,h)
+  # Save the complete viewport too, so a crop cannot conceal broken frame rows.
+  (ev/f'{case}-{w}-full-viewport.ansi').write_text(stable())
+  for i in range(5):keys('Up');cap(f'multiline/{case}-{w}-up-{i}',w,h)
+  for i in range(5):keys('Down');cap(f'multiline/{case}-{w}-down-{i}',w,h)
+  stop();print(case,w,'captured',flush=True)
+ record.unlink()

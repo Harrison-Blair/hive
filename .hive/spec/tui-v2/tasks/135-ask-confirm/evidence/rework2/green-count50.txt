@@ -1,0 +1,2 @@
+$ go test ./internal/tui -count=50 -run TestAsk
+ok  	github.com/Harrison-Blair/hive/internal/tui	9.845s

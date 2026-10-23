@@ -1,0 +1,40 @@
+ hive  /tmp/hv135-verify/home              coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   12:40 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 12:40  asker-scratch ? asked · Scope · Order · open below                                                            │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 1 ━┓
+┃ 1. Which parts?                                                                                                      ┃
+┃                                                                                                                      ┃
+┃   1 [x] Ask card                    card                                                                             ┃
+┃ › 2 [x] Help line                   help                                                                             ┃
+┃   3 [ ] Header count                count                                                                            ┃
+┃   4 [ ] Other: type an answer                                                                                        ┃
+┃                                                                                                                      ┃
+┃ 2. Which order?                                                                                                      ┃
+┃                                                                                                                      ┃
+┃   1 [x] Card first                  card                                                                             ┃
+┃   2 [ ] Help first                  help                                                                             ┃
+┃   3 [ ] Other: type an answer                                                                                        ┃
+┃     note › keep this                                                                                                 ┃
+┗━ space mark · tab note · enter next question · enter on last reviews ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · 1..4 pick · enter review · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type 

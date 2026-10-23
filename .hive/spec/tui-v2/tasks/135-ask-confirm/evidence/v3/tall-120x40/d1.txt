@@ -1,0 +1,40 @@
+ hive  ~/source/hive                          coordinator ● working   supervisor ● live   ? 1 ask   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:02  you           I want a tool for you to ask questions, like the native ask tool, but here in hive.             │
+│                                                                                                                      │
+│ 14:03  coordinator   Interrogate round 1. Who can ask, how the answer gets back, and where the question shows.       │
+│                      Reply like "1A, 2A, 3A".                                                                        │
+│                                                                                                                      │
+│ 14:05  you           A A A                                                                                           │
+│                                                                                                                      │
+│ 14:19  ▸ manager-hi… goal g6-hive-ask created · wave A started · worker t126-worker-1 live                           │
+│                                                                                                                      │
+│ 14:21  manager-hive  ? asked · Model · open below                                                                    │
+│                                                                                                                      │
+│                                                                                                                      ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? manager-hive asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 1 ━┓
+┃ › w338 w339 w340 w341 w342 w343 w344 w345 w346 w347 w348 w349 w350 w351 w352 w353 w354 w355 w356 w357 w358 w359 w360 ┃
+┃   w361 w362 w363 w364 w365 w366 w367 w368 w369 w370 w371 w372 w373 w374 w375 w376 w377 w378 w379 w380 w381 w382 w383 ┃
+┃   w384 w385 w386 w387 w388 w389 w390 w391 w392 w393 w394 w395 w396 w397 w398 w399 w400 w401 w402 w403 w404 w405 w406 ┃
+┃   w407 w408 w409 w410 w411 w412 w413 w414 w415 w416 w417 w418 w419 w420 w421 w422 w423 w424 w425 w426 w427 w428 w429 ┃
+┃   w430 w431 w432 w433 w434 w435 w436 w437 w438 w439 w440 w441 w442 w443 w444 w445 w446 w447 w448 w449 w450           ┃
+┃   MIDDLE-SENTINEL w451 w452 w453 w454 w455 w456 w457 w458 w459 w460 w461 w462 w463 w464 w465 w466 w467 w468 w469     ┃
+┃   w470 w471 w472 w473 w474 w475 w476 w477 w478 w479 w480 w481 w482 w483 w484 w485 w486 w487 w488 w489 w490 w491 w492 ┃
+┃   w493 w494 w495 w496 w497 w498 w499 w500 w501 w502 w503 w504 w505 w506 w507 w508 w509 w510 w511 w512 w513 w514 w515 ┃
+┃   w516 w517 w518 w519 w520 w521 w522 w523 w524 w525 w526 w527 w528 w529 w530 w531 w532 w533 w534 w535 w536 w537 w538 ┃
+┃   w539 w540 w541 w542 w543 w544 w545 w546 w547 w548 w549 w550 w551 w552 w553 w554 w555 w556 w557 w558 w559 w560 w561 ┃
+┃   w562 w563 w564 w565 w566 w567 w568 w569 w570 w571 w572 w573 w574 w575 w576 w577 w578 w579 w580 w581 w582 w583 w584 ┃
+┃   w585 w586 w587 w588 w589 w590 w591 w592 w593 w594 w595 w596 w597 w598 w599 w600 w601 w602 w603 w604 w605 w606 w607 ┃
+┃   w608 w609 w610 w611 w612 w613 w614 w615 w616 w617 w618 w619 w620 w621 w622 w623 w624 w625 w626 w627 w628 w629 w630 ┃
+┃   w631 w632 w633 w634 w635 w636 w637 w638 w639 w640 w641 w642 w643 w644 w645 w646 w647 w648 w649 w650 w651 w652 w653 ┃
+┃   w654 w655 w656 w657 w658 w659 w660 w661 w662 w663 w664 w665 w666 w667 w668 w669 w670 w671 w672 w673 w674 w675 w676 ┃
+┃   w677 w678 w679 w680 w681 w682 w683 w684 w685 w686 w687 w688 w689 w690 w691 w692 w693 w694 w695 w696 w697 w698 w699 ┃
+┗━ enter change · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter change · x dismiss · J/K next/prev card

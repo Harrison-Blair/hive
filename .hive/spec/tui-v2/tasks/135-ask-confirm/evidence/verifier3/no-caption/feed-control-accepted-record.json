@@ -1,0 +1,25 @@
+{
+  "id": "a12",
+  "asker": "asker-scratch-with-long-name-abc",
+  "asker_key": "asker-scratch-with-long-name-abc",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T17:44:41.345263196Z",
+  "questions": [
+    {
+      "question": "Proceed with this change?",
+      "header": "Change",
+      "options": [
+        {
+          "label": "Yes",
+          "description": "proceed"
+        },
+        {
+          "label": "No",
+          "description": "hold"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}

@@ -1,0 +1,12 @@
+0-start  words w001..w360  mark row: '┃ › Model → Yes, restart now ('
+d1       words w338..w699  mark row: '┃ › w338 w339 w340 w341 w342 w'
+d2       words w539..w900  mark row: '┃ › w539 w540 w541 w542 w543 w'
+d3       words w585..w900  mark row: '┃ › Send                      '
+d4       words w585..w900  mark row: '┃ › Send                      '
+u1       words w001..w360  mark row: '┃ › Model → Yes, restart now ('
+u2       words w001..w360  mark row: '┃ › Model → Yes, restart now ('
+u3       words w001..w360  mark row: '┃ › Model → Yes, restart now ('
+u4       words w001..w360  mark row: '┃ › Model → Yes, restart now ('
+words never shown: 0 []
+MIDDLE-SENTINEL seen: True
+FINAL-SENTINEL seen: True

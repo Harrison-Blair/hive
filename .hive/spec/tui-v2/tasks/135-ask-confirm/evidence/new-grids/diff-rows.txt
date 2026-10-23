@@ -1,0 +1,6 @@
+DIFF ChatAsk           112 cells, rows [35 39]
+DIFF ChatAskMulti       59 cells, rows [35 39]
+DIFF ChatAskPreview     82 cells, rows [35 39]
+DIFF ChatAskStopped     97 cells, rows [35 39]
+DIFF CompactChatAsk     51 cells, rows [19 23]
+DIFF Help              481 cells, rows [24 25 26 27 28 29 30 31 32 33]

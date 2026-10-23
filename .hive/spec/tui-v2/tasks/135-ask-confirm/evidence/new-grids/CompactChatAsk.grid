@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 1 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffaaafffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat ──────────────────────────────── ↑ 44 earlier ─────────────────────────╮
+k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:21  manager-… ? asked · Model · below                                     │
+k|rfdddddffiiiiiiiiifaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffr
+b|00000000011111111100000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┏━ ? manager-hive asks · Model ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1 of 1 ━┓
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddaa
+b|00111111111111111111111111111110000000000000000000000000000000000000000000000000
+t|┃ Restart manager-hive on DeepSeek?                                            ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00111111111111111111111111111111111000000000000000000000000000000000000000000000
+t|┃                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃ › 1 [ ] Yes, restart now (REC)      stop it, then spawn on deepseek-v4.1-…   ┃
+k|afafafdddfaaaaaaaaaaaaaaaaaaaaaaffffffddddddddddddddddddddddddddddddddddddddfffa
+b|00101000001111111111111111111111000000000000000000000000000000000000000000000000
+t|┃   2 [ ] After g6 lands              restart when the goal is done            ┃
+k|afafdfdddfffffffffffffffffffffffffffffdddddddddddddddddddddddddddddffffffffffffa
+b|00101000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   3 [ ] No, keep Opus               no change                                ┃
+k|afafdfdddfffffffffffffffffffffffffffffdddddddddffffffffffffffffffffffffffffffffa
+b|00101000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   4 [ ] Other: type an answer                                                ┃
+k|afafdfdddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00101000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+k|aadddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ i or click here to type                                                      │
+k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [ask] ↑↓ move · enter review · tab note · x dismiss · J/K card                 
+k|aaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111110000000000000000000000000000000000000000000000000000000000000000000000000

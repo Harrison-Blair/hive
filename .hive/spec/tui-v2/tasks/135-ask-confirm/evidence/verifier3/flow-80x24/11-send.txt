@@ -1,0 +1,24 @@
+ hive                               coord ● · sup ● · ? 2 · needs you 0 · 14:22 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ──────────────────────────────── ↑ 44 earlier ─────────────────────────╮
+│ 14:05 you                                                                    │
+│ A A A                                                                        │
+│                                                                              │
+│ 14:22  coordina… ? asked · Scope · Order · below                             │
+│ 14:23  manager-… ? asked · Model · waits · 2 of 2                            │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              ┃
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? coordinator asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1 of 2 ━┓
+┃   Scope → Mouse wheel (REC), Click to focus, Header count                    ┃
+┃   Order → Modes first (REC) · note: small                                    ┃
+┃                                                                              ┃
+┃ › Send                                                                       ┃
+┗━ enter send · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [review] demo mode: no action

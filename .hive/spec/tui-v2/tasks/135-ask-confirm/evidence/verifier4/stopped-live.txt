@@ -1,0 +1,8 @@
+full-80: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+full-120: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+short-80: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+short-120: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+state-80: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+state-120: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+long-both-80: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.
+long-both-120: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.

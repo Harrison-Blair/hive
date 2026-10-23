@@ -63,6 +63,10 @@ var Sizes = map[string][2]int{
 	"ChatAskPreview": {120, 40},
 	"ChatAskStopped": {120, 40},
 	"CompactChatAsk": {80, 24},
+	// The ask review boards of task 135-ask-confirm.
+	"ChatAskReview":        {120, 40},
+	"ChatAskReviewMulti":   {120, 40},
+	"CompactChatAskReview": {80, 24},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a

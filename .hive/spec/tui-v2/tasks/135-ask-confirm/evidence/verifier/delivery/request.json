@@ -1,0 +1,37 @@
+{
+  "questions": [
+    {
+      "question": "Which parts?",
+      "header": "Scope",
+      "multiSelect": true,
+      "options": [
+        {
+          "label": "Ask card",
+          "description": "card"
+        },
+        {
+          "label": "Help line",
+          "description": "help"
+        },
+        {
+          "label": "Header count",
+          "description": "count"
+        }
+      ]
+    },
+    {
+      "question": "Which order?",
+      "header": "Order",
+      "options": [
+        {
+          "label": "Card first",
+          "description": "card"
+        },
+        {
+          "label": "Help first",
+          "description": "help"
+        }
+      ]
+    }
+  ]
+}

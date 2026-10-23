@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 2 · needs you 0 · 13:27
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ───────────────────────────────────────────────────────────────────────╮
+│ 13:13  asker-sc… ? asked · Model · asker stopped · waits · 1 of 2     	│
+│ 13:14  asker-sc… ? asked · Scope · Order · asker stopped · below             │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · Scope · Order ━━━ asker stopped · to parent-scratch ━┓
+┃ 1. Which parts?                                                              ┃
+┃                                                                              ┃
+┃   1 [x] Ask card                    card                                     ┃
+┃ › 2 [x] Help line                   help                                     ┃
+┃   3 [ ] Header count                count                                    ┃
+┃   4 [ ] Other: type an answer                                                ┃
+┃                                                                              ┃
+┃ 2. Which order?                                                              ┃
+┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [ask] error: chat send is for the user only: only the user can send chat; rule…

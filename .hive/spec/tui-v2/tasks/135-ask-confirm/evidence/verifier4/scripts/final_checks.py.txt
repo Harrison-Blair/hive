@@ -1,0 +1,41 @@
+from pathlib import Path
+import subprocess,hashlib,json,shutil
+from PIL import Image,ImageDraw
+R=Path.cwd();T=R/'.hive/tmp/verifier135d';E=R/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier4';N=Path('.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids');D=Path('.hive/spec/tui-v2/design')
+lines=[]
+for pattern in ['*.grid','fixtures/*.fixture.json']:
+ for f in sorted(N.glob(pattern)):
+  approved=subprocess.check_output(['git','show',f'6c466dc6:{f}']);assert f.read_bytes()==approved
+  lines.append(f'{f.relative_to(N)}: byte-equal to package 6c466dc6')
+  if f.suffix=='.grid':subprocess.run([T/'gridcheck',f,f],check=True,stdout=subprocess.DEVNULL)
+for f in D.glob('*.fixture.json'):
+ name=f.name
+ if name in ['ChatAskReview.fixture.json','ChatAskReviewMulti.fixture.json','CompactChatAskReview.fixture.json']:
+  approved=subprocess.check_output(['git','show',f'6c466dc6:{N}/fixtures/{name}'])
+ else:approved=subprocess.check_output(['git','show',f'6c466dc6:{f}'])
+ assert f.read_bytes()==approved;lines.append(f'design/{name}: byte-equal to approval state')
+(E/'all-approval-files.txt').write_text('\n'.join(lines)+'\n')
+for n,c in [(1,'008e9d2d'),(2,'235892c0'),(3,'cef43222')]:
+ assert (E/f'failed-{n}-VERIFIED.md').read_bytes()==subprocess.check_output(['git','show',c+':.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/VERIFIED.md'])
+# Evidence from the worker and prior verifiers stays unchanged.
+assert not subprocess.check_output(['git','diff','HEAD','--','.hive/spec/tui-v2/design','internal'])
+paths=['ask_test.go','ask_review_test.go','ask_multiline_test.go']
+assert not subprocess.check_output(['git','diff','cef43222..HEAD','--']+['internal/tui/'+f for f in paths])
+(E/'preservation.txt').write_text('All three failed reports equal their original commits byte for byte. No existing repository test changed in rework 3. Product source and design files remain unchanged during this verification.\n')
+with (E/'stub-executables.txt').open('a') as f:f.write('sha256 /tmp/hv135-verify4/bin/pi = '+hashlib.sha256(Path('/tmp/hv135-verify4/bin/pi').read_bytes()).hexdigest()+'\n')
+boards=['ChatAsk','ChatAskMulti','ChatAskPreview','ChatAskStopped','CompactChatAsk','Help','ChatAskReview','ChatAskReviewMulti','CompactChatAskReview']
+for page in range(3):
+ image=Image.new('RGB',(2020,2250),'#303030');draw=ImageDraw.Draw(image)
+ for row,b in enumerate(boards[page*3:page*3+3]):
+  draw.text((10,750*row+5),b+' — approved board / terminal capture',fill='white')
+  a=Image.open(E/'boards'/f'{b}.png').crop((0,0,1000,740));matches=list((E/'live').glob(b+'-*.png'));assert len(matches)==1
+  z=Image.open(matches[0]).crop((0,0,1000,740))
+  image.paste(a,(0,row*750+20));image.paste(z,(1010,row*750+20))
+ image.save(E/f'visual-pairs-{page+1}.png')
+# Retain only scripts that ran. Keep the helper sources and exact commands.
+ran=['prepare.py','tests.py','mutations.py','regressions.py','live.py','v3.py','v4.py','multiline.py','othernote.py','check_captures.py','stopped_live.py','boards.py','screenshots.py','gridcheck.go','stub.go','gate.sh','final_checks.py']
+for p in (E/'scripts').glob('*'):
+ if p.name.removesuffix('.txt') not in ran and not p.name.endswith('test.go.txt'):p.unlink()
+for name in ran:
+ shutil.copy2(T/name,E/'scripts'/(name+'.txt'))
+print(f'{len(lines)} approval file checks pass. Three failed reports preserved. Rework changes no existing tests. Visual pairs created.')

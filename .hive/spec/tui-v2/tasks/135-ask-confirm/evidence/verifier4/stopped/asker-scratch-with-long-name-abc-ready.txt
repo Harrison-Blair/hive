@@ -1,0 +1,2 @@
+sh-5.3$ pi asker-scratch-with-long-name-abc
+STUB_READY name=asker-scratch-with-long-name-abc executable=/tmp/hv135-verify4/bin/pi pid=798465

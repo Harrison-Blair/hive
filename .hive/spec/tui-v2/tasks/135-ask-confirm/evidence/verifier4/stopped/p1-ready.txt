@@ -1,0 +1,2 @@
+sh-5.3$ pi p1
+STUB_READY name=p1 executable=/tmp/hv135-verify4/bin/pi pid=794426

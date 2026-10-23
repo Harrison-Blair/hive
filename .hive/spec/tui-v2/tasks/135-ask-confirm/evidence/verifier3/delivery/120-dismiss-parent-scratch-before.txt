@@ -1,0 +1,4 @@
+sh-5.3$ pi parent-scratch
+STUB_READY name=parent-scratch executable=/tmp/hv135-verify3/bin/pi pid=581371
+⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
+GOT: ⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first

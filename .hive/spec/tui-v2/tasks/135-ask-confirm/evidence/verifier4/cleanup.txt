@@ -1,0 +1,14 @@
+Owned private herdr PID: 746832 checked scratch stubs: [767199, 768960, 794426, 794745, 798465, 800709]
+Private tmux server is absent: no server running on /tmp/tmux-1000/hv135-verify4
+Private server.stop: {'type': 'ok'}
+746832 absent
+767199 absent
+768960 absent
+794426 absent
+794745 absent
+798465 absent
+800709 absent
+Private socket absent
+Scratch home, server state, binaries, source copies, exports, HTML and Firefox profiles removed.
+Worktree .hive/tmp is empty. Final evidence and captures remain.
+No scratch binary or Firefox profile process runs.

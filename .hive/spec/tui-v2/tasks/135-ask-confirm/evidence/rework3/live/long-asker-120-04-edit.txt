@@ -1,0 +1,40 @@
+ hive  /tmp/claude-1000/-home-penguin-sou… coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   13:59
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 19 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 19                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 20                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 21                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 22                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 23                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 24                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 25                                                                           │
+│                                                                                                                      │
+│ 13:45  coordinator   Later chat message 26                                                                           ┃
+│                                                                                                                      ┃
+│ 13:45  coordinator   Later chat message 27                                                                           ┃
+│                                                                                                                      ┃
+│ 13:45  coordinator   Later chat message 28                                                                           ┃
+│                                                                                                                      ┃
+│ 13:45  coordinator   Later chat message 29                                                                           ┃
+│                                                                                                                      ┃
+│ 13:45  coordinator   Later chat message 30                                                                           ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch-with-long-name-abc asks · Change ━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to parent-scratch ━┓
+┃ Proceed with this change?                                                                                            ┃
+┃                                                                                                                      ┃
+┃ › 1 [x] Yes                         proceed                                                                          ┃
+┃   2 [ ] No                          hold                                                                             ┃
+┃   3 [ ] Other: type an answer                                                                                        ┃
+┗━ enter review · sends to parent-scratch · x dismiss ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [ask] error: chat send is for the user only: only the user can send chat; rule 2 (working directory is below projects/)

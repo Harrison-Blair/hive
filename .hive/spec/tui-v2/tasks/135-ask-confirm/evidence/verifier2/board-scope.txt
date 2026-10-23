@@ -1,0 +1,51 @@
+Unchanged grid: .hive/spec/tui-v2/design/AgentDetails.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentDetailsGeneral.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentsCoordinatorChild.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentsHiddenParent.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentsHome.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentsMany.grid
+Unchanged grid: .hive/spec/tui-v2/design/AgentsNested.grid
+Unchanged grid: .hive/spec/tui-v2/design/Chat.grid
+Approved changed grid: .hive/spec/tui-v2/design/ChatAsk.grid
+Approved changed grid: .hive/spec/tui-v2/design/ChatAskMulti.grid
+Approved changed grid: .hive/spec/tui-v2/design/ChatAskPreview.grid
+Approved new grid: .hive/spec/tui-v2/design/ChatAskReview.grid
+Approved new grid: .hive/spec/tui-v2/design/ChatAskReviewMulti.grid
+Approved changed grid: .hive/spec/tui-v2/design/ChatAskStopped.grid
+Unchanged grid: .hive/spec/tui-v2/design/ChatEvents.grid
+Unchanged grid: .hive/spec/tui-v2/design/ChatInput.grid
+Unchanged grid: .hive/spec/tui-v2/design/ChatNormal.grid
+Unchanged grid: .hive/spec/tui-v2/design/ChatStatus.grid
+Unchanged grid: .hive/spec/tui-v2/design/Compact.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactAgents.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactAgentsHome.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactChat.grid
+Approved changed grid: .hive/spec/tui-v2/design/CompactChatAsk.grid
+Approved new grid: .hive/spec/tui-v2/design/CompactChatAskReview.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactChatNormal.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactChatStatus.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactFriction.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactHealth.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactLiveOverview.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactLivePod.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactLogs.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactTreeNested.grid
+Unchanged grid: .hive/spec/tui-v2/design/CompactTreeWide.grid
+Unchanged grid: .hive/spec/tui-v2/design/Components.grid
+Unchanged grid: .hive/spec/tui-v2/design/Friction.grid
+Unchanged grid: .hive/spec/tui-v2/design/FrictionResolved.grid
+Unchanged grid: .hive/spec/tui-v2/design/Health.grid
+Unchanged grid: .hive/spec/tui-v2/design/HealthAgents.grid
+Unchanged grid: .hive/spec/tui-v2/design/HealthAgentsGeneral.grid
+Approved changed grid: .hive/spec/tui-v2/design/Help.grid
+Unchanged grid: .hive/spec/tui-v2/design/LiveOverview.grid
+Unchanged grid: .hive/spec/tui-v2/design/LivePod.grid
+Unchanged grid: .hive/spec/tui-v2/design/Logs.grid
+Unchanged grid: .hive/spec/tui-v2/design/Main.grid
+Unchanged grid: .hive/spec/tui-v2/design/TooSmall.grid
+Unchanged grid: .hive/spec/tui-v2/design/TreeNested.grid
+Unchanged grid: .hive/spec/tui-v2/design/TreeWide.grid
+Unchanged grid: .hive/spec/tui-v2/design/Work.grid
+Unchanged grid: .hive/spec/tui-v2/design/WorkGoals.grid
+Unchanged grid: .hive/spec/tui-v2/design/WorkQueue.grid
+All 41 other grids, sources, and fixtures equal current dev. No design file changed after the first failed verdict. No added mask.

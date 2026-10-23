@@ -1,0 +1,5 @@
+label both versions, both widths captured
+header both versions, both widths captured
+stopped both versions, both widths captured
+multiline Other/note 120 captured
+multiline Other/note 80 captured
