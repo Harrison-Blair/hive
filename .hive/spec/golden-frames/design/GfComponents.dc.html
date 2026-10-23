@@ -148,9 +148,9 @@ function draw() {
   cap(t, 2, 'Palette', 'terminal default background and foreground · error is new');
   [['fg', 'default'], ['border', '#3d3a33'], ['dim', '#a39d90'], ['accent', '#f5b942'], ['working', '#6ee69a'], ['done', '#7ccf6a'], ['info', '#6fb7ff'], ['user', '#e9cf9b'], ['code', '#9fd0ff'], ['error', '#e8705f new']].forEach(function (p, i) { put(t, i * 12, 3, '██', p[0]); put(t, i * 12 + 3, 3, p[0], 'fg'); put(t, i * 12 + 3, 4, p[1], 'dim'); });
   cap(t, 6, 'StatusRow', 'last row · segments joined by · · clock pinned right · cut from the right until it fits · 1 to 3 rows');
-  statusRow(t, 7, [stateSeg('● working 2m', 'working'), stateSeg('● supervisor', 'working'), ['? 1 asks', 'accent', 1], ['needs you 1', 'accent', 1], chords('chat'), ['? help', 'dim', 0]], '14:22');
-  put(t, 1, 8, '● idle 5m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work', 'dim'); put(t, 1, 8, '●', 'accent'); put(t, 13, 8, '●', 'working'); put(t, 76, 8, '14:22', 'dim'); put(t, 83, 8, '← the same row at 80 columns: the chords are cut', 'dim');
-  var b9 = '▲ blocked 1m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs'; put(t, 1, 9, b9, 'dim'); put(t, 1, 9, '▲', 'accent', 1); put(t, 1 + Array.from(b9).indexOf('●'), 9, '●', 'working'); put(t, 114, 9, '14:22', 'dim');
+  statusRow(t, 7, [stateSeg('● working 2m', 'working'), stateSeg('● supervisor', 'working'), ['? 1 ask', 'accent', 1], ['needs you 1', 'accent', 1], chords('chat'), ['? help', 'dim', 0]], '14:22');
+  put(t, 1, 8, '○ idle 5m · ● supervisor · ? 0 asks · needs you 0', 'dim'); put(t, 1, 8, '○', 'dim', 1); put(t, 13, 8, '●', 'working', 1); put(t, 74, 8, '14:22', 'dim'); put(t, 83, 8, '← the same row at 80 columns: the chords are cut', 'dim');
+  var b9 = '▲ blocked 1m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs'; put(t, 1, 9, b9, 'dim'); put(t, 1, 9, '▲', 'accent', 1); put(t, 1 + Array.from(b9).indexOf('●'), 9, '●', 'working', 1); put(t, 114, 9, '14:22', 'dim');
   cap(t, 11, 'Chords', 'ctrl+letter opens a screen · on that screen it reads esc chat · ? in an empty composer opens Help · tab reserved');
   put(t, 1, 12, '^g agents  ^t work  ^f friction  ^y health  ^l logs', 'dim'); put(t, 56, 12, 'on Work:', 'dim'); put(t, 65, 12, '^g agents  esc chat  ^f friction  ^y health  ^l logs', 'dim');
   cap(t, 14, 'TitleRow', 'row 0 of a screen · name in accent · facts in dim · right text · a rule below');
@@ -172,8 +172,8 @@ function draw() {
   msgYou(t, 37, '14:02', ['move the status out of the composer border.']);
   msgAgent(t, 39, 'coordinator', '14:06', [['Status row, summary', 'accent', 1], ['• Segments are cut from the right. Config under ', 'fg']]); put(t, 49, 41, '[tui.status]', 'code'); put(t, 61, 41, '.', 'fg');
   event(t, 42, 'manager-hive', '14:09', 'quiet');
-  put(t, 1, 43, '▾', 'dim'); put(t, 3, 43, 'manager-store', 'dim', 1); put(t, 17, 43, '14:05  g2-live-scroll DONE', 'dim'); put(t, 3, 44, 'task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails', 'dim');
-  put(t, 1, 45, '?', 'accent', 1); put(t, 3, 45, 'manager-hive', 'accent', 1); put(t, 16, 45, '14:21  asked · Model · answered 14:23 · Yes, restart now', 'dim');
+  put(t, 1, 43, '▾', 'dim'); put(t, 3, 43, 'manager-store', 'dim', 1); put(t, 17, 43, '14:05', 'dim'); put(t, 1, 44, 'g2-live-scroll DONE: task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails', 'dim');
+  msgYou(t, 45, '14:23', ['answered manager-hive · Model → Yes, restart now']);
   put(t, 62, 37, '›  you          user color, bold name', 'dim'); put(t, 62, 38, '●  agent        info name · Glamour markdown body', 'dim'); put(t, 62, 39, '▸  event        dim, folded to one line', 'dim'); put(t, 62, 40, '▾  event open   dim, the full text below', 'dim'); put(t, 62, 41, '?  ask          accent · in the composer while open', 'dim');
   cap(t, 47, 'TaskCard', '24×4 · dot = status · line 2 = worker and age, or landed commit, or the wait · heavy accent = selected');
   card(t, 1, 48, '●', 'done', '10-board-export', 'landed · 2adaf0'); card(t, 27, 48, '◐', 'working', '11-demo-mode', 'verified · V5 pass'); card(t, 53, 48, '○', 'dim', '12-board-fixtures', 't12-worker-1 · 12m', true); card(t, 79, 48, '!', 'accent', '21-components-1', 'needs you · mask ok?');

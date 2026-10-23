@@ -56,7 +56,7 @@ function composer(t, y, h, lines, placeholder) { box(t, 0, y, 120, h, 'accent');
 // Shared screen drawing. Each board file sets META and defines draw() from these.
 // ---- Chat ----
 // items: [{k:'you'|'agent'|'event'|'open'|'ask', name, time, lines|text, mark}]
-function transcript(t, items, limit) { var y = 2; items.forEach(function (it) { if (y >= limit) return; if (it.k === 'you') y = msgYou(t, y, it.time + (it.mark ? ' · ' + it.mark : ''), it.lines); else if (it.k === 'agent') y = msgAgent(t, y, it.name, it.time, it.lines); else if (it.k === 'event') y = event(t, y, it.name, it.time, it.text); else if (it.k === 'open') { put(t, 1, y, '▾', 'dim'); put(t, 3, y, it.name, 'dim', 1); put(t, 4 + len(it.name), y, it.time, 'dim'); y++; it.lines.forEach(function (l) { put(t, 1, y, fit(l, 117), 'dim'); y++; }); } else if (it.k === 'ask') { put(t, 1, y, '?', 'accent', 1); put(t, 3, y, it.name, 'accent', 1); put(t, 4 + len(it.name), y, it.time + '  ' + it.text, it.tk || 'dim'); y++; } if (it.k !== 'event' && it.k !== 'ask') y++; else if (it.gap !== false) y++; }); return y; }
+function transcript(t, items, limit) { var y = 0; items.forEach(function (it) { if (y >= limit) return; if (it.k === 'you') y = msgYou(t, y, it.time + (it.mark ? ' · ' + it.mark : ''), it.lines); else if (it.k === 'agent') y = msgAgent(t, y, it.name, it.time, it.lines); else if (it.k === 'event') y = event(t, y, it.name, it.time, it.text); else if (it.k === 'open') { put(t, 1, y, '▾', 'dim'); put(t, 3, y, it.name, 'dim', 1); put(t, 4 + len(it.name), y, it.time, 'dim'); y++; it.lines.forEach(function (l) { put(t, 1, y, fit(l, 117), 'dim'); y++; }); } else if (it.k === 'ask') { put(t, 1, y, '?', 'accent', 1); put(t, 3, y, it.name, 'accent', 1); put(t, 4 + len(it.name), y, it.time + '  ' + it.text, it.tk || 'dim'); y++; } if (it.k !== 'event' && it.k !== 'ask') y++; else if (it.gap !== false) y++; }); return y; }
 function earlier(t, n) { if (n > 0) put(t, 52, 0, '· · · ' + n + ' earlier · · ·', 'dim'); }
 function chatStatus(t, y, state, extra) { var segs = [stateSeg(state, state[0] === '●' && state.indexOf('starting') < 0 ? 'working' : state[0] === '▲' ? 'accent' : 'dim')]; (extra || []).forEach(function (e) { segs.push(e); }); segs.push(stateSeg('● supervisor', 'working'), ['? 0 asks', 'dim', 0], ['needs you 0', 'dim', 0], chords('chat'), ['? help', 'dim', 0]); statusRow(t, y, segs, '14:22'); }
 function notice(t, y, text, isError) { if (isError) { put(t, 1, y, 'error:', 'error', 1); put(t, 8, y, text, 'fg'); } else put(t, 1, y, text, 'accent'); }
@@ -141,14 +141,12 @@ function agentsLegend(t, y) { put(t, 1, y, '── spawn   ● working   ◐ idl
 function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['agents', 'accent', 1]].concat(keys.map(function (k) { return [k, 'dim', 0]; })).concat([chords('agents')]), '14:22'); }
 
 var META = {w: 120, h: 40, title: 'Golden frames · Chat, events open'};
-function draw() { var t = T(120, 40); earlier(t, 42);
-  transcript(t, [{k:'you', time:'14:02', lines:['move the status out of the composer border. one row under it, like claude code, and keep the chords on it.']},
+function draw() { var t = T(120, 40); transcript(t, [{k:'you', time:'14:02', lines:['move the status out of the composer border. one row under it, like claude code, and keep the chords on it.']},
     {k:'open', name:'manager-store', time:'14:05', lines:['g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit passes, 0 fails).', 'Branch task/121-live-transcript-scroll landed on dev at 3ccd93fb. Wave B of g2 is done. Wave C can start.', 'needs you: none.']},
     {k:'agent', name:'coordinator', time:'14:06', lines:['Noted. I move the status row and keep the chords on it. The spec change goes to task 122.']},
     {k:'open', name:'manager-hive', time:'14:09', lines:['quiet · no change since 14:05 · 2 workers live · next scan 14:14']},
     {k:'open', name:'supervisor', time:'14:12', lines:['nudge coordinator · inbox 2 · reason: completed, verified']},
     {k:'you', time:'14:21', mark:'pending', lines:['yes']}], 34);
-  thumb(t, 119, 0, 34, 120, 86, 'dim');
   composer(t, 36, 3, [], 'type a message · ? help');
   chatStatus(t, 39, '● working 2m'); return t; }
 

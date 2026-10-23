@@ -143,8 +143,7 @@ function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m', 
 var META = {w: 120, h: 40, title: 'Golden frames · Chat'};
 function draw() {
   var t = T(120, 40);
-  put(t, 52, 0, '· · · 42 earlier · · ·', 'dim');
-  var y = 2;
+  var y = 0;
   y = msgYou(t, y, '14:02', ['move the status out of the composer border. one row under it, like claude code, and keep the chords on it.']);
   y++;
   y = event(t, y, 'manager-store', '14:05', 'g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit passes, 0 fails)');
@@ -168,12 +167,11 @@ function draw() {
     '',
     ['Reply yes to confirm, or name the line to change.', 'fg']]);
   // inline code on one bullet
-  put(t, 35, 11, 'state', 'code'); put(t, 40, 11, ', ', 'fg'); put(t, 42, 11, 'supervisor', 'code'); put(t, 52, 11, ', ', 'fg'); put(t, 54, 11, 'asks', 'code'); put(t, 58, 11, ', ', 'fg'); put(t, 60, 11, 'needs_you', 'code'); put(t, 69, 11, ', ', 'fg'); put(t, 71, 11, 'chords', 'code'); put(t, 77, 11, ', ', 'fg'); put(t, 79, 11, 'hints', 'code'); put(t, 84, 11, ', ', 'fg'); put(t, 86, 11, 'clock', 'code'); put(t, 91, 11, ', and ', 'fg'); put(t, 97, 11, 'command', 'code'); put(t, 104, 11, '.', 'fg');
+  put(t, 35, 9, 'state', 'code'); put(t, 40, 9, ', ', 'fg'); put(t, 42, 9, 'supervisor', 'code'); put(t, 52, 9, ', ', 'fg'); put(t, 54, 9, 'asks', 'code'); put(t, 58, 9, ', ', 'fg'); put(t, 60, 9, 'needs_you', 'code'); put(t, 69, 9, ', ', 'fg'); put(t, 71, 9, 'chords', 'code'); put(t, 77, 9, ', ', 'fg'); put(t, 79, 9, 'hints', 'code'); put(t, 84, 9, ', ', 'fg'); put(t, 86, 9, 'clock', 'code'); put(t, 91, 9, ', and ', 'fg'); put(t, 97, 9, 'command', 'code'); put(t, 104, 9, '.', 'fg');
   y++;
   y = event(t, y, 'manager-hive', '14:09', 'quiet');
   y++;
   y = msgYou(t, y, '14:21 · pending', ['yes']);
-  thumb(t, 119, 0, 33, 120, 87, 'dim');
   composer(t, 33, 6, ['Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen:', 'Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each', 'line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me', 'the draft so I can read it before the tag.']);
   statusRow(t, 39, [stateSeg('● working 2m', 'working'), stateSeg('● supervisor', 'working'), ['? 0 asks', 'dim', 0], ['needs you 0', 'dim', 0], chords('chat'), ['? help', 'dim', 0]], '14:22');
   return t;

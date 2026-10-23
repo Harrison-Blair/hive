@@ -103,3 +103,12 @@ The state boards are on the same page, in rows by screen. Each screen file names
 30. Autocomplete on `tab`.
 31. Message history on `↑` in an empty composer.
 32. The spec tasks, the briefs, the fixtures, and the golden grids. They come after the user signs off the boards.
+
+### Changes after sign-off
+
+33. On 2026-10-23 the user answered ask a18: the boards give the status row of an open ask. While the card has the focus, the row starts with `state`, then the focus name in `accent` bold, then the keys of that focus in `dim`. Then the row has the `asks` segment when more than one ask is open, and `clock`. When the row is wider than the pane, the TUI removes keys from the right, before the `asks` segment. The focus names and their keys are:
+    - `ask`: `↑↓ move`, `1..N pick`, `enter review`, `n note`, `x dismiss`, `J/K card`, `^r input`, `esc input`. N is the number of option rows. When the asker stopped, `enter review` is `enter review for parent`.
+    - `note`: `type the note`, `enter keep note`, `n close note`, `↑↓ option`, `space mark`, `^r input`. `space mark` shows only for a multi-select question.
+    - `review`: `↑↓ question`, `enter send`, `x dismiss`, `J/K card`, `^r input`.
+
+    While an ask is open and the input line has the focus, the row is `state`, `supervisor`, `asks`, `needs_you`, `^r answer the ask` in `accent`, and `clock`. The segment `^r answer the ask` is in place of `chords` and `hints`. The boards `GfChatAsk`, `GfChatAskInput`, `GfChatAskMulti`, `GfChatAskStopped`, `GfChatAskReview`, and `GfChatAskMany` show these rows.

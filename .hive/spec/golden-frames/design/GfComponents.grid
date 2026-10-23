@@ -20,15 +20,15 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|StatusRow  last row · segments joined by · · clock pinned right · cut from the right until it fits · 1 to 3 rows        
 k|aaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffff
 b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ● working 2m · ● supervisor · ? 1 asks · needs you 1 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22 
-k|fwddddddddddddddwddddddddddddddaaaaaaaadddaaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffdddddf
-b|010000000000000010000000000000011111111000111111111110000000000000000000000000000000000000000000000000000000000000000000
-t| ● idle 5m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work     14:22  ← the same row at 80 columns: the cho
-k|fadddddddddddwdddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffdddddffddddddddddddddddddddddddddddddddddddd
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ● working 2m · ● supervisor · ? 1 ask · needs you 1 · ^g agents  ^t work  ^f friction  ^y health  ^l logs        14:22 
+k|fwddddddddddddddwddddddddddddddaaaaaaadddaaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffdddddf
+b|010000000000000010000000000000011111110001111111111100000000000000000000000000000000000000000000000000000000000000000000
+t| ○ idle 5m · ● supervisor · ? 0 asks · needs you 0                        14:22    ← the same row at 80 columns: the cho
+k|fddddddddddddwddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffdddddffffddddddddddddddddddddddddddddddddddddd
+b|010000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t| ▲ blocked 1m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22 
 k|faddddddddddddddwddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffdddddf
-b|010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b|010000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -128,17 +128,17 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t| ▸ manager-hive 14:09  quiet                                                                                            
 k|fdfddddddddddddfdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfff
 b|000111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ▾ manager-store 14:05  g2-live-scroll DONE                                                                             
-k|fdfdddddddddddddfddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t| ▾ manager-store 14:05                                                                                                  
+k|fdfdddddddddddddfdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|   task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails                             
-k|fffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffff
+t| g2-live-scroll DONE: task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails          
+k|fdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ? manager-hive 14:21  asked · Model · answered 14:23 · Yes, restart now                                                
-k|fafaaaaaaaaaaaafddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffff
-b|010111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|                                                                                                                        
-k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t| › you 14:23                                                                                                            
+k|fufuuufdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| answered manager-hive · Model → Yes, restart now                                                                       
+k|fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|TaskCard  24×4 · dot = status · line 2 = worker and age, or landed commit, or the wait · heavy accent = selected        
 k|aaaaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffff

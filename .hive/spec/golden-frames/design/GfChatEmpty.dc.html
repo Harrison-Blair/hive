@@ -142,7 +142,7 @@ function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m', 
 
 var META = {w: 120, h: 40, title: 'Golden frames · Chat, empty transcript'};
 function draw() { var t = T(120, 40);
-  ['hive · ~/source/hive', '● coordinator working · started 09:41', 'type a message to the coordinator.', '^g agents  ^t work  ^f friction  ^y health  ^l logs', '? help'].forEach(function (l, i) { put(t, 1, 1 + i, l, 'dim'); });
+  ['hive · ~/source/hive', '● working 2m', 'type a message to the coordinator.', '^g agents  ^t work  ^f friction  ^y health  ^l logs', '? help'].forEach(function (l, i) { put(t, 1, 1 + i, l, 'dim'); });
   put(t, 1, 2, '●', 'working');
   composer(t, 36, 3, [], 'type a message · ? help');
   chatStatus(t, 39, '● working 2m'); return t; }
