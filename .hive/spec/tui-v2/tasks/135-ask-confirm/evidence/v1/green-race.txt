@@ -1,5 +1,3 @@
-=== RUN   TestAgentsDemoActionsShowTheNotice
---- PASS: TestAgentsDemoActionsShowTheNotice (0.02s)
 === RUN   TestAskReviewOneQuestion
 --- PASS: TestAskReviewOneQuestion (0.01s)
 === RUN   TestAskEachCompletionPathOpensTheReview
@@ -47,9 +45,27 @@
 === RUN   TestAskReviewReachesEachPartOfALongRow
 === RUN   TestAskReviewReachesEachPartOfALongRow/120
 === RUN   TestAskReviewReachesEachPartOfALongRow/80
---- PASS: TestAskReviewReachesEachPartOfALongRow (0.75s)
-    --- PASS: TestAskReviewReachesEachPartOfALongRow/120 (0.42s)
-    --- PASS: TestAskReviewReachesEachPartOfALongRow/80 (0.34s)
+--- PASS: TestAskReviewReachesEachPartOfALongRow (0.73s)
+    --- PASS: TestAskReviewReachesEachPartOfALongRow/120 (0.41s)
+    --- PASS: TestAskReviewReachesEachPartOfALongRow/80 (0.32s)
+=== RUN   TestAskBoardsMatch
+=== RUN   TestAskBoardsMatch/ChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskMulti
+=== RUN   TestAskBoardsMatch/ChatAskPreview
+=== RUN   TestAskBoardsMatch/ChatAskStopped
+=== RUN   TestAskBoardsMatch/CompactChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskReview
+=== RUN   TestAskBoardsMatch/ChatAskReviewMulti
+=== RUN   TestAskBoardsMatch/CompactChatAskReview
+--- PASS: TestAskBoardsMatch (0.15s)
+    --- PASS: TestAskBoardsMatch/ChatAsk (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskMulti (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskPreview (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskStopped (0.02s)
+    --- PASS: TestAskBoardsMatch/CompactChatAsk (0.01s)
+    --- PASS: TestAskBoardsMatch/ChatAskReview (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskReviewMulti (0.02s)
+    --- PASS: TestAskBoardsMatch/CompactChatAskReview (0.01s)
 === RUN   TestAskCardHasTheFocusInNormalMode
 --- PASS: TestAskCardHasTheFocusInNormalMode (0.01s)
 === RUN   TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen
@@ -75,110 +91,120 @@
 === RUN   TestAskHistoryShowsTheAnswerAndTheDismissal
 --- PASS: TestAskHistoryShowsTheAnswerAndTheDismissal (0.01s)
 === RUN   TestAskMouseFocusesAndScrolls
---- PASS: TestAskMouseFocusesAndScrolls (0.03s)
+--- PASS: TestAskMouseFocusesAndScrolls (0.02s)
 === RUN   TestAskClickOnTheCardGivesItTheFocus
 --- PASS: TestAskClickOnTheCardGivesItTheFocus (0.03s)
 === RUN   TestAskWheelOverTheCardScrollsTheFeed
 --- PASS: TestAskWheelOverTheCardScrollsTheFeed (0.03s)
-=== RUN   TestReadHeaderCountsTheOpenAsks
---- PASS: TestReadHeaderCountsTheOpenAsks (0.00s)
-=== RUN   TestDemoBlocksTheAnswer
---- PASS: TestDemoBlocksTheAnswer (0.02s)
-=== RUN   TestANewAskRefreshesTheHeaderAndChat
---- PASS: TestANewAskRefreshesTheHeaderAndChat (0.00s)
 === RUN   TestHelpListsTheAskKeys
 --- PASS: TestHelpListsTheAskKeys (0.01s)
-=== RUN   TestHeaderShowsTheOpenAskRecords
---- PASS: TestHeaderShowsTheOpenAskRecords (0.04s)
 === RUN   TestAskOtherInAMultiSelectQuestion
 --- PASS: TestAskOtherInAMultiSelectQuestion (0.01s)
-=== RUN   TestHeaderShowsTheAskCountOfTheState
---- PASS: TestHeaderShowsTheAskCountOfTheState (0.02s)
-=== RUN   TestDemoChatSendShowsTheNotice
---- PASS: TestDemoChatSendShowsTheNotice (0.02s)
-=== RUN   TestDemoFixtureUnknownFieldNamesTheField
-=== RUN   TestDemoFixtureUnknownFieldNamesTheField/top_level
-=== RUN   TestDemoFixtureUnknownFieldNamesTheField/ui
-=== RUN   TestDemoFixtureUnknownFieldNamesTheField/record
-=== RUN   TestDemoFixtureUnknownFieldNamesTheField/supervisor
---- PASS: TestDemoFixtureUnknownFieldNamesTheField (0.00s)
-    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/top_level (0.00s)
-    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/ui (0.00s)
-    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/record (0.00s)
-    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/supervisor (0.00s)
-=== RUN   TestDemoFixtureBadValuesFail
-=== RUN   TestDemoFixtureBadValuesFail/"ui.screen"
-=== RUN   TestDemoFixtureBadValuesFail/"ui.view"
-=== RUN   TestDemoFixtureBadValuesFail/"clock.zone"
-=== RUN   TestDemoFixtureBadValuesFail/"clock.time"
-=== RUN   TestDemoFixtureBadValuesFail/"terminal"
-=== RUN   TestDemoFixtureBadValuesFail/"ui.overlay"
-=== RUN   TestDemoFixtureBadValuesFail/"ui.prompt.kind"
---- PASS: TestDemoFixtureBadValuesFail (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"ui.screen" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"ui.view" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"clock.zone" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"clock.time" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"terminal" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"ui.overlay" (0.00s)
-    --- PASS: TestDemoFixtureBadValuesFail/"ui.prompt.kind" (0.00s)
-=== RUN   TestParseDemoSize
---- PASS: TestParseDemoSize (0.00s)
-=== RUN   TestDemoMainShowsFixtureDataAtTheFixtureClock
---- PASS: TestDemoMainShowsFixtureDataAtTheFixtureClock (0.02s)
-=== RUN   TestDemoSizeDrawsAtTheSizeInALargerPane
---- PASS: TestDemoSizeDrawsAtTheSizeInALargerPane (0.01s)
-=== RUN   TestDemoSizeShowsTooSmallInASmallerPane
---- PASS: TestDemoSizeShowsTooSmallInASmallerPane (0.01s)
-=== RUN   TestDemoTooSmallMatchesItsBoardGrid
---- PASS: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
-=== RUN   TestDemoActionKeysShowTheNotice
---- PASS: TestDemoActionKeysShowTheNotice (0.06s)
-=== RUN   TestDemoLogsShowOnlyFixtureEvents
---- PASS: TestDemoLogsShowOnlyFixtureEvents (0.01s)
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture
-=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture
---- PASS: TestDemoOpensFilesOnlyFromTheFixture (0.05s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture (0.01s)
-    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture (0.01s)
-=== RUN   TestDemoUIStateSetsTheFrameState
-=== RUN   TestDemoUIStateSetsTheFrameState/AgentDetails
-=== RUN   TestDemoUIStateSetsTheFrameState/Chat
-=== RUN   TestDemoUIStateSetsTheFrameState/Compact
-=== RUN   TestDemoUIStateSetsTheFrameState/FrictionResolved
-=== RUN   TestDemoUIStateSetsTheFrameState/HealthAgents
-=== RUN   TestDemoUIStateSetsTheFrameState/Help
-=== RUN   TestDemoUIStateSetsTheFrameState/Logs
-=== RUN   TestDemoUIStateSetsTheFrameState/WorkQueue
---- PASS: TestDemoUIStateSetsTheFrameState (0.03s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/AgentDetails (0.00s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/Chat (0.00s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/Compact (0.00s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/FrictionResolved (0.01s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/HealthAgents (0.00s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/Help (0.00s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/Logs (0.02s)
-    --- PASS: TestDemoUIStateSetsTheFrameState/WorkQueue (0.00s)
-=== RUN   TestDemoRestartPromptYesDoesNotRestart
---- PASS: TestDemoRestartPromptYesDoesNotRestart (0.01s)
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Main
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Chat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Work
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Compact
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Friction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Health
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Logs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Help
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Components
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReviewMulti
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAskReview
+--- PASS: TestEachBoardFixtureLoadsAtItsSpecSize (0.07s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Main (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Chat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Work (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Compact (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Friction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Health (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Logs (0.01s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs (0.01s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Help (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Components (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReviewMulti (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAskReview (0.00s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.02s)
 === RUN   TestHelpKeys
 --- PASS: TestHelpKeys (0.04s)
-=== RUN   TestLogsNormalModeDrawsTheDemoContent
---- PASS: TestLogsNormalModeDrawsTheDemoContent (0.05s)
-=== RUN   TestAgentsRestartLiveSupervisorAsksForConfirmation
---- PASS: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	2.835s
+ok  	github.com/Harrison-Blair/hive/internal/tui	2.655s
