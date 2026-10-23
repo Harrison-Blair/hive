@@ -1,8 +1,8 @@
 ---
 title: "A brief tells a worker to read its inbox, but a worker has no inbox"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-20
-decision: ""
+decision: "Workers and verifiers have inbox keys now: the t126-worker-1 inbox holds records, and the doctor ownerless check reads them"
 ---
 
 **Summary:**

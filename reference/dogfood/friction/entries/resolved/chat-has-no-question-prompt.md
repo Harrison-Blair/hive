@@ -1,8 +1,8 @@
 ---
 title: "The user cannot answer a structured question in the Chat screen"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-22
-decision: ""
+decision: "Goal g6 task 131 adds ask cards in the Chat dock: picks, notes, previews, dismiss, and answers routed to the asker"
 ---
 
 **Summary:**

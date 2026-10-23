@@ -1,8 +1,8 @@
 ---
 title: "No dashboard shows the agents, their lineage, their activity, and their tasks"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-19
-decision: ""
+decision: "Goal g1-hive-tui lands the dashboard: the Agents, Chat, Work, Friction, Health, and Logs screens with lineage, activity, and tasks"
 ---
 
 **Summary:**

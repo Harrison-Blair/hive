@@ -11,7 +11,7 @@ For all other files, the coordinator and manager never change a project source f
 | --- | --- | --- |
 | [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
 | [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
-| [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
+| [A brief tells a worker to read its inbox, but a worker has no inbox](entries/resolved/worker-has-no-inbox.md) | Resolved 2026-10-23 | Workers and verifiers have inbox keys now: the t126-worker-1 inbox holds records, and the doctor ownerless check reads them |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
@@ -33,9 +33,9 @@ For all other files, the coordinator and manager never change a project source f
 | [Hive cannot spawn a reviewer or another one-off agent](entries/resolved/no-reviewer-role.md) | Resolved 2026-10-21 | Goal g3-general-agent adds the role agent, hive agent report, and the hive-agent skill |
 | [A new task can go only in a feature that has a README](entries/old-features-lack-readme.md) | Open |  |
 | [A supervisor nudge splits a message that the user types](entries/nudge-interrupts-user-typing.md) | Open |  |
-| [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/no-agent-dashboard.md) | Open |  |
+| [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/resolved/no-agent-dashboard.md) | Resolved 2026-10-23 | Goal g1-hive-tui lands the dashboard: the Agents, Chat, Work, Friction, Health, and Logs screens with lineage, activity, and tasks |
 | [Claude Code in bypass mode still asks before a dangerous rm](entries/bypass-still-prompts-dangerous-rm.md) | Open |  |
-| [The verifier skill does not give the path of VERIFIED.md](entries/verified-md-path-unspecified.md) | Open |  |
+| [The verifier skill does not give the path of VERIFIED.md](entries/resolved/verified-md-path-unspecified.md) | Resolved 2026-10-23 | The verifier skill names the evidence path for VERIFIED.md and forbids the checkout root |
 | [The supervisor keeps running an old hive binary after a rebuild](entries/resolved/supervisor-runs-stale-binary.md) | Resolved 2026-10-21 | Task 3 adds the r restart for the supervisor and an old-binary mark in the TUI header |
 | [The worker skill gate adds golangci-lint that the project gate does not have](entries/worker-gate-adds-golangci-lint.md) | Open |  |
 | [A feature spec task cannot start in a repository that ignores .hive/spec/](entries/resolved/spec-task-needs-allowlist-first.md) | Resolved 2026-10-20 | Fixed in 70-spec-allowlist (e1276caa): a spec task worktree stages the brief with git add -f and reports allowlist_needed; the spec task commits the .gitignore rules. |
@@ -54,10 +54,10 @@ For all other files, the coordinator and manager never change a project source f
 | [A verify fail leaves no workspace and no verifier for a re-verify](entries/resolved/verify-fail-no-reverify-workspace.md) | Resolved 2026-10-19 | By design. The manager skill fix landed in 17-verifier-project (e7031497): after a verify fail, spawn a fresh verifier with no --pane. |
 | [Shell-ready race in worker and verifier spawns](entries/resolved/shell-ready-spawn-race.md) | Resolved 2026-10-19 |  |
 | [Manager spawn fails with `agent_pane_busy` right after `workspace.create`](entries/resolved/manager-spawn-shell-ready-race.md) | Resolved 2026-10-19 |  |
-| [The user cannot answer a structured question in the Chat screen](entries/chat-has-no-question-prompt.md) | Open |  |
-| [The Chat message box does not grow or scroll while the user types](entries/chat-input-does-not-grow.md) | Open |  |
+| [The user cannot answer a structured question in the Chat screen](entries/resolved/chat-has-no-question-prompt.md) | Resolved 2026-10-23 | Goal g6 task 131 adds ask cards in the Chat dock: picks, notes, previews, dismiss, and answers routed to the asker |
+| [The Chat message box does not grow or scroll while the user types](entries/resolved/chat-input-does-not-grow.md) | Resolved 2026-10-23 | Goal g3 task 122 lands the growing input: the box grows with the typed text and the feed shrinks |
 | [A supervisor restart does not stop the old supervisor or close its tab](entries/supervisor-restart-keeps-old-supervisor.md) | Open |  |
-| [The Chat screen does not show that the coordinator is working](entries/chat-shows-no-coordinator-activity.md) | Open |  |
+| [The Chat screen does not show that the coordinator is working](entries/resolved/chat-shows-no-coordinator-activity.md) | Resolved 2026-10-23 | Goal g3 task 122 shows the working status of the coordinator in the header |
 | [Attach on the supervisor fails with agent_not_found, and the error stays in the footer](entries/attach-fails-on-supervisor.md) | Open |  |
 | [The user must ask an agent to change a hive setting](entries/config-needs-an-agent.md) | Open |  |
 | [Hive has no command to shut down a session](entries/no-shutdown-command.md) | Open |  |
