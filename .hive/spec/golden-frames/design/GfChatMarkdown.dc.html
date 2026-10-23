@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Golden frames · Chat, markdown reply</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 984px; height: 728px; box-sizing: border-box; padding: 24px; background: #171612; border-radius: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 17px; white-space: pre; color: #e6e1d6; overflow: hidden">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="40"><div style="height: 17px"><sc-for list="{{row.runs}}" as="run" hint-placeholder-count="1"><span style="display: inline-block; vertical-align: top; overflow: hidden; width: {{run.width}}; color: {{run.color}}; font-weight: {{run.weight}}">{{run.text}}</span></sc-for></div></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":984,"height":728}}'>
+// Shared cell-grid helpers. Inlined into each board at build time.
+var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff', user:'#e9cf9b', code:'#9fd0ff', error:'#e8705f'};
+function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
+function put(t, x, y, s, k, b) { s = String(s); var cs = Array.from(s); for (var i = 0; i < cs.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:cs[i], k:k || 'fg', b:b ? 1 : 0}; } }
+function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
+function len(s) { return Array.from(String(s)).length; }
+function fit(s, n) { var cs = Array.from(String(s)); return cs.length > n ? cs.slice(0, n - 1).join('') + '…' : cs.join('') + rep(' ', n - cs.length); }
+function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
+function box(t, x, y, w, h, k, title, tk, tb) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', tb === undefined ? 1 : tb); }
+function hbox(t, x, y, w, h, k, title, tk) { put(t, x, y, '┏' + rep('━', w - 2) + '┓', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '┃', k); put(t, x + w - 1, y + i, '┃', k); } put(t, x, y + h - 1, '┗' + rep('━', w - 2) + '┛', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
+function right(t, y, s, k, b, pad) { put(t, t.w - len(s) - (pad || 0), y, s, k, b); }
+// A segment list joined by ' · '. Each segment is [text, token, bold] or a string.
+function segs(t, x, y, list, k) { var cx = x; list.forEach(function (s, i) { if (i) { put(t, cx, y, ' · ', 'dim'); cx += 3; } if (typeof s === 'string') s = [s, k || 'dim', 0]; put(t, cx, y, s[0], s[1], s[2]); cx += len(s[0]); }); return cx; }
+// Status row: segments joined by ' · ', clock pinned right. Segments are cut from the right until the row fits.
+function statusRow(t, y, list, clock) { var avail = t.w - 2 - (clock ? len(clock) + 3 : 0); list = list.slice(); var width = function () { var w = 0; list.forEach(function (s, i) { w += len(s[0]) + (i ? 3 : 0); }); return w; }; while (list.length > 1 && width() > avail) list.pop(); var x = 1; list.forEach(function (s, i) { if (i) { put(t, x, y, ' · ', 'dim'); x += 3; } put(t, x, y, s[0], s[1], s[2]); if (s[3]) s[3].forEach(function (d) { put(t, x + d[0], y, d[1], d[2], 1); }); x += len(s[0]); }); if (clock) right(t, y, clock, 'dim', 0, 1); }
+var CHORDS = ['^g agents', '^t work', '^f friction', '^y health', '^l logs'];
+// The chords segment: one segment, two spaces between chords, the current screen shown as esc chat.
+function chords(screen) { return [CHORDS.map(function (c) { return c.slice(3) === screen ? 'esc chat' : c; }).join('  '), 'dim', 0]; }
+// Common state segments: [text, token, bold, dots] where dots recolor one glyph.
+function stateSeg(text, k) { return [text, 'dim', 0, [[0, text[0], k]]]; }
+function titleRow(t, y, title, rest, r) { put(t, 1, y, title, 'accent', 1); if (rest) put(t, 2 + len(title), y, rest, 'dim'); if (r) right(t, y, r, 'dim', 0, 1); }
+// Card 24x4 with a dot, a name, and a second line.
+function card(t, x, y, dot, dk, name, line2, sel) { if (sel) hbox(t, x, y, 24, 4, 'accent'); else box(t, x, y, 24, 4, 'border'); put(t, x + 2, y + 1, dot, dk); put(t, x + 4, y + 1, fit(name, 18), sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, x + 2, y + 2, fit(line2, 20), 'dim'); }
+function clear(t, x, y, w, h) { for (var r = y; r < y + h; r++) for (var c = x; c < x + w; c++) if (r >= 0 && r < t.h && c >= 0 && c < t.w) t.g[r][c] = {c:' ', k:'fg', b:0}; }
+function dimAll(t) { for (var y = 0; y < t.h; y++) for (var x = 0; x < t.w; x++) { t.g[y][x].k = 'border'; t.g[y][x].b = 0; } }
+function thumb(t, x, y0, n, total, top, k) { var h = Math.max(1, Math.round(n * n / total)), s = Math.round(n * top / total); for (var i = 0; i < h && s + i < n; i++) put(t, x, y0 + s + i, '┃', k || 'dim'); }
+function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:len(r.text) + 'ch'}; })}); } return out; }
+
+// Transcript helpers shared by the Chat boards.
+function msgYou(t, y, time, lines) { put(t, 1, y, '›', 'user', 1); put(t, 3, y, 'you', 'user', 1); put(t, 7, y, time, 'dim'); lines.forEach(function (l, i) { put(t, 1, y + 1 + i, l, 'user'); }); return y + 1 + lines.length; }
+function msgAgent(t, y, name, time, lines) { put(t, 1, y, '●', 'info', 1); put(t, 3, y, name, 'info', 1); put(t, 4 + len(name), y, time, 'dim'); lines.forEach(function (l, i) { var k = 'fg', b = 0, s = l; if (typeof l !== 'string') { s = l[0]; k = l[1]; b = l[2] || 0; } put(t, 1, y + 1 + i, s, k, b); }); return y + 1 + lines.length; }
+function event(t, y, name, time, text) { put(t, 1, y, '▸', 'dim'); put(t, 3, y, name, 'dim', 1); put(t, 4 + len(name), y, time + '  ' + fit(text, 118 - 7 - len(name) - len(time)), 'dim'); return y + 1; }
+function composer(t, y, h, lines, placeholder) { box(t, 0, y, 120, h, 'accent'); if (placeholder) { put(t, 2, y + 1, '> ', 'user'); put(t, 4, y + 1, placeholder, 'dim'); return; } lines.forEach(function (l, i) { put(t, 2, y + 1 + i, i ? '  ' : '> ', 'user'); put(t, 4, y + 1 + i, l, 'user'); }); var last = lines[lines.length - 1]; put(t, 4 + len(last), y + lines.length, '█', 'user'); }
+
+// Shared screen drawing. Each board file sets META and defines draw() from these.
+// ---- Chat ----
+// items: [{k:'you'|'agent'|'event'|'open'|'ask', name, time, lines|text, mark}]
+function transcript(t, items, limit) { var y = 2; items.forEach(function (it) { if (y >= limit) return; if (it.k === 'you') y = msgYou(t, y, it.time + (it.mark ? ' · ' + it.mark : ''), it.lines); else if (it.k === 'agent') y = msgAgent(t, y, it.name, it.time, it.lines); else if (it.k === 'event') y = event(t, y, it.name, it.time, it.text); else if (it.k === 'open') { put(t, 1, y, '▾', 'dim'); put(t, 3, y, it.name, 'dim', 1); put(t, 4 + len(it.name), y, it.time, 'dim'); y++; it.lines.forEach(function (l) { put(t, 1, y, fit(l, 117), 'dim'); y++; }); } else if (it.k === 'ask') { put(t, 1, y, '?', 'accent', 1); put(t, 3, y, it.name, 'accent', 1); put(t, 4 + len(it.name), y, it.time + '  ' + it.text, it.tk || 'dim'); y++; } if (it.k !== 'event' && it.k !== 'ask') y++; else if (it.gap !== false) y++; }); return y; }
+function earlier(t, n) { if (n > 0) put(t, 52, 0, '· · · ' + n + ' earlier · · ·', 'dim'); }
+function chatStatus(t, y, state, extra) { var segs = [stateSeg(state, state[0] === '●' && state.indexOf('starting') < 0 ? 'working' : state[0] === '▲' ? 'accent' : 'dim')]; (extra || []).forEach(function (e) { segs.push(e); }); segs.push(stateSeg('● supervisor', 'working'), ['? 0 asks', 'dim', 0], ['needs you 0', 'dim', 0], chords('chat'), ['? help', 'dim', 0]); statusRow(t, y, segs, '14:22'); }
+function notice(t, y, text, isError) { if (isError) { put(t, 1, y, 'error:', 'error', 1); put(t, 8, y, text, 'fg'); } else put(t, 1, y, text, 'accent'); }
+// The composer with an optional ask card. spec: {y, h, title, right, question, options:[[label, desc, mark]], cur, note, focus:'card'|'input', input, stopped, review:[rows], preview}
+function askFrame(t, s) { box(t, 0, s.y, 120, s.h, 'accent', s.title); if (s.right) right(t, s.y, ' ' + s.right + ' ', 'accent', 1, 1); var y = s.y + 1; if (s.question) { put(t, 2, y, s.question, 'fg'); y += 2; } if (s.review) { s.review.forEach(function (r, i) { var sel = i === s.cur; put(t, 2, y, sel ? '›' : ' ', 'accent', 1); put(t, 4, y, r, sel ? 'accent' : 'fg', sel ? 1 : 0); y++; }); } else { (s.options || []).forEach(function (o, i) { var sel = i === s.cur, cardFocus = s.focus !== 'input'; put(t, 2, y, sel ? '›' : ' ', cardFocus ? 'accent' : 'dim', 1); put(t, 4, y, (i + 1) + ' [' + (o[2] ? 'x' : ' ') + '] ', sel && cardFocus ? 'accent' : o[2] ? 'accent' : 'fg', sel && cardFocus ? 1 : 0); put(t, 10, y, o[0], sel && cardFocus ? 'accent' : 'fg', sel && cardFocus ? 1 : 0); if (o[1]) put(t, 37, y, o[1], 'dim'); y++; }); if (s.preview) { var px = 80, pw = 38, ph = s.preview.length + 2, py = s.y + 3; box(t, px, py, pw, ph, 'border', 'preview · ' + (s.cur + 1), 'accent', 1); s.preview.forEach(function (l, i) { put(t, px + 2, py + 1 + i, fit(l, pw - 4), 'code'); }); } if (s.note !== undefined) { put(t, 2, y, 'note ›', 'dim'); put(t, 9, y, s.note || 'none · n adds one', s.note ? 'user' : 'dim'); y++; } } var sep = s.y + s.h - 3; put(t, 0, sep, '├' + rep('─', 118) + '┤', 'accent'); put(t, 2, sep + 1, '> ', 'user'); if (s.input) { put(t, 4, sep + 1, s.input, 'user'); if (s.focus === 'input') put(t, 4 + len(s.input), sep + 1, '█', 'user'); } else if (s.focus === 'input') put(t, 4, sep + 1, '█', 'user'); else put(t, 4, sep + 1, 'type a message · ? help', 'dim'); }
+function askStatus(t, y, hints) { statusRow(t, y, [stateSeg('● working 1m', 'working'), ['ask', 'accent', 1]].concat(hints.map(function (h) { return [h, 'dim', 0]; })), '14:22'); }
+var ASK_HINTS = ['↑↓ move', '1..4 pick', 'enter review', 'n note', 'x dismiss', 'J/K card', '^r input', 'esc input'];
+var CHAT_ITEMS = [
+  {k:'you', time:'14:02', lines:['I want a tool for you to ask questions, like the native ask tool, here in hive.']},
+  {k:'agent', name:'coordinator', time:'14:03', lines:['Interrogate round 1. Who can ask, how the answer gets back, and where it shows.']},
+  {k:'you', time:'14:05', lines:['any agent can ask. the answer goes to its inbox. it shows in the chat, in the composer, never over it.']},
+  {k:'event', name:'manager-hive', time:'14:19', text:'goal g6-hive-ask created · wave A started · worker t12-worker-1 spawned on pi'},
+  {k:'ask', name:'manager-hive', time:'14:21', text:'asked · Model · in the composer, ^r to answer'}];
+var ASK_OPTIONS = [['Yes, restart now (REC)', 'stop it, then spawn on deepseek-v4.1-flash'], ['After g6 lands', 'restart when the goal is done'], ['No, keep Opus', 'no change'], ['Other: type an answer', '']];
+// ---- Work ----
+// cols: [{title, sel, cards:[{dot, dk, name, line2, sel}], foot, footK, thumb}]
+function workBoard(t, cols, top, h) { var x = 1; cols.forEach(function (c) { if (c.sel) hbox(t, x, top, 28, h, 'accent', c.title, 'accent'); else box(t, x, top, 28, h, 'border', c.title, 'accent', 1); var cy = top + 2; (c.cards || []).forEach(function (k) { if (cy + 4 > top + h - 2) return; card(t, x + 2, cy, k.dot, k.dk, k.name, k.line2, k.sel); cy += 5; }); if (c.foot) put(t, x + 2, top + h - 2, c.foot, 'dim'); if (c.foot2) put(t, x + 2 + len(c.foot) + 1, top + h - 2, c.foot2[0], c.foot2[1]); if (c.thumb) thumb(t, x + 27, top + 1, h - 2, c.thumb[0], c.thumb[1], c.sel ? 'accent' : 'dim'); x += 30; }); }
+function workLegend(t, y) { var legend = '● landed  ◐ verified  ○ assigned or created  ! needs you  × cancelled  ─▶ depends on'; put(t, 1, y, legend, 'dim'); put(t, 1, y, '●', 'done'); put(t, 1 + legend.indexOf('◐'), y, '◐', 'working'); put(t, 1 + legend.indexOf('!'), y, '!', 'accent'); }
+function workStatus(t, y, extra) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['work', 'accent', 1], ['←→ ↑↓ card', 'dim', 0], ['[ ] goal', 'dim', 0], ['enter task', 'dim', 0], ['d deps', 'dim', 0], [extra || 's stops', 'dim', 0], ['h cancelled', 'dim', 0], chords('work')], '14:22'); }
+var WORK_A = {title: 'A · done · 3/3', cards: [{dot:'●', dk:'done', name:'5-tui-v2-spec', line2:'landed · 478dc8'}, {dot:'●', dk:'done', name:'8-no-startup', line2:'landed · 61afa0'}, {dot:'●', dk:'done', name:'9-cellgrid', line2:'landed · 0026af'}], foot: 'done when dev', foot2: ['✓ done', 'done']};
+var WORK_B = {title: 'B · running · 2/4', sel: true, cards: [{dot:'●', dk:'done', name:'10-board-export', line2:'landed · 2adaf0'}, {dot:'◐', dk:'working', name:'11-demo-mode', line2:'verified · V5 pass'}, {dot:'○', dk:'dim', name:'12-board-fixtures', line2:'t12-worker-1 · 12m', sel:true}, {dot:'!', dk:'accent', name:'21-components-1', line2:'needs you · mask ok?'}], foot: 'done when dev'};
+var WORK_C = {title: 'C · planned · 0/3', cards: [{dot:'○', dk:'dim', name:'29-frame-layout', line2:'waits on 21'}, {dot:'○', dk:'dim', name:'33-screen-agents', line2:'waits on 29'}, {dot:'○', dk:'dim', name:'34-screen-chat', line2:'waits on 29'}], foot: 'done when dev'};
+var WORK_D = {title: 'D · planned · 0/2', cards: [{dot:'○', dk:'dim', name:'47-screenshots', line2:'waits on wave C'}, {dot:'○', dk:'dim', name:'48-pr-update', line2:'waits on 47'}], foot: 'done when main'};
+function rail(t, xb, rs, re) { var hv = t.g[rs][xb].c === '┃'; put(t, xb, rs, hv ? '┨' : '┤', hv ? 'accent' : 'border'); put(t, xb + 1, rs, '─', 'border'); if (rs === re) put(t, xb + 2, rs, '─', 'border'); else { put(t, xb + 2, rs, rs > re ? '╯' : '╮', 'border'); var lo = Math.min(rs, re), hi = Math.max(rs, re); for (var r = lo + 1; r < hi; r++) put(t, xb + 2, r, '│', 'border'); put(t, xb + 2, re, rs > re ? '╭' : '╰', 'border'); } var hv2 = t.g[re][xb + 3].c === '┃'; put(t, xb + 3, re, hv2 ? '┠' : '├', hv2 ? 'accent' : 'border'); put(t, xb + 4, re, '▶', 'border'); }
+function workTitle(t, goal, title, rightText, line1) { titleRow(t, 0, 'work · ' + goal, title ? '· ' + title : '', rightText); put(t, 1, 1, line1, 'dim'); }
+// ---- Friction ----
+var FRICTION_ROWS = [
+  ['nudge-interrupts-user-typing', '4d', 5, '10-22', 'avoided through Chat · keep open until the nudge lock lands'],
+  ['scratch-hive-starts-real-agents', '3d', 3, '10-21', 'task 8-no-startup adds --no-startup and HIVE_NO_STARTUP=1'],
+  ['agent-send-flag-means-target', '2d', 2, '10-21', ''],
+  ['agent-can-send-user-chat', '3d', 1, '10-20', 'chat send refuses a caller in a worktree'],
+  ['completed-task-cannot-reopen', '3d', 2, '10-21', 'task reopen moves verified back to assigned'],
+  ['local-gate-misses-ci-tidy', '3d', 1, '10-20', 'gate adds go mod tidy -diff'],
+  ['ste-baseline-row-conflicts', '3d', 1, '10-20', ''],
+  ['verify-fail-lost-on-pass', '3d', 1, '10-20', 'verification history keeps each verdict'],
+  ['worker-has-no-inbox', '3d', 2, '10-21', ''],
+  ['bypass-still-prompts-dangerous-rm', '4d', 3, '10-22', ''],
+  ['no-agent-dashboard', '4d', 1, '10-19', 'the TUI'],
+  ['no-reviewer-role', '4d', 1, '10-19', ''],
+  ['old-features-lack-readme', '4d', 1, '10-19', ''],
+  ['verified-md-path-unspecified', '4d', 2, '10-20', 'EVIDENCE-FORMAT names the path'],
+  ['worker-gate-adds-golangci-lint', '4d', 1, '10-19', '']];
+function frictionHeader(t, y) { put(t, 3, y, 'ENTRY', 'dim', 1); put(t, 40, y, 'AGE', 'dim', 1); put(t, 46, y, 'SEEN', 'dim', 1); put(t, 54, y, 'LAST', 'dim', 1); put(t, 61, y, 'DECISION', 'dim', 1); }
+function frictionRow(t, y, r, sel, resolved) { if (sel) put(t, 1, y, '▶', 'accent', 1); put(t, 3, y, fit(r[0], 36), sel ? 'accent' : resolved ? 'dim' : 'fg', sel ? 1 : 0); put(t, 40, y, r[1], 'dim'); put(t, 46, y, rep('▮', r[2]), r[2] >= 3 && !resolved ? 'accent' : 'dim'); put(t, 54, y, r[3], 'dim'); put(t, 61, y, fit(r[4], 57), 'dim'); }
+function frictionDetails(t, y, h, focused) { box(t, 0, y, 120, h, focused ? 'accent' : 'border', 'scratch-hive-starts-real-agents · Open · opened 2026-10-20 · seen 3 · entries/scratch-hive-starts-real-agents.md', 'accent', 1); put(t, 2, y + 1, 'SUMMARY', 'accent', 1); ['Bare hive runs the startup of G9: in herdr, it starts a coordinator and a supervisor in their own tabs when they are', 'missing. A worker or verifier that runs bare hive with HIVE_HOME set to a scratch home gets no live coordinator and a', 'stale supervisor claim, so each run starts a new coordinator tab and a new hive supervise process in the workspace of', 'the caller. On 2026-10-20 the worker of 101-store-list-long-keys left 4 hive supervise processes and 8 tabs in wQ8.'].forEach(function (l, i) { if (y + 2 + i < y + h - 1) put(t, 2, y + 2 + i, l, 'fg'); }); if (h > 10) { put(t, 2, y + 7, 'REPRODUCTION', 'accent', 1); ['1. In a herdr pane, make a scratch home with a .hive/README.md marker.', '2. Run HIVE_HOME=<scratch> hive and quit the TUI.', '3. herdr tab list shows a new coordinator tab and a new supervisor tab.'].forEach(function (l, i) { if (y + 8 + i < y + h - 1) put(t, 2, y + 8 + i, l, 'fg'); }); } if (h > 15) { put(t, 2, y + 12, 'OCCURRENCES', 'accent', 1); put(t, 2, y + 13, '2026-10-20  worker of 101-store-list-long-keys     2026-10-21  verifier of 8-no-startup     2026-10-21  coordinator', 'dim'); put(t, 2, y + 15, 'DECISION', 'accent', 1); put(t, 11, y + 15, 'task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1', 'fg'); } thumb(t, 119, y + 1, h - 2, 20, 0, focused ? 'accent' : 'dim'); }
+function frictionStatus(t, y) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['friction', 'accent', 1], ['↑↓ move', 'dim', 0], ['enter resolved', 'dim', 0], ['/ filter', 'dim', 0], ['^] details', 'dim', 0], ['pgup/pgdn', 'dim', 0], chords('friction')], '14:22'); }
+// ---- Health ----
+function tile(t, x, y, mark, text, sel, dimAll) { var k = mark === '✓' ? 'done' : 'accent'; if (dimAll) k = 'dim'; if (sel) put(t, x - 1, y, '▶', 'accent', 1); put(t, x + 1, y, mark, k, 1); put(t, x + 3, y, text, sel ? 'accent' : dimAll ? 'dim' : 'fg', sel ? 1 : 0); return x + 4 + len(text) + 2; }
+var HEALTH_GROUPS = [
+  ['herdr', [['✓', 'socket · protocol 22'], ['✓', 'pane w58:p4'], ['✓', 'version 0.9.5']]],
+  ['home', [['✓', '~/source/hive'], ['✓', 'store · 76 records'], ['✓', 'git 2.43.0'], ['✓', 'config.toml']]],
+  ['agents', [['✓', 'starting 0'], ['!', 'unresolved 1'], ['✓', 'stale worktrees none'], ['✓', 'unpushed branches none']]],
+  ['supervisor', [['✓', 'live · pid 1620686'], ['✓', 'binary current'], ['✓', 'last scan 14:21:58']]],
+  ['harness', [['✓', 'claude'], ['✓', 'codex'], ['✓', 'opencode'], ['✓', 'pi'], ['✓', 'cursor']]]];
+function healthGrid(t, groups, selText, dimAll) { put(t, 1, 1, rep('─', 118), 'border'); groups.forEach(function (g, i) { var y = 2 + i; put(t, 1, y, fit(g[0], 11), 'dim', 1); var x = 13; g[1].forEach(function (c) { x = tile(t, x, y, c[0], c[1], c[1] === selText, dimAll); }); }); }
+var HEALTH_AGENTS = [
+  ['●', 'working', 'coordinator', 'coordinator', 'claude', 'working 2m', 'w58:p2', '09:41', 'r restart'],
+  ['●', 'working', 'supervisor', 'supervisor', 'hive', 'live 1h', 'w58:p3', '13:20', 'r restart'],
+  ['●', 'working', 'manager-hive', 'manager', 'claude', 'working 2m', 'wQ8:p1', '13:22', ''],
+  ['●', 'working', 't5-worker-1', 'worker', 'pi', 'working 3m', 'w5T:p1', '14:01', ''],
+  ['●', 'working', 't6-worker-1', 'worker', 'pi', 'working 1m', 'w6A:p1', '14:19', ''],
+  ['◐', 'accent', 't3-verifier-1', 'verifier', 'pi', 'idle 6m', 'w3V:p1', '13:50', ''],
+  ['○', 'dim', 'plan-review-1', 'agent', 'pi', 'stopped', 'gone', '12:10', '']];
+function healthAgents(t, y, h, selIndex, focused) { box(t, 0, y, 120, h, focused ? 'accent' : 'border', 'agents · 7 · 5 live · 1 idle · 1 stopped', 'accent'); put(t, 2, y + 1, '  AGENT             ROLE         HARNESS   STATE          PANE       STARTED   RESTART', 'dim', 1); HEALTH_AGENTS.forEach(function (r, i) { var ry = y + 2 + i, sel = i === selIndex; if (sel) put(t, 2, ry, '▶', 'accent', 1); put(t, 4, ry, r[0], r[1]); put(t, 6, ry, fit(r[2], 17), sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, 24, ry, fit(r[3], 12), 'dim'); put(t, 37, ry, fit(r[4], 9), 'dim'); put(t, 47, ry, fit(r[5], 14), 'fg'); put(t, 62, ry, fit(r[6], 10), 'dim'); put(t, 73, ry, r[7], 'dim'); put(t, 83, ry, r[8], sel ? 'accent' : 'dim'); }); put(t, 2, y + h - 2, 'restart: coordinator and supervisor only · hive asks to confirm only when the agent is live · other rows show a notice', 'dim'); }
+function healthStatus(t, y) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['health', 'accent', 1], ['↑↓ ←→ tile', 'dim', 0], ['^] agents', 'dim', 0], ['r restart', 'dim', 0], ['a attach', 'dim', 0], ['p peek', 'dim', 0], ['R check again', 'dim', 0], chords('health')], '14:22'); }
+// ---- Logs ----
+var LOG_EVENTS = [
+  ['13:04:36', 'DEBUG', 'herdr', 'pane.read w58:p6 · 40ms'], ['13:05:24', 'DEBUG', 'task', 'status read 4-agents-equal-columns'], ['13:06:12', 'DEBUG', 'agent', 'list · 5 agents'], ['13:07:00', 'DEBUG', 'inbox', 'record read by manager-hive'], ['13:07:48', 'DEBUG', 'supervise', 'scan agents · 5 records'], ['13:19:40', 'INFO', 'inbox', 'record sent to coordinator'], ['13:19:40', 'DEBUG', 'supervise', 'nudge coordinator · inbox 2'], ['13:21:02', 'INFO', 'agent', 'spawn worker t2-worker-1'], ['13:21:09', 'DEBUG', 'herdr', 'agent.start w5T:p1 · 812ms'], ['13:21:09', 'DEBUG', 'supervise', 'record live t2-worker-1'], ['13:30:15', 'DEBUG', 'herdr', 'pane.read w5T:p1 · 38ms'], ['13:37:50', 'INFO', 'task', 'verify start 2-stale-coordinator-startup'], ['13:38:02', 'WARN', 'task', 'verify fail 2-stale-coordinator-startup · V4 fail · 412ms'], ['13:38:02', 'DEBUG', 'inbox', 'record sent to manager-hive'], ['13:38:03', 'DEBUG', 'supervise', 'nudge manager-hive · inbox 1'], ['13:45:10', 'DEBUG', 'herdr', 'pane.read w58:p6 · 41ms'], ['14:01:12', 'INFO', 'agent', 'spawn worker t5-worker-1'], ['14:19:33', 'INFO', 'agent', 'spawn worker t6-worker-1'], ['14:21:58', 'DEBUG', 'supervise', 'scan agents · 7 records'], ['14:22:05', 'DEBUG', 'doctor', '17 checks · 1 warn · 230ms']];
+function levelColor(l) { return l === 'WARN' ? 'accent' : l === 'ERROR' ? 'error' : l === 'INFO' ? 'fg' : 'dim'; }
+function logsTitle(t, facts, date) { titleRow(t, 0, 'logs', facts, '← ' + date + ' → day'); }
+function logsFilter(t, y, text, follow) { put(t, 1, y, '/', 'accent', 1); put(t, 3, y, text, 'fg'); put(t, 3 + len(text) + 1, y, '█', 'fg'); put(t, 90, y, 'follow ' + (follow ? '●' : '○'), 'dim'); put(t, 97, y, follow ? '●' : '○', follow ? 'working' : 'dim'); put(t, 100, y, 'f toggles follow', 'dim'); }
+function logsStrip(t, y, strip, marks, start, end, label, labelK) { put(t, 1, y, start, 'dim'); put(t, 7, y, strip, 'dim'); (marks || []).forEach(function (m) { put(t, 7 + m[0], y, Array.from(strip)[m[0]], m[1]); }); put(t, 112, y, end, 'dim'); put(t, 7, y + 1, rep('─', 104), 'border'); if (label) { put(t, 7 + label[0], y + 1, '┴', labelK); put(t, Math.max(7, 7 + label[0] - 6), y + 2, label[1], labelK); } }
+function logsList(t, y, h, events, selTime, focused, empty) { box(t, 0, y, 66, h, focused ? 'accent' : 'border', 'events · ' + (empty ? '0' : '312 · newest at the end'), 'accent'); if (empty) { put(t, 2, y + 2, empty, 'dim'); return; } put(t, 2, y + 1, 'TIME      LEVEL  COMP       MESSAGE', 'dim', 1); events.forEach(function (e, i) { var ry = y + 2 + i, sel = e[0] === selTime && e[1] !== 'DEBUG', lk = levelColor(e[1]); if (ry >= y + h - 1) return; if (sel) put(t, 2, ry, '▶', 'accent', 1); put(t, 4, ry, e[0], sel ? 'accent' : 'dim', sel ? 1 : 0); put(t, 13, ry, fit(e[1], 5), lk, e[1] === 'WARN' || e[1] === 'ERROR' ? 1 : 0); put(t, 20, ry, fit(e[2], 9), 'dim'); put(t, 31, ry, fit(e[3], 33), sel ? 'accent' : (e[1] === 'DEBUG' ? 'dim' : 'fg'), sel ? 1 : 0); }); thumb(t, 65, y + 1, h - 2, 312, 180, focused ? 'accent' : 'dim'); }
+function logsPanel(t, y, h, title, rows, focused, raw) { box(t, 66, y, 54, h, focused ? 'accent' : 'border', title, 'accent'); rows.forEach(function (p, i) { var ry = y + 1 + i; if (ry >= y + h - 1) return; if (raw) { put(t, 68, ry, fit(p, 50), 'code'); return; } put(t, 68, ry, p[0], 'dim'); put(t, 82, ry, fit(p[1], 36), p[1] === 'fail' || p[1] === 'WARN' ? 'accent' : p[1] === 'ERROR' ? 'error' : 'fg', p[1] === 'fail' ? 1 : 0); }); }
+var LOG_FIELDS = [['time', '2026-10-21T13:38:02.114Z'], ['level', 'WARN'], ['msg', 'verify fail'], ['component', 'task'], ['command', 'task verify'], ['project_id', 'hive'], ['task_id', '2-stale-coordinator-startup'], ['agent_id', 't2-verifier-1'], ['request_id', 'r-7f31c2'], ['duration_ms', '412'], ['', ''], ['items', ''], ['  V1', 'pass'], ['  V2', 'pass'], ['  V3', 'pass'], ['  V4', 'fail'], ['  V5', 'pass'], ['', ''], ['reason', 'live restart in a scratch home left the old'], ['', 'supervisor claim in place'], ['', ''], ['truncated', 'false']];
+function logsStatus(t, y) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['logs', 'accent', 1], ['↑↓ move', 'dim', 0], ['/ filter', 'dim', 0], ['f follow', 'dim', 0], ['← → day', 'dim', 0], ['j raw', 'dim', 0], ['r request', 'dim', 0], ['^] panel', 'dim', 0], chords('logs')], '14:22'); }
+// ---- Agents ----
+function pod(t, x, y, w, h, title, sel) { if (sel) hbox(t, x, y, w, h, 'accent', title, 'accent'); else box(t, x, y, w, h, 'border', title, 'accent', 1); }
+function tree(t, x, y, mgr, children) { card(t, x, y, mgr[0], mgr[1], mgr[2], mgr[3], mgr[4]); if (!children.length) return; put(t, x, y + 3, '├', 'border'); var cy = y + 5, from = y + 4; children.forEach(function (c, i) { var last = i === children.length - 1; for (var r = from; r <= cy; r++) put(t, x, r, '│', 'border'); from = cy + 2; card(t, x + 1, cy, c[0], c[1], c[2], c[3], c[4]); put(t, x, cy + 1, last ? '╰' : '├', 'border'); put(t, x + 1, cy + 1, c[4] ? '┨' : '┤', c[4] ? 'accent' : 'border'); cy += 5; }); }
+function agentsTitle(t, facts) { titleRow(t, 0, 'agents', facts, ''); put(t, 1, 1, rep('─', 118), 'border'); }
+function agentsLegend(t, y) { put(t, 1, y, '── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project   wave B 2/4 = landed tasks', 'dim'); put(t, 12, y, '●', 'working'); put(t, 24, y, '◐', 'accent'); }
+function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['agents', 'accent', 1]].concat(keys.map(function (k) { return [k, 'dim', 0]; })).concat([chords('agents')]), '14:22'); }
+
+var META = {w: 120, h: 40, title: 'Golden frames · Chat, markdown reply'};
+function draw() { var t = T(120, 40); earlier(t, 42);
+  var y = msgYou(t, 2, '14:10', ['which verifier ran each wave B task, and how long did the gate take?']); y++;
+  y = msgAgent(t, y, 'coordinator', '14:11', [['Wave B verifiers', 'accent', 1], '']);
+  var rows = [['TASK', 'VERIFIER', 'GATE', 'RESULT'], ['10-board-export', 't10-verifier-1', '4m 12s', 'pass'], ['11-demo-mode', 't11-verifier-1', '3m 48s', 'pass'], ['12-board-fixtures', 't12-verifier-2', '5m 02s', 'pass, after one fail on V4']];
+  rows.forEach(function (r, i) { var ry = y + i * 2; put(t, 1, ry, fit(r[0], 19), 'fg'); put(t, 21, ry, '│', 'border'); put(t, 23, ry, fit(r[1], 16), 'fg'); put(t, 40, ry, '│', 'border'); put(t, 42, ry, fit(r[2], 8), 'fg'); put(t, 51, ry, '│', 'border'); put(t, 53, ry, r[3], 'fg'); if (i < rows.length - 1) { put(t, 1, ry + 1, rep('─', 20) + '┼' + rep('─', 18) + '┼' + rep('─', 10) + '┼' + rep('─', 30), 'border'); } });
+  y += rows.length * 2;
+  put(t, 1, y, 'The gate command of each run was', 'fg'); y += 2;
+  ['  gofmt -l $(git ls-files -co --exclude-standard \'*.go\')', '  go mod tidy -diff', '  go vet ./...', '  golangci-lint run ./...', '  go test -race ./...'].forEach(function (l) { put(t, 1, y, l, 'code'); y++; });
+  y++; put(t, 1, y, 'The second run of 12 passed after the worker fixed the mask file. Details are in ', 'fg'); put(t, 81, y, 'tasks/12-board-fixtures/evidence/V4.md', 'code'); put(t, 118, y, '.', 'fg');
+  thumb(t, 119, 0, 34, 80, 46, 'dim');
+  composer(t, 36, 3, [], 'type a message · ? help');
+  chatStatus(t, 39, '○ idle 3m'); return t; }
+
+class Component extends DCLogic {
+  renderVals() { return { rows: rows(draw()) }; }
+}
+</script>
+</body>
+</html>
