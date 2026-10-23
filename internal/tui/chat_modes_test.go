@@ -245,6 +245,36 @@ func TestMouseWheelScrollsTheLogsEvents(t *testing.T) {
 	}
 }
 
+// The wheel over the event list moves its selection while the Logs filter is
+// open. The filter keeps the focus and its draft.
+func TestMouseWheelWorksWhileTheLogsFilterIsOpen(t *testing.T) {
+	m := newTestDemoModel(t, "Logs.fixture.json", demoSize{})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: '/', Text: "/"})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: 'x', Text: "x"})
+	if got := m.focusState(); got != "filter" {
+		t.Fatalf("focus = %q, want filter", got)
+	}
+	draft := m.filterDraft
+	before := selectedRow(m)
+	m, _ = raise(t, m, wheel(10, 20, tea.MouseWheelDown))
+	if got := selectedRow(m); got != before+1 {
+		t.Fatalf("selected row = %d, want %d", got, before+1)
+	}
+	if got := m.focusState(); got != "filter" || m.filterDraft != draft {
+		t.Fatalf("after the wheel: focus %q, draft %q, want filter, %q", got, m.filterDraft, draft)
+	}
+}
+
+// A click on a tab name opens that tab while the Logs filter is open.
+func TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen(t *testing.T) {
+	m := newTestDemoModel(t, "Logs.fixture.json", demoSize{})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: '/', Text: "/"})
+	m, _ = raise(t, m, click(22, 1))
+	if m.activeTab() != tabWork {
+		t.Fatalf("a click on 3 Work gave tab %d", m.activeTab())
+	}
+}
+
 // The wheel over a region that cannot scroll does nothing.
 func TestMouseWheelOverTheAgentsGraphDoesNothing(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})

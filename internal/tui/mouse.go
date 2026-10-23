@@ -17,7 +17,7 @@ const wheelLines = 3
 // a region gives it the focus, and a click on a list row selects the row. A
 // mouse action that changes the screen is logged.
 func (m *Model) updateMouse(msg tea.MouseMsg) tea.Cmd {
-	if _, _, small := m.tooSmall(); small || m.agents.restartConfirm || m.mode == editing {
+	if _, _, small := m.tooSmall(); small || m.agents.restartConfirm {
 		return nil
 	}
 	mouse := msg.Mouse()
@@ -88,13 +88,14 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 	if region == 1 {
 		repeat = wheelLines
 	}
-	saved := m.regionFocus[tab]
-	m.regionFocus[tab] = region
+	// The scroll keys go to the region, also while the filter is open.
+	saved, savedMode := m.regionFocus[tab], m.mode
+	m.regionFocus[tab], m.mode = region, viewing
 	var cmds []tea.Cmd
 	for range repeat {
 		cmds = append(cmds, m.updateFrameKey(press))
 	}
-	m.regionFocus[tab] = saved
+	m.regionFocus[tab], m.mode = saved, savedMode
 	return batch(cmds...)
 }
 
@@ -108,7 +109,7 @@ func (m *Model) click(x, y int) tea.Cmd {
 	}
 	row, ok := m.contentRow(y)
 	tab := m.activeTab()
-	if !ok || m.helpOpen || tab == tabAgents {
+	if !ok || m.helpOpen || tab == tabAgents || m.focusState() == "filter" {
 		return nil
 	}
 	if tab == tabChat {

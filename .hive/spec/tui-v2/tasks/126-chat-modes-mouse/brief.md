@@ -90,6 +90,9 @@ from 79. Keep the meaning of the plan and of this brief.
 - The wheel scrolls the pane or the list under the pointer, on each tab that
   has a scroll region. A wheel event over a region that cannot scroll does
   nothing.
+- The mouse works in each mode, also while a filter or another text field is
+  open: the wheel scrolls the region under the pointer, and a click on a tab
+  name opens that tab.
 - A click on a row of a list selects that row. A click on a pane gives it the
   focus. A click on a tab name opens that tab.
 - Log each mouse action that changes the state, as each other user action.
@@ -109,7 +112,7 @@ from 79. Keep the meaning of the plan and of this brief.
   line. `ctrl+]` stops input mode. The wheel and `pgup` `pgdn` scroll the
   feed. `esc` and `tab` do not change the mode.
 - A click on the input starts input mode. A click on the feed stops it.
-- The feed title has the `↑ N earlier` note when lines are above the view, as
+- The feed title has the `↑ N earlier` text when lines are above the view, as
   the boards show. The right border shows the `┃` thumb.
 
 ### AC5 Header count
@@ -142,14 +145,19 @@ the boards of Chat that exist (for example `Chat`, `CompactChat`,
 - Write each test first and see it fail for the correct reason.
 - The golden check passes for each of the 3 new boards and for each board of
   AC6 after the approval.
-- Model tests with literal expected text and tokens: the footer tag and the
-  focused border in each mode; `i`, `ctrl+]`, a click on the input, and a
-  click on the feed change the mode; `esc` and `tab` do not change it;
-  `enter` sends and keeps input mode; a letter in normal mode runs its
-  shortcut and does not go into the input; the wheel over the feed and over a
-  list on another tab scrolls that region; a click on a list row selects it;
-  a click on a tab name opens the tab; the header count at 0 and 1 at both
-  widths.
+- Model tests with literal expected text and tokens. The tests cover each
+  item of this list:
+  - The footer tag and the focused border in each mode.
+  - `i`, `ctrl+]`, a click on the input, and a click on the feed change the
+    mode.
+  - `esc` and `tab` do not change the mode.
+  - `enter` sends and keeps input mode.
+  - A letter in normal mode runs its shortcut and does not go into the input.
+  - The wheel over the feed and over a list on another tab scrolls that
+    region.
+  - A click on a list row selects it.
+  - A click on a tab name opens the tab.
+  - The header count at 0 and 1 at both widths.
 
 ## Acceptance criteria
 
@@ -158,7 +166,7 @@ the boards of Chat that exist (for example `Chat`, `CompactChat`,
 | AC1 | Board copies, grids, fixtures | V1, V2 |
 | AC2 | The spec has the new decisions | V-gate |
 | AC3 to AC5 | Mouse, modes, and header match the boards and the plan | V3, V4, V5 |
-| AC6 | The changed boards have approved new grids | V2, V4 |
+| AC6 | The user approves the new grids of the changed boards | V2, V4 |
 | AC7 | The tests fail on the base and pass on the task branch | V3 |
 
 ## Verification items
@@ -176,8 +184,8 @@ the boards of Chat that exist (for example `Chat`, `CompactChat`,
 - Proves: AC1, AC6.
 - Command: run the exporter on the design folder. Compare each grid with the
   committed grid, cell by cell, with `internal/lib/cellgrid`.
-- Expected: the 3 new grids and the approved grids are committed. No other
-  grid changes.
+- Expected: the branch has a commit of the 3 new grids and of the approved
+  grids. No other grid changes.
 
 ### V3 Tests red and green
 
@@ -185,6 +193,9 @@ the boards of Chat that exist (for example `Chat`, `CompactChat`,
 - Command: run the new tests on the base code, then on the task branch. Run
   each new test with `-count=50` and with `-race`.
 - Expected: each fails on the base and passes on the task branch in each run.
+  Exception: a regression guard for behavior that the base already has can
+  pass on the base. The evidence names each guard, and a deliberate break of
+  the guarded behavior makes it fail.
 
 ### V4 Live check
 
@@ -208,7 +219,7 @@ the boards of Chat that exist (for example `Chat`, `CompactChat`,
   cell. Look at each capture and check each point:
   - Each panel border and corner lines up. The focused border is on the
     correct pane.
-  - The header count, the feed note, and the thumb are at the board columns.
+  - The header count, the feed text `↑ N earlier`, and the thumb are at the board columns.
   - The input placeholder and the cursor are in the input.
 - Expected: each capture at the board size equals its grid. Each point
   passes at both sizes. Put each capture, each diff, and a table of the points
