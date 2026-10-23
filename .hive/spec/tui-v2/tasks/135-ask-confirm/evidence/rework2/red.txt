@@ -1,0 +1,30 @@
+=== RUN   TestAskCompactReviewForAStoppedAskerKeepsTheTitle
+    ask_review_test.go:302: view does not contain "┏━ ? asker-scratch asks · confirm ━━━━━━━━━ asker stopped · to parent-scratch ━┓":
+         hive                               coord ○ · sup ○ · ? 0 · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ───────────━━━━━━━━─────────────────────────────────────────────────────────────
+        ╭─ chat ───────────────────────────────────────────────────────────────────────╮
+        │ 06:01 coordinator                                                            │
+        │ line-01                                                                      │
+        │                                                                              │
+        │ 06:02 coordinator                                                            │
+        │ line-02                                                                      │
+        │                                                                              │
+        │ 07:30  asker-sc… ? asked · Model · asker stopped · below                     │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+        ┏━ ? asker-scratch asks · confi asker stopped · answer goes to parent-scratch ━┓
+        ┃   Model → Yes                                                                ┃
+        ┃                                                                              ┃
+        ┃ › Send to parent-scratch                                                     ┃
+        ┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━━━━━━━━━━━━━┛
+        ╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+        │ i or click here to type                                                      │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [review] ↑↓ question · enter send to parent · x dismiss · J/K card             
+--- FAIL: TestAskCompactReviewForAStoppedAskerKeepsTheTitle (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.008s
+FAIL

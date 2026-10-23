@@ -1,0 +1,34 @@
+$ git diff dev...HEAD --stat -- . ":!.hive/spec/tui-v2/tasks"
+ .hive/spec/tui-v2/README.md                        |  21 +
+ .hive/spec/tui-v2/design/ChatAsk.dc.html           |   4 +-
+ .hive/spec/tui-v2/design/ChatAsk.grid              |   6 +-
+ .hive/spec/tui-v2/design/ChatAskMulti.dc.html      |   4 +-
+ .hive/spec/tui-v2/design/ChatAskMulti.grid         |   6 +-
+ .hive/spec/tui-v2/design/ChatAskPreview.dc.html    |   4 +-
+ .hive/spec/tui-v2/design/ChatAskPreview.grid       |   6 +-
+ .hive/spec/tui-v2/design/ChatAskReview.dc.html     |  38 ++
+ .../spec/tui-v2/design/ChatAskReview.fixture.json  | 571 ++++++++++++++++++++
+ .hive/spec/tui-v2/design/ChatAskReview.grid        | 121 +++++
+ .../spec/tui-v2/design/ChatAskReviewMulti.dc.html  |  38 ++
+ .../tui-v2/design/ChatAskReviewMulti.fixture.json  | 578 ++++++++++++++++++++
+ .hive/spec/tui-v2/design/ChatAskReviewMulti.grid   | 121 +++++
+ .hive/spec/tui-v2/design/ChatAskStopped.dc.html    |   4 +-
+ .hive/spec/tui-v2/design/ChatAskStopped.grid       |   6 +-
+ .hive/spec/tui-v2/design/CompactChatAsk.dc.html    |   4 +-
+ .hive/spec/tui-v2/design/CompactChatAsk.grid       |   6 +-
+ .../tui-v2/design/CompactChatAskReview.dc.html     |  38 ++
+ .../design/CompactChatAskReview.fixture.json       | 513 ++++++++++++++++++
+ .hive/spec/tui-v2/design/CompactChatAskReview.grid |  73 +++
+ .hive/spec/tui-v2/design/Help.dc.html              |   4 +-
+ .hive/spec/tui-v2/design/Help.grid                 |   6 +-
+ internal/boardexport/check.go                      |   4 +
+ internal/boardexport/check_test.go                 |   3 +
+ internal/tui/ask.go                                | 268 +++++++++-
+ internal/tui/ask_multiline_test.go                 | 131 +++++
+ internal/tui/ask_review_test.go                    | 584 +++++++++++++++++++++
+ internal/tui/ask_test.go                           |  42 +-
+ internal/tui/demo.go                               |  26 +-
+ internal/tui/demo_fixtures_test.go                 |   4 +-
+ internal/tui/frame.go                              |   6 +-
+ testdata/ste-baseline.json                         |   1 +
+ 32 files changed, 3157 insertions(+), 84 deletions(-)
