@@ -1,0 +1,23 @@
+{
+  "key": "manager-qmeter-g4",
+  "name": "manager-qmeter",
+  "role": "manager",
+  "project": "qmeter",
+  "task": "",
+  "harness": "pi",
+  "model": "opencode-go/deepseek-v4.1-flash:xhigh",
+  "pane_id": "wVZ:p1",
+  "workspace_id": "wVZ",
+  "tab_id": "wVZ:t1",
+  "status": "live",
+  "parent": "coordinator-g8",
+  "replaces": "manager-qmeter-g3",
+  "status_changed_at": "2026-10-23T01:48:02.538611911Z",
+  "agent_status": "working",
+  "finished": false,
+  "quiet_after_min": 10,
+  "generation": 4,
+  "started_at": "2026-10-23T01:35:27.084338052Z",
+  "updated_at": "2026-10-23T01:48:02.538611911Z",
+  "spawned": true
+}

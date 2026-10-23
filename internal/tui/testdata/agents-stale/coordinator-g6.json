@@ -1,0 +1,21 @@
+{
+  "key": "coordinator-g6",
+  "name": "coordinator",
+  "role": "coordinator",
+  "project": "",
+  "task": "",
+  "harness": "",
+  "model": "",
+  "pane_id": "wBC:pV",
+  "workspace_id": "wBC",
+  "tab_id": "wBC:tT",
+  "status": "stale",
+  "status_changed_at": "2026-10-20T14:41:29.085956886Z",
+  "agent_status": "working",
+  "finished": false,
+  "quiet_after_min": 10,
+  "generation": 6,
+  "started_at": "2026-10-20T03:57:32.418672861Z",
+  "updated_at": "2026-10-20T14:41:50.743993109Z",
+  "spawned": false
+}
