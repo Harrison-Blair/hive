@@ -28,6 +28,43 @@ The independent verifier must rerun delivery checks with the intended scratch st
 Check that executable before any test delivery.
 Never run a test TUI or send a test prompt on the real home.
 
+## Rework after failed verification
+
+Verifier `t135-verifier-1` recorded a fail in manager inbox records 560 and 561.
+Evidence commit `008e9d2d` is on this task branch and its remote.
+Read `evidence/VERIFIED.md` and `evidence/verifier/` beside this brief.
+
+The accepted label `First line\nSecond line` breaks the review side borders at both widths.
+A tall accepted multiline label also loses text and exceeds the dock height cap.
+Its final sentinel stays hidden during review navigation.
+`ask.Parse` accepts these inputs.
+The review wrapper splits at spaces but leaves line feeds inside logical rows.
+
+This fix falls within AC2 full text, wrapping, scrolling, and the retained height cap.
+The existing design approval covers this rendering fix.
+
+1. Read `evidence/verifier/multiline-regression.go.txt` and its failed output.
+2. Read the short and tall accepted requests in `evidence/verifier/multiline/`.
+3. Add regressions beside the TUI tests before the source fix.
+4. Run them against the current implementation at 120x40 and 80x24.
+5. Check failures for broken borders, dock overflow, and unreachable sentinel text.
+6. Fix the shared review wrapper to handle accepted line breaks as layout rows.
+7. Keep each physical body row inside its left and right borders.
+8. Keep wrapping, the dock cap, and arrow access to every text segment.
+9. Check other accepted multiline fields that use this same review wrapper.
+10. Keep the original input and delivered reply values unchanged.
+11. Repeat focused and race tests, live multiline checks, approved grid comparisons, and the full root gate.
+12. Record the rework evidence separately from the first verifier evidence.
+
+Do not reject or flatten accepted multiline input to avoid the defect.
+Do not change the answer prompt format, routing, or record format.
+Do not change any board source, golden grid, or design fixture for this fix.
+Keep the first failed verdict and its evidence intact.
+The manager starts a fresh verifier after the worker completes the fix.
+
+The normal test-first rule still applies to task 135.
+The no-new-tests exception belongs to later goal g11, which starts after task 135 lands.
+
 ## Authority and plan
 
 Coordinator inbox record 537 assigns this goal.

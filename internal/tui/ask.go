@@ -768,16 +768,20 @@ func askReviewPicks(question ask.Question, card *askCard, qi int) []string {
 	return picks
 }
 
-// askWord is one word of a review line and its style.
+// askWord is one word of a review line and its style. A word with
+// lineFeed starts a new line before its text.
 type askWord struct {
-	text  string
-	style lipgloss.Style
+	text     string
+	style    lipgloss.Style
+	lineFeed bool
 }
 
 func styledWords(style lipgloss.Style, text string) []askWord {
 	var words []askWord
-	for word := range strings.SplitSeq(text, " ") {
-		words = append(words, askWord{word, style})
+	for index, line := range strings.Split(text, "\n") {
+		for column, word := range strings.Split(line, " ") {
+			words = append(words, askWord{word, style, index > 0 && column == 0})
+		}
 	}
 	return words
 }
@@ -789,6 +793,9 @@ func wrapAskWords(words []askWord, width int) []string {
 	var lines []string
 	line, used := "", 0
 	for _, word := range words {
+		if word.lineFeed {
+			lines, line, used = append(lines, line), "", 0
+		}
 		size := ansi.StringWidth(word.text)
 		if used > 0 && used+1+size > width {
 			lines, line, used = append(lines, line), "", 0
