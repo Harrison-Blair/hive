@@ -129,3 +129,21 @@ board, and needs the user)?
   on the last transcript row, and fill the rows above with earlier messages.
   This changes most transcript rows of 13 boards.
 - The worker recommends option A.
+
+## C11 After the C10 fix, rows 0 and 1 are empty above the first message
+
+- Found while applying the C10 ruling (option A).
+- Each Chat board with a transcript draws the first message on row 2. With
+  the `earlier` row removed, rows 0 and 1 are empty.
+- Layout table: row 0 is the `earlier` row when N is more than 0, "else the
+  first transcript row". Rule 2 gives a blank row only between two messages.
+  No rule gives 2 empty rows above the first message. Rule 8 puts the welcome
+  block from row 1, so `GfChatEmpty` has 1 empty row on row 0.
+- Option A: the code keeps row 0 for the `earlier` row (empty when N is 0)
+  and row 1 empty, and the transcript starts on row 2. The boards stay as they
+  are. The layout table needs a change.
+- Option B: move the transcript of 12 boards up by 2 rows, so the first
+  message is on row 0. The layout table stays. The welcome block of rule 8
+  starts on row 1 and stays as it is.
+- The worker recommends option B, because it follows the layout table, and
+  the model tests of C10 then check row 0 and row 1 for overflowing content.
