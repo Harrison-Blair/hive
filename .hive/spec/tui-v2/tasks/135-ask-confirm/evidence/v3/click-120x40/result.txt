@@ -1,0 +1,2 @@
+120x40: clicks on 4 card rows changed nothing
+ [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help
