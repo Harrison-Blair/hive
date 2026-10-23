@@ -117,6 +117,10 @@ type Model struct {
 	popupOpen     bool
 	popupOffset   int
 	quitNotice    bool
+	tuiConfig     home.TUIConfig
+	chordActions  map[string]string
+	// statusCommandLine is the first output line of the status command.
+	statusCommandLine string
 	quitAt        time.Time
 
 	inputEnded <-chan struct{}
@@ -198,6 +202,11 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.chatInput = newChatInput()
+	m.setTUIConfig(defaultTUI())
+	// Golden-frames decision 19: there is no normal mode, so the composer
+	// has the focus at start.
+	m.chatInputActive = true
+	m.chatInput.Focus()
 	m.screens = m.makeScreens()
 
 	logClock := now
@@ -471,6 +480,9 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 	if m.demo != nil {
 		m.demo.notice = ""
 	}
+	if cmd, ok := m.updateChord(press); ok {
+		return cmd
+	}
 	return m.updateFrameKey(press)
 }
 
@@ -660,7 +672,12 @@ func Run(in io.Reader, out io.Writer) error {
 // output at this boundary. A finite input end or a stream fault settles the
 // program and the log writer.
 func RunHome(home string, in io.Reader, out io.Writer) error {
+	cfg, err := readTUISettings()
+	if err != nil {
+		return err
+	}
 	model := New(home, time.Now)
+	model.setTUIConfig(cfg)
 	defer model.Stop()
 	notice, startupErr := setupSession(home, model.logger)
 	model.startupNotice = notice

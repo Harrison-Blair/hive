@@ -44,7 +44,7 @@ func ReadTUISettings() (TUIConfig, error) {
 		return TUIConfig{}, fmt.Errorf("home config path: %w", err)
 	}
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return defaultTUI(), nil
+		return DefaultTUI(), nil
 	}
 	settings, err := ReadSettings()
 	if err != nil {
@@ -66,7 +66,8 @@ var fixedKeys = map[string]string{
 	"esc": "back", "enter": "send", "tab": "autocomplete",
 }
 
-func defaultTUI() TUIConfig {
+// DefaultTUI gives the TUI settings of golden-frames decisions 9 and 16.
+func DefaultTUI() TUIConfig {
 	return TUIConfig{
 		StatusLines: [][]string{{"state", "supervisor", "asks", "needs_you", "chords", "hints", "clock"}},
 		Keys: map[string]string{
@@ -215,7 +216,7 @@ func WriteConfig(home string) error {
 }
 
 func parseConfig(data []byte) (Settings, error) {
-	settings := Settings{Coordinator: CoordinatorConfig{Harness: "claude", Model: "claude-opus-5-5"}, TUI: defaultTUI()}
+	settings := Settings{Coordinator: CoordinatorConfig{Harness: "claude", Model: "claude-opus-5-5"}, TUI: DefaultTUI()}
 	table := ""
 	seen := map[string]bool{}
 	for lineNumber, line := range strings.Split(string(data), "\n") {

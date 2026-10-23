@@ -271,7 +271,7 @@ func TestHelpKeys(t *testing.T) {
 	m, _ = raise(t, m, key('?', "?"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	rejectView(t, m, "keys · ? or esc closes")
-	if text := strings.Join(helpLines(), "\n"); strings.Contains(text, "--demo") {
+	if text := strings.Join(m.helpLines(), "\n"); strings.Contains(text, "--demo") {
 		t.Fatalf("help lists --demo:\n%s", text)
 	}
 }

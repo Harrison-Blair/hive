@@ -288,11 +288,23 @@ func (m *Model) tooSmall() (demoSize, demoSize, bool) {
 	return demoSize{}, demoSize{}, false
 }
 
-// frameView renders the header, the tab bar, the content area, and the
-// footer at exactly the model size. Only the content area is cached.
+// frameView renders the screen at exactly the model size (golden-frames
+// decisions 1 to 5): the title row and the rule on each screen except Chat,
+// the content area, the notice line while a notice exists, and the status
+// rows. A popup dims the full screen. Only the content area is cached.
 func (m *Model) frameView() string {
 	width, height := m.width, m.height
-	contentHeight := max(1, height-frameRows)
+	status := m.statusRows(width, height)
+	notice := m.noticeLine(width)
+	var rows []string
+	if m.activeTab() != tabChat {
+		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
+	}
+	contentHeight := height - len(status) - 2*len(rows)
+	if notice != "" {
+		contentHeight--
+	}
+	contentHeight = max(1, contentHeight)
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
 		m.screenViewCache = m.contentView(width, contentHeight)
 		m.screenViewCacheValid = true
@@ -300,11 +312,20 @@ func (m *Model) frameView() string {
 		m.screenViewHeight = contentHeight
 		m.screenViewIndex = m.screenIndex
 	}
-	top := m.headerView().View(width) + "\n" + component.TabBar{Active: m.activeTab()}.View(width)
-	if m.helpOpen || (m.activeTab() == tabAgents && m.popupOpen) {
-		top = component.DimScreen(top, width, 3)
+	rows = append(rows, m.screenViewCache)
+	if notice != "" {
+		rows = append(rows, notice)
 	}
-	return top + "\n" + m.screenViewCache + "\n" + m.footerView(width)
+	screen := strings.Join(append(rows, status...), "\n")
+	switch {
+	case m.helpOpen:
+		screen = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: m.helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(screen, width, height)
+	case m.activeTab() == tabAgents && m.popupOpen:
+		title, lines := m.agentDetailsPopup()
+		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
+		screen = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(screen, width, height)
+	}
+	return screen
 }
 
 // headerView gives the header of decision 2 from the header state.
@@ -449,16 +470,7 @@ func (m *Model) contentView(width, height int) string {
 	default:
 		body = m.legacyPanel(width, bodyHeight, focus == entry.regions[0])
 	}
-	content := strings.Join(append(rows, body), "\n")
-	switch {
-	case m.helpOpen:
-		content = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(content, width, height)
-	case tab == tabAgents && m.popupOpen:
-		title, lines := m.agentDetailsPopup()
-		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
-		content = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(content, width, height)
-	}
-	return content
+	return strings.Join(append(rows, body), "\n")
 }
 
 // listRegionWidth gives the width of the list region of a list and details
@@ -497,8 +509,10 @@ func (m *Model) legacyName() string {
 	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
-// helpLines gives the key map of the Help board (decision 21).
-func helpLines() []string {
+// helpLines gives the key map of the Help overlay. It keeps the layout of
+// tui-v2 decision 21 and lists the keys of golden-frames decision 16 with
+// the keys of the config (Help rule 3).
+func (m *Model) helpLines() []string {
 	key := func(text string, width int) string { return titleStyle.Render(padCell(text, width)) }
 	pair := func(leftKey, left, rightKey, right string) string {
 		line := key(leftKey, 11) + padCell(left, 30)
@@ -507,33 +521,37 @@ func helpLines() []string {
 		}
 		return line
 	}
+	keys := m.tuiConfig.Keys
 	return []string{
 		"",
-		titleStyle.Render("GLOBAL · same on every screen") + strings.Repeat(" ", 12) + titleStyle.Render("ACTIONS · one meaning each"),
+		titleStyle.Render("SCREENS · same on every screen") + strings.Repeat(" ", 11) + titleStyle.Render("ACTIONS · one meaning each"),
 		"",
-		pair("1–6", "switch screen", "a", "attach to pane"),
-		pair("tab", "next region", "p", "peek pane"),
-		pair("[ ]", "previous / next view", "r", "restart · Health › Agents"),
-		pair("↑↓ j k", "move", "h", "show or hide stopped agents"),
-		pair("←→", "move on the graph", "t", "open task"),
-		pair("pgup pgdn", "page", "b", "task brief"),
-		pair("g G", "top / end", "v", "VERIFIED.md"),
-		pair("enter", "open / details", "d", "dependency graph"),
-		pair("esc", "back / close", "o", "goal design"),
-		pair("/", "filter bar", "s", "stops only"),
-		pair("?", "this help", "f", "follow logs"),
-		pair("R", "refresh now", "< >", "previous / next day"),
-		pair("ctrl+c ×2", "quit", "", ""),
+		pair(keys["agents"], "Agents", "a", "attach to pane"),
+		pair(keys["work"], "Work", "p", "peek pane"),
+		pair(keys["friction"], "Friction", "r", "restart · Health › Agents"),
+		pair(keys["health"], "Health", "h", "show or hide stopped agents"),
+		pair(keys["logs"], "Logs", "t", "open task"),
+		pair("esc", "close, then back to Chat", "b", "task brief"),
+		pair(keys["help"], "this help", "v", "VERIFIED.md"),
+		pair("ctrl+c ×2", "quit", "d", "dependency graph"),
+		pair("ctrl+]", "other box", "o", "goal design"),
+		pair("[ ]", "previous / next view", "s", "stops only"),
+		pair("↑↓ j k", "move", "f", "follow logs"),
+		pair("←→", "move on the graph", "< >", "previous / next day"),
+		pair("pgup pgdn", "page", "R", "refresh now"),
+		pair("g G", "top / end", "", ""),
+		pair("enter", "open / details", "", ""),
+		pair("/", "filter bar", "", ""),
 		"",
 		titleStyle.Render("FILTER FIELDS"),
 		"level:  comp:  proj:  agent:  task:  req:  text",
 		dimStyle.Render("example  / level:warn agent:manager-hive restart"),
 		"",
 		titleStyle.Render("CHAT"),
-		dimStyle.Render("i or a click on the input types · ctrl+] or a click on the feed leaves"),
+		dimStyle.Render("the composer has the focus · enter sends · shift+enter adds a line"),
 		dimStyle.Render("ctrl+o opens or folds all chat events"),
-		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
-		dimStyle.Render("ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card"),
+		dimStyle.Render("ctrl+r moves the focus between the input line and the ask card"),
+		dimStyle.Render("ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card · esc input"),
 		dimStyle.Render("ask review: enter on the last question · ↑↓ question · enter send or change"),
 	}
 }
@@ -567,13 +585,13 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	switch m.focusState() {
 	case "help":
 		switch key {
-		case "?", "esc":
+		case m.tuiConfig.Keys["help"], "esc":
 			m.helpOpen = false
 			return m.logAction("help close")
 		case "up":
 			m.helpOffset = max(m.helpOffset-1, 0)
 		case "down":
-			m.helpOffset = min(m.helpOffset+1, len(helpLines()))
+			m.helpOffset = min(m.helpOffset+1, len(m.helpLines()))
 		}
 		return nil
 	case "restart":
@@ -582,8 +600,12 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		return m.currentScreen().Update(press)
 	case "input":
 		switch key {
-		case "tab", "esc":
+		case "tab", "esc", "ctrl+]":
 			return nil
+		case m.tuiConfig.Keys["help"]:
+			if m.chatInput.Value() == "" {
+				return m.openHelp()
+			}
 		case "pgup", "pgdown":
 			return m.scrollChatFeed(press)
 		}
@@ -625,17 +647,15 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			}
 		}
 	}
-	if index, ok := screenKey(key); ok {
-		return m.openTab(index)
-	}
 	switch key {
-	case "?":
-		m.helpOpen = true
-		m.helpOffset = 0
-		return m.logAction("help open")
+	case m.tuiConfig.Keys["help"]:
+		return m.openHelp()
 	case "R":
 		return batch(m.logAction("refresh"), m.startHeaderLoad(), m.startCurrentScreenLoad())
 	case "tab":
+		// Golden-frames decision 19: there is no tab region move.
+		return nil
+	case "ctrl+]":
 		return m.nextRegion()
 	case "[", "]":
 		if len(entry.views) == 0 {
@@ -651,6 +671,11 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	}
 	if tab == tabChat {
 		return m.updateChatFeedKey(press)
+	}
+	if key == "esc" && !(tab == tabAgents && m.graph.podView) && !m.detailsFocused() {
+		// Golden-frames decision 17: with no popup open, esc returns to Chat.
+		// The one-pod view of Agents and a details region close first.
+		return m.openChat()
 	}
 	if tab == tabAgents {
 		if m.agents.peekOpen {
@@ -671,6 +696,9 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		case "esc":
 			if panels, ok := entry.panels[m.viewName()]; ok && panels.back != nil && panels.back(m) {
 				return m.logAction("details back")
+			}
+			if m.width >= component.LongFormWidth {
+				return m.openChat()
 			}
 			m.regionFocus[tab] = 0
 			return m.logAction("focus region", slogString("region", entry.regions[0]))
@@ -705,16 +733,15 @@ func (m *Model) openTab(tab int) tea.Cmd {
 	return batch(m.logAction("screen select", slogString("screen", screenRegistry[tab].label)), m.startCurrentScreenLoad())
 }
 
-// screenKey gives the tab of a key 1 to 6.
-func screenKey(key string) (int, bool) {
-	if len(key) == 1 && key[0] >= '1' && key[0] < '1'+tabCount {
-		return int(key[0] - '1'), true
-	}
-	return 0, false
+// openHelp opens the Help overlay.
+func (m *Model) openHelp() tea.Cmd {
+	m.helpOpen = true
+	m.helpOffset = 0
+	return m.logAction("help open")
 }
 
-// nextRegion moves the focus to the next region of the screen (decision 6).
-// Chat has modes in place of regions, so tab does nothing there.
+// nextRegion moves the focus to the other box of the screen (golden-frames
+// decision 6). Chat has no second box, so ctrl+] does nothing there.
 func (m *Model) nextRegion() tea.Cmd {
 	tab := m.activeTab()
 	if tab == tabChat {
