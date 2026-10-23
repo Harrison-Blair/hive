@@ -24,11 +24,11 @@ AgentsHiddenParent.grid        48 cells differ, rows [0] <nil>
 AgentsHome.grid                48 cells differ, rows [0] <nil>
 AgentsMany.grid                48 cells differ, rows [0] <nil>
 AgentsNested.grid              48 cells differ, rows [0] <nil>
-Chat.grid                     109 cells differ, rows [0 39] <nil>
+Chat.grid                     108 cells differ, rows [0 39] <nil>
 ChatEvents.grid               164 cells differ, rows [0 37 39] <nil>
-ChatInput.grid                257 cells differ, rows [3 5 7 10 12 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 36 37 39] <nil>
+ChatInput.grid                297 cells differ, rows [3 5 7 10 12 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 36 37 39] <nil>
 ChatNormal.grid               220 cells differ, rows [5 7 10 12 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 36 39] <nil>
-ChatStatus.grid               109 cells differ, rows [0 39] <nil>
+ChatStatus.grid               108 cells differ, rows [0 39] <nil>
 Compact.grid                   18 cells differ, rows [0] <nil>
 CompactAgents.grid             18 cells differ, rows [0] <nil>
 CompactAgentsHome.grid         18 cells differ, rows [0] <nil>
@@ -66,7 +66,7 @@ WorkQueue.grid                 48 cells differ, rows [0] <nil>
 - `Help` changes in row 0 and in row 30, the CHAT line of the key map:
   `i or a click on the input types · ctrl+] or a click on the feed leaves`.
 - `Chat`, `ChatStatus` (input mode): row 0 and row 39, the footer
-  `[input] enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll`.
+  `[input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll`.
 - `ChatEvents` (normal mode): row 0, row 37 (the dim placeholder
   `i or click here to type` in place of `>`), and row 39 (the `[normal]`
   footer).
@@ -79,6 +79,14 @@ WorkQueue.grid                 48 cells differ, rows [0] <nil>
   the rows above.
 
 ## Approval
+
+On 2026-10-23 the manager sent the approval of the user (chat c133–c143):
+the code follows the rule for each of the 14 cases, and the 41 code grids of
+commit 6bf9c8d4 are approved. The approval also changed the input footer:
+`click feed leave` is removed and `ctrl+o events` is added (decision 57). A
+click on the feed still stops input mode. So `Chat`, `ChatStatus`, and
+`ChatInput` were rendered again. Only row 39 of each changed.
+
 
 The golden files do not change until the manager sends the approval. Then
 each approved board replaces its `.dc.html` file, the exporter runs, and

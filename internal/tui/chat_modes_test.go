@@ -79,7 +79,7 @@ func TestChatInputModeKeys(t *testing.T) {
 	if !m.chatInputActive {
 		t.Fatal("i did not start input mode")
 	}
-	if got := viewRow(m, 39); got != " [input] enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll           " {
+	if got := viewRow(m, 39); got != " [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              " {
 		t.Fatalf("footer = %q", got)
 	}
 	if got := viewRow(m, 37); !strings.HasPrefix(got, "│ > █ ") {

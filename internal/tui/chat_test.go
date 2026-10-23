@@ -217,7 +217,7 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	if !m.chatInputActive {
 		t.Fatal("i did not start input mode")
 	}
-	requireView(t, m, "> █", "[input] enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll")
+	requireView(t, m, "> █", "[input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll")
 	for _, character := range "x12?/jkgGi" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}

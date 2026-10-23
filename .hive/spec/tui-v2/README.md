@@ -385,13 +385,17 @@ The boards `ChatNormal`, `ChatInput`, and `CompactChatNormal` show these decisio
 
 84. In input mode, the input has the `accent` border and a bold title. The feed has the `border` border. The input shows `> ` and the cursor. The footer starts with `[input]`. Each printable key goes into the input. `enter` sends the text and keeps input mode. `shift+enter` adds a line. `ctrl+]` stops input mode. A click on the feed also stops input mode. The wheel, `pgup`, and `pgdn` scroll the feed. `esc` and `tab` do not change the mode. When input mode stops, the text stays in the input.
 
-85. From 120 columns, the footer hints of normal mode are `i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help`. The footer hints of input mode are `enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll`. Below 120 columns, the hints of normal mode are `i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help`. The hints of input mode are `enter send · ctrl+] leave · wheel or pgup/pgdn scroll`. The CHAT line of the Help board is `i or a click on the input types · ctrl+] or a click on the feed leaves`.
+85. From 120 columns, the footer hints of normal mode are `i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help`. The footer hints of input mode are `enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll`. Below 120 columns, the hints of normal mode are `i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help`. The hints of input mode are `enter send · ctrl+] leave · wheel or pgup/pgdn scroll`. The CHAT line of the Help board is `i or a click on the input types · ctrl+] or a click on the feed leaves`.
 
 86. The top border of the feed shows ` ↑ N earlier ` at each width, from the middle column. N is the count of messages above the view.
 
 87. The header shows `? N asks` before `needs you` on each tab, also when N is 0. For one ask, the text is `? 1 ask`. Below 120 columns, the header shows `? N`. The count is `accent` and bold when N is more than 0. In the other cases, it is `fg` and bold. The header state holds the count. Task 2 of the goal `g6-hive-ask` sets it.
 
 88. The three boards break 14 rules that exist. The evidence of task `126-chat-modes-mouse` lists the 14 cases in `board-rule-cases.md`. The code follows the rules.
+
+89. On 2026-10-23 the user approved the 14 rule cases and the code grids of task `126-chat-modes-mouse`. The approval removes `click feed leave` from the input footer and adds `ctrl+o events`, as decision 57 gives. A click on the feed still stops input mode.
+
+90. The approved grids of task `126-chat-modes-mouse` replace 41 grids in `design/`. Each grid is the exporter output of its approved board, and it equals its grid in `tasks/126-chat-modes-mouse/evidence/new-grids/`. The 8 Chat boards (`Chat`, `ChatEvents`, `ChatStatus`, `ChatNormal`, `ChatInput`, `CompactChat`, `CompactChatStatus`, `CompactChatNormal`) and the boards `Help` and `Main` are the canvas copies that the user approved. In 30 other boards, row 0 has the ask count. In `Components`, row 7 has the ask count. The grid `TooSmall` does not change.
 
 ## Waves
 

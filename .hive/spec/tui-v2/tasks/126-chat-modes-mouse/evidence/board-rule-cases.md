@@ -21,11 +21,14 @@ and adds no new design. The code follows the rule. The code grids are in
 | 13 | ChatInput | 37 | 2–32 | `> ` and the draft in `fg` | Decisions 15 and 26: user chat text uses `user`, as the approved `Chat` board shows. |
 | 14 | ChatNormal, ChatInput, CompactChatNormal | 39, 39, 23 | after the hints | padding cells in `fg` | Decision 4: the key hints are `dim`. `component.KeyHints` pads the row in `dim`, as each approved board shows. |
 
-## Open question for the manager
+## Decision 57 and the input footer
 
 Decision 57 says: "Show `ctrl+o` in the key hints of the feed and input."
-The `ChatInput` board footer has no `ctrl+o` hint. The new input hints of
-the board are 103 cells. With ` · ctrl+o events` they are 119 cells, and the
-footer has room for 111 cells, so the hints would be cut with `…`. The code
-follows the board footer for now. `ctrl+o` works in both modes. Tell me if the
-input footer must show `ctrl+o` and which hint to remove.
+The `ChatInput` board footer had no `ctrl+o` hint. On 2026-10-23 the
+manager sent the decision of the user: remove `click feed leave` from the
+input footer and add `ctrl+o events`. A click on the feed still stops input
+mode. The code does this.
+
+## Approval
+
+On 2026-10-23 the user approved the rule for each of the 14 cases.

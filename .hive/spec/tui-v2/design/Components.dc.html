@@ -34,7 +34,7 @@ function sheet(t) {
   [['fg', 'default'], ['border', '#3d3a33'], ['dim', '#a39d90'], ['accent', '#f5b942'], ['working', '#6ee69a'], ['done', '#7ccf6a'], ['info', '#6fb7ff'], ['user', '#e9cf9b new'], ['code', '#9fd0ff new']].forEach(function (p, i) { put(t, i * 13, 3, '██', p[0]); put(t, i * 13 + 3, 3, p[0], 'fg'); put(t, i * 13 + 3, 4, p[1], 'dim'); });
   cap(t, 6, 'Header', 'bold · full width · left: home · right: coordinator, supervisor, needs you, clock');
   put(t, 0, 7, ' hive  ~/source/hive', 'fg', 1);
-  var right = 'coordinator ● working   supervisor ● live   needs you 0   14:22 ';
+  var right = 'coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 ';
   put(t, 120 - right.length, 7, right, 'fg', 1); put(t, 120 - right.length + 12, 7, '●', 'working', 1); put(t, 120 - right.length + 35, 7, '●', 'working', 1);
   cap(t, 9, 'TabBar', 'keys 1–6 · active: accent bold + ━ underline · others dim · rule in border color');
   put(t, 0, 11, rep('─', 120), 'border');

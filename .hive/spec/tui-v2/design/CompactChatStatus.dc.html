@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Hive Chat input at cap</title>
+<title>Hive CompactChatStatus g6 code</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -22,54 +22,14 @@ body{margin:0}
 var PAL = {fg:'#e6e1d6', border:'#3d3a33', dim:'#a39d90', accent:'#f5b942', working:'#6ee69a', done:'#7ccf6a', info:'#6fb7ff', user:'#e9cf9b', code:'#9fd0ff'};
 function T(w, h) { var g = []; for (var y = 0; y < h; y++) { var r = []; for (var x = 0; x < w; x++) r.push({c:' ', k:'fg', b:0}); g.push(r); } return {w:w, h:h, g:g}; }
 function put(t, x, y, s, k, b) { s = String(s); for (var i = 0; i < s.length; i++) { var xx = x + i; if (y < 0 || y >= t.h || xx < 0 || xx >= t.w) continue; t.g[y][xx] = {c:s[i], k:k || 'fg', b:b ? 1 : 0}; } }
-function segs(t, x, y, list) { list.forEach(function (s) { put(t, x, y, s[0], s[1] || 'fg', s[2]); x += s[0].length; }); }
-function rep(ch, n) { return n > 0 ? Array(n + 1).join(ch) : ''; }
-function vline(t, x, y, n, ch, k) { for (var i = 0; i < n; i++) put(t, x, y + i, ch, k); }
-function box(t, x, y, w, h, k, title, tk) { put(t, x, y, '╭' + rep('─', w - 2) + '╮', k); for (var i = 1; i < h - 1; i++) { put(t, x, y + i, '│', k); put(t, x + w - 1, y + i, '│', k); } put(t, x, y + h - 1, '╰' + rep('─', w - 2) + '╯', k); if (title) put(t, x + 2, y, ' ' + title + ' ', tk || 'accent', 1); }
-function fit(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s + rep(' ', n - s.length); }
-function wrap(s, n) { var words = String(s).split(' '), lines = [], cur = ''; words.forEach(function (wd) { if ((cur + (cur ? ' ' : '') + wd).length > n) { lines.push(cur); cur = wd; } else cur = cur + (cur ? ' ' : '') + wd; }); if (cur) lines.push(cur); return lines; }
 function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], cur = null; for (var x = 0; x < t.w; x++) { var c = t.g[y][x], sym = c.c.charCodeAt(0) > 127; if (cur && !sym && !cur.sym && cur.k === c.k && cur.b === c.b) cur.text += c.c; else { cur = {text:c.c, k:c.k, b:c.b, sym:sym}; runs.push(cur); } } out.push({runs: runs.map(function (r) { return {text:r.text, color:PAL[r.k], weight:r.b ? '700' : '400', width:r.text.length + 'ch'}; })}); } return out; }
-function frame(t, active, region, hints) {
-  var w = t.w;
-  put(t, 0, 0, ' hive', 'fg', 1);
-  var right = 'coord ▲ · sup ● · needs you 0 · 14:40 ';
-  var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 6, 0, '▲', 'accent', 1); put(t, rx + 14, 0, '●', 'working', 1);
-  put(t, 0, 2, rep('─', w), 'border');
-  var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
-  names.forEach(function (n, i) { var lab = ' ' + (i + 1) + ' ' + n + ' '; if (i === active) { put(t, x, 1, lab, 'accent', 1); put(t, x, 2, rep('━', lab.length), 'accent'); } else put(t, x, 1, lab, 'dim'); x += lab.length; });
-  var tag = ' [' + region + '] ';
-  put(t, 0, t.h - 1, tag, 'accent', 1); put(t, tag.length, t.h - 1, fit(hints, w - tag.length), 'dim');
-}
-function screen(t) {
-  frame(t, 1, 'input', 'enter send · ctrl+o events · esc leave input · pgup/pgdn feed');
-  // The input is at its cap: 1/3 of the 20 content rows is 6 rows, so 4 text
-  // rows. The text has 7 rows. The input shows the last 4, around the cursor,
-  // and a scroll mark on its right border.
-  var text = 'Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen: Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me the draft so I can read it before the tag.';
-  var lines = wrap(text, 74), shown = lines.slice(lines.length - 4);
-  box(t, 0, 17, 80, 6, 'accent', 'message', 'accent');
-  segs(t, 11, 17, [['· ', 'dim'], ['▲', 'accent'], [' blocked 1m ', 'fg']]);
-  shown.forEach(function (ln, i) { put(t, 2, 18 + i, '  ', 'user'); put(t, 4, 18 + i, ln, 'user'); });
-  put(t, 4 + shown[3].length, 21, '█', 'accent');
-  vline(t, 79, 20, 2, '┃', 'dim');
-  box(t, 0, 3, 80, 14, 'border', 'chat', 'accent');
-  put(t, 2, 4, '14:31', 'dim'); put(t, 8, 4, 'you', 'user', 1);
-  put(t, 2, 5, 'thanks, trying it now', 'user');
-  // Folded events keep one dim line, with ▸ for folded.
-  put(t, 2, 7, fit('14:33 ▸ manager-hive quiet', 76), 'dim');
-  put(t, 2, 8, fit('14:36 ▸ manager-stenographer g2-live-scroll DONE: task 121-live-transcript-scroll verified and landed on dev', 76), 'dim');
-  put(t, 2, 10, '14:38', 'dim'); put(t, 8, 10, 'coordinator', 'info', 1);
-  segs(t, 2, 11, [['I need your approval to run '], ['scripts/reinstall.sh', 'code'], ['. The harness waits']]);
-  put(t, 2, 12, 'on a permission prompt in the coordinator pane.', 'fg');
-  put(t, 2, 14, '14:39', 'dim'); put(t, 8, 14, 'you', 'user', 1);
-  put(t, 2, 15, 'ok', 'user');
-  vline(t, 79, 14, 2, '┃', 'dim');
-}
-
+var TARGET = [[0," hive                               coord ▲ · sup ● · ? 0 · needs you 0 · 14:40 ",[[0,4,"fg",1],[5,35,"fg",0],[36,41,"fg",1],[42,42,"accent",1],[43,49,"fg",1],[50,50,"working",1],[51,79,"fg",1]]],[1,"  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        ",[[0,0,"fg",0],[1,10,"dim",0],[11,18,"accent",1],[19,56,"dim",0],[57,79,"fg",0]]],[2,"───────────━━━━━━━━─────────────────────────────────────────────────────────────",[[0,10,"border",0],[11,18,"accent",0],[19,79,"border",0]]],[3,"╭─ chat ──────────────────────────────── ↑ 19 earlier ─────────────────────────╮",[[0,1,"border",0],[2,7,"accent",1],[8,39,"border",0],[40,53,"dim",0],[54,79,"border",0]]],[4,"│ 14:31 you                                                                    │",[[0,0,"border",0],[1,1,"fg",0],[2,6,"dim",0],[7,7,"fg",0],[8,10,"user",1],[11,78,"fg",0],[79,79,"border",0]]],[5,"│ thanks, trying it now                                                        │",[[0,0,"border",0],[1,1,"fg",0],[2,22,"user",0],[23,78,"fg",0],[79,79,"border",0]]],[6,"│                                                                              │",[[0,0,"border",0],[1,78,"fg",0],[79,79,"border",0]]],[7,"│ 14:33 ▸ manager-hive quiet                                                   │",[[0,0,"border",0],[1,1,"fg",0],[2,77,"dim",0],[78,78,"fg",0],[79,79,"border",0]]],[8,"│ 14:36 ▸ manager-stenographer g2-live-scroll DONE: task 121-live-transcript-… │",[[0,0,"border",0],[1,1,"fg",0],[2,77,"dim",0],[78,78,"fg",0],[79,79,"border",0]]],[9,"│                                                                              │",[[0,0,"border",0],[1,78,"fg",0],[79,79,"border",0]]],[10,"│ 14:38 coordinator                                                            │",[[0,0,"border",0],[1,1,"fg",0],[2,6,"dim",0],[7,7,"fg",0],[8,18,"info",1],[19,78,"fg",0],[79,79,"border",0]]],[11,"│ I need your approval to run scripts/reinstall.sh. The harness waits          │",[[0,0,"border",0],[1,29,"fg",0],[30,49,"code",0],[50,78,"fg",0],[79,79,"border",0]]],[12,"│ on a permission prompt in the coordinator pane.                              │",[[0,0,"border",0],[1,78,"fg",0],[79,79,"border",0]]],[13,"│                                                                              │",[[0,0,"border",0],[1,78,"fg",0],[79,79,"border",0]]],[14,"│ 14:39 you                                                                    ┃",[[0,0,"border",0],[1,1,"fg",0],[2,6,"dim",0],[7,7,"fg",0],[8,10,"user",1],[11,78,"fg",0],[79,79,"dim",0]]],[15,"│ ok                                                                           ┃",[[0,0,"border",0],[1,1,"fg",0],[2,3,"user",0],[4,78,"fg",0],[79,79,"dim",0]]],[16,"╰──────────────────────────────────────────────────────────────────────────────╯",[[0,79,"border",0]]],[17,"╭─ message · ▲ blocked 1m ─────────────────────────────────────────────────────╮",[[0,1,"accent",0],[2,10,"accent",1],[11,12,"dim",0],[13,13,"accent",0],[14,25,"fg",0],[26,79,"accent",0]]],[18,"│   Health, Logs. Put breaking changes at the top with a short migration note. │",[[0,0,"accent",0],[1,1,"fg",0],[2,77,"user",0],[78,78,"fg",0],[79,79,"accent",0]]],[19,"│   Link each line to its task ID so a reader can find the brief. Leave out    │",[[0,0,"accent",0],[1,1,"fg",0],[2,74,"user",0],[75,78,"fg",0],[79,79,"accent",0]]],[20,"│   changes that touch only tests or docs. Then send me the draft so I can     ┃",[[0,0,"accent",0],[1,1,"fg",0],[2,73,"user",0],[74,78,"fg",0],[79,79,"dim",0]]],[21,"│   read it before the tag.█                                                   ┃",[[0,0,"accent",0],[1,1,"fg",0],[2,26,"user",0],[27,27,"accent",0],[28,78,"fg",0],[79,79,"dim",0]]],[22,"╰──────────────────────────────────────────────────────────────────────────────╯",[[0,79,"accent",0]]],[23," [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  ",[[0,8,"accent",1],[9,79,"dim",0]]]];
+function paint(t) { TARGET.forEach(function (r) { r[2].forEach(function (u) { put(t, u[0], r[0], r[1].slice(u[0], u[1] + 1), u[2], u[3]); }); }); }
 class Component extends DCLogic {
   renderVals() {
     var t = T(80, 24);
-    screen(t);
+    paint(t);
+    (function (t) { for (var y = 1; y < t.h - 2; y++) for (var x = 2; x < t.w; x++) { var c = t.g[y][x]; if (c.c !== '●' || c.k !== 'working' || '│┤┃'.indexOf(t.g[y][x - 2].c) < 0) continue; for (var yy = y - 1; yy <= y + 2; yy++) for (var xx = x - 2; xx <= x + 21; xx++) { if (yy > y - 1 && yy < y + 2 && xx > x - 2 && xx < x + 21) continue; var cc = t.g[yy] && t.g[yy][xx]; if (cc && cc.k === 'border') cc.k = 'working'; } } })(t);
     return { rows: rows(t) };
   }
 }

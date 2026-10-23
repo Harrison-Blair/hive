@@ -30,7 +30,7 @@ function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], 
 function frame(t, active, region, hints) {
   var w = t.w;
   put(t, 0, 0, ' hive', 'fg', 1);
-  var right = 'coord ● · sup ● · needs you 0 · 14:22 ';
+  var right = 'coord ● · sup ● · ? 0 · needs you 0 · 14:22 ';
   var rx = w - right.length; put(t, rx, 0, right, 'fg', 1); put(t, rx + 6, 0, '●', 'working', 1); put(t, rx + 14, 0, '●', 'working', 1);
   put(t, 0, 2, rep('─', w), 'border');
   var names = ['Agents', 'Chat', 'Work', 'Friction', 'Health', 'Logs'], x = 1;
