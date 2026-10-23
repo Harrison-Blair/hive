@@ -1,0 +1,63 @@
+$ go run ./internal/boardexport/cmd/boardexport -out .hive/tmp/export134 .hive/spec/tui-v2/design
+exit 0
+exported grids: 47
+
+## Each exported grid against the committed grid in design/ (cellgrid.Compare, no mask)
+AgentDetailsGeneral 0 cells differ
+AgentDetails 0 cells differ
+AgentsCoordinatorChild 0 cells differ
+AgentsHiddenParent 0 cells differ
+AgentsHome 0 cells differ
+AgentsMany 0 cells differ
+AgentsNested 0 cells differ
+ChatAsk 0 cells differ
+ChatAskMulti 0 cells differ
+ChatAskPreview 0 cells differ
+ChatAskStopped 0 cells differ
+ChatEvents 0 cells differ
+Chat 0 cells differ
+ChatInput 0 cells differ
+ChatNormal 0 cells differ
+ChatStatus 0 cells differ
+CompactAgents 0 cells differ
+CompactAgentsHome 0 cells differ
+CompactChatAsk 0 cells differ
+CompactChat 0 cells differ
+CompactChatNormal 0 cells differ
+CompactChatStatus 0 cells differ
+CompactFriction 0 cells differ
+Compact 0 cells differ
+CompactHealth 0 cells differ
+CompactLiveOverview 0 cells differ
+CompactLivePod 0 cells differ
+CompactLogs 0 cells differ
+CompactTreeNested 0 cells differ
+CompactTreeWide 0 cells differ
+Components 0 cells differ
+Friction 0 cells differ
+FrictionResolved 0 cells differ
+HealthAgentsGeneral 0 cells differ
+HealthAgents 0 cells differ
+Health 0 cells differ
+Help 0 cells differ
+LiveOverview 0 cells differ
+LivePod 0 cells differ
+Logs 0 cells differ
+Main 0 cells differ
+TooSmall 0 cells differ
+TreeNested 0 cells differ
+TreeWide 0 cells differ
+WorkGoals 0 cells differ
+Work 0 cells differ
+WorkQueue 0 cells differ
+
+## The 9 changed boards: exported grid against the approved code grid in evidence/new-grids/
+AgentsHiddenParent 0 cells differ
+CompactLiveOverview 0 cells differ
+CompactLivePod 0 cells differ
+CompactTreeNested 0 cells differ
+CompactTreeWide 0 cells differ
+LiveOverview 0 cells differ
+LivePod 0 cells differ
+TreeNested 0 cells differ
+TreeWide 0 cells differ
