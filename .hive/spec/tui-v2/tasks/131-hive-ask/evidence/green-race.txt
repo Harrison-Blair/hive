@@ -7,7 +7,7 @@
 === RUN   TestAskNeedsTheFileFlag
 --- PASS: TestAskNeedsTheFileFlag (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/cmd	1.054s
+ok  	github.com/Harrison-Blair/hive/cmd	1.057s
 === RUN   TestCreateWritesOneOpenRecordAndReturnsAtOnce
 --- PASS: TestCreateWritesOneOpenRecordAndReturnsAtOnce (0.00s)
 === RUN   TestCreateRejectsEachLimitWithNoRecord
@@ -59,11 +59,23 @@ ok  	github.com/Harrison-Blair/hive/cmd	1.054s
 === RUN   TestRouteGivesTheAskerOrTheParent
 --- PASS: TestRouteGivesTheAskerOrTheParent (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/ask	1.051s
+ok  	github.com/Harrison-Blair/hive/internal/ask	1.057s
 === RUN   TestCheckAcceptsTheAskBoards
 --- PASS: TestCheckAcceptsTheAskBoards (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.006s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.008s
+=== RUN   TestAskBoardsMatch
+=== RUN   TestAskBoardsMatch/ChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskMulti
+=== RUN   TestAskBoardsMatch/ChatAskPreview
+=== RUN   TestAskBoardsMatch/ChatAskStopped
+=== RUN   TestAskBoardsMatch/CompactChatAsk
+--- PASS: TestAskBoardsMatch (0.10s)
+    --- PASS: TestAskBoardsMatch/ChatAsk (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskMulti (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskPreview (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAskStopped (0.02s)
+    --- PASS: TestAskBoardsMatch/CompactChatAsk (0.02s)
 === RUN   TestAskCardHasTheFocusInNormalMode
 --- PASS: TestAskCardHasTheFocusInNormalMode (0.01s)
 === RUN   TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen
@@ -103,16 +115,14 @@ ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.006s
 === RUN   TestHelpListsTheAskKeys
 --- PASS: TestHelpListsTheAskKeys (0.01s)
 === RUN   TestHeaderShowsTheOpenAskRecords
---- PASS: TestHeaderShowsTheOpenAskRecords (0.04s)
+--- PASS: TestHeaderShowsTheOpenAskRecords (0.03s)
 === RUN   TestAskOtherInAMultiSelectQuestion
 --- PASS: TestAskOtherInAMultiSelectQuestion (0.01s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.02s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	1.648s
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.748s
 === RUN   TestStyledChatLineUsesOneLine
 --- PASS: TestStyledChatLineUsesOneLine (0.00s)
 PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.048s
-
-real	0m4.998s
-user	0m9.557s
-sys	0m1.046s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.056s
