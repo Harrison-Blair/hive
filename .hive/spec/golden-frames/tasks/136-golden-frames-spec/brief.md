@@ -83,7 +83,7 @@ Do not edit other files. Do not change the text of a moved file.
 
 - Proves: AC2.
 - Command: `go test ./ -run 'STE|Gitignore' -count=1 -v`, and `grep -c golden-frames testdata/ste-baseline.json`.
-- Expected: the tests pass. The count is 8.
+- Expected: the tests pass. The count is 9: the eight spec keys and the key of the brief copy.
 
 ### V3 References
 
@@ -110,4 +110,4 @@ wave 2 tasks do them. `main`.
 
 ## Changes
 
-None.
+- 2026-10-23, manager: the ratchet glob `.hive/spec/*/tasks/*/brief.md` needs a baseline key of 0 for the brief copy. `testdata/ste-baseline.json` gets nine `golden-frames` keys. V2 expects 9.
