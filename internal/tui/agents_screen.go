@@ -43,15 +43,18 @@ const (
 
 // graphState is the state of the Agents screen: the selected agent, the
 // selected pod and the one-pod view (decision 62), the first project column
-// and the first pod row on the screen, the row of the selected card in the
-// last view, and the hide flag of h.
+// and the first pod row on the screen, the first canvas column of the
+// one-pod view on the screen, the cell of the selected card in the last
+// view, and the hide flag of h.
 type graphState struct {
 	selected    string
 	pod         string
 	podView     bool
 	left        int
 	top         int
+	shift       int
 	cardRow     int
+	cardCol     int
 	hideStopped bool
 	// The fields below hold the last view. onePod tells that it is the
 	// one-pod view. focus is the key of the card with the heavy border. up
@@ -65,12 +68,22 @@ type graphState struct {
 	lines      map[[2]string][]point
 	joints     map[string]point
 	managerTop point
+	// roots gives the top cards of the tree of the one-pod view, left to
+	// right: the children of the manager, or the cards with no parent.
+	roots []treeRoot
 	// litAt is the time of the lit timer that runs (decision 67).
 	litAt time.Time
 }
 
 // point is one cell of a canvas.
 type point struct{ x, y int }
+
+// treeRoot is one top card of the tree of the one-pod view: its key, its
+// name, and the canvas column and row of the card.
+type treeRoot struct {
+	key, name string
+	x, y      int
+}
 
 // podKey gives the graph key of a pod.
 func podKey(pod graphPod) string { return "pod:" + pod.group.id }
@@ -388,16 +401,27 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		panel.Title = "project agents · " + pods[selected].group.id
 		shown = pods[selected : selected+1]
 		visible, podWidth = agentsColumns(1, bodyWidth, wide)
+		// The pod grows to the width of its tree (decision 75).
+		podWidth = max(podWidth, layoutTree(shown[0], podWidth-4).width+4)
 	} else {
 		m.graph.left = min(max(m.graph.left, selected-visible+1, 0), selected, len(pods)-visible)
 		shown = pods[m.graph.left : m.graph.left+visible]
 	}
+	// The canvas columns 0 and inner-1 are the padding cells of the body. A
+	// tree that is wider than the region makes the canvas wider, and the
+	// view scrolls sideways (decision 75).
+	inner := bodyWidth + 2
+	canvasWidth := inner
+	if m.graph.onePod {
+		canvasWidth = max(inner, podWidth+1)
+	}
+	sideways := canvasWidth > inner
 	scrolls := !m.graph.onePod && visible < len(pods)
 	footer := 0
 	if wide {
 		footer++
 	}
-	if scrolls {
+	if scrolls || sideways {
 		footer++
 	}
 	// From 120 columns one blank row is above the coordinator card and one
@@ -421,13 +445,15 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	// The coordinator card and the pods are drawn in full on a tall canvas.
 	// When they do not fit, the region shows room rows from top and keeps
 	// the selected card on the screen.
-	tall := newCellCanvas(bodyWidth, head+podHeight)
+	tall := newCellCanvas(canvasWidth, head+podHeight)
 	m.graph.cardRow = -1
+	m.graph.roots = nil
 	m.graph.up = make(map[string]string)
 	m.graph.lines = make(map[[2]string][]point)
 	m.graph.joints = make(map[string]point)
 	group := visible*podWidth + visible - 1
-	x := (bodyWidth - group) / 2
+	first := 1 + max(bodyWidth-group, 0)/2
+	x := first
 	var drops []int
 	for index, pod := range shown {
 		lit := !m.graph.onePod && m.graph.focus == "" && m.graph.left+index == selected
@@ -438,7 +464,16 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		x += podWidth + 1
 	}
 	if hasCoordinator {
-		m.drawCoordinator(tall, coordinator, shown, drops, head)
+		// In the one-pod view the coordinator card is above the manager
+		// card, or at the center of the pod, and moves with the tree.
+		cx := (canvasWidth - component.CardWidth) / 2
+		if m.graph.onePod {
+			cx = first + (podWidth-component.CardWidth)/2
+			if shown[0].manager != nil {
+				cx = m.graph.managerTop.x - component.CardWidth/2
+			}
+		}
+		m.drawCoordinator(tall, coordinator, cx, shown, drops, head)
 	}
 	m.lightLines(tall)
 	room = max(room, 0)
@@ -446,15 +481,27 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		m.graph.top = min(max(m.graph.top, row+component.CardHeight-room), row)
 	}
 	m.graph.top = min(max(m.graph.top, 0), max(tall.height-room, 0))
-	canvas := newCellCanvas(bodyWidth, bodyHeight)
-	for row := range min(room, tall.height) {
-		copy(canvas.cells[(row+gap)*bodyWidth:(row+gap+1)*bodyWidth], tall.cells[(row+m.graph.top)*bodyWidth:(row+m.graph.top+1)*bodyWidth])
+	// Sideways, the selected card stays on the screen: from 120 columns
+	// with the smallest move, below 120 columns at the center when possible
+	// (decision 75).
+	if col := m.graph.cardCol; m.graph.onePod && m.graph.cardRow >= 0 {
+		m.graph.shift = min(max(m.graph.shift, col+component.CardWidth-inner), col)
+		if !wide {
+			m.graph.shift = col + component.CardWidth/2 - inner/2
+		}
 	}
+	m.graph.shift = min(max(m.graph.shift, 0), canvasWidth-inner)
+	canvas := newCellCanvas(inner, bodyHeight)
+	for row := range min(room, tall.height) {
+		from := (row+m.graph.top)*canvasWidth + m.graph.shift
+		copy(canvas.cells[(row+gap)*inner:(row+gap+1)*inner], tall.cells[from:from+inner])
+	}
+	panel.Bleed = true
 	panel.VMark = component.Thumb(bodyHeight, tall.height, room, m.graph.top)
 	row := bodyHeight - footer
 	if wide {
-		canvas.text(0, row, agentsLegend, cellgrid.Dim, false)
-		canvas.text(ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), row, agentsLegendLit, cellgrid.Info, false)
+		canvas.text(1, row, agentsLegend, cellgrid.Dim, false)
+		canvas.text(1+ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), row, agentsLegendLit, cellgrid.Info, false)
 		row++
 	}
 	if scrolls {
@@ -463,7 +510,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		if m.graph.left+visible > projects {
 			scroll += " · home"
 		}
-		canvas.text(0, row, scroll, cellgrid.Dim, false)
+		canvas.text(1, row, scroll, cellgrid.Dim, false)
 		var edges []string
 		if m.graph.left > 0 {
 			edges = append(edges, "← "+pods[m.graph.left-1].group.id)
@@ -472,21 +519,62 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 			edges = append(edges, pods[end].group.id+" →")
 		}
 		right := strings.Join(edges, "   ")
-		canvas.text(bodyWidth-ansi.StringWidth(right), row, right, cellgrid.Dim, false)
+		canvas.text(inner-1-ansi.StringWidth(right), row, right, cellgrid.Dim, false)
 		panel.HMark = component.Thumb(width-2, len(pods), visible, m.graph.left)
+	}
+	if sideways {
+		left, right := m.treeScrollText(inner)
+		canvas.text(1, row, left, cellgrid.Dim, false)
+		canvas.text(inner-1-ansi.StringWidth(right), row, right, cellgrid.Dim, false)
+		panel.HMark = component.Thumb(inner, canvasWidth, inner, m.graph.shift)
 	}
 	panel.Lines = canvas.lines()
 	return panel.View(width, height)
 }
 
-// drawCoordinator draws the coordinator card at the top center and its line
+// treeScrollText gives the scroll line of the one-pod view on a screen of
+// inner columns (decision 75): the top cards that are fully on the screen,
+// and the next hidden top card on the right, or else on the left.
+func (m *Model) treeScrollText(inner int) (string, string) {
+	roots := m.graph.roots
+	first, last := -1, -1
+	right := ""
+	for index, root := range roots {
+		switch {
+		case root.x+component.CardWidth > m.graph.shift+inner:
+			if right == "" {
+				right = root.name + " →"
+			}
+		case root.x >= m.graph.shift:
+			if first < 0 {
+				first = index
+			}
+			last = index
+		}
+	}
+	if right == "" {
+		for index := len(roots) - 1; index >= 0; index-- {
+			if roots[index].x < m.graph.shift {
+				right = "← " + roots[index].name
+				break
+			}
+		}
+	}
+	if first < 0 {
+		return fmt.Sprintf("%s · %d children", agentsScrolls, len(roots)), right
+	}
+	return fmt.Sprintf("%s · children %d–%d of %d", agentsScrolls, first+1, last+1, len(roots)), right
+}
+
+// drawCoordinator draws the coordinator card at column cx and its line
 // (decision 65). The joint is at the card x+12. In the overview, one bus row
 // below the card goes to a drop at the center of each pod on the page; a
 // drop 1 column or less from the joint moves to the joint. In the one-pod
 // view, the line goes down through the pod top border to the top joint of
 // the manager card, or to the pod top border when the pod has no manager.
-func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, shown []graphPod, drops []int, podTop int) {
-	cx := (c.width - component.CardWidth) / 2
+// In home, the line goes to each top card, with a bus above the cards when
+// there are several (rule A of decision 78).
+func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, cx int, shown []graphPod, drops []int, podTop int) {
 	m.drawCard(c, node, cx, 0)
 	joint := cx + component.CardWidth/2
 	bus := component.CardHeight
@@ -497,6 +585,18 @@ func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, shown []graphPod,
 		target := point{joint, podTop}
 		if pod.manager != nil {
 			target = m.graph.managerTop
+		}
+		if pod.homeColumn && len(m.graph.roots) > 0 {
+			for _, top := range m.graph.roots {
+				center := top.x + component.CardWidth/2
+				path := []point{{joint, bus - 1}, {joint, bus}, {center, bus}, {center, top.y}}
+				if len(m.graph.roots) > 1 {
+					path = []point{{joint, bus - 1}, {joint, top.y - 2}, {center, top.y - 2}, {center, top.y}}
+				}
+				m.graph.up[top.key] = root
+				m.graph.lines[[2]string{root, top.key}] = m.connect(c, path)
+			}
+			return
 		}
 		cells := m.connect(c, []point{{joint, bus - 1}, {joint, bus}, {target.x, bus}, target})
 		if pod.manager != nil {
@@ -551,6 +651,22 @@ func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, shown []graphPod,
 // cells, first corner first. Each corner and each end of the line adds the
 // arms of the line to the cell that is there.
 func (m *Model) connect(c *cellCanvas, path []point) []point {
+	cells := pathCells(path)
+	for index, cell := range cells {
+		var arms component.Arms
+		for _, other := range []int{index - 1, index + 1} {
+			if other >= 0 && other < len(cells) {
+				arms = withArm(arms, cell, cells[other], component.Light)
+			}
+		}
+		c.addArms(cell.x, cell.y, arms)
+	}
+	return cells
+}
+
+// pathCells gives each cell of a line through the corners of path, first
+// corner first.
+func pathCells(path []point) []point {
 	cells := []point{path[0]}
 	for _, corner := range path[1:] {
 		for last := cells[len(cells)-1]; last != corner; last = cells[len(cells)-1] {
@@ -567,15 +683,6 @@ func (m *Model) connect(c *cellCanvas, path []point) []point {
 			}
 			cells = append(cells, next)
 		}
-	}
-	for index, cell := range cells {
-		var arms component.Arms
-		for _, other := range []int{index - 1, index + 1} {
-			if other >= 0 && other < len(cells) {
-				arms = withArm(arms, cell, cells[other], component.Light)
-			}
-		}
-		c.addArms(cell.x, cell.y, arms)
 	}
 	return cells
 }
@@ -604,16 +711,22 @@ func podTitle(pod graphPod, width int) string {
 func (m *Model) podLines(pod graphPod, width int) int {
 	content := width - 4
 	rows := 1 // the goal line
+	tree := layoutTree(pod, content)
 	switch {
+	case m.graph.onePod && pod.homeColumn:
+		rows += tree.height
+	case m.graph.onePod && pod.manager == nil:
+		rows += 2
+		if len(pod.children) > 0 {
+			rows += 1 + tree.height
+		}
 	case pod.homeColumn:
 		rows += 5*len(pod.children) - 1
 	case pod.manager == nil:
 		rows += 2 + 5*len(pod.children)
-	case pod.tree(content):
-		rows += component.CardHeight
-		if len(pod.children) > 0 {
-			rows += 3 + component.CardHeight
-		} else {
+	case m.graph.onePod || pod.tree(content):
+		rows += tree.height
+		if len(pod.children) == 0 {
 			rows += 2
 		}
 	default:
@@ -662,11 +775,7 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, se
 	// row at the center of the manager card.
 	goalRoom := content
 	if m.graph.onePod && pod.manager != nil {
-		center := left + component.CardWidth/2
-		if pod.tree(content) {
-			center = left + (content-component.CardWidth)/2 + component.CardWidth/2
-		}
-		goalRoom = min(content, center-left-1)
+		goalRoom = min(content, (layoutTree(pod, content).width-component.CardWidth)/2+component.CardWidth/2-1)
 	}
 	c.text(left, top, ansi.Truncate(pod.group.goal, goalRoom, "…"), goal, false)
 	top++
@@ -675,71 +784,25 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, se
 	}
 	var next int
 	switch {
+	case m.graph.onePod && pod.homeColumn:
+		next = m.drawTree(c, pod, left, top, content)
+	case m.graph.onePod && pod.manager == nil:
+		c.text(left, top+1, "no manager", cellgrid.Dim, false)
+		next = m.drawTree(c, pod, left, top+3, content)
 	case pod.homeColumn:
 		next = m.drawRail(c, pod, left, top-1)
 	case pod.manager == nil:
 		c.text(left, top+1, "no manager", cellgrid.Dim, false)
 		next = m.drawRail(c, pod, left, top+2)
-	case pod.tree(content):
-		manager := *pod.manager
-		mx := left + (content-component.CardWidth)/2
-		m.drawCard(c, manager, mx, top)
-		center := mx + component.CardWidth/2
-		m.graph.managerTop = point{center, top}
-		next = top + component.CardHeight
+	case m.graph.onePod || pod.tree(content):
+		next = m.drawTree(c, pod, left, top, content)
 		if len(pod.children) == 0 {
 			text := "no child agents"
 			if note := pod.note(); note != "" {
 				text = note
 			}
 			c.text(left, next+1, text, cellgrid.Dim, false)
-			break
 		}
-		m.junction(c, center, next-1, manager, '┬', '┯')
-		c.set(center, next, '│', cellgrid.Border)
-		slot := content / len(pod.children)
-		var centers []int
-		for index := range pod.children {
-			centers = append(centers, left+index*slot+(slot-component.CardWidth)/2+component.CardWidth/2)
-		}
-		first, last := centers[0], centers[len(centers)-1]
-		for col := first; col <= last; col++ {
-			c.set(col, next+1, '─', cellgrid.Border)
-		}
-		for _, col := range centers {
-			c.set(col, next+1, '┬', cellgrid.Border)
-			c.set(col, next+2, '│', cellgrid.Border)
-		}
-		if first != last {
-			c.set(first, next+1, '╭', cellgrid.Border)
-			c.set(last, next+1, '╮', cellgrid.Border)
-		}
-		mark := '┴'
-		if slices.Contains(centers, center) {
-			mark = '┼'
-			if first == last {
-				mark = '│'
-			}
-		}
-		c.set(center, next+1, mark, cellgrid.Border)
-		for index, child := range pod.children {
-			cx := centers[index] - component.CardWidth/2
-			m.drawCard(c, child, cx, next+3)
-			m.junction(c, centers[index], next+3, child, '┴', '┷')
-			line := []point{{center, next - 1}, {center, next}, {center, next + 1}}
-			for col := center; col != centers[index]; {
-				if col < centers[index] {
-					col++
-				} else {
-					col--
-				}
-				line = append(line, point{col, next + 1})
-			}
-			line = append(line, point{centers[index], next + 2}, point{centers[index], next + 3})
-			m.graph.up[child.record.Key] = manager.record.Key
-			m.graph.lines[[2]string{manager.record.Key, child.record.Key}] = line
-		}
-		next += 3 + component.CardHeight
 	default:
 		m.drawCard(c, *pod.manager, left, top)
 		m.graph.managerTop = point{left + component.CardWidth/2, top}
@@ -748,6 +811,181 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, se
 	if note := pod.note(); note != "" && len(pod.children) > 0 {
 		c.text(left, next+1, note, cellgrid.Dim, false)
 	}
+}
+
+// treeLayout is the tree form of a pod (decision 74), relative to the first
+// content cell of the tree: the width and the height of the tree, and for
+// each child of the pod its card column and row and the index of its parent
+// card, or -1 for a top card.
+type treeLayout struct {
+	width, height int
+	x, y, parent  []int
+}
+
+// layoutTree gives the tree form of a pod in content cells. Each card is at
+// the center of its span. A span has one slot for each card at the bottom of
+// the subtree. A slot is content divided by the slots of the tree, and at
+// least treeSlot cells. A tree that does not fit is wider than content. A
+// level is one │ row below its parents, or 3 rows with a bus when a parent
+// has more than one child. The children of the manager always use the bus.
+func layoutTree(pod graphPod, content int) treeLayout {
+	n := len(pod.children)
+	t := treeLayout{x: make([]int, n), y: make([]int, n), parent: make([]int, n)}
+	kids := make([][]int, n)
+	var roots []int
+	for index, level := range pod.levels {
+		t.parent[index] = -1
+		for before := index - 1; before >= 0; before-- {
+			if pod.levels[before] == level-1 {
+				t.parent[index] = before
+				break
+			}
+		}
+		if parent := t.parent[index]; parent >= 0 {
+			kids[parent] = append(kids[parent], index)
+		} else {
+			roots = append(roots, index)
+		}
+	}
+	units := make([]int, n)
+	for index := n - 1; index >= 0; index-- {
+		for _, kid := range kids[index] {
+			units[index] += units[kid]
+		}
+		units[index] = max(units[index], 1)
+	}
+	total := 0
+	for _, root := range roots {
+		total += units[root]
+	}
+	slot := treeSlot
+	if total > 0 {
+		slot = max(treeSlot, content/total)
+	}
+	t.width = max(content, total*slot)
+	var place func(index, start int)
+	place = func(index, start int) {
+		t.x[index] = start + (units[index]*slot-component.CardWidth)/2
+		for _, kid := range kids[index] {
+			place(kid, start)
+			start += units[kid] * slot
+		}
+	}
+	start := 0
+	for _, root := range roots {
+		place(root, start)
+		start += units[root] * slot
+	}
+	low, row := 0, 0
+	if pod.manager != nil {
+		low, row = 1, component.CardHeight
+	}
+	rows := make(map[int]int)
+	for level := low; level <= slices.Max(append(slices.Clone(pod.levels), low-1)); level++ {
+		gap := 1
+		switch {
+		case level == low && pod.homeColumn && len(roots) > 1:
+			// The bus of the coordinator line (rule A of decision 78).
+			gap = 2
+		case level == low && pod.manager == nil:
+			gap = 0
+		case level == low:
+			gap = 3
+		default:
+			for index, above := range pod.levels {
+				if above == level-1 && len(kids[index]) > 1 {
+					gap = 3
+				}
+			}
+		}
+		rows[level] = row + gap
+		row = rows[level] + component.CardHeight
+	}
+	for index, level := range pod.levels {
+		t.y[index] = rows[level]
+	}
+	t.height = row
+	return t
+}
+
+// drawTree draws the manager and the children of a pod in the tree form
+// from column left and row top, and gives the first row below them. Each
+// parent has the joint ┬ on its bottom border and a │ row below it. A level
+// with a bus has the bus ╭─┴─╮ and one more │ row. Each child has the joint
+// ┴ on its top border.
+func (m *Model) drawTree(c *cellCanvas, pod graphPod, left, top, content int) int {
+	tree := layoutTree(pod, content)
+	if pod.manager != nil {
+		mx := left + (tree.width-component.CardWidth)/2
+		m.drawCard(c, *pod.manager, mx, top)
+		m.graph.managerTop = point{mx + component.CardWidth/2, top}
+	}
+	kids := make(map[int][]int)
+	for index, child := range pod.children {
+		m.drawCard(c, child, left+tree.x[index], top+tree.y[index])
+		kids[tree.parent[index]] = append(kids[tree.parent[index]], index)
+		if tree.parent[index] < 0 && m.graph.onePod {
+			m.graph.roots = append(m.graph.roots, treeRoot{key: child.record.Key, name: child.record.Name, x: left + tree.x[index], y: top + tree.y[index]})
+		}
+	}
+	for parent := -1; parent < len(pod.children); parent++ {
+		if len(kids[parent]) == 0 {
+			continue
+		}
+		var node agentNode
+		var center, bottom int
+		switch {
+		case parent >= 0:
+			node = pod.children[parent]
+			center, bottom = left+tree.x[parent]+component.CardWidth/2, top+tree.y[parent]+component.CardHeight-1
+		case pod.manager != nil:
+			node = *pod.manager
+			center, bottom = m.graph.managerTop.x, top+component.CardHeight-1
+		default:
+			for _, root := range kids[parent] {
+				m.graph.up[pod.children[root].record.Key] = podKey(pod)
+			}
+			continue
+		}
+		kidTop := top + tree.y[kids[parent][0]]
+		bus := bottom + 1
+		m.junction(c, center, bottom, node, '┬', '┯')
+		c.set(center, bottom+1, '│', cellgrid.Border)
+		var centers []int
+		for _, kid := range kids[parent] {
+			centers = append(centers, left+tree.x[kid]+component.CardWidth/2)
+		}
+		if kidTop-bottom > 2 {
+			bus++
+			first, last := centers[0], centers[len(centers)-1]
+			for col := first; col <= last; col++ {
+				c.set(col, bus, '─', cellgrid.Border)
+			}
+			for _, col := range centers {
+				c.set(col, bus, '┬', cellgrid.Border)
+				c.set(col, bus+1, '│', cellgrid.Border)
+			}
+			if first != last {
+				c.set(first, bus, '╭', cellgrid.Border)
+				c.set(last, bus, '╮', cellgrid.Border)
+			}
+			mark := '┴'
+			if slices.Contains(centers, center) {
+				mark = '┼'
+				if first == last {
+					mark = '│'
+				}
+			}
+			c.set(center, bus, mark, cellgrid.Border)
+		}
+		for index, kid := range kids[parent] {
+			child := pod.children[kid]
+			m.junction(c, centers[index], kidTop, child, '┴', '┷')
+			m.graph.up[child.record.Key] = node.record.Key
+			m.graph.lines[[2]string{node.record.Key, child.record.Key}] = pathCells([]point{{center, bottom}, {center, bus}, {centers[index], bus}, {centers[index], kidTop}})
+		}
+	}
+	return top + tree.height
 }
 
 // drawRail draws the children of a pod in the rail form from row next and
@@ -848,7 +1086,7 @@ func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy r
 func (m *Model) drawCard(c *cellCanvas, node agentNode, x, y int) {
 	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.focus}
 	if card.Selected {
-		m.graph.cardRow = y
+		m.graph.cardRow, m.graph.cardCol = y, x
 	}
 	c.blit(x, y, card.View())
 }
@@ -1051,47 +1289,58 @@ func (m *Model) agentAction(key string, node agentNode) tea.Cmd {
 }
 
 // moveAgentSelection moves the selection in the one-pod view by one arrow
-// key. In a tree, ← and → move between the children, and ↑ and ↓ move
-// between the manager and the children. The selection stays in the pod.
+// key in the tree (decision 74). ↑ selects the parent, ↓ the first child,
+// and ← and → the card before or after on the same level. The selection
+// stays in the pod.
 func (m *Model) moveAgentSelection(key string) bool {
 	node, column, ok := m.selectedAgent()
 	if !ok || column < 0 {
 		return false
 	}
-	pods := m.agentsPods()
-	nodes := pods[column].nodes()
-	index := slices.IndexFunc(nodes, func(n agentNode) bool { return n.record.Key == node.record.Key })
-	tree := pods[column].tree(m.podContentWidth(1))
-	target := index
+	pod := m.agentsPods()[column]
+	tree := layoutTree(pod, 0)
+	index := slices.IndexFunc(pod.children, func(n agentNode) bool { return n.record.Key == node.record.Key })
+	target := -2
 	switch key {
 	case "up", "k":
-		target = index - 1
-		if tree && index > 0 {
-			target = 0
+		if index >= 0 {
+			target = tree.parent[index]
+		}
+		if target == -1 && pod.manager == nil {
+			target = -2
 		}
 	case "down", "j":
-		target = index + 1
+		target = slices.Index(tree.parent, index)
+		if target < 0 {
+			target = -2
+		}
 	case "left", "right":
-		step := 1
-		if key == "left" {
-			step = -1
+		if index < 0 {
+			break
 		}
-		if !tree || index == 0 {
-			return false
+		var level []int
+		for other := range pod.children {
+			if pod.levels[other] == pod.levels[index] {
+				level = append(level, other)
+			}
 		}
-		target = max(index+step, 1)
+		at := slices.Index(level, index)
+		if key == "left" && at > 0 {
+			target = level[at-1]
+		}
+		if key == "right" && at < len(level)-1 {
+			target = level[at+1]
+		}
 	}
-	if target < 0 || target >= len(nodes) || target == index {
+	switch {
+	case target >= 0:
+		m.graph.selected = pod.children[target].record.Key
+	case target == -1 && pod.manager != nil:
+		m.graph.selected = pod.manager.record.Key
+	default:
 		return false
 	}
-	m.graph.selected = nodes[target].record.Key
 	return true
-}
-
-// podContentWidth gives the content width of a pod at the current size.
-func (m *Model) podContentWidth(pods int) int {
-	_, podWidth := agentsColumns(pods, max(m.width-4, 1), m.width >= component.LongFormWidth)
-	return podWidth - 4
 }
 
 // projectGoalLine gives the goal line of a project pod: the active goal and

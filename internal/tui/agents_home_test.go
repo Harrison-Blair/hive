@@ -107,8 +107,9 @@ func TestAgentsHomeAgentsWithNoProjectKeepTheNotice(t *testing.T) {
 }
 
 // AC2: a general agent is under the card of its parent, also a general agent
-// without a project. A child of a child is 2 cells further right on a rail,
-// and the column uses the rail form.
+// without a project. In the one-pod view a child of a child is one more tree
+// level below its parent: in the same column, with the joint ┬ on the
+// bottom of the parent card and one │ row (decision 74).
 func TestAgentsNestGeneralAgentsUnderTheirParentCard(t *testing.T) {
 	m := agentsModel(t, homeSource(
 		generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
@@ -124,26 +125,34 @@ func TestAgentsNestGeneralAgentsUnderTheirParentCard(t *testing.T) {
 	workerRow, worker := cardColumn(t, view, "t1-alpha-worker")
 	helperRow, helper := cardColumn(t, view, "helper-1")
 	nestedRow, nested := cardColumn(t, view, "helper-2")
-	if helper-worker != 2 || nested-helper != 2 || helperRow <= workerRow || nestedRow <= helperRow {
-		t.Fatalf("cards at %d,%d %d,%d %d,%d; want each child 2 cells right and below its parent:\n%s",
+	if helper != worker || nested != helper || helperRow-workerRow != 5 || nestedRow-helperRow != 5 {
+		t.Fatalf("cards at %d,%d %d,%d %d,%d; want each child 5 rows below its parent in its column:\n%s",
 			workerRow, worker, helperRow, helper, nestedRow, nested, view)
 	}
 	_, manager := cardColumn(t, view, "manager-alpha")
-	if worker-manager != 1 {
-		t.Fatalf("the worker is not on the rail of the manager:\n%s", view)
+	if worker != manager {
+		t.Fatalf("the worker is not below the manager in the tree:\n%s", view)
 	}
 	lines := strings.Split(view, "\n")
-	// The rail of helper-1 leaves the bottom border of the worker card.
-	if got := []rune(lines[workerRow+2])[worker-3]; got != '┬' {
-		t.Fatalf("the worker card bottom has %q under the rail; want ┬:\n%s", got, view)
+	// The line to helper-1 leaves the bottom border of the worker card at
+	// its center, and goes down one │ row.
+	if got := []rune(lines[workerRow+2])[worker+8]; got != '┬' {
+		t.Fatalf("the worker card bottom has %q above the line; want ┬:\n%s", got, view)
 	}
-	requireWholeAgentsBorders(t, strings.NewReplacer("─┬─", "───").Replace(view))
+	if got := []rune(lines[workerRow+3])[worker+8]; got != '│' {
+		t.Fatalf("the row below the worker card has %q; want │:\n%s", got, view)
+	}
+	requireWholeAgentsBorders(t, strings.NewReplacer("─┬─", "───", "─┴─", "───").Replace(view))
 }
 
-// AC2: a pod with nesting uses the rail form, also when its children fit
-// side by side in the tree form.
-func TestAgentsNestingUsesTheRailForm(t *testing.T) {
-	m := agentsModel(t, homeSource(generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z")))
+// AC2: in the overview, a pod with nesting uses the rail form, also when its
+// children fit side by side in the tree form. The one-pod view always uses
+// the tree (decision 74).
+func TestAgentsNestingUsesTheRailFormInTheOverview(t *testing.T) {
+	source := homeSource(generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
+	projects, agents := agentsProject("beta", "pi", 1)
+	source.projects, source.agents = append(source.projects, projects...), append(source.agents, agents...)
+	m := agentsModel(t, source)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	view := ansi.Strip(m.View().Content)
 	_, manager := cardColumn(t, view, "manager-alpha")

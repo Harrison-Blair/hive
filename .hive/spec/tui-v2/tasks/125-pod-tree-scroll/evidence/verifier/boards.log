@@ -1,0 +1,38 @@
+[
+  {
+    "board": "TreeWide",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/approved/TreeWide.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  },
+  {
+    "board": "TreeNested",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/approved/TreeNested.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  },
+  {
+    "board": "CompactTreeWide",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/approved/CompactTreeWide.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  },
+  {
+    "board": "CompactTreeNested",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/boards/CompactTreeNested.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  },
+  {
+    "board": "AgentsNested",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/approved/AgentsNested.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  },
+  {
+    "board": "AgentsCoordinatorChild",
+    "staged": "/home/penguin/source/hive/.hive/tmp/g5b/approved/AgentsCoordinatorChild.dc.html",
+    "cmp_exit": 0,
+    "screenshot_pixels_equal": true
+  }
+]

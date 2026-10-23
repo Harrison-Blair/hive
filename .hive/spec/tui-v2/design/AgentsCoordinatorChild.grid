@@ -29,38 +29,38 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                           │                                                          │
 k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           ╭─ home ────────────────────────┴──────────────────────────────╮                           │
+t|│                           ╭─ home ────────────────────────┼──────────────────────────────╮                           │
 k|afffffffffffffffffffffffffffrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                                                              │                           │
-k|afffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                               │                              │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ╭──────────────────────╮                                     │                           │
-k|afffffffffffffffffffffffffffrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   ╭───────────┴──────────╮                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ ● plan-review-1      │                                     │                           │
-k|afffffffffffffffffffffffffffrfwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   │ ● plan-review-1      │                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │ pi · working · 2m    │                                     │                           │
-k|afffffffffffffffffffffffffffrfwfdddddddddddddddddffffwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   │ pi · working · 2m    │                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffwfdddddddddddddddddffffwfffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ├──────────────────────╯                                     │                           │
-k|afffffffffffffffffffffffffffrfwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   ╰───────────┬──────────╯                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │                                                            │                           │
-k|afffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                               │                              │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ │┏━━━━━━━━━━━━━━━━━━━━━━┓                                    │                           │
-k|afffffffffffffffffffffffffffrfraaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   ┏━━━━━━━━━━━┷━━━━━━━━━━┓                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │ ╰┨ ◐ plan-review-2      ┃                                    │                           │
-k|afffffffffffffffffffffffffffrfrafafaaaaaaaaaaaaaffffffaffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
-b|000000000000000000000000000000000001111111111111000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │  ┃ codex · idle · 10m   ┃                                    │                           │
-k|afffffffffffffffffffffffffffrffafddddddddddddddddddfffaffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   ┃ ◐ plan-review-2      ┃                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffafafaaaaaaaaaaaaaffffffafffffffffffffffffffrfffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000011111111111110000000000000000000000000000000000000000000000000000000
+t|│                           │                   ┃ codex · idle · 10m   ┃                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffafddddddddddddddddddfffafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │  ┗━━━━━━━━━━━━━━━━━━━━━━┛                                    │                           │
-k|afffffffffffffffffffffffffffrffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                   ┗━━━━━━━━━━━━━━━━━━━━━━┛                   │                           │
+k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           ╰──────────────────────────────────────────────────────────────╯                           │
 k|afffffffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa

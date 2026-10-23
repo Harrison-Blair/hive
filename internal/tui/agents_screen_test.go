@@ -198,8 +198,9 @@ func TestAgentsArrowsScrollThePods(t *testing.T) {
 }
 
 // A light connector meets the heavy border of the selected card with a
-// mixed-weight joint (manager decision): ┯ below a tree manager, ┷ above a
-// tree child, ┡ on the corner of a rail manager, and ┨ beside a rail child.
+// mixed-weight joint (manager decision): ┯ below a tree manager and ┷ above
+// a tree child. The one-pod view always uses the tree (decision 74), also
+// for the pod of AgentsMany that the overview draws as a rail.
 func TestAgentsSelectedCardJoints(t *testing.T) {
 	for _, tc := range []struct {
 		fixture, name string
@@ -209,8 +210,8 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}{
 		{"Main.fixture.json", "manager-hive", nil, 2, 8, '┯'},
 		{"Main.fixture.json", "t4-worker-1", []tea.KeyPressMsg{key(tea.KeyDown, "")}, -1, 8, '┷'},
-		{"AgentsMany.fixture.json", "t5-worker-1", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, 0, -4, '┨'},
-		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key(tea.KeyEnter, ""), key('k', "k"), key('k', "k")}, 2, -4, '┡'},
+		{"AgentsMany.fixture.json", "t5-worker-1", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, -1, 8, '┷'},
+		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key(tea.KeyEnter, ""), key('k', "k"), key('k', "k")}, 2, 8, '┯'},
 	} {
 		m := newTestDemoModel(t, tc.fixture, demoSize{})
 		for _, k := range tc.keys {
@@ -224,8 +225,9 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}
 }
 
-// ↑ and ↓ move between the manager and the children of a pod. The
-// children are in order of creation time (user decision 2 of
+// ↑ and ↓ move between the manager and the children of a pod: ↑ selects the
+// parent and ↓ the first child (decision 74). ← and → move between the
+// children. The children are in order of creation time (user decision 2 of
 // general-agent): t4-verifier-1, t5-worker-1, t6-worker-1.
 func TestAgentsUpDownMoveInThePod(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
@@ -235,12 +237,14 @@ func TestAgentsUpDownMoveInThePod(t *testing.T) {
 		key  tea.KeyPressMsg
 		want string
 	}{
-		{key('j', "j"), "t6-worker-1"},
-		{key(tea.KeyDown, ""), "t6-worker-1"},
-		{key('k', "k"), "t5-worker-1"},
-		{key(tea.KeyUp, ""), "t4-verifier-1"},
-		{key(tea.KeyDown, ""), "t5-worker-1"},
-		{key(tea.KeyUp, ""), "t4-verifier-1"},
+		{key('j', "j"), "t5-worker-1"},
+		{key('k', "k"), "manager-hive-g2"},
+		{key(tea.KeyUp, ""), "manager-hive-g2"},
+		{key(tea.KeyDown, ""), "t4-verifier-1"},
+		{key('j', "j"), "t4-verifier-1"},
+		{key(tea.KeyRight, ""), "t5-worker-1"},
+		{key(tea.KeyRight, ""), "t6-worker-1"},
+		{key(tea.KeyRight, ""), "t6-worker-1"},
 		{key(tea.KeyUp, ""), "manager-hive-g2"},
 	} {
 		m, _ = raise(t, m, step.key)
@@ -521,18 +525,62 @@ func TestAgentsKeysLogTheirActions(t *testing.T) {
 // "├─" is the corner of a manager card and "├┤" and "╰┤" join a child card.
 // "┡━", "├┨", and "╰┨" are the same joints on the heavy border of the
 // selected card. Each ┏ needs a ┓, and each ┗ needs a ┛, in the same line.
+// A box that the region edge cuts (decision 75) has no corner on that side:
+// its border runs into the edge cell.
 func requireWholeAgentsBorders(t *testing.T, view string) {
 	t.Helper()
 	// The line of the coordinator card bends once on its row to the manager
 	// card of the one-pod view (decision 65).
 	view = coordinatorBend.ReplaceAllString(view, "")
 	view = strings.NewReplacer("├┤", "││", "╰┤", "││", "├─", "╰─", "├┨", "│┃", "╰┨", "│┃", "┡━", "┗━").Replace(view)
+	view = closeClippedBoxes(view)
 	requireWholeBorders(t, view)
 	for index, line := range strings.Split(view, "\n") {
 		if strings.Count(line, "┏") != strings.Count(line, "┓") || strings.Count(line, "┗") != strings.Count(line, "┛") {
 			t.Fatalf("line %d has a broken heavy border: %q\n%s", index+1, line, view)
 		}
 	}
+}
+
+// closeClippedBoxes adds the missing corner of each box that the region
+// edge cuts. A line of the graph is "│" or "┃", the region, and the border
+// cell. A box runs past the edge when a horizontal border cell is next to
+// its corner, and its border line runs to the edge: border cells and the
+// title, with no other corner and no two blank cells.
+func closeClippedBoxes(view string) string {
+	lines := strings.Split(view, "\n")
+	for index, line := range lines {
+		cells := []rune(line)
+		if len(cells) < 3 || !strings.ContainsRune("│┃", cells[0]) {
+			continue
+		}
+		region := string(cells[1 : len(cells)-1])
+		for _, pair := range [][2]string{{"╭", "╮"}, {"╰", "╯"}, {"┏", "┓"}, {"┗", "┛"}} {
+			opens, closes := strings.Count(line, pair[0]), strings.Count(line, pair[1])
+			if at := strings.LastIndex(region, pair[0]); opens == closes+1 && clippedRun(region[at+len(pair[0]):], true) {
+				line += pair[1]
+			}
+			if at := strings.Index(region, pair[1]); closes == opens+1 && at >= 0 && clippedRun(region[:at], false) {
+				line = pair[0] + line
+			}
+		}
+		lines[index] = line
+	}
+	return strings.Join(lines, "\n")
+}
+
+// clippedRun reports that run is the border line of a box from its corner
+// to the region edge. after tells that the corner is before run.
+func clippedRun(run string, after bool) bool {
+	cells := []rune(run)
+	if len(cells) == 0 || strings.ContainsAny(run, "╭╮╰╯┏┓┗┛") || strings.Contains(run, "  ") {
+		return false
+	}
+	next := cells[len(cells)-1]
+	if after {
+		next = cells[0]
+	}
+	return strings.ContainsRune("─━┬┴┼┯┷", next)
 }
 
 // coordinatorBend matches the bend of the coordinator line on its row.
@@ -592,8 +640,9 @@ func TestAgentsWorkingCardBorder(t *testing.T) {
 		{22, 44, '╭', cellgrid.Border}, // t3-verifier-1, idle
 		{23, 44, '┤', cellgrid.Border}, // joint on the idle card
 	})
-	// Decision 62: a card is selected in the one-pod view. The cells are
-	// relative to the first cell of the name of t5-worker-1.
+	// Decision 62: a card is selected in the one-pod view, which draws the
+	// tree (decision 74). The cells are relative to the first cell of the
+	// name of t5-worker-1.
 	m.graph.selected = "t5-worker-1"
 	m.graph.pod = "hive"
 	m.graph.podView = true
@@ -602,8 +651,8 @@ func TestAgentsWorkingCardBorder(t *testing.T) {
 	row, col := findText(t, grid, "t5-worker-1")
 	check(m, []cell{
 		{row - 1, col - 4, '┏', cellgrid.Accent},
-		{row, col - 4, '┨', cellgrid.Accent},
+		{row - 1, col + 8, '┷', cellgrid.Accent},
 		{row + 2, col + 19, '┛', cellgrid.Accent},
-		{row, col - 5, '├', cellgrid.Border},
+		{row - 2, col + 8, '│', cellgrid.Border},
 	})
 }
