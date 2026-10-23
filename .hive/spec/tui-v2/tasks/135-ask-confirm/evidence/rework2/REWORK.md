@@ -1,6 +1,6 @@
 # Task 135 rework 2: compact stopped-review title
 
-Worker: `t135-worker`. Date: 2026-10-23.
+Worker: `t135-worker-3`. Date: 2026-10-23.
 Finding: `../VERIFIED.md` (fail by `t135-verifier-2`, commit `235892c0`, manager inbox record 565).
 Fix commit: `0ae08cf9`. Merge of `origin/dev` at `3fbbb17f`: `312fa5e1`.
 All paths are relative to this `rework2/` folder.
