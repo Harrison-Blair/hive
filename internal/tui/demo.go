@@ -113,15 +113,18 @@ type demoUIState struct {
 }
 
 // demoAsk is the UI state of the card of an open ask. Question and option
-// count from 1. Picks gives the picked options of each question.
+// count from 1. Picks gives the picked options of each question. With the
+// focus review, ReviewRow is the highlighted question from 1, and 0 is
+// Send.
 type demoAsk struct {
-	Card     string   `json:"card"`
-	Question int      `json:"question"`
-	Option   int      `json:"option"`
-	Picks    [][]int  `json:"picks"`
-	Notes    []string `json:"notes"`
-	Other    []string `json:"other"`
-	NoteOpen bool     `json:"note_open"`
+	Card      string   `json:"card"`
+	Question  int      `json:"question"`
+	Option    int      `json:"option"`
+	Picks     [][]int  `json:"picks"`
+	Notes     []string `json:"notes"`
+	Other     []string `json:"other"`
+	NoteOpen  bool     `json:"note_open"`
+	ReviewRow int      `json:"review_row"`
 }
 
 type demoScroll struct {
@@ -149,7 +152,7 @@ var (
 		"health":   {"home", "agents"},
 		"logs":     {""},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "list", "details", "filter", "events", "json"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json"}
 	demoOverlays   = []string{"", "details", "help"}
 	demoPopups     = []string{"", "agent-details"}
 	demoPrompts    = []string{"", "restart"}
@@ -458,6 +461,11 @@ func (m *Model) applyDemoAsk(ui demoUIState) {
 		switch ui.Focus {
 		case "note", "other":
 			card.editing = ui.Focus
+		case "review":
+			card.review, card.reviewRow = true, len(record.Questions)
+			if ui.Ask.ReviewRow > 0 {
+				card.reviewRow = min(ui.Ask.ReviewRow, len(record.Questions)) - 1
+			}
 		}
 	}
 }

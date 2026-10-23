@@ -366,7 +366,7 @@ func (m *Model) footerView(width int) string {
 		hints = restartHints
 	case "filter":
 		hints = filterHints
-	case "ask", "note", "other":
+	case "ask", "note", "other", "review":
 		hints = m.askHints(focus, width >= component.LongFormWidth)
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
@@ -525,7 +525,6 @@ func helpLines() []string {
 		pair("R", "refresh now", "< >", "previous / next day"),
 		pair("ctrl+c ×2", "quit", "", ""),
 		"",
-		"",
 		titleStyle.Render("FILTER FIELDS"),
 		"level:  comp:  proj:  agent:  task:  req:  text",
 		dimStyle.Render("example  / level:warn agent:manager-hive restart"),
@@ -535,6 +534,7 @@ func helpLines() []string {
 		dimStyle.Render("ctrl+o opens or folds all chat events"),
 		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
 		dimStyle.Render("ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card"),
+		dimStyle.Render("ask review: enter on the last question · ↑↓ question · enter send or change"),
 	}
 }
 
@@ -588,7 +588,7 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return m.scrollChatFeed(press)
 		}
 		return m.currentScreen().Update(press)
-	case "ask", "note", "other":
+	case "ask", "note", "other", "review":
 		if cmd, handled := m.updateAskKey(press); handled {
 			return cmd
 		}

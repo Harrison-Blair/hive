@@ -48,6 +48,12 @@ type askCard struct {
 	others   []string
 	noteOpen bool
 	editing  string
+	// review shows the review of all answers before the send. reviewRow
+	// is the highlighted question, or the number of questions for Send.
+	// fromReview returns the edit of a question to the review.
+	review     bool
+	reviewRow  int
+	fromReview bool
 }
 
 // askRow maps a body row of the dock to an option of the focused card.
@@ -130,13 +136,17 @@ func (m *Model) askFocused() bool {
 	return ok && !m.chatInputActive && !m.askFeedFocus
 }
 
-// askFocusState gives the focus state of the card: ask, note, or other.
+// askFocusState gives the focus state of the card: ask, note, other, or
+// review.
 func (m *Model) askFocusState() string {
 	record, _, _ := m.focusedAsk()
-	switch m.askCardOf(record).editing {
-	case "note":
+	card := m.askCardOf(record)
+	switch {
+	case card.review:
+		return "review"
+	case card.editing == "note":
 		return "note"
-	case "other":
+	case card.editing == "other":
 		return "other"
 	}
 	return "ask"
@@ -151,6 +161,9 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 	other := len(question.Options)
 	key := press.String()
 	m.invalidateView()
+	if card.review {
+		return m.updateAskReviewKey(press, record, card)
+	}
 	if card.editing != "" {
 		text := &card.notes[card.question]
 		if card.editing == "other" {
@@ -229,6 +242,39 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 	return nil, true
 }
 
+// updateAskReviewKey handles a key in the review. Only ↑↓, enter, x, and
+// J/K act on the card. A key that changes a pick or a note does nothing.
+func (m *Model) updateAskReviewKey(press tea.KeyPressMsg, record ask.Record, card *askCard) (tea.Cmd, bool) {
+	key := press.String()
+	switch key {
+	case "up":
+		card.reviewRow = max(card.reviewRow-1, 0)
+	case "down":
+		card.reviewRow = min(card.reviewRow+1, len(record.Questions))
+	case "enter":
+		if card.reviewRow == len(record.Questions) {
+			return m.sendAsk(record, card), true
+		}
+		card.review, card.fromReview, card.question = false, true, card.reviewRow
+	case "x":
+		return m.closeAsk(record, "dismiss", nil), true
+	case "J", "K":
+		return m.moveAskCard(key), true
+	case "pgup", "pgdown":
+		return m.scrollChatFeed(press), true
+	case "i":
+		return m.startChatInput(), true
+	case "ctrl+o":
+		return m.updateChat(press), true
+	case "space", "tab", "backspace":
+	default:
+		if len(key) != 1 || key[0] < '1' || key[0] > '9' {
+			return nil, false
+		}
+	}
+	return nil, true
+}
+
 // askPick picks option index of the current question, as a digit or a
 // click does. In a multi-select question it marks the option.
 func (m *Model) askPick(record ask.Record, card *askCard, index int) tea.Cmd {
@@ -247,8 +293,9 @@ func (m *Model) askPick(record ask.Record, card *askCard, index int) tea.Cmd {
 	return m.askEnter(record, card)
 }
 
-// askEnter moves to the next question, or sends the answer on the last
-// question. A picked Other row first opens its text line.
+// askEnter moves to the next question, or opens the review on the last
+// question and after the edit of a question from the review. A picked Other
+// row first opens its text line.
 func (m *Model) askEnter(record ask.Record, card *askCard) tea.Cmd {
 	q := card.question
 	other := len(record.Questions[q].Options)
@@ -257,10 +304,16 @@ func (m *Model) askEnter(record ask.Record, card *askCard) tea.Cmd {
 		return nil
 	}
 	card.editing, card.noteOpen = "", false
-	if q < len(record.Questions)-1 {
+	if q < len(record.Questions)-1 && !card.fromReview {
 		card.question++
 		return nil
 	}
+	card.review, card.fromReview, card.reviewRow = true, false, len(record.Questions)
+	return nil
+}
+
+// sendAsk sends the answer of the card.
+func (m *Model) sendAsk(record ask.Record, card *askCard) tea.Cmd {
 	replies := make([]ask.Reply, len(record.Questions))
 	for index := range record.Questions {
 		reply := ask.Reply{Note: card.notes[index]}
@@ -379,22 +432,35 @@ func (m *Model) startAskDelivery() tea.Cmd {
 
 // askHints gives the footer hints of the card.
 func (m *Model) askHints(focus string, wide bool) []string {
-	switch focus {
-	case "note":
-		return []string{"type a note", "enter send with note", "tab close note", "ctrl+] leave note", "↑↓ option"}
-	case "other":
-		return []string{"type the answer", "enter send", "ctrl+] leave"}
-	}
-	if !wide {
-		return []string{"↑↓ move", "enter send", "tab note", "x dismiss", "J/K card"}
-	}
 	record, _, _ := m.focusedAsk()
 	card := m.askCardOf(record)
-	pick := fmt.Sprintf("1..%d pick", len(record.Questions[card.question].Options)+1)
-	if m.chatData.routes[record.ID].stopped {
-		return []string{"↑↓ move", pick, "enter send to parent", "tab note", "x dismiss", "J/K next/prev card"}
+	stopped := m.chatData.routes[record.ID].stopped
+	switch focus {
+	case "review":
+		send := "enter send"
+		switch {
+		case card.reviewRow < len(record.Questions):
+			send = "enter change"
+		case stopped:
+			send = "enter send to parent"
+		}
+		if !wide {
+			return []string{"↑↓ question", send, "x dismiss", "J/K card"}
+		}
+		return []string{"↑↓ question", send, "x dismiss", "J/K next/prev card", "wheel/pgup scroll feed", "i type"}
+	case "note":
+		return []string{"type a note", "enter keep note", "tab close note", "ctrl+] leave note", "↑↓ option"}
+	case "other":
+		return []string{"type the answer", "enter keep answer", "ctrl+] leave"}
 	}
-	return []string{"↑↓ move", pick, "enter send", "tab note", "x dismiss", "J/K next/prev card", "wheel/pgup scroll feed", "i type"}
+	if !wide {
+		return []string{"↑↓ move", "enter review", "tab note", "x dismiss", "J/K card"}
+	}
+	pick := fmt.Sprintf("1..%d pick", len(record.Questions[card.question].Options)+1)
+	if stopped {
+		return []string{"↑↓ move", pick, "enter review for parent", "tab note", "x dismiss", "J/K next/prev card"}
+	}
+	return []string{"↑↓ move", pick, "enter review", "tab note", "x dismiss", "J/K next/prev card", "wheel/pgup scroll feed", "i type"}
 }
 
 // askFeedText gives the styled text of the feed line of an ask.
@@ -489,7 +555,13 @@ func (m *Model) askDockView(width, limit int) string {
 	focused := m.askFocused()
 	room := width - 4
 	wide := width >= component.LongFormWidth
+	route := m.chatData.routes[record.ID]
+	title := "? " + record.Asker + " asks · " + ask.Headers(record)
 	lines, rows, current := askCardLines(record, card, room)
+	if card.review {
+		title = "? " + record.Asker + " asks · confirm"
+		lines, rows, current = askReviewLines(record, card, room, route)
+	}
 
 	visible := max(min(len(lines), limit-2), 1)
 	offset := max(current[1]-visible+1, 0)
@@ -497,12 +569,11 @@ func (m *Model) askDockView(width, limit int) string {
 	end := min(offset+visible, len(lines))
 	m.askRows = rows[offset:end]
 	panel := component.Panel{
-		Title: "? " + record.Asker + " asks · " + ask.Headers(record), Focused: focused, Heavy: true,
+		Title: title, Focused: focused, Heavy: true,
 		Lines: lines[offset:end], VMark: component.Thumb(visible, len(lines), visible, offset),
 	}
 	out := strings.Split(panel.View(width, visible+2), "\n")
 
-	route := m.chatData.routes[record.ID]
 	note := dimStyle.Render(fmt.Sprintf(" %d of %d ", index+1, len(m.openAsks())))
 	if wide {
 		next := ""
@@ -521,25 +592,35 @@ func (m *Model) askDockView(width, limit int) string {
 
 // askCardHint gives the hint in the bottom border of the card.
 func askCardHint(record ask.Record, card *askCard, wide bool, route askRoute) string {
+	if card.review {
+		send := "enter send"
+		switch {
+		case card.reviewRow < len(record.Questions):
+			send = "enter change"
+		case route.stopped:
+			send = "enter sends to " + route.target
+		}
+		return send + " · ↑↓ question to change · x drop"
+	}
 	question := record.Questions[card.question]
 	multi := slices.ContainsFunc(record.Questions, func(q ask.Question) bool { return q.MultiSelect })
 	switch {
 	case !wide:
-		return "enter send · tab note"
+		return "enter review · tab note"
 	case route.stopped:
-		return "enter sends to " + route.target + " · x dismiss"
+		return "enter review · sends to " + route.target + " · x dismiss"
 	case askHasPreview(question):
-		return "↑↓ move · the preview follows the option · enter send"
+		return "↑↓ move · the preview follows the option · enter review"
 	case len(record.Questions) > 1:
-		hint := "tab note · enter next question · enter on last sends"
+		hint := "tab note · enter next question · enter on last reviews"
 		if multi {
 			hint = "space mark · " + hint
 		}
 		return hint
 	case question.MultiSelect:
-		return fmt.Sprintf("↑↓ move · 1..%d mark · space mark · enter send · tab note · x dismiss · J/K card", len(question.Options)+1)
+		return fmt.Sprintf("↑↓ move · 1..%d mark · space mark · enter review · tab note · x dismiss · J/K card", len(question.Options)+1)
 	}
-	return fmt.Sprintf("↑↓ move · 1..%d pick · enter send · tab note · x dismiss · J/K card", len(question.Options)+1)
+	return fmt.Sprintf("↑↓ move · 1..%d pick · enter review · tab note · x dismiss · J/K card", len(question.Options)+1)
 }
 
 func askHasPreview(question ask.Question) bool {
@@ -601,6 +682,113 @@ func askCardLines(record ask.Record, card *askCard, room int) ([]string, []askRo
 		}
 	}
 	return lines, rows, current
+}
+
+// askReviewLines gives the body lines of the review at room cells: one
+// answer of each question in full, wrapped, and the Send line. It also gives
+// the first and the last line of the highlighted row.
+func askReviewLines(record ask.Record, card *askCard, room int, route askRoute) ([]string, []askRow, [2]int) {
+	var lines []string
+	var rows []askRow
+	var current [2]int
+	add := func(index int, words []askWord) {
+		marker, start := " ", len(lines)
+		if index == card.reviewRow {
+			marker = "›"
+		}
+		for row, line := range wrapAskWords(words, room-2) {
+			if row > 0 {
+				marker = " "
+			}
+			lines = append(lines, titleStyle.Render(marker)+" "+line)
+			rows = append(rows, askRow{index, -1})
+		}
+		if index == card.reviewRow {
+			current = [2]int{start, len(lines) - 1}
+		}
+	}
+	for qi, question := range record.Questions {
+		header := headerStyle
+		if qi == card.reviewRow {
+			header = titleStyle
+		}
+		words := styledWords(header, safeChatText(question.Header))
+		words = append(words, styledWords(titleStyle, "→ "+strings.Join(askReviewPicks(question, card, qi), ", "))...)
+		if card.notes[qi] != "" {
+			words = append(words, styledWords(dimStyle, "· note:")...)
+			words = append(words, styledWords(lipgloss.NewStyle(), safeChatText(card.notes[qi]))...)
+		}
+		add(qi, words)
+	}
+	lines = append(lines, "")
+	rows = append(rows, askRow{len(record.Questions), -1})
+	send := "Send"
+	if route.stopped {
+		send = "Send to " + route.target
+	}
+	style := headerStyle
+	if card.reviewRow == len(record.Questions) {
+		style = titleStyle
+	}
+	add(len(record.Questions), styledWords(style, send))
+	return lines, rows, current
+}
+
+// askReviewPicks gives the picked labels of question qi, with the Other
+// text in place of the Other label.
+func askReviewPicks(question ask.Question, card *askCard, qi int) []string {
+	var picks []string
+	for option, picked := range card.picks[qi] {
+		switch {
+		case !picked:
+		case option < len(question.Options):
+			picks = append(picks, safeChatText(question.Options[option].Label))
+		default:
+			picks = append(picks, safeChatText(card.others[qi]))
+		}
+	}
+	return picks
+}
+
+// askWord is one word of a review line and its style.
+type askWord struct {
+	text  string
+	style lipgloss.Style
+}
+
+func styledWords(style lipgloss.Style, text string) []askWord {
+	var words []askWord
+	for word := range strings.SplitSeq(text, " ") {
+		words = append(words, askWord{word, style})
+	}
+	return words
+}
+
+// wrapAskWords puts the words on lines of at most width cells. A word that
+// is longer than width breaks at width.
+func wrapAskWords(words []askWord, width int) []string {
+	width = max(width, 1)
+	var lines []string
+	line, used := "", 0
+	for _, word := range words {
+		size := ansi.StringWidth(word.text)
+		if used > 0 && used+1+size > width {
+			lines, line, used = append(lines, line), "", 0
+		}
+		for size > width {
+			head := ansi.Truncate(word.text, width, "")
+			lines = append(lines, word.style.Render(head))
+			word.text = ansi.TruncateLeft(word.text, ansi.StringWidth(head), "")
+			size = ansi.StringWidth(word.text)
+		}
+		if used > 0 {
+			line += " "
+			used++
+		}
+		line += word.style.Render(word.text)
+		used += size
+	}
+	return append(lines, line)
 }
 
 // askOptionLine gives one option row: the current mark ›, the number, the
