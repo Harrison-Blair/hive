@@ -261,6 +261,9 @@ func (m *Model) focusState() string {
 		if m.chatInputActive {
 			return "input"
 		}
+		if m.askFocused() {
+			return m.askFocusState()
+		}
 		return "normal"
 	}
 	return screenRegistry[tab].regions[m.regionFocus[tab]]
@@ -363,6 +366,8 @@ func (m *Model) footerView(width int) string {
 		hints = restartHints
 	case "filter":
 		hints = filterHints
+	case "ask", "note", "other":
+		hints = m.askHints(focus, width >= component.LongFormWidth)
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
@@ -529,7 +534,7 @@ func helpLines() []string {
 		dimStyle.Render("i or a click on the input types · ctrl+] or a click on the feed leaves"),
 		dimStyle.Render("ctrl+o opens or folds all chat events"),
 		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
-		"",
+		dimStyle.Render("ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card"),
 	}
 }
 
@@ -583,6 +588,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return m.scrollChatFeed(press)
 		}
 		return m.currentScreen().Update(press)
+	case "ask", "note", "other":
+		if cmd, handled := m.updateAskKey(press); handled {
+			return cmd
+		}
 	case "details":
 		if tab == tabAgents {
 			switch key {
@@ -728,6 +737,12 @@ func (m *Model) updateChatFeedKey(press tea.KeyPressMsg) tea.Cmd {
 		return m.scrollChatFeed(press)
 	case "i":
 		return m.startChatInput()
+	case "J", "K":
+		if _, _, ok := m.focusedAsk(); ok && m.askFeedFocus {
+			m.askFeedFocus = false
+			m.invalidateView()
+			return m.logAction("ask focus")
+		}
 	}
 	return m.currentScreen().Update(press)
 }

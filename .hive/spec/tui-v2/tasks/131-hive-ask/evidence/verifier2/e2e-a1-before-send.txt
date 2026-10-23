@@ -1,0 +1,40 @@
+ hive  ~/source/hive/projects/hive/worktr… coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   00:38
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 00:38  verify-asker  ? asked · Scope · Order · open below                                                            │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? verify-asker asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 1 ━┓
+┃ 1. Which parts?                                                                                                      ┃
+┃                                                                                                                      ┃
+┃   1 [x] Ask card                    the dock                                                                         ┃
+┃   2 [ ] Header count                the header                                                                       ┃
+┃   3 [x] Help line                   the keys                                                                         ┃
+┃   4 [ ] Other: type an answer                                                                                        ┃
+┃     note › keep it small                                                                                             ┃
+┃                                                                                                                      ┃
+┃ 2. Which order?                                                                                                      ┃
+┃                                                                                                                      ┃
+┃   1 [ ] Card first                  the dock first                                                                   ┃
+┃   2 [ ] Header first                the header first                                                                 ┃
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › both together█                                                                                           ┃
+┗━ space mark · tab note · enter next question · enter on last sends ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [other] type the answer · enter send · ctrl+] leave

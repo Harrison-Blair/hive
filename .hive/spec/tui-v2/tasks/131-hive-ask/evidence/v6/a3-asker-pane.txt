@@ -1,0 +1,8 @@
+[penguin@iceberg home]$ pi
+pi ready
+> ⬢ user: answer to ask a1 from asker-scratch · Scope → Ask card, Help line · note: no help yet; Order → both together
+GOT: ⬢ user: answer to ask a1 from asker-scratch · Scope → Ask card, Help line · note: no help yet; Order → both togeth
+er
+> ⬢ hive: the user dismissed ask a3 from asker-scratch · Cleanup. No answer comes.
+GOT: ⬢ hive: the user dismissed ask a3 from asker-scratch · Cleanup. No answer comes.
+>

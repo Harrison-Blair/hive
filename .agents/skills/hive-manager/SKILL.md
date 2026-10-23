@@ -147,3 +147,59 @@ Before you stop for a user decision, or when a harness blocks an action, send th
 ```sh
 hive inbox send --to coordinator TEXT --agent NAME
 ```
+
+## Ask the user
+
+To ask the user a question, use `hive ask`. Never use the question tool of
+your harness. Hive shows the ask as a card on the Chat tab of the TUI.
+
+Write the ask as JSON in a file, or give it on the standard input:
+
+```sh
+hive ask --file ask.json
+hive ask --file - < ask.json
+```
+
+The command writes one ask record, prints the ask ID, and stops at once. It
+does not wait for the answer. Do other work, or stop and wait for the answer
+prompt. Run the command in your own pane.
+
+The JSON has this shape:
+
+```json
+{
+  "questions": [
+    {
+      "question": "Which branch do I merge first?",
+      "header": "Merge order",
+      "multiSelect": false,
+      "options": [
+        {"label": "Task 131", "description": "The ask card", "preview": "optional text"},
+        {"label": "Task 132", "description": "The header count"}
+      ]
+    }
+  ]
+}
+```
+
+- Give 1 to 4 questions. Each question has `question`, `header`, and
+  `options`. `multiSelect` and `preview` are optional.
+- A `header` has 12 characters or less.
+- Give 2 to 5 options. Each option has `label` and `description`.
+- Hive adds the row `Other: type an answer` to each question. Do not give it.
+- When the JSON breaks a limit, hive writes no record and prints the error.
+  Correct the JSON and run the command again.
+
+The answer comes to your pane as one prompt:
+
+```text
+⬢ user: answer to ask ID from ASKER · HEADER → LABEL; HEADER → LABEL, LABEL · note: TEXT
+```
+
+- The prompt has one `HEADER → LABELS` part for each question, in order.
+- A `· note: TEXT` part follows a question when the user typed a `note`.
+- For `Other`, the label is the text that the user typed.
+- When the asker stopped, the parent of the asker gets the prompt. The prompt
+  then has `(asker stopped)` after `from ASKER`.
+- When the user dismisses the ask, this prompt comes:
+  `⬢ hive: the user dismissed ask ID from ASKER · HEADERS. No answer comes.`

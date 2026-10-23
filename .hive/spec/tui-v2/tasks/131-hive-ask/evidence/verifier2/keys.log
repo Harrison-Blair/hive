@@ -1,0 +1,114 @@
+leave-note ['ctrl+]']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+up ['up']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+down ['down']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+note ['tab']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release█                                                                     ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+note-text 'test note'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one releasetest note█                                                            ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+keep-note ['ctrl+]']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one releasetest note                                                             ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+note-again ['tab']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one releasetest note█                                                            ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+drop-note ['tab']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+next ['J']
+┏━ ? manager-hive asks · Model ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 2 of 2 ━┓
+┃ › 1 [ ] Yes, restart now (REC)      stop it, then spawn on deepseek-v4.1-flash                                       ┃
+ [ask] ↑↓ move · 1..4 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+previous ['K']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+mark ['space']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+other ['3']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › █                                                                                                        ┃
+ [other] type the answer · enter send · ctrl+] leave
+other-text 'my answer'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer█                                                                                               ┃
+ [other] type the answer · enter send · ctrl+] leave
+keep-other ['ctrl+]']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer                                                                                                ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+wheel-up '\x1b[<64;40;24M'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer                                                                                                ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+wheel-down '\x1b[<65;40;24M'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer                                                                                                ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+page-up '\x1b[5~'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer                                                                                                ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+page-down '\x1b[6~'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › my answer                                                                                                ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+click-option '\x1b[<0;12;33M\x1b[<0;12;33m'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+click-feed '\x1b[<0;40;10M\x1b[<0;40;10m'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [normal] demo mode: no action
+click-card '\x1b[<0;40;22M\x1b[<0;40;22m'
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+input ['i']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll
+leave-input ['ctrl+]']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+send ['enter']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+dismiss ['x']
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action

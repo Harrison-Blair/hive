@@ -1,0 +1,51 @@
+import pathlib,subprocess,json,shutil,concurrent.futures
+root=pathlib.Path.cwd();tmp=root/'.hive/tmp/verifier2';ev=root/'.hive/spec/tui-v2/tasks/131-hive-ask/evidence/verifier2'
+packages=['./cmd/','./internal/ask/','./internal/boardexport/','./internal/tui/','./internal/tui/component/']; pattern=(tmp/'pattern').read_text()
+def run(args,path,cwd=root):
+ with path.open('w') as out:
+  out.write('$ '+' '.join(map(str,args))+'\n');out.flush();res=subprocess.run(args,cwd=cwd,stdout=out,stderr=subprocess.STDOUT)
+  out.write('\nexit: '+str(res.returncode)+'\n')
+ return res.returncode
+# Base run in a detached scratch worktree. New tests and fixture/spec data only.
+base=tmp/'base';subprocess.run(['git','worktree','add','--detach',str(base),'e0799d49'],check=True)
+for file in ['cmd/ask_root_test.go','internal/ask/ask_test.go','internal/tui/ask_test.go','internal/tui/component/chat_test.go','internal/boardexport/check_test.go','internal/tui/demo_fixtures_test.go','.hive/spec/tui-v2/README.md']:
+ dest=base/file;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy(root/file,dest)
+for board in ['ChatAsk','ChatAskMulti','ChatAskPreview','ChatAskStopped','CompactChatAsk','Help']:
+ for ext in ['dc.html','grid','fixture.json']:
+  file=f'.hive/spec/tui-v2/design/{board}.{ext}';shutil.copy(root/file,base/file)
+run(['go','test','-count=1','-run',pattern]+packages,ev/'red-base.log',base)
+# Deliberate breaks use Go overlays; project source remains unchanged.
+old=(root/'.hive/spec/tui-v2/tasks/131-hive-ask/evidence/verifier/mutation-checks.py').read_text()
+ns={};prefix=old.split('results={};')[0].replace("'.hive/tmp/verifier131'","'.hive/tmp/verifier2'").replace("evidence/verifier'","evidence/verifier2'")
+exec(prefix,ns)
+changes=ns['changes'];mapping={}
+for i,(file,edits) in enumerate(changes.items()):
+ data=(root/file).read_text()
+ for a,b in edits:
+  assert a in data;(None);data=data.replace(a,b)
+ dest=tmp/f'individual-{i}.go';dest.write_text(data);mapping[str(root/file)]=str(dest)
+overlay=tmp/'individual.json';overlay.write_text(json.dumps({'Replace':mapping}))
+prior=json.loads((root/'.hive/spec/tui-v2/tasks/131-hive-ask/evidence/verifier/individual-red.json').read_text())
+prior.append({'test':'TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption','package':'./internal/tui','mutation':'features-disabled'})
+guards={}
+guards['blocked-caller-guard']=ns['run']('blocked-caller-guard',{'internal/tui/ask.go':[('if m.chatCallerBlocked {','if false && m.chatCallerBlocked {')]},['./internal/tui/'],'^TestABlockedCallerCannotAnswer$')
+guards['fixture-guard']=ns['run']('fixture-guard',{'internal/tui/demo.go':[('func loadDemoFixture(path string) (*demoFixture, error) {','func loadDemoFixture(path string) (*demoFixture, error) {\n if true {return nil, fmt.Errorf("feature removed")}')]},['./internal/tui/'],'^TestEachBoardFixtureLoadsAtItsSpecSize$')
+(ev/'guard-results.json').write_text(json.dumps(guards,indent=2))
+def individual(item):
+ over=overlay
+ if item['mutation'] in ['blocked-caller-guard','fixture-guard']:over=tmp/(item['mutation']+'.json')
+ args=['go','test','-count=1','-overlay',str(over),'-run','^'+item['test']+'$',item['package']]
+ res=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+ return dict(test=item['test'],package=item['package'],exit=res.returncode,output=res.stdout)
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:results=list(pool.map(individual,prior))
+(ev/'individual-red.json').write_text(json.dumps(results,indent=2)+'\n')
+assert all(x['exit']==1 and '[build failed]' not in x['output'] for x in results),results
+# Observe repair test fail specifically without the fix.
+oldsource=subprocess.check_output(['git','show','53d59516:internal/tui/ask.go'],text=True)
+(tmp/'before-repair.go').write_text(oldsource)
+(tmp/'repair-red.json').write_text(json.dumps({'Replace':{str(root/'internal/tui/ask.go'):str(tmp/'before-repair.go')}}))
+assert run(['go','test','-count=1','-overlay',str(tmp/'repair-red.json'),'-run','^TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption$','./internal/tui/'],ev/'repair-red.log')==1
+assert run(['go','test','-count=50','-run',pattern]+packages,ev/'green-count50.log')==0
+assert run(['go','test','-race','-count=1','-v','-run',pattern]+packages,ev/'green-race.log')==0
+subprocess.run(['git','worktree','remove','--force',str(base)],check=True)
+(ev/'test-checks.done').write_text('46 selected tests: deliberate red and repeated green complete.\n')

@@ -71,7 +71,7 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 		m.popupOffset = max(m.popupOffset+step, 0)
 		return nil
 	case tab == tabChat:
-		if row < m.chatFeed.height {
+		if row < m.chatFeed.height+m.askDockHeight() {
 			m.scrollChat(step * wheelLines)
 		}
 		return nil
@@ -113,8 +113,12 @@ func (m *Model) click(x, y int) tea.Cmd {
 		return nil
 	}
 	if tab == tabChat {
-		if row < m.chatFeed.height {
+		switch {
+		case row < m.chatFeed.height:
+			m.askFeedFocus = true
 			return m.stopChatInput()
+		case row < m.chatFeed.height+m.askDockHeight():
+			return m.clickAsk(row - m.chatFeed.height - 1)
 		}
 		return m.startChatInput()
 	}

@@ -44,7 +44,7 @@ func TestEachBoardFixtureLoadsAtItsSpecSize(t *testing.T) {
 			}
 		})
 	}
-	if boards != 42 {
-		t.Fatalf("spec table has %d boards; want 42", boards)
+	if boards != 47 {
+		t.Fatalf("spec table has %d boards; want 47", boards)
 	}
 }

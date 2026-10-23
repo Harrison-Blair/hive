@@ -13,11 +13,13 @@ import (
 
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/logs"
 	xterm "github.com/charmbracelet/x/term"
 )
@@ -121,6 +123,18 @@ type Model struct {
 	width      int
 	height     int
 
+	// The ask cards of Chat. askAnswer, askDismiss, and askDeliver write
+	// the ask records and send the prompts.
+	askCards      map[string]*askCard
+	askFocusID    string
+	askFeedFocus  bool
+	askBusy       bool
+	askDelivering bool
+	askRows       []askRow
+	askAnswer     func(context.Context, string, string, []ask.Reply) output.Envelope
+	askDismiss    func(context.Context, string, string) output.Envelope
+	askDeliver    func(context.Context, string) error
+
 	demo *demoState
 }
 
@@ -144,6 +158,9 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		chatNoise:    chatNoiseNormal,
 		chatFeed:     chatFeed{topItem: -1, follow: true},
 		chatLoader:   loadChatScreenData,
+		askAnswer:    ask.Answer,
+		askDismiss:   ask.Dismiss,
+		askDeliver:   ask.DeliverPending,
 		width:        defaultWidth,
 		height:       defaultHeight,
 		header:       headerState{supervisor: "stale"},
@@ -252,7 +269,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, batch(m.tick(), m.startRefreshCheck())
+		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery())
 	case refreshCheckMsg:
 		m.refreshChecking = false
 		headerChanged := msg.header != m.refreshSnapshot.header
@@ -370,6 +387,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case chatSendMsg:
 		m.invalidateView()
 		return m, m.updateChatSend(msg)
+	case askDoneMsg:
+		return m, m.updateAskDone(msg)
+	case askDeliveredMsg:
+		m.askDelivering = false
+		if msg.err != nil {
+			return m, m.logError("ask delivery", msg.err)
+		}
+		return m, nil
 	case quitNoticeExpiredMsg:
 		if m.quitNotice && msg.at.Equal(m.quitAt) {
 			m.quitNotice = false

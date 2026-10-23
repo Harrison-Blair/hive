@@ -1,0 +1,4 @@
+row 0 col 119: want ' ' fg bold, got ' ' fg normal
+row 39 col 117: want ' ' dim normal, got ' ' fg normal
+row 39 col 118: want ' ' dim normal, got ' ' fg normal
+row 39 col 119: want ' ' dim normal, got ' ' fg normal

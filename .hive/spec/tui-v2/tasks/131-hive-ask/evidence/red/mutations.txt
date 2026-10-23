@@ -1,0 +1,160 @@
+## header limit
+internal/ask/ask.go: 'n > MaxHeader {' -> 'n > 99 {'
+fails: TestAskRejectsABadAskWithNoRecord, TestCreateRejectsEachLimitWithNoRecord
+
+## unknown field check
+internal/ask/ask.go: 'decoder.DisallowUnknownFields()' -> '_ = 0'
+fails: TestCreateRejectsEachLimitWithNoRecord
+
+## write the ask record
+internal/ask/ask.go: 'State:     StateOpen,\n\t\t}\n\t\tif err := locked.WriteIn(collection, recor' -> 'State:     StateOpen,\n\t\t}\n\t\tif err := error(nil); '
+fails: TestAnswerOfAStoppedAskerGoesToTheParent, TestAnswerRejectsAClosedAsk, TestAnswerSendsThePromptToTheAskerPane, TestAskReadsStdinAndPrintsTheID, TestCreateWritesOneOpenRecordAndReturnsAtOnce, TestDismissSendsTheDismissPrompt, TestFailedDeliveryKeepsTheAnswerAndTriesAgain, TestListGivesTheRecordsOldestFirst
+
+## refuse an ask with no live agent
+internal/ask/ask.go: '"hive ask needs a live agent: "+err.Error()' -> '"hive ask needs a live agent: "+err.Error()\n\t\t\tpha'
+fails: TestCreateNeedsALiveAsker
+
+## HEADER → LABEL part
+internal/ask/ask.go: 'part := question.Header + " → " + Labels(question, replies[index])' -> 'part := question.Header + " -> " + Labels(question'
+fails: TestAnswerOfAStoppedAskerGoesToTheParent, TestAnswerSendsThePromptToTheAskerPane, TestAnswerTextOfAStoppedAsker, TestAnswerTextOfOneQuestion, TestAnswerTextOfTwoQuestionsWithANoteAndOther, TestFailedDeliveryKeepsTheAnswerAndTriesAgain
+
+## (asker stopped) text
+internal/ask/ask.go: 'from += " (asker stopped)"' -> 'from += ""'
+fails: TestAnswerOfAStoppedAskerGoesToTheParent, TestAnswerTextOfAStoppedAsker
+
+## note part of the answer
+internal/ask/ask.go: 'part += " · note: " + replies[index].Note' -> 'part += ""'
+fails: TestAnswerOfAStoppedAskerGoesToTheParent, TestAnswerTextOfTwoQuestionsWithANoteAndOther
+
+## dismiss text
+internal/ask/ask.go: 'No answer comes.' -> 'No answer.'
+fails: TestDismissSendsTheDismissPrompt, TestDismissText
+
+## refuse a closed ask
+internal/ask/ask.go: 'if record.State != StateOpen {' -> 'if false {'
+fails: TestAnswerRejectsAClosedAsk
+
+## route to the live asker
+internal/ask/ask.go: 'candidate.Key == record.AskerKey && candidate.Status == records.AgentL' -> 'false'
+fails: TestAnswerSendsThePromptToTheAskerPane, TestAskCardHasTheFocusInNormalMode, TestAskJAndKMoveBetweenCards, TestAskTwoQuestionsWithMarksAndANote, TestDismissSendsTheDismissPrompt, TestFailedDeliveryKeepsTheAnswerAndTriesAgain, TestRouteGivesTheAskerOrTheParent
+
+## retry only an idle target
+internal/ask/ask.go: 'target.AgentStatus != "idle" && target.AgentStatus != "done"' -> 'false'
+fails: TestFailedDeliveryKeepsTheAnswerAndTriesAgain
+
+## oldest first
+internal/ask/ask.go: 'sort.Slice(listed, func(i, j int) bool { return sequence(listed[i].ID)' -> 'sort.Slice(listed, func(i, j int) bool { return se'
+fails: TestListGivesTheRecordsOldestFirst
+
+## --file is required
+cmd/ask/ask.go: 'if file == "" {' -> 'if false {'
+fails: TestAskNeedsTheFileFlag
+
+## read stdin
+cmd/ask/ask.go: 'data, err = io.ReadAll(cmd.InOrStdin())' -> 'data, err = io.ReadAll(io.LimitReader(cmd.InOrStdi'
+fails: TestAskReadsStdinAndPrintsTheID, TestAskRejectsABadAskWithNoRecord
+
+## read the file
+cmd/ask/ask.go: 'data, err = os.ReadFile(file)' -> 'data, err = []byte("{}"), nil'
+fails: TestAskReadsAFileAndPrintsTheEnvelope
+
+## print the ask ID
+cmd/ask/ask.go: 'return envelope, asklib.Text(envelope), nil' -> 'return envelope, "", nil'
+fails: TestAskReadsStdinAndPrintsTheID
+
+## ChatAsk board size
+internal/boardexport/check.go: '"ChatAsk":        {120, 40},' -> ''
+fails: TestCheckAcceptsTheAskBoards
+
+## one styled line
+internal/tui/component/chat.go: 'if m.Styled {\n\t\tif wide {' -> 'if false {\n\t\tif wide {'
+fails: TestStyledChatLineUsesOneLine
+
+## card focus state
+internal/tui/frame.go: 'if m.askFocused() {\n\t\t\treturn m.askFocusState()' -> 'if false {\n\t\t\treturn m.askFocusState()'
+fails: TestAskArrowsAndEnterPickTheCurrentOption, TestAskCardHasTheFocusInNormalMode, TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen, TestAskClickOnTheCardGivesItTheFocus, TestAskDigitPicksAndSendsASingleQuestion, TestAskJAndKMoveBetweenCards, TestAskNoteTabDropsAndCtrlBracketKeeps, TestAskOtherInAMultiSelectQuestion, TestAskOtherOpensATextLine, TestAskStoppedAskerShowsTheParent, TestAskTwoQuestionsWithMarksAndANote, TestAskWheelOverTheCardScrollsTheFeed, TestAskXDismisses, TestDemoBlocksTheAnswer
+
+## dock at most half the height
+internal/tui/chat.go: 'm.askDockView(width, height/2)' -> 'm.askDockView(width, height)'
+fails: TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen
+
+## digit picks
+internal/tui/ask.go: "key[0] >= '1' && key[0] <= '9'" -> "key[0] >= ':' && key[0] <= '9'"
+fails: TestAskDigitPicksAndSendsASingleQuestion, TestAskNoteTabDropsAndCtrlBracketKeeps, TestAskOtherInAMultiSelectQuestion, TestAskOtherOpensATextLine, TestAskTwoQuestionsWithMarksAndANote, TestDemoBlocksTheAnswer
+
+## arrows move
+internal/tui/ask.go: 'c.cursor[c.question] = min(max(c.cursor[c.question]+step, 0), last)' -> '_ = step'
+fails: TestAskArrowsAndEnterPickTheCurrentOption, TestAskTwoQuestionsWithMarksAndANote
+
+## enter moves to the next question
+internal/tui/ask.go: 'if q < len(record.Questions)-1 {' -> 'if false {'
+fails: TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen, TestAskOtherInAMultiSelectQuestion, TestAskTwoQuestionsWithMarksAndANote
+
+## tab drops the note
+internal/tui/ask.go: '*text = ""' -> ''
+fails: TestAskNoteTabDropsAndCtrlBracketKeeps
+
+## Other opens a line (multi)
+internal/tui/ask.go: 'card.setPick(index, on, true)\n\t\tif on && index == len(question.Options' -> 'card.setPick(index, on, true)\n\t\tif false {'
+fails: TestAskOtherInAMultiSelectQuestion
+
+## Other opens a line
+internal/tui/ask.go: 'if card.picks[q][other] && strings.TrimSpace(card.others[q]) == "" {' -> 'if card.picks[q][other] && false {'
+fails: TestAskOtherOpensATextLine
+
+## x dismisses
+internal/tui/ask.go: 'case "x":' -> 'case "x_":'
+fails: TestAskJAndKMoveBetweenCards, TestAskXDismisses
+
+## J and K
+internal/tui/ask.go: 'case "J", "K":' -> 'case "J_", "K_":'
+fails: TestAskJAndKMoveBetweenCards
+
+## stopped asker title
+internal/tui/ask.go: 'if route.stopped {\n\t\tnote =' -> 'if false {\n\t\tnote ='
+fails: TestAskStoppedAskerShowsTheParent
+
+## answer line in the feed
+internal/tui/ask.go: 'text.WriteString("answered " + record.Asker + " ·")' -> 'text.WriteString("answer " + record.Asker + " ·")'
+fails: TestAskHistoryShowsTheAnswerAndTheDismissal
+
+## a click on the card takes the focus
+internal/tui/ask.go: 'm.askFeedFocus = false\n\tcmd := m.stopChatInput()' -> 'cmd := m.stopChatInput()'
+fails: TestAskClickOnTheCardGivesItTheFocus
+
+## a click picks an option
+internal/tui/ask.go: 'return batch(cmd, m.askPick(record, card, ref.option))' -> 'return cmd'
+fails: TestAskMouseFocusesAndScrolls
+
+## tick retries the delivery
+internal/tui/ask.go: 'if m.demo != nil || m.askDelivering || m.header.askUndelivered == 0 {' -> 'if true {'
+fails: TestTickDeliversAWaitingAnswer
+
+## demo blocks the answer
+internal/tui/ask.go: 'return m.demoBlocked("ask " + action)' -> '_ = 0'
+fails: TestDemoBlocksTheAnswer
+
+## wheel over the card scrolls the feed
+internal/tui/mouse.go: 'if row < m.chatFeed.height+m.askDockHeight() {' -> 'if row < m.chatFeed.height {'
+fails: TestAskWheelOverTheCardScrollsTheFeed
+
+## header counts open asks
+internal/tui/header.go: 'case record.State == ask.StateOpen:\n\t\t\tstate.asks++' -> 'case true:\n\t\t\tstate.asks++'
+fails: TestHeaderShowsTheOpenAskRecords, TestReadHeaderCountsTheOpenAsks
+
+## header refresh path
+internal/tui/refresh.go: 'filepath.Join(state, "asks"),\n\t\tfilepath.Join(state, "claims"),' -> 'filepath.Join(state, "claims"),'
+fails: TestANewAskRefreshesTheHeaderAndChat
+
+## Chat refresh path
+internal/tui/refresh.go: 'filepath.Join(state, "asks"),\n\t\t\tfilepath.Join(state, "chat"),' -> 'filepath.Join(state, "chat"),'
+fails: TestANewAskRefreshesTheHeaderAndChat
+
+## Help ask line
+internal/tui/frame.go: 'dimStyle.Render("ask card: ↑↓ move · 1–5 pick · space mark · tab note ' -> ''
+fails: TestHelpListsTheAskKeys
+
+## no blank line inside one ask
+internal/tui/chat.go: '&& (!previousAsk || !msg.Styled)' -> '&& (!previousAsk || !msg.Styled || true)'
+fails: TestAskHistoryShowsTheAnswerAndTheDismissal
+

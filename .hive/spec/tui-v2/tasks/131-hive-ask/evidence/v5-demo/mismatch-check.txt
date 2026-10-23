@@ -1,0 +1,2 @@
+ChatAsk-120x40.ansi against ChatAskMulti.grid: 1526 cells differ of 4800
+CompactChatAsk-80x24.ansi (pane 81x25) against CompactAgents.grid: 1142 cells differ of 1920

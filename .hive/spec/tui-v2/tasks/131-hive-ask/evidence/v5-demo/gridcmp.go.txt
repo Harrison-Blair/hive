@@ -1,0 +1,44 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+)
+
+// gridcmp ANSI GRID W H DIFF [PANEW PANEH]: with a pane size, convert the
+// whole pane and crop its top-left W×H cells.
+func main() {
+	text, _ := os.ReadFile(os.Args[1])
+	w, _ := strconv.Atoi(os.Args[3])
+	h, _ := strconv.Atoi(os.Args[4])
+	pw, ph := w, h
+	if len(os.Args) > 7 {
+		pw, _ = strconv.Atoi(os.Args[6])
+		ph, _ = strconv.Atoi(os.Args[7])
+	}
+	pane, err := cellgrid.Convert(string(text), pw, ph)
+	if err != nil {
+		fmt.Println("convert:", err)
+		os.Exit(1)
+	}
+	got := cellgrid.Grid{Width: w, Height: h, Cells: make([]cellgrid.Cell, w*h)}
+	for r := 0; r < h; r++ {
+		copy(got.Cells[r*w:(r+1)*w], pane.Cells[r*pw:r*pw+w])
+	}
+	f, _ := os.Open(os.Args[2])
+	want, err := cellgrid.ReadGrid(f)
+	if err != nil {
+		fmt.Println("grid:", err)
+		os.Exit(1)
+	}
+	diffs, err := cellgrid.Compare(want, got, nil)
+	if err != nil {
+		fmt.Println("compare:", err)
+		os.Exit(1)
+	}
+	_ = os.WriteFile(os.Args[5], []byte(cellgrid.FormatDiffs(diffs)), 0o644)
+	fmt.Printf("%d cells differ of %d\n", len(diffs), w*h)
+}

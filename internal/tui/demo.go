@@ -16,6 +16,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -66,6 +67,7 @@ type demoData struct {
 	Friction   []demoFriction             `json:"friction"`
 	Checks     []doctor.Check             `json:"checks"`
 	Chat       []chatlib.Entry            `json:"chat"`
+	Asks       []ask.Record               `json:"asks"`
 	Logs       []json.RawMessage          `json:"logs"`
 	Files      map[string]string          `json:"files"`
 }
@@ -107,6 +109,19 @@ type demoUIState struct {
 	ChatNoise      string                `json:"chat_noise"`
 	ChatInput      string                `json:"chat_input"`
 	ChatEventsOpen bool                  `json:"chat_events_open"`
+	Ask            demoAsk               `json:"ask"`
+}
+
+// demoAsk is the UI state of the card of an open ask. Question and option
+// count from 1. Picks gives the picked options of each question.
+type demoAsk struct {
+	Card     string   `json:"card"`
+	Question int      `json:"question"`
+	Option   int      `json:"option"`
+	Picks    [][]int  `json:"picks"`
+	Notes    []string `json:"notes"`
+	Other    []string `json:"other"`
+	NoteOpen bool     `json:"note_open"`
 }
 
 type demoScroll struct {
@@ -134,7 +149,7 @@ var (
 		"health":   {"home", "agents"},
 		"logs":     {""},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "list", "details", "filter", "events", "json"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "list", "details", "filter", "events", "json"}
 	demoOverlays   = []string{"", "details", "help"}
 	demoPopups     = []string{"", "agent-details"}
 	demoPrompts    = []string{"", "restart"}
@@ -259,7 +274,7 @@ func ParseDemoSize(value string) (int, int, error) {
 func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	data := fixture.Data
 	m.headerLoader = func(string) (headerState, error) {
-		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks), nil
+		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks, data.Asks), nil
 	}
 	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {
 		unread := make(map[string][]records.Inbox, len(data.Inbox))
@@ -315,7 +330,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		return doctor.Result{Checks: slices.Clone(data.Checks)}
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
-		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), now), nil
+		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), data.Asks, data.Agents, now), nil
 	}
 	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
 		return demoLogEvents(data.Logs), nil
@@ -408,7 +423,43 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	if scroll, ok := ui.Scroll["feed"]; ok {
 		m.chatFeed.topItem = scroll.Top
 	}
+	m.applyDemoAsk(ui)
 	m.applyDemoFrame(ui)
+}
+
+// applyDemoAsk sets the card state of the fixture. The focus feed gives the
+// feed the focus.
+func (m *Model) applyDemoAsk(ui demoUIState) {
+	if ui.Screen != "chat" {
+		return
+	}
+	m.askFeedFocus = ui.Focus == "feed"
+	if ui.Ask.Card == "" || m.demo == nil {
+		return
+	}
+	m.askFocusID = ui.Ask.Card
+	for _, record := range m.demo.fixture.Data.Asks {
+		if record.ID != ui.Ask.Card {
+			continue
+		}
+		card := m.askCardOf(record)
+		card.question = min(max(ui.Ask.Question-1, 0), len(record.Questions)-1)
+		card.cursor[card.question] = max(ui.Ask.Option-1, 0)
+		for index, picks := range ui.Ask.Picks {
+			for _, pick := range picks {
+				if index < len(card.picks) && pick >= 1 && pick <= len(card.picks[index]) {
+					card.picks[index][pick-1] = true
+				}
+			}
+		}
+		copy(card.notes, ui.Ask.Notes)
+		copy(card.others, ui.Ask.Other)
+		card.noteOpen = ui.Ask.NoteOpen
+		switch ui.Focus {
+		case "note", "other":
+			card.editing = ui.Focus
+		}
+	}
 }
 
 // applyDemoFrame sets the tab, the view, the focus, the overlay, the popup,

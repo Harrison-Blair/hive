@@ -1,0 +1,9 @@
+{"Time":"2026-10-23T00:32:28.719604595-04:00","Action":"start","Package":"github.com/Harrison-Blair/hive/internal/tui"}
+{"Time":"2026-10-23T00:32:28.726588604-04:00","Action":"run","Package":"github.com/Harrison-Blair/hive/internal/tui","Test":"TestABlockedCallerCannotAnswer"}
+{"Time":"2026-10-23T00:32:28.726623028-04:00","Action":"output","Package":"github.com/Harrison-Blair/hive/internal/tui","Test":"TestABlockedCallerCannotAnswer","Output":"=== RUN   TestABlockedCallerCannotAnswer\n","OutputType":"frame"}
+{"Time":"2026-10-23T00:32:28.72685518-04:00","Action":"output","Package":"github.com/Harrison-Blair/hive/internal/tui","Test":"TestABlockedCallerCannotAnswer","Output":"    ask_test.go:547: a blocked caller sent [{answer a1 [{[1]  }]}]\n","OutputType":"error"}
+{"Time":"2026-10-23T00:32:28.72689327-04:00","Action":"output","Package":"github.com/Harrison-Blair/hive/internal/tui","Test":"TestABlockedCallerCannotAnswer","Output":"--- FAIL: TestABlockedCallerCannotAnswer (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-23T00:32:28.726896006-04:00","Action":"fail","Package":"github.com/Harrison-Blair/hive/internal/tui","Test":"TestABlockedCallerCannotAnswer","Elapsed":0}
+{"Time":"2026-10-23T00:32:28.726913729-04:00","Action":"output","Package":"github.com/Harrison-Blair/hive/internal/tui","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-10-23T00:32:28.727035735-04:00","Action":"output","Package":"github.com/Harrison-Blair/hive/internal/tui","Output":"FAIL\tgithub.com/Harrison-Blair/hive/internal/tui\t0.007s\n","OutputType":"frame"}
+{"Time":"2026-10-23T00:32:28.727051294-04:00","Action":"fail","Package":"github.com/Harrison-Blair/hive/internal/tui","Elapsed":0.007}

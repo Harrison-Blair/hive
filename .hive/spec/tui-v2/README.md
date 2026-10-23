@@ -54,6 +54,11 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `ChatNormal.dc.html` | 2 Chat, normal mode | 120×40 |
 | `ChatInput.dc.html` | 2 Chat, input mode | 120×40 |
 | `CompactChatNormal.dc.html` | 2 Chat, normal mode | 80×24 |
+| `ChatAsk.dc.html` | 2 Chat, one open ask | 120×40 |
+| `ChatAskMulti.dc.html` | 2 Chat, an ask with two questions and a `note` line | 120×40 |
+| `ChatAskPreview.dc.html` | 2 Chat, an ask with a preview | 120×40 |
+| `ChatAskStopped.dc.html` | 2 Chat, an ask of a stopped agent | 120×40 |
+| `CompactChatAsk.dc.html` | 2 Chat, one open ask | 80×24 |
 
 ## Out of scope
 
@@ -396,6 +401,38 @@ The boards `ChatNormal`, `ChatInput`, and `CompactChatNormal` show these decisio
 89. On 2026-10-23 the user approved the 14 rule cases and the code grids of task `126-chat-modes-mouse`. The approval removes `click feed leave` from the input footer and adds `ctrl+o events`, as decision 57 gives. A click on the feed still stops input mode.
 
 90. The approved grids of task `126-chat-modes-mouse` replace 41 grids in `design/`. Each grid is the exporter output of its approved board, and it equals its grid in `tasks/126-chat-modes-mouse/evidence/new-grids/`. The 8 Chat boards (`Chat`, `ChatEvents`, `ChatStatus`, `ChatNormal`, `ChatInput`, `CompactChat`, `CompactChatStatus`, `CompactChatNormal`) and the boards `Help` and `Main` are the canvas copies that the user approved. In 30 other boards, row 0 has the ask count. In `Components`, row 7 has the ask count. The grid `TooSmall` does not change.
+
+### Ask the user
+
+Task `131-hive-ask` of the goal `g6-hive-ask` adds these decisions. The boards `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, and `CompactChatAsk` show them.
+
+91. An agent asks the user with `hive ask --file FILE`. `--file -` reads the standard input. The command reads one ask as JSON, writes one ask record, and prints `ask ID open`. It does not wait for the answer. With `--json`, it prints the standard result object. Only a live agent can ask. Each role skill tells the agent to use `hive ask` and never the question tool of its harness.
+
+92. The ask JSON has the shape of the native question tool. `questions` is a list of 1 to 4 items. Each item has `question`, `header`, and `options`, and an optional `multiSelect`. A `header` has 12 characters or less. `options` is a list of 2 to 5 items. Each option has `label` and `description`, and an optional `preview`. The command refuses an unknown field and each broken limit. It then writes no record and prints the cause.
+
+93. The ask record is `.hive/state/asks/ID.json`. The ID is `a` and a number from the counter `ask`. The record has these fields: `id`, `asker`, `asker_key`, `parent`, `parent_key`, `created_at`, `questions`, `state`, `replies`, `closed_at`, `delivered_at`, `delivered_to`, `attempts`, and `last_error`. `parent` is the parent of the asker at the time of the ask. `state` is `open`, `answered`, or `dismissed`. Each reply has `picks`, `other`, and `note`. A pick is the 1-based number of an option. The number after the last option is `Other`. Hive logs each ask, each answer, each dismiss, and each delivery try with the component `ask`.
+
+94. Hive adds the row `Other: type an answer` after the options of each question. The ask JSON does not give it. A pick of the row opens a text line `other › TEXT`. The footer then starts with `[other]`. `enter` picks the row with the text and does the function of `enter` on the card. `ctrl+]` closes the line and keeps the text. The typed text is the label of `Other` in the answer.
+
+95. Each open ask is a card in a dock between the feed and the input, at the full width. The dock has the heavy border. It is at most half of the screen height. When the card has more lines, the card scrolls and keeps the current question in view. The card title is `? ASKER asks · HEADERS`. The right side of the top border shows `open · I of N`, and `· J next` when a next card exists. Below 120 columns, it shows `I of N`. When the asker stopped, it shows `asker stopped · answer goes to PARENT` in `accent` bold.
+
+96. The card shows each question in order. Each option row is `NUMBER [ ] LABEL` and the description. At 120 columns, the description starts at column 36. The current row starts with `›`. A picked option has `[x]` in `accent`. A question with a `preview` shows a box on the right of the options with the title ` preview · N `. The box shows the preview of the current option. The bottom border shows one hint for the card.
+
+97. The oldest open card has the focus first. When a card has the focus, the footer starts with `[ask]`. `↑` and `↓` move. `1` to `5` picks an option. The digit after the last option picks the `Other` row. `space` marks an option of a multi-select question. `enter` picks the current option and moves to the next question. `enter` on the last question sends the answer. `x` dismisses the card. `J` and `K` move to the next and the previous card. `i` starts input mode. `ctrl+]` gives the focus back to the card. The wheel, `pgup`, and `pgdn` scroll the feed. A click on an option picks it. A click on the feed gives the focus to the feed. A click on the card gives the focus back to the card.
+
+98. `tab` opens a `note` line `note › TEXT` below the current question. The footer then starts with `[note]`. `enter` sends the answer with the text. `tab` closes the line and drops the text. `ctrl+]` closes the line and keeps the text. `↑` and `↓` move to an option.
+
+99. The feed shows one line for each ask, at the time of the ask, from the asker. The line is `? asked · HEADERS · open below` in `accent` for the card with the focus. Below 120 columns, it is `? asked · HEADERS · below`. For another open card, it is `? asked · HEADERS · waits · I of N`. When the asker stopped, `· asker stopped` follows the headers. After an answer, the feed shows a line from `you`: `answered ASKER · HEADER → PICKS`, with `→ PICKS` in `accent` bold. After a dismiss, the line is `dismissed ASKER · HEADERS`. These lines stay in the chat history. There is no blank line between the lines of one ask.
+
+100. Hive sends the answer as one prompt to the pane of the asker, on the path of `hive chat`. The text is `⬢ user: answer to ask ID from ASKER · HEADER → LABEL; HEADER → LABEL, LABEL · note: TEXT`. Each question has one `HEADER → LABELS` part, in order. A `· note: TEXT` part follows a question that has a `note`. When the asker stopped, hive sends the text to the parent of the asker, with `(asker stopped)` after `from ASKER`. When the parent also stopped, hive sends it to a live agent that has the name of the parent.
+
+101. On `x`, hive sends `⬢ hive: the user dismissed ask ID from ASKER · HEADERS. No answer comes.` to the same agent as decision 100 gives. When a delivery fails, the ask keeps its state and its replies, and the record keeps the error. The TUI tries the delivery again on a tick when the target pane is `idle` or `done`. Hive logs each try. In demo mode, the answer and the dismiss show the demo notice and change no record.
+
+102. The header count of decision 87 is the number of open asks. The TUI reads it from `.hive/state/asks`. A new ask record refreshes the header and the Chat screen. The Help overlay has the line `ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card` below the CHAT lines.
+
+103. The 5 ask boards break 13 rules that exist. Each case is the same as an approved case of task `126-chat-modes-mouse`. The evidence of task `131-hive-ask` lists the 13 cases in `board-rule-cases.md`. The code follows the rules.
+
+104. On 2026-10-23 the user approved the 13 rule cases and the 6 code grids of task `131-hive-ask` (rule A, as for task `126-chat-modes-mouse`). The approved boards `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, `CompactChatAsk`, and `Help` replace the boards and the grids in `design/`. For the 5 ask boards, they replace the staged boards of the task. Each grid is the exporter output of its approved board, and it equals its grid in `tasks/131-hive-ask/evidence/new-grids/`. No other grid changes.
 
 ## Waves
 
