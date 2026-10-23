@@ -23,4 +23,5 @@
 // markdown_style.go holds the Glamour style of decision 29.
 // chat.go holds ChatLines, the lines of the chat feed.
 // statusrow.go holds StatusRow, a status row of segments and the clock.
+// titlerow.go holds TitleRow, the title row and the rule of a screen.
 package component
