@@ -8,6 +8,26 @@
 | Grant | Goal `g10-ask-confirm`. The user chose review on every card in chat `c186` and approved the plan in `c188`. |
 | Evidence | The `evidence/` folder beside this brief. Put `VERIFIED.md` there. |
 
+## User approval: 2026-10-23
+
+Coordinator inbox record 554 relays the user approval: use package `6c466dc6` as the golden files.
+The approval uses the same rule as tasks 126, 131, and 134.
+It includes Send selected after an edit returns to review.
+It includes arrow paging through a highlighted row taller than the dock.
+
+Install the approved review boards and golden grids.
+Keep every other grid unchanged.
+Record coordinator record 554 and package `6c466dc6` in the evidence.
+The manager clears task and wave `needs_user`.
+No approval hold remains for these grids.
+Report any rendering that disagrees with the approved package before a design change.
+
+V4 passed at commit `259aa9d7` before this approval.
+Repeat a worker delivery check only if a later behavior change affects that check.
+The independent verifier must rerun delivery checks with the intended scratch stub executable.
+Check that executable before any test delivery.
+Never run a test TUI or send a test prompt on the real home.
+
 ## Authority and plan
 
 Coordinator inbox record 537 assigns this goal.
@@ -18,7 +38,7 @@ Task 134 landed, so this task can start.
 1. Write failing tests for review before delivery.
 2. Add the smallest card state and layout change.
 3. Commit code grids and live captures for user approval.
-4. Hold board and golden changes until the manager sends approval.
+4. Install the grids approved in coordinator record 554.
 5. Apply the approved grids and complete each verification item.
 
 ## Design

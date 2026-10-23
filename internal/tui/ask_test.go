@@ -16,7 +16,7 @@ import (
 )
 
 func TestAskBoardsMatch(t *testing.T) {
-	for _, board := range []string{"ChatAsk", "ChatAskMulti", "ChatAskPreview", "ChatAskStopped", "CompactChatAsk"} {
+	for _, board := range []string{"ChatAsk", "ChatAskMulti", "ChatAskPreview", "ChatAskStopped", "CompactChatAsk", "ChatAskReview", "ChatAskReviewMulti", "CompactChatAskReview"} {
 		t.Run(board, func(t *testing.T) { checkBoard(t, board) })
 	}
 }

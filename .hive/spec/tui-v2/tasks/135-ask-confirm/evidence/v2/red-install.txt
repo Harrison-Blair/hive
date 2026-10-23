@@ -1,0 +1,430 @@
+--- FAIL: TestCheckAcceptsTheAskBoards (0.00s)
+    check_test.go:239: board ChatAskReview: not in the spec table
+    check_test.go:239: board ChatAskReviewMulti: not in the spec table
+    check_test.go:239: board CompactChatAskReview: not in the spec table
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
+FAIL
+--- FAIL: TestAskBoardsMatch (0.01s)
+    --- FAIL: TestAskBoardsMatch/ChatAsk (0.00s)
+        ask_test.go:20: 112 cells differ from ChatAsk.grid:
+            row 35 col 31: want 's' dim normal, got 'r' dim normal
+            row 35 col 33: want 'n' dim normal, got 'v' dim normal
+            row 35 col 34: want 'd' dim normal, got 'i' dim normal
+            row 35 col 35: want ' ' dim normal, got 'e' dim normal
+            row 35 col 36: want '·' dim normal, got 'w' dim normal
+            row 35 col 38: want 't' dim normal, got '·' dim normal
+            row 35 col 39: want 'a' dim normal, got ' ' dim normal
+            row 35 col 40: want 'b' dim normal, got 't' dim normal
+            row 35 col 41: want ' ' dim normal, got 'a' dim normal
+            row 35 col 42: want 'n' dim normal, got 'b' dim normal
+            row 35 col 43: want 'o' dim normal, got ' ' dim normal
+            row 35 col 44: want 't' dim normal, got 'n' dim normal
+            row 35 col 45: want 'e' dim normal, got 'o' dim normal
+            row 35 col 46: want ' ' dim normal, got 't' dim normal
+            row 35 col 47: want '·' dim normal, got 'e' dim normal
+            row 35 col 49: want 'x' dim normal, got '·' dim normal
+            row 35 col 51: want 'd' dim normal, got 'x' dim normal
+            row 35 col 52: want 'i' dim normal, got ' ' dim normal
+            row 35 col 53: want 's' dim normal, got 'd' dim normal
+            row 35 col 54: want 'm' dim normal, got 'i' dim normal
+            row 35 col 55: want 'i' dim normal, got 's' dim normal
+            row 35 col 56: want 's' dim normal, got 'm' dim normal
+            row 35 col 57: want 's' dim normal, got 'i' dim normal
+            row 35 col 58: want ' ' dim normal, got 's' dim normal
+            row 35 col 59: want '·' dim normal, got 's' dim normal
+            row 35 col 61: want 'J' dim normal, got '·' dim normal
+            row 35 col 62: want '/' dim normal, got ' ' dim normal
+            row 35 col 63: want 'K' dim normal, got 'J' dim normal
+            row 35 col 64: want ' ' dim normal, got '/' dim normal
+            row 35 col 65: want 'c' dim normal, got 'K' dim normal
+            row 35 col 66: want 'a' dim normal, got ' ' dim normal
+            row 35 col 67: want 'r' dim normal, got 'c' dim normal
+            row 35 col 68: want 'd' dim normal, got 'a' dim normal
+            row 35 col 69: want ' ' dim normal, got 'r' dim normal
+            row 35 col 70: want '━' accent normal, got 'd' dim normal
+            row 35 col 71: want '━' accent normal, got ' ' dim normal
+            row 39 col 35: want 's' dim normal, got 'r' dim normal
+            row 39 col 37: want 'n' dim normal, got 'v' dim normal
+            row 39 col 38: want 'd' dim normal, got 'i' dim normal
+            row 39 col 39: want ' ' dim normal, got 'e' dim normal
+            row 39 col 40: want '·' dim normal, got 'w' dim normal
+            row 39 col 42: want 't' dim normal, got '·' dim normal
+            row 39 col 43: want 'a' dim normal, got ' ' dim normal
+            row 39 col 44: want 'b' dim normal, got 't' dim normal
+            row 39 col 45: want ' ' dim normal, got 'a' dim normal
+            row 39 col 46: want 'n' dim normal, got 'b' dim normal
+            row 39 col 47: want 'o' dim normal, got ' ' dim normal
+            row 39 col 48: want 't' dim normal, got 'n' dim normal
+            row 39 col 49: want 'e' dim normal, got 'o' dim normal
+            row 39 col 50: want ' ' dim normal, got 't' dim normal
+            row 39 col 51: want '·' dim normal, got 'e' dim normal
+            row 39 col 53: want 'x' dim normal, got '·' dim normal
+            row 39 col 55: want 'd' dim normal, got 'x' dim normal
+            row 39 col 56: want 'i' dim normal, got ' ' dim normal
+            row 39 col 57: want 's' dim normal, got 'd' dim normal
+            row 39 col 58: want 'm' dim normal, got 'i' dim normal
+            row 39 col 59: want 'i' dim normal, got 's' dim normal
+            row 39 col 60: want 's' dim normal, got 'm' dim normal
+            row 39 col 61: want 's' dim normal, got 'i' dim normal
+            row 39 col 62: want ' ' dim normal, got 's' dim normal
+            row 39 col 63: want '·' dim normal, got 's' dim normal
+            row 39 col 65: want 'J' dim normal, got '·' dim normal
+            row 39 col 66: want '/' dim normal, got ' ' dim normal
+            row 39 col 67: want 'K' dim normal, got 'J' dim normal
+            row 39 col 68: want ' ' dim normal, got '/' dim normal
+            row 39 col 69: want 'n' dim normal, got 'K' dim normal
+            row 39 col 70: want 'e' dim normal, got ' ' dim normal
+            row 39 col 71: want 'x' dim normal, got 'n' dim normal
+            row 39 col 72: want 't' dim normal, got 'e' dim normal
+            row 39 col 73: want '/' dim normal, got 'x' dim normal
+            row 39 col 74: want 'p' dim normal, got 't' dim normal
+            row 39 col 75: want 'r' dim normal, got '/' dim normal
+            row 39 col 76: want 'e' dim normal, got 'p' dim normal
+            row 39 col 77: want 'v' dim normal, got 'r' dim normal
+            row 39 col 78: want ' ' dim normal, got 'e' dim normal
+            row 39 col 79: want 'c' dim normal, got 'v' dim normal
+            row 39 col 80: want 'a' dim normal, got ' ' dim normal
+            row 39 col 81: want 'r' dim normal, got 'c' dim normal
+            row 39 col 82: want 'd' dim normal, got 'a' dim normal
+            row 39 col 83: want ' ' dim normal, got 'r' dim normal
+            row 39 col 84: want '·' dim normal, got 'd' dim normal
+            row 39 col 86: want 'w' dim normal, got '·' dim normal
+            row 39 col 87: want 'h' dim normal, got ' ' dim normal
+            row 39 col 88: want 'e' dim normal, got 'w' dim normal
+            row 39 col 89: want 'e' dim normal, got 'h' dim normal
+            row 39 col 90: want 'l' dim normal, got 'e' dim normal
+            row 39 col 91: want '/' dim normal, got 'e' dim normal
+            row 39 col 92: want 'p' dim normal, got 'l' dim normal
+            row 39 col 93: want 'g' dim normal, got '/' dim normal
+            row 39 col 94: want 'u' dim normal, got 'p' dim normal
+            row 39 col 95: want 'p' dim normal, got 'g' dim normal
+            row 39 col 96: want ' ' dim normal, got 'u' dim normal
+            row 39 col 97: want 's' dim normal, got 'p' dim normal
+            row 39 col 98: want 'c' dim normal, got ' ' dim normal
+            row 39 col 99: want 'r' dim normal, got 's' dim normal
+            row 39 col 100: want 'o' dim normal, got 'c' dim normal
+            row 39 col 101: want 'l' dim normal, got 'r' dim normal
+            row 39 col 102: want 'l' dim normal, got 'o' dim normal
+            row 39 col 103: want ' ' dim normal, got 'l' dim normal
+            row 39 col 104: want 'f' dim normal, got 'l' dim normal
+            row 39 col 105: want 'e' dim normal, got ' ' dim normal
+            row 39 col 106: want 'e' dim normal, got 'f' dim normal
+            row 39 col 107: want 'd' dim normal, got 'e' dim normal
+            row 39 col 108: want ' ' dim normal, got 'e' dim normal
+            row 39 col 109: want '·' dim normal, got 'd' dim normal
+            row 39 col 111: want 'i' dim normal, got '·' dim normal
+            row 39 col 113: want 't' dim normal, got 'i' dim normal
+            row 39 col 114: want 'y' dim normal, got ' ' dim normal
+            row 39 col 115: want 'p' dim normal, got 't' dim normal
+            row 39 col 116: want 'e' dim normal, got 'y' dim normal
+            row 39 col 117: want ' ' dim normal, got 'p' dim normal
+            row 39 col 118: want ' ' dim normal, got 'e' dim normal
+    --- FAIL: TestAskBoardsMatch/ChatAskMulti (0.00s)
+        ask_test.go:20: 59 cells differ from ChatAskMulti.grid:
+            row 35 col 63: want 's' dim normal, got 'r' dim normal
+            row 35 col 65: want 'n' dim normal, got 'v' dim normal
+            row 35 col 66: want 'd' dim normal, got 'i' dim normal
+            row 35 col 67: want 's' dim normal, got 'e' dim normal
+            row 35 col 68: want ' ' dim normal, got 'w' dim normal
+            row 35 col 69: want '━' accent normal, got 's' dim normal
+            row 35 col 70: want '━' accent normal, got ' ' dim normal
+            row 39 col 28: want 's' dim normal, got 'k' dim normal
+            row 39 col 30: want 'n' dim normal, got 'e' dim normal
+            row 39 col 31: want 'd' dim normal, got 'p' dim normal
+            row 39 col 33: want 'w' dim normal, got 'n' dim normal
+            row 39 col 34: want 'i' dim normal, got 'o' dim normal
+            row 39 col 36: want 'h' dim normal, got 'e' dim normal
+            row 39 col 38: want 'n' dim normal, got '·' dim normal
+            row 39 col 39: want 'o' dim normal, got ' ' dim normal
+            row 39 col 41: want 'e' dim normal, got 'a' dim normal
+            row 39 col 42: want ' ' dim normal, got 'b' dim normal
+            row 39 col 43: want '·' dim normal, got ' ' dim normal
+            row 39 col 44: want ' ' dim normal, got 'c' dim normal
+            row 39 col 45: want 't' dim normal, got 'l' dim normal
+            row 39 col 46: want 'a' dim normal, got 'o' dim normal
+            row 39 col 47: want 'b' dim normal, got 's' dim normal
+            row 39 col 48: want ' ' dim normal, got 'e' dim normal
+            row 39 col 49: want 'c' dim normal, got ' ' dim normal
+            row 39 col 50: want 'l' dim normal, got 'n' dim normal
+            row 39 col 52: want 's' dim normal, got 't' dim normal
+            row 39 col 55: want 'n' dim normal, got '·' dim normal
+            row 39 col 56: want 'o' dim normal, got ' ' dim normal
+            row 39 col 57: want 't' dim normal, got 'c' dim normal
+            row 39 col 58: want 'e' dim normal, got 't' dim normal
+            row 39 col 59: want ' ' dim normal, got 'r' dim normal
+            row 39 col 60: want '·' dim normal, got 'l' dim normal
+            row 39 col 61: want ' ' dim normal, got '+' dim normal
+            row 39 col 62: want 'c' dim normal, got ']' dim normal
+            row 39 col 63: want 't' dim normal, got ' ' dim normal
+            row 39 col 64: want 'r' dim normal, got 'l' dim normal
+            row 39 col 65: want 'l' dim normal, got 'e' dim normal
+            row 39 col 66: want '+' dim normal, got 'a' dim normal
+            row 39 col 67: want ']' dim normal, got 'v' dim normal
+            row 39 col 68: want ' ' dim normal, got 'e' dim normal
+            row 39 col 69: want 'l' dim normal, got ' ' dim normal
+            row 39 col 70: want 'e' dim normal, got 'n' dim normal
+            row 39 col 71: want 'a' dim normal, got 'o' dim normal
+            row 39 col 72: want 'v' dim normal, got 't' dim normal
+            row 39 col 75: want 'n' dim normal, got '·' dim normal
+            row 39 col 76: want 'o' dim normal, got ' ' dim normal
+            row 39 col 77: want 't' dim normal, got '↑' dim normal
+            row 39 col 78: want 'e' dim normal, got '↓' dim normal
+            row 39 col 80: want '·' dim normal, got 'o' dim normal
+            row 39 col 81: want ' ' dim normal, got 'p' dim normal
+            row 39 col 82: want '↑' dim normal, got 't' dim normal
+            row 39 col 83: want '↓' dim normal, got 'i' dim normal
+            row 39 col 84: want ' ' dim normal, got 'o' dim normal
+            row 39 col 85: want 'o' dim normal, got 'n' dim normal
+            row 39 col 86: want 'p' dim normal, got ' ' dim normal
+            row 39 col 87: want 't' dim normal, got ' ' dim normal
+            row 39 col 88: want 'i' dim normal, got ' ' dim normal
+            row 39 col 89: want 'o' dim normal, got ' ' dim normal
+            row 39 col 90: want 'n' dim normal, got ' ' dim normal
+    --- FAIL: TestAskBoardsMatch/ChatAskPreview (0.00s)
+        ask_test.go:20: 82 cells differ from ChatAskPreview.grid:
+            row 35 col 52: want 's' dim normal, got 'r' dim normal
+            row 35 col 54: want 'n' dim normal, got 'v' dim normal
+            row 35 col 55: want 'd' dim normal, got 'i' dim normal
+            row 35 col 56: want ' ' dim normal, got 'e' dim normal
+            row 35 col 57: want '━' accent normal, got 'w' dim normal
+            row 35 col 58: want '━' accent normal, got ' ' dim normal
+            row 39 col 35: want 's' dim normal, got 'r' dim normal
+            row 39 col 37: want 'n' dim normal, got 'v' dim normal
+            row 39 col 38: want 'd' dim normal, got 'i' dim normal
+            row 39 col 39: want ' ' dim normal, got 'e' dim normal
+            row 39 col 40: want '·' dim normal, got 'w' dim normal
+            row 39 col 42: want 't' dim normal, got '·' dim normal
+            row 39 col 43: want 'a' dim normal, got ' ' dim normal
+            row 39 col 44: want 'b' dim normal, got 't' dim normal
+            row 39 col 45: want ' ' dim normal, got 'a' dim normal
+            row 39 col 46: want 'n' dim normal, got 'b' dim normal
+            row 39 col 47: want 'o' dim normal, got ' ' dim normal
+            row 39 col 48: want 't' dim normal, got 'n' dim normal
+            row 39 col 49: want 'e' dim normal, got 'o' dim normal
+            row 39 col 50: want ' ' dim normal, got 't' dim normal
+            row 39 col 51: want '·' dim normal, got 'e' dim normal
+            row 39 col 53: want 'x' dim normal, got '·' dim normal
+            row 39 col 55: want 'd' dim normal, got 'x' dim normal
+            row 39 col 56: want 'i' dim normal, got ' ' dim normal
+            row 39 col 57: want 's' dim normal, got 'd' dim normal
+            row 39 col 58: want 'm' dim normal, got 'i' dim normal
+            row 39 col 59: want 'i' dim normal, got 's' dim normal
+            row 39 col 60: want 's' dim normal, got 'm' dim normal
+            row 39 col 61: want 's' dim normal, got 'i' dim normal
+            row 39 col 62: want ' ' dim normal, got 's' dim normal
+            row 39 col 63: want '·' dim normal, got 's' dim normal
+            row 39 col 65: want 'J' dim normal, got '·' dim normal
+            row 39 col 66: want '/' dim normal, got ' ' dim normal
+            row 39 col 67: want 'K' dim normal, got 'J' dim normal
+            row 39 col 68: want ' ' dim normal, got '/' dim normal
+            row 39 col 69: want 'n' dim normal, got 'K' dim normal
+            row 39 col 70: want 'e' dim normal, got ' ' dim normal
+            row 39 col 71: want 'x' dim normal, got 'n' dim normal
+            row 39 col 72: want 't' dim normal, got 'e' dim normal
+            row 39 col 73: want '/' dim normal, got 'x' dim normal
+            row 39 col 74: want 'p' dim normal, got 't' dim normal
+            row 39 col 75: want 'r' dim normal, got '/' dim normal
+            row 39 col 76: want 'e' dim normal, got 'p' dim normal
+            row 39 col 77: want 'v' dim normal, got 'r' dim normal
+            row 39 col 78: want ' ' dim normal, got 'e' dim normal
+            row 39 col 79: want 'c' dim normal, got 'v' dim normal
+            row 39 col 80: want 'a' dim normal, got ' ' dim normal
+            row 39 col 81: want 'r' dim normal, got 'c' dim normal
+            row 39 col 82: want 'd' dim normal, got 'a' dim normal
+            row 39 col 83: want ' ' dim normal, got 'r' dim normal
+            row 39 col 84: want '·' dim normal, got 'd' dim normal
+            row 39 col 86: want 'w' dim normal, got '·' dim normal
+            row 39 col 87: want 'h' dim normal, got ' ' dim normal
+            row 39 col 88: want 'e' dim normal, got 'w' dim normal
+            row 39 col 89: want 'e' dim normal, got 'h' dim normal
+            row 39 col 90: want 'l' dim normal, got 'e' dim normal
+            row 39 col 91: want '/' dim normal, got 'e' dim normal
+            row 39 col 92: want 'p' dim normal, got 'l' dim normal
+            row 39 col 93: want 'g' dim normal, got '/' dim normal
+            row 39 col 94: want 'u' dim normal, got 'p' dim normal
+            row 39 col 95: want 'p' dim normal, got 'g' dim normal
+            row 39 col 96: want ' ' dim normal, got 'u' dim normal
+            row 39 col 97: want 's' dim normal, got 'p' dim normal
+            row 39 col 98: want 'c' dim normal, got ' ' dim normal
+            row 39 col 99: want 'r' dim normal, got 's' dim normal
+            row 39 col 100: want 'o' dim normal, got 'c' dim normal
+            row 39 col 101: want 'l' dim normal, got 'r' dim normal
+            row 39 col 102: want 'l' dim normal, got 'o' dim normal
+            row 39 col 103: want ' ' dim normal, got 'l' dim normal
+            row 39 col 104: want 'f' dim normal, got 'l' dim normal
+            row 39 col 105: want 'e' dim normal, got ' ' dim normal
+            row 39 col 106: want 'e' dim normal, got 'f' dim normal
+            row 39 col 107: want 'd' dim normal, got 'e' dim normal
+            row 39 col 108: want ' ' dim normal, got 'e' dim normal
+            row 39 col 109: want '·' dim normal, got 'd' dim normal
+            row 39 col 111: want 'i' dim normal, got '·' dim normal
+            row 39 col 113: want 't' dim normal, got 'i' dim normal
+            row 39 col 114: want 'y' dim normal, got ' ' dim normal
+            row 39 col 115: want 'p' dim normal, got 't' dim normal
+            row 39 col 116: want 'e' dim normal, got 'y' dim normal
+            row 39 col 117: want ' ' dim normal, got 'p' dim normal
+            row 39 col 118: want ' ' dim normal, got 'e' dim normal
+    --- FAIL: TestAskBoardsMatch/ChatAskStopped (0.00s)
+        ask_test.go:20: 97 cells differ from ChatAskStopped.grid:
+            row 35 col 9: want 's' dim normal, got 'r' dim normal
+            row 35 col 11: want 'n' dim normal, got 'v' dim normal
+            row 35 col 12: want 'd' dim normal, got 'i' dim normal
+            row 35 col 13: want 's' dim normal, got 'e' dim normal
+            row 35 col 14: want ' ' dim normal, got 'w' dim normal
+            row 35 col 15: want 't' dim normal, got ' ' dim normal
+            row 35 col 16: want 'o' dim normal, got '·' dim normal
+            row 35 col 18: want 'm' dim normal, got 's' dim normal
+            row 35 col 19: want 'a' dim normal, got 'e' dim normal
+            row 35 col 21: want 'a' dim normal, got 'd' dim normal
+            row 35 col 22: want 'g' dim normal, got 's' dim normal
+            row 35 col 23: want 'e' dim normal, got ' ' dim normal
+            row 35 col 24: want 'r' dim normal, got 't' dim normal
+            row 35 col 25: want '-' dim normal, got 'o' dim normal
+            row 35 col 26: want 'h' dim normal, got ' ' dim normal
+            row 35 col 27: want 'i' dim normal, got 'm' dim normal
+            row 35 col 28: want 'v' dim normal, got 'a' dim normal
+            row 35 col 29: want 'e' dim normal, got 'n' dim normal
+            row 35 col 30: want ' ' dim normal, got 'a' dim normal
+            row 35 col 31: want '·' dim normal, got 'g' dim normal
+            row 35 col 32: want ' ' dim normal, got 'e' dim normal
+            row 35 col 33: want 'x' dim normal, got 'r' dim normal
+            row 35 col 34: want ' ' dim normal, got '-' dim normal
+            row 35 col 35: want 'd' dim normal, got 'h' dim normal
+            row 35 col 37: want 's' dim normal, got 'v' dim normal
+            row 35 col 38: want 'm' dim normal, got 'e' dim normal
+            row 35 col 39: want 'i' dim normal, got ' ' dim normal
+            row 35 col 40: want 's' dim normal, got '·' dim normal
+            row 35 col 41: want 's' dim normal, got ' ' dim normal
+            row 35 col 42: want ' ' dim normal, got 'x' dim normal
+            row 35 col 43: want '━' accent normal, got ' ' dim normal
+            row 35 col 44: want '━' accent normal, got 'd' dim normal
+            row 35 col 45: want '━' accent normal, got 'i' dim normal
+            row 35 col 46: want '━' accent normal, got 's' dim normal
+            row 35 col 47: want '━' accent normal, got 'm' dim normal
+            row 35 col 48: want '━' accent normal, got 'i' dim normal
+            row 35 col 49: want '━' accent normal, got 's' dim normal
+            row 35 col 50: want '━' accent normal, got 's' dim normal
+            row 35 col 51: want '━' accent normal, got ' ' dim normal
+            row 39 col 35: want 's' dim normal, got 'r' dim normal
+            row 39 col 37: want 'n' dim normal, got 'v' dim normal
+            row 39 col 38: want 'd' dim normal, got 'i' dim normal
+            row 39 col 39: want ' ' dim normal, got 'e' dim normal
+            row 39 col 40: want 't' dim normal, got 'w' dim normal
+            row 39 col 41: want 'o' dim normal, got ' ' dim normal
+            row 39 col 42: want ' ' dim normal, got 'f' dim normal
+            row 39 col 43: want 'p' dim normal, got 'o' dim normal
+            row 39 col 44: want 'a' dim normal, got 'r' dim normal
+            row 39 col 45: want 'r' dim normal, got ' ' dim normal
+            row 39 col 46: want 'e' dim normal, got 'p' dim normal
+            row 39 col 47: want 'n' dim normal, got 'a' dim normal
+            row 39 col 48: want 't' dim normal, got 'r' dim normal
+            row 39 col 49: want ' ' dim normal, got 'e' dim normal
+            row 39 col 50: want '·' dim normal, got 'n' dim normal
+            row 39 col 51: want ' ' dim normal, got 't' dim normal
+            row 39 col 52: want 't' dim normal, got ' ' dim normal
+            row 39 col 53: want 'a' dim normal, got '·' dim normal
+            row 39 col 54: want 'b' dim normal, got ' ' dim normal
+            row 39 col 55: want ' ' dim normal, got 't' dim normal
+            row 39 col 56: want 'n' dim normal, got 'a' dim normal
+            row 39 col 57: want 'o' dim normal, got 'b' dim normal
+            row 39 col 58: want 't' dim normal, got ' ' dim normal
+            row 39 col 59: want 'e' dim normal, got 'n' dim normal
+            row 39 col 60: want ' ' dim normal, got 'o' dim normal
+            row 39 col 61: want '·' dim normal, got 't' dim normal
+            row 39 col 62: want ' ' dim normal, got 'e' dim normal
+            row 39 col 63: want 'x' dim normal, got ' ' dim normal
+            row 39 col 64: want ' ' dim normal, got '·' dim normal
+            row 39 col 65: want 'd' dim normal, got ' ' dim normal
+            row 39 col 66: want 'i' dim normal, got 'x' dim normal
+            row 39 col 67: want 's' dim normal, got ' ' dim normal
+            row 39 col 68: want 'm' dim normal, got 'd' dim normal
+            row 39 col 71: want 's' dim normal, got 'm' dim normal
+            row 39 col 72: want ' ' dim normal, got 'i' dim normal
+            row 39 col 73: want '·' dim normal, got 's' dim normal
+            row 39 col 74: want ' ' dim normal, got 's' dim normal
+            row 39 col 75: want 'J' dim normal, got ' ' dim normal
+            row 39 col 76: want '/' dim normal, got '·' dim normal
+            row 39 col 77: want 'K' dim normal, got ' ' dim normal
+            row 39 col 78: want ' ' dim normal, got 'J' dim normal
+            row 39 col 79: want 'n' dim normal, got '/' dim normal
+            row 39 col 80: want 'e' dim normal, got 'K' dim normal
+            row 39 col 81: want 'x' dim normal, got ' ' dim normal
+            row 39 col 82: want 't' dim normal, got 'n' dim normal
+            row 39 col 83: want '/' dim normal, got 'e' dim normal
+            row 39 col 84: want 'p' dim normal, got 'x' dim normal
+            row 39 col 85: want 'r' dim normal, got 't' dim normal
+            row 39 col 86: want 'e' dim normal, got '/' dim normal
+            row 39 col 87: want 'v' dim normal, got 'p' dim normal
+            row 39 col 88: want ' ' dim normal, got 'r' dim normal
+            row 39 col 89: want 'c' dim normal, got 'e' dim normal
+            row 39 col 90: want 'a' dim normal, got 'v' dim normal
+            row 39 col 91: want 'r' dim normal, got ' ' dim normal
+            row 39 col 92: want 'd' dim normal, got 'c' dim normal
+            row 39 col 93: want ' ' dim normal, got 'a' dim normal
+            row 39 col 94: want ' ' dim normal, got 'r' dim normal
+            row 39 col 95: want ' ' dim normal, got 'd' dim normal
+    --- FAIL: TestAskBoardsMatch/CompactChatAsk (0.00s)
+        ask_test.go:20: 51 cells differ from CompactChatAsk.grid:
+            row 19 col 9: want 's' dim normal, got 'r' dim normal
+            row 19 col 11: want 'n' dim normal, got 'v' dim normal
+            row 19 col 12: want 'd' dim normal, got 'i' dim normal
+            row 19 col 13: want ' ' dim normal, got 'e' dim normal
+            row 19 col 14: want '·' dim normal, got 'w' dim normal
+            row 19 col 16: want 't' dim normal, got '·' dim normal
+            row 19 col 17: want 'a' dim normal, got ' ' dim normal
+            row 19 col 18: want 'b' dim normal, got 't' dim normal
+            row 19 col 19: want ' ' dim normal, got 'a' dim normal
+            row 19 col 20: want 'n' dim normal, got 'b' dim normal
+            row 19 col 21: want 'o' dim normal, got ' ' dim normal
+            row 19 col 22: want 't' dim normal, got 'n' dim normal
+            row 19 col 23: want 'e' dim normal, got 'o' dim normal
+            row 19 col 24: want ' ' dim normal, got 't' dim normal
+            row 19 col 25: want '━' accent normal, got 'e' dim normal
+            row 19 col 26: want '━' accent normal, got ' ' dim normal
+            row 23 col 23: want 's' dim normal, got 'r' dim normal
+            row 23 col 25: want 'n' dim normal, got 'v' dim normal
+            row 23 col 26: want 'd' dim normal, got 'i' dim normal
+            row 23 col 27: want ' ' dim normal, got 'e' dim normal
+            row 23 col 28: want '·' dim normal, got 'w' dim normal
+            row 23 col 30: want 't' dim normal, got '·' dim normal
+            row 23 col 31: want 'a' dim normal, got ' ' dim normal
+            row 23 col 32: want 'b' dim normal, got 't' dim normal
+            row 23 col 33: want ' ' dim normal, got 'a' dim normal
+            row 23 col 34: want 'n' dim normal, got 'b' dim normal
+            row 23 col 35: want 'o' dim normal, got ' ' dim normal
+            row 23 col 36: want 't' dim normal, got 'n' dim normal
+            row 23 col 37: want 'e' dim normal, got 'o' dim normal
+            row 23 col 38: want ' ' dim normal, got 't' dim normal
+            row 23 col 39: want '·' dim normal, got 'e' dim normal
+            row 23 col 41: want 'x' dim normal, got '·' dim normal
+            row 23 col 43: want 'd' dim normal, got 'x' dim normal
+            row 23 col 44: want 'i' dim normal, got ' ' dim normal
+            row 23 col 45: want 's' dim normal, got 'd' dim normal
+            row 23 col 46: want 'm' dim normal, got 'i' dim normal
+            row 23 col 47: want 'i' dim normal, got 's' dim normal
+            row 23 col 48: want 's' dim normal, got 'm' dim normal
+            row 23 col 49: want 's' dim normal, got 'i' dim normal
+            row 23 col 50: want ' ' dim normal, got 's' dim normal
+            row 23 col 51: want '·' dim normal, got 's' dim normal
+            row 23 col 53: want 'J' dim normal, got '·' dim normal
+            row 23 col 54: want '/' dim normal, got ' ' dim normal
+            row 23 col 55: want 'K' dim normal, got 'J' dim normal
+            row 23 col 56: want ' ' dim normal, got '/' dim normal
+            row 23 col 57: want 'c' dim normal, got 'K' dim normal
+            row 23 col 58: want 'a' dim normal, got ' ' dim normal
+            row 23 col 59: want 'r' dim normal, got 'c' dim normal
+            row 23 col 60: want 'd' dim normal, got 'a' dim normal
+            row 23 col 61: want ' ' dim normal, got 'r' dim normal
+            row 23 col 62: want ' ' dim normal, got 'd' dim normal
+    --- FAIL: TestAskBoardsMatch/ChatAskReview (0.00s)
+        ask_test.go:20: open ../../.hive/spec/tui-v2/design/ChatAskReview.grid: no such file or directory
+    --- FAIL: TestAskBoardsMatch/ChatAskReviewMulti (0.00s)
+        ask_test.go:20: open ../../.hive/spec/tui-v2/design/ChatAskReviewMulti.grid: no such file or directory
+    --- FAIL: TestAskBoardsMatch/CompactChatAskReview (0.00s)
+        ask_test.go:20: open ../../.hive/spec/tui-v2/design/CompactChatAskReview.grid: no such file or directory
+--- FAIL: TestEachBoardFixtureLoadsAtItsSpecSize (0.00s)
+    demo_fixtures_test.go:48: spec table has 47 boards; want 50
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.025s
+FAIL

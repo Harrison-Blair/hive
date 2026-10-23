@@ -104,8 +104,8 @@ b|001010000000000000000000000000000000000000000000000000000000000000000000000000
 t|┃     note › keep the old tab key for one release█                                                                     ┃
 k|afffffaaaaaafffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|┗━ space mark · tab note · enter next question · enter on last sends ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-k|aadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+t|┗━ space mark · tab note · enter next question · enter on last reviews ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+k|aadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
@@ -116,6 +116,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option                             
+t| [note] type a note · enter keep note · tab close note · ctrl+] leave note · ↑↓ option                                  
 k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

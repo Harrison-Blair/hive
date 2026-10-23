@@ -231,6 +231,9 @@ func TestCheckAcceptsTheAskBoards(t *testing.T) {
 		{"ChatAskPreview", 120, 40},
 		{"ChatAskStopped", 120, 40},
 		{"CompactChatAsk", 80, 24},
+		{"ChatAskReview", 120, 40},
+		{"ChatAskReviewMulti", 120, 40},
+		{"CompactChatAskReview", 80, 24},
 	} {
 		if err := checkSize(board.name, board.w, board.h); err != nil {
 			t.Error(err)

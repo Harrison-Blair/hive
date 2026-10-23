@@ -59,6 +59,9 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `ChatAskPreview.dc.html` | 2 Chat, an ask with a preview | 120×40 |
 | `ChatAskStopped.dc.html` | 2 Chat, an ask of a stopped agent | 120×40 |
 | `CompactChatAsk.dc.html` | 2 Chat, one open ask | 80×24 |
+| `ChatAskReview.dc.html` | 2 Chat, the review of an ask with one question | 120×40 |
+| `ChatAskReviewMulti.dc.html` | 2 Chat, the review of an ask with two questions, multi-select, Other, and a `note` | 120×40 |
+| `CompactChatAskReview.dc.html` | 2 Chat, the review of an ask with one question | 80×24 |
 
 ## Out of scope
 
@@ -453,6 +456,24 @@ Goal `g9-agents-hide-managers` gives these decisions. Task `134-agents-hide-mana
 111. When `h` hides the selected pod, the TUI selects the first pod on the screen. The TUI keeps the ID of the hidden pod. When `h` shows the pod again, the TUI selects it again. The first column of the overview stays in its limits when a pod is hidden.
 
 112. On 2026-10-23 the user approved the code grids of task `134-agents-hide-managers` as golden grids, with rule A as for tasks `126-chat-modes-mouse` and `131-hive-ask`. The record is ask `a5` and coordinator record 536. The user also approved the two cases of decisions 107 and 110. The grids of the 9 boards `AgentsHiddenParent`, `CompactLiveOverview`, `CompactLivePod`, `CompactTreeNested`, `CompactTreeWide`, `LiveOverview`, `LivePod`, `TreeNested`, and `TreeWide` change only on the title row, from decision 109. Each board in `design/` exports its approved grid. The 6 scenario grids and their fixtures stay in the evidence of the task. No other grid changes.
+
+### Ask review
+
+Goal `g10-ask-confirm` gives these decisions. Task `135-ask-confirm` shows them. The boards `ChatAskReview`, `ChatAskReviewMulti`, and `CompactChatAskReview` show the review.
+
+113. Each ask card has a review step before hive sends the answer. This rule applies to a card with one question. `enter` on the last question opens the review in the same card. A final digit, a click, `enter` on a `note`, and `enter` on Other text also open it. The review writes no answer record and sends no prompt. The check for an empty Other answer and the check for a missing pick do not change.
+
+114. The review title is `? ASKER asks · confirm`. The body has one row for each question: `HEADER → LABEL, LABEL · note: TEXT`. The row shows each mark of a multi-select question and the full Other text. Long text wraps to the card width. A blank row and the `Send` row follow. For a stopped asker, the row is `Send to PARENT`. `›` marks the selected row. Send is the first selection, so a second `enter` sends. The answer prompt, the route, the retries, and the record format of decisions 100 and 101 do not change.
+
+115. In the review, `↑↓` selects a question or Send. `enter` on a question opens its options and its `note` again. All other picks and `note` text stay. When the edit is complete, the review shows again with the changed answer, and the selection is Send. The card keeps its draft and its review when `J` or `K` changes the card, and when the data refreshes.
+
+116. The review keeps the dock height cap. When the selected row is taller than the dock, `↓` moves the row up by the dock height less one line until its last line shows. Then `↓` selects the next row. `↑` moves the row back down until its first line shows. Then `↑` selects the row above, at its first line. `›` is on the first visible line of the selected row. Each part of a long row can show at 120x40 and at 80x24.
+
+117. In the review, only `↑`, `↓`, `enter`, `x`, `J`, and `K` act. Each other key does nothing. A click on the card does nothing. `x` dismisses as decision 101 gives. The global quit does not change. The mouse wheel scrolls the feed. The bottom border is `enter send · ↑↓ question to change · x drop` on Send, `enter change · ↑↓ question to change · x drop` on a question, and `enter sends to PARENT · ↑↓ question to change · x drop` for a stopped asker. The footer label is `[review]`. The footer is `↑↓ question · enter send · x dismiss · J/K next/prev card`, and `J/K card` below 120 columns.
+
+118. The hints outside the review change: `enter send` is `enter review`, and `enter on last sends` is `enter on last reviews`. The Help overlay has the line `ask review: enter on the last question · ↑↓ question · enter send or change` below the `ask card:` line of decision 102. The overlay has one blank row above `FILTER FIELDS`, not two.
+
+119. On 2026-10-23 the user approved package `6c466dc6` of task `135-ask-confirm` as golden grids, with rule A as for tasks `126-chat-modes-mouse`, `131-hive-ask`, and `134-agents-hide-managers`. The record is coordinator record 554. The approval includes decisions 115 and 116. The new boards `ChatAskReview`, `ChatAskReviewMulti`, and `CompactChatAskReview` are in `design/`. The grids of `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, `CompactChatAsk`, and `Help` change only on the rows of decision 118. Each board in `design/` exports its approved grid. The other scenario grids and their fixtures stay in the evidence of the task. No other grid changes.
 
 ## Waves
 
