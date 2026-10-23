@@ -376,7 +376,7 @@ func (m *Model) askHints(focus string, wide bool) []string {
 	case "note":
 		return []string{"type a note", "enter send with note", "tab close note", "ctrl+] leave note", "↑↓ option"}
 	case "other":
-		return []string{"type the answer", "enter keep", "ctrl+] leave"}
+		return []string{"type the answer", "enter send", "ctrl+] leave"}
 	}
 	if !wide {
 		return []string{"↑↓ move", "enter send", "tab note", "x dismiss", "J/K card"}

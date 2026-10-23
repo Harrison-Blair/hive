@@ -246,7 +246,7 @@ func TestAskOtherOpensATextLine(t *testing.T) {
 	if len(*calls) != 0 {
 		t.Fatalf("Other sent %v before the text", *calls)
 	}
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other]") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other] type the answer · enter send · ctrl+] leave") {
 		t.Fatalf("footer = %q", got)
 	}
 	for _, r := range "tomorrow" {
@@ -462,4 +462,41 @@ func TestHelpListsTheAskKeys(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
 	m, _ = raise(t, m, key('?', "?"))
 	requireView(t, m, "│  ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card")
+}
+
+// The header shows the count of the open ask records at 0, 1, and 2, at
+// both widths.
+func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
+	for _, tc := range []struct {
+		open, width int
+		want        string
+	}{
+		{0, 120, "   ? 0 asks   needs you 0   08:00 "},
+		{1, 120, "   ? 1 ask   needs you 0   08:00 "},
+		{2, 120, "   ? 2 asks   needs you 0   08:00 "},
+		{0, 80, " · ? 0 · needs you 0 · 08:00 "},
+		{1, 80, " · ? 1 · needs you 0 · 08:00 "},
+		{2, 80, " · ? 2 · needs you 0 · 08:00 "},
+	} {
+		home := newTestHome(t)
+		closed := oneQuestionAsk("a9", "manager-hive")
+		closed.State = ask.StateDismissed
+		writeRecord(t, home, []string{"asks"}, closed.ID, closed)
+		for index := range tc.open {
+			id := fmt.Sprintf("a%d", index+1)
+			writeRecord(t, home, []string{"asks"}, id, oneQuestionAsk(id, "manager-hive"))
+		}
+		state, err := readHeader(home)
+		if err != nil {
+			t.Fatal(err)
+		}
+		m := chatModel(t, tc.width, 40, 1)
+		m.header.asks = 7
+		m.invalidateView()
+		m.View()
+		m, _ = raise(t, m, headerLoadMsg{state: state})
+		if got := viewRow(m, 0); !strings.HasSuffix(got, tc.want) {
+			t.Errorf("%d open at %d: header = %q, want suffix %q", tc.open, tc.width, got, tc.want)
+		}
+	}
 }

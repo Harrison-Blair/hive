@@ -40,7 +40,7 @@ https://claude.ai/artifact/VrhcA98g9G2G9cFQao5Z9h), in
 
 - `ChatAsk.dc.html` (120×40): one open card with one question.
 - `ChatAskMulti.dc.html` (120×40): two cards. The first card has two
-  questions, with multi-select and an open note line.
+  questions, with multi-select and an open `note` line.
 - `ChatAskPreview.dc.html` (120×40): a question with a preview for each
   option.
 - `ChatAskStopped.dc.html` (120×40): the asker stopped. The answer goes to
@@ -136,7 +136,7 @@ record format, the command, and the prompt text of AC5.
   with `[ask]`. `↑` `↓` move. `1` to `5` or a click picks an option. `space`
   marks an option of a multi-select question. `enter` picks and moves to the
   next question. `enter` on the last question sends the answer. `tab` opens a
-  note line for the question. The footer then starts with `[note]`. `x`
+  `note` line for the question. The footer then starts with `[note]`. `x`
   dismisses the card. While a card is open, the wheel and `pgup` `pgdn`
   scroll the feed. A click on the feed gives the feed the focus. `i` goes to
   input mode as task 126 sets.
@@ -147,7 +147,7 @@ record format, the command, and the prompt text of AC5.
   `⬢ user: answer to ask ID from ASKER · HEADER → LABEL; HEADER → LABEL, LABEL · note: TEXT`
 
   Give one `HEADER → LABELS` part for each question, in order, and put a
-  `· note: TEXT` part after a question that has a note. For `Other`, the label
+  `· note: TEXT` part after a question that has a `note`. For `Other`, the label
   is the typed text.
 - When the asker stopped, hive sends the same text to the parent of the
   asker, with `(asker stopped)` after `from ASKER`.
@@ -192,14 +192,14 @@ The dock and the header count can change boards that exist (for example
 - Write each test first and see it fail for the correct reason.
 - The golden check passes for each of the 5 new boards and for each board of
   AC8 after the approval.
-- Command tests: a valid ask makes one record and returns at once; each limit
+- Command tests: a valid ask makes one record and returns at once. Each limit
   of AC3 gives an error and no record.
 - Model tests with literal expected text and tokens: the card, the title, the
   feed line, the focus order, `J` and `K`, each key of AC5, a click on an
-  option, the note line, `Other`, a multi-select answer, the dock height cap
+  option, the `note` line, `Other`, a multi-select answer, the dock height cap
   and its scroll, and the header count at 0, 1, and 2 at both widths.
 - Delivery tests: the exact prompt text of AC5 for one question, for two
-  questions with a note and `Other`, for a stopped asker, and for a dismiss.
+  questions with a `note` and `Other`, for a stopped asker, and for a dismiss.
   Mock only the herdr pane. A failed delivery keeps the answer and tries
   again.
 
@@ -212,7 +212,7 @@ The dock and the header count can change boards that exist (for example
 | AC3 | The command makes a valid record and rejects a bad ask | V3, V6 |
 | AC4 to AC6 | The card, the answer, and the header match the boards and the plan | V3, V4, V5, V6 |
 | AC7 | The role skills use `hive ask` | V-gate |
-| AC8 | The changed boards have approved new grids | V2, V4 |
+| AC8 | The user approved the new grids of the changed boards | V2, V4 |
 | AC9 | The tests fail on the base and pass on the task branch | V3 |
 
 ## Verification items
@@ -230,7 +230,7 @@ The dock and the header count can change boards that exist (for example
 - Proves: AC1, AC8.
 - Command: run the exporter on the design folder. Compare each grid with the
   committed grid, cell by cell, with `internal/lib/cellgrid`.
-- Expected: the 5 new grids and the approved grids are committed. No other
+- Expected: the commit has the 5 new grids and the approved grids. No other
   grid changes.
 
 ### V3 Tests red and green
