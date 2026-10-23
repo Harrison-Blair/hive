@@ -1,0 +1,40 @@
+ hive  ~/source/hive/projects/hive/worktrees/12… coordinator ○ done   supervisor ○ old   ? 0 asks   needs you 0   23:07
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · qmeter ────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                               ╭──────────────────────╮                                               │
+│                                               │ ◐ coordinator        │                                               │
+│                             ╭─ manager-qmeter · esc closes ────────────────────────────╮                             │
+│                             │                                                          │                             │
+│                             │  role      manager                                       │                             │
+│                           ╭─│  project   qmeter                                        │─╮                           │
+│                           │ │  status    ● live · working                              │ │                           │
+│                           │ │  harness   pi                                            │ │                           │
+│                           │ │  model     opencode-go/deepseek-v4.1-flash:xhigh         │ │                           │
+│                           │ │  pane      wVZ:p1                                        │ │                           │
+│                           │ │  tab       manager-qmeter                                │ │                           │
+│                           │ │  parent    coordinator-g8                                │ │                           │
+│                           │ │  replaces  manager-qmeter-g3                             │ │                           │
+│                           ╰─│                                                          │─╯                           │
+│                             │  ACTIONS                                                 │                             │
+│                             │  a  attach to pane                                       │                             │
+│                             │  p  peek pane                                            │                             │
+│                             │  t  open task · none                                     │                             │
+│                             │                                                          │                             │
+│                             │  RECENT                                                  │                             │
+│                             │  23:07 tui action                                        │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             ╰──────────────────────────────────────────────────────────╯                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close

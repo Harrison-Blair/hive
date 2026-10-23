@@ -1,0 +1,61 @@
+ hive                                        coord ○ · sup ○ · ? 0 · needs you 0 · 22:59
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────────────────────────────────━━━━━━━━━━────────────────────────────────────────
+  Home   [Agents]                                                      [ ] switch view
+╭─ agents · 4 ──────────────────────────────────────────────────────────────────────────╮
+│   AGENT                 ROLE          STATE         PANE                              │
+│ ▶ coordinator-g8        coordinator   ◐ idle        wVA:p2                            │
+│   manager-qmeter        manager       ● working     wVZ:p1                            │
+│   manager-stenographer  manager       ○ stopped     —                                 │
+│   worker-qmeter         worker        ● stale       wCQ:p1                            │
+│                                                                                       │
+│                                                                                       │
+│ r restarts the coordinator or supervisor. It asks first only when live.               │
+│ h hides 1 stopped agent.                                                              │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+│                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · enter details · [ ] view · r restart · R refresh · ?

@@ -1,0 +1,14 @@
+Owned pane: wWC:p2
+Owned TUI PID: 82998
+Outer herdr layout at check: 207x57
+Owned PTY set with stty -F /dev/pts/<owned terminal> rows 40 cols 120
+PTY size reported by stty: 40 120
+
+live-coordinator-details.txt: 40 rows, maximum 120 columns
+live-h.txt: 40 rows, maximum 120 columns
+live-health.txt: 40 rows, maximum 120 columns
+live-hh.txt: 40 rows, maximum 120 columns
+live-manager-details.txt: 40 rows, maximum 120 columns
+live-pod.txt: 40 rows, maximum 120 columns
+live-start.txt: 40 rows, maximum 120 columns
+live-supervisor-stale.txt: 40 rows, maximum 120 columns

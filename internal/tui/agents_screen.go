@@ -121,7 +121,7 @@ func (p graphPod) tree(content int) bool {
 // 39 of general-agent).
 func (m *Model) agentsPods() []graphPod {
 	nodes := m.agents.nodeMap()
-	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.stopped }
+	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.hideable() }
 	// kids gives the children of each card on the graph.
 	kids := make(map[string][]agentNode)
 	// podOf gives the pod index of each card on the graph.
@@ -738,6 +738,12 @@ func (m *Model) podLines(pod graphPod, width int) int {
 	return rows
 }
 
+// hideable reports that h hides the card of node: a stopped agent, or a
+// stale agent. A stale card is current only with no live successor.
+func (n agentNode) hideable() bool {
+	return n.stopped || n.record.Status == records.AgentStale
+}
+
 // note gives the stopped note of a pod: the h key and the number of stopped
 // agents.
 func (p graphPod) note() string {
@@ -746,7 +752,7 @@ func (p graphPod) note() string {
 	}
 	stopped := 0
 	for _, node := range p.children {
-		if node.stopped {
+		if node.hideable() {
 			stopped++
 		}
 	}

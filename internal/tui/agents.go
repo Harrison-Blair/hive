@@ -266,14 +266,36 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 	return data
 }
 
+// currentAgentKeys gives the current record of each identity: the live
+// record, else the newest record that no other record replaces.
 func currentAgentKeys(agents []records.Agent) map[string]bool {
 	replaced := make(map[string]bool)
-	groups := make(map[string][]records.Agent)
+	// root joins the identities of one agent: an old record with no parent
+	// and no replaces has only its name, and a newer record of the same
+	// name also has its lineage.
+	root := make(map[string]string)
+	var find func(identity string) string
+	find = func(identity string) string {
+		parent, ok := root[identity]
+		if !ok || parent == identity {
+			return identity
+		}
+		root[identity] = find(parent)
+		return root[identity]
+	}
 	for _, record := range agents {
 		if record.Replaces != "" {
 			replaced[record.Replaces] = true
 		}
-		identity := agentIdentity(record)
+		identities := agentIdentities(record)
+		first := find(identities[0])
+		for _, identity := range identities[1:] {
+			root[find(identity)] = first
+		}
+	}
+	groups := make(map[string][]records.Agent)
+	for _, record := range agents {
+		identity := find(agentIdentities(record)[0])
 		groups[identity] = append(groups[identity], record)
 	}
 	current := make(map[string]bool)
@@ -284,7 +306,7 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 			if replaced[record.Key] {
 				continue
 			}
-			if !found || newerAgent(record, newest) {
+			if !found || currentBefore(record, newest) {
 				newest = record
 				found = true
 			}
@@ -296,15 +318,31 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 	return current
 }
 
-func agentIdentity(record records.Agent) string {
+// agentIdentities gives each identity of a record. Records that share one
+// identity are generations of one agent.
+func agentIdentities(record records.Agent) []string {
 	// Each general agent is its own identity: many can share a parent.
 	if record.Role == generalRole {
-		return "key\x00" + record.Key
+		return []string{"key\x00" + record.Key}
 	}
-	if record.Parent == "" && record.Replaces == "" {
-		return "name\x00" + record.Name
+	identities := []string{"name\x00" + record.Name}
+	if record.Parent != "" || record.Replaces != "" {
+		identities = append(identities, strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00"))
 	}
-	return strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00")
+	return identities
+}
+
+// currentBefore reports that left is a better current record than right: a
+// live record, else the newer record. Of two records with one name, the
+// newer record has the higher generation.
+func currentBefore(left, right records.Agent) bool {
+	if leftLive, rightLive := left.Status == records.AgentLive, right.Status == records.AgentLive; leftLive != rightLive {
+		return leftLive
+	}
+	if left.Name == right.Name && left.Generation != right.Generation {
+		return left.Generation > right.Generation
+	}
+	return newerAgent(left, right)
 }
 
 func newerAgent(left, right records.Agent) bool {
