@@ -28,7 +28,50 @@ The independent verifier must rerun delivery checks with the intended scratch st
 Check that executable before any test delivery.
 Never run a test TUI or send a test prompt on the real home.
 
-## Current rework: compact stopped-review title
+## Current rework: stopped state when route captions do not fit
+
+Verifier `t135-verifier-3` recorded fail in manager inbox records 574 and 575.
+Its evidence commit `cef43222` is on this branch and its remote.
+Read `evidence/VERIFIED.md` and `evidence/verifier3/` beside this brief.
+
+At 80x24, neither route caption fits for the accepted asker `asker-scratch-with-long-name-abc`.
+The parent is `parent-scratch`.
+The full review title, Send destination, hint, and parent delivery stay correct.
+The card loses every explicit stopped-state word.
+Later valid chat messages move the ask event above the feed viewport.
+The card must identify the stopped state independently of that feed event.
+
+Agent registration permits ASCII names of at most 32 characters.
+Check `namePattern` in `internal/agent/register.go`.
+Cover valid names at this limit, including a long parent.
+
+1. Read `evidence/verifier3/scripts/no-caption-test.go.txt` and its failure output.
+2. Reuse the accepted records and visible/hidden feed controls in `evidence/verifier3/no-caption/`.
+3. Add permanent regressions before the source fix.
+4. Check the failure for missing stopped-state text inside the card at 80x24.
+5. Cover full-caption, short-caption, and neither-route-caption cases at 80x24 and 120x40.
+6. Keep the full review title and an explicit `asker stopped` signal inside the card.
+7. Keep the full parent destination in Send and its existing hint before confirmation.
+8. Keep this information independent of the scrolling feed and unrelated header words.
+9. Check question edits, return to Send, and resizing between the two widths.
+10. Keep the dock cap, wrapping, paging, original reply values, and actual parent route.
+11. Run focused and race tests, normal live checks, approved grid comparisons, and the full root gate.
+12. Record this rework separately from all earlier evidence.
+
+Manager fit rule: keep the full route caption wherever it fits.
+Use `asker stopped · to PARENT` when the full sentence would overlap the title.
+When neither route caption fits, a card-local `asker stopped` fallback can supply the state.
+The full parent still appears in Send and its hint.
+Add no key. Add no layout row unless the existing card cannot retain the required information.
+Do not leave the state empty when both route captions fail.
+
+Keep every approved board, golden grid, and design fixture unchanged.
+Keep the original multiline fix and all three failed verdicts with their evidence.
+Do not fix the pre-existing editor/feed defects in this task.
+The user cancelled goal g11. Keep .hive/spec tracked and retain the current task/evidence/test workflow.
+The manager starts another fresh verifier after this fix.
+
+## Earlier rework: compact stopped-review title
 
 Verifier `t135-verifier-2` recorded fail in manager inbox record 565.
 Its committed evidence is `235892c0`, on this branch and its remote.
@@ -90,8 +133,8 @@ Do not change any board source, golden grid, or design fixture for this fix.
 Keep the first failed verdict and its evidence intact.
 The manager starts a fresh verifier after the worker completes the fix.
 
-The normal test-first rule still applies to task 135.
-The no-new-tests exception belongs to later goal g11, which starts after task 135 lands.
+The normal test-first rule applies to task 135.
+The user cancelled goal g11. Keep existing repository storage and test rules.
 
 ## Authority and plan
 

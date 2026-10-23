@@ -601,22 +601,24 @@ func (m *Model) askDockView(width, limit int) string {
 		note = dimStyle.Render(fmt.Sprintf(" open · %d of %d%s ", index+1, len(m.openAsks()), next))
 	}
 	if route.stopped {
-		// The note must not cover the title, which starts after "┏━ ".
+		// The note must not cover the title, which starts after "┏━ ", or
+		// the " ━" after it. Without room for the parent, the note keeps the
+		// state; Send and the hint name the parent.
 		note = ""
-		for _, text := range []string{" asker stopped · answer goes to ", " asker stopped · to "} {
-			if 3+lipgloss.Width(title)+lipgloss.Width(text+route.target+" ")+2 <= width {
-				note = titleStyle.Render(text + route.target + " ")
+		for _, text := range []string{" asker stopped · answer goes to " + route.target + " ", " asker stopped · to " + route.target + " ", " asker stopped "} {
+			if 3+lipgloss.Width(title)+2+lipgloss.Width(text)+2 <= width {
+				note = titleStyle.Render(text)
 				break
 			}
 		}
 	}
 	out[0] = overlayCells(out[0], note, width-2-lipgloss.Width(note))
-	out[len(out)-1] = overlayCells(out[len(out)-1], dimStyle.Render(" "+askCardHint(record, card, wide, route)+" "), 2)
+	out[len(out)-1] = overlayCells(out[len(out)-1], dimStyle.Render(" "+askCardHint(record, card, width, route)+" "), 2)
 	return strings.Join(out, "\n")
 }
 
 // askCardHint gives the hint in the bottom border of the card.
-func askCardHint(record ask.Record, card *askCard, wide bool, route askRoute) string {
+func askCardHint(record ask.Record, card *askCard, width int, route askRoute) string {
 	if card.review {
 		send := "enter send"
 		switch {
@@ -625,12 +627,17 @@ func askCardHint(record ask.Record, card *askCard, wide bool, route askRoute) st
 		case route.stopped:
 			send = "enter sends to " + route.target
 		}
-		return send + " · ↑↓ question to change · x drop"
+		hint := send + " · ↑↓ question to change · x drop"
+		if lipgloss.Width(" "+hint+" ")+4 > width {
+			// A long parent name keeps its full name in a shorter hint.
+			hint = send + " · ↑↓ change · x drop"
+		}
+		return hint
 	}
 	question := record.Questions[card.question]
 	multi := slices.ContainsFunc(record.Questions, func(q ask.Question) bool { return q.MultiSelect })
 	switch {
-	case !wide:
+	case width < component.LongFormWidth:
 		return "enter review · tab note"
 	case route.stopped:
 		return "enter review · sends to " + route.target + " · x dismiss"
