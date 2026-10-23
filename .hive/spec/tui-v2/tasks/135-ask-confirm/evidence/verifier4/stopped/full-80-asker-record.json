@@ -1,0 +1,15 @@
+{
+  "key": "t1",
+  "name": "t1",
+  "role": "agent",
+  "parent": "p1",
+  "status": "stopped",
+  "agent_status": "idle",
+  "pane_id": "w5:p1",
+  "cwd": "/tmp/hv135-verify4",
+  "workspace_id": "w5",
+  "tab_id": "w5:t1",
+  "generation": 1,
+  "started_at": "2026-10-23T18:00:00Z",
+  "updated_at": "2026-10-23T18:00:00Z"
+}

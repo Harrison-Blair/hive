@@ -1,0 +1,40 @@
+ hive  /tmp/hv135-verify4/home             coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   14:14 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 41 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 19                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 20                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 21                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 22                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 23                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 24                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 25                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 26                                                                           │
+│                                                                                                                      │
+│ 14:14  coordinator   Later chat message 27                                                                           │
+│                                                                                                                      ┃
+│ 14:14  coordinator   Later chat message 28                                                                           ┃
+│                                                                                                                      ┃
+│ 14:14  coordinator   Later chat message 29                                                                           ┃
+│                                                                                                                      ┃
+│ 14:14  coordinator   Later chat message 30                                                                           ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch-with-long-name-abc asks · Change ━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to parent-scratch ━┓
+┃ Proceed with this change?                                                                                            ┃
+┃                                                                                                                      ┃
+┃ › 1 [x] Yes                         proceed                                                                          ┃
+┃   2 [ ] No                          hold                                                                             ┃
+┃   3 [ ] Other: type an answer                                                                                        ┃
+┗━ enter review · sends to parent-scratch · x dismiss ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · 1..3 pick · enter review for parent · tab note · x dismiss · J/K next/prev card                        

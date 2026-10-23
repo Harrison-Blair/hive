@@ -1,0 +1,97 @@
+from live import *
+from datetime import datetime,timezone,timedelta
+EVD=E/'stopped';EVD.mkdir(exist_ok=True)
+A='asker-scratch-with-long-name-abc';P='parent-scratch-with-long-name-ab'
+assert len(A)==len(P)==32
+assert all(re.fullmatch(r'[a-z][a-z0-9_-]{0,31}',n) for n in [A,P,'t1','p1','asker-scratch','parent-scratch'])
+def wait(fn):
+ for _ in range(80):
+  value=fn()
+  if value:return value
+  time.sleep(.15)
+ raise AssertionError('wait timeout')
+def received(name):
+ f=S/(name+'.received');return f.read_text().splitlines() if f.exists() else []
+def agent(name,parent=''):
+ f=S/f'home/.hive/state/agents/{name}.json'
+ if f.exists():
+  a=json.loads(f.read_text());a['status']='live';a['parent']=parent;f.write_text(json.dumps(a));return a
+ info=rpc('workspace.create',{'cwd':str(S),'label':'verify135-'+name});pane=info['root_pane']['pane_id'];time.sleep(.4)
+ rpc('agent.start',{'name':name,'kind':'pi','pane_id':pane,'args':[name]})
+ wait(lambda:rpc('agent.get',{'target':pane})['agent'].get('interactive_ready'))
+ a={'key':name,'name':name,'role':'agent','parent':parent,'status':'live','agent_status':'idle','pane_id':pane,'cwd':str(S),'workspace_id':info['workspace']['workspace_id'],'tab_id':info['tab']['tab_id'],'generation':1,'started_at':'2026-10-23T18:00:00Z','updated_at':'2026-10-23T18:00:00Z'}
+ f.write_text(json.dumps(a));screen=plain(stable(pane));assert f'STUB_READY name={name} executable={S}/bin/pi' in screen
+ (EVD/(name+'-ready.txt')).write_text(screen);return a
+def checkexe(a,label):
+ process=rpc('pane.process_info',{'pane_id':a['pane_id']});fg=[p for p in process['process_info']['foreground_processes'] if p.get('name')=='pi'];assert fg
+ for proc in fg:
+  exe=os.readlink(f'/proc/{proc["pid"]}/exe');assert exe==str(S/'bin/pi')
+  with (E/'stub-executables.txt').open('a') as f:f.write(f'{label}: {a["name"]}: pid={proc["pid"]} exe={exe}\n')
+ (EVD/(label+'-'+a['name']+'-process.json')).write_text(json.dumps(process,indent=2))
+def setstate(a,state):
+ a['status']=state;(S/f'home/.hive/state/agents/{a["name"]}.json').write_text(json.dumps(a))
+def card(s):
+ lines=s.splitlines();a=next(i for i,l in enumerate(lines) if l.startswith('┏'));b=next(i for i,l in enumerate(lines) if i>a and l.startswith('┗'));return '\n'.join(lines[a:b+1])
+def check(s,w,h,a,p,caption,answer='Yes'):
+ c=card(s);assert f'┏━ ? {a} asks · confirm ━' in c,c
+ assert caption+' ━┓' in c,c
+ assert f'┃ › Send to {p} ' in c and f'Change → {answer}' in c,c
+ hint=f'enter sends to {p} · ↑↓ question to change · x drop'
+ if w==80 and len(p)==32:hint=f'enter sends to {p} · ↑↓ change · x drop'
+ assert '┗━ '+hint+' ━' in c,c
+ assert len(c.splitlines())<=h//2
+ assert all(len(l)<=w for l in s.splitlines())
+ assert len(s.splitlines())==h
+ assert '? asked · Change' not in s,s
+ return c
+request=json.loads((ROOT/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier3/no-caption/request.json').read_text())
+req=S/'stopped-request.json';req.write_text(json.dumps(request));(EVD/'request.json').write_text(json.dumps(request,indent=2))
+# Literal full/short/state-only expectations, independent of the fit algorithm.
+cases=[('full','t1','p1','asker stopped · answer goes to p1','asker stopped · answer goes to p1'),('short','asker-scratch','parent-scratch','asker stopped · answer goes to parent-scratch','asker stopped · to parent-scratch'),('state',A,'parent-scratch','asker stopped · answer goes to parent-scratch','asker stopped'),('long-both',A,P,'asker stopped · to '+P,'asker stopped')]
+results=[]
+for case,an,pn,wide,compact in cases:
+ p=agent(pn);a=agent(an,pn)
+ for w,h in [(80,24),(120,40)]:
+  label=f'{case}-{w}';stop();setstate(a,'live');checkexe(a,label+'-before');checkexe(p,label+'-before')
+  asks=S/'home/.hive/state/asks';beforepaths=set(asks.glob('*.json'));before={n:received(n) for n in [an,pn]}
+  rpc('pane.send_input',{'pane_id':a['pane_id'],'text':f'/ask {req}','keys':['enter']})
+  path=wait(lambda:next(iter(set(asks.glob('*.json'))-beforepaths),None));id=path.stem;setstate(a,'stopped')
+  (EVD/(label+'-asker-record.json')).write_text(json.dumps(a,indent=2));(EVD/(label+'-parent-record.json')).write_text(json.dumps(p,indent=2))
+  chats=S/'home/.hive/state/chat';chats.mkdir(exist_ok=True);now=datetime.now(timezone.utc);chatfile=chats/(now.strftime('%Y-%m-%d')+'.jsonl')
+  entries=[{'id':f'c{700+i}','at':(now+timedelta(seconds=i+1)).isoformat().replace('+00:00','Z'),'from':'coordinator','text':f'Later chat message {i+1}'} for i in range(30)]
+  hidden=''.join(json.dumps(j)+'\n' for j in entries)
+  control=case=='state' and w==80
+  chatfile.write_text('' if control else hidden)
+  start(None,w,h)
+  if ' [ask]' not in plain(stable()):keys('2')
+  s=cap(f'stopped/{label}-01-editor',w,h);assert 'asker stopped' in card(s)
+  text('1')
+  if control:
+   visible=cap(f'stopped/{label}-02-feed-event-visible',w,h);assert '? asked · Change · asker stopped' in visible
+   chatfile.write_text(hidden);time.sleep(2)
+  s=cap(f'stopped/{label}-03-review',w,h);check(s,w,h,an,pn,wide if w==120 else compact)
+  if control:
+   assert card(visible)==card(s),'feed visibility changed the card'
+   (EVD/'feed-control.txt').write_text('Same accepted ask and reviewed draft: event visible, then 30 valid later coordinator messages hide it. Card is byte-equal and retains its stopped word.\n')
+   (EVD/'feed-control-later-chat.json').write_text(json.dumps(entries,indent=2))
+  r=json.loads(path.read_text());assert r['state']=='open' and not r.get('replies') and not r.get('attempts');assert {n:received(n) for n in [an,pn]}==before
+  (EVD/(label+'-before.json')).write_text(json.dumps(r,indent=2))
+  keys('Up');cap(f'stopped/{label}-04-highlight',w,h);keys('Enter');cap(f'stopped/{label}-05-edit',w,h);text('2')
+  s=cap(f'stopped/{label}-06-return-review',w,h);check(s,w,h,an,pn,wide if w==120 else compact,'No')
+  nw,nh=(120,40) if w==80 else (80,24)
+  run(TMUX+['resize-window','-t','live:0','-x',str(nw),'-y',str(nh)]);time.sleep(.5)
+  s=cap(f'stopped/{label}-07-resize-{nw}',nw,nh);check(s,nw,nh,an,pn,wide if nw==120 else compact,'No')
+  # Return to the starting size, then confirm at that exact width.
+  run(TMUX+['resize-window','-t','live:0','-x',str(w),'-y',str(h)]);time.sleep(.5)
+  s=cap(f'stopped/{label}-08-resize-back',w,h);check(s,w,h,an,pn,wide if w==120 else compact,'No')
+  assert json.loads(path.read_text())['state']=='open' and {n:received(n) for n in [an,pn]}==before
+  checkexe(p,label+'-send');keys('Enter')
+  def delivered():
+   r=json.loads(path.read_text());return r if r.get('delivered_at') else None
+  r=wait(delivered);expected=f'⬢ user: answer to ask {id} from {an} (asker stopped) · Change → No'
+  wait(lambda:len(received(pn))>len(before[pn]));assert received(pn)==before[pn]+[expected] and received(an)==before[an]
+  assert r['state']=='answered' and r['delivered_to']==pn and r['replies']==[{'picks':[2]}] and r['attempts']==1,r
+  (EVD/(label+'-after.json')).write_text(json.dumps(r,indent=2));(EVD/(label+'-prompt.txt')).write_text(expected+'\n');(EVD/(label+'-parent-pane.txt')).write_text(plain(stable(p['pane_id'])))
+  results.append(f'{label}: literal caption, card-only state, full title and gap, full Send/destination/hint, hidden event, edit, Send selection, both resizes, no delivery before Send, exact parent delivery: pass.')
+  print(results[-1],flush=True)
+stop();(EVD/'result.txt').write_text('\n'.join(results)+'\n')

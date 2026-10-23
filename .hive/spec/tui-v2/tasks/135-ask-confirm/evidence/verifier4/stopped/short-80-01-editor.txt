@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 1 · needs you 0 · 14:13 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ──────────────────────────────── ↑ 44 earlier ─────────────────────────╮
+│ 14:13 coordinator                                                            │
+│ Later chat message 28                                                        │
+│                                                                              │
+│ 14:13 coordinator                                                            │
+│ Later chat message 29                                                        │
+│                                                                              │
+│ 14:13 coordinator                                                            │
+│ Later chat message 30                                                        ┃
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · Change ━━━━━━━━━━ asker stopped · to parent-scratch ━┓
+┃ Proceed with this change?                                                    ┃
+┃                                                                              ┃
+┃ › 1 [ ] Yes                         proceed                                  ┃
+┃   2 [ ] No                          hold                                     ┃
+┃   3 [ ] Other: type an answer                                                ┃
+┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · enter review · tab note · x dismiss · J/K card                 

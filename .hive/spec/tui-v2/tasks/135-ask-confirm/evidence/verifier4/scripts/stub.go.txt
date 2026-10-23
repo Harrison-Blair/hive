@@ -1,0 +1,33 @@
+package main
+
+import (
+ "bufio"
+ "encoding/json"
+ "fmt"
+ "net"
+ "os"
+ "os/exec"
+ "strings"
+ "time"
+)
+func report(state string) {
+ c,e:=net.Dial("unix",os.Getenv("HERDR_SOCKET_PATH")); if e!=nil {panic(e)}; defer c.Close()
+ _=json.NewEncoder(c).Encode(map[string]any{"id":"stub","method":"pane.report_agent","params":map[string]any{"pane_id":os.Getenv("HERDR_PANE_ID"),"agent":"pi","source":"verify135-stub","state":state}})
+ var reply any; _=json.NewDecoder(c).Decode(&reply)
+}
+func main() {
+ name:=os.Args[1]; exe,_:=os.Executable()
+ fmt.Printf("STUB_READY name=%s executable=%s pid=%d\n",name,exe,os.Getpid()); report("idle")
+ input:=bufio.NewScanner(os.Stdin)
+ for input.Scan() {
+  line:=strings.ReplaceAll(strings.ReplaceAll(input.Text(),"\x1b[200~",""),"\x1b[201~","")
+  if strings.HasPrefix(line,"/ask ") {
+   cmd:=exec.Command("/tmp/hv135-verify4/bin/hive","ask","--agent",name,"--file",strings.TrimPrefix(line,"/ask "))
+   cmd.Stdout=os.Stdout;cmd.Stderr=os.Stderr; _=cmd.Run(); continue
+  }
+  report("working")
+  f,e:=os.OpenFile("/tmp/hv135-verify4/"+name+".received",os.O_CREATE|os.O_APPEND|os.O_WRONLY,0600);if e!=nil {panic(e)}
+  _,_=fmt.Fprintln(f,line);_=f.Close()
+  fmt.Println("GOT: "+line);time.Sleep(400*time.Millisecond);report("idle")
+ }
+}

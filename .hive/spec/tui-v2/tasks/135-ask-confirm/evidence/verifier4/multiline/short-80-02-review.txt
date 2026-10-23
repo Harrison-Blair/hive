@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 1 · needs you 0 · 14:10 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ──────────────────────────────── ↑ 4 earlier ──────────────────────────╮
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       dismissed asker-scratch · Scope · Order                     │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       answered asker-scratch · Scope → 2 Help line, 3 Header cou… ┃
+│ 14:09  asker-sc… ? asked · Scope · Order                                     ┃
+│ 14:09  you       answered asker-scratch · Scope → 1 Ask card · note: parent… ┃
+│ 14:09  asker-sc… ? asked · Scope · Order                                     ┃
+│ 14:09  you       dismissed asker-scratch · Scope · Order                     ┃
+│ 14:10  asker-sc… ? asked · Label · below                                     ┃
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1 of 1 ━┓
+┃   Label → First line                                                         ┃
+┃   Second line                                                                ┃
+┃                                                                              ┃
+┃ › Send                                                                       ┃
+┗━ enter send · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter send · x dismiss · J/K card                       

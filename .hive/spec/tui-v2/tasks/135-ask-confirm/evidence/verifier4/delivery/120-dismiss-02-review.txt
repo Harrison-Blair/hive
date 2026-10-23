@@ -1,0 +1,40 @@
+ hive  /tmp/hv135-verify4/home             coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   14:09 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:08  asker-scratch ? asked · Scope · Order                                                                         │
+│ 14:09  you           answered asker-scratch · Scope → 2 Help line, 3 Header count; Order → Next release · note: ke…  │
+│ 14:09  asker-scratch ? asked · Scope · Order                                                                         │
+│ 14:09  you           answered asker-scratch · Scope → 1 Ask card · note: parent path; Order → 2 Help first           │
+│ 14:09  asker-scratch ? asked · Scope · Order · open below                                                            │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 1 ━┓
+┃   Scope → Ask card · note: discard this                                                                              ┃
+┃   Order → Help first                                                                                                 ┃
+┃                                                                                                                      ┃
+┃ › Send                                                                                                               ┃
+┗━ enter send · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter send · x dismiss · J/K next/prev card                                                     

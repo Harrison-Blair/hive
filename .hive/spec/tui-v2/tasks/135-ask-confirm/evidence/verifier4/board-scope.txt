@@ -1,0 +1,51 @@
+AgentDetails: unchanged grid, source, fixture
+AgentDetailsGeneral: unchanged grid, source, fixture
+AgentsCoordinatorChild: unchanged grid, source, fixture
+AgentsHiddenParent: unchanged grid, source, fixture
+AgentsHome: unchanged grid, source, fixture
+AgentsMany: unchanged grid, source, fixture
+AgentsNested: unchanged grid, source, fixture
+Chat: unchanged grid, source, fixture
+ChatAsk: approved change
+ChatAskMulti: approved change
+ChatAskPreview: approved change
+ChatAskReview: approved change
+ChatAskReviewMulti: approved change
+ChatAskStopped: approved change
+ChatEvents: unchanged grid, source, fixture
+ChatInput: unchanged grid, source, fixture
+ChatNormal: unchanged grid, source, fixture
+ChatStatus: unchanged grid, source, fixture
+Compact: unchanged grid, source, fixture
+CompactAgents: unchanged grid, source, fixture
+CompactAgentsHome: unchanged grid, source, fixture
+CompactChat: unchanged grid, source, fixture
+CompactChatAsk: approved change
+CompactChatAskReview: approved change
+CompactChatNormal: unchanged grid, source, fixture
+CompactChatStatus: unchanged grid, source, fixture
+CompactFriction: unchanged grid, source, fixture
+CompactHealth: unchanged grid, source, fixture
+CompactLiveOverview: unchanged grid, source, fixture
+CompactLivePod: unchanged grid, source, fixture
+CompactLogs: unchanged grid, source, fixture
+CompactTreeNested: unchanged grid, source, fixture
+CompactTreeWide: unchanged grid, source, fixture
+Components: unchanged grid, source, fixture
+Friction: unchanged grid, source, fixture
+FrictionResolved: unchanged grid, source, fixture
+Health: unchanged grid, source, fixture
+HealthAgents: unchanged grid, source, fixture
+HealthAgentsGeneral: unchanged grid, source, fixture
+Help: approved change
+LiveOverview: unchanged grid, source, fixture
+LivePod: unchanged grid, source, fixture
+Logs: unchanged grid, source, fixture
+Main: unchanged grid, source, fixture
+TooSmall: unchanged grid, source, fixture
+TreeNested: unchanged grid, source, fixture
+TreeWide: unchanged grid, source, fixture
+Work: unchanged grid, source, fixture
+WorkGoals: unchanged grid, source, fixture
+WorkQueue: unchanged grid, source, fixture
+All design files unchanged since third failed verdict cef43222. No mask added.

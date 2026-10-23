@@ -1,0 +1,15 @@
+{
+  "key": "parent-scratch-with-long-name-ab",
+  "name": "parent-scratch-with-long-name-ab",
+  "role": "agent",
+  "parent": "",
+  "status": "live",
+  "agent_status": "idle",
+  "pane_id": "w7:p1",
+  "cwd": "/tmp/hv135-verify4",
+  "workspace_id": "w7",
+  "tab_id": "w7:t1",
+  "generation": 1,
+  "started_at": "2026-10-23T18:00:00Z",
+  "updated_at": "2026-10-23T18:00:00Z"
+}

@@ -1,0 +1,15 @@
+{
+  "key": "parent-scratch",
+  "name": "parent-scratch",
+  "role": "agent",
+  "parent": "",
+  "status": "live",
+  "agent_status": "idle",
+  "pane_id": "w2:p1",
+  "cwd": "/tmp/hv135-verify4",
+  "workspace_id": "w2",
+  "tab_id": "w2:t1",
+  "generation": 1,
+  "started_at": "2026-10-23T16:30:00Z",
+  "updated_at": "2026-10-23T16:30:00Z"
+}

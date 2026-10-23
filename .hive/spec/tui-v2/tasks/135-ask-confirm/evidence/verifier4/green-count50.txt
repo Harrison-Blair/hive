@@ -1,0 +1,4 @@
+$ go test ./internal/tui -count=50 -run TestAsk|TestHelp|TestDemoFixtureShowsTheReview|TestEachBoardFixtureLoadsAtItsSpecSize
+ok  	github.com/Harrison-Blair/hive/internal/tui	12.848s
+
+exit=0

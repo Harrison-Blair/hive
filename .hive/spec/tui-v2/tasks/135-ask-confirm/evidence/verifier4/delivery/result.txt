@@ -1,0 +1,1 @@
+Both stub executables and startup output checked before any prompt. At both widths: review and edited review leave the ask open and send nothing; Send delivers exact final multi-picks, Other, and note; record refresh keeps highlighted draft; stopped asker routes only to parent; x delivers exact dismiss only to asker. All six records have one successful delivery.

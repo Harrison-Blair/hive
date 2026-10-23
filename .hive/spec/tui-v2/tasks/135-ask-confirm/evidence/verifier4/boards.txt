@@ -1,0 +1,2315 @@
+=== RUN   TestCheckAcceptsAGoodBoard
+--- PASS: TestCheckAcceptsAGoodBoard (0.00s)
+=== RUN   TestCheckAcceptsChatStatusSymbols
+--- PASS: TestCheckAcceptsChatStatusSymbols (0.00s)
+=== RUN   TestCheckAcceptsNewChatBoardSizes
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatStatus
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatEvents
+=== RUN   TestCheckAcceptsNewChatBoardSizes/CompactChatStatus
+--- PASS: TestCheckAcceptsNewChatBoardSizes (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatStatus (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatEvents (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/CompactChatStatus (0.00s)
+=== RUN   TestCheckAcceptsTheHeavyBorder
+--- PASS: TestCheckAcceptsTheHeavyBorder (0.00s)
+=== RUN   TestCheckAcceptsTheLiveBoards
+--- PASS: TestCheckAcceptsTheLiveBoards (0.00s)
+=== RUN   TestCheckAcceptsTheTreeBoards
+--- PASS: TestCheckAcceptsTheTreeBoards (0.00s)
+=== RUN   TestCheckAcceptsTheChatModeBoards
+--- PASS: TestCheckAcceptsTheChatModeBoards (0.00s)
+=== RUN   TestCheckFailsABadSymbol
+--- PASS: TestCheckFailsABadSymbol (0.00s)
+=== RUN   TestCheckFailsATokenOutsideThePalette
+--- PASS: TestCheckFailsATokenOutsideThePalette (0.00s)
+=== RUN   TestCheckFailsACellOfTwoRunes
+--- PASS: TestCheckFailsACellOfTwoRunes (0.00s)
+=== RUN   TestCheckFailsAWrongSize
+--- PASS: TestCheckFailsAWrongSize (0.00s)
+=== RUN   TestCheckFailsARaggedRow
+--- PASS: TestCheckFailsARaggedRow (0.00s)
+=== RUN   TestCheckFailsABoardOutsideTheTable
+--- PASS: TestCheckFailsABoardOutsideTheTable (0.00s)
+=== RUN   TestCheckGridFailsABadSymbol
+--- PASS: TestCheckGridFailsABadSymbol (0.00s)
+=== RUN   TestCheckGridFailsAWrongSize
+--- PASS: TestCheckGridFailsAWrongSize (0.00s)
+=== RUN   TestToGridKeepsEachCell
+--- PASS: TestToGridKeepsEachCell (0.00s)
+=== RUN   TestCheckAcceptsTheAskBoards
+--- PASS: TestCheckAcceptsTheAskBoards (0.00s)
+=== RUN   TestScriptTakesTheBoardScript
+--- PASS: TestScriptTakesTheBoardScript (0.00s)
+=== RUN   TestScriptFailsWithoutOneBoardScript
+--- PASS: TestScriptFailsWithoutOneBoardScript (0.00s)
+=== RUN   TestExportDirFailsWithoutNode
+--- PASS: TestExportDirFailsWithoutNode (0.00s)
+=== RUN   TestExportDirWritesTheCellsOfT
+--- PASS: TestExportDirWritesTheCellsOfT (0.01s)
+=== RUN   TestExportDirFailsABadBoard
+=== RUN   TestExportDirFailsABadBoard/symbol
+=== RUN   TestExportDirFailsABadBoard/token
+=== RUN   TestExportDirFailsABadBoard/size
+=== RUN   TestExportDirFailsABadBoard/two_grids
+=== RUN   TestExportDirFailsABadBoard/script_error
+--- PASS: TestExportDirFailsABadBoard (0.07s)
+    --- PASS: TestExportDirFailsABadBoard/symbol (0.01s)
+    --- PASS: TestExportDirFailsABadBoard/token (0.02s)
+    --- PASS: TestExportDirFailsABadBoard/size (0.01s)
+    --- PASS: TestExportDirFailsABadBoard/two_grids (0.01s)
+    --- PASS: TestExportDirFailsABadBoard/script_error (0.01s)
+=== RUN   TestGoldenGridFiles
+=== RUN   TestGoldenGridFiles/CompactChatNormal
+=== RUN   TestGoldenGridFiles/ChatAskStopped
+=== RUN   TestGoldenGridFiles/ChatStatus
+=== RUN   TestGoldenGridFiles/CompactChatStatus
+=== RUN   TestGoldenGridFiles/WorkGoals
+=== RUN   TestGoldenGridFiles/HealthAgents
+=== RUN   TestGoldenGridFiles/Help
+=== RUN   TestGoldenGridFiles/TooSmall
+=== RUN   TestGoldenGridFiles/AgentsNested
+=== RUN   TestGoldenGridFiles/TreeWide
+=== RUN   TestGoldenGridFiles/Main
+=== RUN   TestGoldenGridFiles/CompactLogs
+=== RUN   TestGoldenGridFiles/Components
+=== RUN   TestGoldenGridFiles/AgentsHome
+=== RUN   TestGoldenGridFiles/ChatAskMulti
+=== RUN   TestGoldenGridFiles/ChatAskReview
+=== RUN   TestGoldenGridFiles/AgentsMany
+=== RUN   TestGoldenGridFiles/Work
+=== RUN   TestGoldenGridFiles/CompactChatAsk
+=== RUN   TestGoldenGridFiles/CompactChatAskReview
+=== RUN   TestGoldenGridFiles/FrictionResolved
+=== RUN   TestGoldenGridFiles/CompactFriction
+=== RUN   TestGoldenGridFiles/Health
+=== RUN   TestGoldenGridFiles/ChatAsk
+=== RUN   TestGoldenGridFiles/CompactHealth
+=== RUN   TestGoldenGridFiles/LivePod
+=== RUN   TestGoldenGridFiles/CompactLivePod
+=== RUN   TestGoldenGridFiles/ChatInput
+=== RUN   TestGoldenGridFiles/ChatAskReviewMulti
+=== RUN   TestGoldenGridFiles/CompactAgents
+=== RUN   TestGoldenGridFiles/ChatEvents
+=== RUN   TestGoldenGridFiles/WorkQueue
+=== RUN   TestGoldenGridFiles/Compact
+=== RUN   TestGoldenGridFiles/Logs
+=== RUN   TestGoldenGridFiles/AgentsCoordinatorChild
+=== RUN   TestGoldenGridFiles/LiveOverview
+=== RUN   TestGoldenGridFiles/TreeNested
+=== RUN   TestGoldenGridFiles/Chat
+=== RUN   TestGoldenGridFiles/CompactChat
+=== RUN   TestGoldenGridFiles/AgentsHiddenParent
+=== RUN   TestGoldenGridFiles/CompactTreeWide
+=== RUN   TestGoldenGridFiles/CompactTreeNested
+=== RUN   TestGoldenGridFiles/ChatNormal
+=== RUN   TestGoldenGridFiles/ChatAskPreview
+=== RUN   TestGoldenGridFiles/AgentDetails
+=== RUN   TestGoldenGridFiles/Friction
+=== RUN   TestGoldenGridFiles/CompactAgentsHome
+=== RUN   TestGoldenGridFiles/AgentDetailsGeneral
+=== RUN   TestGoldenGridFiles/HealthAgentsGeneral
+=== RUN   TestGoldenGridFiles/CompactLiveOverview
+--- PASS: TestGoldenGridFiles (0.01s)
+    --- PASS: TestGoldenGridFiles/CompactChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskStopped (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkGoals (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/Help (0.00s)
+    --- PASS: TestGoldenGridFiles/TooSmall (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsNested (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/Main (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLogs (0.00s)
+    --- PASS: TestGoldenGridFiles/Components (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskMulti (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskReview (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsMany (0.00s)
+    --- PASS: TestGoldenGridFiles/Work (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatAskReview (0.00s)
+    --- PASS: TestGoldenGridFiles/FrictionResolved (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactFriction (0.00s)
+    --- PASS: TestGoldenGridFiles/Health (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactHealth (0.00s)
+    --- PASS: TestGoldenGridFiles/LivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatInput (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskReviewMulti (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatEvents (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkQueue (0.00s)
+    --- PASS: TestGoldenGridFiles/Compact (0.00s)
+    --- PASS: TestGoldenGridFiles/Logs (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGoldenGridFiles/LiveOverview (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/Chat (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChat (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHiddenParent (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskPreview (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentDetails (0.00s)
+    --- PASS: TestGoldenGridFiles/Friction (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgentsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLiveOverview (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.094s
+?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
+=== RUN   TestCompareReportsEachDifferingCell
+--- PASS: TestCompareReportsEachDifferingCell (0.00s)
+=== RUN   TestCompareMaskIgnoresRuneOnly
+--- PASS: TestCompareMaskIgnoresRuneOnly (0.00s)
+=== RUN   TestCompareRejectsBadMask
+--- PASS: TestCompareRejectsBadMask (0.00s)
+=== RUN   TestCompareRejectsSizeMismatch
+--- PASS: TestCompareRejectsSizeMismatch (0.00s)
+=== RUN   TestReadMask
+--- PASS: TestReadMask (0.00s)
+=== RUN   TestReadMaskErrorsNameTheLine
+--- PASS: TestReadMaskErrorsNameTheLine (0.00s)
+=== RUN   TestConvertBoxWithAccentTitle
+--- PASS: TestConvertBoxWithAccentTitle (0.00s)
+=== RUN   TestConvertDefaultForegroundBoldOffResetAndPadding
+--- PASS: TestConvertDefaultForegroundBoldOffResetAndPadding (0.00s)
+=== RUN   TestConvertMapsEachPaletteHex
+--- PASS: TestConvertMapsEachPaletteHex (0.00s)
+=== RUN   TestConvertFailures
+--- PASS: TestConvertFailures (0.00s)
+=== RUN   TestReadGridFile
+--- PASS: TestReadGridFile (0.00s)
+=== RUN   TestWriteGridFile
+--- PASS: TestWriteGridFile (0.00s)
+=== RUN   TestGridRoundTripEachToken
+--- PASS: TestGridRoundTripEachToken (0.00s)
+=== RUN   TestReadGridErrorsNameTheLine
+--- PASS: TestReadGridErrorsNameTheLine (0.00s)
+=== RUN   TestWriteGridRejectsWideRune
+--- PASS: TestWriteGridRejectsWideRune (0.00s)
+=== RUN   TestPaletteMatchesDecision26
+--- PASS: TestPaletteMatchesDecision26 (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/lib/cellgrid	0.001s
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.02s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.02s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.01s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.00s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.00s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.01s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.00s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.00s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.00s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.00s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.02s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.01s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.00s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.01s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.00s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.01s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.00s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.00s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.00s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.00s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard
+--- PASS: TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard (0.00s)
+=== RUN   TestAgentsHomeColumnIsNotShownWhenEmpty
+--- PASS: TestAgentsHomeColumnIsNotShownWhenEmpty (0.00s)
+=== RUN   TestAgentsHomeAgentsWithNoProjectKeepTheNotice
+--- PASS: TestAgentsHomeAgentsWithNoProjectKeepTheNotice (0.00s)
+=== RUN   TestAgentsNestGeneralAgentsUnderTheirParentCard
+--- PASS: TestAgentsNestGeneralAgentsUnderTheirParentCard (0.00s)
+=== RUN   TestAgentsNestingUsesTheRailFormInTheOverview
+--- PASS: TestAgentsNestingUsesTheRailFormInTheOverview (0.00s)
+=== RUN   TestAgentsChildrenAreInOrderOfCreationTime
+--- PASS: TestAgentsChildrenAreInOrderOfCreationTime (0.00s)
+=== RUN   TestAgentsHMovesTheChildOfAHiddenParent
+--- PASS: TestAgentsHMovesTheChildOfAHiddenParent (0.00s)
+=== RUN   TestAgentsCoordinatorChildrenAreInHome
+--- PASS: TestAgentsCoordinatorChildrenAreInHome (0.00s)
+=== RUN   TestAgentsManagerWithoutChildrenShowsNoChildAgents
+--- PASS: TestAgentsManagerWithoutChildrenShowsNoChildAgents (0.00s)
+=== RUN   TestAgentsArrowsReachNestedAndHomeAgents
+--- PASS: TestAgentsArrowsReachNestedAndHomeAgents (0.00s)
+=== RUN   TestAgentsCompactHomeIsTheLastPage
+--- PASS: TestAgentsCompactHomeIsTheLastPage (0.00s)
+=== RUN   TestAgentsDetailsOfAGeneralAgent
+--- PASS: TestAgentsDetailsOfAGeneralAgent (0.00s)
+=== RUN   TestHealthAgentsRestartRefusesAGeneralAgent
+--- PASS: TestHealthAgentsRestartRefusesAGeneralAgent (0.00s)
+=== RUN   TestGeneralAgentBoardFixtures
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentsNested
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardFixtures/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardFixtures/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardFixtures/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardFixtures (0.01s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/HealthAgentsGeneral (0.00s)
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsNested
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral (0.00s)
+=== RUN   TestLiveBoardsMatchTheirGrids
+=== RUN   TestLiveBoardsMatchTheirGrids/LiveOverview
+=== RUN   TestLiveBoardsMatchTheirGrids/LivePod
+=== RUN   TestLiveBoardsMatchTheirGrids/CompactLiveOverview
+=== RUN   TestLiveBoardsMatchTheirGrids/CompactLivePod
+--- PASS: TestLiveBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/LiveOverview (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/LivePod (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/CompactLiveOverview (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/CompactLivePod (0.00s)
+=== RUN   TestLiveLineIsLitForFiveSeconds
+=== RUN   TestLiveLineIsLitForFiveSeconds/at_t
+=== RUN   TestLiveLineIsLitForFiveSeconds/at_t+4s
+=== RUN   TestLiveLineIsLitForFiveSeconds/at_t+5s
+--- PASS: TestLiveLineIsLitForFiveSeconds (0.00s)
+    --- PASS: TestLiveLineIsLitForFiveSeconds/at_t (0.00s)
+    --- PASS: TestLiveLineIsLitForFiveSeconds/at_t+4s (0.00s)
+    --- PASS: TestLiveLineIsLitForFiveSeconds/at_t+5s (0.00s)
+=== RUN   TestLiveNewMessageKeepsTheLineLit
+--- PASS: TestLiveNewMessageKeepsTheLineLit (0.00s)
+=== RUN   TestLiveReplyTurnsTheArrow
+--- PASS: TestLiveReplyTurnsTheArrow (0.00s)
+=== RUN   TestLiveSendEventGivesTheReceiverByKey
+--- PASS: TestLiveSendEventGivesTheReceiverByKey (0.00s)
+=== RUN   TestLiveMessagesGroupByCard
+=== RUN   TestLiveMessagesGroupByCard/name_then_key
+=== RUN   TestLiveMessagesGroupByCard/key_then_name
+--- PASS: TestLiveMessagesGroupByCard (0.00s)
+    --- PASS: TestLiveMessagesGroupByCard/name_then_key (0.00s)
+    --- PASS: TestLiveMessagesGroupByCard/key_then_name (0.00s)
+=== RUN   TestLiveLineGoesDarkOnTheExpiryMessage
+--- PASS: TestLiveLineGoesDarkOnTheExpiryMessage (0.01s)
+=== RUN   TestLiveInboxRecordLightsALine
+=== RUN   TestLiveInboxRecordLightsALine/no_card
+=== RUN   TestLiveInboxRecordLightsALine/coordinator_to_manager
+=== RUN   TestLiveInboxRecordLightsALine/manager_to_manager
+=== RUN   TestLiveInboxRecordLightsALine/rail_down
+=== RUN   TestLiveInboxRecordLightsALine/rail_up
+=== RUN   TestLiveInboxRecordLightsALine/tree_child_to_child
+--- PASS: TestLiveInboxRecordLightsALine (0.03s)
+    --- PASS: TestLiveInboxRecordLightsALine/no_card (0.00s)
+    --- PASS: TestLiveInboxRecordLightsALine/coordinator_to_manager (0.00s)
+    --- PASS: TestLiveInboxRecordLightsALine/manager_to_manager (0.01s)
+    --- PASS: TestLiveInboxRecordLightsALine/rail_down (0.01s)
+    --- PASS: TestLiveInboxRecordLightsALine/rail_up (0.00s)
+    --- PASS: TestLiveInboxRecordLightsALine/tree_child_to_child (0.00s)
+=== RUN   TestLivePodSelection
+--- PASS: TestLivePodSelection (0.07s)
+=== RUN   TestLivePodViewSelectsCards
+--- PASS: TestLivePodViewSelectsCards (0.01s)
+=== RUN   TestLiveOneProjectOpensThePodView
+--- PASS: TestLiveOneProjectOpensThePodView (0.01s)
+=== RUN   TestLiveDropMergesWithTheJoint
+--- PASS: TestLiveDropMergesWithTheJoint (0.01s)
+=== RUN   TestLiveFooters
+=== RUN   TestLiveFooters/LiveOverview/←→_select_pod_·_↑_coordinator_·_enter_open_pod_·_h_stopped_·_?_help
+=== RUN   TestLiveFooters/CompactLiveOverview/←→_select_pod_·_↑_coordinator_·_enter_open_·_?
+=== RUN   TestLiveFooters/LiveOverview/←↑↓→_move_·_enter_details_·_a_attach_·_p_peek_·_t_task_·_esc_pods_·_h_stopped_·_?_help
+=== RUN   TestLiveFooters/CompactLiveOverview/←↑↓→_move_·_enter_details_·_esc_pods_·_?
+--- PASS: TestLiveFooters (0.03s)
+    --- PASS: TestLiveFooters/LiveOverview/←→_select_pod_·_↑_coordinator_·_enter_open_pod_·_h_stopped_·_?_help (0.00s)
+    --- PASS: TestLiveFooters/CompactLiveOverview/←→_select_pod_·_↑_coordinator_·_enter_open_·_? (0.01s)
+    --- PASS: TestLiveFooters/LiveOverview/←↑↓→_move_·_enter_details_·_a_attach_·_p_peek_·_t_task_·_esc_pods_·_h_stopped_·_?_help (0.00s)
+    --- PASS: TestLiveFooters/CompactLiveOverview/←↑↓→_move_·_enter_details_·_esc_pods_·_? (0.01s)
+=== RUN   TestLiveDropClearsALongTitle
+--- PASS: TestLiveDropClearsALongTitle (0.01s)
+=== RUN   TestAgentsBoardsMatchTheirGrids
+=== RUN   TestAgentsBoardsMatchTheirGrids/Main
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentsMany
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentDetails
+=== RUN   TestAgentsBoardsMatchTheirGrids/CompactAgents
+--- PASS: TestAgentsBoardsMatchTheirGrids (0.03s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/Main (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentsMany (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentDetails (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/CompactAgents (0.00s)
+=== RUN   TestAgentsFitEachSize
+=== RUN   TestAgentsFitEachSize/AgentsMany/79x24
+=== RUN   TestAgentsFitEachSize/AgentsMany/80x24
+=== RUN   TestAgentsFitEachSize/AgentsMany/80x25
+=== RUN   TestAgentsFitEachSize/AgentsMany/119x40
+=== RUN   TestAgentsFitEachSize/AgentsMany/119x41
+=== RUN   TestAgentsFitEachSize/AgentsMany/120x40
+=== RUN   TestAgentsFitEachSize/AgentsMany/120x41
+=== RUN   TestAgentsFitEachSize/nine_projects/79x24
+=== RUN   TestAgentsFitEachSize/nine_projects/80x24
+=== RUN   TestAgentsFitEachSize/nine_projects/80x25
+=== RUN   TestAgentsFitEachSize/nine_projects/119x40
+=== RUN   TestAgentsFitEachSize/nine_projects/119x41
+=== RUN   TestAgentsFitEachSize/nine_projects/120x40
+=== RUN   TestAgentsFitEachSize/nine_projects/120x41
+=== RUN   TestAgentsFitEachSize/long_text/79x24
+=== RUN   TestAgentsFitEachSize/long_text/80x24
+=== RUN   TestAgentsFitEachSize/long_text/80x25
+=== RUN   TestAgentsFitEachSize/long_text/119x40
+=== RUN   TestAgentsFitEachSize/long_text/119x41
+=== RUN   TestAgentsFitEachSize/long_text/120x40
+=== RUN   TestAgentsFitEachSize/long_text/120x41
+=== RUN   TestAgentsFitEachSize/forty_workers/79x24
+=== RUN   TestAgentsFitEachSize/forty_workers/80x24
+=== RUN   TestAgentsFitEachSize/forty_workers/80x25
+=== RUN   TestAgentsFitEachSize/forty_workers/119x40
+=== RUN   TestAgentsFitEachSize/forty_workers/119x41
+=== RUN   TestAgentsFitEachSize/forty_workers/120x40
+=== RUN   TestAgentsFitEachSize/forty_workers/120x41
+=== RUN   TestAgentsFitEachSize/empty/79x24
+=== RUN   TestAgentsFitEachSize/empty/80x24
+=== RUN   TestAgentsFitEachSize/empty/80x25
+=== RUN   TestAgentsFitEachSize/empty/119x40
+=== RUN   TestAgentsFitEachSize/empty/119x41
+=== RUN   TestAgentsFitEachSize/empty/120x40
+=== RUN   TestAgentsFitEachSize/empty/120x41
+=== RUN   TestAgentsFitEachSize/Main/79x24
+=== RUN   TestAgentsFitEachSize/Main/80x24
+=== RUN   TestAgentsFitEachSize/Main/80x25
+=== RUN   TestAgentsFitEachSize/Main/119x40
+=== RUN   TestAgentsFitEachSize/Main/119x41
+=== RUN   TestAgentsFitEachSize/Main/120x40
+=== RUN   TestAgentsFitEachSize/Main/120x41
+--- PASS: TestAgentsFitEachSize (0.10s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/80x24 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/119x40 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/119x41 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/120x40 (0.01s)
+    --- PASS: TestAgentsFitEachSize/AgentsMany/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/nine_projects/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/long_text/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/forty_workers/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/empty/120x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/79x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/80x24 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/80x25 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/119x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/119x41 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/120x40 (0.00s)
+    --- PASS: TestAgentsFitEachSize/Main/120x41 (0.00s)
+=== RUN   TestAgentsGraphShowsProjectAgentsOnly
+--- PASS: TestAgentsGraphShowsProjectAgentsOnly (0.00s)
+=== RUN   TestAgentsArrowsScrollThePods
+--- PASS: TestAgentsArrowsScrollThePods (0.01s)
+=== RUN   TestAgentsSelectedCardJoints
+--- PASS: TestAgentsSelectedCardJoints (0.01s)
+=== RUN   TestAgentsUpDownMoveInThePod
+--- PASS: TestAgentsUpDownMoveInThePod (0.00s)
+=== RUN   TestAgentsHHidesStoppedAgents
+--- PASS: TestAgentsHHidesStoppedAgents (0.00s)
+=== RUN   TestAgentsDetailsPopupKeys
+--- PASS: TestAgentsDetailsPopupKeys (0.01s)
+=== RUN   TestAgentsDemoActionsShowTheNotice
+--- PASS: TestAgentsDemoActionsShowTheNotice (0.00s)
+=== RUN   TestAgentsTOpensTheTask
+--- PASS: TestAgentsTOpensTheTask (0.00s)
+=== RUN   TestAgentsCompactFooter
+--- PASS: TestAgentsCompactFooter (0.00s)
+=== RUN   TestAgentsNormalModeLoadsAndRefreshes
+--- PASS: TestAgentsNormalModeLoadsAndRefreshes (0.31s)
+=== RUN   TestAgentsGraphShowsTheCurrentGenerationOnly
+--- PASS: TestAgentsGraphShowsTheCurrentGenerationOnly (0.00s)
+=== RUN   TestAgentsDetailsShowAnUnreadNudge
+=== RUN   TestAgentsDetailsShowAnUnreadNudge/unread_nudged_manager
+=== RUN   TestAgentsDetailsShowAnUnreadNudge/read_nudged_manager
+=== RUN   TestAgentsDetailsShowAnUnreadNudge/unread_manager_without_nudge
+=== RUN   TestAgentsDetailsShowAnUnreadNudge/nudged_worker
+--- PASS: TestAgentsDetailsShowAnUnreadNudge (1.27s)
+    --- PASS: TestAgentsDetailsShowAnUnreadNudge/unread_nudged_manager (0.33s)
+    --- PASS: TestAgentsDetailsShowAnUnreadNudge/read_nudged_manager (0.28s)
+    --- PASS: TestAgentsDetailsShowAnUnreadNudge/unread_manager_without_nudge (0.32s)
+    --- PASS: TestAgentsDetailsShowAnUnreadNudge/nudged_worker (0.34s)
+=== RUN   TestAgentsPodHoldsAgentsWithoutAParentRecord
+--- PASS: TestAgentsPodHoldsAgentsWithoutAParentRecord (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.00s)
+=== RUN   TestAgentsCardsShowUnknownWhenTheSupervisorIsStale
+--- PASS: TestAgentsCardsShowUnknownWhenTheSupervisorIsStale (0.00s)
+=== RUN   TestAgentsKeysLogTheirActions
+--- PASS: TestAgentsKeysLogTheirActions (0.00s)
+=== RUN   TestAgentsHideStoppedAtStart
+--- PASS: TestAgentsHideStoppedAtStart (0.00s)
+=== RUN   TestAgentsWorkingCardBorder
+--- PASS: TestAgentsWorkingCardBorder (0.01s)
+=== RUN   TestCurrentAgentKeysGiveOneRecordForEachName
+--- PASS: TestCurrentAgentKeysGiveOneRecordForEachName (0.00s)
+=== RUN   TestCurrentAgentKeysPreferTheLiveRecord
+--- PASS: TestCurrentAgentKeysPreferTheLiveRecord (0.00s)
+=== RUN   TestAgentsOverviewDrawsOneCardForEachName
+--- PASS: TestAgentsOverviewDrawsOneCardForEachName (0.00s)
+=== RUN   TestAgentsPodViewDrawsTheLiveManager
+--- PASS: TestAgentsPodViewDrawsTheLiveManager (0.00s)
+=== RUN   TestAgentsHHidesAStaleWorkerWithNoSuccessor
+--- PASS: TestAgentsHHidesAStaleWorkerWithNoSuccessor (0.00s)
+=== RUN   TestAgentsCoordinatorIsTheLiveRecord
+--- PASS: TestAgentsCoordinatorIsTheLiveRecord (0.00s)
+=== RUN   TestHealthAgentsListOneRowForEachName
+--- PASS: TestHealthAgentsListOneRowForEachName (0.00s)
+=== RUN   TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime
+--- PASS: TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime (0.00s)
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24
+=== RUN   TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40
+--- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes (0.01s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/80x24 (0.01s)
+    --- PASS: TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes/120x40 (0.01s)
+=== RUN   TestAgentsPeekReadsInCommandAndEscClosesIt
+--- PASS: TestAgentsPeekReadsInCommandAndEscClosesIt (0.00s)
+=== RUN   TestAgentsHeaderUsesBoardLabels
+--- PASS: TestAgentsHeaderUsesBoardLabels (0.26s)
+=== RUN   TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge
+--- PASS: TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge (0.34s)
+=== RUN   TestAgentsBoardTaskShortcutOpensSelectedTask
+--- PASS: TestAgentsBoardTaskShortcutOpensSelectedTask (0.45s)
+=== RUN   TestAgentsBoardKeyHintsMatchTheBoard
+--- PASS: TestAgentsBoardKeyHintsMatchTheBoard (0.54s)
+=== RUN   TestAgentsHeaderUsesSpacesAndRightAlignsTime
+--- PASS: TestAgentsHeaderUsesSpacesAndRightAlignsTime (0.53s)
+=== RUN   TestAgentsProgramUsesStringReader
+--- PASS: TestAgentsProgramUsesStringReader (0.00s)
+=== RUN   TestTreeBoardsMatchTheirGrids
+=== RUN   TestTreeBoardsMatchTheirGrids/TreeWide
+=== RUN   TestTreeBoardsMatchTheirGrids/TreeNested
+=== RUN   TestTreeBoardsMatchTheirGrids/CompactTreeWide
+=== RUN   TestTreeBoardsMatchTheirGrids/CompactTreeNested
+--- PASS: TestTreeBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/TreeWide (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/TreeNested (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/CompactTreeWide (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/CompactTreeNested (0.00s)
+=== RUN   TestTreeNestedChild
+--- PASS: TestTreeNestedChild (0.00s)
+=== RUN   TestTreeNestedChildrenUseABus
+--- PASS: TestTreeNestedChildrenUseABus (0.00s)
+=== RUN   TestTreeScrollsSidewaysAt80
+--- PASS: TestTreeScrollsSidewaysAt80 (0.01s)
+=== RUN   TestTreeScrollsSidewaysAt120
+--- PASS: TestTreeScrollsSidewaysAt120 (0.01s)
+=== RUN   TestTreeScrollsVertically
+--- PASS: TestTreeScrollsVertically (0.01s)
+=== RUN   TestTreePageKeysDoNotScroll
+=== RUN   TestTreePageKeysDoNotScroll/CompactTreeWide
+=== RUN   TestTreePageKeysDoNotScroll/CompactTreeNested
+=== RUN   TestTreePageKeysDoNotScroll/TreeWide
+--- PASS: TestTreePageKeysDoNotScroll (0.02s)
+    --- PASS: TestTreePageKeysDoNotScroll/CompactTreeWide (0.01s)
+    --- PASS: TestTreePageKeysDoNotScroll/CompactTreeNested (0.00s)
+    --- PASS: TestTreePageKeysDoNotScroll/TreeWide (0.01s)
+=== RUN   TestHomeTreeCoordinatorLineGoesToTheTopCard
+--- PASS: TestHomeTreeCoordinatorLineGoesToTheTopCard (0.00s)
+=== RUN   TestHomeTreeCoordinatorLineUsesABus
+--- PASS: TestHomeTreeCoordinatorLineUsesABus (0.00s)
+=== RUN   TestAskReviewKeepsMultilineTextInsideTheDock
+=== RUN   TestAskReviewKeepsMultilineTextInsideTheDock/120
+=== RUN   TestAskReviewKeepsMultilineTextInsideTheDock/80
+--- PASS: TestAskReviewKeepsMultilineTextInsideTheDock (0.00s)
+    --- PASS: TestAskReviewKeepsMultilineTextInsideTheDock/120 (0.00s)
+    --- PASS: TestAskReviewKeepsMultilineTextInsideTheDock/80 (0.00s)
+=== RUN   TestAskReviewReachesEachLineOfATallLabel
+=== RUN   TestAskReviewReachesEachLineOfATallLabel/120
+=== RUN   TestAskReviewReachesEachLineOfATallLabel/80
+--- PASS: TestAskReviewReachesEachLineOfATallLabel (0.03s)
+    --- PASS: TestAskReviewReachesEachLineOfATallLabel/120 (0.02s)
+    --- PASS: TestAskReviewReachesEachLineOfATallLabel/80 (0.01s)
+=== RUN   TestAskReviewOneQuestion
+--- PASS: TestAskReviewOneQuestion (0.00s)
+=== RUN   TestAskEachCompletionPathOpensTheReview
+=== RUN   TestAskEachCompletionPathOpensTheReview/enter
+=== RUN   TestAskEachCompletionPathOpensTheReview/digit
+=== RUN   TestAskEachCompletionPathOpensTheReview/click
+=== RUN   TestAskEachCompletionPathOpensTheReview/note
+=== RUN   TestAskEachCompletionPathOpensTheReview/other
+--- PASS: TestAskEachCompletionPathOpensTheReview (0.01s)
+    --- PASS: TestAskEachCompletionPathOpensTheReview/enter (0.00s)
+    --- PASS: TestAskEachCompletionPathOpensTheReview/digit (0.00s)
+    --- PASS: TestAskEachCompletionPathOpensTheReview/click (0.00s)
+    --- PASS: TestAskEachCompletionPathOpensTheReview/note (0.00s)
+    --- PASS: TestAskEachCompletionPathOpensTheReview/other (0.00s)
+=== RUN   TestAskReviewKeepsTheEmptyOtherCheck
+--- PASS: TestAskReviewKeepsTheEmptyOtherCheck (0.00s)
+=== RUN   TestAskReviewEditsAQuestionAndSendsTheEditedDraft
+--- PASS: TestAskReviewEditsAQuestionAndSendsTheEditedDraft (0.00s)
+=== RUN   TestAskReviewEditsANote
+--- PASS: TestAskReviewEditsANote (0.00s)
+=== RUN   TestAskReviewIgnoresOtherInput
+--- PASS: TestAskReviewIgnoresOtherInput (0.00s)
+=== RUN   TestAskReviewXDismisses
+--- PASS: TestAskReviewXDismisses (0.00s)
+=== RUN   TestAskReviewSurvivesACardSwitch
+--- PASS: TestAskReviewSurvivesACardSwitch (0.00s)
+=== RUN   TestAskReviewSurvivesARefresh
+--- PASS: TestAskReviewSurvivesARefresh (0.00s)
+=== RUN   TestAskReviewForAStoppedAsker
+--- PASS: TestAskReviewForAStoppedAsker (0.00s)
+=== RUN   TestAskCompactReviewForAStoppedAskerKeepsTheTitle
+--- PASS: TestAskCompactReviewForAStoppedAskerKeepsTheTitle (0.00s)
+=== RUN   TestAskReviewWrapsAndScrollsLongContent
+=== RUN   TestAskReviewWrapsAndScrollsLongContent/120
+=== RUN   TestAskReviewWrapsAndScrollsLongContent/80
+--- PASS: TestAskReviewWrapsAndScrollsLongContent (0.01s)
+    --- PASS: TestAskReviewWrapsAndScrollsLongContent/120 (0.00s)
+    --- PASS: TestAskReviewWrapsAndScrollsLongContent/80 (0.01s)
+=== RUN   TestAskReviewAfterAnEditAtEightyColumns
+--- PASS: TestAskReviewAfterAnEditAtEightyColumns (0.00s)
+=== RUN   TestAskReviewBlockedCallerSendsNothing
+--- PASS: TestAskReviewBlockedCallerSendsNothing (0.00s)
+=== RUN   TestDemoFixtureShowsTheReview
+--- PASS: TestDemoFixtureShowsTheReview (0.00s)
+=== RUN   TestAskReviewKeepsOnlyTheReviewKeys
+--- PASS: TestAskReviewKeepsOnlyTheReviewKeys (0.01s)
+=== RUN   TestAskReviewReachesEachPartOfALongRow
+=== RUN   TestAskReviewReachesEachPartOfALongRow/120
+=== RUN   TestAskReviewReachesEachPartOfALongRow/80
+--- PASS: TestAskReviewReachesEachPartOfALongRow (0.08s)
+    --- PASS: TestAskReviewReachesEachPartOfALongRow/120 (0.04s)
+    --- PASS: TestAskReviewReachesEachPartOfALongRow/80 (0.04s)
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_120_and_no_route_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_120_and_no_route_caption_at_80/80x24
+--- PASS: TestAskStoppedReviewKeepsTheStateInTheCard (0.04s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/120x40 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/80x24 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/120x40 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/80x24 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/120x40 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/80x24 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_120_and_no_route_caption_at_80/120x40 (0.00s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_120_and_no_route_caption_at_80/80x24 (0.00s)
+=== RUN   TestAskStoppedEditorKeepsTheStateInTheCard
+--- PASS: TestAskStoppedEditorKeepsTheStateInTheCard (0.00s)
+=== RUN   TestAskBoardsMatch
+=== RUN   TestAskBoardsMatch/ChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskMulti
+=== RUN   TestAskBoardsMatch/ChatAskPreview
+=== RUN   TestAskBoardsMatch/ChatAskStopped
+=== RUN   TestAskBoardsMatch/CompactChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskReview
+=== RUN   TestAskBoardsMatch/ChatAskReviewMulti
+=== RUN   TestAskBoardsMatch/CompactChatAskReview
+--- PASS: TestAskBoardsMatch (0.02s)
+    --- PASS: TestAskBoardsMatch/ChatAsk (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskMulti (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskPreview (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskStopped (0.00s)
+    --- PASS: TestAskBoardsMatch/CompactChatAsk (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskReview (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskReviewMulti (0.00s)
+    --- PASS: TestAskBoardsMatch/CompactChatAskReview (0.00s)
+=== RUN   TestAskCardHasTheFocusInNormalMode
+--- PASS: TestAskCardHasTheFocusInNormalMode (0.00s)
+=== RUN   TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen
+--- PASS: TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen (0.00s)
+=== RUN   TestAskDigitPicksAndSendsASingleQuestion
+--- PASS: TestAskDigitPicksAndSendsASingleQuestion (0.00s)
+=== RUN   TestAskArrowsAndEnterPickTheCurrentOption
+--- PASS: TestAskArrowsAndEnterPickTheCurrentOption (0.00s)
+=== RUN   TestAskTwoQuestionsWithMarksAndANote
+--- PASS: TestAskTwoQuestionsWithMarksAndANote (0.00s)
+=== RUN   TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption
+--- PASS: TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption (0.00s)
+=== RUN   TestAskNoteTabDropsAndCtrlBracketKeeps
+--- PASS: TestAskNoteTabDropsAndCtrlBracketKeeps (0.00s)
+=== RUN   TestAskOtherOpensATextLine
+--- PASS: TestAskOtherOpensATextLine (0.00s)
+=== RUN   TestAskXDismisses
+--- PASS: TestAskXDismisses (0.00s)
+=== RUN   TestAskJAndKMoveBetweenCards
+--- PASS: TestAskJAndKMoveBetweenCards (0.00s)
+=== RUN   TestAskStoppedAskerShowsTheParent
+--- PASS: TestAskStoppedAskerShowsTheParent (0.00s)
+=== RUN   TestAskHistoryShowsTheAnswerAndTheDismissal
+--- PASS: TestAskHistoryShowsTheAnswerAndTheDismissal (0.00s)
+=== RUN   TestAskMouseFocusesAndScrolls
+--- PASS: TestAskMouseFocusesAndScrolls (0.00s)
+=== RUN   TestAskClickOnTheCardGivesItTheFocus
+--- PASS: TestAskClickOnTheCardGivesItTheFocus (0.00s)
+=== RUN   TestAskWheelOverTheCardScrollsTheFeed
+--- PASS: TestAskWheelOverTheCardScrollsTheFeed (0.00s)
+=== RUN   TestReadHeaderCountsTheOpenAsks
+--- PASS: TestReadHeaderCountsTheOpenAsks (0.00s)
+=== RUN   TestTickDeliversAWaitingAnswer
+--- PASS: TestTickDeliversAWaitingAnswer (0.30s)
+=== RUN   TestDemoBlocksTheAnswer
+--- PASS: TestDemoBlocksTheAnswer (0.00s)
+=== RUN   TestANewAskRefreshesTheHeaderAndChat
+--- PASS: TestANewAskRefreshesTheHeaderAndChat (0.00s)
+=== RUN   TestHelpListsTheAskKeys
+--- PASS: TestHelpListsTheAskKeys (0.00s)
+=== RUN   TestHeaderShowsTheOpenAskRecords
+--- PASS: TestHeaderShowsTheOpenAskRecords (0.01s)
+=== RUN   TestAskOtherInAMultiSelectQuestion
+--- PASS: TestAskOtherInAMultiSelectQuestion (0.00s)
+=== RUN   TestABlockedCallerCannotAnswer
+--- PASS: TestABlockedCallerCannotAnswer (0.00s)
+=== RUN   TestChatModeBoardsMatch
+=== RUN   TestChatModeBoardsMatch/ChatNormal
+=== RUN   TestChatModeBoardsMatch/ChatInput
+=== RUN   TestChatModeBoardsMatch/CompactChatNormal
+--- PASS: TestChatModeBoardsMatch (0.01s)
+    --- PASS: TestChatModeBoardsMatch/ChatNormal (0.00s)
+    --- PASS: TestChatModeBoardsMatch/ChatInput (0.00s)
+    --- PASS: TestChatModeBoardsMatch/CompactChatNormal (0.00s)
+=== RUN   TestChatNormalModeIsTheDefault
+--- PASS: TestChatNormalModeIsTheDefault (0.00s)
+=== RUN   TestChatCompactFooterShowsTheModes
+--- PASS: TestChatCompactFooterShowsTheModes (0.00s)
+=== RUN   TestChatInputModeKeys
+--- PASS: TestChatInputModeKeys (0.00s)
+=== RUN   TestChatNormalModeLettersStayShortcuts
+--- PASS: TestChatNormalModeLettersStayShortcuts (0.00s)
+=== RUN   TestChatClicksChangeTheMode
+--- PASS: TestChatClicksChangeTheMode (0.00s)
+=== RUN   TestChatWheelScrollsTheFeed
+--- PASS: TestChatWheelScrollsTheFeed (0.03s)
+=== RUN   TestCompactChatFeedShowsTheEarlierNote
+--- PASS: TestCompactChatFeedShowsTheEarlierNote (0.00s)
+=== RUN   TestMouseWheelScrollsTheListUnderThePointer
+--- PASS: TestMouseWheelScrollsTheListUnderThePointer (0.01s)
+=== RUN   TestMouseWheelScrollsTheLogsEvents
+--- PASS: TestMouseWheelScrollsTheLogsEvents (0.00s)
+=== RUN   TestMouseWheelWorksWhileTheLogsFilterIsOpen
+--- PASS: TestMouseWheelWorksWhileTheLogsFilterIsOpen (0.00s)
+=== RUN   TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen
+--- PASS: TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen (0.00s)
+=== RUN   TestMouseWheelOverTheAgentsGraphDoesNothing
+--- PASS: TestMouseWheelOverTheAgentsGraphDoesNothing (0.00s)
+=== RUN   TestMouseClickSelectsAListRow
+--- PASS: TestMouseClickSelectsAListRow (0.02s)
+=== RUN   TestMouseClickOnATabNameOpensTheTab
+--- PASS: TestMouseClickOnATabNameOpensTheTab (0.01s)
+=== RUN   TestHeaderShowsTheAskCountOfTheState
+--- PASS: TestHeaderShowsTheAskCountOfTheState (0.00s)
+=== RUN   TestViewTurnsOnMouseReports
+--- PASS: TestViewTurnsOnMouseReports (0.00s)
+=== RUN   TestChatMatchesItsBoard
+--- PASS: TestChatMatchesItsBoard (0.00s)
+=== RUN   TestCompactChatMatchesItsBoard
+--- PASS: TestCompactChatMatchesItsBoard (0.00s)
+=== RUN   TestChatStatusBoardsMatch
+=== RUN   TestChatStatusBoardsMatch/ChatStatus
+=== RUN   TestChatStatusBoardsMatch/ChatEvents
+=== RUN   TestChatStatusBoardsMatch/CompactChatStatus
+--- PASS: TestChatStatusBoardsMatch (0.01s)
+    --- PASS: TestChatStatusBoardsMatch/ChatStatus (0.00s)
+    --- PASS: TestChatStatusBoardsMatch/ChatEvents (0.00s)
+    --- PASS: TestChatStatusBoardsMatch/CompactChatStatus (0.00s)
+=== RUN   TestChatFixtureScrollPutsTheMessageAtTheTop
+--- PASS: TestChatFixtureScrollPutsTheMessageAtTheTop (0.00s)
+=== RUN   TestChatLoadsRecentConversationAndInboxEvents
+--- PASS: TestChatLoadsRecentConversationAndInboxEvents (0.00s)
+=== RUN   TestChatNoiseLevelsFilterInboxKinds
+--- PASS: TestChatNoiseLevelsFilterInboxKinds (0.00s)
+=== RUN   TestChatKeysScrollTheFeed
+--- PASS: TestChatKeysScrollTheFeed (0.01s)
+=== RUN   TestChatKeysFollowTheFocusRules
+--- PASS: TestChatKeysFollowTheFocusRules (0.00s)
+=== RUN   TestChatCompactFooterHints
+--- PASS: TestChatCompactFooterHints (0.00s)
+=== RUN   TestChatInputBorderShowsCoordinatorStatusAndQueuedMark
+--- PASS: TestChatInputBorderShowsCoordinatorStatusAndQueuedMark (0.00s)
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_zero
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_one
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_fifty-nine
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/idle
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/blocked
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/other
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_time
+=== RUN   TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_live_coordinator
+--- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_zero (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_one (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/working_fifty-nine (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/idle (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/blocked (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/other (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_time (0.00s)
+    --- PASS: TestChatInputShowsStatusGlyphAndWholeMinuteAge/no_live_coordinator (0.00s)
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/120x40
+=== RUN   TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/80x24
+--- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves (0.01s)
+    --- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/120x40 (0.00s)
+    --- PASS: TestChatInputCapsAndKeepsCursorVisibleAfterFocusLeaves/80x24 (0.00s)
+=== RUN   TestChatCtrlOOpensAndFoldsEventsFromBothRegions
+--- PASS: TestChatCtrlOOpensAndFoldsEventsFromBothRegions (0.00s)
+=== RUN   TestDemoChatSendShowsTheNotice
+--- PASS: TestDemoChatSendShowsTheNotice (0.00s)
+=== RUN   TestChatFitsEachSize
+=== RUN   TestChatFitsEachSize/80x24
+=== RUN   TestChatFitsEachSize/80x25
+=== RUN   TestChatFitsEachSize/119x40
+=== RUN   TestChatFitsEachSize/120x40
+=== RUN   TestChatFitsEachSize/120x41
+--- PASS: TestChatFitsEachSize (0.02s)
+    --- PASS: TestChatFitsEachSize/80x24 (0.00s)
+    --- PASS: TestChatFitsEachSize/80x25 (0.00s)
+    --- PASS: TestChatFitsEachSize/119x40 (0.00s)
+    --- PASS: TestChatFitsEachSize/120x40 (0.00s)
+    --- PASS: TestChatFitsEachSize/120x41 (0.00s)
+=== RUN   TestChatStartFromProjectsShowsRefusalAndBlocksInput
+--- PASS: TestChatStartFromProjectsShowsRefusalAndBlocksInput (0.00s)
+=== RUN   TestChatRefusedSendShowsNoticeAndKeepsDraft
+--- PASS: TestChatRefusedSendShowsNoticeAndKeepsDraft (0.00s)
+=== RUN   TestChatSendRunsInBackgroundAndKeepsFailedDraft
+--- PASS: TestChatSendRunsInBackgroundAndKeepsFailedDraft (0.00s)
+=== RUN   TestChatProgramRunsWithStringInput
+--- PASS: TestChatProgramRunsWithStringInput (0.00s)
+=== RUN   TestChatWrappedInputCursorTracksInsertion
+=== RUN   TestChatWrappedInputCursorTracksInsertion/compact_cap
+=== RUN   TestChatWrappedInputCursorTracksInsertion/full_cap
+--- PASS: TestChatWrappedInputCursorTracksInsertion (0.01s)
+    --- PASS: TestChatWrappedInputCursorTracksInsertion/compact_cap (0.00s)
+    --- PASS: TestChatWrappedInputCursorTracksInsertion/full_cap (0.00s)
+=== RUN   TestChatWordWrappedInputCursorTracksInsertion
+--- PASS: TestChatWordWrappedInputCursorTracksInsertion (0.00s)
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Main
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Chat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Work
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Compact
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Friction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Health
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Logs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Help
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Components
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReviewMulti
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAskReview
+--- PASS: TestEachBoardFixtureLoadsAtItsSpecSize (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Main (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Chat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Work (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Compact (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Friction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Health (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Logs (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Help (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Components (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskReviewMulti (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAskReview (0.00s)
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/top_level
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/ui
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/record
+=== RUN   TestDemoFixtureUnknownFieldNamesTheField/supervisor
+--- PASS: TestDemoFixtureUnknownFieldNamesTheField (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/top_level (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/ui (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/record (0.00s)
+    --- PASS: TestDemoFixtureUnknownFieldNamesTheField/supervisor (0.00s)
+=== RUN   TestDemoFixtureBadValuesFail
+=== RUN   TestDemoFixtureBadValuesFail/"ui.screen"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.view"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.zone"
+=== RUN   TestDemoFixtureBadValuesFail/"clock.time"
+=== RUN   TestDemoFixtureBadValuesFail/"terminal"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.overlay"
+=== RUN   TestDemoFixtureBadValuesFail/"ui.prompt.kind"
+--- PASS: TestDemoFixtureBadValuesFail (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.screen" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.view" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.zone" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"clock.time" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"terminal" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.overlay" (0.00s)
+    --- PASS: TestDemoFixtureBadValuesFail/"ui.prompt.kind" (0.00s)
+=== RUN   TestParseDemoSize
+--- PASS: TestParseDemoSize (0.00s)
+=== RUN   TestDemoMainShowsFixtureDataAtTheFixtureClock
+--- PASS: TestDemoMainShowsFixtureDataAtTheFixtureClock (0.00s)
+=== RUN   TestDemoSizeDrawsAtTheSizeInALargerPane
+--- PASS: TestDemoSizeDrawsAtTheSizeInALargerPane (0.00s)
+=== RUN   TestDemoSizeShowsTooSmallInASmallerPane
+--- PASS: TestDemoSizeShowsTooSmallInASmallerPane (0.00s)
+=== RUN   TestDemoTooSmallMatchesItsBoardGrid
+--- PASS: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
+=== RUN   TestDemoActionKeysShowTheNotice
+--- PASS: TestDemoActionKeysShowTheNotice (0.01s)
+=== RUN   TestDemoLogsShowOnlyFixtureEvents
+--- PASS: TestDemoLogsShowOnlyFixtureEvents (0.00s)
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture
+=== RUN   TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture
+--- PASS: TestDemoOpensFilesOnlyFromTheFixture (0.01s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/brief_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/evidence_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/verification_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/design_not_in_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_from_fixture (0.00s)
+    --- PASS: TestDemoOpensFilesOnlyFromTheFixture/friction_entry_not_in_fixture (0.00s)
+=== RUN   TestLogRefreshKeepsFileOrder
+--- PASS: TestLogRefreshKeepsFileOrder (0.00s)
+=== RUN   TestRunHomeReportsOutputFailure
+=== RUN   TestRunHomeReportsOutputFailure/short=false
+=== RUN   TestRunHomeReportsOutputFailure/short=true
+--- PASS: TestRunHomeReportsOutputFailure (0.04s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=false (0.02s)
+    --- PASS: TestRunHomeReportsOutputFailure/short=true (0.02s)
+=== RUN   TestRunHomeReportsInputFailure
+--- PASS: TestRunHomeReportsInputFailure (0.00s)
+=== RUN   TestRunHomeReportsFileWriterFailure
+--- PASS: TestRunHomeReportsFileWriterFailure (0.02s)
+=== RUN   TestRunHomeFiniteEOFStops
+--- PASS: TestRunHomeFiniteEOFStops (2.00s)
+=== RUN   TestHeaderRejectsOutOfRangePIDs
+=== RUN   TestHeaderRejectsOutOfRangePIDs/self
+=== RUN   TestHeaderRejectsOutOfRangePIDs/zero
+=== RUN   TestHeaderRejectsOutOfRangePIDs/negative
+=== RUN   TestHeaderRejectsOutOfRangePIDs/exited
+=== RUN   TestHeaderRejectsOutOfRangePIDs/plus_2^32
+=== RUN   TestHeaderRejectsOutOfRangePIDs/max_int32_plus_one
+=== RUN   TestHeaderRejectsOutOfRangePIDs/max_int64
+--- PASS: TestHeaderRejectsOutOfRangePIDs (0.52s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/self (0.51s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/zero (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/negative (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/exited (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/plus_2^32 (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/max_int32_plus_one (0.00s)
+    --- PASS: TestHeaderRejectsOutOfRangePIDs/max_int64 (0.00s)
+=== RUN   TestHeaderErrorDoesNotStopShell
+--- PASS: TestHeaderErrorDoesNotStopShell (0.00s)
+=== RUN   TestRunHomeFiniteFDPipeStops
+--- PASS: TestRunHomeFiniteFDPipeStops (2.00s)
+=== RUN   TestRunHomeFiniteFDFileStops
+--- PASS: TestRunHomeFiniteFDFileStops (2.00s)
+=== RUN   TestActionLogRefusalShowsError
+=== RUN   TestActionLogRefusalShowsError/first-open/daily-link
+=== RUN   TestActionLogRefusalShowsError/first-open/daily-fifo
+=== RUN   TestActionLogRefusalShowsError/first-open/linked-log-dir
+=== RUN   TestActionLogRefusalShowsError/rotation/daily-link
+=== RUN   TestActionLogRefusalShowsError/rotation/daily-fifo
+=== RUN   TestActionLogRefusalShowsError/rotation/linked-log-dir
+--- PASS: TestActionLogRefusalShowsError (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/daily-link (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/daily-fifo (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/first-open/linked-log-dir (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/daily-link (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/daily-fifo (0.00s)
+    --- PASS: TestActionLogRefusalShowsError/rotation/linked-log-dir (0.00s)
+=== RUN   TestHealthyActionLogIsWrittenOnce
+--- PASS: TestHealthyActionLogIsWrittenOnce (0.00s)
+=== RUN   TestNewRejectsLinkedDailyLogWithoutWrite
+--- PASS: TestNewRejectsLinkedDailyLogWithoutWrite (0.00s)
+=== RUN   TestNewRejectsDailyFIFOWithoutBlocking
+--- PASS: TestNewRejectsDailyFIFOWithoutBlocking (0.00s)
+=== RUN   TestNewRejectsLinkedLogDirectoryWithoutWrite
+--- PASS: TestNewRejectsLinkedLogDirectoryWithoutWrite (0.00s)
+=== RUN   TestFrameRowsMatchMain
+--- PASS: TestFrameRowsMatchMain (0.00s)
+=== RUN   TestFooterShowsStartupNoticeBeforeError
+--- PASS: TestFooterShowsStartupNoticeBeforeError (0.00s)
+=== RUN   TestFrameRowsMatchEachScreenBoard
+=== RUN   TestFrameRowsMatchEachScreenBoard/AgentDetails
+=== RUN   TestFrameRowsMatchEachScreenBoard/AgentsMany
+=== RUN   TestFrameRowsMatchEachScreenBoard/Chat
+=== RUN   TestFrameRowsMatchEachScreenBoard/Compact
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactAgents
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactChat
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactFriction
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactHealth
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactLogs
+=== RUN   TestFrameRowsMatchEachScreenBoard/Friction
+=== RUN   TestFrameRowsMatchEachScreenBoard/FrictionResolved
+=== RUN   TestFrameRowsMatchEachScreenBoard/Health
+=== RUN   TestFrameRowsMatchEachScreenBoard/HealthAgents
+=== RUN   TestFrameRowsMatchEachScreenBoard/Logs
+=== RUN   TestFrameRowsMatchEachScreenBoard/Main
+=== RUN   TestFrameRowsMatchEachScreenBoard/Work
+=== RUN   TestFrameRowsMatchEachScreenBoard/WorkGoals
+=== RUN   TestFrameRowsMatchEachScreenBoard/WorkQueue
+--- PASS: TestFrameRowsMatchEachScreenBoard (0.03s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/AgentDetails (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/AgentsMany (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Chat (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Compact (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactAgents (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactChat (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactFriction (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactHealth (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactLogs (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Friction (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/FrictionResolved (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Health (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/HealthAgents (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Logs (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Main (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Work (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/WorkGoals (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/WorkQueue (0.00s)
+=== RUN   TestDemoUIStateSetsTheFrameState
+=== RUN   TestDemoUIStateSetsTheFrameState/AgentDetails
+=== RUN   TestDemoUIStateSetsTheFrameState/Chat
+=== RUN   TestDemoUIStateSetsTheFrameState/Compact
+=== RUN   TestDemoUIStateSetsTheFrameState/FrictionResolved
+=== RUN   TestDemoUIStateSetsTheFrameState/HealthAgents
+=== RUN   TestDemoUIStateSetsTheFrameState/Help
+=== RUN   TestDemoUIStateSetsTheFrameState/Logs
+=== RUN   TestDemoUIStateSetsTheFrameState/WorkQueue
+--- PASS: TestDemoUIStateSetsTheFrameState (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/AgentDetails (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/Chat (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/Compact (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/FrictionResolved (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/HealthAgents (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/Help (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/Logs (0.00s)
+    --- PASS: TestDemoUIStateSetsTheFrameState/WorkQueue (0.00s)
+=== RUN   TestDemoRestartPromptYesDoesNotRestart
+--- PASS: TestDemoRestartPromptYesDoesNotRestart (0.00s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.00s)
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Logs/0
+--- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint (0.02s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Logs/0 (0.00s)
+=== RUN   TestTabMovesTheAccentBorder
+--- PASS: TestTabMovesTheAccentBorder (0.00s)
+=== RUN   TestHelpKeys
+--- PASS: TestHelpKeys (0.00s)
+=== RUN   TestDetailsOverlayBelow120Columns
+--- PASS: TestDetailsOverlayBelow120Columns (0.00s)
+=== RUN   TestOverlayKeepsScreenAndViewKeys
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/help/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/popup/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/work_overlay/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/friction_overlay/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/health_overlay/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/logs_overlay/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/filter/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/input/tab
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/1
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/2
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/3
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/4
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/5
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/6
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/[
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/]
+=== RUN   TestOverlayKeepsScreenAndViewKeys/restart/tab
+--- PASS: TestOverlayKeepsScreenAndViewKeys (0.04s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/help/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/popup/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/work_overlay/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/friction_overlay/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/health_overlay/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/logs_overlay/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/filter/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/input/tab (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/1 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/2 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/3 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/4 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/5 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/6 (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/[ (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/] (0.00s)
+    --- PASS: TestOverlayKeepsScreenAndViewKeys/restart/tab (0.00s)
+=== RUN   TestOverlayGivesActionKeysToTheScreen
+--- PASS: TestOverlayGivesActionKeysToTheScreen (0.00s)
+=== RUN   TestWideDetailsKeepsScreenKeys
+--- PASS: TestWideDetailsKeepsScreenKeys (0.00s)
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/graph
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/normal
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/input
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/filter
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/help
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/overlay
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/popup
+=== RUN   TestCtrlCTwiceQuitsInEachFocusState/restart
+--- PASS: TestCtrlCTwiceQuitsInEachFocusState (0.01s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/graph (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/normal (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/input (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/filter (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/help (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/overlay (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/popup (0.00s)
+    --- PASS: TestCtrlCTwiceQuitsInEachFocusState/restart (0.00s)
+=== RUN   TestNormalModeUsesTheFrame
+--- PASS: TestNormalModeUsesTheFrame (0.00s)
+=== RUN   TestListHintsHaveNoFilterOnWorkAndFriction
+--- PASS: TestListHintsHaveNoFilterOnWorkAndFriction (0.00s)
+=== RUN   TestFrictionMatchesItsBoards
+=== RUN   TestFrictionMatchesItsBoards/Friction
+=== RUN   TestFrictionMatchesItsBoards/FrictionResolved
+=== RUN   TestFrictionMatchesItsBoards/CompactFriction
+--- PASS: TestFrictionMatchesItsBoards (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/Friction (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/FrictionResolved (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/CompactFriction (0.00s)
+=== RUN   TestFrictionFitsEachSize
+=== RUN   TestFrictionFitsEachSize/Friction/79x24
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/79x24
+=== RUN   TestFrictionFitsEachSize/Friction/80x24
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/80x24
+=== RUN   TestFrictionFitsEachSize/Friction/80x25
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/80x25
+=== RUN   TestFrictionFitsEachSize/Friction/119x40
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/119x40
+=== RUN   TestFrictionFitsEachSize/Friction/119x41
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/119x41
+=== RUN   TestFrictionFitsEachSize/Friction/120x40
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/120x40
+=== RUN   TestFrictionFitsEachSize/Friction/120x41
+=== RUN   TestFrictionFitsEachSize/FrictionResolved/120x41
+--- PASS: TestFrictionFitsEachSize (0.02s)
+    --- PASS: TestFrictionFitsEachSize/Friction/79x24 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/79x24 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/80x24 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/80x24 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/80x25 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/80x25 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/119x40 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/119x40 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/119x41 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/119x41 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/120x40 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/120x40 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/Friction/120x41 (0.00s)
+    --- PASS: TestFrictionFitsEachSize/FrictionResolved/120x41 (0.00s)
+=== RUN   TestFrictionFitsEmptyAndLongData
+=== RUN   TestFrictionFitsEmptyAndLongData/empty/80x24
+=== RUN   TestFrictionFitsEmptyAndLongData/empty/120x40
+=== RUN   TestFrictionFitsEmptyAndLongData/long/80x24
+=== RUN   TestFrictionFitsEmptyAndLongData/long/120x40
+--- PASS: TestFrictionFitsEmptyAndLongData (0.00s)
+    --- PASS: TestFrictionFitsEmptyAndLongData/empty/80x24 (0.00s)
+    --- PASS: TestFrictionFitsEmptyAndLongData/empty/120x40 (0.00s)
+    --- PASS: TestFrictionFitsEmptyAndLongData/long/80x24 (0.00s)
+    --- PASS: TestFrictionFitsEmptyAndLongData/long/120x40 (0.00s)
+=== RUN   TestFrictionKeys
+--- PASS: TestFrictionKeys (0.00s)
+=== RUN   TestFrictionNormalModeRefresh
+--- PASS: TestFrictionNormalModeRefresh (0.00s)
+=== RUN   TestFrictionFileScrolls
+--- PASS: TestFrictionFileScrolls (0.00s)
+=== RUN   TestGoalsOpenTasksForSelectedWave
+--- PASS: TestGoalsOpenTasksForSelectedWave (0.00s)
+=== RUN   TestGoalsOpenTasksListsEachProject
+--- PASS: TestGoalsOpenTasksListsEachProject (0.00s)
+=== RUN   TestGoalsOpenWaveDesign
+=== RUN   TestGoalsOpenWaveDesign/one_feature
+=== RUN   TestGoalsOpenWaveDesign/first_feature_wins
+=== RUN   TestGoalsOpenWaveDesign/no_feature
+=== RUN   TestGoalsOpenWaveDesign/missing_file
+--- PASS: TestGoalsOpenWaveDesign (0.00s)
+    --- PASS: TestGoalsOpenWaveDesign/one_feature (0.00s)
+    --- PASS: TestGoalsOpenWaveDesign/first_feature_wins (0.00s)
+    --- PASS: TestGoalsOpenWaveDesign/no_feature (0.00s)
+    --- PASS: TestGoalsOpenWaveDesign/missing_file (0.00s)
+=== RUN   TestQueueHeaderShowsRunStopAndWaitCounts
+--- PASS: TestQueueHeaderShowsRunStopAndWaitCounts (0.00s)
+=== RUN   TestGoalsRefreshKeepsGoalSelection
+--- PASS: TestGoalsRefreshKeepsGoalSelection (0.00s)
+=== RUN   TestGoalsPanelsFitStandardFrame
+--- PASS: TestGoalsPanelsFitStandardFrame (0.00s)
+=== RUN   TestHealthAgentsMatchesItsBoard
+--- PASS: TestHealthAgentsMatchesItsBoard (0.00s)
+=== RUN   TestHealthMatchesItsBoard
+--- PASS: TestHealthMatchesItsBoard (0.00s)
+=== RUN   TestCompactHealthMatchesItsBoard
+--- PASS: TestCompactHealthMatchesItsBoard (0.00s)
+=== RUN   TestHealthFitsEachSize
+=== RUN   TestHealthFitsEachSize/Health/board/79x24
+=== RUN   TestHealthFitsEachSize/Health/board/80x24
+=== RUN   TestHealthFitsEachSize/Health/board/80x25
+=== RUN   TestHealthFitsEachSize/Health/board/119x40
+=== RUN   TestHealthFitsEachSize/Health/board/119x41
+=== RUN   TestHealthFitsEachSize/Health/board/120x40
+=== RUN   TestHealthFitsEachSize/Health/board/120x41
+=== RUN   TestHealthFitsEachSize/Health/empty/79x24
+=== RUN   TestHealthFitsEachSize/Health/empty/80x24
+=== RUN   TestHealthFitsEachSize/Health/empty/80x25
+=== RUN   TestHealthFitsEachSize/Health/empty/119x40
+=== RUN   TestHealthFitsEachSize/Health/empty/119x41
+=== RUN   TestHealthFitsEachSize/Health/empty/120x40
+=== RUN   TestHealthFitsEachSize/Health/empty/120x41
+=== RUN   TestHealthFitsEachSize/Health/long/79x24
+=== RUN   TestHealthFitsEachSize/Health/long/80x24
+=== RUN   TestHealthFitsEachSize/Health/long/80x25
+=== RUN   TestHealthFitsEachSize/Health/long/119x40
+=== RUN   TestHealthFitsEachSize/Health/long/119x41
+=== RUN   TestHealthFitsEachSize/Health/long/120x40
+=== RUN   TestHealthFitsEachSize/Health/long/120x41
+=== RUN   TestHealthFitsEachSize/Health/many/79x24
+=== RUN   TestHealthFitsEachSize/Health/many/80x24
+=== RUN   TestHealthFitsEachSize/Health/many/80x25
+=== RUN   TestHealthFitsEachSize/Health/many/119x40
+=== RUN   TestHealthFitsEachSize/Health/many/119x41
+=== RUN   TestHealthFitsEachSize/Health/many/120x40
+=== RUN   TestHealthFitsEachSize/Health/many/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/board/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/empty/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/long/120x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/79x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/80x24
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/80x25
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/119x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/119x41
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/120x40
+=== RUN   TestHealthFitsEachSize/CompactHealth/many/120x41
+--- PASS: TestHealthFitsEachSize (0.06s)
+    --- PASS: TestHealthFitsEachSize/Health/board/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/board/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/empty/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/long/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/Health/many/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/board/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/empty/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/long/120x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/79x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/80x24 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/80x25 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/119x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/119x41 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/120x40 (0.00s)
+    --- PASS: TestHealthFitsEachSize/CompactHealth/many/120x41 (0.00s)
+=== RUN   TestHealthKeysAndFooterHints
+--- PASS: TestHealthKeysAndFooterHints (0.01s)
+=== RUN   TestHealthRestartPromptKeys
+--- PASS: TestHealthRestartPromptKeys (0.00s)
+=== RUN   TestHealthRIsOnlyRestartInAgentsView
+--- PASS: TestHealthRIsOnlyRestartInAgentsView (0.00s)
+=== RUN   TestHealthNormalModeRefreshKeepsSelection
+--- PASS: TestHealthNormalModeRefreshKeepsSelection (0.29s)
+=== RUN   TestHealthProgramUsesStringReader
+--- PASS: TestHealthProgramUsesStringReader (0.00s)
+=== RUN   TestIdleTickDoesNotReloadUnchangedData
+--- PASS: TestIdleTickDoesNotReloadUnchangedData (0.00s)
+=== RUN   TestIdleTickReloadsChangedScreenOnce
+--- PASS: TestIdleTickReloadsChangedScreenOnce (0.00s)
+=== RUN   TestHeaderRefreshReusesUnchangedScreenRender
+--- PASS: TestHeaderRefreshReusesUnchangedScreenRender (0.00s)
+=== RUN   TestMinuteRefreshUpdatesOnlyTheHeader
+--- PASS: TestMinuteRefreshUpdatesOnlyTheHeader (0.00s)
+=== RUN   TestLogsMatchesItsBoard
+--- PASS: TestLogsMatchesItsBoard (0.00s)
+=== RUN   TestCompactLogsMatchesItsBoard
+--- PASS: TestCompactLogsMatchesItsBoard (0.00s)
+=== RUN   TestLogsFoldsCommandRequests
+--- PASS: TestLogsFoldsCommandRequests (0.00s)
+=== RUN   TestLogsTypedFilterFields
+=== RUN   TestLogsTypedFilterFields/level:debug_comp:cli
+=== RUN   TestLogsTypedFilterFields/level:debug_proj:demo
+=== RUN   TestLogsTypedFilterFields/agent:worker-1
+=== RUN   TestLogsTypedFilterFields/agent:worker-2
+=== RUN   TestLogsTypedFilterFields/level:debug_req:r-22222222
+=== RUN   TestLogsTypedFilterFields/task:t9
+=== RUN   TestLogsTypedFilterFields/level:warn
+=== RUN   TestLogsTypedFilterFields/retry
+--- PASS: TestLogsTypedFilterFields (0.01s)
+    --- PASS: TestLogsTypedFilterFields/level:debug_comp:cli (0.00s)
+    --- PASS: TestLogsTypedFilterFields/level:debug_proj:demo (0.00s)
+    --- PASS: TestLogsTypedFilterFields/agent:worker-1 (0.00s)
+    --- PASS: TestLogsTypedFilterFields/agent:worker-2 (0.00s)
+    --- PASS: TestLogsTypedFilterFields/level:debug_req:r-22222222 (0.00s)
+    --- PASS: TestLogsTypedFilterFields/task:t9 (0.00s)
+    --- PASS: TestLogsTypedFilterFields/level:warn (0.00s)
+    --- PASS: TestLogsTypedFilterFields/retry (0.00s)
+=== RUN   TestLogsAgentFieldMatchesTheAgentName
+--- PASS: TestLogsAgentFieldMatchesTheAgentName (0.00s)
+=== RUN   TestLogsFilterBarTakesPaste
+--- PASS: TestLogsFilterBarTakesPaste (0.00s)
+=== RUN   TestLogsDayAndFollowKeys
+--- PASS: TestLogsDayAndFollowKeys (0.00s)
+=== RUN   TestLogsWideJSONKeys
+--- PASS: TestLogsWideJSONKeys (0.00s)
+=== RUN   TestLogsCompactJSONOverlay
+--- PASS: TestLogsCompactJSONOverlay (0.00s)
+=== RUN   TestLogsJSONOverflowShowsMoreLines
+--- PASS: TestLogsJSONOverflowShowsMoreLines (0.00s)
+=== RUN   TestLogsFitsEachSize
+=== RUN   TestLogsFitsEachSize/fixture/79x24
+=== RUN   TestLogsFitsEachSize/fixture/80x24
+=== RUN   TestLogsFitsEachSize/fixture/80x25
+=== RUN   TestLogsFitsEachSize/fixture/119x40
+=== RUN   TestLogsFitsEachSize/fixture/119x41
+=== RUN   TestLogsFitsEachSize/fixture/120x40
+=== RUN   TestLogsFitsEachSize/fixture/120x41
+=== RUN   TestLogsFitsEachSize/empty/79x24
+=== RUN   TestLogsFitsEachSize/empty/80x24
+=== RUN   TestLogsFitsEachSize/empty/80x25
+=== RUN   TestLogsFitsEachSize/empty/119x40
+=== RUN   TestLogsFitsEachSize/empty/119x41
+=== RUN   TestLogsFitsEachSize/empty/120x40
+=== RUN   TestLogsFitsEachSize/empty/120x41
+=== RUN   TestLogsFitsEachSize/long/79x24
+=== RUN   TestLogsFitsEachSize/long/80x24
+=== RUN   TestLogsFitsEachSize/long/80x25
+=== RUN   TestLogsFitsEachSize/long/119x40
+=== RUN   TestLogsFitsEachSize/long/119x41
+=== RUN   TestLogsFitsEachSize/long/120x40
+=== RUN   TestLogsFitsEachSize/long/120x41
+--- PASS: TestLogsFitsEachSize (0.02s)
+    --- PASS: TestLogsFitsEachSize/fixture/79x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/80x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/80x25 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/119x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/119x41 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/120x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/fixture/120x41 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/79x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/80x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/80x25 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/119x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/119x41 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/120x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/empty/120x41 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/79x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/80x24 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/80x25 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/119x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/119x41 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/120x40 (0.00s)
+    --- PASS: TestLogsFitsEachSize/long/120x41 (0.00s)
+=== RUN   TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen
+--- PASS: TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen (0.12s)
+=== RUN   TestLogsScreenKeepsSelectionAcrossRefresh
+--- PASS: TestLogsScreenKeepsSelectionAcrossRefresh (0.00s)
+=== RUN   TestLogsScreenDayNavigationLoadsSelectedFile
+--- PASS: TestLogsScreenDayNavigationLoadsSelectedFile (0.00s)
+=== RUN   TestLogsEscapeClearsAppliedFilter
+--- PASS: TestLogsEscapeClearsAppliedFilter (0.00s)
+=== RUN   TestRunHomeLogsKeysOnStringReader
+--- PASS: TestRunHomeLogsKeysOnStringReader (2.00s)
+=== RUN   TestLogsNormalModeDrawsTheDemoContent
+--- PASS: TestLogsNormalModeDrawsTheDemoContent (0.01s)
+=== RUN   TestLogsRowShowsTheReasonBeforeItsFirstSemicolon
+--- PASS: TestLogsRowShowsTheReasonBeforeItsFirstSemicolon (0.00s)
+=== RUN   TestLogsFollowKeepsTheSelectionWithoutNewEvents
+--- PASS: TestLogsFollowKeepsTheSelectionWithoutNewEvents (0.01s)
+=== RUN   TestLogsSelectionSurvivesAnEmptyFilter
+--- PASS: TestLogsSelectionSurvivesAnEmptyFilter (0.00s)
+=== RUN   TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey
+--- PASS: TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey (0.00s)
+=== RUN   TestAgentsRestartMissingCoordinatorPaneTakesStalePath
+--- PASS: TestAgentsRestartMissingCoordinatorPaneTakesStalePath (0.00s)
+=== RUN   TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation
+--- PASS: TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation (0.00s)
+=== RUN   TestHealthAgentsHTogglesStoppedAgents
+--- PASS: TestHealthAgentsHTogglesStoppedAgents (0.00s)
+=== RUN   TestAgentsRestartLiveSupervisorAsksForConfirmation
+--- PASS: TestAgentsRestartLiveSupervisorAsksForConfirmation (0.00s)
+=== RUN   TestAgentsRestartResultIsRenderedAndLogged
+--- PASS: TestAgentsRestartResultIsRenderedAndLogged (0.00s)
+=== RUN   TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation
+--- PASS: TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation (0.00s)
+=== RUN   TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint
+--- PASS: TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint (0.28s)
+=== RUN   TestSupervisorHeaderOldProcess
+--- PASS: TestSupervisorHeaderOldProcess (0.00s)
+=== RUN   TestAgentsRestartKeyExplainsUnsupportedNode
+--- PASS: TestAgentsRestartKeyExplainsUnsupportedNode (0.00s)
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health
+=== RUN   TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs
+--- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground (0.33s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Agents (0.33s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Queue (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Tasks (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Friction (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Health (0.00s)
+    --- PASS: TestScreenSelectionsUseHoneyMarkerAndDefaultForeground/Logs (0.00s)
+=== RUN   TestScreenKeysSelectAllSixScreens
+--- PASS: TestScreenKeysSelectAllSixScreens (0.00s)
+=== RUN   TestNarrowShellFitsAndShowsTheTabBar
+--- PASS: TestNarrowShellFitsAndShowsTheTabBar (0.00s)
+=== RUN   TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice
+--- PASS: TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice (0.00s)
+=== RUN   TestSlowScreenLoadDoesNotBlockKeysOrStartTwice
+--- PASS: TestSlowScreenLoadDoesNotBlockKeysOrStartTwice (0.00s)
+=== RUN   TestQuitNeedsTwoCtrlCWithinThreeSeconds
+--- PASS: TestQuitNeedsTwoCtrlCWithinThreeSeconds (0.00s)
+=== RUN   TestQuitNoticeExpiresAndOtherKeyClearsIt
+--- PASS: TestQuitNoticeExpiresAndOtherKeyClearsIt (0.00s)
+=== RUN   TestQDoesNotQuitOnAnyScreen
+--- PASS: TestQDoesNotQuitOnAnyScreen (0.00s)
+=== RUN   TestAttachUsesBackgroundFocusAndReportsError
+--- PASS: TestAttachUsesBackgroundFocusAndReportsError (0.00s)
+=== RUN   TestRunHomeHandlesScreenAndQuitKeys
+--- PASS: TestRunHomeHandlesScreenAndQuitKeys (0.00s)
+=== RUN   TestEightScreensDoNotPaintTerminalBackground
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Agents
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Goals
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Queue
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Tasks
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Friction
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Health
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Logs
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat_input_
+=== RUN   TestEightScreensDoNotPaintTerminalBackground/Chat_input_selection_marker_draft
+--- PASS: TestEightScreensDoNotPaintTerminalBackground (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Agents (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Goals (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Queue (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Tasks (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Friction (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Health (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Logs (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat_input_ (0.00s)
+    --- PASS: TestEightScreensDoNotPaintTerminalBackground/Chat_input_selection_marker_draft (0.00s)
+=== RUN   TestStartupTakesStartingClaimBeforeCoordinatorTab
+--- PASS: TestStartupTakesStartingClaimBeforeCoordinatorTab (0.00s)
+=== RUN   TestStartupRefusesWhileAnotherLauncherStarts
+--- PASS: TestStartupRefusesWhileAnotherLauncherStarts (0.00s)
+=== RUN   TestStartupCreatesCoordinatorAndSupervisorTabs
+--- PASS: TestStartupCreatesCoordinatorAndSupervisorTabs (0.00s)
+=== RUN   TestStartupKeepsLiveCoordinatorAndFreshSupervisor
+--- PASS: TestStartupKeepsLiveCoordinatorAndFreshSupervisor (0.00s)
+=== RUN   TestStartupStartsSupervisorWhenClaimIsStale
+--- PASS: TestStartupStartsSupervisorWhenClaimIsStale (0.00s)
+=== RUN   TestStartupSkipsHerdrWhenEnvironmentIsMissing
+--- PASS: TestStartupSkipsHerdrWhenEnvironmentIsMissing (0.00s)
+=== RUN   TestStartupFailureShowsInFooterAndDoesNotStopTUI
+--- PASS: TestStartupFailureShowsInFooterAndDoesNotStopTUI (0.00s)
+=== RUN   TestStartupNoStartupSkipsEachStepAndLogsReason
+--- PASS: TestStartupNoStartupSkipsEachStepAndLogsReason (0.00s)
+=== RUN   TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing
+--- PASS: TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing (0.00s)
+=== RUN   TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord
+--- PASS: TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord (0.00s)
+=== RUN   TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails
+--- PASS: TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails (0.00s)
+=== RUN   TestLoadTasksFindsLongTaskID
+--- PASS: TestLoadTasksFindsLongTaskID (0.00s)
+=== RUN   TestWorkTasksNormalModeShowsRecordDetails
+--- PASS: TestWorkTasksNormalModeShowsRecordDetails (0.00s)
+=== RUN   TestWorkTasksArrowDownSelectsNextTask
+--- PASS: TestWorkTasksArrowDownSelectsNextTask (0.00s)
+=== RUN   TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize
+--- PASS: TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize (0.00s)
+=== RUN   TestWorkTasksRefreshKeepsSelection
+--- PASS: TestWorkTasksRefreshKeepsSelection (0.00s)
+=== RUN   TestFileViewsMatchTerminalFrames
+=== RUN   TestFileViewsMatchTerminalFrames/120x40
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/b
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/v
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Tasks/d
+=== RUN   TestFileViewsMatchTerminalFrames/120x40/Friction/file
+=== RUN   TestFileViewsMatchTerminalFrames/200x57
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/b
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/v
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Tasks/d
+=== RUN   TestFileViewsMatchTerminalFrames/200x57/Friction/file
+--- PASS: TestFileViewsMatchTerminalFrames (0.01s)
+    --- PASS: TestFileViewsMatchTerminalFrames/120x40 (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/b (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/v (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Tasks/d (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/120x40/Friction/file (0.00s)
+    --- PASS: TestFileViewsMatchTerminalFrames/200x57 (0.01s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/b (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/v (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Tasks/d (0.00s)
+        --- PASS: TestFileViewsMatchTerminalFrames/200x57/Friction/file (0.00s)
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel/120x40
+=== RUN   TestFrictionScreenShowsSelectedDetailsInRightPanel/200x57
+--- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel (0.00s)
+    --- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel/120x40 (0.00s)
+    --- PASS: TestFrictionScreenShowsSelectedDetailsInRightPanel/200x57 (0.00s)
+=== RUN   TestFrictionScreenLoadsEntriesAndOpensSelectedEntry
+--- PASS: TestFrictionScreenLoadsEntriesAndOpensSelectedEntry (0.00s)
+=== RUN   TestRunHomeShowsTasksFromStringReader
+--- PASS: TestRunHomeShowsTasksFromStringReader (2.00s)
+=== RUN   TestHeaderShowsProjectAgentAndNeedsUserCounts
+--- PASS: TestHeaderShowsProjectAgentAndNeedsUserCounts (0.29s)
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Chat/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Agents/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Goals/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Queue/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Tasks/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Friction/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Health/300x80
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/80x24
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/120x40
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/200x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/207x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/103x57
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/57x20
+=== RUN   TestFramesMatchTerminalSizesOnEveryScreen/Logs/300x80
+--- PASS: TestFramesMatchTerminalSizesOnEveryScreen (0.04s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Chat/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Agents/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Goals/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Queue/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Tasks/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Friction/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Health/300x80 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/80x24 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/120x40 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/200x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/207x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/103x57 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/57x20 (0.00s)
+    --- PASS: TestFramesMatchTerminalSizesOnEveryScreen/Logs/300x80 (0.00s)
+=== RUN   TestHeaderInvalidStoreShowsBoundedError
+--- PASS: TestHeaderInvalidStoreShowsBoundedError (0.00s)
+=== RUN   TestKeysFilterLevelFollowAndQuit
+--- PASS: TestKeysFilterLevelFollowAndQuit (0.00s)
+=== RUN   TestFollowReadsAppendedLineOnTick
+--- PASS: TestFollowReadsAppendedLineOnTick (0.00s)
+=== RUN   TestFollowControlsSelection
+--- PASS: TestFollowControlsSelection (0.00s)
+=== RUN   TestDailyFileRolloverSelectsCurrentDay
+--- PASS: TestDailyFileRolloverSelectsCurrentDay (0.00s)
+=== RUN   TestFollowKeepsIncompleteLineUntilNewline
+--- PASS: TestFollowKeepsIncompleteLineUntilNewline (0.00s)
+=== RUN   TestDailyFileWaitsForFirstFile
+--- PASS: TestDailyFileWaitsForFirstFile (0.00s)
+=== RUN   TestDailyFileInvalidTypeShowsError
+--- PASS: TestDailyFileInvalidTypeShowsError (0.00s)
+=== RUN   TestScreenLoadErrorShowsInFooter
+--- PASS: TestScreenLoadErrorShowsInFooter (0.00s)
+=== RUN   TestStopClosesWriterMoreThanOnce
+--- PASS: TestStopClosesWriterMoreThanOnce (0.00s)
+=== RUN   TestQuitKeysRequireTwoCtrlCPresses
+--- PASS: TestQuitKeysRequireTwoCtrlCPresses (0.00s)
+=== RUN   TestOtherKeysDoNotQuit
+--- PASS: TestOtherKeysDoNotQuit (0.00s)
+=== RUN   TestViewNamesHive
+--- PASS: TestViewNamesHive (0.00s)
+=== RUN   TestRunQuits
+--- PASS: TestRunQuits (0.00s)
+=== RUN   TestRunResolvesFixtureHome
+--- PASS: TestRunResolvesFixtureHome (0.00s)
+=== RUN   TestWorkGoalsMatchesItsBoard
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+=== RUN   TestGoalsDetailsShowWavesTasksAndStops
+--- PASS: TestGoalsDetailsShowWavesTasksAndStops (0.00s)
+=== RUN   TestGoalsSortAndCountOnlyPushedDeliveries
+--- PASS: TestGoalsSortAndCountOnlyPushedDeliveries (0.00s)
+=== RUN   TestGoalsSelectedRowIsAccentBold
+--- PASS: TestGoalsSelectedRowIsAccentBold (0.00s)
+=== RUN   TestGoalsFitEachSize
+=== RUN   TestGoalsFitEachSize/fixture/79x24
+=== RUN   TestGoalsFitEachSize/fixture/80x24
+=== RUN   TestGoalsFitEachSize/fixture/80x25
+=== RUN   TestGoalsFitEachSize/fixture/119x40
+=== RUN   TestGoalsFitEachSize/fixture/120x40
+=== RUN   TestGoalsFitEachSize/fixture/120x24
+=== RUN   TestGoalsFitEachSize/fixture/120x25
+=== RUN   TestGoalsFitEachSize/empty/79x24
+=== RUN   TestGoalsFitEachSize/empty/80x24
+=== RUN   TestGoalsFitEachSize/empty/80x25
+=== RUN   TestGoalsFitEachSize/empty/119x40
+=== RUN   TestGoalsFitEachSize/empty/120x40
+=== RUN   TestGoalsFitEachSize/empty/120x24
+=== RUN   TestGoalsFitEachSize/empty/120x25
+=== RUN   TestGoalsFitEachSize/long/79x24
+=== RUN   TestGoalsFitEachSize/long/80x24
+=== RUN   TestGoalsFitEachSize/long/80x25
+=== RUN   TestGoalsFitEachSize/long/119x40
+=== RUN   TestGoalsFitEachSize/long/120x40
+=== RUN   TestGoalsFitEachSize/long/120x24
+=== RUN   TestGoalsFitEachSize/long/120x25
+--- PASS: TestGoalsFitEachSize (0.03s)
+    --- PASS: TestGoalsFitEachSize/fixture/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/fixture/120x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/empty/120x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/79x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/80x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/80x25 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/119x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/120x40 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/120x24 (0.00s)
+    --- PASS: TestGoalsFitEachSize/long/120x25 (0.00s)
+=== RUN   TestGoalsKeysAndHints
+--- PASS: TestGoalsKeysAndHints (0.00s)
+=== RUN   TestGoalsHasNoStopsOnlyKey
+--- PASS: TestGoalsHasNoStopsOnlyKey (0.00s)
+=== RUN   TestGoalsDesignNoticeAndTaskKey
+--- PASS: TestGoalsDesignNoticeAndTaskKey (0.00s)
+=== RUN   TestGoalsRefreshReloadsRecords
+--- PASS: TestGoalsRefreshReloadsRecords (0.00s)
+=== RUN   TestGoalsProgramUsesStringReader
+--- PASS: TestGoalsProgramUsesStringReader (0.00s)
+=== RUN   TestWorkQueueMatchesItsBoard
+--- PASS: TestWorkQueueMatchesItsBoard (0.00s)
+=== RUN   TestQueueShowsGrantGroupsTreesAndStops
+--- PASS: TestQueueShowsGrantGroupsTreesAndStops (0.00s)
+=== RUN   TestQueueShowsLandedTasks
+--- PASS: TestQueueShowsLandedTasks (0.00s)
+=== RUN   TestQueueDetailsShowTheSelectedTask
+--- PASS: TestQueueDetailsShowTheSelectedTask (0.00s)
+=== RUN   TestQueueStopsOnly
+--- PASS: TestQueueStopsOnly (0.00s)
+=== RUN   TestQueueEmptyData
+--- PASS: TestQueueEmptyData (0.00s)
+=== RUN   TestQueueShowsEachProject
+--- PASS: TestQueueShowsEachProject (0.00s)
+=== RUN   TestQueueKeys
+--- PASS: TestQueueKeys (0.00s)
+=== RUN   TestQueueFocusStates
+--- PASS: TestQueueFocusStates (0.00s)
+=== RUN   TestQueueRefreshKeepsSelection
+--- PASS: TestQueueRefreshKeepsSelection (0.00s)
+=== RUN   TestQueueFitsEachSize
+=== RUN   TestQueueFitsEachSize/79x24
+=== RUN   TestQueueFitsEachSize/80x24
+=== RUN   TestQueueFitsEachSize/80x25
+=== RUN   TestQueueFitsEachSize/119x40
+=== RUN   TestQueueFitsEachSize/119x41
+=== RUN   TestQueueFitsEachSize/120x40
+=== RUN   TestQueueFitsEachSize/120x41
+--- PASS: TestQueueFitsEachSize (0.01s)
+    --- PASS: TestQueueFitsEachSize/79x24 (0.00s)
+    --- PASS: TestQueueFitsEachSize/80x24 (0.00s)
+    --- PASS: TestQueueFitsEachSize/80x25 (0.00s)
+    --- PASS: TestQueueFitsEachSize/119x40 (0.00s)
+    --- PASS: TestQueueFitsEachSize/119x41 (0.00s)
+    --- PASS: TestQueueFitsEachSize/120x40 (0.00s)
+    --- PASS: TestQueueFitsEachSize/120x41 (0.00s)
+=== RUN   TestWorkTasksMatchesWorkBoard
+--- PASS: TestWorkTasksMatchesWorkBoard (0.00s)
+=== RUN   TestWorkTasksMatchesCompactBoard
+--- PASS: TestWorkTasksMatchesCompactBoard (0.00s)
+=== RUN   TestWorkTasksFitsEachSize
+=== RUN   TestWorkTasksFitsEachSize/79x24
+=== RUN   TestWorkTasksFitsEachSize/80x24
+=== RUN   TestWorkTasksFitsEachSize/80x25
+=== RUN   TestWorkTasksFitsEachSize/119x40
+=== RUN   TestWorkTasksFitsEachSize/119x41
+=== RUN   TestWorkTasksFitsEachSize/120x40
+=== RUN   TestWorkTasksFitsEachSize/120x41
+--- PASS: TestWorkTasksFitsEachSize (0.01s)
+    --- PASS: TestWorkTasksFitsEachSize/79x24 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/80x24 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/80x25 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/119x40 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/119x41 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/120x40 (0.00s)
+    --- PASS: TestWorkTasksFitsEachSize/120x41 (0.00s)
+=== RUN   TestWorkTasksEmptyData
+--- PASS: TestWorkTasksEmptyData (0.00s)
+=== RUN   TestWorkTasksCutsLongText
+--- PASS: TestWorkTasksCutsLongText (0.00s)
+=== RUN   TestWorkTasksMoveKeys
+--- PASS: TestWorkTasksMoveKeys (0.00s)
+=== RUN   TestWorkTasksFileKeys
+--- PASS: TestWorkTasksFileKeys (0.00s)
+=== RUN   TestWorkTasksOverlayKeys
+--- PASS: TestWorkTasksOverlayKeys (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	17.470s
+=== RUN   TestBoxRuneOfArms
+--- PASS: TestBoxRuneOfArms (0.00s)
+=== RUN   TestBoxArmsOfRune
+--- PASS: TestBoxArmsOfRune (0.00s)
+=== RUN   TestCardGolden
+=== RUN   TestCardGolden/idle
+=== RUN   TestCardGolden/stopped
+--- PASS: TestCardGolden (0.00s)
+    --- PASS: TestCardGolden/idle (0.00s)
+    --- PASS: TestCardGolden/stopped (0.00s)
+=== RUN   TestCardSelectedHeavyBorder
+--- PASS: TestCardSelectedHeavyBorder (0.00s)
+=== RUN   TestCardCutsLongText
+--- PASS: TestCardCutsLongText (0.00s)
+=== RUN   TestCardWorkingBorder
+--- PASS: TestCardWorkingBorder (0.00s)
+=== RUN   TestChatGolden
+--- PASS: TestChatGolden (0.00s)
+=== RUN   TestCompactChatGolden
+--- PASS: TestCompactChatGolden (0.00s)
+=== RUN   TestChatNarrow
+--- PASS: TestChatNarrow (0.00s)
+=== RUN   TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks
+--- PASS: TestOpenEventTextUsesMessageColumnAndKeepsLineBreaks (0.00s)
+=== RUN   TestChatWrapWidth
+--- PASS: TestChatWrapWidth (0.00s)
+=== RUN   TestStyledChatLineUsesOneLine
+--- PASS: TestStyledChatLineUsesOneLine (0.00s)
+=== RUN   TestDetailsGolden
+--- PASS: TestDetailsGolden (0.00s)
+=== RUN   TestDetailsScrolls
+--- PASS: TestDetailsScrolls (0.00s)
+=== RUN   TestDetailsShowsMoreLinesOnOverflow
+--- PASS: TestDetailsShowsMoreLinesOnOverflow (0.00s)
+=== RUN   TestFilterBarGolden
+--- PASS: TestFilterBarGolden (0.00s)
+=== RUN   TestFilterBarFields
+--- PASS: TestFilterBarFields (0.00s)
+=== RUN   TestFilterBarLongTextKeepsCursor
+--- PASS: TestFilterBarLongTextKeepsCursor (0.00s)
+=== RUN   TestFilterBarStatus
+--- PASS: TestFilterBarStatus (0.00s)
+=== RUN   TestFilterBarFocused
+--- PASS: TestFilterBarFocused (0.00s)
+=== RUN   TestFitFrameRows
+--- PASS: TestFitFrameRows (0.05s)
+=== RUN   TestFitPanels
+--- PASS: TestFitPanels (0.26s)
+=== RUN   TestFitWave4
+--- PASS: TestFitWave4 (0.58s)
+=== RUN   TestHeaderGolden
+=== RUN   TestHeaderGolden/long
+=== RUN   TestHeaderGolden/short
+--- PASS: TestHeaderGolden (0.00s)
+    --- PASS: TestHeaderGolden/long (0.00s)
+    --- PASS: TestHeaderGolden/short (0.00s)
+=== RUN   TestHeaderForms
+--- PASS: TestHeaderForms (0.00s)
+=== RUN   TestHeaderStateDots
+--- PASS: TestHeaderStateDots (0.00s)
+=== RUN   TestHeaderBlockedStateUsesWarningGlyph
+--- PASS: TestHeaderBlockedStateUsesWarningGlyph (0.00s)
+=== RUN   TestHeaderCutsLongHome
+--- PASS: TestHeaderCutsLongHome (0.00s)
+=== RUN   TestHeaderNeedsYouCountIsAccent
+--- PASS: TestHeaderNeedsYouCountIsAccent (0.00s)
+=== RUN   TestHeaderShowsTheAskCount
+--- PASS: TestHeaderShowsTheAskCount (0.00s)
+=== RUN   TestInputGolden
+=== RUN   TestInputGolden/components
+=== RUN   TestInputGolden/chat
+--- PASS: TestInputGolden (0.00s)
+    --- PASS: TestInputGolden/components (0.00s)
+    --- PASS: TestInputGolden/chat (0.00s)
+=== RUN   TestInputUnfocused
+--- PASS: TestInputUnfocused (0.00s)
+=== RUN   TestInputGrowsToFitWrappedText
+--- PASS: TestInputGrowsToFitWrappedText (0.00s)
+=== RUN   TestInputShowsWrappedTextAndCursor
+--- PASS: TestInputShowsWrappedTextAndCursor (0.00s)
+=== RUN   TestInputCursorFollowsLineAndColumn
+=== RUN   TestInputCursorFollowsLineAndColumn/on_the_soft_break_space
+=== RUN   TestInputCursorFollowsLineAndColumn/after_the_soft_break
+=== RUN   TestInputCursorFollowsLineAndColumn/first_row
+=== RUN   TestInputCursorFollowsLineAndColumn/second_line
+=== RUN   TestInputCursorFollowsLineAndColumn/inside_a_broken_word
+--- PASS: TestInputCursorFollowsLineAndColumn (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/on_the_soft_break_space (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/after_the_soft_break (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/first_row (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/second_line (0.00s)
+    --- PASS: TestInputCursorFollowsLineAndColumn/inside_a_broken_word (0.00s)
+=== RUN   TestKeyHintsGolden
+=== RUN   TestKeyHintsGolden/sheet
+=== RUN   TestKeyHintsGolden/main
+=== RUN   TestKeyHintsGolden/compact
+--- PASS: TestKeyHintsGolden (0.00s)
+    --- PASS: TestKeyHintsGolden/sheet (0.00s)
+    --- PASS: TestKeyHintsGolden/main (0.00s)
+    --- PASS: TestKeyHintsGolden/compact (0.00s)
+=== RUN   TestKeyHintsFit
+--- PASS: TestKeyHintsFit (0.00s)
+=== RUN   TestListGolden
+--- PASS: TestListGolden (0.00s)
+=== RUN   TestListKeepsSelectionVisible
+--- PASS: TestListKeepsSelectionVisible (0.00s)
+=== RUN   TestListScrollMark
+--- PASS: TestListScrollMark (0.00s)
+=== RUN   TestListFillGolden
+--- PASS: TestListFillGolden (0.00s)
+=== RUN   TestListHint
+--- PASS: TestListHint (0.00s)
+=== RUN   TestListRowCells
+--- PASS: TestListRowCells (0.00s)
+=== RUN   TestMarkdownTableUneven
+--- PASS: TestMarkdownTableUneven (0.00s)
+=== RUN   TestMarkdownTableEqualColumns
+--- PASS: TestMarkdownTableEqualColumns (0.00s)
+=== RUN   TestMarkdownTableTooManyColumns
+--- PASS: TestMarkdownTableTooManyColumns (0.00s)
+=== RUN   TestMarkdownTableTokens
+--- PASS: TestMarkdownTableTokens (0.00s)
+=== RUN   TestMarkdownGrid
+--- PASS: TestMarkdownGrid (0.00s)
+=== RUN   TestMarkdownAutoLinks
+--- PASS: TestMarkdownAutoLinks (0.00s)
+=== RUN   TestMarkdownRemovesBlankFirstLine
+--- PASS: TestMarkdownRemovesBlankFirstLine (0.00s)
+=== RUN   TestMarkdownListFitsWidth
+--- PASS: TestMarkdownListFitsWidth (0.00s)
+=== RUN   TestNoticeGrid
+--- PASS: TestNoticeGrid (0.00s)
+=== RUN   TestNoticeCutsLongText
+--- PASS: TestNoticeCutsLongText (0.00s)
+=== RUN   TestPanelGolden
+=== RUN   TestPanelGolden/unfocused
+=== RUN   TestPanelGolden/focused
+--- PASS: TestPanelGolden (0.00s)
+    --- PASS: TestPanelGolden/unfocused (0.00s)
+    --- PASS: TestPanelGolden/focused (0.00s)
+=== RUN   TestPanelBleedFillsThePadding
+--- PASS: TestPanelBleedFillsThePadding (0.00s)
+=== RUN   TestPopupGolden
+--- PASS: TestPopupGolden (0.00s)
+=== RUN   TestPopupDimsScreen
+--- PASS: TestPopupDimsScreen (0.00s)
+=== RUN   TestDimScreen
+--- PASS: TestDimScreen (0.00s)
+=== RUN   TestSubTabsGolden
+=== RUN   TestSubTabsGolden/sheet
+=== RUN   TestSubTabsGolden/work
+=== RUN   TestSubTabsGolden/compact
+--- PASS: TestSubTabsGolden (0.00s)
+    --- PASS: TestSubTabsGolden/sheet (0.00s)
+    --- PASS: TestSubTabsGolden/work (0.00s)
+    --- PASS: TestSubTabsGolden/compact (0.00s)
+=== RUN   TestSubTabsText
+--- PASS: TestSubTabsText (0.00s)
+=== RUN   TestSubTabsHint
+--- PASS: TestSubTabsHint (0.00s)
+=== RUN   TestSymbolWidth
+--- PASS: TestSymbolWidth (0.00s)
+=== RUN   TestTabBarGolden
+=== RUN   TestTabBarGolden/sheet
+=== RUN   TestTabBarGolden/work
+=== RUN   TestTabBarGolden/compact
+--- PASS: TestTabBarGolden (0.00s)
+    --- PASS: TestTabBarGolden/sheet (0.00s)
+    --- PASS: TestTabBarGolden/work (0.00s)
+    --- PASS: TestTabBarGolden/compact (0.00s)
+=== RUN   TestTabBarSpacing
+--- PASS: TestTabBarSpacing (0.00s)
+=== RUN   TestTabBarMultiByteGap
+--- PASS: TestTabBarMultiByteGap (0.00s)
+=== RUN   TestViewportGolden
+=== RUN   TestViewportGolden/vertical
+=== RUN   TestViewportGolden/horizontal
+--- PASS: TestViewportGolden (0.00s)
+    --- PASS: TestViewportGolden/vertical (0.00s)
+    --- PASS: TestViewportGolden/horizontal (0.00s)
+=== RUN   TestViewportXOffset
+--- PASS: TestViewportXOffset (0.00s)
+=== RUN   TestThumb
+--- PASS: TestThumb (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.906s

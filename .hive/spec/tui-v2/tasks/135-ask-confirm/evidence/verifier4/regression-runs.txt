@@ -1,0 +1,13 @@
+original-multiline-red.txt 1
+original-title-red.txt 1
+stopped-state-red.txt 1
+original-stopped-red.txt 1
+all-regressions-green.txt 0
+original-full-caption-result.txt 1
+mutation-state-only.txt 1
+mutation-title-gap.txt 1
+mutation-full-caption.txt 1
+mutation-short-caption.txt 1
+mutation-short-hint.txt 1
+mutation-line-feed.txt 1
+All regression and guard runs complete

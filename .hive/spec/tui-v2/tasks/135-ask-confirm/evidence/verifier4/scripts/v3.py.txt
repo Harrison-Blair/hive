@@ -1,0 +1,60 @@
+from live import *
+F=ROOT/'.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/fixtures'; D=ROOT/'.hive/spec/tui-v2/design'; C=ROOT/'.hive/tmp/verifier135d/gridcheck'
+checks=[]
+boards=['ChatAsk','ChatAskMulti','ChatAskPreview','ChatAskStopped','CompactChatAsk','Help','ChatAskReview','ChatAskReviewMulti','CompactChatAskReview']
+scenarios=['ChatAskReviewHighlight','ChatAskReviewStopped','ChatAskReviewLong','CompactChatAskReviewLong','CompactChatAskReviewMulti','ChatAskReviewTall','CompactChatAskReviewTall']
+for b in boards+scenarios:
+ fixture=(D if b in boards else F)/(b+'.fixture.json');j=json.loads(fixture.read_text());w=j['terminal']['width'];h=j['terminal']['height']
+ start(fixture,w,h);cap('live/'+b+f'-{w}x{h}',w,h)
+ grid=(D if b in boards else F.parent)/(b+'.grid')
+ checks.append(run([C,grid,E/'live'/f'{b}-{w}x{h}.ansi',w,h]));print(b,'equal',flush=True)
+(E/'live-grid-compare.txt').write_text(''.join(checks))
+for w,h,prefix in [(120,40,''),(80,24,'Compact')]:
+ folder=f'flow-{w}x{h}/';start(F/(prefix+'ChatAskFlow.fixture.json'),w,h)
+ cap(folder+'01-question',w,h);text('14');keys('Enter');cap(folder+'02-last-question',w,h);keys('Tab');text('small');keys('Enter')
+ s=cap(folder+'03-review',w,h);assert 'asks · confirm' in s and '› Send' in s and 'note: small' in s
+ keys('Up','Up');s=cap(folder+'04-highlight-scope',w,h);assert '› Scope' in s
+ keys('Enter');s=cap(folder+'05-edit-scope',w,h);assert '1 [x]' in s and '4 [x]' in s
+ text('2');keys('Enter');s=cap(folder+'06-return-review',w,h);assert 'asks · confirm' in s and '› Send' in s
+ for k in ['1','2','3','4','5','Space','Tab','a','z','BSpace','i','C-o','?','Escape','Left','Right','PPage','NPage','g','G','R','C-]']:keys(k)
+ after=cap(folder+'07-ignored-keys',w,h);assert s==after,'review keys changed screen'
+ rows=[i for i,line in enumerate(s.splitlines()) if line.startswith('┃')]
+ for row in rows:
+  for col in [5,20]:raw(f'\x1b[<0;{col};{row+1}M\x1b[<0;{col};{row+1}m')
+ assert cap(folder+'08-ignored-clicks',w,h)==s
+ keys('J');assert 'manager-hive asks' in cap(folder+'09-J',w,h)
+ keys('K');assert cap(folder+'10-K',w,h)==s
+ keys('Enter');assert 'demo mode: no action' in cap(folder+'11-send',w,h)
+ keys('x');assert 'demo mode: no action' in cap(folder+'12-dismiss',w,h)
+ print('flow',w,'passed',flush=True)
+ # Live completion paths on a one-question card.
+ for path in ['enter','digit','click','note','other']:
+  start(D/(prefix+'ChatAsk.fixture.json'),w,h);s=cap(f'completion-{w}/{path}-before',w,h)
+  if path=='enter':keys('Down','Enter')
+  if path=='digit':text('2')
+  if path=='click':
+   row=next(i for i,line in enumerate(s.splitlines()) if '2 [ ]' in line)
+   raw(f'\x1b[<0;12;{row+1}M\x1b[<0;12;{row+1}m')
+  if path=='note':keys('Tab');text('verified note');keys('Enter')
+  if path=='other':text('4');text('verified Other');keys('Enter')
+  s=cap(f'completion-{w}/{path}-review',w,h);assert 'asks · confirm' in s and '› Send' in s,(path,s)
+  if path=='note':assert 'note: verified note' in s
+  if path=='other':assert 'verified Other' in s
+ print('completion paths',w,'passed',flush=True)
+ # All parts of each tall row must be reachable using only arrows.
+ fixture=F/(prefix+'ChatAskReviewTall.fixture.json');j=json.loads(fixture.read_text());wanted=j['ui']['ask']['notes'][0].split();seen=set()
+ start(fixture,w,h)
+ for i in range(15):
+  s=cap(f'tall-{w}/down-{i:02}',w,h)
+  body=' '.join(line.strip('┃ ›') for line in s.splitlines() if line.startswith('┃'));seen.update(body.split())
+  assert any(line.startswith('┃ › ') for line in s.splitlines())
+  if '› Send' in s:break
+  keys('Down')
+ assert set(wanted)<=seen,sorted(set(wanted)-seen)
+ for i in range(15):
+  keys('Up');s=cap(f'tall-{w}/up-{i:02}',w,h)
+  if 'note: w001' in s:break
+ assert 'note: w001' in s
+ (E/f'tall-{w}/result.txt').write_text(f'All {len(wanted)} words reached. MIDDLE-SENTINEL and FINAL-SENTINEL reached. Up returns to w001.\n')
+ print('tall row',w,'passed',flush=True)
+stop();(E/'live-result.txt').write_text('16 initial grid comparisons equal. Both widths: edit, return review, ignored keys and clicks, J/K draft retention, Send and dismiss, five completion paths, and full tall-row access pass.\n')

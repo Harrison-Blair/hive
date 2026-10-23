@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 0 · needs you 0 · 14:09 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ───────────────────────────────────────────────────────────────────────╮
+│ 14:08  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       answered asker-scratch · Scope → 2 Help line, 3 Header cou… │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       answered asker-scratch · Scope → 1 Ask card · note: parent… │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       dismissed asker-scratch · Scope · Order                     │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       answered asker-scratch · Scope → 2 Help line, 3 Header cou… │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       answered asker-scratch · Scope → 1 Ask card · note: parent… │
+│ 14:09  asker-sc… ? asked · Scope · Order                                     │
+│ 14:09  you       dismissed asker-scratch · Scope · Order                     │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
