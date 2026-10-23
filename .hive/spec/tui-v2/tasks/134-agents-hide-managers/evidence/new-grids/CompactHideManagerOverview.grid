@@ -47,17 +47,17 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ┃ │                                 ┃ │                                   │  ┃
 k|afafrfffffffffffffffffffffffffffffffffafrfffffffffffffffffffffffffffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╭──────────────────────╮         ┃ │ h shows 2 stopped                 │  │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfdddddddddddddddddfffffffffffffffffrffa
+t|│ ┃ │╭──────────────────────╮         ┃ │ ╭──────────────────────╮          │  │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ├┤ ● t5-worker-1        │         ┃ │                                   │  │
-k|afafrwfwffffffffffffffffffffwfffffffffafrfffffffffffffffffffffffffffffffffffrffa
+t|│ ┃ ├┤ ● t5-worker-1        │         ┃ │ │ ◐ api-review-1       │          │  │
+k|afafrwfwffffffffffffffffffffwfffffffffafrfrfaffffffffffffffffffffrffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ││ pi · working · 3m    │         ┃ │                                   │  │
-k|afafrwfdddddddddddddddddffffwfffffffffafrfffffffffffffffffffffffffffffffffffrffa
+t|│ ┃ ││ pi · working · 3m    │         ┃ │ │ claude · idle · 4m   │          │  │
+k|afafrwfdddddddddddddddddffffwfffffffffafrfrfddddddddddddddddddfffrffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╰──────────────────────╯         ┃ │                                   │  │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfffffffffffffffffffffffffffffffffffrffa
+t|│ ┃ │╰──────────────────────╯         ┃ │ ╰──────────────────────╯          │  │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwfffffffffafrfrrrrrrrrrrrrrrrrrrrrrrrrffffffffffrffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ┃ │                                 ┃ │                                   │  │
 k|afafrfffffffffffffffffffffffffffffffffafrfffffffffffffffffffffffffffffffffffrffa

@@ -8,12 +8,31 @@
 | Grant | Goal `g9-agents-hide-managers`. The user approved the plan in chat `c175` and asks `a3` and `a4`. Land on `dev`. |
 | Evidence | The `evidence/` folder beside this brief. Put `VERIFIED.md` there. |
 
+## User decisions: approved on 2026-10-23
+
+Coordinator inbox record 536 relays the user decisions from ask `a5` and chat.
+The user approved the code grids as golden files, as in tasks 126 and 131.
+Update the final scenario grids to follow these decisions.
+Do not request a second approval unless a rendered grid disagrees with the approved behavior.
+
+1. A direct child of a hidden manager stays in its project pod, under the pod top border.
+2. A child of a hidden worker keeps decision 39 and moves to home.
+3. With registered projects and all project pods hidden, show the notice `no project agents` and the live home cards.
+4. Keep the coordinator and the live home agents visible in that state.
+5. Show the notice alone only when nothing at all is visible in that state.
+6. Keep decision 10 unchanged for an empty project registry.
+
+This section replaces the earlier approval hold.
+The manager clears task and wave `needs_user`.
+The worker completes the task after the tests, approved grids, live checks, and gate pass.
+The manager then spawns an independent verifier and lands the verified branch.
+
 ## Plan
 
 1. Write failing tests for the approved behavior.
 2. Make the smallest source change.
 3. Export code grids and captures for user approval.
-4. Hold golden changes until the manager sends approval.
+4. Apply the user decisions relayed in coordinator record 536.
 5. Apply the approved grids and run each verification item.
 
 ## Design
@@ -33,7 +52,7 @@ Read these boards as the layout references:
 - `/home/penguin/source/hive/.hive/spec/tui-v2/design/CompactLivePod.dc.html`
 
 Goal g9 changes the hide rule of these references.
-The user must approve the resulting code grids before any golden file changes.
+The user approved the resulting code grids through ask `a5`, as coordinator record 536 states.
 Follow the visual check procedure in the worker skill.
 
 ## Requirements
@@ -54,6 +73,11 @@ Follow the visual check procedure in the worker skill.
 - Use the existing tree of the home pod without a manager as the reference.
 - Apply this rule in the overview and the one-pod view.
 - Keep nested child relationships that remain visible.
+- Keep a direct general-agent child of a hidden manager in the project pod.
+- Keep the home rule for a child of a hidden worker.
+- When all project pods hide, draw the notice and the visible coordinator and home cards.
+- Show only the notice when nothing at all is visible in that state.
+- Keep decision 10 unchanged for no registered project.
 - Keep selection and scrolling valid when a pod disappears or returns.
 
 ### AC3 Counts and discovery
@@ -71,6 +95,8 @@ Follow the visual check procedure in the worker skill.
 - Render each changed board at its board size from the code.
 - Put these grids in `evidence/new-grids/` in the exporter format.
 - Add representative fixtures for a hidden manager with a live child and for no visible project cards.
+- Include the two edge cases from `evidence/review-cases.md` in the final scenario grids.
+- Keep the approval package and final evidence consistent with the approved decisions.
 - Include both 120x40 and 80x24 cases in the approval package.
 - Write `evidence/new-grids/README.md` with the changed boards, changed rows, and causes.
 - List each board that stays unchanged.
@@ -79,8 +105,7 @@ Follow the visual check procedure in the worker skill.
 - Send its commit and path to `manager-hive` with `hive inbox send`.
 - Do not change a golden grid, board source, or existing board fixture before approval.
 - Do other independent work while approval is pending.
-- Before you stop for approval, set task `needs_user` with `hive task edit`.
-- After approval, clear task `needs_user`.
+- The manager owns task `needs_user` because only the controlling role can edit that field.
 - Make each approved board source export its approved code grid.
 - Change only the approved golden files and the fixtures they require.
 

@@ -50,23 +50,23 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ┃ │                                  ┃ │                                    │ │                                    │ │
 k|afafrffffffffffffffffffffffffffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╭──────────────────────╮          ┃ │ h shows 2 stopped                  │ │ h shows 1 stopped                  │ │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfdddddddddddddddddffffffffffffffffffrfrfdddddddddddddddddffffffffffffffffffrfa
+t|│ ┃ │╭──────────────────────╮          ┃ │ ╭──────────────────────╮           │ │ h shows 1 stopped                  │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrfdddddddddddddddddffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ├┤ ● t5-worker-1        │          ┃ │                                    │ │                                    │ │
-k|afafrwfwffffffffffffffffffffwffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+t|│ ┃ ├┤ ● t5-worker-1        │          ┃ │ │ ◐ api-review-1       │           │ │                                    │ │
+k|afafrwfwffffffffffffffffffffwffffffffffafrfrfaffffffffffffffffffffrfffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ ││ pi · working · 3m    │          ┃ │                                    │ │                                    │ │
-k|afafrwfdddddddddddddddddffffwffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+t|│ ┃ ││ pi · working · 3m    │          ┃ │ │ claude · idle · 4m   │           │ │                                    │ │
+k|afafrwfdddddddddddddddddffffwffffffffffafrfrfddddddddddddddddddfffrfffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╰──────────────────────╯          ┃ │                                    │ │                                    │ │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+t|│ ┃ │╰──────────────────────╯          ┃ │ ╰──────────────────────╯           │ │                                    │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ┃ │                                  ┃ │                                    │ │                                    │ │
 k|afafrffffffffffffffffffffffffffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ ┃ │╭──────────────────────╮          ┃ │                                    │ │                                    │ │
-k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
+t|│ ┃ │╭──────────────────────╮          ┃ │ h shows 2 stopped                  │ │                                    │ │
+k|afafrwwwwwwwwwwwwwwwwwwwwwwwwffffffffffafrfdddddddddddddddddffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ┃ ╰┤ ● t6-worker-1        │          ┃ │                                    │ │                                    │ │
 k|afafrwfwffffffffffffffffffffwffffffffffafrffffffffffffffffffffffffffffffffffffrfrffffffffffffffffffffffffffffffffffffrfa

@@ -8,9 +8,9 @@ b|011111111110000000000000000000000000000000000000000000000000000000000000000000
 t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
 k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ project agents · hive ──────────────────────────────────────────────────────╮
+t|╭─ project agents · hive · h shows 2 stopped ──────────────────────────────────╮
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-b|00111111111111111111111110000000000000000000000000000000000000000000000000000000
+b|00111111111111111111111111111111111111111111100000000000000000000000000000000000
 t|│                           ╭──────────────────────╮                           ┃
 k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000

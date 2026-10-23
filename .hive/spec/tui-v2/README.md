@@ -434,6 +434,26 @@ Task `131-hive-ask` of the goal `g6-hive-ask` adds these decisions. The boards `
 
 104. On 2026-10-23 the user approved the 13 rule cases and the 6 code grids of task `131-hive-ask` (rule A, as for task `126-chat-modes-mouse`). The approved boards `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, `CompactChatAsk`, and `Help` replace the boards and the grids in `design/`. For the 5 ask boards, they replace the staged boards of the task. Each grid is the exporter output of its approved board, and it equals its grid in `tasks/131-hive-ask/evidence/new-grids/`. No other grid changes.
 
+### Hidden managers
+
+Goal `g9-agents-hide-managers` gives these decisions. Task `134-agents-hide-managers` shows them in `tasks/134-agents-hide-managers/evidence/new-grids/`.
+
+105. `h` hides a current manager that is `stopped`, `exited`, or stale, as it hides each other stopped agent of decision 58. The manager has no special rule.
+
+106. A pod with no visible card is not on the Agents screen. This rule applies to a project pod and to the `home` pod. When `h` shows a stopped card of the pod, the pod is on the screen again. The pod count in the title counts only the pods on the screen.
+
+107. When `h` hides the manager of a project and a child is visible, the pod stays. It keeps its border, its title, and its goal line. A direct child of the manager is a top card of the pod, of each role. This includes a general agent with the role `agent`. The pod draws its cards as the `home` pod does. In the overview, the top cards are on content column 0 with no rail. The drop of the coordinator line on the pod top border is the anchor. In the one-pod view, the coordinator line goes down through the pod top border (`┼`). It goes to the top joint of each top card (rule A of decision 78). A nested child stays below its parent. A child of a hidden worker keeps decision 39 of the feature `general-agent` and is in the `home` pod.
+
+108. The stopped text of a pod counts each stopped card of the pod. This includes a hidden manager and a shown stopped manager.
+
+109. While `h` hides one or more cards, the box title ends with `· h shows N stopped`. N is the count of all hidden cards, in the pods on the screen, in the hidden pods, and in `home`. The title shows it in the overview and in the one-pod view, at each width.
+
+110. When the registry holds projects and `h` hides each project pod, the body shows the coordinator card and the `home` pod with its visible cards. The dim line `no project agents` is on the row above the legend. Below 120 columns, it is on the last row of the body. When no card is visible, the body shows only the notice `no project agents`, as decision 10 gives. Decision 10 stays the same when the registry holds no project.
+
+111. When `h` hides the selected pod, the TUI selects the first pod on the screen. The TUI keeps the ID of the hidden pod. When `h` shows the pod again, the TUI selects it again. The first column of the overview stays in its limits when a pod is hidden.
+
+112. On 2026-10-23 the user approved the code grids of task `134-agents-hide-managers` as golden grids, with rule A as for tasks `126-chat-modes-mouse` and `131-hive-ask`. The record is ask `a5` and coordinator record 536. The user also approved the two cases of decisions 107 and 110. The grids of the 9 boards `AgentsHiddenParent`, `CompactLiveOverview`, `CompactLivePod`, `CompactTreeNested`, `CompactTreeWide`, `LiveOverview`, `LivePod`, `TreeNested`, and `TreeWide` change only on the title row, from decision 109. Each board in `design/` exports its approved grid. The 6 scenario grids and their fixtures stay in the evidence of the task. No other grid changes.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.

@@ -35,17 +35,23 @@ b|000000000000000000000000000000111111111111100000000000000000000000000000000000
 t|│                           │ g4-rate-limits · wave B       │                              │                           │
 k|afffffffffffffffffffffffffffrfdddddddddddddddddddddddfffffffrffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ┏━━━━━━━━━━━┷━━━━━━━━━━┓                   │                           │
-k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                ╭──────────────┴──────────────╮               │                           │
+k|afffffffffffffffffffffffffffrffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ┃ ● t3-worker-1        ┃                   │                           │
-k|afffffffffffffffffffffffffffrfffffffffffffffffffafwfaaaaaaaaaaaffffffffafffffffffffffffffffrfffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000011111111111000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ┃ codex · working      ┃                   │                           │
-k|afffffffffffffffffffffffffffrfffffffffffffffffffafdddddddddddddddffffffafffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │                │                             │               │                           │
+k|afffffffffffffffffffffffffffrffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                           │                   ┗━━━━━━━━━━━━━━━━━━━━━━┛                   │                           │
-k|afffffffffffffffffffffffffffrfffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffrfffffffffffffffffffffffffffa
+t|│                           │    ┏━━━━━━━━━━━┷━━━━━━━━━━┓      ╭───────────┴──────────╮    │                           │
+k|afffffffffffffffffffffffffffrffffaaaaaaaaaaaaaaaaaaaaaaaaffffffrrrrrrrrrrrrrrrrrrrrrrrrffffrfffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │    ┃ ● t3-worker-1        ┃      │ ◐ api-review-1       │    │                           │
+k|afffffffffffffffffffffffffffrffffafwfaaaaaaaaaaaffffffffaffffffrfaffffffffffffffffffffrffffrfffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │    ┃ codex · working      ┃      │ claude · idle · 4m   │    │                           │
+k|afffffffffffffffffffffffffffrffffafdddddddddddddddffffffaffffffrfddddddddddddddddddfffrffffrfffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │    ┗━━━━━━━━━━━━━━━━━━━━━━┛      ╰──────────────────────╯    │                           │
+k|afffffffffffffffffffffffffffrffffaaaaaaaaaaaaaaaaaaaaaaaaffffffrrrrrrrrrrrrrrrrrrrrrrrrffffrfffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           │                                                              │                           │
 k|afffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffa
@@ -55,12 +61,6 @@ k|afffffffffffffffffffffffffffrfdddddddddddddddddfffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                           ╰──────────────────────────────────────────────────────────────╯                           │
 k|afffffffffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa

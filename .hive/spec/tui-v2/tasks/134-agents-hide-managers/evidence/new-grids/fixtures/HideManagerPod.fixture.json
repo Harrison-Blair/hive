@@ -250,6 +250,29 @@
         "spawned": true,
         "started_by_hive": true,
         "tab_created_by_hive": true
+      },
+      {
+        "key": "api-review-1",
+        "name": "api-review-1",
+        "role": "agent",
+        "project": "example-api",
+        "task": "",
+        "harness": "claude",
+        "model": "claude-opus-5-5",
+        "pane_id": "w82:p1",
+        "workspace_id": "w82",
+        "tab_id": "w82:t1",
+        "cwd": "~/source/hive/.hive/tmp/agents/api-review-1",
+        "status": "live",
+        "agent_status": "idle",
+        "parent": "manager-api-g1",
+        "status_changed_at": "2026-10-21T14:18:00Z",
+        "generation": 1,
+        "started_at": "2026-10-21T14:10:00Z",
+        "updated_at": "2026-10-21T14:18:00Z",
+        "spawned": true,
+        "started_by_hive": true,
+        "tab_created_by_hive": true
       }
     ],
     "goals": [

@@ -2,6 +2,7 @@ package tui
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-// Goal g9 (decisions 105 to 108): a stopped, exited, or stale manager hides
+// Goal g9 (decisions 105 to 111): a stopped, exited, or stale manager hides
 // with the other stopped cards. A pod with no visible card disappears. A
 // hidden manager with a live child keeps the pod, and the child hangs from
 // the pod top border as in the home pod.
@@ -248,5 +249,88 @@ func TestAgentsScrollStaysValidWhenPodsHide(t *testing.T) {
 	rejectView(t, m, "beta", "at the edge scrolls")
 	if m.graph.left != 0 {
 		t.Fatalf("first pod column = %d; want 0", m.graph.left)
+	}
+}
+
+// Ask a5, Q3: a direct child of a hidden manager stays in its project pod,
+// of each role. A general agent child hangs from the pod top border as a
+// worker child does. Nothing moves to home.
+func TestAgentsGeneralChildOfAHiddenManagerStaysInThePod(t *testing.T) {
+	for _, state := range managerStates {
+		for _, size := range hideSizes {
+			helper := records.Agent{Key: "beta-helper", Name: "beta-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-beta", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
+			home, clock := hideHome(t, betaManager(state), helper)
+			m := openHide(t, home, clock, size)
+			requireView(t, m, "project agents · 2 projects · h shows 1 stopped", "─ beta ─", "● beta-helper")
+			rejectView(t, m, "home", "manager-beta", "no manager")
+			m, _ = raise(t, m, key(tea.KeyRight, ""))
+			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			requireView(t, m, "project agents · beta · h shows 1 stopped", "● beta-helper")
+			grid := renderGrid(t, m, size.Width, size.Height)
+			_, coordCol := findText(t, grid, "● coordinator")
+			joint := coordCol - 2 + 12
+			podRow, _ := findText(t, grid, "─ beta ─")
+			helperRow, helperCol := findText(t, grid, "beta-helper")
+			if got := grid.At(podRow, joint).Rune; got != '┼' {
+				t.Errorf("%s %dx%d: pod top border at the joint = %q; want ┼", state, size.Width, size.Height, got)
+			}
+			if got := grid.At(helperRow-1, helperCol-4+12).Rune; got != '┷' {
+				t.Errorf("%s %dx%d: top joint of the selected beta-helper = %q; want ┷", state, size.Width, size.Height, got)
+			}
+			if t.Failed() {
+				t.Logf("view:\n%s", m.View().Content)
+				return
+			}
+		}
+	}
+}
+
+// Decision 39 of general-agent stays for a hidden worker parent: its live
+// general child moves to home.
+func TestAgentsGeneralChildOfAHiddenWorkerMovesToHome(t *testing.T) {
+	helper := records.Agent{Key: "b2-helper", Name: "b2-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b2-worker", StartedAt: "2026-10-23T10:06:00Z"}
+	home, clock := hideHome(t, betaManager(records.AgentLive), betaWorker("b2-worker", records.AgentStopped, "done", "2026-10-23T10:05:00Z"), helper)
+	m := openHide(t, home, clock, hideSizes[0])
+	requireView(t, m, "─ home ─", "◐ b2-helper", "manager-beta", "h shows 1 stopped")
+	if pod, _ := podOf(t, m, "b2-helper"); pod != "home" {
+		t.Fatalf("b2-helper is in pod %q; want home", pod)
+	}
+}
+
+// Ask a5, Q2: with registered projects and each project pod hidden, the
+// screen draws the notice and also the coordinator card and the home pod
+// with its live cards, at both widths.
+func TestAgentsAllProjectPodsHiddenKeepTheHomePod(t *testing.T) {
+	for _, size := range hideSizes {
+		home, clock := hideHome(t, betaManager(records.AgentStopped))
+		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "helper", Name: "helper", Role: "agent", Harness: "pi", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StartedAt: "2026-10-23T10:07:00Z"})
+		m := openHide(t, home, clock, size)
+		requireView(t, m, "project agents · 0 projects · h shows 3 stopped", agentsNoneText, "● coordinator", "━ home ━", "◐ helper")
+		rejectView(t, m, "alpha", "beta")
+		// The home pod is selected; enter opens it.
+		m, _ = raise(t, m, key(tea.KeyEnter, ""))
+		requireView(t, m, "project agents · home · h shows 3 stopped", "◐ helper")
+	}
+}
+
+// Ask a5, Q2: the notice alone shows only when nothing is visible: no
+// coordinator card and no home card.
+func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
+	for _, size := range hideSizes {
+		home, clock := hideHome(t, betaManager(records.AgentStopped))
+		if err := os.Remove(filepath.Join(home, ".hive", "state", "agents", "coordinator.json")); err != nil {
+			t.Fatal(err)
+		}
+		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, StartedAt: "2026-10-23T10:01:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+		m := openHide(t, home, clock, size)
+		requireView(t, m, "project agents · 0 projects · h shows 3 stopped", agentsNoneText)
+		rejectView(t, m, "│ ● coordinator", "─ home ─", "╭──")
+		// The notice is the second body row, as decision 10 draws it.
+		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != 5 || col != 3 {
+			t.Fatalf("%dx%d: notice at row %d col %d; want row 5 col 3", size.Width, size.Height, row, col)
+		}
 	}
 }

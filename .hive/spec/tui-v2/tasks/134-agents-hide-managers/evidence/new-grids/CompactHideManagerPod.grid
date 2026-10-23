@@ -32,17 +32,23 @@ b|000011111111111110000000000000000000000000000000000000000000000000000000000000
 t|│ │ g4-rate-limits · wave B             │                                    │ │
 k|afrfdddddddddddddddddddddddfffffffffffffrffffffffffffffffffffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ┏━━━━━━━━━━━┷━━━━━━━━━━┓                         │ │
-k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
+t|│ │                   ╭─────────────────┴─────────────────╮                  │ │
+k|afrfffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ┃ ● t3-worker-1        ┃                         │ │
-k|afrfffffffffffffffffffffffffafwfaaaaaaaaaaaffffffffafffffffffffffffffffffffffrfa
-b|00000000000000000000000000000000111111111110000000000000000000000000000000000000
-t|│ │                         ┃ codex · working      ┃                         │ │
-k|afrfffffffffffffffffffffffffafdddddddddddddddffffffafffffffffffffffffffffffffrfa
+t|│ │                   │                                   │                  │ │
+k|afrfffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ │                         ┗━━━━━━━━━━━━━━━━━━━━━━┛                         │ │
-k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
+t|│ │       ┏━━━━━━━━━━━┷━━━━━━━━━━┓            ╭───────────┴──────────╮       │ │
+k|afrfffffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ┃ ● t3-worker-1        ┃            │ ◐ api-review-1       │       │ │
+k|afrfffffffafwfaaaaaaaaaaaffffffffaffffffffffffrfaffffffffffffffffffffrfffffffrfa
+b|00000000000000111111111110000000000000000000000000000000000000000000000000000000
+t|│ │       ┃ codex · working      ┃            │ claude · idle · 4m   │       │ │
+k|afrfffffffafdddddddddddddddffffffaffffffffffffrfddddddddddddddddddfffrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ┗━━━━━━━━━━━━━━━━━━━━━━┛            ╰──────────────────────╯       │ │
+k|afrfffffffaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ │                                                                          │ │
 k|afrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
@@ -52,12 +58,6 @@ k|afrfdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ ╰──────────────────────────────────────────────────────────────────────────╯ │
 k|afrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                              │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                              │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa

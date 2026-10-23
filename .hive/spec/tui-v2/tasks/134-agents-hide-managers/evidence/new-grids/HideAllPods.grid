@@ -14,8 +14,47 @@ b|001111111111111111111111111111111111111111111111111000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│  no project agents                                                                                                   │
-k|affdddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│                                               ╭──────────────────────╮                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ ● coordinator-g8     │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               │ claude · working · … │                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╰───────────┬──────────╯                                               │
+k|afffffffffffffffffffffffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                           │                                                          │
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┏━ home ━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                           │
+k|afffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffa
+b|000000000000000000000000000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃                                                              ┃                           │
+k|afffffffffffffffffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃ ╭──────────────────────╮                                     ┃                           │
+k|afffffffffffffffffffffffffffafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃ │ ● plan-review-1      │                                     ┃                           │
+k|afffffffffffffffffffffffffffafwfwffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃ │ pi · working · 2m    │                                     ┃                           │
+k|afffffffffffffffffffffffffffafwfdddddddddddddddddffffwfffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃ ╰──────────────────────╯                                     ┃                           │
+k|afffffffffffffffffffffffffffafwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃                                                              ┃                           │
+k|afffffffffffffffffffffffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┃ h shows 1 stopped                                            ┃                           │
+k|afffffffffffffffffffffffffffafdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                           │
+k|afffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
@@ -68,50 +107,11 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│ no project agents                                                                                                    │
+k|afdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+k|afddddddddddddddddddddddddddddddddddddddddddddiiidddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

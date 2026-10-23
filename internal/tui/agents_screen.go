@@ -150,8 +150,12 @@ func (m *Model) allPods() []graphPod {
 	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.hideable() }
 	// kids gives the children of each card on the graph.
 	kids := make(map[string][]agentNode)
-	// podOf gives the pod index of each card on the graph.
+	// podOf gives the pod index of each card on the graph, and of each
+	// hidden manager.
 	podOf := make(map[string]int)
+	// hiddenManager marks each hidden manager. Its children are top cards of
+	// its pod (goal g9).
+	hiddenManager := make(map[string]bool)
 	var pods []graphPod
 	var roots [][]agentNode
 	for _, group := range m.agents.data.groups {
@@ -165,6 +169,8 @@ func (m *Model) allPods() []graphPod {
 				if hidden(node) {
 					pod.hidden++
 					pod.managerHidden = true
+					hiddenManager[key] = true
+					podOf[key] = len(pods)
 					continue
 				}
 				pod.manager = &node
@@ -213,6 +219,9 @@ func (m *Model) allPods() []graphPod {
 					continue
 				case hidden(node):
 					hiddenIn(index).hidden++
+				case hiddenManager[node.record.Parent]:
+					roots[index] = append(roots[index], node)
+					podOf[node.record.Key] = index
 				default:
 					kids[node.record.Parent] = append(kids[node.record.Parent], node)
 					podOf[node.record.Key] = index
@@ -417,14 +426,17 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		panel.Lines = strings.Split(renderAgentPeek(&m.agents, bodyWidth, bodyHeight), "\n")
 		return panel.View(width, height)
 	}
-	if projects == 0 {
+	coordinator, hasCoordinator := m.coordinatorNode()
+	// With no registered project, or with nothing on the graph, the screen
+	// is the notice. When h hides each project pod, the notice is a body
+	// line below the coordinator card and the home pod (goal g9).
+	if registered := len(m.agents.data.groups) - 1; projects == 0 && (registered == 0 || len(pods) == 0 && !hasCoordinator) {
 		panel.Lines = []string{"", component.Notice{Text: agentsNoneText}.View(bodyWidth)}
 		return panel.View(width, height)
 	}
 	wide := width >= component.LongFormWidth
 	selected := m.podIndex(pods)
-	m.graph.onePod = m.inPodView(pods)
-	coordinator, hasCoordinator := m.coordinatorNode()
+	m.graph.onePod = len(pods) > 0 && m.inPodView(pods)
 	m.graph.focus = ""
 	switch {
 	case m.coordinatorSelected(pods):
@@ -442,7 +454,8 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		// The pod grows to the width of its tree (decision 75).
 		podWidth = max(podWidth, layoutTree(shown[0], podWidth-4).width+4)
 	} else {
-		m.graph.left = min(max(m.graph.left, selected-visible+1, 0), selected, len(pods)-visible)
+		visible = min(visible, len(pods))
+		m.graph.left = max(min(max(m.graph.left, selected-visible+1, 0), selected, len(pods)-visible), 0)
 		shown = pods[m.graph.left : m.graph.left+visible]
 	}
 	// The canvas columns 0 and inner-1 are the padding cells of the body. A
@@ -457,6 +470,9 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	scrolls := !m.graph.onePod && visible < len(pods)
 	footer := 0
 	if wide {
+		footer++
+	}
+	if projects == 0 {
 		footer++
 	}
 	if scrolls || sideways {
@@ -537,6 +553,10 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	panel.Bleed = true
 	panel.VMark = component.Thumb(bodyHeight, tall.height, room, m.graph.top)
 	row := bodyHeight - footer
+	if projects == 0 {
+		canvas.text(1, row, agentsNoneText, cellgrid.Dim, false)
+		row++
+	}
 	if wide {
 		canvas.text(1, row, agentsLegend, cellgrid.Dim, false)
 		canvas.text(1+ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), row, agentsLegendLit, cellgrid.Info, false)
@@ -614,6 +634,9 @@ func (m *Model) treeScrollText(inner int) (string, string) {
 // there are several (rule A of decision 78).
 func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, cx int, shown []graphPod, drops []int, podTop int) {
 	m.drawCard(c, node, cx, 0)
+	if len(shown) == 0 {
+		return
+	}
 	joint := cx + component.CardWidth/2
 	bus := component.CardHeight
 	c.addArms(joint, bus-1, component.Arms{Down: component.Light})
