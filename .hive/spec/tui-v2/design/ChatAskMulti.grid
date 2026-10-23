@@ -9,23 +9,23 @@ t|────────────━━━━━━━━──────
 k|rrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
-k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|rraaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ 14:05  you           A A A                                                                                           │
-k|rfdddddffaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|000000000111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|rfdddddffuuuuuuuuuuuuufuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ 14:22  coordinator   ? asked · Scope · Order · open below                                                            │
-k|rfdddddffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|rfdddddffiiiiiiiiiiiiifaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ 14:23  manager-hive  ? asked · Model · waits · 2 of 2                                                                │
-k|rfdddddffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
-b|000000000111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|rfdddddffiiiiiiiiiiiiifaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -50,11 +50,11 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                                                                                                                      │
 k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│                                                                                                                      ┃
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                                                                                                                      │
-k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│                                                                                                                      ┃
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
@@ -108,8 +108,8 @@ t|┗━ space mark · tab note · enter next question · enter on last sends �
 k|aadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
-k|rrrrrrrrrrrrrwrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ i or click here to type                                                                                              │
 k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -117,5 +117,5 @@ t|╰─────────────────────────
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t| [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option                             
-k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffff
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

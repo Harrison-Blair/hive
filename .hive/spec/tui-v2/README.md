@@ -432,6 +432,8 @@ Task `131-hive-ask` of the goal `g6-hive-ask` adds these decisions. The boards `
 
 103. The 5 ask boards break 13 rules that exist. Each case is the same as an approved case of task `126-chat-modes-mouse`. The evidence of task `131-hive-ask` lists the 13 cases in `board-rule-cases.md`. The code follows the rules.
 
+104. On 2026-10-23 the user approved the 13 rule cases and the 6 code grids of task `131-hive-ask` (rule A, as for task `126-chat-modes-mouse`). The approved boards `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, `CompactChatAsk`, and `Help` replace the boards and the grids in `design/`. For the 5 ask boards, they replace the staged boards of the task. Each grid is the exporter output of its approved board, and it equals its grid in `tasks/131-hive-ask/evidence/new-grids/`. No other grid changes.
+
 ## Waves
 
 1. **Spec.** Land this README and the board copies. Add the README to `steFiles`.

@@ -32,3 +32,8 @@ a rule case:
 row 33, columns 21–95, dim:
 ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card
 ```
+
+## Approval
+
+On 2026-10-23 the user approved the rule for each of the 13 cases and the
+new `Help` row (decision 104).

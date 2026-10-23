@@ -1,0 +1,9 @@
+ok  	github.com/Harrison-Blair/hive/cmd	0.050s
+ok  	github.com/Harrison-Blair/hive/internal/ask	0.266s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.002s
+ok  	github.com/Harrison-Blair/hive/internal/tui	17.042s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.009s
+
+real	0m17.263s
+user	0m3.622s
+sys	0m0.518s

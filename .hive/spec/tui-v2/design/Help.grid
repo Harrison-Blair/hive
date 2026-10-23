@@ -98,8 +98,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 │  r restart: coordinator or supervisor, asks first only when live                 │                 │
 k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                 │                                                                                  │                 │
-k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+t|│                 │  ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card     │                 │
+k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 ╰──────────────────────────────────────────────────────────────────────────────────╯                 │
 k|rrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrr

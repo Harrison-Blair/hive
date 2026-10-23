@@ -29,4 +29,8 @@ differs. `Help` row 33 is the new ask key line.
 
 ## Approval
 
-Waiting for the approval of the user.
+On 2026-10-23 the manager sent the approval of the user: all 6 code grids
+are golden. The approved boards are in
+`/home/penguin/source/hive/.hive/tmp/g6/approved131/`. Their exports equal
+the grids in this folder, and they replace the grids in `design/`
+(decision 104).

@@ -500,3 +500,24 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 		}
 	}
 }
+
+// In a multi-select question, a mark on Other opens its text line, and the
+// answer keeps the marks and the text.
+func TestAskOtherInAMultiSelectQuestion(t *testing.T) {
+	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
+	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, key('4', "4"))
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other]") {
+		t.Fatalf("footer = %q, want the Other line", got)
+	}
+	for _, r := range "keys" {
+		m, _ = raise(t, m, key(r, string(r)))
+	}
+	requireView(t, m, "┃     other › keys█")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
+	run(t, m, key('2', "2"))
+	want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1, 4}, Other: "keys"}, {Picks: []int{2}}}}}
+	if fmt.Sprint(*calls) != fmt.Sprint(want) {
+		t.Fatalf("calls = %v, want %v", *calls, want)
+	}
+}
