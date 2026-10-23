@@ -135,8 +135,9 @@ record format, the command, and the prompt text of AC5.
 - The card has the focus in normal mode when an ask is open. The footer starts
   with `[ask]`. `↑` `↓` move. `1` to `5` or a click picks an option. `space`
   marks an option of a multi-select question. `enter` picks and moves to the
-  next question. `enter` on the last question sends the answer. `tab` opens a
-  `note` line for the question. The footer then starts with `[note]`. `x`
+  next question. `enter` on the last question sends the answer. When the
+  question has no picked or marked option, `enter` picks the current option,
+  also from a `note` line. `tab` opens a `note` line for the question. The footer then starts with `[note]`. `x`
   dismisses the card. While a card is open, the wheel and `pgup` `pgdn`
   scroll the feed. A click on the feed gives the feed the focus. `i` goes to
   input mode as task 126 sets.
@@ -258,8 +259,10 @@ The dock and the header count can change boards that exist (for example
 
 - Proves: AC4 to AC6.
 - Command: run the real TUI in a herdr pane at 120×40 and at 80×24 with an
-  open card. Compare the capture at the board size with the board grid, cell
-  by cell. Look at each capture and check each point:
+  open card, with `hive --demo FILE --size WxH` on the fixture of each board.
+  Compare the capture at the board size with the board grid, cell by cell.
+  A capture with live data from a scratch home is a visual check only. It
+  does not need to equal a grid. Look at each capture and check each point:
   - Each panel border and corner lines up. The dock is between the feed and
     the input.
   - The card title, the marks, the `›` row, and the preview box are at the
