@@ -3,6 +3,7 @@ package tui
 import (
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
@@ -343,6 +344,7 @@ func TestHeaderShowsTheAskCountOfTheState(t *testing.T) {
 		{1, 80, " · ? 1 · needs you 0 · 08:00 "},
 	} {
 		m := chatModel(t, tc.width, 40, 1)
+		m.now = func() time.Time { return time.Date(2026, 10, 20, 8, 0, 0, 0, time.Local) }
 		m.header.asks = tc.asks
 		m.invalidateView()
 		if got := viewRow(m, 0); !strings.HasSuffix(got, tc.want) {

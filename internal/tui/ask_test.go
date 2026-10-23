@@ -503,6 +503,7 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 			t.Fatal(err)
 		}
 		m := chatModel(t, tc.width, 40, 1)
+		m.now = func() time.Time { return time.Date(2026, 10, 20, 8, 0, 0, 0, time.Local) }
 		m.header.asks = 7
 		m.invalidateView()
 		m.View()
