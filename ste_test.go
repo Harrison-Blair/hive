@@ -28,6 +28,8 @@ var steFiles = []string{
 	".hive/spec/releases/README.md",
 	".hive/spec/*/tasks/*/brief.md",
 	".hive/spec/*.md",
+	"redesign-spec/README.md",
+	"redesign-spec/screens/*.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
 	".agents/skills/hive-coordinator/SKILL.md",

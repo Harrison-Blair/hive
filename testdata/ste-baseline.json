@@ -130,12 +130,12 @@
   ".hive/spec/tui-v2/tasks/124-live-agent-activity/brief.md": 0,
   ".hive/spec/tui-v2/tasks/125-pod-tree-scroll/brief.md": 0,
   ".hive/spec/tui-v2/tasks/126-chat-modes-mouse/brief.md": 0,
+  ".hive/spec/tui-v2/tasks/129-agents-stale-card/brief.md": 0,
   ".hive/spec/tui-v2/tasks/131-hive-ask/brief.md": 0,
   ".hive/spec/tui-v2/tasks/132-tui-clock-tests/brief.md": 0,
   ".hive/spec/tui-v2/tasks/133-dev-main-pr/brief.md": 0,
   ".hive/spec/tui-v2/tasks/134-agents-hide-managers/brief.md": 0,
   ".hive/spec/tui-v2/tasks/135-ask-confirm/brief.md": 0,
-  ".hive/spec/tui-v2/tasks/129-agents-stale-card/brief.md": 0,
   ".hive/spec/tui-v2/tasks/21-components-1/brief.md": 0,
   ".hive/spec/tui-v2/tasks/22-components-board-fix/brief.md": 0,
   ".hive/spec/tui-v2/tasks/23-components-2/brief.md": 0,
@@ -161,5 +161,13 @@
   ".hive/spec/tui-v2/tasks/9-cellgrid/brief.md": 0,
   "AGENTS.md": 0,
   "internal/agent/templates/presets.md": 0,
-  "internal/agent/templates/project-agents.md": 0
+  "internal/agent/templates/project-agents.md": 0,
+  "redesign-spec/README.md": 0,
+  "redesign-spec/screens/agents.md": 0,
+  "redesign-spec/screens/chat.md": 0,
+  "redesign-spec/screens/friction.md": 0,
+  "redesign-spec/screens/health.md": 0,
+  "redesign-spec/screens/help.md": 0,
+  "redesign-spec/screens/logs.md": 0,
+  "redesign-spec/screens/work.md": 0
 }
