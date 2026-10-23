@@ -121,7 +121,7 @@ type Model struct {
 	chordActions  map[string]string
 	// statusCommandLine is the first output line of the status command.
 	statusCommandLine string
-	quitAt        time.Time
+	quitAt            time.Time
 
 	inputEnded <-chan struct{}
 	width      int
