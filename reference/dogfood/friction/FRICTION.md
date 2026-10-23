@@ -18,6 +18,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
 | [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
 | [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/health-program-test-flakes.md) | Open |  |
+| [Unread inbox records of a stopped agent warn forever, with no way to clear them](entries/ownerless-inbox-records-stay.md) | Open |  |
 | [TestUpdateCallbackRunsUnderLock fails at times under heavy load](entries/store-lock-test-flakes-under-load.md) | Open |  |
 | [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
 | [herdr pane send-keys has no page up or page down key name](entries/herdr-send-keys-no-page-keys.md) | Open |  |
