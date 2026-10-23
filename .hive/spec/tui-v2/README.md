@@ -54,6 +54,11 @@ Each board is a grid of terminal cells. The script in the board writes each cell
 | `ChatNormal.dc.html` | 2 Chat, normal mode | 120×40 |
 | `ChatInput.dc.html` | 2 Chat, input mode | 120×40 |
 | `CompactChatNormal.dc.html` | 2 Chat, normal mode | 80×24 |
+| `ChatAsk.dc.html` | 2 Chat, one open ask | 120×40 |
+| `ChatAskMulti.dc.html` | 2 Chat, an ask with two questions and a note | 120×40 |
+| `ChatAskPreview.dc.html` | 2 Chat, an ask with a preview | 120×40 |
+| `ChatAskStopped.dc.html` | 2 Chat, an ask of a stopped agent | 120×40 |
+| `CompactChatAsk.dc.html` | 2 Chat, one open ask | 80×24 |
 
 ## Out of scope
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -13,6 +14,8 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -34,6 +37,14 @@ const (
 type chatScreenData struct {
 	entries []chatlib.Entry
 	inbox   []records.Inbox
+	asks    []ask.Record
+	routes  map[string]askRoute
+}
+
+// chatItem is one message of the feed and its time.
+type chatItem struct {
+	at  time.Time
+	msg component.ChatMessage
 }
 
 type chatSendMsg struct {
@@ -88,13 +99,25 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 	if err != nil {
 		return chatScreenData{}, fmt.Errorf("coordinator inbox: %w", err)
 	}
-	return buildChatScreenData(chatResult.Entries, inboxRecords, now), nil
+	asks, err := ask.List(home)
+	if err != nil {
+		return chatScreenData{}, fmt.Errorf("asks: %w", err)
+	}
+	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
+	agents, ok := agentEnvelope.Result.([]records.Agent)
+	if agentEnvelope.Outcome != "ok" || !ok {
+		return chatScreenData{}, fmt.Errorf("agents: %v", agentEnvelope.Error)
+	}
+	return buildChatScreenData(chatResult.Entries, inboxRecords, asks, agents, now), nil
 }
 
-// buildChatScreenData keeps the chat entries of the chat window.
-func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, now time.Time) chatScreenData {
+// buildChatScreenData keeps the chat entries of the chat window, the asks in
+// the order of their IDs, and the route of each ask.
+func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, asks []ask.Record, agents []records.Agent, now time.Time) chatScreenData {
 	cutoff := now.UTC().Add(-chatWindow)
-	result := chatScreenData{entries: []chatlib.Entry{}, inbox: inboxRecords}
+	asks = slices.Clone(asks)
+	sortAsks(asks)
+	result := chatScreenData{entries: []chatlib.Entry{}, inbox: inboxRecords, asks: asks, routes: buildAskRoutes(asks, agents)}
 	for _, entry := range entries {
 		at, err := time.Parse(time.RFC3339Nano, entry.At)
 		if err == nil && !at.Before(cutoff) {
@@ -239,6 +262,10 @@ func (m *Model) chatView(width, height int) string {
 	wide := width >= component.LongFormWidth
 	input := m.chatInputView(width, height)
 	inputHeight := len(strings.Split(input, "\n"))
+	if dock := m.askDockView(width, height/2); dock != "" {
+		input = dock + "\n" + input
+		inputHeight += len(strings.Split(dock, "\n"))
+	}
 	feedHeight := max(height-inputHeight, component.PanelMinHeight)
 	body := feedHeight - 2
 	pad := 0
@@ -248,8 +275,8 @@ func (m *Model) chatView(width, height int) string {
 	feed := &m.chatFeed
 	feed.visible = max(body-pad, 1)
 	if feed.lines == nil || feed.width != width {
-		feed.lines, feed.starts = m.chatLines(width)
 		feed.width = width
+		feed.lines, feed.starts = m.chatLines(width)
 	}
 	end := max(len(feed.lines)-feed.visible, 0)
 	switch {
@@ -270,7 +297,7 @@ func (m *Model) chatView(width, height int) string {
 		title = "chat · noise " + m.chatNoise
 	}
 	mark := component.Thumb(body, len(feed.lines), body, feed.top)
-	panel := component.Panel{Title: title, Focused: !m.chatInputActive, Lines: lines, VMark: mark}
+	panel := component.Panel{Title: title, Focused: !m.chatInputActive && !m.askFocused(), Lines: lines, VMark: mark}
 	rows := strings.Split(panel.View(width, feedHeight), "\n")
 	for row := max(mark.Start, 0); row < min(mark.Start+mark.Size, feedHeight-2); row++ {
 		rows[row+1] = ansi.Truncate(rows[row+1], width-1, "") + dimStyle.Render("┃")
@@ -363,23 +390,24 @@ func borderNote(row, note string, col int) string {
 
 // chatLines gives the lines of the feed for a feed panel of width cells, and
 // the first line of each message. A blank line separates two messages, as
-// in component.ChatLines.
+// in component.ChatLines. Two folded events or two ask lines have no blank
+// line between them.
 func (m *Model) chatLines(width int) ([]string, []int) {
 	var lines []string
 	var starts []int
-	previousFoldedEvent := false
+	previousFoldedEvent, previousAsk := false, false
 	for _, msg := range m.chatMessages() {
 		got, err := component.ChatLines([]component.ChatMessage{msg}, width)
 		if err != nil {
 			got = []string{safeChatText(msg.Text)}
 		}
 		foldedEvent := msg.Kind == component.ChatEvent && !msg.Open
-		if len(lines) > 0 && ansi.Strip(lines[len(lines)-1]) != "" && (!previousFoldedEvent || !foldedEvent) {
+		if len(lines) > 0 && ansi.Strip(lines[len(lines)-1]) != "" && (!previousFoldedEvent || !foldedEvent) && (!previousAsk || !msg.Styled) {
 			lines = append(lines, "")
 		}
 		starts = append(starts, len(lines))
 		lines = append(lines, got...)
-		previousFoldedEvent = foldedEvent
+		previousFoldedEvent, previousAsk = foldedEvent, msg.Styled
 	}
 	if len(lines) == 0 {
 		lines = []string{dimStyle.Render("no chat yet")}
@@ -391,12 +419,8 @@ func (m *Model) chatLines(width int) ([]string, []int) {
 // chatMessages gives the chat entries and the visible inbox records in time
 // order. A user entry that is not sent shows its delivery after the name.
 func (m *Model) chatMessages() []component.ChatMessage {
-	type item struct {
-		at  time.Time
-		msg component.ChatMessage
-	}
 	zone := m.now().Location()
-	var items []item
+	var items []chatItem
 	for _, entry := range m.chatData.entries {
 		at, err := time.Parse(time.RFC3339Nano, entry.At)
 		if err != nil {
@@ -409,18 +433,19 @@ func (m *Model) chatMessages() []component.ChatMessage {
 				msg.Name += " · " + entry.Delivery
 			}
 		}
-		items = append(items, item{at, msg})
+		items = append(items, chatItem{at, msg})
 	}
 	for _, event := range m.visibleChatEvents() {
 		at, err := time.Parse(time.RFC3339Nano, event.CreatedAt)
 		if err != nil {
 			continue
 		}
-		items = append(items, item{at, component.ChatMessage{
+		items = append(items, chatItem{at, component.ChatMessage{
 			Time: at.In(zone).Format("15:04"), Name: event.Agent, Kind: component.ChatEvent,
 			Text: safeChatText(event.Text), Open: m.chatEventsOpen,
 		}})
 	}
+	items = append(items, m.askMessages(m.chatFeed.width >= component.LongFormWidth, zone)...)
 	sort.SliceStable(items, func(i, j int) bool { return items[i].at.Before(items[j].at) })
 	msgs := make([]component.ChatMessage, len(items))
 	for index, it := range items {

@@ -53,6 +53,7 @@ func headerRefreshPaths(home string) []string {
 	state := filepath.Join(home, ".hive", "state")
 	paths := []string{
 		filepath.Join(state, "agents"),
+		filepath.Join(state, "asks"),
 		filepath.Join(state, "claims"),
 		filepath.Join(state, "projects"),
 		filepath.Join(state, "tasks"),
@@ -69,6 +70,7 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 	case chatDataRequest:
 		return []string{
 			filepath.Join(state, "agents"),
+			filepath.Join(state, "asks"),
 			filepath.Join(state, "chat"),
 			filepath.Join(state, "inbox"),
 		}

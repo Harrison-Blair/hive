@@ -17,14 +17,20 @@ const (
 	ChatEvent                 // an event, folded to one dim line
 )
 
-// ChatMessage is one message of the chat feed.
+// ChatMessage is one message of the chat feed. Styled marks one line of
+// text that the caller styled, such as an ask line. Kind then gives only the
+// style of the name.
 type ChatMessage struct {
-	Time string
-	Name string
-	Kind ChatKind
-	Text string
-	Open bool
+	Time   string
+	Name   string
+	Kind   ChatKind
+	Text   string
+	Open   bool
+	Styled bool
 }
+
+// chatShortNameWidth is the name width of a styled line below LongFormWidth.
+const chatShortNameWidth = 9
 
 // The gutter of the chat feed from LongFormWidth (decision 30): the time,
 // then the name in 13 cells, then the text from col 21 of a line. A line
@@ -96,6 +102,14 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 			lines = append(lines, dimStyle.Render(line))
 		}
 		return lines, nil
+	}
+
+	if m.Styled {
+		if wide {
+			return []string{dimStyle.Render(m.Time) + "  " + nameStyle.Render(fitCell(m.Name, chatNameWidth)) + " " + ansi.Truncate(m.Text, wrap, "…")}, nil
+		}
+		return []string{dimStyle.Render(m.Time) + "  " + nameStyle.Render(fitCell(m.Name, chatShortNameWidth)) + " " +
+			ansi.Truncate(m.Text, max(wrap-lipgloss.Width(m.Time)-3-chatShortNameWidth, 0), "…")}, nil
 	}
 
 	var body []string

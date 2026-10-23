@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -35,6 +36,7 @@ type headerState struct {
 	idle                 int
 	needsUser            int
 	asks                 int
+	askUndelivered       int
 	queueRun             int
 	queueStops           int
 	queueWaits           int
@@ -85,10 +87,14 @@ func readHeader(home string) (headerState, error) {
 	if !ok {
 		return state, errors.New("tasks: unexpected result")
 	}
-	return buildHeader(state.supervisor == "fresh", state.supervisorOld, projects, agents, tasks), nil
+	asks, err := ask.List(home)
+	if err != nil {
+		return state, fmt.Errorf("asks: %w", err)
+	}
+	return buildHeader(state.supervisor == "fresh", state.supervisorOld, projects, agents, tasks, asks), nil
 }
 
-func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project, agents []records.Agent, tasks []records.Task) headerState {
+func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project, agents []records.Agent, tasks []records.Task, asks []ask.Record) headerState {
 	state := headerState{supervisor: "stale", projects: len(projects)}
 	if supervisorFresh {
 		state.supervisor = "fresh"
@@ -121,6 +127,14 @@ func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project
 		}
 	}
 	state.queueRun, state.queueStops, state.queueWaits = queueTaskCounts(tasks)
+	for _, record := range asks {
+		switch {
+		case record.State == ask.StateOpen:
+			state.asks++
+		case record.DeliveredAt == "":
+			state.askUndelivered++
+		}
+	}
 	return state
 }
 

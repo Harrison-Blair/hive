@@ -137,3 +137,24 @@ func TestChatWrapWidth(t *testing.T) {
 		}
 	}
 }
+
+// A styled line keeps one line in the gutter of the feed. Below 120 columns
+// the name has 9 cells.
+func TestStyledChatLineUsesOneLine(t *testing.T) {
+	msg := ChatMessage{Time: "14:21", Name: "manager-hive", Kind: ChatAgent, Text: "? asked · Model · below", Styled: true}
+	for _, tc := range []struct {
+		width int
+		want  string
+	}{
+		{120, "14:21  manager-hive  ? asked · Model · below"},
+		{80, "14:21  manager-… ? asked · Model · below"},
+	} {
+		lines, err := ChatLines([]ChatMessage{msg}, tc.width)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(lines) != 1 || ansi.Strip(lines[0]) != tc.want {
+			t.Errorf("width %d: lines = %q, want %q", tc.width, lines, tc.want)
+		}
+	}
+}
