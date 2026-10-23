@@ -1,0 +1,24 @@
+ hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+╭─ project agents · 0 projects · h shows 8 stopped ────────────────────────────╮
+│                                                                              │
+│  no project agents                                                           │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [graph] ←→ select pod · ↑ coordinator · enter open · ?                         

@@ -97,7 +97,14 @@ type graphPod struct {
 	hidden   int
 	// homeColumn marks the home pod: the general agents with no parent card.
 	homeColumn bool
+	// managerHidden marks a project pod whose manager card h hides. Its
+	// cards hang from the pod top border as in the home pod (goal g9).
+	managerHidden bool
 }
+
+// homeTree reports that the pod draws its cards as the home pod does: the
+// home pod, or a pod with a hidden manager.
+func (p graphPod) homeTree() bool { return p.homeColumn || p.managerHidden }
 
 // nodes gives the agents of the pod in the order of the selection.
 func (p graphPod) nodes() []agentNode {
@@ -114,12 +121,31 @@ func (p graphPod) tree(content int) bool {
 	return p.manager != nil && !p.nested() && (len(p.children) == 0 || content/len(p.children) >= treeSlot)
 }
 
-// agentsPods gives one pod for each project, in the order of the records,
-// and the home pod last when it has a card. The coordinator and the
-// supervisor are in no pod (decision 14). A general agent is under the card
-// of its parent when that card is on the graph, otherwise in home (decision
-// 39 of general-agent).
+// agentsPods gives each pod with a visible card (goal g9).
 func (m *Model) agentsPods() []graphPod {
+	var out []graphPod
+	for _, pod := range m.allPods() {
+		if pod.manager != nil || len(pod.children) > 0 {
+			out = append(out, pod)
+		}
+	}
+	return out
+}
+
+// hiddenCards gives the number of cards that h hides, in all pods.
+func (m *Model) hiddenCards() int {
+	hidden := 0
+	for _, pod := range m.allPods() {
+		hidden += pod.hidden
+	}
+	return hidden
+}
+
+// allPods gives one pod for each project, in the order of the records, and
+// the home pod last. The coordinator and the supervisor are in no pod
+// (decision 14). A general agent is under the card of its parent when that
+// card is on the graph, otherwise in home (decision 39 of general-agent).
+func (m *Model) allPods() []graphPod {
 	nodes := m.agents.nodeMap()
 	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.hideable() }
 	// kids gives the children of each card on the graph.
@@ -135,7 +161,12 @@ func (m *Model) agentsPods() []graphPod {
 		pod := graphPod{group: group}
 		for _, key := range group.keys {
 			node := nodes[key]
-			if node.record.Role == "manager" && node.current && pod.manager == nil {
+			if node.record.Role == "manager" && node.current && pod.manager == nil && !pod.managerHidden {
+				if hidden(node) {
+					pod.hidden++
+					pod.managerHidden = true
+					continue
+				}
 				pod.manager = &node
 				podOf[key] = len(pods)
 			}
@@ -225,10 +256,7 @@ func (m *Model) agentsPods() []graphPod {
 		out = append(out, pod)
 	}
 	home.children, home.levels = flattenCards(kids, homeRoots, 0)
-	if len(home.children) > 0 {
-		out = append(out, home)
-	}
-	return out
+	return append(out, home)
 }
 
 // generalRole is the role of a general agent.
@@ -307,8 +335,13 @@ func (m *Model) podIndex(pods []graphPod) int {
 				}
 			}
 		}
-		return 0
+		return -1
 	}()
+	if found < 0 {
+		// The remembered pod is not on the graph, for example while h hides
+		// it. It is selected again when it comes back.
+		return 0
+	}
 	if found < len(pods) {
 		m.graph.pod = pods[found].group.id
 	}
@@ -372,7 +405,12 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	if projects == 1 {
 		title = "project agents · 1 project"
 	}
-	panel := component.Panel{Title: title, Focused: focused}
+	// The hint of h stays on the title while h hides a card (goal g9).
+	hint := ""
+	if hidden := m.hiddenCards(); hidden > 0 {
+		hint = fmt.Sprintf(" · h shows %d stopped", hidden)
+	}
+	panel := component.Panel{Title: title + hint, Focused: focused}
 	bodyWidth, bodyHeight := max(width-4, 1), max(height-2, 0)
 	if m.agents.peekOpen {
 		panel.Title = "peek " + m.agents.peekPane + " · esc closes"
@@ -398,7 +436,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	var shown []graphPod
 	visible, podWidth := agentsColumns(len(pods), bodyWidth, wide)
 	if m.graph.onePod {
-		panel.Title = "project agents · " + pods[selected].group.id
+		panel.Title = "project agents · " + pods[selected].group.id + hint
 		shown = pods[selected : selected+1]
 		visible, podWidth = agentsColumns(1, bodyWidth, wide)
 		// The pod grows to the width of its tree (decision 75).
@@ -586,7 +624,7 @@ func (m *Model) drawCoordinator(c *cellCanvas, node agentNode, cx int, shown []g
 		if pod.manager != nil {
 			target = m.graph.managerTop
 		}
-		if pod.homeColumn && len(m.graph.roots) > 0 {
+		if pod.homeTree() && len(m.graph.roots) > 0 {
 			for _, top := range m.graph.roots {
 				center := top.x + component.CardWidth/2
 				path := []point{{joint, bus - 1}, {joint, bus}, {center, bus}, {center, top.y}}
@@ -713,14 +751,14 @@ func (m *Model) podLines(pod graphPod, width int) int {
 	rows := 1 // the goal line
 	tree := layoutTree(pod, content)
 	switch {
-	case m.graph.onePod && pod.homeColumn:
+	case m.graph.onePod && pod.homeTree():
 		rows += tree.height
 	case m.graph.onePod && pod.manager == nil:
 		rows += 2
 		if len(pod.children) > 0 {
 			rows += 1 + tree.height
 		}
-	case pod.homeColumn:
+	case pod.homeTree():
 		rows += 5*len(pod.children) - 1
 	case pod.manager == nil:
 		rows += 2 + 5*len(pod.children)
@@ -751,7 +789,7 @@ func (p graphPod) note() string {
 		return fmt.Sprintf("h shows %d stopped", p.hidden)
 	}
 	stopped := 0
-	for _, node := range p.children {
+	for _, node := range p.nodes() {
 		if node.hideable() {
 			stopped++
 		}
@@ -780,8 +818,12 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, se
 	// In the one-pod view the coordinator line goes down through the goal
 	// row at the center of the manager card.
 	goalRoom := content
-	if m.graph.onePod && pod.manager != nil {
+	switch {
+	case m.graph.onePod && pod.manager != nil:
 		goalRoom = min(content, (layoutTree(pod, content).width-component.CardWidth)/2+component.CardWidth/2-1)
+	case m.graph.onePod && pod.managerHidden:
+		// The line goes down from the coordinator joint at the pod center.
+		goalRoom = min(content, (width-component.CardWidth)/2+component.CardWidth/2-3)
 	}
 	c.text(left, top, ansi.Truncate(pod.group.goal, goalRoom, "…"), goal, false)
 	top++
@@ -790,12 +832,12 @@ func (m *Model) drawPod(c *cellCanvas, pod graphPod, x, y, width, height int, se
 	}
 	var next int
 	switch {
-	case m.graph.onePod && pod.homeColumn:
+	case m.graph.onePod && pod.homeTree():
 		next = m.drawTree(c, pod, left, top, content)
 	case m.graph.onePod && pod.manager == nil:
 		c.text(left, top+1, "no manager", cellgrid.Dim, false)
 		next = m.drawTree(c, pod, left, top+3, content)
-	case pod.homeColumn:
+	case pod.homeTree():
 		next = m.drawRail(c, pod, left, top-1)
 	case pod.manager == nil:
 		c.text(left, top+1, "no manager", cellgrid.Dim, false)
@@ -890,7 +932,7 @@ func layoutTree(pod graphPod, content int) treeLayout {
 	for level := low; level <= slices.Max(append(slices.Clone(pod.levels), low-1)); level++ {
 		gap := 1
 		switch {
-		case level == low && pod.homeColumn && len(roots) > 1:
+		case level == low && pod.homeTree() && len(roots) > 1:
 			// The bus of the coordinator line (rule A of decision 78).
 			gap = 2
 		case level == low && pod.manager == nil:

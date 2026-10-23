@@ -462,11 +462,14 @@ func TestAgentsPodHoldsAgentsWithoutAParentRecord(t *testing.T) {
 	requireView(t, m, "project agents · demo", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
 }
 
-// The pods follow the order of the project records.
+// The pods follow the order of the project records. Goal g9 removes a pod
+// with no visible card, so alpha and zeta each have a live manager.
 func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
-	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
-	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
+	for _, id := range []string{"alpha", "zeta"} {
+		writeRecord(t, home, []string{"projects"}, id, records.Project{ID: id, Path: "/repo/" + id, Base: "dev"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-" + id, Name: "manager-" + id, Role: "manager", Project: id, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle"})
+	}
 	m := openAgents(t, home, clock)
 	view := ansi.Strip(m.View().Content)
 	alpha, demo, zeta := strings.Index(view, " alpha "), strings.Index(view, " demo "), strings.Index(view, " zeta ")
