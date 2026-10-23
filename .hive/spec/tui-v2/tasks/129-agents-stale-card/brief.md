@@ -76,7 +76,7 @@ same.
 | AC1 | One card for each name, from the live or newest record | V1, V2 |
 | AC2 | No board change | V-gate |
 | AC3 | The tests fail on the base and pass on the task branch | V1 |
-| AC4 | The friction entry is resolved | V-gate |
+| AC4 | The friction entry has the status `Resolved` | V-gate |
 
 ## Verification items
 
