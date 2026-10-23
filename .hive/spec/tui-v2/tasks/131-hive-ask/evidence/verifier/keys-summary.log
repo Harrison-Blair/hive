@@ -1,0 +1,176 @@
+key-00-start
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+┃     note › keep the old tab key for one release█                                                                     ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+
+key-01-leave-note
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-02-up
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-03-down
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release                                                                      ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-04-note
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release█                                                                     ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+
+key-05-note-text
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release now█                                                                 ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+
+key-06-keep-note
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release now                                                                  ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-07-note-again
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+┃     note › keep the old tab key for one release now█                                                                 ┃
+ [note] type a note · enter send with note · tab close note · ctrl+] leave note · ↑↓ option
+
+key-08-drop-note
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-09-next
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? manager-hive asks · Model ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 2 of 2 ━┓
+┃ › 1 [ ] Yes, restart now (REC)      stop it, then spawn on deepseek-v4.1-flash                                       ┃
+ [ask] ↑↓ move · 1..4 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-10-previous
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [ ] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-11-mark
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-12-other
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › █                                                                                                        ┃
+ [other] type the answer · enter send · ctrl+] leave
+
+key-13-other-text
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later█                                                                                                   ┃
+ [other] type the answer · enter send · ctrl+] leave
+
+key-14-keep-other
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-15-wheel-up
+╭─ chat · noise normal ───────────────────────────────────── ↑ 40 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-16-wheel-down
+╭─ chat · noise normal ───────────────────────────────────── ↑ 40 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-17-page-up
+╭─ chat · noise normal ───────────────────────────────────── ↑ 33 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-18-page-down
+╭─ chat · noise normal ───────────────────────────────────── ↑ 40 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-19-click-option
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+ [ask] demo mode: no action
+
+key-20-click-feed
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [normal] demo mode: no action
+ [normal] demo mode: no action
+
+key-21-click-card
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+ [ask] demo mode: no action
+
+key-22-input
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll
+
+key-23-leave-input
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
+
+key-24-send
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+ [ask] demo mode: no action
+
+key-25-dismiss
+╭─ chat · noise normal ───────────────────────────────────── ↑ 39 earlier ─────────────────────────────────────────────╮
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ › 2 [x] Card first                  modes come later                                                                 ┃
+ [ask] demo mode: no action
+ [ask] demo mode: no action
+

@@ -1,0 +1,25 @@
+{
+  "id": "a4",
+  "asker": "verify-asker",
+  "asker_key": "verify-asker",
+  "parent": "verify-parent",
+  "parent_key": "verify-parent",
+  "created_at": "2026-10-23T04:13:37.596324058Z",
+  "questions": [
+    {
+      "question": "Restart the agent?",
+      "header": "Restart",
+      "options": [
+        {
+          "label": "Yes",
+          "description": "Restart now"
+        },
+        {
+          "label": "No",
+          "description": "Keep it"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}

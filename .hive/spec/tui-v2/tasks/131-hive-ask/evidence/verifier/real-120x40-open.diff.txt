@@ -1,0 +1,1264 @@
+row 0 col 20: want ' ' fg normal, got '/' fg bold
+row 0 col 21: want ' ' fg normal, got 'p' fg bold
+row 0 col 22: want ' ' fg normal, got 'r' fg bold
+row 0 col 23: want ' ' fg normal, got 'o' fg bold
+row 0 col 24: want ' ' fg normal, got 'j' fg bold
+row 0 col 25: want ' ' fg normal, got 'e' fg bold
+row 0 col 26: want ' ' fg normal, got 'c' fg bold
+row 0 col 27: want ' ' fg normal, got 't' fg bold
+row 0 col 28: want ' ' fg normal, got 's' fg bold
+row 0 col 29: want ' ' fg normal, got '/' fg bold
+row 0 col 30: want ' ' fg normal, got 'h' fg bold
+row 0 col 31: want ' ' fg normal, got 'i' fg bold
+row 0 col 32: want ' ' fg normal, got 'v' fg bold
+row 0 col 33: want ' ' fg normal, got 'e' fg bold
+row 0 col 34: want ' ' fg normal, got '/' fg bold
+row 0 col 35: want ' ' fg normal, got 'w' fg bold
+row 0 col 36: want ' ' fg normal, got 'o' fg bold
+row 0 col 37: want ' ' fg normal, got 'r' fg bold
+row 0 col 38: want ' ' fg normal, got 'k' fg bold
+row 0 col 39: want ' ' fg normal, got 't' fg bold
+row 0 col 40: want ' ' fg normal, got 'r' fg bold
+row 0 col 41: want ' ' fg normal, got '…' fg bold
+row 0 col 43: want ' ' fg normal, got 'c' fg bold
+row 0 col 44: want ' ' fg normal, got 'o' fg bold
+row 0 col 45: want 'c' fg bold, got 'o' fg bold
+row 0 col 46: want 'o' fg bold, got 'r' fg bold
+row 0 col 47: want 'o' fg bold, got 'd' fg bold
+row 0 col 48: want 'r' fg bold, got 'i' fg bold
+row 0 col 49: want 'd' fg bold, got 'n' fg bold
+row 0 col 50: want 'i' fg bold, got 'a' fg bold
+row 0 col 51: want 'n' fg bold, got 't' fg bold
+row 0 col 52: want 'a' fg bold, got 'o' fg bold
+row 0 col 53: want 't' fg bold, got 'r' fg bold
+row 0 col 54: want 'o' fg bold, got ' ' fg bold
+row 0 col 55: want 'r' fg bold, got '○' dim bold
+row 0 col 57: want '●' working bold, got 's' fg bold
+row 0 col 58: want ' ' fg bold, got 't' fg bold
+row 0 col 59: want 'w' fg bold, got 'o' fg bold
+row 0 col 60: want 'o' fg bold, got 'p' fg bold
+row 0 col 61: want 'r' fg bold, got 'p' fg bold
+row 0 col 62: want 'k' fg bold, got 'e' fg bold
+row 0 col 63: want 'i' fg bold, got 'd' fg bold
+row 0 col 64: want 'n' fg bold, got ' ' fg bold
+row 0 col 65: want 'g' fg bold, got ' ' fg bold
+row 0 col 67: want ' ' fg bold, got 's' fg bold
+row 0 col 68: want ' ' fg bold, got 'u' fg bold
+row 0 col 69: want 's' fg bold, got 'p' fg bold
+row 0 col 70: want 'u' fg bold, got 'e' fg bold
+row 0 col 71: want 'p' fg bold, got 'r' fg bold
+row 0 col 72: want 'e' fg bold, got 'v' fg bold
+row 0 col 73: want 'r' fg bold, got 'i' fg bold
+row 0 col 74: want 'v' fg bold, got 's' fg bold
+row 0 col 75: want 'i' fg bold, got 'o' fg bold
+row 0 col 76: want 's' fg bold, got 'r' fg bold
+row 0 col 77: want 'o' fg bold, got ' ' fg bold
+row 0 col 78: want 'r' fg bold, got '○' dim bold
+row 0 col 80: want '●' working bold, got 's' fg bold
+row 0 col 81: want ' ' fg bold, got 't' fg bold
+row 0 col 82: want 'l' fg bold, got 'o' fg bold
+row 0 col 83: want 'i' fg bold, got 'p' fg bold
+row 0 col 84: want 'v' fg bold, got 'p' fg bold
+row 0 col 86: want ' ' fg bold, got 'd' fg bold
+row 0 col 89: want '?' accent bold, got ' ' fg bold
+row 0 col 90: want ' ' accent bold, got '?' accent bold
+row 0 col 91: want '2' accent bold, got ' ' accent bold
+row 0 col 92: want ' ' accent bold, got '1' accent bold
+row 0 col 93: want 'a' accent bold, got ' ' accent bold
+row 0 col 94: want 's' accent bold, got 'a' accent bold
+row 0 col 95: want 'k' accent bold, got 's' accent bold
+row 0 col 96: want 's' accent bold, got 'k' accent bold
+row 0 col 114: want '1' fg bold, got '0' fg bold
+row 0 col 115: want '4' fg bold, got '0' fg bold
+row 0 col 117: want '2' fg bold, got '1' fg bold
+row 0 col 119: want ' ' fg bold, got ' ' fg normal
+row 3 col 60: want ' ' dim normal, got '─' border normal
+row 3 col 61: want '↑' dim normal, got '─' border normal
+row 3 col 62: want ' ' dim normal, got '─' border normal
+row 3 col 63: want '4' dim normal, got '─' border normal
+row 3 col 64: want '4' dim normal, got '─' border normal
+row 3 col 65: want ' ' dim normal, got '─' border normal
+row 3 col 66: want 'e' dim normal, got '─' border normal
+row 3 col 67: want 'a' dim normal, got '─' border normal
+row 3 col 68: want 'r' dim normal, got '─' border normal
+row 3 col 69: want 'l' dim normal, got '─' border normal
+row 3 col 70: want 'i' dim normal, got '─' border normal
+row 3 col 71: want 'e' dim normal, got '─' border normal
+row 3 col 72: want 'r' dim normal, got '─' border normal
+row 3 col 73: want ' ' dim normal, got '─' border normal
+row 5 col 2: want '1' dim normal, got '0' dim normal
+row 5 col 3: want '4' dim normal, got '0' dim normal
+row 5 col 5: want '0' dim normal, got '1' dim normal
+row 5 col 6: want '5' dim normal, got '0' dim normal
+row 5 col 9: want 'y' user bold, got 'v' info bold
+row 5 col 10: want 'o' user bold, got 'e' info bold
+row 5 col 11: want 'u' user bold, got 'r' info bold
+row 5 col 12: want ' ' user bold, got 'i' info bold
+row 5 col 13: want ' ' user bold, got 'f' info bold
+row 5 col 14: want ' ' user bold, got 'y' info bold
+row 5 col 15: want ' ' user bold, got '-' info bold
+row 5 col 16: want ' ' user bold, got 'a' info bold
+row 5 col 17: want ' ' user bold, got 's' info bold
+row 5 col 18: want ' ' user bold, got 'k' info bold
+row 5 col 19: want ' ' user bold, got 'e' info bold
+row 5 col 20: want ' ' user bold, got 'r' info bold
+row 5 col 21: want ' ' user bold, got ' ' info bold
+row 5 col 23: want 'A' user normal, got '?' accent normal
+row 5 col 24: want ' ' user normal, got ' ' accent normal
+row 5 col 25: want 'A' user normal, got 'a' accent normal
+row 5 col 26: want ' ' user normal, got 's' accent normal
+row 5 col 27: want 'A' user normal, got 'k' accent normal
+row 5 col 28: want ' ' fg normal, got 'e' accent normal
+row 5 col 29: want ' ' fg normal, got 'd' accent normal
+row 5 col 30: want ' ' fg normal, got ' ' accent normal
+row 5 col 31: want ' ' fg normal, got '·' accent normal
+row 5 col 32: want ' ' fg normal, got ' ' accent normal
+row 5 col 33: want ' ' fg normal, got 'S' accent normal
+row 5 col 34: want ' ' fg normal, got 'c' accent normal
+row 5 col 35: want ' ' fg normal, got 'o' accent normal
+row 5 col 36: want ' ' fg normal, got 'p' accent normal
+row 5 col 37: want ' ' fg normal, got 'e' accent normal
+row 5 col 38: want ' ' fg normal, got ' ' accent normal
+row 5 col 39: want ' ' fg normal, got '·' accent normal
+row 5 col 40: want ' ' fg normal, got ' ' accent normal
+row 5 col 41: want ' ' fg normal, got 'O' accent normal
+row 5 col 42: want ' ' fg normal, got 'r' accent normal
+row 5 col 43: want ' ' fg normal, got 'd' accent normal
+row 5 col 44: want ' ' fg normal, got 'e' accent normal
+row 5 col 45: want ' ' fg normal, got 'r' accent normal
+row 5 col 46: want ' ' fg normal, got ' ' accent normal
+row 5 col 47: want ' ' fg normal, got '·' accent normal
+row 5 col 48: want ' ' fg normal, got ' ' accent normal
+row 5 col 49: want ' ' fg normal, got 'o' accent normal
+row 5 col 50: want ' ' fg normal, got 'p' accent normal
+row 5 col 51: want ' ' fg normal, got 'e' accent normal
+row 5 col 52: want ' ' fg normal, got 'n' accent normal
+row 5 col 53: want ' ' fg normal, got ' ' accent normal
+row 5 col 54: want ' ' fg normal, got 'b' accent normal
+row 5 col 55: want ' ' fg normal, got 'e' accent normal
+row 5 col 56: want ' ' fg normal, got 'l' accent normal
+row 5 col 57: want ' ' fg normal, got 'o' accent normal
+row 5 col 58: want ' ' fg normal, got 'w' accent normal
+row 7 col 2: want '1' dim normal, got ' ' fg normal
+row 7 col 3: want '4' dim normal, got ' ' fg normal
+row 7 col 4: want ':' dim normal, got ' ' fg normal
+row 7 col 5: want '2' dim normal, got ' ' fg normal
+row 7 col 6: want '2' dim normal, got ' ' fg normal
+row 7 col 9: want 'c' info bold, got ' ' fg normal
+row 7 col 10: want 'o' info bold, got ' ' fg normal
+row 7 col 11: want 'o' info bold, got ' ' fg normal
+row 7 col 12: want 'r' info bold, got ' ' fg normal
+row 7 col 13: want 'd' info bold, got ' ' fg normal
+row 7 col 14: want 'i' info bold, got ' ' fg normal
+row 7 col 15: want 'n' info bold, got ' ' fg normal
+row 7 col 16: want 'a' info bold, got ' ' fg normal
+row 7 col 17: want 't' info bold, got ' ' fg normal
+row 7 col 18: want 'o' info bold, got ' ' fg normal
+row 7 col 19: want 'r' info bold, got ' ' fg normal
+row 7 col 20: want ' ' info bold, got ' ' fg normal
+row 7 col 21: want ' ' info bold, got ' ' fg normal
+row 7 col 23: want '?' accent normal, got ' ' fg normal
+row 7 col 24: want ' ' accent normal, got ' ' fg normal
+row 7 col 25: want 'a' accent normal, got ' ' fg normal
+row 7 col 26: want 's' accent normal, got ' ' fg normal
+row 7 col 27: want 'k' accent normal, got ' ' fg normal
+row 7 col 28: want 'e' accent normal, got ' ' fg normal
+row 7 col 29: want 'd' accent normal, got ' ' fg normal
+row 7 col 30: want ' ' accent normal, got ' ' fg normal
+row 7 col 31: want '·' accent normal, got ' ' fg normal
+row 7 col 32: want ' ' accent normal, got ' ' fg normal
+row 7 col 33: want 'S' accent normal, got ' ' fg normal
+row 7 col 34: want 'c' accent normal, got ' ' fg normal
+row 7 col 35: want 'o' accent normal, got ' ' fg normal
+row 7 col 36: want 'p' accent normal, got ' ' fg normal
+row 7 col 37: want 'e' accent normal, got ' ' fg normal
+row 7 col 38: want ' ' accent normal, got ' ' fg normal
+row 7 col 39: want '·' accent normal, got ' ' fg normal
+row 7 col 40: want ' ' accent normal, got ' ' fg normal
+row 7 col 41: want 'O' accent normal, got ' ' fg normal
+row 7 col 42: want 'r' accent normal, got ' ' fg normal
+row 7 col 43: want 'd' accent normal, got ' ' fg normal
+row 7 col 44: want 'e' accent normal, got ' ' fg normal
+row 7 col 45: want 'r' accent normal, got ' ' fg normal
+row 7 col 46: want ' ' accent normal, got ' ' fg normal
+row 7 col 47: want '·' accent normal, got ' ' fg normal
+row 7 col 48: want ' ' accent normal, got ' ' fg normal
+row 7 col 49: want 'o' accent normal, got ' ' fg normal
+row 7 col 50: want 'p' accent normal, got ' ' fg normal
+row 7 col 51: want 'e' accent normal, got ' ' fg normal
+row 7 col 52: want 'n' accent normal, got ' ' fg normal
+row 7 col 53: want ' ' accent normal, got ' ' fg normal
+row 7 col 54: want 'b' accent normal, got ' ' fg normal
+row 7 col 55: want 'e' accent normal, got ' ' fg normal
+row 7 col 56: want 'l' accent normal, got ' ' fg normal
+row 7 col 57: want 'o' accent normal, got ' ' fg normal
+row 7 col 58: want 'w' accent normal, got ' ' fg normal
+row 8 col 2: want '1' dim normal, got ' ' fg normal
+row 8 col 3: want '4' dim normal, got ' ' fg normal
+row 8 col 4: want ':' dim normal, got ' ' fg normal
+row 8 col 5: want '2' dim normal, got ' ' fg normal
+row 8 col 6: want '3' dim normal, got ' ' fg normal
+row 8 col 9: want 'm' info bold, got ' ' fg normal
+row 8 col 10: want 'a' info bold, got ' ' fg normal
+row 8 col 11: want 'n' info bold, got ' ' fg normal
+row 8 col 12: want 'a' info bold, got ' ' fg normal
+row 8 col 13: want 'g' info bold, got ' ' fg normal
+row 8 col 14: want 'e' info bold, got ' ' fg normal
+row 8 col 15: want 'r' info bold, got ' ' fg normal
+row 8 col 16: want '-' info bold, got ' ' fg normal
+row 8 col 17: want 'h' info bold, got ' ' fg normal
+row 8 col 18: want 'i' info bold, got ' ' fg normal
+row 8 col 19: want 'v' info bold, got ' ' fg normal
+row 8 col 20: want 'e' info bold, got ' ' fg normal
+row 8 col 21: want ' ' info bold, got ' ' fg normal
+row 8 col 23: want '?' accent normal, got ' ' fg normal
+row 8 col 24: want ' ' accent normal, got ' ' fg normal
+row 8 col 25: want 'a' accent normal, got ' ' fg normal
+row 8 col 26: want 's' accent normal, got ' ' fg normal
+row 8 col 27: want 'k' accent normal, got ' ' fg normal
+row 8 col 28: want 'e' accent normal, got ' ' fg normal
+row 8 col 29: want 'd' accent normal, got ' ' fg normal
+row 8 col 30: want ' ' accent normal, got ' ' fg normal
+row 8 col 31: want '·' accent normal, got ' ' fg normal
+row 8 col 32: want ' ' accent normal, got ' ' fg normal
+row 8 col 33: want 'M' accent normal, got ' ' fg normal
+row 8 col 34: want 'o' accent normal, got ' ' fg normal
+row 8 col 35: want 'd' accent normal, got ' ' fg normal
+row 8 col 36: want 'e' accent normal, got ' ' fg normal
+row 8 col 37: want 'l' accent normal, got ' ' fg normal
+row 8 col 38: want ' ' accent normal, got ' ' fg normal
+row 8 col 39: want '·' accent normal, got ' ' fg normal
+row 8 col 40: want ' ' accent normal, got ' ' fg normal
+row 8 col 41: want 'w' accent normal, got ' ' fg normal
+row 8 col 42: want 'a' accent normal, got ' ' fg normal
+row 8 col 43: want 'i' accent normal, got ' ' fg normal
+row 8 col 44: want 't' accent normal, got ' ' fg normal
+row 8 col 45: want 's' accent normal, got ' ' fg normal
+row 8 col 46: want ' ' accent normal, got ' ' fg normal
+row 8 col 47: want '·' accent normal, got ' ' fg normal
+row 8 col 48: want ' ' accent normal, got ' ' fg normal
+row 8 col 49: want '2' accent normal, got ' ' fg normal
+row 8 col 50: want ' ' accent normal, got ' ' fg normal
+row 8 col 51: want 'o' accent normal, got ' ' fg normal
+row 8 col 52: want 'f' accent normal, got ' ' fg normal
+row 8 col 53: want ' ' accent normal, got ' ' fg normal
+row 8 col 54: want '2' accent normal, got ' ' fg normal
+row 17 col 119: want '┃' dim normal, got '│' border normal
+row 18 col 119: want '┃' dim normal, got '│' border normal
+row 19 col 0: want '╰' border normal, got '│' border normal
+row 19 col 1: want '─' border normal, got ' ' fg normal
+row 19 col 2: want '─' border normal, got ' ' fg normal
+row 19 col 3: want '─' border normal, got ' ' fg normal
+row 19 col 4: want '─' border normal, got ' ' fg normal
+row 19 col 5: want '─' border normal, got ' ' fg normal
+row 19 col 6: want '─' border normal, got ' ' fg normal
+row 19 col 7: want '─' border normal, got ' ' fg normal
+row 19 col 8: want '─' border normal, got ' ' fg normal
+row 19 col 9: want '─' border normal, got ' ' fg normal
+row 19 col 10: want '─' border normal, got ' ' fg normal
+row 19 col 11: want '─' border normal, got ' ' fg normal
+row 19 col 12: want '─' border normal, got ' ' fg normal
+row 19 col 13: want '─' border normal, got ' ' fg normal
+row 19 col 14: want '─' border normal, got ' ' fg normal
+row 19 col 15: want '─' border normal, got ' ' fg normal
+row 19 col 16: want '─' border normal, got ' ' fg normal
+row 19 col 17: want '─' border normal, got ' ' fg normal
+row 19 col 18: want '─' border normal, got ' ' fg normal
+row 19 col 19: want '─' border normal, got ' ' fg normal
+row 19 col 20: want '─' border normal, got ' ' fg normal
+row 19 col 21: want '─' border normal, got ' ' fg normal
+row 19 col 22: want '─' border normal, got ' ' fg normal
+row 19 col 23: want '─' border normal, got ' ' fg normal
+row 19 col 24: want '─' border normal, got ' ' fg normal
+row 19 col 25: want '─' border normal, got ' ' fg normal
+row 19 col 26: want '─' border normal, got ' ' fg normal
+row 19 col 27: want '─' border normal, got ' ' fg normal
+row 19 col 28: want '─' border normal, got ' ' fg normal
+row 19 col 29: want '─' border normal, got ' ' fg normal
+row 19 col 30: want '─' border normal, got ' ' fg normal
+row 19 col 31: want '─' border normal, got ' ' fg normal
+row 19 col 32: want '─' border normal, got ' ' fg normal
+row 19 col 33: want '─' border normal, got ' ' fg normal
+row 19 col 34: want '─' border normal, got ' ' fg normal
+row 19 col 35: want '─' border normal, got ' ' fg normal
+row 19 col 36: want '─' border normal, got ' ' fg normal
+row 19 col 37: want '─' border normal, got ' ' fg normal
+row 19 col 38: want '─' border normal, got ' ' fg normal
+row 19 col 39: want '─' border normal, got ' ' fg normal
+row 19 col 40: want '─' border normal, got ' ' fg normal
+row 19 col 41: want '─' border normal, got ' ' fg normal
+row 19 col 42: want '─' border normal, got ' ' fg normal
+row 19 col 43: want '─' border normal, got ' ' fg normal
+row 19 col 44: want '─' border normal, got ' ' fg normal
+row 19 col 45: want '─' border normal, got ' ' fg normal
+row 19 col 46: want '─' border normal, got ' ' fg normal
+row 19 col 47: want '─' border normal, got ' ' fg normal
+row 19 col 48: want '─' border normal, got ' ' fg normal
+row 19 col 49: want '─' border normal, got ' ' fg normal
+row 19 col 50: want '─' border normal, got ' ' fg normal
+row 19 col 51: want '─' border normal, got ' ' fg normal
+row 19 col 52: want '─' border normal, got ' ' fg normal
+row 19 col 53: want '─' border normal, got ' ' fg normal
+row 19 col 54: want '─' border normal, got ' ' fg normal
+row 19 col 55: want '─' border normal, got ' ' fg normal
+row 19 col 56: want '─' border normal, got ' ' fg normal
+row 19 col 57: want '─' border normal, got ' ' fg normal
+row 19 col 58: want '─' border normal, got ' ' fg normal
+row 19 col 59: want '─' border normal, got ' ' fg normal
+row 19 col 60: want '─' border normal, got ' ' fg normal
+row 19 col 61: want '─' border normal, got ' ' fg normal
+row 19 col 62: want '─' border normal, got ' ' fg normal
+row 19 col 63: want '─' border normal, got ' ' fg normal
+row 19 col 64: want '─' border normal, got ' ' fg normal
+row 19 col 65: want '─' border normal, got ' ' fg normal
+row 19 col 66: want '─' border normal, got ' ' fg normal
+row 19 col 67: want '─' border normal, got ' ' fg normal
+row 19 col 68: want '─' border normal, got ' ' fg normal
+row 19 col 69: want '─' border normal, got ' ' fg normal
+row 19 col 70: want '─' border normal, got ' ' fg normal
+row 19 col 71: want '─' border normal, got ' ' fg normal
+row 19 col 72: want '─' border normal, got ' ' fg normal
+row 19 col 73: want '─' border normal, got ' ' fg normal
+row 19 col 74: want '─' border normal, got ' ' fg normal
+row 19 col 75: want '─' border normal, got ' ' fg normal
+row 19 col 76: want '─' border normal, got ' ' fg normal
+row 19 col 77: want '─' border normal, got ' ' fg normal
+row 19 col 78: want '─' border normal, got ' ' fg normal
+row 19 col 79: want '─' border normal, got ' ' fg normal
+row 19 col 80: want '─' border normal, got ' ' fg normal
+row 19 col 81: want '─' border normal, got ' ' fg normal
+row 19 col 82: want '─' border normal, got ' ' fg normal
+row 19 col 83: want '─' border normal, got ' ' fg normal
+row 19 col 84: want '─' border normal, got ' ' fg normal
+row 19 col 85: want '─' border normal, got ' ' fg normal
+row 19 col 86: want '─' border normal, got ' ' fg normal
+row 19 col 87: want '─' border normal, got ' ' fg normal
+row 19 col 88: want '─' border normal, got ' ' fg normal
+row 19 col 89: want '─' border normal, got ' ' fg normal
+row 19 col 90: want '─' border normal, got ' ' fg normal
+row 19 col 91: want '─' border normal, got ' ' fg normal
+row 19 col 92: want '─' border normal, got ' ' fg normal
+row 19 col 93: want '─' border normal, got ' ' fg normal
+row 19 col 94: want '─' border normal, got ' ' fg normal
+row 19 col 95: want '─' border normal, got ' ' fg normal
+row 19 col 96: want '─' border normal, got ' ' fg normal
+row 19 col 97: want '─' border normal, got ' ' fg normal
+row 19 col 98: want '─' border normal, got ' ' fg normal
+row 19 col 99: want '─' border normal, got ' ' fg normal
+row 19 col 100: want '─' border normal, got ' ' fg normal
+row 19 col 101: want '─' border normal, got ' ' fg normal
+row 19 col 102: want '─' border normal, got ' ' fg normal
+row 19 col 103: want '─' border normal, got ' ' fg normal
+row 19 col 104: want '─' border normal, got ' ' fg normal
+row 19 col 105: want '─' border normal, got ' ' fg normal
+row 19 col 106: want '─' border normal, got ' ' fg normal
+row 19 col 107: want '─' border normal, got ' ' fg normal
+row 19 col 108: want '─' border normal, got ' ' fg normal
+row 19 col 109: want '─' border normal, got ' ' fg normal
+row 19 col 110: want '─' border normal, got ' ' fg normal
+row 19 col 111: want '─' border normal, got ' ' fg normal
+row 19 col 112: want '─' border normal, got ' ' fg normal
+row 19 col 113: want '─' border normal, got ' ' fg normal
+row 19 col 114: want '─' border normal, got ' ' fg normal
+row 19 col 115: want '─' border normal, got ' ' fg normal
+row 19 col 116: want '─' border normal, got ' ' fg normal
+row 19 col 117: want '─' border normal, got ' ' fg normal
+row 19 col 118: want '─' border normal, got ' ' fg normal
+row 19 col 119: want '╯' border normal, got '│' border normal
+row 20 col 0: want '┏' accent normal, got '│' border normal
+row 20 col 1: want '━' accent normal, got ' ' fg normal
+row 20 col 2: want ' ' accent bold, got ' ' fg normal
+row 20 col 3: want '?' accent bold, got ' ' fg normal
+row 20 col 4: want ' ' accent bold, got ' ' fg normal
+row 20 col 5: want 'c' accent bold, got ' ' fg normal
+row 20 col 6: want 'o' accent bold, got ' ' fg normal
+row 20 col 7: want 'o' accent bold, got ' ' fg normal
+row 20 col 8: want 'r' accent bold, got ' ' fg normal
+row 20 col 9: want 'd' accent bold, got ' ' fg normal
+row 20 col 10: want 'i' accent bold, got ' ' fg normal
+row 20 col 11: want 'n' accent bold, got ' ' fg normal
+row 20 col 12: want 'a' accent bold, got ' ' fg normal
+row 20 col 13: want 't' accent bold, got ' ' fg normal
+row 20 col 14: want 'o' accent bold, got ' ' fg normal
+row 20 col 15: want 'r' accent bold, got ' ' fg normal
+row 20 col 16: want ' ' accent bold, got ' ' fg normal
+row 20 col 17: want 'a' accent bold, got ' ' fg normal
+row 20 col 18: want 's' accent bold, got ' ' fg normal
+row 20 col 19: want 'k' accent bold, got ' ' fg normal
+row 20 col 20: want 's' accent bold, got ' ' fg normal
+row 20 col 21: want ' ' accent bold, got ' ' fg normal
+row 20 col 22: want '·' accent bold, got ' ' fg normal
+row 20 col 23: want ' ' accent bold, got ' ' fg normal
+row 20 col 24: want 'S' accent bold, got ' ' fg normal
+row 20 col 25: want 'c' accent bold, got ' ' fg normal
+row 20 col 26: want 'o' accent bold, got ' ' fg normal
+row 20 col 27: want 'p' accent bold, got ' ' fg normal
+row 20 col 28: want 'e' accent bold, got ' ' fg normal
+row 20 col 29: want ' ' accent bold, got ' ' fg normal
+row 20 col 30: want '·' accent bold, got ' ' fg normal
+row 20 col 31: want ' ' accent bold, got ' ' fg normal
+row 20 col 32: want 'O' accent bold, got ' ' fg normal
+row 20 col 33: want 'r' accent bold, got ' ' fg normal
+row 20 col 34: want 'd' accent bold, got ' ' fg normal
+row 20 col 35: want 'e' accent bold, got ' ' fg normal
+row 20 col 36: want 'r' accent bold, got ' ' fg normal
+row 20 col 37: want ' ' accent bold, got ' ' fg normal
+row 20 col 38: want '━' accent normal, got ' ' fg normal
+row 20 col 39: want '━' accent normal, got ' ' fg normal
+row 20 col 40: want '━' accent normal, got ' ' fg normal
+row 20 col 41: want '━' accent normal, got ' ' fg normal
+row 20 col 42: want '━' accent normal, got ' ' fg normal
+row 20 col 43: want '━' accent normal, got ' ' fg normal
+row 20 col 44: want '━' accent normal, got ' ' fg normal
+row 20 col 45: want '━' accent normal, got ' ' fg normal
+row 20 col 46: want '━' accent normal, got ' ' fg normal
+row 20 col 47: want '━' accent normal, got ' ' fg normal
+row 20 col 48: want '━' accent normal, got ' ' fg normal
+row 20 col 49: want '━' accent normal, got ' ' fg normal
+row 20 col 50: want '━' accent normal, got ' ' fg normal
+row 20 col 51: want '━' accent normal, got ' ' fg normal
+row 20 col 52: want '━' accent normal, got ' ' fg normal
+row 20 col 53: want '━' accent normal, got ' ' fg normal
+row 20 col 54: want '━' accent normal, got ' ' fg normal
+row 20 col 55: want '━' accent normal, got ' ' fg normal
+row 20 col 56: want '━' accent normal, got ' ' fg normal
+row 20 col 57: want '━' accent normal, got ' ' fg normal
+row 20 col 58: want '━' accent normal, got ' ' fg normal
+row 20 col 59: want '━' accent normal, got ' ' fg normal
+row 20 col 60: want '━' accent normal, got ' ' fg normal
+row 20 col 61: want '━' accent normal, got ' ' fg normal
+row 20 col 62: want '━' accent normal, got ' ' fg normal
+row 20 col 63: want '━' accent normal, got ' ' fg normal
+row 20 col 64: want '━' accent normal, got ' ' fg normal
+row 20 col 65: want '━' accent normal, got ' ' fg normal
+row 20 col 66: want '━' accent normal, got ' ' fg normal
+row 20 col 67: want '━' accent normal, got ' ' fg normal
+row 20 col 68: want '━' accent normal, got ' ' fg normal
+row 20 col 69: want '━' accent normal, got ' ' fg normal
+row 20 col 70: want '━' accent normal, got ' ' fg normal
+row 20 col 71: want '━' accent normal, got ' ' fg normal
+row 20 col 72: want '━' accent normal, got ' ' fg normal
+row 20 col 73: want '━' accent normal, got ' ' fg normal
+row 20 col 74: want '━' accent normal, got ' ' fg normal
+row 20 col 75: want '━' accent normal, got ' ' fg normal
+row 20 col 76: want '━' accent normal, got ' ' fg normal
+row 20 col 77: want '━' accent normal, got ' ' fg normal
+row 20 col 78: want '━' accent normal, got ' ' fg normal
+row 20 col 79: want '━' accent normal, got ' ' fg normal
+row 20 col 80: want '━' accent normal, got ' ' fg normal
+row 20 col 81: want '━' accent normal, got ' ' fg normal
+row 20 col 82: want '━' accent normal, got ' ' fg normal
+row 20 col 83: want '━' accent normal, got ' ' fg normal
+row 20 col 84: want '━' accent normal, got ' ' fg normal
+row 20 col 85: want '━' accent normal, got ' ' fg normal
+row 20 col 86: want '━' accent normal, got ' ' fg normal
+row 20 col 87: want '━' accent normal, got ' ' fg normal
+row 20 col 88: want '━' accent normal, got ' ' fg normal
+row 20 col 89: want '━' accent normal, got ' ' fg normal
+row 20 col 90: want '━' accent normal, got ' ' fg normal
+row 20 col 91: want '━' accent normal, got ' ' fg normal
+row 20 col 92: want '━' accent normal, got ' ' fg normal
+row 20 col 93: want '━' accent normal, got ' ' fg normal
+row 20 col 94: want ' ' dim normal, got ' ' fg normal
+row 20 col 95: want 'o' dim normal, got ' ' fg normal
+row 20 col 96: want 'p' dim normal, got ' ' fg normal
+row 20 col 97: want 'e' dim normal, got ' ' fg normal
+row 20 col 98: want 'n' dim normal, got ' ' fg normal
+row 20 col 99: want ' ' dim normal, got ' ' fg normal
+row 20 col 100: want '·' dim normal, got ' ' fg normal
+row 20 col 101: want ' ' dim normal, got ' ' fg normal
+row 20 col 102: want '1' dim normal, got ' ' fg normal
+row 20 col 103: want ' ' dim normal, got ' ' fg normal
+row 20 col 104: want 'o' dim normal, got ' ' fg normal
+row 20 col 105: want 'f' dim normal, got ' ' fg normal
+row 20 col 106: want ' ' dim normal, got ' ' fg normal
+row 20 col 107: want '2' dim normal, got ' ' fg normal
+row 20 col 108: want ' ' dim normal, got ' ' fg normal
+row 20 col 109: want '·' dim normal, got ' ' fg normal
+row 20 col 110: want ' ' dim normal, got ' ' fg normal
+row 20 col 111: want 'J' dim normal, got ' ' fg normal
+row 20 col 112: want ' ' dim normal, got ' ' fg normal
+row 20 col 113: want 'n' dim normal, got ' ' fg normal
+row 20 col 114: want 'e' dim normal, got ' ' fg normal
+row 20 col 115: want 'x' dim normal, got ' ' fg normal
+row 20 col 116: want 't' dim normal, got ' ' fg normal
+row 20 col 117: want ' ' dim normal, got ' ' fg normal
+row 20 col 118: want '━' accent normal, got ' ' fg normal
+row 20 col 119: want '┓' accent normal, got '│' border normal
+row 21 col 0: want '┃' accent normal, got '╰' border normal
+row 21 col 1: want ' ' fg normal, got '─' border normal
+row 21 col 2: want '1' fg bold, got '─' border normal
+row 21 col 3: want '.' fg bold, got '─' border normal
+row 21 col 4: want ' ' fg bold, got '─' border normal
+row 21 col 5: want 'W' fg bold, got '─' border normal
+row 21 col 6: want 'h' fg bold, got '─' border normal
+row 21 col 7: want 'i' fg bold, got '─' border normal
+row 21 col 8: want 'c' fg bold, got '─' border normal
+row 21 col 9: want 'h' fg bold, got '─' border normal
+row 21 col 10: want ' ' fg bold, got '─' border normal
+row 21 col 11: want 'p' fg bold, got '─' border normal
+row 21 col 12: want 'a' fg bold, got '─' border normal
+row 21 col 13: want 'r' fg bold, got '─' border normal
+row 21 col 14: want 't' fg bold, got '─' border normal
+row 21 col 15: want 's' fg bold, got '─' border normal
+row 21 col 16: want ' ' fg bold, got '─' border normal
+row 21 col 17: want 'g' fg bold, got '─' border normal
+row 21 col 18: want 'o' fg bold, got '─' border normal
+row 21 col 19: want ' ' fg bold, got '─' border normal
+row 21 col 20: want 'i' fg bold, got '─' border normal
+row 21 col 21: want 'n' fg bold, got '─' border normal
+row 21 col 22: want ' ' fg bold, got '─' border normal
+row 21 col 23: want 't' fg bold, got '─' border normal
+row 21 col 24: want 'a' fg bold, got '─' border normal
+row 21 col 25: want 's' fg bold, got '─' border normal
+row 21 col 26: want 'k' fg bold, got '─' border normal
+row 21 col 27: want ' ' fg bold, got '─' border normal
+row 21 col 28: want '1' fg bold, got '─' border normal
+row 21 col 29: want '?' fg bold, got '─' border normal
+row 21 col 30: want ' ' fg normal, got '─' border normal
+row 21 col 31: want ' ' fg normal, got '─' border normal
+row 21 col 32: want ' ' fg normal, got '─' border normal
+row 21 col 33: want ' ' fg normal, got '─' border normal
+row 21 col 34: want ' ' fg normal, got '─' border normal
+row 21 col 35: want ' ' fg normal, got '─' border normal
+row 21 col 36: want ' ' fg normal, got '─' border normal
+row 21 col 37: want ' ' fg normal, got '─' border normal
+row 21 col 38: want ' ' fg normal, got '─' border normal
+row 21 col 39: want ' ' fg normal, got '─' border normal
+row 21 col 40: want ' ' fg normal, got '─' border normal
+row 21 col 41: want ' ' fg normal, got '─' border normal
+row 21 col 42: want ' ' fg normal, got '─' border normal
+row 21 col 43: want ' ' fg normal, got '─' border normal
+row 21 col 44: want ' ' fg normal, got '─' border normal
+row 21 col 45: want ' ' fg normal, got '─' border normal
+row 21 col 46: want ' ' fg normal, got '─' border normal
+row 21 col 47: want ' ' fg normal, got '─' border normal
+row 21 col 48: want ' ' fg normal, got '─' border normal
+row 21 col 49: want ' ' fg normal, got '─' border normal
+row 21 col 50: want ' ' fg normal, got '─' border normal
+row 21 col 51: want ' ' fg normal, got '─' border normal
+row 21 col 52: want ' ' fg normal, got '─' border normal
+row 21 col 53: want ' ' fg normal, got '─' border normal
+row 21 col 54: want ' ' fg normal, got '─' border normal
+row 21 col 55: want ' ' fg normal, got '─' border normal
+row 21 col 56: want ' ' fg normal, got '─' border normal
+row 21 col 57: want ' ' fg normal, got '─' border normal
+row 21 col 58: want ' ' fg normal, got '─' border normal
+row 21 col 59: want ' ' fg normal, got '─' border normal
+row 21 col 60: want ' ' fg normal, got '─' border normal
+row 21 col 61: want ' ' fg normal, got '─' border normal
+row 21 col 62: want ' ' fg normal, got '─' border normal
+row 21 col 63: want ' ' fg normal, got '─' border normal
+row 21 col 64: want ' ' fg normal, got '─' border normal
+row 21 col 65: want ' ' fg normal, got '─' border normal
+row 21 col 66: want ' ' fg normal, got '─' border normal
+row 21 col 67: want ' ' fg normal, got '─' border normal
+row 21 col 68: want ' ' fg normal, got '─' border normal
+row 21 col 69: want ' ' fg normal, got '─' border normal
+row 21 col 70: want ' ' fg normal, got '─' border normal
+row 21 col 71: want ' ' fg normal, got '─' border normal
+row 21 col 72: want ' ' fg normal, got '─' border normal
+row 21 col 73: want ' ' fg normal, got '─' border normal
+row 21 col 74: want ' ' fg normal, got '─' border normal
+row 21 col 75: want ' ' fg normal, got '─' border normal
+row 21 col 76: want ' ' fg normal, got '─' border normal
+row 21 col 77: want ' ' fg normal, got '─' border normal
+row 21 col 78: want ' ' fg normal, got '─' border normal
+row 21 col 79: want ' ' fg normal, got '─' border normal
+row 21 col 80: want ' ' fg normal, got '─' border normal
+row 21 col 81: want ' ' fg normal, got '─' border normal
+row 21 col 82: want ' ' fg normal, got '─' border normal
+row 21 col 83: want ' ' fg normal, got '─' border normal
+row 21 col 84: want ' ' fg normal, got '─' border normal
+row 21 col 85: want ' ' fg normal, got '─' border normal
+row 21 col 86: want ' ' fg normal, got '─' border normal
+row 21 col 87: want ' ' fg normal, got '─' border normal
+row 21 col 88: want ' ' fg normal, got '─' border normal
+row 21 col 89: want ' ' fg normal, got '─' border normal
+row 21 col 90: want ' ' fg normal, got '─' border normal
+row 21 col 91: want ' ' fg normal, got '─' border normal
+row 21 col 92: want ' ' fg normal, got '─' border normal
+row 21 col 93: want ' ' fg normal, got '─' border normal
+row 21 col 94: want ' ' fg normal, got '─' border normal
+row 21 col 95: want ' ' fg normal, got '─' border normal
+row 21 col 96: want ' ' fg normal, got '─' border normal
+row 21 col 97: want ' ' fg normal, got '─' border normal
+row 21 col 98: want ' ' fg normal, got '─' border normal
+row 21 col 99: want ' ' fg normal, got '─' border normal
+row 21 col 100: want ' ' fg normal, got '─' border normal
+row 21 col 101: want ' ' fg normal, got '─' border normal
+row 21 col 102: want ' ' fg normal, got '─' border normal
+row 21 col 103: want ' ' fg normal, got '─' border normal
+row 21 col 104: want ' ' fg normal, got '─' border normal
+row 21 col 105: want ' ' fg normal, got '─' border normal
+row 21 col 106: want ' ' fg normal, got '─' border normal
+row 21 col 107: want ' ' fg normal, got '─' border normal
+row 21 col 108: want ' ' fg normal, got '─' border normal
+row 21 col 109: want ' ' fg normal, got '─' border normal
+row 21 col 110: want ' ' fg normal, got '─' border normal
+row 21 col 111: want ' ' fg normal, got '─' border normal
+row 21 col 112: want ' ' fg normal, got '─' border normal
+row 21 col 113: want ' ' fg normal, got '─' border normal
+row 21 col 114: want ' ' fg normal, got '─' border normal
+row 21 col 115: want ' ' fg normal, got '─' border normal
+row 21 col 116: want ' ' fg normal, got '─' border normal
+row 21 col 117: want ' ' fg normal, got '─' border normal
+row 21 col 118: want ' ' fg normal, got '─' border normal
+row 21 col 119: want '┃' accent normal, got '╯' border normal
+row 22 col 0: want '┃' accent normal, got '┏' accent normal
+row 22 col 1: want ' ' fg normal, got '━' accent normal
+row 22 col 2: want ' ' fg normal, got ' ' accent bold
+row 22 col 3: want ' ' fg normal, got '?' accent bold
+row 22 col 4: want ' ' fg normal, got ' ' accent bold
+row 22 col 5: want ' ' fg normal, got 'v' accent bold
+row 22 col 6: want ' ' fg normal, got 'e' accent bold
+row 22 col 7: want ' ' fg normal, got 'r' accent bold
+row 22 col 8: want ' ' fg normal, got 'i' accent bold
+row 22 col 9: want ' ' fg normal, got 'f' accent bold
+row 22 col 10: want ' ' fg normal, got 'y' accent bold
+row 22 col 11: want ' ' fg normal, got '-' accent bold
+row 22 col 12: want ' ' fg normal, got 'a' accent bold
+row 22 col 13: want ' ' fg normal, got 's' accent bold
+row 22 col 14: want ' ' fg normal, got 'k' accent bold
+row 22 col 15: want ' ' fg normal, got 'e' accent bold
+row 22 col 16: want ' ' fg normal, got 'r' accent bold
+row 22 col 17: want ' ' fg normal, got ' ' accent bold
+row 22 col 18: want ' ' fg normal, got 'a' accent bold
+row 22 col 19: want ' ' fg normal, got 's' accent bold
+row 22 col 20: want ' ' fg normal, got 'k' accent bold
+row 22 col 21: want ' ' fg normal, got 's' accent bold
+row 22 col 22: want ' ' fg normal, got ' ' accent bold
+row 22 col 23: want ' ' fg normal, got '·' accent bold
+row 22 col 24: want ' ' fg normal, got ' ' accent bold
+row 22 col 25: want ' ' fg normal, got 'S' accent bold
+row 22 col 26: want ' ' fg normal, got 'c' accent bold
+row 22 col 27: want ' ' fg normal, got 'o' accent bold
+row 22 col 28: want ' ' fg normal, got 'p' accent bold
+row 22 col 29: want ' ' fg normal, got 'e' accent bold
+row 22 col 30: want ' ' fg normal, got ' ' accent bold
+row 22 col 31: want ' ' fg normal, got '·' accent bold
+row 22 col 32: want ' ' fg normal, got ' ' accent bold
+row 22 col 33: want ' ' fg normal, got 'O' accent bold
+row 22 col 34: want ' ' fg normal, got 'r' accent bold
+row 22 col 35: want ' ' fg normal, got 'd' accent bold
+row 22 col 36: want ' ' fg normal, got 'e' accent bold
+row 22 col 37: want ' ' fg normal, got 'r' accent bold
+row 22 col 38: want ' ' fg normal, got ' ' accent bold
+row 22 col 39: want ' ' fg normal, got '━' accent normal
+row 22 col 40: want ' ' fg normal, got '━' accent normal
+row 22 col 41: want ' ' fg normal, got '━' accent normal
+row 22 col 42: want ' ' fg normal, got '━' accent normal
+row 22 col 43: want ' ' fg normal, got '━' accent normal
+row 22 col 44: want ' ' fg normal, got '━' accent normal
+row 22 col 45: want ' ' fg normal, got '━' accent normal
+row 22 col 46: want ' ' fg normal, got '━' accent normal
+row 22 col 47: want ' ' fg normal, got '━' accent normal
+row 22 col 48: want ' ' fg normal, got '━' accent normal
+row 22 col 49: want ' ' fg normal, got '━' accent normal
+row 22 col 50: want ' ' fg normal, got '━' accent normal
+row 22 col 51: want ' ' fg normal, got '━' accent normal
+row 22 col 52: want ' ' fg normal, got '━' accent normal
+row 22 col 53: want ' ' fg normal, got '━' accent normal
+row 22 col 54: want ' ' fg normal, got '━' accent normal
+row 22 col 55: want ' ' fg normal, got '━' accent normal
+row 22 col 56: want ' ' fg normal, got '━' accent normal
+row 22 col 57: want ' ' fg normal, got '━' accent normal
+row 22 col 58: want ' ' fg normal, got '━' accent normal
+row 22 col 59: want ' ' fg normal, got '━' accent normal
+row 22 col 60: want ' ' fg normal, got '━' accent normal
+row 22 col 61: want ' ' fg normal, got '━' accent normal
+row 22 col 62: want ' ' fg normal, got '━' accent normal
+row 22 col 63: want ' ' fg normal, got '━' accent normal
+row 22 col 64: want ' ' fg normal, got '━' accent normal
+row 22 col 65: want ' ' fg normal, got '━' accent normal
+row 22 col 66: want ' ' fg normal, got '━' accent normal
+row 22 col 67: want ' ' fg normal, got '━' accent normal
+row 22 col 68: want ' ' fg normal, got '━' accent normal
+row 22 col 69: want ' ' fg normal, got '━' accent normal
+row 22 col 70: want ' ' fg normal, got '━' accent normal
+row 22 col 71: want ' ' fg normal, got '━' accent normal
+row 22 col 72: want ' ' fg normal, got '━' accent normal
+row 22 col 73: want ' ' fg normal, got '━' accent normal
+row 22 col 74: want ' ' fg normal, got '━' accent normal
+row 22 col 75: want ' ' fg normal, got '━' accent normal
+row 22 col 76: want ' ' fg normal, got '━' accent normal
+row 22 col 77: want ' ' fg normal, got '━' accent normal
+row 22 col 78: want ' ' fg normal, got '━' accent normal
+row 22 col 79: want ' ' fg normal, got '━' accent normal
+row 22 col 80: want ' ' fg normal, got '━' accent normal
+row 22 col 81: want ' ' fg normal, got '━' accent normal
+row 22 col 82: want ' ' fg normal, got '━' accent normal
+row 22 col 83: want ' ' fg normal, got '━' accent normal
+row 22 col 84: want ' ' fg normal, got '━' accent normal
+row 22 col 85: want ' ' fg normal, got '━' accent normal
+row 22 col 86: want ' ' fg normal, got '━' accent normal
+row 22 col 87: want ' ' fg normal, got '━' accent normal
+row 22 col 88: want ' ' fg normal, got '━' accent normal
+row 22 col 89: want ' ' fg normal, got '━' accent normal
+row 22 col 90: want ' ' fg normal, got '━' accent normal
+row 22 col 91: want ' ' fg normal, got '━' accent normal
+row 22 col 92: want ' ' fg normal, got '━' accent normal
+row 22 col 93: want ' ' fg normal, got '━' accent normal
+row 22 col 94: want ' ' fg normal, got '━' accent normal
+row 22 col 95: want ' ' fg normal, got '━' accent normal
+row 22 col 96: want ' ' fg normal, got '━' accent normal
+row 22 col 97: want ' ' fg normal, got '━' accent normal
+row 22 col 98: want ' ' fg normal, got '━' accent normal
+row 22 col 99: want ' ' fg normal, got '━' accent normal
+row 22 col 100: want ' ' fg normal, got '━' accent normal
+row 22 col 101: want ' ' fg normal, got '━' accent normal
+row 22 col 102: want ' ' fg normal, got '━' accent normal
+row 22 col 103: want ' ' fg normal, got ' ' dim normal
+row 22 col 104: want ' ' fg normal, got 'o' dim normal
+row 22 col 105: want ' ' fg normal, got 'p' dim normal
+row 22 col 106: want ' ' fg normal, got 'e' dim normal
+row 22 col 107: want ' ' fg normal, got 'n' dim normal
+row 22 col 108: want ' ' fg normal, got ' ' dim normal
+row 22 col 109: want ' ' fg normal, got '·' dim normal
+row 22 col 110: want ' ' fg normal, got ' ' dim normal
+row 22 col 111: want ' ' fg normal, got '1' dim normal
+row 22 col 112: want ' ' fg normal, got ' ' dim normal
+row 22 col 113: want ' ' fg normal, got 'o' dim normal
+row 22 col 114: want ' ' fg normal, got 'f' dim normal
+row 22 col 115: want ' ' fg normal, got ' ' dim normal
+row 22 col 116: want ' ' fg normal, got '1' dim normal
+row 22 col 117: want ' ' fg normal, got ' ' dim normal
+row 22 col 118: want ' ' fg normal, got '━' accent normal
+row 22 col 119: want '┃' accent normal, got '┓' accent normal
+row 23 col 2: want ' ' accent bold, got '1' fg bold
+row 23 col 3: want ' ' fg normal, got '.' fg bold
+row 23 col 4: want '1' dim bold, got ' ' fg bold
+row 23 col 5: want ' ' fg normal, got 'W' fg bold
+row 23 col 6: want '[' accent bold, got 'h' fg bold
+row 23 col 7: want 'x' accent bold, got 'i' fg bold
+row 23 col 8: want ']' accent bold, got 'c' fg bold
+row 23 col 9: want ' ' fg normal, got 'h' fg bold
+row 23 col 10: want 'M' fg normal, got ' ' fg bold
+row 23 col 11: want 'o' fg normal, got 'p' fg bold
+row 23 col 12: want 'u' fg normal, got 'a' fg bold
+row 23 col 13: want 's' fg normal, got 'r' fg bold
+row 23 col 14: want 'e' fg normal, got 't' fg bold
+row 23 col 15: want ' ' fg normal, got 's' fg bold
+row 23 col 16: want 'w' fg normal, got '?' fg bold
+row 23 col 17: want 'h' fg normal, got ' ' fg normal
+row 23 col 18: want 'e' fg normal, got ' ' fg normal
+row 23 col 19: want 'e' fg normal, got ' ' fg normal
+row 23 col 20: want 'l' fg normal, got ' ' fg normal
+row 23 col 22: want '(' fg normal, got ' ' fg normal
+row 23 col 23: want 'R' fg normal, got ' ' fg normal
+row 23 col 24: want 'E' fg normal, got ' ' fg normal
+row 23 col 25: want 'C' fg normal, got ' ' fg normal
+row 23 col 26: want ')' fg normal, got ' ' fg normal
+row 23 col 38: want 's' dim normal, got ' ' fg normal
+row 23 col 39: want 'c' dim normal, got ' ' fg normal
+row 23 col 40: want 'r' dim normal, got ' ' fg normal
+row 23 col 41: want 'o' dim normal, got ' ' fg normal
+row 23 col 42: want 'l' dim normal, got ' ' fg normal
+row 23 col 43: want 'l' dim normal, got ' ' fg normal
+row 23 col 44: want ' ' dim normal, got ' ' fg normal
+row 23 col 45: want 't' dim normal, got ' ' fg normal
+row 23 col 46: want 'h' dim normal, got ' ' fg normal
+row 23 col 47: want 'e' dim normal, got ' ' fg normal
+row 23 col 48: want ' ' dim normal, got ' ' fg normal
+row 23 col 49: want 'p' dim normal, got ' ' fg normal
+row 23 col 50: want 'a' dim normal, got ' ' fg normal
+row 23 col 51: want 'n' dim normal, got ' ' fg normal
+row 23 col 52: want 'e' dim normal, got ' ' fg normal
+row 23 col 53: want ' ' dim normal, got ' ' fg normal
+row 23 col 54: want 'u' dim normal, got ' ' fg normal
+row 23 col 55: want 'n' dim normal, got ' ' fg normal
+row 23 col 56: want 'd' dim normal, got ' ' fg normal
+row 23 col 57: want 'e' dim normal, got ' ' fg normal
+row 23 col 58: want 'r' dim normal, got ' ' fg normal
+row 23 col 59: want ' ' dim normal, got ' ' fg normal
+row 23 col 60: want 't' dim normal, got ' ' fg normal
+row 23 col 61: want 'h' dim normal, got ' ' fg normal
+row 23 col 62: want 'e' dim normal, got ' ' fg normal
+row 23 col 63: want ' ' dim normal, got ' ' fg normal
+row 23 col 64: want 'p' dim normal, got ' ' fg normal
+row 23 col 65: want 'o' dim normal, got ' ' fg normal
+row 23 col 66: want 'i' dim normal, got ' ' fg normal
+row 23 col 67: want 'n' dim normal, got ' ' fg normal
+row 23 col 68: want 't' dim normal, got ' ' fg normal
+row 23 col 69: want 'e' dim normal, got ' ' fg normal
+row 23 col 70: want 'r' dim normal, got ' ' fg normal
+row 24 col 2: want ' ' accent bold, got ' ' fg normal
+row 24 col 4: want '2' dim bold, got ' ' fg normal
+row 24 col 6: want '[' accent bold, got ' ' fg normal
+row 24 col 7: want 'x' accent bold, got ' ' fg normal
+row 24 col 8: want ']' accent bold, got ' ' fg normal
+row 24 col 10: want 'C' fg normal, got ' ' fg normal
+row 24 col 11: want 'l' fg normal, got ' ' fg normal
+row 24 col 12: want 'i' fg normal, got ' ' fg normal
+row 24 col 13: want 'c' fg normal, got ' ' fg normal
+row 24 col 14: want 'k' fg normal, got ' ' fg normal
+row 24 col 16: want 't' fg normal, got ' ' fg normal
+row 24 col 17: want 'o' fg normal, got ' ' fg normal
+row 24 col 19: want 'f' fg normal, got ' ' fg normal
+row 24 col 20: want 'o' fg normal, got ' ' fg normal
+row 24 col 21: want 'c' fg normal, got ' ' fg normal
+row 24 col 22: want 'u' fg normal, got ' ' fg normal
+row 24 col 23: want 's' fg normal, got ' ' fg normal
+row 24 col 38: want 'c' dim normal, got ' ' fg normal
+row 24 col 39: want 'l' dim normal, got ' ' fg normal
+row 24 col 40: want 'i' dim normal, got ' ' fg normal
+row 24 col 41: want 'c' dim normal, got ' ' fg normal
+row 24 col 42: want 'k' dim normal, got ' ' fg normal
+row 24 col 43: want ' ' dim normal, got ' ' fg normal
+row 24 col 44: want 't' dim normal, got ' ' fg normal
+row 24 col 45: want 'h' dim normal, got ' ' fg normal
+row 24 col 46: want 'e' dim normal, got ' ' fg normal
+row 24 col 47: want ' ' dim normal, got ' ' fg normal
+row 24 col 48: want 'f' dim normal, got ' ' fg normal
+row 24 col 49: want 'e' dim normal, got ' ' fg normal
+row 24 col 50: want 'e' dim normal, got ' ' fg normal
+row 24 col 51: want 'd' dim normal, got ' ' fg normal
+row 24 col 52: want ' ' dim normal, got ' ' fg normal
+row 24 col 53: want 'o' dim normal, got ' ' fg normal
+row 24 col 54: want 'r' dim normal, got ' ' fg normal
+row 24 col 55: want ' ' dim normal, got ' ' fg normal
+row 24 col 56: want 't' dim normal, got ' ' fg normal
+row 24 col 57: want 'h' dim normal, got ' ' fg normal
+row 24 col 58: want 'e' dim normal, got ' ' fg normal
+row 24 col 59: want ' ' dim normal, got ' ' fg normal
+row 24 col 60: want 'i' dim normal, got ' ' fg normal
+row 24 col 61: want 'n' dim normal, got ' ' fg normal
+row 24 col 62: want 'p' dim normal, got ' ' fg normal
+row 24 col 63: want 'u' dim normal, got ' ' fg normal
+row 24 col 64: want 't' dim normal, got ' ' fg normal
+row 25 col 4: want '3' dim bold, got '1' dim bold
+row 25 col 6: want '[' accent bold, got '[' dim normal
+row 25 col 7: want 'x' accent bold, got ' ' dim normal
+row 25 col 8: want ']' accent bold, got ']' dim normal
+row 25 col 10: want 'N' fg normal, got 'A' fg normal
+row 25 col 11: want 'o' fg normal, got 's' fg normal
+row 25 col 12: want 'r' fg normal, got 'k' fg normal
+row 25 col 13: want 'm' fg normal, got ' ' fg normal
+row 25 col 14: want 'a' fg normal, got 'c' fg normal
+row 25 col 15: want 'l' fg normal, got 'a' fg normal
+row 25 col 16: want ' ' fg normal, got 'r' fg normal
+row 25 col 17: want 'a' fg normal, got 'd' fg normal
+row 25 col 18: want 'n' fg normal, got ' ' fg normal
+row 25 col 19: want 'd' fg normal, got ' ' fg normal
+row 25 col 21: want 'i' fg normal, got ' ' fg normal
+row 25 col 22: want 'n' fg normal, got ' ' fg normal
+row 25 col 23: want 'p' fg normal, got ' ' fg normal
+row 25 col 24: want 'u' fg normal, got ' ' fg normal
+row 25 col 25: want 't' fg normal, got ' ' fg normal
+row 25 col 27: want 'm' fg normal, got ' ' fg normal
+row 25 col 28: want 'o' fg normal, got ' ' fg normal
+row 25 col 29: want 'd' fg normal, got ' ' fg normal
+row 25 col 30: want 'e' fg normal, got ' ' fg normal
+row 25 col 38: want 'i' dim normal, got 'A' dim normal
+row 25 col 39: want ' ' dim normal, got 'd' dim normal
+row 25 col 40: want 'i' dim normal, got 'd' dim normal
+row 25 col 41: want 'n' dim normal, got ' ' dim normal
+row 25 col 42: want ',' dim normal, got 't' dim normal
+row 25 col 43: want ' ' dim normal, got 'h' dim normal
+row 25 col 44: want 'c' dim normal, got 'e' dim normal
+row 25 col 45: want 't' dim normal, got ' ' dim normal
+row 25 col 46: want 'r' dim normal, got 'c' dim normal
+row 25 col 47: want 'l' dim normal, got 'a' dim normal
+row 25 col 48: want '+' dim normal, got 'r' dim normal
+row 25 col 49: want ']' dim normal, got 'd' dim normal
+row 25 col 50: want ' ' dim normal, got ' ' fg normal
+row 25 col 51: want 'o' dim normal, got ' ' fg normal
+row 25 col 52: want 'u' dim normal, got ' ' fg normal
+row 25 col 53: want 't' dim normal, got ' ' fg normal
+row 26 col 2: want ' ' accent bold, got '›' accent bold
+row 26 col 4: want '4' dim bold, got '2' accent bold
+row 26 col 6: want '[' dim normal, got '[' accent bold
+row 26 col 7: want ' ' dim normal, got 'x' accent bold
+row 26 col 8: want ']' dim normal, got ']' accent bold
+row 26 col 10: want 'H' fg normal, got 'H' accent bold
+row 26 col 11: want 'e' fg normal, got 'e' accent bold
+row 26 col 12: want 'a' fg normal, got 'a' accent bold
+row 26 col 13: want 'd' fg normal, got 'd' accent bold
+row 26 col 14: want 'e' fg normal, got 'e' accent bold
+row 26 col 15: want 'r' fg normal, got 'r' accent bold
+row 26 col 16: want ' ' fg normal, got ' ' accent bold
+row 26 col 17: want 'c' fg normal, got 'c' accent bold
+row 26 col 18: want 'o' fg normal, got 'o' accent bold
+row 26 col 19: want 'u' fg normal, got 'u' accent bold
+row 26 col 20: want 'n' fg normal, got 'n' accent bold
+row 26 col 21: want 't' fg normal, got 't' accent bold
+row 26 col 38: want '"' dim normal, got 'A' dim normal
+row 26 col 39: want '?' dim normal, got 'd' dim normal
+row 26 col 40: want ' ' dim normal, got 'd' dim normal
+row 26 col 41: want 'N' dim normal, got ' ' dim normal
+row 26 col 42: want '"' dim normal, got 't' dim normal
+row 26 col 43: want ' ' dim normal, got 'h' dim normal
+row 26 col 44: want 'o' dim normal, got 'e' dim normal
+row 26 col 45: want 'n' dim normal, got ' ' dim normal
+row 26 col 46: want ' ' dim normal, got 'c' dim normal
+row 26 col 47: want 'a' dim normal, got 'o' dim normal
+row 26 col 48: want 'l' dim normal, got 'u' dim normal
+row 26 col 49: want 'l' dim normal, got 'n' dim normal
+row 26 col 50: want ' ' dim normal, got 't' dim normal
+row 26 col 51: want 't' dim normal, got ' ' fg normal
+row 26 col 52: want 'a' dim normal, got ' ' fg normal
+row 26 col 53: want 'b' dim normal, got ' ' fg normal
+row 26 col 54: want 's' dim normal, got ' ' fg normal
+row 27 col 4: want '5' dim bold, got '3' dim bold
+row 27 col 10: want 'O' fg normal, got 'H' fg normal
+row 27 col 11: want 't' fg normal, got 'e' fg normal
+row 27 col 12: want 'h' fg normal, got 'l' fg normal
+row 27 col 13: want 'e' fg normal, got 'p' fg normal
+row 27 col 14: want 'r' fg normal, got ' ' fg normal
+row 27 col 15: want ':' fg normal, got 'l' fg normal
+row 27 col 16: want ' ' fg normal, got 'i' fg normal
+row 27 col 17: want 't' fg normal, got 'n' fg normal
+row 27 col 18: want 'y' fg normal, got 'e' fg normal
+row 27 col 19: want 'p' fg normal, got ' ' fg normal
+row 27 col 20: want 'e' fg normal, got ' ' fg normal
+row 27 col 22: want 'a' fg normal, got ' ' fg normal
+row 27 col 23: want 'n' fg normal, got ' ' fg normal
+row 27 col 25: want 'a' fg normal, got ' ' fg normal
+row 27 col 26: want 'n' fg normal, got ' ' fg normal
+row 27 col 27: want 's' fg normal, got ' ' fg normal
+row 27 col 28: want 'w' fg normal, got ' ' fg normal
+row 27 col 29: want 'e' fg normal, got ' ' fg normal
+row 27 col 30: want 'r' fg normal, got ' ' fg normal
+row 27 col 38: want ' ' fg normal, got 'A' dim normal
+row 27 col 39: want ' ' fg normal, got 'd' dim normal
+row 27 col 40: want ' ' fg normal, got 'd' dim normal
+row 27 col 41: want ' ' fg normal, got ' ' dim normal
+row 27 col 42: want ' ' fg normal, got 't' dim normal
+row 27 col 43: want ' ' fg normal, got 'h' dim normal
+row 27 col 44: want ' ' fg normal, got 'e' dim normal
+row 27 col 45: want ' ' fg normal, got ' ' dim normal
+row 27 col 46: want ' ' fg normal, got 'h' dim normal
+row 27 col 47: want ' ' fg normal, got 'i' dim normal
+row 27 col 48: want ' ' fg normal, got 'n' dim normal
+row 27 col 49: want ' ' fg normal, got 't' dim normal
+row 27 col 50: want ' ' fg normal, got 's' dim normal
+row 28 col 2: want ' ' fg normal, got ' ' accent bold
+row 28 col 4: want ' ' fg normal, got '4' dim bold
+row 28 col 6: want ' ' fg normal, got '[' dim normal
+row 28 col 7: want ' ' fg normal, got ' ' dim normal
+row 28 col 8: want ' ' fg normal, got ']' dim normal
+row 28 col 10: want ' ' fg normal, got 'O' fg normal
+row 28 col 11: want ' ' fg normal, got 't' fg normal
+row 28 col 12: want ' ' fg normal, got 'h' fg normal
+row 28 col 13: want ' ' fg normal, got 'e' fg normal
+row 28 col 14: want ' ' fg normal, got 'r' fg normal
+row 28 col 15: want ' ' fg normal, got ':' fg normal
+row 28 col 17: want ' ' fg normal, got 't' fg normal
+row 28 col 18: want ' ' fg normal, got 'y' fg normal
+row 28 col 19: want ' ' fg normal, got 'p' fg normal
+row 28 col 20: want ' ' fg normal, got 'e' fg normal
+row 28 col 22: want ' ' fg normal, got 'a' fg normal
+row 28 col 23: want ' ' fg normal, got 'n' fg normal
+row 28 col 25: want ' ' fg normal, got 'a' fg normal
+row 28 col 26: want ' ' fg normal, got 'n' fg normal
+row 28 col 27: want ' ' fg normal, got 's' fg normal
+row 28 col 28: want ' ' fg normal, got 'w' fg normal
+row 28 col 29: want ' ' fg normal, got 'e' fg normal
+row 28 col 30: want ' ' fg normal, got 'r' fg normal
+row 29 col 2: want '2' fg bold, got ' ' fg normal
+row 29 col 3: want '.' fg bold, got ' ' fg normal
+row 29 col 4: want ' ' fg bold, got ' ' fg normal
+row 29 col 5: want 'W' fg bold, got ' ' fg normal
+row 29 col 6: want 'h' fg bold, got ' ' fg normal
+row 29 col 7: want 'i' fg bold, got ' ' fg normal
+row 29 col 8: want 'c' fg bold, got ' ' fg normal
+row 29 col 9: want 'h' fg bold, got ' ' fg normal
+row 29 col 10: want ' ' fg bold, got ' ' fg normal
+row 29 col 11: want 't' fg bold, got ' ' fg normal
+row 29 col 12: want 'a' fg bold, got ' ' fg normal
+row 29 col 13: want 's' fg bold, got ' ' fg normal
+row 29 col 14: want 'k' fg bold, got ' ' fg normal
+row 29 col 15: want ' ' fg bold, got ' ' fg normal
+row 29 col 16: want 'g' fg bold, got ' ' fg normal
+row 29 col 17: want 'o' fg bold, got ' ' fg normal
+row 29 col 18: want 'e' fg bold, got ' ' fg normal
+row 29 col 19: want 's' fg bold, got ' ' fg normal
+row 29 col 20: want ' ' fg bold, got ' ' fg normal
+row 29 col 21: want 'f' fg bold, got ' ' fg normal
+row 29 col 22: want 'i' fg bold, got ' ' fg normal
+row 29 col 23: want 'r' fg bold, got ' ' fg normal
+row 29 col 24: want 's' fg bold, got ' ' fg normal
+row 29 col 25: want 't' fg bold, got ' ' fg normal
+row 29 col 26: want '?' fg bold, got ' ' fg normal
+row 30 col 2: want ' ' fg normal, got '2' fg bold
+row 30 col 3: want ' ' fg normal, got '.' fg bold
+row 30 col 4: want ' ' fg normal, got ' ' fg bold
+row 30 col 5: want ' ' fg normal, got 'W' fg bold
+row 30 col 6: want ' ' fg normal, got 'h' fg bold
+row 30 col 7: want ' ' fg normal, got 'i' fg bold
+row 30 col 8: want ' ' fg normal, got 'c' fg bold
+row 30 col 9: want ' ' fg normal, got 'h' fg bold
+row 30 col 10: want ' ' fg normal, got ' ' fg bold
+row 30 col 11: want ' ' fg normal, got 'o' fg bold
+row 30 col 12: want ' ' fg normal, got 'r' fg bold
+row 30 col 13: want ' ' fg normal, got 'd' fg bold
+row 30 col 14: want ' ' fg normal, got 'e' fg bold
+row 30 col 15: want ' ' fg normal, got 'r' fg bold
+row 30 col 16: want ' ' fg normal, got '?' fg bold
+row 31 col 2: want '›' accent bold, got ' ' fg normal
+row 31 col 4: want '1' accent bold, got ' ' fg normal
+row 31 col 6: want '[' accent bold, got ' ' fg normal
+row 31 col 7: want 'x' accent bold, got ' ' fg normal
+row 31 col 8: want ']' accent bold, got ' ' fg normal
+row 31 col 10: want 'M' accent bold, got ' ' fg normal
+row 31 col 11: want 'o' accent bold, got ' ' fg normal
+row 31 col 12: want 'd' accent bold, got ' ' fg normal
+row 31 col 13: want 'e' accent bold, got ' ' fg normal
+row 31 col 14: want 's' accent bold, got ' ' fg normal
+row 31 col 15: want ' ' accent bold, got ' ' fg normal
+row 31 col 16: want 'f' accent bold, got ' ' fg normal
+row 31 col 17: want 'i' accent bold, got ' ' fg normal
+row 31 col 18: want 'r' accent bold, got ' ' fg normal
+row 31 col 19: want 's' accent bold, got ' ' fg normal
+row 31 col 20: want 't' accent bold, got ' ' fg normal
+row 31 col 21: want ' ' accent bold, got ' ' fg normal
+row 31 col 22: want '(' accent bold, got ' ' fg normal
+row 31 col 23: want 'R' accent bold, got ' ' fg normal
+row 31 col 24: want 'E' accent bold, got ' ' fg normal
+row 31 col 25: want 'C' accent bold, got ' ' fg normal
+row 31 col 26: want ')' accent bold, got ' ' fg normal
+row 31 col 38: want 't' dim normal, got ' ' fg normal
+row 31 col 39: want 'h' dim normal, got ' ' fg normal
+row 31 col 40: want 'e' dim normal, got ' ' fg normal
+row 31 col 41: want ' ' dim normal, got ' ' fg normal
+row 31 col 42: want 'c' dim normal, got ' ' fg normal
+row 31 col 43: want 'a' dim normal, got ' ' fg normal
+row 31 col 44: want 'r' dim normal, got ' ' fg normal
+row 31 col 45: want 'd' dim normal, got ' ' fg normal
+row 31 col 46: want ' ' dim normal, got ' ' fg normal
+row 31 col 47: want 'u' dim normal, got ' ' fg normal
+row 31 col 48: want 's' dim normal, got ' ' fg normal
+row 31 col 49: want 'e' dim normal, got ' ' fg normal
+row 31 col 50: want 's' dim normal, got ' ' fg normal
+row 31 col 51: want ' ' dim normal, got ' ' fg normal
+row 31 col 52: want 't' dim normal, got ' ' fg normal
+row 31 col 53: want 'h' dim normal, got ' ' fg normal
+row 31 col 54: want 'e' dim normal, got ' ' fg normal
+row 31 col 55: want ' ' dim normal, got ' ' fg normal
+row 31 col 56: want 'n' dim normal, got ' ' fg normal
+row 31 col 57: want 'e' dim normal, got ' ' fg normal
+row 31 col 58: want 'w' dim normal, got ' ' fg normal
+row 31 col 59: want ' ' dim normal, got ' ' fg normal
+row 31 col 60: want 'm' dim normal, got ' ' fg normal
+row 31 col 61: want 'o' dim normal, got ' ' fg normal
+row 31 col 62: want 'd' dim normal, got ' ' fg normal
+row 31 col 63: want 'e' dim normal, got ' ' fg normal
+row 31 col 64: want 's' dim normal, got ' ' fg normal
+row 32 col 4: want '2' dim bold, got '1' dim bold
+row 32 col 10: want 'C' fg normal, got 'M' fg normal
+row 32 col 11: want 'a' fg normal, got 'o' fg normal
+row 32 col 12: want 'r' fg normal, got 'd' fg normal
+row 32 col 13: want 'd' fg normal, got 'e' fg normal
+row 32 col 14: want ' ' fg normal, got 's' fg normal
+row 32 col 15: want 'f' fg normal, got ' ' fg normal
+row 32 col 16: want 'i' fg normal, got 'f' fg normal
+row 32 col 17: want 'r' fg normal, got 'i' fg normal
+row 32 col 18: want 's' fg normal, got 'r' fg normal
+row 32 col 19: want 't' fg normal, got 's' fg normal
+row 32 col 20: want ' ' fg normal, got 't' fg normal
+row 32 col 38: want 'm' dim normal, got 'S' dim normal
+row 32 col 39: want 'o' dim normal, got 't' dim normal
+row 32 col 40: want 'd' dim normal, got 'a' dim normal
+row 32 col 41: want 'e' dim normal, got 'r' dim normal
+row 32 col 42: want 's' dim normal, got 't' dim normal
+row 32 col 44: want 'c' dim normal, got 'w' dim normal
+row 32 col 45: want 'o' dim normal, got 'i' dim normal
+row 32 col 46: want 'm' dim normal, got 't' dim normal
+row 32 col 47: want 'e' dim normal, got 'h' dim normal
+row 32 col 49: want 'l' dim normal, got 'm' dim normal
+row 32 col 50: want 'a' dim normal, got 'o' dim normal
+row 32 col 51: want 't' dim normal, got 'd' dim normal
+row 32 col 53: want 'r' dim normal, got 's' dim normal
+row 33 col 4: want '3' dim bold, got '2' dim bold
+row 33 col 10: want 'O' fg normal, got 'C' fg normal
+row 33 col 11: want 't' fg normal, got 'a' fg normal
+row 33 col 12: want 'h' fg normal, got 'r' fg normal
+row 33 col 13: want 'e' fg normal, got 'd' fg normal
+row 33 col 14: want 'r' fg normal, got ' ' fg normal
+row 33 col 15: want ':' fg normal, got 'f' fg normal
+row 33 col 16: want ' ' fg normal, got 'i' fg normal
+row 33 col 17: want 't' fg normal, got 'r' fg normal
+row 33 col 18: want 'y' fg normal, got 's' fg normal
+row 33 col 19: want 'p' fg normal, got 't' fg normal
+row 33 col 20: want 'e' fg normal, got ' ' fg normal
+row 33 col 22: want 'a' fg normal, got ' ' fg normal
+row 33 col 23: want 'n' fg normal, got ' ' fg normal
+row 33 col 25: want 'a' fg normal, got ' ' fg normal
+row 33 col 26: want 'n' fg normal, got ' ' fg normal
+row 33 col 27: want 's' fg normal, got ' ' fg normal
+row 33 col 28: want 'w' fg normal, got ' ' fg normal
+row 33 col 29: want 'e' fg normal, got ' ' fg normal
+row 33 col 30: want 'r' fg normal, got ' ' fg normal
+row 33 col 38: want ' ' fg normal, got 'S' dim normal
+row 33 col 39: want ' ' fg normal, got 't' dim normal
+row 33 col 40: want ' ' fg normal, got 'a' dim normal
+row 33 col 41: want ' ' fg normal, got 'r' dim normal
+row 33 col 42: want ' ' fg normal, got 't' dim normal
+row 33 col 43: want ' ' fg normal, got ' ' dim normal
+row 33 col 44: want ' ' fg normal, got 'w' dim normal
+row 33 col 45: want ' ' fg normal, got 'i' dim normal
+row 33 col 46: want ' ' fg normal, got 't' dim normal
+row 33 col 47: want ' ' fg normal, got 'h' dim normal
+row 33 col 48: want ' ' fg normal, got ' ' dim normal
+row 33 col 49: want ' ' fg normal, got 'c' dim normal
+row 33 col 50: want ' ' fg normal, got 'a' dim normal
+row 33 col 51: want ' ' fg normal, got 'r' dim normal
+row 33 col 52: want ' ' fg normal, got 'd' dim normal
+row 34 col 2: want ' ' fg normal, got ' ' accent bold
+row 34 col 4: want ' ' fg normal, got '3' dim bold
+row 34 col 6: want 'n' accent bold, got '[' dim normal
+row 34 col 7: want 'o' accent bold, got ' ' dim normal
+row 34 col 8: want 't' accent bold, got ']' dim normal
+row 34 col 9: want 'e' accent bold, got ' ' fg normal
+row 34 col 10: want ' ' accent bold, got 'O' fg normal
+row 34 col 11: want '›' accent bold, got 't' fg normal
+row 34 col 12: want ' ' fg normal, got 'h' fg normal
+row 34 col 13: want 'k' fg normal, got 'e' fg normal
+row 34 col 14: want 'e' fg normal, got 'r' fg normal
+row 34 col 15: want 'e' fg normal, got ':' fg normal
+row 34 col 16: want 'p' fg normal, got ' ' fg normal
+row 34 col 17: want ' ' fg normal, got 't' fg normal
+row 34 col 18: want 't' fg normal, got 'y' fg normal
+row 34 col 19: want 'h' fg normal, got 'p' fg normal
+row 34 col 22: want 'o' fg normal, got 'a' fg normal
+row 34 col 23: want 'l' fg normal, got 'n' fg normal
+row 34 col 24: want 'd' fg normal, got ' ' fg normal
+row 34 col 25: want ' ' fg normal, got 'a' fg normal
+row 34 col 26: want 't' fg normal, got 'n' fg normal
+row 34 col 27: want 'a' fg normal, got 's' fg normal
+row 34 col 28: want 'b' fg normal, got 'w' fg normal
+row 34 col 29: want ' ' fg normal, got 'e' fg normal
+row 34 col 30: want 'k' fg normal, got 'r' fg normal
+row 34 col 31: want 'e' fg normal, got ' ' fg normal
+row 34 col 32: want 'y' fg normal, got ' ' fg normal
+row 34 col 34: want 'f' fg normal, got ' ' fg normal
+row 34 col 35: want 'o' fg normal, got ' ' fg normal
+row 34 col 36: want 'r' fg normal, got ' ' fg normal
+row 34 col 38: want 'o' fg normal, got ' ' fg normal
+row 34 col 39: want 'n' fg normal, got ' ' fg normal
+row 34 col 40: want 'e' fg normal, got ' ' fg normal
+row 34 col 42: want 'r' fg normal, got ' ' fg normal
+row 34 col 43: want 'e' fg normal, got ' ' fg normal
+row 34 col 44: want 'l' fg normal, got ' ' fg normal
+row 34 col 45: want 'e' fg normal, got ' ' fg normal
+row 34 col 46: want 'a' fg normal, got ' ' fg normal
+row 34 col 47: want 's' fg normal, got ' ' fg normal
+row 34 col 48: want 'e' fg normal, got ' ' fg normal
+row 34 col 49: want '█' accent normal, got ' ' fg normal
+row 36 col 13: want '●' working normal, got '○' dim normal
+row 36 col 15: want 'w' fg normal, got 'n' fg normal
+row 36 col 17: want 'r' fg normal, got 'n' fg normal
+row 36 col 18: want 'k' fg normal, got 'e' fg normal
+row 36 col 19: want 'i' fg normal, got ' ' fg normal
+row 36 col 20: want 'n' fg normal, got '─' border normal
+row 36 col 21: want 'g' fg normal, got '─' border normal
+row 36 col 22: want ' ' fg normal, got '─' border normal
+row 36 col 23: want '1' fg normal, got '─' border normal
+row 36 col 24: want 'm' fg normal, got '─' border normal
+row 36 col 25: want ' ' fg normal, got '─' border normal
+row 39 col 2: want 'n' accent bold, got 'a' accent bold
+row 39 col 3: want 'o' accent bold, got 's' accent bold
+row 39 col 4: want 't' accent bold, got 'k' accent bold
+row 39 col 5: want 'e' accent bold, got ']' accent bold
+row 39 col 6: want ']' accent bold, got ' ' accent bold
+row 39 col 7: want ' ' accent bold, got '↑' dim normal
+row 39 col 8: want 't' dim normal, got '↓' dim normal
+row 39 col 9: want 'y' dim normal, got ' ' dim normal
+row 39 col 10: want 'p' dim normal, got 'm' dim normal
+row 39 col 11: want 'e' dim normal, got 'o' dim normal
+row 39 col 12: want ' ' dim normal, got 'v' dim normal
+row 39 col 13: want 'a' dim normal, got 'e' dim normal
+row 39 col 15: want 'n' dim normal, got '·' dim normal
+row 39 col 16: want 'o' dim normal, got ' ' dim normal
+row 39 col 17: want 't' dim normal, got '1' dim normal
+row 39 col 18: want 'e' dim normal, got '.' dim normal
+row 39 col 19: want ' ' dim normal, got '.' dim normal
+row 39 col 20: want '·' dim normal, got '4' dim normal
+row 39 col 22: want 'e' dim normal, got 'p' dim normal
+row 39 col 23: want 'n' dim normal, got 'i' dim normal
+row 39 col 24: want 't' dim normal, got 'c' dim normal
+row 39 col 25: want 'e' dim normal, got 'k' dim normal
+row 39 col 26: want 'r' dim normal, got ' ' dim normal
+row 39 col 27: want ' ' dim normal, got '·' dim normal
+row 39 col 28: want 's' dim normal, got ' ' dim normal
+row 39 col 31: want 'd' dim normal, got 't' dim normal
+row 39 col 32: want ' ' dim normal, got 'e' dim normal
+row 39 col 33: want 'w' dim normal, got 'r' dim normal
+row 39 col 34: want 'i' dim normal, got ' ' dim normal
+row 39 col 35: want 't' dim normal, got 's' dim normal
+row 39 col 36: want 'h' dim normal, got 'e' dim normal
+row 39 col 37: want ' ' dim normal, got 'n' dim normal
+row 39 col 38: want 'n' dim normal, got 'd' dim normal
+row 39 col 39: want 'o' dim normal, got ' ' dim normal
+row 39 col 40: want 't' dim normal, got '·' dim normal
+row 39 col 41: want 'e' dim normal, got ' ' dim normal
+row 39 col 42: want ' ' dim normal, got 't' dim normal
+row 39 col 43: want '·' dim normal, got 'a' dim normal
+row 39 col 44: want ' ' dim normal, got 'b' dim normal
+row 39 col 45: want 't' dim normal, got ' ' dim normal
+row 39 col 46: want 'a' dim normal, got 'n' dim normal
+row 39 col 47: want 'b' dim normal, got 'o' dim normal
+row 39 col 48: want ' ' dim normal, got 't' dim normal
+row 39 col 49: want 'c' dim normal, got 'e' dim normal
+row 39 col 50: want 'l' dim normal, got ' ' dim normal
+row 39 col 51: want 'o' dim normal, got '·' dim normal
+row 39 col 52: want 's' dim normal, got ' ' dim normal
+row 39 col 53: want 'e' dim normal, got 'x' dim normal
+row 39 col 55: want 'n' dim normal, got 'd' dim normal
+row 39 col 56: want 'o' dim normal, got 'i' dim normal
+row 39 col 57: want 't' dim normal, got 's' dim normal
+row 39 col 58: want 'e' dim normal, got 'm' dim normal
+row 39 col 59: want ' ' dim normal, got 'i' dim normal
+row 39 col 60: want '·' dim normal, got 's' dim normal
+row 39 col 61: want ' ' dim normal, got 's' dim normal
+row 39 col 62: want 'c' dim normal, got ' ' dim normal
+row 39 col 63: want 't' dim normal, got '·' dim normal
+row 39 col 64: want 'r' dim normal, got ' ' dim normal
+row 39 col 65: want 'l' dim normal, got 'J' dim normal
+row 39 col 66: want '+' dim normal, got '/' dim normal
+row 39 col 67: want ']' dim normal, got 'K' dim normal
+row 39 col 69: want 'l' dim normal, got 'n' dim normal
+row 39 col 71: want 'a' dim normal, got 'x' dim normal
+row 39 col 72: want 'v' dim normal, got 't' dim normal
+row 39 col 73: want 'e' dim normal, got '/' dim normal
+row 39 col 74: want ' ' dim normal, got 'p' dim normal
+row 39 col 75: want 'n' dim normal, got 'r' dim normal
+row 39 col 76: want 'o' dim normal, got 'e' dim normal
+row 39 col 77: want 't' dim normal, got 'v' dim normal
+row 39 col 78: want 'e' dim normal, got ' ' dim normal
+row 39 col 79: want ' ' dim normal, got 'c' dim normal
+row 39 col 80: want '·' dim normal, got 'a' dim normal
+row 39 col 81: want ' ' dim normal, got 'r' dim normal
+row 39 col 82: want '↑' dim normal, got 'd' dim normal
+row 39 col 83: want '↓' dim normal, got ' ' dim normal
+row 39 col 84: want ' ' dim normal, got '·' dim normal
+row 39 col 85: want 'o' dim normal, got ' ' dim normal
+row 39 col 86: want 'p' dim normal, got 'w' dim normal
+row 39 col 87: want 't' dim normal, got 'h' dim normal
+row 39 col 88: want 'i' dim normal, got 'e' dim normal
+row 39 col 89: want 'o' dim normal, got 'e' dim normal
+row 39 col 90: want 'n' dim normal, got 'l' dim normal
+row 39 col 91: want ' ' dim normal, got '/' dim normal
+row 39 col 92: want ' ' dim normal, got 'p' dim normal
+row 39 col 93: want ' ' dim normal, got 'g' dim normal
+row 39 col 94: want ' ' dim normal, got 'u' dim normal
+row 39 col 95: want ' ' dim normal, got 'p' dim normal
+row 39 col 97: want ' ' dim normal, got 's' dim normal
+row 39 col 98: want ' ' dim normal, got 'c' dim normal
+row 39 col 99: want ' ' dim normal, got 'r' dim normal
+row 39 col 100: want ' ' dim normal, got 'o' dim normal
+row 39 col 101: want ' ' dim normal, got 'l' dim normal
+row 39 col 102: want ' ' dim normal, got 'l' dim normal
+row 39 col 104: want ' ' dim normal, got 'f' dim normal
+row 39 col 105: want ' ' dim normal, got 'e' dim normal
+row 39 col 106: want ' ' dim normal, got 'e' dim normal
+row 39 col 107: want ' ' dim normal, got 'd' dim normal
+row 39 col 109: want ' ' dim normal, got '·' dim normal
+row 39 col 111: want ' ' dim normal, got 'i' dim normal
+row 39 col 113: want ' ' dim normal, got 't' dim normal
+row 39 col 114: want ' ' dim normal, got 'y' dim normal
+row 39 col 115: want ' ' dim normal, got 'p' dim normal
+row 39 col 116: want ' ' dim normal, got 'e' dim normal
+row 39 col 117: want ' ' dim normal, got ' ' fg normal
+row 39 col 118: want ' ' dim normal, got ' ' fg normal
+row 39 col 119: want ' ' dim normal, got ' ' fg normal

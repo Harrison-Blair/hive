@@ -1,0 +1,6 @@
+[penguin@iceberg verifier131]$ export PATH='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/bin':$PATH HIVE_HOME='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'; cd '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'
+[penguin@iceberg home]$ pi
+pi scratch prompt sink
+> ⬢ user: answer to ask a2 from verify-asker (asker stopped) · Restart → No
+GOT: ⬢ user: answer to ask a2 from verify-asker (asker stopped) · Restart → No
+>

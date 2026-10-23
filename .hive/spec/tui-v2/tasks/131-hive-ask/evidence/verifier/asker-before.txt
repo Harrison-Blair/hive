@@ -1,0 +1,9 @@
+[penguin@iceberg verifier131]$ export PATH='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/bin':$PATH HIVE_HOME='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'; cd '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'; time '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/hive' ask --agent verify-asker --file '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/two.json'
+ask a1 open
+
+real    0m0.012s
+user    0m0.008s
+sys     0m0.001s
+[penguin@iceberg home]$ pi
+pi scratch prompt sink
+>

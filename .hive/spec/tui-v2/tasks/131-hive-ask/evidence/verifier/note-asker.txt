@@ -1,0 +1,37 @@
+[penguin@iceberg verifier131]$ export PATH='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/bin':$PATH HIVE_HOME='/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'; cd '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/home'; time '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/hive' ask --agent verify-asker --file '/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/two.json'
+ask a1 open
+
+real    0m0.012s
+user    0m0.008s
+sys     0m0.001s
+[penguin@iceberg home]$ pi
+pi scratch prompt sink
+> ⬢ user: answer to ask a1 from verify-asker · Scope → Ask card, Header count, Help line · note: no help yet; Order → both together
+GOT: ⬢ user: answer to ask a1 from verify-asker · Scope → Ask card, Header count, Help line · note: no help yet; Order → both together
+> ^C
+[penguin@iceberg home]$ time /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/hive ask --agent verify-asker --file /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/one.json; pi
+ask a2 open
+
+real    0m0.079s
+user    0m0.007s
+sys     0m0.004s
+pi scratch prompt sink
+> ^C
+[penguin@iceberg home]$ time /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/hive ask --agent verify-asker --file /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/one.json; pi
+ask a3 open
+
+real    0m0.015s
+user    0m0.006s
+sys     0m0.005s
+pi scratch prompt sink
+> ⬢ hive: the user dismissed ask a3 from verify-asker · Restart. No answer comes.
+GOT: ⬢ hive: the user dismissed ask a3 from verify-asker · Restart. No answer comes.
+> ^C
+[penguin@iceberg home]$ time /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/hive ask --agent verify-asker --file /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier131/one.json; pi
+ask a4 open
+
+real    0m0.015s
+user    0m0.005s
+sys     0m0.006s
+pi scratch prompt sink
+>
