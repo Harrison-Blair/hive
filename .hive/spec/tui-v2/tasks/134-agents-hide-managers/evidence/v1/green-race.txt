@@ -1,0 +1,802 @@
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.02s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.02s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.03s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	30.771s
