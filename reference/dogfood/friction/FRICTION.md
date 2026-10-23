@@ -23,6 +23,7 @@ For all other files, the coordinator and manager never change a project source f
 | [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
 | [herdr pane send-keys has no page up or page down key name](entries/herdr-send-keys-no-page-keys.md) | Open |  |
 | [A new herdr tab reports 120 columns but its terminal has 119](entries/herdr-terminal-width-mismatch.md) | Open | Use an isolated larger scratch server for live captures |
+| [A scratch harness stub did not override the installed Pi executable](entries/scratch-harness-stub-runs-real-pi.md) | Open | Use the explicit stub executable for scratch delivery checks |
 | [A scratch coordinator fails with agent_name_taken on the live herdr server](entries/coordinator-name-clash-in-scratch-home.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
