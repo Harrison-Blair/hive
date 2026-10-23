@@ -37,4 +37,4 @@
 ╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
 │ > hello█                                                                                                             │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
- [input] enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll
+ [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll
