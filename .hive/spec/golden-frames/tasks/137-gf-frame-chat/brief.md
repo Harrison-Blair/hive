@@ -80,11 +80,13 @@ board shows a state by colour alone, stop and report it.
 | `internal/lib/home/config.go` | AC4, AC6. The `[tui.status]` and `[tui.keys]` tables. |
 | `internal/tui/` | AC3 to AC9. The frame, the status rows, the notice line, the keys, Chat, the interim frame of the other screens, and the Help text. |
 | `internal/tui/component/` | AC3 to AC7. The components of the frame and of Chat. Remove the tab bar and the header when no caller remains. |
+| `.hive/spec/golden-frames/README.md` | AC10. Only the new decision 33 of the ask a18 answer. |
+| `.hive/spec/golden-frames/screens/chat.md` | AC10. Only one line that points to decision 33 from the ask card rules. |
 | `cmd/root_demo_test.go` | AC8. Only to point the demo checks to the new boards. |
 | `cmd/` | Only to pass the config to the TUI, if the wiring needs it. |
 
-Edit no other file. Do not edit `.hive/spec/golden-frames/README.md`, a
-screen file, or a file in `.hive/spec/tui-v2/`.
+Edit no other file. Do not edit `.hive/spec/golden-frames/README.md` or a
+screen file except for AC10. Do not edit a file in `.hive/spec/tui-v2/`.
 
 ## Requirements
 
@@ -174,6 +176,38 @@ screen file, or a file in `.hive/spec/tui-v2/`.
 - The property tests of `tui-v2` decision 46 run on each screen at 79×24,
   80×24, 119×40, and 120×40, with the new frame.
 
+### AC10 The user decisions of ask a18
+
+The user answered ask a18 on 2026-10-23 for the cases of
+`evidence/board-spec-conflicts.md`.
+
+- C1, the board wins. Add decision 33 under a new heading `### Changes after
+  sign-off` at the end of the Decisions section of the README. It gives the
+  status row of each ask board as the board draws it: while the ask card has
+  the focus, the row is the `state` segment, the focus name in `accent` bold,
+  the keys of that focus in `dim`, the `asks` segment when more than one ask is
+  open, and the clock. While an ask is open and the input line has the focus,
+  the row ends with `^r answer the ask` in place of `chords` and `hints`. Take
+  each focus name and each key list from the boards (`ask`, `note`, `review`,
+  and the stopped form). Write it in ASD-STE100. The ratchet stays at 0.
+- C3, C4, C7, the spec wins. Correct the board copies in
+  `.hive/spec/golden-frames/design/` to the spec: the welcome state line of
+  rule 8, the error text of rule 12, `? 1 ask`, `○ idle 5m`, the open event of
+  rule 3, and the `answered` line of rule 6.
+- C2, C5, C6, C9, the worker fixes the copies. Correct the board scripts to
+  the spec rules: no composer thumb when the text does not scroll, the Glamour
+  wrap at 118 cells with no lost space, the transcript thumb ends on the last
+  transcript row while the view follows the end, and no card row that no rule
+  gives.
+- Change only the cells of these cases. Record each changed board in
+  `evidence/board-changes.md`: the case, the rows, and the old and new text.
+  Export the grids again. The `SHA256SUMS` check of V1 then applies only to
+  the unchanged boards. For each changed board, record the old and new hash.
+- The user reviews the changed grids before the landing. Render each changed
+  board before and after its change as HTML or text, side by side, in the
+  evidence.
+- When a new conflict comes up, stop and report it again.
+
 ## Acceptance criteria
 
 | ID | Criterion | Proven by |
@@ -187,6 +221,7 @@ screen file, or a file in `.hive/spec/tui-v2/`.
 | AC7 | Chat follows each rule and state of `chat.md` | V2, V3, V4 |
 | AC8 | The 14 screen boards and the component sheet pass the golden check | V3, V4 |
 | AC9 | The retired grids are listed and the property tests pass | V3 |
+| AC10 | Decision 33 is in the README and the board copies follow ask a18 | V1, V3, V6 |
 
 ## Verification items
 
@@ -214,6 +249,12 @@ screen file, or a file in `.hive/spec/tui-v2/`.
 - Command: `tui-v2` decision 43 for each of the 14 screen boards, with `COLORTERM=truecolor hive --demo FILE --size 120x40` in a herdr pane of that size or larger. Then in the same demo, press each chord, `esc`, `?`, `ctrl+o`, `ctrl+r`, and `ctrl+c` twice, and capture each result.
 - Expected: each capture matches its golden grid with no difference. Each key gives the screen of the spec. Store the captures and the diffs in the evidence. Close each pane that the check made.
 
+### V6 Board changes
+
+- Proves: AC10.
+- Command: `git diff` of each changed board copy against the pinned source file. `go test ./ -run STE -count=1`.
+- Expected: each diff touches only the cells that `evidence/board-changes.md` lists. The ratchet passes.
+
 ### V5 Gate
 
 - Proves: AC1 to AC9.
@@ -234,4 +275,5 @@ The bodies of Work, Friction, Health, Logs, Agents, and the Help layout. The
 ## Changes
 
 - 2026-10-23, manager: C8. Chat has 14 boards, as the Design section gives.
+- 2026-10-23, manager: ask a18 answer. AC10, V6, and two spec files added to the source table.
 - 2026-10-23, manager: C7 scope. The `GfComponents` rows of the wave C components (TaskCard, WaveColumn, Rail, Popup, CheckTile, DensityStrip, SeenBar) are out of scope. The component check of this task covers only the frame and Chat components of the sheet. The test excludes the wave C rows by component region, not by a mask. The evidence lists them as wave C.
