@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+──────────────────────────────────────────────────────━━━━━━━━──────────────────────────────────────────────────────────
+╭─ filter ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ / level:debug proj:hivex█                                                         follow ○  < 2026-10-21 >           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ events · 312 ───────────────────────────────────────────────╮╭─ event 13:10:12 ─────────────────────────────────────╮
+│                                                              ││                                                      │
+│   13:04:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││ {                                                    │
+│   13:05:24 DEBUG task      status read 4-agents-equal-colum… ││   "time": "2026-10-21T13:10:12Z",                    │
+│   13:06:12 DEBUG agent     list · 5 agents                   ││   "level": "DEBUG",                                  │
+│   13:07:00 DEBUG inbox     record read by manager-hive       ││   "msg": "list · 5 agents",                          │
+│   13:07:48 DEBUG supervise scan agents · 5 records           ││   "component": "agent",                              │
+│   13:08:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││   "project_id": "hive",                              │
+│   13:09:24 DEBUG task      status read 4-agents-equal-colum… ││   "agent_id": "manager-hive-g2"                      │
+│ ▶ 13:10:12 DEBUG agent     list · 5 agents                   ││ }                                                    │
+│   13:11:00 DEBUG inbox     record read by manager-hive       ││                                                      │
+│   13:11:48 DEBUG supervise scan agents · 5 records           ││                                                      │
+│   13:12:36 DEBUG herdr     pane.read w58:p6 · 40ms           ││                                                      │
+│   13:13:24 DEBUG task      status read 4-agents-equal-colum… ││                                                      │
+│   13:14:12 DEBUG agent     list · 5 agents                   ││                                                      │
+│   13:15:00 DEBUG inbox     record read by manager-hive       ││                                                      │
+│   13:19:40 DEBUG inbox     record sent to coordinator        ││                                                      │
+│   13:19:40 DEBUG supervise nudge coordinator · inbox 2       ││                                                      │
+│   13:21:02 DEBUG agent     spawn worker t2-worker-1          ││                                                      │
+│   13:21:09 DEBUG herdr     agent.start w5T:p1 · 812ms        ││                                                      │
+│   13:24:51 DEBUG task      status assigned → working         ││                                                      │
+│   13:33:17 DEBUG task      status working → completed        ││                                                      │
+│   13:33:18 DEBUG agent     stop t2-worker-1 · pane closed    ││                                                      │
+│   13:33:40 DEBUG agent     spawn verifier t2-verifier-1      ││                                                      │
+│   13:38:02 WARN  task      verify fail · V4 diff scope       ││                                                      │
+│   13:38:30 DEBUG agent     spawn worker t2-worker-2          ││                                                      │
+│   13:44:12 DEBUG task      status completed → verified       ││                                                      │
+│   13:44:20 DEBUG land      merge task/2 into dev · 0e079272  ││                                                      │
+│   13:44:22 DEBUG land      push dev · 1.9s                   ││                                                      │
+│   13:44:23 DEBUG worktree  remove 2-stale-coordinator-start… ││                                                      │
+│   13:44:25 DEBUG inbox     record sent to coordinator        ┃│                                                      │
+│   13:45:01 DEBUG agent     spawn worker t3-worker-1          ┃│                                                      │
+╰──────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+ [filter] enter apply · esc close                                                                                       

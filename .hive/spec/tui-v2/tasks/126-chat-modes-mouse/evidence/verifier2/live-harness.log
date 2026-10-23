@@ -1,0 +1,13 @@
+The first live run used own pane wW7:p2, 207x57. All 40 board captures passed.
+During the later key sequence, the user window changed to 90x61. The Logs check then showed the expected too-small notice.
+The verifier stopped its demo and closed only tab wW7:t2.
+The verifier started its own named herdr server t126-verifier2-3995380, PID 4078720, protocol 22.
+All final interactive checks use its own pane w1:p1 at 120x40. No live home chat is used.
+A headless server starts at 120x40. Under TERM=vt100, Bubble Tea used 119 columns, which showed the too-small notice.
+The verifier attached an owned client in a 240x70 PTY. The pane is now 206x69, independent of the user window.
+The final key checks and the repeated V5 captures use this pane. The earlier too-small captures are replaced.
+All 57 final key/mouse captures passed in the 206x69 scratch pane.
+Input-mode tab clicks also passed. All four V5 captures were repeated there, with 0 differing cells. Their PNGs were regenerated.
+Cleanup: each demo quit with two ctrl+c presses. The owned pane had only bash in the foreground.
+The owned client exited. The owned scratch server stopped, and its session was deleted.
+The scratch Git worktree was removed. All new scratch files and board PNGs were then removed.

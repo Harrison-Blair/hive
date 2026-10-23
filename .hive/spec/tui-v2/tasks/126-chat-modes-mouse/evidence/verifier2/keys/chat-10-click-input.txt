@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 31 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                                                                                                      │
+│ 13:31  coordinator   The manager reports that wave A of g1 is on track.                                              │
+│                                                                                                                      │
+│ 13:32  you           What is the state of the stale coordinator check?                                               │
+│                                                                                                                      │
+│ 13:33  coordinator   The manager reports that the stale coordinator check is on track.                               │
+│                                                                                                                      │
+│ 13:34  you           What is the state of the restart key?                                                           │
+│                                                                                                                      │
+│ 13:35  coordinator   The manager reports that the restart key is on track.                                           │
+│                                                                                                                      │
+│ 13:36  you           What is the state of the Agents graph columns?                                                  │
+│                                                                                                                      │
+│ 13:37  coordinator   The manager reports that the Agents graph columns is on track.                                  │
+│                                                                                                                      │
+│ 13:38  you           What is the state of the supervisor binary check?                                               │
+│                                                                                                                      │
+│ 13:39  coordinator   The manager reports that the supervisor binary check is on track.                               │
+│                                                                                                                      │
+│ 13:40  you           What is the state of the friction entry for scratch homes?                                      │
+│                                                                                                                      ┃
+│ 13:41  coordinator   The manager reports that the friction entry for scratch homes is on track.                      ┃
+│                                                                                                                      ┃
+│ 14:02  you           I want a tool for you to ask questions, like the native ask tool, but here in hive.             ┃
+│                                                                                                                      ┃
+│ 14:03  coordinator   Interrogate round 1. Who can ask, how the answer gets back, and where the question shows.       ┃
+│                      Reply like "1A, 2A, 3A".                                                                        ┃
+│                                                                                                                      ┃
+│ 14:05  you           A A A                                                                                           ┃
+│                                                                                                                      ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > verify█                                                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              

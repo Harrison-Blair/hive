@@ -1,0 +1,80 @@
+## base-_count_50.jsonl
+TestChatClicksChangeTheMode: fail 50/50; first output: chat_modes_test.go:152: a click on the input did not start input mode
+TestChatCompactFooterShowsTheModes: fail 50/50; first output: chat_modes_test.go:66: compact normal footer = " [feed] i type · pgup/pgdn feed · ctrl+o events · tab region · ?                "
+TestChatInputModeKeys: fail 50/50; first output: chat_modes_test.go:83: footer = " [input] enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region   "
+TestChatModeBoardsMatch: fail 50/50; first output: none
+TestChatNormalModeIsTheDefault: fail 50/50; first output: chat_modes_test.go:50: footer = " [feed] i or type to write · j/k scroll · g/G top/end · ctrl+o open events · tab region · ? help                        "
+TestChatNormalModeLettersStayShortcuts: fail 50/50; first output: chat_modes_test.go:127: x started input mode
+TestChatWheelScrollsTheFeed: fail 50/50; first output: chat_modes_test.go:171: view contains "line-40":
+TestCheckAcceptsTheChatModeBoards: fail 50/50; first output: check_test.go:126: board ChatNormal: not in the spec table
+TestCompactChatFeedShowsTheEarlierNote: fail 50/50; first output: chat_modes_test.go:192: feed title = "╭─ chat ───────────────────────────────────────────────────────────────────────╮"
+TestHeaderShowsTheAskCount: fail 50/50; first output: header_test.go:92: asks 0 at 120 = " hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 ", want suffix "supervisor ● live   ? 0 asks   needs you 0   14:22 "
+TestHeaderShowsTheAskCountOfTheState: fail 50/50; first output: chat_modes_test.go:349: asks 0 at 120: header = " hive  /tmp/TestHeaderShowsTheAskCountOfTheState147… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 ", want suffix "   ? 0 asks   needs you 0   08:00 "
+TestMouseClickOnATabNameOpensTheTab: fail 50/50; first output: chat_modes_test.go:324: width 120: a click on "1 Agents" gave tab 1
+TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen: fail 50/50; first output: chat_modes_test.go:274: a click on 3 Work gave tab 5
+TestMouseClickSelectsAListRow: fail 50/50; first output: chat_modes_test.go:294: selected row = 10, want 7
+TestMouseWheelOverTheAgentsGraphDoesNothing: pass 50/50; first output: none
+TestMouseWheelScrollsTheListUnderThePointer: fail 50/50; first output: chat_modes_test.go:218: selected row after wheel down = 10, want 11
+TestMouseWheelScrollsTheLogsEvents: fail 50/50; first output: chat_modes_test.go:244: selected row = 30, want 29
+TestMouseWheelWorksWhileTheLogsFilterIsOpen: fail 50/50; first output: chat_modes_test.go:261: selected row = 30, want 31
+TestViewTurnsOnMouseReports: fail 50/50; first output: chat_modes_test.go:359: mouse mode = 0, want cell motion
+## base-_race__count_50.jsonl
+TestChatClicksChangeTheMode: fail 50/50; first output: chat_modes_test.go:152: a click on the input did not start input mode
+TestChatCompactFooterShowsTheModes: fail 50/50; first output: chat_modes_test.go:66: compact normal footer = " [feed] i type · pgup/pgdn feed · ctrl+o events · tab region · ?                "
+TestChatInputModeKeys: fail 50/50; first output: chat_modes_test.go:83: footer = " [input] enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region   "
+TestChatModeBoardsMatch: fail 50/50; first output: none
+TestChatNormalModeIsTheDefault: fail 50/50; first output: chat_modes_test.go:50: footer = " [feed] i or type to write · j/k scroll · g/G top/end · ctrl+o open events · tab region · ? help                        "
+TestChatNormalModeLettersStayShortcuts: fail 50/50; first output: chat_modes_test.go:127: x started input mode
+TestChatWheelScrollsTheFeed: fail 50/50; first output: chat_modes_test.go:171: view contains "line-40":
+TestCheckAcceptsTheChatModeBoards: fail 50/50; first output: check_test.go:126: board ChatNormal: not in the spec table
+TestCompactChatFeedShowsTheEarlierNote: fail 50/50; first output: chat_modes_test.go:192: feed title = "╭─ chat ───────────────────────────────────────────────────────────────────────╮"
+TestHeaderShowsTheAskCount: fail 50/50; first output: header_test.go:92: asks 0 at 120 = " hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 ", want suffix "supervisor ● live   ? 0 asks   needs you 0   14:22 "
+TestHeaderShowsTheAskCountOfTheState: fail 50/50; first output: chat_modes_test.go:349: asks 0 at 120: header = " hive  /tmp/TestHeaderShowsTheAskCountOfTheState177… coordinator ○ stopped   supervisor ○ stopped   needs you 0   08:00 ", want suffix "   ? 0 asks   needs you 0   08:00 "
+TestMouseClickOnATabNameOpensTheTab: fail 50/50; first output: chat_modes_test.go:324: width 120: a click on "1 Agents" gave tab 1
+TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen: fail 50/50; first output: chat_modes_test.go:274: a click on 3 Work gave tab 5
+TestMouseClickSelectsAListRow: fail 50/50; first output: chat_modes_test.go:294: selected row = 10, want 7
+TestMouseWheelOverTheAgentsGraphDoesNothing: pass 50/50; first output: none
+TestMouseWheelScrollsTheListUnderThePointer: fail 50/50; first output: chat_modes_test.go:218: selected row after wheel down = 10, want 11
+TestMouseWheelScrollsTheLogsEvents: fail 50/50; first output: chat_modes_test.go:244: selected row = 30, want 29
+TestMouseWheelWorksWhileTheLogsFilterIsOpen: fail 50/50; first output: chat_modes_test.go:261: selected row = 30, want 31
+TestViewTurnsOnMouseReports: fail 50/50; first output: chat_modes_test.go:359: mouse mode = 0, want cell motion
+## green-_count_50.jsonl
+TestChatClicksChangeTheMode: pass 50/50; first output: none
+TestChatCompactFooterShowsTheModes: pass 50/50; first output: none
+TestChatInputModeKeys: pass 50/50; first output: none
+TestChatModeBoardsMatch: pass 50/50; first output: none
+TestChatNormalModeIsTheDefault: pass 50/50; first output: none
+TestChatNormalModeLettersStayShortcuts: pass 50/50; first output: none
+TestChatWheelScrollsTheFeed: pass 50/50; first output: none
+TestCheckAcceptsTheChatModeBoards: pass 50/50; first output: none
+TestCompactChatFeedShowsTheEarlierNote: pass 50/50; first output: none
+TestHeaderShowsTheAskCount: pass 50/50; first output: none
+TestHeaderShowsTheAskCountOfTheState: pass 50/50; first output: none
+TestMouseClickOnATabNameOpensTheTab: pass 50/50; first output: none
+TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen: pass 50/50; first output: none
+TestMouseClickSelectsAListRow: pass 50/50; first output: none
+TestMouseWheelOverTheAgentsGraphDoesNothing: pass 50/50; first output: none
+TestMouseWheelScrollsTheListUnderThePointer: pass 50/50; first output: none
+TestMouseWheelScrollsTheLogsEvents: pass 50/50; first output: none
+TestMouseWheelWorksWhileTheLogsFilterIsOpen: pass 50/50; first output: none
+TestViewTurnsOnMouseReports: pass 50/50; first output: none
+## green-_race__count_50.jsonl
+TestChatClicksChangeTheMode: pass 50/50; first output: none
+TestChatCompactFooterShowsTheModes: pass 50/50; first output: none
+TestChatInputModeKeys: pass 50/50; first output: none
+TestChatModeBoardsMatch: pass 50/50; first output: none
+TestChatNormalModeIsTheDefault: pass 50/50; first output: none
+TestChatNormalModeLettersStayShortcuts: pass 50/50; first output: none
+TestChatWheelScrollsTheFeed: pass 50/50; first output: none
+TestCheckAcceptsTheChatModeBoards: pass 50/50; first output: none
+TestCompactChatFeedShowsTheEarlierNote: pass 50/50; first output: none
+TestHeaderShowsTheAskCount: pass 50/50; first output: none
+TestHeaderShowsTheAskCountOfTheState: pass 50/50; first output: none
+TestMouseClickOnATabNameOpensTheTab: pass 50/50; first output: none
+TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen: pass 50/50; first output: none
+TestMouseClickSelectsAListRow: pass 50/50; first output: none
+TestMouseWheelOverTheAgentsGraphDoesNothing: pass 50/50; first output: none
+TestMouseWheelScrollsTheListUnderThePointer: pass 50/50; first output: none
+TestMouseWheelScrollsTheLogsEvents: pass 50/50; first output: none
+TestMouseWheelWorksWhileTheLogsFilterIsOpen: pass 50/50; first output: none
+TestViewTurnsOnMouseReports: pass 50/50; first output: none

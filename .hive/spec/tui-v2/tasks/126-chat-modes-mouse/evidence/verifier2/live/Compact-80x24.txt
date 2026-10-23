@@ -1,0 +1,24 @@
+ hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs 
+───────────────────━━━━━━━━─────────────────────────────────────────────────────
+  Goals    Queue   [Tasks]                                      list › details
+╭─ 3-tui-restart · esc back ───────────────────────────────────────────────────╮
+│ status    landed                                                             ┃
+│ goal      g1-tui-restart · wave B                                            ┃
+│ verifier  t3-verifier-1 · pass                                               ┃
+│ merge     3ccd93fb on dev                                                    ┃
+│                                                                              ┃
+│ ACCEPTANCE                                                                   ┃
+│ ✓ AC1 r restarts a coordinator or supervisor, confirms only when live        ┃
+│ ✓ AC2 coordinator restart closes only a pane that hive started               ┃
+│ ✓ AC3 supervisor restart runs hive supervise in a new tab                    ┃
+│ ✓ AC4 old records get stale or stopped, stay on disk, h hides them           ┃
+│ ✓ AC5 header shows old and r to restart for an old supervisor                ┃
+│ ✓ AC6 coordinator start waits for herdr readiness                            ┃
+│                                                                              ┃
+│ EVIDENCE                                                                     ┃
+│ b brief.md    v VERIFIED.md   d deps graph                                   ┃
+│                                                                              │
+│ ↓ 2 more lines                                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [details] ↑↓ scroll · esc back to list · b brief · v verified · d deps         
