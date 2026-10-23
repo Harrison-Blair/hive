@@ -75,6 +75,12 @@ not choose. Row and column numbers are 0-based.
   `▾` row with no text and the text from column 1.
 - Row 45: `? manager-hive 14:21  asked · Model · answered 14:23 · Yes, restart now`.
   Rule 6 gives a line from `you`: `answered ASKER · HEADER → PICKS`.
+- Row 8, the 80-column example: the `chords` segment is cut inside the
+  segment (`^g agents  ^t work` then the clock). Decision 10 removes whole
+  segments from the right.
+- Bold: on row 7 the state glyph and the `●` of `supervisor` are bold. On
+  rows 8 and 9 the `●` of `supervisor` is not bold. On the Chat boards
+  (row 39) both glyphs are bold. Decision 11 gives no bold for a glyph.
 - Row 41: the text `[tui.status].` touches the legend `?  ask` with no gap.
 - Rows 47 to 65 (TaskCard, WaveColumn, Rail, Popup, CheckTile,
   DensityStrip, SeenBar) are components of the wave C screen bodies, which the
