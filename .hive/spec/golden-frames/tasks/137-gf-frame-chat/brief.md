@@ -14,7 +14,7 @@
 This task builds the frame of the restyled TUI and the Chat screen. Bare
 `hive` opens Chat. No screen has a header row or a tab bar. A chord opens each
 other screen. The task adds the status rows, the notice line, the key map, and
-the `error` palette token. Chat matches its 13 boards cell for cell.
+the `error` palette token. Chat matches its 14 boards cell for cell.
 
 The spec is `.hive/spec/golden-frames/README.md` and
 `.hive/spec/golden-frames/screens/chat.md`. The spec is the authority for each
@@ -233,4 +233,5 @@ The bodies of Work, Friction, Health, Logs, Agents, and the Help layout. The
 
 ## Changes
 
-None.
+- 2026-10-23, manager: C8. Chat has 14 boards, as the Design section gives.
+- 2026-10-23, manager: C7 scope. The `GfComponents` rows of the wave C components (TaskCard, WaveColumn, Rail, Popup, CheckTile, DensityStrip, SeenBar) are out of scope. The component check of this task covers only the frame and Chat components of the sheet. The test excludes the wave C rows by component region, not by a mask. The evidence lists them as wave C.
