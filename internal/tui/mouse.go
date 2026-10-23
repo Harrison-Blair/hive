@@ -100,7 +100,7 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 
 // click handles a left click at x, y.
 func (m *Model) click(x, y int) tea.Cmd {
-	if y == 1 && !m.helpOpen && !(m.activeTab() == tabAgents && m.popupOpen) {
+	if y == 1 && !m.helpOpen && (m.activeTab() != tabAgents || !m.popupOpen) {
 		if tab, ok := (component.TabBar{}).TabAt(x, m.width); ok {
 			return m.openTab(tab)
 		}
