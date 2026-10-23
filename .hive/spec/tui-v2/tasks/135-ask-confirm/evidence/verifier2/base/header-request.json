@@ -1,0 +1,18 @@
+{
+  "questions": [
+    {
+      "question": "Which label?",
+      "header": "Head\nTail",
+      "options": [
+        {
+          "label": "Yes",
+          "description": "one"
+        },
+        {
+          "label": "No",
+          "description": "two"
+        }
+      ]
+    }
+  ]
+}

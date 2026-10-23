@@ -1,0 +1,18 @@
+{
+  "questions": [
+    {
+      "question": "Which label?",
+      "header": "Model",
+      "options": [
+        {
+          "label": "First line\nSecond line",
+          "description": "one"
+        },
+        {
+          "label": "No",
+          "description": "two"
+        }
+      ]
+    }
+  ]
+}

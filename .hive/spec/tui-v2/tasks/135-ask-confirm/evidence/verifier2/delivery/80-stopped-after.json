@@ -1,0 +1,61 @@
+{
+  "id": "a5",
+  "asker": "asker-scratch",
+  "asker_key": "asker-scratch",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T17:09:14.596536003Z",
+  "questions": [
+    {
+      "question": "Which parts?",
+      "header": "Scope",
+      "options": [
+        {
+          "label": "Ask card",
+          "description": "card"
+        },
+        {
+          "label": "Help line",
+          "description": "help"
+        },
+        {
+          "label": "Header count",
+          "description": "count"
+        }
+      ],
+      "multiSelect": true
+    },
+    {
+      "question": "Which order?",
+      "header": "Order",
+      "options": [
+        {
+          "label": "Card first",
+          "description": "card"
+        },
+        {
+          "label": "Help first",
+          "description": "help"
+        }
+      ]
+    }
+  ],
+  "state": "answered",
+  "replies": [
+    {
+      "picks": [
+        1
+      ],
+      "note": "parent path"
+    },
+    {
+      "picks": [
+        2
+      ]
+    }
+  ],
+  "closed_at": "2026-10-23T17:09:21.506219944Z",
+  "delivered_at": "2026-10-23T17:09:21.807296312Z",
+  "delivered_to": "parent-scratch",
+  "attempts": 1
+}

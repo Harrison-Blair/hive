@@ -1,0 +1,40 @@
+ hive  /tmp/hv135-reverify/home            coordinator ○ stopped   supervisor ○ stopped   ? 1 ask   needs you 0   13:08 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 13:08  asker-scratch ? asked · Scope · Order                                                                         │
+│ 13:08  you           answered asker-scratch · Scope → 2 Help line, 3 Header count; Order → Next release · note: ke…  │
+│ 13:08  asker-scratch ? asked · Scope · Order · asker stopped · open below                                            │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to parent-scratch ━┓
+┃   Scope → Ask card · note: parent path                                                                               ┃
+┃   Order → Help first                                                                                                 ┃
+┃                                                                                                                      ┃
+┃ › Send to parent-scratch                                                                                             ┃
+┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter send to parent · x dismiss · J/K next/prev card                                           

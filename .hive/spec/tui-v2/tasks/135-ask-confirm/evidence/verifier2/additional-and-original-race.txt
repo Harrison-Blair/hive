@@ -1,0 +1,14 @@
+=== RUN   TestVerifierMultilineReviewFieldsAndReplies
+=== RUN   TestVerifierMultilineReviewFieldsAndReplies/120
+=== RUN   TestVerifierMultilineReviewFieldsAndReplies/80
+--- PASS: TestVerifierMultilineReviewFieldsAndReplies (0.05s)
+    --- PASS: TestVerifierMultilineReviewFieldsAndReplies/120 (0.03s)
+    --- PASS: TestVerifierMultilineReviewFieldsAndReplies/80 (0.02s)
+=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock
+=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock/120
+=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock/80
+--- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock (0.01s)
+    --- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock/120 (0.01s)
+    --- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock/80 (0.01s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	1.134s

@@ -1,0 +1,38 @@
+from live import *
+ev=E/'base';pane=json.loads((S/'home/.hive/state/agents/asker-scratch.json').read_text())['pane_id']
+for kind in ['label','header','stopped']:
+ request={'questions':[{'question':'Which label?','header':'Head\nTail' if kind=='header' else 'Model','options':[{'label':'First line\nSecond line' if kind=='label' else 'Yes','description':'one'},{'label':'No','description':'two'}]}]}
+ f=S/f'{kind}-base.json';f.write_text(json.dumps(request));(ev/f'{kind}-request.json').write_text(json.dumps(request,indent=2))
+ path=S/'home/.hive/state/agents/asker-scratch.json';a=json.loads(path.read_text());a['status']='live';path.write_text(json.dumps(a))
+ process=rpc('pane.process_info',{'pane_id':pane})
+ for proc in process['process_info']['foreground_processes']:
+  if proc.get('name')=='pi':assert os.readlink(f'/proc/{proc["pid"]}/exe')==str(S/'bin/pi')
+ before=set((S/'home/.hive/state/asks').glob('*.json'))
+ rpc('pane.send_input',{'pane_id':pane,'text':f'/ask {f}','keys':['enter']})
+ for _ in range(80):
+  added=set((S/'home/.hive/state/asks').glob('*.json'))-before
+  if added:break
+  time.sleep(.1)
+ assert len(added)==1;record=added.pop();(ev/f'{kind}-accepted-record.json').write_text(record.read_text())
+ if kind=='stopped':a['status']='stopped';path.write_text(json.dumps(a))
+ for w,h in [(120,40),(80,24)]:
+  for version in ['dev','task']:
+   start(None,w,h,S/'bin'/('hive-dev' if version=='dev' else 'hive'))
+   s=cap(f'base/live/{version}-{kind}-{w}-editor',w,h)
+   if ' [ask]' not in s:keys('2');s=cap(f'base/live/{version}-{kind}-{w}-editor',w,h)
+   if version=='task':
+    text('1');s=cap(f'base/live/task-{kind}-{w}-review',w,h)
+   stop()
+ record.unlink()
+ print(kind,'both versions, both widths captured',flush=True)
+# Live multiline Other and note review using demo's accepted draft values.
+design=ROOT/'.hive/spec/tui-v2/design/ChatAskReviewMulti.fixture.json'
+for w,h in [(120,40),(80,24)]:
+ j=json.loads(design.read_text());j['terminal']={'width':w,'height':h}
+ j['ui']['ask']['notes']=['note one\nnote two','tail note one\ntail note two'];j['ui']['ask']['other']=['other one\nother two','']
+ j['data']['asks'][0]['questions'][0]['options'][0]['label']='First line\nSecond line'
+ f=E/f'multiline/OtherNote-{w}.fixture.json';f.write_text(json.dumps(j,indent=2))
+ start(f,w,h);cap(f'multiline/OtherNote-{w}-review',w,h)
+ for i in range(5):keys('Up');cap(f'multiline/OtherNote-{w}-up-{i}',w,h)
+ for i in range(5):keys('Down');cap(f'multiline/OtherNote-{w}-down-{i}',w,h)
+ stop();print('multiline Other/note',w,'captured',flush=True)

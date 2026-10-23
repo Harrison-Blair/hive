@@ -1,0 +1,10 @@
+short 120x40: 11 captures, borders intact, dock <= 20 rows, frame fits, no cut. All expected text visible.
+short 80x24: 11 captures, borders intact, dock <= 12 rows, frame fits, no cut. All expected text visible.
+tall 120x40: 11 captures, borders intact, dock <= 20 rows, frame fits, no cut. ROW01 to ROW30 and FINAL-LABEL-SENTINEL reached with arrows.
+tall 80x24: 11 captures, borders intact, dock <= 12 rows, frame fits, no cut. ROW01 to ROW30 and FINAL-LABEL-SENTINEL reached with arrows.
+OtherNote 120x40: 11 captures, borders intact, dock <= 20 rows, frame fits, no cut. All expected text visible.
+OtherNote 80x24: 11 captures, borders intact, dock <= 12 rows, frame fits, no cut. All expected text visible.
+dev 120: multiline label breaks 2 editor body borders; newline header breaks feed/title physical rows.
+dev 80: multiline label breaks 2 editor body borders; newline header breaks feed/title physical rows.
+task 120: multiline label breaks 2 editor body borders; newline header breaks feed/title physical rows.
+task 80: multiline label breaks 2 editor body borders; newline header breaks feed/title physical rows.

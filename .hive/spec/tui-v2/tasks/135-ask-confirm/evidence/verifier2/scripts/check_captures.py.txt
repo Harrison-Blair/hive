@@ -1,0 +1,42 @@
+from live import *
+from collections import defaultdict
+folder=E/'multiline';results=[]
+for case in ['short','tall','OtherNote']:
+ for w,h in [(120,40),(80,24)]:
+  paths=list(folder.glob(f'{case}-{w}-*.txt'))
+  paths=[p for p in paths if 'editor' not in p.name]
+  assert paths,(case,w)
+  seen=set();first=False
+  for p in sorted(paths):
+   lines=p.read_text().splitlines();assert len(lines)==h,(p,len(lines))
+   assert all(len(line)<=w for line in lines),(p,'line width')
+   start=next(i for i,l in enumerate(lines) if l.startswith('┏'))
+   end=next(i for i,l in enumerate(lines) if i>start and l.startswith('┗'))
+   assert end-start+1<=h//2,(p,'dock overflow')
+   assert ' [review]' in lines[-1],p
+   for line in lines[start+1:end]:
+    assert line.startswith('┃') and line.endswith('┃'),(p,line)
+    assert '…' not in line,(p,'cut row')
+    seen.update(line.strip('┃ ›').split())
+   if '› Label → ROW01' in '\n'.join(lines):first=True
+  if case=='tall':
+   assert {f'ROW{i:02}' for i in range(1,31)}|{'FINAL-LABEL-SENTINEL'}<=seen,(w,seen)
+   assert first,(w,'first line not highlighted')
+  if case=='short':assert {'First','line','Second'}<=seen
+  if case=='OtherNote':
+   for p in paths:
+    s=p.read_text()
+    for text in ['Second line, Click to focus, other one','other two · note: note one','note two','tail note one','tail note two']:
+     assert text in s,(p,text)
+  results.append(f'{case} {w}x{h}: {len(paths)} captures, borders intact, dock <= {h//2} rows, frame fits, no cut. '+('ROW01 to ROW30 and FINAL-LABEL-SENTINEL reached with arrows.' if case=='tall' else 'All expected text visible.'))
+(E/'multiline-check.txt').write_text('\n'.join(results)+'\n');print('\n'.join(results))
+# Base editor captures differ only in intended review hints. Record the actual failed properties independently.
+for version in ['dev','task']:
+ for w in [120,80]:
+  label=(E/f'base/live/{version}-label-{w}-editor.txt').read_text()
+  rows=label.splitlines();a=next(i for i,l in enumerate(rows) if l.startswith('┏'));b=next(i for i,l in enumerate(rows) if i>a and l.startswith('┗'))
+  broken=[l for l in rows[a+1:b] if not (l.startswith('┃') and l.endswith('┃'))]
+  assert broken,(version,w,'expected pre-existing broken label borders')
+  header=(E/f'base/live/{version}-header-{w}-editor.txt').read_text()
+  assert any('Tail' in l and not l.startswith(('│','┃')) for l in header.splitlines())
+  print(f'{version} {w}: multiline label breaks {len(broken)} editor body borders; newline header breaks feed/title physical rows.')

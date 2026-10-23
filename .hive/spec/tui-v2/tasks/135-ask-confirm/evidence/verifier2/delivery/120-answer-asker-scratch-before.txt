@@ -1,0 +1,4 @@
+sh-5.3$ pi asker-scratch
+STUB_READY name=asker-scratch executable=/tmp/hv135-reverify/bin/pi pid=383601
+/ask /tmp/hv135-reverify/ask.json
+ask a1 open

@@ -1,288 +1,331 @@
-# Task 135: independent verification — fail
+# Task 135: second independent verification — fail
 
-Verifier: `t135-verifier-1`. Date: 2026-10-23.
-Checked worker commit: `d19709738bd393d4db823446110f2846fefc6e6f`.
-Base: `25f544e3`. Current `origin/dev`: `981e21de`.
+Verifier: `t135-verifier-2`. Date: 2026-10-23.
+Worker commit: `935bc91b`. Multiline fix: `cc4c170a`.
+Current `origin/dev`: `981e21de`. Original task base: `25f544e3`.
 Approval: coordinator record 554, package `6c466dc6`, user chats `c208` and `c209`.
-The approval includes Send after an edit and arrow paging through a tall row.
 
-**Verdict: fail. V3/AC2 fails for accepted multi-line option labels.**
-The approved grids, required interaction sequences, delivery checks, and gate pass.
-No product source, worker evidence, design file, or golden grid changed during this verification.
+**Verdict: fail. V3 loses part of the required review title at 80x24 for a stopped asker.**
+The multiline review fix passes. V1, V2, V4, and V5 pass.
+The manager accepted the title finding as within V3 and decision 114.
 
+The first failed report is preserved, byte for byte, in `verifier2/first-failed-VERIFIED.md`.
+It equals the report at commit `008e9d2d`.
+The first `verifier/` folder and the worker evidence remain unchanged.
 All paths below are relative to this evidence folder.
-New run output, captures, and scratch script copies are in `verifier/`.
+This verification changes no product source, design source, golden grid, fixture in `design/`, or worker report.
 
 ## Verification items
 
-| Item | Result | Independent run and observation |
+| Item | Result | Independent result |
 | --- | --- | --- |
-| V1 Tests red and green | pass | All 16 task tests ran against the base. Fourteen fail. Two retained guards pass. Nine deliberate breaks fail their target tests. The focused tests pass with `-count=50` and `-race`. |
-| V2 Approved boards and grids | pass | All 50 exports equal their committed grids. All 9 installed grids equal the approval snapshot. The 3 new fixtures equal their approval snapshots. No mask. All board and golden tests pass. |
-| V3 Live behavior and visual check | fail | The 16 initial captures equal their grids. Required keys and flows pass at both widths. Accepted multi-line labels break review borders. A tall multi-line label loses text and exceeds the dock height cap. |
-| V4 End-to-end delivery | pass | Six normal-mode runs pass: answer, stopped asker, and dismiss at both widths. I checked executable identity and stub output before any test prompt. |
-| V5 Scope, gate, cleanup | pass | The branch contains current `origin/dev`. Only named files change. All five gate commands pass. I removed all scratch resources. |
+| V1 Tests red and green | pass | The 18 task tests run on the base. Sixteen fail for missing review behavior. Two retained guards pass. Nine deliberate breaks detect failures. Both rework tests fail before the fix. Focused tests pass with `-count=50` and `-race`. The original verifier regression passes after the fix. |
+| V2 Approved boards and grids | pass | All 50 exports equal their committed grids through `internal/lib/cellgrid`. All 9 installed approval grids equal package `6c466dc6`. All 3 new fixtures equal their approval files. No mask. Board and golden tests pass. |
+| V3 Live behavior and visual check | fail | All 16 initial captures equal their grids. Required interaction sequences and multiline review checks pass at both sizes. The compact stopped review shows `confi`, not the required `confirm`. |
+| V4 End-to-end delivery | pass | Six normal-mode cases pass: answer, stopped asker, and dismiss at both sizes. Before each setup, the recipient executables equal the compiled scratch stub. Records and delivered prompts match literal expected values. |
+| V5 Scope, gate, and cleanup | pass | Current `origin/dev` is included. Only named files change. The full gate passes. All scratch processes, panes, homes, binaries, profiles, and source copies are removed. |
 
-## Blocking finding: multi-line labels break the review
+## Blocking finding: compact stopped-review title overlap
 
-### Accepted input
+### Reproduction
 
-`verifier/multiline/short-request.json` contains this exact request:
+1. Use an 80x24 scratch TUI.
+2. Create an ask from `asker-scratch`, whose live parent is `parent-scratch`.
+3. Set the asker record to `stopped`.
+4. Complete the last question to open review.
 
-```json
-{
-  "questions": [
-    {
-      "question": "Which label?",
-      "header": "Label",
-      "options": [
-        {"label": "First line\nSecond line", "description": "a valid multiline label"},
-        {"label": "No", "description": "no"}
-      ]
-    }
-  ]
-}
+Expected, from the Design section and decision 114:
+
+```text
+? asker-scratch asks · confirm
 ```
 
-The scratch agent ran `hive ask` with this file.
-Hive accepted it and wrote open record `a14`.
-`verifier/multiline/short-accepted-record.json` preserves that record.
-`verifier/multiline/asker-scratch-creation-pane.txt` preserves the command output.
-The regression also checks that `ask.Parse` accepts the request.
+Actual top border:
 
-### Reproduction and difference
+```text
+┏━ ? asker-scratch asks · confi asker stopped · answer goes to parent-scratch ━┓
+```
 
-1. Create the ask from the scratch agent pane.
-2. Open the normal TUI at 120x40 or 80x24.
-3. Press `1` to pick the first option and open review.
-4. Read the review body borders.
-
-Expected: the full label stays inside the dock, with a left and right border on each body row.
-Actual: the first text row has no right border.
-The continuation row has no left border.
-This failure occurs at both widths.
+The stopped-asker note overwrites `rm`. Both names are valid agent names.
+The route note, Send row, footer, and actual parent delivery remain correct.
+The required full state title does not remain visible.
 
 Evidence:
 
-- `verifier/multiline/short-120-02-review.{ansi,txt,png}`
-- `verifier/multiline/short-80-02-review.{ansi,txt,png}`
-- `verifier/multiline-regression.go.txt`: the complete independent regression source.
-- `verifier/multiline-regression.txt`: both subtests fail on the delivered code.
+- `verifier2/delivery/80-stopped-02-review.{ansi,txt,png}`: normal TUI, real scratch ask, and live parent.
+- `verifier2/base/live/task-stopped-80-review.{ansi,txt,png}`: a separate normal-mode reproduction.
+- `verifier2/compact-stopped-title-regression.txt`: the independent model regression fails on the task implementation.
+- `verifier2/scripts/additional_test.go.txt`: complete regression source.
 
-Exact regression command, from the scratch source copy:
+Regression command, in the isolated task source copy:
 
 ```sh
-go test ./internal/tui -count=1 -v -run '^TestVerifierReviewKeepsMultilineLabelInsideDock$'
+go test ./internal/tui -count=1 -v -run '^TestVerifierCompactStoppedReviewTitle$'
 ```
 
-Both failures report `review body has a broken border`.
-I removed the source copy after the run.
-The durable regression source remains in evidence.
+It fails with `view does not contain "? asker-scratch asks · confirm"`.
+The 120x40 stopped review keeps the full title.
 
-A second accepted request has 30 lines and `FINAL-LABEL-SENTINEL` in its label.
-`verifier/multiline/tall-request.json` preserves the exact request.
-At both widths, the review draws broken rows and truncates text with `…`.
-The sentinel never shows in review or after five up and five down presses.
-At 80x24, the Send row and the message panel disappear from the captured screen.
-The review body exceeds the half-screen dock cap.
-See `verifier/multiline/tall-*-result.txt` and the associated captures.
+The cause is the top-border overlay in `internal/tui/ask.go`, in `askDockView`.
+The right note is placed without reserving space for the review title.
+Current `dev` has the same overlay helper, but has no review state.
+Its compact stopped editor fits the complete header `Model`.
+The task adds the longer `confirm` state and loses part of that word.
+Thus the new review state fails its design requirement.
+This finding does not require a change to the existing approved boards.
+Preserve the stopped-asker route information when correcting this state.
 
-Source locations: `internal/tui/ask.go:708`, `:777`, and `:787`.
-`styledWords` splits only at spaces.
-Embedded line feeds remain inside a logical review line.
-The dock counts logical lines, while the panel renders the embedded line feeds as physical rows.
-
-This finding concerns V3/AC2 full review text, wrapping, scrolling, and the retained dock cap.
-The manager accepted the finding and requested a rendering fix under the existing approval.
-The fix needs no new user design decision.
-Do not reject this accepted input or change the answer prompt format to address the finding.
-
-## V1 details
+## V1: independent red and green runs
 
 Commands:
 
 ```sh
-# Base source copy, with the final test file and review fixtures copied into it:
+# Base 25f544e3, with final task tests, review fixtures, and accepted requests copied in:
 go test ./internal/tui -count=1 -v -run 'TestAskReview|TestAskEachCompletionPathOpensTheReview|TestDemoFixtureShowsTheReview'
-# Delivered implementation:
+# Task implementation, from the worktree root:
 go test ./internal/tui -count=50 -run 'TestAsk|TestHelp|TestDemoFixtureShowsTheReview|TestEachBoardFixtureLoadsAtItsSpecSize'
 go test ./internal/tui -race -count=1 -v -run 'TestAsk|TestHelp|TestDemoFixtureShowsTheReview|TestEachBoardFixtureLoadsAtItsSpecSize'
+# Pre-rework source, with final tests:
+go test ./internal/tui -count=1 -v -run '^TestAskReview(KeepsMultilineTextInsideTheDock|ReachesEachLineOfATallLabel)$'
+# Original independent regression, before and after the fix:
+go test ./internal/tui -count=1 -v -run '^TestVerifierReviewKeepsMultilineLabelInsideDock$'
 ```
 
-Logs: `verifier/red-base.txt`, `green-count50.txt`, and `green-race.txt`.
-Base failures show immediate delivery instead of review, missing review rows, or unsupported fixture focus.
-The two base passes retain the empty-Other check and the blocked-caller check.
+Logs: `verifier2/red-base.txt`, `green-count50.txt`, `green-race.txt`, `rework-red.txt`,
+`original-and-additional-red.txt`, `original-regression-green.txt`, and `additional-and-original-race.txt`.
+The red runs fail for behavior, without a build failure.
+The two base passes retain the empty-Other and blocked-caller guards.
 
-`verifier/mutations.txt` records nine detected breaks:
-empty Other, blocked caller, review digit, card draft, refresh draft, edit return,
-truncated row, frame keys, and tall-row paging.
-Each break ran in a scratch source copy.
-Each target failed for behavior, with no build failure.
-I restored the source after each break.
-`verifier/scripts/mutations.py.txt` preserves the exact replacements.
+`verifier2/mutations.txt` records nine detected breaks:
+empty Other, blocked caller, review digits, card draft, refreshed draft, return from edit,
+truncated review row, frame keys, and tall-row paging.
+The complete replacements are in `verifier2/scripts/mutations.py.txt`.
+`verifier2/linefeed-mutation.txt` detects removal of the new line-feed boundary handling.
+All deliberate breaks run in an isolated source copy. The source is restored after each run.
 
-The additional multi-line regression fails under V3. It exposes a gap in the task tests.
+### Multiline rework checks
+
+At 120x40 and 80x24, I independently check:
+
+- The original accepted short label `First line\nSecond line`.
+- The original accepted 31-line label, including `ROW01` through `ROW30` and `FINAL-LABEL-SENTINEL`.
+- Multiline Other text and multiline `note` values.
+- A multiline header and a blank line inside a picked label, within the review body.
+- Both dock borders, the half-screen cap, full text, arrow access, and unchanged reply values.
+
+The original regression fails before the fix and passes after it.
+The added field/reply test also fails before the fix and passes after it, including under `-race`.
+Removing the new boundary handling makes the added field/reply test fail.
+
+Literal expected reply in the added test:
+
+```json
+[{"picks":[1,3],"other":"other one\nother two","note":"note one\nnote two"}]
+```
+
+The original request and the delivered reply keep their line feeds.
+The test uses the actual TUI state and answer path. It replaces only the external answer operation.
+See `verifier2/additional-multiline-green.txt` and `scripts/additional_test.go.txt`.
 
 ### Changed existing expectations
 
-I checked the test diff and the approval against each change.
-The diff removes or skips no existing test.
+I checked each change against decisions 113 to 119 and approval `6c466dc6`.
+`verifier2/changed-expectations.diff.txt` preserves the exact test diff.
+No existing test is removed, skipped, or weakened.
 
-| Test | Approved cause |
+| Existing test | Approved cause |
 | --- | --- |
 | `TestAskBoardsMatch` | Add the three approved review boards. |
-| `TestAskCardHasTheFocusInNormalMode` | Replace send hints with review hints. |
-| `TestAskTwoQuestionsWithMarksAndANote` | Review hint, `enter keep note` hint, and one additional Send press. |
-| `TestAskOtherOpensATextLine` | Keep-answer hint and one additional Send press. |
-| `TestAskStoppedAskerShowsTheParent` | Review-for-parent hints and one additional Send press. |
-| `TestAskArrowsAndEnterPickTheCurrentOption` | One additional Send press. |
+| `TestAskCardHasTheFocusInNormalMode` | Change send hints to review hints. |
+| `TestAskTwoQuestionsWithMarksAndANote` | Review and keep-note hints, then one additional Send press. |
 | `TestAskDigitPicksAndSendsASingleQuestion` | One additional Send press. |
+| `TestAskArrowsAndEnterPickTheCurrentOption` | One additional Send press. |
 | `TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption` | One additional Send press. |
-| `TestAskMouseFocusesAndScrolls` | A click opens review before Send. |
 | `TestAskNoteTabDropsAndCtrlBracketKeeps` | One additional Send press. |
+| `TestAskOtherOpensATextLine` | Keep-answer hint and one additional Send press. |
+| `TestAskStoppedAskerShowsTheParent` | Review-for-parent hints. The route check stays. |
+| `TestAskMouseFocusesAndScrolls` | A click opens review before Send. |
 | `TestAskOtherInAMultiSelectQuestion` | One additional Send press. |
 | `TestDemoBlocksTheAnswer` | One additional Send press before the demo block. |
 | `TestHelpListsTheAskKeys` | Require the approved review help line. |
-| `TestEachBoardFixtureLoadsAtItsSpecSize` | The three new boards increase the count from 47 to 50. |
+| `TestEachBoardFixtureLoadsAtItsSpecSize` | Three new boards change the count from 47 to 50. |
 | `TestCheckAcceptsTheAskBoards` | Register the three new board sizes. |
 
-The tests retain the returned model where the new review step requires it.
-Decisions 113 to 119 and package `6c466dc6` authorize these changes.
-
-## V2 details
+## V2: approval comparisons
 
 ```sh
-mkdir -p .hive/tmp/verifier135/exports
-go run ./internal/boardexport/cmd/boardexport -out .hive/tmp/verifier135/exports .hive/spec/tui-v2/design
+go run ./internal/boardexport/cmd/boardexport -out .hive/tmp/verifier135b/exports .hive/spec/tui-v2/design
 go test ./internal/boardexport/... ./internal/lib/cellgrid/... ./internal/tui/... -count=1 -v
 ```
 
-The exporter exits 0 with no output. It writes 50 grids.
-`verifier/grid-compare.txt` records 59 equal comparisons through `internal/lib/cellgrid`.
-Each comparison includes rune, colour token, and weight, with no mask.
-`verifier/fixture-approval.txt` records three equal fixture comparisons.
-`verifier/boards.txt` records all board and golden checks.
-
-The approval snapshot uses the full path:
+`verifier2/export.txt` is empty. The exporter exits 0 and writes 50 grids.
+`verifier2/grid-compare.txt` records 59 cell-equal grid comparisons and 3 equal fixture comparisons.
+Each grid comparison checks rune, colour token, and weight through `internal/lib/cellgrid`, without a mask.
+Approval lookups use the full Git paths:
 
 ```text
 6c466dc6:.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/BOARD.grid
+6c466dc6:.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/fixtures/BOARD.fixture.json
 ```
 
-Changed existing boards: `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`,
-`ChatAskStopped`, `CompactChatAsk`, and `Help`.
+Changed existing boards: `ChatAsk`, `ChatAskMulti`, `ChatAskPreview`, `ChatAskStopped`, `CompactChatAsk`, and `Help`.
 New boards: `ChatAskReview`, `ChatAskReviewMulti`, and `CompactChatAskReview`.
-All other board sources, grids, and fixtures stay unchanged.
-The diff adds or changes no golden mask.
+The other 41 grids, their sources, and their fixtures equal current `dev`.
+No design file changed after the first failed verdict.
+`verifier2/board-scope.txt` names each unchanged grid.
+`verifier2/boards.txt` records the passing board and golden checks.
+`verifier2/approval-chat.json` preserves the user approval and the original plan.
 
-## V3 details and visual table
+## V3: live and visual checks
 
-The task binary ran on isolated herdr 0.9.5, protocol 22.
-The virtual terminal had 140 columns and 48 rows.
-Demo runs used `--size 120x40` or `--size 80x24`.
-Normal runs used a private tmux window resized to the exact required size.
-Each run used `HIVE_NO_STARTUP=1`, a scratch home, and `COLORTERM=truecolor`.
-No test TUI ran on the real home.
+I built the task binary and used isolated herdr 0.9.5, protocol 22.
+The private session is `reverify135`, under `/tmp/hv135-reverify`.
+Each TUI uses a scratch home, `HIVE_NO_STARTUP=1`, `--no-startup`, and `COLORTERM=truecolor`.
+Demo runs use `--size 120x40` or `--size 80x24` in a 140x48 pane.
+Normal runs use a private tmux window at the exact required size.
+No test TUI or test prompt uses the real home.
 
-Each initial read was stable across two reads 500 ms apart.
-Each read reported no truncation and a scroll offset of zero.
-The capture cropped the top-left board rectangle.
-All 16 initial captures have zero differing cells: `verifier/live-grid-compare.txt`.
-The live comparison follows the spec exception for invisible space-cell attributes.
-It compares each visible rune, colour token, and weight. It uses no mask.
+Each initial read is stable across two reads 500 ms apart, without truncation or a scroll offset.
+All 16 initial captures have zero differing cells: `verifier2/live-grid-compare.txt`.
+The comparison checks all visible rune, token, and weight values, without a mask.
+It applies the spec exception for invisible attributes of space cells.
+All nine changed boards are captured again as PNG files with fresh Firefox profiles.
+Both board PNGs and terminal PNGs remain in `verifier2/boards/` and `verifier2/live/`.
+I compared each changed board with its terminal capture.
 
-I captured the nine changed boards as PNG files with fresh Firefox profiles.
-I compared each board with its terminal capture.
-Terminal PNG and ANSI captures remain in `verifier/live/`.
-I removed the temporary board PNG files after comparison.
+Both sizes pass the five completion paths, question edits, return to review with Send selected,
+ignored digits/clicks/space/tab/text, card switches, dismissal, and ordinary refreshed data.
+Long single-line notes retain every word and both sentinels during arrow paging.
+The normal-mode record refresh retains the highlighted question and its draft.
+The model tests also check the unchanged global quit behavior.
 
-Both widths pass these required interaction checks:
+Live multiline captures pass their independent physical-row checks.
+Each short, tall, and Other/note case has 11 review captures at each size.
+Each review body row has both borders, has no cut, and stays inside the dock cap.
+Every tall label line and the final sentinel shows during arrow navigation.
+See `verifier2/multiline-check.txt` and `capture-checks.txt`.
+The title failure above remains the V3 blocker.
 
-- Five completion paths: enter, digit, click, `note`, and Other text.
-- Question, review, highlighted question, edit, review with Send selected, then Send.
-- Digits, clicks, space, tab, text, backspace, and other frame keys leave review unchanged.
-- `J` then `K` restores the reviewed draft and selection.
-- `x` retains the dismiss action.
-- Long single-line `note` values page through every word, including middle and final sentinels.
+Exact commands and socket requests: `verifier2/live-commands.txt`.
+Complete reusable scripts: `verifier2/scripts/`.
+Interaction logs: `live-run.txt`, `delivery-run.txt`, `multiline-run.txt`, and `base/live-run.txt` in `verifier2/`.
 
-The normal delivery runs also force a watched-record refresh during highlighted review.
-The refreshed review keeps the selection, picks, and `note` at both widths.
-Model tests cover the unchanged global quit behavior.
-Logs and captures: `verifier/live-run.txt`, `flow-*`, `completion-*`, `tall-*`, and `delivery/`.
-Exact commands and socket requests: `verifier/live-commands.txt`.
+### Visual table
 
 | Board element | state without colour | Result | Cause or decision |
 | --- | --- | --- | --- |
 | Header and tabs | status words, `? N`, screen names, active underline | matches | All approved initial captures equal their grids. |
-| Chat feed | names, times, `? asked`, open/waits words | matches | Existing feed layout stays unchanged. |
-| Input panel | `message`, status words, input instruction | matches | Existing input layout stays unchanged. |
-| Dock frame and count | heavy border, `open`, `I of N` | matches | Approved fixtures retain the existing dock. |
-| Option editor | option number, `[x]`, `[ ]`, `›` | matches | Existing picks stay visible after an edit. |
-| Preview box | `preview · N`, framed text | matches | `ChatAskPreview` matches its board. |
-| `note` editor | `note ›`, cursor `█` | matches | Updated hint says `enter keep note`. |
-| Review title | `confirm` | matches | Decision 114 in the approved fixtures. |
-| Review answers | header, `→`, full labels and `note` text | matches | Approved one-question and multi-select fixtures. |
-| Other answer | full typed text | matches | Review replaces the Other label with its text. |
-| Selected review row | `›` | matches | Arrows highlight a question or Send. |
-| Send row | `Send` or `Send to PARENT` | matches | The review selects Send after entry and after an edit. |
-| Stopped route | `asker stopped`, parent name | matches | Parent routing remains explicit in plain text. |
-| Review border hints | `enter send` or `enter change`, arrows, `x drop` | matches | Approved review actions. |
-| Footer | `[ask]`, `[note]`, `[other]`, or `[review]` | matches | Each focus state has a word. |
-| Help | `ask review:` and its keys | matches | Approved Help change. |
-| Tall single-line answer | `›`, scroll mark `┃`, both sentinels | matches | Arrow paging reaches every word. |
-| Accepted multi-line answer | first and second label lines | differs | Embedded line feeds break the left and right review borders. |
-| Tall multi-line answer | `ROW01` to `ROW30`, final sentinel | differs | The review truncates text, exceeds the dock cap, and hides the final sentinel. |
+| Chat feed | names, times, `? asked`, open/waits words | matches | Ordinary approved fixtures retain the layout. |
+| Message input | `message`, status words, input instruction | matches | Existing input layout stays. |
+| Dock frame and count | heavy border, `open`, `I of N` | matches | Approved fixtures retain the dock. |
+| Option editor | numbers, `[x]`, `[ ]`, `›` | matches | Picks remain after an edit in approved scenarios. |
+| Preview | `preview · N`, framed text | matches | The Preview capture equals its board. |
+| Note editor | `note ›`, `█` | matches | The hint says `enter keep note`. |
+| Ordinary review title | `confirm` | matches | Approved one-question, multiple-question, and compact grids. |
+| Review answers | headers, `→`, full labels and note text | matches | Full picks, Other text, and notes wrap. |
+| Selected question | `›` | matches | Arrows select and page a question. |
+| Send row | `Send` | matches | It is selected after entry and after an edit. |
+| Stopped route | `asker stopped`, parent name, `Send to PARENT` | matches | Route information and actual delivery remain correct. |
+| Review hints | `enter send` or `enter change`, arrows, `x drop` | matches | Required review keys. |
+| Footer | `[ask]`, `[note]`, `[other]`, `[review]` | matches | Each focus state has a word. |
+| Help | `ask review:` and its keys | matches | Approved Help grid. |
+| Tall review | `›`, scroll mark `┃`, sentinels | matches | Arrow paging reaches every text segment. |
+| Multiline review body | separate text rows, both borders | matches | The wrapper fix retains line breaks and the dock cap. |
+| Compact stopped-review title | `confi`, `[review]` in footer | differs | The route note overwrites `rm`. Decision 114 requires full `confirm`. |
+| Existing multiline option editor | first and second label lines | differs | Same broken physical rows on current dev. Outside this task's review change. |
+| Existing newline-header feed/title | `Head`, `Tail` | differs | Same broken physical rows on current dev. Outside this task's review change. |
 
-The plain-text captures preserve all state words and glyphs.
-No tested state depends on colour alone.
+Plain-text captures retain the state words and glyphs. No tested state uses colour as its only signal.
 
-## V4 details
+## Confirmed pre-existing issues for friction
 
-Read the worker incident and `scratch-harness-stub-runs-real-pi` before setup.
-The executable stub was a compiled Go program at `/tmp/hv135-verify/bin/pi`.
-Both panes printed `STUB_READY` with the executable path, name, and PID.
-`pane.process_info` identified each foreground PID.
-`/proc/PID/exe` equalled the explicit scratch stub path before any test prompt.
-`verifier/stub-executables.txt` records the executable checks and hash.
-No installed Pi process ran in these checks.
+The manager will record these two issues in friction. This verification changes no source for them.
+I checked actual model output and normal-mode live output on current `dev` and the task branch.
 
-The scratch agent created each ask from its own pane.
-Before Send, the ask record stays open, has no replies or attempts, and neither target receives a new prompt.
-An edit returns to review with Send selected.
-A second edit sets Other text and keeps the `note`.
-Send stores the final replies and delivers the exact expected prompt once.
+Source and build commands:
 
-| Width | Answer | Stopped asker | Dismiss |
+```sh
+mkdir -p .hive/tmp/verifier135b/dev
+git archive origin/dev | tar -x -C .hive/tmp/verifier135b/dev
+(cd .hive/tmp/verifier135b/dev && go build -o /tmp/hv135-reverify/bin/hive-dev .)
+go build -o /tmp/hv135-reverify/bin/hive .
+python3 .hive/tmp/verifier135b/base_live.py
+```
+
+`verifier2/base/commits.txt` records both source commits.
+`verifier2/scripts/base_live.py.txt` preserves the exact accepted requests, setup, keys, binary selection, and capture calls.
+`verifier2/live-commands.txt` records each full command and the private socket path.
+Each request comes from the executable-checked scratch asker with `/ask FILE`, which calls `hive ask --agent asker-scratch --file FILE`.
+Both versions run `--no-startup` against the scratch home. No answer is sent for these comparisons.
+
+1. **Multiline option label in the editor.** The accepted label is `First line\nSecond line`.
+   Both versions draw a first physical row without a right border and a continuation without a left border.
+   This occurs at 120x40 and 80x24 before review.
+   Captures: `verifier2/base/live/{dev,task}-label-{120,80}-editor.{ansi,txt,png}`.
+   Input and accepted record: `verifier2/base/label-request.json` and `label-accepted-record.json`.
+   The task's subsequent review has intact rows. AC2's review wrapper fix passes.
+
+2. **Newline header in the existing feed and editor title.** The accepted header is `Head\nTail`.
+   Both versions split the feed line and card title into unframed physical rows at both sizes.
+   Captures: `verifier2/base/live/{dev,task}-header-{120,80}-editor.{ansi,txt,png}`.
+   Input and accepted record: `verifier2/base/header-request.json` and `header-accepted-record.json`.
+   The new review body handles the multiline header. The pre-existing feed defect remains.
+
+Independent model captures are in `verifier2/base/{dev,task}/`.
+Their test commands are:
+
+```sh
+VERIFIER_CAPTURE=ABSOLUTE_OUTPUT go test ./internal/tui -count=1 -v -run '^TestVerifierExistingMultilineEditorStates$'
+```
+
+The command runs in each isolated source copy. The complete test is in `scripts/additional_test.go.txt`.
+`verifier2/base/dev-tests.txt` and `task-tests.txt` preserve the output.
+The compact stopped-title comparison is separate from these two pre-existing issues.
+Current dev has no review state, so it cannot establish that the new state's overlap is outside scope.
+
+## V4: real TUI delivery through checked scratch stubs
+
+Before the first prompt, both panes show `STUB_READY` with the explicit compiled executable path.
+Before each of the six delivery setups, `/proc/PID/exe` equals `/tmp/hv135-reverify/bin/pi`.
+`verifier2/stub-executables.txt` records each check and the executable hash.
+`verifier2/delivery/*-process.json` and `*-ready.txt` preserve the process and pane evidence.
+No installed Pi process runs for these checks.
+
+| Size | Edited answer | Stopped asker | Dismiss |
 | --- | --- | --- | --- |
-| 120x40 | `a8`, pass | `a9`, pass | `a10`, pass |
-| 80x24 | `a11`, pass | `a12`, pass | `a13`, pass |
+| 120x40 | `a1`, pass | `a2`, pass | `a3`, pass |
+| 80x24 | `a4`, pass | `a5`, pass | `a6`, pass |
 
-Exact reply example:
+Before Send, the record remains open with no replies or delivery attempts.
+Neither recipient gets a prompt, including after the question edits and the watched-record refresh.
+Send delivers the final edited draft once. Literal expected replies:
 
 ```json
 [{"picks":[2,3]},{"picks":[3],"other":"Next release","note":"keep this"}]
 ```
 
-Exact prompt example:
+Literal expected prompt for `a1`:
 
 ```text
-⬢ user: answer to ask a8 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
+⬢ user: answer to ask a1 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
 ```
 
-Stopped delivery reaches only `parent-scratch` and includes `(asker stopped)`.
+The stopped case reaches only `parent-scratch` and retains `(asker stopped)`.
 Dismiss reaches only the asker and retains `No answer comes.`
-Every completed record has `attempts: 1` and the expected `delivered_to`.
-See `verifier/delivery-run.txt` and `verifier/delivery/` for before/after records, prompts, and pane output.
+All six final records have `attempts: 1` and the expected `delivered_to`.
+Before/after records, expected prompts, pane output, and TUI captures remain in `verifier2/delivery/`.
+`verifier2/scripts/v4.py.txt` gives the exact commands, keys, refresh, and literal assertions.
+The compact title failure does not change the passing delivery result.
 
-## V5 details and cleanup
+## V5: scope, gate, and cleanup
 
-`git fetch origin` and `git merge --no-edit origin/dev` report `Already up to date.`
-`verifier/merge.txt` records the exact commits before the final gate.
-`verifier/diff-stat.txt` records `git diff dev...HEAD --stat`.
-Outside this task folder, all changed files are in the brief.
-This verifier adds only this report and the `verifier/` evidence folder.
+`git fetch origin` followed by `git merge --no-edit origin/dev` reports `Already up to date.`
+`verifier2/merge.txt` records the commits.
+`verifier2/diff-stat.txt` records `git diff dev...HEAD --stat`.
+All changes outside the task folder are named in the brief, including tests beside the named source files.
+This verification adds only the new report and `verifier2/` evidence.
 
-`verifier/gate.txt` preserves the full gate output:
+`verifier2/gate.txt` preserves the full output from the root gate:
 
 | Command | Result |
 | --- | --- |
@@ -292,15 +335,15 @@ This verifier adds only this report and the `verifier/` evidence folder.
 | `golangci-lint run ./...` | `0 issues.`, exit 0. |
 | `go test -race ./...` | All packages pass, exit 0. |
 
-Cleanup is complete. `verifier/cleanup.txt` records the checks.
+Cleanup is complete before the verdict commit.
+`verifier2/cleanup.txt` records the process checks and path checks.
 
-- The isolated herdr server and its panes stopped.
-- The private tmux server stopped.
-- `/tmp/hv135-verify` is absent.
-- `.hive/tmp/verifier135` and the two scratch identity/history files are absent.
+- The private herdr server and all its panes are stopped.
+- Both compiled recipient stubs are stopped.
+- The private tmux server is absent.
+- `/tmp/hv135-reverify` and `.hive/tmp/verifier135b` are absent.
 - The worktree `.hive/tmp/` folder is empty.
-- The worker board PNG folder `/home/penguin/source/hive/.hive/tmp/135-boards/` is absent, as requested.
-- No scratch hive or stub process runs.
+- Scratch source copies, binaries, exported grids, HTML, homes, and Firefox profiles are removed.
+- Final evidence, board captures, and terminal captures remain in this task folder.
 
-Final evidence and terminal captures remain in this task folder.
-The manager must start a fix worker, then a fresh independent verifier.
+The manager must assign the compact review rendering fix, then start a fresh verifier.
