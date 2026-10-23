@@ -192,7 +192,7 @@ cells and all passed. I do not claim pixel equality for these different data set
 | Live agent with a stale supervisor | `○ live-worker`, `pi · unknown` | matches | The live card stays visible. Only an actual stale or stopped child record can hide. |
 
 I checked each changed screen after colour removal in its plain-text capture.
-Every displayed agent state has a glyph or a word. No checked state uses colour
+Each agent state on the screen has a glyph or a word. No checked state uses colour
 as its only signal.
 
 ## V-gate
