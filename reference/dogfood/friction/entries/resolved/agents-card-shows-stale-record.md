@@ -1,8 +1,8 @@
 ---
 title: "Agents overview draws a card from a stale record instead of the live one"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-22
-decision: ""
+decision: "Task 129 (3d97c49a) joins the name and lineage identities of each record, so each name has one current record: the live record, else the newest. h hides a stale card as it hides a stopped card. h does not hide a manager card."
 ---
 
 **Summary:**
