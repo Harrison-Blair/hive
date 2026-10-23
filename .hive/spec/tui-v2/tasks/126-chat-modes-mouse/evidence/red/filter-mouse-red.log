@@ -1,0 +1,9 @@
+=== RUN   TestMouseWheelWorksWhileTheLogsFilterIsOpen
+    chat_modes_test.go:261: selected row = 30, want 31
+--- FAIL: TestMouseWheelWorksWhileTheLogsFilterIsOpen (0.00s)
+=== RUN   TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen
+    chat_modes_test.go:274: a click on 3 Work gave tab 5
+--- FAIL: TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.013s
+FAIL

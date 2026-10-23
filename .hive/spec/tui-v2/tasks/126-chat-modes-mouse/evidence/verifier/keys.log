@@ -1,0 +1,33 @@
+chat i  [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              
+chat text  [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              
+chat enter  [input] demo mode: no action                                                                                           
+chat escape  [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              
+chat tab  [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              
+chat ctrl-bracket  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat j  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat k  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat wheel-up  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat wheel-down  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat click-input  [input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll              
+chat click-feed  [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+chat tab-logs  [events] ↑↓ move · tab region · enter open · f follow · < > day · / filter · g/G top/end · ? help                      
+compact i  [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
+compact text  [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
+compact escape  [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
+compact tab  [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
+compact ctrl-bracket  [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
+compact wheel-up  [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
+compact click-input  [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
+compact click-feed  [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
+compact tab-friction  [list] ↑↓ move · enter details · [ ] view · ?                                  
+logs wheel-down  [json] ↑↓ scroll · tab region · f follow · < > day · / filter · g/G top/end · ? help                                   
+logs wheel-up  [json] ↑↓ scroll · tab region · f follow · < > day · / filter · g/G top/end · ? help                                   
+logs details-wheel  [json] ↑↓ scroll · tab region · f follow · < > day · / filter · g/G top/end · ? help                                   
+logs click-row  [events] ↑↓ move · tab region · enter open · f follow · < > day · / filter · g/G top/end · ? help                      
+agents wheel-down  [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help                                    
+agents click  [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help                                    
+friction click-row  [list] ↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help                                             
+friction click-details  [details] ↑↓ scroll · tab region · esc back to list · ? help                                                           
+friction wheel-list  [details] ↑↓ scroll · tab region · esc back to list · ? help                                                           
+friction wheel-details  [details] ↑↓ scroll · tab region · esc back to list · ? help                                                           
+friction click-list  [list] ↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help                                             

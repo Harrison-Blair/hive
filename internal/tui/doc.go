@@ -4,6 +4,7 @@
 // shell.go defines the screen interface, the palette, and the list of current screens.
 // frame.go defines the screen registry, the frame, the focus, the key routes, and the help overlay.
 // chat.go loads and renders chat and coordinator inbox data, and handles Chat input.
+// mouse.go handles mouse clicks and wheel steps on each tab.
 // agents.go loads and renders agent topology, and handles pane actions.
 // goals_queue.go loads and renders goal and queue records.
 // work_tasks.go loads task records and files, and draws the Work Tasks view.

@@ -23,6 +23,9 @@ type Input struct {
 	Status       string
 	Age          string
 	Queued       bool
+	// Placeholder shows in dim, with no prompt, when the input has no text
+	// and no focus.
+	Placeholder string
 }
 
 // View renders the input at exactly width cells. Height is the maximum panel
@@ -64,6 +67,9 @@ func (in Input) View(width int) string {
 			line = userStyle.Render(line)
 		}
 		lines[i] = line
+	}
+	if !in.Focused && in.Text == "" && in.Placeholder != "" {
+		lines[0] = dimStyle.Render(in.Placeholder)
 	}
 	mark := Thumb(visibleRows, len(textRows), len(visible), offset)
 	status := ""

@@ -1,15 +1,15 @@
 hive-grid 1 80 24
-t| hive                                     coord ▲ · sup ● · needs you 0 · 14:40 
-k|ffffffffffffffffffffffffffffffffffffffffffffffffafffffffwfffffffffffffffffffffff
-b|11111000000000000000000000000000000000000011111111111111111111111111111111111111
+t| hive                               coord ▲ · sup ● · ? 0 · needs you 0 · 14:40 
+k|ffffffffffffffffffffffffffffffffffffffffffafffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
 t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
 k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
 b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
 t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
 k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|╭─ chat ───────────────────────────────────────────────────────────────────────╮
-k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+t|╭─ chat ──────────────────────────────── ↑ 19 earlier ─────────────────────────╮
+k|rraaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
 t|│ 14:31 you                                                                    │
 k|rfdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
@@ -68,6 +68,6 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────╯
 k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed          
+t| [input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll                  
 k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

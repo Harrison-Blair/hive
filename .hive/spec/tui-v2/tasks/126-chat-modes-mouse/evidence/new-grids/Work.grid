@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+k|fffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|fddddddddddfddddddddfaaaaaaaafddddddddddddfddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|─────────────────────━━━━━━━━───────────────────────────────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Goals    Queue   [Tasks]                                                                            [ ] switch view   
+k|fdddddddffdddddddffaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|000000000000000000011111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ tasks · 4 ──────────────────────────────────────╮╭─ 3-tui-restart ──────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarraaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111100000000000000000000000000000000000000000111111111111111000000000000000000000000000000000000000000000000000
+t|│   ID                        STATUS    WAVE       ││                                                                  │
+k|afffddddddddddddddddddddddddddddddddddddddddfffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   4-agents-equal-columns    landed    C          ││ title     Restart of the coordinator and the supervisor from th… │
+k|afffffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ 3-tui-restart             landed    B          ││ status    landed                                                 │
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaoooooooooodffffffffffarfddddddddddoooooooooooooooooooooooooooooooooooooooooooooooooooooofr
+b|001011111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   2-stale-coordinator-star… landed    A          ││ goal      g1-tui-restart · wave B                                │
+k|afffffffffffffffffffffffffffffoooooooooodffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   1-cp5-end-to-end          assigned  —          ││ worker    t3-worker-1 · stopped                                  │
+k|afffffffffffffffffffffffffffffiiiiiiiiiidffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ verifier  t3-verifier-1 · pass                                   │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ branch    task/3-tui-restart                                     │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ merge     3ccd93fb on dev                                        │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ depends   2-stale-coordinator-startup                            │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ACCEPTANCE                                                       │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000111111111100000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC1 r restarts a coordinator or supervisor, confirms only whe… │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC2 coordinator restart closes only a pane that hive started   │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC3 supervisor restart runs hive supervise in a new tab        │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC4 old records get stale or stopped, stay on disk, h hides t… │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC5 header shows old and r to restart for an old supervisor    │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ✓ AC6 coordinator start waits for herdr readiness                │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfoffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ EVIDENCE                                                         │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000111111110000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ b brief.md    v VERIFIED.md   d deps graph                       │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfafffffffffffffafffffffffffffffaffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000100000000000001000000000000000100000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ V1 go test -race ./internal/tui/...      pass                    │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfdddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ V3 live restart in a scratch home        pass                    │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarfdddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffarffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [list] ↑↓ move · tab region · [ ] view · enter open · b brief · v verified · d deps · ? help                           
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

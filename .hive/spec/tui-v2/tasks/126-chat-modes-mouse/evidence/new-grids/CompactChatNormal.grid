@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddaaaaaaaaddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat ──────────────────────────────── ↑ 42 earlier ─────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:02 you                                                                    │
+k|afdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ I want a tool for you to ask questions, like the native ask tool, here in    │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ hive.                                                                        │
+k|afuuuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:03 coordinator                                                            │
+k|afdddddfiiiiiiiiiiiffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000111111111110000000000000000000000000000000000000000000000000000000000000
+t|│ Interrogate round 1. Who can ask, how the answer gets back, and where it     │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ shows.                                                                       │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:05 you                                                                    │
+k|afdddddfuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ A A A                                                                        │
+k|afuuuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:19 ▸ manager-hive goal g6-hive-ask created · wave A started · worker t12… │
+k|afddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|│ i or click here to type                                                      │
+k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
+k|aaaaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111110000000000000000000000000000000000000000000000000000000000000000000000

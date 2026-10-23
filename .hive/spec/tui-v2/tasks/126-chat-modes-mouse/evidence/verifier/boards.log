@@ -1,0 +1,15 @@
+Chat: cmp exit 0; screenshot pixel difference None
+ChatEvents: cmp exit 0; screenshot pixel difference None
+ChatStatus: cmp exit 0; screenshot pixel difference None
+ChatNormal: cmp exit 0; screenshot pixel difference None
+ChatInput: cmp exit 0; screenshot pixel difference None
+CompactChat: cmp exit 0; screenshot pixel difference None
+CompactChatStatus: cmp exit 0; screenshot pixel difference None
+CompactChatNormal: cmp exit 0; screenshot pixel difference None
+Help: cmp exit 0; screenshot pixel difference None
+Main: cmp exit 0; screenshot pixel difference None
+
+Original v88 copies (superseded by the approved v92 copies):
+ChatNormal: cmp exit 1; /home/penguin/source/hive/.hive/tmp/g6/boards/ChatNormal.dc.html .hive/spec/tui-v2/design/ChatNormal.dc.html differ: byte 86, line 5
+ChatInput: cmp exit 1; /home/penguin/source/hive/.hive/tmp/g6/boards/ChatInput.dc.html .hive/spec/tui-v2/design/ChatInput.dc.html differ: byte 85, line 5
+CompactChatNormal: cmp exit 1; /home/penguin/source/hive/.hive/tmp/g6/boards/CompactChatNormal.dc.html .hive/spec/tui-v2/design/CompactChatNormal.dc.html differ: byte 93, line 5

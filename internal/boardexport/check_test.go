@@ -113,6 +113,21 @@ func TestCheckAcceptsTheTreeBoards(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsTheChatModeBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatNormal", 120, 40},
+		{"ChatInput", 120, 40},
+		{"CompactChatNormal", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func TestCheckFailsABadSymbol(t *testing.T) {
 	g := fill("ab★", "fff")
 	err := Check("TooSmall", g)

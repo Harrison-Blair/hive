@@ -1,7 +1,7 @@
 hive-grid 1 120 40
-t| hive  ~/source/hive                                       coordinator ○ idle   supervisor ● live   needs you 0   14:31 
-k|fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffwffffffffffffffffffffffffffff
-b|111111111111111111110000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111
+t| hive  ~/source/hive                            coordinator ○ idle   supervisor ● live   ? 0 asks   needs you 0   14:31 
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffwfffffffffffffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111
 t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
 k|fddddddddddfaaaaaaaafddddddddfddddddddddddfddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -110,12 +110,12 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╭─ message · ○ idle 5m ────────────────────────────────────────────────────────────────────────────────────────────────╮
 k|rraaaaaaaaadddfffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|001111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│ >                                                                                                                    │
-k|rfuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+t|│ i or click here to type                                                                                              │
+k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| [feed] i or type to write · j/k scroll · g/G top/end · ctrl+o fold events · tab region · ? help                        
-k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 
+k|aaaaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

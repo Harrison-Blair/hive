@@ -34,6 +34,7 @@ type headerState struct {
 	working              int
 	idle                 int
 	needsUser            int
+	asks                 int
 	queueRun             int
 	queueStops           int
 	queueWaits           int

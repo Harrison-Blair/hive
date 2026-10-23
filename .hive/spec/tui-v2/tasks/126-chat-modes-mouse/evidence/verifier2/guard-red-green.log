@@ -1,0 +1,10 @@
+Deliberate break, scratch checkout:
+--- FAIL: TestMouseWheelOverTheAgentsGraphDoesNothing (0.00s)
+    chat_modes_test.go:284: the wheel changed the Agents graph
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL
+EXIT 1
+Restored:
+ok  	github.com/Harrison-Blair/hive/internal/tui	2.575s
+EXIT 0

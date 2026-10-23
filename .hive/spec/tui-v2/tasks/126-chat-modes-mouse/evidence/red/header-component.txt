@@ -1,0 +1,18 @@
+--- FAIL: TestHeaderShowsTheAskCount (0.00s)
+    header_test.go:92: asks 0 at 120 = " hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 ", want suffix "supervisor ● live   ? 0 asks   needs you 0   14:22 "
+panic: runtime error: slice bounds out of range [:-1] [recovered, repanicked]
+
+goroutine 19 [running]:
+testing.tRunner.func1.2({0xfd7110, 0x3df45ece7a58})
+	/usr/lib/go/src/testing/testing.go:2125 +0x232
+testing.tRunner.func1()
+	/usr/lib/go/src/testing/testing.go:2128 +0x329
+panic({0xfd7110?, 0x3df45ece7a58?})
+	/usr/lib/go/src/runtime/panic.go:859 +0x125
+github.com/Harrison-Blair/hive/internal/tui/component.TestHeaderShowsTheAskCount(0x3df45eeb86c8)
+	/home/penguin/source/hive/projects/hive/worktrees/126-chat-modes-mouse/internal/tui/component/header_test.go:99 +0x785
+testing.tRunner(0x3df45eeb86c8, 0xff5038)
+	/usr/lib/go/src/testing/testing.go:2195 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go/src/testing/testing.go:2260 +0x4d4
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.009s

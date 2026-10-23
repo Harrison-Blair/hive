@@ -1,0 +1,10 @@
+$ go test ./internal/tui ./internal/tui/component ./internal/boardexport -run NEW_TESTS -count=50
+ok  	github.com/Harrison-Blair/hive/internal/tui	4.607s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.012s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.002s
+EXIT 0
+$ go test -race ./internal/tui ./internal/tui/component ./internal/boardexport -run NEW_TESTS -count=50
+ok  	github.com/Harrison-Blair/hive/internal/tui	46.853s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.096s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.015s
+EXIT 0

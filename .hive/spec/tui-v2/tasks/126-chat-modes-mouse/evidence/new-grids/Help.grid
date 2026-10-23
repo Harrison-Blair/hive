@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · hive ──────────────────────────────────────────────────────────────────────────────────────────────╮
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                               ╭──────────────────────╮                                               │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 ╭─ keys · ? or esc closes ─────────────────────────────────────────────────────────╮                 │
+k|rrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrr
+b|000000000000000000001111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  GLOBAL · same on every screen            ACTIONS · one meaning each             │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111111111111111111111110000000000001111111111111111111111111100000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  1–6        switch screen                 a     attach to pane                   │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  tab        next region                   p     peek pane                        │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  [ ]        previous / next view          r     restart · Health › Agents        │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  ↑↓ j k     move                          h     show or hide stopped agents      │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  ←→         move on the graph             t     open task                        │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  pgup pgdn  page                          b     task brief                       │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  g G        top / end                     v     VERIFIED.md                      │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  enter      open / details                d     dependency graph                 │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  esc        back / close                  o     goal design                      │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  /          filter bar                    s     stops only                       │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  ?          this help                     f     follow logs                      │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  R          refresh now                   < >   previous / next day              │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaffffffffffffffffffffffffffffffaaaaaafffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000001111110000000000000000000000000000000000000000000000000000
+t|│                 │  ctrl+c ×2  quit                                                                 │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  FILTER FIELDS                                                                   │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  level:  comp:  proj:  agent:  task:  req:  text                                 │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  example  / level:warn agent:manager-hive restart                                │                 │
+k|rrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  CHAT                                                                            │                 │
+k|rrrrrrrrrrrrrrrrrraffaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  i or a click on the input types · ctrl+] or a click on the feed leaves          │                 │
+k|rrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  ctrl+o opens or folds all chat events                                           │                 │
+k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │  r restart: coordinator or supervisor, asks first only when live                 │                 │
+k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 │                                                                                  │                 │
+k|rrrrrrrrrrrrrrrrrraffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                 ╰──────────────────────────────────────────────────────────────────────────────────╯                 │
+k|rrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [help] ↑↓ scroll · ? or esc close                                                                                      
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

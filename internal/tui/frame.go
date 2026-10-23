@@ -72,12 +72,12 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Chat",
 		regions: []string{"feed", "input"},
 		hints: map[string][]string{
-			"feed":  {"i or type to write", "j/k scroll", "g/G top/end", "ctrl+o open events", "tab region", "? help"},
-			"input": {"enter send", "shift+enter newline", "ctrl+o open events", "esc leave input", "pgup/pgdn scroll feed", "tab region"},
+			"normal": {"i type", "↑↓ j/k scroll", "wheel scroll", "pgup/pgdn page", "g/G top/end", "ctrl+o events", "? help"},
+			"input":  {"enter send", "shift+enter newline", "ctrl+] leave input", "ctrl+o events", "wheel or pgup/pgdn scroll"},
 		},
 		compact: map[string][]string{
-			"feed":  {"i type", "pgup/pgdn feed", "ctrl+o events", "tab region", "?"},
-			"input": {"enter send", "ctrl+o events", "esc leave input", "pgup/pgdn feed"},
+			"normal": {"i type", "↑↓ wheel scroll", "pgup/pgdn", "ctrl+o events", "? help"},
+			"input":  {"enter send", "ctrl+] leave", "wheel or pgup/pgdn scroll"},
 		},
 	},
 	tabWork: {
@@ -261,7 +261,7 @@ func (m *Model) focusState() string {
 		if m.chatInputActive {
 			return "input"
 		}
-		return "feed"
+		return "normal"
 	}
 	return screenRegistry[tab].regions[m.regionFocus[tab]]
 }
@@ -328,6 +328,7 @@ func (m *Model) headerView() component.Header {
 		Coordinator: coordinator,
 		Supervisor:  supervisor,
 		NeedsYou:    m.header.needsUser,
+		Asks:        m.header.asks,
 		Clock:       m.now().Format("15:04"),
 	}
 }
@@ -364,17 +365,6 @@ func (m *Model) footerView(width int) string {
 		hints = filterHints
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
-		if tab == tabChat && width >= component.LongFormWidth && (focus == "feed" || focus == "input") {
-			toggleHint := "ctrl+o open events"
-			if m.chatEventsOpen {
-				toggleHint = "ctrl+o fold events"
-			}
-			for i, hint := range hints {
-				if strings.HasPrefix(hint, "ctrl+o ") {
-					hints[i] = toggleHint
-				}
-			}
-		}
 	}
 	if notice := m.footerNotice(); notice != "" {
 		hints = []string{notice}
@@ -442,7 +432,7 @@ func (m *Model) contentView(width, height int) string {
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
-		listWidth := width * 13 / 30
+		listWidth := listRegionWidth(tab, width)
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
 		details := strings.Split(m.detailsPanel(width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
 		for index := range list {
@@ -464,6 +454,16 @@ func (m *Model) contentView(width, height int) string {
 		content = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(content, width, height)
 	}
 	return content
+}
+
+// listRegionWidth gives the width of the list region of a list and details
+// screen from 120 columns. The Logs event list has 8/15 of the width, and
+// each other list has 13/30.
+func listRegionWidth(tab, width int) int {
+	if tab == tabLogs {
+		return width * 8 / 15
+	}
+	return width * 13 / 30
 }
 
 // legacyPanel draws the current screen of the tab in one panel. The panel
@@ -526,7 +526,7 @@ func helpLines() []string {
 		dimStyle.Render("example  / level:warn agent:manager-hive restart"),
 		"",
 		titleStyle.Render("CHAT"),
-		dimStyle.Render("i or enter types in chat · esc leaves the input · 1–6 work again"),
+		dimStyle.Render("i or a click on the input types · ctrl+] or a click on the feed leaves"),
 		dimStyle.Render("ctrl+o opens or folds all chat events"),
 		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
 		"",
@@ -577,10 +577,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		return m.currentScreen().Update(press)
 	case "input":
 		switch key {
-		case "tab":
-			m.chatInputActive = false
-			m.chatInput.Blur()
-			return m.logAction("focus region", slogString("region", "feed"))
+		case "tab", "esc":
+			return nil
 		case "pgup", "pgdown":
 			return m.scrollChatFeed(press)
 		}
@@ -619,12 +617,7 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		}
 	}
 	if index, ok := screenKey(key); ok {
-		view := m.views[index]
-		if index == tab {
-			view = m.activeView()
-		}
-		m.selectScreen(index, view)
-		return batch(m.logAction("screen select", slogString("screen", screenRegistry[index].label)), m.startCurrentScreenLoad())
+		return m.openTab(index)
 	}
 	switch key {
 	case "?":
@@ -693,6 +686,16 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	return m.currentScreen().Update(press)
 }
 
+// openTab shows tab in its last view.
+func (m *Model) openTab(tab int) tea.Cmd {
+	view := m.views[tab]
+	if tab == m.activeTab() {
+		view = m.activeView()
+	}
+	m.selectScreen(tab, view)
+	return batch(m.logAction("screen select", slogString("screen", screenRegistry[tab].label)), m.startCurrentScreenLoad())
+}
+
 // screenKey gives the tab of a key 1 to 6.
 func screenKey(key string) (int, bool) {
 	if len(key) == 1 && key[0] >= '1' && key[0] < '1'+tabCount {
@@ -702,14 +705,11 @@ func screenKey(key string) (int, bool) {
 }
 
 // nextRegion moves the focus to the next region of the screen (decision 6).
+// Chat has modes in place of regions, so tab does nothing there.
 func (m *Model) nextRegion() tea.Cmd {
 	tab := m.activeTab()
 	if tab == tabChat {
-		if m.chatCallerBlocked {
-			return nil
-		}
-		m.chatInputActive = true
-		return batch(m.chatInput.Focus(), m.logAction("focus region", slogString("region", "input")))
+		return nil
 	}
 	regions := screenRegistry[tab].regions
 	m.regionFocus[tab] = (m.regionFocus[tab] + 1) % len(regions)
@@ -720,28 +720,33 @@ func (m *Model) nextRegion() tea.Cmd {
 // gives to its screen.
 const actionKeys = "aprhtbvdosf"
 
-// chatFeedGlobals are the keys that stay global when the chat feed has the
-// focus (decision 24).
-const chatFeedGlobals = "?/jkgGRf"
-
-// updateChatFeedKey handles a key in the chat feed. A printable key gives the
-// focus to the input and types the key. i and enter give the focus to the
-// input.
+// updateChatFeedKey handles a key in the normal mode of Chat. i starts input
+// mode. Each other letter keeps its shortcut and does not type.
 func (m *Model) updateChatFeedKey(press tea.KeyPressMsg) tea.Cmd {
-	key := press.String()
-	switch {
-	case key == "pgup" || key == "pgdown":
+	switch press.String() {
+	case "pgup", "pgdown":
 		return m.scrollChatFeed(press)
-	case key == "i" || key == "enter":
-		return m.nextRegion()
-	case press.Text != "" && len([]rune(key)) == 1 && !strings.Contains(chatFeedGlobals, key):
-		if m.chatCallerBlocked {
-			return nil
-		}
-		cmd := m.nextRegion()
-		updated, typed := m.chatInput.Update(press)
-		m.chatInput = updated
-		return batch(cmd, typed)
+	case "i":
+		return m.startChatInput()
 	}
 	return m.currentScreen().Update(press)
+}
+
+// startChatInput starts the input mode of Chat.
+func (m *Model) startChatInput() tea.Cmd {
+	if m.chatCallerBlocked || m.chatInputActive {
+		return nil
+	}
+	m.chatInputActive = true
+	return batch(m.chatInput.Focus(), m.logAction("chat mode", slogString("mode", "input")))
+}
+
+// stopChatInput starts the normal mode of Chat. The draft stays.
+func (m *Model) stopChatInput() tea.Cmd {
+	if !m.chatInputActive {
+		return nil
+	}
+	m.chatInputActive = false
+	m.chatInput.Blur()
+	return m.logAction("chat mode", slogString("mode", "normal"))
 }

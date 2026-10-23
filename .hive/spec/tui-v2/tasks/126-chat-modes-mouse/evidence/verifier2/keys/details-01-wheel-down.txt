@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs 
+──────────────────────────────━━━━━━━━━━━━──────────────────────────────────────────────────────────────────────────────
+ [Open]   Resolved                                                                                    [ ] switch view
+╭─ open · 15 ──────────────────────────────────────╮╭─ scratch-hive-starts-real-agents ────────────────────────────────╮
+│   ENTRY                             OPENED       ││ opened    2026-10-20                                             │
+│   agent-send-flag-means-target      10-21        ││ seen      3 times · last 2026-10-21                              │
+│   agent-can-send-user-chat          10-20        ││ file      entries/scratch-hive-starts-real-agents.md             │
+│   completed-task-cannot-reopen      10-20        ││                                                                  ┃
+│   local-gate-misses-ci-tidy         10-20        ││ SUMMARY                                                          ┃
+│ ▶ scratch-hive-starts-real-agents   10-20        ││ Bare hive runs the startup of G9: in herdr, it starts a          ┃
+│   ste-baseline-row-conflicts        10-20        ││ coordinator and a supervisor in their own tabs when they are     ┃
+│   verify-fail-lost-on-pass          10-20        ││ missing. A worker or verifier that runs bare hive with           ┃
+│   worker-has-no-inbox               10-20        ││ HIVE_HOME set to a scratch home gets no live coordinator and a   ┃
+│   bypass-still-prompts-dangerous-rm 10-19        ││ stale supervisor claim, so each run starts a new coordinator     ┃
+│   no-agent-dashboard                10-19        ││ tab and a new hive supervise process in the caller workspace.    ┃
+│   no-reviewer-role                  10-19        ││                                                                  ┃
+│   nudge-interrupts-user-typing      10-19        ││ REPRODUCTION                                                     ┃
+│   old-features-lack-readme          10-19        ││ 1. In a herdr pane, make a scratch home with a marker.           ┃
+│   verified-md-path-unspecified      10-19        ││ 2. Run HIVE_HOME=<scratch> hive and quit the TUI.                ┃
+│   worker-gate-adds-golangci-lint    10-19        ││ 3. herdr tab list shows a new coordinator and supervisor tab.    ┃
+│                                                  ││                                                                  ┃
+│                                                  ││ OCCURRENCES                                                      ┃
+│                                                  ││ 2026-10-20  worker of 101 left 4 supervisors, 8 tabs             ┃
+│                                                  ││ 2026-10-20  t91-worker-1 closed the user TUI tab                 ┃
+│                                                  ││ 2026-10-21  third scratch hive tab leak                          ┃
+│                                                  ││                                                                  ┃
+│                                                  ││ MITIGATION                                                       ┃
+│                                                  ││ Task 8-no-startup of feature tui-v2 adds the switch              ┃
+│                                                  ││ hive --no-startup and the variable HIVE_NO_STARTUP=1, from       ┃
+│                                                  ││ decision 34 of the spec. With either one, bare hive opens the    ┃
+│                                                  ││ TUI. It makes no tab, starts no coordinator and no supervisor,   ┃
+│                                                  ││ and does not rename the tab.                                     ┃
+│                                                  ││ The worker skill and the verifier skill tell each agent to run   ┃
+│                                                  ││ bare hive only with the switch or the variable.                  ┃
+│                                                  ││ The entry stays open: the switch is opt-in, and automatic        ┃
+│                                                  ││ detection of a scratch home is out of scope.                     │
+│                                                  ││ ↓ 2 more lines                                                   │
+╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+ [list] ↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help                                             

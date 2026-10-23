@@ -423,6 +423,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		m.invalidateView()
 		return m, m.updateKey(msg)
+	case tea.MouseClickMsg, tea.MouseWheelMsg:
+		m.invalidateView()
+		return m, m.updateMouse(msg.(tea.MouseMsg))
 	}
 	return m, nil
 }
@@ -459,6 +462,7 @@ func (m *Model) View() tea.View {
 	}
 	view := tea.NewView(content)
 	view.AltScreen = true
+	view.MouseMode = tea.MouseModeCellMotion
 	view.Cursor = m.chatCursor(content)
 	return view
 }

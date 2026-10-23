@@ -1,5 +1,5 @@
 hive-grid 1 120 40
-t| hive  ~/source/hive                                    coordinator ● working   supervisor ● live   needs you 0   14:22 
+t| hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
 k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
@@ -89,8 +89,8 @@ b|000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 │  CHAT                                                                            │                 │
 k|rrrrrrrrrrrrrrrrrraffaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t|│                 │  i or enter types in chat · esc leaves the input · 1–6 work again                │                 │
-k|rrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffarrrrrrrrrrrrrrrrrr
+t|│                 │  i or a click on the input types · ctrl+] or a click on the feed leaves          │                 │
+k|rrrrrrrrrrrrrrrrrraffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffarrrrrrrrrrrrrrrrrr
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|│                 │  ctrl+o opens or folds all chat events                                           │                 │
 k|rrrrrrrrrrrrrrrrrraffdddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffarrrrrrrrrrrrrrrrrr

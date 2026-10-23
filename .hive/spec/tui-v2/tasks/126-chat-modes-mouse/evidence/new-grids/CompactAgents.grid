@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|faaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|01111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · hive ──────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111110000000000000000000000000000000000000000000000000000000
+t|│                           ╭──────────────────────╮                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ ● coordinator        │                           ┃
+k|afffffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           │ claude · working · … │                           ┃
+k|afffffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                           ╰───────────┬──────────╯                           ┃
+k|afffffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                       │                                      ┃
+k|afffffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ╭─ hive ──────────────────────────────┼────────────────────────────────────╮ ┃
+k|afrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|00001111110000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ g1-tui-restart · done               │                                    │ ┃
+k|afrfdddddddddddddddddddddfffffffffffffffrffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         ┏━━━━━━━━━━━┷━━━━━━━━━━┓                         │ ┃
+k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         ┃ ◐ manager-hive       ┃                         │ ┃
+k|afrfffffffffffffffffffffffffafafaaaaaaaaaaaafffffffafffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000111111111111000000000000000000000000000000000000
+t|│ │                         ┃ claude · idle · 4m   ┃                         │ ┃
+k|afrfffffffffffffffffffffffffafddddddddddddddddddfffafffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         ┗━━━━━━━━━━━┯━━━━━━━━━━┛                         │ ┃
+k|afrfffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                                     │                                    │ ┃
+k|afrfffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                   ╭─────────────────┴─────────────────╮                  │ ┃
+k|afrfffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                   │                                   │                  │ ┃
+k|afrfffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ╭───────────┴──────────╮            ╭───────────┴──────────╮       │ ┃
+k|afrfffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       │ ○ t4-worker-1        │            │ ○ t4-verifier-1      │       │ │
+k|afrfffffffrfdfdddddddddddffffffffrffffffffffffrfdfdddddddddddddffffffrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       │ pi · stopped · done  │            │ pi · stopped · pass  │       │ │
+k|afrfffffffrfdddddddddddddddddddffrffffffffffffrfdddddddddddddddddddffrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ╰──────────────────────╯            ╰──────────────────────╯       │ │
+k|afrfffffffrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [graph] ←↑↓→ move · enter details · a attach · p peek · ?                      
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

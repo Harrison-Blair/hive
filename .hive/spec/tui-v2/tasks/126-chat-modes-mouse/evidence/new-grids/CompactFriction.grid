@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|fddddddddddddddddddddddddddaaaaaaaaaaaaddddddddddddddddddfffffffffffffffffffffff
+b|00000000000000000000000000011111111111100000000000000000000000000000000000000000
+t|───────────────────────────━━━━━━━━━━━━─────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [Open]   Resolved                                            [ ] switch view   
+k|faaaaaaffddddddddddfffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|01111110000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ open · 15 ──────────────────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111110000000000000000000000000000000000000000000000000000000000000000000
+t|│   ENTRY                                 OPENED      SEEN                     │
+k|afffddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   agent-send-flag-means-target          2026-10-21  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   agent-can-send-user-chat              2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   completed-task-cannot-reopen          2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   local-gate-misses-ci-tidy             2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ scratch-hive-starts-real-agents       2026-10-20  3                        │
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddddffdffffffffffffffffffffffffa
+b|00101111111111111111111111111111111111111100000000000000000000000000000000000000
+t|│   ste-baseline-row-conflicts            2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verify-fail-lost-on-pass              2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   worker-has-no-inbox                   2026-10-20  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   bypass-still-prompts-dangerous-rm     2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   no-agent-dashboard                    2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   no-reviewer-role                      2026-10-19  2                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   nudge-interrupts-user-typing          2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   old-features-lack-readme              2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   verified-md-path-unspecified          2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   worker-gate-adds-golangci-lint        2026-10-19  1                        │
+k|afffffffffffffffffffffffffffffffffffffffffddddddddddffdffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                         enter opens details  │
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [list] ↑↓ move · enter details · [ ] view · ?                                  
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111000000000000000000000000000000000000000000000000000000000000000000000000

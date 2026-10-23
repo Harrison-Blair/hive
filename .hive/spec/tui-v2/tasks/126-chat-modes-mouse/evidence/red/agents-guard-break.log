@@ -1,0 +1,11 @@
+# Deliberate break in internal/tui/mouse.go wheel(): the Agents case sends KeyDown in place of return nil.
+$ go test ./internal/tui -run TestMouseWheelOverTheAgentsGraphDoesNothing -count=1
+--- FAIL: TestMouseWheelOverTheAgentsGraphDoesNothing (0.00s)
+    chat_modes_test.go:284: the wheel changed the Agents graph
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL
+
+# Restored.
+$ go test ./internal/tui -run TestMouseWheelOverTheAgentsGraphDoesNothing -count=50
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.163s

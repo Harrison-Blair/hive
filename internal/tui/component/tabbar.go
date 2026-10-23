@@ -48,6 +48,24 @@ func (b TabBar) View(width int) string {
 	return fitRow(labels.String(), width) + "\n" + fitRow(rule.String()+borderStyle.Render(strings.Repeat("─", width)), width)
 }
 
+// TabAt gives the tab of the label at cell x of the label row of a tab bar
+// of width cells.
+func (b TabBar) TabAt(x, width int) (int, bool) {
+	gap := 0
+	if width >= LongFormWidth {
+		gap = lipgloss.Width(tabGap)
+	}
+	start := 1
+	for i, name := range tabNames {
+		end := start + lipgloss.Width(fmt.Sprintf(" %d %s ", i+1, name))
+		if x >= start && x < end && end <= width {
+			return i, true
+		}
+		start = end + gap
+	}
+	return 0, false
+}
+
 // fitRow cuts s to width cells, or pads it with plain spaces to width cells.
 func fitRow(s string, width int) string {
 	s = ansi.Truncate(s, width, "")

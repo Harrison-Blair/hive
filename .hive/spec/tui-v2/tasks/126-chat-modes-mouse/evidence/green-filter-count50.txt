@@ -1,0 +1,4 @@
+$ go test ./internal/tui -run WhileTheLogsFilterIsOpen -count=50 -v | grep -c "^--- PASS"
+100
+$ go test -race ./internal/tui -run WhileTheLogsFilterIsOpen -count=50 -v | grep -c "^--- PASS"
+100
