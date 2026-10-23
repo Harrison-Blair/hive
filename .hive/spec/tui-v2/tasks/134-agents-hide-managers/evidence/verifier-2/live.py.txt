@@ -1,0 +1,87 @@
+import json,subprocess,time,os,socket,pathlib,shlex,traceback
+W=pathlib.Path.cwd();T=W/'.hive/tmp/verify134-second';E=W/'.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/verifier-2';N=E.parent/'new-grids';D=W/'.hive/spec/tui-v2/design';L=E/'live';L.mkdir(exist_ok=True);(T/'html').mkdir(exist_ok=True);(T/'home').mkdir(exist_ok=True)
+log=[]; comparisons=[];seq=0
+
+def rpc(method,**params):
+ global seq
+ seq+=1
+ with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as s:
+  s.settimeout(15);s.connect(os.environ['HERDR_SOCKET_PATH']);s.sendall((json.dumps(dict(id=str(seq),method=method,params=params))+'\n').encode());b=b''
+  while not b.endswith(b'\n'): b+=s.recv(65536)
+ r=json.loads(b);assert 'error' not in r,r;return r['result']
+def cli(*a):
+ r=subprocess.run(['herdr',*a],capture_output=True,text=True);assert r.returncode==0,(a,r.stderr);return r.stdout
+p=rpc('ping');assert p['protocol']==22 and p['version']=='0.9.5',p
+r=rpc('tab.create',workspace_id=os.environ['HERDR_WORKSPACE_ID'],cwd=str(W),label='verify134-second-live',focus=False)
+pane=r['root_pane']['pane_id'];tab=r['tab']['tab_id'];(E/'scratch-tab.json').write_text(json.dumps(r,indent=2)+'\n');print('created',pane,tab,flush=True)
+
+def stable():
+ prev=None
+ for i in range(24):
+  time.sleep(.5);r=rpc('pane.read',pane_id=pane,source='visible',format='ansi');assert not r['read']['truncated']
+  if r['read']['text']==prev:
+   info=rpc('pane.get',pane_id=pane);assert info['pane']['scroll']['offset_from_bottom']==0,info
+   return r,info
+  prev=r['read']['text']
+ raise AssertionError('screen did not stabilize')
+def capture(name,size,grid=None):
+ r,info=stable();a=r['read']['text'];txt=rpc('pane.read',pane_id=pane,source='visible',format='text')['read']['text'];w,h=map(int,size.split('x'));crop='\n'.join(line[:w] for line in txt.splitlines()[:h])+'\n'
+ (L/(name+'.ansi')).write_text(a);(L/(name+'.txt')).write_text(crop);(L/(name+'.metadata.json')).write_text(json.dumps({'read':{k:v for k,v in r['read'].items() if k!='text'},'pane':info,'size':size,'stable_ms':500},indent=2)+'\n')
+ # Convert each capture to HTML through the same cell converter. A non-reference capture uses itself only for conversion, not for a check.
+ if grid:
+  x=subprocess.run([str(T/'gridtool'),str(L/(name+'.ansi')),str(grid),str(w),str(h)],capture_output=True,text=True);(L/(name+'.diff.txt')).write_text(x.stdout+x.stderr);assert x.returncode==0,(name,x.stdout[:1000],x.stderr);comparisons.append(name+': '+x.stdout.strip())
+ return crop
+
+def heavy(txt):
+ for line in txt.splitlines():
+  i=line.find('● coordinator')
+  if i>=2:return line[i-2]=='┃'
+ return False
+
+def check(txt,require=(),reject=(),selected=None):
+ for s in require:assert s in txt,('missing',s,txt)
+ for s in reject:assert s not in txt,('unexpected',s,txt)
+ if selected is not None:assert heavy(txt)==selected,('heavy',selected,txt)
+ assert 'panic:' not in txt and 'fatal error' not in txt
+
+def start(fx,size):
+ cmd=f'clear; HIVE_HOME={shlex.quote(str(T/"home"))} HIVE_NO_STARTUP=1 TERM=vt100 COLORTERM=truecolor {T}/hive --demo {shlex.quote(str(fx))} --size {size}'
+ cli('pane','run',pane,cmd);time.sleep(.8)
+def key(k):cli('pane','send-keys',pane,k)
+def stop():
+ key('esc');key('ctrl+c');time.sleep(.15);key('ctrl+c');time.sleep(.6)
+ txt=rpc('pane.read',pane_id=pane,source='visible',format='text')['read']['text'];assert 'project agents' not in txt,txt
+
+def keys(name,fx,size,steps):
+ start(fx,size)
+ txt=capture(name+'-0-start',size);check(txt);log.append(name+' start: pass')
+ for i,(label,k,req,rej,sel) in enumerate(steps,1):
+  key(k);txt=capture(f'{name}-{i}-{label}',size);check(txt,req,rej,sel);log.append(f'{name} {label}: pass');print(log[-1],flush=True)
+ stop()
+try:
+ cases=[(n,D/(n+'.fixture.json'),N/(n+'.grid')) for n in 'AgentsHiddenParent LiveOverview LivePod CompactLiveOverview CompactLivePod TreeNested TreeWide CompactTreeNested CompactTreeWide'.split()]
+ cases += [(n,N/'fixtures'/(n+'.fixture.json'),N/(n+'.grid')) for n in 'HideManagerOverview CompactHideManagerOverview HideManagerPod CompactHideManagerPod HideAllPods CompactHideAllPods'.split()]
+ cases += [(n,D/(n+'.fixture.json'),D/(n+'.grid')) for n in 'Main AgentsMany CompactAgents AgentsHome AgentsCoordinatorChild'.split()]
+ for name,fx,grid in cases:
+  term=json.loads(fx.read_text())['terminal'];size=f"{term['width']}x{term['height']}";start(fx,size);txt=capture(name,size,grid);check(txt)
+  log.append(name+' initial grid: pass');print(log[-1],flush=True);stop()
+ for width,size,prefix in [('120','120x40',''),('80','80x24','Compact')]:
+  fx=E.parent/'verifier/fixtures'/f'coordinator-only-{width}.fixture.json'
+  notice=('no project agents','● coordinator');details=('coordinator-g8 · esc closes','[details]')
+  # Initial enter and each arrow are safe with zero pods. Down clears coordinator selection, and enter then does nothing.
+  steps=[('enter-empty','enter',notice,details,False),('left-empty','left',notice,details,False),('right-empty','right',notice,details,False),('down-empty','down',notice,details,False),('up','up',notice,details,True),('left-selected','left',notice,details,True),('right-selected','right',notice,details,True),('enter','enter',details,(),None),('esc','esc',notice,details,True),('down-selected','down',notice,details,False),('enter-deselected','enter',notice,details,False),('k','k',notice,details,True),('enter-k','enter',details,(),None),('esc-k','esc',notice,details,True),('h-shows','h',('─ hive ─','─ example-api ─'),('no project agents',),True),('h-hides','h',notice,details,True),('enter-after-cycle','enter',details,(),None),('esc-final','esc',notice,details,True)]
+  keys('zero-pods-'+size,fx,size,steps)
+  keys('selected-before-'+size,fx,size,[('h-shows','h',('━ hive ━',),(),False),('up','up',(),(),True),('h-hides','h',notice,details,True),('enter','enter',details,(),None),('esc','esc',notice,details,True)])
+  doc=json.loads(fx.read_text());doc['data']['projects']=[];doc['data']['agents']=[a for a in doc['data']['agents'] if a['role'] in ('coordinator','supervisor')];nr=T/f'noreg-{width}.fixture.json';nr.write_text(json.dumps(doc))
+  keys('no-registry-'+size,nr,size,[(k,k,('no project agents',),('● coordinator','esc closes','[details]'),None) for k in ('left','right','down','enter','up','k','enter','h','h')])
+  doc=json.loads(fx.read_text());doc['data']['agents']=[a for a in doc['data']['agents'] if a['role']!='coordinator'];none=T/f'none-{width}.fixture.json';none.write_text(json.dumps(doc))
+  keys('nothing-visible-'+size,none,size,[(k,k,('no project agents',),('● coordinator','esc closes','[details]'),None) for k in ('left','right','down','enter','up','k','enter')])
+  keys('home-only-'+size,N/'fixtures'/(prefix+'HideAllPods.fixture.json'),size,[('enter','enter',('project agents · home','● plan-review-1'),(),None),('esc','esc',('no project agents',),(),None)])
+  # h twice returns to the exact approved screen. In the one-pod view it returns to the same card selection.
+  for kind in ('Overview','Pod'):
+   name=prefix+'HideManager'+kind;fx=N/'fixtures'/(name+'.fixture.json');start(fx,size);capture(name+'-cycle-start',size,N/(name+'.grid'));key('h');txt=capture(name+'-cycle-shows',size);check(txt,('manager-api',),('h shows',));key('h');capture(name+'-cycle-hides',size,N/(name+'.grid'));stop();log.append(name+' h twice grid: pass')
+except Exception:
+ (E/'live-error.log').write_text(traceback.format_exc());raise
+finally:
+ rpc('tab.close',tab_id=tab);log.append('closed scratch tab '+tab+' and pane '+pane)
+ (E/'live-summary.log').write_text('\n'.join(log)+'\n');(E/'live-grid-compare.log').write_text('\n'.join(comparisons)+f'\n{len(comparisons)} comparisons\n')

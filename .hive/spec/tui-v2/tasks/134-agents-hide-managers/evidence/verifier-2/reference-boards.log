@@ -1,0 +1,83 @@
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-Main --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/Main.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/Main.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 7421251c73385c5b11e9da325d66e192be3617de9b1e9531067cdc09b124fdf9
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-AgentsMany --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/AgentsMany.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/AgentsMany.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 310485a5bf1b80c8cdb726ca2ed1de9c93be667b2ba566c74eefb12c4e7f7612
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-CompactAgents --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/CompactAgents.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/CompactAgents.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 e1139ed091261089197df53c2b80e9a9677428c6e83b687e57e59b84c999f8d6
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-AgentsHome --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/AgentsHome.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/AgentsHome.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 701a49766ae6b260e09d01bc36fe50b37d34bb1db73af774be0e652fdde2b907
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-AgentsCoordinatorChild --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/AgentsCoordinatorChild.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/AgentsCoordinatorChild.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 16f5a8d1badb3d42f6f752d9c8a3ae13e2a9d0a7c10c57c27acc882c8da554a7
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-AgentsHiddenParent --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/AgentsHiddenParent.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/AgentsHiddenParent.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 c7bee39720c6abe8439230a5c53f2d084ddaefb19f233a808c7a3023018b94b8
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-LiveOverview --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/LiveOverview.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/LiveOverview.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 1e94c30e0bcdd9d822973a99b97830debc65835ddce11749664c438033a43fd8
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-LivePod --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/LivePod.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/LivePod.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 5782af3101a7450b6fea6fe61cb91414ab24230b6af3945e852fb1a58f548853
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-CompactLiveOverview --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/CompactLiveOverview.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/CompactLiveOverview.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 2700bd774629d344f5891a0bcd1dde3f2a9ceb2743b43e6bca84709d32487b47
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-CompactLivePod --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/CompactLivePod.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/CompactLivePod.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 834387d26922cfcb1e76de8a1152de6229545b8493b54934a3464be50b2dc922
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-TreeNested --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/TreeNested.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/TreeNested.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 021d7913deb48ce881bc0e74eb07226b259074f71cf475e7446fb8cc6194a644
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-TreeWide --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/TreeWide.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/TreeWide.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 21a934b9f6a5a9fb7469d46439328c9c7d798601f0d7bc9fc3bbb8d3ec1fd7dd
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-CompactTreeNested --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/CompactTreeNested.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/CompactTreeNested.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 f951773785e74e1702939fccd7a0240911c16c50d9d2355114cc14c32fbb7a26
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134-second/board-profile-CompactTreeWide --window-size=1220,780 --screenshot /home/penguin/source/hive/.hive/tmp/verify134-second-boards/CompactTreeWide.png file:///home/penguin/source/hive/.hive/spec/tui-v2/design/CompactTreeWide.dc.html
+*** You are running in headless mode.
+
+exit 0
+sha256 ed9ed840d40f1cc75c2dd4ffd1e780795f0e70b9cc3b9c3c71aa66a03369bfe5

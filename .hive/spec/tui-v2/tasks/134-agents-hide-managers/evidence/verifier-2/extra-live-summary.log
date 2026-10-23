@@ -1,0 +1,25 @@
+pod-selection-120x40 start: pass
+pod-selection-120x40 h-shows: pass
+pod-selection-120x40 right: pass
+pod-selection-120x40 h-hides: pass
+pod-selection-120x40 h-restores: pass
+general-child-120x40 start: pass
+general-child-120x40 right: pass
+general-child-120x40 enter: pass
+general-child-120x40 esc: pass
+stopped manager with live worker and general child at 120x40: pass
+exited manager with live worker and general child at 120x40: pass
+stale manager with live worker and general child at 120x40: pass
+pod-selection-80x24 start: pass
+pod-selection-80x24 h-shows: pass
+pod-selection-80x24 right: pass
+pod-selection-80x24 h-hides: pass
+pod-selection-80x24 h-restores: pass
+general-child-80x24 start: pass
+general-child-80x24 right: pass
+general-child-80x24 enter: pass
+general-child-80x24 esc: pass
+stopped manager with live worker and general child at 80x24: pass
+exited manager with live worker and general child at 80x24: pass
+stale manager with live worker and general child at 80x24: pass
+closed scratch tab w1:t4 and pane w1:p4

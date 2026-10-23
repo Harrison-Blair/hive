@@ -1,0 +1,2305 @@
+$ go test -race ./internal/tui/ -run ^(TestAgentsHHidesAManagerWithNoLiveChild|TestAgentsHiddenManagerKeepsThePodOfALiveChild|TestAgentsPodViewHangsTheChildrenFromTheTopBorder|TestAgentsHintStaysWhenEveryProjectPodHides|TestAgentsNoHintWithNothingHidden|TestAgentsSelectionFollowsThePodsOfH|TestAgentsScrollStaysValidWhenPodsHide|TestAgentsGeneralChildOfAHiddenManagerStaysInThePod|TestAgentsGeneralChildOfAHiddenWorkerMovesToHome|TestAgentsAllProjectPodsHiddenKeepTheHomePod|TestAgentsNoticeAloneWhenNothingIsVisible|TestAgentsCoordinatorSelectableWithAllProjectPodsHidden|TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding|TestAgentsNoRegisteredProjectSelectsNothing|TestAgentsPodsFollowProjectRecordOrder)$ -count=50 -v
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.17s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.17s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.02s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.04s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.17s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.04s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.13s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.09s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.15s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.04s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.06s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.18s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.02s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.01s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+--- PASS: TestAgentsHHidesAManagerWithNoLiveChild (0.17s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+--- PASS: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.16s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+--- PASS: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.08s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+--- PASS: TestAgentsHintStaysWhenEveryProjectPodHides (0.04s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.01s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+--- PASS: TestAgentsSelectionFollowsThePodsOfH (0.10s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+--- PASS: TestAgentsScrollStaysValidWhenPodsHide (0.02s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+--- PASS: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.12s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.01s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+--- PASS: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.03s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+--- PASS: TestAgentsNoticeAloneWhenNothingIsVisible (0.02s)
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40
+=== RUN   TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24
+--- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.16s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.03s)
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40
+=== RUN   TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24
+--- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.05s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.03s)
+    --- PASS: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.02s)
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.01s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.01s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.02s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	51.753s
+
+exit 0

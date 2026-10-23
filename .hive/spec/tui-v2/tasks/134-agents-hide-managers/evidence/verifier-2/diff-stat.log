@@ -1,0 +1,555 @@
+From github.com:Harrison-Blair/hive
+ * branch              dev        -> FETCH_HEAD
+Already up to date.
+7a264df8416d315d638a65cddde1cd0a462bd183
+b34ee38d1cbb91eedc9d52ef1db3a9497fa10764
+b34ee38d1cbb91eedc9d52ef1db3a9497fa10764
+ .hive/spec/tui-v2/README.md                        |   20 +
+ .../spec/tui-v2/design/AgentsHiddenParent.dc.html  |    2 +-
+ .hive/spec/tui-v2/design/AgentsHiddenParent.grid   |    4 +-
+ .../spec/tui-v2/design/CompactLiveOverview.dc.html |    2 +-
+ .hive/spec/tui-v2/design/CompactLiveOverview.grid  |    4 +-
+ .hive/spec/tui-v2/design/CompactLivePod.dc.html    |    2 +-
+ .hive/spec/tui-v2/design/CompactLivePod.grid       |    4 +-
+ .hive/spec/tui-v2/design/CompactTreeNested.dc.html |    2 +-
+ .hive/spec/tui-v2/design/CompactTreeNested.grid    |    4 +-
+ .hive/spec/tui-v2/design/CompactTreeWide.dc.html   |    2 +-
+ .hive/spec/tui-v2/design/CompactTreeWide.grid      |    4 +-
+ .hive/spec/tui-v2/design/LiveOverview.dc.html      |    2 +-
+ .hive/spec/tui-v2/design/LiveOverview.grid         |    4 +-
+ .hive/spec/tui-v2/design/LivePod.dc.html           |    2 +-
+ .hive/spec/tui-v2/design/LivePod.grid              |    4 +-
+ .hive/spec/tui-v2/design/TreeNested.dc.html        |    2 +-
+ .hive/spec/tui-v2/design/TreeNested.grid           |    4 +-
+ .hive/spec/tui-v2/design/TreeWide.dc.html          |    2 +-
+ .hive/spec/tui-v2/design/TreeWide.grid             |    4 +-
+ .../tui-v2/tasks/134-agents-hide-managers/brief.md |  234 ++++
+ .../tasks/134-agents-hide-managers/evidence/V1.md  |  107 ++
+ .../tasks/134-agents-hide-managers/evidence/V2.md  |   56 +
+ .../tasks/134-agents-hide-managers/evidence/V3.md  |   80 ++
+ .../134-agents-hide-managers/evidence/V4-gate.log  |   97 ++
+ .../tasks/134-agents-hide-managers/evidence/V4.md  |   48 +
+ .../134-agents-hide-managers/evidence/VERIFIED.md  |  212 ++++
+ .../captures/AgentsHiddenParent-120x40.ansi        |   40 +
+ .../captures/AgentsHiddenParent-120x40.diff.txt    |    1 +
+ .../captures/AgentsHiddenParent-120x40.png         |  Bin 0 -> 75062 bytes
+ .../captures/CompactHideAllPods-80x24.ansi         |   24 +
+ .../captures/CompactHideAllPods-80x24.diff.txt     |    1 +
+ .../evidence/captures/CompactHideAllPods-80x24.png |  Bin 0 -> 37485 bytes
+ .../captures/CompactHideManagerOverview-80x24.ansi |   24 +
+ .../CompactHideManagerOverview-80x24.diff.txt      |    1 +
+ .../captures/CompactHideManagerOverview-80x24.png  |  Bin 0 -> 54033 bytes
+ .../captures/CompactHideManagerPod-80x24.ansi      |   24 +
+ .../captures/CompactHideManagerPod-80x24.diff.txt  |    1 +
+ .../captures/CompactHideManagerPod-80x24.png       |  Bin 0 -> 43301 bytes
+ .../captures/CompactLiveOverview-80x24.ansi        |   24 +
+ .../captures/CompactLiveOverview-80x24.diff.txt    |    1 +
+ .../captures/CompactLiveOverview-80x24.png         |  Bin 0 -> 52224 bytes
+ .../evidence/captures/CompactLivePod-80x24.ansi    |   24 +
+ .../captures/CompactLivePod-80x24.diff.txt         |    1 +
+ .../evidence/captures/CompactLivePod-80x24.png     |  Bin 0 -> 44841 bytes
+ .../evidence/captures/CompactTreeNested-80x24.ansi |   24 +
+ .../captures/CompactTreeNested-80x24.diff.txt      |    1 +
+ .../evidence/captures/CompactTreeNested-80x24.png  |  Bin 0 -> 42303 bytes
+ .../evidence/captures/CompactTreeWide-80x24.ansi   |   24 +
+ .../captures/CompactTreeWide-80x24.diff.txt        |    1 +
+ .../evidence/captures/CompactTreeWide-80x24.png    |  Bin 0 -> 46306 bytes
+ .../evidence/captures/HideAllPods-120x40.ansi      |   40 +
+ .../evidence/captures/HideAllPods-120x40.diff.txt  |    1 +
+ .../evidence/captures/HideAllPods-120x40.png       |  Bin 0 -> 50651 bytes
+ .../captures/HideManagerOverview-120x40.ansi       |   40 +
+ .../captures/HideManagerOverview-120x40.diff.txt   |    1 +
+ .../captures/HideManagerOverview-120x40.png        |  Bin 0 -> 78129 bytes
+ .../evidence/captures/HideManagerPod-120x40.ansi   |   40 +
+ .../captures/HideManagerPod-120x40.diff.txt        |    1 +
+ .../evidence/captures/HideManagerPod-120x40.png    |  Bin 0 -> 57242 bytes
+ .../evidence/captures/LiveOverview-120x40.ansi     |   40 +
+ .../evidence/captures/LiveOverview-120x40.diff.txt |    1 +
+ .../evidence/captures/LiveOverview-120x40.png      |  Bin 0 -> 76326 bytes
+ .../evidence/captures/LivePod-120x40.ansi          |   40 +
+ .../evidence/captures/LivePod-120x40.diff.txt      |    1 +
+ .../evidence/captures/LivePod-120x40.png           |  Bin 0 -> 61055 bytes
+ .../evidence/captures/TreeNested-120x40.ansi       |   40 +
+ .../evidence/captures/TreeNested-120x40.diff.txt   |    1 +
+ .../evidence/captures/TreeNested-120x40.png        |  Bin 0 -> 64235 bytes
+ .../evidence/captures/TreeWide-120x40.ansi         |   40 +
+ .../evidence/captures/TreeWide-120x40.diff.txt     |    1 +
+ .../evidence/captures/TreeWide-120x40.png          |  Bin 0 -> 67200 bytes
+ .../evidence/new-grids/AgentsHiddenParent.grid     |  121 ++
+ .../evidence/new-grids/AgentsHiddenParent.txt      |   40 +
+ .../evidence/new-grids/CompactHideAllPods.grid     |   73 ++
+ .../evidence/new-grids/CompactHideAllPods.txt      |   24 +
+ .../new-grids/CompactHideManagerOverview.grid      |   73 ++
+ .../new-grids/CompactHideManagerOverview.txt       |   24 +
+ .../evidence/new-grids/CompactHideManagerPod.grid  |   73 ++
+ .../evidence/new-grids/CompactHideManagerPod.txt   |   24 +
+ .../evidence/new-grids/CompactLiveOverview.grid    |   73 ++
+ .../evidence/new-grids/CompactLiveOverview.txt     |   24 +
+ .../evidence/new-grids/CompactLivePod.grid         |   73 ++
+ .../evidence/new-grids/CompactLivePod.txt          |   24 +
+ .../evidence/new-grids/CompactTreeNested.grid      |   73 ++
+ .../evidence/new-grids/CompactTreeNested.txt       |   24 +
+ .../evidence/new-grids/CompactTreeWide.grid        |   73 ++
+ .../evidence/new-grids/CompactTreeWide.txt         |   24 +
+ .../evidence/new-grids/HideAllPods.grid            |  121 ++
+ .../evidence/new-grids/HideAllPods.txt             |   40 +
+ .../evidence/new-grids/HideManagerOverview.grid    |  121 ++
+ .../evidence/new-grids/HideManagerOverview.txt     |   40 +
+ .../evidence/new-grids/HideManagerPod.grid         |  121 ++
+ .../evidence/new-grids/HideManagerPod.txt          |   40 +
+ .../evidence/new-grids/LiveOverview.grid           |  121 ++
+ .../evidence/new-grids/LiveOverview.txt            |   40 +
+ .../evidence/new-grids/LivePod.grid                |  121 ++
+ .../evidence/new-grids/LivePod.txt                 |   40 +
+ .../evidence/new-grids/README.md                   |   95 ++
+ .../evidence/new-grids/TreeNested.grid             |  121 ++
+ .../evidence/new-grids/TreeNested.txt              |   40 +
+ .../evidence/new-grids/TreeWide.grid               |  121 ++
+ .../evidence/new-grids/TreeWide.txt                |   40 +
+ .../evidence/new-grids/diff-rows.txt               |    9 +
+ .../fixtures/CompactHideAllPods.fixture.json       |  453 ++++++++
+ .../CompactHideManagerOverview.fixture.json        |  491 ++++++++
+ .../fixtures/CompactHideManagerPod.fixture.json    |  476 ++++++++
+ .../new-grids/fixtures/HideAllPods.fixture.json    |  453 ++++++++
+ .../fixtures/HideManagerOverview.fixture.json      |  491 ++++++++
+ .../new-grids/fixtures/HideManagerPod.fixture.json |  476 ++++++++
+ .../evidence/review-cases.md                       |  246 ++++
+ .../evidence/rework/README.md                      |  118 ++
+ .../evidence/rework/cmpgrid.go.txt                 |   37 +
+ .../evidence/rework/export-compare.log             |    1 +
+ .../evidence/rework/gate.log                       |   90 ++
+ .../evidence/rework/green-c50.log                  |    4 +
+ .../evidence/rework/green-r50.log                  |    4 +
+ .../rework/grids/AgentsCoordinatorChild.ansi       |   40 +
+ .../rework/grids/AgentsCoordinatorChild.txt        |   40 +
+ .../evidence/rework/grids/AgentsHiddenParent.ansi  |   40 +
+ .../evidence/rework/grids/AgentsHiddenParent.txt   |   40 +
+ .../evidence/rework/grids/AgentsHome.ansi          |   40 +
+ .../evidence/rework/grids/AgentsHome.txt           |   40 +
+ .../evidence/rework/grids/AgentsMany.ansi          |   40 +
+ .../evidence/rework/grids/AgentsMany.txt           |   40 +
+ .../evidence/rework/grids/CompactAgents.ansi       |   24 +
+ .../evidence/rework/grids/CompactAgents.txt        |   24 +
+ .../evidence/rework/grids/CompactHideAllPods.ansi  |   24 +
+ .../evidence/rework/grids/CompactHideAllPods.txt   |   24 +
+ .../rework/grids/CompactHideManagerOverview.ansi   |   24 +
+ .../rework/grids/CompactHideManagerOverview.txt    |   24 +
+ .../rework/grids/CompactHideManagerPod.ansi        |   24 +
+ .../rework/grids/CompactHideManagerPod.txt         |   24 +
+ .../evidence/rework/grids/CompactLiveOverview.ansi |   24 +
+ .../evidence/rework/grids/CompactLiveOverview.txt  |   24 +
+ .../evidence/rework/grids/CompactLivePod.ansi      |   24 +
+ .../evidence/rework/grids/CompactLivePod.txt       |   24 +
+ .../evidence/rework/grids/CompactTreeNested.ansi   |   24 +
+ .../evidence/rework/grids/CompactTreeNested.txt    |   24 +
+ .../evidence/rework/grids/CompactTreeWide.ansi     |   24 +
+ .../evidence/rework/grids/CompactTreeWide.txt      |   24 +
+ .../evidence/rework/grids/HideAllPods.ansi         |   40 +
+ .../evidence/rework/grids/HideAllPods.txt          |   40 +
+ .../evidence/rework/grids/HideManagerOverview.ansi |   40 +
+ .../evidence/rework/grids/HideManagerOverview.txt  |   40 +
+ .../evidence/rework/grids/HideManagerPod.ansi      |   40 +
+ .../evidence/rework/grids/HideManagerPod.txt       |   40 +
+ .../evidence/rework/grids/LiveOverview.ansi        |   40 +
+ .../evidence/rework/grids/LiveOverview.txt         |   40 +
+ .../evidence/rework/grids/LivePod.ansi             |   40 +
+ .../evidence/rework/grids/LivePod.txt              |   40 +
+ .../evidence/rework/grids/Main.ansi                |   40 +
+ .../evidence/rework/grids/Main.txt                 |   40 +
+ .../evidence/rework/grids/TreeNested.ansi          |   40 +
+ .../evidence/rework/grids/TreeNested.txt           |   40 +
+ .../evidence/rework/grids/TreeWide.ansi            |   40 +
+ .../evidence/rework/grids/TreeWide.txt             |   40 +
+ .../evidence/rework/grids/grid-compare.log         |   21 +
+ .../evidence/rework/guard-no-registry.log          |    7 +
+ .../evidence/rework/live-grids.py.txt              |   37 +
+ .../evidence/rework/live-keys.py.txt               |   50 +
+ .../rework/live/coord-before-120x40-0-start.ansi   |   40 +
+ .../rework/live/coord-before-120x40-0-start.txt    |   40 +
+ .../rework/live/coord-before-120x40-1-h-shows.ansi |   40 +
+ .../rework/live/coord-before-120x40-1-h-shows.txt  |   40 +
+ .../rework/live/coord-before-120x40-2-up.ansi      |   40 +
+ .../rework/live/coord-before-120x40-2-up.txt       |   40 +
+ .../rework/live/coord-before-120x40-3-h-hides.ansi |   40 +
+ .../rework/live/coord-before-120x40-3-h-hides.txt  |   40 +
+ .../rework/live/coord-before-120x40-4-enter.ansi   |   40 +
+ .../rework/live/coord-before-120x40-4-enter.png    |  Bin 0 -> 64961 bytes
+ .../rework/live/coord-before-120x40-4-enter.txt    |   40 +
+ .../rework/live/coord-before-80x24-0-start.ansi    |   24 +
+ .../rework/live/coord-before-80x24-0-start.txt     |   24 +
+ .../rework/live/coord-before-80x24-1-h-shows.ansi  |   24 +
+ .../rework/live/coord-before-80x24-1-h-shows.txt   |   24 +
+ .../rework/live/coord-before-80x24-2-up.ansi       |   24 +
+ .../rework/live/coord-before-80x24-2-up.txt        |   24 +
+ .../rework/live/coord-before-80x24-3-h-hides.ansi  |   24 +
+ .../rework/live/coord-before-80x24-3-h-hides.txt   |   24 +
+ .../rework/live/coord-before-80x24-4-enter.ansi    |   24 +
+ .../rework/live/coord-before-80x24-4-enter.png     |  Bin 0 -> 48760 bytes
+ .../rework/live/coord-before-80x24-4-enter.txt     |   24 +
+ .../rework/live/coord-k-120x40-0-start.ansi        |   40 +
+ .../rework/live/coord-k-120x40-0-start.txt         |   40 +
+ .../evidence/rework/live/coord-k-120x40-1-k.ansi   |   40 +
+ .../evidence/rework/live/coord-k-120x40-1-k.txt    |   40 +
+ .../rework/live/coord-k-120x40-2-enter.ansi        |   40 +
+ .../rework/live/coord-k-120x40-2-enter.png         |  Bin 0 -> 64961 bytes
+ .../rework/live/coord-k-120x40-2-enter.txt         |   40 +
+ .../rework/live/coord-k-80x24-0-start.ansi         |   24 +
+ .../evidence/rework/live/coord-k-80x24-0-start.txt |   24 +
+ .../evidence/rework/live/coord-k-80x24-1-k.ansi    |   24 +
+ .../evidence/rework/live/coord-k-80x24-1-k.txt     |   24 +
+ .../rework/live/coord-k-80x24-2-enter.ansi         |   24 +
+ .../evidence/rework/live/coord-k-80x24-2-enter.png |  Bin 0 -> 48760 bytes
+ .../evidence/rework/live/coord-k-80x24-2-enter.txt |   24 +
+ .../rework/live/coord-up-120x40-0-start.ansi       |   40 +
+ .../rework/live/coord-up-120x40-0-start.png        |  Bin 0 -> 48367 bytes
+ .../rework/live/coord-up-120x40-0-start.txt        |   40 +
+ .../evidence/rework/live/coord-up-120x40-1-up.ansi |   40 +
+ .../evidence/rework/live/coord-up-120x40-1-up.png  |  Bin 0 -> 48391 bytes
+ .../evidence/rework/live/coord-up-120x40-1-up.txt  |   40 +
+ .../rework/live/coord-up-120x40-2-enter.ansi       |   40 +
+ .../rework/live/coord-up-120x40-2-enter.png        |  Bin 0 -> 64961 bytes
+ .../rework/live/coord-up-120x40-2-enter.txt        |   40 +
+ .../rework/live/coord-up-120x40-3-esc.ansi         |   40 +
+ .../evidence/rework/live/coord-up-120x40-3-esc.txt |   40 +
+ .../rework/live/coord-up-120x40-4-h-shows.ansi     |   40 +
+ .../rework/live/coord-up-120x40-4-h-shows.txt      |   40 +
+ .../rework/live/coord-up-120x40-5-h-hides.ansi     |   40 +
+ .../rework/live/coord-up-120x40-5-h-hides.png      |  Bin 0 -> 48391 bytes
+ .../rework/live/coord-up-120x40-5-h-hides.txt      |   40 +
+ .../rework/live/coord-up-120x40-6-enter.ansi       |   40 +
+ .../rework/live/coord-up-120x40-6-enter.png        |  Bin 0 -> 64961 bytes
+ .../rework/live/coord-up-120x40-6-enter.txt        |   40 +
+ .../rework/live/coord-up-120x40-7-esc.ansi         |   40 +
+ .../evidence/rework/live/coord-up-120x40-7-esc.txt |   40 +
+ .../rework/live/coord-up-80x24-0-start.ansi        |   24 +
+ .../rework/live/coord-up-80x24-0-start.png         |  Bin 0 -> 35777 bytes
+ .../rework/live/coord-up-80x24-0-start.txt         |   24 +
+ .../evidence/rework/live/coord-up-80x24-1-up.ansi  |   24 +
+ .../evidence/rework/live/coord-up-80x24-1-up.png   |  Bin 0 -> 35791 bytes
+ .../evidence/rework/live/coord-up-80x24-1-up.txt   |   24 +
+ .../rework/live/coord-up-80x24-2-enter.ansi        |   24 +
+ .../rework/live/coord-up-80x24-2-enter.png         |  Bin 0 -> 48760 bytes
+ .../rework/live/coord-up-80x24-2-enter.txt         |   24 +
+ .../evidence/rework/live/coord-up-80x24-3-esc.ansi |   24 +
+ .../evidence/rework/live/coord-up-80x24-3-esc.txt  |   24 +
+ .../rework/live/coord-up-80x24-4-h-shows.ansi      |   24 +
+ .../rework/live/coord-up-80x24-4-h-shows.txt       |   24 +
+ .../rework/live/coord-up-80x24-5-h-hides.ansi      |   24 +
+ .../rework/live/coord-up-80x24-5-h-hides.png       |  Bin 0 -> 35791 bytes
+ .../rework/live/coord-up-80x24-5-h-hides.txt       |   24 +
+ .../rework/live/coord-up-80x24-6-enter.ansi        |   24 +
+ .../rework/live/coord-up-80x24-6-enter.png         |  Bin 0 -> 48760 bytes
+ .../rework/live/coord-up-80x24-6-enter.txt         |   24 +
+ .../evidence/rework/live/coord-up-80x24-7-esc.ansi |   24 +
+ .../evidence/rework/live/coord-up-80x24-7-esc.txt  |   24 +
+ .../evidence/rework/live/live-keys.log             |   38 +
+ .../evidence/rework/live/noreg-120x40-0-start.ansi |   40 +
+ .../evidence/rework/live/noreg-120x40-0-start.txt  |   40 +
+ .../evidence/rework/live/noreg-120x40-1-up.ansi    |   40 +
+ .../evidence/rework/live/noreg-120x40-1-up.txt     |   40 +
+ .../evidence/rework/live/noreg-120x40-2-enter.ansi |   40 +
+ .../evidence/rework/live/noreg-120x40-2-enter.png  |  Bin 0 -> 35256 bytes
+ .../evidence/rework/live/noreg-120x40-2-enter.txt  |   40 +
+ .../evidence/rework/live/noreg-80x24-0-start.ansi  |   24 +
+ .../evidence/rework/live/noreg-80x24-0-start.txt   |   24 +
+ .../evidence/rework/live/noreg-80x24-1-up.ansi     |   24 +
+ .../evidence/rework/live/noreg-80x24-1-up.txt      |   24 +
+ .../evidence/rework/live/noreg-80x24-2-enter.ansi  |   24 +
+ .../evidence/rework/live/noreg-80x24-2-enter.png   |  Bin 0 -> 29506 bytes
+ .../evidence/rework/live/noreg-80x24-2-enter.txt   |   24 +
+ .../evidence/rework/red-before-fix.log             |   17 +
+ .../evidence/rework/verifier-regression-green.log  |    4 +
+ .../evidence/v1/green-count50.txt                  | 1202 +++++++++++++++++++
+ .../evidence/v1/green-race.txt                     | 1202 +++++++++++++++++++
+ .../evidence/v1/mutants-review-cases.txt           |   20 +
+ .../evidence/v1/mutants.txt                        |   81 ++
+ .../evidence/v1/red-review-cases.txt               |   93 ++
+ .../134-agents-hide-managers/evidence/v1/red.txt   |  249 ++++
+ .../evidence/v2-export.txt                         |   63 +
+ .../evidence/v2-golden.txt                         |  382 +++++++
+ .../evidence/v3/allhidden-80x24-1-start.txt        |   24 +
+ .../evidence/v3/allhidden-80x24-2-enter.txt        |   24 +
+ .../evidence/v3/allhidden-80x24-3-esc.txt          |   24 +
+ .../evidence/v3/hcycle-120x40-1-start.txt          |   40 +
+ .../evidence/v3/hcycle-120x40-2-h-shows.txt        |   40 +
+ .../evidence/v3/hcycle-120x40-3-h-hides.txt        |   40 +
+ .../evidence/v3/hcycle-80x24-1-start.txt           |   24 +
+ .../evidence/v3/hcycle-80x24-2-h-shows.txt         |   24 +
+ .../evidence/v3/hcycle-80x24-3-h-hides.txt         |   24 +
+ .../evidence/v3/podview-80x24-1-start.txt          |   24 +
+ .../evidence/v3/podview-80x24-2-right.txt          |   24 +
+ .../evidence/v3/podview-80x24-3-up.txt             |   24 +
+ .../evidence/v3/select-120x40-1-start.txt          |   40 +
+ .../evidence/v3/select-120x40-2-h-shows.txt        |   40 +
+ .../evidence/v3/select-120x40-3-right.txt          |   40 +
+ .../evidence/v3/select-120x40-4-h-hides.txt        |   40 +
+ .../evidence/v3/select-120x40-5-h-shows-again.txt  |   40 +
+ .../evidence/verifier/board-png-compare.log        |    9 +
+ .../evidence/verifier/boards.log                   |   15 +
+ .../evidence/verifier/cleanup.log                  |   18 +
+ .../evidence/verifier/coordinator-model-red.log    |   75 ++
+ .../verifier/coordinator-regression.go.txt         |   23 +
+ .../evidence/verifier/coordinator-selection.log    |    8 +
+ .../evidence/verifier/diff-stat.log                |  139 +++
+ .../evidence/verifier/export.log                   |    0
+ .../fixtures/coordinator-only-120.fixture.json     |    1 +
+ .../fixtures/coordinator-only-80.fixture.json      |    1 +
+ .../evidence/verifier/gate.log                     |   90 ++
+ .../evidence/verifier/golden.log                   |  406 +++++++
+ .../evidence/verifier/green-count50.log            | 1205 ++++++++++++++++++++
+ .../evidence/verifier/green-race50.log             | 1205 ++++++++++++++++++++
+ .../evidence/verifier/grid-compare.log             |   56 +
+ .../evidence/verifier/guard-hidden-worker.log      |   49 +
+ .../evidence/verifier/guard-no-hint.log            |   49 +
+ .../evidence/verifier/guard-notice.log             |    9 +
+ .../evidence/verifier/guard-record-order.log       |   49 +
+ .../evidence/verifier/live-summary.log             |   52 +
+ .../evidence/verifier/live-unchanged.log           |   10 +
+ .../verifier/live/AgentsCoordinatorChild.ansi      |   40 +
+ .../verifier/live/AgentsCoordinatorChild.diff.txt  |    1 +
+ .../verifier/live/AgentsCoordinatorChild.png       |  Bin 0 -> 58122 bytes
+ .../verifier/live/AgentsCoordinatorChild.read.json |    8 +
+ .../verifier/live/AgentsCoordinatorChild.txt       |   40 +
+ .../evidence/verifier/live/AgentsHiddenParent.ansi |   40 +
+ .../verifier/live/AgentsHiddenParent.diff.txt      |    1 +
+ .../evidence/verifier/live/AgentsHiddenParent.png  |  Bin 0 -> 89599 bytes
+ .../verifier/live/AgentsHiddenParent.read.json     |    8 +
+ .../evidence/verifier/live/AgentsHiddenParent.txt  |   40 +
+ .../evidence/verifier/live/AgentsHome.ansi         |   40 +
+ .../evidence/verifier/live/AgentsHome.diff.txt     |    1 +
+ .../evidence/verifier/live/AgentsHome.png          |  Bin 0 -> 99473 bytes
+ .../evidence/verifier/live/AgentsHome.read.json    |    8 +
+ .../evidence/verifier/live/AgentsHome.txt          |   40 +
+ .../evidence/verifier/live/AgentsMany.ansi         |   40 +
+ .../evidence/verifier/live/AgentsMany.diff.txt     |    1 +
+ .../evidence/verifier/live/AgentsMany.png          |  Bin 0 -> 116135 bytes
+ .../evidence/verifier/live/AgentsMany.read.json    |    8 +
+ .../evidence/verifier/live/AgentsMany.txt          |   40 +
+ .../evidence/verifier/live/CompactAgents.ansi      |   24 +
+ .../evidence/verifier/live/CompactAgents.diff.txt  |    1 +
+ .../evidence/verifier/live/CompactAgents.png       |  Bin 0 -> 49080 bytes
+ .../evidence/verifier/live/CompactAgents.read.json |    8 +
+ .../evidence/verifier/live/CompactAgents.txt       |   24 +
+ .../live/CompactHideAllPods-hide-pods.ansi         |   24 +
+ .../live/CompactHideAllPods-hide-pods.read.json    |    8 +
+ .../verifier/live/CompactHideAllPods-hide-pods.txt |   24 +
+ .../live/CompactHideAllPods-home-back.ansi         |   24 +
+ .../live/CompactHideAllPods-home-back.read.json    |    8 +
+ .../verifier/live/CompactHideAllPods-home-back.txt |   24 +
+ .../live/CompactHideAllPods-home-open.ansi         |   24 +
+ .../live/CompactHideAllPods-home-open.read.json    |    8 +
+ .../verifier/live/CompactHideAllPods-home-open.txt |   24 +
+ .../live/CompactHideAllPods-restore-api.ansi       |   24 +
+ .../live/CompactHideAllPods-restore-api.read.json  |    8 +
+ .../live/CompactHideAllPods-restore-api.txt        |   24 +
+ .../live/CompactHideAllPods-select-api.ansi        |   24 +
+ .../live/CompactHideAllPods-select-api.read.json   |    8 +
+ .../live/CompactHideAllPods-select-api.txt         |   24 +
+ .../live/CompactHideAllPods-selection-start.ansi   |   24 +
+ .../CompactHideAllPods-selection-start.read.json   |    8 +
+ .../live/CompactHideAllPods-selection-start.txt    |   24 +
+ .../live/CompactHideAllPods-show-pods.ansi         |   24 +
+ .../live/CompactHideAllPods-show-pods.read.json    |    8 +
+ .../verifier/live/CompactHideAllPods-show-pods.txt |   24 +
+ .../evidence/verifier/live/CompactHideAllPods.ansi |   24 +
+ .../verifier/live/CompactHideAllPods.diff.txt      |    1 +
+ .../evidence/verifier/live/CompactHideAllPods.png  |  Bin 0 -> 44710 bytes
+ .../verifier/live/CompactHideAllPods.read.json     |    8 +
+ .../evidence/verifier/live/CompactHideAllPods.txt  |   24 +
+ .../live/CompactHideManagerOverview-h-hidden.ansi  |   24 +
+ .../CompactHideManagerOverview-h-hidden.diff.txt   |    1 +
+ .../live/CompactHideManagerOverview-h-hidden.png   |  Bin 0 -> 64490 bytes
+ .../CompactHideManagerOverview-h-hidden.read.json  |    8 +
+ .../live/CompactHideManagerOverview-h-hidden.txt   |   24 +
+ .../live/CompactHideManagerOverview-h-shown.ansi   |   24 +
+ .../CompactHideManagerOverview-h-shown.read.json   |    8 +
+ .../live/CompactHideManagerOverview-h-shown.txt    |   24 +
+ .../verifier/live/CompactHideManagerOverview.ansi  |   24 +
+ .../live/CompactHideManagerOverview.diff.txt       |    1 +
+ .../verifier/live/CompactHideManagerOverview.png   |  Bin 0 -> 64490 bytes
+ .../live/CompactHideManagerOverview.read.json      |    8 +
+ .../verifier/live/CompactHideManagerOverview.txt   |   24 +
+ .../verifier/live/CompactHideManagerPod-right.ansi |   24 +
+ .../live/CompactHideManagerPod-right.read.json     |    8 +
+ .../verifier/live/CompactHideManagerPod-right.txt  |   24 +
+ .../verifier/live/CompactHideManagerPod-up.ansi    |   24 +
+ .../live/CompactHideManagerPod-up.read.json        |    8 +
+ .../verifier/live/CompactHideManagerPod-up.txt     |   24 +
+ .../verifier/live/CompactHideManagerPod.ansi       |   24 +
+ .../verifier/live/CompactHideManagerPod.diff.txt   |    1 +
+ .../verifier/live/CompactHideManagerPod.png        |  Bin 0 -> 50188 bytes
+ .../verifier/live/CompactHideManagerPod.read.json  |    8 +
+ .../verifier/live/CompactHideManagerPod.txt        |   24 +
+ .../verifier/live/CompactLiveOverview.ansi         |   24 +
+ .../verifier/live/CompactLiveOverview.diff.txt     |    1 +
+ .../evidence/verifier/live/CompactLiveOverview.png |  Bin 0 -> 65000 bytes
+ .../verifier/live/CompactLiveOverview.read.json    |    8 +
+ .../evidence/verifier/live/CompactLiveOverview.txt |   24 +
+ .../evidence/verifier/live/CompactLivePod.ansi     |   24 +
+ .../evidence/verifier/live/CompactLivePod.diff.txt |    1 +
+ .../evidence/verifier/live/CompactLivePod.png      |  Bin 0 -> 52114 bytes
+ .../verifier/live/CompactLivePod.read.json         |    8 +
+ .../evidence/verifier/live/CompactLivePod.txt      |   24 +
+ .../evidence/verifier/live/CompactTreeNested.ansi  |   24 +
+ .../verifier/live/CompactTreeNested.diff.txt       |    1 +
+ .../evidence/verifier/live/CompactTreeNested.png   |  Bin 0 -> 50602 bytes
+ .../verifier/live/CompactTreeNested.read.json      |    8 +
+ .../evidence/verifier/live/CompactTreeNested.txt   |   24 +
+ .../evidence/verifier/live/CompactTreeWide.ansi    |   24 +
+ .../verifier/live/CompactTreeWide.diff.txt         |    1 +
+ .../evidence/verifier/live/CompactTreeWide.png     |  Bin 0 -> 54886 bytes
+ .../verifier/live/CompactTreeWide.read.json        |    8 +
+ .../evidence/verifier/live/CompactTreeWide.txt     |   24 +
+ .../verifier/live/HideAllPods-hide-pods.ansi       |   40 +
+ .../verifier/live/HideAllPods-hide-pods.read.json  |    8 +
+ .../verifier/live/HideAllPods-hide-pods.txt        |   40 +
+ .../verifier/live/HideAllPods-home-back.ansi       |   40 +
+ .../verifier/live/HideAllPods-home-back.read.json  |    8 +
+ .../verifier/live/HideAllPods-home-back.txt        |   40 +
+ .../verifier/live/HideAllPods-home-open.ansi       |   40 +
+ .../verifier/live/HideAllPods-home-open.read.json  |    8 +
+ .../verifier/live/HideAllPods-home-open.txt        |   40 +
+ .../verifier/live/HideAllPods-restore-api.ansi     |   40 +
+ .../live/HideAllPods-restore-api.read.json         |    8 +
+ .../verifier/live/HideAllPods-restore-api.txt      |   40 +
+ .../verifier/live/HideAllPods-select-api.ansi      |   40 +
+ .../verifier/live/HideAllPods-select-api.read.json |    8 +
+ .../verifier/live/HideAllPods-select-api.txt       |   40 +
+ .../verifier/live/HideAllPods-selection-start.ansi |   40 +
+ .../live/HideAllPods-selection-start.read.json     |    8 +
+ .../verifier/live/HideAllPods-selection-start.txt  |   40 +
+ .../verifier/live/HideAllPods-show-pods.ansi       |   40 +
+ .../verifier/live/HideAllPods-show-pods.read.json  |    8 +
+ .../verifier/live/HideAllPods-show-pods.txt        |   40 +
+ .../evidence/verifier/live/HideAllPods.ansi        |   40 +
+ .../evidence/verifier/live/HideAllPods.diff.txt    |    1 +
+ .../evidence/verifier/live/HideAllPods.png         |  Bin 0 -> 58375 bytes
+ .../evidence/verifier/live/HideAllPods.read.json   |    8 +
+ .../evidence/verifier/live/HideAllPods.txt         |   40 +
+ .../live/HideManagerOverview-h-hidden.ansi         |   40 +
+ .../live/HideManagerOverview-h-hidden.diff.txt     |    1 +
+ .../verifier/live/HideManagerOverview-h-hidden.png |  Bin 0 -> 92660 bytes
+ .../live/HideManagerOverview-h-hidden.read.json    |    8 +
+ .../verifier/live/HideManagerOverview-h-hidden.txt |   40 +
+ .../verifier/live/HideManagerOverview-h-shown.ansi |   40 +
+ .../live/HideManagerOverview-h-shown.read.json     |    8 +
+ .../verifier/live/HideManagerOverview-h-shown.txt  |   40 +
+ .../verifier/live/HideManagerOverview.ansi         |   40 +
+ .../verifier/live/HideManagerOverview.diff.txt     |    1 +
+ .../evidence/verifier/live/HideManagerOverview.png |  Bin 0 -> 92660 bytes
+ .../verifier/live/HideManagerOverview.read.json    |    8 +
+ .../evidence/verifier/live/HideManagerOverview.txt |   40 +
+ .../verifier/live/HideManagerPod-right.ansi        |   40 +
+ .../verifier/live/HideManagerPod-right.read.json   |    8 +
+ .../verifier/live/HideManagerPod-right.txt         |   40 +
+ .../evidence/verifier/live/HideManagerPod-up.ansi  |   40 +
+ .../verifier/live/HideManagerPod-up.read.json      |    8 +
+ .../evidence/verifier/live/HideManagerPod-up.txt   |   40 +
+ .../evidence/verifier/live/HideManagerPod.ansi     |   40 +
+ .../evidence/verifier/live/HideManagerPod.diff.txt |    1 +
+ .../evidence/verifier/live/HideManagerPod.png      |  Bin 0 -> 65003 bytes
+ .../verifier/live/HideManagerPod.read.json         |    8 +
+ .../evidence/verifier/live/HideManagerPod.txt      |   40 +
+ .../evidence/verifier/live/LiveOverview.ansi       |   40 +
+ .../evidence/verifier/live/LiveOverview.diff.txt   |    1 +
+ .../evidence/verifier/live/LiveOverview.png        |  Bin 0 -> 93456 bytes
+ .../evidence/verifier/live/LiveOverview.read.json  |    8 +
+ .../evidence/verifier/live/LiveOverview.txt        |   40 +
+ .../evidence/verifier/live/LivePod.ansi            |   40 +
+ .../evidence/verifier/live/LivePod.diff.txt        |    1 +
+ .../evidence/verifier/live/LivePod.png             |  Bin 0 -> 68046 bytes
+ .../evidence/verifier/live/LivePod.read.json       |    8 +
+ .../evidence/verifier/live/LivePod.txt             |   40 +
+ .../evidence/verifier/live/Main.ansi               |   40 +
+ .../evidence/verifier/live/Main.diff.txt           |    1 +
+ .../evidence/verifier/live/Main.png                |  Bin 0 -> 63839 bytes
+ .../evidence/verifier/live/Main.read.json          |    8 +
+ .../evidence/verifier/live/Main.txt                |   40 +
+ .../evidence/verifier/live/TreeNested.ansi         |   40 +
+ .../evidence/verifier/live/TreeNested.diff.txt     |    1 +
+ .../evidence/verifier/live/TreeNested.png          |  Bin 0 -> 71337 bytes
+ .../evidence/verifier/live/TreeNested.read.json    |    8 +
+ .../evidence/verifier/live/TreeNested.txt          |   40 +
+ .../evidence/verifier/live/TreeWide.ansi           |   40 +
+ .../evidence/verifier/live/TreeWide.diff.txt       |    1 +
+ .../evidence/verifier/live/TreeWide.png            |  Bin 0 -> 78587 bytes
+ .../evidence/verifier/live/TreeWide.read.json      |    8 +
+ .../evidence/verifier/live/TreeWide.txt            |   40 +
+ .../live/coordinator-only-120x40-keys-blocked.ansi |   40 +
+ .../coordinator-only-120x40-keys-blocked.read.json |    8 +
+ .../live/coordinator-only-120x40-keys-blocked.txt  |   40 +
+ .../live/coordinator-only-120x40-keys-enter.ansi   |   40 +
+ .../live/coordinator-only-120x40-keys-enter.png    |  Bin 0 -> 48142 bytes
+ .../coordinator-only-120x40-keys-enter.read.json   |    8 +
+ .../live/coordinator-only-120x40-keys-enter.txt    |   40 +
+ ...coordinator-only-120x40-keys-popup-control.ansi |   40 +
+ ...inator-only-120x40-keys-popup-control.read.json |    8 +
+ .../coordinator-only-120x40-keys-popup-control.txt |   40 +
+ ...ordinator-only-120x40-keys-selected-hidden.ansi |   40 +
+ ...oordinator-only-120x40-keys-selected-hidden.png |  Bin 0 -> 48175 bytes
+ ...ator-only-120x40-keys-selected-hidden.read.json |    8 +
+ ...oordinator-only-120x40-keys-selected-hidden.txt |   40 +
+ .../coordinator-only-120x40-keys-selected.ansi     |   40 +
+ ...coordinator-only-120x40-keys-selected.read.json |    8 +
+ .../live/coordinator-only-120x40-keys-selected.txt |   40 +
+ .../live/coordinator-only-120x40-keys-shown.ansi   |   40 +
+ .../coordinator-only-120x40-keys-shown.read.json   |    8 +
+ .../live/coordinator-only-120x40-keys-shown.txt    |   40 +
+ .../live/coordinator-only-120x40-keys-start.ansi   |   40 +
+ .../coordinator-only-120x40-keys-start.read.json   |    8 +
+ .../live/coordinator-only-120x40-keys-start.txt    |   40 +
+ .../live/coordinator-only-120x40-keys-up.ansi      |   40 +
+ .../live/coordinator-only-120x40-keys-up.read.json |    8 +
+ .../live/coordinator-only-120x40-keys-up.txt       |   40 +
+ .../verifier/live/coordinator-only-120x40.ansi     |   40 +
+ .../live/coordinator-only-120x40.read.json         |    8 +
+ .../verifier/live/coordinator-only-120x40.txt      |   40 +
+ .../live/coordinator-only-80x24-keys-blocked.ansi  |   24 +
+ .../coordinator-only-80x24-keys-blocked.read.json  |    8 +
+ .../live/coordinator-only-80x24-keys-blocked.txt   |   24 +
+ .../live/coordinator-only-80x24-keys-enter.ansi    |   24 +
+ .../live/coordinator-only-80x24-keys-enter.png     |  Bin 0 -> 35877 bytes
+ .../coordinator-only-80x24-keys-enter.read.json    |    8 +
+ .../live/coordinator-only-80x24-keys-enter.txt     |   24 +
+ .../coordinator-only-80x24-keys-popup-control.ansi |   24 +
+ ...dinator-only-80x24-keys-popup-control.read.json |    8 +
+ .../coordinator-only-80x24-keys-popup-control.txt  |   24 +
+ ...oordinator-only-80x24-keys-selected-hidden.ansi |   24 +
+ ...coordinator-only-80x24-keys-selected-hidden.png |  Bin 0 -> 35892 bytes
+ ...nator-only-80x24-keys-selected-hidden.read.json |    8 +
+ ...coordinator-only-80x24-keys-selected-hidden.txt |   24 +
+ .../live/coordinator-only-80x24-keys-selected.ansi |   24 +
+ .../coordinator-only-80x24-keys-selected.read.json |    8 +
+ .../live/coordinator-only-80x24-keys-selected.txt  |   24 +
+ .../live/coordinator-only-80x24-keys-shown.ansi    |   24 +
+ .../coordinator-only-80x24-keys-shown.read.json    |    8 +
+ .../live/coordinator-only-80x24-keys-shown.txt     |   24 +
+ .../live/coordinator-only-80x24-keys-start.ansi    |   24 +
+ .../coordinator-only-80x24-keys-start.read.json    |    8 +
+ .../live/coordinator-only-80x24-keys-start.txt     |   24 +
+ .../live/coordinator-only-80x24-keys-up.ansi       |   24 +
+ .../live/coordinator-only-80x24-keys-up.read.json  |    8 +
+ .../live/coordinator-only-80x24-keys-up.txt        |   24 +
+ .../verifier/live/coordinator-only-80x24.ansi      |   24 +
+ .../verifier/live/coordinator-only-80x24.read.json |    8 +
+ .../verifier/live/coordinator-only-80x24.txt       |   24 +
+ .../evidence/verifier/live/no-registry-120x40.ansi |   40 +
+ .../verifier/live/no-registry-120x40.read.json     |    8 +
+ .../evidence/verifier/live/no-registry-120x40.txt  |   40 +
+ .../evidence/verifier/live/no-registry-80x24.ansi  |   24 +
+ .../verifier/live/no-registry-80x24.read.json      |    8 +
+ .../evidence/verifier/live/no-registry-80x24.txt   |   24 +
+ .../verifier/live/nothing-visible-120x40.ansi      |   40 +
+ .../verifier/live/nothing-visible-120x40.read.json |    8 +
+ .../verifier/live/nothing-visible-120x40.txt       |   40 +
+ .../verifier/live/nothing-visible-80x24.ansi       |   24 +
+ .../verifier/live/nothing-visible-80x24.read.json  |    8 +
+ .../verifier/live/nothing-visible-80x24.txt        |   24 +
+ .../evidence/verifier/red-base.log                 |  383 +++++++
+ .../evidence/verifier/report-lint.json             |    8 +
+ .../evidence/verifier/v1-summary.txt               |    3 +
+ internal/tui/agents_hide_test.go                   |  422 +++++++
+ internal/tui/agents_screen.go                      |  138 ++-
+ internal/tui/agents_screen_test.go                 |    9 +-
+ testdata/ste-baseline.json                         |    1 +
+ 548 files changed, 23664 insertions(+), 63 deletions(-)

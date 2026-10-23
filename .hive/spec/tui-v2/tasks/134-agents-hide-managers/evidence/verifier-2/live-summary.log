@@ -1,0 +1,117 @@
+AgentsHiddenParent initial grid: pass
+LiveOverview initial grid: pass
+LivePod initial grid: pass
+CompactLiveOverview initial grid: pass
+CompactLivePod initial grid: pass
+TreeNested initial grid: pass
+TreeWide initial grid: pass
+CompactTreeNested initial grid: pass
+CompactTreeWide initial grid: pass
+HideManagerOverview initial grid: pass
+CompactHideManagerOverview initial grid: pass
+HideManagerPod initial grid: pass
+CompactHideManagerPod initial grid: pass
+HideAllPods initial grid: pass
+CompactHideAllPods initial grid: pass
+Main initial grid: pass
+AgentsMany initial grid: pass
+CompactAgents initial grid: pass
+AgentsHome initial grid: pass
+AgentsCoordinatorChild initial grid: pass
+zero-pods-120x40 start: pass
+zero-pods-120x40 enter-empty: pass
+zero-pods-120x40 left-empty: pass
+zero-pods-120x40 right-empty: pass
+zero-pods-120x40 down-empty: pass
+zero-pods-120x40 up: pass
+zero-pods-120x40 left-selected: pass
+zero-pods-120x40 right-selected: pass
+zero-pods-120x40 enter: pass
+zero-pods-120x40 esc: pass
+zero-pods-120x40 down-selected: pass
+zero-pods-120x40 enter-deselected: pass
+zero-pods-120x40 k: pass
+zero-pods-120x40 enter-k: pass
+zero-pods-120x40 esc-k: pass
+zero-pods-120x40 h-shows: pass
+zero-pods-120x40 h-hides: pass
+zero-pods-120x40 enter-after-cycle: pass
+zero-pods-120x40 esc-final: pass
+selected-before-120x40 start: pass
+selected-before-120x40 h-shows: pass
+selected-before-120x40 up: pass
+selected-before-120x40 h-hides: pass
+selected-before-120x40 enter: pass
+selected-before-120x40 esc: pass
+no-registry-120x40 start: pass
+no-registry-120x40 left: pass
+no-registry-120x40 right: pass
+no-registry-120x40 down: pass
+no-registry-120x40 enter: pass
+no-registry-120x40 up: pass
+no-registry-120x40 k: pass
+no-registry-120x40 enter: pass
+no-registry-120x40 h: pass
+no-registry-120x40 h: pass
+nothing-visible-120x40 start: pass
+nothing-visible-120x40 left: pass
+nothing-visible-120x40 right: pass
+nothing-visible-120x40 down: pass
+nothing-visible-120x40 enter: pass
+nothing-visible-120x40 up: pass
+nothing-visible-120x40 k: pass
+nothing-visible-120x40 enter: pass
+home-only-120x40 start: pass
+home-only-120x40 enter: pass
+home-only-120x40 esc: pass
+HideManagerOverview h twice grid: pass
+HideManagerPod h twice grid: pass
+zero-pods-80x24 start: pass
+zero-pods-80x24 enter-empty: pass
+zero-pods-80x24 left-empty: pass
+zero-pods-80x24 right-empty: pass
+zero-pods-80x24 down-empty: pass
+zero-pods-80x24 up: pass
+zero-pods-80x24 left-selected: pass
+zero-pods-80x24 right-selected: pass
+zero-pods-80x24 enter: pass
+zero-pods-80x24 esc: pass
+zero-pods-80x24 down-selected: pass
+zero-pods-80x24 enter-deselected: pass
+zero-pods-80x24 k: pass
+zero-pods-80x24 enter-k: pass
+zero-pods-80x24 esc-k: pass
+zero-pods-80x24 h-shows: pass
+zero-pods-80x24 h-hides: pass
+zero-pods-80x24 enter-after-cycle: pass
+zero-pods-80x24 esc-final: pass
+selected-before-80x24 start: pass
+selected-before-80x24 h-shows: pass
+selected-before-80x24 up: pass
+selected-before-80x24 h-hides: pass
+selected-before-80x24 enter: pass
+selected-before-80x24 esc: pass
+no-registry-80x24 start: pass
+no-registry-80x24 left: pass
+no-registry-80x24 right: pass
+no-registry-80x24 down: pass
+no-registry-80x24 enter: pass
+no-registry-80x24 up: pass
+no-registry-80x24 k: pass
+no-registry-80x24 enter: pass
+no-registry-80x24 h: pass
+no-registry-80x24 h: pass
+nothing-visible-80x24 start: pass
+nothing-visible-80x24 left: pass
+nothing-visible-80x24 right: pass
+nothing-visible-80x24 down: pass
+nothing-visible-80x24 enter: pass
+nothing-visible-80x24 up: pass
+nothing-visible-80x24 k: pass
+nothing-visible-80x24 enter: pass
+home-only-80x24 start: pass
+home-only-80x24 enter: pass
+home-only-80x24 esc: pass
+CompactHideManagerOverview h twice grid: pass
+CompactHideManagerPod h twice grid: pass
+closed scratch tab w1:t3 and pane w1:p3

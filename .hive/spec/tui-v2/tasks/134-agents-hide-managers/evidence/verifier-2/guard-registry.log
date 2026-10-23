@@ -1,0 +1,78 @@
+$ go test ./internal/tui/ -run ^TestAgentsNoRegisteredProjectSelectsNothing$ -count=1 -v
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/120x40
+    agents_hide_test.go:419: view contains "esc closes":
+         hive  /tmp/TestAgentsNoRegisteredProjec… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 0 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │  no project agents                                                                                                   │
+        │                                                                                                                      │
+        │                             ╭─ coordinator · esc closes ───────────────────────────────╮                             │
+        │                             │                                                          │                             │
+        │                             │  role      coordinator                                   │                             │
+        │                             │  status    ○ live · unknown                              │                             │
+        │                             │  harness   claude                                        │                             │
+        │                             │  tab       coordinator                                   │                             │
+        │                             │                                                          │                             │
+        │                             │  ACTIONS                                                 │                             │
+        │                             │  a  attach to pane                                       │                             │
+        │                             │  p  peek pane                                            │                             │
+        │                             │  t  open task · none                                     │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             │                                                          │                             │
+        │                             ╰──────────────────────────────────────────────────────────╯                             │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [details] a attach · p peek · t task · ↑↓ scroll · esc close                                                           
+=== RUN   TestAgentsNoRegisteredProjectSelectsNothing/80x24
+    agents_hide_test.go:419: view contains "esc closes":
+         hive                               coord ○ · sup ○ · ? 0 · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+        ╭─ project╭─ coordinator · esc closes ───────────────────────────────╮─────────╮
+        │         │                                                          │         │
+        │  no proj│  role      coordinator                                   │         │
+        │         │  status    ○ live · unknown                              │         │
+        │         │  harness   claude                                        │         │
+        │         │  tab       coordinator                                   │         │
+        │         │                                                          │         │
+        │         │  ACTIONS                                                 │         │
+        │         │  a  attach to pane                                       │         │
+        │         │  p  peek pane                                            │         │
+        │         │  t  open task · none                                     │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        │         │                                                          │         │
+        ╰─────────╰──────────────────────────────────────────────────────────╯─────────╯
+         [details] a attach · p peek · t task · ↑↓ scroll · esc close                   
+--- FAIL: TestAgentsNoRegisteredProjectSelectsNothing (0.00s)
+    --- FAIL: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.00s)
+    --- FAIL: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.009s
+FAIL
+
+exit 1

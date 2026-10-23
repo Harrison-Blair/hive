@@ -1,0 +1,16 @@
+package main
+import("fmt";"os";"strconv";"strings";"html";"github.com/Harrison-Blair/hive/internal/lib/cellgrid")
+func load(p string) cellgrid.Grid { f,e:=os.Open(p); if e!=nil{panic(e)}; defer f.Close(); g,e:=cellgrid.ReadGrid(f);if e!=nil{panic(e)};return g }
+func main(){
+ var got cellgrid.Grid
+ if len(os.Args)==3 {got=load(os.Args[1])} else {
+ raw,e:=os.ReadFile(os.Args[1]);if e!=nil{panic(e)};w,_:=strconv.Atoi(os.Args[3]);h,_:=strconv.Atoi(os.Args[4]);got,e=cellgrid.Convert(string(raw),w,h);if e!=nil{panic(e)}
+ var b strings.Builder
+ b.WriteString("<!doctype html><meta charset=utf-8><style>body{margin:0}pre{margin:0;padding:24px;background:#171612;color:#e6e1d6;font:13px/17px 'JetBrains Mono',monospace;white-space:pre}span{display:inline-block;width:1ch;overflow:hidden;vertical-align:top}</style><pre>")
+ fmt.Fprintf(&b,"<style>pre{width:%dch;height:%dpx;border-radius:10px;overflow:hidden}</style>",w,h*17)
+ pal:=map[cellgrid.Token]string{cellgrid.FG:"#e6e1d6",cellgrid.Border:"#3d3a33",cellgrid.Dim:"#a39d90",cellgrid.Accent:"#f5b942",cellgrid.Working:"#6ee69a",cellgrid.Done:"#7ccf6a",cellgrid.Info:"#6fb7ff",cellgrid.User:"#e9cf9b",cellgrid.Code:"#9fd0ff"}
+ for y:=0;y<h;y++{for x:=0;x<w;x++{c:=got.At(y,x);weight:=400;if c.Bold{weight=700};fmt.Fprintf(&b,"<span style=\"color:%s;font-weight:%d\">%s</span>",pal[c.Token],weight,html.EscapeString(string(c.Rune)))};b.WriteByte('\n')};b.WriteString("</pre>");if e=os.WriteFile(os.Args[1]+".html",[]byte(b.String()),0600);e!=nil{panic(e)}
+ }
+ if os.Args[2]=="-" {fmt.Println("converted (no reference comparison)");return}
+ want:=load(os.Args[2]);d,e:=cellgrid.Compare(want,got,nil);if e!=nil{panic(e)};fmt.Printf("%d differences\n",len(d));if len(d)>0{fmt.Print(cellgrid.FormatDiffs(d));os.Exit(1)}
+}

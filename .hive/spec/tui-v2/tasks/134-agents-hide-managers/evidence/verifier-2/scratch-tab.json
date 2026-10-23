@@ -1,0 +1,28 @@
+{
+  "type": "tab_created",
+  "tab": {
+    "tab_id": "w1:t4",
+    "workspace_id": "w1",
+    "number": 4,
+    "label": "verify134-second-live",
+    "focused": false,
+    "pane_count": 1,
+    "agent_status": "unknown"
+  },
+  "root_pane": {
+    "pane_id": "w1:p4",
+    "terminal_id": "term_65e8373e43ced4",
+    "workspace_id": "w1",
+    "tab_id": "w1:t4",
+    "focused": false,
+    "cwd": "/home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers",
+    "foreground_cwd": "/home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers",
+    "agent_status": "unknown",
+    "scroll": {
+      "offset_from_bottom": 0,
+      "max_offset_from_bottom": 0,
+      "viewport_rows": 48
+    },
+    "revision": 0
+  }
+}

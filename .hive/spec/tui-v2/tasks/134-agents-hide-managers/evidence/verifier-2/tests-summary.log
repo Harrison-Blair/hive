@@ -1,0 +1,10 @@
+red-base: exit 1; PASS 3; FAIL 9
+red-rework: exit 1; PASS 3; FAIL 8
+guard-no-hint: exit 1; PASS 0; FAIL 1
+guard-hidden-worker: exit 1; PASS 0; FAIL 1
+guard-notice: exit 1; PASS 0; FAIL 1
+guard-order: exit 1; PASS 0; FAIL 1
+guard-registry: exit 1; PASS 0; FAIL 3
+green-count50: exit 0; PASS 1150; FAIL 0
+green-race50: exit 0; PASS 1150; FAIL 0
+restored scratch source: True
