@@ -285,6 +285,27 @@ func TestAskReviewForAStoppedAsker(t *testing.T) {
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}}}}})
 }
 
+// Decision 114: below 120 columns, the stopped-asker note is shorter when the
+// full note would cover the review title.
+func TestAskCompactReviewForAStoppedAskerKeepsTheTitle(t *testing.T) {
+	record := oneQuestionAsk("a1", "asker-scratch")
+	m, calls := askModel(t, 80, 24, record)
+	agents := []records.Agent{
+		{Key: "asker-scratch", Name: "asker-scratch", Status: records.AgentStopped},
+		{Key: "parent-scratch", Name: "parent-scratch", Status: records.AgentLive},
+	}
+	record.Parent, record.ParentKey = "parent-scratch", "parent-scratch"
+	m.chatData = buildChatScreenData(m.chatData.entries, nil, []ask.Record{record}, agents, m.now())
+	m.rebuildChat()
+	m = run(t, m, key('1', "1"))
+	requireNoCalls(t, calls, "the pick")
+	requireView(t, m,
+		"┏━ ? asker-scratch asks · confirm ━━━━━━━━━ asker stopped · to parent-scratch ━┓",
+		"┃ › Send to parent-scratch ", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━")
+	run(t, m, enterKey)
+	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}}}}})
+}
+
 func longAsk(id string) ask.Record {
 	return ask.Record{
 		ID: id, Asker: "coordinator", AskerKey: "coordinator-g1",

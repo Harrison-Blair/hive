@@ -28,7 +28,35 @@ The independent verifier must rerun delivery checks with the intended scratch st
 Check that executable before any test delivery.
 Never run a test TUI or send a test prompt on the real home.
 
-## Rework after failed verification
+## Current rework: compact stopped-review title
+
+Verifier `t135-verifier-2` recorded fail in manager inbox record 565.
+Its committed evidence is `235892c0`, on this branch and its remote.
+Read `evidence/VERIFIED.md` and `evidence/verifier2/` beside this brief.
+
+At 80x24, the stopped-asker route text overwrites the review title.
+The normal scratch TUI shows `asks · confi asker stopped`.
+Decision 114 requires the full title `? asker-scratch asks · confirm`.
+The route and actual parent delivery still work.
+The existing design approval covers this rendering fix.
+
+1. Read the regression in `evidence/verifier2/scripts/additional_test.go.txt`.
+2. Add a permanent compact stopped-review regression before the fix.
+3. Run it against the current code and check the recorded title failure.
+4. Fit the full review title and explicit stopped-asker route information without overlap.
+5. Check the compact stopped state in the normal scratch TUI at 80x24 and 120x40.
+6. Keep the multiline wrapper fix and every approved grid unchanged.
+7. Keep prompt format, routing, and reply values unchanged.
+8. Run focused and race tests, live key checks, approval comparisons, and the full root gate.
+9. Record this rework separately from the earlier reports and evidence.
+
+Do not change board sources, golden grids, or design fixtures for this fix.
+Keep both failed verdicts and their evidence intact.
+Do not fix the two pre-existing editor/feed defects in this task.
+The manager records those defects in friction separately.
+The manager starts another fresh verifier after this fix.
+
+## Earlier rework: multiline review
 
 Verifier `t135-verifier-1` recorded a fail in manager inbox records 560 and 561.
 Evidence commit `008e9d2d` is on this task branch and its remote.

@@ -601,7 +601,14 @@ func (m *Model) askDockView(width, limit int) string {
 		note = dimStyle.Render(fmt.Sprintf(" open · %d of %d%s ", index+1, len(m.openAsks()), next))
 	}
 	if route.stopped {
-		note = titleStyle.Render(" asker stopped · answer goes to " + route.target + " ")
+		// The note must not cover the title, which starts after "┏━ ".
+		note = ""
+		for _, text := range []string{" asker stopped · answer goes to ", " asker stopped · to "} {
+			if 3+lipgloss.Width(title)+lipgloss.Width(text+route.target+" ")+2 <= width {
+				note = titleStyle.Render(text + route.target + " ")
+				break
+			}
+		}
 	}
 	out[0] = overlayCells(out[0], note, width-2-lipgloss.Width(note))
 	out[len(out)-1] = overlayCells(out[len(out)-1], dimStyle.Render(" "+askCardHint(record, card, wide, route)+" "), 2)
