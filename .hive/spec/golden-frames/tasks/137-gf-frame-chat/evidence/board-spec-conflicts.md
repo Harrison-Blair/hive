@@ -105,3 +105,27 @@ not choose. Row and column numbers are 0-based.
 For each case, which one is the authority: the board (then the spec needs a
 change), or the spec (then the grid needs a change, which is a mask or a new
 board, and needs the user)?
+
+## C10 The transcript follows its end, but the boards leave empty rows below the last message
+
+- Found while fixing C6 under ask a18.
+- Rule 7: the transcript follows its end. When the view shows `N earlier`
+  with N more than 0, the content is taller than the transcript rows, so the
+  last message is on the last transcript row.
+- `GfChat`: the last message ends on row 29, rows 30 to 32 are empty.
+  `GfChatAsk`, `GfChatAskInput`, `GfChatAskMany`: the ask line is on row 13,
+  rows 14 to 27 are empty. `GfChatEvents`: rows 21 to 35 are empty.
+  `GfChatNotice`: rows 10 to 34 are empty. The other boards with
+  `N earlier` are the same. Each board draws the first message on row 2,
+  below the `earlier` row.
+- No scroll position gives `N earlier` above the view and empty rows below
+  the last message. A thumb that ends on the last row (the C6 fix) makes this
+  contradiction visible.
+- Option A (smallest change): on each board, remove the `· · · N earlier · · ·`
+  row and the transcript thumb, because the shown content fits in the rows.
+  Rule 7 and the `earlier` row of the layout then have no board, and tests
+  check them in words.
+- Option B: move the content of each board down so that the last message is
+  on the last transcript row, and fill the rows above with earlier messages.
+  This changes most transcript rows of 13 boards.
+- The worker recommends option A.
