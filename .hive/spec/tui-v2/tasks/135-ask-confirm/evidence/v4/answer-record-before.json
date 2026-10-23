@@ -1,0 +1,44 @@
+{
+  "id": "a1",
+  "asker": "asker-scratch",
+  "asker_key": "asker-scratch",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T15:41:36.20740684Z",
+  "questions": [
+    {
+      "question": "Which parts go in task 1?",
+      "header": "Scope",
+      "options": [
+        {
+          "label": "Ask card",
+          "description": "the card"
+        },
+        {
+          "label": "Help line",
+          "description": "help"
+        },
+        {
+          "label": "Header count",
+          "description": "count"
+        }
+      ],
+      "multiSelect": true
+    },
+    {
+      "question": "Which task goes first?",
+      "header": "Order",
+      "options": [
+        {
+          "label": "Card first",
+          "description": "now"
+        },
+        {
+          "label": "Help first",
+          "description": "later"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}
