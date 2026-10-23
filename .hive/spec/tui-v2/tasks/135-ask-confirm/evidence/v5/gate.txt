@@ -1,0 +1,90 @@
+$ gofmt -l $(git ls-files -co --exclude-standard '*.go')
+exit 0
+$ go mod tidy -diff
+exit 0
+$ go vet ./...
+exit 0
+$ golangci-lint run ./...
+0 issues.
+exit 0
+$ go test -race ./...
+ok  	github.com/Harrison-Blair/hive	18.568s
+ok  	github.com/Harrison-Blair/hive/cmd	3.593s
+?   	github.com/Harrison-Blair/hive/cmd/agent	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/list	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/agent/register	1.126s
+ok  	github.com/Harrison-Blair/hive/cmd/agent/report	1.156s
+ok  	github.com/Harrison-Blair/hive/cmd/agent/resolve	1.211s
+?   	github.com/Harrison-Blair/hive/cmd/agent/send	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/agent/show	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/agent/spawn	1.168s
+?   	github.com/Harrison-Blair/hive/cmd/agent/stop	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/ask	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/chat	1.130s
+?   	github.com/Harrison-Blair/hive/cmd/common	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/doctor	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/goal	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/handoff	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/handoff/write	1.461s
+?   	github.com/Harrison-Blair/hive/cmd/homeinit	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/inbox	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/land	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/logs	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/memory	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/memory/write	1.479s
+?   	github.com/Harrison-Blair/hive/cmd/project	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/register	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/project/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/supervise	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/task	1.158s
+?   	github.com/Harrison-Blair/hive/cmd/task/assign	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/cancel	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/complete	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/task/create	1.125s
+ok  	github.com/Harrison-Blair/hive/cmd/task/edit	1.131s
+?   	github.com/Harrison-Blair/hive/cmd/task/list	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/reopen	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/show	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/task/verify	[no test files]
+ok  	github.com/Harrison-Blair/hive/cmd/version	1.104s
+?   	github.com/Harrison-Blair/hive/cmd/worktree	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/worktree/create	[no test files]
+?   	github.com/Harrison-Blair/hive/cmd/worktree/remove	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/agent	4.450s
+ok  	github.com/Harrison-Blair/hive/internal/ask	1.107s
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.236s
+?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/chat	1.039s
+ok  	github.com/Harrison-Blair/hive/internal/doctor	5.561s
+?   	github.com/Harrison-Blair/hive/internal/goal	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/handoff	1.125s
+ok  	github.com/Harrison-Blair/hive/internal/homeinit	1.004s
+ok  	github.com/Harrison-Blair/hive/internal/inbox	1.025s
+ok  	github.com/Harrison-Blair/hive/internal/land	2.035s
+ok  	github.com/Harrison-Blair/hive/internal/lib/cellgrid	1.005s
+ok  	github.com/Harrison-Blair/hive/internal/lib/gitx	1.058s
+ok  	github.com/Harrison-Blair/hive/internal/lib/harness	1.005s
+ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	6.543s
+ok  	github.com/Harrison-Blair/hive/internal/lib/home	1.009s
+ok  	github.com/Harrison-Blair/hive/internal/lib/identity	1.024s
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	1.211s
+ok  	github.com/Harrison-Blair/hive/internal/lib/log	1.059s
+?   	github.com/Harrison-Blair/hive/internal/lib/marker	[no test files]
+?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/lib/panelock	1.035s
+ok  	github.com/Harrison-Blair/hive/internal/lib/process	1.008s
+ok  	github.com/Harrison-Blair/hive/internal/lib/records	1.006s
+ok  	github.com/Harrison-Blair/hive/internal/lib/run	4.164s
+ok  	github.com/Harrison-Blair/hive/internal/lib/scope	1.119s
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	17.595s
+ok  	github.com/Harrison-Blair/hive/internal/lib/version	1.004s
+ok  	github.com/Harrison-Blair/hive/internal/logs	6.008s
+ok  	github.com/Harrison-Blair/hive/internal/memory	2.156s
+ok  	github.com/Harrison-Blair/hive/internal/project	1.011s
+ok  	github.com/Harrison-Blair/hive/internal/supervise	1.587s
+ok  	github.com/Harrison-Blair/hive/internal/task	1.747s
+ok  	github.com/Harrison-Blair/hive/internal/tui	30.057s
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	8.707s
+ok  	github.com/Harrison-Blair/hive/internal/worktree	1.991s
+exit 0
