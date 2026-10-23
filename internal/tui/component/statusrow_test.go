@@ -8,7 +8,6 @@ import (
 
 const gfChords = "^g agents  ^t work  ^f friction  ^y health  ^l logs"
 
-
 // Decisions 10 and 11: GfComponents rows 7 to 9. Row 7 has no room for
 // "? help", so the row removes it. Row 8 is the 80-column form, which removes
 // the whole chords and hints segments.
