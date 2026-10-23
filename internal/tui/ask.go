@@ -313,6 +313,11 @@ func (m *Model) closeAsk(record ask.Record, action string, replies []ask.Reply) 
 	if m.demo != nil {
 		return m.demoBlocked("ask " + action)
 	}
+	// The answer has the authority of the user, as chat has (rule 2).
+	if m.chatCallerBlocked {
+		m.invalidateView()
+		return nil
+	}
 	if m.askBusy {
 		return nil
 	}

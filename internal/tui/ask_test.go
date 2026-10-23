@@ -521,3 +521,18 @@ func TestAskOtherInAMultiSelectQuestion(t *testing.T) {
 		t.Fatalf("calls = %v, want %v", *calls, want)
 	}
 }
+
+// The answer prompt has the authority of the user. A TUI that the chat rule
+// blocks (rule 2: a working directory below projects/) sends no answer and no
+// dismiss.
+func TestABlockedCallerCannotAnswer(t *testing.T) {
+	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	m.chatCallerBlocked = true
+	m.chatErr = "chat send is for the user only: rule 2"
+	run(t, m, key('1', "1"))
+	run(t, m, key('x', "x"))
+	if len(*calls) != 0 {
+		t.Fatalf("a blocked caller sent %v", *calls)
+	}
+	requireView(t, m, "chat send is for the user only: rule 2")
+}
