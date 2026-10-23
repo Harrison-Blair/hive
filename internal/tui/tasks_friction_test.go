@@ -110,16 +110,19 @@ func TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize(t *testing.T) {
 	}
 	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
 	view := ansi.Strip(m.View().Content)
-	for _, text := range []string{"╭─ 79-tui-shell · esc back", "list › details", "status    landed", "goal      g1-tui · wave wave-c", "verifier  t79-verifier-2 · pass", "merge     7204d699", "ACCEPTANCE", "EVIDENCE", "[details]"} {
+	for _, text := range []string{"╭─ 79-tui-shell · esc back", "list › details", "status    landed", "goal      g1-tui · wave wave-c", "verifier  t79-verifier-2 · pass", "merge     7204d699", "ACCEPTANCE", "EVIDENCE"} {
 		if !strings.Contains(view, text) {
 			t.Errorf("80x24 overlay omits %q:\n%s", text, view)
 		}
+	}
+	if m.focusState() != "details" {
+		t.Errorf("focus = %q; want details", m.focusState())
 	}
 	if strings.Contains(view, "title     ") || strings.Contains(view, "branch    ") {
 		t.Errorf("80x24 overlay shows a field of the wide form:\n%s", view)
 	}
 	m, _ = raise(t, m, key(0, "esc"))
-	if view := ansi.Strip(m.View().Content); strings.Contains(view, "ACCEPTANCE") || !strings.Contains(view, "[list]") {
+	if view := ansi.Strip(m.View().Content); strings.Contains(view, "ACCEPTANCE") || m.focusState() != "list" {
 		t.Fatalf("esc did not close the overlay:\n%s", view)
 	}
 }
@@ -343,7 +346,7 @@ func TestRunHomeShowsTasksFromStringReader(t *testing.T) {
 	home := writeTasksFixture(t)
 	var output strings.Builder
 	// Decisions 5 and 22: 3 selects Work, and ] ] select its Tasks view.
-	if err := RunHome(home, strings.NewReader("3]]"), &output); err != nil {
+	if err := RunHome(home, strings.NewReader("\x14]]"), &output); err != nil {
 		t.Fatal(err)
 	}
 	view := ansi.Strip(output.String())

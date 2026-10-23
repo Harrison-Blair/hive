@@ -86,11 +86,11 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "? help"},
-			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "? help"},
-			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
-			"details":       {"↑↓ scroll", "tab region", "esc back to list", "? help"},
-			"Tasks/details": {"↑↓ scroll", "tab region", "esc back to list", "b brief", "v verified", "d deps", "? help"},
+			"Goals/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "o design", "t task", "? help"},
+			"Queue/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "s stops only", "t task", "? help"},
+			"Tasks/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
+			"details":       {"↑↓ scroll", "^] box", "esc back to list", "? help"},
+			"Tasks/details": {"↑↓ scroll", "^] box", "esc back to list", "b brief", "v verified", "d deps", "? help"},
 		},
 		compact: map[string][]string{
 			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
@@ -109,8 +109,8 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "g/G top/end", "? help"},
-			"details": {"↑↓ scroll", "tab region", "esc back to list", "? help"},
+			"list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "g/G top/end", "? help"},
+			"details": {"↑↓ scroll", "^] box", "esc back to list", "? help"},
 		},
 		compact: map[string][]string{
 			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
@@ -127,9 +127,9 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"list", "details"},
 		listDetails: true,
 		hints: map[string][]string{
-			"Home/list":   {"↑↓ move", "tab region", "[ ] view", "enter open", "R refresh", "? help"},
-			"Agents/list": {"↑↓ move", "tab region", "[ ] view", "enter open", "r restart", "R refresh", "? help"},
-			"details":     {"↑↓ scroll", "tab region", "esc back to list", "? help"},
+			"Home/list":   {"↑↓ move", "^] box", "[ ] view", "enter open", "R refresh", "? help"},
+			"Agents/list": {"↑↓ move", "^] box", "[ ] view", "enter open", "r restart", "R refresh", "? help"},
+			"details":     {"↑↓ scroll", "^] box", "esc back to list", "? help"},
 		},
 		compact: map[string][]string{
 			"Home/list":   {"↑↓ move", "enter details", "[ ] view", "R refresh", "?"},
@@ -146,8 +146,8 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"events", "json"},
 		listDetails: true,
 		hints: map[string][]string{
-			"events": {"↑↓ move", "tab region", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
-			"json":   {"↑↓ scroll", "tab region", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"events": {"↑↓ move", "^] box", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"json":   {"↑↓ scroll", "^] box", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
 		},
 		compact: map[string][]string{
 			"events": {"↑↓ move", "enter details", "f follow", "/ filter", "?"},
@@ -292,6 +292,20 @@ func (m *Model) tooSmall() (demoSize, demoSize, bool) {
 // decisions 1 to 5): the title row and the rule on each screen except Chat,
 // the content area, the notice line while a notice exists, and the status
 // rows. A popup dims the full screen. Only the content area is cached.
+// contentArea gives the first row and the rows of the content area of
+// golden-frames decision 2: below the title row and the rule on each screen
+// other than Chat, and above the notice line and the status rows.
+func (m *Model) contentArea() (top, height int) {
+	if m.activeTab() != tabChat {
+		top = 2
+	}
+	height = m.height - top - len(m.statusRows(m.width, m.height))
+	if m.noticeLine(m.width) != "" {
+		height--
+	}
+	return top, max(1, height)
+}
+
 func (m *Model) frameView() string {
 	width, height := m.width, m.height
 	status := m.statusRows(width, height)
@@ -300,11 +314,7 @@ func (m *Model) frameView() string {
 	if m.activeTab() != tabChat {
 		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
 	}
-	contentHeight := height - len(status) - 2*len(rows)
-	if notice != "" {
-		contentHeight--
-	}
-	contentHeight = max(1, contentHeight)
+	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
 		m.screenViewCache = m.contentView(width, contentHeight)
 		m.screenViewCacheValid = true
@@ -374,9 +384,9 @@ func (m *Model) hintKey(tab int, focus string) string {
 	return "pods"
 }
 
-// footerView gives the footer of decision 4: the focus state and its key
-// hints. A notice takes the place of the hints.
-func (m *Model) footerView(width int) string {
+// focusHints gives the keys of the focus for the screen segment of
+// golden-frames decision 11.
+func (m *Model) focusHints(width int) []string {
 	tab := m.activeTab()
 	focus := m.focusState()
 	var hints []string
@@ -392,10 +402,7 @@ func (m *Model) footerView(width int) string {
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
-	if notice := m.footerNotice(); notice != "" {
-		hints = []string{notice}
-	}
-	return component.KeyHints{Region: focus, Hints: hints}.View(width)
+	return hints
 }
 
 func (m *Model) footerNotice() string {
@@ -405,7 +412,7 @@ func (m *Model) footerNotice() string {
 	case m.demo != nil && m.demo.notice != "":
 		return m.demo.notice
 	case m.agents.restartConfirm:
-		return ""
+		return m.restartPrompt()
 	case m.screenIndex == 6 && m.agents.restartNotice != "":
 		return m.agents.restartNotice
 	case m.startupNotice != "":
@@ -417,6 +424,15 @@ func (m *Model) footerNotice() string {
 		return "error: " + err
 	}
 	return ""
+}
+
+// restartPrompt gives the restart prompt of health.md rule 6.
+func (m *Model) restartPrompt() string {
+	target := m.agents.restartTarget.Role
+	if target == "" {
+		target = m.agents.restartTarget.Key
+	}
+	return "restart the " + target + "? y restarts · any other key cancels"
 }
 
 func (m *Model) footerError() string {
@@ -672,9 +688,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	if tab == tabChat {
 		return m.updateChatFeedKey(press)
 	}
-	if key == "esc" && !(tab == tabAgents && m.graph.podView) && !m.detailsFocused() {
+	if key == "esc" && !m.escCloses() {
 		// Golden-frames decision 17: with no popup open, esc returns to Chat.
-		// The one-pod view of Agents and a details region close first.
 		return m.openChat()
 	}
 	if tab == tabAgents {
@@ -696,9 +711,6 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		case "esc":
 			if panels, ok := entry.panels[m.viewName()]; ok && panels.back != nil && panels.back(m) {
 				return m.logAction("details back")
-			}
-			if m.width >= component.LongFormWidth {
-				return m.openChat()
 			}
 			m.regionFocus[tab] = 0
 			return m.logAction("focus region", slogString("region", entry.regions[0]))

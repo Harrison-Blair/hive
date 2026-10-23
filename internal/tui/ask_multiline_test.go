@@ -66,8 +66,8 @@ func TestAskReviewKeepsMultilineTextInsideTheDock(t *testing.T) {
 				Options: []ask.Option{askOption("Plain", "one line")},
 			})
 			m, calls := askModel(t, size[0], size[1], record)
-			m, _ = raise(t, m, key('1', "1"))
-			m, _ = raise(t, m, key('2', "2"))
+			m, _ = raise(t, m, ctrl('g'))
+			m, _ = raise(t, m, escKey())
 			m.askCards["a1"].others[1] = "other one\nother two"
 			m.askCards["a1"].notes[1] = "note one\nnote two"
 			m = run(t, m, enterKey)
@@ -90,7 +90,7 @@ func TestAskReviewReachesEachLineOfATallLabel(t *testing.T) {
 	for _, size := range [][2]int{{120, 40}, {80, 24}} {
 		t.Run(fmt.Sprint(size[0]), func(t *testing.T) {
 			m, calls := askModel(t, size[0], size[1], multilineAsk(t, "tall-request.json"))
-			m = run(t, m, key('1', "1"))
+			m = run(t, m, ctrl('g'))
 			requireNoCalls(t, calls, "the review")
 			requireView(t, m, "┃ › Send ")
 			seen := map[string]bool{}

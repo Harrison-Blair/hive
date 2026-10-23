@@ -10,7 +10,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 var gfDay = time.Date(2026, 10, 23, 14, 22, 0, 0, time.Local)
@@ -205,5 +207,82 @@ func TestFrameKeysRebind(t *testing.T) {
 	m, _ = raise(t, m, escKey())
 	if rows := viewRows(m); !strings.Contains(rows[39], "^a agents  ^t work") {
 		t.Errorf("status row %q; want the rebound chord ^a agents", rows[39])
+	}
+}
+
+// keysRow gives the plain screen segment of m: the view with the one status
+// row ["screen"] of decision 11, without the screen name.
+func keysRow(t *testing.T, m *Model) string {
+	t.Helper()
+	saved := m.tuiConfig
+	cfg := defaultTUI()
+	cfg.StatusLines = [][]string{{"screen"}}
+	m.setTUIConfig(cfg)
+	defer m.setTUIConfig(saved)
+	rows := viewRows(m)
+	row := strings.TrimSpace(rows[len(rows)-1])
+	if _, keys, ok := strings.Cut(row, " · "); ok {
+		return keys
+	}
+	return ""
+}
+
+// requireKeys fails when the focus of m is not focus, or when its screen
+// segment does not show keys. Decision 11 gives the keys of the focus in the
+// screen segment, in place of the footer of tui-v2.
+func requireKeys(t *testing.T, m *Model, focus, keys string) {
+	t.Helper()
+	if got := m.focusState(); got != focus {
+		t.Fatalf("focus = %q; want %q", got, focus)
+	}
+	if got := keysRow(t, m); !strings.Contains(got, keys) {
+		t.Fatalf("screen segment keys = %q; want %q", got, keys)
+	}
+}
+
+// Decision 11: the screen segment shows the keys of the focus: help,
+// filter, and the restart prompt too.
+func TestFrameScreenSegmentShowsTheFocusKeys(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	m, _ = raise(t, m, ctrl('l'))
+	// Decisions 6 and 19: ctrl+] moves the box focus, and tab does not.
+	requireKeys(t, m, "events", "↑↓ move · ^] box · enter open")
+	for _, tab := range []int{tabWork, tabFriction, tabHealth, tabLogs} {
+		m.selectScreen(tab, 0)
+		if keys := keysRow(t, m); strings.Contains(keys, "tab") {
+			t.Errorf("screen %d keys %q name tab", tab, keys)
+		}
+	}
+	m.selectScreen(tabLogs, 0)
+	m, _ = raise(t, m, key('?', "?"))
+	requireKeys(t, m, "help", "↑↓ scroll · ? or esc close")
+}
+
+// Decision 14 and health.md rule 6: the restart prompt is on the notice line
+// in accent bold, and the key that answers it clears it.
+func TestFrameRestartPromptOnTheNoticeLine(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	m.selectScreen(tabHealth, 1)
+	m.health.acceptAgents(agentsData{
+		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
+		nodes: []agentNode{{
+			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", PaneID: "w1:p3", Status: records.AgentLive},
+			status: "idle", current: true,
+		}},
+		supervisorLive: true,
+	})
+	m, _ = raise(t, m, key('r', "r"))
+	const prompt = "restart the supervisor? y restarts · any other key cancels"
+	rows := viewRows(m)
+	if got := strings.TrimSpace(rows[38]); got != prompt {
+		t.Fatalf("notice line = %q; want %q", got, prompt)
+	}
+	grid := renderGrid(t, m, 120, 40)
+	if cell := grid.At(38, 1); cell.Rune != 'r' || cell.Token != cellgrid.Accent || !cell.Bold {
+		t.Fatalf("notice cell = %q %s bold %v; want r accent bold", cell.Rune, cell.Token, cell.Bold)
+	}
+	m, _ = raise(t, m, key('n', "n"))
+	if rows := viewRows(m); strings.Contains(rows[38], "restart the") {
+		t.Fatalf("the prompt stays after n: %q", rows[38])
 	}
 }

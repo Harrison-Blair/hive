@@ -214,9 +214,9 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	// Decision 2: the header shows the agent states and needs you. The
-	// header state keeps the counts.
-	requireView(t, m, " hive ", "sup ○", "needs you 0", "12:00")
+	// Golden-frames decision 11: the status row shows the supervisor and
+	// needs you. The header state keeps the counts.
+	requireView(t, m, "○ supervisor", "needs you 0", "12:00")
 	requireHeaderCounts(t, m.header, 0, 0, 0, 0)
 
 	pidStart, err := process.Start(int64(os.Getpid()))
@@ -238,7 +238,7 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	})
 	writeRecord(t, home, []string{"tasks"}, "1-first", records.Task{ID: "1-first", Project: "demo", Title: "first", NeedsUser: "choose"})
 	m = loadHeader(t, m)
-	requireView(t, m, "sup ●", "needs you 1")
+	requireView(t, m, "● supervisor", "needs you 1")
 	requireHeaderCounts(t, m.header, 1, 2, 1, 1)
 
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
@@ -248,7 +248,7 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,
 	})
 	m = loadHeader(t, m)
-	requireView(t, m, "sup ○", "needs you 1")
+	requireView(t, m, "○ supervisor", "needs you 1")
 	requireHeaderCounts(t, m.header, 1, 2, 0, 0)
 }
 
@@ -356,7 +356,7 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 
 	// Editing must not let viewing-mode keys act.
 	m, _ = raise(t, m, key('/', "/"))
-	requireView(t, m, "[filter] enter apply · esc close")
+	requireKeys(t, m, "filter", "enter apply · esc close")
 	for _, code := range []rune{'f', 'G'} {
 		m, _ = raise(t, m, key(code, string(code)))
 	}
@@ -365,7 +365,8 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 		t.Fatal("f in the filter bar turned follow off")
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "[events]", "/ level:info ", "beta")
+	requireView(t, m, "/ level:info ", "beta")
+	requireKeys(t, m, "events", "")
 
 	// A q in editing mode is a printable character, not a quit.
 	m, _ = raise(t, m, key('/', "/"))

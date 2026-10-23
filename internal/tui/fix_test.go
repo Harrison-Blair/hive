@@ -198,13 +198,13 @@ func TestHeaderRejectsOutOfRangePIDs(t *testing.T) {
 		pid  int64
 		want string
 	}{
-		{"self", self, "sup ●"},
-		{"zero", 0, "sup ○"},
-		{"negative", -1, "sup ○"},
-		{"exited", exited, "sup ○"},
-		{"plus 2^32", self + (1 << 32), "sup ○"},
-		{"max int32 plus one", int64(math.MaxInt32) + 1, "sup ○"},
-		{"max int64", math.MaxInt64, "sup ○"},
+		{"self", self, "● supervisor"},
+		{"zero", 0, "○ supervisor"},
+		{"negative", -1, "○ supervisor"},
+		{"exited", exited, "○ supervisor"},
+		{"plus 2^32", self + (1 << 32), "○ supervisor"},
+		{"max int32 plus one", int64(math.MaxInt32) + 1, "○ supervisor"},
+		{"max int64", math.MaxInt64, "○ supervisor"},
 	}
 	for _, item := range cases {
 		t.Run(item.name, func(t *testing.T) {
@@ -237,7 +237,7 @@ func TestHeaderErrorDoesNotStopShell(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	requireView(t, m, "╭─ project agents ", "error:")
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")

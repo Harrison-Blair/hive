@@ -17,43 +17,50 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// TestScreenKeysSelectAllSixScreens presses 1 to 6 and [ ] (decisions 3,
-// 22). Each tab shows the current screen of its view until wave 6.
+// TestScreenKeysSelectAllSixScreens presses the chords of golden-frames
+// decision 16, esc, and [ ] (decisions 3, 22). Each tab shows the current
+// screen of its view until wave 6. The title row of decision 2 names the
+// screen, and Chat has no title row.
 func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	for _, step := range []struct {
-		key    string
+		key    tea.KeyPressMsg
 		tab    int
 		screen string
 		shows  string
 	}{
-		{"1", tabAgents, "Agents", "no project agents"},
-		{"2", tabChat, "Chat", "no chat yet"},
-		{"3", tabWork, "Goals", "goals · 0"},
-		{"]", tabWork, "Queue", "no tasks"},
-		{"]", tabWork, "Tasks", "tasks · 0"},
-		{"4", tabFriction, "Friction", "open · 0"},
-		{"5", tabHealth, "Health", "checks ·"},
-		{"]", tabHealth, "Health", "agents ·"},
-		{"6", tabLogs, "Logs", "events · 0"},
+		{ctrl('g'), tabAgents, "Agents", "no project agents"},
+		{escKey(), tabChat, "Chat", "no chat yet"},
+		{ctrl('t'), tabWork, "Goals", "goals · 0"},
+		{key(']', "]"), tabWork, "Queue", "no tasks"},
+		{key(']', "]"), tabWork, "Tasks", "tasks · 0"},
+		{ctrl('f'), tabFriction, "Friction", "open · 0"},
+		{ctrl('y'), tabHealth, "Health", "checks ·"},
+		{key(']', "]"), tabHealth, "Health", "agents ·"},
+		{ctrl('l'), tabLogs, "Logs", "events · 0"},
 	} {
-		m, _ = raise(t, m, key(rune(step.key[0]), step.key))
+		m, _ = raise(t, m, step.key)
 		view := ansi.Strip(m.View().Content)
 		if m.activeTab() != step.tab || m.legacyName() != step.screen {
 			t.Fatalf("key %q gave tab %d screen %s; want tab %d screen %s", step.key, m.activeTab(), m.legacyName(), step.tab, step.screen)
 		}
-		label := strconv.Itoa(step.tab+1) + " " + screenRegistry[step.tab].label
-		tabRow := strings.Split(view, "\n")[1]
-		if !strings.Contains(tabRow, label) || !strings.Contains(view, step.shows) {
-			t.Fatalf("key %q view omits %q or %q:\n%s", step.key, label, step.shows, view)
+		title := " " + strings.ToLower(screenRegistry[step.tab].label)
+		titleRow := strings.Split(view, "\n")[0]
+		if step.tab == tabChat {
+			title = "╭─ chat"
+		}
+		if !strings.HasPrefix(titleRow, title) || !strings.Contains(view, step.shows) {
+			t.Fatalf("key %q view omits %q or %q:\n%s", step.key, title, step.shows, view)
 		}
 	}
 }
 
 // TestNarrowShellFitsAndShowsTheTabBar checks the frame at 80×24
-// (decisions 1, 3): the short header, the tab bar, and no sidebar.
+// (decisions 1, 3) and no sidebar. Golden-frames decisions 2, 3, and 10: no
+// header and no tab bar, and the status row drops whole segments from the
+// right to fit.
 func TestNarrowShellFitsAndShowsTheTabBar(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.Local))
@@ -64,10 +71,11 @@ func TestNarrowShellFitsAndShowsTheTabBar(t *testing.T) {
 		t.Fatalf("rendered shell height %d; want 24:\n%s", got, view)
 	}
 	plain := ansi.Strip(view)
-	for _, text := range []string{" hive ", "coord ", "  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs"} {
-		if !strings.Contains(plain, text) {
-			t.Fatalf("narrow shell omitted %q:\n%s", text, plain)
-		}
+	if strings.Contains(plain, " hive ") || strings.Contains(plain, "1 Agents") {
+		t.Fatalf("narrow shell shows the header or the tab bar:\n%s", plain)
+	}
+	if rows := strings.Split(plain, "\n"); !strings.HasPrefix(rows[23], " ○ none · ○ supervisor · ? 0 asks · needs you 0 ") {
+		t.Fatalf("narrow status row = %q", rows[23])
 	}
 	if strings.Contains(plain, "SCREENS") {
 		t.Fatalf("narrow shell shows the old sidebar:\n%s", plain)
@@ -105,7 +113,7 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("header load did not start")
 	}
-	m, keyCmd := raise(t, m, key('1', "1"))
+	m, keyCmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, keyCmd)
 	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
@@ -152,11 +160,11 @@ func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("screen load did not start")
 	}
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
 		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
 	}
-	m, _ = raise(t, m, key('6', "6"))
+	m, _ = raise(t, m, ctrl('l'))
 	_, refresh := raise(t, m, tickMsg{})
 	runRefreshLoads(t, refresh)
 	select {
@@ -218,7 +226,7 @@ func TestQuitNoticeExpiresAndOtherKeyClearsIt(t *testing.T) {
 	rejectView(t, m, "press ctrl+c again to quit")
 	m, _ = raise(t, m, ctrlC())
 	requireView(t, m, "press ctrl+c again to quit")
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	rejectView(t, m, "press ctrl+c again to quit")
 }
 
@@ -253,7 +261,7 @@ func TestRunHomeHandlesScreenAndQuitKeys(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
 	done := make(chan error, 1)
-	go func() { done <- RunHome(home, strings.NewReader("16\x03\x03"), &out) }()
+	go func() { done <- RunHome(home, strings.NewReader("\x07\x0c\x03\x03"), &out) }()
 	select {
 	case err := <-done:
 		if err != nil {
@@ -262,7 +270,9 @@ func TestRunHomeHandlesScreenAndQuitKeys(t *testing.T) {
 	case <-time.After(8 * time.Second):
 		t.Fatal("RunHome did not quit after the second ctrl+c")
 	}
-	if !strings.Contains(out.String(), "Agents") || !strings.Contains(out.String(), "Logs") {
+	// Golden-frames decision 2: the title row names the screen. The
+	// renderer draws only the last frame of the fast input in full.
+	if !strings.Contains(ansi.Strip(out.String()), " logs") {
 		t.Fatalf("program output omitted selected screens:\n%s", out.String())
 	}
 }

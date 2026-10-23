@@ -22,7 +22,7 @@ func TestGoalsOpenTasksForSelectedWave(t *testing.T) {
 		},
 	})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('3', "3"))
+	m, cmd := raise(t, m, ctrl('t'))
 	m = deliverAgentCommands(t, m, cmd)
 	m, cmd = raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
@@ -104,7 +104,7 @@ func TestGoalsOpenWaveDesign(t *testing.T) {
 				writeText(t, filepath.Join(home, ".hive", "spec", feature, "README.md"), content)
 			}
 			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-			m, cmd := raise(t, m, key('3', "3"))
+			m, cmd := raise(t, m, ctrl('t'))
 			m = deliverAgentCommands(t, m, cmd)
 			m, cmd = raise(t, m, key('o', "o"))
 			m = deliverAgentCommands(t, m, cmd)
@@ -154,7 +154,7 @@ func TestGoalsRefreshKeepsGoalSelection(t *testing.T) {
 	writeRecord(t, home, []string{"tasks"}, "7-zed", records.Task{ID: "7-zed", Project: "zeta", Title: "Zed", Status: "created", DependsOn: []string{}})
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	m, cmd := raise(t, m, key('3', "3"))
+	m, cmd := raise(t, m, ctrl('t'))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	writeRecord(t, home, []string{"goals"}, "g2-other", records.Goal{
@@ -229,7 +229,7 @@ func goalsQueueFixture(t *testing.T) string {
 // the next view. It gives the command of the last key.
 func openWorkView(t *testing.T, m *Model, view int) (*Model, tea.Cmd) {
 	t.Helper()
-	m, cmd := raise(t, m, key('3', "3"))
+	m, cmd := raise(t, m, ctrl('t'))
 	for range view {
 		m = deliverAgentCommands(t, m, cmd)
 		m, cmd = raise(t, m, key(']', "]"))

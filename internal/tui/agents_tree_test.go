@@ -187,8 +187,10 @@ func TestTreeScrollsSidewaysAt120(t *testing.T) {
 }
 
 // Decision 76: when the tree is higher than the region, the view scrolls
-// vertically and keeps the selected card on the screen. The right border
-// has the ┃ thumb: 10 of 18 rows for 18 of 31 rows.
+// vertically and keeps the selected card on the screen. Golden-frames
+// decision 2: at 80×24 the region has 19 rows, from row 3 to row 21, so the
+// right border has the ┃ thumb of 11 rows (19 × 19 / 31, rounded down) for 19
+// of 31 rows. The thumb starts at row 3 + top × 8 / 12.
 func TestTreeScrollsVertically(t *testing.T) {
 	m := liveModel(t, "CompactTreeNested", both(addAgent("t5-research-2", "t5-research-1", "idle", "2026-10-21T14:16:00Z"), selectAgent("manager-hive-g2")))
 	steps := []struct {
@@ -198,15 +200,15 @@ func TestTreeScrollsVertically(t *testing.T) {
 		cardY    int
 		from     int
 	}{
-		{0, "manager-hive-g2", 28, 11, 4},
-		{tea.KeyDown, "t5-worker-1", 10, 18, 4},
-		{tea.KeyDown, "t5-research-1", 10, 18, 7},
-		{tea.KeyDown, "t5-research-2", 10, 18, 10},
-		{tea.KeyDown, "t5-research-2", 10, 18, 10},
-		{tea.KeyUp, "t5-research-1", 10, 13, 10},
-		{tea.KeyUp, "t5-worker-1", 10, 8, 10},
-		{tea.KeyUp, "manager-hive-g2", 28, 4, 8},
-		{tea.KeyUp, "manager-hive-g2", 28, 4, 8},
+		{0, "manager-hive-g2", 28, 10, 3},
+		{tea.KeyDown, "t5-worker-1", 10, 17, 3},
+		{tea.KeyDown, "t5-research-1", 10, 18, 5},
+		{tea.KeyDown, "t5-research-2", 10, 18, 9},
+		{tea.KeyDown, "t5-research-2", 10, 18, 9},
+		{tea.KeyUp, "t5-research-1", 10, 13, 9},
+		{tea.KeyUp, "t5-worker-1", 10, 8, 9},
+		{tea.KeyUp, "manager-hive-g2", 28, 3, 7},
+		{tea.KeyUp, "manager-hive-g2", 28, 3, 7},
 	}
 	for _, step := range steps {
 		if step.press != 0 {
@@ -214,9 +216,9 @@ func TestTreeScrollsVertically(t *testing.T) {
 		}
 		requireSelected(t, m, step.selected)
 		requireCells(t, m, liveCell{step.cardX, step.cardY, '┏', cellgrid.Accent},
-			liveCell{79, step.from, '┃', cellgrid.Accent}, liveCell{79, step.from + 9, '┃', cellgrid.Accent},
-			liveCell{79, step.from + 10, '│', cellgrid.Accent})
-		if step.from > 4 {
+			liveCell{79, step.from, '┃', cellgrid.Accent}, liveCell{79, step.from + 10, '┃', cellgrid.Accent},
+			liveCell{79, step.from + 11, '│', cellgrid.Accent})
+		if step.from > 3 {
 			requireCells(t, m, liveCell{79, step.from - 1, '│', cellgrid.Accent})
 		}
 	}
@@ -231,7 +233,9 @@ func TestTreePageKeysDoNotScroll(t *testing.T) {
 		thumb []liveCell
 	}{
 		{"CompactTreeWide", []liveCell{{16, 22, '─', cellgrid.Accent}, {17, 22, '━', cellgrid.Accent}, {61, 22, '━', cellgrid.Accent}, {62, 22, '─', cellgrid.Accent}}},
-		{"CompactTreeNested", []liveCell{{79, 6, '│', cellgrid.Accent}, {79, 7, '┃', cellgrid.Accent}, {79, 18, '┃', cellgrid.Accent}, {79, 19, '│', cellgrid.Accent}}},
+		// Golden-frames decision 2: the region of 19 rows gives a thumb of
+		// 13 rows, from row 6 to row 18.
+		{"CompactTreeNested", []liveCell{{79, 5, '│', cellgrid.Accent}, {79, 6, '┃', cellgrid.Accent}, {79, 18, '┃', cellgrid.Accent}, {79, 19, '│', cellgrid.Accent}}},
 		{"TreeWide", []liveCell{{1, 38, '━', cellgrid.Accent}, {103, 38, '━', cellgrid.Accent}, {104, 38, '─', cellgrid.Accent}}},
 	} {
 		t.Run(tc.board, func(t *testing.T) {

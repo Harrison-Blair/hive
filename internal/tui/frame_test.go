@@ -69,6 +69,9 @@ func gridRows(g cellgrid.Grid, rows ...int) cellgrid.Grid {
 // demo view of board with the same rows of its golden grid.
 func checkFrameRows(t *testing.T, board string) {
 	t.Helper()
+	if skipRetired(t, board) {
+		return
+	}
 	want := readBoardGrid(t, board)
 	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
 	rows := []int{0, 1, 2, want.Height - 1}
@@ -89,18 +92,18 @@ func TestFrameRowsMatchMain(t *testing.T) {
 	checkFrameRows(t, "Main")
 }
 
-// The startup notice takes the footer before an error, as the old footer
-// did. The error then shows when the notice is empty.
+// Golden-frames decision 14: the startup notice takes the notice line before
+// an error. The error then shows when the notice is empty.
 func TestFooterShowsStartupNoticeBeforeError(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.startupNotice = "not in herdr: no coordinator or supervisor started"
 	m.chatErr = "chat send is for the user only"
 	m.invalidateView()
-	requireView(t, m, "[normal] not in herdr: no coordinator or supervisor started")
+	requireView(t, m, " not in herdr: no coordinator or supervisor started")
 	m.startupNotice = ""
 	m.invalidateView()
-	requireView(t, m, "[normal] error: chat send is for the user only")
+	requireView(t, m, " error: chat send is for the user only")
 }
 
 // screenBoards are the boards of one screen each. Their header, tab bar, and
@@ -156,6 +159,9 @@ func TestDemoRestartPromptYesDoesNotRestart(t *testing.T) {
 // The Help view matches its board cell for cell (AC5), with the Agents
 // screen behind the box.
 func TestHelpMatchesItsBoard(t *testing.T) {
+	if skipRetired(t, "Help") {
+		return
+	}
 	want := readBoardGrid(t, "Help")
 	m := newTestDemoModel(t, "Help.fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
@@ -225,28 +231,31 @@ func TestEachScreenKeepsTheFrameAtEachBreakpoint(t *testing.T) {
 
 // focusTokens gives the token of the top-left corner of the list panel and
 // of the details panel in the first content row of a 120×40 Health view.
+// Golden-frames decision 2: the content starts on row 2, with the view row
+// of Health, so the panels start on row 3.
 func focusTokens(t *testing.T, m *Model) (cellgrid.Token, cellgrid.Token) {
 	t.Helper()
-	row := renderRows(t, m, 120, 4)
+	row := renderRows(t, m, 120, 3)
 	listWidth := 120 * 13 / 30
 	return row.At(0, 0).Token, row.At(0, listWidth).Token
 }
 
-// AC2: the focused region has the accent border, and tab moves the focus.
+// AC2: the focused region has the accent border, and ctrl+] moves the focus
+// (golden-frames decision 6).
 func TestTabMovesTheAccentBorder(t *testing.T) {
 	m := newTestDemoModel(t, "Health.fixture.json", demoSize{})
 	if list, details := focusTokens(t, m); list != cellgrid.Accent || details != cellgrid.Border {
 		t.Fatalf("list focus: list border %s, details border %s; want accent, border", list, details)
 	}
-	requireView(t, m, "[list]")
-	m, _ = raise(t, m, key(0, "tab"))
+	requireKeys(t, m, "list", "")
+	m, _ = raise(t, m, ctrl(']'))
 	if list, details := focusTokens(t, m); list != cellgrid.Border || details != cellgrid.Accent {
 		t.Fatalf("details focus: list border %s, details border %s; want border, accent", list, details)
 	}
-	requireView(t, m, "[details]")
-	m, _ = raise(t, m, key(0, "tab"))
+	requireKeys(t, m, "details", "")
+	m, _ = raise(t, m, ctrl(']'))
 	if m.focusState() != "list" {
-		t.Fatalf("second tab gave focus %q; want list", m.focusState())
+		t.Fatalf("second ctrl+] gave focus %q; want list", m.focusState())
 	}
 }
 
@@ -255,16 +264,17 @@ func TestTabMovesTheAccentBorder(t *testing.T) {
 func TestHelpKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	m, _ = raise(t, m, key('?', "?"))
-	requireView(t, m, "keys · ? or esc closes", "[help]")
+	requireView(t, m, "keys · ? or esc closes")
+	requireKeys(t, m, "help", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	if m.helpOffset != 1 {
 		t.Fatalf("help offset = %d after down down up; want 1", m.helpOffset)
 	}
-	m, _ = raise(t, m, key('2', "2"))
+	m, _ = raise(t, m, ctrl('t'))
 	if m.activeTab() != tabAgents || !m.helpOpen {
-		t.Fatal("a screen key changed the screen behind the help overlay")
+		t.Fatal("a chord changed the screen behind the help overlay")
 	}
 	m, _ = raise(t, m, key('?', "?"))
 	rejectView(t, m, "keys · ? or esc closes")
@@ -283,7 +293,8 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, " · esc back", "[details]")
+	requireView(t, m, " · esc back")
+	requireKeys(t, m, "details", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
 	if m.focusState() != "details" || m.detailsOffset[tabFriction] != 1 {
@@ -292,12 +303,15 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	requireView(t, m, " · esc back")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	rejectView(t, m, "esc back")
-	requireView(t, m, "[list]")
+	requireKeys(t, m, "list", "")
 }
 
 // AC2: in each focus state of decision 21 that does not keep the global
-// keys, a screen key, a view key, or tab does not change the screen or the
-// view. An overlay, a popup, help, and the filter bar also keep the focus.
+// keys, a view key or tab does not change the screen or the view. An
+// overlay, a popup, help, and the filter bar also keep the focus.
+// Golden-frames decisions 16 and 17: a chord opens its screen from each
+// focus but help and the restart prompt, and esc closes an overlay, a popup,
+// help, and the filter bar first, on the same screen.
 func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	compact := tea.WindowSizeMsg{Width: 80, Height: 24}
 	enter := key(0, "enter")
@@ -312,11 +326,12 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
 		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
 		{"logs overlay", "CompactLogs", "json", true, nil},
-		{"filter", "Logs", "filter", true, []tea.Msg{tea.KeyPressMsg{Code: tea.KeyEscape}, key('/', "/")}},
+		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
 		{"input", "Chat", "input", false, nil},
 		{"restart", "HealthAgents", "restart", false, nil},
 	} {
-		for _, press := range []tea.KeyPressMsg{key('1', "1"), key('2', "2"), key('3', "3"), key('4', "4"), key('5', "5"), key('6', "6"), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
+		chords := map[string]int{"ctrl+g": tabAgents, "ctrl+t": tabWork, "ctrl+f": tabFriction, "ctrl+y": tabHealth, "ctrl+l": tabLogs}
+		for _, press := range []tea.KeyPressMsg{ctrl('g'), escKey(), ctrl('t'), ctrl('f'), ctrl('y'), ctrl('l'), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
 			t.Run(tt.name+"/"+press.String(), func(t *testing.T) {
 				m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
 				for _, msg := range tt.keys {
@@ -327,8 +342,23 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 				}
 				tab, view := m.activeTab(), m.activeView()
 				m, _ = raise(t, m, press)
+				if want, chord := chords[press.String()]; chord && tt.focus != "help" && tt.focus != "restart" {
+					if want == tab {
+						want = tabChat
+					}
+					if m.activeTab() != want {
+						t.Fatalf("chord %q gave screen %d; want %d", press.String(), m.activeTab(), want)
+					}
+					return
+				}
 				if m.activeTab() != tab || m.activeView() != view {
 					t.Fatalf("key %q changed screen %d view %d to screen %d view %d", press.String(), tab, view, m.activeTab(), m.activeView())
+				}
+				if press.String() == "esc" {
+					if tt.keepFocus && m.focusState() == tt.focus {
+						t.Fatalf("esc kept focus %q", tt.focus)
+					}
+					return
 				}
 				if tt.keepFocus && m.focusState() != tt.focus {
 					t.Fatalf("key %q changed focus %q to %q", press.String(), tt.focus, m.focusState())
@@ -355,13 +385,13 @@ func TestOverlayGivesActionKeysToTheScreen(t *testing.T) {
 // screen keys stay global (decision 21).
 func TestWideDetailsKeepsScreenKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	if m.focusState() != "details" {
 		t.Fatalf("focus = %q; want details", m.focusState())
 	}
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	if m.activeTab() != tabAgents {
-		t.Fatalf("1 in the wide details gave screen %d; want Agents", m.activeTab())
+		t.Fatalf("ctrl+g in the wide details gave screen %d; want Agents", m.activeTab())
 	}
 }
 
@@ -373,9 +403,11 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 		keys               []tea.KeyPressMsg
 	}{
 		{"graph", "Main", "graph", nil},
-		{"normal", "CompactChat", "normal", []tea.KeyPressMsg{ctrlBracket()}},
+		// Golden-frames decision 19: Chat has no normal mode, so the Logs
+		// JSON region takes its place.
+		{"json", "Logs", "json", nil},
 		{"input", "Chat", "input", nil},
-		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: tea.KeyEscape}, {Code: '/', Text: "/"}}},
+		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: '/', Text: "/"}}},
 		{"help", "Help", "help", nil},
 		{"overlay", "Compact", "details", nil},
 		{"popup", "AgentDetails", "details", nil},
@@ -403,12 +435,13 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 }
 
 // AC6: normal mode uses the frame of demo mode, and below 80×24 it shows the
-// too-small notice.
+// too-small notice. Golden-frames decisions 1 to 3: Chat is home with no
+// header and no tab bar, and the last row is the status row.
 func TestNormalModeUsesTheFrame(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	if !strings.HasPrefix(lines[0], " hive ") || !strings.Contains(lines[1], "1 Agents   2 Chat") || !strings.HasPrefix(lines[39], " [normal] ") {
+	if m.activeTab() != tabChat || strings.Contains(lines[0], " hive ") || strings.Contains(lines[1], "Agents") || !strings.HasPrefix(lines[39], " ○ none · ") {
 		t.Fatalf("normal mode does not draw the frame:\n%s", strings.Join(lines, "\n"))
 	}
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 23})

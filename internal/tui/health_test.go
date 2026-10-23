@@ -19,6 +19,9 @@ import (
 // compares the whole view with the golden grid, cell by cell (decision 42).
 func checkBoardGolden(t *testing.T, board string) {
 	t.Helper()
+	if skipRetired(t, board) {
+		return
+	}
 	want := readBoardGrid(t, board)
 	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
@@ -140,16 +143,18 @@ func TestHealthFitsEachSize(t *testing.T) {
 }
 
 // footerLine gives the plain footer row of the view.
+// footerLine gives the notice line of golden-frames decision 14: the row
+// above the status row.
 func footerLine(m *Model) string {
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	return strings.TrimRight(lines[len(lines)-1], " ")
+	return strings.TrimSpace(lines[len(lines)-2])
 }
 
 // TestHealthKeysAndFooterHints checks the keys of decisions 21 to 23 and the
 // key hints of each focus state of the Health screen.
 func TestHealthKeysAndFooterHints(t *testing.T) {
 	m := healthDemoModel(t, "Health", nil)
-	if got, want := footerLine(m), " [list] ↑↓ move · tab region · [ ] view · enter open · R refresh · ? help"; got != want {
+	if got, want := keysRow(t, m), "↑↓ move · ^] box · [ ] view · enter open · R refresh · ? help"; got != want || m.focusState() != "list" {
 		t.Fatalf("Home list footer = %q; want %q", got, want)
 	}
 	m, _ = raise(t, m, key('j', "j"))
@@ -166,16 +171,16 @@ func TestHealthKeysAndFooterHints(t *testing.T) {
 	if m.health.selected != "herdr socket" {
 		t.Fatalf("g selected %q; want herdr socket", m.health.selected)
 	}
-	m, _ = raise(t, m, key(tea.KeyTab, ""))
-	if got, want := footerLine(m), " [details] ↑↓ scroll · tab region · esc back to list · ? help"; got != want {
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
+	if got, want := keysRow(t, m), "↑↓ scroll · ^] box · esc back to list · ? help"; got != want || m.focusState() != "details" {
 		t.Fatalf("details footer = %q; want %q", got, want)
 	}
-	m, _ = raise(t, m, key(tea.KeyTab, ""))
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	m, _ = raise(t, m, key(']', "]"))
 	if m.activeView() != healthAgents {
 		t.Fatalf("] gave view %d; want Agents", m.activeView())
 	}
-	if got, want := footerLine(m), " [list] ↑↓ move · tab region · [ ] view · enter open · r restart · R refresh · ? help"; got != want {
+	if got, want := keysRow(t, m), "↑↓ move · ^] box · [ ] view · enter open · r restart · R refresh · ? help"; got != want || m.focusState() != "list" {
 		t.Fatalf("Agents list footer = %q; want %q", got, want)
 	}
 	requireView(t, m, "AGENT", "coordinator-g2", "supervisor-g4", "manager-hive", "cp5-worker-01", "t4-worker-1")
@@ -198,12 +203,12 @@ func TestHealthKeysAndFooterHints(t *testing.T) {
 
 	// Below 120 columns, enter opens the details overlay and esc closes it.
 	compact := healthDemoModel(t, "CompactHealth", nil)
-	if got, want := footerLine(compact), " [list] ↑↓ move · enter details · [ ] view · r restart · R refresh · ?"; got != want {
+	if got, want := keysRow(t, compact), "↑↓ move · enter details · [ ] view · r restart · R refresh · ?"; got != want || compact.focusState() != "list" {
 		t.Fatalf("compact footer = %q; want %q", got, want)
 	}
 	compact, _ = raise(t, compact, key(tea.KeyEnter, ""))
 	requireView(t, compact, "coordinator-g2 · esc back", "r restart · starts a new coordinator")
-	if got, want := footerLine(compact), " [details] ↑↓ scroll · esc back to list"; got != want {
+	if got, want := keysRow(t, compact), "↑↓ scroll · esc back to list"; got != want || compact.focusState() != "details" {
 		t.Fatalf("overlay footer = %q; want %q", got, want)
 	}
 	compact, _ = raise(t, compact, key(tea.KeyEscape, ""))
@@ -216,9 +221,13 @@ func TestHealthKeysAndFooterHints(t *testing.T) {
 // board: the box in the details, the footer of decision 21, and the cancel.
 func TestHealthRestartPromptKeys(t *testing.T) {
 	m := healthDemoModel(t, "HealthAgents", nil)
-	requireView(t, m, "restart supervisor-g4?", "y restart   esc cancel", "[restart] y restart · any other key cancels")
+	requireView(t, m, "restart supervisor-g4?", "y restart   esc cancel")
+	requireKeys(t, m, "restart", "y restart · any other key cancels")
 	m, _ = raise(t, m, key('n', "n"))
-	rejectView(t, m, "restart supervisor-g4?", "[restart]")
+	rejectView(t, m, "restart supervisor-g4?")
+	if m.focusState() == "restart" {
+		t.Fatal("n kept the restart focus")
+	}
 	if !strings.Contains(footerLine(m), "restart cancelled") {
 		t.Fatalf("footer = %q; want the cancel notice", footerLine(m))
 	}
@@ -308,8 +317,9 @@ func flattenCmd(t *testing.T, cmd tea.Cmd) []tea.Msg {
 func TestHealthProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	// Decision 3: 5 selects Health, and the sub-tab row marks the Home view.
-	if err := RunHome(home, strings.NewReader("5R\x03\x03"), &out); err != nil {
+	// Decision 3: ctrl+y (golden-frames decision 16) selects Health, and the
+	// sub-tab row marks the Home view.
+	if err := RunHome(home, strings.NewReader("\x19R\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
 	for _, want := range []string{"[Home]", "checks ·"} {

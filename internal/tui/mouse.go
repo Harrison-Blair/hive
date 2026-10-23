@@ -13,8 +13,9 @@ import (
 const wheelLines = 3
 
 // updateMouse handles one click or one wheel step. The wheel scrolls the
-// region under the pointer. A click on a tab name opens the tab, a click on
-// a region gives it the focus, and a click on a list row selects the row. A
+// region under the pointer. A click on a region gives it the focus, and a
+// click on a list row selects the row. Golden-frames decision 2 removes the
+// tab bar, so no click opens a screen. A
 // mouse action that changes the screen is logged.
 func (m *Model) updateMouse(msg tea.MouseMsg) tea.Cmd {
 	if _, _, small := m.tooSmall(); small || m.agents.restartConfirm {
@@ -52,8 +53,9 @@ func (m *Model) updateMouse(msg tea.MouseMsg) tea.Cmd {
 
 // contentRow gives the row of the content area at screen row y.
 func (m *Model) contentRow(y int) (int, bool) {
-	row := y - 3
-	return row, row >= 0 && row < m.height-frameRows
+	top, height := m.contentArea()
+	row := y - top
+	return row, row >= 0 && row < height
 }
 
 // wheel scrolls the region at x, y by step.
@@ -101,12 +103,6 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 
 // click handles a left click at x, y.
 func (m *Model) click(x, y int) tea.Cmd {
-	if y == 1 && !m.helpOpen && (m.activeTab() != tabAgents || !m.popupOpen) {
-		if tab, ok := (component.TabBar{}).TabAt(x, m.width); ok {
-			return m.openTab(tab)
-		}
-		return nil
-	}
 	row, ok := m.contentRow(y)
 	tab := m.activeTab()
 	if !ok || m.helpOpen || tab == tabAgents || m.focusState() == "filter" {
@@ -158,7 +154,8 @@ func (m *Model) regionAt(tab, x int) int {
 func (m *Model) selectListRow(row int) tea.Cmd {
 	marker := func() []string {
 		m.invalidateView()
-		return strings.Split(ansi.Strip(m.contentView(m.width, m.height-frameRows)), "\n")
+		_, height := m.contentArea()
+		return strings.Split(ansi.Strip(m.contentView(m.width, height)), "\n")
 	}
 	rows := marker()
 	selected := markerRow(rows)

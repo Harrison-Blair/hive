@@ -136,13 +136,13 @@ func TestAskStoppedReviewKeepsTheStateInTheCard(t *testing.T) {
 				if strings.Contains(ansi.Strip(m.View().Content), "? asked · Change") {
 					t.Fatal("the ask event is in the feed viewport; the check needs it above")
 				}
-				m = run(t, m, key('1', "1"))
+				m = run(t, m, ctrl('g'))
 				requireNoCalls(t, calls, "the pick")
 				check(m, start.Width, start.Height)
 
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 				m = run(t, m, enterKey)
-				m = run(t, m, key('2', "2"))
+				m = run(t, m, escKey())
 				requireNoCalls(t, calls, "the edit")
 				requireCard(t, m, "Change → No")
 				check(m, start.Width, start.Height)

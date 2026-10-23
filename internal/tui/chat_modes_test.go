@@ -136,7 +136,7 @@ func TestChatNormalModeLettersStayShortcuts(t *testing.T) {
 		t.Fatal("? did not open help")
 	}
 	m, _ = raise(t, m, key('?', "?"))
-	m, _ = raise(t, m, key('3', "3"))
+	m, _ = raise(t, m, ctrl('t'))
 	if m.activeTab() != tabWork {
 		t.Fatalf("3 gave tab %d", m.activeTab())
 	}
@@ -208,20 +208,21 @@ func selectedRow(m *Model) int {
 }
 
 // The wheel over a list on another tab moves its selection. The wheel over
-// the details scrolls them and keeps the focus.
+// the details scrolls them and keeps the focus. Golden-frames decision 2:
+// the list starts one row higher than in tui-v2.
 func TestMouseWheelScrollsTheListUnderThePointer(t *testing.T) {
 	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
-	if got := selectedRow(m); got != 10 {
-		t.Fatalf("selected row = %d, want 10", got)
+	if got := selectedRow(m); got != 9 {
+		t.Fatalf("selected row = %d, want 9", got)
 	}
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelDown))
-	if got := selectedRow(m); got != 11 {
-		t.Fatalf("selected row after wheel down = %d, want 11", got)
+	if got := selectedRow(m); got != 10 {
+		t.Fatalf("selected row after wheel down = %d, want 10", got)
 	}
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelUp))
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelUp))
-	if got := selectedRow(m); got != 9 {
-		t.Fatalf("selected row after wheel up = %d, want 9", got)
+	if got := selectedRow(m); got != 8 {
+		t.Fatalf("selected row after wheel up = %d, want 8", got)
 	}
 	// The details of the first selected entry have more lines than the
 	// region, so they can scroll.
@@ -266,13 +267,15 @@ func TestMouseWheelWorksWhileTheLogsFilterIsOpen(t *testing.T) {
 	}
 }
 
-// A click on a tab name opens that tab while the Logs filter is open.
+// Golden-frames decision 2: no tab bar exists. A click on the rule, the row
+// of the tui-v2 tab names, does not change the screen while the Logs filter
+// is open.
 func TestMouseClickOnATabNameWorksWhileTheLogsFilterIsOpen(t *testing.T) {
 	m := newTestDemoModel(t, "Logs.fixture.json", demoSize{})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: '/', Text: "/"})
 	m, _ = raise(t, m, click(22, 1))
-	if m.activeTab() != tabWork {
-		t.Fatalf("a click on 3 Work gave tab %d", m.activeTab())
+	if m.activeTab() != tabLogs || m.focusState() != "filter" {
+		t.Fatalf("a click on the rule gave tab %d, focus %q; want Logs, filter", m.activeTab(), m.focusState())
 	}
 }
 
@@ -287,21 +290,22 @@ func TestMouseWheelOverTheAgentsGraphDoesNothing(t *testing.T) {
 }
 
 // A click on a list row selects it. A click on the details gives them the
-// focus.
+// focus. Golden-frames decision 2: the list starts one row higher than in
+// tui-v2, so each row is one less.
 func TestMouseClickSelectsAListRow(t *testing.T) {
 	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
-	m, _ = raise(t, m, click(10, 7))
-	if got := selectedRow(m); got != 7 {
-		t.Fatalf("selected row = %d, want 7", got)
+	m, _ = raise(t, m, click(10, 6))
+	if got := selectedRow(m); got != 6 {
+		t.Fatalf("selected row = %d, want 6", got)
 	}
 	requireView(t, m, "╭─ agent-can-send-user-chat ")
-	m, _ = raise(t, m, click(10, 16))
-	if got := selectedRow(m); got != 16 {
-		t.Fatalf("selected row = %d, want 16", got)
+	m, _ = raise(t, m, click(10, 15))
+	if got := selectedRow(m); got != 15 {
+		t.Fatalf("selected row = %d, want 15", got)
 	}
 	m, _ = raise(t, m, click(10, 30))
-	if got := selectedRow(m); got != 20 {
-		t.Fatalf("a click below the last row moved the selection to %d, want 20", got)
+	if got := selectedRow(m); got != 19 {
+		t.Fatalf("a click below the last row moved the selection to %d, want 19", got)
 	}
 	m, _ = raise(t, m, click(80, 12))
 	if m.regionFocus[tabFriction] != 1 {
@@ -313,42 +317,40 @@ func TestMouseClickSelectsAListRow(t *testing.T) {
 	}
 }
 
-// A click on a tab name opens the tab, at both widths.
+// Golden-frames decision 2: no tab bar exists, so a click on row 1 of a
+// screen, the rule, does not change the screen, at both widths.
 func TestMouseClickOnATabNameOpensTheTab(t *testing.T) {
 	for _, width := range []int{120, 80} {
 		m := chatModel(t, width, 40, 1)
-		row := viewRow(m, 1)
-		for tab, label := range []string{"1 Agents", "2 Chat", "3 Work", "4 Friction", "5 Health", "6 Logs"} {
-			x := ansi.StringWidth(row[:strings.Index(row, label)]) + 2
+		m, _ = raise(t, m, ctrl('t'))
+		for x := 0; x < width; x += 7 {
 			m, _ = raise(t, m, click(x, 1))
-			if m.activeTab() != tab {
-				t.Fatalf("width %d: a click on %q gave tab %d", width, label, m.activeTab())
+			if m.activeTab() != tabWork {
+				t.Fatalf("width %d: a click at %d,1 gave screen %d; want Work", width, x, m.activeTab())
 			}
-		}
-		m, _ = raise(t, m, click(width-2, 1))
-		if m.activeTab() != tabLogs {
-			t.Fatalf("width %d: a click after the last label gave tab %d", width, m.activeTab())
 		}
 	}
 }
 
-// The header shows the ask count of the header state, at both widths.
+// Golden-frames decision 11: the status row shows the ask count of the
+// header state, at both widths.
 func TestHeaderShowsTheAskCountOfTheState(t *testing.T) {
 	for _, tc := range []struct {
 		asks, width int
 		want        string
 	}{
-		{0, 120, "   ? 0 asks   needs you 0   08:00 "},
-		{1, 120, "   ? 1 ask   needs you 0   08:00 "},
-		{0, 80, " · ? 0 · needs you 0 · 08:00 "},
-		{1, 80, " · ? 1 · needs you 0 · 08:00 "},
+		{0, 120, " · ? 0 asks · needs you 0 · "},
+		{1, 120, " · ? 1 ask · needs you 0 · "},
+		{0, 80, " · ? 0 asks · needs you 0 "},
+		{1, 80, " · ? 1 ask · needs you 0 "},
 	} {
 		m := chatModel(t, tc.width, 40, 1)
 		m.now = func() time.Time { return time.Date(2026, 10, 20, 8, 0, 0, 0, time.Local) }
 		m.header.asks = tc.asks
 		m.invalidateView()
-		if got := viewRow(m, 0); !strings.HasSuffix(got, tc.want) {
-			t.Errorf("asks %d at %d: header = %q, want suffix %q", tc.asks, tc.width, got, tc.want)
+		rows := viewRows(m)
+		if got := rows[len(rows)-1]; !strings.Contains(got, tc.want) || !strings.HasSuffix(got, " 08:00 ") {
+			t.Errorf("asks %d at %d: status row = %q, want %q and the clock 08:00", tc.asks, tc.width, got, tc.want)
 		}
 	}
 }

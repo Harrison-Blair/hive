@@ -120,7 +120,7 @@ func TestLogsWideJSONKeys(t *testing.T) {
 	if m.focusState() != "json" {
 		t.Fatalf("enter gave focus %q; want json", m.focusState())
 	}
-	requireView(t, m, "[json] ↑↓ scroll")
+	requireKeys(t, m, "json", "↑↓ scroll")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	if m.detailsOffset[tabLogs] != 1 {
 		t.Fatalf("down gave JSON offset %d; want 1", m.detailsOffset[tabLogs])
@@ -133,9 +133,9 @@ func TestLogsWideJSONKeys(t *testing.T) {
 	if m.focusState() != "events" {
 		t.Fatalf("esc gave focus %q; want events", m.focusState())
 	}
-	m, _ = raise(t, m, key(0, "tab"))
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	if m.focusState() != "json" {
-		t.Fatalf("tab gave focus %q; want json", m.focusState())
+		t.Fatalf("ctrl+] gave focus %q; want json", m.focusState())
 	}
 }
 
@@ -143,9 +143,10 @@ func TestLogsWideJSONKeys(t *testing.T) {
 // selected event, < and > still change the day, and esc closes it.
 func TestLogsCompactJSONOverlay(t *testing.T) {
 	m := logsModelAt(t, 80, 24)
-	requireView(t, m, "[events] ↑↓ move · enter details")
+	requireKeys(t, m, "events", "↑↓ move · enter details")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, "event 12:00:03 · esc back", `"msg": "network retry"`, "[json] ↑↓ scroll · esc back to events")
+	requireView(t, m, "event 12:00:03 · esc back", `"msg": "network retry"`)
+	requireKeys(t, m, "json", "↑↓ scroll · esc back to events")
 	rejectView(t, m, "─ events · ")
 	m, _ = raise(t, m, key('>', ">"))
 	requireView(t, m, "< 2026-04-07 >")
@@ -179,9 +180,10 @@ func TestLogsJSONOverflowShowsMoreLines(t *testing.T) {
 		t.Fatal(err)
 	}
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: []logs.Event{{Raw: raw, Fields: fields}}})
-	// 35 JSON lines in 15 body rows: 14 lines, then the count of the 21
-	// lines below them.
-	requireView(t, m, "↓ 21 more lines", "┃")
+	// 35 JSON lines in 16 body rows: 15 lines, then the count of the 20
+	// lines below them. Golden-frames decision 2 gives the region one row
+	// more than tui-v2 at 80×24.
+	requireView(t, m, "↓ 20 more lines", "┃")
 	// The overlay takes the scroll keys of decision 21, not G.
 	for range 2 {
 		m, _ = raise(t, m, key(0, "pgdown"))
@@ -364,8 +366,8 @@ func TestLogsEscapeClearsAppliedFilter(t *testing.T) {
 	}
 }
 
-// AC3: the program in normal mode shows Logs on 6 and applies a typed
-// filter, from a string reader.
+// AC3: the program in normal mode shows Logs on ctrl+l (golden-frames
+// decision 16) and applies a typed filter, from a string reader.
 func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 	home := newTestHome(t)
 	t.Setenv("HIVE_HOME", home)
@@ -381,7 +383,7 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		_ = sendInput.Close()
 	})
 
-	if _, err := sendInput.Write([]byte("6")); err != nil {
+	if _, err := sendInput.Write([]byte("\x0c")); err != nil {
 		t.Fatalf("send screen key: %v", err)
 	}
 	waitForOutput(t, output, "─ events · ", "queued")

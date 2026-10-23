@@ -65,6 +65,25 @@ func (m *Model) updateChord(press tea.KeyPressMsg) (tea.Cmd, bool) {
 	return nil, false
 }
 
+// escCloses reports that esc closes a part of the screen first (decision
+// 17): a peek, the one-pod view of Agents, a details region, an open file,
+// or an applied Logs filter.
+func (m *Model) escCloses() bool {
+	switch tab := m.activeTab(); {
+	case m.detailsFocused(), m.agents.peekOpen:
+		return true
+	case tab == tabAgents:
+		return m.graph.podView
+	case tab == tabWork:
+		return m.tasks.fileOpen
+	case tab == tabFriction:
+		return m.friction.fileOpen
+	case tab == tabLogs:
+		return m.textFilter != defaultLogFilter
+	}
+	return false
+}
+
 // openChat returns to Chat (decision 1).
 func (m *Model) openChat() tea.Cmd {
 	m.popupOpen = false
@@ -127,9 +146,8 @@ func (m *Model) statusSegment(name string) string {
 	case "project":
 		return component.DimText(m.selectedProjectID())
 	case "screen":
-		tab := m.activeTab()
-		keys := screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, m.focusState()), true)
-		return component.StrongText(strings.ToLower(screenRegistry[tab].label)) + component.DimText(strings.Join(append([]string{""}, keys...), " · "))
+		name := strings.ToLower(screenRegistry[m.activeTab()].label)
+		return component.StrongText(name) + component.DimText(strings.Join(append([]string{""}, m.focusHints(m.width)...), " · "))
 	case "chords":
 		parts := make([]string, 0, len(chordTabs))
 		for _, chord := range chordTabs {
@@ -200,6 +218,9 @@ func (m *Model) noticeLine(width int) string {
 	}
 	if text, ok := strings.CutPrefix(notice, "error: "); ok {
 		return fitLine(" "+errorStyle.Render("error:")+" "+text, width)
+	}
+	if m.agents.restartConfirm && notice == m.restartPrompt() {
+		return fitLine(" "+component.StrongText(notice), width)
 	}
 	return fitLine(" "+component.AccentText(notice), width)
 }

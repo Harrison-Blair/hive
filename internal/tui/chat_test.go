@@ -208,7 +208,7 @@ func TestChatKeysScrollTheFeed(t *testing.T) {
 // does not type (decision 21 and the chat modes of task 126).
 func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
-	requireView(t, m, "[normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help")
+	requireKeys(t, m, "normal", "i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help")
 	m, _ = raise(t, m, key('x', "x"))
 	if m.chatInputActive {
 		t.Fatal("a printable key in normal mode started input mode")
@@ -217,7 +217,8 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	if !m.chatInputActive {
 		t.Fatal("i did not start input mode")
 	}
-	requireView(t, m, "> █", "[input] enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll")
+	requireView(t, m, "> █")
+	requireKeys(t, m, "input", "enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll")
 	for _, character := range "x12?/jkgGi" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}
@@ -237,14 +238,15 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	if m.chatInputActive {
 		t.Fatal("ctrl+] did not stop input mode")
 	}
-	requireView(t, m, "[normal]", "  two")
+	requireView(t, m, "  two")
+	requireKeys(t, m, "normal", "")
 	rejectView(t, m, "two█")
 	m, _ = raise(t, m, key('?', "?"))
 	if !m.helpOpen {
 		t.Fatal("? in normal mode did not open help")
 	}
 	m, _ = raise(t, m, key('?', "?"))
-	m, _ = raise(t, m, key('3', "3"))
+	m, _ = raise(t, m, ctrl('t'))
 	if m.activeTab() != tabWork {
 		t.Fatalf("3 in normal mode gave tab %d", m.activeTab())
 	}
@@ -256,9 +258,9 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 // Below 120 columns the footer shows the compact hints of each mode.
 func TestChatCompactFooterHints(t *testing.T) {
 	m := chatModel(t, 80, 24, 1)
-	requireView(t, m, "[normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help")
+	requireKeys(t, m, "normal", "i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help")
 	m, _ = raise(t, m, key('i', "i"))
-	requireView(t, m, "[input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll")
+	requireKeys(t, m, "input", "enter send · ctrl+] leave · wheel or pgup/pgdn scroll")
 }
 
 func TestChatInputBorderShowsCoordinatorStatusAndQueuedMark(t *testing.T) {

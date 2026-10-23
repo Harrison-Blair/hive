@@ -167,7 +167,7 @@ func TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen(t *testing.T) {
 
 func TestAskDigitPicksAndSendsASingleQuestion(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m = run(t, m, key('2', "2"))
+	m = run(t, m, escKey())
 	run(t, m, enterKey)
 	want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{2}}}}}
 	if fmt.Sprint(*calls) != fmt.Sprint(want) {
@@ -196,7 +196,7 @@ func TestAskTwoQuestionsWithMarksAndANote(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
 	requireView(t, m, "┗━ space mark · tab note · enter next question · enter on last reviews ━")
 	m, _ = raise(t, m, key(' ', "space"))
-	m, _ = raise(t, m, key('3', "3"))
+	m, _ = raise(t, m, ctrl('t'))
 	requireView(t, m, "┃   1 [x] Wheel", "┃ › 3 [x] Modes")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	if got := viewRow(m, 39); !strings.HasPrefix(got, " [note] type a note · enter keep note · tab close note · ctrl+] leave note · ↑↓ option") {
@@ -250,7 +250,7 @@ func TestAskNoteTabDropsAndCtrlBracketKeeps(t *testing.T) {
 	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
 		t.Fatalf("footer after ctrl+] = %q", got)
 	}
-	m = run(t, m, key('1', "1"))
+	m = run(t, m, ctrl('g'))
 	run(t, m, enterKey)
 	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}, Note: "ok"}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
 		t.Fatalf("calls = %v, want %v", *calls, want)
@@ -259,7 +259,7 @@ func TestAskNoteTabDropsAndCtrlBracketKeeps(t *testing.T) {
 
 func TestAskOtherOpensATextLine(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m, _ = raise(t, m, key('4', "4"))
+	m, _ = raise(t, m, ctrl('f'))
 	if len(*calls) != 0 {
 		t.Fatalf("Other sent %v before the text", *calls)
 	}
@@ -457,7 +457,7 @@ func TestTickDeliversAWaitingAnswer(t *testing.T) {
 
 func TestDemoBlocksTheAnswer(t *testing.T) {
 	m := newTestDemoModel(t, "ChatAsk.fixture.json", demoSize{})
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	m, _ = raise(t, m, enterKey)
 	requireView(t, m, demoNotice)
 }
@@ -485,19 +485,19 @@ func TestHelpListsTheAskKeys(t *testing.T) {
 		"│  ask review: enter on the last question · ↑↓ question · enter send or change")
 }
 
-// The header shows the count of the open ask records at 0, 1, and 2, at
-// both widths.
+// The status row shows the count of the open ask records at 0, 1, and 2, at
+// both widths (golden-frames decision 11).
 func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 	for _, tc := range []struct {
 		open, width int
 		want        string
 	}{
-		{0, 120, "   ? 0 asks   needs you 0   08:00 "},
-		{1, 120, "   ? 1 ask   needs you 0   08:00 "},
-		{2, 120, "   ? 2 asks   needs you 0   08:00 "},
-		{0, 80, " · ? 0 · needs you 0 · 08:00 "},
-		{1, 80, " · ? 1 · needs you 0 · 08:00 "},
-		{2, 80, " · ? 2 · needs you 0 · 08:00 "},
+		{0, 120, " · ? 0 asks · needs you 0 · "},
+		{1, 120, " · ? 1 ask · needs you 0 · "},
+		{2, 120, " · ? 2 asks · needs you 0 · "},
+		{0, 80, " · ? 0 asks · needs you 0 "},
+		{1, 80, " · ? 1 ask · needs you 0 "},
+		{2, 80, " · ? 2 asks · needs you 0 "},
 	} {
 		home := newTestHome(t)
 		closed := oneQuestionAsk("a9", "manager-hive")
@@ -517,8 +517,9 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 		m.invalidateView()
 		m.View()
 		m, _ = raise(t, m, headerLoadMsg{state: state})
-		if got := viewRow(m, 0); !strings.HasSuffix(got, tc.want) {
-			t.Errorf("%d open at %d: header = %q, want suffix %q", tc.open, tc.width, got, tc.want)
+		rows := viewRows(m)
+		if got := rows[len(rows)-1]; !strings.Contains(got, tc.want) || !strings.HasSuffix(got, " 08:00 ") {
+			t.Errorf("%d open at %d: status row = %q, want %q and the clock 08:00", tc.open, tc.width, got, tc.want)
 		}
 	}
 }
@@ -527,8 +528,8 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 // answer keeps the marks and the text.
 func TestAskOtherInAMultiSelectQuestion(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
-	m, _ = raise(t, m, key('1', "1"))
-	m, _ = raise(t, m, key('4', "4"))
+	m, _ = raise(t, m, ctrl('g'))
+	m, _ = raise(t, m, ctrl('f'))
 	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other]") {
 		t.Fatalf("footer = %q, want the Other line", got)
 	}
@@ -537,7 +538,7 @@ func TestAskOtherInAMultiSelectQuestion(t *testing.T) {
 	}
 	requireView(t, m, "┃     other › keys█")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	m = run(t, m, key('2', "2"))
+	m = run(t, m, escKey())
 	run(t, m, enterKey)
 	want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1, 4}, Other: "keys"}, {Picks: []int{2}}}}}
 	if fmt.Sprint(*calls) != fmt.Sprint(want) {
@@ -552,7 +553,7 @@ func TestABlockedCallerCannotAnswer(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	m.chatCallerBlocked = true
 	m.chatErr = "chat send is for the user only: rule 2"
-	run(t, m, key('1', "1"))
+	run(t, m, ctrl('g'))
 	run(t, m, key('x', "x"))
 	if len(*calls) != 0 {
 		t.Fatalf("a blocked caller sent %v", *calls)

@@ -1,0 +1,7 @@
+--- FAIL: TestFrameScreenSegmentShowsTheFocusKeys (0.00s)
+    gframe_test.go:249: screen segment keys = "↑↓ move · tab region · enter open · f follow · < > day · / filter · g/G top/end · ? help"; want "↑↓ move · ^] box · enter open"
+--- FAIL: TestFrameRestartPromptOnTheNoticeLine (0.00s)
+    gframe_test.go:278: notice line = "╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯"; want "restart the supervisor? y restarts · any other key cancels"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL

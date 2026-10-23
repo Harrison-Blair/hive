@@ -31,14 +31,41 @@ type liveCell struct {
 	token cellgrid.Token
 }
 
-// requireCells fails when a cell of the view of m is not as want.
+// bodyShift is the row offset of a screen body from the tui-v2 boards to
+// the golden frames. Golden-frames decision 2 replaces the header and the
+// two tab bar rows with the title row and the rule, so the body starts one
+// row higher. The status row takes the place of the footer.
+const bodyShift = -1
+
+// tuiV2Body sizes m so that its body has the rows of the tui-v2 frame at the
+// board size: the golden frame uses one row less than the tui-v2 frame, so
+// the pane gets one row less. It gives the row shift of the body. At the
+// minimum height the pane keeps its size, so the body has one row more at
+// its end, and a view that keeps the selection at its end keeps its rows.
+func tuiV2Body(m *Model) (shift int, restore func()) {
+	if m.height <= minimumHeight {
+		return 0, func() {}
+	}
+	m.height--
+	if m.demo != nil {
+		m.demo.paneHeight = m.height
+		m.demo.size.Height = m.height
+	}
+	m.invalidateView()
+	return bodyShift, func() { m.height++ }
+}
+
+// requireCells fails when a cell of the view of m is not as want. The rows
+// of want are the rows of the tui-v2 board, which bodyShift moves.
 func requireCells(t *testing.T, m *Model, want ...liveCell) {
 	t.Helper()
+	shift, restore := tuiV2Body(m)
+	defer restore()
 	grid := renderGrid(t, m, m.width, m.height)
 	for _, cell := range want {
-		got := grid.At(cell.y, cell.x)
+		got := grid.At(cell.y+shift, cell.x)
 		if got.Rune != cell.glyph || got.Token != cell.token {
-			t.Errorf("cell %d,%d = %q %s; want %q %s", cell.x, cell.y, string(got.Rune), got.Token, string(cell.glyph), cell.token)
+			t.Errorf("cell %d,%d = %q %s; want %q %s", cell.x, cell.y+shift, string(got.Rune), got.Token, string(cell.glyph), cell.token)
 		}
 	}
 	if t.Failed() {
@@ -244,12 +271,21 @@ func TestLivePodSelection(t *testing.T) {
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
 	m, _ = raise(t, m, key(tea.KeyUp, ""))
 	requireCells(t, m, coordinator...)
+	// Golden-frames decision 17: esc with no popup open returns to Chat.
+	// The chord opens Agents again with the same selection.
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
+	if m.activeTab() != tabChat {
+		t.Fatalf("esc on the overview gave screen %d; want Chat", m.activeTab())
+	}
+	m, _ = raise(t, m, ctrl('g'))
 	requireCells(t, m, coordinator...)
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	requireCells(t, m, api...)
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "project agents · example-api", "esc pods")
+	requireView(t, m, "project agents · example-api")
+	if !m.graph.podView {
+		t.Fatal("enter on a pod did not open the one-pod view")
+	}
 	if m.popupOpen {
 		t.Fatal("enter on a pod opened the details popup")
 	}
@@ -283,13 +319,18 @@ func TestLivePodViewSelectsCards(t *testing.T) {
 }
 
 // Decision 64: with one project and no home pod, the screen opens the one-pod
-// view, esc does nothing, and the footer has no esc pods.
+// view and the keys have no esc pods. Golden-frames decision 17: esc returns
+// to Chat, because the view has no overview to go back to.
 func TestLiveOneProjectOpensThePodView(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	requireView(t, m, "project agents · hive")
-	rejectView(t, m, "esc pods")
+	if hints := screenRegistry[tabAgents].keyHints("", m.hintKey(tabAgents, m.focusState()), true); strings.Contains(strings.Join(hints, " "), "esc pods") {
+		t.Fatalf("keys = %v; want no esc pods", hints)
+	}
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
-	requireView(t, m, "project agents · hive")
+	if m.activeTab() != tabChat {
+		t.Fatalf("esc gave screen %d; want Chat", m.activeTab())
+	}
 }
 
 // Decision 65: a pod drop 1 column or less from the coordinator joint moves
@@ -313,14 +354,20 @@ func TestLiveFooters(t *testing.T) {
 		{"CompactLiveOverview", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, "←↑↓→ move · enter details · esc pods · ?"},
 	} {
 		t.Run(tc.board+"/"+tc.want, func(t *testing.T) {
+			// Golden-frames decisions 3 and 11: the status row takes the
+			// place of the footer. Its screen segment shows the screen
+			// name and the keys of the focus.
 			m := liveModel(t, tc.board, nil)
+			cfg := defaultTUI()
+			cfg.StatusLines = [][]string{{"screen"}}
+			m.setTUIConfig(cfg)
 			for _, press := range tc.keys {
 				m, _ = raise(t, m, press)
 			}
 			lines := strings.Split(m.View().Content, "\n")
-			footer := strings.TrimSpace(strings.TrimPrefix(ansi.Strip(lines[len(lines)-1]), " [graph] "))
+			footer := strings.TrimSpace(strings.TrimPrefix(ansi.Strip(lines[len(lines)-1]), " agents · "))
 			if footer != tc.want {
-				t.Fatalf("footer = %q; want %q", footer, tc.want)
+				t.Fatalf("status row = %q; want %q", footer, tc.want)
 			}
 		})
 	}

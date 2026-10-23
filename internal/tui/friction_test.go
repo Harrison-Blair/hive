@@ -16,6 +16,9 @@ import (
 // (decision 42).
 func checkBoard(t *testing.T, board string) {
 	t.Helper()
+	if skipRetired(t, board) {
+		return
+	}
 	want := readBoardGrid(t, board)
 	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
@@ -132,18 +135,12 @@ func TestFrictionFitsEmptyAndLongData(t *testing.T) {
 	}
 }
 
-// footerText gives the plain text of the footer row.
-func footerText(m *Model) string {
-	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	return strings.TrimRight(lines[len(lines)-1], " ")
-}
-
 // AC4: the keys of the Friction screen follow decisions 21 to 23, and the
 // footer shows the key hints of each focus state.
 func TestFrictionKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
 	selected := func() string { entry, _ := m.friction.selected(); return entry.name() }
-	if got := footerText(m); got != " [list] ↑↓ move · tab region · [ ] view · enter open · g/G top/end · ? help" {
+	if got := keysRow(t, m); got != "↑↓ move · ^] box · [ ] view · enter open · g/G top/end · ? help" || m.focusState() != "list" {
 		t.Fatalf("list footer = %q", got)
 	}
 	for _, step := range []struct {
@@ -177,8 +174,8 @@ func TestFrictionKeys(t *testing.T) {
 	if m.activeView() != 0 {
 		t.Fatalf("[ gave view %d; want Open", m.activeView())
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	if got := footerText(m); got != " [details] ↑↓ scroll · tab region · esc back to list · ? help" {
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
+	if got := keysRow(t, m); got != "↑↓ scroll · ^] box · esc back to list · ? help" || m.focusState() != "details" {
 		t.Fatalf("details footer = %q", got)
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
@@ -199,11 +196,11 @@ func TestFrictionKeys(t *testing.T) {
 	}
 
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	if got := footerText(m); got != " [list] ↑↓ move · enter details · [ ] view · ?" {
+	if got := keysRow(t, m); got != "↑↓ move · enter details · [ ] view · ?" || m.focusState() != "list" {
 		t.Fatalf("compact list footer = %q", got)
 	}
 	m, _ = raise(t, m, key(0, "enter"))
-	if got := footerText(m); got != " [details] ↑↓ scroll · esc back to list" {
+	if got := keysRow(t, m); got != "↑↓ scroll · esc back to list" || m.focusState() != "details" {
 		t.Fatalf("compact details footer = %q", got)
 	}
 }
@@ -217,7 +214,7 @@ func TestFrictionNormalModeRefresh(t *testing.T) {
 	writeText(t, filepath.Join(root, "entries", "first.md"), "---\ntitle: \"First issue\"\nstatus: \"Open\"\nopened: 2026-10-19\ndecision: \"\"\n---\n\n**Summary:**\nThe first.\n")
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('4', "4"))
+	m, cmd := raise(t, m, ctrl('f'))
 	m = deliverAgentCommands(t, m, cmd)
 	requireView(t, m, "open · 1", "▶ first", "First issue")
 	writeText(t, filepath.Join(root, "entries", "second.md"), "---\ntitle: \"Second issue\"\nstatus: \"Open\"\nopened: 2026-10-20\ndecision: \"\"\n---\n\n**Occurrences:**\n2026-10-20  one\n2026-10-21  two\n")
@@ -236,8 +233,9 @@ func TestFrictionFileScrolls(t *testing.T) {
 	m, cmd := raise(t, m, key(0, "enter"))
 	m = deliverAgentCommands(t, m, cmd)
 	requireView(t, m, "scratch-hive-starts-real-agents.md · esc closes", "title: \"Bare hive in a scratch home starts real tabs\"")
-	// Row 5 is the first body row of the details region.
-	firstRow := func() string { return strings.Split(ansi.Strip(m.View().Content), "\n")[5] }
+	// Row 4 is the first body row of the details region: golden-frames
+	// decision 2 starts the content on row 2.
+	firstRow := func() string { return strings.Split(ansi.Strip(m.View().Content), "\n")[4] }
 	if row := firstRow(); !strings.Contains(row, "││ ---") {
 		t.Fatalf("first file row = %q; want the front matter line ---", row)
 	}

@@ -141,7 +141,9 @@ func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	if strings.Count(view, "supervisor") != 1 {
 		t.Fatalf("the graph shows the supervisor outside the header:\n%s", view)
 	}
-	if strings.Count(view, "coordinator") != 2 {
+	// Golden-frames decision 2: no header names the coordinator, so the
+	// one coordinator card is the one match.
+	if strings.Count(view, "coordinator") != 1 {
 		t.Fatalf("the graph does not show one coordinator card:\n%s", view)
 	}
 	for _, name := range []string{"◐ manager-hive", "○ t4-worker-1", "○ t4-verifier-1"} {
@@ -294,7 +296,8 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.focusState() != "details" {
 		t.Fatalf("focus %q after enter; want details", m.focusState())
 	}
-	requireView(t, m, "manager-hive · esc closes", "ACTIONS", "[details] a attach · p peek · t task · ↑↓ scroll · esc close")
+	requireView(t, m, "manager-hive · esc closes", "ACTIONS")
+	requireKeys(t, m, "details", "a attach · p peek · t task · ↑↓ scroll · esc close")
 	popup := m.View().Content
 	m, cmd = raise(t, m, key('r', "r"))
 	if m.View().Content != popup || cmd != nil {
@@ -312,7 +315,7 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.popupOpen || m.focusState() != "graph" {
 		t.Fatalf("esc did not close the popup: focus %q", m.focusState())
 	}
-	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help")
+	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help")
 }
 
 // Decision 35: a and p on the graph show the demo notice.
@@ -338,7 +341,7 @@ func TestAgentsTOpensTheTask(t *testing.T) {
 // graph.
 func TestAgentsCompactFooter(t *testing.T) {
 	m := newTestDemoModel(t, "CompactAgents.fixture.json", demoSize{})
-	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · ?")
+	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · ?")
 }
 
 // Decisions 37 and 38: normal mode reads the records of a scratch home with
@@ -369,7 +372,7 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	}
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 64: one project opens the one-pod view.
 	requireView(t, m, "project agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
@@ -394,7 +397,7 @@ func openAgents(t *testing.T, home string, clock *testClock) *Model {
 	t.Helper()
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	return deliverAgentCommands(t, m, cmd)
 }
 
@@ -612,7 +615,7 @@ func TestAgentsHideStoppedAtStart(t *testing.T) {
 // An idle and a stopped card, their joints, and the rail outside a card keep
 // border. A selected working card keeps the heavy accent border. The cells
 // are those of AgentsHome.grid, column hive, below the coordinator card of
-// decision 65.
+// decision 65, at the body rows of the golden frame (tuiV2Body).
 func TestAgentsWorkingCardBorder(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsHome.fixture.json", demoSize{})
 	type cell struct {
@@ -622,9 +625,11 @@ func TestAgentsWorkingCardBorder(t *testing.T) {
 	}
 	check := func(m *Model, cells []cell) {
 		t.Helper()
-		got := renderGrid(t, m, 120, 40)
+		shift, restore := tuiV2Body(m)
+		defer restore()
+		got := renderGrid(t, m, m.width, m.height)
 		for _, want := range cells {
-			if c := got.At(want.row, want.col); c.Rune != want.r || c.Token != want.token {
+			if c := got.At(want.row+shift, want.col); c.Rune != want.r || c.Token != want.token {
 				t.Errorf("row %d col %d: got %q %s, want %q %s", want.row, want.col, c.Rune, c.Token, want.r, want.token)
 			}
 		}
@@ -651,8 +656,10 @@ func TestAgentsWorkingCardBorder(t *testing.T) {
 	m.graph.pod = "hive"
 	m.graph.podView = true
 	m.invalidateView()
-	grid := renderGrid(t, m, 120, 40)
-	row, col := findText(t, grid, "t5-worker-1")
+	shift, restore := tuiV2Body(m)
+	row, col := findText(t, renderGrid(t, m, m.width, m.height), "t5-worker-1")
+	restore()
+	row -= shift
 	check(m, []cell{
 		{row - 1, col - 4, '┏', cellgrid.Accent},
 		{row - 1, col + 8, '┷', cellgrid.Accent},
