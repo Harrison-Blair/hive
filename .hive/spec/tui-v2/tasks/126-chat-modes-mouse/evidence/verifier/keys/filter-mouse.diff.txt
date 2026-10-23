@@ -1,0 +1,6 @@
+cmp filter-00-editing.ansi filter-01-wheel-events.ansi: exit 0, byte-equal.
+Expected: wheel down over the event list moves the selected row from 30 to 31.
+Actual: the selected row stays at 30.
+cmp filter-00-editing.ansi filter-02-click-work.ansi: exit 0, byte-equal.
+Expected: a click on 3 Work opens Work.
+Actual: Logs stays open, and the footer stays [filter].
