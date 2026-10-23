@@ -1,0 +1,12 @@
+=== RUN   TestStatusRowGolden
+=== RUN   TestStatusRowGolden/working
+=== RUN   TestStatusRowGolden/idle_at_80_columns
+=== RUN   TestStatusRowGolden/blocked
+--- PASS: TestStatusRowGolden (0.00s)
+    --- PASS: TestStatusRowGolden/working (0.00s)
+    --- PASS: TestStatusRowGolden/idle_at_80_columns (0.00s)
+    --- PASS: TestStatusRowGolden/blocked (0.00s)
+=== RUN   TestStatusRowFit
+--- PASS: TestStatusRowFit (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.007s
