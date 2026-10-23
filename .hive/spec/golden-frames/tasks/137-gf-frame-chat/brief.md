@@ -18,7 +18,7 @@ the `error` palette token. Chat matches its 14 boards cell for cell.
 
 The spec is `.hive/spec/golden-frames/README.md` and
 `.hive/spec/golden-frames/screens/chat.md`. The spec is the authority for each
-behavior. This brief gives the scope and the proof. When the spec, a board, and
+behavior. This brief gives the scope and the evidence. When the spec, a board, and
 this brief do not agree, stop and report it with
 `hive inbox send --to manager-hive TEXT --agent NAME`. Do not choose.
 
@@ -31,13 +31,13 @@ place of the old keys. Do not restyle a body. A wave C task does that.
 
 ## User decision: ask a11, 2026-10-23
 
-1. Retire each `tui-v2` golden grid that the new frame replaces. The grid
+1. Stop the golden check of each `tui-v2` grid that the new frame replaces. The grid
    files stay in `.hive/spec/tui-v2/design/` as history. Do not delete or
    change them. The golden checks stop checking them.
 2. Rewrite each layout test or key test whose rule the new spec replaces. Each
    rewritten test cites the decision or the rule that replaces the old rule, in
    a comment. A test of a rule that the spec keeps stays and passes unchanged.
-3. Retire the `Compact*` grids. Keep the property tests at 80×24 on each
+3. Stop the golden check of the `Compact*` grids. Keep the property tests at 80×24 on each
    screen: no line wider than the pane, no broken border, and the selected
    item visible.
 4. A `tui-v2` grid that still matches the new code stays checked. One example
@@ -45,7 +45,7 @@ place of the old keys. Do not restyle a body. A wave C task does that.
 
 ## Design
 
-The boards are pinned at version `1792795470-106f` of the canvas. The source
+The manager fixed the boards at version `1792795470-106f` of the canvas. The source
 folder is `/home/penguin/source/hive/.hive/tmp/golden-frames-1792795470-106f/project/`
 with `SHA256SUMS` beside it. Copy from this folder. Do not fetch the canvas.
 
@@ -76,12 +76,13 @@ board shows a state by colour alone, stop and report it.
 | --- | --- |
 | `.hive/spec/golden-frames/design/` | AC1, AC8. New. The 15 boards, `canvas.json`, the 15 golden grids, and the fixtures of the 14 screen boards. |
 | `internal/lib/cellgrid/` | AC2. The `error` token and the converter map. |
-| `internal/boardexport/` | AC1, AC8, AC9. The sizes of the Gf boards, the design folder of the feature, the golden checks, and the retired list. |
+| `internal/boardexport/` | AC1, AC8, AC9. The sizes of the Gf boards, the design folder of the feature, the golden checks, and the list of stopped grids. |
 | `internal/lib/home/config.go` | AC4, AC6. The `[tui.status]` and `[tui.keys]` tables. |
 | `internal/tui/` | AC3 to AC9. The frame, the status rows, the notice line, the keys, Chat, the interim frame of the other screens, and the Help text. |
 | `internal/tui/component/` | AC3 to AC7. The components of the frame and of Chat. Remove the tab bar and the header when no caller remains. |
 | `.hive/spec/golden-frames/README.md` | AC10. Only the new decision 33 of the ask a18 answer. |
 | `.hive/spec/golden-frames/screens/chat.md` | AC10. Only one line that points to decision 33 from the ask card rules. |
+| `testdata/ste-baseline.json` | One entry of 0 for this brief copy. |
 | `cmd/root_demo_test.go` | AC8. Only to point the demo checks to the new boards. |
 | `cmd/` | Only to pass the config to the TUI, if the wiring needs it. |
 
@@ -170,8 +171,8 @@ screen file except for AC10. Do not edit a file in `.hive/spec/tui-v2/`.
 ### AC9 The retirement
 
 - Follow the user decision of ask a11 above. One list in the test code names
-  each retired `tui-v2` grid. Each entry gives the reason in one line.
-- A test checks that each `tui-v2` grid is in the retired list or passes its
+  each `tui-v2` grid with a stopped check. Each entry gives the reason in one line.
+- A test checks that each `tui-v2` grid is in the list of stopped grids or passes its
   golden check. A grid that is in neither fails the test.
 - The property tests of `tui-v2` decision 46 run on each screen at 79×24,
   80×24, 119×40, and 120×40, with the new frame.
@@ -212,7 +213,7 @@ The user answered ask a18 on 2026-10-23 for the cases of
 
 | ID | Criterion | Proven by |
 | --- | --- | --- |
-| AC1 | The 15 boards are copied byte for byte and their grids are exported | V1 |
+| AC1 | The task copies the 15 boards byte for byte and exports their grids | V1 |
 | AC2 | The `error` token is in the palette and the converter | V2 |
 | AC3 | The frame has no header or tab bar, the chords open screens, and `esc` returns | V2, V4 |
 | AC4 | The status rows and `[tui.status]` follow decisions 8 to 13 | V2, V4 |
@@ -220,7 +221,7 @@ The user answered ask a18 on 2026-10-23 for the cases of
 | AC6 | The keys and `[tui.keys]` follow decisions 16 to 20 | V2, V4 |
 | AC7 | Chat follows each rule and state of `chat.md` | V2, V3, V4 |
 | AC8 | The 14 screen boards and the component sheet pass the golden check | V3, V4 |
-| AC9 | The retired grids are listed and the property tests pass | V3 |
+| AC9 | One list names each stopped grid and the property tests pass | V3 |
 | AC10 | Decision 33 is in the README and the board copies follow ask a18 | V1, V3, V6 |
 
 ## Verification items
@@ -241,7 +242,7 @@ The user answered ask a18 on 2026-10-23 for the cases of
 
 - Proves: AC7, AC8, AC9.
 - Command: the golden tests of `internal/boardexport` and `internal/tui` with `-count=1 -v`.
-- Expected: the 14 screen boards and the component sheet pass with no mask. The retired list test passes. The property tests pass at each of the four sizes.
+- Expected: the 14 screen boards and the component sheet pass with no mask. The test of the list of stopped grids passes. The property tests pass at each of the four sizes.
 
 ### V4 Live check
 
@@ -275,5 +276,6 @@ The bodies of Work, Friction, Health, Logs, Agents, and the Help layout. The
 ## Changes
 
 - 2026-10-23, manager: C8. Chat has 14 boards, as the Design section gives.
+- 2026-10-23, manager: STE wording of this brief, no change of scope. Add a baseline entry of 0 for this brief copy in `testdata/ste-baseline.json`.
 - 2026-10-23, manager: ask a18 answer. AC10, V6, and two spec files added to the source table.
 - 2026-10-23, manager: C7 scope. The `GfComponents` rows of the wave C components (TaskCard, WaveColumn, Rail, Popup, CheckTile, DensityStrip, SeenBar) are out of scope. The component check of this task covers only the frame and Chat components of the sheet. The test excludes the wave C rows by component region, not by a mask. The evidence lists them as wave C.
