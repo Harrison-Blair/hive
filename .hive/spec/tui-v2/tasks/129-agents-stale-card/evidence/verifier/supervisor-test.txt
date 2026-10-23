@@ -1,0 +1,26 @@
+package tui
+
+import (
+	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+)
+
+// A stale supervisor claim changes the display status, but does not hide a
+// live current worker or verifier when the graph hides stopped agents.
+func TestVerifierLiveAgentsStayVisibleWhenSupervisorIsStale(t *testing.T) {
+	home, clock := agentsFixture(t, 0)
+	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", PID: 0})
+	m := openAgents(t, home, clock)
+	if !m.graph.hideStopped {
+		t.Fatal("stopped agents must be hidden at start")
+	}
+	requireView(t, m, "worker-1", "legacy-verifier", "pi · unknown", "codex · unknown")
+	for _, node := range m.agents.data.nodes {
+		if node.record.Key == "worker-1" || node.record.Key == "legacy-verifier" {
+			if node.record.Status != records.AgentLive || !node.current || node.hideable() {
+				t.Fatalf("live agent %s: record status=%s current=%t hidden=%t", node.record.Key, node.record.Status, node.current, node.hideable())
+			}
+		}
+	}
+}
