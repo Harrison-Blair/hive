@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ project agents · example-api · h shows 4 stopped ───────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                               ╭──────────────────────╮                                               │
+│                                               │ ● coordinator-g8     │                                               │
+│                             ╭─ api-review-1 · esc closes ──────────────────────────────╮                             │
+│                             │                                                          │                             │
+│                             │  role      agent                                         │                             │
+│                           ╭─│  project   example-api                                   │─╮                           │
+│                           │ │  status    ◐ live · idle                                 │ │                           │
+│                           │ │  harness   claude                                        │ │                           │
+│                           │ │  model     claude-opus-5-5                               │ │                           │
+│                           │ │  pane      w82:p1                                        │ │                           │
+│                           │ │  tab       api-review-1                                  │ │                           │
+│                           │ │  goal      g4-rate-limits · wave B                       │ │                           │
+│                           │ │  parent    manager-api-g1                                │ │                           │
+│                           │ │                                                          │ │                           │
+│                           │ │  ACTIONS                                                 │ │                           │
+│                           ╰─│  a  attach to pane                                       │─╯                           │
+│                             │  p  peek pane                                            │                             │
+│                             │  t  open task · none                                     │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             │                                                          │                             │
+│                             ╰──────────────────────────────────────────────────────────╯                             │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close

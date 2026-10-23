@@ -1,0 +1,11 @@
+import pathlib,subprocess,concurrent.futures,hashlib
+W=pathlib.Path.cwd();E=W/'.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/verifier-2';T=W/'.hive/tmp/verify134-second';B=pathlib.Path('/home/penguin/source/hive/.hive/tmp/verify134-second-boards');B.mkdir(exist_ok=True)
+names='Main AgentsMany CompactAgents AgentsHome AgentsCoordinatorChild AgentsHiddenParent LiveOverview LivePod CompactLiveOverview CompactLivePod TreeNested TreeWide CompactTreeNested CompactTreeWide'.split()
+def job(n):
+ p=T/('board-profile-'+n);p.mkdir(exist_ok=True)
+ cmd=['firefox','--headless','--no-remote','--profile',str(p),'--window-size=1220,780','--screenshot',str(B/(n+'.png')),'file://'+str(W/'.hive/spec/tui-v2/design'/(n+'.dc.html'))]
+ r=subprocess.run(cmd,capture_output=True,text=True,timeout=90)
+ assert r.returncode==0,(n,r.stdout,r.stderr);out=B/(n+'.png');assert out.stat().st_size>10000,n
+ return '$ '+' '.join(cmd)+'\n'+r.stdout+r.stderr+'\nexit 0\nsha256 '+hashlib.sha256(out.read_bytes()).hexdigest()+'\n'
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex: logs=list(ex.map(job,names))
+(E/'boards.log').write_text('\n'.join(logs));print(f'{len(logs)} board PNGs at {B}')

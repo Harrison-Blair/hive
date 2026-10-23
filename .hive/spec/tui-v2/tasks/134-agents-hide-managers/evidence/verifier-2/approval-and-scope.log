@@ -1,0 +1,24 @@
+Approval: ask a5; coordinator record 536; package 219eddba; final approved grids 21495e2e.
+All 18 changed design files are the 9 approved board/grid pairs.
+No board fixture or mask changes.
+git diff 21495e2e HEAD -- .hive/spec/tui-v2/design/: empty
+git diff fd5401c0 HEAD -- internal/: empty
+First verdict preserved byte for byte: sha256 ddb959fdf16396b0118b34600dde03df4bf7b375a1cf45c3ca18f14796eee485
+.hive/spec/tui-v2/design/AgentsHiddenParent.dc.html
+.hive/spec/tui-v2/design/AgentsHiddenParent.grid
+.hive/spec/tui-v2/design/CompactLiveOverview.dc.html
+.hive/spec/tui-v2/design/CompactLiveOverview.grid
+.hive/spec/tui-v2/design/CompactLivePod.dc.html
+.hive/spec/tui-v2/design/CompactLivePod.grid
+.hive/spec/tui-v2/design/CompactTreeNested.dc.html
+.hive/spec/tui-v2/design/CompactTreeNested.grid
+.hive/spec/tui-v2/design/CompactTreeWide.dc.html
+.hive/spec/tui-v2/design/CompactTreeWide.grid
+.hive/spec/tui-v2/design/LiveOverview.dc.html
+.hive/spec/tui-v2/design/LiveOverview.grid
+.hive/spec/tui-v2/design/LivePod.dc.html
+.hive/spec/tui-v2/design/LivePod.grid
+.hive/spec/tui-v2/design/TreeNested.dc.html
+.hive/spec/tui-v2/design/TreeNested.grid
+.hive/spec/tui-v2/design/TreeWide.dc.html
+.hive/spec/tui-v2/design/TreeWide.grid

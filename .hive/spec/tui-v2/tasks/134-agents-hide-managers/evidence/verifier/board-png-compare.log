@@ -1,0 +1,9 @@
+LivePod.png: independent PNG equals worker board PNG: True
+TreeNested.png: independent PNG equals worker board PNG: True
+CompactTreeWide.png: independent PNG equals worker board PNG: True
+CompactLiveOverview.png: independent PNG equals worker board PNG: True
+LiveOverview.png: independent PNG equals worker board PNG: True
+AgentsHiddenParent.png: independent PNG equals worker board PNG: True
+TreeWide.png: independent PNG equals worker board PNG: True
+CompactLivePod.png: independent PNG equals worker board PNG: True
+CompactTreeNested.png: independent PNG equals worker board PNG: True

@@ -1,0 +1,20 @@
+## M10 a general child of a hidden manager goes to home
+--- FAIL: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.00s)
+    agents_hide_test.go:264: view does not contain "project agents · 2 projects · h shows 1 stopped":
+exit 1
+## M11 a hidden worker parent keeps its general child in the pod
+--- FAIL: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.00s)
+    agents_hide_test.go:294: view does not contain "─ home ─":
+exit 1
+## M12 notice alone whenever each project pod hides
+--- FAIL: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.00s)
+    agents_hide_test.go:310: view does not contain "● coordinator":
+exit 1
+## M13 never the notice alone with registered projects
+--- FAIL: TestAgentsNoticeAloneWhenNothingIsVisible (0.00s)
+    agents_hide_test.go:333: 120x40: notice at row 36 col 2; want row 5 col 3
+exit 1
+## M14 no notice line below the home pod
+--- FAIL: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.00s)
+    agents_hide_test.go:310: view does not contain "no project agents":
+exit 1

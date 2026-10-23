@@ -1,0 +1,382 @@
+$ go test ./internal/tui/ ./internal/boardexport/ -run '^(TestAgentsBoardsMatchTheirGrids|TestAskBoardsMatch|TestChatMatchesItsBoard|TestChatModeBoardsMatch|TestChatStatusBoardsMatch|TestCompactChatMatchesItsBoard|TestCompactHealthMatchesItsBoard|TestCompactLogsMatchesItsBoard|TestDemoTooSmallMatchesItsBoardGrid|TestEachBoardFixtureLoadsAtItsSpecSize|TestFrameRowsMatchEachScreenBoard|TestFrictionMatchesItsBoards|TestGeneralAgentBoardFixtures|TestGeneralAgentBoardsMatchTheirGrids|TestHealthAgentsMatchesItsBoard|TestHealthMatchesItsBoard|TestHelpMatchesItsBoard|TestLiveBoardsMatchTheirGrids|TestLogsMatchesItsBoard|TestTreeBoardsMatchTheirGrids|TestWorkGoalsMatchesItsBoard|TestWorkQueueMatchesItsBoard|TestWorkTasksMatchesCompactBoard|TestWorkTasksMatchesWorkBoard|TestGoldenGridFiles|TestCheckAccepts.*)$' -count=1 -v
+=== RUN   TestGeneralAgentBoardFixtures
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentsNested
+=== RUN   TestGeneralAgentBoardFixtures/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardFixtures/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardFixtures/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardFixtures/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardFixtures/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardFixtures (0.01s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardFixtures/HealthAgentsGeneral (0.00s)
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsNested
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral
+=== RUN   TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral
+--- PASS: TestGeneralAgentBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsNested (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsHiddenParent (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/CompactAgentsHome (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGeneralAgentBoardsMatchTheirGrids/HealthAgentsGeneral (0.00s)
+=== RUN   TestLiveBoardsMatchTheirGrids
+=== RUN   TestLiveBoardsMatchTheirGrids/LiveOverview
+=== RUN   TestLiveBoardsMatchTheirGrids/LivePod
+=== RUN   TestLiveBoardsMatchTheirGrids/CompactLiveOverview
+=== RUN   TestLiveBoardsMatchTheirGrids/CompactLivePod
+--- PASS: TestLiveBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/LiveOverview (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/LivePod (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/CompactLiveOverview (0.00s)
+    --- PASS: TestLiveBoardsMatchTheirGrids/CompactLivePod (0.00s)
+=== RUN   TestAgentsBoardsMatchTheirGrids
+=== RUN   TestAgentsBoardsMatchTheirGrids/Main
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentsMany
+=== RUN   TestAgentsBoardsMatchTheirGrids/AgentDetails
+=== RUN   TestAgentsBoardsMatchTheirGrids/CompactAgents
+--- PASS: TestAgentsBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/Main (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentsMany (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/AgentDetails (0.00s)
+    --- PASS: TestAgentsBoardsMatchTheirGrids/CompactAgents (0.00s)
+=== RUN   TestTreeBoardsMatchTheirGrids
+=== RUN   TestTreeBoardsMatchTheirGrids/TreeWide
+=== RUN   TestTreeBoardsMatchTheirGrids/TreeNested
+=== RUN   TestTreeBoardsMatchTheirGrids/CompactTreeWide
+=== RUN   TestTreeBoardsMatchTheirGrids/CompactTreeNested
+--- PASS: TestTreeBoardsMatchTheirGrids (0.01s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/TreeWide (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/TreeNested (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/CompactTreeWide (0.00s)
+    --- PASS: TestTreeBoardsMatchTheirGrids/CompactTreeNested (0.00s)
+=== RUN   TestAskBoardsMatch
+=== RUN   TestAskBoardsMatch/ChatAsk
+=== RUN   TestAskBoardsMatch/ChatAskMulti
+=== RUN   TestAskBoardsMatch/ChatAskPreview
+=== RUN   TestAskBoardsMatch/ChatAskStopped
+=== RUN   TestAskBoardsMatch/CompactChatAsk
+--- PASS: TestAskBoardsMatch (0.01s)
+    --- PASS: TestAskBoardsMatch/ChatAsk (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskMulti (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskPreview (0.00s)
+    --- PASS: TestAskBoardsMatch/ChatAskStopped (0.00s)
+    --- PASS: TestAskBoardsMatch/CompactChatAsk (0.00s)
+=== RUN   TestChatModeBoardsMatch
+=== RUN   TestChatModeBoardsMatch/ChatNormal
+=== RUN   TestChatModeBoardsMatch/ChatInput
+=== RUN   TestChatModeBoardsMatch/CompactChatNormal
+--- PASS: TestChatModeBoardsMatch (0.01s)
+    --- PASS: TestChatModeBoardsMatch/ChatNormal (0.00s)
+    --- PASS: TestChatModeBoardsMatch/ChatInput (0.00s)
+    --- PASS: TestChatModeBoardsMatch/CompactChatNormal (0.00s)
+=== RUN   TestChatMatchesItsBoard
+--- PASS: TestChatMatchesItsBoard (0.00s)
+=== RUN   TestCompactChatMatchesItsBoard
+--- PASS: TestCompactChatMatchesItsBoard (0.00s)
+=== RUN   TestChatStatusBoardsMatch
+=== RUN   TestChatStatusBoardsMatch/ChatStatus
+=== RUN   TestChatStatusBoardsMatch/ChatEvents
+=== RUN   TestChatStatusBoardsMatch/CompactChatStatus
+--- PASS: TestChatStatusBoardsMatch (0.01s)
+    --- PASS: TestChatStatusBoardsMatch/ChatStatus (0.00s)
+    --- PASS: TestChatStatusBoardsMatch/ChatEvents (0.00s)
+    --- PASS: TestChatStatusBoardsMatch/CompactChatStatus (0.00s)
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Main
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Chat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Work
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Compact
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Friction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Health
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Logs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Help
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/Components
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/LivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped
+=== RUN   TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk
+--- PASS: TestEachBoardFixtureLoadsAtItsSpecSize (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Main (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Chat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Work (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Compact (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Friction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Health (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Logs (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Help (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/Components (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/LivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped (0.00s)
+    --- PASS: TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk (0.00s)
+=== RUN   TestDemoTooSmallMatchesItsBoardGrid
+--- PASS: TestDemoTooSmallMatchesItsBoardGrid (0.00s)
+=== RUN   TestFrameRowsMatchEachScreenBoard
+=== RUN   TestFrameRowsMatchEachScreenBoard/AgentDetails
+=== RUN   TestFrameRowsMatchEachScreenBoard/AgentsMany
+=== RUN   TestFrameRowsMatchEachScreenBoard/Chat
+=== RUN   TestFrameRowsMatchEachScreenBoard/Compact
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactAgents
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactChat
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactFriction
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactHealth
+=== RUN   TestFrameRowsMatchEachScreenBoard/CompactLogs
+=== RUN   TestFrameRowsMatchEachScreenBoard/Friction
+=== RUN   TestFrameRowsMatchEachScreenBoard/FrictionResolved
+=== RUN   TestFrameRowsMatchEachScreenBoard/Health
+=== RUN   TestFrameRowsMatchEachScreenBoard/HealthAgents
+=== RUN   TestFrameRowsMatchEachScreenBoard/Logs
+=== RUN   TestFrameRowsMatchEachScreenBoard/Main
+=== RUN   TestFrameRowsMatchEachScreenBoard/Work
+=== RUN   TestFrameRowsMatchEachScreenBoard/WorkGoals
+=== RUN   TestFrameRowsMatchEachScreenBoard/WorkQueue
+--- PASS: TestFrameRowsMatchEachScreenBoard (0.03s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/AgentDetails (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/AgentsMany (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Chat (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Compact (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactAgents (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactChat (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactFriction (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactHealth (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/CompactLogs (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Friction (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/FrictionResolved (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Health (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/HealthAgents (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Logs (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Main (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/Work (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/WorkGoals (0.00s)
+    --- PASS: TestFrameRowsMatchEachScreenBoard/WorkQueue (0.00s)
+=== RUN   TestHelpMatchesItsBoard
+--- PASS: TestHelpMatchesItsBoard (0.00s)
+=== RUN   TestFrictionMatchesItsBoards
+=== RUN   TestFrictionMatchesItsBoards/Friction
+=== RUN   TestFrictionMatchesItsBoards/FrictionResolved
+=== RUN   TestFrictionMatchesItsBoards/CompactFriction
+--- PASS: TestFrictionMatchesItsBoards (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/Friction (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/FrictionResolved (0.00s)
+    --- PASS: TestFrictionMatchesItsBoards/CompactFriction (0.00s)
+=== RUN   TestHealthAgentsMatchesItsBoard
+--- PASS: TestHealthAgentsMatchesItsBoard (0.00s)
+=== RUN   TestHealthMatchesItsBoard
+--- PASS: TestHealthMatchesItsBoard (0.00s)
+=== RUN   TestCompactHealthMatchesItsBoard
+--- PASS: TestCompactHealthMatchesItsBoard (0.00s)
+=== RUN   TestLogsMatchesItsBoard
+--- PASS: TestLogsMatchesItsBoard (0.00s)
+=== RUN   TestCompactLogsMatchesItsBoard
+--- PASS: TestCompactLogsMatchesItsBoard (0.00s)
+=== RUN   TestWorkGoalsMatchesItsBoard
+--- PASS: TestWorkGoalsMatchesItsBoard (0.00s)
+=== RUN   TestWorkQueueMatchesItsBoard
+--- PASS: TestWorkQueueMatchesItsBoard (0.00s)
+=== RUN   TestWorkTasksMatchesWorkBoard
+--- PASS: TestWorkTasksMatchesWorkBoard (0.00s)
+=== RUN   TestWorkTasksMatchesCompactBoard
+--- PASS: TestWorkTasksMatchesCompactBoard (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.129s
+=== RUN   TestCheckAcceptsAGoodBoard
+--- PASS: TestCheckAcceptsAGoodBoard (0.00s)
+=== RUN   TestCheckAcceptsChatStatusSymbols
+--- PASS: TestCheckAcceptsChatStatusSymbols (0.00s)
+=== RUN   TestCheckAcceptsNewChatBoardSizes
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatStatus
+=== RUN   TestCheckAcceptsNewChatBoardSizes/ChatEvents
+=== RUN   TestCheckAcceptsNewChatBoardSizes/CompactChatStatus
+--- PASS: TestCheckAcceptsNewChatBoardSizes (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatStatus (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/ChatEvents (0.00s)
+    --- PASS: TestCheckAcceptsNewChatBoardSizes/CompactChatStatus (0.00s)
+=== RUN   TestCheckAcceptsTheHeavyBorder
+--- PASS: TestCheckAcceptsTheHeavyBorder (0.00s)
+=== RUN   TestCheckAcceptsTheLiveBoards
+--- PASS: TestCheckAcceptsTheLiveBoards (0.00s)
+=== RUN   TestCheckAcceptsTheTreeBoards
+--- PASS: TestCheckAcceptsTheTreeBoards (0.00s)
+=== RUN   TestCheckAcceptsTheChatModeBoards
+--- PASS: TestCheckAcceptsTheChatModeBoards (0.00s)
+=== RUN   TestCheckAcceptsTheAskBoards
+--- PASS: TestCheckAcceptsTheAskBoards (0.00s)
+=== RUN   TestGoldenGridFiles
+=== RUN   TestGoldenGridFiles/AgentDetails
+=== RUN   TestGoldenGridFiles/Chat
+=== RUN   TestGoldenGridFiles/Health
+=== RUN   TestGoldenGridFiles/AgentDetailsGeneral
+=== RUN   TestGoldenGridFiles/CompactTreeWide
+=== RUN   TestGoldenGridFiles/CompactChatAsk
+=== RUN   TestGoldenGridFiles/HealthAgents
+=== RUN   TestGoldenGridFiles/TooSmall
+=== RUN   TestGoldenGridFiles/HealthAgentsGeneral
+=== RUN   TestGoldenGridFiles/CompactLiveOverview
+=== RUN   TestGoldenGridFiles/CompactLivePod
+=== RUN   TestGoldenGridFiles/ChatAskStopped
+=== RUN   TestGoldenGridFiles/Main
+=== RUN   TestGoldenGridFiles/CompactChat
+=== RUN   TestGoldenGridFiles/Work
+=== RUN   TestGoldenGridFiles/Help
+=== RUN   TestGoldenGridFiles/WorkQueue
+=== RUN   TestGoldenGridFiles/CompactAgentsHome
+=== RUN   TestGoldenGridFiles/CompactChatStatus
+=== RUN   TestGoldenGridFiles/LivePod
+=== RUN   TestGoldenGridFiles/TreeNested
+=== RUN   TestGoldenGridFiles/CompactTreeNested
+=== RUN   TestGoldenGridFiles/ChatAsk
+=== RUN   TestGoldenGridFiles/ChatStatus
+=== RUN   TestGoldenGridFiles/WorkGoals
+=== RUN   TestGoldenGridFiles/CompactHealth
+=== RUN   TestGoldenGridFiles/CompactLogs
+=== RUN   TestGoldenGridFiles/AgentsHiddenParent
+=== RUN   TestGoldenGridFiles/LiveOverview
+=== RUN   TestGoldenGridFiles/ChatNormal
+=== RUN   TestGoldenGridFiles/ChatInput
+=== RUN   TestGoldenGridFiles/ChatEvents
+=== RUN   TestGoldenGridFiles/Friction
+=== RUN   TestGoldenGridFiles/FrictionResolved
+=== RUN   TestGoldenGridFiles/AgentsHome
+=== RUN   TestGoldenGridFiles/AgentsNested
+=== RUN   TestGoldenGridFiles/ChatAskMulti
+=== RUN   TestGoldenGridFiles/ChatAskPreview
+=== RUN   TestGoldenGridFiles/CompactAgents
+=== RUN   TestGoldenGridFiles/Compact
+=== RUN   TestGoldenGridFiles/CompactFriction
+=== RUN   TestGoldenGridFiles/Logs
+=== RUN   TestGoldenGridFiles/Components
+=== RUN   TestGoldenGridFiles/AgentsCoordinatorChild
+=== RUN   TestGoldenGridFiles/TreeWide
+=== RUN   TestGoldenGridFiles/CompactChatNormal
+=== RUN   TestGoldenGridFiles/AgentsMany
+--- PASS: TestGoldenGridFiles (0.01s)
+    --- PASS: TestGoldenGridFiles/AgentDetails (0.00s)
+    --- PASS: TestGoldenGridFiles/Chat (0.00s)
+    --- PASS: TestGoldenGridFiles/Health (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/TooSmall (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgentsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLiveOverview (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskStopped (0.00s)
+    --- PASS: TestGoldenGridFiles/Main (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChat (0.00s)
+    --- PASS: TestGoldenGridFiles/Work (0.00s)
+    --- PASS: TestGoldenGridFiles/Help (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkQueue (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/LivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkGoals (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactHealth (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLogs (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHiddenParent (0.00s)
+    --- PASS: TestGoldenGridFiles/LiveOverview (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatInput (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatEvents (0.00s)
+    --- PASS: TestGoldenGridFiles/Friction (0.00s)
+    --- PASS: TestGoldenGridFiles/FrictionResolved (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsNested (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskMulti (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskPreview (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/Compact (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactFriction (0.00s)
+    --- PASS: TestGoldenGridFiles/Logs (0.00s)
+    --- PASS: TestGoldenGridFiles/Components (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsMany (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.010s
+exit 0

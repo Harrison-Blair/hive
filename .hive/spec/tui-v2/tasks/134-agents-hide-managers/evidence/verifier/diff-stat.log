@@ -1,0 +1,139 @@
+ .hive/spec/tui-v2/README.md                        |   20 +
+ .../spec/tui-v2/design/AgentsHiddenParent.dc.html  |    2 +-
+ .hive/spec/tui-v2/design/AgentsHiddenParent.grid   |    4 +-
+ .../spec/tui-v2/design/CompactLiveOverview.dc.html |    2 +-
+ .hive/spec/tui-v2/design/CompactLiveOverview.grid  |    4 +-
+ .hive/spec/tui-v2/design/CompactLivePod.dc.html    |    2 +-
+ .hive/spec/tui-v2/design/CompactLivePod.grid       |    4 +-
+ .hive/spec/tui-v2/design/CompactTreeNested.dc.html |    2 +-
+ .hive/spec/tui-v2/design/CompactTreeNested.grid    |    4 +-
+ .hive/spec/tui-v2/design/CompactTreeWide.dc.html   |    2 +-
+ .hive/spec/tui-v2/design/CompactTreeWide.grid      |    4 +-
+ .hive/spec/tui-v2/design/LiveOverview.dc.html      |    2 +-
+ .hive/spec/tui-v2/design/LiveOverview.grid         |    4 +-
+ .hive/spec/tui-v2/design/LivePod.dc.html           |    2 +-
+ .hive/spec/tui-v2/design/LivePod.grid              |    4 +-
+ .hive/spec/tui-v2/design/TreeNested.dc.html        |    2 +-
+ .hive/spec/tui-v2/design/TreeNested.grid           |    4 +-
+ .hive/spec/tui-v2/design/TreeWide.dc.html          |    2 +-
+ .hive/spec/tui-v2/design/TreeWide.grid             |    4 +-
+ .../tui-v2/tasks/134-agents-hide-managers/brief.md |  204 ++++
+ .../tasks/134-agents-hide-managers/evidence/V1.md  |  107 ++
+ .../tasks/134-agents-hide-managers/evidence/V2.md  |   56 +
+ .../tasks/134-agents-hide-managers/evidence/V3.md  |   80 ++
+ .../134-agents-hide-managers/evidence/V4-gate.log  |   97 ++
+ .../tasks/134-agents-hide-managers/evidence/V4.md  |   48 +
+ .../captures/AgentsHiddenParent-120x40.ansi        |   40 +
+ .../captures/AgentsHiddenParent-120x40.diff.txt    |    1 +
+ .../captures/AgentsHiddenParent-120x40.png         |  Bin 0 -> 75062 bytes
+ .../captures/CompactHideAllPods-80x24.ansi         |   24 +
+ .../captures/CompactHideAllPods-80x24.diff.txt     |    1 +
+ .../evidence/captures/CompactHideAllPods-80x24.png |  Bin 0 -> 37485 bytes
+ .../captures/CompactHideManagerOverview-80x24.ansi |   24 +
+ .../CompactHideManagerOverview-80x24.diff.txt      |    1 +
+ .../captures/CompactHideManagerOverview-80x24.png  |  Bin 0 -> 54033 bytes
+ .../captures/CompactHideManagerPod-80x24.ansi      |   24 +
+ .../captures/CompactHideManagerPod-80x24.diff.txt  |    1 +
+ .../captures/CompactHideManagerPod-80x24.png       |  Bin 0 -> 43301 bytes
+ .../captures/CompactLiveOverview-80x24.ansi        |   24 +
+ .../captures/CompactLiveOverview-80x24.diff.txt    |    1 +
+ .../captures/CompactLiveOverview-80x24.png         |  Bin 0 -> 52224 bytes
+ .../evidence/captures/CompactLivePod-80x24.ansi    |   24 +
+ .../captures/CompactLivePod-80x24.diff.txt         |    1 +
+ .../evidence/captures/CompactLivePod-80x24.png     |  Bin 0 -> 44841 bytes
+ .../evidence/captures/CompactTreeNested-80x24.ansi |   24 +
+ .../captures/CompactTreeNested-80x24.diff.txt      |    1 +
+ .../evidence/captures/CompactTreeNested-80x24.png  |  Bin 0 -> 42303 bytes
+ .../evidence/captures/CompactTreeWide-80x24.ansi   |   24 +
+ .../captures/CompactTreeWide-80x24.diff.txt        |    1 +
+ .../evidence/captures/CompactTreeWide-80x24.png    |  Bin 0 -> 46306 bytes
+ .../evidence/captures/HideAllPods-120x40.ansi      |   40 +
+ .../evidence/captures/HideAllPods-120x40.diff.txt  |    1 +
+ .../evidence/captures/HideAllPods-120x40.png       |  Bin 0 -> 50651 bytes
+ .../captures/HideManagerOverview-120x40.ansi       |   40 +
+ .../captures/HideManagerOverview-120x40.diff.txt   |    1 +
+ .../captures/HideManagerOverview-120x40.png        |  Bin 0 -> 78129 bytes
+ .../evidence/captures/HideManagerPod-120x40.ansi   |   40 +
+ .../captures/HideManagerPod-120x40.diff.txt        |    1 +
+ .../evidence/captures/HideManagerPod-120x40.png    |  Bin 0 -> 57242 bytes
+ .../evidence/captures/LiveOverview-120x40.ansi     |   40 +
+ .../evidence/captures/LiveOverview-120x40.diff.txt |    1 +
+ .../evidence/captures/LiveOverview-120x40.png      |  Bin 0 -> 76326 bytes
+ .../evidence/captures/LivePod-120x40.ansi          |   40 +
+ .../evidence/captures/LivePod-120x40.diff.txt      |    1 +
+ .../evidence/captures/LivePod-120x40.png           |  Bin 0 -> 61055 bytes
+ .../evidence/captures/TreeNested-120x40.ansi       |   40 +
+ .../evidence/captures/TreeNested-120x40.diff.txt   |    1 +
+ .../evidence/captures/TreeNested-120x40.png        |  Bin 0 -> 64235 bytes
+ .../evidence/captures/TreeWide-120x40.ansi         |   40 +
+ .../evidence/captures/TreeWide-120x40.diff.txt     |    1 +
+ .../evidence/captures/TreeWide-120x40.png          |  Bin 0 -> 67200 bytes
+ .../evidence/new-grids/AgentsHiddenParent.grid     |  121 ++
+ .../evidence/new-grids/AgentsHiddenParent.txt      |   40 +
+ .../evidence/new-grids/CompactHideAllPods.grid     |   73 ++
+ .../evidence/new-grids/CompactHideAllPods.txt      |   24 +
+ .../new-grids/CompactHideManagerOverview.grid      |   73 ++
+ .../new-grids/CompactHideManagerOverview.txt       |   24 +
+ .../evidence/new-grids/CompactHideManagerPod.grid  |   73 ++
+ .../evidence/new-grids/CompactHideManagerPod.txt   |   24 +
+ .../evidence/new-grids/CompactLiveOverview.grid    |   73 ++
+ .../evidence/new-grids/CompactLiveOverview.txt     |   24 +
+ .../evidence/new-grids/CompactLivePod.grid         |   73 ++
+ .../evidence/new-grids/CompactLivePod.txt          |   24 +
+ .../evidence/new-grids/CompactTreeNested.grid      |   73 ++
+ .../evidence/new-grids/CompactTreeNested.txt       |   24 +
+ .../evidence/new-grids/CompactTreeWide.grid        |   73 ++
+ .../evidence/new-grids/CompactTreeWide.txt         |   24 +
+ .../evidence/new-grids/HideAllPods.grid            |  121 ++
+ .../evidence/new-grids/HideAllPods.txt             |   40 +
+ .../evidence/new-grids/HideManagerOverview.grid    |  121 ++
+ .../evidence/new-grids/HideManagerOverview.txt     |   40 +
+ .../evidence/new-grids/HideManagerPod.grid         |  121 ++
+ .../evidence/new-grids/HideManagerPod.txt          |   40 +
+ .../evidence/new-grids/LiveOverview.grid           |  121 ++
+ .../evidence/new-grids/LiveOverview.txt            |   40 +
+ .../evidence/new-grids/LivePod.grid                |  121 ++
+ .../evidence/new-grids/LivePod.txt                 |   40 +
+ .../evidence/new-grids/README.md                   |   95 ++
+ .../evidence/new-grids/TreeNested.grid             |  121 ++
+ .../evidence/new-grids/TreeNested.txt              |   40 +
+ .../evidence/new-grids/TreeWide.grid               |  121 ++
+ .../evidence/new-grids/TreeWide.txt                |   40 +
+ .../evidence/new-grids/diff-rows.txt               |    9 +
+ .../fixtures/CompactHideAllPods.fixture.json       |  453 ++++++++
+ .../CompactHideManagerOverview.fixture.json        |  491 ++++++++
+ .../fixtures/CompactHideManagerPod.fixture.json    |  476 ++++++++
+ .../new-grids/fixtures/HideAllPods.fixture.json    |  453 ++++++++
+ .../fixtures/HideManagerOverview.fixture.json      |  491 ++++++++
+ .../new-grids/fixtures/HideManagerPod.fixture.json |  476 ++++++++
+ .../evidence/review-cases.md                       |  246 ++++
+ .../evidence/v1/green-count50.txt                  | 1202 ++++++++++++++++++++
+ .../evidence/v1/green-race.txt                     | 1202 ++++++++++++++++++++
+ .../evidence/v1/mutants-review-cases.txt           |   20 +
+ .../evidence/v1/mutants.txt                        |   81 ++
+ .../evidence/v1/red-review-cases.txt               |   93 ++
+ .../134-agents-hide-managers/evidence/v1/red.txt   |  249 ++++
+ .../evidence/v2-export.txt                         |   63 +
+ .../evidence/v2-golden.txt                         |  382 +++++++
+ .../evidence/v3/allhidden-80x24-1-start.txt        |   24 +
+ .../evidence/v3/allhidden-80x24-2-enter.txt        |   24 +
+ .../evidence/v3/allhidden-80x24-3-esc.txt          |   24 +
+ .../evidence/v3/hcycle-120x40-1-start.txt          |   40 +
+ .../evidence/v3/hcycle-120x40-2-h-shows.txt        |   40 +
+ .../evidence/v3/hcycle-120x40-3-h-hides.txt        |   40 +
+ .../evidence/v3/hcycle-80x24-1-start.txt           |   24 +
+ .../evidence/v3/hcycle-80x24-2-h-shows.txt         |   24 +
+ .../evidence/v3/hcycle-80x24-3-h-hides.txt         |   24 +
+ .../evidence/v3/podview-80x24-1-start.txt          |   24 +
+ .../evidence/v3/podview-80x24-2-right.txt          |   24 +
+ .../evidence/v3/podview-80x24-3-up.txt             |   24 +
+ .../evidence/v3/select-120x40-1-start.txt          |   40 +
+ .../evidence/v3/select-120x40-2-h-shows.txt        |   40 +
+ .../evidence/v3/select-120x40-3-right.txt          |   40 +
+ .../evidence/v3/select-120x40-4-h-hides.txt        |   40 +
+ .../evidence/v3/select-120x40-5-h-shows-again.txt  |   40 +
+ internal/tui/agents_hide_test.go                   |  336 ++++++
+ internal/tui/agents_screen.go                      |  117 +-
+ internal/tui/agents_screen_test.go                 |    9 +-
+ testdata/ste-baseline.json                         |    1 +
+ 138 files changed, 10561 insertions(+), 56 deletions(-)

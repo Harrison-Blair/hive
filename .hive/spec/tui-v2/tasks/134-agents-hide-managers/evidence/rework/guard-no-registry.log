@@ -1,0 +1,7 @@
+    agents_hide_test.go:419: view contains "esc closes":
+        │                             ╭─ coordinator · esc closes ───────────────────────────────╮                             │
+    agents_hide_test.go:419: view contains "esc closes":
+        ╭─ project╭─ coordinator · esc closes ───────────────────────────────╮─────────╮
+--- FAIL: TestAgentsNoRegisteredProjectSelectsNothing (0.00s)
+    --- FAIL: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.00s)
+    --- FAIL: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)

@@ -1,0 +1,49 @@
+$ go test ./internal/tui/ -run ^TestAgentsPodsFollowProjectRecordOrder$ -count=1 -v
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+    agents_screen_test.go:477: pods are missing or out of order: alpha 2108, demo 2005, zeta 1902:
+         hive  /tmp/TestAgentsPodsFollowProjectR… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 3 projects · h shows 1 stopped ────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                   ╭───────────────────────────────────────┼─────────────────────────────────────╮                    │
+        │ ┏━ zeta ━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━┓ ╭─ demo ───────────┴─────────────────╮ ╭─ alpha ─────────┴──────────────────╮ │
+        │ ┃                                    ┃ │ g1-demo · active                   │ │                                    │ │
+        │ ┃      ╭──────────────────────╮      ┃ │ ╭──────────────────────╮           │ │      ╭──────────────────────╮      │ │
+        │ ┃      │ ◐ manager-zeta       │      ┃ │ │ ◐ manager-demo       │           │ │      │ ◐ manager-alpha      │      │ │
+        │ ┃      │ pi · idle            │      ┃ │ │ claude · idle · 3m   │           │ │      │ pi · idle            │      │ │
+        │ ┃      ╰──────────────────────╯      ┃ │ ├──────────────────────╯           │ │      ╰──────────────────────╯      │ │
+        │ ┃                                    ┃ │ │                                  │ │                                    │ │
+        │ ┃ no child agents                    ┃ │ │╭──────────────────────╮          │ │ no child agents                    │ │
+        │ ┃                                    ┃ │ ├┤ ● legacy-verifier    │          │ │                                    │ │
+        │ ┃                                    ┃ │ ││ codex · working · 5m │          │ │                                    │ │
+        │ ┃                                    ┃ │ │╰──────────────────────╯          │ │                                    │ │
+        │ ┃                                    ┃ │ │                                  │ │                                    │ │
+        │ ┃                                    ┃ │ │╭──────────────────────╮          │ │                                    │ │
+        │ ┃                                    ┃ │ ╰┤ ○ worker-1           │          │ │                                    │ │
+        │ ┃                                    ┃ │  │ pi · blocked · 4m    │          │ │                                    │ │
+        │ ┃                                    ┃ │  ╰──────────────────────╯          │ │                                    │ │
+        │ ┃                                    ┃ │                                    │ │                                    │ │
+        │ ┃                                    ┃ │ h shows 1 stopped                  │ │                                    │ │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰────────────────────────────────────╯ ╰────────────────────────────────────╯ │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsPodsFollowProjectRecordOrder (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL
+
+exit 1

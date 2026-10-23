@@ -1,0 +1,17 @@
+    agents_hide_test.go:373: 120x40: coordinator left border = '│'; want heavy true
+    agents_hide_test.go:373: 80x24: coordinator left border = '│'; want heavy true
+    agents_hide_test.go:373: 120x40: coordinator left border = '│'; want heavy true
+    agents_hide_test.go:373: 80x24: coordinator left border = '│'; want heavy true
+--- FAIL: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden (0.01s)
+    --- FAIL: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/120x40 (0.00s)
+    --- FAIL: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/up/80x24 (0.00s)
+    --- FAIL: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/120x40 (0.00s)
+    --- FAIL: TestAgentsCoordinatorSelectableWithAllProjectPodsHidden/k/80x24 (0.00s)
+    agents_hide_test.go:401: view does not contain "coordinator · esc closes":
+    agents_hide_test.go:401: view does not contain "coordinator · esc closes":
+--- FAIL: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding (0.01s)
+    --- FAIL: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/120x40 (0.00s)
+    --- FAIL: TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding/80x24 (0.00s)
+--- PASS: TestAgentsNoRegisteredProjectSelectsNothing (0.00s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/120x40 (0.00s)
+    --- PASS: TestAgentsNoRegisteredProjectSelectsNothing/80x24 (0.00s)

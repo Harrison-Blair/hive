@@ -1,0 +1,49 @@
+$ go test ./internal/tui/ -run ^TestAgentsNoHintWithNothingHidden$ -count=1 -v
+=== RUN   TestAgentsNoHintWithNothingHidden
+    agents_hide_test.go:197: view does not contain "project agents · 2 projects ─":
+         hive  /tmp/TestAgentsNoHintWithNothingH… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects · h shows 0 stopped ────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                             ╭─────────────────────────────┴───────────────────────────╮                              │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────┴───────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ◐ manager-alpha      │                ┃ │               │ ◐ manager-beta       │                │  │
+        │ ┃               │ claude · idle · 2m   │                ┃ │               │ codex · idle · 1h    │                │  │
+        │ ┃               ╰───────────┬──────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┃                           │                           ┃ │                                                       │  │
+        │ ┃                           │                           ┃ │ no child agents                                       │  │
+        │ ┃                           │                           ┃ │                                                       │  │
+        │ ┃               ╭───────────┴──────────╮                ┃ │                                                       │  │
+        │ ┃               │ ● a1-worker          │                ┃ │                                                       │  │
+        │ ┃               │ pi · working · 2m    │                ┃ │                                                       │  │
+        │ ┃               ╰──────────────────────╯                ┃ │                                                       │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsNoHintWithNothingHidden (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.009s
+FAIL
+
+exit=1
