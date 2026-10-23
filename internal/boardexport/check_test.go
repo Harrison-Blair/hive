@@ -220,3 +220,20 @@ func assertErr(t *testing.T, err error, parts ...string) {
 		}
 	}
 }
+
+func TestCheckAcceptsTheAskBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatAsk", 120, 40},
+		{"ChatAskMulti", 120, 40},
+		{"ChatAskPreview", 120, 40},
+		{"ChatAskStopped", 120, 40},
+		{"CompactChatAsk", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}

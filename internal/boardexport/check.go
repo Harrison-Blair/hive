@@ -57,6 +57,12 @@ var Sizes = map[string][2]int{
 	"ChatNormal":        {120, 40},
 	"ChatInput":         {120, 40},
 	"CompactChatNormal": {80, 24},
+	// The ask boards of task 131-hive-ask.
+	"ChatAsk":        {120, 40},
+	"ChatAskMulti":   {120, 40},
+	"ChatAskPreview": {120, 40},
+	"ChatAskStopped": {120, 40},
+	"CompactChatAsk": {80, 24},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a
