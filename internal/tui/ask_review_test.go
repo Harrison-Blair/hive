@@ -56,7 +56,7 @@ func TestAskReviewOneQuestion(t *testing.T) {
 		"manager-hive  ? asked · Model · open below",
 	)
 	rejectView(t, m, "1 [ ] Yes", "2 [x] No")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [review] ↑↓ question · enter send · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type") {
+	if got := viewRow(m, 39); strings.TrimRight(got, " ") != " [review] ↑↓ question · enter send · x dismiss · J/K next/prev card" {
 		t.Fatalf("footer = %q", got)
 	}
 	run(t, m, enterKey)
@@ -453,5 +453,111 @@ func TestDemoFixtureShowsTheReview(t *testing.T) {
 		if got := viewRow(m, 39); !strings.HasPrefix(got, " [review]") {
 			t.Fatalf("footer = %q", got)
 		}
+	}
+}
+
+// AC3: in the review, only ↑↓, enter, x, and J/K act. i, ctrl+o, pgup,
+// pgdown, ?, and other frame keys do nothing. The footer names only the
+// review keys. ctrl+c twice still quits.
+func TestAskReviewKeepsOnlyTheReviewKeys(t *testing.T) {
+	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	for index := 3; index <= 40; index++ {
+		m.chatData.entries = append(m.chatData.entries, m.chatData.entries[0])
+		m.chatData.entries[len(m.chatData.entries)-1].ID = fmt.Sprintf("c%d", index)
+	}
+	m.rebuildChat()
+	m = run(t, m, key('2', "2"))
+	before := ansi.Strip(m.View().Content)
+	top := m.chatFeed.top
+	presses := []tea.KeyPressMsg{
+		key('i', "i"), {Code: 'o', Mod: tea.ModCtrl}, {Code: tea.KeyPgUp}, {Code: tea.KeyPgDown},
+		key('?', "?"), key('r', "r"), key('h', "h"), {Code: tea.KeyEsc}, ctrlBracket(),
+		{Code: tea.KeyLeft}, {Code: tea.KeyRight}, key('g', "g"), key('G', "G"),
+	}
+	for _, press := range presses {
+		m = run(t, m, press)
+		if got := ansi.Strip(m.View().Content); got != before {
+			t.Fatalf("%s changed the view:\n%s", press.String(), got)
+		}
+	}
+	if m.chatFeed.top != top || m.chatInputActive || m.helpOpen || m.screenIndex != 0 {
+		t.Fatalf("a review key acted: top %d→%d, input %v, help %v, screen %d", top, m.chatFeed.top, m.chatInputActive, m.helpOpen, m.screenIndex)
+	}
+	requireNoCalls(t, calls, "the frame keys")
+	if got := viewRow(m, 39); strings.TrimRight(got, " ") != " [review] ↑↓ question · enter send · x dismiss · J/K next/prev card" {
+		t.Fatalf("footer = %q", got)
+	}
+	_, cmd := raise(t, m, tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	if cmd == nil {
+		t.Fatal("the first ctrl+c gave no command")
+	}
+	_, cmd = raise(t, m, tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatal("the second ctrl+c did not quit")
+	}
+}
+
+// longNoteAsk gives a one-question ask and a note of words w001 to wNNN with
+// MIDDLE-SENTINEL in the middle and FINAL-SENTINEL at the end.
+func longNoteText(words int) string {
+	var parts []string
+	for index := 1; index <= words; index++ {
+		parts = append(parts, fmt.Sprintf("w%03d", index))
+		if index == words/2 {
+			parts = append(parts, "MIDDLE-SENTINEL")
+		}
+	}
+	return strings.Join(append(parts, "FINAL-SENTINEL"), " ")
+}
+
+// AC2: a note longer than the dock can show is readable in full with ↑↓
+// only. ↑ gives a row the highlight at its first line. ↓ pages through the
+// highlighted row before it moves to the next row, and ↑ pages back. Each
+// word shows at some step, and the first visible line of the highlighted
+// row has the › mark.
+func TestAskReviewReachesEachPartOfALongRow(t *testing.T) {
+	for _, size := range [][2]int{{120, 40}, {80, 24}} {
+		t.Run(fmt.Sprint(size[0]), func(t *testing.T) {
+			note := longNoteText(900)
+			m, calls := askModel(t, size[0], size[1], oneQuestionAsk("a1", "manager-hive"))
+			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+			m.askCards["a1"].notes[0] = note
+			m = run(t, m, enterKey)
+			requireView(t, m, "┃ › Send ")
+			seen := map[string]bool{}
+			look := func() {
+				requireFits(t, m, size[0], size[1])
+				view := ansi.Strip(m.View().Content)
+				if !strings.Contains(view, "┃ › ") {
+					t.Fatalf("no › mark in view:\n%s", view)
+				}
+				for _, word := range strings.Fields(cardText(m)) {
+					seen[word] = true
+				}
+			}
+			look()
+			for range 12 {
+				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
+				look()
+			}
+			requireView(t, m, "┃ › Model → Yes · note: w001")
+			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+			look()
+			rejectView(t, m, "note: w001")
+			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
+			requireView(t, m, "┃ › Model → Yes · note: w001")
+			for range 12 {
+				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+				look()
+			}
+			requireView(t, m, "┃ › Send ")
+			for _, word := range append(strings.Fields(note), "Model", "Send") {
+				if !seen[word] {
+					t.Fatalf("%q never showed", word)
+				}
+			}
+			run(t, m, enterKey)
+			requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}, Note: note}}}})
+		})
 	}
 }

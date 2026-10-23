@@ -1,0 +1,56 @@
+## break: askEnter skips the empty Other check (the condition gets `&& false`)
+test: TestAskReviewKeepsTheEmptyOtherCheck$
+--- FAIL: TestAskReviewKeepsTheEmptyOtherCheck (0.00s)
+    ask_review_test.go:119: the empty Other: calls = [{answer a1 [{[4]  }]}], want none
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.007s
+## break: closeAsk ignores the blocked caller
+test: TestAskReviewBlockedCallerSendsNothing$
+--- FAIL: TestAskReviewBlockedCallerSendsNothing (0.00s)
+    ask_review_test.go:422: a blocked caller: calls = [{answer a1 [{[1]  }]}], want none
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.007s
+## break: review passes digits to the pick path
+test: TestAskReviewIgnoresOtherInput$
+--- FAIL: TestAskReviewIgnoresOtherInput (0.00s)
+    ask_review_test.go:220: view does not contain "┃   Model → Yes · note: o ":
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.011s
+## break: a card switch drops the review
+test: TestAskReviewSurvivesACardSwitch$
+--- FAIL: TestAskReviewSurvivesACardSwitch (0.00s)
+    ask_review_test.go:247: view does not contain "? coordinator asks · confirm":
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.009s
+## break: a refresh resets the card
+test: TestAskReviewSurvivesARefresh$
+--- FAIL: TestAskReviewSurvivesARefresh (0.00s)
+    ask_review_test.go:264: view does not contain "? coordinator asks · confirm":
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.008s
+## break: the edit goes to the next question, not to the review
+test: TestAskReviewEditsAQuestionAndSendsTheEditedDraft$
+--- FAIL: TestAskReviewEditsAQuestionAndSendsTheEditedDraft (0.00s)
+    ask_review_test.go:169: view does not contain "┃   Scope → Wheel, Click, keys ":
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.011s
+## break: the review row cuts long text
+test: TestAskReviewWrapsAndScrollsLongContent$
+--- FAIL: TestAskReviewWrapsAndScrollsLongContent (0.01s)
+        ask_review_test.go:372: card text = "Scope → Wheel scroll over the feed and the card, Click focus, a typed answer that is longer than one row of the Order → Modes first · note: keep the old tab key for one release, then remove it after the users read the change Model → Sonnet Wave → A Tier → Strong Land → Yes Send"
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.013s
+## break: the review passes other keys to the frame (the code of ff977f6d)
+test: TestAskReviewKeepsOnlyTheReviewKeys$
+--- FAIL: TestAskReviewKeepsOnlyTheReviewKeys (0.00s)
+    ask_review_test.go:480: i changed the view:
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL
+## break: ↓ does not page a tall row (the code of ff977f6d)
+test: TestAskReviewReachesEachPartOfALongRow$
+--- FAIL: TestAskReviewReachesEachPartOfALongRow (0.08s)
+    --- FAIL: TestAskReviewReachesEachPartOfALongRow/120 (0.05s)
+        ask_review_test.go:556: "w365" never showed
+    --- FAIL: TestAskReviewReachesEachPartOfALongRow/80 (0.04s)
+        ask_review_test.go:556: "w117" never showed

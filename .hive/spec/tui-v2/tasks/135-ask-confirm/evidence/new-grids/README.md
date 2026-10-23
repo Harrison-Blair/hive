@@ -29,25 +29,46 @@ cell for cell (0 cells differ). The key runs are in `../v3/`.
   question opens its options, picks, and `note` again. Its completion
   returns to the review with `Send` selected. Other questions keep their
   draft.
-- Only `↑↓`, `enter`, `x`, and `J/K` act on the card in the review. Digits,
-  space, tab, backspace, text, and a click do nothing. `pgup/pgdn`, `i`,
-  and `ctrl+o` keep their feed and input meanings.
+- A highlighted row that is taller than the dock pages with the same
+  arrows: `↓` scrolls the row by one dock height less one line until its
+  last line shows, and then moves to the next row. `↑` pages back while
+  the row is scrolled, and then moves to the row above, at its first line.
+  The first visible line of the highlighted row has the `›` mark. So each
+  part of a long pick list or `note` can show, with the existing height
+  cap and no new key (manager review, inbox after record 550).
+- Only `↑↓`, `enter`, `x`, and `J/K` act in the review. Each other key does
+  nothing: digits, space, tab, backspace, text, `i`, `ctrl+o`, `pgup`,
+  `pgdn`, `?`, `esc`, `ctrl+]`, `←→`, and `g/G`. The global quit
+  (`ctrl+c` twice) does not change. A click on the card does nothing. The
+  mouse wheel is not a key and keeps its feed scroll.
 - The bottom border: `enter send · ↑↓ question to change · x drop` on
   Send, `enter change · …` on a question, and `enter sends to PARENT · …`
   on Send for a stopped asker.
 - The footer label is `[review]`: `↑↓ question · enter send · x dismiss ·
-  J/K next/prev card · wheel/pgup scroll feed · i type` (120 columns), and
-  `↑↓ question · enter send · x dismiss · J/K card` (80 columns). On a
-  question, `enter change` replaces `enter send`.
+  J/K next/prev card` (120 columns), and `↑↓ question · enter send · x
+  dismiss · J/K card` (80 columns). On a question, `enter change` replaces
+  `enter send`.
 - The card keeps the dock height cap. It scrolls to keep the highlighted
   row in view.
 
-### Navigation decision for approval
+### Return after an edit
 
 After an edit, the review opens with `Send` selected (as each entry to
 the review does), so one `enter` sends. The edited row shows its new
 answer. At 80x24 with long content, the card scrolls to keep `Send` in
-view. Run `flow-*/7-return-review` shows it.
+view. Run `flow-*/7-return-review` shows it. The manager confirmed that
+this follows the brief.
+
+### Long rows (reproduction before the fix)
+
+With commit `ff977f6d`, the dock showed a highlighted row from its first
+line, and the arrows moved whole rows. A row taller than the dock lost its
+middle. `../v1/long-row-repro-before.txt` records one question with a
+`note` of 900 words and `MIDDLE-SENTINEL` after word 450: at 120x40, words
+`w365` to `w590` never showed; at 80x24, words `w117` to `w817` never
+showed. `MIDDLE-SENTINEL` never showed at either width. The paging rule
+above fixes it. `../v3/tall-*/summary.txt` shows each word, the middle
+sentinel, and the final sentinel in the live TUI.
 
 ## Review grids
 
@@ -61,6 +82,8 @@ view. Run `flow-*/7-return-review` shows it.
 | `ChatAskReviewLong` | 120x40 | 5 picks, long Other text, two long notes, wrapped | evidence only |
 | `CompactChatAskReviewLong` | 80x24 | the same at 80 columns, question 1 highlighted, scrolled | evidence only |
 | `CompactChatAskReviewMulti` | 80x24 | `ChatAskReviewMulti` at 80 columns | evidence only |
+| `ChatAskReviewTall` | 120x40 | a `note` of 900 words with a middle and a final sentinel, question highlighted | evidence only |
+| `CompactChatAskReviewTall` | 80x24 | a `note` of 300 words with the sentinels, question highlighted | evidence only |
 | `ChatAskFlow`, `CompactChatAskFlow` | both | fixtures of the key runs only, no grid | evidence only |
 
 ## Existing boards that change

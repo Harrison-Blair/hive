@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 2 asks   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:05  you           A A A                                                                                           │
+│                 ╭─ keys · ? or esc closes ─────────────────────────────────────────────────────────╮                 │
+│ 14:22  coordinat│                                                                                  │                 │
+│ 14:23  manager-h│  GLOBAL · same on every screen            ACTIONS · one meaning each             │                 │
+│                 │                                                                                  │                 │
+│                 │  1–6        switch screen                 a     attach to pane                   │                 │
+│                 │  tab        next region                   p     peek pane                        │                 │
+│                 │  [ ]        previous / next view          r     restart · Health › Agents        │                 │
+│                 │  ↑↓ j k     move                          h     show or hide stopped agents      │                 │
+│                 │  ←→         move on the graph             t     open task                        │                 │
+│                 │  pgup pgdn  page                          b     task brief                       │                 │
+│                 │  g G        top / end                     v     VERIFIED.md                      │                 │
+│                 │  enter      open / details                d     dependency graph                 │                 │
+│                 │  esc        back / close                  o     goal design                      │                 ┃
+│                 │  /          filter bar                    s     stops only                       │                 ┃
+╰─────────────────│  ?          this help                     f     follow logs                      │─────────────────╯
+┏━ ? coordinator a│  R          refresh now                   < >   previous / next day              │1 of 2 · J next ━┓
+┃ 1. Which parts g│  ctrl+c ×2  quit                                                                 │                 ┃
+┃                 │                                                                                  │                 ┃
+┃ › 1 [ ] Mouse wh│  FILTER FIELDS                                                                   │                 ┃
+┃   2 [ ] Click to│  level:  comp:  proj:  agent:  task:  req:  text                                 │                 ┃
+┃   3 [ ] Normal a│  example  / level:warn agent:manager-hive restart                                │                 ┃
+┃   4 [ ] Header c│                                                                                  │                 ┃
+┃   5 [ ] Other: t│  CHAT                                                                            │                 ┃
+┃                 │  i or a click on the input types · ctrl+] or a click on the feed leaves          │                 ┃
+┃ 2. Which task go│  ctrl+o opens or folds all chat events                                           │                 ┃
+┃                 │  r restart: coordinator or supervisor, asks first only when live                 │                 ┃
+┃   1 [ ] Modes fi│  ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card     │                 ┃
+┃   2 [ ] Card fir│  ask review: enter on the last question · ↑↓ question · enter send or change     │                 ┃
+┃   3 [ ] Other: t╰──────────────────────────────────────────────────────────────────────────────────╯                 ┃
+┗━ space mark · tab note · enter next question · enter on last reviews ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [help] ↑↓ scroll · ? or esc close

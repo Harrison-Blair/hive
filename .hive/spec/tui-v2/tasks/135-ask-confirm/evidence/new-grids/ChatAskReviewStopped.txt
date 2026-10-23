@@ -37,4 +37,4 @@
 ╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
 │ i or click here to type                                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
- [review] ↑↓ question · enter send to parent · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type         
+ [review] ↑↓ question · enter send to parent · x dismiss · J/K next/prev card                                           

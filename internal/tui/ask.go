@@ -50,10 +50,16 @@ type askCard struct {
 	editing  string
 	// review shows the review of all answers before the send. reviewRow
 	// is the highlighted question, or the number of questions for Send.
-	// fromReview returns the edit of a question to the review.
-	review     bool
-	reviewRow  int
-	fromReview bool
+	// fromReview returns the edit of a question to the review. A
+	// highlighted row taller than the dock scrolls: reviewScroll is its
+	// first visible line, and the last render sets reviewMax and
+	// reviewStep.
+	review       bool
+	reviewRow    int
+	fromReview   bool
+	reviewScroll int
+	reviewMax    int
+	reviewStep   int
 }
 
 // askRow maps a body row of the dock to an option of the focused card.
@@ -243,14 +249,26 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 }
 
 // updateAskReviewKey handles a key in the review. Only ↑↓, enter, x, and
-// J/K act on the card. A key that changes a pick or a note does nothing.
+// J/K act. Each other key does nothing. ↑↓ first pages through a
+// highlighted row that is taller than the dock. A row gets the highlight
+// at its first line.
 func (m *Model) updateAskReviewKey(press tea.KeyPressMsg, record ask.Record, card *askCard) (tea.Cmd, bool) {
 	key := press.String()
 	switch key {
 	case "up":
-		card.reviewRow = max(card.reviewRow-1, 0)
+		switch {
+		case card.reviewScroll > 0:
+			card.reviewScroll = max(card.reviewScroll-card.reviewStep, 0)
+		case card.reviewRow > 0:
+			card.reviewRow, card.reviewMax = card.reviewRow-1, 0
+		}
 	case "down":
-		card.reviewRow = min(card.reviewRow+1, len(record.Questions))
+		switch {
+		case card.reviewScroll < card.reviewMax:
+			card.reviewScroll = min(card.reviewScroll+card.reviewStep, card.reviewMax)
+		case card.reviewRow < len(record.Questions):
+			card.reviewRow, card.reviewScroll, card.reviewMax = card.reviewRow+1, 0, 0
+		}
 	case "enter":
 		if card.reviewRow == len(record.Questions) {
 			return m.sendAsk(record, card), true
@@ -260,17 +278,6 @@ func (m *Model) updateAskReviewKey(press tea.KeyPressMsg, record ask.Record, car
 		return m.closeAsk(record, "dismiss", nil), true
 	case "J", "K":
 		return m.moveAskCard(key), true
-	case "pgup", "pgdown":
-		return m.scrollChatFeed(press), true
-	case "i":
-		return m.startChatInput(), true
-	case "ctrl+o":
-		return m.updateChat(press), true
-	case "space", "tab", "backspace":
-	default:
-		if len(key) != 1 || key[0] < '1' || key[0] > '9' {
-			return nil, false
-		}
 	}
 	return nil, true
 }
@@ -308,7 +315,7 @@ func (m *Model) askEnter(record ask.Record, card *askCard) tea.Cmd {
 		card.question++
 		return nil
 	}
-	card.review, card.fromReview, card.reviewRow = true, false, len(record.Questions)
+	card.review, card.fromReview, card.reviewRow, card.reviewScroll = true, false, len(record.Questions), 0
 	return nil
 }
 
@@ -447,7 +454,7 @@ func (m *Model) askHints(focus string, wide bool) []string {
 		if !wide {
 			return []string{"↑↓ question", send, "x dismiss", "J/K card"}
 		}
-		return []string{"↑↓ question", send, "x dismiss", "J/K next/prev card", "wheel/pgup scroll feed", "i type"}
+		return []string{"↑↓ question", send, "x dismiss", "J/K next/prev card"}
 	case "note":
 		return []string{"type a note", "enter keep note", "tab close note", "ctrl+] leave note", "↑↓ option"}
 	case "other":
@@ -566,6 +573,17 @@ func (m *Model) askDockView(width, limit int) string {
 	visible := max(min(len(lines), limit-2), 1)
 	offset := max(current[1]-visible+1, 0)
 	offset = min(offset, current[0])
+	if card.review {
+		// A highlighted row taller than the dock scrolls with ↑↓, and its
+		// first visible line has the › mark.
+		card.reviewMax = max(current[1]-current[0]+1-visible, 0)
+		card.reviewStep = max(visible-1, 1)
+		card.reviewScroll = min(card.reviewScroll, card.reviewMax)
+		if card.reviewMax > 0 {
+			offset = current[0] + card.reviewScroll
+			lines[offset] = titleStyle.Render("›") + ansi.TruncateLeft(lines[offset], 1, "")
+		}
+	}
 	end := min(offset+visible, len(lines))
 	m.askRows = rows[offset:end]
 	panel := component.Panel{
