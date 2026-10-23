@@ -58,3 +58,11 @@ Rules now forbid `rm` on a bare variable. The worker ran `rm -f $T/*.ansi` in
 one command with a commit and a live capture. The task went to `blocked`. The
 manager declined it the same way. A rule in a brief does not stop the error.
 A rule in the worker and verifier skills, or a harness hook, is still open.
+
+**Recurrence 2026-10-22 and 2026-10-23 (hive 125, 126, 131):** t125-worker-1,
+t126-worker-1 (`rm -f $C/*.ansi` and `rm -f $H/*.png`), and t131-worker-1
+(`rm -f $B/*.png`) each hit the dialog in a capture cleanup. Each gave a
+`blocked` record with no reason, and each prompt denied itself after about two
+minutes. The t131 brief had the `"${VAR:?}"` rule, and the worker did not
+obey it. The fix in the worker and verifier skills, or a harness hook, is
+still open.
