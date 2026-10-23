@@ -1,0 +1,1 @@
+Same accepted ask and same card, without Send. Without later messages, the feed shows asker stopped. With later valid coordinator messages, the event is above the viewport and the screen has no explicit stopped state. The card is byte-equal in both captures. The record remains open without replies or attempts.

@@ -1,0 +1,44 @@
+{
+  "id": "a6",
+  "asker": "asker-scratch",
+  "asker_key": "asker-scratch",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T17:39:25.590005101Z",
+  "questions": [
+    {
+      "question": "Which parts?",
+      "header": "Scope",
+      "options": [
+        {
+          "label": "Ask card",
+          "description": "card"
+        },
+        {
+          "label": "Help line",
+          "description": "help"
+        },
+        {
+          "label": "Header count",
+          "description": "count"
+        }
+      ],
+      "multiSelect": true
+    },
+    {
+      "question": "Which order?",
+      "header": "Order",
+      "options": [
+        {
+          "label": "Card first",
+          "description": "card"
+        },
+        {
+          "label": "Help first",
+          "description": "help"
+        }
+      ]
+    }
+  ],
+  "state": "open"
+}

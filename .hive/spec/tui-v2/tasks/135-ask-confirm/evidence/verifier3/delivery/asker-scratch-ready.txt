@@ -1,0 +1,2 @@
+sh-5.3$ pi asker-scratch
+STUB_READY name=asker-scratch executable=/tmp/hv135-verify3/bin/pi pid=581785

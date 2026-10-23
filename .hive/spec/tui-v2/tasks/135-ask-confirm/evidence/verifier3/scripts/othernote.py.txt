@@ -1,0 +1,11 @@
+from live import *
+design=ROOT/'.hive/spec/tui-v2/design/ChatAskReviewMulti.fixture.json'
+for w,h in [(120,40),(80,24)]:
+ j=json.loads(design.read_text());j['terminal']={'width':w,'height':h}
+ j['ui']['ask']['notes']=['note one\nnote two','tail note one\ntail note two'];j['ui']['ask']['other']=['other one\nother two','']
+ j['data']['asks'][0]['questions'][0]['options'][0]['label']='First line\nSecond line'
+ f=E/f'multiline/OtherNote-{w}.fixture.json';f.write_text(json.dumps(j,indent=2))
+ start(f,w,h);cap(f'multiline/OtherNote-{w}-review',w,h)
+ for i in range(5):keys('Up');cap(f'multiline/OtherNote-{w}-up-{i}',w,h)
+ for i in range(5):keys('Down');cap(f'multiline/OtherNote-{w}-down-{i}',w,h)
+ stop();print('multiline Other/note',w,'captured',flush=True)

@@ -1,0 +1,13 @@
+from pathlib import Path
+import sys
+E=Path('.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier3')
+failed=False
+for case,asker,prefix in [('standard','asker-scratch','delivery'),('neither-caption','asker-scratch-with-long-name-abc','no-caption')]:
+ for w in [80,120]:
+  path=E/prefix/(f'{w}-stopped-02-review.txt' if case=='standard' else f'{w}-review.txt')
+  screen=path.read_text();lines=screen.splitlines();a=next(i for i,line in enumerate(lines) if line.startswith('┏'));b=next(i for i,line in enumerate(lines) if i>a and line.startswith('┗'));card='\n'.join(lines[a:b+1])
+  checks={'full title':f'? {asker} asks · confirm' in card,'explicit stopped state':'asker stopped' in card,'full destination':'Send to parent-scratch' in card,'Send selected':'› Send to parent-scratch' in card,'full Send hint':'enter sends to parent-scratch' in card}
+  for item,ok in checks.items():print(f'{case} {w}: {item}: '+('pass' if ok else 'fail'))
+  failed |= not all(checks.values())
+print('Header and feed words cannot satisfy these card checks.')
+sys.exit(1 if failed else 0)

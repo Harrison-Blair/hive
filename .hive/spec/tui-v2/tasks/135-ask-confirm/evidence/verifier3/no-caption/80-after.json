@@ -1,0 +1,36 @@
+{
+  "id": "a8",
+  "asker": "asker-scratch-with-long-name-abc",
+  "asker_key": "asker-scratch-with-long-name-abc",
+  "parent": "parent-scratch",
+  "parent_key": "parent-scratch",
+  "created_at": "2026-10-23T17:41:30.205955375Z",
+  "questions": [
+    {
+      "question": "Proceed with this change?",
+      "header": "Change",
+      "options": [
+        {
+          "label": "Yes",
+          "description": "proceed"
+        },
+        {
+          "label": "No",
+          "description": "hold"
+        }
+      ]
+    }
+  ],
+  "state": "answered",
+  "replies": [
+    {
+      "picks": [
+        1
+      ]
+    }
+  ],
+  "closed_at": "2026-10-23T17:41:34.763780139Z",
+  "delivered_at": "2026-10-23T17:41:35.065078068Z",
+  "delivered_to": "parent-scratch",
+  "attempts": 1
+}

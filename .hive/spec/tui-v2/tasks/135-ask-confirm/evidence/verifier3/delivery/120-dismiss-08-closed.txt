@@ -1,0 +1,40 @@
+ hive  /tmp/hv135-verify3/home            coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   13:38 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 13:38  asker-scratch ? asked · Scope · Order                                                                         │
+│ 13:38  you           answered asker-scratch · Scope → 2 Help line, 3 Header count; Order → Next release · note: ke…  │
+│ 13:38  asker-scratch ? asked · Scope · Order                                                                         │
+│ 13:38  you           answered asker-scratch · Scope → 1 Ask card · note: parent path; Order → 2 Help first           │
+│ 13:38  asker-scratch ? asked · Scope · Order                                                                         │
+│ 13:38  you           dismissed asker-scratch · Scope · Order                                                         │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ message · ○ none ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help                 

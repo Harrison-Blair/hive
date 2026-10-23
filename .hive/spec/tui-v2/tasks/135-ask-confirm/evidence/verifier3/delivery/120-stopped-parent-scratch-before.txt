@@ -1,0 +1,2 @@
+sh-5.3$ pi parent-scratch
+STUB_READY name=parent-scratch executable=/tmp/hv135-verify3/bin/pi pid=581371
