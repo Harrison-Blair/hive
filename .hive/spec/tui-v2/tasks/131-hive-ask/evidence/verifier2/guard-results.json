@@ -1,0 +1,83 @@
+{
+  "blocked-caller-guard": {
+    "exit": 1,
+    "failures": [
+      "TestABlockedCallerCannotAnswer"
+    ],
+    "args": [
+      "go",
+      "test",
+      "-count=1",
+      "-json",
+      "-overlay",
+      "/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier2/blocked-caller-guard.json",
+      "-run",
+      "^TestABlockedCallerCannotAnswer$",
+      "./internal/tui/"
+    ]
+  },
+  "fixture-guard": {
+    "exit": 1,
+    "failures": [
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Main",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentsMany",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetails",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgents",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Chat",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactChat",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatStatus",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatEvents",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatStatus",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/WorkGoals",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/WorkQueue",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Work",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Compact",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Friction",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/FrictionResolved",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactFriction",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Health",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgents",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactHealth",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Logs",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactLogs",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Help",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/TooSmall",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/Components",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHome",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentsNested",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentsHiddenParent",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentsCoordinatorChild",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactAgentsHome",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/AgentDetailsGeneral",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/HealthAgentsGeneral",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/LiveOverview",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/LivePod",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactLiveOverview",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactLivePod",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/TreeWide",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/TreeNested",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeWide",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactTreeNested",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatNormal",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatInput",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatNormal",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatAsk",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskMulti",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskPreview",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/ChatAskStopped",
+      "TestEachBoardFixtureLoadsAtItsSpecSize/CompactChatAsk",
+      "TestEachBoardFixtureLoadsAtItsSpecSize"
+    ],
+    "args": [
+      "go",
+      "test",
+      "-count=1",
+      "-json",
+      "-overlay",
+      "/home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier2/fixture-guard.json",
+      "-run",
+      "^TestEachBoardFixtureLoadsAtItsSpecSize$",
+      "./internal/tui/"
+    ]
+  }
+}

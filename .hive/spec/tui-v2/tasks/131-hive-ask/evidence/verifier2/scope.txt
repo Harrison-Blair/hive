@@ -1,0 +1,320 @@
+ .agents/skills/hive-agent/SKILL.md                 |   56 +
+ .agents/skills/hive-coordinator/SKILL.md           |   56 +
+ .agents/skills/hive-manager/SKILL.md               |   56 +
+ .agents/skills/hive-verifier/SKILL.md              |   56 +
+ .agents/skills/hive-worker/SKILL.md                |   56 +
+ .hive/spec/tui-v2/README.md                        |   37 +
+ .hive/spec/tui-v2/design/ChatAsk.dc.html           |   38 +
+ .hive/spec/tui-v2/design/ChatAsk.fixture.json      |  563 ++++++++
+ .hive/spec/tui-v2/design/ChatAsk.grid              |  121 ++
+ .hive/spec/tui-v2/design/ChatAskMulti.dc.html      |   38 +
+ .hive/spec/tui-v2/design/ChatAskMulti.fixture.json |  575 ++++++++
+ .hive/spec/tui-v2/design/ChatAskMulti.grid         |  121 ++
+ .hive/spec/tui-v2/design/ChatAskPreview.dc.html    |   38 +
+ .../spec/tui-v2/design/ChatAskPreview.fixture.json |  589 ++++++++
+ .hive/spec/tui-v2/design/ChatAskPreview.grid       |  121 ++
+ .hive/spec/tui-v2/design/ChatAskStopped.dc.html    |   38 +
+ .../spec/tui-v2/design/ChatAskStopped.fixture.json |  579 ++++++++
+ .hive/spec/tui-v2/design/ChatAskStopped.grid       |  121 ++
+ .hive/spec/tui-v2/design/CompactChatAsk.dc.html    |   38 +
+ .../spec/tui-v2/design/CompactChatAsk.fixture.json |  505 +++++++
+ .hive/spec/tui-v2/design/CompactChatAsk.grid       |   73 +
+ .hive/spec/tui-v2/design/Help.dc.html              |    6 +-
+ .hive/spec/tui-v2/design/Help.grid                 |    4 +-
+ .hive/spec/tui-v2/tasks/131-hive-ask/brief.md      |  322 +++++
+ .../tui-v2/tasks/131-hive-ask/evidence/V-gate.log  |   90 ++
+ .../tui-v2/tasks/131-hive-ask/evidence/V-gate.md   |   42 +
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V1.md  |   34 +
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V2.md  |   20 +
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V3.md  |   81 ++
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V4.md  |  114 ++
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V5.md  |  107 ++
+ .../spec/tui-v2/tasks/131-hive-ask/evidence/V6.md  |  105 ++
+ .../tui-v2/tasks/131-hive-ask/evidence/VERIFIED.md |  256 ++++
+ .../131-hive-ask/evidence/board-rule-cases.md      |   39 +
+ .../evidence/captures/ChatAsk-120x40.ansi          |   40 +
+ .../evidence/captures/ChatAsk-120x40.diff.txt      |    0
+ .../evidence/captures/ChatAskMulti-120x40.ansi     |   40 +
+ .../evidence/captures/ChatAskMulti-120x40.diff.txt |    0
+ .../evidence/captures/ChatAskPreview-120x40.ansi   |   40 +
+ .../captures/ChatAskPreview-120x40.diff.txt        |    0
+ .../evidence/captures/ChatAskStopped-120x40.ansi   |   40 +
+ .../captures/ChatAskStopped-120x40.diff.txt        |    0
+ .../evidence/captures/CompactChatAsk-80x24.ansi    |   24 +
+ .../captures/CompactChatAsk-80x24.diff.txt         |    0
+ .../evidence/captures/Help-120x40.ansi             |   40 +
+ .../evidence/captures/Help-120x40.diff.txt         |    0
+ .../tasks/131-hive-ask/evidence/captures/cap.sh    |   14 +
+ .../evidence/captures/keys/00-start.txt            |   40 +
+ .../captures/keys/01-ctrl-bracket-leave-note.txt   |   40 +
+ .../131-hive-ask/evidence/captures/keys/02-up.txt  |   40 +
+ .../evidence/captures/keys/03-down.txt             |   40 +
+ .../evidence/captures/keys/04-tab-open-note.txt    |   40 +
+ .../evidence/captures/keys/05-type-in-note.txt     |   40 +
+ .../captures/keys/06-ctrl-bracket-keep-note.txt    |   40 +
+ .../evidence/captures/keys/07-tab-again.txt        |   40 +
+ .../evidence/captures/keys/08-tab-drops-note.txt   |   40 +
+ .../evidence/captures/keys/09-J-next-card.txt      |   40 +
+ .../evidence/captures/keys/10-K-prev-card.txt      |   40 +
+ .../evidence/captures/keys/11-space-pick.txt       |   40 +
+ .../evidence/captures/keys/12-digit-3-other.txt    |   40 +
+ .../evidence/captures/keys/13-type-other.txt       |   40 +
+ .../captures/keys/14-ctrl-bracket-leave-other.txt  |   40 +
+ .../captures/keys/15-wheel-up-over-card.txt        |   40 +
+ .../captures/keys/16-wheel-down-over-card.txt      |   40 +
+ .../evidence/captures/keys/17-pgup.txt             |   40 +
+ .../evidence/captures/keys/18-pgdn.txt             |   40 +
+ .../captures/keys/19-click-option-2-q2.txt         |   40 +
+ .../evidence/captures/keys/20-click-feed.txt       |   40 +
+ .../evidence/captures/keys/21-click-card.txt       |   40 +
+ .../evidence/captures/keys/22-i-input.txt          |   40 +
+ .../captures/keys/23-ctrl-bracket-back.txt         |   40 +
+ .../evidence/captures/keys/24-enter-send.txt       |   40 +
+ .../evidence/captures/keys/25-x-dismiss.txt        |   40 +
+ .../131-hive-ask/evidence/captures/keys/keys.sh    |   38 +
+ .../evidence/captures/mismatch-check.txt           | 1526 ++++++++++++++++++++
+ .../tasks/131-hive-ask/evidence/green-count50.txt  |    5 +
+ .../tasks/131-hive-ask/evidence/green-golden.txt   |    1 +
+ .../tasks/131-hive-ask/evidence/green-race.txt     |  128 ++
+ .../131-hive-ask/evidence/new-grids/ChatAsk.grid   |  121 ++
+ .../evidence/new-grids/ChatAskMulti.grid           |  121 ++
+ .../evidence/new-grids/ChatAskPreview.grid         |  121 ++
+ .../evidence/new-grids/ChatAskStopped.grid         |  121 ++
+ .../evidence/new-grids/CompactChatAsk.grid         |   73 +
+ .../131-hive-ask/evidence/new-grids/Help.grid      |  121 ++
+ .../131-hive-ask/evidence/new-grids/README.md      |   36 +
+ .../131-hive-ask/evidence/note-enter-green.txt     |    5 +
+ .../tasks/131-hive-ask/evidence/red/base.txt       |   39 +
+ .../tasks/131-hive-ask/evidence/red/mutations.txt  |  160 ++
+ .../131-hive-ask/evidence/red/note-enter-red.txt   |    5 +
+ .../evidence/v4-note-enter/00-start.ansi           |   40 +
+ .../evidence/v4-note-enter/00-start.txt            |   40 +
+ .../evidence/v4-note-enter/01-down.ansi            |   40 +
+ .../evidence/v4-note-enter/01-down.txt             |   40 +
+ .../evidence/v4-note-enter/02-tab.ansi             |   40 +
+ .../131-hive-ask/evidence/v4-note-enter/02-tab.txt |   40 +
+ .../evidence/v4-note-enter/03-text.ansi            |   40 +
+ .../evidence/v4-note-enter/03-text.txt             |   40 +
+ .../evidence/v4-note-enter/04-enter.ansi           |   40 +
+ .../evidence/v4-note-enter/04-enter.txt            |   40 +
+ .../evidence/v4-note-enter/real-00-open.ansi       |   40 +
+ .../evidence/v4-note-enter/real-00-open.txt        |   40 +
+ .../evidence/v4-note-enter/real-01-down.ansi       |   40 +
+ .../evidence/v4-note-enter/real-01-down.txt        |   40 +
+ .../evidence/v4-note-enter/real-02-tab.ansi        |   40 +
+ .../evidence/v4-note-enter/real-02-tab.txt         |   40 +
+ .../evidence/v4-note-enter/real-03-text.ansi       |   40 +
+ .../evidence/v4-note-enter/real-03-text.png        |  Bin 0 -> 62562 bytes
+ .../evidence/v4-note-enter/real-03-text.txt        |   40 +
+ .../evidence/v4-note-enter/real-04-enter.ansi      |   40 +
+ .../evidence/v4-note-enter/real-04-enter.png       |  Bin 0 -> 46912 bytes
+ .../evidence/v4-note-enter/real-04-enter.txt       |   40 +
+ .../evidence/v4-note-enter/real-a1-record.json     |   37 +
+ .../evidence/v4-note-enter/real-asker.txt          |    2 +
+ .../evidence/v5-demo/ChatAsk-120x40.ansi           |   40 +
+ .../evidence/v5-demo/ChatAsk-120x40.diff.txt       |    0
+ .../evidence/v5-demo/ChatAsk-120x40.png            |  Bin 0 -> 106249 bytes
+ .../evidence/v5-demo/ChatAskMulti-120x40.ansi      |   40 +
+ .../evidence/v5-demo/ChatAskMulti-120x40.diff.txt  |    0
+ .../evidence/v5-demo/ChatAskMulti-120x40.png       |  Bin 0 -> 105130 bytes
+ .../evidence/v5-demo/ChatAskPreview-120x40.ansi    |   40 +
+ .../v5-demo/ChatAskPreview-120x40.diff.txt         |    0
+ .../evidence/v5-demo/ChatAskPreview-120x40.png     |  Bin 0 -> 110938 bytes
+ .../evidence/v5-demo/ChatAskStopped-120x40.ansi    |   40 +
+ .../v5-demo/ChatAskStopped-120x40.diff.txt         |    0
+ .../evidence/v5-demo/ChatAskStopped-120x40.png     |  Bin 0 -> 91371 bytes
+ .../v5-demo/CompactChatAsk-80x24-pane80x24.ansi    |   24 +
+ .../CompactChatAsk-80x24-pane80x24.diff.txt        |   20 +
+ .../v5-demo/CompactChatAsk-80x24-pane80x24.png     |  Bin 0 -> 62090 bytes
+ .../evidence/v5-demo/CompactChatAsk-80x24.ansi     |   24 +
+ .../evidence/v5-demo/CompactChatAsk-80x24.diff.txt |    0
+ .../evidence/v5-demo/CompactChatAsk-80x24.png      |  Bin 0 -> 62090 bytes
+ .../131-hive-ask/evidence/v5-demo/Help-120x40.ansi |   40 +
+ .../evidence/v5-demo/Help-120x40.diff.txt          |    0
+ .../131-hive-ask/evidence/v5-demo/Help-120x40.png  |  Bin 0 -> 112993 bytes
+ .../tasks/131-hive-ask/evidence/v5-demo/cap.sh     |   16 +
+ .../131-hive-ask/evidence/v5-demo/gridcmp.go.txt   |   44 +
+ .../evidence/v5-demo/mismatch-check.txt            |    2 +
+ .../evidence/v5-demo/results-120x40.txt            |    5 +
+ .../evidence/v5-demo/results-80x24-pane80x24.txt   |    1 +
+ .../evidence/v5-demo/results-80x24-pane81x25.txt   |    1 +
+ .../131-hive-ask/evidence/v5/ChatAsk-120x40.ansi   |   40 +
+ .../evidence/v5/ChatAsk-120x40.diff.txt            |    0
+ .../131-hive-ask/evidence/v5/ChatAsk-120x40.png    |  Bin 0 -> 118302 bytes
+ .../evidence/v5/ChatAskMulti-120x40.ansi           |   40 +
+ .../evidence/v5/ChatAskMulti-120x40.diff.txt       |    0
+ .../evidence/v5/ChatAskMulti-120x40.png            |  Bin 0 -> 115289 bytes
+ .../evidence/v5/ChatAskPreview-120x40.ansi         |   40 +
+ .../evidence/v5/ChatAskPreview-120x40.diff.txt     |    0
+ .../evidence/v5/ChatAskPreview-120x40.png          |  Bin 0 -> 122958 bytes
+ .../evidence/v5/ChatAskStopped-120x40.ansi         |   40 +
+ .../evidence/v5/ChatAskStopped-120x40.diff.txt     |    0
+ .../evidence/v5/ChatAskStopped-120x40.png          |  Bin 0 -> 100286 bytes
+ .../evidence/v5/CompactChatAsk-80x24.ansi          |   24 +
+ .../evidence/v5/CompactChatAsk-80x24.diff.txt      |    0
+ .../evidence/v5/CompactChatAsk-80x24.png           |  Bin 0 -> 69179 bytes
+ .../131-hive-ask/evidence/v5/real-ask-120x40.ansi  |   40 +
+ .../131-hive-ask/evidence/v5/real-ask-120x40.png   |  Bin 0 -> 93721 bytes
+ .../131-hive-ask/evidence/v6/a1-asker-pane.txt     |    6 +
+ .../tasks/131-hive-ask/evidence/v6/a1-record.json  |   63 +
+ .../131-hive-ask/evidence/v6/a1-tui-after.txt      |   40 +
+ .../131-hive-ask/evidence/v6/a2-parent-pane.txt    |    5 +
+ .../tasks/131-hive-ask/evidence/v6/a2-record.json  |   36 +
+ .../131-hive-ask/evidence/v6/a3-asker-pane.txt     |    8 +
+ .../tasks/131-hive-ask/evidence/v6/a3-record.json  |   29 +
+ .../131-hive-ask/evidence/v6/a3-tui-after.txt      |   40 +
+ .../131-hive-ask/evidence/verifier/ChatAsk.ansi    |   40 +
+ .../evidence/verifier/ChatAsk.diff.txt             |    0
+ .../evidence/verifier/ChatAsk.meta.json            |   15 +
+ .../131-hive-ask/evidence/verifier/ChatAsk.png     |  Bin 0 -> 110268 bytes
+ .../evidence/verifier/ChatAskMulti.ansi            |   40 +
+ .../evidence/verifier/ChatAskMulti.diff.txt        |    0
+ .../evidence/verifier/ChatAskMulti.meta.json       |   15 +
+ .../evidence/verifier/ChatAskMulti.png             |  Bin 0 -> 108844 bytes
+ .../evidence/verifier/ChatAskPreview.ansi          |   40 +
+ .../evidence/verifier/ChatAskPreview.diff.txt      |    0
+ .../evidence/verifier/ChatAskPreview.meta.json     |   15 +
+ .../evidence/verifier/ChatAskPreview.png           |  Bin 0 -> 114769 bytes
+ .../evidence/verifier/ChatAskStopped.ansi          |   40 +
+ .../evidence/verifier/ChatAskStopped.diff.txt      |    0
+ .../evidence/verifier/ChatAskStopped.meta.json     |   15 +
+ .../evidence/verifier/ChatAskStopped.png           |  Bin 0 -> 94647 bytes
+ .../evidence/verifier/CompactChatAsk.ansi          |   24 +
+ .../evidence/verifier/CompactChatAsk.diff.txt      |    0
+ .../evidence/verifier/CompactChatAsk.meta.json     |   15 +
+ .../evidence/verifier/CompactChatAsk.png           |  Bin 0 -> 65094 bytes
+ .../tasks/131-hive-ask/evidence/verifier/Help.ansi |   40 +
+ .../131-hive-ask/evidence/verifier/Help.diff.txt   |    0
+ .../131-hive-ask/evidence/verifier/Help.meta.json  |   15 +
+ .../tasks/131-hive-ask/evidence/verifier/Help.png  |  Bin 0 -> 118451 bytes
+ .../131-hive-ask/evidence/verifier/a1-asker.txt    |   11 +
+ .../131-hive-ask/evidence/verifier/a1-record.json  |   64 +
+ .../131-hive-ask/evidence/verifier/a2-parent.txt   |    6 +
+ .../131-hive-ask/evidence/verifier/a2-record.json  |   36 +
+ .../131-hive-ask/evidence/verifier/a3-asker.txt    |   29 +
+ .../131-hive-ask/evidence/verifier/a3-record.json  |   29 +
+ .../131-hive-ask/evidence/verifier/a4-record.json  |   25 +
+ .../evidence/verifier/approved-grids.log           |    6 +
+ .../evidence/verifier/asker-before.txt             |    9 +
+ .../evidence/verifier/blocked-caller-guard.jsonl   |    9 +
+ .../evidence/verifier/board-capture-hashes.log     |    6 +
+ .../evidence/verifier/board-captures.log           |   35 +
+ .../131-hive-ask/evidence/verifier/boards.log      |    6 +
+ .../131-hive-ask/evidence/verifier/demo-grids.log  |   12 +
+ .../evidence/verifier/e2e-a1-after.ansi            |   40 +
+ .../evidence/verifier/e2e-a1-after.meta.json       |   15 +
+ .../evidence/verifier/e2e-a2-after.ansi            |   40 +
+ .../evidence/verifier/e2e-a2-after.meta.json       |   15 +
+ .../evidence/verifier/e2e-a2-stopped.ansi          |   40 +
+ .../evidence/verifier/e2e-a2-stopped.meta.json     |   15 +
+ .../evidence/verifier/e2e-a3-after.ansi            |   40 +
+ .../evidence/verifier/e2e-a3-after.meta.json       |   15 +
+ .../evidence/verifier/e2e-a3-open.ansi             |   40 +
+ .../evidence/verifier/e2e-a3-open.meta.json        |   15 +
+ .../evidence/verifier/e2e-commands.log             |   92 ++
+ .../131-hive-ask/evidence/verifier/export.log      |    0
+ .../evidence/verifier/fixture-guard.jsonl          |  243 ++++
+ .../tasks/131-hive-ask/evidence/verifier/gate.log  |   90 ++
+ .../evidence/verifier/green-count50.log            |    8 +
+ .../evidence/verifier/green-fixtures.log           |    1 +
+ .../131-hive-ask/evidence/verifier/green-race.log  |  133 ++
+ .../tasks/131-hive-ask/evidence/verifier/grids.log |   47 +
+ .../evidence/verifier/individual-red.json          |  317 ++++
+ .../evidence/verifier/key-00-start.ansi            |   40 +
+ .../evidence/verifier/key-00-start.meta.json       |   15 +
+ .../evidence/verifier/key-01-leave-note.ansi       |   40 +
+ .../evidence/verifier/key-01-leave-note.meta.json  |   15 +
+ .../131-hive-ask/evidence/verifier/key-02-up.ansi  |   40 +
+ .../evidence/verifier/key-02-up.meta.json          |   15 +
+ .../evidence/verifier/key-03-down.ansi             |   40 +
+ .../evidence/verifier/key-03-down.meta.json        |   15 +
+ .../evidence/verifier/key-04-note.ansi             |   40 +
+ .../evidence/verifier/key-04-note.meta.json        |   15 +
+ .../evidence/verifier/key-05-note-text.ansi        |   40 +
+ .../evidence/verifier/key-05-note-text.meta.json   |   15 +
+ .../evidence/verifier/key-06-keep-note.ansi        |   40 +
+ .../evidence/verifier/key-06-keep-note.meta.json   |   15 +
+ .../evidence/verifier/key-07-note-again.ansi       |   40 +
+ .../evidence/verifier/key-07-note-again.meta.json  |   15 +
+ .../evidence/verifier/key-08-drop-note.ansi        |   40 +
+ .../evidence/verifier/key-08-drop-note.meta.json   |   15 +
+ .../evidence/verifier/key-09-next.ansi             |   40 +
+ .../evidence/verifier/key-09-next.meta.json        |   15 +
+ .../evidence/verifier/key-10-previous.ansi         |   40 +
+ .../evidence/verifier/key-10-previous.meta.json    |   15 +
+ .../evidence/verifier/key-11-mark.ansi             |   40 +
+ .../evidence/verifier/key-11-mark.meta.json        |   15 +
+ .../evidence/verifier/key-12-other.ansi            |   40 +
+ .../evidence/verifier/key-12-other.meta.json       |   15 +
+ .../evidence/verifier/key-13-other-text.ansi       |   40 +
+ .../evidence/verifier/key-13-other-text.meta.json  |   15 +
+ .../evidence/verifier/key-14-keep-other.ansi       |   40 +
+ .../evidence/verifier/key-14-keep-other.meta.json  |   15 +
+ .../evidence/verifier/key-15-wheel-up.ansi         |   40 +
+ .../evidence/verifier/key-15-wheel-up.meta.json    |   15 +
+ .../evidence/verifier/key-16-wheel-down.ansi       |   40 +
+ .../evidence/verifier/key-16-wheel-down.meta.json  |   15 +
+ .../evidence/verifier/key-17-page-up.ansi          |   40 +
+ .../evidence/verifier/key-17-page-up.meta.json     |   15 +
+ .../evidence/verifier/key-18-page-down.ansi        |   40 +
+ .../evidence/verifier/key-18-page-down.meta.json   |   15 +
+ .../evidence/verifier/key-19-click-option.ansi     |   40 +
+ .../verifier/key-19-click-option.meta.json         |   15 +
+ .../evidence/verifier/key-20-click-feed.ansi       |   40 +
+ .../evidence/verifier/key-20-click-feed.meta.json  |   15 +
+ .../evidence/verifier/key-21-click-card.ansi       |   40 +
+ .../evidence/verifier/key-21-click-card.meta.json  |   15 +
+ .../evidence/verifier/key-22-input.ansi            |   40 +
+ .../evidence/verifier/key-22-input.meta.json       |   15 +
+ .../evidence/verifier/key-23-leave-input.ansi      |   40 +
+ .../evidence/verifier/key-23-leave-input.meta.json |   15 +
+ .../evidence/verifier/key-24-send.ansi             |   40 +
+ .../evidence/verifier/key-24-send.meta.json        |   15 +
+ .../evidence/verifier/key-25-dismiss.ansi          |   40 +
+ .../evidence/verifier/key-25-dismiss.meta.json     |   15 +
+ .../evidence/verifier/keys-summary.log             |  176 +++
+ .../evidence/verifier/mutation-checks.py           |   42 +
+ .../131-hive-ask/evidence/verifier/mutations.json  |  146 ++
+ .../evidence/verifier/note-after-enter.ansi        |   40 +
+ .../evidence/verifier/note-after-enter.meta.json   |   15 +
+ .../evidence/verifier/note-after-enter.png         |  Bin 0 -> 97790 bytes
+ .../131-hive-ask/evidence/verifier/note-asker.txt  |   37 +
+ .../evidence/verifier/note-before-enter.ansi       |   40 +
+ .../evidence/verifier/note-before-enter.meta.json  |   15 +
+ .../evidence/verifier/note-before-enter.png        |  Bin 0 -> 99661 bytes
+ .../131-hive-ask/evidence/verifier/note-enter.log  |    5 +
+ .../evidence/verifier/note-enter_test.go.txt       |   11 +
+ .../evidence/verifier/real-120x40-open.ansi        |   40 +
+ .../evidence/verifier/real-120x40-open.diff.txt    | 1264 ++++++++++++++++
+ .../evidence/verifier/real-120x40-open.meta.json   |   15 +
+ .../evidence/verifier/real-120x40-open.png         |  Bin 0 -> 85913 bytes
+ .../evidence/verifier/real-80x24-open.ansi         |   24 +
+ .../evidence/verifier/real-80x24-open.diff.txt     |  637 ++++++++
+ .../evidence/verifier/real-80x24-open.meta.json    |   15 +
+ .../evidence/verifier/real-80x24-open.png          |  Bin 0 -> 59982 bytes
+ .../evidence/verifier/real-grid-results.log        |    2 +
+ .../131-hive-ask/evidence/verifier/red-base.log    |   40 +
+ .../tasks/131-hive-ask/evidence/verifier/scope.txt |  132 ++
+ .../evidence/verifier/scratch-ask-log.jsonl        |   10 +
+ .../evidence/verifier/screen-captures.log          |   29 +
+ cmd/ask/ask.go                                     |   46 +
+ cmd/ask_root_test.go                               |   83 ++
+ cmd/root.go                                        |    3 +-
+ internal/ask/ask.go                                |  536 +++++++
+ internal/ask/ask_test.go                           |  519 +++++++
+ internal/boardexport/check.go                      |    6 +
+ internal/boardexport/check_test.go                 |   17 +
+ internal/tui/ask.go                                |  712 +++++++++
+ internal/tui/ask_test.go                           |  550 +++++++
+ internal/tui/chat.go                               |   59 +-
+ internal/tui/component/chat.go                     |   26 +-
+ internal/tui/component/chat_test.go                |   21 +
+ internal/tui/demo.go                               |   57 +-
+ internal/tui/demo_fixtures_test.go                 |    4 +-
+ internal/tui/frame.go                              |   17 +-
+ internal/tui/header.go                             |   18 +-
+ internal/tui/mouse.go                              |    8 +-
+ internal/tui/refresh.go                            |    2 +
+ internal/tui/tui.go                                |   27 +-
+ testdata/ste-baseline.json                         |    1 +
+ 319 files changed, 19261 insertions(+), 40 deletions(-)

@@ -1,0 +1,40 @@
+$ go test -count=1 -run ^(TestAskReadsStdinAndPrintsTheID|TestAskReadsAFileAndPrintsTheEnvelope|TestAskRejectsABadAskWithNoRecord|TestAskNeedsTheFileFlag|TestCreateWritesOneOpenRecordAndReturnsAtOnce|TestCreateRejectsEachLimitWithNoRecord|TestCreateNeedsALiveAsker|TestAnswerTextOfOneQuestion|TestAnswerTextOfTwoQuestionsWithANoteAndOther|TestAnswerTextOfAStoppedAsker|TestDismissText|TestAnswerSendsThePromptToTheAskerPane|TestAnswerOfAStoppedAskerGoesToTheParent|TestDismissSendsTheDismissPrompt|TestAnswerRejectsAClosedAsk|TestFailedDeliveryKeepsTheAnswerAndTriesAgain|TestListGivesTheRecordsOldestFirst|TestRouteGivesTheAskerOrTheParent|TestAskBoardsMatch|TestAskCardHasTheFocusInNormalMode|TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen|TestAskDigitPicksAndSendsASingleQuestion|TestAskArrowsAndEnterPickTheCurrentOption|TestAskTwoQuestionsWithMarksAndANote|TestAskNoteTabDropsAndCtrlBracketKeeps|TestAskOtherOpensATextLine|TestAskXDismisses|TestAskJAndKMoveBetweenCards|TestAskStoppedAskerShowsTheParent|TestAskHistoryShowsTheAnswerAndTheDismissal|TestAskMouseFocusesAndScrolls|TestAskClickOnTheCardGivesItTheFocus|TestAskWheelOverTheCardScrollsTheFeed|TestReadHeaderCountsTheOpenAsks|TestTickDeliversAWaitingAnswer|TestDemoBlocksTheAnswer|TestANewAskRefreshesTheHeaderAndChat|TestHelpListsTheAskKeys|TestHeaderShowsTheOpenAskRecords|TestAskOtherInAMultiSelectQuestion|TestABlockedCallerCannotAnswer|TestCheckAcceptsTheAskBoards|TestStyledChatLineUsesOneLine|TestHelpMatchesItsBoard|TestEachBoardFixtureLoadsAtItsSpecSize|TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption)$ ./cmd/ ./internal/ask/ ./internal/boardexport/ ./internal/tui/ ./internal/tui/component/
+github.com/Harrison-Blair/hive/internal/ask: no non-test Go files in /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier2/base/internal/ask
+# github.com/Harrison-Blair/hive/internal/ask [github.com/Harrison-Blair/hive/internal/ask.test]
+internal/ask/ask_test.go:89:48: undefined: Record
+internal/ask/ask_test.go:95:13: undefined: Record
+internal/ask/ask_test.go:107:14: undefined: Create
+internal/ask/ask_test.go:107:49: undefined: CreateOptions
+internal/ask/ask_test.go:125:21: undefined: StateOpen
+internal/ask/ask_test.go:131:12: undefined: Text
+internal/ask/ask_test.go:160:16: undefined: Create
+internal/ask/ask_test.go:160:51: undefined: CreateOptions
+internal/ask/ask_test.go:221:43: undefined: Request
+internal/ask/ask_test.go:230:49: undefined: Record
+internal/ask/ask_test.go:160:51: too many errors
+# github.com/Harrison-Blair/hive/internal/tui/component [github.com/Harrison-Blair/hive/internal/tui/component.test]
+internal/tui/component/chat_test.go:144:110: unknown field Styled in struct literal of type ChatMessage
+--- FAIL: TestAskReadsStdinAndPrintsTheID (0.00s)
+    ask_root_test.go:31: status = 2, stdout = "", stderr = "hive: unknown flag: --agent\n"
+--- FAIL: TestAskReadsAFileAndPrintsTheEnvelope (0.00s)
+    ask_root_test.go:55: decode "": unexpected end of JSON input
+--- FAIL: TestAskRejectsABadAskWithNoRecord (0.00s)
+    ask_root_test.go:69: status = 2, stderr = "hive: unknown flag: --agent\n"; want the header error
+--- FAIL: TestAskNeedsTheFileFlag (0.00s)
+    ask_root_test.go:81: status = 2, stderr = "hive: unknown flag: --agent\n"; want a usage error that names --file
+FAIL
+FAIL	github.com/Harrison-Blair/hive/cmd	0.009s
+FAIL	github.com/Harrison-Blair/hive/internal/ask [build failed]
+--- FAIL: TestCheckAcceptsTheAskBoards (0.00s)
+    check_test.go:236: board ChatAsk: not in the spec table
+    check_test.go:236: board ChatAskMulti: not in the spec table
+    check_test.go:236: board ChatAskPreview: not in the spec table
+    check_test.go:236: board ChatAskStopped: not in the spec table
+    check_test.go:236: board CompactChatAsk: not in the spec table
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/boardexport	0.002s
+FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component [build failed]
+FAIL
+
+exit: 1

@@ -1,0 +1,3 @@
+⬢ user: answer to ask a1 from verify-asker · Scope → Ask card, Help line · note: keep it small; Order → both together
+⬢ hive: the user dismissed ask a3 from verify-asker · Restart. No answer comes.
+⬢ user: answer to ask a4 from verify-asker · Restart → No · note: ok
