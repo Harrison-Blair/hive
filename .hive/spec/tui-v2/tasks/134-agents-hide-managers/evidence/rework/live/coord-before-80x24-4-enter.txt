@@ -1,0 +1,24 @@
+ hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+╭─ project╭─ coordinator-g8 · esc closes ────────────────────────────╮─────────╮
+│         │                                                          │         │
+│         │  role      coordinator                                   │         │
+│         │  status    ● live · working                              │         │
+│         │  harness   claude                                        │         │
+│         │  model     claude-opus-5-5                               │         │
+│         │  pane      w58:p4                                        │         │
+│         │  tab       coordinator-g8                                │         │
+│         │                                                          │         │
+│         │  ACTIONS                                                 │         │
+│         │  a  attach to pane                                       │         │
+│         │  p  peek pane                                            │         │
+│         │  t  open task · none                                     │         │
+│         │                                                          │         │
+│         │                                                          │         │
+│         │                                                          │         │
+│         │                                                          │         │
+│         │                                                          │         │
+│ no proje│                                                          │         │
+╰─────────╰──────────────────────────────────────────────────────────╯─────────╯
+ [details] a attach · p peek · t task · ↑↓ scroll · esc close

@@ -1,0 +1,50 @@
+import json,subprocess,sys,time,os
+W=os.getcwd(); T=W+'/.hive/tmp/rework134'; OUT=sys.argv[1]
+os.makedirs(OUT,exist_ok=True)
+def h(*a):
+    r=subprocess.run(['herdr',*a],capture_output=True,text=True); 
+    if r.returncode: raise SystemExit(f'herdr {a}: {r.stderr}')
+    return r.stdout
+tab=json.loads(h('tab','create','--workspace','wWT','--cwd',W,'--label','rework134-live'))
+print(json.dumps(tab)[:300],file=sys.stderr)
+res=tab['result']
+pane=res.get('root_pane',{}).get('pane_id') or res['tab'].get('root_pane_id') or res['panes'][0]['pane_id']
+tabid=res['tab']['tab_id']
+def read():
+    prev=None
+    for _ in range(20):
+        time.sleep(0.5)
+        cur=h('pane','read',pane,'--source','visible','--format','text')
+        if cur==prev: return cur
+        prev=cur
+    return cur
+log=[]
+def heavy(txt):
+    for line in txt.splitlines():
+        i=line.find('● coordinator')
+        if i>=2: return line[i-2]=='┃'
+    return None
+def run(name,fixture,size,keys):
+    h('pane','run',pane,f'clear; HIVE_HOME={T}/home HIVE_NO_STARTUP=1 COLORTERM=truecolor {T}/hive --demo {T}/{fixture} --size {size}')
+    time.sleep(1.5)
+    steps=[('start',None)]+keys
+    for i,(label,k) in enumerate(steps):
+        if k: h('pane','send-keys',pane,k)
+        txt=read()
+        lines=txt.splitlines()
+        w,hh=map(int,size.split('x'))
+        crop='\n'.join(l[:w] for l in lines[:hh])
+        open(f'{OUT}/{name}-{i}-{label}.txt','w').write(crop+'\n')
+        if True: 
+            open(f'{OUT}/{name}-{i}-{label}.ansi','w').write(h('pane','read',pane,'--source','visible','--format','ansi'))
+        log.append(f'{name} step {i} {label}: notice={"no project agents" in crop} coordinator_card={"● coordinator" in crop} heavy={heavy(crop)} details={"coordinator-g8 · esc closes" in crop and "[details]" in crop} pods={"─ hive ─" in crop or "━ hive ━" in crop}')
+    h('pane','send-keys',pane,'esc'); h('pane','send-keys',pane,'ctrl+c'); time.sleep(0.3); h('pane','send-keys',pane,'ctrl+c'); time.sleep(1); assert 'project agents' not in read(), 'tui still running'
+try:
+    for w,size in (('120','120x40'),('80','80x24')):
+        run(f'coord-up-{size}',f'coordinator-only-{w}.fixture.json',size,[('up','up'),('enter','enter'),('esc','esc'),('h-shows','h'),('h-hides','h'),('enter','enter'),('esc','esc')])
+        run(f'coord-k-{size}',f'coordinator-only-{w}.fixture.json',size,[('k','k'),('enter','enter')])
+        run(f'coord-before-{size}',f'coordinator-only-{w}.fixture.json',size,[('h-shows','h'),('up','up'),('h-hides','h'),('enter','enter')])
+        run(f'noreg-{size}',f'noreg-{w}.fixture.json',size,[('up','up'),('enter','enter')])
+finally:
+    h('tab','close',tabid)
+open(f'{OUT}/live-keys.log','w').write('\n'.join(log)+'\n'); print('\n'.join(log))

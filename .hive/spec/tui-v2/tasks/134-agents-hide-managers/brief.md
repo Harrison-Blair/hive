@@ -27,6 +27,36 @@ The manager clears task and wave `needs_user`.
 The worker completes the task after the tests, approved grids, live checks, and gate pass.
 The manager then spawns an independent verifier and lands the verified branch.
 
+## Rework after verification fail
+
+Verifier `t134-verifier-1` recorded a fail in manager inbox record 542.
+The failure evidence is commit `b257f299` on this task branch.
+Read `evidence/VERIFIED.md` and `evidence/verifier/` beside this brief.
+
+- Registered projects have all project pods hidden.
+- No live home agent exists, but the coordinator card remains visible.
+- Up and `k` cannot select that card.
+- `enter` cannot open its details, even with the coordinator already selected before `h` hides the last pod.
+- At 120x40 and 80x24, `h` restoring the project pods makes these actions work again.
+
+AC2 requires valid selection. Decision 65 keeps coordinator selection and details.
+This fix needs no new design decision.
+
+1. Add a regression beside the TUI tests from the durable reproduction in `evidence/verifier/coordinator-regression.go.txt`.
+2. Run it against the current implementation before the fix.
+3. Check failure for the recorded reason at both widths.
+4. Fix selection and coordinator actions when no pod is visible.
+5. Cover up, `k`, and `enter`, plus a coordinator selected before the last pod hides.
+6. Check the `h` control, details close, and the no-registered-project rule.
+7. Preserve the approved board and golden output.
+8. Run focused tests repeatedly and with the race detector.
+9. Run the live key checks at both widths, grid comparisons, and the full root gate.
+10. Record rework evidence separately from the first verifier evidence.
+
+Do not change the board or golden files for this fix.
+Keep the first failed verdict and its evidence intact.
+The manager spawns a fresh verifier after the worker completes the fix.
+
 ## Plan
 
 1. Write failing tests for the approved behavior.

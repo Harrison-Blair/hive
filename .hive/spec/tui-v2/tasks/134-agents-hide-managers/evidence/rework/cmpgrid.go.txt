@@ -1,0 +1,37 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+)
+
+// args: ansi grid width height
+func main() {
+	raw, _ := os.ReadFile(os.Args[1])
+	w, _ := strconv.Atoi(os.Args[3])
+	h, _ := strconv.Atoi(os.Args[4])
+	got, err := cellgrid.Convert(string(raw), w, h)
+	if err != nil {
+		fmt.Println("convert:", err)
+		os.Exit(2)
+	}
+	f, _ := os.Open(os.Args[2])
+	want, err := cellgrid.ReadGrid(f)
+	if err != nil {
+		fmt.Println("read:", err)
+		os.Exit(2)
+	}
+	diffs, err := cellgrid.Compare(want, got, nil)
+	if err != nil {
+		fmt.Println("compare:", err)
+		os.Exit(2)
+	}
+	fmt.Printf("%d differences\n", len(diffs))
+	if len(diffs) > 0 {
+		fmt.Print(cellgrid.FormatDiffs(diffs))
+		os.Exit(1)
+	}
+}

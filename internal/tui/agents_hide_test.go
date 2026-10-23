@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -332,5 +333,90 @@ func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != 5 || col != 3 {
 			t.Fatalf("%dx%d: notice at row %d col %d; want row 5 col 3", size.Width, size.Height, row, col)
 		}
+	}
+}
+
+// coordinatorOnlyHome gives a home with registered projects, each project
+// agent stopped, a live coordinator, and no home card. h hides each pod.
+func coordinatorOnlyHome(t *testing.T) (string, *testClock) {
+	t.Helper()
+	home, clock := hideHome(t, betaManager(records.AgentStopped))
+	writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+	return home, clock
+}
+
+// requireCoordinatorHeavy fails unless the coordinator card has the heavy
+// border of the selection.
+func requireCoordinatorHeavy(t *testing.T, m *Model, size tea.WindowSizeMsg, want bool) {
+	t.Helper()
+	grid := renderGrid(t, m, size.Width, size.Height)
+	row, col := findText(t, grid, "● coordinator")
+	if got := grid.At(row, col-2).Rune == '┃'; got != want {
+		t.Fatalf("%dx%d: coordinator left border = %q; want heavy %v", size.Width, size.Height, grid.At(row, col-2).Rune, want)
+	}
+}
+
+// AC2 and decision 65: with each project pod hidden and only the
+// coordinator card left, ↑ and k select the card and enter opens its
+// details. esc closes the details. h shows the pods again and keeps the
+// selection.
+func TestAgentsCoordinatorSelectableWithAllProjectPodsHidden(t *testing.T) {
+	for _, up := range []tea.KeyPressMsg{key(tea.KeyUp, ""), key('k', "k")} {
+		for _, size := range hideSizes {
+			t.Run(fmt.Sprintf("%s/%dx%d", up.String(), size.Width, size.Height), func(t *testing.T) {
+				home, clock := coordinatorOnlyHome(t)
+				m := openHide(t, home, clock, size)
+				requireView(t, m, agentsNoneText, "● coordinator")
+				requireCoordinatorHeavy(t, m, size, false)
+				m, _ = raise(t, m, up)
+				requireCoordinatorHeavy(t, m, size, true)
+				m, _ = raise(t, m, key(tea.KeyEnter, ""))
+				requireView(t, m, "coordinator · esc closes", "[details]")
+				m, _ = raise(t, m, key(tea.KeyEscape, ""))
+				rejectView(t, m, "coordinator · esc closes")
+				requireCoordinatorHeavy(t, m, size, true)
+				m, _ = raise(t, m, key('h', "h"))
+				requireView(t, m, "─ alpha ─", "─ beta ─")
+				requireCoordinatorHeavy(t, m, size, true)
+			})
+		}
+	}
+}
+
+// AC2: the coordinator selected while the pods show stays selected when h
+// hides the last pod, and enter opens its details.
+func TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding(t *testing.T) {
+	for _, size := range hideSizes {
+		t.Run(fmt.Sprintf("%dx%d", size.Width, size.Height), func(t *testing.T) {
+			home, clock := coordinatorOnlyHome(t)
+			m := openHide(t, home, clock, size)
+			m, _ = raise(t, m, key('h', "h"))
+			m, _ = raise(t, m, key(tea.KeyUp, ""))
+			requireCoordinatorHeavy(t, m, size, true)
+			m, _ = raise(t, m, key('h', "h"))
+			requireView(t, m, agentsNoneText)
+			requireCoordinatorHeavy(t, m, size, true)
+			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			requireView(t, m, "coordinator · esc closes", "[details]")
+		})
+	}
+}
+
+// Decision 10: with no registered project the screen is the notice alone,
+// so the live coordinator, which has no card, cannot be selected or opened.
+func TestAgentsNoRegisteredProjectSelectsNothing(t *testing.T) {
+	for _, size := range hideSizes {
+		t.Run(fmt.Sprintf("%dx%d", size.Width, size.Height), func(t *testing.T) {
+			home := newTestHome(t)
+			clock := fixedClock(t, time.Date(2026, 10, 23, 12, 0, 0, 0, time.UTC))
+			writeAgentRecord(t, home, records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StartedAt: "2026-10-23T10:00:00Z"})
+			m := openHide(t, home, clock, size)
+			requireView(t, m, agentsNoneText)
+			rejectView(t, m, "● coordinator")
+			m, _ = raise(t, m, key(tea.KeyUp, ""))
+			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			rejectView(t, m, "esc closes", "[details]")
+		})
 	}
 }

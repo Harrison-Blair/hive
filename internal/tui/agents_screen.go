@@ -317,10 +317,17 @@ func (m *Model) coordinatorNode() (agentNode, bool) {
 	return agentNode{}, false
 }
 
+// coordinatorCard gives the coordinator when the screen draws its card:
+// with no registered project the screen is the notice alone (decision 10).
+func (m *Model) coordinatorCard() (agentNode, bool) {
+	node, ok := m.coordinatorNode()
+	return node, ok && len(m.agents.data.groups) > 1
+}
+
 // inPodView reports that the screen shows the one-pod view: after enter on
 // a pod, or at once with one project and no home pod (decision 64).
 func (m *Model) inPodView(pods []graphPod) bool {
-	return m.graph.podView || len(pods) == 1 && projectPods(pods) == 1
+	return len(pods) > 0 && (m.graph.podView || len(pods) == 1 && projectPods(pods) == 1)
 }
 
 // podIndex gives the selected pod: the pod of m.graph.pod, else the pod
@@ -360,7 +367,7 @@ func (m *Model) podIndex(pods []graphPod) int {
 // coordinatorSelected reports that the coordinator card is selected in the
 // overview.
 func (m *Model) coordinatorSelected(pods []graphPod) bool {
-	node, ok := m.coordinatorNode()
+	node, ok := m.coordinatorCard()
 	return ok && !m.inPodView(pods) && m.graph.selected == node.record.Key
 }
 
@@ -369,9 +376,6 @@ func (m *Model) coordinatorSelected(pods []graphPod) bool {
 // the overview, only the coordinator card can be selected; it is in no pod.
 func (m *Model) selectedAgent() (agentNode, int, bool) {
 	pods := m.agentsPods()
-	if len(pods) == 0 {
-		return agentNode{}, 0, false
-	}
 	if m.coordinatorSelected(pods) {
 		node, _ := m.coordinatorNode()
 		return node, -1, true
@@ -1255,7 +1259,7 @@ func stripCardDot(state string) string {
 func (m *Model) updateAgentsKey(key string) tea.Cmd {
 	pods := m.agentsPods()
 	node, _, ok := m.selectedAgent()
-	if len(pods) > 0 && !m.inPodView(pods) {
+	if !m.inPodView(pods) {
 		return m.updatePodsKey(key, pods, node, ok)
 	}
 	switch key {
@@ -1291,7 +1295,7 @@ func (m *Model) updateAgentsKey(key string) tea.Cmd {
 // and enter opens the pod or the details of the coordinator.
 func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bool) tea.Cmd {
 	column := m.podIndex(pods)
-	coordinator, hasCoordinator := m.coordinatorNode()
+	coordinator, hasCoordinator := m.coordinatorCard()
 	selected := m.coordinatorSelected(pods)
 	switch key {
 	case "left", "right":
@@ -1320,6 +1324,9 @@ func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bo
 			m.popupOpen = true
 			m.popupOffset = 0
 			return m.logAction("agent details open", slog.String("agent_id", node.record.Key))
+		}
+		if len(pods) == 0 {
+			return nil
 		}
 		m.graph.podView = true
 		// The first card of the pod is selected when the selection is not
