@@ -1,0 +1,75 @@
+=== RUN   TestVerifierCoordinatorSelectableWithAllProjectPodsHidden
+=== RUN   TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/120x40
+    zz_verifier_test.go:20: view does not contain "coordinator · esc closes":
+         hive  /tmp/TestVerifierCoordinatorSelec… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 0 projects · h shows 3 stopped ────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰──────────────────────╯                                               │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ no project agents                                                                                                    │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help                                    
+=== RUN   TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/80x24
+    zz_verifier_test.go:20: view does not contain "coordinator · esc closes":
+         hive                               coord ○ · sup ○ · ? 0 · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 0 projects · h shows 3 stopped ────────────────────────────╮
+        │                           ╭──────────────────────╮                           │
+        │                           │ ● coordinator        │                           │
+        │                           │ claude · working · … │                           │
+        │                           ╰──────────────────────╯                           │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │ no project agents                                                            │
+        ╰──────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←↑↓→ move · enter details · a attach · p peek · ?                      
+--- FAIL: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden (0.00s)
+    --- FAIL: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/120x40 (0.00s)
+    --- FAIL: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/80x24 (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.011s
+FAIL

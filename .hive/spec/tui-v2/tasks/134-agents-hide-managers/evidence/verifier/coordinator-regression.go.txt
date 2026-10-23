@@ -1,0 +1,23 @@
+package tui
+
+import (
+ "testing"
+ "fmt"
+ tea "charm.land/bubbletea/v2"
+ "github.com/Harrison-Blair/hive/internal/lib/records"
+)
+
+func TestVerifierCoordinatorSelectableWithAllProjectPodsHidden(t *testing.T) {
+ for _, size := range hideSizes {
+  t.Run(fmt.Sprintf("%dx%d",size.Width,size.Height), func(t *testing.T) {
+   home, clock := hideHome(t, betaManager(records.AgentStopped))
+   writeAgentRecord(t, home, records.Agent{Key:"manager-alpha", Name:"manager-alpha", Role:"manager", Project:"alpha", Harness:"claude", Status:records.AgentStopped, Parent:"coordinator", StartedAt:"2026-10-23T10:01:00Z"})
+   writeAgentRecord(t, home, records.Agent{Key:"a1-worker", Name:"a1-worker", Role:"worker", Project:"alpha", Harness:"pi", Status:records.AgentStopped, Parent:"manager-alpha", StartedAt:"2026-10-23T10:02:00Z"})
+   m:=openHide(t,home,clock,size)
+   requireView(t,m,"no project agents","● coordinator")
+   m,_=raise(t,m,key('k',"k"))
+   m,_=raise(t,m,key(tea.KeyEnter,""))
+   requireView(t,m,"coordinator · esc closes", "[details]")
+  })
+ }
+}

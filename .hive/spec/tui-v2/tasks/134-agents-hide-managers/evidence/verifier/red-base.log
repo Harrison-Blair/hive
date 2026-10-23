@@ -1,0 +1,383 @@
+$ go test ./internal/tui/ -run ^(TestAgentsHHidesAManagerWithNoLiveChild|TestAgentsHiddenManagerKeepsThePodOfALiveChild|TestAgentsPodViewHangsTheChildrenFromTheTopBorder|TestAgentsHintStaysWhenEveryProjectPodHides|TestAgentsNoHintWithNothingHidden|TestAgentsSelectionFollowsThePodsOfH|TestAgentsScrollStaysValidWhenPodsHide|TestAgentsGeneralChildOfAHiddenManagerStaysInThePod|TestAgentsGeneralChildOfAHiddenWorkerMovesToHome|TestAgentsAllProjectPodsHiddenKeepTheHomePod|TestAgentsNoticeAloneWhenNothingIsVisible|TestAgentsPodsFollowProjectRecordOrder)$ -count=1 -v
+=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
+    agents_hide_test.go:80: view does not contain "project agents · alpha · h shows 2 stopped":
+         hive  /tmp/TestAgentsHHidesAManagerWith… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                             ╭─────────────────────────────┴───────────────────────────╮                              │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────┴───────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ◐ manager-alpha      │                ┃ │               │ ○ manager-beta       │                │  │
+        │ ┃               │ claude · idle · 2m   │                ┃ │               │ codex · stopped · d… │                │  │
+        │ ┃               ╰───────────┬──────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┃                           │                           ┃ │                                                       │  │
+        │ ┃                           │                           ┃ │ h shows 1 stopped                                     │  │
+        │ ┃                           │                           ┃ │                                                       │  │
+        │ ┃               ╭───────────┴──────────╮                ┃ │                                                       │  │
+        │ ┃               │ ● a1-worker          │                ┃ │                                                       │  │
+        │ ┃               │ pi · working · 2m    │                ┃ │                                                       │  │
+        │ ┃               ╰──────────────────────╯                ┃ │                                                       │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsHHidesAManagerWithNoLiveChild (0.00s)
+=== RUN   TestAgentsHiddenManagerKeepsThePodOfALiveChild
+    agents_hide_test.go:106: view does not contain "project agents · 2 projects · h shows 2 stopped":
+         hive  /tmp/TestAgentsHiddenManagerKeeps… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                             ╭─────────────────────────────┴───────────────────────────╮                              │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────┴───────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ◐ manager-alpha      │                ┃ │               │ ○ manager-beta       │                │  │
+        │ ┃               │ claude · idle · 2m   │                ┃ │               │ codex · stopped · d… │                │  │
+        │ ┃               ╰───────────┬──────────╯                ┃ │               ╰───────────┬──────────╯                │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃               ╭───────────┴──────────╮                ┃ │               ╭───────────┴──────────╮                │  │
+        │ ┃               │ ● a1-worker          │                ┃ │               │ ● b1-worker          │                │  │
+        │ ┃               │ pi · working · 2m    │                ┃ │               │ pi · working · 10m   │                │  │
+        │ ┃               ╰──────────────────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃                                                       ┃ │ h shows 1 stopped                                     │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsHiddenManagerKeepsThePodOfALiveChild (0.00s)
+=== RUN   TestAgentsPodViewHangsTheChildrenFromTheTopBorder
+    agents_hide_test.go:143: view does not contain "project agents · beta · h shows 1 stopped":
+         hive  /tmp/TestAgentsPodViewHangsTheChi… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · beta ──────────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                                                           │                                                          │
+        │                           ╭─ beta ────────────────────────┼──────────────────────────────╮                           │
+        │                           │                               │                              │                           │
+        │                           │                   ┏━━━━━━━━━━━┷━━━━━━━━━━┓                   │                           │
+        │                           │                   ┃ ○ manager-beta       ┃                   │                           │
+        │                           │                   ┃ codex · stopped · d… ┃                   │                           │
+        │                           │                   ┗━━━━━━━━━━━┯━━━━━━━━━━┛                   │                           │
+        │                           │                               │                              │                           │
+        │                           │                               │                              │                           │
+        │                           │                               │                              │                           │
+        │                           │                   ╭───────────┴──────────╮                   │                           │
+        │                           │                   │ ● b1-worker          │                   │                           │
+        │                           │                   │ pi · working · 10m   │                   │                           │
+        │                           │                   ╰───────────┬──────────╯                   │                           │
+        │                           │                               │                              │                           │
+        │                           │                   ╭───────────┴──────────╮                   │                           │
+        │                           │                   │ ◐ b1-helper          │                   │                           │
+        │                           │                   │ claude · idle · 10m  │                   │                           │
+        │                           │                   ╰──────────────────────╯                   │                           │
+        │                           ╰──────────────────────────────────────────────────────────────╯                           │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped · ? help                         
+--- FAIL: TestAgentsPodViewHangsTheChildrenFromTheTopBorder (0.00s)
+=== RUN   TestAgentsHintStaysWhenEveryProjectPodHides
+    agents_hide_test.go:185: view does not contain "project agents · 0 projects · h shows 4 stopped":
+         hive  /tmp/TestAgentsHintStaysWhenEvery… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                             ╭─────────────────────────────┴───────────────────────────╮                              │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────┴───────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ○ manager-alpha      │                ┃ │               │ ○ manager-beta       │                │  │
+        │ ┃               │ claude · stopped     │                ┃ │               │ codex · stopped · d… │                │  │
+        │ ┃               ╰──────────────────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃ h shows 1 stopped                                     ┃ │ h shows 1 stopped                                     │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsHintStaysWhenEveryProjectPodHides (0.00s)
+=== RUN   TestAgentsNoHintWithNothingHidden
+--- PASS: TestAgentsNoHintWithNothingHidden (0.00s)
+=== RUN   TestAgentsSelectionFollowsThePodsOfH
+    agents_hide_test.go:208: view does not contain "project agents · 1 project · h shows 1 stopped":
+         hive  /tmp/TestAgentsSelectionFollowsTh… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                   ╭───────────────────────────────────────┼─────────────────────────────────────╮                    │
+        │ ┏━ alpha ━━━━━━━━━┷━━━━━━━━━━━━━━━━━━┓ ╭─ beta ───────────┴─────────────────╮ ╭─ home ──────────┴──────────────────╮ │
+        │ ┃                                    ┃ │                                    │ │                                    │ │
+        │ ┃      ╭──────────────────────╮      ┃ │      ╭──────────────────────╮      │ │ ╭──────────────────────╮           │ │
+        │ ┃      │ ◐ manager-alpha      │      ┃ │      │ ○ manager-beta       │      │ │ │ ◐ helper             │           │ │
+        │ ┃      │ claude · idle · 2m   │      ┃ │      │ codex · stopped · d… │      │ │ │ pi · idle            │           │ │
+        │ ┃      ╰───────────┬──────────╯      ┃ │      ╰──────────────────────╯      │ │ ╰──────────────────────╯           │ │
+        │ ┃                  │                 ┃ │                                    │ │                                    │ │
+        │ ┃                  │                 ┃ │ no child agents                    │ │                                    │ │
+        │ ┃                  │                 ┃ │                                    │ │                                    │ │
+        │ ┃      ╭───────────┴──────────╮      ┃ │                                    │ │                                    │ │
+        │ ┃      │ ● a1-worker          │      ┃ │                                    │ │                                    │ │
+        │ ┃      │ pi · working · 2m    │      ┃ │                                    │ │                                    │ │
+        │ ┃      ╰──────────────────────╯      ┃ │                                    │ │                                    │ │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰────────────────────────────────────╯ ╰────────────────────────────────────╯ │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsSelectionFollowsThePodsOfH (0.00s)
+=== RUN   TestAgentsScrollStaysValidWhenPodsHide
+    agents_hide_test.go:248: view does not contain "─ alpha ─":
+         hive                               coord ○ · sup ○ · ? 0 · needs you 0 · 08:00 
+          1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 3 projects ────────────────────────────────────────────────╮
+        │                           ╭──────────────────────╮                           │
+        │                           │ ● coordinator        │                           │
+        │                           │ claude · working · … │                           │
+        │                           ╰───────────┬──────────╯                           │
+        │                   ╭───────────────────┴─────────────────╮                    │
+        │ ╭─ beta ──────────┴─────────────────╮ ┏━ gamma ━━━━━━━━━┷━━━━━━━━━━━━━━━━━┓  │
+        │ │                                   │ ┃                                   ┃  │
+        │ │     ╭──────────────────────╮      │ ┃     ╭──────────────────────╮      ┃  │
+        │ │     │ ○ manager-beta       │      │ ┃     │ ● manager-gamma      │      ┃  │
+        │ │     │ codex · stopped · d… │      │ ┃     │ pi · working         │      ┃  │
+        │ │     ╰──────────────────────╯      │ ┃     ╰──────────────────────╯      ┃  │
+        │ │                                   │ ┃                                   ┃  │
+        │ │ no child agents                   │ ┃ no child agents                   ┃  │
+        │ ╰───────────────────────────────────╯ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  │
+        │                                                                              │
+        │                                                                              │
+        │                                                                              │
+        │ ←→ at the edge scrolls · projects 2–3 of 3                           ← alpha │
+        ╰──────────────────────────━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+         [graph] ←→ select pod · ↑ coordinator · enter open · ?                         
+--- FAIL: TestAgentsScrollStaysValidWhenPodsHide (0.00s)
+=== RUN   TestAgentsGeneralChildOfAHiddenManagerStaysInThePod
+    agents_hide_test.go:264: view does not contain "project agents · 2 projects · h shows 1 stopped":
+         hive  /tmp/TestAgentsGeneralChildOfAHid… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                             ╭─────────────────────────────┴───────────────────────────╮                              │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────┴───────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ◐ manager-alpha      │                ┃ │               │ ○ manager-beta       │                │  │
+        │ ┃               │ claude · idle · 2m   │                ┃ │               │ codex · stopped · d… │                │  │
+        │ ┃               ╰───────────┬──────────╯                ┃ │               ╰───────────┬──────────╯                │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃                           │                           ┃ │                           │                           │  │
+        │ ┃               ╭───────────┴──────────╮                ┃ │               ╭───────────┴──────────╮                │  │
+        │ ┃               │ ● a1-worker          │                ┃ │               │ ● beta-helper        │                │  │
+        │ ┃               │ pi · working · 2m    │                ┃ │               │ claude · working · … │                │  │
+        │ ┃               ╰──────────────────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsGeneralChildOfAHiddenManagerStaysInThePod (0.00s)
+=== RUN   TestAgentsGeneralChildOfAHiddenWorkerMovesToHome
+--- PASS: TestAgentsGeneralChildOfAHiddenWorkerMovesToHome (0.00s)
+=== RUN   TestAgentsAllProjectPodsHiddenKeepTheHomePod
+    agents_hide_test.go:310: view does not contain "project agents · 0 projects · h shows 3 stopped":
+         hive  /tmp/TestAgentsAllProjectPodsHidd… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │                                               ╭──────────────────────╮                                               │
+        │                                               │ ● coordinator        │                                               │
+        │                                               │ claude · working · … │                                               │
+        │                                               ╰───────────┬──────────╯                                               │
+        │                   ╭───────────────────────────────────────┼─────────────────────────────────────╮                    │
+        │ ┏━ alpha ━━━━━━━━━┷━━━━━━━━━━━━━━━━━━┓ ╭─ beta ───────────┴─────────────────╮ ╭─ home ──────────┴──────────────────╮ │
+        │ ┃                                    ┃ │                                    │ │                                    │ │
+        │ ┃      ╭──────────────────────╮      ┃ │      ╭──────────────────────╮      │ │ ╭──────────────────────╮           │ │
+        │ ┃      │ ○ manager-alpha      │      ┃ │      │ ○ manager-beta       │      │ │ │ ◐ helper             │           │ │
+        │ ┃      │ claude · stopped     │      ┃ │      │ codex · stopped · d… │      │ │ │ pi · idle            │           │ │
+        │ ┃      ╰──────────────────────╯      ┃ │      ╰──────────────────────╯      │ │ ╰──────────────────────╯           │ │
+        │ ┃                                    ┃ │                                    │ │                                    │ │
+        │ ┃ h shows 1 stopped                  ┃ │ no child agents                    │ │                                    │ │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰────────────────────────────────────╯ ╰────────────────────────────────────╯ │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsAllProjectPodsHiddenKeepTheHomePod (0.00s)
+=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
+    agents_hide_test.go:329: view does not contain "project agents · 0 projects · h shows 3 stopped":
+         hive  /tmp/TestAgentsNoticeAloneWhenNot… coordinator ○ stopped   supervisor ○ stopped   ? 0 asks   needs you 0   08:00 
+          1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+        ─━━━━━━━━━━─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        ╭─ project agents · 2 projects ────────────────────────────────────────────────────────────────────────────────────────╮
+        │                                                                                                                      │
+        │ ┏━ alpha ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─ beta ────────────────────────────────────────────────╮  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃               ╭──────────────────────╮                ┃ │               ╭──────────────────────╮                │  │
+        │ ┃               │ ○ manager-alpha      │                ┃ │               │ ○ manager-beta       │                │  │
+        │ ┃               │ claude · stopped     │                ┃ │               │ codex · stopped · d… │                │  │
+        │ ┃               ╰──────────────────────╯                ┃ │               ╰──────────────────────╯                │  │
+        │ ┃                                                       ┃ │                                                       │  │
+        │ ┃ h shows 1 stopped                                     ┃ │ no child agents                                       │  │
+        │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰───────────────────────────────────────────────────────╯  │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │                                                                                                                      │
+        │ ── spawn   ● working   ◐ idle   ○ stopped   ━ ▶ message, lit 5s   one column per project                             │
+        ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+         [graph] ←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help                                            
+--- FAIL: TestAgentsNoticeAloneWhenNothingIsVisible (0.00s)
+=== RUN   TestAgentsPodsFollowProjectRecordOrder
+--- PASS: TestAgentsPodsFollowProjectRecordOrder (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.030s
+FAIL
+
+exit=1
