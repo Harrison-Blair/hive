@@ -1,0 +1,24 @@
+ hive                               coord ● · sup ● · ? 2 · needs you 0 · 14:22
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ──────────────────────────────── ↑ 44 earlier ─────────────────────────╮
+│ 14:05 you                                                                    │
+│ A A A                                                                        │
+│                                                                              │
+│ 14:22  coordina… ? asked · Scope · Order · below                             │
+│ 14:23  manager-… ? asked · Model · waits · 2 of 2                            ┃
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1 of 2 ━┓
+┃ 1. Which parts go in task 1?                                                 ┃
+┃                                                                              ┃
+┃ › 1 [ ] Mouse wheel (REC)           scroll the pane under the pointer        ┃
+┃   2 [ ] Click to focus              click the feed or the input              ┃
+┃   3 [ ] Normal and input mode       i in, ctrl+] out                         ┃
+┃   4 [ ] Header count                "? N" on all tabs                        ┃
+┃   5 [ ] Other: type an answer                                                ┃
+┃                                                                              ┃
+┗━ enter review · tab note ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · enter review · tab note · x dismiss · J/K card

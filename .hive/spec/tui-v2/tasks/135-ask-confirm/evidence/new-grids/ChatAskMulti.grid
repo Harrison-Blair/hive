@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 2 asks   needs you 0   14:22 
+k|fffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwffffffffaaaaaaaafffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|fddddddddddfaaaaaaaafddddddddfddddddddddddfddddddddddfddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+k|rraaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrddddddddddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:05  you           A A A                                                                                           │
+k|rfdddddffuuuuuuuuuuuuufuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:22  coordinator   ? asked · Scope · Order · open below                                                            │
+k|rfdddddffiiiiiiiiiiiiifaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:23  manager-hive  ? asked · Model · waits · 2 of 2                                                                │
+k|rfdddddffiiiiiiiiiiiiifaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      ┃
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      ┃
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddddddddddddddddddaa
+b|001111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃ 1. Which parts go in task 1?                                                                                         ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃                                                                                                                      ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   1 [x] Mouse wheel (REC)           scroll the pane under the pointer                                                ┃
+k|afafdfaaafffffffffffffffffffffffffffffdddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   2 [x] Click to focus              click the feed or the input                                                      ┃
+k|afafdfaaafffffffffffffffffffffffffffffdddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   3 [x] Normal and input mode       i in, ctrl+] out                                                                 ┃
+k|afafdfaaafffffffffffffffffffffffffffffddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   4 [ ] Header count                "? N" on all tabs                                                                ┃
+k|afafdfdddfffffffffffffffffffffffffffffdddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   5 [ ] Other: type an answer                                                                                        ┃
+k|afafdfdddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃                                                                                                                      ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃ 2. Which task goes first?                                                                                            ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃                                                                                                                      ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃ › 1 [x] Modes first (REC)           the card uses the new modes                                                      ┃
+k|afafafaaafaaaaaaaaaaaaaaaaafffffffffffdddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010111011111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   2 [ ] Card first                  modes come later                                                                 ┃
+k|afafdfdddfffffffffffffffffffffffffffffddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃   3 [ ] Other: type an answer                                                                                        ┃
+k|afafdfdddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┃     note › keep the old tab key for one release█                                                                     ┃
+k|afffffaaaaaafffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|┗━ space mark · tab note · enter next question · enter on last reviews ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+k|aadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+k|rraaaaaaaaaddwffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ i or click here to type                                                                                              │
+k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [note] type a note · enter keep note · tab close note · ctrl+] leave note · ↑↓ option                                  
+k|aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -1,0 +1,40 @@
+ hive  ~/source/hive                          coordinator ● working   supervisor ● live   ? 1 ask   needs you 0   14:22 
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 44 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│ 14:21  manager-hive  ? asked · Model                                                                                 │
+│ 14:22  you           answered manager-hive · Model → 2 After g6 lands · note: once the PR is open                    │
+│                                                                                                                      │
+│ 14:23  coordinator   Noted. I restart manager-hive after g6 lands.                                                   │
+│                                                                                                                      │
+│ 14:25  t126-worker-1 ? asked · Test · asker stopped · open below                                                     │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      │
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+│                                                                                                                      ┃
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? t126-worker-1 asks · confirm ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ asker stopped · answer goes to manager-hive ━┓
+┃   Test → No, remove it (REC)                                                                                         ┃
+┃                                                                                                                      ┃
+┃ › Send to manager-hive                                                                                               ┃
+┗━ enter sends to manager-hive · ↑↓ question to change · x drop ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [review] ↑↓ question · enter send to parent · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type         

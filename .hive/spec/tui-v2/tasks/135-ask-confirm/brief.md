@@ -1,0 +1,232 @@
+# Ask cards: review every answer before send
+
+| Item | Value |
+| --- | --- |
+| Feature | `tui-v2`, goal `g10-ask-confirm`, wave A |
+| Tier | strong |
+| Depends on | `134-agents-hide-managers`, landed at `25f544e3`. Base: `dev` after that landing. |
+| Grant | Goal `g10-ask-confirm`. The user chose review on every card in chat `c186` and approved the plan in `c188`. |
+| Evidence | The `evidence/` folder beside this brief. Put `VERIFIED.md` there. |
+
+## Authority and plan
+
+Coordinator inbox record 537 assigns this goal.
+Read user chats `c185` to `c189` through `hive chat log`.
+The approved plan is in `c187`. Its review view is in `c185`.
+Task 134 landed, so this task can start.
+
+1. Write failing tests for review before delivery.
+2. Add the smallest card state and layout change.
+3. Commit code grids and live captures for user approval.
+4. Hold board and golden changes until the manager sends approval.
+5. Apply the approved grids and complete each verification item.
+
+## Design
+
+Read `/home/penguin/source/hive/.hive/spec/tui-v2/README.md`.
+The approved existing layout references are:
+
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/ChatAsk.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/ChatAskMulti.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/ChatAskPreview.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/ChatAskStopped.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/CompactChatAsk.dc.html`
+- `/home/penguin/source/hive/.hive/spec/tui-v2/design/Help.dc.html`
+
+The user approved this review structure in `c185` and `c187`:
+
+```text
+? ASKER asks · confirm
+HEADER → FULL PICK
+HEADER → FULL PICK
+HEADER → FULL PICK
+
+enter send · ↑↓ question to change · x drop
+```
+
+Use the same card and dock. Add no popup or separate screen.
+The existing palette, frame, dock height cap, and scrolling rules apply.
+Use Send as the initial review selection, so another `enter` sends.
+Arrows select a question for an edit.
+Complete the edited question by returning to review with its updated draft.
+Include that navigation in the approval package.
+Follow the visual check procedure in the worker skill.
+Each state has a glyph or word. Colour only adds to the state.
+
+## Requirements
+
+### AC1 Review before every answer
+
+- Every card gets the review step, including a card with one question.
+- `enter` on the last question opens review instead of sending.
+- Apply the same rule to each path that completes the last answer.
+- This includes a final digit, a click, a `note`, and Other text.
+- Entering review writes no answer record and sends no answer prompt.
+- In review, `enter` on Send sends the answer.
+- The default review selection is Send, so a second `enter` sends.
+- Retain the existing validation for an empty Other answer or missing pick.
+- Keep the answer prompt format, routing, retries, and record format unchanged.
+
+### AC2 Full review and editing
+
+- Show every question with its full picked labels and `note`.
+- Show every marked option of a multi-select question.
+- Show the full Other text.
+- Wrap long text to the card width without truncation.
+- Use the existing dock scroll when the content exceeds its height.
+- Keep the highlighted question and its answer reachable at 120x40 and 80x24.
+- Up and down highlight a question to change.
+- `enter` on that question returns to its option and `note` editor.
+- Preserve all other picks and `note` values during the edit.
+- Complete the edited question by returning to review before send.
+- Show the updated draft there.
+- Keep each card draft and review state when `J` or `K` changes cards.
+- Keep the draft across ordinary data refreshes.
+
+### AC3 Review keys and mouse
+
+- Only up, down, enter, x, J, and K act as card keys in review.
+- Digits 1 to 5 and a click do not change a pick in review.
+- Space, tab, and text entry do not change a reviewed answer.
+- `x` keeps its existing dismiss behavior.
+- `J` and `K` keep their existing card-switch behavior.
+- Keep these meanings outside review unchanged.
+- Keep the existing global quit behavior.
+- Update card hints and Help where this behavior requires them.
+
+### AC4 Grids and user approval
+
+- Render each changed existing board at its board size from the code.
+- Add review grids at 120x40 and 80x24.
+- Include one question, multiple questions, multi-select, Other, `note` values, and long text.
+- Include a highlighted question and the return from editing in the live captures.
+- Put the grids, plain text, fixtures, and a changed-row report in `evidence/new-grids/`.
+- Put terminal PNG and ANSI captures in the evidence.
+- List each existing board that changes and each that stays unchanged.
+- Commit and push the approval package.
+- Send its commit and path to `manager-hive` through `hive inbox send`.
+- Do not change any existing board source, golden grid, or board fixture before approval.
+- Do not install new design boards or golden grids before approval.
+- The manager sets task and wave `needs_user` if the worker holds for approval.
+- Do independent work while approval is pending.
+- After approval, install only the approved board and grid changes.
+- Add `ChatAskReview`, `ChatAskReviewMulti`, and `CompactChatAskReview` as permanent review references.
+- Keep additional long-content scenarios as evidence fixtures unless approval requires another permanent board.
+- Make each board source export its approved code grid.
+- Add no golden mask.
+
+### AC5 Spec and tests
+
+- Add the approved decisions to the TUI spec after decision 112.
+- Write each new behavior test before the implementation.
+- Use literal expected selections, `note` text, reply values, and prompt text.
+- Prove that entering review does not close the card or deliver an answer.
+- Prove that confirmation sends the final edited draft.
+- Cover one and several questions, multi-select, Other, `note` values, and long content.
+- Cover each completion path and review input restriction.
+- Cover card switches and a data refresh during review.
+- Cover a stopped asker and the unchanged parent route.
+- Cover dismiss from review and the unchanged dismiss prompt.
+- Cover both widths, overflow scrolling, and the highlighted question after an edit.
+- Preserve the existing checks. Change an expectation only for the approved review step.
+- Record the reason for each changed existing expectation.
+
+## Source files
+
+| Path | Purpose |
+| --- | --- |
+| `internal/tui/ask.go` and tests beside it | Card state, review layout, edits, confirmation, and draft tests. |
+| `internal/tui/frame.go`, `mouse.go`, `demo.go`, `chat.go`, and tests beside them | Review focus, hints, mouse guards, demo state, and dock integration only. |
+| `.hive/spec/tui-v2/README.md` | The approved review decisions. |
+| `.hive/spec/tui-v2/design/*.dc.html`, `*.grid`, `*.fixture.json` | Only the approved review boards and affected existing boards. |
+| `internal/boardexport/check.go` and its tests | Register the three approved review board sizes. |
+| `testdata/ste-baseline.json` | Add this brief at baseline 0. Counts can fall. |
+| This task folder | The brief, fixtures for evidence, and evidence. |
+
+Do not change other files.
+Do not change the ask transport or the answer prompt format.
+Do not change the exporter except the board-size registration.
+Report a required scope change before you edit another source file.
+
+## Verification items
+
+### V1 Tests red and green
+
+Run each new test against the base implementation before the source change.
+Check that it fails for the correct reason.
+Run it with the task implementation.
+Run the focused tests with `-count=50` and with `-race`.
+For a guard that passes on the base, break its guarded behavior deliberately.
+Record the failure, then restore the source.
+Expected: tests detect send without review, input changes during review, or lost draft data.
+Expected: the final implementation passes each test.
+Record each changed existing expectation and its approved cause.
+
+### V2 Approved boards and grids
+
+After approval, run the exporter on the design folder.
+Compare each exported grid with its committed grid through `internal/lib/cellgrid`.
+Compare each changed grid with its approved code grid.
+Run all existing board and golden checks.
+Expected: cell equality for rune, colour token, and weight, with no mask.
+Expected: only approved board, grid, and fixture changes.
+Record the approval reference and commit.
+
+### V3 Live behavior and visual check
+
+Build the task binary.
+Use scratch herdr panes or an isolated scratch server that you start.
+Use a scratch home or demo fixtures, `HIVE_NO_STARTUP=1`, and `COLORTERM=truecolor`.
+Capture each changed screen and its approved reference at the board size.
+Run the full question to review to edit to review to send sequence at both widths.
+Test digits, clicks, space, tab, and text while review has focus.
+Check that they do not change picks or `note` values.
+Run dismiss and card-switch sequences.
+Check long `note` values, full Other text, multi-picks, wrapping, and scroll access.
+Compare each initial reference capture with its approved grid cell for cell.
+Include the visual table required by the worker skill.
+Expected: each approved grid matches and each interaction follows AC1 to AC3.
+The worker and verifier each run this item.
+
+### V4 End to end delivery
+
+Use a scratch home and an isolated scratch herdr session.
+Create an ask from a scratch agent pane.
+Complete its questions in the real TUI and read the ask record and target pane.
+Expected before review confirmation: the ask remains open and no answer prompt arrives.
+Edit a question through review, return to review, and press `enter` on Send.
+Expected: the record and delivered prompt contain the final picks and `note` values in the unchanged format.
+Repeat for a stopped asker with a live parent and for dismiss from review.
+Expected: the parent route and dismiss prompt stay unchanged.
+Record exact commands and captures.
+Do not send any test message on the real home.
+
+### V5 Diff scope, gate, and cleanup
+
+Merge current `origin/dev` before the final gate.
+Run `git diff dev...HEAD --stat`.
+Run the full gate from the worktree root:
+
+```sh
+gofmt -l $(git ls-files -co --exclude-standard '*.go')
+go mod tidy -diff
+go vet ./...
+golangci-lint run ./...
+go test -race ./...
+```
+
+Expected: only the named files change.
+Expected: the first two commands print nothing.
+Expected: each other command exits 0.
+Record the full output.
+Close only the panes, sessions, and processes that you started.
+Remove task scratch after you record the result.
+Keep final evidence and captures.
+Check cleanup before completion.
+
+## Finish
+
+Commit and push the task branch without an agent co-author.
+Run `hive task complete` only after approval and each verification item passes.
+Send the commit and results to `manager-hive`.
+The manager starts an independent verifier before landing under goal g10.
