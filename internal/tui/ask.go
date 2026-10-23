@@ -163,6 +163,8 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 			}
 			if card.editing == "other" {
 				card.setPick(other, true, question.MultiSelect)
+			} else if !slices.Contains(card.picks[card.question], true) {
+				card.setPick(card.cursor[card.question], true, question.MultiSelect)
 			}
 			card.editing = ""
 			return m.askEnter(record, card), true

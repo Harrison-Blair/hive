@@ -217,6 +217,18 @@ func TestAskTwoQuestionsWithMarksAndANote(t *testing.T) {
 	}
 }
 
+func TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption(t *testing.T) {
+	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('o', "o"))
+	m, _ = raise(t, m, key('k', "k"))
+	run(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
+	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{2}, Note: "ok"}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
+		t.Fatalf("calls = %v, want %v", *calls, want)
+	}
+}
+
 func TestAskNoteTabDropsAndCtrlBracketKeeps(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
