@@ -1,0 +1,40 @@
+ hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 2 asks   needs you 0   14:22
+  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs
+────────────━━━━━━━━────────────────────────────────────────────────────────────────────────────────────────────────────
+╭─ chat · noise normal ───────────────────────────────────── ↑ 33 earlier ─────────────────────────────────────────────╮
+│                                                                                                                      │
+│                                                                                                                      │
+│ 13:33  coordinator   The manager reports that the stale coordinator check is on track.                               │
+│                                                                                                                      │
+│ 13:34  you           What is the state of the restart key?                                                           │
+│                                                                                                                      │
+│ 13:35  coordinator   The manager reports that the restart key is on track.                                           │
+│                                                                                                                      │
+│ 13:36  you           What is the state of the Agents graph columns?                                                  │
+│                                                                                                                      │
+│ 13:37  coordinator   The manager reports that the Agents graph columns is on track.                                  ┃
+│                                                                                                                      ┃
+│ 13:38  you           What is the state of the supervisor binary check?                                               │
+│                                                                                                                      │
+│ 13:39  coordinator   The manager reports that the supervisor binary check is on track.                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┏━ ? coordinator asks · Scope · Order ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ open · 1 of 2 · J next ━┓
+┃ 1. Which parts go in task 1?                                                                                         ┃
+┃                                                                                                                      ┃
+┃   1 [x] Mouse wheel (REC)           scroll the pane under the pointer                                                ┃
+┃   2 [x] Click to focus              click the feed or the input                                                      ┃
+┃   3 [x] Normal and input mode       i in, ctrl+] out                                                                 ┃
+┃   4 [ ] Header count                "? N" on all tabs                                                                ┃
+┃   5 [ ] Other: type an answer                                                                                        ┃
+┃                                                                                                                      ┃
+┃ 2. Which task goes first?                                                                                            ┃
+┃                                                                                                                      ┃
+┃   1 [ ] Modes first (REC)           the card uses the new modes                                                      ┃
+┃   2 [ ] Card first                  modes come later                                                                 ┃
+┃ › 3 [x] Other: type an answer                                                                                        ┃
+┃     other › later                                                                                                    ┃
+┗━ space mark · tab note · enter next question · enter on last sends ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╭─ message · ● working 1m ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ i or click here to type                                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ [ask] ↑↓ move · 1..3 pick · enter send · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type
