@@ -1,0 +1,24 @@
+ hive                               coord ○ · sup ○ · ? 1 · needs you 0 · 13:59
+  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs
+───────────━━━━━━━━─────────────────────────────────────────────────────────────
+╭─ chat ──────────────────────────────── ↑ 28 earlier ─────────────────────────╮
+│ Later chat message 27                                                        │
+│                                                                              │
+│ 13:45 coordinator                                                            │
+│ Later chat message 28                                                        │
+│                                                                              │
+│ 13:45 coordinator                                                            │
+│ Later chat message 29                                                        │
+│                                                                              │
+│ 13:45 coordinator                                                            │
+│ Later chat message 30                                                        ┃
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━ ? asker-scratch-with-long-name-abc asks · confirm ━━━━━━━━━━ asker stopped ━┓
+┃   Change → No                                                                ┃
+┃                                                                              ┃
+┃ › Send to parent-scratch-with-long-name-ab                                   ┃
+┗━ enter sends to parent-scratch-with-long-name-ab · ↑↓ change · x drop ━━━━━━━┛
+╭─ message · ○ none ───────────────────────────────────────────────────────────╮
+│ i or click here to type                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ [review] error: chat send is for the user only: only the user can send chat; r…
