@@ -1,0 +1,1 @@
+CompactChatAsk-80x24.ansi rows=24 0 cells differ of 1920
