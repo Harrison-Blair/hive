@@ -59,3 +59,4 @@ For all other files, the coordinator and manager never change a project source f
 | [Hive has no command to shut down a session](entries/no-shutdown-command.md) | Open |  |
 | [Up and Down in a wrapped chat input can land one word off](entries/chat-input-updown-wrap-offset.md) | Open | Later: the user deferred a fix on 2026-10-22 |
 | [A manager cannot send a completed task back to a worker before the verify](entries/completed-task-no-repair-before-verify.md) | Open |  |
+| [Agents overview draws a card from a stale record instead of the live one](entries/agents-card-shows-stale-record.md) | Open |  |
