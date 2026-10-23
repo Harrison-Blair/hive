@@ -33,6 +33,7 @@ correct. This task changes the tests only.
 | `internal/tui/tui_test.go` | Only when the chosen fix needs a shared test helper. Record the cause in the evidence. |
 | `.hive/spec/tui-v2/tasks/132-tui-clock-tests/brief.md` | A copy of this brief. |
 | `.hive/spec/tui-v2/tasks/132-tui-clock-tests/evidence/` | The evidence files. |
+| `testdata/ste-baseline.json` | AC4. To add the brief copy with a count of 0 in the STE ratchet. |
 
 Do not edit other files. Do not change product code. Do not change the
 header text, the header layout, or the ask count. Do not weaken a test.
