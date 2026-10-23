@@ -382,7 +382,7 @@ func (m *Model) logsContent(width, height int) string {
 	var body string
 	switch {
 	case wide:
-		listWidth := width * 8 / 15
+		listWidth := listRegionWidth(tabLogs, width)
 		list := strings.Split(m.logEventsPanel(listWidth, bodyHeight, focus == "events"), "\n")
 		details := strings.Split(m.logJSONPanel(width-listWidth, bodyHeight, focus == "json", "", true), "\n")
 		for index := range list {

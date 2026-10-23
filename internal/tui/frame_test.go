@@ -97,10 +97,10 @@ func TestFooterShowsStartupNoticeBeforeError(t *testing.T) {
 	m.startupNotice = "not in herdr: no coordinator or supervisor started"
 	m.chatErr = "chat send is for the user only"
 	m.invalidateView()
-	requireView(t, m, "[feed] not in herdr: no coordinator or supervisor started")
+	requireView(t, m, "[normal] not in herdr: no coordinator or supervisor started")
 	m.startupNotice = ""
 	m.invalidateView()
-	requireView(t, m, "[feed] error: chat send is for the user only")
+	requireView(t, m, "[normal] error: chat send is for the user only")
 }
 
 // screenBoards are the boards of one screen each. Their header, tab bar, and
@@ -373,7 +373,7 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 		keys               []tea.KeyPressMsg
 	}{
 		{"graph", "Main", "graph", nil},
-		{"feed", "CompactChat", "feed", []tea.KeyPressMsg{{Code: tea.KeyEscape}}},
+		{"normal", "CompactChat", "normal", []tea.KeyPressMsg{ctrlBracket()}},
 		{"input", "Chat", "input", nil},
 		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: tea.KeyEscape}, {Code: '/', Text: "/"}}},
 		{"help", "Help", "help", nil},
@@ -408,7 +408,7 @@ func TestNormalModeUsesTheFrame(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	if !strings.HasPrefix(lines[0], " hive ") || !strings.Contains(lines[1], "1 Agents   2 Chat") || !strings.HasPrefix(lines[39], " [feed] ") {
+	if !strings.HasPrefix(lines[0], " hive ") || !strings.Contains(lines[1], "1 Agents   2 Chat") || !strings.HasPrefix(lines[39], " [normal] ") {
 		t.Fatalf("normal mode does not draw the frame:\n%s", strings.Join(lines, "\n"))
 	}
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 23})

@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Frict  5 Health  6 Logs                           
+k|fddddddddddaaaaaaaadddddddddddddddddddddddddddddddddddffffffffffffffffffffffffff
+b|00000000000111111110000000000000000000000000000000000000000000000000000000000000
+t|───────────━━━━━━━━─────────────────────────────────────────────────────────────
+k|rrrrrrrrrrraaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ chat · noise normal ───────────────── ↑ 42 earlier ─────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:02  you       I want a tool for you to ask questions,                     │
+k|afdddddffaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000011100000000000000000000000000000000000000000000000000000000000000000000
+t|│                  like the native ask tool, here in hive.                     │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:03  coordina… Interrogate round 1. Who can ask, how                       │
+k|afdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000011111111100000000000000000000000000000000000000000000000000000000000000
+t|│                  the answer gets back, and where it shows.                   │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ 14:05  you       A A A                                                       │
+k|afdddddffaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000011100000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                              ┃
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ message · ● working 1m ─────────────────────────────────────────────────────╮
+k|rrrrrrrrrrrrrwrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ i or click here to type                                                      │
+k|rfdddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help         
+k|aaaaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffff
+b|11111111110000000000000000000000000000000000000000000000000000000000000000000000

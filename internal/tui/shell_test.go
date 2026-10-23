@@ -295,7 +295,7 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			view := m.View()
 			assertNoPaintedBackgroundSGR(t, view.Content)
 			// Decision 21: the Chat input footer shows the keys of the input.
-			if !strings.Contains(view.Content, "esc leave input") {
+			if !strings.Contains(view.Content, "ctrl+] leave input") {
 				t.Error("active Chat footer omits its input controls")
 			}
 			if view.Cursor == nil {

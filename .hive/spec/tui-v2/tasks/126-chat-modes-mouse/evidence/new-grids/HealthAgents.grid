@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| hive  ~/source/hive                         coordinator ● working   supervisor ● live   ? 0 asks   needs you 0   14:22 
+k|fffffffffffffffffffffffffffffffffffffffffffffffffffffffffwffffffffffffffffffffffwfffffffffffffffffffffffffffffffffffffff
+b|111111111111111111110000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111
+t|  1 Agents   2 Chat   3 Work   4 Friction   5 Health   6 Logs                                                           
+k|fddddddddddfddddddddfddddddddfddddddddddddfaaaaaaaaaafddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000011111111110000000000000000000000000000000000000000000000000000000000000000000
+t|───────────────────────────────────────────━━━━━━━━━━───────────────────────────────────────────────────────────────────
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|  Home   [Agents]                                                                                     [ ] switch view   
+k|fddddddffaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddfff
+b|000000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ agents · 5 · h hides 1 stopped ─────────────────╮╭─ supervisor-g4 ──────────────────────────────────────────────────╮
+k|rraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|001111111111111111111111111111111100000000000000000000111111111111111000000000000000000000000000000000000000000000000000
+t|│   AGENT                 ROLE        STATE        ││                                                                  │
+k|rfffdddddddddddddddddddddddddddddddddddddddffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   coordinator-g2        coordinator ● working    ││ role      supervisor                                             │
+k|rfffffffffffffffffffffffffddddddddddddwffffffffffffrrfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ ▶ supervisor-g4         supervisor  ● live       ││ state     live                                                   │
+k|rfafaaaaaaaaaaaaaaaaaaaaaaddddddddddddwffffffffffffrrfddddddddddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwfr
+b|001011111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   manager-hive          manager     ◐ idle       ││ pid       1620686                                                │
+k|rfffffffffffffffffffffffffddddddddddddaffffffffffffrrfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   cp5-worker-01         worker      ● unresolved ││ pane      w58:p5 · tab supervisor                                │
+k|rfffffffffffffffffffffffffddddddddddddaffffffffffffrrfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   t4-worker-1           worker      ○ stopped    ││ binary    current · ~/go/bin/hive                                │
+k|rfffffffffffffffffffffffffdddddddddddddfddddddddddfrrfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ started   by bare hive                                           │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ ACTIONS                                                          │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000111111100000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ r restart · runs hive supervise in a new tab                     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ a attach to the pane                                             │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ p peek at the pane                                               │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││       ╭─ restart supervisor-g4? ───────────────────────────╮     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffr
+b|000000000000000000000000000000000000000000000000000000000000001111111111111111111111110000000000000000000000000000000000
+t|│                                                  ││       │                                                    │     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffafffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││       │ It is live. Hive stops it and starts a new one.    │     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffafffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││       │ The old record stays on disk as stopped.           │     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffafddddddddddddddddddddddddddddddddddddddddfffffffffffafffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││       │                                                    │     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffafffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││       │ y restart   esc cancel                             │     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffafafffffffffffaaaffffffffffffffffffffffffffffffffffffafffffr
+b|000000000000000000000000000000000000000000000000000000000000001000000000001110000000000000000000000000000000000000000000
+t|│                                                  ││       ╰────────────────────────────────────────────────────╯     │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfffffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ r asks to confirm only when the agent is live.                   │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││ A stale or stopped agent restarts at once.                       │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrfddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                  ││                                                                  │
+k|rffffffffffffffffffffffffffffffffffffffffffffffffffrrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [restart] y restart · any other key cancels                                                                            
+k|aaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

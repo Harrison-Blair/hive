@@ -202,20 +202,23 @@ func TestChatKeysScrollTheFeed(t *testing.T) {
 	requireView(t, m, "line-40")
 }
 
-// Decision 24: a printable key in the feed gives the focus to the input and
-// types the key. i and enter give the focus. 1–6 and ? stay global in the
-// feed. In the input each printable key types, esc gives the focus to the
-// feed, and tab moves the region. The footer shows the keys of each focus
-// state (decision 21).
+// In input mode each printable key types, also the keys that are global in
+// normal mode. shift+enter adds a line. ctrl+] goes back to normal mode and
+// keeps the draft. In normal mode ? and 1–6 keep their meaning, and a letter
+// does not type (decision 21 and the chat modes of task 126).
 func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
-	requireView(t, m, "[feed] i or type to write · j/k scroll · g/G top/end · ctrl+o open events · tab region · ? help")
+	requireView(t, m, "[normal] i type · ↑↓ j/k scroll · wheel scroll · pgup/pgdn page · g/G top/end · ctrl+o events · ? help")
 	m, _ = raise(t, m, key('x', "x"))
-	if !m.chatInputActive {
-		t.Fatal("a printable key in the feed did not give the focus to the input")
+	if m.chatInputActive {
+		t.Fatal("a printable key in normal mode started input mode")
 	}
-	requireView(t, m, "> x█", "[input] enter send · shift+enter newline · ctrl+o open events · esc leave input · pgup/pgdn scroll feed · tab region")
-	for _, character := range "12?/jkgG" {
+	m, _ = raise(t, m, key('i', "i"))
+	if !m.chatInputActive {
+		t.Fatal("i did not start input mode")
+	}
+	requireView(t, m, "> █", "[input] enter send · shift+enter newline · ctrl+] leave input · click feed leave · wheel or pgup/pgdn scroll")
+	for _, character := range "x12?/jkgGi" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}
 	if m.activeTab() != tabChat || m.helpOpen {
@@ -225,50 +228,37 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 	for _, character := range "two" {
 		m, _ = raise(t, m, key(character, string(character)))
 	}
-	if got := m.chatInput.Value(); got != "x12?/jkgG\ntwo" {
+	if got := m.chatInput.Value(); got != "x12?/jkgGi\ntwo" {
 		t.Fatalf("draft = %q", got)
 	}
 	requireView(t, m, "  two█")
 
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	m, _ = raise(t, m, ctrlBracket())
 	if m.chatInputActive {
-		t.Fatal("esc did not give the focus to the feed")
+		t.Fatal("ctrl+] did not stop input mode")
 	}
-	requireView(t, m, "[feed]", "  two")
+	requireView(t, m, "[normal]", "  two")
 	rejectView(t, m, "two█")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	if !m.chatInputActive {
-		t.Fatal("enter in the feed did not give the focus to the input")
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	if m.chatInputActive {
-		t.Fatal("tab in the input did not move the focus to the feed")
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	if !m.chatInputActive {
-		t.Fatal("tab in the feed did not move the focus to the input")
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	m, _ = raise(t, m, key('?', "?"))
 	if !m.helpOpen {
-		t.Fatal("? in the feed did not open help")
+		t.Fatal("? in normal mode did not open help")
 	}
 	m, _ = raise(t, m, key('?', "?"))
 	m, _ = raise(t, m, key('3', "3"))
 	if m.activeTab() != tabWork {
-		t.Fatalf("3 in the feed gave tab %d", m.activeTab())
+		t.Fatalf("3 in normal mode gave tab %d", m.activeTab())
 	}
-	if got := m.chatInput.Value(); got != "x12?/jkgG\ntwo" {
-		t.Fatalf("draft after the feed keys = %q", got)
+	if got := m.chatInput.Value(); got != "x12?/jkgGi\ntwo" {
+		t.Fatalf("draft after the normal mode keys = %q", got)
 	}
 }
 
-// Below 120 columns the footer shows the compact hints of each focus state.
+// Below 120 columns the footer shows the compact hints of each mode.
 func TestChatCompactFooterHints(t *testing.T) {
 	m := chatModel(t, 80, 24, 1)
-	requireView(t, m, "[feed] i type · pgup/pgdn feed · ctrl+o events · tab region · ?")
+	requireView(t, m, "[normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help")
 	m, _ = raise(t, m, key('i', "i"))
-	requireView(t, m, "[input] enter send · ctrl+o events · esc leave input · pgup/pgdn feed")
+	requireView(t, m, "[input] enter send · ctrl+] leave · wheel or pgup/pgdn scroll")
 }
 
 func TestChatInputBorderShowsCoordinatorStatusAndQueuedMark(t *testing.T) {

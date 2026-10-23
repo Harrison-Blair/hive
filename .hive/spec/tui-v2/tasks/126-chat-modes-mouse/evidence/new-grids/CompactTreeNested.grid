@@ -1,0 +1,73 @@
+hive-grid 1 80 24
+t| hive                               coord ● · sup ● · ? 0 · needs you 0 · 14:22 
+k|ffffffffffffffffffffffffffffffffffffffffffwfffffffwfffffffffffffffffffffffffffff
+b|11111000000000000000000000000000000011111111111111111111111111111111111111111111
+t|  1 Agents  2 Chat  3 Work  4 Friction  5 Health  6 Logs                        
+k|faaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffff
+b|01111111111000000000000000000000000000000000000000000000000000000000000000000000
+t|─━━━━━━━━━━─────────────────────────────────────────────────────────────────────
+k|raaaaaaaaaarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ project agents · hive ──────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00111111111111111111111110000000000000000000000000000000000000000000000000000000
+t|│ ╭─ hive ──────────────────────────────┼────────────────────────────────────╮ │
+k|afrrddddddrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrfa
+b|00001111110000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │ g2-tui-v2 · wave A                  │                                    │ │
+k|afrfddddddddddddddddddffffffffffffffffffrffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         ╭───────────┴──────────╮                         │ │
+k|afrfffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         │ ● manager-hive       │                         │ ┃
+k|afrfffffffffffffffffffffffffwfwffffffffffffffffffffwfffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         │ claude · working · … │                         │ ┃
+k|afrfffffffffffffffffffffffffwfddddddddddddddddddddfwfffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                         ╰───────────┬──────────╯                         │ ┃
+k|afrfffffffffffffffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                                     │                                    │ ┃
+k|afrfffffffffffffffffffffffffffffffffffffrffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                   ╭─────────────────┴─────────────────╮                  │ ┃
+k|afrfffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                   │                                   │                  │ ┃
+k|afrfffffffffffffffffffrfffffffffffffffffffffffffffffffffffrffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ╭───────────┴──────────╮            ╭───────────┴──────────╮       │ ┃
+k|afrfffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       │ ● t5-worker-1        │            │ ● t6-worker-1        │       │ ┃
+k|afrfffffffwfwffffffffffffffffffffwffffffffffffwfwffffffffffffffffffffwfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       │ pi · working · 3m    │            │ pi · working · 1m    │       │ ┃
+k|afrfffffffwfdddddddddddddddddffffwffffffffffffwfdddddddddddddddddffffwfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ╰───────────┬──────────╯            ╰──────────────────────╯       │ ┃
+k|afrfffffffwwwwwwwwwwwwwwwwwwwwwwwwffffffffffffwwwwwwwwwwwwwwwwwwwwwwwwfffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │                   │                                                      │ ┃
+k|afrfffffffffffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ┏━━━━━━━━━━━┷━━━━━━━━━━┓                                           │ ┃
+k|afrfffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ┃ ● t5-research-1      ┃                                           │ │
+k|afrfffffffafwfaaaaaaaaaaaaaffffffafffffffffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000111111111111100000000000000000000000000000000000000000000000000000
+t|│ │       ┃ pi · working · 1m    ┃                                           │ │
+k|afrfffffffafdddddddddddddddddffffafffffffffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ │       ┗━━━━━━━━━━━━━━━━━━━━━━┛                                           │ │
+k|afrfffffffaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffrfa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|00000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| [graph] ←↑↓→ move · enter details · esc pods · ?                               
+k|aaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|11111111100000000000000000000000000000000000000000000000000000000000000000000000

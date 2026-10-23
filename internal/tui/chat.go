@@ -42,7 +42,8 @@ type chatSendMsg struct {
 }
 
 // chatFeed is the scroll state of the feed and the lines of its last render.
-// Top is the first line of the feed in view. TopItem is a message to put at
+// Height is the rows of the feed panel. Top is the first line of the feed in
+// view. TopItem is a message to put at
 // the top on the next render, or -1. Follow keeps the last line in view.
 type chatFeed struct {
 	top     int
@@ -52,6 +53,7 @@ type chatFeed struct {
 	starts  []int
 	width   int
 	visible int
+	height  int
 }
 
 // chatScreen is the tab 2 Chat (decisions 15, 24, 30, 31): a feed that
@@ -143,10 +145,8 @@ func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
 		case "shift+enter", "alt+enter":
 			m.chatInput.InsertString("\n")
 			return nil
-		case "esc":
-			m.chatInputActive = false
-			m.chatInput.Blur()
-			return m.logAction("focus region", slogString("region", "feed"))
+		case "ctrl+]":
+			return m.stopChatInput()
 		}
 		updated, cmd := m.chatInput.Update(press)
 		m.chatInput = updated
@@ -275,7 +275,8 @@ func (m *Model) chatView(width, height int) string {
 	for row := max(mark.Start, 0); row < min(mark.Start+mark.Size, feedHeight-2); row++ {
 		rows[row+1] = ansi.Truncate(rows[row+1], width-1, "") + dimStyle.Render("┃")
 	}
-	if wide && earlier > 0 {
+	m.chatFeed.height = feedHeight
+	if earlier > 0 {
 		rows[0] = borderNote(rows[0], fmt.Sprintf(" ↑ %d earlier ", earlier), width/2)
 	}
 	return strings.Join(rows, "\n") + "\n" + input
@@ -298,7 +299,8 @@ func (m *Model) chatInputView(width, contentHeight int) string {
 		Text: m.chatInput.Value(), Focused: m.chatInputActive, Height: panelCap,
 		CursorLine: m.chatInput.Line(), CursorColumn: m.chatInput.Column(),
 		HasCursor: true, Status: status, Age: age,
-		Queued: m.lastUserChatPending(),
+		Queued:      m.lastUserChatPending(),
+		Placeholder: "i or click here to type",
 	}.View(width)
 }
 

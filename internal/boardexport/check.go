@@ -53,6 +53,10 @@ var Sizes = map[string][2]int{
 	"TreeNested":        {120, 40},
 	"CompactTreeWide":   {80, 24},
 	"CompactTreeNested": {80, 24},
+	// The chat mode boards of task 126-chat-modes-mouse.
+	"ChatNormal":        {120, 40},
+	"ChatInput":         {120, 40},
+	"CompactChatNormal": {80, 24},
 }
 
 // symbols is the symbol list of decision 13. A cell can also hold a
