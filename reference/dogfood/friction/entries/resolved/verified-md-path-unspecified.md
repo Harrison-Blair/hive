@@ -1,8 +1,8 @@
 ---
 title: "The verifier skill does not give the path of VERIFIED.md"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-19
-decision: ""
+decision: "The verifier skill names the evidence path for VERIFIED.md and forbids the checkout root"
 ---
 
 **Summary:**

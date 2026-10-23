@@ -1,8 +1,8 @@
 ---
 title: "The Chat message box does not grow or scroll while the user types"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-22
-decision: ""
+decision: "Goal g3 task 122 lands the growing input: the box grows with the typed text and the feed shrinks"
 ---
 
 **Summary:**

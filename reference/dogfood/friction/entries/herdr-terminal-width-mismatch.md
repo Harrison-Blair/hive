@@ -12,17 +12,19 @@ herdr `pane.layout` reported 120 columns. The live check required 120x40
 and 80x24 captures.
 
 The verifier used an isolated herdr 0.9.5 scratch server at 140x48 for the
-captures. It ran no TUI on the real home. It will remove the scratch
-session after the check.
+captures. It ran no TUI on the real home. It removed the scratch session
+after the check.
 
-Source: manager inbox record 546. The verifier will record the exact
-commands and dimensions in the task evidence. The cause and repeatability
-remain unknown. The manager did not independently repeat this mismatch.
+Sources: manager inbox records 546 and 548. The task evidence records the
+[exact commands and dimensions](../../../../.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/verifier-2/geometry.md)
+and the [cleanup checks](../../../../.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/verifier-2/cleanup.log).
+The cause and repeatability remain unknown. The manager did not
+independently repeat this mismatch.
 
 **Reproduction steps:**
 1. On herdr 0.9.5, create a new tab for a live TUI capture at 120x40.
 2. Read the pane size through `pane.layout`.
-3. Check the terminal columns in that pane.
+3. Run `stty size` in that pane.
 4. Compare the two sizes. The verifier reported 120 and 119 columns.
 5. For the capture, use an isolated scratch server larger than the board.
 

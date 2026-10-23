@@ -1,8 +1,8 @@
 ---
 title: "The Chat screen does not show that the coordinator is working"
-status: "Open"
+status: "Resolved 2026-10-23"
 opened: 2026-10-22
-decision: ""
+decision: "Goal g3 task 122 shows the working status of the coordinator in the header"
 ---
 
 **Summary:**
