@@ -51,16 +51,18 @@ func TestGoldenGridFiles(t *testing.T) {
 	}
 }
 
-// gfDesignDir holds the Gf boards and their golden grids of task 137.
+// gfDesignDir holds the Gf boards and their golden grids of tasks 137,
+// 145, and 148.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
-// gfGrids gives the Gf grids in design/: the 15 boards of Chat and the
-// component sheet of task 137, the Help board of task 148, and the Friction
-// boards of task 144.
+// gfGrids gives the 24 Gf grids in design/: the Chat boards and the
+// component sheet of task 137, the Health boards of task 145, the Help board
+// of task 148, and the Friction boards of task 144.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
+	"GfHealth", "GfHealthChecking", "GfHealthGreen", "GfHealthRestart",
 	"GfHelp",
 	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
 }
@@ -76,7 +78,7 @@ func TestGfGoldenGridFiles(t *testing.T) {
 	}
 	for _, file := range files {
 		if !slices.Contains(gfGrids, strings.TrimSuffix(filepath.Base(file), ".grid")) {
-			t.Errorf("%s is not one of the Gf grids of gfGrids", file)
+			t.Errorf("%s is not one of the %d Gf grids", file, len(gfGrids))
 		}
 	}
 	for _, board := range gfGrids {

@@ -329,7 +329,7 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		{"AgentsCoordinatorChild", 120, 40, []string{"project agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
 		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
 		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "coordinator-g2", "14:15 agent report plan-review-1"}, nil},
-		{"HealthAgentsGeneral", 120, 40, []string{"▶ plan-review-1", "agent"}, nil},
+		{"HealthAgentsGeneral", 120, 40, []string{"▶ ● plan-review-1", "agent"}, nil},
 	} {
 		t.Run(tc.board, func(t *testing.T) {
 			path := filepath.Join(designDir, tc.board+".fixture.json")

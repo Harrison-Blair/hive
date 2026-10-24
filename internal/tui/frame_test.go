@@ -132,7 +132,8 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 		{"Chat", "input", tabChat, 0},
 		{"Compact", "details", tabWork, 2},
 		{"FrictionResolved", "list", tabFriction, 0},
-		{"HealthAgents", "restart", tabHealth, 1},
+		// Golden-frames health.md: Health has no views.
+		{"HealthAgents", "restart", tabHealth, 0},
 		{"Help", "help", tabAgents, 0},
 		{"Logs", "json", tabLogs, 0},
 		{"WorkQueue", "list", tabWork, 1},
@@ -240,33 +241,31 @@ func TestEachScreenKeepsTheFrameAtEachBreakpoint(t *testing.T) {
 	}
 }
 
-// focusTokens gives the token of the top-left corner of the list panel and
-// of the details panel in the first content row of a 120×40 Health view.
-// Golden-frames decision 2: the content starts on row 2, with the view row
-// of Health, so the panels start on row 3.
+// focusTokens gives the token of the top-left corner of the details box and
+// of the agents table of a 120×40 Health view: rows 8 and 18 of health.md.
 func focusTokens(t *testing.T, m *Model) (cellgrid.Token, cellgrid.Token) {
 	t.Helper()
-	row := renderRows(t, m, 120, 3)
-	listWidth := 120 * 13 / 30
-	return row.At(0, 0).Token, row.At(0, listWidth).Token
+	grid := renderGrid(t, m, 120, 40)
+	return grid.At(8, 0).Token, grid.At(18, 0).Token
 }
 
 // AC2: the focused region has the accent border, and ctrl+] moves the focus
-// (golden-frames decision 6).
+// (golden-frames decision 6). Health has two boxes, the grid with no border
+// and the agents table (health.md rule 5).
 func TestTabMovesTheAccentBorder(t *testing.T) {
-	m := newTestDemoModel(t, "Health.fixture.json", demoSize{})
-	if list, details := focusTokens(t, m); list != cellgrid.Accent || details != cellgrid.Border {
-		t.Fatalf("list focus: list border %s, details border %s; want accent, border", list, details)
+	m := gfHealthModel(t, "GfHealth", nil)
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Border {
+		t.Fatalf("grid focus: details border %s, table border %s; want border, border", details, table)
 	}
-	requireKeys(t, m, "list", "")
+	requireKeys(t, m, "grid", "")
 	m, _ = raise(t, m, ctrl(']'))
-	if list, details := focusTokens(t, m); list != cellgrid.Border || details != cellgrid.Accent {
-		t.Fatalf("details focus: list border %s, details border %s; want border, accent", list, details)
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Accent {
+		t.Fatalf("table focus: details border %s, table border %s; want border, accent", details, table)
 	}
-	requireKeys(t, m, "details", "")
+	requireKeys(t, m, "table", "")
 	m, _ = raise(t, m, ctrl(']'))
-	if m.focusState() != "list" {
-		t.Fatalf("second ctrl+] gave focus %q; want list", m.focusState())
+	if m.focusState() != "grid" {
+		t.Fatalf("second ctrl+] gave focus %q; want grid", m.focusState())
 	}
 }
 
@@ -301,10 +300,10 @@ func TestHelpKeys(t *testing.T) {
 
 // AC3: below 120 columns enter opens the details as a full-width overlay,
 // and esc closes it. A resize keeps the overlay and its scroll position.
-// Golden-frames friction.md rule 8 gives Friction no overlay, so the test
-// uses Health.
+// Golden-frames friction.md and health.md give those screens no list and
+// details overlay, so the test uses Work.
 func TestDetailsOverlayBelow120Columns(t *testing.T) {
-	m := newTestDemoModel(t, "Health.fixture.json", demoSize{})
+	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
@@ -312,8 +311,8 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	requireKeys(t, m, "details", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
-	if m.focusState() != "details" || m.detailsOffset[tabHealth] != 1 {
-		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabHealth])
+	if m.focusState() != "details" || m.detailsOffset[tabWork] != 1 {
+		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabWork])
 	}
 	requireView(t, m, " · esc back")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
@@ -328,8 +327,6 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 // focus but help and the restart prompt, and esc closes an overlay, a popup,
 // help, and the filter bar first, on the same screen.
 func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
-	compact := tea.WindowSizeMsg{Width: 80, Height: 24}
-	enter := key(0, "enter")
 	for _, tt := range []struct {
 		name, board, focus string
 		keepFocus          bool
@@ -338,7 +335,6 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
 		{"work overlay", "Compact", "details", true, nil},
-		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
 		{"logs overlay", "CompactLogs", "json", true, nil},
 		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
 		{"input", "Chat", "input", false, nil},
