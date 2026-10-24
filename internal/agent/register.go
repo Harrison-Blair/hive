@@ -495,7 +495,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 	}
 	if options.Owns != "" && currentClaim != nil {
-		if holder, ok := agentByKey[currentClaim.Agent]; ok && !(hasExisting && replaceOrphan && existing.Key == currentClaim.Agent) {
+		if holder, ok := agentByKey[currentClaim.Agent]; ok && (!replaceOrphan || existing.Key != currentClaim.Agent) {
 			switch holder.Status {
 			case records.AgentStarting:
 				return failed("agent", "agent is starting: "+holder.Name)
