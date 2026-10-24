@@ -158,20 +158,20 @@ func TestFrameBoxFocusKeys(t *testing.T) {
 	if m.activeTab() != tabChat || !m.chatInputActive {
 		t.Fatalf("ctrl+] on Chat changed the screen %d or the input focus %v", m.activeTab(), m.chatInputActive)
 	}
-	m, _ = raise(t, m, ctrl('t'))
+	m, _ = raise(t, m, ctrl('f'))
 	for _, k := range []tea.KeyPressMsg{key('1', "1"), key('2', "2"), {Code: tea.KeyTab}} {
 		m, _ = raise(t, m, k)
-		if m.activeTab() != tabWork || m.regionFocus[tabWork] != 0 {
-			t.Fatalf("%v moved to screen %d, region %d; want Work, region 0", k, m.activeTab(), m.regionFocus[tabWork])
+		if m.activeTab() != tabFriction || m.regionFocus[tabFriction] != 0 {
+			t.Fatalf("%v moved to screen %d, region %d; want Friction, region 0", k, m.activeTab(), m.regionFocus[tabFriction])
 		}
 	}
 	m, _ = raise(t, m, ctrl(']'))
-	if m.regionFocus[tabWork] != 1 {
-		t.Fatalf("ctrl+] gave region %d; want 1", m.regionFocus[tabWork])
+	if m.regionFocus[tabFriction] != 1 {
+		t.Fatalf("ctrl+] gave region %d; want 1", m.regionFocus[tabFriction])
 	}
 	m, _ = raise(t, m, ctrl(']'))
-	if m.regionFocus[tabWork] != 0 {
-		t.Fatalf("second ctrl+] gave region %d; want 0", m.regionFocus[tabWork])
+	if m.regionFocus[tabFriction] != 0 {
+		t.Fatalf("second ctrl+] gave region %d; want 0", m.regionFocus[tabFriction])
 	}
 }
 
@@ -218,6 +218,42 @@ func TestFrameKeysRebind(t *testing.T) {
 	}
 }
 
+// Ask a27: on each screen except Chat, the default first status row is the
+// state, the screen segment, and the clock. Chat and a row from the config
+// keep their segments.
+func TestFrameScreenStatusRowIsStateScreenClock(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	m.header.coordinator = "working"
+	m.header.coordinatorChangedAt = gfDay.Add(-2 * time.Minute).Format(time.RFC3339)
+	m.invalidateView()
+	if row := viewRows(m)[39]; !strings.Contains(row, "supervisor") {
+		t.Fatalf("Chat status row %q; want the default segments", row)
+	}
+	m, _ = raise(t, m, ctrl('l'))
+	want := " ● working 2m · logs · ↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel"
+	row := viewRows(m)[39]
+	if !strings.HasPrefix(row, want) || !strings.HasSuffix(row, "14:22 ") {
+		t.Fatalf("Logs status row\n%q\nwant prefix %q and the clock", row, want)
+	}
+	g := viewGrid(t, m)
+	if cell := g.At(39, len([]rune(" ● working 2m · "))); cell.Token != cellgrid.Accent || !cell.Bold {
+		t.Errorf("screen name %v bold %v; want accent bold", cell.Token, cell.Bold)
+	}
+	if cell := g.At(39, len([]rune(" ● working 2m · logs · "))); cell.Token != cellgrid.Dim {
+		t.Errorf("screen keys %v; want dim", cell.Token)
+	}
+	m, _ = raise(t, m, ctrl('t'))
+	if row := viewRows(m)[39]; !strings.Contains(row, "· work · ") || strings.Contains(row, "supervisor") {
+		t.Errorf("Work status row %q; want state, work, clock", row)
+	}
+	cfg := home.DefaultTUI()
+	cfg.StatusLines = [][]string{{"state", "asks", "clock"}}
+	m.setTUIConfig(cfg)
+	if row := viewRows(m)[39]; !strings.Contains(row, "? 0 asks") || strings.Contains(row, "· work") {
+		t.Errorf("Work status row %q with a config row; want the config segments", row)
+	}
+}
+
 // keysRow gives the plain screen segment of m: the view with the one status
 // row ["screen"] of decision 11, without the screen name.
 func keysRow(t *testing.T, m *Model) string {
@@ -254,7 +290,7 @@ func TestFrameScreenSegmentShowsTheFocusKeys(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	m, _ = raise(t, m, ctrl('l'))
 	// Decisions 6 and 19: ctrl+] moves the box focus, and tab does not.
-	requireKeys(t, m, "events", "↑↓ move · ^] box · enter open")
+	requireKeys(t, m, "events", "↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel")
 	for _, tab := range []int{tabWork, tabFriction, tabHealth, tabLogs} {
 		m.selectScreen(tab, 0)
 		if keys := keysRow(t, m); strings.Contains(keys, "tab") {

@@ -87,8 +87,6 @@ func screenRefreshPaths(home string, request dataRequest, day time.Time, tasks t
 			// (decision 66).
 			filepath.Join(home, ".hive", "logs", day.Format("2006-01-02")+".jsonl"),
 		}
-	case goalsQueueDataRequest:
-		return []string{filepath.Join(state, "goals"), filepath.Join(state, "tasks")}
 	case healthDataRequest:
 		return []string{filepath.Join(home, ".hive", "README.md"), state}
 	case tasksDataRequest:

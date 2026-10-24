@@ -330,13 +330,13 @@ func TestAgentsDemoActionsShowTheNotice(t *testing.T) {
 	}
 }
 
-// t opens the task of the selected agent in Work › Tasks.
+// t opens the Work board with the task of the selected agent selected.
 func TestAgentsTOpensTheTask(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	m, _ = raise(t, m, key('t', "t"))
-	if m.activeTab() != tabWork || m.viewName() != "Tasks" || m.tasks.selectedID != "4-agents-equal-columns" {
-		t.Fatalf("t gave tab %d view %q task %q", m.activeTab(), m.viewName(), m.tasks.selectedID)
+	if m.activeTab() != tabWork || m.tasks.popup != "" || m.tasks.selectedID != "4-agents-equal-columns" {
+		t.Fatalf("t gave tab %d popup %q task %q", m.activeTab(), m.tasks.popup, m.tasks.selectedID)
 	}
 }
 

@@ -277,9 +277,13 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 		{width: 57, height: 20},
 		{width: 300, height: 80},
 	}
-	screens := []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}
+	// Slots 3 and 4 also hold the Work board, so the test skips them.
+	screens := []string{"Chat", "Agents", "Work", "", "", "Friction", "Health", "Logs"}
 
 	for screenIndex, screen := range screens {
+		if screen == "" {
+			continue
+		}
 		for _, size := range sizes {
 			t.Run(fmt.Sprintf("%s/%dx%d", screen, size.width, size.height), func(t *testing.T) {
 				home := newTestHome(t)
@@ -307,6 +311,14 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 				// Golden-frames agents.md rule 1: the Agents body has no
 				// outer box, so it has no top border to check.
 				if screen == "Agents" {
+					return
+				}
+				if screen == "Work" {
+					// Work rule 13: with no goal the board shows a notice
+					// and no box.
+					if !strings.Contains(strings.Join(lines, "\n"), "no goals · hive goal create starts one") {
+						t.Errorf("Work frame has no empty notice")
+					}
 					return
 				}
 				foundBorder := false
@@ -369,7 +381,7 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	for _, code := range []rune{'f', 'G'} {
 		m, _ = raise(t, m, key(code, string(code)))
 	}
-	requireView(t, m, "/ level:infofG█")
+	requireView(t, m, "/ level:infofG █")
 	if !m.follow {
 		t.Fatal("f in the filter bar turned follow off")
 	}
@@ -392,8 +404,13 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	requireView(t, m, "/ level:info gq ", "alpha gq", "gamma gq", "epsilon gq")
 	rejectView(t, m, "beta", "delta", "zeta")
 
-	// Escape in the event list clears the applied filter.
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	// The filter line takes backspace. logs.md: esc returns to Chat, so
+	// the filter text changes only on the filter line.
+	m, _ = raise(t, m, key('/', "/"))
+	for range " gq" {
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	requireView(t, m, "/ level:info ", "beta", "delta")
 	rejectView(t, m, "zeta")
 
@@ -449,7 +466,7 @@ func TestFollowControlsSelection(t *testing.T) {
 	m := newTestLogsModel(t, home, clock)
 	// Decision 7: 80×24 is the smallest frame.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 40")
 
 	m, _ = raise(t, m, key('f', "f"))
 	if m.follow {
@@ -457,19 +474,19 @@ func TestFollowControlsSelection(t *testing.T) {
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line 41"))
 	m = tickUntilCount(t, m, 41)
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 40")
 
 	m, _ = raise(t, m, key('g', "g"))
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 01")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 01")
 	rejectView(t, m, "line 40")
 	m, _ = raise(t, m, key('G', "G"))
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 41")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 41")
 	if !m.follow {
 		t.Fatal("G did not turn follow on")
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line 42"))
 	m = tickUntilCount(t, m, 42)
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 42")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 42")
 }
 
 func TestDailyFileRolloverSelectsCurrentDay(t *testing.T) {
@@ -521,7 +538,7 @@ func TestDailyFileWaitsForFirstFile(t *testing.T) {
 	day := time.Date(2026, 4, 9, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
 	m := newTestLogsModel(t, home, clock)
-	requireView(t, m, "no events today")
+	requireView(t, m, "no log file for 2026-04-09")
 
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "first arrives"))
 	m = tickUntilCount(t, m, 1)

@@ -10,7 +10,6 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/charmbracelet/x/ansi"
 )
 
 func TestLoadTasksFindsLongTaskID(t *testing.T) {
@@ -30,121 +29,6 @@ func TestLoadTasksFindsLongTaskID(t *testing.T) {
 	t.Fatalf("loadTasks() omitted task %q", id)
 }
 
-// loadWorkTasks opens the Tasks view in normal mode at width×height and
-// loads the records of home (decision 38).
-func loadWorkTasks(t *testing.T, home string, width, height int) *Model {
-	t.Helper()
-	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: width, Height: height})
-	m, cmd := openWorkView(t, m, 2)
-	return deliverAgentCommands(t, m, cmd)
-}
-
-// AC3: normal mode reads the task, goal, project, and agent records and the
-// files of the task, and the same renderer shows them.
-func TestWorkTasksNormalModeShowsRecordDetails(t *testing.T) {
-	home := writeTasksFixture(t)
-	writeRecord(t, home, []string{"agents"}, "t79-worker-2", records.Agent{Key: "t79-worker-2", Name: "t79-worker-2", Role: "worker", Status: "stopped"})
-	m := loadWorkTasks(t, home, 120, 40)
-	view := ansi.Strip(m.View().Content)
-	for _, line := range []string{
-		"tasks · 5",
-		"▶ 79-tui-shell              landed    wave-c",
-		"80-queued-task            created   —",
-		"90-qmeter-task",
-		"title     TUI shell",
-		"status    landed",
-		"goal      g1-tui · wave wave-c",
-		"worker    t79-worker-2 · stopped",
-		"verifier  t79-verifier-2 · pass",
-		"branch    task/79-tui-shell",
-		"merge     7204d699 ",
-		"depends   81-agents-screen",
-		"✓ AC1 the shell loads",
-		"V1 go test ./internal/tui/...",
-	} {
-		if !strings.Contains(view, line) {
-			t.Errorf("Tasks view does not contain %q:\n%s", line, view)
-		}
-	}
-	m, cmd := raise(t, m, key('b', "b"))
-	m = deliverAgentCommands(t, m, cmd)
-	if got := ansi.Strip(m.View().Content); !strings.Contains(got, "╭─ brief.md ─") || !strings.Contains(got, "# TUI shell brief") {
-		t.Fatalf("b did not open the task brief in the details:\n%s", got)
-	}
-	m, _ = raise(t, m, key(0, "esc"))
-	if got := ansi.Strip(m.View().Content); strings.Contains(got, "# TUI shell brief") || !strings.Contains(got, "title     TUI shell") {
-		t.Fatalf("esc did not close the brief:\n%s", got)
-	}
-	m, cmd = raise(t, m, key('v', "v"))
-	m = deliverAgentCommands(t, m, cmd)
-	if got := ansi.Strip(m.View().Content); !strings.Contains(got, "# VERIFIED") {
-		t.Fatalf("v did not open VERIFIED.md:\n%s", got)
-	}
-}
-
-// AC4: ↓ selects the next task and its details show.
-func TestWorkTasksArrowDownSelectsNextTask(t *testing.T) {
-	home := writeTasksFixture(t)
-	writeRecord(t, home, []string{"tasks"}, "78-landed-task", records.Task{
-		ID: "78-landed-task", Project: "hive", Title: "Earlier landed task", Status: "verified",
-		Delivery: &records.Delivery{Commit: "1234567890abcdef", Pushed: true},
-	})
-	m := loadWorkTasks(t, home, 120, 40)
-	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "▶ 78-landed-task") {
-		t.Fatalf("initial view does not select the first task:\n%s", view)
-	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	view := ansi.Strip(m.View().Content)
-	if !strings.Contains(view, "▶ 79-tui-shell") || !strings.Contains(view, "╭─ 79-tui-shell ─") {
-		t.Fatalf("arrow-down did not select the next task and show its details:\n%s", view)
-	}
-}
-
-// AC1: at 80×24 the list fills the content area, and enter opens the
-// details overlay with the short form of the Compact board.
-func TestWorkTasksShowsDetailsOverlayAtDefaultTerminalSize(t *testing.T) {
-	m := loadWorkTasks(t, writeTasksFixture(t), 80, 24)
-	if view := ansi.Strip(m.View().Content); !strings.Contains(view, "▶ 79-tui-shell") || strings.Contains(view, "ACCEPTANCE") {
-		t.Fatalf("80x24 Tasks view does not show the list alone:\n%s", view)
-	}
-	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
-	view := ansi.Strip(m.View().Content)
-	for _, text := range []string{"╭─ 79-tui-shell · esc back", "list › details", "status    landed", "goal      g1-tui · wave wave-c", "verifier  t79-verifier-2 · pass", "merge     7204d699", "ACCEPTANCE", "EVIDENCE"} {
-		if !strings.Contains(view, text) {
-			t.Errorf("80x24 overlay omits %q:\n%s", text, view)
-		}
-	}
-	if m.focusState() != "details" {
-		t.Errorf("focus = %q; want details", m.focusState())
-	}
-	if strings.Contains(view, "title     ") || strings.Contains(view, "branch    ") {
-		t.Errorf("80x24 overlay shows a field of the wide form:\n%s", view)
-	}
-	m, _ = raise(t, m, key(0, "esc"))
-	if view := ansi.Strip(m.View().Content); strings.Contains(view, "ACCEPTANCE") || m.focusState() != "list" {
-		t.Fatalf("esc did not close the overlay:\n%s", view)
-	}
-}
-
-// AC3: a refresh keeps the selected task, and the list has no project
-// filter.
-func TestWorkTasksRefreshKeepsSelection(t *testing.T) {
-	m := loadWorkTasks(t, writeTasksFixture(t), 120, 40)
-	for range 3 {
-		m, _ = raise(t, m, key('j', "j"))
-	}
-	if m.tasks.selectedID != "82-failed-task" {
-		t.Fatalf("j j j selected %q, want 82-failed-task", m.tasks.selectedID)
-	}
-	m, cmd := raise(t, m, key('R', "R"))
-	m = deliverAgentCommands(t, m, cmd)
-	view := ansi.Strip(m.View().Content)
-	if !strings.Contains(view, "▶ 82-failed-task") || !strings.Contains(view, "verifier  verifier-fail · fail") || !strings.Contains(view, "90-qmeter-task") {
-		t.Fatalf("refresh did not keep the selection with each project listed:\n%s", view)
-	}
-}
-
 func TestFileViewsMatchTerminalFrames(t *testing.T) {
 	for _, size := range []struct {
 		width  int
@@ -152,27 +36,30 @@ func TestFileViewsMatchTerminalFrames(t *testing.T) {
 	}{{width: 120, height: 40}, {width: 200, height: 57}} {
 		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
 			for _, keyText := range []string{"b", "v", "d"} {
-				t.Run("Tasks/"+keyText, func(t *testing.T) {
+				t.Run("Work/"+keyText, func(t *testing.T) {
 					home := writeTasksFixture(t)
 					m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-					m.screenIndex = 4
+					m.screenIndex = 2
 					m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.width, Height: size.height})
 					cmd := m.startCurrentScreenLoad()
 					if cmd == nil {
-						t.Fatal("Tasks screen did not request data")
+						t.Fatal("Work screen did not request data")
 					}
 					m, _ = raise(t, m, cmd())
-					// Decision 6: tab moves the region, so the test gives
-					// tab to the current Tasks screen.
-					for range 2 {
-						m, _ = pressScreenKey(t, m, key(0, "tab"))
-					}
+					// Work rule 9: enter opens the task popup, and b, v,
+					// and d act in it.
+					m, _ = raise(t, m, key(tea.KeyEnter, ""))
 					m, cmd = raise(t, m, key(rune(keyText[0]), keyText))
 					if keyText != "d" && cmd == nil {
 						t.Fatal(keyText + " did not request a file")
 					}
 					m = deliverAgentCommands(t, m, cmd)
-					assertModelFrameSize(t, m, size.width, size.height)
+					width, height := workTaskPopupWidth, workTaskPopupHeight
+					if keyText == "d" {
+						width, height = workDepsPopupWidth, workDepsPopupHeight
+					}
+					requireWorkFits(t, m, size.width, size.height, width, height)
+					requireView(t, m, "esc closes")
 				})
 			}
 
@@ -180,34 +67,17 @@ func TestFileViewsMatchTerminalFrames(t *testing.T) {
 	}
 }
 
-func assertModelFrameSize(t *testing.T, m *Model, width, height int) {
-	t.Helper()
-	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	if len(lines) != height {
-		t.Errorf("frame has %d lines, want %d:\n%s", len(lines), height, strings.Join(lines, "\n"))
-	}
-	for index, line := range lines {
-		if got := ansi.StringWidth(line); got != width {
-			t.Errorf("frame line %d has display width %d, want %d: %q", index+1, got, width, line)
-		}
-	}
-	// Decision 1: the footer is one row, below the content area.
-	if !strings.HasSuffix(lines[height-2], "╯") {
-		t.Errorf("main panel bottom border is not on line %d: %q", height-1, lines[height-2])
-	}
-}
-
 func TestRunHomeShowsTasksFromStringReader(t *testing.T) {
 	home := writeTasksFixture(t)
 	var output strings.Builder
-	// Decisions 5 and 22: 3 selects Work, and ] ] select its Tasks view.
-	if err := RunHome(home, strings.NewReader("\x14]]"), &output); err != nil {
+	// Golden-frames decision 16: ctrl+t selects the Work board.
+	if err := RunHome(home, strings.NewReader("\x14"), &output); err != nil {
 		t.Fatal(err)
 	}
-	view := ansi.Strip(output.String())
-	// The renderer writes only the changed cells of a row, so the test looks
-	// for text that the first Tasks frame writes in full.
-	for _, text := range []string{"[Tasks]", "81-agents-scr", "79-tui-shell"} {
+	view := strings.Join(terminalScreen(output.String(), defaultWidth, defaultHeight), "\n")
+	// The renderer writes only the changed cells of a row, so the test checks
+	// the final screen, not the concatenated writes.
+	for _, text := range []string{"work · g1-tui", "wave-c · done", "79-tui-shell"} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("program output does not contain %q:\n%s", text, view)
 		}

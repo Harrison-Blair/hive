@@ -83,27 +83,9 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 	},
 	tabWork: {
-		label:       "Work",
-		views:       []string{"Goals", "Queue", "Tasks"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
-		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "o design", "t task", "? help"},
-			"Queue/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "s stops only", "t task", "? help"},
-			"Tasks/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
-			"details":       {"↑↓ scroll", "^] box", "esc back to list", "? help"},
-			"Tasks/details": {"↑↓ scroll", "^] box", "esc back to list", "b brief", "v verified", "d deps", "? help"},
-		},
-		compact: map[string][]string{
-			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
-			"details":       {"↑↓ scroll", "esc back to list"},
-			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
-		},
-		panels: map[string]screenPanels{
-			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
-			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
-			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
-		},
+		label:   "Work",
+		regions: []string{"board"},
+		title:   (*Model).workTitleRow,
 	},
 	tabFriction: {
 		label:   "Friction",
@@ -129,12 +111,12 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"events", "json"},
 		listDetails: true,
 		hints: map[string][]string{
-			"events": {"↑↓ move", "^] box", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
-			"json":   {"↑↓ scroll", "^] box", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"events": {"↑↓ move", "/ filter", "f follow", "← → day", "j raw", "r request", "^] panel"},
+			"json":   {"↑↓ scroll", "/ filter", "f follow", "← → day", "j raw", "r request", "^] list"},
 		},
 		compact: map[string][]string{
-			"events": {"↑↓ move", "enter details", "f follow", "/ filter", "?"},
-			"json":   {"↑↓ scroll", "esc back to events", "f follow"},
+			"events": {"↑↓ move", "enter details", "/ filter", "f follow", "j raw"},
+			"json":   {"↑↓ scroll", "esc back to events", "j raw"},
 		},
 	},
 }
@@ -206,7 +188,7 @@ func (m *Model) selectScreen(tab, view int) {
 	case tabChat:
 		m.screenIndex = 0
 	case tabWork:
-		m.screenIndex = 2 + view
+		m.screenIndex = 2
 	case tabFriction:
 		m.screenIndex = 5
 	case tabHealth:
@@ -232,6 +214,8 @@ func (m *Model) focusState() string {
 		return "filter"
 	case tab == tabAgents && m.popupOpen:
 		return "details"
+	case tab == tabWork && m.tasks.popup != "":
+		return m.tasks.popup
 	case tab == tabChat:
 		if m.chatInputActive {
 			return "input"
@@ -292,6 +276,10 @@ func (m *Model) frameView() string {
 	switch {
 	case entry.title != nil:
 		rows = append(rows, entry.title(m).View(width))
+	case m.activeTab() == tabLogs:
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		title.Facts, title.Right = m.logsTitle()
+		rows = append(rows, title.View(width))
 	case m.activeTab() != tabChat:
 		title := component.TitleRow{Name: strings.ToLower(entry.label)}
 		if m.activeTab() == tabAgents {
@@ -310,6 +298,9 @@ func (m *Model) frameView() string {
 	rows = append(rows, m.screenViewCache)
 	if notice != "" && m.activeTab() != tabChat {
 		rows = append(rows, notice)
+	}
+	if m.activeTab() == tabWork && m.tasks.popup != "" && !m.helpOpen {
+		rows = []string{m.workPopupView(strings.Join(rows, "\n"), width, height-len(status))}
 	}
 	screen := strings.Join(append(rows, status...), "\n")
 	switch {
@@ -381,6 +372,8 @@ func (m *Model) focusHints(width int) []string {
 		}
 	case "ask", "note", "other", "review":
 		hints = m.askHints(focus)
+	case "board", workPopupTask, workPopupDeps:
+		hints = m.workHints(focus)
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
@@ -399,8 +392,6 @@ func (m *Model) footerNotice() string {
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
-	case m.screenIndex == 2 && m.goalsQueue.designNotice != "":
-		return m.goalsQueue.designNotice
 	}
 	if err := m.footerError(); err != "" {
 		return "error: " + err
@@ -421,6 +412,9 @@ func (m *Model) footerError() string {
 	errs := []string{m.startupErr, m.attachErr, m.headerErr, m.screenErr, m.logErr}
 	if m.activeTab() == tabChat {
 		errs = append(errs, m.chatErr)
+	}
+	if m.activeTab() == tabLogs {
+		errs = append(errs, m.logFilterErr)
 	}
 	for _, text := range errs {
 		if text != "" {
@@ -453,6 +447,8 @@ func (m *Model) contentView(width, height int) string {
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
 	case tab == tabAgents:
 		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
+	case tab == tabWork:
+		body = m.workBoardView(width, bodyHeight)
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
 	case tab == tabFriction:
@@ -480,7 +476,7 @@ func (m *Model) contentView(width, height int) string {
 // each other list has 13/30.
 func listRegionWidth(tab, width int) int {
 	if tab == tabLogs {
-		return width * 8 / 15
+		return width * 11 / 20
 	}
 	return width * 13 / 30
 }
@@ -508,7 +504,7 @@ func (m *Model) detailsPanel(width, height int, focused bool, suffix string) str
 }
 
 func (m *Model) legacyName() string {
-	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
+	return [...]string{"Chat", "Agents", "Work", "Work", "Work", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
 // padCell pads text with spaces to width cells.
@@ -587,15 +583,11 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 	}
-	if entry.listDetails && m.detailsFocused() && m.width < component.LongFormWidth {
+	if entry.listDetails && tab != tabLogs && m.detailsFocused() && m.width < component.LongFormWidth {
 		// Decision 21: the overlay takes its scroll keys and its action
 		// keys, and esc closes it. It drops each other key.
 		switch key {
 		case "esc", "up", "k", "down", "j", "pgup", "pgdown":
-		case "<", ">":
-			if tab != tabLogs {
-				return nil
-			}
 		default:
 			if len(key) != 1 || !strings.Contains(actionKeys, key) {
 				return nil
@@ -617,6 +609,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	case "ctrl+]":
 		return m.nextRegion()
 	case "[", "]":
+		if tab == tabWork {
+			// Work rule 1: [ and ] change the goal.
+			break
+		}
 		if len(entry.views) == 0 {
 			return nil
 		}
@@ -639,12 +635,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		// Decision 19: restart is in Health › Agents, so r does nothing.
 		return m.updateAgentsKey(key)
 	}
-	if tab == tabLogs && (key == "<" || key == ">") {
-		day := "["
-		if key == ">" {
-			day = "]"
-		}
-		return m.currentScreen().Update(tea.KeyPressMsg{Code: rune(day[0]), Text: day})
+	if tab == tabLogs {
+		return m.currentScreen().Update(press)
 	}
 	if entry.listDetails && m.detailsFocused() {
 		switch key {

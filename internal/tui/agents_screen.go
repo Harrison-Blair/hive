@@ -1382,11 +1382,10 @@ func (m *Model) agentAction(key string, node agentNode) tea.Cmd {
 		return batch(m.logAction("agent peek", slog.String("pane_id", record.PaneID)), m.startAgentsPeek(record.PaneID))
 	case key == "t" && record.Task != "":
 		m.popupOpen = false
-		m.selectScreen(tabWork, 2)
+		m.selectScreen(tabWork, 0)
 		m.tasks.selectedID = record.Task
-		m.tasks.scrollOffset = 0
-		m.tasks.fileOpen = false
-		m.tasks.fileLoading = false
+		m.tasks.popup = ""
+		m.tasks.closeFile()
 		m.screenLoading = false
 		return batch(m.logAction("agent open task", slog.String("task_id", record.Task)), m.startCurrentScreenLoad())
 	}

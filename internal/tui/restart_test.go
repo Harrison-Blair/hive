@@ -318,6 +318,10 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	// the frame has no restart hint.
 	requireView(t, m, "▲ supervisor")
 	rejectView(t, m, "r to restart")
+	// Golden-frames decision 11: the status row shows an old supervisor as
+	// ▲ supervisor. Ask a27: the default row has this segment on Chat only.
+	m.openChat()
+	requireView(t, m, "▲ supervisor")
 }
 
 func TestSupervisorHeaderOldProcess(t *testing.T) {

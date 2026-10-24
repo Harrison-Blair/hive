@@ -135,27 +135,12 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			// The Queue board draws the marker and the task in two runs.
-			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
+			// Work rule 4: the selected card has a bold accent ID and a
+			// heavy border.
+			name: "Work", honey: []string{"1-alpha"}, states: []string{"○ 1-alpha", "┏━"},
 			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 3)
-				m.goalsQueue.data = goalsQueueData{
-					projects: []records.Project{{ID: "demo"}},
-					tasks:    []records.Task{{ID: "1-alpha", Project: "demo", Status: "assigned"}},
-				}
-				m.goalsQueue.selectedTaskID = "1-alpha"
-				return m
-			},
-		},
-		{
-			name: "Tasks", honey: []string{"▶", "selected-task"}, states: []string{"assigned"},
-			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 4)
-				// Decision 8: the list panel has 13/30 of the width, so the
-				// pane is 200 columns wide to show the Tasks columns.
-				m.width = 200
-				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}}
-				m.tasks.selectedID = "selected-task"
+				m := selectionModel(t, 2)
+				m.tasks.accept(tasksData{items: []taskItem{{record: records.Task{ID: "1-alpha", Project: "demo", Status: "assigned"}}}})
 				return m
 			},
 		},
@@ -184,7 +169,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN  herdr     network retry"},
+			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN   herdr      network retry"},
 			model: func(t *testing.T) *Model {
 				clock := fixedClock(t, time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local))
 				m := newTestLogsModel(t, newTestHome(t), clock)

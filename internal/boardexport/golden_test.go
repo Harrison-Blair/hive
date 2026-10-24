@@ -51,22 +51,25 @@ func TestGoldenGridFiles(t *testing.T) {
 	}
 }
 
-// gfDesignDir holds the Gf boards and their golden grids of tasks 137,
-// 145, and 148.
+// gfDesignDir holds the Gf boards and their golden grids of tasks 137, 143,
+// 144, 145, 146, and 148.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
-// gfGrids gives the 28 Gf grids in design/: the Chat boards and the
-// component sheet of task 137, the Health boards of task 145, the Help board
-// of task 148, the 4 Agents boards of task 147, and the Friction boards of
-// task 144.
+// gfGrids gives the 40 Gf grids in design/: the Chat boards and the
+// component sheet of task 137, the Work boards of task 143, the Logs boards
+// of task 146, the Health boards of task 145, the Friction boards of task 144,
+// the Help board of task 148, and the 4 Agents boards of task 147.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
+	"GfWork", "GfWorkEmpty", "GfWorkNoGoal", "GfWorkScroll", "GfWorkStops",
+	"GfWorkCancelled", "GfWorkTask", "GfWorkDeps",
+	"GfLogs", "GfLogsEmpty", "GfLogsError", "GfLogsRaw",
 	"GfHealth", "GfHealthChecking", "GfHealthGreen", "GfHealthRestart",
-	"GfHelp",
 	"GfAgents", "GfAgentsPod", "GfAgentsDetails", "GfAgentsNone",
 	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
+	"GfHelp",
 }
 
 // TestGfGoldenGridFiles reads each committed Gf grid file of gfGrids. Each

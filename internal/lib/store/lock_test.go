@@ -344,6 +344,9 @@ func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 func TestWithLockRejectsDirectoryLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	lockPath := filepath.Join(store.home, ".hive", "state", "lock")
+	if err := os.Remove(lockPath); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.Mkdir(lockPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
