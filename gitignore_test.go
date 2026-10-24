@@ -58,25 +58,54 @@ func TestHomeMarkerIsTracked(t *testing.T) {
 	}
 }
 
-// TestPersonalPathsAreIgnored checks that Git ignores each personal and runtime
-// path of the home, so a push of this public repository never carries them.
-func TestFeatureSpecPathsAreNotIgnored(t *testing.T) {
+// TestFeatureSpecPathsAreIgnored checks AC1 of spec-local-state: the spec
+// tree is local state in the home. Git ignores each path type below
+// .hive/spec/, also a Markdown file that the !*.md rule allows elsewhere.
+func TestFeatureSpecPathsAreIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	for _, path := range []string{
 		".hive/spec/x/README.md",
+		".hive/spec/x/screens/chat.md",
+		".hive/spec/x/design/chat.dc.html",
+		".hive/spec/x/design/chat.grid",
+		".hive/spec/x/fixtures/chat.json",
+		".hive/spec/x/design/canvas.json",
+		".hive/spec/x/tasks/1-y/brief.md",
 		".hive/spec/x/tasks/1-y/evidence/V1.md",
+		".hive/spec/x/tasks/1-y/evidence/testdata/frame.txt",
+		".hive/spec/BRIEF-FORMAT.md",
 	} {
-		if err := exec.Command("git", "check-ignore", "-q", path).Run(); err == nil {
-			t.Errorf("git ignores %s", path)
-		} else {
-			var exit *exec.ExitError
-			if !errors.As(err, &exit) || exit.ExitCode() != 1 {
-				t.Errorf("git check-ignore %s: %v", path, err)
-			}
+		// check-ignore exits 0 when the path is ignored.
+		if err := exec.Command("git", "check-ignore", "--no-index", "-q", path).Run(); err != nil {
+			t.Errorf("git does not ignore %s", path)
 		}
 	}
 }
 
+// TestFeatureSpecIsNotTracked checks AC1 of spec-local-state: Git tracks no
+// file below .hive/spec/.
+func TestFeatureSpecIsNotTracked(t *testing.T) {
+	skipWithoutGit(t)
+	out, err := exec.Command("git", "ls-files", "--cached", ".hive/spec").Output()
+	if err != nil {
+		t.Fatalf("git ls-files: %v", err)
+	}
+	if tracked := strings.TrimSpace(string(out)); tracked != "" {
+		t.Errorf("git tracks files below .hive/spec/; run git rm --cached -r .hive/spec/:\n%s", firstLines(tracked, 5))
+	}
+}
+
+// firstLines returns the first n lines of text.
+func firstLines(text string, n int) string {
+	lines := strings.SplitN(text, "\n", n+1)
+	if len(lines) > n {
+		lines = lines[:n]
+	}
+	return strings.Join(lines, "\n")
+}
+
+// TestPersonalPathsAreIgnored checks that Git ignores each personal and runtime
+// path of the home, so a push of this public repository never carries them.
 func TestPersonalPathsAreIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	for _, path := range []string{

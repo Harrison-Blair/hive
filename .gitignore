@@ -41,5 +41,3 @@
 /handoff.md
 .hive/*
 !.hive/README.md
-!.hive/spec/
-!.hive/spec/**
