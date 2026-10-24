@@ -42,11 +42,6 @@ func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, log
 	}
 	task := *options.taskRecord
 	choice := taskChoice{Task: task, Project: *options.projectRecord}
-	switch task.Status {
-	case "created", "assigned", "completed":
-	default:
-		return taskChoice{}, "task is " + task.Status
-	}
 	if task.Worktree == nil || task.Worktree.RootPane == "" {
 		return taskChoice{}, "task has no worktree: run hive worktree create --task " + task.ID
 	}
@@ -361,13 +356,16 @@ func spawnTaskAgent(ctx context.Context, home string, options SpawnOptions, prof
 func finishTaskSpawn(ctx context.Context, home string, options SpawnOptions, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	if envelope.Outcome == "ok" {
 		if choice.ShouldAssign {
-			if message := assignTask(home, choice.Task.ID, record.Name); message != "" {
+			assigned, message := assignTask(home, choice.Task.ID, record.Name)
+			if message != "" {
 				envelope.Outcome = "partial"
 				envelope.Phase = "assign"
 				envelope.Error = message
 				return envelope
 			}
-			envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: statePath("tasks", choice.Task.ID), Action: "assigned"})
+			if assigned {
+				envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: statePath("tasks", choice.Task.ID), Action: "assigned"})
+			}
 		}
 		return promptPlacedAgent(ctx, options.firstPrompt, record, envelope, logger)
 	}
@@ -478,13 +476,16 @@ func waitAgentInteractive(ctx context.Context, paneID string, logger *slog.Logge
 	}
 }
 
-// assignTask assigns one task under the store lock. A changed status fails with
-// the current status.
-func assignTask(home, taskID, agentName string) string {
+// assignTask selects the acting agent of one task under the store lock when
+// the task still allows a selection. A task in another status, or one with a
+// live acting agent, keeps its facts. It returns whether it wrote the task and
+// a message.
+func assignTask(home, taskID, agentName string) (bool, string) {
 	registry, err := store.Open(home)
 	if err != nil {
-		return "store: " + err.Error()
+		return false, "store: " + err.Error()
 	}
+	assigned := false
 	message := ""
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		var task records.Task
@@ -497,7 +498,14 @@ func assignTask(home, taskID, agentName string) string {
 			return nil
 		}
 		if task.Status != "created" && task.Status != "assigned" {
-			message = "task is " + task.Status
+			return nil
+		}
+		live, err := taskHasLiveActingAgent(locked, task.ActingAgent)
+		if err != nil {
+			message = "store: " + err.Error()
+			return nil
+		}
+		if live {
 			return nil
 		}
 		task.ActingAgent = agentName
@@ -507,12 +515,39 @@ func assignTask(home, taskID, agentName string) string {
 			message = "store: " + err.Error()
 			return nil
 		}
+		assigned = true
 		return nil
 	})
 	if err != nil {
-		return "store: " + err.Error()
+		return false, "store: " + err.Error()
 	}
-	return message
+	return assigned, message
+}
+
+// taskHasLiveActingAgent reports whether one acting-agent name has a live
+// record under the store lock.
+func taskHasLiveActingAgent(locked *store.LockedStore, name string) (bool, error) {
+	if name == "" {
+		return false, nil
+	}
+	raw, err := locked.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return false, err
+	}
+	for _, data := range raw {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			return false, err
+		}
+		if record.Name != name && record.Key != name {
+			continue
+		}
+		switch record.Status {
+		case records.AgentStarting, records.AgentLive, records.AgentUnresolved:
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // spawnResultAgent returns the agent record of one spawn envelope.

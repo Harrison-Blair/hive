@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -491,7 +492,7 @@ func TestWorkerSpawnTimeoutKeepsTask(t *testing.T) {
 	}
 }
 
-func TestWorkerSpawnChangedStatusSkipsAssignment(t *testing.T) {
+func TestWorkerSpawnChangedStatusBindsWithoutAssignment(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)
 	writeProjectPath(t, home, "demo", repo)
@@ -508,17 +509,17 @@ func TestWorkerSpawnChangedStatusSkipsAssignment(t *testing.T) {
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
-	if envelope.Outcome != "partial" {
-		t.Fatalf("envelope = %#v; want partial", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want the binding spawn to succeed", envelope)
 	}
-	if !strings.Contains(fmt.Sprint(envelope.Error), "task is completed") {
-		t.Fatalf("error = %v; want task is completed", envelope.Error)
+	if hasEffectAction(envelope.Effects, "assigned") {
+		t.Fatalf("effects = %#v; want no assigned effect", envelope.Effects)
 	}
-	if len(fake.recorded("agent.prompt")) != 0 {
-		t.Fatalf("changed status sent a prompt")
+	if len(fake.recorded("agent.prompt")) != 1 {
+		t.Fatalf("agent.prompt requests = %d; want the first prompt", len(fake.recorded("agent.prompt")))
 	}
-	if task := readTaskRecord(t, home, "1-worker-demo"); task.ActingAgent != "" {
-		t.Fatalf("task = %#v; want no acting agent", task)
+	if task := readTaskRecord(t, home, "1-worker-demo"); task.Status != "completed" || task.ActingAgent != "" {
+		t.Fatalf("task = %#v; want completed with no acting agent", task)
 	}
 }
 
@@ -814,21 +815,37 @@ func TestVerifierSpawnMakesTab(t *testing.T) {
 	}
 }
 
-func TestVerifierSpawnRefusals(t *testing.T) {
-	t.Run("status", func(t *testing.T) {
-		home := testHome(t)
-		repo, worktree, branch := taskWorktree(t)
-		writeProjectPath(t, home, "demo", repo)
-		writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "verified"))
-		fake := newFakeHerdr(t)
-		envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m"})
-		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task is verified") {
-			t.Fatalf("envelope = %#v; want task is verified", envelope)
-		}
-		if len(fake.recorded("workspace.get")) != 0 {
-			t.Fatalf("status refusal read a workspace")
-		}
+// TestVerifierSpawnVerifiedBindsWithoutPane proves coordinator ruling 902: a
+// verified task with a worktree binds without --pane and keeps its lifecycle
+// fields.
+func TestVerifierSpawnVerifiedBindsWithoutPane(t *testing.T) {
+	home := testHome(t)
+	repo, worktree, branch := taskWorktree(t)
+	writeProjectPath(t, home, "demo", repo)
+	task := workerTask(home, repo, worktree, branch, "verified")
+	task.Delivery = &records.Delivery{Mode: "merge", Target: "dev", Grant: "g13", Pushed: true}
+	writeTaskRecord(t, home, task)
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	scriptTaskBind(fake, sleep, "w5", "w5:t2", "w5:p2", worktree, task.ID, repo, "verifier-1")
+
+	envelope := Spawn(context.Background(), home, SpawnOptions{
+		Role: "verifier", Task: task.ID, Harness: "claude", Model: "m",
+		Name: "verifier-1", NameSet: true,
 	})
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want the verified spawn to bind", envelope)
+	}
+	after := readTaskRecord(t, home, task.ID)
+	if after.Status != "verified" || after.ActingAgent != "" {
+		t.Fatalf("task = %#v; want verified with no acting agent", after)
+	}
+	if !reflect.DeepEqual(after.Delivery, task.Delivery) {
+		t.Fatalf("delivery = %#v; want %#v", after.Delivery, task.Delivery)
+	}
+}
+
+func TestVerifierSpawnRefusals(t *testing.T) {
 	t.Run("no worktree", func(t *testing.T) {
 		home := testHome(t)
 		repo, worktree, branch := taskWorktree(t)

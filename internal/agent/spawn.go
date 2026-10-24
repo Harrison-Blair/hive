@@ -76,6 +76,7 @@ type SpawnOptions struct {
 	projectRecord     *records.Project
 	caller            records.Agent
 	callerKnown       bool
+	callerWorkspace   string
 	firstPrompt       string
 	fromCLI           bool
 }
@@ -164,22 +165,23 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 // identity. The caller sends the first prompt.
 func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, paneID string, renameTab bool, logger *slog.Logger) output.Envelope {
 	registered := Register(home, RegisterOptions{
-		Profile:       options.Profile,
-		Kind:          options.Kind,
-		Owns:          options.Owns,
-		Project:       options.Project,
-		Task:          options.Task,
-		Harness:       options.Harness,
-		Model:         options.Model,
-		Name:          options.Name,
-		NameSet:       options.NameSet,
-		PaneID:        paneID,
-		CallerAgent:   options.Agent,
-		CallerPaneID:  os.Getenv("HERDR_PANE_ID"),
-		QuietAfterMin: options.QuietAfterMin,
-		QuietAfterSet: options.QuietAfterSet,
-		PID:           options.PID,
-		Spawned:       true,
+		Profile:             options.Profile,
+		Kind:                options.Kind,
+		Owns:                options.Owns,
+		Project:             options.Project,
+		Task:                options.Task,
+		Harness:             options.Harness,
+		Model:               options.Model,
+		Name:                options.Name,
+		NameSet:             options.NameSet,
+		PaneID:              paneID,
+		CallerAgent:         options.Agent,
+		CallerPaneID:        os.Getenv("HERDR_PANE_ID"),
+		CallerPaneWorkspace: options.callerWorkspace,
+		QuietAfterMin:       options.QuietAfterMin,
+		QuietAfterSet:       options.QuietAfterSet,
+		PID:                 options.PID,
+		Spawned:             true,
 
 		TabCreatedByHive: options.general != nil && options.general.tabCreated,
 		FirstPrompt:      options.general.keptPrompt(),
@@ -567,8 +569,10 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, logg
 	}
 	if options.Owner {
 		if options.fromCLI {
-			if message := checkOwnerCaller(ctx, home, options); message != "" {
+			if message, workspace := checkOwnerCaller(ctx, home, options); message != "" {
 				return options, message
+			} else {
+				options.callerWorkspace = workspace
 			}
 		} else if options.callerKnown && !isCoordinator(options.caller) {
 			return options, "--owner needs the coordinator or the user: " + options.caller.Name
@@ -652,25 +656,26 @@ func resolveSpawnCaller(ctx context.Context, home string, options *SpawnOptions)
 	})
 }
 
-func checkOwnerCaller(ctx context.Context, home string, options SpawnOptions) string {
+func checkOwnerCaller(ctx context.Context, home string, options SpawnOptions) (string, string) {
 	if options.callerKnown {
 		if isCoordinator(options.caller) {
-			return ""
+			return "", ""
 		}
-		return "--owner needs the coordinator or the user: " + options.caller.Name
+		return "--owner needs the coordinator or the user: " + options.caller.Name, ""
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
 		cwd = ""
 	}
-	if err := chat.ValidateCaller(ctx, home, options.Agent, os.Getenv("HERDR_PANE_ID"), cwd); err != nil {
+	workspace, err := chat.ValidateCallerWorkspace(ctx, home, options.Agent, os.Getenv("HERDR_PANE_ID"), cwd)
+	if err != nil {
 		name := options.Agent
 		if name == "" {
 			name = "the caller"
 		}
-		return "--owner needs the coordinator or the user: " + displayValue(name)
+		return "--owner needs the coordinator or the user: " + displayValue(name), ""
 	}
-	return ""
+	return "", workspace
 }
 
 func isCoordinator(record records.Agent) bool {

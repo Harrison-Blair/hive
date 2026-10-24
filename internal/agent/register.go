@@ -15,6 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	identitylib "github.com/Harrison-Blair/hive/internal/lib/identity"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -39,21 +40,25 @@ type RegisterOptions struct {
 	// Kind is the built-in kind of a record that hive code starts.
 	Kind string
 	// Owns is the project ID that the agent owns, or empty.
-	Owns          string
-	Project       string
-	Task          string
-	Harness       string
-	Model         string
-	Name          string
-	NameSet       bool
-	PaneID        string
-	CallerAgent   string
-	CallerPaneID  string
-	WorkspaceID   string
-	TabID         string
-	QuietAfterMin int
-	QuietAfterSet bool
-	PID           int64
+	Owns         string
+	Project      string
+	Task         string
+	Harness      string
+	Model        string
+	Name         string
+	NameSet      bool
+	PaneID       string
+	CallerAgent  string
+	CallerPaneID string
+	// CallerPaneWorkspace is the workspace observed for CallerPaneID by the
+	// caller-context check. An owner registration rechecks the caller facts
+	// under the store lock with this workspace. It is a fact, not a grant.
+	CallerPaneWorkspace string
+	WorkspaceID         string
+	TabID               string
+	QuietAfterMin       int
+	QuietAfterSet       bool
+	PID                 int64
 	// PIDStart is the start time of the holder process from /proc/<pid>/stat.
 	// A singleton claim stores it so a later start can tell a reused PID apart.
 	PIDStart uint64
@@ -363,9 +368,42 @@ func taskRegistrationError(project, task string) string {
 	return fmt.Sprintf("task not found in %s: %s", displayValue(project), displayValue(task))
 }
 
+// recheckOwnerCaller applies the owner caller rule with facts read under the
+// registration lock. It reads no remote state and writes no record.
+func recheckOwnerCaller(locked *store.LockedStore, options RegisterOptions) string {
+	if options.Owns == "" || options.CallerPaneID == "" {
+		return ""
+	}
+	caller, err := identitylib.ResolveHeld(locked, options.CallerAgent, options.CallerPaneID)
+	if err == nil {
+		if isCoordinator(caller) {
+			return ""
+		}
+		return "--owner needs the coordinator or the user: " + caller.Name
+	}
+	if !errors.Is(err, identitylib.ErrCallerUnknown) {
+		return ownerCallerName(options)
+	}
+	if err := chat.ValidateCallerAtWorkspace(locked, options.CallerAgent, options.CallerPaneID, options.CallerPaneWorkspace); err != nil {
+		return ownerCallerName(options)
+	}
+	return ""
+}
+
+func ownerCallerName(options RegisterOptions) string {
+	name := options.CallerAgent
+	if name == "" {
+		name = "the caller"
+	}
+	return "--owner needs the coordinator or the user: " + displayValue(name)
+}
+
 func registerLocked(locked *store.LockedStore, writer lockedWriter, options RegisterOptions) output.Envelope {
 	options, message := normalizeRegistration(options)
 	if message != "" {
+		return failed("validate", message)
+	}
+	if message := recheckOwnerCaller(locked, options); message != "" {
 		return failed("validate", message)
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
