@@ -31,11 +31,13 @@ const (
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
 // or "focus". Panels gives the list and the details of each view that wave 6
-// replaced. The key is the view name.
+// replaced. The key is the view name. Title gives the title row of a screen
+// with golden-frames facts.
 type frameScreen struct {
 	label       string
 	views       []string
 	regions     []string
+	title       func(m *Model) component.TitleRow
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
@@ -102,21 +104,13 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 	},
 	tabFriction: {
-		label:       "Friction",
-		views:       []string{"Open", "Resolved"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
+		label:   "Friction",
+		regions: []string{"list", "details"},
+		title:   (*Model).frictionTitle,
 		hints: map[string][]string{
-			"list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "g/G top/end", "? help"},
-			"details": {"↑↓ scroll", "^] box", "esc back to list", "? help"},
-		},
-		compact: map[string][]string{
-			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
-			"details": {"↑↓ scroll", "esc back to list"},
-		},
-		panels: map[string]screenPanels{
-			"Open":     {list: (*Model).frictionList, details: (*Model).frictionDetails},
-			"Resolved": {list: (*Model).frictionList, details: (*Model).frictionDetails},
+			"list":    {"↑↓ move", "enter resolved", "/ filter", "^] details", "pgup/pgdn"},
+			"details": {"↑↓ scroll", "pgup/pgdn", "g/G top/end", "^] list"},
+			"filter":  {"type", "enter apply", "esc close", "backspace"},
 		},
 	},
 	tabHealth: {
@@ -200,8 +194,6 @@ func (m *Model) activeView() int {
 	switch m.activeTab() {
 	case tabWork:
 		return m.screenIndex - 2
-	case tabFriction:
-		return int(m.friction.tab)
 	case tabHealth:
 		return m.views[tabHealth]
 	}
@@ -228,10 +220,6 @@ func (m *Model) selectScreen(tab, view int) {
 		m.screenIndex = 2 + view
 	case tabFriction:
 		m.screenIndex = 5
-		if frictionTab(view) != m.friction.tab {
-			m.friction.tab = frictionTab(view)
-			m.friction.acceptSelection()
-		}
 	case tabHealth:
 		m.screenIndex = 6
 	default:
@@ -251,7 +239,7 @@ func (m *Model) focusState() string {
 		return "help"
 	case m.agents.restartConfirm:
 		return "restart"
-	case tab == tabLogs && m.mode == editing:
+	case tab == tabLogs && m.mode == editing, tab == tabFriction && m.friction.filterOpen:
 		return "filter"
 	case tab == tabAgents && m.popupOpen:
 		return "details"
@@ -311,12 +299,14 @@ func (m *Model) frameView() string {
 	status := m.statusRows(width, height)
 	notice := m.noticeLine(width)
 	var rows []string
-	if m.activeTab() != tabChat {
-		title := component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}
-		if m.activeTab() == tabLogs {
-			title.Facts, title.Right = m.logsTitle()
-		}
+	if entry := screenRegistry[m.activeTab()]; entry.title != nil {
+		rows = append(rows, entry.title(m).View(width))
+	} else if m.activeTab() == tabLogs {
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		title.Facts, title.Right = m.logsTitle()
 		rows = append(rows, title.View(width))
+	} else if m.activeTab() != tabChat {
+		rows = append(rows, component.TitleRow{Name: strings.ToLower(entry.label)}.View(width))
 	}
 	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
@@ -384,6 +374,9 @@ func (m *Model) focusHints(width int) []string {
 		hints = restartHints
 	case "filter":
 		hints = filterHints
+		if own, ok := screenRegistry[tab].hints["filter"]; ok {
+			hints = own
+		}
 	case "ask", "note", "other", "review":
 		hints = m.askHints(focus)
 	default:
@@ -463,6 +456,8 @@ func (m *Model) contentView(width, height int) string {
 		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
+	case tab == tabFriction:
+		body = m.frictionBody(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := listRegionWidth(tab, width)
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")

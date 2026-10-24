@@ -34,10 +34,6 @@ var errorStyle = lipgloss.NewStyle().Foreground(component.Error).Bold(true)
 // of the config (decision 8). Below it, the TUI shows only the first row.
 const statusRowsMin = 30
 
-// screenStatusLine is the default first status row of each screen except
-// Chat (ask a27).
-var screenStatusLine = []string{"state", "screen", "clock"}
-
 // setTUIConfig takes the [tui.status] and [tui.keys] settings.
 func (m *Model) setTUIConfig(cfg home.TUIConfig) {
 	m.tuiConfig = cfg
@@ -72,7 +68,8 @@ func (m *Model) updateChord(press tea.KeyPressMsg) (tea.Cmd, bool) {
 
 // escCloses reports that esc closes a part of the screen first (decision
 // 17): a peek, the one-pod view of Agents, a details region, an open file,
-// or the Logs field panel overlay.
+// or the Logs field panel overlay. On Friction, esc returns to Chat from
+// each box.
 func (m *Model) escCloses() bool {
 	switch tab := m.activeTab(); {
 	case tab == tabLogs:
@@ -85,8 +82,6 @@ func (m *Model) escCloses() bool {
 		return m.graph.podView
 	case tab == tabWork:
 		return m.tasks.fileOpen
-	case tab == tabFriction:
-		return m.friction.fileOpen
 	}
 	return false
 }
@@ -105,16 +100,27 @@ func chordText(key string) string {
 	return key
 }
 
-// statusRows gives the status rows of decisions 8 to 11 at width cells.
-func (m *Model) statusRows(width, height int) []string {
+// screenStatusLine is the default first status row of each screen other
+// than Chat (decision 34).
+var screenStatusLine = []string{"state", "screen", "clock"}
+
+// statusLines gives the status rows of the config. On a screen other than
+// Chat, a config with the default rows of decision 9 gives the first row of
+// decision 34.
+func (m *Model) statusLines() [][]string {
 	lines := m.tuiConfig.StatusLines
+	if m.activeTab() == tabChat || !slices.EqualFunc(lines, defaultTUI().StatusLines, slices.Equal) {
+		return lines
+	}
+	return append([][]string{screenStatusLine}, lines[1:]...)
+}
+
+// statusRows gives the status rows of decisions 8 to 11 and 34 at width
+// cells.
+func (m *Model) statusRows(width, height int) []string {
+	lines := m.statusLines()
 	if height < statusRowsMin && len(lines) > 1 {
 		lines = lines[:1]
-	}
-	if m.activeTab() != tabChat && len(lines) > 0 && slices.Equal(lines[0], defaultTUI().StatusLines[0]) {
-		// Ask a27: on each screen except Chat, the default first row is
-		// the state, the screen segment, and the clock.
-		lines = append([][]string{screenStatusLine}, lines[1:]...)
 	}
 	_, _, asking := m.focusedAsk()
 	asking = asking && m.activeTab() == tabChat && !m.helpOpen
@@ -136,6 +142,11 @@ func (m *Model) statusRows(width, height int) []string {
 				row.Segments = append(row.Segments, component.AccentText("^r answer the ask"))
 				continue
 			case asking && name == "hints":
+				continue
+			case name == "screen":
+				// Decision 34: each key is its own segment, so that the
+				// row drops keys from the right before the clock.
+				row.Segments = append(row.Segments, m.screenSegments()...)
 				continue
 			}
 			if segment := m.statusSegment(name); segment != "" {
@@ -189,9 +200,6 @@ func (m *Model) statusSegment(name string) string {
 		return countText(fmt.Sprintf("needs you %d", m.header.needsUser), m.header.needsUser)
 	case "project":
 		return component.DimText(m.selectedProjectID())
-	case "screen":
-		name := strings.ToLower(screenRegistry[m.activeTab()].label)
-		return component.StrongText(name) + component.DimText(strings.Join(append([]string{""}, m.focusHints(m.width)...), " · "))
 	case "chords":
 		parts := make([]string, 0, len(chordTabs))
 		for _, chord := range chordTabs {
@@ -208,6 +216,21 @@ func (m *Model) statusSegment(name string) string {
 		return m.statusCommandLine
 	}
 	return ""
+}
+
+// screenSegments gives the screen segment of decisions 11 and 34: the screen
+// name, or the name of the popup that has the focus, in accent bold, then
+// each key of the focus in dim.
+func (m *Model) screenSegments() []string {
+	name := strings.ToLower(screenRegistry[m.activeTab()].label)
+	if focus := m.focusState(); !slices.Contains(screenRegistry[m.activeTab()].regions, focus) {
+		name = focus
+	}
+	segments := []string{component.StrongText(name)}
+	for _, key := range m.focusHints(m.width) {
+		segments = append(segments, component.DimText(key))
+	}
+	return segments
 }
 
 // countText renders a count segment: accent bold when n is more than 0.

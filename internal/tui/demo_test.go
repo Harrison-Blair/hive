@@ -306,17 +306,15 @@ func deliverFileReads(m *Model, cmd tea.Cmd) {
 		for _, next := range msg {
 			deliverFileReads(m, next)
 		}
-	case taskFileMsg, frictionFileMsg:
+	case taskFileMsg:
 		m.Update(msg)
 	}
 }
 
 func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 	const taskDir = ".hive/spec/hive-tui/tasks/4-agents-equal-columns/"
-	const frictionPath = "reference/dogfood/friction/entries/demo-entry.md"
 	tasksUI := map[string]any{"screen": "work", "view": "tasks", "focus": "list", "selection": "4-agents-equal-columns", "scroll": map[string]any{}}
 	goalsUI := map[string]any{"screen": "work", "view": "goals", "focus": "list", "selection": "g1-tui-restart", "scroll": map[string]any{}}
-	frictionUI := map[string]any{"screen": "friction", "view": "open", "focus": "list", "selection": "demo-entry.md", "scroll": map[string]any{}}
 	friction := []any{map[string]any{"file": "demo-entry.md", "title": "Demo entry", "status": "Open", "opened": "2026-10-21", "body": "## Summary\n\nfixture body"}}
 	for _, tc := range []struct {
 		name, key, livePath string
@@ -333,9 +331,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 		{name: "design from fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI,
 			files: map[string]string{".hive/spec/hive-tui/README.md": "fixture design text"}, want: "fixture design text"},
 		{name: "design not in fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI, want: demoNoFile},
-		{name: "friction entry from fixture", key: "enter", livePath: frictionPath, ui: frictionUI,
-			files: map[string]string{frictionPath: "fixture friction text"}, want: "fixture friction text"},
-		{name: "friction entry not in fixture", key: "enter", livePath: frictionPath, ui: frictionUI, want: demoNoFile},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()
@@ -349,9 +344,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 			m := newDemoModel(root, &demoState{fixture: demoFileFixture(t, root, tc.ui, friction, tc.files)})
 			t.Cleanup(m.Stop)
 			key := tea.KeyPressMsg{Code: rune(tc.key[0]), Text: tc.key}
-			if tc.key == "enter" {
-				key = tea.KeyPressMsg{Code: tea.KeyEnter}
-			}
 			deliverFileReads(m, m.updateKey(key))
 			view := ansi.Strip(m.View().Content)
 			if !strings.Contains(view, tc.want) {

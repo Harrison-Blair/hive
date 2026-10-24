@@ -398,13 +398,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.logError("task file read", msg.err)
 		}
 		return m, nil
-	case frictionFileMsg:
-		m.invalidateView()
-		m.acceptFrictionFile(msg)
-		if msg.err != nil {
-			return m, m.logError("friction file read", msg.err)
-		}
-		return m, nil
 	case chatSendMsg:
 		m.invalidateView()
 		return m, m.updateChatSend(msg)

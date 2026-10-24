@@ -134,13 +134,12 @@ func TestAgentsFitEachSize(t *testing.T) {
 // Decisions 10 and 14: the graph shows the project agents, and the
 // selected card has a heavy accent border (user decision 2026-10-21,
 // option A). Decision 65 adds the coordinator card at the top. The
-// supervisor is not on the graph.
+// supervisor is not on the graph. Golden-frames decision 34: the status row
+// of Agents has no supervisor segment, so no row names the supervisor.
 func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	view := ansi.Strip(m.View().Content)
-	// Ask a27: the status row of a screen has no supervisor segment, so
-	// no row names the supervisor.
-	if strings.Contains(view, "supervisor") {
+	if strings.Count(view, "supervisor") != 0 {
 		t.Fatalf("the graph shows the supervisor:\n%s", view)
 	}
 	// Golden-frames decision 2: no header names the coordinator, so the

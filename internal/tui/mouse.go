@@ -77,6 +77,9 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 		// wheel, so the wheel over the composer scrolls the transcript too.
 		m.scrollChat(step * wheelLines)
 		return nil
+	case tab == tabFriction:
+		row, _ := m.contentRow(y)
+		return m.frictionWheel(row, step)
 	case !screenRegistry[tab].listDetails:
 		// Decision 77: the wheel does not move the Agents graph.
 		return nil
@@ -119,6 +122,9 @@ func (m *Model) click(x, y int) tea.Cmd {
 			return m.startChatInput()
 		}
 		return nil
+	}
+	if tab == tabFriction {
+		return m.frictionClick(row)
 	}
 	entry := screenRegistry[tab]
 	if !entry.listDetails || (m.detailsFocused() && m.width < component.LongFormWidth) {

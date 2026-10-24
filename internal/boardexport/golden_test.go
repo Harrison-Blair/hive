@@ -55,13 +55,15 @@ func TestGoldenGridFiles(t *testing.T) {
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
 // gfGrids gives the Gf grids in design/: the 15 boards of Chat and the
-// component sheet of task 137, the 4 Logs boards of task 146, and the Help
-// board of task 148.
+// component sheet of task 137, the 4 Logs boards of task 146, the Friction
+// boards of task 144, and the Help board of task 148.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
-	"GfLogs", "GfLogsEmpty", "GfLogsError", "GfLogsRaw", "GfHelp",
+	"GfLogs", "GfLogsEmpty", "GfLogsError", "GfLogsRaw",
+	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
+	"GfHelp",
 }
 
 // TestGfGoldenGridFiles reads each committed Gf grid file of gfGrids. Each

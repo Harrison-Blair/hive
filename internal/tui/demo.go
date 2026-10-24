@@ -376,15 +376,25 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 			m.tasks.selectedID = ui.Selection
 		}
 	case "friction":
+		// The view resolved is the state with the resolved entries
+		// expanded. A selection is an open entry file, a resolved entry
+		// file, or the fold line.
 		m.screenIndex = 5
-		path := "entries/" + ui.Selection
-		if ui.View == "resolved" {
-			m.friction.tab = frictionResolved
-			path = "entries/resolved/" + ui.Selection
+		m.friction.expanded = ui.View == "resolved"
+		m.friction.filter, m.friction.filterDraft, m.friction.filterOpen = ui.Filter.Text, ui.Filter.Text, ui.Filter.Open
+		m.friction.selectedPath = ""
+		for _, entry := range m.demo.fixture.Data.Friction {
+			if entry.File == ui.Selection && !entry.Resolved {
+				m.friction.selectedPath = "entries/" + ui.Selection
+			} else if entry.File == ui.Selection && m.friction.selectedPath == "" {
+				m.friction.selectedPath = "entries/resolved/" + ui.Selection
+			}
 		}
-		if ui.Selection != "" {
-			m.friction.selectedPath = path
+		if ui.Selection == frictionFold {
+			m.friction.selectedPath = frictionFold
 		}
+		m.friction.listOffset = ui.Scroll["list"].Top
+		m.detailsOffset[tabFriction] = ui.Scroll["details"].Top
 	case "health":
 		m.screenIndex = 6
 		m.health.hideStopped = ui.HideStopped
@@ -482,8 +492,6 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 	switch {
 	case tab == tabWork:
 		view = m.screenIndex - 2
-	case tab == tabFriction && ui.View == "resolved":
-		view = 1
 	case ui.Screen == "health" && ui.View == "agents":
 		tab, view = tabHealth, 1
 	}

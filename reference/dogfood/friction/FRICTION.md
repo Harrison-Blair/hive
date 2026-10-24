@@ -24,6 +24,7 @@ For all other files, the coordinator and manager never change a project source f
 | [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
 | [The verifier skill names no inbox for a report](entries/verifier-skill-names-no-report-inbox.md) | Open | Fix in the g13 verifier profile |
 | [Memory write help omits the required frontmatter](entries/memory-write-help-omits-frontmatter.md) | Open | Supply YAML name and description fields on standard input. |
+| [Supplemental verifier evidence stays in the worktree](entries/verifier-evidence-stays-in-worktree.md) | Open | Copy the full supplemental folder to the home and check hashes before review or worktree removal. |
 | [A worktree and CI skip the tests that read the spec of another feature](entries/worktree-skips-other-feature-spec-tests.md) | Open | Task 151 copies design folders into new worktrees. Other spec paths and CI still skip tests. |
 | [herdr pane send-keys has no page up or page down key name](entries/herdr-send-keys-no-page-keys.md) | Open |  |
 | [A new herdr tab reports 120 columns but its terminal has 119](entries/herdr-terminal-width-mismatch.md) | Open | Use an isolated larger scratch server for live captures |

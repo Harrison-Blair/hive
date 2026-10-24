@@ -312,8 +312,15 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	m.selectScreen(tabHealth, 1)
 	m.width = 120
 	m.header = state
-	// Decision 19: restart moves to Health › Agents, so the frame has no
-	// restart hint.
+	// Golden-frames decision 34: the default row of Health has no
+	// supervisor segment, so the config names it.
+	cfg := defaultTUI()
+	cfg.StatusLines = [][]string{{"state", "supervisor", "clock"}}
+	m.setTUIConfig(cfg)
+	// Golden-frames decision 11: the status row shows an old supervisor as
+	// ▲ supervisor. Decision 19: restart moves to Health › Agents, so the
+	// frame has no restart hint.
+	requireView(t, m, "▲ supervisor")
 	rejectView(t, m, "r to restart")
 	// Golden-frames decision 11: the status row shows an old supervisor as
 	// ▲ supervisor. Ask a27: the default row has this segment on Chat only.
