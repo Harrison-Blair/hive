@@ -128,7 +128,7 @@ type Model struct {
 	// statusCommandFailed is true after a failure was logged, until a run
 	// succeeds.
 	statusCommandFailed bool
-	quitAt            time.Time
+	quitAt              time.Time
 
 	inputEnded <-chan struct{}
 	width      int
