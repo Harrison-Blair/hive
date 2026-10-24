@@ -231,33 +231,31 @@ func TestEachScreenKeepsTheFrameAtEachBreakpoint(t *testing.T) {
 	}
 }
 
-// focusTokens gives the token of the top-left corner of the list panel and
-// of the details panel in the first content row of a 120×40 Friction view.
-// Golden-frames decision 2: the content starts on row 2, with the view row
-// of Friction, so the panels start on row 3.
+// focusTokens gives the token of the top-left corner of the details box and
+// of the agents table of a 120×40 Health view: rows 8 and 18 of health.md.
 func focusTokens(t *testing.T, m *Model) (cellgrid.Token, cellgrid.Token) {
 	t.Helper()
-	row := renderRows(t, m, 120, 3)
-	listWidth := 120 * 13 / 30
-	return row.At(0, 0).Token, row.At(0, listWidth).Token
+	grid := renderGrid(t, m, 120, 40)
+	return grid.At(8, 0).Token, grid.At(18, 0).Token
 }
 
 // AC2: the focused region has the accent border, and ctrl+] moves the focus
-// (golden-frames decision 6).
+// (golden-frames decision 6). Health has two boxes, the grid with no border
+// and the agents table (health.md rule 5).
 func TestTabMovesTheAccentBorder(t *testing.T) {
-	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
-	if list, details := focusTokens(t, m); list != cellgrid.Accent || details != cellgrid.Border {
-		t.Fatalf("list focus: list border %s, details border %s; want accent, border", list, details)
+	m := gfHealthModel(t, "GfHealth", nil)
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Border {
+		t.Fatalf("grid focus: details border %s, table border %s; want border, border", details, table)
 	}
-	requireKeys(t, m, "list", "")
+	requireKeys(t, m, "grid", "")
 	m, _ = raise(t, m, ctrl(']'))
-	if list, details := focusTokens(t, m); list != cellgrid.Border || details != cellgrid.Accent {
-		t.Fatalf("details focus: list border %s, details border %s; want border, accent", list, details)
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Accent {
+		t.Fatalf("table focus: details border %s, table border %s; want border, accent", details, table)
 	}
-	requireKeys(t, m, "details", "")
+	requireKeys(t, m, "table", "")
 	m, _ = raise(t, m, ctrl(']'))
-	if m.focusState() != "list" {
-		t.Fatalf("second ctrl+] gave focus %q; want list", m.focusState())
+	if m.focusState() != "grid" {
+		t.Fatalf("second ctrl+] gave focus %q; want grid", m.focusState())
 	}
 }
 
