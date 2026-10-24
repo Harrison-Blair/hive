@@ -191,5 +191,6 @@
   "internal/agent/templates/presets.md": 0,
   "internal/agent/templates/project-agents.md": 0,
   "internal/guide/flows.md": 0,
-  ".hive/spec/agents-without-roles/tasks/154-awr-spawn/brief.md": 0
+  ".hive/spec/agents-without-roles/tasks/154-awr-spawn/brief.md": 0,
+  ".hive/spec/agents-without-roles/tasks/158-awr-spawn-reconcile/brief.md": 0
 }
