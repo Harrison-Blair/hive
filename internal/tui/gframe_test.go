@@ -115,8 +115,9 @@ func TestFrameChordsOpenScreens(t *testing.T) {
 			if rows[1] != " "+strings.Repeat("─", 118)+" " {
 				t.Fatalf("row 1 = %q; want the rule", rows[1])
 			}
-			if !strings.Contains(rows[39], "esc chat") {
-				t.Errorf("status row %q does not show esc chat", rows[39])
+			// Ask a27: the status row of a screen names the screen.
+			if !strings.Contains(rows[39], " · "+tc.name+" · ") {
+				t.Errorf("status row %q does not name %s", rows[39], tc.name)
 			}
 			back := escKey()
 			if tc.name == "work" {
@@ -194,6 +195,9 @@ func TestFrameKeysRebind(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	cfg := home.DefaultTUI()
 	cfg.Keys["agents"] = "ctrl+a"
+	// Ask a27: the default row of a screen has no chords, so the config
+	// gives a row with chords.
+	cfg.StatusLines = [][]string{{"state", "chords", "clock"}}
 	m.setTUIConfig(cfg)
 	m, _ = raise(t, m, ctrl('g'))
 	if m.activeTab() != tabChat {
@@ -209,6 +213,42 @@ func TestFrameKeysRebind(t *testing.T) {
 	m, _ = raise(t, m, escKey())
 	if rows := viewRows(m); !strings.Contains(rows[39], "^a agents  ^t work") {
 		t.Errorf("status row %q; want the rebound chord ^a agents", rows[39])
+	}
+}
+
+// Ask a27: on each screen except Chat, the default first status row is the
+// state, the screen segment, and the clock. Chat and a row from the config
+// keep their segments.
+func TestFrameScreenStatusRowIsStateScreenClock(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	m.header.coordinator = "working"
+	m.header.coordinatorChangedAt = gfDay.Add(-2 * time.Minute).Format(time.RFC3339)
+	m.invalidateView()
+	if row := viewRows(m)[39]; !strings.Contains(row, "supervisor") {
+		t.Fatalf("Chat status row %q; want the default segments", row)
+	}
+	m, _ = raise(t, m, ctrl('l'))
+	want := " ● working 2m · logs · ↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel"
+	row := viewRows(m)[39]
+	if !strings.HasPrefix(row, want) || !strings.HasSuffix(row, "14:22 ") {
+		t.Fatalf("Logs status row\n%q\nwant prefix %q and the clock", row, want)
+	}
+	g := viewGrid(t, m)
+	if cell := g.At(39, len([]rune(" ● working 2m · "))); cell.Token != cellgrid.Accent || !cell.Bold {
+		t.Errorf("screen name %v bold %v; want accent bold", cell.Token, cell.Bold)
+	}
+	if cell := g.At(39, len([]rune(" ● working 2m · logs · "))); cell.Token != cellgrid.Dim {
+		t.Errorf("screen keys %v; want dim", cell.Token)
+	}
+	m, _ = raise(t, m, ctrl('t'))
+	if row := viewRows(m)[39]; !strings.Contains(row, "· work · ") || strings.Contains(row, "supervisor") {
+		t.Errorf("Work status row %q; want state, work, clock", row)
+	}
+	cfg := home.DefaultTUI()
+	cfg.StatusLines = [][]string{{"state", "asks", "clock"}}
+	m.setTUIConfig(cfg)
+	if row := viewRows(m)[39]; !strings.Contains(row, "? 0 asks") || strings.Contains(row, "· work") {
+		t.Errorf("Work status row %q with a config row; want the config segments", row)
 	}
 }
 

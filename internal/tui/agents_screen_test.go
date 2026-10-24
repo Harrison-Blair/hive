@@ -138,8 +138,10 @@ func TestAgentsFitEachSize(t *testing.T) {
 func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	view := ansi.Strip(m.View().Content)
-	if strings.Count(view, "supervisor") != 1 {
-		t.Fatalf("the graph shows the supervisor outside the header:\n%s", view)
+	// Ask a27: the status row of a screen has no supervisor segment, so
+	// no row names the supervisor.
+	if strings.Contains(view, "supervisor") {
+		t.Fatalf("the graph shows the supervisor:\n%s", view)
 	}
 	// Golden-frames decision 2: no header names the coordinator, so the
 	// one coordinator card is the one match.

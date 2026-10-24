@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"image/color"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -32,6 +33,10 @@ var errorStyle = lipgloss.NewStyle().Foreground(component.Error).Bold(true)
 // statusRowsMin is the pane height from which the TUI shows each status row
 // of the config (decision 8). Below it, the TUI shows only the first row.
 const statusRowsMin = 30
+
+// screenStatusLine is the default first status row of each screen except
+// Chat (ask a27).
+var screenStatusLine = []string{"state", "screen", "clock"}
 
 // setTUIConfig takes the [tui.status] and [tui.keys] settings.
 func (m *Model) setTUIConfig(cfg home.TUIConfig) {
@@ -105,6 +110,11 @@ func (m *Model) statusRows(width, height int) []string {
 	lines := m.tuiConfig.StatusLines
 	if height < statusRowsMin && len(lines) > 1 {
 		lines = lines[:1]
+	}
+	if m.activeTab() != tabChat && len(lines) > 0 && slices.Equal(lines[0], defaultTUI().StatusLines[0]) {
+		// Ask a27: on each screen except Chat, the default first row is
+		// the state, the screen segment, and the clock.
+		lines = append([][]string{screenStatusLine}, lines[1:]...)
 	}
 	_, _, asking := m.focusedAsk()
 	asking = asking && m.activeTab() == tabChat && !m.helpOpen

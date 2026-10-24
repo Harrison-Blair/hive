@@ -161,9 +161,11 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 
 func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	m := agentsBoardModel(t)
-	frame := ansi.Strip(m.View().Content)
 	// Golden-frames decision 11: the status row shows the state of the
-	// supervisor and needs you. The header state keeps the agent counts.
+	// supervisor and needs you. Ask a27: the default row has these segments
+	// on Chat only. The header state keeps the agent counts.
+	m.openChat()
+	frame := ansi.Strip(m.View().Content)
 	for _, want := range []string{"● supervisor", "needs you 0"} {
 		if !strings.Contains(frame, want) {
 			t.Errorf("Agents header omits %q:\n%s", want, frame)
