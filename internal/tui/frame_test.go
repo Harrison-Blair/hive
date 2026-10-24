@@ -130,15 +130,15 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 	}{
 		{"AgentDetails", "details", tabAgents, 0},
 		{"Chat", "input", tabChat, 0},
-		{"Compact", "details", tabWork, 2},
+		{"GfWorkTask", workPopupTask, tabWork, 0},
 		{"FrictionResolved", "list", tabFriction, 1},
 		{"HealthAgents", "restart", tabHealth, 1},
 		{"Help", "help", tabAgents, 0},
 		{"Logs", "json", tabLogs, 0},
-		{"WorkQueue", "list", tabWork, 1},
+		{"GfWork", "board", tabWork, 0},
 	} {
 		t.Run(tt.board, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			if m.activeTab() != tt.tab || m.activeView() != tt.view || m.focusState() != tt.focus {
 				t.Fatalf("tab %d, view %d, focus %q; want %d, %d, %q", m.activeTab(), m.activeView(), m.focusState(), tt.tab, tt.view, tt.focus)
 			}
@@ -323,7 +323,7 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}{
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
-		{"work overlay", "Compact", "details", true, nil},
+		{"work popup", "GfWorkTask", workPopupTask, true, nil},
 		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
 		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
 		{"logs overlay", "CompactLogs", "json", true, nil},
@@ -334,7 +334,7 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		chords := map[string]int{"ctrl+g": tabAgents, "ctrl+t": tabWork, "ctrl+f": tabFriction, "ctrl+y": tabHealth, "ctrl+l": tabLogs}
 		for _, press := range []tea.KeyPressMsg{ctrl('g'), escKey(), ctrl('t'), ctrl('f'), ctrl('y'), ctrl('l'), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
 			t.Run(tt.name+"/"+press.String(), func(t *testing.T) {
-				m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+				m := newBoardDemoModel(t, tt.board)
 				for _, msg := range tt.keys {
 					m, _ = raise(t, m, msg)
 				}
@@ -369,23 +369,22 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}
 }
 
-// AC2: an action key of the overlay still reaches its screen. In the Work
-// Tasks overlay, d opens the dependency graph.
+// AC2: an action key of a popup still reaches its screen. In the Work task
+// popup, d opens the dependency popup (work.md rule 10).
 func TestOverlayGivesActionKeysToTheScreen(t *testing.T) {
-	m := newTestDemoModel(t, "Compact.fixture.json", demoSize{})
+	m := newGfDemoModel(t, "GfWorkTask")
 	m, _ = raise(t, m, key('d', "d"))
-	if !m.tasks.fileOpen || !strings.HasPrefix(m.tasks.fileTitle, "dependency graph") {
-		t.Fatalf("d in the Work overlay gave open %t, title %q; want the dependency graph", m.tasks.fileOpen, m.tasks.fileTitle)
+	if m.focusState() != workPopupDeps {
+		t.Fatalf("focus = %q after d in the task popup; want deps", m.focusState())
 	}
-	if m.focusState() != "details" {
-		t.Fatalf("focus = %q after b; want details", m.focusState())
-	}
+	requireView(t, m, "12-board-fixtures · dependencies · esc closes")
 }
 
 // AC2: from 120 columns the details region sits beside the list, so the
 // screen keys stay global (decision 21).
 func TestWideDetailsKeepsScreenKeys(t *testing.T) {
-	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
+	// The Work board has one region, so the test uses Friction.
+	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
 	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	if m.focusState() != "details" {
 		t.Fatalf("focus = %q; want details", m.focusState())
@@ -410,12 +409,12 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 		{"input", "Chat", "input", nil},
 		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: '/', Text: "/"}}},
 		{"help", "Help", "help", nil},
-		{"overlay", "Compact", "details", nil},
-		{"popup", "AgentDetails", "details", nil},
+		{"popup", "GfWorkTask", workPopupTask, nil},
+		{"agent popup", "AgentDetails", "details", nil},
 		{"restart", "HealthAgents", "restart", nil},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			for _, press := range tt.keys {
 				m, _ = raise(t, m, press)
 			}

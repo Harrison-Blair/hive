@@ -166,7 +166,8 @@ func selectedCard(t *testing.T, m *Model) string {
 	return ""
 }
 
-// Rule 4: each card shows the line 2 form of its state.
+// Rule 4: each card shows the line 2 form of its state. waits on names each
+// dependency by the number of its ID, as the boards show (GfWork row 7).
 func TestWorkCardForms(t *testing.T) {
 	m := newWorkModel(t, workTestData(), demoUIState{Selection: "1-a"}, 120, 40)
 	requireView(t, m,
@@ -175,7 +176,7 @@ func TestWorkCardForms(t *testing.T) {
 		"○ 5-e", "t5-worker-1 · 12m",
 		"! 6-f", "needs you · mask ok?",
 		"○ 7-g", "verify fail · V4",
-		"○ 8-h", "waits on 5-e, 6-f",
+		"○ 8-h", "waits on 5, 6 ",
 		"○ 9-i", "verify fail ",
 	)
 	rejectView(t, m, "3-c")
@@ -523,4 +524,19 @@ func TestWorkBreakpoints(t *testing.T) {
 			}
 		}
 	}
+}
+
+// Ask a27 (W1) decides the screen name of the status row while a popup is
+// open. The board form names the popup (GfWorkTask row 39). The other form
+// keeps the name of the screen.
+func TestWorkPopupScreenName(t *testing.T) {
+	t.Cleanup(func() { workPopupNamesScreen = true })
+	m := newWorkModel(t, workTestData(), demoUIState{Selection: "8-h"}, 120, 40)
+	m.tuiConfig.StatusLines = [][]string{{"state", "screen", "clock"}}
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	requireView(t, m, "task · b brief · v verified")
+	m = pressWork(t, m, key('d', "d"))
+	requireView(t, m, "deps · ↑↓ move · enter task")
+	workPopupNamesScreen = false
+	requireView(t, m, "work · ↑↓ move · enter task")
 }

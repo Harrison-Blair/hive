@@ -37,7 +37,7 @@ func (r TitleRow) View(width int) string {
 		}
 	}
 	if r.Note != "" {
-		row += dimStyle.Render("  ") + accentStyle.Render(r.Note)
+		row += "  " + accentStyle.Render(r.Note)
 	}
 	rule := " " + borderStyle.Render(strings.Repeat("─", max(width-2, 0))) + " "
 	if r.Line != "" {

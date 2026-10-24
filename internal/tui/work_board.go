@@ -632,7 +632,11 @@ func (s *tasksState) cardLine(item taskItem, now time.Time) (string, bool) {
 		return task.ActingAgent, false
 	}
 	if ids := s.waitsOn(task); len(ids) > 0 {
-		return "waits on " + strings.Join(ids, ", "), false
+		numbers := make([]string, len(ids))
+		for index, id := range ids {
+			numbers[index], _, _ = strings.Cut(id, "-")
+		}
+		return "waits on " + strings.Join(numbers, ", "), false
 	}
 	return task.Status, false
 }

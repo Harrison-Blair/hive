@@ -107,7 +107,7 @@ func (m *Model) workTitleRow() component.TitleRow {
 	}
 	row.Line = dimStyle.Render(line)
 	if elsewhere := s.stopsElsewhere(onScreen); elsewhere > 0 {
-		row.Line += dimStyle.Render("  ") + accentStyle.Render(fmt.Sprintf("· %d stops elsewhere", elsewhere))
+		row.Line += "  " + accentStyle.Render(fmt.Sprintf("· %d stops elsewhere", elsewhere))
 	}
 	return row
 }
@@ -254,16 +254,16 @@ func (m *Model) workScrollView(columns []workColumn, width int) string {
 	fit := workColumnsFit(width)
 	left := s.boardLeft(columns, fit)
 	last := min(left+fit, len(columns)) - 1
-	text := fmt.Sprintf(" ←→ at the edge scrolls · waves %s–%s of %d", columns[left].key, columns[last].key, len(columns))
+	text := fmt.Sprintf("←→ at the edge scrolls · waves %s–%s of %d", columns[left].key, columns[last].key, len(columns))
 	track := width - 1 - workScrollTrack
 	if track < 1 {
-		return dimStyle.Render(text)
+		return " " + dimStyle.Render(text)
 	}
 	thumb := component.Thumb(track, len(columns), fit, left)
 	bar := workBorderStyle.Render(strings.Repeat("─", thumb.Start)) +
 		accentStyle.Render(strings.Repeat("━", thumb.Size)) +
 		workBorderStyle.Render(strings.Repeat("─", track-thumb.Start-thumb.Size))
-	return padCell(dimStyle.Render(text), workScrollTrack) + bar
+	return padCell(" "+dimStyle.Render(text), workScrollTrack) + bar
 }
 
 // workBorderStyle is the style of the border token.

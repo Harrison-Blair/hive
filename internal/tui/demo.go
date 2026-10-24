@@ -148,14 +148,13 @@ var (
 	demoViews   = map[string][]string{
 		"agents":   {"", "pod"},
 		"chat":     {""},
-		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
 		"health":   {"home", "agents"},
 		"logs":     {""},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "board"}
 	demoOverlays   = []string{"", "details", "help"}
-	demoPopups     = []string{"", "agent-details"}
+	demoPopups     = []string{"", "agent-details", workPopupTask, workPopupDeps}
 	demoPrompts    = []string{"", "restart", "quit", "send"}
 	demoChatNoises = []string{"", "quiet", "normal", "all"}
 )
@@ -222,14 +221,28 @@ func (f *demoFixture) check() error {
 	if !slices.Contains(demoScreens, ui.Screen) {
 		return fmt.Errorf(`field "ui.screen": unknown value %q`, ui.Screen)
 	}
-	if !slices.Contains(demoViews[ui.Screen], ui.View) {
+	// The view of Work is its goal: a goal ID, the pseudo-goal, or "" for
+	// the default goal. The tui-v2 fixtures name the old views goals, queue,
+	// and tasks. They select the default goal.
+	waves := map[string]bool{}
+	views := demoViews[ui.Screen]
+	if ui.Screen == "work" {
+		views = []string{"", workNoGoal, "goals", "queue", "tasks"}
+		for _, goal := range f.Data.Goals {
+			views = append(views, goal.ID)
+			for _, wave := range goal.Waves {
+				waves[wave.ID] = true
+			}
+		}
+	}
+	if !slices.Contains(views, ui.View) {
 		return fmt.Errorf(`field "ui.view": unknown value %q for screen %q`, ui.View, ui.Screen)
 	}
 	if ui.Focus != "" && !slices.Contains(demoFocuses, ui.Focus) {
 		return fmt.Errorf(`field "ui.focus": unknown value %q`, ui.Focus)
 	}
 	for region, scroll := range ui.Scroll {
-		if !slices.Contains(demoFocuses, region) {
+		if !slices.Contains(demoFocuses, region) && !(ui.Screen == "work" && waves[region]) {
 			return fmt.Errorf(`field "ui.scroll": unknown region %q`, region)
 		}
 		if scroll.Top < 0 || scroll.Left < 0 {
@@ -363,6 +376,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
 		m.screenIndex = 2
+		m.tasks.goal = ui.View
 		m.tasks.selectedID = ui.Selection
 		m.tasks.stopsOnly = ui.StopsOnly
 		m.tasks.showCancelled = ui.ShowCancelled

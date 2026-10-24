@@ -179,6 +179,9 @@ func (m *Model) statusSegment(name string) string {
 		return component.DimText(m.selectedProjectID())
 	case "screen":
 		name := strings.ToLower(screenRegistry[m.activeTab()].label)
+		if m.activeTab() == tabWork && m.tasks.popup != "" && workPopupNamesScreen {
+			name = m.tasks.popup
+		}
 		return component.StrongText(name) + component.DimText(strings.Join(append([]string{""}, m.focusHints(m.width)...), " · "))
 	case "chords":
 		parts := make([]string, 0, len(chordTabs))
