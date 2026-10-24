@@ -51,6 +51,7 @@
   ".hive/spec/golden-frames/tasks/148-gf-help/brief.md": 0,
   ".hive/spec/golden-frames/tasks/155-explicit-status-lines/brief.md": 0,
   ".hive/spec/golden-frames/tasks/156-gf-agents-state-unit/brief.md": 0,
+  ".hive/spec/golden-frames/tasks/157-shared-readiness/brief.md": 0,
   ".hive/spec/hive-tui/tasks/100-no-backgrounds/brief.md": 0,
   ".hive/spec/hive-tui/tasks/101-store-list-long-keys/brief.md": 0,
   ".hive/spec/hive-tui/tasks/102-selection-marker/brief.md": 0,
