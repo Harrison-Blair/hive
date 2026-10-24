@@ -121,3 +121,65 @@ func copySpecIn(home, worktreePath string, task records.Task) (SpecCopy, error) 
 func writeSpecCopy(registry *store.Store, record SpecCopy) error {
 	return registry.WriteIn([]string{specCopyCollection}, record.Task, record)
 }
+
+// DesignCopy gives the counts of the design copy-in of one worktree create.
+type DesignCopy struct {
+	Features int `json:"features"`
+	Files    int `json:"files"`
+}
+
+// copyDesignIn copies the design/ folder of each feature of the home other
+// than the feature of the task into the worktree. It copies each regular file
+// below each folder and no other file. It writes no hash record, because land
+// copies back only the feature of the task. A home without .hive/spec/ copies
+// nothing.
+func copyDesignIn(home, worktreePath string, task records.Task) (DesignCopy, error) {
+	counts := DesignCopy{}
+	features, err := os.ReadDir(filepath.Join(home, ".hive", "spec"))
+	if errors.Is(err, os.ErrNotExist) {
+		return counts, nil
+	}
+	if err != nil {
+		return counts, fmt.Errorf("copy design in: %s", oneLine(err.Error()))
+	}
+	for _, feature := range features {
+		if !feature.IsDir() || feature.Name() == task.Feature {
+			continue
+		}
+		relDir := featureSpecRelDir(feature.Name()) + "design/"
+		source := filepath.Join(home, filepath.FromSlash(relDir))
+		if info, err := os.Stat(source); err != nil || !info.IsDir() {
+			continue
+		}
+		counts.Features++
+		err := filepath.WalkDir(source, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !entry.Type().IsRegular() {
+				return nil
+			}
+			inner, err := filepath.Rel(source, path)
+			if err != nil {
+				return err
+			}
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			destination := filepath.Join(worktreePath, filepath.FromSlash(relDir), inner)
+			if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+				return err
+			}
+			if err := os.WriteFile(destination, data, 0o644); err != nil {
+				return err
+			}
+			counts.Files++
+			return nil
+		})
+		if err != nil {
+			return counts, fmt.Errorf("copy design in: %s", oneLine(err.Error()))
+		}
+	}
+	return counts, nil
+}
