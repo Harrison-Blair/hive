@@ -38,11 +38,13 @@ const (
 
 // Model is the root Bubble Tea model for the eight-screen shell.
 type Model struct {
-	home   string
-	now    func() time.Time
-	reader *logs.Reader
-	logger *slog.Logger
-	closer io.Closer
+	home        string
+	now         func() time.Time
+	reader      *logs.Reader
+	logger      *slog.Logger
+	gatedLogger *slog.Logger
+	closer      io.Closer
+	logs        logGate
 
 	events      []logs.Event
 	filterDraft string
@@ -226,9 +228,12 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		m.logErr = boundedError("log: " + err.Error())
 	} else {
 		m.closer = writer
+		handler := &gatedHandler{gate: &m.logs, next: writer}
 		m.logger = slog.New(writer)
+		m.gatedLogger = slog.New(handler)
 		if demo != nil {
 			m.logger = slog.New(writer.WithAttrs([]slog.Attr{slog.Bool("demo", true)}))
+			m.gatedLogger = slog.New(handler.WithAttrs([]slog.Attr{slog.Bool("demo", true)}))
 		}
 	}
 	if demo != nil {
@@ -241,8 +246,82 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 
 // Stop closes the TUI log writer.
 func (m *Model) Stop() {
+	m.logs.close()
 	if m.closer != nil {
 		_ = m.closer.Close()
+	}
+}
+
+var errLogClosed = errors.New("tui: log writer is closed")
+
+// gatedHandler passes a log event to the writer until the program ends. A late
+// event is dropped, so a running loader cannot keep the log file open.
+type gatedHandler struct {
+	gate *logGate
+	next slog.Handler
+}
+
+func (h *gatedHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.next.Enabled(ctx, level)
+}
+
+func (h *gatedHandler) Handle(ctx context.Context, record slog.Record) error {
+	if !h.gate.begin() {
+		return errLogClosed
+	}
+	defer h.gate.end()
+	return h.next.Handle(ctx, record)
+}
+
+func (h *gatedHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &gatedHandler{gate: h.gate, next: h.next.WithAttrs(attrs)}
+}
+
+func (h *gatedHandler) WithGroup(name string) slog.Handler {
+	return &gatedHandler{gate: h.gate, next: h.next.WithGroup(name)}
+}
+
+// logGate stops a log write after the program ends. A command that started
+// before the close finishes; a command that starts after it does not write.
+type logGate struct {
+	mu     sync.Mutex
+	closed bool
+	active sync.WaitGroup
+}
+
+func (g *logGate) begin() bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.closed {
+		return false
+	}
+	g.active.Add(1)
+	return true
+}
+
+func (g *logGate) end() {
+	g.active.Done()
+}
+
+// close waits for each started log command, then refuses a new one.
+func (g *logGate) close() {
+	g.mu.Lock()
+	g.closed = true
+	g.mu.Unlock()
+	g.active.Wait()
+}
+
+// trackLogCmd marks a command that can write a log event.
+func (m *Model) trackLogCmd(command tea.Cmd) tea.Cmd {
+	if command == nil {
+		return nil
+	}
+	return func() tea.Msg {
+		if !m.logs.begin() {
+			return nil
+		}
+		defer m.logs.end()
+		return command()
 	}
 }
 
@@ -556,7 +635,7 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		}
 	case healthDataRequest:
 		// health.md rule 4: the agents table is beside the checks.
-		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
+		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.gatedLogger, m.now
 		return func() tea.Msg {
 			agents, err := agentsLoader(home, now())
 			result, doctorErr := loader(home, logger)
@@ -635,11 +714,11 @@ func (m *Model) recordLogCmd(message string, attrs ...slog.Attr) tea.Cmd {
 		return nil
 	}
 	logger, now := m.logger, m.now
-	return func() tea.Msg {
+	return m.trackLogCmd(func() tea.Msg {
 		record := slog.NewRecord(now(), slog.LevelDebug, message, 0)
 		record.AddAttrs(attrs...)
 		return logWriteErrMsg{err: logger.Handler().Handle(context.Background(), record)}
-	}
+	})
 }
 
 func batch(cmds ...tea.Cmd) tea.Cmd {
@@ -730,6 +809,7 @@ func runProgram(model *Model, in io.Reader, out io.Writer, width, height int) er
 
 	_, runErr := program.Run()
 	close(watched)
+	model.logs.close()
 
 	if err := outputGuard.Err(); err != nil {
 		return fmt.Errorf("tui: output: %w", err)

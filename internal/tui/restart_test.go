@@ -36,7 +36,7 @@ func TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey(t *testing.T) 
 		t.Fatal("restart request did not start a coordinator pane check")
 	}
 	m = runCoordinatorRestartCheck(t, m, cmd)
-	if got := len(requestsFor(server.requests, "pane.get")); got != 1 {
+	if got := len(requestsFor(server.recorded(), "pane.get")); got != 1 {
 		t.Fatalf("pane.get requests = %d; want 1", got)
 	}
 	requireRestartPrompt(t, m, "restart coordinator? y/n")
@@ -84,7 +84,7 @@ func TestAgentsRestartMissingCoordinatorPaneTakesStalePath(t *testing.T) {
 		t.Fatal("restart request did not start the coordinator pane check")
 	}
 	m = runCoordinatorRestartCheck(t, m, cmd)
-	if got := len(requestsFor(server.requests, "pane.get")); got != 1 {
+	if got := len(requestsFor(server.recorded(), "pane.get")); got != 1 {
 		t.Fatalf("pane.get requests = %d; want 1 before the restart decision", got)
 	}
 	if m.agents.restartConfirm || !m.agents.restartRunning || m.agents.restartTarget.Status != records.AgentStale {
@@ -119,7 +119,7 @@ func TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation(t *testing.T) {
 		t.Fatal("restart request did not start the coordinator pane check")
 	}
 	m = runCoordinatorRestartCheck(t, m, cmd)
-	if got := len(requestsFor(server.requests, "pane.get")); got != 1 {
+	if got := len(requestsFor(server.recorded(), "pane.get")); got != 1 {
 		t.Fatalf("pane.get requests = %d; want 1 before the restart decision", got)
 	}
 	if !m.agents.restartConfirm || m.agents.restartRunning {

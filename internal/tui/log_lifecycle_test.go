@@ -1,0 +1,166 @@
+package tui
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+)
+
+// blockingLogHandler holds one log event until the test releases it. It proves
+// that a command which writes a log event cannot keep the writer after
+// runProgram returns.
+type blockingLogHandler struct {
+	next    slog.Handler
+	started chan struct{}
+	release chan struct{}
+	written chan struct{}
+
+	startOnce  sync.Once
+	releaseOne sync.Once
+	writeOnce  sync.Once
+}
+
+func (h *blockingLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.next.Enabled(ctx, level)
+}
+
+func (h *blockingLogHandler) Handle(ctx context.Context, record slog.Record) error {
+	h.startOnce.Do(func() { close(h.started) })
+	h.releaseOne.Do(func() { <-h.release })
+	err := h.next.Handle(ctx, record)
+	h.writeOnce.Do(func() { close(h.written) })
+	return err
+}
+
+func (h *blockingLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &blockingLogHandler{next: h.next.WithAttrs(attrs), started: h.started, release: h.release, written: h.written}
+}
+
+func (h *blockingLogHandler) WithGroup(name string) slog.Handler {
+	return &blockingLogHandler{next: h.next.WithGroup(name), started: h.started, release: h.release, written: h.written}
+}
+
+// TestRunProgramStopsLogWritesBeforeReturn checks that a log command after the
+// return writes no event, and that the event of the program is kept (AC1, AC2).
+func TestRunProgramStopsLogWritesBeforeReturn(t *testing.T) {
+	home := newTestHome(t)
+	model := New(home, nil)
+	defer model.Stop()
+
+	blocked := &blockingLogHandler{
+		next:    model.logger.Handler(),
+		started: make(chan struct{}),
+		release: make(chan struct{}),
+		written: make(chan struct{}),
+	}
+	model.logger = slog.New(blocked)
+
+	input, keys := io.Pipe()
+	done := make(chan error, 1)
+	go func() {
+		done <- runProgram(model, input, io.Discard, defaultWidth, defaultHeight)
+	}()
+
+	if _, err := fmt.Fprint(keys, "\x03"); err != nil {
+		t.Fatalf("send the first quit key: %v", err)
+	}
+	select {
+	case <-blocked.started:
+	case <-time.After(5 * time.Second):
+		t.Fatal("the quit log command did not start")
+	}
+	if _, err := fmt.Fprint(keys, "\x03"); err != nil {
+		t.Fatalf("send the second quit key: %v", err)
+	}
+	if err := keys.Close(); err != nil {
+		t.Fatalf("close the input: %v", err)
+	}
+	select {
+	case err := <-done:
+		close(blocked.release)
+		<-blocked.written
+		t.Fatalf("runProgram returned before the log write ended: %v", err)
+	case <-time.After(2 * time.Second):
+		close(blocked.release)
+	}
+	select {
+	case <-blocked.written:
+	case <-time.After(5 * time.Second):
+		t.Fatal("the log event did not reach the file")
+	}
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("runProgram: %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("runProgram did not return")
+	}
+
+	path := onlyLogFile(t, home)
+	before := readLogFile(t, path)
+	if !strings.Contains(before, `"action":"quit request"`) {
+		t.Fatalf("log file after the return omits the quit event:\n%s", before)
+	}
+
+	command := model.logAction("after return")
+	if command == nil {
+		t.Fatal("logAction returned no command")
+	}
+	if msg := command(); msg != nil {
+		t.Fatalf("a log command after the return gave %T; want no write", msg)
+	}
+	if after := readLogFile(t, path); after != before {
+		t.Fatalf("a log command after the return changed the log file:\nbefore:\n%s\nafter:\n%s", before, after)
+	}
+
+	model.Stop()
+	record := slog.NewRecord(time.Now(), slog.LevelDebug, "after close", 0)
+	if err := model.logger.Handler().Handle(context.Background(), record); err == nil {
+		t.Fatal("the closed writer accepted an event after Stop")
+	}
+}
+
+// TestRunHomeKeepsLogEventsBeforeReturn checks that the quit event of the
+// program is in the log file after the return, and that the writer is closed.
+func TestRunHomeKeepsLogEventsBeforeReturn(t *testing.T) {
+	home := newTestHome(t)
+	var out strings.Builder
+	if err := RunHome(home, strings.NewReader("\x03\x03"), &out); err != nil {
+		t.Fatalf("RunHome: %v", err)
+	}
+	path := onlyLogFile(t, home)
+	after := readLogFile(t, path)
+	if !strings.Contains(after, `"action":"quit request"`) {
+		t.Fatalf("log file after the return omits the quit event:\n%s", after)
+	}
+}
+
+// onlyLogFile gives the one daily log file of home.
+func onlyLogFile(t *testing.T, home string) string {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("log files = %d; want one", len(entries))
+	}
+	return filepath.Join(home, ".hive", "logs", entries[0].Name())
+}
+
+func readLogFile(t *testing.T, path string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}

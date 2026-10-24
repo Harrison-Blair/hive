@@ -37,7 +37,7 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 	var gotCoordinator bool
 	starter := func(_ context.Context, launch *agent.CoordinatorLaunch, paneID, harnessKind, model string) error {
 		gotHome := launch.Home()
-		if got := requestsFor(server.requests, "pane.send_input"); len(got) != 1 {
+		if got := requestsFor(server.recorded(), "pane.send_input"); len(got) != 1 {
 			t.Errorf("coordinator started before supervisor: pane.send_input requests = %d; want 1", len(got))
 		}
 		gotCoordinator = true
@@ -54,12 +54,12 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 	if !gotCoordinator {
 		t.Fatal("coordinator starter was not called")
 	}
-	requireStartupLabels(t, server.requests, "coordinator", "supervisor")
-	renames := requestsFor(server.requests, "tab.rename")
+	requireStartupLabels(t, server.recorded(), "coordinator", "supervisor")
+	renames := requestsFor(server.recorded(), "tab.rename")
 	if len(renames) != 1 || !strings.Contains(renames[0].Params, `"tab_id":"w1:t1"`) || !strings.Contains(renames[0].Params, `"label":"hive"`) {
 		t.Fatalf("tab.rename requests = %#v; want the current tab labeled hive", renames)
 	}
-	for _, request := range requestsFor(server.requests, "tab.create") {
+	for _, request := range requestsFor(server.recorded(), "tab.create") {
 		var params struct {
 			Cwd   string            `json:"cwd"`
 			Label string            `json:"label"`
@@ -75,7 +75,7 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 			t.Errorf("tab.create startup role = %q; want %q", params.Env["HIVE_STARTUP_ROLE"], params.Label)
 		}
 	}
-	inputs := requestsFor(server.requests, "pane.send_input")
+	inputs := requestsFor(server.recorded(), "pane.send_input")
 	if len(inputs) != 1 || !strings.Contains(inputs[0].Params, "hive supervise") {
 		t.Fatalf("pane.send_input requests = %#v; want one hive supervise command", inputs)
 	}
@@ -97,14 +97,14 @@ func TestStartupKeepsLiveCoordinatorAndFreshSupervisor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("setupSessionWith(): %v", err)
 	}
-	if got := requestsFor(server.requests, "tab.create"); len(got) != 0 {
+	if got := requestsFor(server.recorded(), "tab.create"); len(got) != 0 {
 		t.Fatalf("tab.create requests = %#v; want none", got)
 	}
-	paneGets := requestsFor(server.requests, "pane.get")
+	paneGets := requestsFor(server.recorded(), "pane.get")
 	if len(paneGets) != 2 || !strings.Contains(paneGets[1].Params, `"pane_id":"w1:p9"`) {
 		t.Fatalf("pane.get requests = %#v; want current pane and coordinator pane w1:p9", paneGets)
 	}
-	if got := requestsFor(server.requests, "pane.send_input"); len(got) != 0 {
+	if got := requestsFor(server.recorded(), "pane.send_input"); len(got) != 0 {
 		t.Fatalf("pane.send_input requests = %#v; want none", got)
 	}
 }
@@ -125,8 +125,8 @@ func TestStartupStartsSupervisorWhenClaimIsStale(t *testing.T) {
 	if err != nil {
 		t.Fatalf("setupSessionWith(): %v", err)
 	}
-	requireStartupLabels(t, server.requests, "supervisor")
-	if got := requestsFor(server.requests, "pane.send_input"); len(got) != 1 || !strings.Contains(got[0].Params, "hive supervise") {
+	requireStartupLabels(t, server.recorded(), "supervisor")
+	if got := requestsFor(server.recorded(), "pane.send_input"); len(got) != 1 || !strings.Contains(got[0].Params, "hive supervise") {
 		t.Fatalf("pane.send_input requests = %#v; want one hive supervise command", got)
 	}
 }
@@ -144,8 +144,8 @@ func TestStartupSkipsHerdrWhenEnvironmentIsMissing(t *testing.T) {
 	if notice != "not in herdr: no coordinator or supervisor started" {
 		t.Fatalf("notice = %q", notice)
 	}
-	if len(server.requests) != 0 {
-		t.Fatalf("herdr requests = %#v; want none", server.requests)
+	if len(server.recorded()) != 0 {
+		t.Fatalf("herdr requests = %#v; want none", server.recorded())
 	}
 }
 
@@ -166,7 +166,7 @@ func TestStartupFailureShowsInFooterAndDoesNotStopTUI(t *testing.T) {
 	if !strings.Contains(output.String(), "error:") || !strings.Contains(output.String(), "coordinator pane") {
 		t.Fatalf("TUI output %q does not show the startup error", output.String())
 	}
-	if got := requestsFor(server.requests, "tab.create"); len(got) != 0 {
+	if got := requestsFor(server.recorded(), "tab.create"); len(got) != 0 {
 		t.Fatalf("tab.create requests = %#v; want none after pane lookup failed", got)
 	}
 }
@@ -188,8 +188,8 @@ func TestStartupNoStartupSkipsEachStepAndLogsReason(t *testing.T) {
 	if err != nil {
 		t.Fatalf("setupSessionWith(): %v", err)
 	}
-	if notice != "" || len(server.requests) != 0 {
-		t.Fatalf("notice/requests = %q / %#v; want no notice and no herdr request", notice, server.requests)
+	if notice != "" || len(server.recorded()) != 0 {
+		t.Fatalf("notice/requests = %q / %#v; want no notice and no herdr request", notice, server.recorded())
 	}
 	for _, step := range []string{"current tab label", "coordinator", "supervisor"} {
 		want := `"step":"` + step + `","outcome":"skipped","reason":"no-startup"`
@@ -209,8 +209,8 @@ func TestStartupShowsNoHerdrNoticeWhenPaneIDIsMissing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("setupSessionWith(): %v", err)
 	}
-	if notice != "not in herdr: no coordinator or supervisor started" || len(server.requests) != 0 {
-		t.Fatalf("notice/requests = %q / %#v", notice, server.requests)
+	if notice != "not in herdr: no coordinator or supervisor started" || len(server.recorded()) != 0 {
+		t.Fatalf("notice/requests = %q / %#v", notice, server.recorded())
 	}
 }
 
@@ -237,7 +237,7 @@ func TestStartupReplacesCoordinatorWithGonePaneAndKeepsRecord(t *testing.T) {
 	if !started {
 		t.Fatal("coordinator did not start after its pane disappeared")
 	}
-	created := requestsFor(server.requests, "tab.create")
+	created := requestsFor(server.recorded(), "tab.create")
 	if len(created) != 2 || !strings.Contains(created[0].Params, `"label":"coordinator"`) {
 		t.Fatalf("tab.create requests = %#v; want new coordinator and supervisor tabs", created)
 	}
@@ -278,7 +278,7 @@ func TestStartupDoesNotReplaceCoordinatorWhenPaneLookupFails(t *testing.T) {
 	if starterCalled {
 		t.Fatal("coordinator starter ran after pane lookup failed")
 	}
-	for _, request := range requestsFor(server.requests, "tab.create") {
+	for _, request := range requestsFor(server.recorded(), "tab.create") {
 		if strings.Contains(request.Params, `"label":"coordinator"`) {
 			t.Fatalf("created a coordinator tab after lookup failure: %s", request.Params)
 		}
@@ -369,6 +369,14 @@ type startupHerdr struct {
 	tabCount     int
 	failMethod   string
 	paneFailures map[string]startupPaneFailure
+}
+
+// recorded gives a copy of the requests that the server has handled. A test
+// reads the copy so the handler goroutine does not race with the test.
+func (s *startupHerdr) recorded() []startupRequest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]startupRequest(nil), s.requests...)
 }
 
 type startupPaneFailure struct {
