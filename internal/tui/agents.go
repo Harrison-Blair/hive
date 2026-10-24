@@ -29,7 +29,16 @@ type agentNode struct {
 	pid      string
 	nudgedAt string
 	result   string
-	recent   []string
+	// The fields below are the stored data of the details popup
+	// (agents.md rule 14): the task status, the worktree path and branch of
+	// the task, the name of the parent, the unread records of the inbox of
+	// the agent, and the last record that the agent sent.
+	taskStatus string
+	worktree   string
+	branch     string
+	parentName string
+	unread     int
+	lastSent   *records.Inbox
 }
 
 type agentGroup struct {
@@ -38,12 +47,22 @@ type agentGroup struct {
 	keys     []string
 	goal     string
 	goalStop bool
+	// wave is the wave progress of the pod title (agents.md rule 2).
+	wave string
 }
 
 type agentsData struct {
 	nodes          []agentNode
 	groups         []agentGroup
 	supervisorLive bool
+	messages       []agentMessage
+}
+
+// agentMessage is one message between two agents (decision 66): an inbox
+// record, or an agent prompt event of hive agent send.
+type agentMessage struct {
+	from, to string
+	at       time.Time
 }
 
 type agentsState struct {
@@ -99,6 +118,13 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		return agentsData{}, fmt.Errorf("logs: %w", err)
 	}
 	source.events = events
+	for _, name := range messageInboxNames(agents) {
+		items, err := inbox.All(home, name)
+		if err != nil {
+			return agentsData{}, fmt.Errorf("%s inbox: %w", name, err)
+		}
+		source.inbox = append(source.inbox, items...)
+	}
 	return buildAgents(source, now), nil
 }
 
@@ -112,6 +138,53 @@ type agentsSource struct {
 	supervisorClaim records.Claim
 	unread          map[string][]records.Inbox
 	events          []logs.Event
+	// inbox holds each inbox record of a card, read or not: the lit lines
+	// of decision 66.
+	inbox []records.Inbox
+}
+
+// messageInboxNames gives the inbox key of each current agent with a card:
+// its name, and "coordinator" for the coordinator.
+func messageInboxNames(agents []records.Agent) []string {
+	current := currentAgentKeys(agents)
+	names := []string{}
+	checked := make(map[string]bool)
+	for _, record := range agents {
+		name := record.Name
+		if record.Role == "coordinator" {
+			name = "coordinator"
+		}
+		if !current[record.Key] || name == "" || checked[name] || record.Role == "supervisor" {
+			continue
+		}
+		checked[name] = true
+		names = append(names, name)
+	}
+	return names
+}
+
+// agentMessages gives the messages of the inbox records and of the agent
+// prompt events of hive agent send.
+func agentMessages(items []records.Inbox, events []logs.Event) []agentMessage {
+	var out []agentMessage
+	for _, item := range items {
+		if sent, err := time.Parse(time.RFC3339Nano, item.CreatedAt); err == nil {
+			out = append(out, agentMessage{from: item.Agent, to: item.Role, at: sent})
+		}
+	}
+	for _, event := range events {
+		message, _ := event.Fields["msg"].(string)
+		command, _ := event.Fields["command"].(string)
+		from, _ := event.Fields["from"].(string)
+		to, _ := event.Fields["agent_id"].(string)
+		stamp, _ := event.Fields["time"].(string)
+		sent, err := time.Parse(time.RFC3339Nano, stamp)
+		if message != "agent prompt" || command != "agent send" || from == "" || to == "" || err != nil {
+			continue
+		}
+		out = append(out, agentMessage{from: from, to: to, at: sent})
+	}
+	return out
 }
 
 // inboxAgentNames returns the current coordinator and manager names. Their
@@ -138,6 +211,10 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		taskByID[task.ID] = task
 	}
 	currentAgents := currentAgentKeys(agents)
+	names := make(map[string]string, len(agents))
+	for _, record := range agents {
+		names[record.Key] = record.Name
+	}
 	nudgedAt := make(map[string]string)
 	for _, name := range inboxAgentNames(agents) {
 		for _, item := range source.unread[name] {
@@ -146,14 +223,13 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			}
 		}
 	}
-	recent := recentAgentEvents(source.events, now.Location())
 	goalTitle := make(map[string]string)
 	for _, goal := range goals {
 		if goal.Status == "active" && goalTitle[goal.Project] == "" {
 			goalTitle[goal.Project] = goal.Title
 		}
 	}
-	data := agentsData{groups: []agentGroup{{id: "home", title: "home"}}, supervisorLive: fresh}
+	data := agentsData{groups: []agentGroup{{id: "home", title: "home"}}, supervisorLive: fresh, messages: agentMessages(source.inbox, source.events)}
 	groupByProject := make(map[string]int, len(projects))
 	for _, project := range projects {
 		groupByProject[project.ID] = len(data.groups)
@@ -162,7 +238,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			title += " · " + goalTitle[project.ID]
 		}
 		goal, stop := projectGoalLine(goals, project.ID)
-		data.groups = append(data.groups, agentGroup{id: project.ID, title: title, goal: goal, goalStop: stop})
+		data.groups = append(data.groups, agentGroup{id: project.ID, title: title, goal: goal, goalStop: stop, wave: projectWave(goals, taskByID, project.ID)})
 	}
 	for _, record := range agents {
 		groupIndex := 0
@@ -193,7 +269,25 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		}
 		node := agentNode{
 			record: record, status: status, age: age, stopped: stopped, current: currentAgents[record.Key],
-			pid: pid, result: result, recent: recent[record.Key],
+			pid: pid, result: result, parentName: names[record.Parent],
+		}
+		if task, ok := taskByID[record.Task]; ok {
+			node.taskStatus = task.Status
+			if task.Worktree != nil {
+				node.worktree, node.branch = task.Worktree.Path, task.Worktree.Branch
+			}
+		}
+		inboxName := record.Name
+		if record.Role == "coordinator" {
+			inboxName = "coordinator"
+		}
+		for index, item := range source.inbox {
+			if item.Role == inboxName && item.ReadAt == "" {
+				node.unread++
+			}
+			if item.Agent == inboxName && (node.lastSent == nil || item.CreatedAt > node.lastSent.CreatedAt) {
+				node.lastSent = &source.inbox[index]
+			}
 		}
 		if node.current {
 			node.nudgedAt = nudgedAt[record.Name]
@@ -204,14 +298,36 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 	return data
 }
 
+// currentAgentKeys gives the current record of each identity: the live
+// record, else the newest record that no other record replaces.
 func currentAgentKeys(agents []records.Agent) map[string]bool {
 	replaced := make(map[string]bool)
-	groups := make(map[string][]records.Agent)
+	// root joins the identities of one agent: an old record with no parent
+	// and no replaces has only its name, and a newer record of the same
+	// name also has its lineage.
+	root := make(map[string]string)
+	var find func(identity string) string
+	find = func(identity string) string {
+		parent, ok := root[identity]
+		if !ok || parent == identity {
+			return identity
+		}
+		root[identity] = find(parent)
+		return root[identity]
+	}
 	for _, record := range agents {
 		if record.Replaces != "" {
 			replaced[record.Replaces] = true
 		}
-		identity := agentIdentity(record)
+		identities := agentIdentities(record)
+		first := find(identities[0])
+		for _, identity := range identities[1:] {
+			root[find(identity)] = first
+		}
+	}
+	groups := make(map[string][]records.Agent)
+	for _, record := range agents {
+		identity := find(agentIdentities(record)[0])
 		groups[identity] = append(groups[identity], record)
 	}
 	current := make(map[string]bool)
@@ -222,7 +338,7 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 			if replaced[record.Key] {
 				continue
 			}
-			if !found || newerAgent(record, newest) {
+			if !found || currentBefore(record, newest) {
 				newest = record
 				found = true
 			}
@@ -234,15 +350,31 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 	return current
 }
 
-func agentIdentity(record records.Agent) string {
+// agentIdentities gives each identity of a record. Records that share one
+// identity are generations of one agent.
+func agentIdentities(record records.Agent) []string {
 	// Each general agent is its own identity: many can share a parent.
 	if record.Role == generalRole {
-		return "key\x00" + record.Key
+		return []string{"key\x00" + record.Key}
 	}
-	if record.Parent == "" && record.Replaces == "" {
-		return "name\x00" + record.Name
+	identities := []string{"name\x00" + record.Name}
+	if record.Parent != "" || record.Replaces != "" {
+		identities = append(identities, strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00"))
 	}
-	return strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00")
+	return identities
+}
+
+// currentBefore reports that left is a better current record than right: a
+// live record, else the newer record. Of two records with one name, the
+// newer record has the higher generation.
+func currentBefore(left, right records.Agent) bool {
+	if leftLive, rightLive := left.Status == records.AgentLive, right.Status == records.AgentLive; leftLive != rightLive {
+		return leftLive
+	}
+	if left.Name == right.Name && left.Generation != right.Generation {
+		return left.Generation > right.Generation
+	}
+	return newerAgent(left, right)
 }
 
 func newerAgent(left, right records.Agent) bool {
@@ -321,11 +453,15 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 		}
 		return "working"
 	}
-	if record.Status == records.AgentStopped || record.Status == records.AgentExited {
+	switch record.Status {
+	case records.AgentStopped, records.AgentExited:
 		return "stopped"
-	}
-	if record.Status == records.AgentStale {
-		return "unknown"
+	case records.AgentStarting:
+		return "starting"
+	case records.AgentUnresolved:
+		return "unresolved"
+	case records.AgentStale:
+		return "stale"
 	}
 	switch record.AgentStatus {
 	case "working":
@@ -334,6 +470,12 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 		return "idle"
 	case "blocked":
 		return "blocked"
+	case records.AgentStarting:
+		return "starting"
+	case records.AgentUnresolved:
+		return "unresolved"
+	case records.AgentStale:
+		return "stale"
 	default:
 		return "unknown"
 	}
@@ -369,7 +511,7 @@ type agentsScreen struct{ model *Model }
 func (s agentsScreen) DataRequest() dataRequest { return agentsDataRequest }
 
 func (s agentsScreen) KeyHints() string {
-	return "←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat"
+	return "←↑↓→ move · tab view · enter peek · a attach · h stopped · t task · r restart coordinator/supervisor · ask in Chat"
 }
 
 func (s agentsScreen) Update(msg tea.Msg) tea.Cmd {

@@ -20,8 +20,8 @@ func TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey(t *testing.T) 
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	server := newStartupHerdr(t)
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -71,8 +71,8 @@ func TestAgentsRestartMissingCoordinatorPaneTakesStalePath(t *testing.T) {
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
@@ -106,8 +106,8 @@ func TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation(t *testing.T) {
 	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups:         []agentGroup{{id: "home", title: "home", keys: []string{record.Key}}},
 		nodes:          []agentNode{{record: record, status: "idle", current: true}},
@@ -153,14 +153,14 @@ func runCoordinatorRestartCheck(t *testing.T, model *Model, command tea.Cmd) *Mo
 	return model
 }
 
-// TestHealthAgentsHTogglesStoppedAgents checks the h key of Health › Agents.
-// The HealthAgents board shows a stopped agent until h hides it.
-func TestHealthAgentsHTogglesStoppedAgents(t *testing.T) {
+// TestHealthTableKeepsStoppedAgents checks that the agents table lists a
+// stopped agent (health.md rule 4). The h key of tui-v2 Health › Agents goes
+// away with the view, so h does not hide the row.
+func TestHealthTableKeepsStoppedAgents(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -169,20 +169,17 @@ func TestHealthAgentsHTogglesStoppedAgents(t *testing.T) {
 		}},
 	})
 	m.width, m.height = 120, 40
-	requireView(t, m, "coordinator-g1", "○ stopped", "agents · 1 · h hides 1 stopped")
+	requireView(t, m, "○ coordinator", "stopped", "gone", "agents · 1 · 1 stopped")
 	m, _ = raise(t, m, key('h', "h"))
-	rejectView(t, m, "coordinator-g1")
-	requireView(t, m, "agents · 0 · h shows 1 stopped", "no agents")
-	m, _ = raise(t, m, key('h', "h"))
-	requireView(t, m, "coordinator-g1")
+	requireView(t, m, "○ coordinator", "agents · 1 · 1 stopped")
 }
 
 func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{
@@ -199,14 +196,12 @@ func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	requireRestartPrompt(t, m, "restart supervisor? y/n")
 }
 
-// requireRestartPrompt checks the restart prompt. Decision 21 gives the
-// footer the fixed text "[restart] y restart · any other key cancels". The
-// current Agents screen keeps the prompt that names the agent. The Health ›
-// Agents task of wave 6 shows it in the content area, as the HealthAgents
-// board does.
+// requireRestartPrompt checks the restart prompt. Golden-frames decision 11
+// gives the keys "y restart · any other key cancels" in the status row. The
+// notice line shows the prompt of health.md rule 6 from restartPrompt.
 func requireRestartPrompt(t *testing.T, m *Model, prompt string) {
 	t.Helper()
-	requireView(t, m, "[restart] y restart · any other key cancels")
+	requireKeys(t, m, "restart", "y restart · any other key cancels")
 	if m.agents.restartNotice != prompt {
 		t.Fatalf("restart prompt = %q; want %q", m.agents.restartNotice, prompt)
 	}
@@ -216,8 +211,8 @@ func TestAgentsRestartResultIsRenderedAndLogged(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m, cmd := raise(t, m, agentRestartMsg{
 		agentKey: "coordinator-g2",
 		result:   agent.RestartResult{Tab: herdr.TabCreated{Tab: herdr.TabInfo{TabID: "w1:t2", Label: "coordinator"}}},
@@ -237,8 +232,8 @@ func TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
@@ -308,14 +303,26 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	}
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// The Health status row has the form of ask a27 with no supervisor
+	// segment, so this check uses the Agents screen.
+	m.selectScreen(tabAgents, 0)
 	m.width = 120
 	m.header = state
-	// Decisions 2 and 19: the header shows the supervisor state word, and
-	// restart moves to Health › Agents, so the header has no restart hint.
-	requireView(t, m, "supervisor ○ old")
+	// Golden-frames decision 34: the default row of Health has no
+	// supervisor segment, so the config names it.
+	cfg := defaultTUI()
+	cfg.StatusLines = [][]string{{"state", "supervisor", "clock"}}
+	cfg.StatusLinesExplicit = true
+	m.setTUIConfig(cfg)
+	// Golden-frames decision 11: the status row shows an old supervisor as
+	// ▲ supervisor. Decision 19: restart is in the Health agents table, so
+	// the frame has no restart hint.
+	requireView(t, m, "▲ supervisor")
 	rejectView(t, m, "r to restart")
+	// Golden-frames decision 11: the status row shows an old supervisor as
+	// ▲ supervisor. Ask a27: the default row has this segment on Chat only.
+	m.openChat()
+	requireView(t, m, "▲ supervisor")
 }
 
 func TestSupervisorHeaderOldProcess(t *testing.T) {
@@ -331,8 +338,8 @@ func TestAgentsRestartKeyExplainsUnsupportedNode(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC))
 	m := newTestModel(t, home, clock)
-	// Decision 19: restart is in Health › Agents.
-	m.selectScreen(tabHealth, 1)
+	// health.md keys: r acts in the agents table of Health.
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "demo", title: "demo", keys: []string{"manager-demo"}}},
 		nodes: []agentNode{{

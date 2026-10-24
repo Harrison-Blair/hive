@@ -129,36 +129,23 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 				m := agentsBoardModel(t)
 				m.width, m.height = 120, 40
 				m.graph.selected = "manager-alpha"
+				// Decision 62: a card is selected in the one-pod view.
+				m.graph.podView = true
 				return m
 			},
 		},
 		{
-			// The Queue board draws the marker and the task in two runs.
-			name: "Queue", honey: []string{"▶", "1-alpha"}, states: []string{"▶ 1-alpha", "assigned"},
+			// Work rule 4: the selected card has a bold accent ID and a
+			// heavy border.
+			name: "Work", honey: []string{"1-alpha"}, states: []string{"○ 1-alpha", "┏━"},
 			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 3)
-				m.goalsQueue.data = goalsQueueData{
-					projects: []records.Project{{ID: "demo"}},
-					tasks:    []records.Task{{ID: "1-alpha", Project: "demo", Status: "assigned"}},
-				}
-				m.goalsQueue.selectedTaskID = "1-alpha"
+				m := selectionModel(t, 2)
+				m.tasks.accept(tasksData{items: []taskItem{{record: records.Task{ID: "1-alpha", Project: "demo", Status: "assigned"}}}})
 				return m
 			},
 		},
 		{
-			name: "Tasks", honey: []string{"▶", "selected-task"}, states: []string{"assigned"},
-			model: func(t *testing.T) *Model {
-				m := selectionModel(t, 4)
-				// Decision 8: the list panel has 13/30 of the width, so the
-				// pane is 200 columns wide to show the Tasks columns.
-				m.width = 200
-				m.tasks.data = tasksData{items: []taskItem{{record: records.Task{ID: "selected-task", Title: "Selected", Project: "demo", Status: "assigned"}}}}
-				m.tasks.selectedID = "selected-task"
-				return m
-			},
-		},
-		{
-			name: "Friction", honey: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
+			name: "Friction", honey: []string{"▶", "issue"}, states: []string{"▶ issue", "issue · Open · opened 2026-04-05"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 5)
 				m.friction.data.entries = []frictionEntry{{file: "issue.md", path: "entries/issue.md", title: "Open issue", status: "Open", opened: "2026-04-05", decision: "Keep", valid: true}}
@@ -168,8 +155,10 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		},
 		{
 			// The Health board puts the check glyph between the marker and
-			// the name, so the test reads the marker and the name apart.
-			name: "Health", honey: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
+			// the tile text, so the test reads the marker and the text
+			// apart. health.md rule 2: the first tile that did not pass is
+			// the first selection.
+			name: "Health", honey: []string{"▶", "socket · unavailable"}, states: []string{"✓ /fixture", "▶ ! socket · unavailable"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{
@@ -180,7 +169,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN  herdr     network retry"},
+			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN   herdr      network retry"},
 			model: func(t *testing.T) *Model {
 				clock := fixedClock(t, time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local))
 				m := newTestLogsModel(t, newTestHome(t), clock)

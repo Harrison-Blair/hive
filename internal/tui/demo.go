@@ -16,6 +16,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -66,6 +67,7 @@ type demoData struct {
 	Friction   []demoFriction             `json:"friction"`
 	Checks     []doctor.Check             `json:"checks"`
 	Chat       []chatlib.Entry            `json:"chat"`
+	Asks       []ask.Record               `json:"asks"`
 	Logs       []json.RawMessage          `json:"logs"`
 	Files      map[string]string          `json:"files"`
 }
@@ -91,21 +93,40 @@ type demoFriction struct {
 
 // demoUIState is the UI state of a board.
 type demoUIState struct {
-	Screen      string                `json:"screen"`
-	View        string                `json:"view"`
-	Focus       string                `json:"focus"`
-	Selection   string                `json:"selection"`
-	Scroll      map[string]demoScroll `json:"scroll"`
-	Filter      demoFilter            `json:"filter"`
-	Overlay     string                `json:"overlay"`
-	Popup       string                `json:"popup"`
-	Prompt      demoPrompt            `json:"prompt"`
-	HideStopped bool                  `json:"hide_stopped"`
-	StopsOnly   bool                  `json:"stops_only"`
-	Follow      bool                  `json:"follow"`
-	LogDay      string                `json:"log_day"`
-	ChatNoise   string                `json:"chat_noise"`
-	ChatInput   string                `json:"chat_input"`
+	Screen         string                `json:"screen"`
+	View           string                `json:"view"`
+	Focus          string                `json:"focus"`
+	Selection      string                `json:"selection"`
+	Scroll         map[string]demoScroll `json:"scroll"`
+	Filter         demoFilter            `json:"filter"`
+	Overlay        string                `json:"overlay"`
+	Popup          string                `json:"popup"`
+	Prompt         demoPrompt            `json:"prompt"`
+	HideStopped    bool                  `json:"hide_stopped"`
+	StopsOnly      bool                  `json:"stops_only"`
+	ShowCancelled  bool                  `json:"show_cancelled"`
+	Follow         bool                  `json:"follow"`
+	LogDay         string                `json:"log_day"`
+	ChatNoise      string                `json:"chat_noise"`
+	ChatInput      string                `json:"chat_input"`
+	ChatEventsOpen bool                  `json:"chat_events_open"`
+	Checking       bool                  `json:"checking"`
+	Ask            demoAsk               `json:"ask"`
+}
+
+// demoAsk is the UI state of the card of an open ask. Question and option
+// count from 1. Picks gives the picked options of each question. With the
+// focus review, ReviewRow is the highlighted question from 1, and 0 is
+// Send.
+type demoAsk struct {
+	Card      string   `json:"card"`
+	Question  int      `json:"question"`
+	Option    int      `json:"option"`
+	Picks     [][]int  `json:"picks"`
+	Notes     []string `json:"notes"`
+	Other     []string `json:"other"`
+	NoteOpen  bool     `json:"note_open"`
+	ReviewRow int      `json:"review_row"`
 }
 
 type demoScroll struct {
@@ -126,17 +147,18 @@ type demoPrompt struct {
 var (
 	demoScreens = []string{"agents", "chat", "work", "friction", "health", "logs"}
 	demoViews   = map[string][]string{
-		"agents":   {""},
+		"agents":   {"", "pod"},
 		"chat":     {""},
-		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
-		"health":   {"home", "agents"},
-		"logs":     {""},
+		// Health has no views. The tui-v2 fixtures name the old views home
+		// and agents, and the value has no effect.
+		"health": {"", "home", "agents"},
+		"logs":   {"", "raw"},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "list", "details", "filter", "events", "json"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "board", "grid", "table"}
 	demoOverlays   = []string{"", "details", "help"}
-	demoPopups     = []string{"", "agent-details"}
-	demoPrompts    = []string{"", "restart"}
+	demoPopups     = []string{"", "agent-details", workPopupTask, workPopupDeps}
+	demoPrompts    = []string{"", "restart", "quit", "send"}
 	demoChatNoises = []string{"", "quiet", "normal", "all"}
 )
 
@@ -202,14 +224,28 @@ func (f *demoFixture) check() error {
 	if !slices.Contains(demoScreens, ui.Screen) {
 		return fmt.Errorf(`field "ui.screen": unknown value %q`, ui.Screen)
 	}
-	if !slices.Contains(demoViews[ui.Screen], ui.View) {
+	// The view of Work is its goal: a goal ID, the pseudo-goal, or "" for
+	// the default goal. The tui-v2 fixtures name the old views goals, queue,
+	// and tasks. They select the default goal.
+	waves := map[string]bool{}
+	views := demoViews[ui.Screen]
+	if ui.Screen == "work" {
+		views = []string{"", workNoGoal, "goals", "queue", "tasks"}
+		for _, goal := range f.Data.Goals {
+			views = append(views, goal.ID)
+			for _, wave := range goal.Waves {
+				waves[wave.ID] = true
+			}
+		}
+	}
+	if !slices.Contains(views, ui.View) {
 		return fmt.Errorf(`field "ui.view": unknown value %q for screen %q`, ui.View, ui.Screen)
 	}
 	if ui.Focus != "" && !slices.Contains(demoFocuses, ui.Focus) {
 		return fmt.Errorf(`field "ui.focus": unknown value %q`, ui.Focus)
 	}
 	for region, scroll := range ui.Scroll {
-		if !slices.Contains(demoFocuses, region) {
+		if !slices.Contains(demoFocuses, region) && (ui.Screen != "work" || !waves[region]) {
 			return fmt.Errorf(`field "ui.scroll": unknown region %q`, region)
 		}
 		if scroll.Top < 0 || scroll.Left < 0 {
@@ -258,16 +294,18 @@ func ParseDemoSize(value string) (int, int, error) {
 func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	data := fixture.Data
 	m.headerLoader = func(string) (headerState, error) {
-		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks), nil
+		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks, data.Asks), nil
 	}
 	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {
 		unread := make(map[string][]records.Inbox, len(data.Inbox))
+		var all []records.Inbox
 		for name, items := range data.Inbox {
 			for _, item := range items {
 				if item.ReadAt == "" {
 					unread[name] = append(unread[name], item)
 				}
 			}
+			all = append(all, items...)
 		}
 		return buildAgents(agentsSource{
 			projects:        data.Projects,
@@ -278,10 +316,8 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			supervisorClaim: records.Claim{Key: "supervisor", Agent: data.Supervisor.Agent, PID: data.Supervisor.PID},
 			unread:          unread,
 			events:          demoLogEvents(data.Logs),
+			inbox:           all,
 		}, now), nil
-	}
-	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
-		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks), slices.Clone(data.Agents)), nil
 	}
 	m.tasksLoader = func(string) (tasksData, error) {
 		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{
@@ -307,11 +343,11 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		sortFrictionEntries(entries)
 		return frictionData{entries: entries}, nil
 	}
-	m.healthLoader = func(string, *slog.Logger) doctor.Result {
-		return doctor.Result{Checks: slices.Clone(data.Checks)}
+	m.healthLoader = func(string, *slog.Logger) (doctor.Result, error) {
+		return doctor.Result{Checks: slices.Clone(data.Checks)}, nil
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
-		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), now), nil
+		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), data.Asks, data.Agents, now), nil
 	}
 	m.logLoader = func(*logs.Reader, time.Time) ([]logs.Event, error) {
 		return demoLogEvents(data.Logs), nil
@@ -339,50 +375,63 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	case "agents":
 		m.screenIndex = 1
 		m.graph.selected = ui.Selection
+		m.graph.podView = ui.View == "pod"
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
-		switch ui.View {
-		case "goals":
-			m.screenIndex = 2
-			m.goalsQueue.selectedGoal = ui.Selection
-		case "queue":
-			m.screenIndex = 3
-			m.goalsQueue.selectedTaskID = ui.Selection
-		default:
-			m.screenIndex = 4
-			m.tasks.selectedID = ui.Selection
+		m.screenIndex = 2
+		m.tasks.goal = ui.View
+		m.tasks.selectedID = ui.Selection
+		m.tasks.stopsOnly = ui.StopsOnly
+		m.tasks.showCancelled = ui.ShowCancelled
+		m.tasks.left = ui.Scroll["board"].Left
+		for key, scroll := range ui.Scroll {
+			if key != "board" {
+				if m.tasks.tops == nil {
+					m.tasks.tops = map[string]int{}
+				}
+				m.tasks.tops[key] = scroll.Top
+			}
+		}
+		switch ui.Popup {
+		case workPopupTask, workPopupDeps:
+			m.tasks.popup = ui.Popup
 		}
 	case "friction":
+		// The view resolved is the state with the resolved entries
+		// expanded. A selection is an open entry file, a resolved entry
+		// file, or the fold line.
 		m.screenIndex = 5
-		path := "entries/" + ui.Selection
-		if ui.View == "resolved" {
-			m.friction.tab = frictionResolved
-			path = "entries/resolved/" + ui.Selection
+		m.friction.expanded = ui.View == "resolved"
+		m.friction.filter, m.friction.filterDraft, m.friction.filterOpen = ui.Filter.Text, ui.Filter.Text, ui.Filter.Open
+		m.friction.selectedPath = ""
+		for _, entry := range m.demo.fixture.Data.Friction {
+			if entry.File == ui.Selection && !entry.Resolved {
+				m.friction.selectedPath = "entries/" + ui.Selection
+			} else if entry.File == ui.Selection && m.friction.selectedPath == "" {
+				m.friction.selectedPath = "entries/resolved/" + ui.Selection
+			}
 		}
-		if ui.Selection != "" {
-			m.friction.selectedPath = path
+		if ui.Selection == frictionFold {
+			m.friction.selectedPath = frictionFold
 		}
+		m.friction.listOffset = ui.Scroll["list"].Top
+		m.detailsOffset[tabFriction] = ui.Scroll["details"].Top
 	case "health":
 		m.screenIndex = 6
-		m.health.hideStopped = ui.HideStopped
-		if ui.View == "agents" {
-			m.health.selectedAgent = ui.Selection
-		} else {
-			m.health.selected = ui.Selection
-		}
+		m.health.selectedAgent = ui.Selection
 	case "logs":
 		m.screenIndex = 7
 		m.textFilter = ui.Filter.Text
 		m.logPendingTime = ui.Selection
 		m.logOffset = ui.Scroll["events"].Top
 		m.detailsOffset[tabLogs] = ui.Scroll["json"].Top
+		m.logRaw = ui.View == "raw"
 		if ui.Filter.Open {
 			m.mode = editing
 			m.filterDraft = ui.Filter.Text
 		}
 	}
 	m.graph.hideStopped = ui.HideStopped
-	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {
 		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, m.now().Location())
@@ -399,23 +448,65 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	if ui.ChatNoise != "" {
 		m.chatNoise = ui.ChatNoise
 	}
+	m.chatEventsOpen = ui.ChatEventsOpen
 	if scroll, ok := ui.Scroll["feed"]; ok {
 		m.chatFeed.topItem = scroll.Top
 	}
+	m.applyDemoAsk(ui)
 	m.applyDemoFrame(ui)
+}
+
+// applyDemoAsk sets the card state of the fixture. A focus of the card
+// takes the focus from the input line.
+func (m *Model) applyDemoAsk(ui demoUIState) {
+	if ui.Screen != "chat" {
+		return
+	}
+	switch ui.Focus {
+	case "ask", "note", "other", "review":
+		m.chatInputActive = false
+		m.chatInput.Blur()
+	}
+	if ui.Ask.Card == "" || m.demo == nil {
+		return
+	}
+	m.askFocusID = ui.Ask.Card
+	for _, record := range m.demo.fixture.Data.Asks {
+		if record.ID != ui.Ask.Card {
+			continue
+		}
+		card := m.askCardOf(record)
+		card.question = min(max(ui.Ask.Question-1, 0), len(record.Questions)-1)
+		card.cursor[card.question] = max(ui.Ask.Option-1, 0)
+		for index, picks := range ui.Ask.Picks {
+			for _, pick := range picks {
+				if index < len(card.picks) && pick >= 1 && pick <= len(card.picks[index]) {
+					card.picks[index][pick-1] = true
+				}
+			}
+		}
+		copy(card.notes, ui.Ask.Notes)
+		copy(card.others, ui.Ask.Other)
+		card.noteOpen = ui.Ask.NoteOpen
+		switch ui.Focus {
+		case "note", "other":
+			card.editing = ui.Focus
+		case "review":
+			card.review, card.reviewRow = true, len(record.Questions)
+			if ui.Ask.ReviewRow > 0 {
+				card.reviewRow = min(ui.Ask.ReviewRow, len(record.Questions)) - 1
+			}
+		}
+	}
 }
 
 // applyDemoFrame sets the tab, the view, the focus, the overlay, the popup,
 // and the restart prompt of the frame from the fixture UI state.
 func (m *Model) applyDemoFrame(ui demoUIState) {
 	tab, view := m.activeTab(), 0
-	switch {
-	case tab == tabWork:
+	switch tab {
+	case tabWork:
 		view = m.screenIndex - 2
-	case tab == tabFriction && ui.View == "resolved":
-		view = 1
-	case ui.Screen == "health" && ui.View == "agents":
-		tab, view = tabHealth, 1
 	}
 	m.selectScreen(tab, view)
 	if index := slices.Index(screenRegistry[tab].regions, ui.Focus); index > 0 {
@@ -423,10 +514,24 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 	}
 	m.helpOpen = ui.Overlay == "help"
 	m.popupOpen = ui.Popup == "agent-details"
-	if ui.Prompt.Kind == "restart" {
+	switch ui.Prompt.Kind {
+	case "restart":
 		m.agents.restartConfirm = true
 		m.agents.restartTarget = records.Agent{Key: ui.Prompt.Target}
+		if m.demo != nil {
+			// The prompt names the role of its target (health.md rule 6).
+			agents := m.demo.fixture.Data.Agents
+			if index := slices.IndexFunc(agents, func(a records.Agent) bool { return a.Key == ui.Prompt.Target }); index >= 0 {
+				m.agents.restartTarget = agents[index]
+			}
+		}
 		m.agents.restartNotice = "restart " + ui.Prompt.Target + "? y/n"
+	case "quit":
+		// The state after the first ctrl+c (decision 14).
+		m.quitNotice = true
+	case "send":
+		// The state after enter on Chat (chat.md rule 12).
+		_ = m.sendChat()
 	}
 }
 

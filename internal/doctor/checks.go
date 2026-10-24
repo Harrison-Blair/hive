@@ -152,6 +152,52 @@ func checkGit(ctx context.Context) Check {
 	return newCheck("git", true, true, firstLine(result.Stdout))
 }
 
+// checkHomeVersion compares the binary version with the tags at HEAD of the
+// home (decision 19 of the releases spec).
+func checkHomeVersion(ctx context.Context, home, binary, git string) Check {
+	const name = "home version"
+	if binary == "dev" {
+		return newCheck(name, false, true, "development build: no release version to compare")
+	}
+	checkCtx, cancel := context.WithTimeout(ctx, checkBound)
+	defer cancel()
+	tags, err := gitLines(checkCtx, git, "-C", home, "tag", "--points-at", "HEAD")
+	if err != nil {
+		return newCheck(name, false, false, err.Error())
+	}
+	for _, tag := range tags {
+		if tag == binary {
+			return newCheck(name, false, true, binary)
+		}
+	}
+	atHome := "home tags " + strings.Join(tags, ", ")
+	if len(tags) == 0 {
+		commit, err := gitLines(checkCtx, git, "-C", home, "rev-parse", "--short", "HEAD")
+		if err != nil {
+			return newCheck(name, false, false, err.Error())
+		}
+		atHome = "no tag at commit " + strings.Join(commit, "")
+	}
+	steps := fmt.Sprintf("update (README.md, Update): git -C HOME_DIR fetch --tags; git -C HOME_DIR checkout %[1]s; "+
+		"go install github.com/Harrison-Blair/hive@%[1]s; restart the supervisor and the coordinator", binary)
+	return newCheck(name, false, false, fmt.Sprintf("binary %s, %s; %s", binary, atHome, steps))
+}
+
+func gitLines(ctx context.Context, git string, args ...string) ([]string, error) {
+	result, err := run.Command(ctx, "", git, args...)
+	if err != nil {
+		return nil, err
+	}
+	if result.ExitCode != 0 {
+		detail := firstLine(result.Stderr)
+		if detail == "" {
+			detail = fmt.Sprintf("git exited with code %d", result.ExitCode)
+		}
+		return nil, errors.New(detail)
+	}
+	return strings.Fields(result.Stdout), nil
+}
+
 func checkSupervisor(home string) Check {
 	store, err := storelib.Open(home)
 	if err != nil {

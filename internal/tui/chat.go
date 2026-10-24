@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -13,6 +14,8 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -34,6 +37,16 @@ const (
 type chatScreenData struct {
 	entries []chatlib.Entry
 	inbox   []records.Inbox
+	asks    []ask.Record
+	routes  map[string]askRoute
+}
+
+// chatItem is one message of the transcript, its time, and the inbox
+// sequence of an event.
+type chatItem struct {
+	at  time.Time
+	seq uint64
+	msg component.ChatMessage
 }
 
 type chatSendMsg struct {
@@ -41,21 +54,28 @@ type chatSendMsg struct {
 	envelope output.Envelope
 }
 
-// chatFeed is the scroll state of the feed and the lines of its last render.
-// Top is the first line of the feed in view. TopItem is a message to put at
-// the top on the next render, or -1. Follow keeps the last line in view.
+// chatFeed is the scroll state of the transcript and the lines of its last
+// render. Height is the rows of the transcript and composerTop is the first
+// row of the composer. Top is the first line in view. TopItem is a message to
+// put at the top on the next render, or -1. Follow keeps the last line in
+// view. Msgs and seqs are the messages of the lines and the inbox sequence of
+// each event.
 type chatFeed struct {
-	top     int
-	topItem int
-	follow  bool
-	lines   []string
-	starts  []int
-	width   int
-	visible int
+	top         int
+	topItem     int
+	follow      bool
+	lines       []string
+	starts      []int
+	msgs        []component.ChatMessage
+	seqs        []uint64
+	width       int
+	visible     int
+	height      int
+	composerTop int
 }
 
-// chatScreen is the tab 2 Chat (decisions 15, 24, 30, 31): a feed that
-// scrolls and a fixed input below it.
+// chatScreen is Chat, the home screen of golden-frames decision 1: the
+// transcript and the composer.
 type chatScreen struct{ model *Model }
 
 func (s chatScreen) Update(msg tea.Msg) tea.Cmd {
@@ -86,13 +106,25 @@ func loadChatScreenData(home string, now time.Time) (chatScreenData, error) {
 	if err != nil {
 		return chatScreenData{}, fmt.Errorf("coordinator inbox: %w", err)
 	}
-	return buildChatScreenData(chatResult.Entries, inboxRecords, now), nil
+	asks, err := ask.List(home)
+	if err != nil {
+		return chatScreenData{}, fmt.Errorf("asks: %w", err)
+	}
+	agentEnvelope := agent.List(home, agent.ListOptions{All: true})
+	agents, ok := agentEnvelope.Result.([]records.Agent)
+	if agentEnvelope.Outcome != "ok" || !ok {
+		return chatScreenData{}, fmt.Errorf("agents: %v", agentEnvelope.Error)
+	}
+	return buildChatScreenData(chatResult.Entries, inboxRecords, asks, agents, now), nil
 }
 
-// buildChatScreenData keeps the chat entries of the chat window.
-func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, now time.Time) chatScreenData {
+// buildChatScreenData keeps the chat entries of the chat window, the asks in
+// the order of their IDs, and the route of each ask.
+func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, asks []ask.Record, agents []records.Agent, now time.Time) chatScreenData {
 	cutoff := now.UTC().Add(-chatWindow)
-	result := chatScreenData{entries: []chatlib.Entry{}, inbox: inboxRecords}
+	asks = slices.Clone(asks)
+	sortAsks(asks)
+	result := chatScreenData{entries: []chatlib.Entry{}, inbox: inboxRecords, asks: asks, routes: buildAskRoutes(asks, agents)}
 	for _, entry := range entries {
 		at, err := time.Parse(time.RFC3339Nano, entry.At)
 		if err == nil && !at.Before(cutoff) {
@@ -102,51 +134,55 @@ func buildChatScreenData(entries []chatlib.Entry, inboxRecords []records.Inbox, 
 	return result
 }
 
-// newChatInput gives the edit buffer of the input. The Input component draws
-// it.
+// newChatInput gives the edit buffer of the input line. The Composer
+// component draws it. Golden-frames decision 16 takes ctrl+g, ctrl+t, and
+// ctrl+f from the key map, and right keeps character forward.
 func newChatInput() textarea.Model {
 	input := textarea.New()
 	input.Prompt = ""
 	input.ShowLineNumbers = false
 	input.CharLimit = 0
-	input.SetWidth(1 << 12)
 	input.MaxHeight = 0
-	input.Blur()
+	input.SetVirtualCursor(false)
+	input.KeyMap.CharacterForward.SetKeys("right")
+	input.KeyMap.TransposeCharacterBackward.SetKeys()
+	input.KeyMap.SelectAll.SetKeys()
+	input.Focus()
 	return input
 }
 
 func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
-	if m.chatInputActive {
-		switch press.String() {
-		case "enter":
-			return m.sendChat()
-		case "shift+enter", "alt+enter":
-			m.chatInput.InsertString("\n")
-			return nil
-		case "esc":
-			m.chatInputActive = false
-			m.chatInput.Blur()
-			return m.logAction("focus region", slogString("region", "feed"))
-		}
-		updated, cmd := m.chatInput.Update(press)
-		m.chatInput = updated
-		return cmd
+	switch press.String() {
+	case "ctrl+o":
+		return m.toggleChatEvents()
+	}
+	if !m.chatInputActive {
+		// A blocked caller has no input line to type in (rule 2).
+		return nil
 	}
 	switch press.String() {
-	case "up", "k":
-		m.scrollChat(-1)
-	case "down", "j":
-		m.scrollChat(1)
-	case "g":
-		m.chatFeed.follow = false
-		m.chatFeed.top = 0
-	case "G":
-		m.chatFeed.follow = true
+	case "enter":
+		return m.sendChat()
+	case "shift+enter", "alt+enter":
+		m.chatInput.InsertString("\n")
+		m.invalidateView()
+		return nil
 	}
-	return nil
+	updated, cmd := m.chatInput.Update(press)
+	m.chatInput = updated
+	m.invalidateView()
+	return cmd
 }
 
-// scrollChatFeed pages the feed (decision 22).
+// toggleChatEvents opens or folds all events (chat.md rule 3).
+func (m *Model) toggleChatEvents() tea.Cmd {
+	m.chatEventsOpen = !m.chatEventsOpen
+	m.chatEventOpen = nil
+	m.rebuildChat()
+	return m.logAction("chat events toggle", slog.Bool("open", m.chatEventsOpen))
+}
+
+// scrollChatFeed pages the transcript (chat.md rule 7).
 func (m *Model) scrollChatFeed(press tea.KeyPressMsg) tea.Cmd {
 	page := max(m.chatFeed.visible, 1)
 	if press.String() == "pgup" {
@@ -156,19 +192,27 @@ func (m *Model) scrollChatFeed(press tea.KeyPressMsg) tea.Cmd {
 	return nil
 }
 
-// scrollChat moves the feed by lines. The feed follows its end when the last
-// line comes into view.
+// scrollChat moves the transcript by lines. The transcript follows its end
+// when the last line comes into view.
 func (m *Model) scrollChat(lines int) {
 	feed := &m.chatFeed
 	end := max(len(feed.lines)-feed.visible, 0)
 	if feed.follow {
 		feed.top = end
 	}
-	feed.top = min(max(feed.top+lines, 0), max(end, feed.top))
+	feed.top = min(max(feed.top+lines, 0), end)
 	feed.follow = feed.top >= end
+	m.invalidateView()
 }
 
+// sendChat sends the input line (chat.md rule 12). With no live
+// coordinator, it shows the error and keeps the text.
 func (m *Model) sendChat() tea.Cmd {
+	if m.header.coordinator == "" {
+		m.chatErr = "no live coordinator"
+		m.invalidateView()
+		return m.logError("chat send", errors.New(m.chatErr))
+	}
 	if m.demo != nil {
 		return m.demoBlocked("chat send")
 	}
@@ -212,117 +256,201 @@ func (m *Model) updateChatSend(msg chatSendMsg) tea.Cmd {
 	return batch(m.logAction("chat sent", slogString("chat_id", result.ID)), m.startCurrentScreenLoad())
 }
 
-// chatView draws the feed panel and the input at exactly width×height cells.
-// From 120 columns the first body row of the feed is blank, and the top
-// border shows the count of the messages above the view.
-func (m *Model) chatView(width, height int) string {
-	wide := width >= component.LongFormWidth
-	feedHeight := max(height-3, component.PanelMinHeight)
-	body := feedHeight - 2
-	pad := 0
-	if wide {
-		pad = 1
+// chatView draws Chat in rows rows above the status rows (golden-frames
+// chat.md): the transcript, the notice line while a notice exists, and the
+// composer with the ask card.
+func (m *Model) chatView(width, rows int) string {
+	inputRows := max(rows/3-2, 1)
+	composer := component.Composer{
+		Text: m.chatInput.Value(), Cursor: m.chatInputActive,
+		CursorLine: m.chatInput.Line(), CursorColumn: m.chatInput.Column(),
+		Placeholder: m.chatPlaceholder(), InputRows: inputRows,
 	}
+	if record, _, ok := m.focusedAsk(); ok {
+		used := component.InputHeight(composer.Text, width, inputRows) + 3
+		composer.Card = m.askCardView(record, width, max(rows/2-used, 1))
+	}
+	frame := composer.View(width)
+	frameRows := strings.Count(frame, "\n") + 1
+	notice := m.noticeLine(width)
+	transcript := rows - frameRows
+	if notice != "" {
+		transcript--
+	}
+	m.chatFeed.height = max(transcript, 0)
+	m.chatFeed.composerTop = m.chatFeed.height
+	if notice != "" {
+		m.chatFeed.composerTop++
+	}
+	out := m.transcriptRows(width, max(transcript, 0))
+	if notice != "" {
+		out = append(out, notice)
+	}
+	return strings.Join(append(out, frame), "\n")
+}
+
+// chatPlaceholder gives the placeholder of chat.md rule 10.
+func (m *Model) chatPlaceholder() string {
+	switch m.header.coordinator {
+	case "working", "idle":
+		return "type a message · " + chordText(m.tuiConfig.Keys["help"]) + " help"
+	case "blocked":
+		return "type a message · the coordinator is blocked"
+	case "":
+		return "no coordinator · " + chordText(m.tuiConfig.Keys["health"]) + " health, r restarts it"
+	}
+	return "coordinator starting · a message waits here"
+}
+
+// transcriptRows gives the rows of the transcript (chat.md rules 1, 7, and
+// 8). When the lines do not fit, the view follows the end, row 0 shows the
+// count of the messages above the view, and column width-1 shows the thumb.
+func (m *Model) transcriptRows(width, height int) []string {
 	feed := &m.chatFeed
-	feed.visible = max(body-pad, 1)
 	if feed.lines == nil || feed.width != width {
-		feed.lines, feed.starts = m.chatLines(width)
 		feed.width = width
+		feed.lines, feed.starts = m.chatLines(width)
 	}
-	end := max(len(feed.lines)-feed.visible, 0)
-	switch {
-	case feed.topItem >= 0:
+	out := make([]string, 0, height)
+	if len(feed.lines) == 0 {
+		feed.visible = height
+		out = append(out, m.welcomeLines()...)
+		for len(out) < height {
+			out = append(out, "")
+		}
+		return fitRows(out[:height], width)
+	}
+	if len(feed.lines) <= height {
+		feed.visible, feed.top, feed.follow = height, 0, true
+		out = append(out, feed.lines...)
+		for len(out) < height {
+			out = append(out, "")
+		}
+		return fitRows(out, width)
+	}
+	feed.visible = max(height-1, 1)
+	end := len(feed.lines) - feed.visible
+	if feed.topItem >= 0 {
 		feed.top = feed.starts[min(feed.topItem, len(feed.starts)-1)]
 		feed.topItem = -1
-		feed.follow = false
-	case feed.follow:
+		feed.follow = feed.top >= end
+	}
+	if feed.follow {
 		feed.top = end
 	}
-	feed.top = min(max(feed.top, 0), max(len(feed.lines)-1, 0))
+	feed.top = min(max(feed.top, 0), end)
 	earlier := sort.SearchInts(feed.starts, feed.top)
+	head := ""
+	if earlier > 0 {
+		head = strings.Repeat(" ", chatEarlierCol) + dimStyle.Render(fmt.Sprintf("· · · %d earlier · · ·", earlier))
+	}
+	out = append(out, head)
+	out = append(out, feed.lines[feed.top:feed.top+feed.visible]...)
+	out = fitRows(out, width)
+	mark := component.Thumb(feed.visible, len(feed.lines), feed.visible, feed.top)
+	for row := mark.Start; row < mark.Start+mark.Size; row++ {
+		out[row+1] = ansi.Truncate(out[row+1], width-1, "") + dimStyle.Render("┃")
+	}
+	return out
+}
 
-	lines := make([]string, pad, pad+feed.visible)
-	lines = append(lines, feed.lines[feed.top:min(feed.top+feed.visible, len(feed.lines))]...)
-	title := "chat"
-	if wide {
-		title = "chat · noise " + m.chatNoise
+// chatEarlierCol is the column of the earlier row of the layout of chat.md.
+const chatEarlierCol = 52
+
+// fitRows cuts or pads each row to width cells.
+func fitRows(rows []string, width int) []string {
+	for i, row := range rows {
+		rows[i] = fitLine(row, width)
 	}
-	panel := component.Panel{
-		Title: title, Focused: !m.chatInputActive, Lines: lines,
-		VMark: component.Thumb(body, len(feed.lines)+pad, body, feed.top),
+	return rows
+}
+
+// welcomeLines gives the welcome block of chat.md rule 8, from row 1.
+func (m *Model) welcomeLines() []string {
+	home := m.homeLabel()
+	state := ansi.Strip(m.stateSegment())
+	glyph, rest, _ := strings.Cut(state, " ")
+	glyphStyle := lipgloss.NewStyle().Foreground(stateColor(m.header.coordinator))
+	chords := make([]string, 0, len(chordTabs))
+	for _, chord := range chordTabs {
+		chords = append(chords, chordText(m.tuiConfig.Keys[chord.action])+" "+chord.action)
 	}
-	rows := strings.Split(panel.View(width, feedHeight), "\n")
-	if wide && earlier > 0 {
-		rows[0] = borderNote(rows[0], fmt.Sprintf(" ↑ %d earlier ", earlier), width/2)
+	return []string{
+		"",
+		" " + dimStyle.Render("hive · "+home),
+		" " + glyphStyle.Render(glyph) + dimStyle.Render(" "+rest),
+		" " + dimStyle.Render("type a message to the coordinator."),
+		" " + dimStyle.Render(strings.Join(chords, "  ")),
+		" " + dimStyle.Render(chordText(m.tuiConfig.Keys["help"])+" help"),
 	}
-	input := component.Input{Text: m.chatInput.Value(), Focused: m.chatInputActive}.View(width)
-	return strings.Join(rows, "\n") + "\n" + input
+}
+
+func coordinatorStatusAge(changedAt string, now time.Time) string {
+	changed, err := time.Parse(time.RFC3339Nano, changedAt)
+	if err != nil {
+		return ""
+	}
+	minutes := int(now.Sub(changed) / time.Minute)
+	if minutes < 0 {
+		minutes = 0
+	}
+	return fmt.Sprintf("%dm", minutes)
 }
 
 // chatCursor puts the real terminal cursor on the cursor cell of the input
-// text row, while the input has the focus. The input bottom border and the
-// footer are below that row.
+// line, while the input line has the focus. An empty input line has the
+// cursor after "> ".
 func (m *Model) chatCursor(content string) *tea.Cursor {
 	if m.activeTab() != tabChat || !m.chatInputActive || m.helpOpen {
 		return nil
 	}
 	lines := strings.Split(ansi.Strip(content), "\n")
-	if len(lines) < 3 {
-		return nil
+	place := func(col, row int) *tea.Cursor {
+		cursor := tea.NewCursor(col, row)
+		cursor.Shape = tea.CursorBar
+		cursor.Color = lipgloss.Color(colorAccent)
+		return cursor
 	}
-	row := lines[len(lines)-3]
-	index := strings.LastIndex(row, "█")
-	if index < 0 {
-		return nil
+	for row, line := range lines {
+		if index := strings.LastIndex(line, "█"); index >= 0 {
+			return place(ansi.StringWidth(line[:index]), row)
+		}
 	}
-	cursor := tea.NewCursor(ansi.StringWidth(row[:index]), len(lines)-3)
-	cursor.Shape = tea.CursorBar
-	cursor.Color = lipgloss.Color(colorAccent)
-	return cursor
+	for row := len(lines) - 1; row >= 0; row-- {
+		if strings.HasPrefix(lines[row], "│ > ") {
+			return place(4, row)
+		}
+	}
+	return nil
 }
 
-// borderNote draws note in dim over the top border row from cell col.
-func borderNote(row, note string, col int) string {
-	end := col + lipgloss.Width(note)
-	if end >= lipgloss.Width(row) {
-		return row
-	}
-	return ansi.Truncate(row, col, "") + dimStyle.Render(note) + ansi.TruncateLeft(row, end, "")
-}
-
-// chatLines gives the lines of the feed for a feed panel of width cells, and
-// the first line of each message. A blank line separates two messages, as
-// in component.ChatLines.
+// chatLines gives the lines of the transcript at width cells and the first
+// line of each message.
 func (m *Model) chatLines(width int) ([]string, []int) {
-	var lines []string
-	var starts []int
-	for _, msg := range m.chatMessages() {
-		got, err := component.ChatLines([]component.ChatMessage{msg}, width)
-		if err != nil {
-			got = []string{safeChatText(msg.Text)}
+	msgs := m.chatMessages()
+	lines, err := component.ChatLines(msgs, width)
+	if err != nil {
+		lines = nil
+		for _, msg := range msgs {
+			lines = append(lines, " "+safeChatText(msg.Text))
 		}
-		if len(lines) > 0 && ansi.Strip(lines[len(lines)-1]) != "" {
-			lines = append(lines, "")
+	}
+	starts, err := component.ChatStarts(msgs, width)
+	if err != nil {
+		starts = make([]int, len(msgs))
+		for i := range starts {
+			starts[i] = i
 		}
-		starts = append(starts, len(lines))
-		lines = append(lines, got...)
 	}
-	if len(lines) == 0 {
-		lines = []string{dimStyle.Render("no chat yet")}
-		starts = []int{0}
-	}
+	m.chatFeed.msgs = msgs
 	return lines, starts
 }
 
-// chatMessages gives the chat entries and the visible inbox records in time
-// order. A user entry that is not sent shows its delivery after the name.
+// chatMessages gives the chat entries, the visible inbox records, and the
+// ask lines in time order (chat.md rules 2 to 6).
 func (m *Model) chatMessages() []component.ChatMessage {
-	type item struct {
-		at  time.Time
-		msg component.ChatMessage
-	}
 	zone := m.now().Location()
-	var items []item
+	var items []chatItem
 	for _, entry := range m.chatData.entries {
 		at, err := time.Parse(time.RFC3339Nano, entry.At)
 		if err != nil {
@@ -331,24 +459,36 @@ func (m *Model) chatMessages() []component.ChatMessage {
 		msg := component.ChatMessage{Time: at.In(zone).Format("15:04"), Name: "coordinator", Kind: component.ChatAgent, Text: safeChatText(entry.Text)}
 		if entry.From == "user" {
 			msg.Name, msg.Kind = "you", component.ChatUser
-			if entry.Delivery != "sent" {
-				msg.Name += " · " + entry.Delivery
+			switch entry.Delivery {
+			case "pending":
+				msg.Note = dimStyle.Render(" · pending")
+			case "unknown":
+				msg.Note = accentStyle.Render(" · not delivered")
 			}
 		}
-		items = append(items, item{at, msg})
+		items = append(items, chatItem{at: at, msg: msg})
 	}
 	for _, event := range m.visibleChatEvents() {
 		at, err := time.Parse(time.RFC3339Nano, event.CreatedAt)
 		if err != nil {
 			continue
 		}
-		first, _, _ := strings.Cut(safeChatText(event.Text), "\n")
-		items = append(items, item{at, component.ChatMessage{Time: at.In(zone).Format("15:04"), Name: event.Agent, Kind: component.ChatEvent, Text: first}})
+		open, ok := m.chatEventOpen[event.Seq]
+		if !ok {
+			open = m.chatEventsOpen
+		}
+		items = append(items, chatItem{at: at, seq: event.Seq, msg: component.ChatMessage{
+			Time: at.In(zone).Format("15:04"), Name: event.Agent, Kind: component.ChatEvent,
+			Text: safeChatText(event.Text), Open: open,
+		}})
 	}
+	items = append(items, m.askMessages(zone)...)
 	sort.SliceStable(items, func(i, j int) bool { return items[i].at.Before(items[j].at) })
 	msgs := make([]component.ChatMessage, len(items))
+	m.chatFeed.seqs = make([]uint64, len(items))
 	for index, it := range items {
 		msgs[index] = it.msg
+		m.chatFeed.seqs[index] = it.seq
 	}
 	return msgs
 }

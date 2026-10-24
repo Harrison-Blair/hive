@@ -1,8 +1,12 @@
 package boardexport
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
@@ -14,16 +18,21 @@ const designDir = "../../.hive/spec/tui-v2/design"
 // TestGoldenGridFiles reads each committed grid file. It checks the size
 // against the spec table and checks each symbol. It runs no Node.js.
 func TestGoldenGridFiles(t *testing.T) {
+	requireSpecFile(t, designDir)
 	files, err := filepath.Glob(filepath.Join(designDir, "*.grid"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != len(Sizes) {
-		t.Errorf("found %d grid files, want %d: %v", len(files), len(Sizes), files)
+	for _, file := range files {
+		if _, ok := Sizes[strings.TrimSuffix(filepath.Base(file), ".grid")]; !ok {
+			t.Errorf("%s is not in the board table", file)
+		}
 	}
 	for board, size := range Sizes {
 		t.Run(board, func(t *testing.T) {
-			f, err := os.Open(filepath.Join(designDir, board+".grid"))
+			path := filepath.Join(designDir, board+".grid")
+			requireSpecFile(t, path)
+			f, err := os.Open(path)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -39,5 +48,77 @@ func TestGoldenGridFiles(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+// gfDesignDir holds the Gf boards and their golden grids of tasks 137, 143,
+// 144, 145, 146, and 148.
+const gfDesignDir = "../../.hive/spec/golden-frames/design"
+
+// gfGrids gives the 40 Gf grids in design/: the Chat boards and the
+// component sheet of task 137, the Work boards of task 143, the Logs boards
+// of task 146, the Health boards of task 145, the Friction boards of task 144,
+// the Help board of task 148, and the 4 Agents boards of task 147.
+var gfGrids = []string{
+	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
+	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
+	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
+	"GfWork", "GfWorkEmpty", "GfWorkNoGoal", "GfWorkScroll", "GfWorkStops",
+	"GfWorkCancelled", "GfWorkTask", "GfWorkDeps",
+	"GfLogs", "GfLogsEmpty", "GfLogsError", "GfLogsRaw",
+	"GfHealth", "GfHealthChecking", "GfHealthGreen", "GfHealthRestart",
+	"GfAgents", "GfAgentsPod", "GfAgentsDetails", "GfAgentsNone",
+	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
+	"GfHelp",
+}
+
+// TestGfGoldenGridFiles reads each committed Gf grid file of gfGrids. Each
+// grid has the size of golden-frames decision 23 and the symbols and tokens
+// of decision 7.
+func TestGfGoldenGridFiles(t *testing.T) {
+	requireSpecFile(t, gfDesignDir)
+	files, err := filepath.Glob(filepath.Join(gfDesignDir, "*.grid"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		if !slices.Contains(gfGrids, strings.TrimSuffix(filepath.Base(file), ".grid")) {
+			t.Errorf("%s is not one of the %d Gf grids", file, len(gfGrids))
+		}
+	}
+	for _, board := range gfGrids {
+		t.Run(board, func(t *testing.T) {
+			size, ok := GfSizes[board]
+			if !ok {
+				t.Fatalf("%s is not in the board table of decision 23", board)
+			}
+			path := filepath.Join(gfDesignDir, board+".grid")
+			requireSpecFile(t, path)
+			f, err := os.Open(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() { _ = f.Close() }()
+			g, err := cellgrid.ReadGrid(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if g.Width != size[0] || g.Height != size[1] {
+				t.Errorf("size %d×%d, want %d×%d", g.Width, g.Height, size[0], size[1])
+			}
+			if err := CheckGrid(board, g); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+// requireSpecFile skips the test when a file or a folder of the local spec is
+// missing. Git does not track .hive/spec/, so a clean clone has no grid and
+// no fixture. The test runs as before when the file exists.
+func requireSpecFile(t testing.TB, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("local spec file missing: %s: Git does not track .hive/spec/", path)
 	}
 }

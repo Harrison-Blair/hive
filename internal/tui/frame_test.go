@@ -17,6 +17,7 @@ import (
 // readBoardGrid reads the golden grid of one board.
 func readBoardGrid(t *testing.T, board string) cellgrid.Grid {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, board+".grid"))
 	file, err := os.Open(filepath.Join(designDir, board+".grid"))
 	if err != nil {
 		t.Fatal(err)
@@ -69,6 +70,9 @@ func gridRows(g cellgrid.Grid, rows ...int) cellgrid.Grid {
 // demo view of board with the same rows of its golden grid.
 func checkFrameRows(t *testing.T, board string) {
 	t.Helper()
+	if skipRetired(t, board) {
+		return
+	}
 	want := readBoardGrid(t, board)
 	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
 	rows := []int{0, 1, 2, want.Height - 1}
@@ -89,18 +93,18 @@ func TestFrameRowsMatchMain(t *testing.T) {
 	checkFrameRows(t, "Main")
 }
 
-// The startup notice takes the footer before an error, as the old footer
-// did. The error then shows when the notice is empty.
+// Golden-frames decision 14: the startup notice takes the notice line before
+// an error. The error then shows when the notice is empty.
 func TestFooterShowsStartupNoticeBeforeError(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.startupNotice = "not in herdr: no coordinator or supervisor started"
 	m.chatErr = "chat send is for the user only"
 	m.invalidateView()
-	requireView(t, m, "[feed] not in herdr: no coordinator or supervisor started")
+	requireView(t, m, " not in herdr: no coordinator or supervisor started")
 	m.startupNotice = ""
 	m.invalidateView()
-	requireView(t, m, "[feed] error: chat send is for the user only")
+	requireView(t, m, " error: chat send is for the user only")
 }
 
 // screenBoards are the boards of one screen each. Their header, tab bar, and
@@ -126,20 +130,31 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 	}{
 		{"AgentDetails", "details", tabAgents, 0},
 		{"Chat", "input", tabChat, 0},
-		{"Compact", "details", tabWork, 2},
-		{"FrictionResolved", "list", tabFriction, 1},
-		{"HealthAgents", "restart", tabHealth, 1},
+		{"GfWorkTask", workPopupTask, tabWork, 0},
+		{"FrictionResolved", "list", tabFriction, 0},
+		// Golden-frames health.md: Health has no views.
+		{"HealthAgents", "restart", tabHealth, 0},
 		{"Help", "help", tabAgents, 0},
 		{"Logs", "json", tabLogs, 0},
-		{"WorkQueue", "list", tabWork, 1},
+		{"GfWork", "board", tabWork, 0},
 	} {
 		t.Run(tt.board, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			if m.activeTab() != tt.tab || m.activeView() != tt.view || m.focusState() != tt.focus {
 				t.Fatalf("tab %d, view %d, focus %q; want %d, %d, %q", m.activeTab(), m.activeView(), m.focusState(), tt.tab, tt.view, tt.focus)
 			}
 		})
 	}
+}
+
+// Golden-frames friction.md rule 3: Friction has no views. The fixture view
+// "resolved" expands the fold line of the resolved entries.
+func TestDemoUIStateExpandsTheFrictionResolvedRows(t *testing.T) {
+	m := newTestDemoModel(t, "FrictionResolved.fixture.json", demoSize{})
+	if !m.friction.expanded {
+		t.Fatal("the fixture view resolved did not expand the resolved entries")
+	}
+	requireView(t, m, "▾ resolved · ")
 }
 
 // y in the restart prompt of demo mode shows the demo notice and restarts
@@ -156,6 +171,9 @@ func TestDemoRestartPromptYesDoesNotRestart(t *testing.T) {
 // The Help view matches its board cell for cell (AC5), with the Agents
 // screen behind the box.
 func TestHelpMatchesItsBoard(t *testing.T) {
+	if skipRetired(t, "Help") {
+		return
+	}
 	want := readBoardGrid(t, "Help")
 	m := newTestDemoModel(t, "Help.fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
@@ -223,84 +241,92 @@ func TestEachScreenKeepsTheFrameAtEachBreakpoint(t *testing.T) {
 	}
 }
 
-// focusTokens gives the token of the top-left corner of the list panel and
-// of the details panel in the first content row of a 120×40 Health view.
+// focusTokens gives the token of the top-left corner of the details box and
+// of the agents table of a 120×40 Health view: rows 8 and 18 of health.md.
 func focusTokens(t *testing.T, m *Model) (cellgrid.Token, cellgrid.Token) {
 	t.Helper()
-	row := renderRows(t, m, 120, 4)
-	listWidth := 120 * 13 / 30
-	return row.At(0, 0).Token, row.At(0, listWidth).Token
+	grid := renderGrid(t, m, 120, 40)
+	return grid.At(8, 0).Token, grid.At(18, 0).Token
 }
 
-// AC2: the focused region has the accent border, and tab moves the focus.
+// AC2: the focused region has the accent border, and ctrl+] moves the focus
+// (golden-frames decision 6). Health has two boxes, the grid with no border
+// and the agents table (health.md rule 5).
 func TestTabMovesTheAccentBorder(t *testing.T) {
-	m := newTestDemoModel(t, "Health.fixture.json", demoSize{})
-	if list, details := focusTokens(t, m); list != cellgrid.Accent || details != cellgrid.Border {
-		t.Fatalf("list focus: list border %s, details border %s; want accent, border", list, details)
+	m := gfHealthModel(t, "GfHealth", nil)
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Border {
+		t.Fatalf("grid focus: details border %s, table border %s; want border, border", details, table)
 	}
-	requireView(t, m, "[list]")
-	m, _ = raise(t, m, key(0, "tab"))
-	if list, details := focusTokens(t, m); list != cellgrid.Border || details != cellgrid.Accent {
-		t.Fatalf("details focus: list border %s, details border %s; want border, accent", list, details)
+	requireKeys(t, m, "grid", "")
+	m, _ = raise(t, m, ctrl(']'))
+	if details, table := focusTokens(t, m); details != cellgrid.Border || table != cellgrid.Accent {
+		t.Fatalf("table focus: details border %s, table border %s; want border, accent", details, table)
 	}
-	requireView(t, m, "[details]")
-	m, _ = raise(t, m, key(0, "tab"))
-	if m.focusState() != "list" {
-		t.Fatalf("second tab gave focus %q; want list", m.focusState())
+	requireKeys(t, m, "table", "")
+	m, _ = raise(t, m, ctrl(']'))
+	if m.focusState() != "grid" {
+		t.Fatalf("second ctrl+] gave focus %q; want grid", m.focusState())
 	}
 }
 
 // AC4: ? opens the help overlay, ↑ and ↓ scroll it, and ? or esc closes it.
-// Help does not list --demo.
+// Help does not list --demo. At 80×24 the body is taller than the box, so it
+// scrolls (golden-frames screens/help.md rule 4).
 func TestHelpKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	m, _ = raise(t, m, key('?', "?"))
-	requireView(t, m, "keys · ? or esc closes", "[help]")
+	requireView(t, m, helpBoxTitle)
+	requireKeys(t, m, "help", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	if m.helpOffset != 1 {
 		t.Fatalf("help offset = %d after down down up; want 1", m.helpOffset)
 	}
-	m, _ = raise(t, m, key('2', "2"))
+	m, _ = raise(t, m, ctrl('t'))
 	if m.activeTab() != tabAgents || !m.helpOpen {
-		t.Fatal("a screen key changed the screen behind the help overlay")
+		t.Fatal("a chord changed the screen behind the help overlay")
 	}
 	m, _ = raise(t, m, key('?', "?"))
-	rejectView(t, m, "keys · ? or esc closes")
+	rejectView(t, m, helpBoxTitle)
 	m, _ = raise(t, m, key('?', "?"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	rejectView(t, m, "keys · ? or esc closes")
-	if text := strings.Join(helpLines(), "\n"); strings.Contains(text, "--demo") {
+	rejectView(t, m, helpBoxTitle)
+	if text := strings.Join(m.helpLines(), "\n"); strings.Contains(text, "--demo") {
 		t.Fatalf("help lists --demo:\n%s", text)
 	}
 }
 
 // AC3: below 120 columns enter opens the details as a full-width overlay,
 // and esc closes it. A resize keeps the overlay and its scroll position.
+// Golden-frames work.md and health.md give those screens no list and details
+// overlay, so the test uses Logs.
 func TestDetailsOverlayBelow120Columns(t *testing.T) {
-	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
+	m := newBoardDemoModel(t, "GfLogs")
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, " · esc back", "[details]")
+	requireView(t, m, " · esc back to events")
+	requireKeys(t, m, "json", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
-	if m.focusState() != "details" || m.detailsOffset[tabFriction] != 1 {
-		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabFriction])
+	if m.focusState() != "json" || m.detailsOffset[tabLogs] != 1 {
+		t.Fatalf("resize gave focus %q, offset %d; want json, 1", m.focusState(), m.detailsOffset[tabLogs])
 	}
-	requireView(t, m, " · esc back")
+	requireView(t, m, " · esc back to events")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	rejectView(t, m, "esc back")
-	requireView(t, m, "[list]")
+	rejectView(t, m, "esc back to events")
+	requireKeys(t, m, "events", "")
 }
 
 // AC2: in each focus state of decision 21 that does not keep the global
-// keys, a screen key, a view key, or tab does not change the screen or the
-// view. An overlay, a popup, help, and the filter bar also keep the focus.
+// keys, a view key or tab does not change the screen or the view. An
+// overlay, a popup, help, and the filter bar also keep the focus.
+// Golden-frames decisions 16 and 17: a chord opens its screen from each
+// focus but help and the restart prompt, and esc closes an overlay, a popup,
+// help, and the filter bar first, on the same screen.
 func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
-	compact := tea.WindowSizeMsg{Width: 80, Height: 24}
-	enter := key(0, "enter")
 	for _, tt := range []struct {
 		name, board, focus string
 		keepFocus          bool
@@ -308,17 +334,16 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}{
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
-		{"work overlay", "Compact", "details", true, nil},
-		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
-		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
+		{"work popup", "GfWorkTask", workPopupTask, true, nil},
 		{"logs overlay", "CompactLogs", "json", true, nil},
-		{"filter", "Logs", "filter", true, []tea.Msg{tea.KeyPressMsg{Code: tea.KeyEscape}, key('/', "/")}},
+		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
 		{"input", "Chat", "input", false, nil},
 		{"restart", "HealthAgents", "restart", false, nil},
 	} {
-		for _, press := range []tea.KeyPressMsg{key('1', "1"), key('2', "2"), key('3', "3"), key('4', "4"), key('5', "5"), key('6', "6"), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
+		chords := map[string]int{"ctrl+g": tabAgents, "ctrl+t": tabWork, "ctrl+f": tabFriction, "ctrl+y": tabHealth, "ctrl+l": tabLogs}
+		for _, press := range []tea.KeyPressMsg{ctrl('g'), escKey(), ctrl('t'), ctrl('f'), ctrl('y'), ctrl('l'), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
 			t.Run(tt.name+"/"+press.String(), func(t *testing.T) {
-				m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+				m := newBoardDemoModel(t, tt.board)
 				for _, msg := range tt.keys {
 					m, _ = raise(t, m, msg)
 				}
@@ -327,8 +352,23 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 				}
 				tab, view := m.activeTab(), m.activeView()
 				m, _ = raise(t, m, press)
+				if want, chord := chords[press.String()]; chord && tt.focus != "help" && tt.focus != "restart" {
+					if want == tab {
+						want = tabChat
+					}
+					if m.activeTab() != want {
+						t.Fatalf("chord %q gave screen %d; want %d", press.String(), m.activeTab(), want)
+					}
+					return
+				}
 				if m.activeTab() != tab || m.activeView() != view {
 					t.Fatalf("key %q changed screen %d view %d to screen %d view %d", press.String(), tab, view, m.activeTab(), m.activeView())
+				}
+				if press.String() == "esc" {
+					if tt.keepFocus && m.focusState() == tt.focus {
+						t.Fatalf("esc kept focus %q", tt.focus)
+					}
+					return
 				}
 				if tt.keepFocus && m.focusState() != tt.focus {
 					t.Fatalf("key %q changed focus %q to %q", press.String(), tt.focus, m.focusState())
@@ -338,30 +378,29 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}
 }
 
-// AC2: an action key of the overlay still reaches its screen. In the Work
-// Tasks overlay, d opens the dependency graph.
+// AC2: an action key of a popup still reaches its screen. In the Work task
+// popup, d opens the dependency popup (work.md rule 10).
 func TestOverlayGivesActionKeysToTheScreen(t *testing.T) {
-	m := newTestDemoModel(t, "Compact.fixture.json", demoSize{})
+	m := newGfDemoModel(t, "GfWorkTask")
 	m, _ = raise(t, m, key('d', "d"))
-	if !m.tasks.fileOpen || !strings.HasPrefix(m.tasks.fileTitle, "dependency graph") {
-		t.Fatalf("d in the Work overlay gave open %t, title %q; want the dependency graph", m.tasks.fileOpen, m.tasks.fileTitle)
+	if m.focusState() != workPopupDeps {
+		t.Fatalf("focus = %q after d in the task popup; want deps", m.focusState())
 	}
-	if m.focusState() != "details" {
-		t.Fatalf("focus = %q after b; want details", m.focusState())
-	}
+	requireView(t, m, "12-board-fixtures · dependencies · esc closes")
 }
 
 // AC2: from 120 columns the details region sits beside the list, so the
 // screen keys stay global (decision 21).
 func TestWideDetailsKeepsScreenKeys(t *testing.T) {
-	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	// The Work board has one region, so the test uses Friction.
+	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	if m.focusState() != "details" {
 		t.Fatalf("focus = %q; want details", m.focusState())
 	}
-	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, ctrl('g'))
 	if m.activeTab() != tabAgents {
-		t.Fatalf("1 in the wide details gave screen %d; want Agents", m.activeTab())
+		t.Fatalf("ctrl+g in the wide details gave screen %d; want Agents", m.activeTab())
 	}
 }
 
@@ -373,16 +412,18 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 		keys               []tea.KeyPressMsg
 	}{
 		{"graph", "Main", "graph", nil},
-		{"feed", "CompactChat", "feed", []tea.KeyPressMsg{{Code: tea.KeyEscape}}},
+		// Golden-frames decision 19: Chat has no normal mode, so the Logs
+		// JSON region takes its place.
+		{"json", "Logs", "json", nil},
 		{"input", "Chat", "input", nil},
-		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: tea.KeyEscape}, {Code: '/', Text: "/"}}},
+		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: '/', Text: "/"}}},
 		{"help", "Help", "help", nil},
-		{"overlay", "Compact", "details", nil},
-		{"popup", "AgentDetails", "details", nil},
+		{"popup", "GfWorkTask", workPopupTask, nil},
+		{"agent popup", "AgentDetails", "details", nil},
 		{"restart", "HealthAgents", "restart", nil},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			for _, press := range tt.keys {
 				m, _ = raise(t, m, press)
 			}
@@ -403,22 +444,24 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 }
 
 // AC6: normal mode uses the frame of demo mode, and below 80×24 it shows the
-// too-small notice.
+// too-small notice. Golden-frames decisions 1 to 3: Chat is home with no
+// header and no tab bar, and the last row is the status row.
 func TestNormalModeUsesTheFrame(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	if !strings.HasPrefix(lines[0], " hive ") || !strings.Contains(lines[1], "1 Agents   2 Chat") || !strings.HasPrefix(lines[39], " [feed] ") {
+	if m.activeTab() != tabChat || strings.Contains(lines[0], " hive ") || strings.Contains(lines[1], "Agents") || !strings.HasPrefix(lines[39], " ○ none · ") {
 		t.Fatalf("normal mode does not draw the frame:\n%s", strings.Join(lines, "\n"))
 	}
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 23})
 	requireView(t, m, "terminal too small", "hive needs at least 80×24")
 }
 
-// The list hints of Work and Friction have no "/ filter" at either size
-// (user decision 6 of 2026-10-21). The events hints of Logs keep it.
-func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
-	for _, tab := range []int{tabWork, tabFriction} {
+// The list hints of Work have no "/ filter" at either size (user decision
+// 6 of 2026-10-21). The events hints of Logs keep it. Golden-frames
+// friction.md rule 6 gives Friction a filter, so its list hints have it.
+func TestListHintsFilterByScreen(t *testing.T) {
+	for _, tab := range []int{tabWork} {
 		s := screenRegistry[tab]
 		for _, view := range append([]string{""}, s.views...) {
 			for _, wide := range []bool{true, false} {
@@ -431,6 +474,9 @@ func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
 	for _, wide := range []bool{true, false} {
 		if hints := screenRegistry[tabLogs].keyHints("", "events", wide); !slices.Contains(hints, "/ filter") {
 			t.Errorf("Logs events, wide %t: hints %q have no / filter", wide, hints)
+		}
+		if hints := screenRegistry[tabFriction].keyHints("", "list", wide); !slices.Contains(hints, "/ filter") {
+			t.Errorf("Friction list, wide %t: hints %q have no / filter", wide, hints)
 		}
 	}
 }

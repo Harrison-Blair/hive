@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -50,6 +51,20 @@ func effectCount(envelope output.Envelope, resource, action string) int {
 		}
 	}
 	return count
+}
+
+// effectResources gives the sorted set of the effect resources of envelope.
+func effectResources(envelope output.Envelope) []string {
+	seen := map[string]bool{}
+	resources := []string{}
+	for _, effect := range envelope.Effects {
+		if !seen[effect.Resource] {
+			seen[effect.Resource] = true
+			resources = append(resources, effect.Resource)
+		}
+	}
+	sort.Strings(resources)
+	return resources
 }
 
 func TestCreateRecordsWorktreeAndRepositoryWorkspace(t *testing.T) {
@@ -459,116 +474,13 @@ func TestCreatePreservesConcurrentTaskChange(t *testing.T) {
 	}
 }
 
-func TestCreateSpecIgnoredPathStagesBriefAndReportsAllowlist(t *testing.T) {
-	repo := newTestRepo(t)
-	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!*/\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	runGit(t, repo, "add", "-f", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "ignore spec files")
-	home := newTestHome(t, "repo-live")
-	task := testTask()
-	task.Feature = "f"
-	task.Spec = true
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, task)
-	stateBrief := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
-	if err := os.MkdirAll(filepath.Dir(stateBrief), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	const brief = "# Spec task\n"
-	if err := os.WriteFile(stateBrief, []byte(brief), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	var workspaces []herdr.WorkspaceInfo
-	var creates int
-	startFakeHerdr(t, func(request fakeRequest) fakeReply {
-		switch request.Method {
-		case "workspace.list":
-			return fakeReply{Result: workspaceListReply(t, workspaces...)}
-		case "worktree.create":
-			creates++
-			path := request.stringParam(t, "path")
-			branch := request.stringParam(t, "branch")
-			runGit(t, repo, "worktree", "add", "-q", "-b", branch, path, "main")
-			workspace := linkedWorkspace(fmt.Sprintf("w%d", creates), path, repo)
-			workspaces = append(workspaces, workspace)
-			return fakeReply{Result: createReply(t, workspace.WorkspaceID, workspace.ActiveTabID, workspace.WorkspaceID+":p1", path, branch, repo)}
-		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
-	})
-
-	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
-	if envelope.Outcome != "ok" {
-		t.Fatalf("Create() = %+v, want ok", envelope)
-	}
-	featureBrief := ".hive/spec/f/tasks/" + task.ID + "/brief.md"
-	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
-	if got, err := os.ReadFile(filepath.Join(worktreePath, filepath.FromSlash(featureBrief))); err != nil || string(got) != brief {
-		t.Fatalf("worktree brief = %q, %v; want %q", got, err, brief)
-	}
-	if got := strings.TrimSpace(runGit(t, worktreePath, "diff", "--cached", "--name-only")); got != featureBrief {
-		t.Fatalf("staged paths = %q, want only %q", got, featureBrief)
-	}
-	status := runGit(t, worktreePath, "status", "--short")
-	if !strings.Contains(status, "A  "+featureBrief) {
-		t.Fatalf("git status = %q, want the brief staged as added", status)
-	}
-	var allowlistEffects []output.Effect
-	for _, effect := range envelope.Effects {
-		if effect.Resource == "allowlist_needed" {
-			allowlistEffects = append(allowlistEffects, effect)
-		}
-	}
-	if len(allowlistEffects) != 1 || !strings.Contains(allowlistEffects[0].Path, "!.hive/spec/") || !strings.Contains(allowlistEffects[0].Path, "!.hive/spec/**") {
-		t.Fatalf("allowlist effects = %+v, want one effect with both rules", allowlistEffects)
-	}
-	if !strings.Contains(CreateText(envelope), allowlistEffects[0].Path) {
-		t.Fatalf("create text = %q, want the allowlist instruction", CreateText(envelope))
-	}
-}
-
-func TestCreateFeatureIgnoredPathRefusesBeforeWorktreeCreation(t *testing.T) {
-	repo := newTestRepo(t)
-	runGit(t, repo, "config", "core.excludesFile", "")
-	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	runGit(t, repo, "add", "-f", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "ignore feature brief")
-	home := newTestHome(t, "repo-live")
-	task := testTask()
-	task.Feature = "f"
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, task)
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
-	})
-
-	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
-	wantPath := ".hive/spec/f/tasks/1-live-demo/brief.md"
-	if envelope.Outcome != "failed" || envelope.Phase != "validate" || !strings.Contains(fmt.Sprint(envelope.Error), wantPath) || !strings.Contains(fmt.Sprint(envelope.Error), "allow .hive/spec/") {
-		t.Fatalf("Create() = %+v, want validate failure naming %s and the allowlist", envelope, wantPath)
-	}
-	if methods := server.methods(); len(methods) != 0 {
-		t.Fatalf("methods = %v, want no workspace or worktree request", methods)
-	}
-	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
-	if _, err := os.Lstat(worktreePath); !os.IsNotExist(err) {
-		t.Fatalf("worktree path status = %v, want no path", err)
-	}
-	if got := runGit(t, repo, "branch", "--list", "task/1-live-demo"); strings.TrimSpace(got) != "" {
-		t.Fatalf("task branch = %q, want no branch", got)
-	}
-}
-
 func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
 	repo := newTestRepo(t)
-	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!.hive/\n!.hive/spec/\n!.hive/spec/**\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!.gitignore\n.hive/*\n!.hive/README.md\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	runGit(t, repo, "add", "-f", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "allow feature brief")
+	runGit(t, repo, "commit", "-q", "-m", "ignore the feature spec")
 	home := newTestHome(t, "repo-live")
 	task := testTask()
 	task.Feature = "f"
@@ -611,13 +523,15 @@ func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
 	if !hasEffect(envelope, "brief", "copied", featureBrief) {
 		t.Fatalf("effects = %+v, want copied brief at %s", envelope.Effects, featureBrief)
 	}
-	if effectCount(envelope, "allowlist_needed", "add") != 0 {
-		t.Fatalf("effects = %+v, want no allowlist effect", envelope.Effects)
+	// AC7: the effects have no allowlist step.
+	if got, want := effectResources(envelope), []string{"branch", "brief", "spec", "spec_copy", "workspace", "worktree"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("effect resources = %v, want %v", got, want)
 	}
-	status := runGit(t, worktreePath, "status", "--short", "--untracked-files=all")
-	if !strings.Contains(status, "?? .hive/spec/f/tasks/1-live-demo/brief.md") {
-		t.Fatalf("git status = %q, want the copied brief untracked", status)
+	// AC1: the repository ignores the copied brief, so the worktree is clean.
+	if status := runGit(t, worktreePath, "status", "--short", "--untracked-files=all"); status != "" {
+		t.Fatalf("git status = %q, want a clean worktree", status)
 	}
+	runGit(t, worktreePath, "check-ignore", "-q", ".hive/spec/f/tasks/1-live-demo/brief.md")
 }
 
 func TestCreateWithoutFeatureSkipsFeatureIgnoreCheckAndCopy(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // TestPanelGolden renders the two panels of the Panel section,
@@ -23,4 +24,21 @@ func TestPanelGolden(t *testing.T) {
 			checkGolden(t, tc.panel.View(tc.r.w, tc.r.h), sheet, tc.r)
 		})
 	}
+}
+
+// TestPanelBleedFillsThePadding: with Bleed, a line also fills the padding
+// cell on each side, so a clipped graph meets the border.
+func TestPanelBleedFillsThePadding(t *testing.T) {
+	got := ansi.Strip(Panel{Bleed: true, Lines: []string{"──────", "ab"}}.View(8, 4))
+	want := "╭──────╮\n│──────│\n│ab    │\n╰──────╯"
+	if got != want {
+		t.Fatalf("view:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// Friction rule 7: GfFrictionEmpty rows 21 and 22, a box with no entry. The
+// title is dim bold.
+func TestPanelDimTitleGolden(t *testing.T) {
+	p := Panel{Title: "no entry", DimTitle: true, Lines: []string{dimStyle.Render("select an entry to read it")}}
+	checkGolden(t, p.View(120, 17), "GfFrictionEmpty", rect{21, 0, 120, 17})
 }

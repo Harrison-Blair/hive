@@ -19,3 +19,9 @@ verifier can then record a false fail.
    `go test -race -run TestHealthProgramUsesStringReader -count=40 ./internal/tui/`.
 2. Some runs fail in the `TempDir` cleanup with `directory not empty` for
    `.hive/logs`.
+
+**Recurrence 2026-10-24:**
+Worker t140-worker-3 saw the same fault during the repair of task
+140-spec-local-state. The test failed about 2 or 3 times in 300 runs, with and
+without `.hive/spec/`. The probable cause is a log write of `RunHome` after the
+function returns. Evidence: task 140 `evidence/repair-2/health-flake-full-spec.log`.

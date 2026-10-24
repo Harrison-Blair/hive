@@ -1,6 +1,6 @@
 ---
 name: hive-worker
-description: Do one hive task in a worktree. Use when a manager gives you one task and a brief. Work test-first, commit and push the task branch, write the evidence, run the gate, and finish the task.
+description: Do one hive task in a worktree. Use when a manager gives you one task and a brief. Work test-first, write the evidence, commit and push the task branch, run the gate, and finish the task.
 ---
 
 # Hive worker
@@ -30,11 +30,12 @@ The brief names the files that you may edit. Read each file before you change
 it. Do not change a file outside the brief.
 
 For a task with a feature, read the worktree brief at
-`.hive/spec/<feature>/tasks/<id>/brief.md`. Commit this file with your work.
+`.hive/spec/<feature>/tasks/<id>/brief.md`. Git ignores `.hive/spec/`. It is
+local state in the home. `hive worktree create` copies the feature folder of
+the home into the worktree. Do not commit a file under `.hive/spec/`.
 
-When hive worktree create shows allowlist_needed, add !.hive/spec/ and
-!.hive/spec/** to the project .gitignore after the rules that ignore the path.
-Commit this change with the feature README.
+For a spec task, write the feature README at `.hive/spec/<feature>/README.md`
+in the worktree. `hive land` copies it to the home.
 
 ## Visual check
 
@@ -67,7 +68,7 @@ herdr pane read PANE --source visible --format ansi > F.ansi
 Use a short scratch script to change the ANSI SGR codes to an HTML `<pre>`.
 Then run the Firefox command above.
 
-Commit screen PNG files to the task evidence directory. Keep each board PNG in
+Write each screen PNG file to the task evidence directory. Keep each board PNG in
 the home under `.hive/tmp/`. Give its path. Never commit a board PNG. Capture
 only your own panes or a scratch run.
 
@@ -115,6 +116,10 @@ For a task with a feature, write each `V<n>.md` file to
 write each file to the evidence directory that the brief names. The verifier
 writes `VERIFIED.md` in the same directory.
 
+Git ignores the evidence directory of a task with a feature. Do not commit the
+evidence. `hive task complete` copies the evidence directory of the worktree to
+the same path in the home.
+
 ## Commit
 
 Commit on the task branch after each green run. Push the task branch. Do not
@@ -137,6 +142,62 @@ gate passes.
 ```sh
 hive task complete --task ID --agent NAME
 ```
+
+## Ask the user
+
+To ask the user a question, use `hive ask`. Never use the question tool of
+your harness. Hive shows the ask as a card on the Chat tab of the TUI.
+
+Write the ask as JSON in a file, or give it on the standard input:
+
+```sh
+hive ask --file ask.json
+hive ask --file - < ask.json
+```
+
+The command writes one ask record, prints the ask ID, and stops at once. It
+does not wait for the answer. Do other work, or stop and wait for the answer
+prompt. Run the command in your own pane.
+
+The JSON has this shape:
+
+```json
+{
+  "questions": [
+    {
+      "question": "Which branch do I merge first?",
+      "header": "Merge order",
+      "multiSelect": false,
+      "options": [
+        {"label": "Task 131", "description": "The ask card", "preview": "optional text"},
+        {"label": "Task 132", "description": "The header count"}
+      ]
+    }
+  ]
+}
+```
+
+- Give 1 to 4 questions. Each question has `question`, `header`, and
+  `options`. `multiSelect` and `preview` are optional.
+- A `header` has 12 characters or less.
+- Give 2 to 5 options. Each option has `label` and `description`.
+- Hive adds the row `Other: type an answer` to each question. Do not give it.
+- When the JSON breaks a limit, hive writes no record and prints the error.
+  Correct the JSON and run the command again.
+
+The answer comes to your pane as one prompt:
+
+```text
+⬢ user: answer to ask ID from ASKER · HEADER → LABEL; HEADER → LABEL, LABEL · note: TEXT
+```
+
+- The prompt has one `HEADER → LABELS` part for each question, in order.
+- A `· note: TEXT` part follows a question when the user typed a `note`.
+- For `Other`, the label is the text that the user typed.
+- When the asker stopped, the parent of the asker gets the prompt. The prompt
+  then has `(asker stopped)` after `from ASKER`.
+- When the user dismisses the ask, this prompt comes:
+  `⬢ hive: the user dismissed ask ID from ASKER · HEADERS. No answer comes.`
 
 ## Rules
 

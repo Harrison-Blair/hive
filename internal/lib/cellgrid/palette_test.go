@@ -3,7 +3,8 @@ package cellgrid
 import "testing"
 
 // TestPaletteMatchesDecision26 checks the table against the hex values that
-// decision 26 of the tui-v2 spec gives, plus the fg value for a board render.
+// decision 26 of the tui-v2 spec gives, plus the fg value for a board render
+// and the error token of golden-frames decision 21.
 func TestPaletteMatchesDecision26(t *testing.T) {
 	want := []struct {
 		tok  Token
@@ -19,6 +20,7 @@ func TestPaletteMatchesDecision26(t *testing.T) {
 		{Info, "info", "#6fb7ff"},
 		{User, "user", "#e9cf9b"},
 		{Code, "code", "#9fd0ff"},
+		{Error, "error", "#e8705f"},
 	}
 	if len(palette) != len(want) {
 		t.Fatalf("palette has %d tokens, want %d", len(palette), len(want))

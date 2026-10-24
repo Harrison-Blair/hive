@@ -9,7 +9,7 @@ import (
 // builds an expected grid without the code under test.
 var testTokens = map[byte]Token{
 	'f': FG, 'r': Border, 'd': Dim, 'a': Accent, 'w': Working,
-	'o': Done, 'i': Info, 'u': User, 'c': Code,
+	'o': Done, 'i': Info, 'u': User, 'c': Code, 'e': Error,
 }
 
 // handGrid builds a grid from rows of "text|tokens|bold" strings.
@@ -87,7 +87,7 @@ func TestConvertMapsEachPaletteHex(t *testing.T) {
 	cases := map[string]Token{
 		"61;58;51": Border, "163;157;144": Dim, "245;185;66": Accent,
 		"110;230;154": Working, "124;207;106": Done, "111;183;255": Info,
-		"233;207;155": User, "159;208;255": Code,
+		"233;207;155": User, "159;208;255": Code, "232;112;95": Error,
 	}
 	for rgb, want := range cases {
 		got, err := Convert("\x1b[38;2;"+rgb+"mX", 1, 1)
@@ -98,6 +98,18 @@ func TestConvertMapsEachPaletteHex(t *testing.T) {
 			t.Errorf("%s: token %v, want %v", rgb, got.Cells[0].Token, want)
 		}
 	}
+}
+
+// Golden-frames decision 21: the notice line prefix "error:" is error bold,
+// and its text is the default fg.
+func TestConvertErrorNoticePrefix(t *testing.T) {
+	in := "\x1b[1;38;2;232;112;95merror:\x1b[0m no live"
+	got, err := Convert(in, 14, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := handGrid(t, "error: no live|eeeeeeffffffff|11111100000000")
+	assertGrid(t, got, want)
 }
 
 func TestConvertFailures(t *testing.T) {

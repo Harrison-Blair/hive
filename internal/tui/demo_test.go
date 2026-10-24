@@ -19,6 +19,7 @@ const designDir = "../../.hive/spec/tui-v2/design"
 
 func newTestDemoModel(t *testing.T, fixture string, size demoSize) *Model {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, fixture))
 	loaded, err := loadDemoFixture(filepath.Join(designDir, fixture))
 	if err != nil {
 		t.Fatal(err)
@@ -29,6 +30,7 @@ func newTestDemoModel(t *testing.T, fixture string, size demoSize) *Model {
 }
 
 func TestDemoFixtureUnknownFieldNamesTheField(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	base, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -55,6 +57,7 @@ func TestDemoFixtureUnknownFieldNamesTheField(t *testing.T) {
 }
 
 func TestDemoFixtureBadValuesFail(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	base, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -63,12 +66,12 @@ func TestDemoFixtureBadValuesFail(t *testing.T) {
 		old, new, want string
 	}{
 		{old: `"screen": "agents"`, new: `"screen": "queue"`, want: `"ui.screen"`},
-		{old: `"view": ""`, new: `"view": "goals"`, want: `"ui.view"`},
+		{old: `"view": ""`, new: `"view": "g9-none"`, want: `"ui.view"`},
 		{old: `"zone": "UTC"`, new: `"zone": "Mars/Olympus"`, want: `"clock.zone"`},
 		{old: `"time": "2026-10-21T14:22:00Z"`, new: `"time": "14:22"`, want: `"clock.time"`},
 		{old: `"width": 120`, new: `"width": 0`, want: `"terminal"`},
 		{old: `"overlay": ""`, new: `"overlay": "brief"`, want: `"ui.overlay"`},
-		{old: `"kind": ""`, new: `"kind": "quit"`, want: `"ui.prompt.kind"`},
+		{old: `"kind": ""`, new: `"kind": "launch"`, want: `"ui.prompt.kind"`},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			data := strings.Replace(string(base), tc.old, tc.new, 1)
@@ -103,7 +106,8 @@ func TestDemoMainShowsFixtureDataAtTheFixtureClock(t *testing.T) {
 		t.Fatalf("selected agent = %q; want the fixture selection manager-hive-g2", m.graph.selected)
 	}
 	first := ansi.Strip(m.View().Content)
-	for _, want := range []string{"14:22", "~/source/hive", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
+	// Golden-frames decision 2: no header shows the home path.
+	for _, want := range []string{"14:22", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("view does not contain %q:\n%s", want, first)
 		}
@@ -154,6 +158,7 @@ func TestDemoSizeShowsTooSmallInASmallerPane(t *testing.T) {
 
 func TestDemoTooSmallMatchesItsBoardGrid(t *testing.T) {
 	m := newTestDemoModel(t, "TooSmall.fixture.json", demoSize{})
+	requireSpecFile(t, filepath.Join(designDir, "TooSmall.grid"))
 	file, err := os.Open(filepath.Join(designDir, "TooSmall.grid"))
 	if err != nil {
 		t.Fatal(err)
@@ -179,7 +184,8 @@ func TestDemoTooSmallMatchesItsBoardGrid(t *testing.T) {
 func TestDemoActionKeysShowTheNotice(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	// Decision 14: p peeks at the pane, and enter opens the details popup.
-	// Decision 19: restart is in Health › Agents, so r on Agents does nothing.
+	// Decision 19: restart is in the Health agents table, so r on Agents does
+	// nothing.
 	m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
 	if view := ansi.Strip(m.View().Content); strings.Contains(view, demoNotice) || m.agents.restartConfirm {
 		t.Fatalf("r on the Agents tab acted:\n%s", view)
@@ -190,10 +196,10 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 		{Code: 'r', Text: "r"},
 	} {
 		if key.Text == "r" {
-			m.Update(tea.KeyPressMsg{Code: '5', Text: "5"})
-			m.Update(tea.KeyPressMsg{Code: ']', Text: "]"})
-			if m.activeTab() != tabHealth || m.activeView() != healthAgents {
-				t.Fatalf("5 ] did not select Health › Agents: tab %d, view %d", m.activeTab(), m.activeView())
+			m.Update(ctrl('y'))
+			m.Update(ctrl(']'))
+			if m.activeTab() != tabHealth || m.focusState() != "table" {
+				t.Fatalf("ctrl+y ctrl+] did not focus the Health table: tab %d, focus %q", m.activeTab(), m.focusState())
 			}
 		}
 		m.Update(key)
@@ -208,7 +214,7 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 			t.Fatalf("notice stays after the next key:\n%s", view)
 		}
 	}
-	m.Update(tea.KeyPressMsg{Code: '2', Text: "2"})
+	m.Update(escKey())
 	m.Update(tea.KeyPressMsg{Code: 'i', Text: "i"})
 	m.Update(tea.KeyPressMsg{Code: 'h', Text: "h"})
 	if cmd := m.updateKey(tea.KeyPressMsg{Code: tea.KeyEnter}); m.chatSending {
@@ -229,6 +235,7 @@ func TestDemoLogsShowOnlyFixtureEvents(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(logDir, "2026-10-21.jsonl"), []byte(live), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	data, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -257,6 +264,7 @@ func TestDemoLogsShowOnlyFixtureEvents(t *testing.T) {
 // UI state, the given friction entries, and the given file texts.
 func demoFileFixture(t *testing.T, root string, ui map[string]any, friction []any, files map[string]string) *demoFixture {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	data, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -270,11 +278,6 @@ func demoFileFixture(t *testing.T, root string, ui map[string]any, friction []an
 	fixtureData["friction"] = friction
 	if files != nil {
 		fixtureData["files"] = files
-	}
-	if ui["view"] == "goals" {
-		// Goals opens the design of the first wave that is not done.
-		goal := fixtureData["goals"].([]any)[0].(map[string]any)
-		goal["waves"].([]any)[2].(map[string]any)["status"] = "active"
 	}
 	state := fixture["ui"].(map[string]any)
 	maps.Copy(state, ui)
@@ -299,17 +302,15 @@ func deliverFileReads(m *Model, cmd tea.Cmd) {
 		for _, next := range msg {
 			deliverFileReads(m, next)
 		}
-	case taskFileMsg, frictionFileMsg:
+	case taskFileMsg:
 		m.Update(msg)
 	}
 }
 
 func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 	const taskDir = ".hive/spec/hive-tui/tasks/4-agents-equal-columns/"
-	const frictionPath = "reference/dogfood/friction/entries/demo-entry.md"
-	tasksUI := map[string]any{"screen": "work", "view": "tasks", "focus": "list", "selection": "4-agents-equal-columns", "scroll": map[string]any{}}
-	goalsUI := map[string]any{"screen": "work", "view": "goals", "focus": "list", "selection": "g1-tui-restart", "scroll": map[string]any{}}
-	frictionUI := map[string]any{"screen": "friction", "view": "open", "focus": "list", "selection": "demo-entry.md", "scroll": map[string]any{}}
+	// Work rule 9: b and v open the files in the task popup.
+	tasksUI := map[string]any{"screen": "work", "view": "", "focus": "board", "selection": "4-agents-equal-columns", "popup": "task", "scroll": map[string]any{}}
 	friction := []any{map[string]any{"file": "demo-entry.md", "title": "Demo entry", "status": "Open", "opened": "2026-10-21", "body": "## Summary\n\nfixture body"}}
 	for _, tc := range []struct {
 		name, key, livePath string
@@ -323,12 +324,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 		{name: "evidence from fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI,
 			files: map[string]string{taskDir + "evidence/VERIFIED.md": "fixture evidence text"}, want: "fixture evidence text"},
 		{name: "verification not in fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI, want: demoNoFile},
-		{name: "design from fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI,
-			files: map[string]string{".hive/spec/hive-tui/README.md": "fixture design text"}, want: "fixture design text"},
-		{name: "design not in fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI, want: demoNoFile},
-		{name: "friction entry from fixture", key: "enter", livePath: frictionPath, ui: frictionUI,
-			files: map[string]string{frictionPath: "fixture friction text"}, want: "fixture friction text"},
-		{name: "friction entry not in fixture", key: "enter", livePath: frictionPath, ui: frictionUI, want: demoNoFile},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()
@@ -342,9 +337,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 			m := newDemoModel(root, &demoState{fixture: demoFileFixture(t, root, tc.ui, friction, tc.files)})
 			t.Cleanup(m.Stop)
 			key := tea.KeyPressMsg{Code: rune(tc.key[0]), Text: tc.key}
-			if tc.key == "enter" {
-				key = tea.KeyPressMsg{Code: tea.KeyEnter}
-			}
 			deliverFileReads(m, m.updateKey(key))
 			view := ansi.Strip(m.View().Content)
 			if !strings.Contains(view, tc.want) {

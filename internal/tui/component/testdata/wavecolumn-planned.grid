@@ -1,0 +1,100 @@
+hive-grid 1 28 33
+t|╭─ E · planned · 0/2 ──────╮
+k|rraaaaaaaaaaaaaaaaaaarrrrrrr
+b|0011111111111111111110000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│ ╭──────────────────────╮ │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrfr
+b|0000000000000000000000000000
+t|│ │ ○ 47-screenshots     │ │
+k|rfrfdffffffffffffffffffffrfr
+b|0000000000000000000000000000
+t|│ │ waits on wave D      │ │
+k|rfrfddddddddddddddddddddfrfr
+b|0000000000000000000000000000
+t|│ ╰──────────────────────╯ │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrfr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│ ╭──────────────────────╮ │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrfr
+b|0000000000000000000000000000
+t|│ │ ○ 48-pr-update       │ │
+k|rfrfdffffffffffffffffffffrfr
+b|0000000000000000000000000000
+t|│ │ waits on 47          │ │
+k|rfrfddddddddddddddddddddfrfr
+b|0000000000000000000000000000
+t|│ ╰──────────────────────╯ │
+k|rfrrrrrrrrrrrrrrrrrrrrrrrrfr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│                          │
+k|rffffffffffffffffffffffffffr
+b|0000000000000000000000000000
+t|│ done when main           │
+k|rfddddddddddddddfffffffffffr
+b|0000000000000000000000000000
+t|╰──────────────────────────╯
+k|rrrrrrrrrrrrrrrrrrrrrrrrrrrr
+b|0000000000000000000000000000

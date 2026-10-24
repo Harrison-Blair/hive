@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -32,7 +31,7 @@ func TestLogsFoldsCommandRequests(t *testing.T) {
 	m := logsModelAt(t, 120, 40)
 	m.textFilter = "level:debug"
 	m.refreshLogSelection()
-	requireView(t, m, "12:00:00 DEBUG cli       task list ", "12:00:01 INFO  task      queued ")
+	requireView(t, m, "12:00:00 DEBUG  cli        task list ", "12:00:01 INFO   task       queued ")
 	rejectView(t, m, "command end", "4ms")
 }
 
@@ -48,7 +47,7 @@ func TestLogsTypedFilterFields(t *testing.T) {
 		{"agent:worker-1", []string{"queued"}, []string{"network retry"}},
 		{"agent:worker-2", []string{"network retry"}, []string{"queued"}},
 		{"level:debug req:r-22222222", []string{"network retry"}, []string{"queued", "task list"}},
-		{"task:t9", []string{"no events today"}, []string{"queued", "network retry"}},
+		{"task:t9", []string{"no event matches task:t9"}, []string{"queued", "network retry"}},
 		{"level:warn", []string{"network retry"}, []string{"queued"}},
 		{"retry", []string{"network retry"}, []string{"queued"}},
 	} {
@@ -92,79 +91,81 @@ func TestLogsFilterBarTakesPaste(t *testing.T) {
 	rejectView(t, m, "queued")
 }
 
-// AC1: < and > change the day, and f turns follow off and on. The filter
-// bar shows the day, and follow as ● or ○.
+// logs.md rule 8: ← and → change the day, and f turns follow off and on.
+// The title row shows the day, and the filter line shows follow as ● or ○.
 func TestLogsDayAndFollowKeys(t *testing.T) {
 	m := logsModelAt(t, 120, 40)
-	requireView(t, m, "follow ●  < 2026-04-06 >")
+	requireView(t, m, "follow ●  f toggles follow", "← 2026-04-06 → day")
 	m, _ = raise(t, m, key('f', "f"))
-	requireView(t, m, "follow ○  < 2026-04-06 >")
-	m, cmd := raise(t, m, key('>', ">"))
-	requireView(t, m, "< 2026-04-07 >")
+	requireView(t, m, "follow ○  f toggles follow")
+	m, cmd := raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	requireView(t, m, "← 2026-04-07 → day")
 	if cmd == nil {
-		t.Fatal("> did not start a load of the next day")
+		t.Fatal("→ did not start a load of the next day")
 	}
-	m, _ = raise(t, m, key('<', "<"))
-	m, _ = raise(t, m, key('<', "<"))
-	requireView(t, m, "< 2026-04-05 >")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyLeft})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyLeft})
+	requireView(t, m, "← 2026-04-05 → day")
 }
 
-// AC4, decisions 21 and 22: from 120 columns, enter and tab give the focus
-// to the JSON panel, and ↑↓ g G scroll it. esc gives the focus back to the
-// events.
-func TestLogsWideJSONKeys(t *testing.T) {
+// logs.md rule 6 and the key table: from 120 columns, ctrl+] moves the
+// focus between the list and the field panel, the panel takes ↑↓ g G, and
+// esc returns to Chat from the panel.
+func TestLogsWideFieldPanelKeys(t *testing.T) {
 	m := logsModelAt(t, 120, 24)
 	m.textFilter = "level:debug"
 	m.refreshLogSelection()
-	m, _ = raise(t, m, key(0, "enter"))
+	m, _ = raise(t, m, ctrl(']'))
 	if m.focusState() != "json" {
-		t.Fatalf("enter gave focus %q; want json", m.focusState())
+		t.Fatalf("ctrl+] gave focus %q; want json", m.focusState())
 	}
-	requireView(t, m, "[json] ↑↓ scroll")
+	requireKeys(t, m, "json", "↑↓ scroll")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	if m.detailsOffset[tabLogs] != 1 {
-		t.Fatalf("down gave JSON offset %d; want 1", m.detailsOffset[tabLogs])
+		t.Fatalf("down gave panel offset %d; want 1", m.detailsOffset[tabLogs])
 	}
 	m, _ = raise(t, m, key('g', "g"))
 	if m.detailsOffset[tabLogs] != 0 {
-		t.Fatalf("g gave JSON offset %d; want 0", m.detailsOffset[tabLogs])
+		t.Fatalf("g gave panel offset %d; want 0", m.detailsOffset[tabLogs])
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	m, _ = raise(t, m, ctrl(']'))
 	if m.focusState() != "events" {
-		t.Fatalf("esc gave focus %q; want events", m.focusState())
+		t.Fatalf("ctrl+] gave focus %q; want events", m.focusState())
 	}
-	m, _ = raise(t, m, key(0, "tab"))
-	if m.focusState() != "json" {
-		t.Fatalf("tab gave focus %q; want json", m.focusState())
+	m, _ = raise(t, m, ctrl(']'))
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	if m.activeTab() != tabChat {
+		t.Fatalf("esc on the panel gave tab %d; want Chat", m.activeTab())
 	}
 }
 
-// AC4, decision 9: below 120 columns, enter opens the JSON overlay of the
-// selected event, < and > still change the day, and esc closes it.
-func TestLogsCompactJSONOverlay(t *testing.T) {
+// AC4, decision 9: below 120 columns, enter opens the field panel overlay
+// of the selected event, → still changes the day, and esc closes it.
+func TestLogsCompactFieldOverlay(t *testing.T) {
 	m := logsModelAt(t, 80, 24)
-	requireView(t, m, "[events] ↑↓ move · enter details")
+	requireKeys(t, m, "events", "↑↓ move · enter details")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, "event 12:00:03 · esc back", `"msg": "network retry"`, "[json] ↑↓ scroll · esc back to events")
+	requireView(t, m, "event 12:00:03 · WARN · esc back", "msg           network retry")
+	requireKeys(t, m, "json", "↑↓ scroll · esc back to events")
 	rejectView(t, m, "─ events · ")
-	m, _ = raise(t, m, key('>', ">"))
-	requireView(t, m, "< 2026-04-07 >")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	requireView(t, m, "← 2026-04-07 → day")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	requireView(t, m, "─ events · ")
 }
 
-// Decision 22 and the Logs board: the JSON panel shows each line that fits.
-// When the lines do not fit, the last body row shows the count of the lines
-// below it, and the scroll mark shows.
-func TestLogsJSONOverflowShowsMoreLines(t *testing.T) {
+// Decision 22 and the Logs boards: the field panel shows each line that
+// fits, with no scroll mark. When the lines do not fit, the scroll mark
+// shows, and pgdown scrolls to the last line.
+func TestLogsFieldPanelOverflowShowsTheThumb(t *testing.T) {
 	m := logsModelAt(t, 80, 24)
 	m.textFilter = "level:debug"
 	m.refreshLogSelection()
 	m.moveLogSelection(-10)
 	m, _ = raise(t, m, key(0, "enter"))
 	view := ansi.Strip(m.View().Content)
-	if strings.Contains(view, "more lines") || strings.Contains(view, "┃") {
-		t.Fatalf("JSON that fits shows an overflow mark:\n%s", view)
+	if strings.Contains(view, "┃") {
+		t.Fatalf("fields that fit show a scroll mark:\n%s", view)
 	}
 	event := map[string]any{"time": "2026-04-06T12:00:00Z", "level": "INFO", "msg": "big"}
 	for index := range 30 {
@@ -179,15 +180,14 @@ func TestLogsJSONOverflowShowsMoreLines(t *testing.T) {
 		t.Fatal(err)
 	}
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: []logs.Event{{Raw: raw, Fields: fields}}})
-	// 35 JSON lines in 15 body rows: 14 lines, then the count of the 21
-	// lines below them.
-	requireView(t, m, "↓ 21 more lines", "┃")
-	// The overlay takes the scroll keys of decision 21, not G.
-	for range 2 {
+	// 33 field lines do not fit in the overlay at 80×24.
+	requireView(t, m, "time          2026-04-06T12:00:00Z", "┃")
+	rejectView(t, m, "field_29")
+	for range 3 {
 		m, _ = raise(t, m, key(0, "pgdown"))
 	}
-	requireView(t, m, `"time": "2026-04-06T12:00:00Z"`, "}")
-	rejectView(t, m, "more lines")
+	requireView(t, m, "field_29      29")
+	rejectView(t, m, "time          2026-04-06T12:00:00Z")
 }
 
 // AC2, decision 46: at each size, each line has the pane width, no border
@@ -271,28 +271,28 @@ func TestLogsFollowAndSelectionKeepLargeLogRowsOnScreen(t *testing.T) {
 			t.Fatalf("selected log row %q is off screen:\n%s", want, view)
 		}
 	}
-	assertSelectedRowVisible("13:23:19 INFO  tui       event-4999")
+	assertSelectedRowVisible("13:23:19 INFO   tui        event-4999")
 	if m.logSelection != 4999 {
 		t.Fatalf("follow selected row %d, want newest row 4999", m.logSelection)
 	}
 
 	for range 60 {
-		m, _ = raise(t, m, key('k', "k"))
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	}
-	assertSelectedRowVisible("13:22:19 INFO  tui       event-4939")
-	m, _ = raise(t, m, key('j', "j"))
-	assertSelectedRowVisible("13:22:20 INFO  tui       event-4940")
+	assertSelectedRowVisible("13:22:19 INFO   tui        event-4939")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	assertSelectedRowVisible("13:22:20 INFO   tui        event-4940")
 	m, _ = raise(t, m, key(0, "pgup"))
-	assertSelectedRowVisible("13:21:50 INFO  tui       event-4910")
+	assertSelectedRowVisible(fmt.Sprintf("%s INFO   tui        event-%04d", day.Add(time.Duration(4940-m.logPage())*time.Second).Format("15:04:05"), 4940-m.logPage()))
 }
 
 func TestLogsScreenKeepsSelectionAcrossRefresh(t *testing.T) {
 	m := logsModelAt(t, 120, 40)
-	m, _ = raise(t, m, key('k', "k"))
-	requireView(t, m, "▶ 12:00:01 INFO  task      queued")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
+	requireView(t, m, "▶ 12:00:01 INFO   task       queued")
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: logsFixture(t, day)})
-	requireView(t, m, "▶ 12:00:01 INFO  task      queued")
+	requireView(t, m, "▶ 12:00:01 INFO   task       queued")
 }
 
 func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
@@ -305,7 +305,7 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 	m := newTestLogsModel(t, home, clock)
 	requireView(t, m, "second day")
 	m.logger = nil
-	m, cmd := raise(t, m, key('<', "<"))
+	m, cmd := raise(t, m, tea.KeyPressMsg{Code: tea.KeyLeft})
 	if cmd == nil {
 		t.Fatal("day change did not start a background read")
 	}
@@ -318,18 +318,17 @@ func TestLogsScreenDayNavigationLoadsSelectedFile(t *testing.T) {
 	rejectView(t, m, "second day")
 }
 
-// Escape in the event list clears the applied filter and writes one action
-// event. It keeps follow and the viewing mode.
-func TestLogsEscapeClearsAppliedFilter(t *testing.T) {
+// logs.md keys: esc in the event list returns to Chat when no filter line
+// is open. The applied filter stays, so Logs shows it again on ctrl+l.
+func TestLogsEscapeReturnsToChatAndKeepsTheFilter(t *testing.T) {
 	home := newTestHome(t)
 	day := time.Date(2026, 5, 20, 12, 0, 0, 0, time.Local)
 	writeEvents(t, dailyPath(home, day),
 		eventJSON(t, day, "INFO", "project alpha"),
 		eventJSON(t, day, "INFO", "other beta"),
-		eventJSON(t, day, "DEBUG", "project debug"),
 	)
 	m := newTestLogsModel(t, home, fixedClock(t, day))
-	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, _ = raise(t, m, key('/', "/"))
 	for _, r := range " project" {
 		m, _ = raise(t, m, key(r, string(r)))
@@ -337,35 +336,20 @@ func TestLogsEscapeClearsAppliedFilter(t *testing.T) {
 	m, _ = raise(t, m, key(0, "enter"))
 	rejectView(t, m, "other beta")
 
-	before := countLogLines(t, home)
-	m, cmd := raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	if cmd != nil {
-		m, _ = raise(t, m, cmd())
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	if m.activeTab() != tabChat {
+		t.Fatalf("esc gave tab %d; want Chat", m.activeTab())
 	}
-	if after := countLogLines(t, home); after != before+1 {
-		t.Fatalf("log lines went from %d to %d after Escape; want one event", before, after)
+	m, _ = raise(t, m, ctrl('l'))
+	if m.activeTab() != tabLogs {
+		t.Fatalf("ctrl+l gave tab %d; want Logs", m.activeTab())
 	}
-	data, err := os.ReadFile(dailyPath(home, day))
-	if err != nil {
-		t.Fatal(err)
-	}
-	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
-	var event map[string]any
-	if err := json.Unmarshal([]byte(lines[len(lines)-1]), &event); err != nil {
-		t.Fatal(err)
-	}
-	if event["msg"] != "tui action" || event["action"] != "filter clear" || event["component"] != "tui" {
-		t.Fatalf("Escape log event = %v", event)
-	}
-	requireView(t, m, "/ level:info ", "project alpha", "other beta")
-	rejectView(t, m, "project debug")
-	if m.mode != viewing || !m.follow {
-		t.Fatalf("mode %v, follow %v after Escape; want viewing and follow on", m.mode, m.follow)
-	}
+	requireView(t, m, "/ level:info project ", "project alpha")
+	rejectView(t, m, "other beta")
 }
 
-// AC3: the program in normal mode shows Logs on 6 and applies a typed
-// filter, from a string reader.
+// AC3: the program in normal mode shows Logs on ctrl+l (golden-frames
+// decision 16) and applies a typed filter, from a string reader.
 func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 	home := newTestHome(t)
 	t.Setenv("HIVE_HOME", home)
@@ -381,14 +365,14 @@ func TestRunHomeLogsKeysOnStringReader(t *testing.T) {
 		_ = sendInput.Close()
 	})
 
-	if _, err := sendInput.Write([]byte("6")); err != nil {
+	if _, err := sendInput.Write([]byte("\x0c")); err != nil {
 		t.Fatalf("send screen key: %v", err)
 	}
 	waitForOutput(t, output, "─ events · ", "queued")
 	if _, err := sendInput.Write([]byte("/ proj:other\r")); err != nil {
 		t.Fatalf("send filter keys: %v", err)
 	}
-	waitForOutput(t, output, "proj:other", "no events today")
+	waitForOutput(t, output, "proj:other", "no event matches level:info proj:other")
 	if err := sendInput.Close(); err != nil {
 		t.Fatalf("close input: %v", err)
 	}
@@ -525,14 +509,15 @@ func TestLogsNormalModeDrawsTheDemoContent(t *testing.T) {
 	}
 }
 
-// Manager decision: an event with a reason shows its msg, " · ", and the
-// reason text before the first ";". The JSON panel keeps the full reason.
-func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
+// logs.md rule 3: an event with a reason shows its msg, " · ", and the
+// reason. The row cuts the text at the column width only. The JSON panel
+// keeps the full reason.
+func TestLogsRowShowsTheWholeReasonWhenItFits(t *testing.T) {
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	m := logsModelAt(t, 120, 40)
 	events := []string{
-		logsFixtureEvent(t, day, "WARN", "task", "verify fail", map[string]any{"reason": "V4 diff scope; Design section missing"}),
-		logsFixtureEvent(t, day.Add(time.Second), "WARN", "task", "verify fail", map[string]any{"reason": "no evidence"}),
+		logsFixtureEvent(t, day, "WARN", "task", "fault", map[string]any{"reason": "first; suffix"}),
+		logsFixtureEvent(t, day.Add(time.Second), "WARN", "task", "verify fail", map[string]any{"reason": "V4 diff scope; Design section missing"}),
 	}
 	loaded := make([]logs.Event, len(events))
 	for index, line := range events {
@@ -543,10 +528,9 @@ func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
 		loaded[index] = logs.Event{Raw: []byte(line), Fields: fields}
 	}
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: loaded})
-	requireView(t, m, "12:00:00 WARN  task      verify fail · V4 diff scope ", "verify fail · no evidence ")
-	rejectView(t, m, "verify fail · V4 diff scope;")
-	m, _ = raise(t, m, key('k', "k"))
-	requireView(t, m, `"reason": "V4 diff scope; Design section missin…`)
+	requireView(t, m, "12:00:00 WARN   task       fault · first; suffix", "verify fail · V4 diff scope;")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
+	requireView(t, m, "reason        first; suffix")
 }
 
 // Follow selects the newest event when a load brings a new newest event. A
@@ -560,7 +544,7 @@ func TestLogsFollowKeepsTheSelectionWithoutNewEvents(t *testing.T) {
 	requireView(t, demo, "event 13:38:02")
 
 	m := logsModelAt(t, 120, 40)
-	m, _ = raise(t, m, key('k', "k"))
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	m, _ = raise(t, m, key('f', "f"))
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	more := logsFixture(t, day)
@@ -570,22 +554,26 @@ func TestLogsFollowKeepsTheSelectionWithoutNewEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: append(more, logs.Event{Raw: []byte(line), Fields: fields})})
-	requireView(t, m, "▶ 12:01:00 INFO  task      landed")
+	requireView(t, m, "▶ 12:01:00 INFO   task       landed")
 }
 
 // A filter that hides each row keeps the selected event. When the rows show
 // again, the same event is selected.
 func TestLogsSelectionSurvivesAnEmptyFilter(t *testing.T) {
 	m := logsModelAt(t, 120, 40)
-	m, _ = raise(t, m, key('k', "k"))
-	m, _ = raise(t, m, key('j', "j"))
-	requireView(t, m, "▶ 12:00:03 WARN  herdr     network retry", "follow ○")
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	requireView(t, m, "▶ 12:00:03 WARN   herdr      network retry", "follow ○")
 	m, _ = raise(t, m, key('/', "/"))
 	for _, r := range " nothing-matches" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, "no events today")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "▶ 12:00:03 WARN  herdr     network retry")
+	requireView(t, m, "no event matches level:info nothing-matches")
+	m, _ = raise(t, m, key('/', "/"))
+	for range " nothing-matches" {
+		m, _ = raise(t, m, key(0, "backspace"))
+	}
+	m, _ = raise(t, m, key(0, "enter"))
+	requireView(t, m, "▶ 12:00:03 WARN   herdr      network retry")
 }

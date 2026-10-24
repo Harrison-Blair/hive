@@ -40,6 +40,15 @@ func TestWriteGridFile(t *testing.T) {
 	}
 }
 
+// Golden-frames decision 21: the grid letter of error is e.
+func TestReadGridErrorLetter(t *testing.T) {
+	got, err := ReadGrid(strings.NewReader("hive-grid 1 3 1\nt|ab \nk|efe\nb|100\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertGrid(t, got, handGrid(t, "ab |efe|100"))
+}
+
 func TestGridRoundTripEachToken(t *testing.T) {
 	g := handGrid(t, "abcdefghi|frdawoiuc|101010101", "·•…—┃━×█●|cuiowadrf|010101010")
 	var buf bytes.Buffer

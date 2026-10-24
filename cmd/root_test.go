@@ -74,12 +74,15 @@ func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
 	if status != 0 {
 		t.Fatalf("status = %d; want 0", status)
 	}
-	// A Bubble Tea program hides the cursor on start.
-	if !strings.Contains(out.String(), "\x1b[?25l") {
-		t.Fatalf("output %q shows no TUI ran", out.String())
+	// The TUI enters the alternate screen on start and leaves it on quit. The
+	// input focus sets the cursor, so the test does not check the cursor.
+	enter := strings.Index(out.String(), "\x1b[?1049h")
+	leave := strings.LastIndex(out.String(), "\x1b[?1049l")
+	if enter < 0 || leave < enter {
+		t.Fatalf("output %q shows no TUI ran and quit", out.String())
 	}
-	if !strings.Contains(out.String(), " hive") {
-		t.Fatalf("output %q does not show the TUI header", out.String())
+	if !strings.Contains(out.String()[enter:leave], " ○ none · ○ supervisor · ? 0 asks · needs you 0") {
+		t.Fatalf("output %q does not show the status row of the Chat frame", out.String())
 	}
 	if strings.Contains(out.String(), `"outcome"`) {
 		t.Fatalf("successful TUI wrote an envelope: %q", out.String())

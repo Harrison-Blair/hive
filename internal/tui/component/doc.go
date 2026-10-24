@@ -4,21 +4,28 @@
 // measures text with lipgloss.Width and uses only the palette of decision 26.
 //
 // palette.go holds the palette tokens and their styles.
-// header.go holds Header, the first row with the home and the agent states.
-// tabbar.go holds TabBar, the screen labels and the rule below them.
 // subtabs.go holds SubTabs, the views of a screen.
 // panel.go holds Panel, a region with a rounded border and a title.
 // scrollmark.go holds ScrollMark and Thumb, the scroll marks of a region.
 // viewport.go holds Viewport, a Panel whose body scrolls.
-// keyhints.go holds KeyHints, the footer with the region and its keys.
 // list.go holds List, a Panel of rows in fixed columns with a selection.
 // details.go holds Details, a Panel of label and value lines that scrolls.
 // filterbar.go holds FilterBar, the filter text of the log screen.
 // input.go holds Input, the message line of the chat.
 // card.go holds Card, the box of one agent.
+// boxjoin.go holds BoxArms and BoxRune, the light and heavy box joints.
 // notice.go holds Notice, a dim line of one notice.
-// popup.go holds Popup and DimScreen, a Details box over a dimmed screen.
+// popup.go holds Popup, Overlay, and DimScreen, a box over a dimmed screen.
 // markdown.go holds RenderMarkdown, an agent reply rendered by Glamour.
 // markdown_style.go holds the Glamour style of decision 29.
 // chat.go holds ChatLines, the lines of the chat feed.
+// statusrow.go holds StatusRow, a status row of segments and the clock.
+// titlerow.go holds TitleRow, the title row and the rule of a screen.
+// taskcard.go holds TaskCard, the card of one task on the Work board.
+// wavecolumn.go holds WaveColumn, the column of one wave on the Work board.
+// rail.go holds Rail, the dependency rails between two wave columns.
+// densitystrip.go holds DensityStrip, the event strip and its marker of Logs.
+// checkrow.go holds CheckRow and CheckTile, one area row of the Health grid.
+// seenbar.go holds SeenBar, the bar of occurrences of a friction entry.
+// fold.go holds Fold, the fold line of a group of rows.
 package component

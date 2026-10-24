@@ -187,7 +187,9 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	}
 }
 
-func TestVerifierCommitsVerdictBeforeVerify(t *testing.T) {
+// AC9: the verifier keeps VERIFIED.md out of each commit. Hive task verify copies it
+// from the ignored evidence folder to the home.
+func TestVerifierLeavesVerdictUncommitted(t *testing.T) {
 	managerSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
 	if err != nil {
 		t.Fatal(err)
@@ -196,7 +198,7 @@ func TestVerifierCommitsVerdictBeforeVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "The verifier commits and pushes `VERIFIED.md` on the task branch before it runs `hive task verify`."
+	want := "The verifier writes `VERIFIED.md` in the evidence folder and does not commit it. `hive task verify` copies it to the home."
 	for name, instructions := range map[string]string{
 		"template":       projectAgentsTemplate,
 		"manager skill":  string(managerSkill),

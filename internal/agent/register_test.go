@@ -1127,3 +1127,14 @@ func TestRegisterTaskOfTheProjectSucceeds(t *testing.T) {
 		t.Fatalf("record = %#v; want the project task", record)
 	}
 }
+
+// TestRegisterRefusesReservedNames covers the name refusal of D1.
+func TestRegisterRefusesReservedNames(t *testing.T) {
+	home := t.TempDir()
+	for _, name := range []string{"coordinator", "supervisor"} {
+		envelope := RegisterAndRename(home, RegisterOptions{Role: "agent", Name: name, NameSet: true, PaneID: "w1:p1"})
+		if envelope.Outcome != "failed" || envelope.Error != "name is reserved: "+name {
+			t.Fatalf("RegisterAndRename(name=%s) = %#v; want the reserved-name refusal", name, envelope)
+		}
+	}
+}

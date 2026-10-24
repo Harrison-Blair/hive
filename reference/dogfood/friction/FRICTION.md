@@ -11,15 +11,29 @@ For all other files, the coordinator and manager never change a project source f
 | --- | --- | --- |
 | [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
 | [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
-| [A brief tells a worker to read its inbox, but a worker has no inbox](entries/worker-has-no-inbox.md) | Open |  |
+| [A brief tells a worker to read its inbox, but a worker has no inbox](entries/resolved/worker-has-no-inbox.md) | Resolved 2026-10-23 | Workers and verifiers have inbox keys now: the t126-worker-1 inbox holds records, and the doctor ownerless check reads them |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
+| [A manager spawn marks the live manager stale but leaves its pane running, and agent stop refuses it](entries/manager-respawn-leaves-old-pane.md) | Open |  |
+| [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
 | [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/health-program-test-flakes.md) | Open |  |
+| [Unread inbox records of a stopped agent warn forever, with no way to clear them](entries/ownerless-inbox-records-stay.md) | Open |  |
 | [TestUpdateCallbackRunsUnderLock fails at times under heavy load](entries/store-lock-test-flakes-under-load.md) | Open |  |
 | [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
+| [The verifier skill names no inbox for a report](entries/verifier-skill-names-no-report-inbox.md) | Open | Fix in the g13 verifier profile |
+| [Memory write help omits the required frontmatter](entries/memory-write-help-omits-frontmatter.md) | Open | Supply YAML name and description fields on standard input. |
+| [Supplemental verifier evidence stays in the worktree](entries/verifier-evidence-stays-in-worktree.md) | Open | Copy the full supplemental folder to the home and check hashes before review or worktree removal. |
+| [A worktree and CI skip the tests that read the spec of another feature](entries/worktree-skips-other-feature-spec-tests.md) | Open | Task 151 copies design folders into new worktrees. Other spec paths and CI still skip tests. |
+| [A test TMPDIR below the home permits production state access](entries/test-tmpdir-reaches-production-home.md) | Open | Reviewed physical state/socket/PID/descriptor isolation and negative probes before branch execution. Corrected damage count is seven in the frozen snapshots only. |
+| [A paused supervisor leaves incident inbox messages without nudges](entries/paused-supervisor-delays-incident-notifications.md) | Open | Durable inbox plus authorized direct notification and explicit recipient acknowledgment. Do not auto-restart the runtime. |
+| [An Agents state test fails without local design files](entries/resolved/agents-state-test-needs-local-fixture.md) | Resolved 2026-10-24 | Task 156 keeps all six assertions with self-contained unit input. Both input-mode gates and push/PR CI pass at 7b945db7. |
 | [herdr pane send-keys has no page up or page down key name](entries/herdr-send-keys-no-page-keys.md) | Open |  |
+| [A new herdr tab reports 120 columns but its terminal has 119](entries/herdr-terminal-width-mismatch.md) | Open | Use an isolated larger scratch server for live captures |
+| [A scratch harness stub did not override the installed Pi executable](entries/scratch-harness-stub-runs-real-pi.md) | Open | Use the explicit stub executable for scratch delivery checks |
+| [An accepted multiline label breaks ask-option editor borders](entries/ask-editor-multiline-label-breaks-borders.md) | Open | Outside task 135 |
+| [An accepted newline header breaks the ask feed and card title](entries/ask-newline-header-breaks-feed-title.md) | Open | Outside task 135 |
 | [A scratch coordinator fails with agent_name_taken on the live herdr server](entries/coordinator-name-clash-in-scratch-home.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
@@ -29,9 +43,9 @@ For all other files, the coordinator and manager never change a project source f
 | [Hive cannot spawn a reviewer or another one-off agent](entries/resolved/no-reviewer-role.md) | Resolved 2026-10-21 | Goal g3-general-agent adds the role agent, hive agent report, and the hive-agent skill |
 | [A new task can go only in a feature that has a README](entries/old-features-lack-readme.md) | Open |  |
 | [A supervisor nudge splits a message that the user types](entries/nudge-interrupts-user-typing.md) | Open |  |
-| [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/no-agent-dashboard.md) | Open |  |
+| [No dashboard shows the agents, their lineage, their activity, and their tasks](entries/resolved/no-agent-dashboard.md) | Resolved 2026-10-23 | Goal g1-hive-tui lands the dashboard: the Agents, Chat, Work, Friction, Health, and Logs screens with lineage, activity, and tasks |
 | [Claude Code in bypass mode still asks before a dangerous rm](entries/bypass-still-prompts-dangerous-rm.md) | Open |  |
-| [The verifier skill does not give the path of VERIFIED.md](entries/verified-md-path-unspecified.md) | Open |  |
+| [The verifier skill does not give the path of VERIFIED.md](entries/resolved/verified-md-path-unspecified.md) | Resolved 2026-10-23 | The verifier skill names the evidence path for VERIFIED.md and forbids the checkout root |
 | [The supervisor keeps running an old hive binary after a rebuild](entries/resolved/supervisor-runs-stale-binary.md) | Resolved 2026-10-21 | Task 3 adds the r restart for the supervisor and an old-binary mark in the TUI header |
 | [The worker skill gate adds golangci-lint that the project gate does not have](entries/worker-gate-adds-golangci-lint.md) | Open |  |
 | [A feature spec task cannot start in a repository that ignores .hive/spec/](entries/resolved/spec-task-needs-allowlist-first.md) | Resolved 2026-10-20 | Fixed in 70-spec-allowlist (e1276caa): a spec task worktree stages the brief with git add -f and reports allowlist_needed; the spec task commits the .gitignore rules. |
@@ -50,9 +64,17 @@ For all other files, the coordinator and manager never change a project source f
 | [A verify fail leaves no workspace and no verifier for a re-verify](entries/resolved/verify-fail-no-reverify-workspace.md) | Resolved 2026-10-19 | By design. The manager skill fix landed in 17-verifier-project (e7031497): after a verify fail, spawn a fresh verifier with no --pane. |
 | [Shell-ready race in worker and verifier spawns](entries/resolved/shell-ready-spawn-race.md) | Resolved 2026-10-19 |  |
 | [Manager spawn fails with `agent_pane_busy` right after `workspace.create`](entries/resolved/manager-spawn-shell-ready-race.md) | Resolved 2026-10-19 |  |
-| [The user cannot answer a structured question in the Chat screen](entries/chat-has-no-question-prompt.md) | Open |  |
-| [The Chat message box does not grow or scroll while the user types](entries/chat-input-does-not-grow.md) | Open |  |
+| [The user cannot answer a structured question in the Chat screen](entries/resolved/chat-has-no-question-prompt.md) | Resolved 2026-10-23 | Goal g6 task 131 adds ask cards in the Chat dock: picks, notes, previews, dismiss, and answers routed to the asker |
+| [The Chat message box does not grow or scroll while the user types](entries/resolved/chat-input-does-not-grow.md) | Resolved 2026-10-23 | Goal g3 task 122 lands the growing input: the box grows with the typed text and the feed shrinks |
 | [A supervisor restart does not stop the old supervisor or close its tab](entries/supervisor-restart-keeps-old-supervisor.md) | Open |  |
-| [The Chat screen does not show that the coordinator is working](entries/chat-shows-no-coordinator-activity.md) | Open |  |
+| [The Chat screen does not show that the coordinator is working](entries/resolved/chat-shows-no-coordinator-activity.md) | Resolved 2026-10-23 | Goal g3 task 122 shows the working status of the coordinator in the header |
 | [Attach on the supervisor fails with agent_not_found, and the error stays in the footer](entries/attach-fails-on-supervisor.md) | Open |  |
 | [The user must ask an agent to change a hive setting](entries/config-needs-an-agent.md) | Open |  |
+| [Hive has no command to shut down a session](entries/no-shutdown-command.md) | Open |  |
+| [Up and Down in a wrapped chat input can land one word off](entries/chat-input-updown-wrap-offset.md) | Open | Later: the user deferred a fix on 2026-10-22 |
+| [A manager cannot send a completed task back to a worker before the verify](entries/completed-task-no-repair-before-verify.md) | Open |  |
+| [Agents overview draws a card from a stale record instead of the live one](entries/resolved/agents-card-shows-stale-record.md) | Resolved 2026-10-23 | Task 129 (3d97c49a) joins the name and lineage identities of each record, so each name has one current record: the live record, else the newest. h hides a stale card as it hides a stopped card. h does not hide a manager card. |
+| [A restart can silently run a stale hive binary](entries/restart-runs-stale-binary.md) | Open |  |
+| [A test that passes in the local zone fails the UTC CI gate](entries/ci-zone-local-test.md) | Open | Task 132 fixes the two tests. The gate still runs in the local zone. |
+| [The manager startup list does not name overrides/verifier-model.md](entries/manager-startup-skips-verifier-model.md) | Open |  |
+| [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |

@@ -1,6 +1,0 @@
-=== RUN   TestTabMovesTheAccentBorder
-    frame_test.go:257: details focus: list border border, details border border; want border, accent
---- FAIL: TestTabMovesTheAccentBorder (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.018s
-FAIL

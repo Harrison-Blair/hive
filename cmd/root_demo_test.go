@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -12,12 +13,18 @@ import (
 	"testing"
 )
 
+// mainFixture starts on Agents with project agents to peek, attach, and
+// restart. The Gf boards of task 137 are Chat boards with no project agent.
 const mainFixture = "../.hive/spec/tui-v2/design/Main.fixture.json"
+
+// gfChatFixture is the fixture of the GfChat board of task 137.
+const gfChatFixture = "../.hive/spec/golden-frames/design/GfChat.fixture.json"
 
 // TestDemoActionsChangeNoFileAndStartNoProcess runs the CLI entry with --demo
 // and presses the chat send, restart, attach, and peek keys. The keys follow
-// the frame map: p peeks and a attaches on Agents, 5 ] opens Health › Agents
-// where r restarts, 2 opens Chat, i focuses the input, and enter sends.
+// the golden-frames chords: p peeks and a attaches on Agents, ^y opens
+// Health and ^] focuses its agents table where r restarts, ^y again returns
+// to Chat, where the input line has the focus, and enter sends.
 func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 	home := newRootTestHome(t)
 	methods := newRootFakeHerdr(t)
@@ -26,6 +33,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	fixtureDir := t.TempDir()
 	fixture := filepath.Join(fixtureDir, "Main.fixture.json")
+	requireSpecFile(t, mainFixture)
 	data, err := os.ReadFile(mainFixture)
 	if err != nil {
 		t.Fatal(err)
@@ -46,7 +54,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	before := snapshotFiles(t, home, fixtureDir)
 	var out bytes.Buffer
-	keys := "pa5]r2ihi\r"
+	keys := "pa\x19\x1dr\x19hi\r"
 	status := executeWithStreams([]string{"--demo", fixture}, strings.NewReader(keys), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; output %q", status, out.String())
@@ -128,12 +136,29 @@ func TestDemoFlagsAreHiddenFromHelp(t *testing.T) {
 	}
 }
 
+// --demo with the GfChat fixture draws the golden-frames Chat at the board
+// size: the composer with the draft and the status row. Two ctrl+c quit.
+func TestDemoRunsTheGfChatBoard(t *testing.T) {
+	requireSpecFile(t, gfChatFixture)
+	newRootTestHome(t)
+	var out bytes.Buffer
+	status := executeWithStreams([]string{"--demo", gfChatFixture}, strings.NewReader("\x03\x03"), &out, &out)
+	if status != 0 {
+		t.Fatalf("status = %d; output %q", status, out.String())
+	}
+	for _, want := range []string{"> Next, the release notes.", "● working", "^g agents"} {
+		if !strings.Contains(out.String(), want) {
+			t.Fatalf("output lacks %q:\n%s", want, out.String())
+		}
+	}
+}
+
 func TestDemoBadSizeNamesTheValue(t *testing.T) {
 	for _, value := range []string{"12x", "x40", "120x40x2", "0x40", "abcxdef", "120*40"} {
 		t.Run(value, func(t *testing.T) {
 			newRootTestHome(t)
 			var stdout, stderr bytes.Buffer
-			status := executeWithStreams([]string{"--demo", mainFixture, "--size", value}, strings.NewReader(""), &stdout, &stderr)
+			status := executeWithStreams([]string{"--demo", gfChatFixture, "--size", value}, strings.NewReader(""), &stdout, &stderr)
 			if status == 0 {
 				t.Fatalf("status = 0; want a failure for --size %q", value)
 			}
@@ -192,4 +217,14 @@ func snapshotFiles(t *testing.T, roots ...string) map[string][32]byte {
 		}
 	}
 	return files
+}
+
+// requireSpecFile skips the test when a file or a folder of the local spec is
+// missing. Git does not track .hive/spec/, so a clean clone has no grid and
+// no fixture. The test runs as before when the file exists.
+func requireSpecFile(t testing.TB, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("local spec file missing: %s: Git does not track .hive/spec/", path)
+	}
 }

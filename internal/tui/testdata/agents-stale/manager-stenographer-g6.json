@@ -1,0 +1,20 @@
+{
+  "key": "manager-stenographer-g6",
+  "name": "manager-stenographer",
+  "role": "manager",
+  "project": "stenographer",
+  "task": "",
+  "harness": "claude",
+  "model": "claude-opus-5-5",
+  "pane_id": "wEH:p1",
+  "workspace_id": "wEH",
+  "tab_id": "wEH:t1",
+  "status": "stale",
+  "agent_status": "idle",
+  "finished": false,
+  "quiet_after_min": 10,
+  "generation": 6,
+  "started_at": "2026-10-19T19:52:42.240434425Z",
+  "updated_at": "2026-10-19T20:52:59.376921978Z",
+  "spawned": true
+}

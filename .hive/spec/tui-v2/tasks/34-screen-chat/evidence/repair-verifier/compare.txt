@@ -1,1 +1,0 @@
-Chat.grid: strict differences 2644, space-cell token or bold only 2644, differences under the live rule 0

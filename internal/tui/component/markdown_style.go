@@ -41,9 +41,9 @@ var markdownStyle = ansi.StyleConfig{
 	HorizontalRule: ansi.StylePrimitive{Color: hexPtr(Border), Format: "────"},
 }
 
-// markdownBullet is the list item prefix. Glamour draws a block prefix
-// without the item style, so the accent is in the text.
-var markdownBullet = accentStyle.Render("• ")
+// markdownBullet is the list item prefix in fg, as the golden-frames boards
+// draw it.
+const markdownBullet = "• "
 
 func hexPtr(c color.Color) *string {
 	r, g, b, _ := c.RGBA()

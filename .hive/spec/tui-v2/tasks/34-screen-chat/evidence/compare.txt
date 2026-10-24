@@ -1,4 +1,0 @@
-Chat.grid: strict differences 2644, space-cell token or bold only 2644, differences under the live rule 0
-CompactChat.grid: strict differences 675, space-cell token or bold only 675, differences under the live rule 0
-chat-start w92:p2 {'max_offset_from_bottom': 0, 'offset_from_bottom': 0, 'viewport_rows': 57}
-compactchat-start w92:p2 {'max_offset_from_bottom': 0, 'offset_from_bottom': 0, 'viewport_rows': 57}

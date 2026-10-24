@@ -1,9 +1,0 @@
---- FAIL: TestWorkQueueMatchesItsBoard (0.01s)
-    work_queue_test.go:26: 4 cells differ from WorkQueue.grid:
-        row 9 col 4: want '└' border normal, got '└' dim normal
-        row 9 col 5: want '▶' border normal, got '▶' dim normal
-        row 10 col 6: want '└' border normal, got '└' dim normal
-        row 10 col 7: want '▶' border normal, got '▶' dim normal
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.033s
-FAIL

@@ -36,21 +36,11 @@ func checkRows(t *testing.T, name, view string, width, rows int) []string {
 // minimum to 200 columns, with text longer than the width.
 func TestFitFrameRows(t *testing.T) {
 	long := strings.Repeat("long-text-", 30)
-	header := Header{Home: "~/" + long, Coordinator: "working", Supervisor: "stopped", NeedsYou: 12345, Clock: "14:22"}
-	wordy := Header{Home: "~", Coordinator: long, Supervisor: long, NeedsYou: 1, Clock: long}
 	subtabs := SubTabs{Views: []string{"Goals", "Queue", "Tasks", long}, Active: 1}
-	hints := KeyHints{Region: "list", Hints: []string{"↑↓ move", long}}
+	status := StatusRow{Segments: []string{DimText(long), DimText("short")}, Tail: []string{StrongText("? 2 asks")}, Clock: "14:22"}
 	for width := frameMinWidth; width <= maxFitWidth; width++ {
-		checkRows(t, "Header", header.View(width), width, 1)
-		checkRows(t, "Header", wordy.View(width), width, 1)
 		checkRows(t, "SubTabs", subtabs.View(width), width, 1)
-		checkRows(t, "KeyHints", hints.View(width), width, 1)
-		for active := range tabNames {
-			rows := checkRows(t, "TabBar", TabBar{Active: active}.View(width), width, 2)
-			if strings.Trim(rows[len(rows)-1], "─━") != "" {
-				t.Errorf("TabBar at %d: rule %q has a cell that is not ─ or ━", width, rows[len(rows)-1])
-			}
-		}
+		checkRows(t, "StatusRow", status.View(width), width, 1)
 	}
 }
 
@@ -102,8 +92,8 @@ func checkBorderOf(t *testing.T, name, view string, width, height int, b lipglos
 // TestFitWave4 checks the components of wave 4 at each width from the
 // minimum to 200 columns, with text longer than the width: each row is
 // exactly the width and each border is whole. The Chat lines and the
-// markdown lines are not padded, so they are checked for no line wider than
-// the room.
+// markdown lines are not padded, so they are checked for no line past
+// column width-2 (golden-frames chat.md rule 1).
 func TestFitWave4(t *testing.T) {
 	long := strings.Repeat("wide·text ", 30)
 	list := List{Title: long, Focused: true, Columns: []Column{{Title: long, Width: 12}, {Title: "S", Width: 8}, {Title: long}}, Selected: 4}
@@ -119,7 +109,7 @@ func TestFitWave4(t *testing.T) {
 			checkBorder(t, "Details", details.View(width, height), width, height)
 		}
 		checkBorder(t, "FilterBar", FilterBar{Text: "level:warn " + long, Editing: width%2 == 0}.View(width), width, 3)
-		checkBorder(t, "Input", Input{Text: long, Focused: width%2 == 0}.View(width), width, 3)
+		checkBorder(t, "Composer", Composer{Text: long, Cursor: width%2 == 0, CursorColumn: 5, InputRows: 3}.View(width), width, InputHeight(long, width, 3)+2)
 		checkRows(t, "Notice", Notice{Text: long}.View(width), width, 1)
 		screen := strings.Repeat(long+"\n", 12)
 		for _, h := range []int{3, 12} {
@@ -134,13 +124,13 @@ func TestFitWave4(t *testing.T) {
 		{Time: "09:00", Name: long, Kind: ChatUser, Text: "ok"},
 	}
 	for width := 30; width <= maxFitWidth; width++ {
-		lines, err := ChatLines(append(chatSample, longNames...), width)
+		lines, err := ChatLines(append(gfChatSample(), longNames...), width)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for i, l := range lines {
-			if w := lipgloss.Width(l); w > width-4 {
-				t.Errorf("Chat at %d: line %d is %d cells, inner width %d", width, i, w, width-4)
+			if w := lipgloss.Width(l); w > width-1 {
+				t.Errorf("Chat at %d: line %d is %d cells, want at most %d", width, i, w, width-1)
 			}
 		}
 	}

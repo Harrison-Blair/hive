@@ -44,6 +44,7 @@ type CreateResult struct {
 	Path            string       `json:"path"`
 	Branch          string       `json:"branch"`
 	RepoWorkspaceID string       `json:"repo_workspace_id,omitempty"`
+	Design          *DesignCopy  `json:"design,omitempty"`
 }
 
 type createReadFailure struct {
@@ -152,23 +153,6 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		return fail("precheck", "check path: "+oneLine(err.Error()))
 	}
 	featureBrief := featureBriefRelativePath(task)
-	allowlistNeeded := false
-	if task.Feature != "" {
-		check, err := run.Command(ctx, project.Path, "git", "-C", project.Path, "check-ignore", "-q", "--no-index", featureBrief)
-		if err != nil {
-			return fail("validate", "check ignored path "+featureBrief+": "+oneLine(err.Error()))
-		}
-		switch check.ExitCode {
-		case 0:
-			if !task.Spec {
-				return fail("validate", "path is ignored: "+featureBrief+". The .gitignore of the repo must allow .hive/spec/.")
-			}
-			allowlistNeeded = true
-		case 1:
-		default:
-			return fail("validate", fmt.Sprintf("check ignored path %s: git exited with code %d", featureBrief, check.ExitCode))
-		}
-	}
 
 	before, err := herdr.WorkspaceList(ctx, herdr.WithLogger(scoped))
 	if err != nil {
@@ -216,15 +200,35 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		CreatedAt:   now(),
 	}
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
-	if allowlistNeeded {
-		effects = append(effects, output.Effect{
-			Resource: "allowlist_needed",
-			Path:     "Add !.hive/spec/ and !.hive/spec/** to the project .gitignore after the rules that ignore the path. Commit this change with the feature README.",
-			Action:   "add",
-		})
-	}
+	var specCopyErr error
 	var briefCopyErr error
+	var design *DesignCopy
 	if task.Feature != "" {
+		specCopy, err := copySpecIn(home, worktreePath, task)
+		if err == nil {
+			err = writeSpecCopy(registry, specCopy)
+		}
+		if err != nil {
+			specCopyErr = err
+		} else {
+			effects = append(effects,
+				output.Effect{Resource: "spec", Path: filepath.Join(worktreePath, filepath.FromSlash(featureSpecRelDir(task.Feature))) + "/", Action: "copied"},
+				output.Effect{Resource: "spec_copy", Path: SpecCopyRelPath(task.ID), Action: "created"},
+			)
+			logEvent(logger, "worktree spec copy-in", commandCreate, project.ID, options.Task, "path", featureSpecRelDir(task.Feature), "files", len(specCopy.Files))
+		}
+		counts, err := copyDesignIn(home, worktreePath, task)
+		if err != nil {
+			if specCopyErr == nil {
+				specCopyErr = err
+			}
+		} else {
+			design = &counts
+			if counts.Features > 0 {
+				effects = append(effects, output.Effect{Resource: "design", Path: fmt.Sprintf("%d features %d files", counts.Features, counts.Files), Action: "copied"})
+			}
+			logEvent(logger, "worktree design copy-in", commandCreate, project.ID, options.Task, "features", counts.Features, "files", counts.Files)
+		}
 		if err := copyFeatureBrief(home, worktreePath, task, featureBrief); err != nil {
 			briefCopyErr = err
 		} else {
@@ -233,11 +237,6 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 				Path:     filepath.Join(worktreePath, filepath.FromSlash(featureBrief)),
 				Action:   "copied",
 			})
-			if allowlistNeeded {
-				if _, err := run.Command(ctx, worktreePath, "git", "-C", worktreePath, "add", "-f", featureBrief); err != nil {
-					briefCopyErr = fmt.Errorf("stage feature brief: %s", oneLine(err.Error()))
-				}
-			}
 		}
 	}
 	logEffects(logger, commandCreate, project.ID, options.Task, effects)
@@ -257,18 +256,25 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		logFailure(logger, commandCreate, project.ID, options.Task, "workspace", message)
 		return partialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
 	}
+	if specCopyErr != nil {
+		message := oneLine(specCopyErr.Error())
+		logFailure(logger, commandCreate, project.ID, options.Task, "spec", message)
+		return partialEnvelope("spec", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
+	}
 	if briefCopyErr != nil {
 		message := "copy feature brief: " + oneLine(briefCopyErr.Error())
 		logFailure(logger, commandCreate, project.ID, options.Task, "brief", message)
 		return partialEnvelope("brief", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
 	logEvent(logger, "worktree create done", commandCreate, project.ID, options.Task, "workspace_id", worktree.WorkspaceID, "path", worktreePath, "branch", branch)
+	created := createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID)
+	created.Design = design
 	return output.Envelope{
 		Outcome: "ok",
 		Phase:   "complete",
 		Effects: effects,
 		Error:   nil,
-		Result:  createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID),
+		Result:  created,
 	}
 }
 

@@ -1,0 +1,20 @@
+{
+  "key": "coordinator-g4",
+  "name": "coordinator",
+  "role": "coordinator",
+  "project": "",
+  "task": "",
+  "harness": "",
+  "model": "",
+  "pane_id": "wBC:pV",
+  "workspace_id": "wBC",
+  "tab_id": "wBC:tT",
+  "status": "stale",
+  "agent_status": "working",
+  "finished": false,
+  "quiet_after_min": 10,
+  "generation": 4,
+  "started_at": "2026-10-20T03:56:57.422423779Z",
+  "updated_at": "2026-10-20T03:57:16.93240108Z",
+  "spawned": false
+}

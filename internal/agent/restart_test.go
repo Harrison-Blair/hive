@@ -192,6 +192,7 @@ func restartTabCreatedJSON(label, tabID, paneID string) string {
 
 func writeRestartRecord(t *testing.T, home string, record records.Agent) {
 	t.Helper()
+	record.ApplyRoleFacts(record.Worktree)
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)

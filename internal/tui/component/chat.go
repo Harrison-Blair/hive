@@ -10,46 +10,43 @@ import (
 // ChatKind is the kind of a chat message.
 type ChatKind int
 
-// The kinds of chat message (decision 15).
+// The kinds of chat message of golden-frames chat.md rules 2, 3, and 6.
 const (
 	ChatUser  ChatKind = iota // text of the user, in user
 	ChatAgent                 // an agent reply, rendered as markdown
 	ChatEvent                 // an event, folded to one dim line
+	ChatAsk                   // an ask line, one line that the caller styles
 )
 
-// ChatMessage is one message of the chat feed.
+// ChatMessage is one message of the transcript. Note is styled text after
+// the time on the first line, such as the delivery of a user message. The
+// Text of a ChatAsk message is styled by the caller.
 type ChatMessage struct {
 	Time string
 	Name string
 	Kind ChatKind
 	Text string
+	Note string
+	Open bool
 }
 
-// The gutter of the chat feed from LongFormWidth (decision 30): the time,
-// then the name in 13 cells, then the text from col 21 of a line. A line
-// starts at the panel padding, so the text starts 23 cells from the left
-// edge of the panel.
-const (
-	chatNameCol   = 7
-	chatNameWidth = 13
-	chatTextCol   = 21
+var (
+	infoStyle    = lipgloss.NewStyle().Foreground(Info)
+	dimBoldStyle = dimStyle.Bold(true)
 )
 
-var infoStyle = lipgloss.NewStyle().Foreground(Info)
-
-// ChatLines gives the lines of the chat feed for a feed panel of width
-// cells (decisions 15, 30, 31). From LongFormWidth the time and the name
-// are in a gutter and the text wraps at width-26 cells. Below it the time and
-// the name use their own line and the text wraps at the inner width of the
-// panel. A blank line separates two messages.
+// ChatLines gives the rows of the transcript at width cells (golden-frames
+// chat.md rules 1 to 6). Each row starts at column 1, and the text wraps at
+// column width-2. One blank row separates two messages. Two folded events, or
+// two ask lines, have no blank row between them.
 func ChatLines(msgs []ChatMessage, width int) ([]string, error) {
 	var out []string
-	for _, m := range msgs {
+	for i, m := range msgs {
 		lines, err := chatMessage(m, width)
 		if err != nil {
 			return nil, err
 		}
-		if len(out) > 0 && ansi.Strip(out[len(out)-1]) != "" {
+		if i > 0 && !chatJoined(msgs[i-1], m) {
 			out = append(out, "")
 		}
 		out = append(out, lines...)
@@ -57,59 +54,108 @@ func ChatLines(msgs []ChatMessage, width int) ([]string, error) {
 	return out, nil
 }
 
-func chatMessage(m ChatMessage, width int) ([]string, error) {
-	nameStyle := infoStyle.Bold(true)
-	if m.Kind == ChatUser {
-		nameStyle = userStyle.Bold(true)
-	}
-	wide := width >= LongFormWidth
-	wrap := width - 4
-	if wide {
-		wrap = width - 26
-	}
-
-	if m.Kind == ChatEvent {
-		if wide {
-			return []string{dimStyle.Render(m.Time) + "  " + dimStyle.Render(fitCell("· "+m.Name, chatNameWidth)) +
-				" " + dimStyle.Render(fitCell(m.Text, wrap))}, nil
-		}
-		return []string{dimStyle.Render(ansi.Truncate(m.Time+" · "+m.Name+" "+m.Text, wrap, "…"))}, nil
-	}
-
-	var body []string
-	if m.Kind == ChatAgent {
-		var err error
-		if body, err = RenderMarkdown(m.Text, wrap); err != nil {
+// ChatStarts gives the first row of each message in the rows of ChatLines.
+func ChatStarts(msgs []ChatMessage, width int) ([]int, error) {
+	starts := make([]int, 0, len(msgs))
+	row := 0
+	for i, m := range msgs {
+		lines, err := chatMessage(m, width)
+		if err != nil {
 			return nil, err
 		}
-	} else {
-		for _, l := range wordWrap(m.Text, wrap) {
-			body = append(body, userStyle.Render(l))
+		if i > 0 && !chatJoined(msgs[i-1], m) {
+			row++
 		}
+		starts = append(starts, row)
+		row += len(lines)
 	}
-
-	if !wide {
-		name := ansi.Truncate(m.Name, max(wrap-lipgloss.Width(m.Time)-1, 0), "…")
-		head := dimStyle.Render(m.Time) + " " + nameStyle.Render(name)
-		return append([]string{head}, body...), nil
-	}
-	gutter := dimStyle.Render(m.Time) + "  " + nameStyle.Render(fitCell(m.Name, chatNameWidth)) + " "
-	indent := strings.Repeat(" ", chatTextCol)
-	for i, l := range body {
-		if i == 0 {
-			body[i] = gutter + l
-		} else if ansi.Strip(l) != "" {
-			body[i] = indent + l
-		}
-	}
-	if len(body) == 0 {
-		body = []string{gutter}
-	}
-	return body, nil
+	return starts, nil
 }
 
-// wordWrap breaks s at spaces into lines of at most width cells, as the
-// board script does. A word longer than width is cut into parts.
+func chatJoined(prev, next ChatMessage) bool {
+	folded := func(m ChatMessage) bool { return m.Kind == ChatEvent && !m.Open }
+	return folded(prev) && folded(next) || prev.Kind == ChatAsk && next.Kind == ChatAsk
+}
+
+func chatMessage(m ChatMessage, width int) ([]string, error) {
+	wrap := max(width-2, 1)
+	switch m.Kind {
+	case ChatEvent:
+		marker := "▸"
+		if m.Open {
+			marker = "▾"
+		}
+		head := " " + dimStyle.Render(marker) + " " + dimBoldStyle.Render(m.Name) + " "
+		if !m.Open {
+			first, _, _ := strings.Cut(m.Text, "\n")
+			rest := max(width-3-lipgloss.Width(head), 0)
+			return []string{ansi.Truncate(head+dimStyle.Render(fitCell(ansi.Truncate(m.Time+"  "+first, rest, "…"), rest)), width-1, "…")}, nil
+		}
+		lines := []string{ansi.Truncate(head+dimStyle.Render(m.Time), width-1, "…")}
+		for _, line := range wordWrap(m.Text, wrap) {
+			lines = append(lines, " "+dimStyle.Render(fitCell(line, width-3)))
+		}
+		return lines, nil
+	case ChatAsk:
+		head := " " + titleStyle.Render("?") + " " + titleStyle.Render(m.Name) + " "
+		return []string{ansi.Truncate(head+dimStyle.Render(m.Time+"  ")+m.Text, width-1, "…")}, nil
+	}
+	marker, nameStyle := "●", infoStyle.Bold(true)
+	if m.Kind == ChatUser {
+		marker, nameStyle = "›", userStyle.Bold(true)
+	}
+	head := " " + nameStyle.Render(marker) + " " + nameStyle.Render(m.Name) + " " + dimStyle.Render(m.Time)
+	if m.Note != "" {
+		head += m.Note
+	}
+	lines := []string{ansi.Truncate(head, width-1, "…")}
+	if m.Kind == ChatAgent {
+		body, err := RenderMarkdown(m.Text, wrap)
+		if err != nil {
+			return nil, err
+		}
+		for _, line := range compactHeadingGaps(body) {
+			lines = append(lines, " "+line)
+		}
+		return lines, nil
+	}
+	for _, line := range wordWrap(m.Text, wrap) {
+		lines = append(lines, " "+userStyle.Render(line))
+	}
+	return lines, nil
+}
+
+// compactHeadingGaps removes the blank row that Glamour puts between a
+// heading and the list or the code block below it, as the boards draw it.
+func compactHeadingGaps(lines []string) []string {
+	out := make([]string, 0, len(lines))
+	for i, line := range lines {
+		if ansi.Strip(line) == "" && len(out) > 0 && i+1 < len(lines) && isHeading(out[len(out)-1]) &&
+			(strings.HasPrefix(ansi.Strip(lines[i+1]), "• ") || strings.HasPrefix(ansi.Strip(lines[i+1]), "  ")) {
+			continue
+		}
+		out = append(out, line)
+	}
+	return out
+}
+
+// isHeading reports that line starts with the style of a heading.
+func isHeading(line string) bool {
+	return headingPrefix != "" && strings.HasPrefix(line, headingPrefix)
+}
+
+// headingPrefix is the SGR sequence that starts a rendered heading.
+var headingPrefix = func() string {
+	lines, err := RenderMarkdown("# x", 10)
+	if err != nil || len(lines) == 0 {
+		return ""
+	}
+	prefix, _, _ := strings.Cut(lines[0], "x")
+	return prefix
+}()
+
+// wordWrap breaks s at spaces into lines of at most width cells. A word
+// longer than width is cut into parts.
 func wordWrap(s string, width int) []string {
 	var lines []string
 	for _, para := range strings.Split(s, "\n") {

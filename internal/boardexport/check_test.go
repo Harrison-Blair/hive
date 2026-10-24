@@ -8,10 +8,10 @@ import (
 )
 
 // raw builds a hand-written board grid. Each row is "text|tokens", with one
-// token letter for each cell: f fg, r border, a accent, x a token outside the
-// palette.
+// token letter for each cell: f fg, r border, a accent, e error, x a token
+// outside the palette.
 func raw(rows ...string) Raw {
-	names := map[rune]string{'f': "fg", 'r': "border", 'a': "accent", 'x': "red"}
+	names := map[rune]string{'f': "fg", 'r': "border", 'a': "accent", 'e': "error", 'x': "red"}
 	var g Raw
 	for _, row := range rows {
 		text, toks, _ := strings.Cut(row, "|")
@@ -46,10 +46,85 @@ func TestCheckAcceptsAGoodBoard(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsChatStatusSymbols(t *testing.T) {
+	g := fill("▸▾▲", "fff")
+	if err := Check("TooSmall", g); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCheckAcceptsNewChatBoardSizes(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatStatus", 120, 40},
+		{"ChatEvents", 120, 40},
+		{"CompactChatStatus", 80, 24},
+	} {
+		t.Run(board.name, func(t *testing.T) {
+			if err := checkSize(board.name, board.w, board.h); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func TestCheckAcceptsTheHeavyBorder(t *testing.T) {
 	g := fill("┏━┯━┓┃┗┷┛┡┨", "aaaaaaaaaaa")
 	if err := Check("TooSmall", g); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCheckAcceptsTheLiveBoards(t *testing.T) {
+	g := fill("┰┸┺┹╃┻◀▼", "aaaaaaaa")
+	if err := Check("TooSmall", g); err != nil {
+		t.Fatal(err)
+	}
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"LiveOverview", 120, 40},
+		{"LivePod", 120, 40},
+		{"CompactLiveOverview", 80, 24},
+		{"CompactLivePod", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestCheckAcceptsTheTreeBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"TreeWide", 120, 40},
+		{"TreeNested", 120, 40},
+		{"CompactTreeWide", 80, 24},
+		{"CompactTreeNested", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestCheckAcceptsTheChatModeBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatNormal", 120, 40},
+		{"ChatInput", 120, 40},
+		{"CompactChatNormal", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
 	}
 }
 
@@ -144,4 +219,78 @@ func assertErr(t *testing.T, err error, parts ...string) {
 			t.Errorf("error %q does not name %q", err, p)
 		}
 	}
+}
+
+func TestCheckAcceptsTheAskBoards(t *testing.T) {
+	for _, board := range []struct {
+		name string
+		w, h int
+	}{
+		{"ChatAsk", 120, 40},
+		{"ChatAskMulti", 120, 40},
+		{"ChatAskPreview", 120, 40},
+		{"ChatAskStopped", 120, 40},
+		{"CompactChatAsk", 80, 24},
+		{"ChatAskReview", 120, 40},
+		{"ChatAskReviewMulti", 120, 40},
+		{"CompactChatAskReview", 80, 24},
+	} {
+		if err := checkSize(board.name, board.w, board.h); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+// gfFill gives a 120×40 Gf board grid of spaces in fg, with the first row
+// replaced by top.
+func gfFill(top string, toks string) Raw {
+	rows := []string{top + strings.Repeat(" ", 120-len([]rune(top))) + "|" + toks + strings.Repeat("f", 120-len(toks))}
+	for range 39 {
+		rows = append(rows, strings.Repeat(" ", 120)+"|"+strings.Repeat("f", 120))
+	}
+	return raw(rows...)
+}
+
+// Golden-frames decision 23: each board is 120×40 except GfComponents at
+// 120×67.
+func TestCheckAcceptsTheGoldenFramesBoardSizes(t *testing.T) {
+	boards := []string{
+		"GfChat", "GfChatAsk", "GfWork", "GfFriction", "GfHealth", "GfLogs", "GfAgents", "GfHelp",
+		"GfChatEmpty", "GfChatNoCoordinator", "GfChatEvents", "GfChatTall", "GfChatMarkdown", "GfChatNotice",
+		"GfChatAskInput", "GfChatAskMulti", "GfChatAskPreview", "GfChatAskStopped", "GfChatAskReview", "GfChatAskMany",
+		"GfWorkEmpty", "GfWorkNoGoal", "GfWorkScroll", "GfWorkStops", "GfWorkCancelled", "GfWorkTask", "GfWorkDeps",
+		"GfFrictionResolved", "GfFrictionEmpty", "GfFrictionFilter", "GfHealthGreen", "GfHealthRestart", "GfHealthChecking",
+		"GfLogsEmpty", "GfLogsRaw", "GfLogsError", "GfAgentsPod", "GfAgentsDetails", "GfAgentsNone",
+	}
+	for _, board := range boards {
+		if err := checkSize(board, 120, 40); err != nil {
+			t.Error(err)
+		}
+	}
+	if err := checkSize("GfComponents", 120, 67); err != nil {
+		t.Error(err)
+	}
+	assertErr(t, checkSize("GfChat", 120, 67), "GfChat", "120×67", "120×40")
+}
+
+// Golden-frames decisions 7 and 21: a Gf board can use the bar symbols and
+// the error token.
+func TestCheckAcceptsTheGoldenFramesSymbolsAndError(t *testing.T) {
+	g := gfFill("▮▁▂▃▄▅▆▇ error: ▸▾", "aaaaaaaafeeeeeefff")
+	if err := Check("GfLogs", g); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// A tui-v2 board keeps the symbol list of tui-v2 decision 13 and the eight
+// tokens of tui-v2 decision 26.
+func TestCheckKeepsTheTuiV2ListsForATuiV2Board(t *testing.T) {
+	assertErr(t, Check("TooSmall", fill("ab▮", "fff")), "TooSmall", "row 0 col 2", `"▮"`)
+	assertErr(t, Check("TooSmall", fill("abc", "ffe")), "TooSmall", "row 0 col 2", `"error"`)
+}
+
+func TestCheckFailsAGoldenFramesBoardOutsideItsLists(t *testing.T) {
+	assertErr(t, Check("GfChat", gfFill("ab★", "fff")), "GfChat", "row 0 col 2", `"★"`)
+	assertErr(t, Check("GfChat", gfFill("abc", "ffx")), "GfChat", "row 0 col 2", `"red"`)
+	assertErr(t, Check("GfChat", fill("abc", "fff")), "GfChat", "60×16", "120×40")
 }

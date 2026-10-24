@@ -9,6 +9,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/charmbracelet/x/ansi"
@@ -75,8 +76,8 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
 			home, clock := agentsFixture(t, 40)
 			m := newTestModel(t, home, clock)
-			m.width, m.height, m.screenIndex = size.width, size.height, 1
-			m, cmd := raise(t, m, key('1', "1"))
+			m.width, m.height = size.width, size.height
+			m, cmd := raise(t, m, ctrl('g'))
 			m = deliverAgentCommands(t, m, cmd)
 
 			// Decisions 1 and 3: the frame has no sidebar. The Agents panel
@@ -90,8 +91,11 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 					t.Fatalf("line %d is %d cells; want %d:\n%s", index, got, size.width, strings.Join(lines, "\n"))
 				}
 			}
-			if !strings.HasPrefix(lines[frameRows-1], "╭─ project agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
-				t.Fatalf("Agents panel does not fill the content area:\n%s", strings.Join(lines, "\n"))
+			// Golden-frames decision 2: the title row and the rule are above
+			// the body. Golden-frames agents.md rule 1: the body has no
+			// outer box.
+			if !strings.HasPrefix(lines[0], " agents · ") || strings.Contains(strings.Join(lines, "\n"), "project agents") {
+				t.Fatalf("Agents body is not below the title row with no outer box:\n%s", strings.Join(lines, "\n"))
 			}
 		})
 	}
@@ -102,7 +106,7 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	// At 120×40 the peek panel has room for each of the 20 lines.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, cmd)
 	bin := t.TempDir()
 	argsPath := filepath.Join(bin, "args")
@@ -141,7 +145,8 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	if m.agents.peekOpen {
 		t.Fatal("esc did not close the peek")
 	}
-	requireView(t, m, "╭─ project agents ")
+	rejectView(t, m, "peek w1:p3 · esc closes")
+	requireView(t, m, " agents · ", "manager-demo")
 	logData, err := os.ReadFile(dailyPath(home, clock.now()))
 	if err != nil {
 		t.Fatal(err)
@@ -159,22 +164,35 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 
 func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	m := agentsBoardModel(t)
-	frame := ansi.Strip(m.View().Content)
-	// Decision 2: the header shows the state of the coordinator and the
-	// supervisor, and needs you. The header state keeps the agent counts.
-	for _, want := range []string{"sup ●", "needs you 0"} {
-		if !strings.Contains(frame, want) {
-			t.Errorf("Agents header omits %q:\n%s", want, frame)
+	// Golden-frames decision 11: the status row shows the state of the
+	// supervisor and needs you. The header state keeps the agent counts.
+	check := func(screen string) {
+		frame := ansi.Strip(m.View().Content)
+		for _, want := range []string{"● supervisor", "needs you 0"} {
+			if !strings.Contains(frame, want) {
+				t.Errorf("%s header omits %q:\n%s", screen, want, frame)
+			}
+		}
+		if m.header.agents != 5 || m.header.working != 2 || m.header.idle != 3 {
+			t.Errorf("header counts = %d agents, %d working, %d idle; want 5, 2, 3", m.header.agents, m.header.working, m.header.idle)
+		}
+		for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
+			if strings.Contains(frame, unwanted) {
+				t.Errorf("%s header contains %q:\n%s", screen, unwanted, frame)
+			}
 		}
 	}
-	if m.header.agents != 5 || m.header.working != 2 || m.header.idle != 3 {
-		t.Errorf("header counts = %d agents, %d working, %d idle; want 5, 2, 3", m.header.agents, m.header.working, m.header.idle)
-	}
-	for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
-		if strings.Contains(frame, unwanted) {
-			t.Errorf("Agents header contains %q:\n%s", unwanted, frame)
-		}
-	}
+	// Ask a27: the default row of Agents has no supervisor and no needs
+	// you segment, so the check names them.
+	cfg := home.DefaultTUI()
+	cfg.StatusLines = [][]string{{"state", "supervisor", "needs_you", "clock"}}
+	cfg.StatusLinesExplicit = true
+	m.setTUIConfig(cfg)
+	check("Agents")
+	// Decision 34: only Chat has these segments in the default row.
+	m.setTUIConfig(home.DefaultTUI())
+	m.selectScreen(tabChat, 0)
+	check("Chat")
 }
 
 func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
@@ -212,13 +230,15 @@ func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 
 func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 	m := agentsBoardModel(t)
+	// agents.md rule 12: o opens the pod, and the arrows move in it.
+	m, _ = raise(t, m, key('o', "o"))
 	for range 3 {
 		m, _ = raise(t, m, key('j', "j"))
 	}
 	m.screenLoading = true
 	m, cmd := raise(t, m, key('t', "t"))
-	if m.screenIndex != 4 {
-		t.Fatalf("screen index = %d, want Tasks screen index 4", m.screenIndex)
+	if m.screenIndex != 2 {
+		t.Fatalf("screen index = %d, want Work screen index 2", m.screenIndex)
 	}
 	if m.tasks.selectedID != "10-alpha" {
 		t.Fatalf("Tasks selection = %q, want task 10-alpha", m.tasks.selectedID)
@@ -227,31 +247,23 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 		t.Fatal("t did not load the Tasks screen")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	if view := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(view, "▶ 10-alpha") {
-		t.Fatalf("Tasks screen did not select task 10-alpha:\n%s", view)
+	// agents.md key table: t opens the task of the card on Work.
+	if m.tasks.popup != workPopupTask {
+		t.Fatalf("Work popup = %q, want the task popup", m.tasks.popup)
+	}
+	requireView(t, m, "10-alpha · esc closes")
+	m, _ = raise(t, m, key(tea.KeyEscape, ""))
+	// Work rule 4: the selected card has the heavy border.
+	if got := selectedCard(t, m); got != "10-alpha" {
+		t.Fatalf("Work board selected %q, want task 10-alpha", got)
 	}
 }
 
 func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	m := agentsBoardModel(t)
-	want := "←↑↓→ move · tab view · enter peek · a attach · h hide stopped · t task · r restart coordinator/supervisor · ask in Chat"
+	want := "←↑↓→ move · tab view · enter peek · a attach · h stopped · t task · r restart coordinator/supervisor · ask in Chat"
 	if got := m.currentScreen().KeyHints(); got != want {
 		t.Fatalf("Agents key hints = %q, want %q", got, want)
-	}
-}
-
-func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.width = 120
-	m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.Local) }
-	// Decision 2: the header shows the home, the agent states, needs you,
-	// and the clock.
-	line := ansi.Strip(m.headerView().View(m.width))
-	if !strings.HasPrefix(line, " hive  ") || !strings.Contains(line, "needs you 0   12:00 ") {
-		t.Fatalf("Agents header does not have the long form of decision 2: %s", line)
-	}
-	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00 ") {
-		t.Fatalf("Agents header time is not at the right edge: width=%d line=%q", ansi.StringWidth(line), line)
 	}
 }
 
@@ -307,8 +319,9 @@ func agentsBoardModel(t *testing.T) *Model {
 func TestAgentsProgramUsesStringReader(t *testing.T) {
 	home := newTestHome(t)
 	var out strings.Builder
-	// Decision 10: with no project, Agents shows the notice.
-	if err := RunHome(home, strings.NewReader("1\x03\x03"), &out); err != nil {
+	// Decision 10: with no project, Agents shows the notice. Golden-frames
+	// decision 16: ctrl+g, the byte 0x07, opens Agents.
+	if err := RunHome(home, strings.NewReader("\x07\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
 	if !strings.Contains(out.String(), agentsNoneText) {

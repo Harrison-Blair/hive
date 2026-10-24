@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 
@@ -31,11 +32,13 @@ const (
 // overlay (decisions 8, 9). Hints and compact give the key hints of each
 // focus state from 120 columns and below 120 columns. A key is "view/focus"
 // or "focus". Panels gives the list and the details of each view that wave 6
-// replaced. The key is the view name.
+// replaced. The key is the view name. Title gives the title row of a screen
+// with golden-frames facts.
 type frameScreen struct {
 	label       string
 	views       []string
 	regions     []string
+	title       func(m *Model) component.TitleRow
 	listDetails bool
 	hints       map[string][]string
 	compact     map[string][]string
@@ -57,84 +60,50 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Agents",
 		regions: []string{"graph"},
 		hints: map[string][]string{
-			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h hide stopped", "? help"},
+			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped"},
+			"pods":    {"←→ pod", "↑↓ card", "enter details", "o one pod", "a attach", "p peek", "t task", "h stopped"},
+			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped"},
+			"none":    {"↑ coordinator", "enter details", "a attach", "p peek", "h stopped"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
 			"graph": {"←↑↓→ move", "enter details", "a attach", "p peek", "?"},
+			"pods":  {"←→ pod", "↑↓ card", "enter details", "o one pod", "?"},
+			"pod":   {"←↑↓→ move", "enter details", "esc pods", "?"},
 		},
 	},
 	tabChat: {
 		label:   "Chat",
 		regions: []string{"feed", "input"},
 		hints: map[string][]string{
-			"feed":  {"i type", "pgup/pgdn scroll", "tab region", "? help"},
-			"input": {"enter send", "shift+enter newline", "esc leave input", "pgup/pgdn scroll feed", "tab region"},
+			"input": {"enter send", "shift+enter newline", "ctrl+o events", "wheel or pgup/pgdn scroll"},
 		},
 		compact: map[string][]string{
-			"feed":  {"i type", "pgup/pgdn feed", "tab region", "?"},
-			"input": {"enter send", "esc leave input", "pgup/pgdn feed", "tab region"},
+			"input": {"enter send", "wheel or pgup/pgdn scroll"},
 		},
 	},
 	tabWork: {
-		label:       "Work",
-		views:       []string{"Goals", "Queue", "Tasks"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
-		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "o design", "t task", "? help"},
-			"Queue/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "s stops only", "t task", "? help"},
-			"Tasks/list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
-			"details":       {"↑↓ scroll", "tab region", "esc back to list", "? help"},
-			"Tasks/details": {"↑↓ scroll", "tab region", "esc back to list", "b brief", "v verified", "d deps", "? help"},
-		},
-		compact: map[string][]string{
-			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
-			"details":       {"↑↓ scroll", "esc back to list"},
-			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
-		},
-		panels: map[string]screenPanels{
-			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
-			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
-			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
-		},
+		label:   "Work",
+		regions: []string{"board"},
+		title:   (*Model).workTitleRow,
 	},
 	tabFriction: {
-		label:       "Friction",
-		views:       []string{"Open", "Resolved"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
+		label:   "Friction",
+		regions: []string{"list", "details"},
+		title:   (*Model).frictionTitle,
 		hints: map[string][]string{
-			"list":    {"↑↓ move", "tab region", "[ ] view", "enter open", "g/G top/end", "? help"},
-			"details": {"↑↓ scroll", "tab region", "esc back to list", "? help"},
-		},
-		compact: map[string][]string{
-			"list":    {"↑↓ move", "enter details", "[ ] view", "?"},
-			"details": {"↑↓ scroll", "esc back to list"},
-		},
-		panels: map[string]screenPanels{
-			"Open":     {list: (*Model).frictionList, details: (*Model).frictionDetails},
-			"Resolved": {list: (*Model).frictionList, details: (*Model).frictionDetails},
+			"list":    {"↑↓ move", "enter resolved", "/ filter", "^] details", "pgup/pgdn"},
+			"details": {"↑↓ scroll", "pgup/pgdn", "g/G top/end", "^] list"},
+			"filter":  {"type", "enter apply", "esc close", "backspace"},
 		},
 	},
 	tabHealth: {
-		label:       "Health",
-		views:       []string{"Home", "Agents"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
+		label:   "Health",
+		regions: []string{"grid", "table"},
+		title:   (*Model).healthTitle,
 		hints: map[string][]string{
-			"Home/list":   {"↑↓ move", "tab region", "[ ] view", "enter open", "R refresh", "? help"},
-			"Agents/list": {"↑↓ move", "tab region", "[ ] view", "enter open", "r restart", "R refresh", "? help"},
-			"details":     {"↑↓ scroll", "tab region", "esc back to list", "? help"},
-		},
-		compact: map[string][]string{
-			"Home/list":   {"↑↓ move", "enter details", "[ ] view", "R refresh", "?"},
-			"Agents/list": {"↑↓ move", "enter details", "[ ] view", "r restart", "R refresh", "?"},
-			"details":     {"↑↓ scroll", "esc back to list"},
-		},
-		panels: map[string]screenPanels{
-			"Home":   {list: (*Model).healthPanel, details: (*Model).healthDetails},
-			"Agents": {list: (*Model).healthPanel, details: (*Model).healthDetails},
+			"grid":  {"↑↓ ←→ tile", "^] agents", "R check again"},
+			"table": {"↑↓ row", "g/G top/end", "pgup/pgdn page", "^] checks", "r restart", "a attach", "p peek", "R check again"},
 		},
 	},
 	tabLogs: {
@@ -142,12 +111,12 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"events", "json"},
 		listDetails: true,
 		hints: map[string][]string{
-			"events": {"↑↓ move", "tab region", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
-			"json":   {"↑↓ scroll", "tab region", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"events": {"↑↓ move", "/ filter", "f follow", "← → day", "j raw", "r request", "^] panel"},
+			"json":   {"↑↓ scroll", "/ filter", "f follow", "← → day", "j raw", "r request", "^] list"},
 		},
 		compact: map[string][]string{
-			"events": {"↑↓ move", "enter details", "f follow", "/ filter", "?"},
-			"json":   {"↑↓ scroll", "esc back to events", "f follow"},
+			"events": {"↑↓ move", "enter details", "/ filter", "f follow", "j raw"},
+			"json":   {"↑↓ scroll", "esc back to events", "j raw"},
 		},
 	},
 }
@@ -198,10 +167,6 @@ func (m *Model) activeView() int {
 	switch m.activeTab() {
 	case tabWork:
 		return m.screenIndex - 2
-	case tabFriction:
-		return int(m.friction.tab)
-	case tabHealth:
-		return m.views[tabHealth]
 	}
 	return 0
 }
@@ -223,13 +188,9 @@ func (m *Model) selectScreen(tab, view int) {
 	case tabChat:
 		m.screenIndex = 0
 	case tabWork:
-		m.screenIndex = 2 + view
+		m.screenIndex = 2
 	case tabFriction:
 		m.screenIndex = 5
-		if frictionTab(view) != m.friction.tab {
-			m.friction.tab = frictionTab(view)
-			m.friction.acceptSelection()
-		}
 	case tabHealth:
 		m.screenIndex = 6
 	default:
@@ -249,15 +210,20 @@ func (m *Model) focusState() string {
 		return "help"
 	case m.agents.restartConfirm:
 		return "restart"
-	case tab == tabLogs && m.mode == editing:
+	case tab == tabLogs && m.mode == editing, tab == tabFriction && m.friction.filterOpen:
 		return "filter"
 	case tab == tabAgents && m.popupOpen:
 		return "details"
+	case tab == tabWork && m.tasks.popup != "":
+		return m.tasks.popup
 	case tab == tabChat:
 		if m.chatInputActive {
 			return "input"
 		}
-		return "feed"
+		if m.askFocused() {
+			return m.askFocusState()
+		}
+		return "normal"
 	}
 	return screenRegistry[tab].regions[m.regionFocus[tab]]
 }
@@ -281,11 +247,47 @@ func (m *Model) tooSmall() (demoSize, demoSize, bool) {
 	return demoSize{}, demoSize{}, false
 }
 
-// frameView renders the header, the tab bar, the content area, and the
-// footer at exactly the model size. Only the content area is cached.
+// frameView renders the screen at exactly the model size (golden-frames
+// decisions 1 to 5): the title row and the rule on each screen except Chat,
+// the content area, the notice line while a notice exists, and the status
+// rows. A popup dims the full screen. Only the content area is cached.
+// contentArea gives the first row and the rows of the content area of
+// golden-frames decision 2: below the title row and the rule on each screen
+// other than Chat, and above the notice line and the status rows.
+func (m *Model) contentArea() (top, height int) {
+	if m.activeTab() != tabChat {
+		top = 2
+	}
+	height = m.height - top - len(m.statusRows(m.width, m.height))
+	// On Chat the notice line is above the composer, inside the content
+	// area (decision 14).
+	if m.activeTab() != tabChat && m.noticeLine(m.width) != "" {
+		height--
+	}
+	return top, max(1, height)
+}
+
 func (m *Model) frameView() string {
 	width, height := m.width, m.height
-	contentHeight := max(1, height-frameRows)
+	status := m.statusRows(width, height)
+	notice := m.noticeLine(width)
+	var rows []string
+	entry := screenRegistry[m.activeTab()]
+	switch {
+	case entry.title != nil:
+		rows = append(rows, entry.title(m).View(width))
+	case m.activeTab() == tabLogs:
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		title.Facts, title.Right = m.logsTitle()
+		rows = append(rows, title.View(width))
+	case m.activeTab() != tabChat:
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		if m.activeTab() == tabAgents {
+			title.Facts = m.agentsTitleFacts()
+		}
+		rows = append(rows, title.View(width))
+	}
+	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
 		m.screenViewCache = m.contentView(width, contentHeight)
 		m.screenViewCacheValid = true
@@ -293,44 +295,68 @@ func (m *Model) frameView() string {
 		m.screenViewHeight = contentHeight
 		m.screenViewIndex = m.screenIndex
 	}
-	top := m.headerView().View(width) + "\n" + component.TabBar{Active: m.activeTab()}.View(width)
-	if m.helpOpen || (m.activeTab() == tabAgents && m.popupOpen) {
-		top = component.DimScreen(top, width, 3)
+	rows = append(rows, m.screenViewCache)
+	if notice != "" && m.activeTab() != tabChat {
+		rows = append(rows, notice)
 	}
-	return top + "\n" + m.screenViewCache + "\n" + m.footerView(width)
-}
-
-// headerView gives the header of decision 2 from the header state.
-func (m *Model) headerView() component.Header {
-	home := m.home
-	if m.demo != nil {
-		home = m.demo.fixture.Home
-	} else if user, err := os.UserHomeDir(); err == nil && user != "" && strings.HasPrefix(home, user) {
-		home = "~" + strings.TrimPrefix(home, user)
+	if m.activeTab() == tabWork && m.tasks.popup != "" && !m.helpOpen {
+		rows = []string{m.workPopupView(strings.Join(rows, "\n"), width, height-len(status))}
 	}
-	supervisor := "stopped"
+	screen := strings.Join(append(rows, status...), "\n")
 	switch {
-	case m.header.supervisorOld:
-		supervisor = "old"
-	case m.header.supervisor == "fresh":
-		supervisor = "live"
+	case m.activeTab() == tabAgents && m.popupOpen && !m.helpOpen:
+		// agents.md rule 14: the popup covers the rows above the status
+		// rows. The key row is on its last inner row, and the lines above
+		// it scroll.
+		title, lines, keys := m.agentDetailsPopup()
+		room := agentPopupHeight - 3
+		m.popupOffset = min(m.popupOffset, max(len(lines)-room, 0))
+		lines = lines[m.popupOffset:min(m.popupOffset+room, len(lines))]
+		for len(lines) < room {
+			lines = append(lines, "")
+		}
+		top := component.Popup{Details: component.Details{Title: title, Lines: append(lines, keys)}, Width: agentPopupWidth, Height: agentPopupHeight, Tight: true}.View(strings.Join(rows, "\n"), width, height-len(status))
+		screen = strings.Join(append([]string{top}, status...), "\n")
+	case m.helpOpen:
+		screen = m.helpView(screen, width, height)
 	}
-	coordinator := m.header.coordinator
-	if coordinator == "" {
-		coordinator = "stopped"
-	}
-	return component.Header{
-		Home:        home,
-		Coordinator: coordinator,
-		Supervisor:  supervisor,
-		NeedsYou:    m.header.needsUser,
-		Clock:       m.now().Format("15:04"),
-	}
+	return screen
 }
 
-// footerView gives the footer of decision 4: the focus state and its key
-// hints. A notice takes the place of the hints.
-func (m *Model) footerView(width int) string {
+// homeLabel gives the home of the welcome block: the fixture home in demo
+// mode, else the home with ~ for the user home folder.
+func (m *Model) homeLabel() string {
+	if m.demo != nil {
+		return m.demo.fixture.Home
+	}
+	if user, err := os.UserHomeDir(); err == nil && user != "" && strings.HasPrefix(m.home, user) {
+		return "~" + strings.TrimPrefix(m.home, user)
+	}
+	return m.home
+}
+
+// hintKey gives the key of the hints of focus. On the Agents graph it is
+// pods for the overview and pod for the one-pod view of decision 62. With
+// one project the one-pod view has no esc pods, so it keeps the graph hints.
+func (m *Model) hintKey(tab int, focus string) string {
+	if tab != tabAgents || focus != "graph" {
+		return focus
+	}
+	pods := m.agentsPods()
+	switch {
+	case len(pods) == 0:
+		return "none"
+	case len(pods) == 1 && projectPods(pods) == 1:
+		return focus
+	case m.inPodView(pods):
+		return "pod"
+	}
+	return "pods"
+}
+
+// focusHints gives the keys of the focus for the screen segment of
+// golden-frames decision 11.
+func (m *Model) focusHints(width int) []string {
 	tab := m.activeTab()
 	focus := m.focusState()
 	var hints []string
@@ -341,13 +367,17 @@ func (m *Model) footerView(width int) string {
 		hints = restartHints
 	case "filter":
 		hints = filterHints
+		if own, ok := screenRegistry[tab].hints["filter"]; ok {
+			hints = own
+		}
+	case "ask", "note", "other", "review":
+		hints = m.askHints(focus)
+	case "board", workPopupTask, workPopupDeps:
+		hints = m.workHints(focus)
 	default:
-		hints = screenRegistry[tab].keyHints(m.viewName(), focus, width >= component.LongFormWidth)
+		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
-	if notice := m.footerNotice(); notice != "" {
-		hints = []string{notice}
-	}
-	return component.KeyHints{Region: focus, Hints: hints}.View(width)
+	return hints
 }
 
 func (m *Model) footerNotice() string {
@@ -357,13 +387,11 @@ func (m *Model) footerNotice() string {
 	case m.demo != nil && m.demo.notice != "":
 		return m.demo.notice
 	case m.agents.restartConfirm:
-		return ""
+		return m.restartPrompt()
 	case m.screenIndex == 6 && m.agents.restartNotice != "":
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
-	case m.screenIndex == 2 && m.goalsQueue.designNotice != "":
-		return m.goalsQueue.designNotice
 	}
 	if err := m.footerError(); err != "" {
 		return "error: " + err
@@ -371,10 +399,22 @@ func (m *Model) footerNotice() string {
 	return ""
 }
 
+// restartPrompt gives the restart prompt of health.md rule 6.
+func (m *Model) restartPrompt() string {
+	target := m.agents.restartTarget.Role
+	if target == "" {
+		target = m.agents.restartTarget.Key
+	}
+	return "restart the " + target + "? y restarts · any other key cancels"
+}
+
 func (m *Model) footerError() string {
 	errs := []string{m.startupErr, m.attachErr, m.headerErr, m.screenErr, m.logErr}
 	if m.activeTab() == tabChat {
 		errs = append(errs, m.chatErr)
+	}
+	if m.activeTab() == tabLogs {
+		errs = append(errs, m.logFilterErr)
 	}
 	for _, text := range errs {
 		if text != "" {
@@ -407,10 +447,16 @@ func (m *Model) contentView(width, height int) string {
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
 	case tab == tabAgents:
 		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
+	case tab == tabWork:
+		body = m.workBoardView(width, bodyHeight)
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
+	case tab == tabFriction:
+		body = m.frictionBody(width, bodyHeight)
+	case tab == tabHealth:
+		body = m.healthContent(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
-		listWidth := width * 13 / 30
+		listWidth := listRegionWidth(tab, width)
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
 		details := strings.Split(m.detailsPanel(width-listWidth, bodyHeight, focus == entry.regions[1], ""), "\n")
 		for index := range list {
@@ -422,16 +468,17 @@ func (m *Model) contentView(width, height int) string {
 	default:
 		body = m.legacyPanel(width, bodyHeight, focus == entry.regions[0])
 	}
-	content := strings.Join(append(rows, body), "\n")
-	switch {
-	case m.helpOpen:
-		content = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(content, width, height)
-	case tab == tabAgents && m.popupOpen:
-		title, lines := m.agentDetailsPopup()
-		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
-		content = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(content, width, height)
+	return strings.Join(append(rows, body), "\n")
+}
+
+// listRegionWidth gives the width of the list region of a list and details
+// screen from 120 columns. The Logs event list has 8/15 of the width, and
+// each other list has 13/30.
+func listRegionWidth(tab, width int) int {
+	if tab == tabLogs {
+		return width * 11 / 20
 	}
-	return content
+	return width * 13 / 30
 }
 
 // legacyPanel draws the current screen of the tab in one panel. The panel
@@ -457,48 +504,7 @@ func (m *Model) detailsPanel(width, height int, focused bool, suffix string) str
 }
 
 func (m *Model) legacyName() string {
-	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
-}
-
-// helpLines gives the key map of the Help board (decision 21).
-func helpLines() []string {
-	key := func(text string, width int) string { return titleStyle.Render(padCell(text, width)) }
-	pair := func(leftKey, left, rightKey, right string) string {
-		line := key(leftKey, 11) + padCell(left, 30)
-		if rightKey != "" {
-			line += key(rightKey, 6) + right
-		}
-		return line
-	}
-	return []string{
-		"",
-		titleStyle.Render("GLOBAL · same on every screen") + strings.Repeat(" ", 12) + titleStyle.Render("ACTIONS · one meaning each"),
-		"",
-		pair("1–6", "switch screen", "a", "attach to pane"),
-		pair("tab", "next region", "p", "peek pane"),
-		pair("[ ]", "previous / next view", "r", "restart · Health › Agents"),
-		pair("↑↓ j k", "move", "h", "hide stopped agents"),
-		pair("←→", "move on the graph", "t", "open task"),
-		pair("pgup pgdn", "page", "b", "task brief"),
-		pair("g G", "top / end", "v", "VERIFIED.md"),
-		pair("enter", "open / details", "d", "dependency graph"),
-		pair("esc", "back / close", "o", "goal design"),
-		pair("/", "filter bar", "s", "stops only"),
-		pair("?", "this help", "f", "follow logs"),
-		pair("R", "refresh now", "< >", "previous / next day"),
-		pair("ctrl+c ×2", "quit", "", ""),
-		"",
-		"",
-		titleStyle.Render("FILTER FIELDS"),
-		"level:  comp:  proj:  agent:  task:  req:  text",
-		dimStyle.Render("example  / level:warn agent:manager-hive restart"),
-		"",
-		titleStyle.Render("CHAT"),
-		dimStyle.Render("i or enter types in chat · esc leaves the input · 1–6 work again"),
-		"",
-		dimStyle.Render("r restart: coordinator or supervisor, asks first only when live"),
-		"",
-	}
+	return [...]string{"Chat", "Agents", "Work", "Work", "Work", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
 // padCell pads text with spaces to width cells.
@@ -529,30 +535,29 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	entry := screenRegistry[tab]
 	switch m.focusState() {
 	case "help":
-		switch key {
-		case "?", "esc":
-			m.helpOpen = false
-			return m.logAction("help close")
-		case "up":
-			m.helpOffset = max(m.helpOffset-1, 0)
-		case "down":
-			m.helpOffset = min(m.helpOffset+1, len(helpLines()))
-		}
-		return nil
+		return m.updateHelpKey(key)
 	case "restart":
 		return m.screens[1].Update(press)
 	case "filter":
 		return m.currentScreen().Update(press)
 	case "input":
 		switch key {
-		case "tab":
-			m.chatInputActive = false
-			m.chatInput.Blur()
-			return m.logAction("focus region", slogString("region", "feed"))
+		case "tab", "esc", "ctrl+]":
+			return nil
+		case "ctrl+r":
+			return m.focusAskCard()
+		case m.tuiConfig.Keys["help"]:
+			if m.chatInput.Value() == "" {
+				return m.openHelp()
+			}
 		case "pgup", "pgdown":
 			return m.scrollChatFeed(press)
 		}
 		return m.currentScreen().Update(press)
+	case "ask", "note", "other", "review":
+		if cmd, handled := m.updateAskKey(press); handled {
+			return cmd
+		}
 	case "details":
 		if tab == tabAgents {
 			switch key {
@@ -561,8 +566,15 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 				return m.logAction("agent details close")
 			case "up", "k", "pgup":
 				m.popupOffset = max(m.popupOffset-1, 0)
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
 			case "down", "j", "pgdown":
 				m.popupOffset++
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
+			case "h":
+				m.graph.hideStopped = !m.graph.hideStopped
+				return m.logAction("agent hide stopped", slog.Bool("hide_stopped", m.graph.hideStopped))
+			case m.tuiConfig.Keys["help"]:
+				return m.openHelp()
 			case "a", "p", "t":
 				if node, _, ok := m.selectedAgent(); ok {
 					return m.agentAction(key, node)
@@ -571,39 +583,36 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 	}
-	if entry.listDetails && m.detailsFocused() && m.width < component.LongFormWidth {
+	if entry.listDetails && tab != tabLogs && m.detailsFocused() && m.width < component.LongFormWidth {
 		// Decision 21: the overlay takes its scroll keys and its action
 		// keys, and esc closes it. It drops each other key.
 		switch key {
 		case "esc", "up", "k", "down", "j", "pgup", "pgdown":
-		case "<", ">":
-			if tab != tabLogs {
-				return nil
-			}
 		default:
 			if len(key) != 1 || !strings.Contains(actionKeys, key) {
 				return nil
 			}
 		}
 	}
-	if index, ok := screenKey(key); ok {
-		view := m.views[index]
-		if index == tab {
-			view = m.activeView()
-		}
-		m.selectScreen(index, view)
-		return batch(m.logAction("screen select", slogString("screen", screenRegistry[index].label)), m.startCurrentScreenLoad())
-	}
 	switch key {
-	case "?":
-		m.helpOpen = true
-		m.helpOffset = 0
-		return m.logAction("help open")
+	case m.tuiConfig.Keys["help"]:
+		return m.openHelp()
 	case "R":
+		if tab == tabHealth {
+			// health.md rule 7: the screen shows checking until the result.
+			m.health.checking = true
+		}
 		return batch(m.logAction("refresh"), m.startHeaderLoad(), m.startCurrentScreenLoad())
 	case "tab":
+		// Golden-frames decision 19: there is no tab region move.
+		return nil
+	case "ctrl+]":
 		return m.nextRegion()
 	case "[", "]":
+		if tab == tabWork {
+			// Work rule 1: [ and ] change the goal.
+			break
+		}
 		if len(entry.views) == 0 {
 			return nil
 		}
@@ -615,8 +624,9 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		m.selectScreen(tab, view)
 		return batch(m.logAction("view select", slogString("view", entry.views[view])), m.startCurrentScreenLoad())
 	}
-	if tab == tabChat {
-		return m.updateChatFeedKey(press)
+	if key == "esc" && !m.escCloses() {
+		// Golden-frames decision 17: with no popup open, esc returns to Chat.
+		return m.openChat()
 	}
 	if tab == tabAgents {
 		if m.agents.peekOpen {
@@ -625,12 +635,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		// Decision 19: restart is in Health › Agents, so r does nothing.
 		return m.updateAgentsKey(key)
 	}
-	if tab == tabLogs && (key == "<" || key == ">") {
-		day := "["
-		if key == ">" {
-			day = "]"
-		}
-		return m.currentScreen().Update(tea.KeyPressMsg{Code: rune(day[0]), Text: day})
+	if tab == tabLogs {
+		return m.currentScreen().Update(press)
 	}
 	if entry.listDetails && m.detailsFocused() {
 		switch key {
@@ -661,23 +667,29 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	return m.currentScreen().Update(press)
 }
 
-// screenKey gives the tab of a key 1 to 6.
-func screenKey(key string) (int, bool) {
-	if len(key) == 1 && key[0] >= '1' && key[0] < '1'+tabCount {
-		return int(key[0] - '1'), true
+// openTab shows tab in its last view.
+func (m *Model) openTab(tab int) tea.Cmd {
+	view := m.views[tab]
+	if tab == m.activeTab() {
+		view = m.activeView()
 	}
-	return 0, false
+	m.selectScreen(tab, view)
+	return batch(m.logAction("screen select", slogString("screen", screenRegistry[tab].label)), m.startCurrentScreenLoad())
 }
 
-// nextRegion moves the focus to the next region of the screen (decision 6).
+// openHelp opens the Help overlay.
+func (m *Model) openHelp() tea.Cmd {
+	m.helpOpen = true
+	m.helpOffset = 0
+	return m.logAction("help open")
+}
+
+// nextRegion moves the focus to the other box of the screen (golden-frames
+// decision 6). Chat has no second box, so ctrl+] does nothing there.
 func (m *Model) nextRegion() tea.Cmd {
 	tab := m.activeTab()
 	if tab == tabChat {
-		if m.chatCallerBlocked {
-			return nil
-		}
-		m.chatInputActive = true
-		return batch(m.chatInput.Focus(), m.logAction("focus region", slogString("region", "input")))
+		return nil
 	}
 	regions := screenRegistry[tab].regions
 	m.regionFocus[tab] = (m.regionFocus[tab] + 1) % len(regions)
@@ -688,28 +700,25 @@ func (m *Model) nextRegion() tea.Cmd {
 // gives to its screen.
 const actionKeys = "aprhtbvdosf"
 
-// chatFeedGlobals are the keys that stay global when the chat feed has the
-// focus (decision 24).
-const chatFeedGlobals = "?/jkgGRf"
-
-// updateChatFeedKey handles a key in the chat feed. A printable key gives the
-// focus to the input and types the key. i and enter give the focus to the
-// input.
-func (m *Model) updateChatFeedKey(press tea.KeyPressMsg) tea.Cmd {
-	key := press.String()
-	switch {
-	case key == "pgup" || key == "pgdown":
-		return m.scrollChatFeed(press)
-	case key == "i" || key == "enter":
-		return m.nextRegion()
-	case press.Text != "" && len([]rune(key)) == 1 && !strings.Contains(chatFeedGlobals, key):
-		if m.chatCallerBlocked {
-			return nil
-		}
-		cmd := m.nextRegion()
-		updated, typed := m.chatInput.Update(press)
-		m.chatInput = updated
-		return batch(cmd, typed)
+// startChatInput gives the input line the focus (chat.md rule 17). The
+// text stays.
+func (m *Model) startChatInput() tea.Cmd {
+	if m.chatCallerBlocked || m.chatInputActive {
+		return nil
 	}
-	return m.currentScreen().Update(press)
+	m.chatInputActive = true
+	m.invalidateView()
+	return batch(m.chatInput.Focus(), m.logAction("chat focus", slogString("focus", "input")))
+}
+
+// focusAskCard gives the ask card the focus (chat.md rule 17). The text of
+// the input line stays.
+func (m *Model) focusAskCard() tea.Cmd {
+	if _, _, ok := m.focusedAsk(); !ok || !m.chatInputActive {
+		return nil
+	}
+	m.chatInputActive = false
+	m.chatInput.Blur()
+	m.invalidateView()
+	return m.logAction("chat focus", slogString("focus", "ask"))
 }

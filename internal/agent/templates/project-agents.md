@@ -68,7 +68,7 @@ Before you stop for a user decision on a task, set `needs_user` with `hive task 
 
 Hive takes the project from the task. Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.
 
-The verifier commits and pushes `VERIFIED.md` on the task branch before it runs `hive task verify`.
+The verifier writes `VERIFIED.md` in the evidence folder and does not commit it. `hive task verify` copies it to the home.
 
 After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.
 

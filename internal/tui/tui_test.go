@@ -54,6 +54,10 @@ func newTestModel(t *testing.T, home string, clock *testClock) *Model {
 	model.chatPaneID = ""
 	model.chatCallerBlocked = false
 	model.chatErr = ""
+	// The test runs below projects/, so New blocked the caller and gave the
+	// input no focus. Golden-frames decision 19 gives the input the focus.
+	model.chatInputActive = true
+	model.chatInput.Focus()
 	t.Cleanup(model.Stop)
 	return model
 }
@@ -214,9 +218,9 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	clock := fixedClock(t, time.Date(2026, 4, 5, 12, 0, 0, 0, time.Local))
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
-	// Decision 2: the header shows the agent states and needs you. The
-	// header state keeps the counts.
-	requireView(t, m, " hive ", "sup ○", "needs you 0", "12:00")
+	// Golden-frames decision 11: the status row shows the supervisor and
+	// needs you. The header state keeps the counts.
+	requireView(t, m, "○ supervisor", "needs you 0", "12:00")
 	requireHeaderCounts(t, m.header, 0, 0, 0, 0)
 
 	pidStart, err := process.Start(int64(os.Getpid()))
@@ -238,7 +242,7 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	})
 	writeRecord(t, home, []string{"tasks"}, "1-first", records.Task{ID: "1-first", Project: "demo", Title: "first", NeedsUser: "choose"})
 	m = loadHeader(t, m)
-	requireView(t, m, "sup ●", "needs you 1")
+	requireView(t, m, "● supervisor", "needs you 1")
 	requireHeaderCounts(t, m.header, 1, 2, 1, 1)
 
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
@@ -248,7 +252,7 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,
 	})
 	m = loadHeader(t, m)
-	requireView(t, m, "sup ○", "needs you 1")
+	requireView(t, m, "○ supervisor", "needs you 1")
 	requireHeaderCounts(t, m.header, 1, 2, 0, 0)
 }
 
@@ -273,9 +277,13 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 		{width: 57, height: 20},
 		{width: 300, height: 80},
 	}
-	screens := []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}
+	// Slots 3 and 4 also hold the Work board, so the test skips them.
+	screens := []string{"Chat", "Agents", "Work", "", "", "Friction", "Health", "Logs"}
 
 	for screenIndex, screen := range screens {
+		if screen == "" {
+			continue
+		}
 		for _, size := range sizes {
 			t.Run(fmt.Sprintf("%s/%dx%d", screen, size.width, size.height), func(t *testing.T) {
 				home := newTestHome(t)
@@ -299,6 +307,19 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 					if got := ansi.StringWidth(line); got != size.width {
 						t.Fatalf("%s frame line %d has display width %d, want %d: %q", screen, lineIndex+1, got, size.width, line)
 					}
+				}
+				// Golden-frames agents.md rule 1: the Agents body has no
+				// outer box, so it has no top border to check.
+				if screen == "Agents" {
+					return
+				}
+				if screen == "Work" {
+					// Work rule 13: with no goal the board shows a notice
+					// and no box.
+					if !strings.Contains(strings.Join(lines, "\n"), "no goals · hive goal create starts one") {
+						t.Errorf("Work frame has no empty notice")
+					}
+					return
 				}
 				foundBorder := false
 				for _, line := range lines {
@@ -356,16 +377,17 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 
 	// Editing must not let viewing-mode keys act.
 	m, _ = raise(t, m, key('/', "/"))
-	requireView(t, m, "[filter] enter apply · esc close")
+	requireKeys(t, m, "filter", "enter apply · esc close")
 	for _, code := range []rune{'f', 'G'} {
 		m, _ = raise(t, m, key(code, string(code)))
 	}
-	requireView(t, m, "/ level:infofG█")
+	requireView(t, m, "/ level:infofG █")
 	if !m.follow {
 		t.Fatal("f in the filter bar turned follow off")
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "[events]", "/ level:info ", "beta")
+	requireView(t, m, "/ level:info ", "beta")
+	requireKeys(t, m, "events", "")
 
 	// A q in editing mode is a printable character, not a quit.
 	m, _ = raise(t, m, key('/', "/"))
@@ -382,8 +404,13 @@ func TestKeysFilterLevelFollowAndQuit(t *testing.T) {
 	requireView(t, m, "/ level:info gq ", "alpha gq", "gamma gq", "epsilon gq")
 	rejectView(t, m, "beta", "delta", "zeta")
 
-	// Escape in the event list clears the applied filter.
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	// The filter line takes backspace. logs.md: esc returns to Chat, so
+	// the filter text changes only on the filter line.
+	m, _ = raise(t, m, key('/', "/"))
+	for range " gq" {
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	requireView(t, m, "/ level:info ", "beta", "delta")
 	rejectView(t, m, "zeta")
 
@@ -439,7 +466,7 @@ func TestFollowControlsSelection(t *testing.T) {
 	m := newTestLogsModel(t, home, clock)
 	// Decision 7: 80×24 is the smallest frame.
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 40")
 
 	m, _ = raise(t, m, key('f', "f"))
 	if m.follow {
@@ -447,19 +474,19 @@ func TestFollowControlsSelection(t *testing.T) {
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line 41"))
 	m = tickUntilCount(t, m, 41)
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 40")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 40")
 
 	m, _ = raise(t, m, key('g', "g"))
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 01")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 01")
 	rejectView(t, m, "line 40")
 	m, _ = raise(t, m, key('G', "G"))
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 41")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 41")
 	if !m.follow {
 		t.Fatal("G did not turn follow on")
 	}
 	appendEvent(t, path, eventJSON(t, day, "INFO", "line 42"))
 	m = tickUntilCount(t, m, 42)
-	requireView(t, m, "▶ 12:00:00 INFO  -         line 42")
+	requireView(t, m, "▶ 12:00:00 INFO   -          line 42")
 }
 
 func TestDailyFileRolloverSelectsCurrentDay(t *testing.T) {
@@ -511,7 +538,7 @@ func TestDailyFileWaitsForFirstFile(t *testing.T) {
 	day := time.Date(2026, 4, 9, 12, 0, 0, 0, time.Local)
 	clock := fixedClock(t, day)
 	m := newTestLogsModel(t, home, clock)
-	requireView(t, m, "no events today")
+	requireView(t, m, "no log file for 2026-04-09")
 
 	writeEvents(t, dailyPath(home, day), eventJSON(t, day, "INFO", "first arrives"))
 	m = tickUntilCount(t, m, 1)

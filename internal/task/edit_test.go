@@ -60,7 +60,7 @@ func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
 	if got, err := os.ReadFile(featureBrief); err != nil || string(got) != updated {
 		t.Fatalf("worktree brief = %q, %v; want %q", got, err, updated)
 	}
-	if len(envelope.Effects) != 2 || envelope.Effects[1].Resource != "brief" || envelope.Effects[1].Action != "copied" || envelope.Effects[1].Path != featureBrief {
-		t.Fatalf("effects = %+v, want the updated home brief and copied worktree brief", envelope.Effects)
+	if len(envelope.Effects) != 3 || envelope.Effects[2].Resource != "brief" || envelope.Effects[2].Action != "copied" || envelope.Effects[2].Path != featureBrief {
+		t.Fatalf("effects = %+v, want the updated state brief, the updated home feature brief, and the copied worktree brief", envelope.Effects)
 	}
 }

@@ -1,6 +1,0 @@
-internal/tui/frame.go
-internal/tui/goals_queue.go
-internal/tui/goals_queue_test.go
-internal/tui/selection_marker_test.go
-internal/tui/shell_test.go
-testdata/ste-baseline.json

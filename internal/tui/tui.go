@@ -13,11 +13,13 @@ import (
 
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/ask"
 	chatlib "github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/doctor"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/logs"
 	xterm "github.com/charmbracelet/x/term"
 )
@@ -55,6 +57,9 @@ type Model struct {
 	chatPaneID        string
 	chatCallerBlocked bool
 	chatNoise         string
+	chatEventsOpen    bool
+	chatEventOpen     map[uint64]bool
+	chatStatusAge     string
 	chatErr           string
 	textFilter        string
 	follow            bool
@@ -65,6 +70,8 @@ type Model struct {
 	logOffset         int
 	logPendingTime    string
 	logErr            string
+	logFilterErr      string
+	logRaw            bool
 
 	header               headerState
 	headerErr            string
@@ -74,14 +81,12 @@ type Model struct {
 	startupErr           string
 	headerLoader         func(string) (headerState, error)
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader         func(string, *slog.Logger) doctor.Result
+	healthLoader         func(string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
-	goalsQueueLoader     func(string) (goalsQueueData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
 	graph                graphState
 	health               healthState
-	goalsQueue           goalsQueueState
 	tasksLoader          func(string) (tasksData, error)
 	tasks                tasksState
 	frictionLoader       func(string) (frictionData, error)
@@ -113,11 +118,32 @@ type Model struct {
 	popupOpen     bool
 	popupOffset   int
 	quitNotice    bool
-	quitAt        time.Time
+	tuiConfig     home.TUIConfig
+	chordActions  map[string]string
+	// statusCommandLine is the first output line of the status command.
+	statusCommandLine string
+	// statusCommandAt is the start of the last run of the status command.
+	statusCommandAt      time.Time
+	statusCommandRunning bool
+	// statusCommandFailed is true after a failure was logged, until a run
+	// succeeds.
+	statusCommandFailed bool
+	quitAt              time.Time
 
 	inputEnded <-chan struct{}
 	width      int
 	height     int
+
+	// The ask cards of Chat. askAnswer, askDismiss, and askDeliver write
+	// the ask records and send the prompts.
+	askCards      map[string]*askCard
+	askFocusID    string
+	askBusy       bool
+	askDelivering bool
+	askRows       []askRow
+	askAnswer     func(context.Context, string, string, []ask.Reply) output.Envelope
+	askDismiss    func(context.Context, string, string) output.Envelope
+	askDeliver    func(context.Context, string) error
 
 	demo *demoState
 }
@@ -142,10 +168,14 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		chatNoise:    chatNoiseNormal,
 		chatFeed:     chatFeed{topItem: -1, follow: true},
 		chatLoader:   loadChatScreenData,
+		askAnswer:    ask.Answer,
+		askDismiss:   ask.Dismiss,
+		askDeliver:   ask.DeliverPending,
 		width:        defaultWidth,
 		height:       defaultHeight,
 		header:       headerState{supervisor: "stale"},
 		agents:       agentsState{},
+		graph:        graphState{hideStopped: true},
 		headerLoader: readHeader,
 		logLoader: func(_ *logs.Reader, day time.Time) ([]logs.Event, error) {
 			// The reader names the day file in the local zone, so it gets
@@ -155,13 +185,12 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
-		agentsLoader:     loadAgents,
-		healthLoader:     loadHealth,
-		goalsQueueLoader: loadGoalsQueue,
-		paneReader:       readAgentPane,
-		tasksLoader:      loadTasks,
-		frictionLoader:   loadFriction,
-		demo:             demo,
+		agentsLoader:   loadAgents,
+		healthLoader:   loadHealth,
+		paneReader:     readAgentPane,
+		tasksLoader:    loadTasks,
+		frictionLoader: loadFriction,
+		demo:           demo,
 	}
 	if demo != nil {
 		m.useDemoLoaders(demo.fixture)
@@ -178,6 +207,13 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.chatInput = newChatInput()
+	m.setTUIConfig(defaultTUI())
+	// Golden-frames decision 19: there is no normal mode, so the composer
+	// has the focus at start. A blocked caller cannot type (rule 2).
+	if !m.chatCallerBlocked {
+		m.chatInputActive = true
+		m.chatInput.Focus()
+	}
 	m.screens = m.makeScreens()
 
 	logClock := now
@@ -212,7 +248,7 @@ func (m *Model) Stop() {
 
 // Init starts the first data loads and the refresh tick.
 func (m *Model) Init() tea.Cmd {
-	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad())
+	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad(), m.startStatusCommand())
 }
 
 // Update handles one message.
@@ -227,6 +263,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case tickMsg:
+		if m.activeTab() == tabChat {
+			age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
+			if age != m.chatStatusAge {
+				m.chatStatusAge = age
+				m.invalidateView()
+			}
+		}
 		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
 			m.logDate = startOfDay(m.now())
 			m.events = nil
@@ -242,7 +285,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, batch(m.tick(), m.startRefreshCheck())
+		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery(), m.startStatusCommand())
+	case statusCommandMsg:
+		return m, m.updateStatusCommand(msg)
 	case refreshCheckMsg:
 		m.refreshChecking = false
 		headerChanged := msg.header != m.refreshSnapshot.header
@@ -282,7 +327,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, logCmd
 		}
+		chatStatusChanged := msg.state.coordinator != m.header.coordinator || msg.state.coordinatorChangedAt != m.header.coordinatorChangedAt
 		m.header = msg.state
+		m.chatStatusAge = coordinatorStatusAge(msg.state.coordinatorChangedAt, m.now())
+		if m.activeTab() == tabChat && chatStatusChanged {
+			m.invalidateView()
+		}
 		m.headerErr = ""
 		if m.headerRefreshPending {
 			m.headerRefreshPending = false
@@ -292,6 +342,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenLoadMsg:
 		m.invalidateView()
 		m.screenLoading = false
+		if msg.request == healthDataRequest {
+			// health.md rule 7: checking ends with the result or the error.
+			// In a demo frame of the checking state, hive doctor never ends.
+			m.health.checking = m.demo != nil && m.demo.fixture.UI.Checking
+		}
 		if msg.request != m.currentScreen().DataRequest() {
 			return m, m.startCurrentScreenLoad()
 		}
@@ -308,8 +363,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.request {
 		case agentsDataRequest:
 			m.agents.accept(msg.agents)
-		case goalsQueueDataRequest:
-			m.goalsQueue.accept(msg.goalsQueue)
+			if tick := m.litTick(); tick != nil {
+				return m, batch(tick, m.finishScreenRefresh())
+			}
 		case healthDataRequest:
 			m.health.accept(msg.health)
 			m.health.acceptAgents(msg.agents)
@@ -330,11 +386,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
-		if m.screenRefreshPending {
-			m.screenRefreshPending = false
-			return m, m.startCurrentScreenLoad()
-		}
-		return m, nil
+		return m, m.finishScreenRefresh()
+	case agentsLitMsg:
+		m.graph.litAt = time.Time{}
+		m.invalidateView()
+		return m, m.litTick()
 	case taskFileMsg:
 		m.invalidateView()
 		m.acceptTaskFile(msg)
@@ -342,16 +398,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.logError("task file read", msg.err)
 		}
 		return m, nil
-	case frictionFileMsg:
-		m.invalidateView()
-		m.acceptFrictionFile(msg)
-		if msg.err != nil {
-			return m, m.logError("friction file read", msg.err)
-		}
-		return m, nil
 	case chatSendMsg:
 		m.invalidateView()
 		return m, m.updateChatSend(msg)
+	case askDoneMsg:
+		return m, m.updateAskDone(msg)
+	case askDeliveredMsg:
+		m.askDelivering = false
+		if msg.err != nil {
+			return m, m.logError("ask delivery", msg.err)
+		}
+		return m, nil
 	case quitNoticeExpiredMsg:
 		if m.quitNotice && msg.at.Equal(m.quitAt) {
 			m.quitNotice = false
@@ -405,6 +462,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		m.invalidateView()
 		return m, m.updateKey(msg)
+	case tea.MouseClickMsg, tea.MouseWheelMsg:
+		m.invalidateView()
+		return m, m.updateMouse(msg.(tea.MouseMsg))
 	}
 	return m, nil
 }
@@ -425,6 +485,9 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 	if m.demo != nil {
 		m.demo.notice = ""
 	}
+	if cmd, ok := m.updateChord(press); ok {
+		return cmd
+	}
 	return m.updateFrameKey(press)
 }
 
@@ -441,8 +504,19 @@ func (m *Model) View() tea.View {
 	}
 	view := tea.NewView(content)
 	view.AltScreen = true
+	view.MouseMode = tea.MouseModeCellMotion
 	view.Cursor = m.chatCursor(content)
 	return view
+}
+
+// finishScreenRefresh starts the screen load that a refresh asked for while
+// a load ran.
+func (m *Model) finishScreenRefresh() tea.Cmd {
+	if !m.screenRefreshPending {
+		return nil
+	}
+	m.screenRefreshPending = false
+	return m.startCurrentScreenLoad()
 }
 
 func (m *Model) invalidateView() {
@@ -480,18 +554,16 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
 		}
-	case goalsQueueDataRequest:
-		loader, home := m.goalsQueueLoader, m.home
-		return func() tea.Msg {
-			data, err := loader(home)
-			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
-		}
 	case healthDataRequest:
-		// Health › Agents lists the agents beside the checks (decision 18).
+		// health.md rule 4: the agents table is beside the checks.
 		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
 		return func() tea.Msg {
 			agents, err := agentsLoader(home, now())
-			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger), agents: agents, err: err}
+			result, doctorErr := loader(home, logger)
+			if doctorErr != nil {
+				err = fmt.Errorf("hive doctor: %w", doctorErr)
+			}
+			return screenLoadMsg{request: healthDataRequest, health: result, agents: agents, err: err}
 		}
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home
@@ -603,7 +675,12 @@ func Run(in io.Reader, out io.Writer) error {
 // output at this boundary. A finite input end or a stream fault settles the
 // program and the log writer.
 func RunHome(home string, in io.Reader, out io.Writer) error {
+	cfg, err := readTUISettings()
+	if err != nil {
+		return err
+	}
 	model := New(home, time.Now)
+	model.setTUIConfig(cfg)
 	defer model.Stop()
 	notice, startupErr := setupSession(home, model.logger)
 	model.startupNotice = notice

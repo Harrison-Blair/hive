@@ -1,1 +1,0 @@
-CompactAgents-live vs CompactAgents: strict 59, space attributes 59, live differences 0

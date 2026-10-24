@@ -8,21 +8,31 @@
 
 Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant.
 
-Read this section first. A prompt from hive that names a role gives your role. That prompt wins over your working directory. A brief can name another role. The brief wins over your working directory.
+Read this section first. An agent has no fixed role. Hive gives each agent its work in four sources. Read them in this order:
 
-| Role evidence | Role | Then read |
+1. The prompt from hive. It gives your name, your parent, and your facts: the project, the task, and the worktree. It can also give the text of the agent that spawned you.
+2. Your profile. Hive puts the text of `profiles/NAME.md` in your starting context. The profile tells you how to do the work.
+3. Your brief. A prompt that gives a task also gives the path of its brief. Read the brief before you start.
+4. Your working directory. Use it only when no prompt from hive gives your work.
+
+The prompt from hive wins over each other source. A brief wins over your working directory.
+
+| Evidence | Work | Then read |
 | --- | --- | --- |
 | A `⬢` prompt from hive that names the coordinator | coordinator | [Coordinator](#coordinator) |
-| `projects/<project-id>/` | manager | the project instructions, then your brief |
-| `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
+| A `⬢` prompt from hive that names a profile or a task | the work of that prompt | your profile, then your brief, then [Development](#development) for a change to hive |
+| `projects/<project-id>/worktrees/<task-id>/` with no prompt from hive | the task of the folder name | `hive task show <task-id> --brief`, then [Development](#development) |
+| `projects/<project-id>/` with no prompt from hive | no work | this section |
 | The root of this checkout with no prompt from hive | no role | this section |
 
 - Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
 - A session in the root of this checkout with no prompt from hive has no role. It does not run the coordinator startup. It tells the user that it has no role.
-- A session with a brief that names another role does not run coordinator startup.
-- A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
-- When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
+- A session with a prompt or a brief that names another profile does not run coordinator startup.
+- An agent that is not the coordinator never runs coordinator startup. This rule also applies after a context reset.
+- A session with no work tells the user that hive gave it no work. It does not take work from its working directory.
+- When the evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
 - Claude Code loads this file in every checkout below the root. The role gate applies there too.
+- Transition rule, until wave A of goal g13 lands: a prompt from hive can name a role. Read that role as a profile: `manager` is `planner`, `worker` is `builder`, `verifier` is `verifier`, and a general agent is `general`.
 
 ## Project
 
@@ -38,7 +48,7 @@ hive/                            the checkout is the home
 ├─ main.go  cmd/  internal/      Go source             tracked
 ├─ reference/                    API and dogfood docs    tracked
 ├─ .hive/README.md               home marker           tracked
-├─ .hive/spec/                   feature specs         tracked
+├─ .hive/spec/                   feature specs         ignored
 ├─ projects/<project-id>/        project directory     ignored
 │  └─ worktrees/<task-id>/       worktree              ignored
 ├─ memory/  overrides/  plans/   personal              ignored
@@ -46,7 +56,7 @@ hive/                            the checkout is the home
 └─ .hive/  state/  logs/  tmp/   runtime               ignored
 ```
 
-- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md` and `.hive/spec/`. The README file marks the home. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
+- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md`. The README file marks the home. `.hive/spec/` is local state in the home, as `.hive/state/` is. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
 - `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
 - Put scratch files in `.hive/tmp/`.
 
@@ -69,6 +79,8 @@ These rules apply to a worker on the hive project.
 ### Task flow
 
 Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The manager skill gives the manager flow. The worker skill gives the worker flow. Read `.agents/skills/hive-manager/SKILL.md` for manager work. Read `.agents/skills/hive-worker/SKILL.md` for worker work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A worker edits only named files and new tests beside them.
+
+Git ignores `.hive/spec/`. `hive worktree create` copies the feature folder of the home into the worktree. A worker and a verifier do not add the evidence to Git. `hive task complete` copies the evidence folder to the home. `hive task verify` copies `VERIFIED.md` to the home. `hive land` merges the code. Then it copies each changed spec file outside `tasks/` to the home.
 
 ### Go layout
 
@@ -94,7 +106,7 @@ gofmt -l $(git ls-files -co --exclude-standard '*.go')
 go mod tidy -diff
 go vet ./...
 golangci-lint run ./...
-go test -race ./...
+env -u TERM TZ=UTC go test -race ./...
 ```
 
 The first command must print nothing. The second command must print nothing. The

@@ -1,9 +1,9 @@
 package cellgrid
 
-// Token is a palette token of decision 26.
+// Token is a palette token of tui-v2 decision 26 or golden-frames decision 21.
 type Token uint8
 
-// The nine palette tokens. FG is the zero value: the terminal default.
+// The ten palette tokens. FG is the zero value: the terminal default.
 const (
 	FG Token = iota
 	Border
@@ -14,6 +14,7 @@ const (
 	Info
 	User
 	Code
+	Error
 )
 
 // palette is the one table of the tokens: name, grid file letter, and hex.
@@ -33,6 +34,7 @@ var palette = [...]struct {
 	Info:    {"info", 'i', "#6fb7ff"},
 	User:    {"user", 'u', "#e9cf9b"},
 	Code:    {"code", 'c', "#9fd0ff"},
+	Error:   {"error", 'e', "#e8705f"},
 }
 
 // String returns the token name, for example "accent".

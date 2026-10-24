@@ -18,6 +18,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func tickUntilCount(t *testing.T, m *Model, want int) *Model {
@@ -90,7 +91,10 @@ func TestLogRefreshKeepsFileOrder(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("log order=%q; want %q", got, want)
 	}
-	view := m.View().Content
+	// The list starts at its title. The strip above it names the selected
+	// event.
+	view := ansi.Strip(m.View().Content)
+	view = view[strings.Index(view, "─ events · "):]
 	if strings.Index(view, "append A") > strings.Index(view, "append B") {
 		t.Fatalf("rendered order reversed A then B:\n%s", view)
 	}
@@ -198,13 +202,13 @@ func TestHeaderRejectsOutOfRangePIDs(t *testing.T) {
 		pid  int64
 		want string
 	}{
-		{"self", self, "sup ●"},
-		{"zero", 0, "sup ○"},
-		{"negative", -1, "sup ○"},
-		{"exited", exited, "sup ○"},
-		{"plus 2^32", self + (1 << 32), "sup ○"},
-		{"max int32 plus one", int64(math.MaxInt32) + 1, "sup ○"},
-		{"max int64", math.MaxInt64, "sup ○"},
+		{"self", self, "● supervisor"},
+		{"zero", 0, "○ supervisor"},
+		{"negative", -1, "○ supervisor"},
+		{"exited", exited, "○ supervisor"},
+		{"plus 2^32", self + (1 << 32), "○ supervisor"},
+		{"max int32 plus one", int64(math.MaxInt32) + 1, "○ supervisor"},
+		{"max int64", math.MaxInt64, "○ supervisor"},
 	}
 	for _, item := range cases {
 		t.Run(item.name, func(t *testing.T) {
@@ -237,8 +241,8 @@ func TestHeaderErrorDoesNotStopShell(t *testing.T) {
 	m := newTestModel(t, home, clock)
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")
-	m, _ = raise(t, m, key('1', "1"))
-	requireView(t, m, "╭─ project agents ", "error:")
+	m, _ = raise(t, m, ctrl('g'))
+	requireView(t, m, " agents · ", "error:")
 	m = loadHeader(t, m)
 	requireView(t, m, "error:")
 	_, cmd := raise(t, m, key('q', "q"))

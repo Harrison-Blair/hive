@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -60,7 +60,8 @@ func agentsDataSets(t *testing.T) map[string]func(t *testing.T) (*Model, string)
 			return newTestDemoModel(t, "Main.fixture.json", demoSize{}), "manager-hive"
 		},
 		"AgentsMany": func(t *testing.T) (*Model, string) {
-			return newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{}), "t5-worker-1"
+			// Decision 62: the overview selects the pod of the card.
+			return newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{}), "━ hive · wave A 0/2 ━"
 		},
 		"nine projects": func(t *testing.T) (*Model, string) {
 			var source agentsSource
@@ -129,16 +130,22 @@ func TestAgentsFitEachSize(t *testing.T) {
 	}
 }
 
-// Decisions 10 and 14: the graph shows the project agents only, and the
+// Decisions 10 and 14: the graph shows the project agents, and the
 // selected card has a heavy accent border (user decision 2026-10-21,
-// option A).
+// option A). Decision 65 adds the coordinator card at the top. The
+// supervisor is not on the graph. Golden-frames decision 34: the status row
+// of Agents has no supervisor segment, so no row names the supervisor.
 func TestAgentsGraphShowsProjectAgentsOnly(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	view := ansi.Strip(m.View().Content)
-	for _, name := range []string{"coordinator ●", "supervisor ●"} {
-		if strings.Count(view, strings.Fields(name)[0]) != 1 {
-			t.Fatalf("the graph shows %q outside the header:\n%s", name, view)
-		}
+	// Ask a27: the default status row of Agents has no supervisor segment.
+	if strings.Contains(view, "supervisor") {
+		t.Fatalf("the graph shows the supervisor:\n%s", view)
+	}
+	// Golden-frames decision 2: no header names the coordinator, so the
+	// one coordinator card is the one match.
+	if strings.Count(view, "coordinator") != 1 {
+		t.Fatalf("the graph does not show one coordinator card:\n%s", view)
 	}
 	for _, name := range []string{"◐ manager-hive", "○ t4-worker-1", "○ t4-verifier-1"} {
 		if !strings.Contains(view, name) {
@@ -172,30 +179,31 @@ func findText(t *testing.T, g cellgrid.Grid, text string) (int, int) {
 }
 
 // Decision 10: → at the edge of the screen scrolls the pods and keeps the
-// selected card on the screen. ← scrolls back.
+// selected pod on the screen. ← scrolls back. Decision 62 replaces the
+// card selection between pods with the pod selection.
 func TestAgentsArrowsScrollThePods(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
 	requireView(t, m, "projects 1–4 of 5", "example-ml →")
 	for range 4 {
 		m, _ = raise(t, m, key(tea.KeyRight, ""))
 	}
-	if m.graph.selected != "manager-ml-g1" {
-		t.Fatalf("selection %q after 4 × →; want manager-ml-g1", m.graph.selected)
+	if m.graph.pod != "example-ml" {
+		t.Fatalf("pod %q after 4 × →; want example-ml", m.graph.pod)
 	}
-	requireView(t, m, "projects 2–5 of 5", "← hive", "◐ manager-ml")
+	requireView(t, m, "projects 2–5 of 5", "← hive", "◐ manager-ml", "━ example-ml ")
 	for range 4 {
 		m, _ = raise(t, m, key(tea.KeyLeft, ""))
 	}
-	requireView(t, m, "projects 1–4 of 5")
-	// Each step keeps the index in the pod, cut to the pod.
-	if m.graph.selected != "manager-hive-g2" {
-		t.Fatalf("selection %q after 4 × ←; want manager-hive-g2", m.graph.selected)
+	requireView(t, m, "projects 1–4 of 5", "━ hive ")
+	if m.graph.pod != "hive" {
+		t.Fatalf("pod %q after 4 × ←; want hive", m.graph.pod)
 	}
 }
 
 // A light connector meets the heavy border of the selected card with a
-// mixed-weight joint (manager decision): ┯ below a tree manager, ┷ above a
-// tree child, ┡ on the corner of a rail manager, and ┨ beside a rail child.
+// mixed-weight joint (manager decision): ┯ below a tree manager and ┷ above
+// a tree child. The one-pod view always uses the tree (decision 74), also
+// for the pod of AgentsMany that the overview draws as a rail.
 func TestAgentsSelectedCardJoints(t *testing.T) {
 	for _, tc := range []struct {
 		fixture, name string
@@ -205,8 +213,8 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}{
 		{"Main.fixture.json", "manager-hive", nil, 2, 8, '┯'},
 		{"Main.fixture.json", "t4-worker-1", []tea.KeyPressMsg{key(tea.KeyDown, "")}, -1, 8, '┷'},
-		{"AgentsMany.fixture.json", "t5-worker-1", nil, 0, -4, '┨'},
-		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('k', "k"), key('k', "k")}, 2, -4, '┡'},
+		{"AgentsMany.fixture.json", "t5-worker-1", []tea.KeyPressMsg{key('o', "o")}, -1, 8, '┷'},
+		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('o', "o"), key('k', "k"), key('k', "k")}, 2, 8, '┯'},
 	} {
 		m := newTestDemoModel(t, tc.fixture, demoSize{})
 		for _, k := range tc.keys {
@@ -220,21 +228,26 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}
 }
 
-// ↑ and ↓ move between the manager and the children of a pod. The
-// children are in order of creation time (user decision 2 of
+// ↑ and ↓ move between the manager and the children of a pod: ↑ selects the
+// parent and ↓ the first child (decision 74). ← and → move between the
+// children. The children are in order of creation time (user decision 2 of
 // general-agent): t4-verifier-1, t5-worker-1, t6-worker-1.
 func TestAgentsUpDownMoveInThePod(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
+	// agents.md rule 12: o opens the pod of the selected card.
+	m, _ = raise(t, m, key('o', "o"))
 	for _, step := range []struct {
 		key  tea.KeyPressMsg
 		want string
 	}{
-		{key('j', "j"), "t6-worker-1"},
-		{key(tea.KeyDown, ""), "t6-worker-1"},
-		{key('k', "k"), "t5-worker-1"},
-		{key(tea.KeyUp, ""), "t4-verifier-1"},
-		{key(tea.KeyDown, ""), "t5-worker-1"},
-		{key(tea.KeyUp, ""), "t4-verifier-1"},
+		{key('j', "j"), "t5-worker-1"},
+		{key('k', "k"), "manager-hive-g2"},
+		{key(tea.KeyUp, ""), "manager-hive-g2"},
+		{key(tea.KeyDown, ""), "t4-verifier-1"},
+		{key('j', "j"), "t4-verifier-1"},
+		{key(tea.KeyRight, ""), "t5-worker-1"},
+		{key(tea.KeyRight, ""), "t6-worker-1"},
+		{key(tea.KeyRight, ""), "t6-worker-1"},
 		{key(tea.KeyUp, ""), "manager-hive-g2"},
 	} {
 		m, _ = raise(t, m, step.key)
@@ -284,7 +297,10 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.focusState() != "details" {
 		t.Fatalf("focus %q after enter; want details", m.focusState())
 	}
-	requireView(t, m, "manager-hive · esc closes", "ACTIONS", "[details] a attach · p peek · t task · ↑↓ scroll · esc close")
+	// agents.md rule 14: the key row is in the place of ACTIONS. The manager
+	// has no task, so the row has no t task.
+	requireView(t, m, "manager-hive · esc closes", "a attach · p peek · esc closes")
+	requireKeys(t, m, "details", "a attach · p peek · t task · ↑↓ scroll · esc close")
 	popup := m.View().Content
 	m, cmd = raise(t, m, key('r', "r"))
 	if m.View().Content != popup || cmd != nil {
@@ -302,7 +318,7 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.popupOpen || m.focusState() != "graph" {
 		t.Fatalf("esc did not close the popup: focus %q", m.focusState())
 	}
-	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · t task · h hide stopped · ? help")
+	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · t task · h stopped")
 }
 
 // Decision 35: a and p on the graph show the demo notice.
@@ -314,21 +330,23 @@ func TestAgentsDemoActionsShowTheNotice(t *testing.T) {
 	}
 }
 
-// t opens the task of the selected agent in Work › Tasks.
+// t opens the Work task popup with the literal task of the selected agent.
 func TestAgentsTOpensTheTask(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
-	m, _ = raise(t, m, key('t', "t"))
-	if m.activeTab() != tabWork || m.viewName() != "Tasks" || m.tasks.selectedID != "4-agents-equal-columns" {
-		t.Fatalf("t gave tab %d view %q task %q", m.activeTab(), m.viewName(), m.tasks.selectedID)
+	m, cmd := raise(t, m, key('t', "t"))
+	m = deliverAgentCommands(t, m, cmd)
+	if m.activeTab() != tabWork || m.tasks.popup != workPopupTask || m.tasks.selectedID != "4-agents-equal-columns" {
+		t.Fatalf("t gave tab %d popup %q task %q", m.activeTab(), m.tasks.popup, m.tasks.selectedID)
 	}
+	requireView(t, m, "4-agents-equal-columns · esc closes")
 }
 
 // Decision 21: below 120 columns the footer shows the compact hints of the
 // graph.
 func TestAgentsCompactFooter(t *testing.T) {
 	m := newTestDemoModel(t, "CompactAgents.fixture.json", demoSize{})
-	requireView(t, m, "[graph] ←↑↓→ move · enter details · a attach · p peek · ?")
+	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · ?")
 }
 
 // Decisions 37 and 38: normal mode reads the records of a scratch home with
@@ -347,32 +365,27 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	for _, record := range agents {
 		writeAgentRecord(t, home, record)
 	}
-	logDir := filepath.Join(home, ".hive", "logs")
-	if err := os.MkdirAll(logDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	// The popup shows the event time in the zone of the clock.
-	at := time.Date(2026, 10, 21, 14, 10, 0, 0, clock.now().Location()).Format(time.RFC3339)
-	event := `{"time":"` + at + `","level":"INFO","msg":"task land 1-alpha","agent_id":"manager-alpha"}` + "\n"
-	if err := os.WriteFile(dailyPath(home, clock.now()), []byte(event), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, cmd)
-	requireView(t, m, "project agents · 1 project", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
+	// Decision 64: one project opens the one-pod view.
+	requireView(t, m, "agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Role: "worker", Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
 	m, cmd = raise(t, m, key('R', "R"))
 	m = deliverAgentCommands(t, m, cmd)
+	requireView(t, m, "h shows 1 stopped")
+	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "○ t3-alpha-worker", "h hides 1 stopped")
 	if m.graph.selected != "t1-alpha-worker" {
 		t.Fatalf("selection %q after R; want t1-alpha-worker", m.graph.selected)
 	}
 	m, _ = raise(t, m, key(tea.KeyUp, ""))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "RECENT", "14:10 task land 1-alpha")
+	// agents.md rule 14 (ask a29) replaces RECENT with the fields of the
+	// board.
+	requireView(t, m, "manager-alpha · esc closes", "role      manager", "project   alpha")
 }
 
 // openAgents opens the Agents tab of a normal-mode model at 120×40 and
@@ -381,17 +394,21 @@ func openAgents(t *testing.T, home string, clock *testClock) *Model {
 	t.Helper()
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	return deliverAgentCommands(t, m, cmd)
 }
 
 // The graph shows the current generation of each agent. A replaced
-// generation is not on the graph. A stopped current agent is on it.
+// generation is not on the graph. A stopped current agent is on it after h.
 func TestAgentsGraphShowsTheCurrentGenerationOnly(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
 	writeAgentRecord(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "idle", Parent: "manager-current"})
 	writeAgentRecord(t, home, records.Agent{Key: "worker-new", Name: "worker-new", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", Replaces: "worker-old"})
 	m := openAgents(t, home, clock)
+	// The coordinator card of decision 65 takes 5 rows: the pod note needs
+	// a taller pane.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 48})
+	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "manager-current", "● live-worker", "● worker-new", "○ active-ghost", "○ landed-ghost", "h hides 2 stopped")
 	view := ansi.Strip(m.View().Content)
 	for _, old := range []string{"manager-old", "worker-old"} {
@@ -422,6 +439,8 @@ func TestAgentsDetailsShowAnUnreadNudge(t *testing.T) {
 			m = refreshAgents(t, m)
 			m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 			m.graph.selected = tc.selected
+			// Decision 62: enter opens the pod, then the details.
+			m, _ = raise(t, m, key(tea.KeyEnter, ""))
 			m, _ = raise(t, m, key(tea.KeyEnter, ""))
 			view := ansi.Strip(m.View().Content)
 			if !strings.Contains(view, tc.selected+" · esc closes") {
@@ -440,14 +459,17 @@ func TestAgentsPodHoldsAgentsWithoutAParentRecord(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	writeAgentRecord(t, home, records.Agent{Key: "worker-stenographer-long-key-g7", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working"})
 	m := openAgents(t, home, clock)
-	requireView(t, m, "project agents · 1 project", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
+	requireView(t, m, "agents · demo", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
 }
 
-// The pods follow the order of the project records.
+// The pods follow the order of the project records. Goal g9 removes a pod
+// with no visible card, so alpha and zeta each have a live manager.
 func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
-	writeRecord(t, home, []string{"projects"}, "alpha", records.Project{ID: "alpha", Path: "/repo/alpha", Base: "dev"})
-	writeRecord(t, home, []string{"projects"}, "zeta", records.Project{ID: "zeta", Path: "/repo/zeta", Base: "dev"})
+	for _, id := range []string{"alpha", "zeta"} {
+		writeRecord(t, home, []string{"projects"}, id, records.Project{ID: id, Path: "/repo/" + id, Base: "dev"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-" + id, Name: "manager-" + id, Role: "manager", Project: id, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle"})
+	}
 	m := openAgents(t, home, clock)
 	view := ansi.Strip(m.View().Content)
 	alpha, demo, zeta := strings.Index(view, " alpha "), strings.Index(view, " demo "), strings.Index(view, " zeta ")
@@ -456,13 +478,15 @@ func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 	}
 }
 
-// A stale agent is unknown. When the supervisor claim is stale, each card
-// is unknown.
-func TestAgentsCardsShowUnknownWhenTheSupervisorIsStale(t *testing.T) {
+// A stale agent keeps its stale state. h hides it with the stopped agents,
+// and h on shows it. When the supervisor claim is stale, each card is
+// unknown.
+func TestAgentsCardsShowTheirStateWhenTheSupervisorIsStale(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := openAgents(t, home, clock)
-	requireView(t, m, "claude · idle · 3m", "pi · unknown")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "claude · idle · 3m", "pi · stale")
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
 	m = refreshAgents(t, m)
 	requireView(t, m, "claude · unknown", "codex · unknown · 5m")
@@ -495,7 +519,7 @@ func TestAgentsKeysLogTheirActions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"action":"agent selection"`, `"action":"agent hide stopped"`, `"hide_stopped":true`, `"action":"agent attach"`} {
+	for _, want := range []string{`"action":"agent selection"`, `"action":"agent hide stopped"`, `"hide_stopped":false`, `"action":"agent attach"`} {
 		if !strings.Contains(string(data), want) {
 			t.Fatalf("TUI log omits %q:\n%s", want, data)
 		}
@@ -506,13 +530,140 @@ func TestAgentsKeysLogTheirActions(t *testing.T) {
 // "├─" is the corner of a manager card and "├┤" and "╰┤" join a child card.
 // "┡━", "├┨", and "╰┨" are the same joints on the heavy border of the
 // selected card. Each ┏ needs a ┓, and each ┗ needs a ┛, in the same line.
+// A box that the region edge cuts (decision 75) has no corner on that side:
+// its border runs into the edge cell.
 func requireWholeAgentsBorders(t *testing.T, view string) {
 	t.Helper()
+	// The line of the coordinator card bends once on its row to the manager
+	// card of the one-pod view (decision 65).
+	view = coordinatorBend.ReplaceAllString(view, "")
 	view = strings.NewReplacer("├┤", "││", "╰┤", "││", "├─", "╰─", "├┨", "│┃", "╰┨", "│┃", "┡━", "┗━").Replace(view)
+	view = closeClippedBoxes(view)
 	requireWholeBorders(t, view)
 	for index, line := range strings.Split(view, "\n") {
 		if strings.Count(line, "┏") != strings.Count(line, "┓") || strings.Count(line, "┗") != strings.Count(line, "┛") {
 			t.Fatalf("line %d has a broken heavy border: %q\n%s", index+1, line, view)
 		}
 	}
+}
+
+// closeClippedBoxes adds the missing corner of each box that the edge of
+// the screen cuts. The graph has no outer box (golden frames agents.md
+// rule 1), so the region is the full line. A box runs past the edge when a
+// horizontal border cell is next to its corner, and its border line runs to
+// the edge: border cells and the title, with no other corner and no two
+// blank cells.
+func closeClippedBoxes(view string) string {
+	lines := strings.Split(view, "\n")
+	for index, line := range lines {
+		region := strings.TrimRight(line, " ")
+		if len([]rune(region)) < 2 {
+			continue
+		}
+		for _, pair := range [][2]string{{"╭", "╮"}, {"╰", "╯"}, {"┏", "┓"}, {"┗", "┛"}} {
+			opens, closes := strings.Count(line, pair[0]), strings.Count(line, pair[1])
+			if at := strings.LastIndex(region, pair[0]); opens == closes+1 && clippedRun(region[at+len(pair[0]):], true) {
+				line += pair[1]
+			}
+			if at := strings.Index(region, pair[1]); closes == opens+1 && at >= 0 && clippedRun(region[:at], false) {
+				line = pair[0] + line
+			}
+		}
+		lines[index] = line
+	}
+	return strings.Join(lines, "\n")
+}
+
+// clippedRun reports that run is the border line of a box from its corner
+// to the region edge. after tells that the corner is before run.
+func clippedRun(run string, after bool) bool {
+	cells := []rune(run)
+	if len(cells) == 0 || strings.ContainsAny(run, "╭╮╰╯┏┓┗┛") || strings.Contains(run, "  ") {
+		return false
+	}
+	next := cells[len(cells)-1]
+	if after {
+		next = cells[0]
+	}
+	return strings.ContainsRune("─━┬┴┼┯┷", next)
+}
+
+// coordinatorBend matches the bend of the coordinator line on its row.
+var coordinatorBend = regexp.MustCompile("╭─*╯|╰─*╮")
+
+// Decision 58: in normal mode the graph hides each stopped agent at start.
+// h shows them and h hides them again. An unresolved agent stays visible.
+func TestAgentsHideStoppedAtStart(t *testing.T) {
+	home, clock := agentsGenerationFixture(t)
+	writeAgentRecord(t, home, records.Agent{Key: "lost-worker", Name: "lost-worker", Role: "worker", Project: "demo", Task: "14-lost", Status: records.AgentUnresolved, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:30Z"})
+	m := openAgents(t, home, clock)
+	// The coordinator card of decision 65 takes 5 rows: the pod note needs
+	// a taller pane.
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 48})
+	requireView(t, m, "manager-current", "● live-worker", "lost-worker", "h shows 2 stopped")
+	rejectView(t, m, "active-ghost", "landed-ghost")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "lost-worker", "○ active-ghost", "○ landed-ghost", "h hides 2 stopped")
+	m, _ = raise(t, m, key('h', "h"))
+	requireView(t, m, "lost-worker", "h shows 2 stopped")
+	rejectView(t, m, "active-ghost", "landed-ghost")
+}
+
+// Decision 60: a working card and each joint on its border are in working.
+// An idle and a stopped card, their joints, and the rail outside a card keep
+// border. A selected working card keeps the heavy accent border. The cells
+// are those of AgentsHome.grid, column hive, below the coordinator card of
+// decision 65, at the body rows of the golden frame (tuiV2Body). The hive
+// pod has no outer box on its left (golden-frames agents.md rule 1), so its
+// columns are one less.
+func TestAgentsWorkingCardBorder(t *testing.T) {
+	m := newTestDemoModel(t, "AgentsHome.fixture.json", demoSize{})
+	type cell struct {
+		row, col int
+		r        rune
+		token    cellgrid.Token
+	}
+	check := func(m *Model, cells []cell) {
+		t.Helper()
+		shift, restore := tuiV2Body(m)
+		defer restore()
+		got := renderGrid(t, m, m.width, m.height)
+		for _, want := range cells {
+			if c := got.At(want.row+shift, want.col); c.Rune != want.r || c.Token != want.token {
+				t.Errorf("row %d col %d: got %q %s, want %q %s", want.row, want.col, c.Rune, c.Token, want.r, want.token)
+			}
+		}
+	}
+	check(m, []cell{
+		{12, 3, '╭', cellgrid.Working}, // manager-hive, working
+		{15, 3, '├', cellgrid.Working}, // joint on the working manager card
+		{17, 4, '╭', cellgrid.Border},  // t4-verifier-1, stopped
+		{18, 3, '├', cellgrid.Border},  // rail outside the card
+		{18, 4, '┤', cellgrid.Border},  // joint on the stopped card
+		{22, 4, '╭', cellgrid.Working}, // t5-worker-1, working
+		{23, 3, '├', cellgrid.Border},  // rail outside the working card
+		{23, 4, '┤', cellgrid.Working}, // joint on the working card
+		{25, 27, '╯', cellgrid.Working},
+		{28, 3, '╰', cellgrid.Border},  // rail outside t6-worker-1
+		{28, 4, '┤', cellgrid.Working}, // joint on t6-worker-1, working
+		{22, 44, '╭', cellgrid.Border}, // t3-verifier-1, idle
+		{23, 44, '┤', cellgrid.Border}, // joint on the idle card
+	})
+	// Decision 62: a card is selected in the one-pod view, which draws the
+	// tree (decision 74). The cells are relative to the first cell of the
+	// name of t5-worker-1.
+	m.graph.selected = "t5-worker-1"
+	m.graph.pod = "hive"
+	m.graph.podView = true
+	m.invalidateView()
+	shift, restore := tuiV2Body(m)
+	row, col := findText(t, renderGrid(t, m, m.width, m.height), "t5-worker-1")
+	restore()
+	row -= shift
+	check(m, []cell{
+		{row - 1, col - 4, '┏', cellgrid.Accent},
+		{row - 1, col + 8, '┷', cellgrid.Accent},
+		{row + 2, col + 19, '┛', cellgrid.Accent},
+		{row - 2, col + 8, '│', cellgrid.Border},
+	})
 }
