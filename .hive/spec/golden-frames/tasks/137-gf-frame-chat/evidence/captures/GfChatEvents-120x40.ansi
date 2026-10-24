@@ -1,0 +1,40 @@
+ [0m[1m[38;2;233;207;155m›[0m [0m[1m[38;2;233;207;155myou[0m [0m[38;2;163;157;144m14:02[0m
+ [0m[38;2;233;207;155mmove the status out of the composer border. one row under it, like claude code, and keep the chords on it.[0m
+
+ [0m[38;2;163;157;144m▾[0m [0m[1m[38;2;163;157;144mmanager-store[0m [0m[38;2;163;157;144m14:05[0m
+ [0m[38;2;163;157;144mg2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit passes, 0 fails).          [0m
+ [0m[38;2;163;157;144mBranch task/121-live-transcript-scroll landed on dev at 3ccd93fb. Wave B of g2 is done. Wave C can start.            [0m
+ [0m[38;2;163;157;144mneeds you: none.                                                                                                     [0m
+
+ [0m[1m[38;2;111;183;255m●[0m [0m[1m[38;2;111;183;255mcoordinator[0m [0m[38;2;163;157;144m14:06[0m
+ Noted. I move the status row and keep the chords on it. The spec change goes to task 122.
+
+ [0m[38;2;163;157;144m▾[0m [0m[1m[38;2;163;157;144mmanager-hive[0m [0m[38;2;163;157;144m14:09[0m
+ [0m[38;2;163;157;144mquiet · no change since 14:05 · 2 workers live · next scan 14:14                                                     [0m
+
+ [0m[38;2;163;157;144m▾[0m [0m[1m[38;2;163;157;144msupervisor[0m [0m[38;2;163;157;144m14:12[0m
+ [0m[38;2;163;157;144mnudge coordinator · inbox 2 · reason: completed, verified                                                            [0m
+
+ [0m[1m[38;2;233;207;155m›[0m [0m[1m[38;2;233;207;155myou[0m [0m[38;2;163;157;144m14:21 · pending[0m
+ [0m[38;2;233;207;155myes[0m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[0m[38;2;245;185;66m╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮[0m
+[0m[38;2;245;185;66m│[0m [0m[38;2;233;207;155m> [0m[38;2;163;157;144mtype a message · ? help[0m                                                                                            [0m[38;2;245;185;66m│[0m
+[0m[38;2;245;185;66m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+ [0m[1m[38;2;110;230;154m●[0m[38;2;163;157;144m working 2m · [0m[1m[38;2;110;230;154m●[0m[38;2;163;157;144m supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs[0m       [0m[38;2;163;157;144m14:22[0m

@@ -1,0 +1,14 @@
+GfChat 120x40: 0 cells differ
+GfChatEmpty 120x40: 0 cells differ
+GfChatEvents 120x40: 0 cells differ
+GfChatTall 120x40: 0 cells differ
+GfChatMarkdown 120x40: 0 cells differ
+GfChatNoCoordinator 120x40: 0 cells differ
+GfChatNotice 120x40: 0 cells differ
+GfChatAsk 120x40: 0 cells differ
+GfChatAskInput 120x40: 0 cells differ
+GfChatAskMulti 120x40: 0 cells differ
+GfChatAskPreview 120x40: 0 cells differ
+GfChatAskStopped 120x40: 0 cells differ
+GfChatAskReview 120x40: 0 cells differ
+GfChatAskMany 120x40: 0 cells differ
