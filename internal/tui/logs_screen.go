@@ -384,8 +384,14 @@ func (m *Model) makeLogRows() []logRow {
 				message = logField(event, "command")
 			}
 		}
-		if reason, _, _ := strings.Cut(logField(event, "reason"), ";"); reason != "" {
-			message += " · " + reason
+		// logs.md case L11: the error, or else the reason before its
+		// first ";".
+		extra := logField(event, "error")
+		if extra == "" {
+			extra = logField(event, "reason")
+		}
+		if extra, _, _ = strings.Cut(extra, ";"); extra != "" {
+			message += " · " + extra
 		}
 		if event.Malformed() {
 			message = logs.MalformedText(event)
@@ -494,7 +500,7 @@ func (m *Model) logFilterLine(width int) string {
 	if m.follow {
 		mark = workingStyle.Render("●")
 	}
-	right := dimStyle.Render("follow ") + mark + dimStyle.Render("  f toggles follow") + strings.Repeat(" ", logFollowCells)
+	right := dimStyle.Render("follow ") + mark + "  " + dimStyle.Render("f toggles follow") + strings.Repeat(" ", logFollowCells)
 	room := width - lipgloss.Width(right) - 4
 	if room < 1 {
 		right, room = "", width-3
@@ -523,7 +529,7 @@ func (m *Model) logEventsPanel(rows []logRow, width, height int, focused bool) s
 	case len(rows) == 0:
 		lines = []string{"", dimStyle.Render("no event matches " + sanitizeText(m.textFilter))}
 	default:
-		lines = []string{dimStyle.Bold(true).Render(logListHeader)}
+		lines = []string{"  " + dimStyle.Bold(true).Render(strings.TrimPrefix(logListHeader, "  "))}
 	}
 	offset := min(m.logOffset, m.logSelection)
 	offset = max(offset, m.logSelection-visible+1)
@@ -597,7 +603,7 @@ func (m *Model) logFieldPanel(width, height int, focused bool) string {
 	if body > region {
 		shown[region] = dimStyle.Render(hint)
 	}
-	if width < component.LongFormWidth {
+	if m.width < component.LongFormWidth {
 		title += " · esc back"
 	}
 	panel := component.Panel{Title: title, Focused: focused, Lines: shown, VMark: component.Thumb(body, len(lines), region, offset)}

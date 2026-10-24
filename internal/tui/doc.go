@@ -12,6 +12,8 @@
 // health_screen.go loads and renders doctor checks.
 // header.go loads and renders project, agent, supervisor, task, and clock data.
 // logs_screen.go loads, filters, and renders log events, and handles Logs keys.
+// logs_strip.go buckets the kept log events into the Logs density strip.
+// logs_fields.go gives the label and value rows of the Logs field panel.
 // tick.go schedules refreshes and carries background load results.
 // demo.go loads a demo fixture, feeds the screens from it, and draws the too-small notice.
 // gframe.go draws the golden-frames status rows and the notice line, and handles the chords.

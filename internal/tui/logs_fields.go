@@ -56,7 +56,7 @@ func logFieldLines(raw []byte, valueCells int) []string {
 	var add func(nodes []logFieldNode, indent string)
 	add = func(nodes []logFieldNode, indent string) {
 		for _, node := range nodes {
-			label := dimStyle.Render(padCell(indent+node.key, logLabelCells))
+			label := padCell(dimStyle.Render(indent+node.key), logLabelCells)
 			if node.object {
 				blank()
 				lines = append(lines, dimStyle.Render(indent+node.key))

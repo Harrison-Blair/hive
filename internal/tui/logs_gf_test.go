@@ -7,11 +7,13 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+	"github.com/Harrison-Blair/hive/internal/logs"
 )
 
 // raiseRun sends msg and runs the command that it gives, so that an action
@@ -250,4 +252,18 @@ func TestLogsLogsEachUserAction(t *testing.T) {
 			t.Errorf("actions %q do not include %q", got, want)
 		}
 	}
+}
+
+// logs.md rule 3 (case L11): the MESSAGE of an event with an error is the
+// msg, then · and the error.
+func TestLogsRowShowsTheError(t *testing.T) {
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	m := logsModelAt(t, 120, 40)
+	line := logsFixtureEvent(t, day, "ERROR", "agent", "spawn worker", map[string]any{"error": "workspace refused"})
+	var fields map[string]any
+	if err := json.Unmarshal([]byte(line), &fields); err != nil {
+		t.Fatal(err)
+	}
+	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: []logs.Event{{Raw: []byte(line), Fields: fields}}})
+	requireView(t, m, "ERROR  agent      spawn worker · workspace refused ")
 }

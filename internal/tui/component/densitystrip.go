@@ -43,11 +43,11 @@ func (s DensityStrip) View(width int) string {
 	}
 	var strip, rule strings.Builder
 	for index, cell := range s.Cells {
-		bar := " "
 		if cell.Count > 0 {
-			bar = string(densityBars[(cell.Count*len(densityBars)+most-1)/most-1])
+			strip.WriteString(levelStyle(cell.Level, dimStyle).Render(string(densityBars[(cell.Count*len(densityBars)+most-1)/most-1])))
+		} else {
+			strip.WriteByte(' ')
 		}
-		strip.WriteString(levelStyle(cell.Level, dimStyle).Render(bar))
 		if index == s.Mark {
 			rule.WriteString(levelStyle(s.MarkLevel, lipgloss.NewStyle()).Render("┴"))
 			continue

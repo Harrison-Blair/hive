@@ -150,7 +150,7 @@ var (
 		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
 		"health":   {"home", "agents"},
-		"logs":     {""},
+		"logs":     {"", "raw"},
 	}
 	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json"}
 	demoOverlays   = []string{"", "details", "help"}
@@ -399,6 +399,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.logPendingTime = ui.Selection
 		m.logOffset = ui.Scroll["events"].Top
 		m.detailsOffset[tabLogs] = ui.Scroll["json"].Top
+		m.logRaw = ui.View == "raw"
 		if ui.Filter.Open {
 			m.mode = editing
 			m.filterDraft = ui.Filter.Text
