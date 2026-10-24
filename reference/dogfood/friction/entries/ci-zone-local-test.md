@@ -21,3 +21,14 @@ Tasks 129 and 131 landed on the red tree.
 1. Write a test with a fixed instant and an expected clock text of the local zone.
 2. Run the gate in a zone where the text agrees with the test. The gate passes.
 3. Push the commit. The CI runner uses UTC and the test fails.
+
+**Recurrence 2026-10-24:**
+Task 137-gf-frame-chat passed the gate of its worker and two verifiers. After
+the land on `dev` at `e3f107dc`, CI run `40052654140` failed. Six
+`internal/tui` tests used the local zone and failed with `TZ=UTC`. `cmd`
+`TestBareHiveRunsTUIUntilQuit` also failed with `TERM=dumb` and in a new clone.
+The cause is the same as in `local-gate-misses-ci-tidy`: the local gate does
+not run with the environment of CI. Repair task: 141-gf-ci-tz-term.
+Reproduction: on `e3f107dc`, run
+`TZ=UTC go test ./internal/tui/ -run TestChatCompactStatusRowKeepsTheClock -count=1`
+and `TERM=dumb go test ./cmd/ -run TestBareHiveRunsTUIUntilQuit -count=1`.

@@ -49,6 +49,16 @@ func twoQuestionAsk(id string) ask.Record {
 	}
 }
 
+// inEastern shows the clock of m in a fixed US Eastern zone, so the
+// expected times do not depend on the zone of the machine.
+func inEastern(m *Model) *Model {
+	now, zone := m.now, time.FixedZone("EDT", -4*60*60)
+	m.now = func() time.Time { return now().In(zone) }
+	m.rebuildChat()
+	m.invalidateView()
+	return m
+}
+
 type askCall struct {
 	action  string
 	id      string
@@ -120,6 +130,7 @@ func flatten(cmd tea.Cmd) []tea.Msg {
 // names the composer, and the status row gives the keys of the card.
 func TestAskCardSitsInTheComposerFrame(t *testing.T) {
 	m, _ := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	m = inEastern(m)
 	requireView(t, m,
 		"╭─ ? manager-hive asks · Model ─",
 		" open · 1 of 1 ╮",
@@ -309,6 +320,7 @@ func TestAskXDismisses(t *testing.T) {
 
 func TestAskJAndKMoveBetweenCards(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "coordinator"), oneQuestionAsk("a2", "manager-hive"))
+	m = inEastern(m)
 	requireView(t, m, "? coordinator asks · Model", " open · 1 of 2 · J next ╮",
 		"? coordinator 07:30  asked · Model · in the composer, ^r to answer", "? manager-hive 07:30  asked · Model · waits · 2 of 2")
 	m, _ = raise(t, m, key('J', "J"))
@@ -347,6 +359,7 @@ func TestAskHistoryShowsTheAnswerAndTheDismissal(t *testing.T) {
 	dismissed := oneQuestionAsk("a2", "manager-hive")
 	dismissed.State, dismissed.ClosedAt = ask.StateDismissed, "2026-10-20T11:41:00Z"
 	m, _ := askModel(t, 120, 40, answered, dismissed)
+	m = inEastern(m)
 	requireView(t, m,
 		"? manager-hive 07:30  asked · Model",
 		"? coordinator 07:31  asked · Scope, Order",

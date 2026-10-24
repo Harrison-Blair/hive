@@ -45,6 +45,7 @@ func rowOf(m *Model, text string) int {
 // writes no answer. enter on Send sends it.
 func TestAskReviewOneQuestion(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	m = inEastern(m)
 	m = run(t, m, key('2', "2"))
 	requireNoCalls(t, calls, "the pick")
 	requireView(t, m,
