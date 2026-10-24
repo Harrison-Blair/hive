@@ -330,14 +330,16 @@ func TestAgentsDemoActionsShowTheNotice(t *testing.T) {
 	}
 }
 
-// t opens the Work board with the task of the selected agent selected.
+// t opens the Work task popup with the literal task of the selected agent.
 func TestAgentsTOpensTheTask(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
-	m, _ = raise(t, m, key('t', "t"))
-	if m.activeTab() != tabWork || m.tasks.popup != "" || m.tasks.selectedID != "4-agents-equal-columns" {
+	m, cmd := raise(t, m, key('t', "t"))
+	m = deliverAgentCommands(t, m, cmd)
+	if m.activeTab() != tabWork || m.tasks.popup != workPopupTask || m.tasks.selectedID != "4-agents-equal-columns" {
 		t.Fatalf("t gave tab %d popup %q task %q", m.activeTab(), m.tasks.popup, m.tasks.selectedID)
 	}
+	requireView(t, m, "4-agents-equal-columns · esc closes")
 }
 
 // Decision 21: below 120 columns the footer shows the compact hints of the
