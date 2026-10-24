@@ -220,6 +220,7 @@ func TestChatKeysFollowTheFocusRules(t *testing.T) {
 // keys from the right, before the asks segment and the clock.
 func TestChatCompactAskStatusRowCutsKeys(t *testing.T) {
 	m, _ := askModel(t, 80, 24, oneQuestionAsk("a1", "manager-hive"), oneQuestionAsk("a2", "coordinator"))
+	m = inEastern(m)
 	got := viewRow(m, 23)
 	if !strings.HasPrefix(got, " ○ none · ask · ↑↓ move · 1..4 pick · ") || !strings.HasSuffix(got, " · ? 2 asks    08:00 ") {
 		t.Fatalf("compact ask status row = %q", got)
