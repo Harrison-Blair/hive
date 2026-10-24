@@ -1,6 +1,6 @@
 ---
 title: "An Agents state test fails without local design files"
-status: "Open"
+status: "Resolved 2026-10-24"
 opened: 2026-10-24
 decision: "Task 156 keeps the six state cases and makes their unit input self-contained."
 ---
@@ -33,3 +33,12 @@ and separate checks with tracked inputs and complete matching spec inputs.
 its tests, plus the brief baseline entry. It keeps every existing state,
 glyph, selection, and freshness assertion. It adds no skip or CI exception.
 Production rendering, boards, and spec rules remain unchanged.
+
+**Resolution 2026-10-24:** Task 156 landed at `7b945db7` after independent
+verification. All six expectations and assertions remain unchanged.
+The original missing-file failure and four deliberate behavior breaks fail
+as expected. The corrected cases pass with tracked inputs only.
+Full gates pass in separate tracked-only and complete-input clones.
+The complete-input run checks all 40 grids and 39 screen fixtures.
+Push CI `40084770546` and PR CI `40084774906` both pass.
+The task adds no skip, production change, board change, or CI exception.
