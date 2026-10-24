@@ -1,0 +1,40 @@
+ › you 14:02
+ move the status out of the composer border. one row under it, like claude code, and keep the chords on it.
+
+ ● coordinator 14:06
+ Noted. I move the status row and keep the chords on it. The spec change goes to task 122.
+
+ ▸ manager-hive 14:09  quiet                                                                                         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen:        │
+│   Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each │
+│   line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me  │
+│   the draft so I can read it before the tag.                                                                         │
+│                                                                                                                      │
+│   After that, open the release PR from dev into main with the gh-summarize-pr skill and the approve argument. Add the│
+│   screenshots section after Changes. Use the raw link form with the full SHA of the screenshot commit. Do not merge. │
+│                                                                                                                      │
+│   Last, record a friction entry for the clock test that depended on the local zone. Name the task that fixed it and  │
+│   mark the entry resolved with the date.█                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 2m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22

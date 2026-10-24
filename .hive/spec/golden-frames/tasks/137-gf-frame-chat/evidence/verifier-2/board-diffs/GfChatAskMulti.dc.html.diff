@@ -1,0 +1,32 @@
+diff --git a/home/penguin/source/hive/.hive/tmp/golden-frames-1792795470-106f/project/GfChatAskMulti.dc.html b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/design/GfChatAskMulti.dc.html
+index 6a23253c..57eb1d9e 100644
+--- a/home/penguin/source/hive/.hive/tmp/golden-frames-1792795470-106f/project/GfChatAskMulti.dc.html
++++ b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/design/GfChatAskMulti.dc.html
+@@ -56,7 +56,7 @@ function composer(t, y, h, lines, placeholder) { box(t, 0, y, 120, h, 'accent');
+ // Shared screen drawing. Each board file sets META and defines draw() from these.
+ // ---- Chat ----
+ // items: [{k:'you'|'agent'|'event'|'open'|'ask', name, time, lines|text, mark}]
+-function transcript(t, items, limit) { var y = 2; items.forEach(function (it) { if (y >= limit) return; if (it.k === 'you') y = msgYou(t, y, it.time + (it.mark ? ' · ' + it.mark : ''), it.lines); else if (it.k === 'agent') y = msgAgent(t, y, it.name, it.time, it.lines); else if (it.k === 'event') y = event(t, y, it.name, it.time, it.text); else if (it.k === 'open') { put(t, 1, y, '▾', 'dim'); put(t, 3, y, it.name, 'dim', 1); put(t, 4 + len(it.name), y, it.time, 'dim'); y++; it.lines.forEach(function (l) { put(t, 1, y, fit(l, 117), 'dim'); y++; }); } else if (it.k === 'ask') { put(t, 1, y, '?', 'accent', 1); put(t, 3, y, it.name, 'accent', 1); put(t, 4 + len(it.name), y, it.time + '  ' + it.text, it.tk || 'dim'); y++; } if (it.k !== 'event' && it.k !== 'ask') y++; else if (it.gap !== false) y++; }); return y; }
++function transcript(t, items, limit) { var y = 0; items.forEach(function (it) { if (y >= limit) return; if (it.k === 'you') y = msgYou(t, y, it.time + (it.mark ? ' · ' + it.mark : ''), it.lines); else if (it.k === 'agent') y = msgAgent(t, y, it.name, it.time, it.lines); else if (it.k === 'event') y = event(t, y, it.name, it.time, it.text); else if (it.k === 'open') { put(t, 1, y, '▾', 'dim'); put(t, 3, y, it.name, 'dim', 1); put(t, 4 + len(it.name), y, it.time, 'dim'); y++; it.lines.forEach(function (l) { put(t, 1, y, fit(l, 117), 'dim'); y++; }); } else if (it.k === 'ask') { put(t, 1, y, '?', 'accent', 1); put(t, 3, y, it.name, 'accent', 1); put(t, 4 + len(it.name), y, it.time + '  ' + it.text, it.tk || 'dim'); y++; } if (it.k !== 'event' && it.k !== 'ask') y++; else if (it.gap !== false) y++; }); return y; }
+ function earlier(t, n) { if (n > 0) put(t, 52, 0, '· · · ' + n + ' earlier · · ·', 'dim'); }
+ function chatStatus(t, y, state, extra) { var segs = [stateSeg(state, state[0] === '●' && state.indexOf('starting') < 0 ? 'working' : state[0] === '▲' ? 'accent' : 'dim')]; (extra || []).forEach(function (e) { segs.push(e); }); segs.push(stateSeg('● supervisor', 'working'), ['? 0 asks', 'dim', 0], ['needs you 0', 'dim', 0], chords('chat'), ['? help', 'dim', 0]); statusRow(t, y, segs, '14:22'); }
+ function notice(t, y, text, isError) { if (isError) { put(t, 1, y, 'error:', 'error', 1); put(t, 8, y, text, 'fg'); } else put(t, 1, y, text, 'accent'); }
+@@ -141,8 +141,7 @@ function agentsLegend(t, y) { put(t, 1, y, '── spawn   ● working   ◐ idl
+ function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m', 'working'), ['agents', 'accent', 1]].concat(keys.map(function (k) { return [k, 'dim', 0]; })).concat([chords('agents')]), '14:22'); }
+ 
+ var META = {w: 120, h: 40, title: 'Golden frames · Chat, ask with two questions'};
+-function draw() { var t = T(120, 40); earlier(t, 44);
+-  transcript(t, CHAT_ITEMS.slice(0, 4).concat([{k:'ask', name:'manager-hive', time:'14:21', text:'asked · Scope, Order · in the composer, ^r to answer'}]), 20); thumb(t, 119, 0, 20, 100, 80, 'dim');
++function draw() { var t = T(120, 40); transcript(t, CHAT_ITEMS.slice(0, 4).concat([{k:'ask', name:'manager-hive', time:'14:21', text:'asked · Scope, Order · in the composer, ^r to answer'}]), 20);
+   var y = 21, h = 18; box(t, 0, y, 120, h, 'accent', '? manager-hive asks · Scope, Order'); right(t, y, ' open · 1 of 1 ', 'accent', 1, 1);
+   put(t, 2, y + 1, '1. Which parts go in task 1?', 'fg');
+   [['Mouse wheel (REC)', 'scroll the pane under the pointer', true], ['Click to focus', 'click the feed or the input', true], ['Normal and input mode', 'i in, ctrl+] out', true], ['Header count', '"? N" on all tabs', false], ['Other: type an answer', '', false]].forEach(function (o, i) { var oy = y + 3 + i; put(t, 4, oy, (i + 1) + ' [' + (o[2] ? 'x' : ' ') + '] ', o[2] ? 'accent' : 'fg'); put(t, 10, oy, o[0], 'fg'); put(t, 37, oy, o[1], 'dim'); });
+@@ -150,7 +149,7 @@ function draw() { var t = T(120, 40); earlier(t, 44);
+   [['Modes first (REC)', 'the card uses the new modes', true], ['Card first', 'modes come later', false], ['Other: type an answer', '', false]].forEach(function (o, i) { var oy = y + 11 + i, sel = i === 0; put(t, 2, oy, sel ? '›' : ' ', 'accent', 1); put(t, 4, oy, (i + 1) + ' [' + (o[2] ? 'x' : ' ') + '] ', sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, 10, oy, o[0], sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, 37, oy, o[1], 'dim'); });
+   put(t, 2, y + 14, 'note ›', 'dim'); put(t, 9, y + 14, 'keep the old tab key for one release', 'user'); put(t, 45, y + 14, '█', 'user');
+   put(t, 0, y + h - 3, '├' + rep('─', 118) + '┤', 'accent'); put(t, 2, y + h - 2, '> ', 'user'); put(t, 4, y + h - 2, 'type a message · ? help', 'dim');
+-  statusRow(t, 39, [stateSeg('● working 1m', 'working'), ['note', 'accent', 1], ['type the note', 'dim', 0], ['enter keep note', 'dim', 0], ['n close note', 'dim', 0], ['↑↓ option', 'dim', 0], ['space mark', 'dim', 0], ['^r input', 'dim', 0]], '14:22'); return t; }
++  statusRow(t, 39, [stateSeg('● working 1m', 'working'), ['note', 'accent', 1], ['type the note', 'dim', 0], ['enter keep note', 'dim', 0], ['↑↓ option', 'dim', 0], ['space mark', 'dim', 0], ['^r input', 'dim', 0]], '14:22'); return t; }
+ 
+ class Component extends DCLogic {
+   renderVals() { return { rows: rows(draw()) }; }

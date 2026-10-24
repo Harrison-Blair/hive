@@ -1,0 +1,121 @@
+hive-grid 1 120 40
+t| › you 14:02                                                                                                            
+k|fufuuufdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| I want a tool for you to ask questions, like the native ask tool, here in hive.                                        
+k|fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ● coordinator 14:03                                                                                                    
+k|fifiiiiiiiiiiifdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| Interrogate round 1. Who can ask, how the answer gets back, and where it shows.                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| › you 14:05                                                                                                            
+k|fufuuufdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| any agent can ask. the answer goes to its inbox. it shows in the chat, in the composer, never over it.                 
+k|fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ▸ manager-hive 14:19  goal g6-hive-ask created · wave A started · worker t12-worker-1 spawned on pi                    
+k|fdfddddddddddddfdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfff
+b|000111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ? manager-hive 14:21  asked · Model · in the composer, ^r to answer                                                    
+k|fafaaaaaaaaaaaafddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ? manager-api 14:21  asked · Rate limit · waits · 2 of 3                                                               
+k|fafaaaaaaaaaaafddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ? plan-review-1 14:22  asked · Verdict · waits · 3 of 3                                                                
+k|fafaaaaaaaaaaaaafdddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ ? manager-hive asks · Model ──────────────────────────────────────────────────────────────── open · 1 of 3 · J next ╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|001111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000001111111111111111111111110
+t|│ Restart manager-hive on DeepSeek? It runs on Opus now.                                                               │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                                                      │
+k|affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ › 1 [ ] Yes, restart now (REC)     stop it, then spawn on deepseek-v4.1-flash                                        │
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffa
+b|001011111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   2 [ ] After g6 lands             restart when the goal is done                                                     │
+k|afaffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   3 [ ] No, keep Opus              no change                                                                         │
+k|afaffffffffffffffffffffffffffffffffffdddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   4 [ ] Other: type an answer                                                                                        │
+k|afaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ note › none · n adds one                                                                                             │
+k|afddddddfdddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > type a message · ? help                                                                                            │
+k|afuudddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ● working 1m · ask · ↑↓ move · 1..4 pick · enter review · n note · x dismiss · J/K card · ^r input · ? 3 asks    14:22 
+k|fwddddddddddddddaaadddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaffffdddddf
+b|010000000000000011100000000000000000000000000000000000000000000000000000000000000000000000000000000000111111110000000000

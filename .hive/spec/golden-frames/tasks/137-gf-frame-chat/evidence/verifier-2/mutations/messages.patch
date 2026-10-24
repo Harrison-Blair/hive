@@ -1,0 +1,13 @@
+diff --git a/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/internal/tui/component/chat.go b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/mutations/messages.go
+index dbbbffc8..c1c36583 100644
+--- a/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/internal/tui/component/chat.go
++++ b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/mutations/messages.go
+@@ -46,7 +46,7 @@ func ChatLines(msgs []ChatMessage, width int) ([]string, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		if i > 0 && !chatJoined(msgs[i-1], m) {
++		if false && i > 0 && !chatJoined(msgs[i-1], m) {
+ 			out = append(out, "")
+ 		}
+ 		out = append(out, lines...)

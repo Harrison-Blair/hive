@@ -1,0 +1,105 @@
+package tui
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/ask"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
+)
+
+// Golden-frames decision 5: a resize never breaks a border.
+func TestVerifierAskResizeKeepsTheTopRightCorner(t *testing.T) {
+	record := oneQuestionAsk("a1", "manager-project-with-a-long-name")
+	record.Questions = nil
+	for i := range 4 {
+		record.Questions = append(record.Questions, ask.Question{
+			Question: "Which option?", Header: fmt.Sprintf("Question%04d", i),
+			Options: []ask.Option{askOption("Yes", "accept"), askOption("No", "decline")},
+		})
+	}
+	data, err := json.Marshal(ask.Request{Questions: record.Questions})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ask.Parse(data); err != nil {
+		t.Fatalf("invalid probe ask: %v", err)
+	}
+	m, _ := askModel(t, 120, 40, record)
+	if dir := os.Getenv("T137_PROBE_CAPTURES"); dir != "" {
+		if err := os.WriteFile(filepath.Join(dir, "ask-resize-before.ansi"), []byte(m.View().Content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, row := range viewRows(m) {
+		if strings.HasPrefix(row, "╭─ ?") && !strings.HasSuffix(row, "╮") {
+			t.Fatalf("initial top border has no top-right corner: %q", row)
+		}
+	}
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
+	rows := viewRows(m)
+	if dir := os.Getenv("T137_PROBE_CAPTURES"); dir != "" {
+		if err := os.WriteFile(filepath.Join(dir, "ask-resize-after.ansi"), []byte(m.View().Content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, row := range rows {
+		if strings.HasPrefix(row, "╭─ ?") && !strings.HasSuffix(row, "╮") {
+			t.Fatalf("resized ask top border has no top-right corner: %q", row)
+		}
+	}
+}
+
+// Golden-frames decision 18 permits Bubble Tea key names.
+func TestVerifierKeysAcceptBubbleTeaNamedKey(t *testing.T) {
+	if got := (tea.KeyPressMsg{Code: tea.KeyUp, Mod: tea.ModAlt}).String(); got != "alt+up" {
+		t.Fatalf("Bubble Tea key name is %q, want alt+up", got)
+	}
+	config := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", config)
+	if err := os.Mkdir(filepath.Join(config, "hive"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	text := "home = \"/tmp/hive\"\n[tui.keys]\nhelp = \"alt+up\"\n"
+	if err := os.WriteFile(filepath.Join(config, "hive", "config.toml"), []byte(text), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := home.ReadSettings(); err != nil {
+		t.Fatalf("valid Bubble Tea key alt+up was refused: %v", err)
+	}
+}
+
+// Golden-frames chat.md rule 10 gives one placeholder for each state.
+func TestVerifierChatStatePlaceholders(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	for _, tc := range []struct{ state, want string }{
+		{"working", "type a message · ? help"},
+		{"idle", "type a message · ? help"},
+		{"blocked", "type a message · the coordinator is blocked"},
+		{"starting", "coordinator starting · a message waits here"},
+		{"", "no coordinator · ^y health, r restarts it"},
+	} {
+		m.header.coordinator = tc.state
+		if got := m.chatPlaceholder(); got != tc.want {
+			t.Errorf("state %q: placeholder %q, want %q", tc.state, got, tc.want)
+		}
+	}
+}
+
+// Golden-frames decision 8 shows only the first row below 30 rows.
+func TestVerifierStatusRowsHeight(t *testing.T) {
+	m, _ := newFrameModel(t, 120, 40)
+	cfg := home.DefaultTUI()
+	cfg.StatusLines = [][]string{{"state"}, {"supervisor"}, {"clock"}}
+	m.setTUIConfig(cfg)
+	for _, tc := range []struct{ height, want int }{{29, 1}, {30, 3}, {40, 3}} {
+		if got := len(m.statusRows(120, tc.height)); got != tc.want {
+			t.Errorf("height %d: %d status rows, want %d", tc.height, got, tc.want)
+		}
+	}
+}
