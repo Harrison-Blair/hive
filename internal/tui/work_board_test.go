@@ -499,6 +499,39 @@ func TestWorkDepsPopupSelectionStaysVisible(t *testing.T) {
 	requireView(t, m, "▶ ○ 56-dependency")
 }
 
+// Verification finding F1: a task with no dependencies and no dependents
+// opens an empty dependency popup. Each navigation key, enter, and esc keep
+// the popup, its visible state, and its action log, with no panic.
+func TestWorkDepsPopupEmptyList(t *testing.T) {
+	m := newWorkModel(t, workTestData(), demoUIState{Selection: "30-z"}, 120, 40)
+	var log bytes.Buffer
+	m.logger = slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	m = pressWork(t, m, key('d', "d"))
+	requireView(t, m, "30-z · dependencies · esc closes", "WAITS ON", "WAITED ON BY", "none")
+	for _, press := range []tea.KeyPressMsg{arrowKey(tea.KeyDown), key('j', "j"), arrowKey(tea.KeyUp), key('k', "k")} {
+		log.Reset()
+		m = pressWork(t, m, press)
+		requireView(t, m, "30-z · dependencies · esc closes", "WAITS ON", "WAITED ON BY", "none")
+		if !strings.Contains(log.String(), `"action":"work deps selection"`) {
+			t.Errorf("%q wrote no dependency selection action: %s", press.String(), log.String())
+		}
+	}
+	log.Reset()
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	requireView(t, m, "30-z · dependencies · esc closes", "none")
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	if m.tasks.popup != "" {
+		t.Fatalf("esc left popup %q, want the board", m.tasks.popup)
+	}
+	// The task popup opens the same empty list, and esc returns to it.
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	m = pressWork(t, m, key('d', "d"))
+	m = pressWork(t, m, arrowKey(tea.KeyDown))
+	requireView(t, m, "30-z · dependencies · esc closes", "none")
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	requireView(t, m, "30-z · esc closes", "status     created")
+}
+
 // AC2: each scroll and each selection key of a popup writes one action log
 // event.
 func TestWorkPopupActionsLog(t *testing.T) {

@@ -546,7 +546,11 @@ func (m *Model) workDepsPopupKey(key string) tea.Cmd {
 	lines, selected := m.workDepsLines()
 	s.depsOffset = s.depsVisibleOffset(selected, len(lines), m.workPopupBody())
 	m.invalidateView()
-	return m.logAction("work deps selection", slog.String("task_id", rows[s.depsRow].record.ID))
+	selectedID := s.selectedID
+	if s.depsRow < len(rows) {
+		selectedID = rows[s.depsRow].record.ID
+	}
+	return m.logAction("work deps selection", slog.String("task_id", selectedID))
 }
 
 // depsRows gives the rows of the dependency popup: the dependencies of the

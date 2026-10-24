@@ -237,9 +237,9 @@ func TestRunHomeShowsTasksFromStringReader(t *testing.T) {
 	if err := RunHome(home, strings.NewReader("\x14"), &output); err != nil {
 		t.Fatal(err)
 	}
-	view := ansi.Strip(output.String())
-	// The renderer writes only the changed cells of a row, so the test looks
-	// for text that the first Work frame writes in full.
+	view := strings.Join(terminalScreen(output.String(), defaultWidth, defaultHeight), "\n")
+	// The renderer writes only the changed cells of a row, so the test checks
+	// the final screen, not the concatenated writes.
 	for _, text := range []string{"work · g1-tui", "wave-c · done", "79-tui-shell"} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("program output does not contain %q:\n%s", text, view)
