@@ -44,6 +44,7 @@ type CreateResult struct {
 	Path            string       `json:"path"`
 	Branch          string       `json:"branch"`
 	RepoWorkspaceID string       `json:"repo_workspace_id,omitempty"`
+	Design          *DesignCopy  `json:"design,omitempty"`
 }
 
 type createReadFailure struct {
@@ -201,6 +202,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
 	var specCopyErr error
 	var briefCopyErr error
+	var design *DesignCopy
 	if task.Feature != "" {
 		specCopy, err := copySpecIn(home, worktreePath, task)
 		if err == nil {
@@ -214,6 +216,18 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 				output.Effect{Resource: "spec_copy", Path: SpecCopyRelPath(task.ID), Action: "created"},
 			)
 			logEvent(logger, "worktree spec copy-in", commandCreate, project.ID, options.Task, "path", featureSpecRelDir(task.Feature), "files", len(specCopy.Files))
+		}
+		counts, err := copyDesignIn(home, worktreePath, task)
+		if err != nil {
+			if specCopyErr == nil {
+				specCopyErr = err
+			}
+		} else {
+			design = &counts
+			if counts.Features > 0 {
+				effects = append(effects, output.Effect{Resource: "design", Path: fmt.Sprintf("%d features %d files", counts.Features, counts.Files), Action: "copied"})
+			}
+			logEvent(logger, "worktree design copy-in", commandCreate, project.ID, options.Task, "features", counts.Features, "files", counts.Files)
 		}
 		if err := copyFeatureBrief(home, worktreePath, task, featureBrief); err != nil {
 			briefCopyErr = err
@@ -253,12 +267,14 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		return partialEnvelope("brief", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
 	logEvent(logger, "worktree create done", commandCreate, project.ID, options.Task, "workspace_id", worktree.WorkspaceID, "path", worktreePath, "branch", branch)
+	created := createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID)
+	created.Design = design
 	return output.Envelope{
 		Outcome: "ok",
 		Phase:   "complete",
 		Effects: effects,
 		Error:   nil,
-		Result:  createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID),
+		Result:  created,
 	}
 }
 
