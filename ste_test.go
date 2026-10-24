@@ -36,6 +36,7 @@ var steFiles = []string{
 	".hive/spec/golden-frames/screens/*.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
+	"internal/guide/flows.md",
 	".agents/skills/hive-coordinator/SKILL.md",
 	".agents/skills/hive-manager/SKILL.md",
 	".agents/skills/hive-worker/SKILL.md",
