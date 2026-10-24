@@ -10,7 +10,6 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/charmbracelet/x/ansi"
 )
 
 func TestLoadTasksFindsLongTaskID(t *testing.T) {
@@ -65,23 +64,6 @@ func TestFileViewsMatchTerminalFrames(t *testing.T) {
 			}
 
 		})
-	}
-}
-
-func assertModelFrameSize(t *testing.T, m *Model, width, height int) {
-	t.Helper()
-	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	if len(lines) != height {
-		t.Errorf("frame has %d lines, want %d:\n%s", len(lines), height, strings.Join(lines, "\n"))
-	}
-	for index, line := range lines {
-		if got := ansi.StringWidth(line); got != width {
-			t.Errorf("frame line %d has display width %d, want %d: %q", index+1, got, width, line)
-		}
-	}
-	// Decision 1: the footer is one row, below the content area.
-	if !strings.HasSuffix(lines[height-2], "╯") {
-		t.Errorf("main panel bottom border is not on line %d: %q", height-1, lines[height-2])
 	}
 }
 
