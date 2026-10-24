@@ -111,3 +111,27 @@ func TestReadTUISettings(t *testing.T) {
 		t.Fatalf("bad config gave %v; want an error that names %s", err, path)
 	}
 }
+
+// Decision 18: a rebound key is a Bubble Tea key name, also a named key
+// such as up or f5. Task 137 repair F2.
+func TestParseConfigTUIAcceptsNamedKeys(t *testing.T) {
+	for _, key := range []string{"alt+up", "ctrl+pgdown", "f5", "shift+enter", "ctrl+space", "alt+home", "meta+x", "super+left"} {
+		t.Run(key, func(t *testing.T) {
+			settings, err := parseConfig([]byte(tuiHome + "[tui.keys]\nhelp = \"" + key + "\"\n"))
+			if err != nil {
+				t.Fatalf("%s refused: %v", key, err)
+			}
+			if settings.TUI.Keys["help"] != key {
+				t.Fatalf("help = %q; want %q", settings.TUI.Keys["help"], key)
+			}
+		})
+	}
+	for _, key := range []string{"alt+upp", "ctrl+f99", "foo", "alt+"} {
+		t.Run("refuse "+key, func(t *testing.T) {
+			_, err := parseConfig([]byte(tuiHome + "[tui.keys]\nhelp = \"" + key + "\"\n"))
+			if err == nil || !strings.Contains(err.Error(), "tui.keys.help") {
+				t.Fatalf("%s gave %v; want an error that names tui.keys.help", key, err)
+			}
+		})
+	}
+}

@@ -1,0 +1,4 @@
+== ask-resize-before (plain text, ask top row)
+╭─ ? manager-project-with-a-long-name asks · Question0000, Question0001, Question0002, Question0003 ──── open · 1 of 1 ╮
+== ask-resize-after (plain text, ask top row)
+╭─ ? manager-project-with-a-long-name asks · Question0000, Question0001, Quest…╮

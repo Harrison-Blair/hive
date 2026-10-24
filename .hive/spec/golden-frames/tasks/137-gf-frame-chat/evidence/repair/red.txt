@@ -1,0 +1,45 @@
+$ go test ./internal/lib/home/ -run TestParseConfigTUIAcceptsNamedKeys -count=1 -v
+=== RUN   TestParseConfigTUIAcceptsNamedKeys
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/alt+up
+    config_tui_test.go:122: alt+up refused: tui.keys.help: "alt+up" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/ctrl+pgdown
+    config_tui_test.go:122: ctrl+pgdown refused: tui.keys.help: "ctrl+pgdown" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/f5
+    config_tui_test.go:122: f5 refused: tui.keys.help: "f5" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/shift+enter
+    config_tui_test.go:122: shift+enter refused: tui.keys.help: "shift+enter" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/ctrl+space
+    config_tui_test.go:122: ctrl+space refused: tui.keys.help: "ctrl+space" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/alt+home
+    config_tui_test.go:122: alt+home refused: tui.keys.help: "alt+home" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/meta+x
+    config_tui_test.go:122: meta+x refused: tui.keys.help: "meta+x" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/super+left
+    config_tui_test.go:122: super+left refused: tui.keys.help: "super+left" is not a key name
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/refuse_alt+upp
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/refuse_ctrl+f99
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/refuse_foo
+=== RUN   TestParseConfigTUIAcceptsNamedKeys/refuse_alt+
+--- FAIL: TestParseConfigTUIAcceptsNamedKeys (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/alt+up (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/ctrl+pgdown (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/f5 (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/shift+enter (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/ctrl+space (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/alt+home (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/meta+x (0.00s)
+    --- FAIL: TestParseConfigTUIAcceptsNamedKeys/super+left (0.00s)
+    --- PASS: TestParseConfigTUIAcceptsNamedKeys/refuse_alt+upp (0.00s)
+    --- PASS: TestParseConfigTUIAcceptsNamedKeys/refuse_ctrl+f99 (0.00s)
+    --- PASS: TestParseConfigTUIAcceptsNamedKeys/refuse_foo (0.00s)
+    --- PASS: TestParseConfigTUIAcceptsNamedKeys/refuse_alt+ (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/lib/home	0.001s
+FAIL
+$ go test ./internal/tui/ -run TestAskResizeKeepsTheTopRightCorner -count=1 -v
+=== RUN   TestAskResizeKeepsTheTopRightCorner
+    ask_resize_test.go:52: at 80 columns the ask top border is "╭─ ? manager-project-with-a-long-name asks · Question0000, Question0001, Questio"; want 80 cells that end with ╮
+--- FAIL: TestAskResizeKeepsTheTopRightCorner (0.00s)
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.008s
+FAIL

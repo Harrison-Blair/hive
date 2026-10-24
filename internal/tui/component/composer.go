@@ -77,7 +77,9 @@ func (card *ComposerCard) top(width int) string {
 	}
 	fill := width - 3 - lipgloss.Width(title) - lipgloss.Width(note)
 	if fill < 0 {
-		note, fill = "", max(width-3-lipgloss.Width(title), 0)
+		note = ""
+		title = ansi.Truncate(title, max(width-3, 0), "…")
+		fill = max(width-3-lipgloss.Width(title), 0)
 	}
 	return ansi.Truncate(borderAccent.Render("╭─")+title+borderAccent.Render(strings.Repeat("─", fill))+note+borderAccent.Render("╮"), width, "")
 }

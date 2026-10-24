@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 // CoordinatorConfig holds the launch profile of the coordinator.
@@ -121,18 +123,44 @@ func parseStatusLines(value string) ([][]string, error) {
 	return lines, nil
 }
 
-// validKeyName accepts a Bubble Tea key name of one character with optional
-// ctrl+, alt+, or shift+ prefixes.
+// validKeyName accepts a Bubble Tea key name: one character or a named key
+// such as up or f5, with optional ctrl+, alt+, shift+, meta+, hyper+, or
+// super+ prefixes.
 func validKeyName(name string) bool {
 	base := name
 	for {
-		trimmed := strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(base, "ctrl+"), "alt+"), "shift+")
+		trimmed := base
+		for _, mod := range []string{"ctrl+", "alt+", "shift+", "meta+", "hyper+", "super+"} {
+			trimmed = strings.TrimPrefix(trimmed, mod)
+		}
 		if trimmed == base {
 			break
 		}
 		base = trimmed
 	}
-	return utf8.RuneCountInString(base) == 1 && strings.TrimSpace(base) != ""
+	if utf8.RuneCountInString(base) == 1 {
+		return strings.TrimSpace(base) != ""
+	}
+	return slices.Contains(namedKeys(), base)
+}
+
+// namedKeys gives each Bubble Tea name of a key with no one-character name,
+// for example space, enter, up, and f5.
+func namedKeys() []string {
+	var names []string
+	add := func(code rune) {
+		if name := (tea.Key{Code: code}).String(); utf8.RuneCountInString(name) > 1 {
+			names = append(names, name)
+		}
+	}
+	for code := rune(0); code <= ' '; code++ {
+		add(code)
+	}
+	add(tea.KeyBackspace)
+	for code := tea.KeyExtended + 1; code <= tea.KeyExtended+512; code++ {
+		add(code)
+	}
+	return names
 }
 
 // checkKeys refuses tab, a fixed key, and one key for two actions.
