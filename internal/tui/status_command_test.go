@@ -34,6 +34,7 @@ func statusCommandModel(t *testing.T, command string) (*Model, *testClock) {
 	m.header = state
 	cfg := defaultTUI()
 	cfg.StatusLines = [][]string{{"state", "command", "clock"}}
+	cfg.StatusLinesExplicit = true
 	cfg.StatusCommand = command
 	m.setTUIConfig(cfg)
 	return m, clock
@@ -174,6 +175,7 @@ func TestStatusCommandRunsOnlyWhenItApplies(t *testing.T) {
 	m, _ = statusCommandModel(t, "echo ok")
 	cfg := m.tuiConfig
 	cfg.StatusLines = [][]string{{"state", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	if m.startStatusCommand() != nil {
 		t.Fatal("a run started with no command segment")

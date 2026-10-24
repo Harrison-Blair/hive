@@ -19,6 +19,9 @@ func TestParseConfigTUIDefaults(t *testing.T) {
 	if !reflect.DeepEqual(settings.TUI.StatusLines, wantLines) {
 		t.Errorf("status lines = %q; want %q", settings.TUI.StatusLines, wantLines)
 	}
+	if settings.TUI.StatusLinesExplicit {
+		t.Error("status lines are explicit; want the defaults")
+	}
 	if settings.TUI.StatusCommand != "" {
 		t.Errorf("status command = %q; want empty", settings.TUI.StatusCommand)
 	}
@@ -48,11 +51,40 @@ help = "alt+h"
 	if !reflect.DeepEqual(settings.TUI.StatusLines, wantLines) {
 		t.Errorf("status lines = %q; want %q", settings.TUI.StatusLines, wantLines)
 	}
+	if !settings.TUI.StatusLinesExplicit {
+		t.Error("status lines are not explicit; want explicit")
+	}
 	if settings.TUI.StatusCommand != "statusline render hive" {
 		t.Errorf("status command = %q", settings.TUI.StatusCommand)
 	}
 	if settings.TUI.Keys["agents"] != "ctrl+a" || settings.TUI.Keys["help"] != "alt+h" || settings.TUI.Keys["work"] != "ctrl+t" {
 		t.Errorf("keys = %v; want agents ctrl+a, help alt+h, work ctrl+t", settings.TUI.Keys)
+	}
+}
+
+// Task 155: the parser records that the config gives tui.status.lines, also
+// when the rows equal the default rows of decision 9.
+func TestParseConfigTUIStatusLinesExplicit(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		body string
+		want bool
+	}{
+		{"absent lines", "", false},
+		{"command only", "[tui.status]\ncommand = \"printf task-155\"\n", false},
+		{"custom row", "[tui.status]\nlines = [[\"state\", \"clock\"]]\n", true},
+		{"default row", "[tui.status]\nlines = [[\"state\", \"supervisor\", \"asks\", \"needs_you\", \"chords\", \"hints\", \"clock\"]]\n", true},
+		{"multiple rows", "[tui.status]\nlines = [[\"state\"], [\"clock\"]]\n", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			settings, err := parseConfig([]byte(tuiHome + tc.body))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if settings.TUI.StatusLinesExplicit != tc.want {
+				t.Errorf("status lines explicit = %v; want %v", settings.TUI.StatusLinesExplicit, tc.want)
+			}
+		})
 	}
 }
 
@@ -99,12 +131,16 @@ func TestReadTUISettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("no config file: %v", err)
 	}
-	if tui.Keys["agents"] != "ctrl+g" || len(tui.StatusLines) != 1 {
+	if tui.Keys["agents"] != "ctrl+g" || len(tui.StatusLines) != 1 || tui.StatusLinesExplicit {
 		t.Fatalf("no config file gave %+v; want the defaults", tui)
 	}
 	writeConfig(t, path, tuiHome+"[tui.keys]\nagents = \"ctrl+a\"\n")
-	if tui, err = ReadTUISettings(); err != nil || tui.Keys["agents"] != "ctrl+a" {
+	if tui, err = ReadTUISettings(); err != nil || tui.Keys["agents"] != "ctrl+a" || tui.StatusLinesExplicit {
 		t.Fatalf("config file gave %+v, %v; want agents ctrl+a", tui, err)
+	}
+	writeConfig(t, path, tuiHome+"[tui.status]\nlines = [[\"state\", \"clock\"]]\n")
+	if tui, err = ReadTUISettings(); err != nil || !tui.StatusLinesExplicit {
+		t.Fatalf("lines config gave %+v, %v; want explicit lines", tui, err)
 	}
 	writeConfig(t, path, tuiHome+"[tui.keys]\nagents = \"tab\"\n")
 	if _, err = ReadTUISettings(); err == nil || !strings.Contains(err.Error(), path) {

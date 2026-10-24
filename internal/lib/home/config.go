@@ -24,6 +24,9 @@ type CoordinatorConfig struct {
 type TUIConfig struct {
 	// StatusLines gives one to three status rows of segment names.
 	StatusLines [][]string
+	// StatusLinesExplicit reports that the config gives tui.status.lines.
+	// An absent key keeps the default rows of golden-frames decision 9.
+	StatusLinesExplicit bool
 	// StatusCommand is the command of the command segment, or empty.
 	StatusCommand string
 	// Keys maps each action (agents, work, friction, health, logs, help) to
@@ -288,6 +291,7 @@ func parseConfig(data []byte) (Settings, error) {
 				return Settings{}, fmt.Errorf("line %d: %w", lineNumber+1, err)
 			}
 			settings.TUI.StatusLines = lines
+			settings.TUI.StatusLinesExplicit = true
 			continue
 		}
 		parsed, err := strconv.Unquote(strings.TrimSpace(value))
