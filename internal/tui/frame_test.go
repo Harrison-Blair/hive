@@ -449,10 +449,11 @@ func TestNormalModeUsesTheFrame(t *testing.T) {
 	requireView(t, m, "terminal too small", "hive needs at least 80×24")
 }
 
-// The list hints of Work and Friction have no "/ filter" at either size
-// (user decision 6 of 2026-10-21). The events hints of Logs keep it.
-func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
-	for _, tab := range []int{tabWork, tabFriction} {
+// The list hints of Work have no "/ filter" at either size (user decision
+// 6 of 2026-10-21). The events hints of Logs keep it. Golden-frames
+// friction.md rule 6 gives Friction a filter, so its list hints have it.
+func TestListHintsFilterByScreen(t *testing.T) {
+	for _, tab := range []int{tabWork} {
 		s := screenRegistry[tab]
 		for _, view := range append([]string{""}, s.views...) {
 			for _, wide := range []bool{true, false} {
@@ -465,6 +466,9 @@ func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
 	for _, wide := range []bool{true, false} {
 		if hints := screenRegistry[tabLogs].keyHints("", "events", wide); !slices.Contains(hints, "/ filter") {
 			t.Errorf("Logs events, wide %t: hints %q have no / filter", wide, hints)
+		}
+		if hints := screenRegistry[tabFriction].keyHints("", "list", wide); !slices.Contains(hints, "/ filter") {
+			t.Errorf("Friction list, wide %t: hints %q have no / filter", wide, hints)
 		}
 	}
 }

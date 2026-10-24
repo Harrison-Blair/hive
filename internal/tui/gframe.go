@@ -67,7 +67,7 @@ func (m *Model) updateChord(press tea.KeyPressMsg) (tea.Cmd, bool) {
 
 // escCloses reports that esc closes a part of the screen first (decision
 // 17): a peek, the one-pod view of Agents, a details region, an open file,
-// or an applied Logs filter.
+// or an applied Logs filter. On Friction, esc returns to Chat from each box.
 func (m *Model) escCloses() bool {
 	switch tab := m.activeTab(); {
 	case m.detailsFocused(), m.agents.peekOpen:
@@ -76,8 +76,6 @@ func (m *Model) escCloses() bool {
 		return m.graph.podView
 	case tab == tabWork:
 		return m.tasks.fileOpen
-	case tab == tabFriction:
-		return m.friction.fileOpen
 	case tab == tabLogs:
 		return m.textFilter != defaultLogFilter
 	}

@@ -54,16 +54,18 @@ func TestGoldenGridFiles(t *testing.T) {
 // gfDesignDir holds the Gf boards and their golden grids of task 137.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
-// gfGrids gives the 15 Gf grids that task 137 copies: the boards of Chat and
-// the component sheet.
+// gfGrids gives the 19 Gf grids: the boards of Chat and the component sheet
+// that task 137 copies, and the Friction boards that task 144 copies.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
+	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
 }
 
 // TestGfGoldenGridFiles reads each committed Gf grid file. Task 137 copies
-// the 15 boards of Chat and the component sheet. Each grid has the size of
+// the 15 boards of Chat and the component sheet, and task 144 the 4 Friction
+// boards. Each grid has the size of
 // golden-frames decision 23 and the symbols and tokens of decision 7.
 func TestGfGoldenGridFiles(t *testing.T) {
 	requireSpecFile(t, gfDesignDir)
@@ -73,7 +75,7 @@ func TestGfGoldenGridFiles(t *testing.T) {
 	}
 	for _, file := range files {
 		if !slices.Contains(gfGrids, strings.TrimSuffix(filepath.Base(file), ".grid")) {
-			t.Errorf("%s is not one of the 15 Gf grids of task 137", file)
+			t.Errorf("%s is not one of the 19 Gf grids", file)
 		}
 	}
 	for _, board := range gfGrids {

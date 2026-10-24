@@ -21,4 +21,6 @@
 // chat.go holds ChatLines, the lines of the chat feed.
 // statusrow.go holds StatusRow, a status row of segments and the clock.
 // titlerow.go holds TitleRow, the title row and the rule of a screen.
+// seenbar.go holds SeenBar, the bar of occurrences of a friction entry.
+// fold.go holds Fold, the fold line of a group of rows.
 package component

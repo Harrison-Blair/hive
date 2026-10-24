@@ -35,3 +35,10 @@ func TestPanelBleedFillsThePadding(t *testing.T) {
 		t.Fatalf("view:\n%s\nwant:\n%s", got, want)
 	}
 }
+
+// Friction rule 7: GfFrictionEmpty rows 21 and 22, a box with no entry. The
+// title is dim bold.
+func TestPanelDimTitleGolden(t *testing.T) {
+	p := Panel{Title: "no entry", DimTitle: true, Lines: []string{dimStyle.Render("select an entry to read it")}}
+	checkGolden(t, p.View(120, 17), "GfFrictionEmpty", rect{21, 0, 120, 17})
+}
