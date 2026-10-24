@@ -1,9 +1,12 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 )
@@ -65,5 +68,24 @@ func TestGfChatBoardsMatch(t *testing.T) {
 				t.Fatalf("%d cells differ from %s.grid:\n%s\nrendered:\n%s", len(diffs), board, cellgrid.FormatDiffs(shown), m.View().Content)
 			}
 		})
+	}
+}
+
+// AC9 and tui-v2 decision 46: each Chat board state at 79×24 shows the
+// too-small notice. At 80×24, 119×40, and 120×40 it fills the pane, and no
+// border breaks.
+func TestGfChatBoardsKeepTheFrameAtEachBreakpoint(t *testing.T) {
+	for _, size := range []demoSize{{79, 24}, {80, 24}, {119, 40}, {120, 40}} {
+		for _, board := range gfChatBoards {
+			t.Run(fmt.Sprintf("%dx%d/%s", size.Width, size.Height, board), func(t *testing.T) {
+				m := newGfDemoModel(t, board)
+				m, _ = raise(t, m, tea.WindowSizeMsg{Width: size.Width, Height: size.Height})
+				if size.Width < minimumWidth {
+					requireView(t, m, "terminal too small")
+					return
+				}
+				requireFits(t, m, size.Width, size.Height)
+			})
+		}
 	}
 }
