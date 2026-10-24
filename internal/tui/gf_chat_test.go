@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
@@ -72,8 +73,9 @@ func TestGfChatBoardsMatch(t *testing.T) {
 }
 
 // AC9 and tui-v2 decision 46: each Chat board state at 79×24 shows the
-// too-small notice. At 80×24, 119×40, and 120×40 it fills the pane, and no
-// border breaks.
+// too-small notice. At 80×24, 119×40, and 120×40 it fills the pane, no
+// border breaks, and the composer frame closes on the row above the status
+// rows (chat.md rule 9).
 func TestGfChatBoardsKeepTheFrameAtEachBreakpoint(t *testing.T) {
 	for _, size := range []demoSize{{79, 24}, {80, 24}, {119, 40}, {120, 40}} {
 		for _, board := range gfChatBoards {
@@ -84,7 +86,20 @@ func TestGfChatBoardsKeepTheFrameAtEachBreakpoint(t *testing.T) {
 					requireView(t, m, "terminal too small")
 					return
 				}
-				requireFits(t, m, size.Width, size.Height)
+				rows := strings.Split(requireFits(t, m, size.Width, size.Height), "\n")
+				status := len(m.statusRows(size.Width, size.Height))
+				top, bottom := -1, -1
+				for index, row := range rows {
+					switch {
+					case strings.HasPrefix(row, "╭") && top < 0:
+						top = index
+					case strings.HasPrefix(row, "╰"):
+						bottom = index
+					}
+				}
+				if top < 0 || bottom != len(rows)-status-1 {
+					t.Fatalf("composer frame rows %d to %d, want it to close on row %d above %d status rows:\n%s", top, bottom, len(rows)-status-1, status, strings.Join(rows, "\n"))
+				}
 			})
 		}
 	}

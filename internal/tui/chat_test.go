@@ -747,3 +747,24 @@ func TestChatWelcomeNamesTheHomeWithTilde(t *testing.T) {
 		}
 	}
 }
+
+// Golden-frames chat.md rule 12 and decision 14: enter with no live
+// coordinator shows error: no live coordinator on the notice line above the
+// composer, sends nothing, and keeps the text.
+func TestChatSendWithNoCoordinatorKeepsTheText(t *testing.T) {
+	m := chatModel(t, 120, 40, 1)
+	for _, character := range "hi" {
+		m, _ = raise(t, m, key(character, string(character)))
+	}
+	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
+	if m.chatSending || m.chatInput.Value() != "hi" {
+		t.Fatalf("sending %v, draft %q, want no send and hi kept", m.chatSending, m.chatInput.Value())
+	}
+	rows := viewRows(m)
+	if got := strings.TrimRight(rows[35], " "); got != " error: no live coordinator" {
+		t.Fatalf("row 35 = %q, want the notice line", got)
+	}
+	if !strings.HasPrefix(rows[36], "╭") {
+		t.Fatalf("row 36 = %q, want the composer below the notice", rows[36])
+	}
+}
