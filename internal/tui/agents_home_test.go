@@ -333,6 +333,7 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 	} {
 		t.Run(tc.board, func(t *testing.T) {
 			path := filepath.Join(designDir, tc.board+".fixture.json")
+			requireSpecFile(t, path)
 			fixture, err := loadDemoFixture(path)
 			if err != nil {
 				t.Fatal(err)

@@ -10,7 +10,6 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/Harrison-Blair/hive/internal/lib/run"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
@@ -44,19 +43,12 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		return fail("store", err.Error())
 	}
 	var record records.Task
-	var project records.Project
 	var agent *records.Agent
 	var readErr error
 	if err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		if err := locked.ReadIn([]string{tasksCollection}, id, &record); err != nil {
 			readErr = err
 			return nil
-		}
-		if record.Feature != "" {
-			if err := locked.ReadIn([]string{"projects"}, record.Project, &project); err != nil {
-				readErr = err
-				return nil
-			}
 		}
 		if record.ActingAgent == "" {
 			return nil
@@ -88,26 +80,19 @@ func Show(home, id string, options ShowOptions) output.Envelope {
 		log.failure("task show", record.Project, id, "", "brief", err.Error())
 		return failedEnvelope("brief", err.Error())
 	}
-	warnings := featureFileWarnings(record, project, log.logger)
+	warnings := featureFileWarnings(home, record)
 	return okEnvelope(ShowResult{Task: record, Brief: string(brief), Agent: agent, Warnings: warnings})
 }
 
-func featureFileWarnings(record records.Task, project records.Project, logger *slog.Logger) []string {
+func featureFileWarnings(home string, record records.Task) []string {
 	paths := TaskFeaturePaths(record)
 	if paths == nil {
 		return nil
 	}
 	warnings := make([]string, 0, 2)
 	for _, path := range []string{paths.README, paths.Brief} {
-		var exists bool
-		if record.Worktree != nil && record.Worktree.RemovedAt == "" {
-			info, err := os.Lstat(filepath.Join(record.Worktree.Path, filepath.FromSlash(path)))
-			exists = err == nil && info.Mode().IsRegular()
-		} else {
-			result, err := run.Command(run.WithLogger(context.Background(), logger), "", "git", "-C", project.Path, "cat-file", "-e", project.Base+":"+path)
-			exists = err == nil && result.ExitCode == 0
-		}
-		if !exists {
+		info, err := os.Lstat(filepath.Join(home, filepath.FromSlash(path)))
+		if err != nil || !info.Mode().IsRegular() {
 			warnings = append(warnings, "linked file missing: "+path)
 		}
 	}

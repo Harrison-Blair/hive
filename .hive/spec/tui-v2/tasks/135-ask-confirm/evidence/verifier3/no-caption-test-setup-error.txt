@@ -1,5 +1,0 @@
-# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
-internal/tui/verifier_fit_test.go:6:2: "strings" imported and not used
-internal/tui/verifier_fit_test.go:25:49: undefined: ask
-FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
-FAIL

@@ -19,6 +19,7 @@ const designDir = "../../.hive/spec/tui-v2/design"
 
 func newTestDemoModel(t *testing.T, fixture string, size demoSize) *Model {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, fixture))
 	loaded, err := loadDemoFixture(filepath.Join(designDir, fixture))
 	if err != nil {
 		t.Fatal(err)
@@ -29,6 +30,7 @@ func newTestDemoModel(t *testing.T, fixture string, size demoSize) *Model {
 }
 
 func TestDemoFixtureUnknownFieldNamesTheField(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	base, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -55,6 +57,7 @@ func TestDemoFixtureUnknownFieldNamesTheField(t *testing.T) {
 }
 
 func TestDemoFixtureBadValuesFail(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	base, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -155,6 +158,7 @@ func TestDemoSizeShowsTooSmallInASmallerPane(t *testing.T) {
 
 func TestDemoTooSmallMatchesItsBoardGrid(t *testing.T) {
 	m := newTestDemoModel(t, "TooSmall.fixture.json", demoSize{})
+	requireSpecFile(t, filepath.Join(designDir, "TooSmall.grid"))
 	file, err := os.Open(filepath.Join(designDir, "TooSmall.grid"))
 	if err != nil {
 		t.Fatal(err)
@@ -230,6 +234,7 @@ func TestDemoLogsShowOnlyFixtureEvents(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(logDir, "2026-10-21.jsonl"), []byte(live), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	data, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -258,6 +263,7 @@ func TestDemoLogsShowOnlyFixtureEvents(t *testing.T) {
 // UI state, the given friction entries, and the given file texts.
 func demoFileFixture(t *testing.T, root string, ui map[string]any, friction []any, files map[string]string) *demoFixture {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, "Main.fixture.json"))
 	data, err := os.ReadFile(filepath.Join(designDir, "Main.fixture.json"))
 	if err != nil {
 		t.Fatal(err)

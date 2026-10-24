@@ -26,17 +26,18 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("HERDR_PANE_ID", "")
 	projectPath := filepath.Join(t.TempDir(), "repo")
-	if err := os.MkdirAll(filepath.Join(projectPath, ".hive", "spec", "f"), 0o755); err != nil {
+	if err := os.MkdirAll(projectPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	gitTask(t, projectPath, "init", "-b", "main")
-	gitTask(t, projectPath, "config", "user.name", "Hive Test")
-	gitTask(t, projectPath, "config", "user.email", "hive-test@example.invalid")
-	if err := os.WriteFile(filepath.Join(projectPath, ".hive", "spec", "f", "README.md"), []byte("feature spec\n"), 0o644); err != nil {
+	// AC2: the feature README is local state in the home, not a file on the
+	// base branch of the project.
+	if err := os.MkdirAll(filepath.Join(home, ".hive", "spec", "f"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	gitTask(t, projectPath, "add", ".hive/spec/f/README.md")
-	gitTask(t, projectPath, "commit", "-m", "add feature spec")
+	if err := os.WriteFile(filepath.Join(home, ".hive", "spec", "f", "README.md"), []byte("feature spec\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)
@@ -97,8 +98,10 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 		} `json:"result"`
 	}
 	decodeJSON(t, specShow, &specWarnings)
-	if len(specWarnings.Result.Warnings) != 2 || specWarnings.Result.Warnings[0] != "linked file missing: .hive/spec/not-ready/README.md" || specWarnings.Result.Warnings[1] != "linked file missing: .hive/spec/not-ready/tasks/"+spec+"/brief.md" {
-		t.Fatalf("show warnings for spec task = %#v; want missing README and brief", specWarnings.Result.Warnings)
+	// AC2: task create writes the brief to the home, so only the README of the
+	// spec task is missing.
+	if len(specWarnings.Result.Warnings) != 1 || specWarnings.Result.Warnings[0] != "linked file missing: .hive/spec/not-ready/README.md" {
+		t.Fatalf("show warnings for spec task = %#v; want the missing README", specWarnings.Result.Warnings)
 	}
 	first := createFeatureTask(t, "First feature task", "f", false)
 	second := createFeatureTask(t, "Second feature task", "f", false)
@@ -117,7 +120,6 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 		"feature: f",
 		"brief: .hive/spec/f/tasks/" + second + "/brief.md",
 		"evidence: .hive/spec/f/tasks/" + second + "/evidence/",
-		"warning: linked file missing: .hive/spec/f/tasks/" + second + "/brief.md",
 	} {
 		if !strings.Contains(shown, want) {
 			t.Errorf("task show output %q; want %q", shown, want)
@@ -130,8 +132,9 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 		} `json:"result"`
 	}
 	decodeJSON(t, jsonShown, &showResult)
-	if len(showResult.Result.Warnings) != 1 || showResult.Result.Warnings[0] != "linked file missing: .hive/spec/f/tasks/"+second+"/brief.md" {
-		t.Fatalf("show warnings = %#v; want the missing task brief", showResult.Result.Warnings)
+	// AC2: the home has the README and the brief, so task show warns of nothing.
+	if strings.Contains(shown, "warning:") || len(showResult.Result.Warnings) != 0 {
+		t.Fatalf("show = %q, warnings %#v; want no warning", shown, showResult.Result.Warnings)
 	}
 
 	activeID := "92-active-feature"
@@ -160,8 +163,10 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 		} `json:"result"`
 	}
 	decodeJSON(t, activeShow, &activeWarnings)
-	if len(activeWarnings.Result.Warnings) != 2 || activeWarnings.Result.Warnings[0] != "linked file missing: .hive/spec/f/README.md" || activeWarnings.Result.Warnings[1] != "linked file missing: .hive/spec/f/tasks/"+activeID+"/brief.md" {
-		t.Fatalf("active worktree warnings = %#v; want both missing worktree files", activeWarnings.Result.Warnings)
+	// AC2: task show checks the home, also for a task with a worktree. The
+	// home has the README but no brief for this seeded record.
+	if len(activeWarnings.Result.Warnings) != 1 || activeWarnings.Result.Warnings[0] != "linked file missing: .hive/spec/f/tasks/"+activeID+"/brief.md" {
+		t.Fatalf("active worktree warnings = %#v; want the missing home brief", activeWarnings.Result.Warnings)
 	}
 	if spec == "" {
 		t.Fatal("spec task ID is empty")

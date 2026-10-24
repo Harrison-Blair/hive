@@ -1,9 +1,0 @@
-$ go test ./internal/tui -run ^TestWideDetailsKeepsScreenKeys$ -count=1 -v
-=== RUN   TestWideDetailsKeepsScreenKeys
-    frame_test.go:377: 1 in the wide details gave screen 2; want Agents
---- FAIL: TestWideDetailsKeepsScreenKeys (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.015s
-FAIL
-
-exit 1

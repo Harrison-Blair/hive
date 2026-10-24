@@ -1,6 +1,8 @@
 package component
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"strings"
 	"testing"
@@ -39,6 +41,7 @@ type rect struct{ row, col, w, h int }
 // boardRect gives the cells of r from the golden grid of board.
 func boardRect(t *testing.T, board string, r rect) cellgrid.Grid {
 	t.Helper()
+	requireSpecFile(t, boardPath(board))
 	f, err := os.Open(boardPath(board))
 	if err != nil {
 		t.Fatalf("open board: %v", err)
@@ -104,5 +107,15 @@ func checkHandGrid(t *testing.T, got, want string) {
 	}
 	if len(diffs) > 0 {
 		t.Errorf("%d cells differ from the expected grid:\n%s\nrendered:\n%s", len(diffs), cellgrid.FormatDiffs(diffs), got)
+	}
+}
+
+// requireSpecFile skips the test when a file or a folder of the local spec is
+// missing. Git does not track .hive/spec/, so a clean clone has no grid and
+// no fixture. The test runs as before when the file exists.
+func requireSpecFile(t testing.TB, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("local spec file missing: %s: Git does not track .hive/spec/", path)
 	}
 }

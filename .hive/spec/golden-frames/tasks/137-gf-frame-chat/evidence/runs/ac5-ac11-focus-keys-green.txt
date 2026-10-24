@@ -1,6 +1,0 @@
-=== RUN   TestFrameScreenSegmentShowsTheFocusKeys
---- PASS: TestFrameScreenSegmentShowsTheFocusKeys (0.00s)
-=== RUN   TestFrameRestartPromptOnTheNoticeLine
---- PASS: TestFrameRestartPromptOnTheNoticeLine (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.012s

@@ -180,6 +180,16 @@ func Edit(home string, options EditOptions) output.Envelope {
 			return nil
 		}
 		effects := []output.Effect{{Resource: "brief", Path: briefRelPath(task.ID), Action: "updated"}}
+		if paths := TaskFeaturePaths(task); paths != nil {
+			if err := writeWorktreeBrief(home, paths.Brief, brief); err != nil {
+				message := "write feature brief: " + err.Error()
+				envelope = output.Envelope{Outcome: "partial", Phase: "brief", Effects: effects, Error: message, Result: task}
+				log.failure("task edit", task.Project, task.ID, actorID, envelope.Phase, message)
+				return nil
+			}
+			effects = append(effects, output.Effect{Resource: "brief", Path: paths.Brief, Action: "updated"})
+			log.effect("task edit", task.Project, task.ID, "brief", paths.Brief, "updated")
+		}
 		if paths := TaskFeaturePaths(task); paths != nil && task.Worktree != nil && task.Worktree.RemovedAt == "" {
 			featurePath := filepath.Join(task.Worktree.Path, filepath.FromSlash(paths.Brief))
 			if err := writeWorktreeBrief(task.Worktree.Path, paths.Brief, brief); err != nil {

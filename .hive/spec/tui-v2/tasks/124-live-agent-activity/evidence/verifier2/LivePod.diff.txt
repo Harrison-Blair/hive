@@ -1,1 +1,0 @@
-/home/penguin/source/hive/projects/hive/worktrees/124-live-agent-activity/.hive/spec/tui-v2/design/LivePod.grid vs /home/penguin/source/hive/projects/hive/worktrees/124-live-agent-activity/.hive/spec/tui-v2/tasks/124-live-agent-activity/evidence/verifier2/LivePod.ansi: 4800 cells, 0 diffs

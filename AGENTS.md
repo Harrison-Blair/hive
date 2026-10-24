@@ -38,7 +38,7 @@ hive/                            the checkout is the home
 ├─ main.go  cmd/  internal/      Go source             tracked
 ├─ reference/                    API and dogfood docs    tracked
 ├─ .hive/README.md               home marker           tracked
-├─ .hive/spec/                   feature specs         tracked
+├─ .hive/spec/                   feature specs         ignored
 ├─ projects/<project-id>/        project directory     ignored
 │  └─ worktrees/<task-id>/       worktree              ignored
 ├─ memory/  overrides/  plans/   personal              ignored
@@ -46,7 +46,7 @@ hive/                            the checkout is the home
 └─ .hive/  state/  logs/  tmp/   runtime               ignored
 ```
 
-- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md` and `.hive/spec/`. The README file marks the home. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
+- Git ignores `projects/`, `memory/`, `overrides/`, `plans/`, `handoff.md`, and everything in `.hive/` except `.hive/README.md`. The README file marks the home. `.hive/spec/` is local state in the home, as `.hive/state/` is. `gitignore_test.go` fails when Git tracks one of the ignored paths, ignores the marker, or ignores a tracked file.
 - `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
 - Put scratch files in `.hive/tmp/`.
 
@@ -69,6 +69,8 @@ These rules apply to a worker on the hive project.
 ### Task flow
 
 Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The manager skill gives the manager flow. The worker skill gives the worker flow. Read `.agents/skills/hive-manager/SKILL.md` for manager work. Read `.agents/skills/hive-worker/SKILL.md` for worker work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A worker edits only named files and new tests beside them.
+
+Git ignores `.hive/spec/`. `hive worktree create` copies the feature folder of the home into the worktree. A worker and a verifier do not add the evidence to Git. `hive task complete` copies the evidence folder to the home. `hive task verify` copies `VERIFIED.md` to the home. `hive land` merges the code. Then it copies each changed spec file outside `tasks/` to the home.
 
 ### Go layout
 

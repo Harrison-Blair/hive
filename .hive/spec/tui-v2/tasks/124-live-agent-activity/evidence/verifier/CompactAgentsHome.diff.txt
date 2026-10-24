@@ -1,1 +1,0 @@
-80x24: 1920 cells match

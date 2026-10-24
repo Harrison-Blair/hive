@@ -1,6 +1,0 @@
---- FAIL: TestListSelectedRowCells (0.00s)
-    list_test.go:103: col 3 = ' ' accent bold true; want ' ' fg bold false
-    list_test.go:103: col 9 = ' ' fg bold false; want ' ' accent bold true
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.015s
-FAIL

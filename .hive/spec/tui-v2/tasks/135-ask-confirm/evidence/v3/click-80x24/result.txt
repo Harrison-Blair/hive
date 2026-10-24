@@ -1,2 +1,0 @@
-80x24: clicks on 3 card rows changed nothing
- [normal] i type · ↑↓ wheel scroll · pgup/pgdn · ctrl+o events · ? help

@@ -1,5 +1,0 @@
-[penguin@iceberg home]$ pi
-pi ready
-> ⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Restart → No
-GOT: ⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Restart → No
->

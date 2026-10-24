@@ -1,4 +1,0 @@
---- PASS: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden (0.00s)
-    --- PASS: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/120x40 (0.00s)
-    --- PASS: TestVerifierCoordinatorSelectableWithAllProjectPodsHidden/80x24 (0.00s)
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.011s

@@ -89,8 +89,9 @@ checkout root.
 
 ## Verdict
 
-The verifier commits and pushes `VERIFIED.md` on the task branch before it runs
-`hive task verify`.
+The verifier writes `VERIFIED.md` in the evidence folder and does not commit it.
+`hive task verify` copies it to the home. Git ignores the evidence folder of a
+task with a feature. An ignored evidence file does not make the worktree dirty.
 
 Record a pass when each item passes.
 

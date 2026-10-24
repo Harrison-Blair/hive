@@ -1,6 +1,0 @@
-sh-5.3$ pi parent-scratch
-STUB_READY name=parent-scratch executable=/tmp/hv135-verify4/bin/pi pid=767199
-⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
-GOT: ⬢ user: answer to ask a2 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
-⬢ user: answer to ask a5 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first
-GOT: ⬢ user: answer to ask a5 from asker-scratch (asker stopped) · Scope → Ask card · note: parent path; Order → Help first

@@ -1,8 +1,0 @@
-=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock
-=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock/120
-=== RUN   TestVerifierReviewKeepsMultilineLabelInsideDock/80
---- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock (0.00s)
-    --- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock/120 (0.00s)
-    --- PASS: TestVerifierReviewKeepsMultilineLabelInsideDock/80 (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.009s

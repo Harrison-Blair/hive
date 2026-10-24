@@ -1,8 +1,0 @@
-$ go test ./internal/tui -count=1 -run TestAgentsHome|TestAgentsNest|TestAgentsChildren|TestAgentsHMoves|TestAgentsCoordinatorChildren|TestAgentsManagerWithout|TestAgentsArrowsReach|TestAgentsCompactHome|TestAgentsDetailsOfAGeneral|TestHealthAgentsRestartRefuses|TestGeneralAgentBoard -v
-# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
-internal/tui/agents_home_test.go:41:49: pod.levels undefined (type graphPod has no field or method levels)
-internal/tui/agents_home_test.go:42:30: pod.levels undefined (type graphPod has no field or method levels)
-FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
-FAIL
-
-exit 1

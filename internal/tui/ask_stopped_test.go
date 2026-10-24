@@ -24,6 +24,7 @@ const (
 // chat messages move the ask event above the feed viewport.
 func stoppedAskModel(t *testing.T, width, height int, asker, parent string) (*Model, *[]askCall) {
 	t.Helper()
+	requireSpecFile(t, "../../.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier3/no-caption/request.json")
 	data, err := os.ReadFile("../../.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier3/no-caption/request.json")
 	if err != nil {
 		t.Fatal(err)

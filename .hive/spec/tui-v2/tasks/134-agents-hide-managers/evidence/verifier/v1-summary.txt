@@ -1,3 +1,0 @@
-Base: 6a586f1a; task: 0bbf3a07.
-Focused tests: TestAgentsHHidesAManagerWithNoLiveChild, TestAgentsHiddenManagerKeepsThePodOfALiveChild, TestAgentsPodViewHangsTheChildrenFromTheTopBorder, TestAgentsHintStaysWhenEveryProjectPodHides, TestAgentsNoHintWithNothingHidden, TestAgentsSelectionFollowsThePodsOfH, TestAgentsScrollStaysValidWhenPodsHide, TestAgentsGeneralChildOfAHiddenManagerStaysInThePod, TestAgentsGeneralChildOfAHiddenWorkerMovesToHome, TestAgentsAllProjectPodsHiddenKeepTheHomePod, TestAgentsNoticeAloneWhenNothingIsVisible, TestAgentsPodsFollowProjectRecordOrder
-Each base-passing guard failed under its mutation. Scratch source restored exactly. Both focused green runs: 600 PASS, 0 FAIL.

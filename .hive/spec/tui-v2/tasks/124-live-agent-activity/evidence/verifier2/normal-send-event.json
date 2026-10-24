@@ -1,1 +1,0 @@
-{"agent_id": "manager-alpha-g1", "body": "verifier2 scratch send", "command": "agent send", "component": "agent", "from": "worker-alpha", "level": "DEBUG", "msg": "agent prompt", "pane_id": "wVS:p2", "request_id": "r-3974d442", "time": "2026-10-22T18:57:07.769750127-04:00"}

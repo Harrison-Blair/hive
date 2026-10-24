@@ -1,7 +1,0 @@
-$ go test ./internal/boardexport -run ^TestCheckAcceptsTheLiveBoards$ -count=1 -v
-=== RUN   TestCheckAcceptsTheLiveBoards
---- PASS: TestCheckAcceptsTheLiveBoards (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
-
-exit: 0

@@ -151,7 +151,7 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 	logEvent(scoped, "land start", project.ID, options.Task, "mode", options.Mode, "base", project.Base)
 
 	if options.Mode == "merge" {
-		return landMerge(ctx, registry, scoped, options, task, project)
+		return landSpec(home, scoped, task, landMerge(ctx, registry, scoped, options, task, project))
 	}
 	return landPR(ctx, registry, scoped, home, options, task, project)
 }

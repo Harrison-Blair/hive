@@ -1,5 +1,0 @@
-=== RUN   TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption
---- PASS: TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.007s
-ok  	github.com/Harrison-Blair/hive/internal/tui	1.093s

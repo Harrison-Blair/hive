@@ -19,6 +19,8 @@ import (
 
 // steFiles lists the instruction text the ratchet covers. Each entry is a
 // filepath.Glob pattern. Add each new instruction file here with a baseline of 0.
+// Git does not track .hive/spec/. A pattern below it checks the local files
+// only when they exist.
 var steFiles = []string{
 	"AGENTS.md",
 	".hive/README.md",
@@ -29,6 +31,7 @@ var steFiles = []string{
 	".hive/spec/*/tasks/*/brief.md",
 	".hive/spec/*.md",
 	".hive/spec/golden-frames/README.md",
+	".hive/spec/spec-local-state/README.md",
 	".hive/spec/golden-frames/screens/*.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
@@ -42,6 +45,7 @@ var steFiles = []string{
 const (
 	steGlossaryPath = "STE-GLOSSARY.md"
 	steBaselinePath = "testdata/ste-baseline.json"
+	steLocalSpecDir = ".hive/spec/"
 	steMaxWords     = 25
 )
 
@@ -272,13 +276,19 @@ func steExpand(patterns []string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("pattern %s: %w", pattern, err)
 		}
-		if len(matches) == 0 {
+		if len(matches) == 0 && !steLocalSpec(pattern) {
 			return nil, fmt.Errorf("pattern %s matches no file", pattern)
 		}
 		files = append(files, matches...)
 	}
 	slices.Sort(files)
 	return slices.Compact(files), nil
+}
+
+// steLocalSpec reports whether path is below the local spec folder, which Git
+// does not track.
+func steLocalSpec(path string) bool {
+	return strings.HasPrefix(filepath.ToSlash(path), steLocalSpecDir)
 }
 
 // steCompare reports every way counts departs from baseline. The ratchet only
@@ -298,6 +308,9 @@ func steCompare(counts, baseline map[string]int) []string {
 	}
 	for _, file := range steKeys(baseline) {
 		if _, ok := counts[file]; !ok {
+			if _, err := os.Stat(file); steLocalSpec(file) && os.IsNotExist(err) {
+				continue
+			}
 			problems = append(problems, fmt.Sprintf("%s: baseline names a file the ratchet does not check; remove it from %s", file, steBaselinePath))
 		}
 	}
@@ -492,6 +505,10 @@ func TestSTECompare(t *testing.T) {
 		{"below baseline", map[string]int{"a.md": 2}, map[string]int{"a.md": 3}, "lower the baseline"},
 		{"missing entry", map[string]int{"a.md": 2}, map[string]int{}, "no baseline entry"},
 		{"stale entry", map[string]int{}, map[string]int{"a.md": 1}, "does not check"},
+		// AC6: the baseline keeps the entry of a local spec file that this
+		// checkout does not have.
+		{"missing local spec file", map[string]int{}, map[string]int{".hive/spec/no-such-feature/README.md": 0}, ""},
+		{"stale entry of a tracked file under a spec-like name", map[string]int{}, map[string]int{"spec/a.md": 0}, "does not check"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -509,6 +526,19 @@ func TestSTECompare(t *testing.T) {
 				t.Errorf("problem %q does not mention %q", problems[0], c.want)
 			}
 		})
+	}
+}
+
+// TestSTEExpandLocalSpec checks AC6: a pattern under .hive/spec/ that matches
+// no file is not a failure, because Git does not track the spec. A tracked
+// pattern that matches no file stays a failure.
+func TestSTEExpandLocalSpec(t *testing.T) {
+	files, err := steExpand([]string{".hive/spec/no-such-feature/README.md", ".hive/spec/no-such-feature/tasks/*/brief.md"})
+	if err != nil || len(files) != 0 {
+		t.Fatalf("steExpand(missing local spec) = %v, %v; want no file and no error", files, err)
+	}
+	if _, err := steExpand([]string{"no-such-instruction-file.md"}); err == nil {
+		t.Fatal("steExpand(missing tracked file) = nil error; want a failure")
 	}
 }
 

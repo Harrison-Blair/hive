@@ -1,8 +1,0 @@
-$ go test -count=1 -overlay /home/penguin/source/hive/projects/hive/worktrees/131-hive-ask/.hive/tmp/verifier2/repair-red.json -run ^TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption$ ./internal/tui/
---- FAIL: TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption (0.00s)
-    ask_test.go:228: calls = [{answer a1 [{[]  ok}]}], want [{answer a1 [{[2]  ok}]}]
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.008s
-FAIL
-
-exit: 1

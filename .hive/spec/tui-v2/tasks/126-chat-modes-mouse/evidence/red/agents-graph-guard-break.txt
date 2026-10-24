@@ -1,5 +1,0 @@
---- FAIL: TestMouseWheelOverTheAgentsGraphDoesNothing (0.00s)
-    chat_modes_test.go:254: the wheel changed the Agents graph
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
-FAIL

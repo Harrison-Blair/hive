@@ -1,1 +1,0 @@
-{'state': 'dismissed', 'replies': None, 'delivered_to': 'asker-scratch'}

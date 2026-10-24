@@ -1,8 +1,0 @@
-$ go test ./internal/tui/... ./internal/boardexport/... -run TestCheckAcceptsTheTreeBoards|TestPanelBleedFillsThePadding|TestTree|TestHomeTree|TestAgentsNestGeneralAgentsUnderTheirParentCard|TestAgentsNestingUsesTheRailFormInTheOverview|TestAgentsSelectedCardJoints|TestAgentsUpDownMoveInThePod|TestAgentsWorkingCardBorder|TestAgentsFitEachSize|TestGeneralAgentBoardsMatchTheirGrids|TestEachBoardFixtureLoadsAtItsSpecSize -race -count=1
-base=022c71971d95b859ed1218ebd57a7fff7bc84f5f
-ok  	github.com/Harrison-Blair/hive/internal/tui	2.512s
-ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.060s
-ok  	github.com/Harrison-Blair/hive/internal/boardexport	1.010s
-?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
-
-exit: 0

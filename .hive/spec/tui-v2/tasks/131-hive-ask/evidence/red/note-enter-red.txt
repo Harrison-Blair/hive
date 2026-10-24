@@ -1,5 +1,0 @@
---- FAIL: TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption (0.00s)
-    ask_test.go:228: calls = [{answer a1 [{[]  ok}]}], want [{answer a1 [{[2]  ok}]}]
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.007s
-FAIL

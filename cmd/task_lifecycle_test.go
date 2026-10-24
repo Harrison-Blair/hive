@@ -183,7 +183,8 @@ func TestTaskCLIEditBrief(t *testing.T) {
 	if status != 0 || stderr != "" {
 		t.Fatalf("created task edit status = %d; stdout %q, stderr %q; want success", status, stdout, stderr)
 	}
-	if want := "updated brief .hive/state/briefs/" + createdID + ".md\n"; stdout != want {
+	// AC3: task edit --brief also writes the brief of the feature to the home.
+	if want := "updated brief .hive/state/briefs/" + createdID + ".md\nupdated brief .hive/spec/f/tasks/" + createdID + "/brief.md\n"; stdout != want {
 		t.Fatalf("created task edit output = %q; want %q", stdout, want)
 	}
 	if got := cli.mustRun(t, "task", "show", "--brief", createdID); got != updatedBrief {
@@ -477,11 +478,13 @@ func TestTaskCLILogsPartialCreatePrefixes(t *testing.T) {
 	}
 
 	events := taskLogEvents(t, cli.home)
-	for _, resource := range []string{"counter", "brief"} {
+	// AC2: task create writes two briefs, the state brief and the home brief
+	// of the feature.
+	for resource, want := range map[string]int{"counter": 1, "brief": 2} {
 		if countEvents(events, "task effect", map[string]string{
 			"command": "task create", "task_id": "1-topic", "project_id": "repo", "resource": resource,
-		}) != 1 {
-			t.Fatalf("log events = %#v; want one completed %s effect", events, resource)
+		}) != want {
+			t.Fatalf("log events = %#v; want %d completed %s effects", events, want, resource)
 		}
 	}
 	if countEvents(events, "task effect", map[string]string{

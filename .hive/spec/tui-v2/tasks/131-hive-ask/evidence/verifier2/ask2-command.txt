@@ -1,2 +1,0 @@
-ask a2 open
-exit=0 elapsed_ns=18535494

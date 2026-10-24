@@ -1,7 +1,0 @@
---- FAIL: TestCheckAcceptsTheChatModeBoards (0.00s)
-    check_test.go:126: board ChatNormal: not in the spec table
-    check_test.go:126: board ChatInput: not in the spec table
-    check_test.go:126: board CompactChatNormal: not in the spec table
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
-FAIL

@@ -455,6 +455,7 @@ func TestAskReviewBlockedCallerSendsNothing(t *testing.T) {
 // review_row as the highlighted question. Without review_row, Send has the
 // highlight.
 func TestDemoFixtureShowsTheReview(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "ChatAskMulti.fixture.json"))
 	base, err := os.ReadFile(filepath.Join(designDir, "ChatAskMulti.fixture.json"))
 	if err != nil {
 		t.Fatal(err)

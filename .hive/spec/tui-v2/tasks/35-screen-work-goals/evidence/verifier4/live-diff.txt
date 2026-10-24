@@ -1,1 +1,0 @@
-strict differences: 2992; live-rule differences: 0

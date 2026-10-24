@@ -1,6 +1,0 @@
-# github.com/Harrison-Blair/hive/internal/lib/cellgrid [github.com/Harrison-Blair/hive/internal/lib/cellgrid.test]
-internal/lib/cellgrid/convert_test.go:12:51: undefined: Error
-internal/lib/cellgrid/convert_test.go:90:59: undefined: Error
-internal/lib/cellgrid/palette_test.go:23:4: undefined: Error
-FAIL	github.com/Harrison-Blair/hive/internal/lib/cellgrid [build failed]
-FAIL

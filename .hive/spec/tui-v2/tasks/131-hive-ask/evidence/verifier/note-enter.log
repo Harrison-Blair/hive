@@ -1,5 +1,0 @@
---- FAIL: TestVerifierNoteEnterPicksCurrentOption (0.00s)
-    verifier131_test.go:10: note enter: got [{answer a1 [{[]  ok}]}], want [{answer a1 [{[2]  ok}]}]
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.007s
-FAIL
