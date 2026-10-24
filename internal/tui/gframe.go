@@ -105,11 +105,10 @@ func chordText(key string) string {
 var screenStatusLine = []string{"state", "screen", "clock"}
 
 // statusLines gives the status rows of the config. On a screen other than
-// Chat, a config with the default rows of decision 9 gives the first row of
-// decision 34.
+// Chat, a config without tui.status.lines gives the first row of decision 34.
 func (m *Model) statusLines() [][]string {
 	lines := m.tuiConfig.StatusLines
-	if m.activeTab() == tabChat || !slices.EqualFunc(lines, defaultTUI().StatusLines, slices.Equal) {
+	if m.activeTab() == tabChat || m.tuiConfig.StatusLinesExplicit {
 		return lines
 	}
 	return append([][]string{screenStatusLine}, lines[1:]...)
@@ -129,11 +128,6 @@ func (m *Model) statusRows(width, height int) []string {
 		if index == 0 && asking && m.askFocused() {
 			rows = append(rows, m.askStatusRow(width))
 			continue
-		}
-		if index == 0 && m.activeTab() != tabChat && slices.Equal(names, home.DefaultTUI().StatusLines[0]) {
-			// Ask a27: on a screen other than Chat, the default first row
-			// is the state, the screen segment, and the clock.
-			names = []string{"state", "screen", "clock"}
 		}
 		row := component.StatusRow{}
 		for _, name := range names {

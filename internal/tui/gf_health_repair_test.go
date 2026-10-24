@@ -22,6 +22,7 @@ func TestGfHealthCustomStatusLineStaysConfigured(t *testing.T) {
 
 	cfg := defaultTUI()
 	cfg.StatusLines = [][]string{{"command", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	m.statusCommandLine = "custom-health-status"
 	m.selectScreen(tabHealth, 0)

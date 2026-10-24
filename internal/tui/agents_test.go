@@ -186,6 +186,7 @@ func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	// you segment, so the check names them.
 	cfg := home.DefaultTUI()
 	cfg.StatusLines = [][]string{{"state", "supervisor", "needs_you", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	check("Agents")
 	// Decision 34: only Chat has these segments in the default row.
