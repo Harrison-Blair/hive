@@ -8,21 +8,31 @@
 
 Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant.
 
-Read this section first. A prompt from hive that names a role gives your role. That prompt wins over your working directory. A brief can name another role. The brief wins over your working directory.
+Read this section first. An agent has no fixed role. Hive gives each agent its work in four sources. Read them in this order:
 
-| Role evidence | Role | Then read |
+1. The prompt from hive. It gives your name, your parent, and your facts: the project, the task, and the worktree. It can also give the text of the agent that spawned you.
+2. Your profile. Hive puts the text of `profiles/NAME.md` in your starting context. The profile tells you how to do the work.
+3. Your brief. A prompt that gives a task also gives the path of its brief. Read the brief before you start.
+4. Your working directory. Use it only when no prompt from hive gives your work.
+
+The prompt from hive wins over each other source. A brief wins over your working directory.
+
+| Evidence | Work | Then read |
 | --- | --- | --- |
 | A `⬢` prompt from hive that names the coordinator | coordinator | [Coordinator](#coordinator) |
-| `projects/<project-id>/` | manager | the project instructions, then your brief |
-| `projects/<project-id>/worktrees/<task-id>/` | worker | your brief, then [Development](#development) |
+| A `⬢` prompt from hive that names a profile or a task | the work of that prompt | your profile, then your brief, then [Development](#development) for a change to hive |
+| `projects/<project-id>/worktrees/<task-id>/` with no prompt from hive | the task of the folder name | `hive task show <task-id> --brief`, then [Development](#development) |
+| `projects/<project-id>/` with no prompt from hive | no work | this section |
 | The root of this checkout with no prompt from hive | no role | this section |
 
 - Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
 - A session in the root of this checkout with no prompt from hive has no role. It does not run the coordinator startup. It tells the user that it has no role.
-- A session with a brief that names another role does not run coordinator startup.
-- A manager or a worker never runs coordinator startup. This rule also applies after a context reset.
-- When the role evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
+- A session with a prompt or a brief that names another profile does not run coordinator startup.
+- An agent that is not the coordinator never runs coordinator startup. This rule also applies after a context reset.
+- A session with no work tells the user that hive gave it no work. It does not take work from its working directory.
+- When the evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
 - Claude Code loads this file in every checkout below the root. The role gate applies there too.
+- Transition rule, until wave A of goal g13 lands: a prompt from hive can name a role. Read that role as a profile: `manager` is `planner`, `worker` is `builder`, `verifier` is `verifier`, and a general agent is `general`.
 
 ## Project
 
