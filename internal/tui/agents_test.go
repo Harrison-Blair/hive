@@ -246,6 +246,12 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 		t.Fatal("t did not load the Tasks screen")
 	}
 	m = deliverAgentCommands(t, m, cmd)
+	// agents.md key table: t opens the task of the card on Work.
+	if m.tasks.popup != workPopupTask {
+		t.Fatalf("Work popup = %q, want the task popup", m.tasks.popup)
+	}
+	requireView(t, m, "10-alpha · esc closes")
+	m, _ = raise(t, m, key(tea.KeyEscape, ""))
 	// Work rule 4: the selected card has the heavy border.
 	if got := selectedCard(t, m); got != "10-alpha" {
 		t.Fatalf("Work board selected %q, want task 10-alpha", got)
