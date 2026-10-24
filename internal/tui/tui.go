@@ -70,6 +70,8 @@ type Model struct {
 	logOffset         int
 	logPendingTime    string
 	logErr            string
+	logFilterErr      string
+	logRaw            bool
 
 	header               headerState
 	headerErr            string
