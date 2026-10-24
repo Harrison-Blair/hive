@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"maps"
 	"strings"
 	"testing"
 
@@ -331,5 +332,90 @@ func TestHelpKeepsTheNoticeLineClear(t *testing.T) {
 		if !thumb {
 			t.Errorf("screen %d: the body does not fit the smaller box but has no thumb", m.activeTab())
 		}
+	}
+}
+
+// helpKeyRows counts the key cells of the Help box at 120×40 by section:
+// the section of each key row and the key in its first helpKeyWidth cells.
+func helpKeyRows(t *testing.T, m *Model) map[string]map[string]int {
+	t.Helper()
+	rows := viewRows(m)
+	top, bottom := helpBox(t, rows)
+	box := rows[top+1 : bottom]
+	_, left := cellOf(box, "SCREENS")
+	_, right := cellOf(box, "AGENTS")
+	sections := map[string]bool{
+		"SCREENS": true, "CHAT": true, "ASK CARD": true, "AGENTS": true,
+		"WORK": true, "FRICTION": true, "HEALTH": true, "LOGS": true,
+	}
+	counts := map[string]map[string]int{}
+	for _, col := range []int{left, right} {
+		section := ""
+		for _, row := range box {
+			cell := strings.TrimSpace(ansi.Cut(row, col, col+helpKeyWidth+30))
+			switch {
+			case sections[cell]:
+				section = cell
+			case strings.HasPrefix(cell, "STATUS ROW"):
+				section = ""
+			case cell != "" && section != "":
+				key := strings.TrimSpace(ansi.Cut(row, col, col+helpKeyWidth))
+				if counts[key] == nil {
+					counts[key] = map[string]int{}
+				}
+				counts[key][section]++
+			}
+		}
+	}
+	return counts
+}
+
+// help.md rule 3: each chord of README decision 16 shows once in each
+// section where it acts. SCREENS lists the screen chords, esc, ?, and
+// ctrl+c ×2. ctrl+o shows in CHAT, ctrl+r in ASK CARD, and the box switch
+// ctrl+] in FRICTION, HEALTH, and LOGS. A rebound chord shows its bound key.
+func TestHelpShowsEachChordOfDecision16Once(t *testing.T) {
+	rebound := home.DefaultTUI()
+	rebound.Keys["agents"] = "ctrl+a"
+	rebound.Keys["work"] = "ctrl+w"
+	rebound.Keys["logs"] = "ctrl+n"
+	for _, tc := range []struct {
+		name   string
+		cfg    home.TUIConfig
+		want   map[string][]string
+		absent []string
+	}{
+		{"default", home.DefaultTUI(), map[string][]string{
+			"ctrl+g": {"SCREENS"}, "ctrl+t": {"SCREENS"}, "ctrl+f": {"SCREENS"}, "ctrl+y": {"SCREENS"},
+			"ctrl+l": {"SCREENS"}, "ctrl+c ×2": {"SCREENS"}, "?": {"SCREENS"},
+			"ctrl+o": {"CHAT"}, "ctrl+r": {"ASK CARD"}, "ctrl+]": {"FRICTION", "HEALTH", "LOGS"},
+		}, nil},
+		{"rebound", rebound, map[string][]string{
+			"ctrl+a": {"SCREENS"}, "ctrl+w": {"SCREENS"}, "ctrl+f": {"SCREENS"}, "ctrl+y": {"SCREENS"},
+			"ctrl+n": {"SCREENS"}, "ctrl+c ×2": {"SCREENS"}, "?": {"SCREENS"},
+			"ctrl+o": {"CHAT"}, "ctrl+r": {"ASK CARD"}, "ctrl+]": {"FRICTION", "HEALTH", "LOGS"},
+		}, []string{"ctrl+g", "ctrl+t", "ctrl+l"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m, _ := newFrameModel(t, 120, 40)
+			m.setTUIConfig(tc.cfg)
+			m, cmd := raise(t, m, key('?', "?"))
+			drain(cmd)
+			counts := helpKeyRows(t, m)
+			for chord, sections := range tc.want {
+				want := map[string]int{}
+				for _, section := range sections {
+					want[section] = 1
+				}
+				if got := counts[chord]; !maps.Equal(got, want) {
+					t.Errorf("%s shows in %v; want once in each of %v", chord, got, sections)
+				}
+			}
+			for _, chord := range tc.absent {
+				if got := counts[chord]; len(got) > 0 {
+					t.Errorf("the rebound chord %s still shows in %v", chord, got)
+				}
+			}
+		})
 	}
 }
