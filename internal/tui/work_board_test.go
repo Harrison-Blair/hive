@@ -410,6 +410,63 @@ func TestWorkDepsPopupEnterOpensTask(t *testing.T) {
 	}
 }
 
+// Ask a28 (W10) decides the form of the dependency popup. The board form
+// has the ready when line and a selection with no mark. The keep form adds
+// the ▶ mark and accent bold to the selected row. The spec form is a list
+// with esc only.
+func TestWorkDepsPopupForms(t *testing.T) {
+	t.Cleanup(func() { workDepsForm = workDepsBoardForm })
+	popupRows := func(m *Model) []string {
+		var rows []string
+		for _, row := range workRows(m) {
+			if strings.Contains(row, "wave B · ") {
+				rows = append(rows, row)
+			}
+		}
+		return rows
+	}
+	open := func(form int) *Model {
+		workDepsForm = form
+		m := newWorkModel(t, workTestData(), demoUIState{Selection: "8-h"}, 120, 40)
+		return pressWork(t, m, key('d', "d"))
+	}
+
+	m := open(workDepsBoardForm)
+	requireView(t, m, "ready when 5-e, 6-f land", "enter opens the selected task · ↑↓ move · esc closes")
+	if rows := popupRows(m); len(rows) != 2 || strings.Contains(rows[0], "▶") || strings.Contains(rows[1], "▶") {
+		t.Errorf("board form rows %q, want two rows with no mark", rows)
+	}
+
+	m = open(workDepsKeepForm)
+	requireView(t, m, "ready when 5-e, 6-f land", "▶ ○ 5-e", "  ! 6-f")
+	m = pressWork(t, m, arrowKey(tea.KeyDown))
+	requireView(t, m, "  ○ 5-e", "▶ ! 6-f")
+	grid, err := cellgrid.Convert(m.View().Content, 120, 40)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for row, line := range workRows(m) {
+		if col := strings.Index(line, "▶ ! 6-f"); col >= 0 {
+			col = ansi.StringWidth(line[:col]) + 4
+			if cell := grid.At(row, col); cell.Token != cellgrid.Accent || !cell.Bold {
+				t.Errorf("selected ID cell %+v, want accent bold", cell)
+			}
+		}
+	}
+
+	m = open(workDepsSpecForm)
+	rejectView(t, m, "ready when", "enter opens")
+	requireView(t, m, "8-h · dependencies · esc closes")
+	if rows := popupRows(m); len(rows) != 2 || strings.Contains(rows[0], "▶ ") || strings.Contains(rows[1], "▶ ") {
+		t.Errorf("spec form rows %q, want two rows with no mark", rows)
+	}
+	m = pressWork(t, m, arrowKey(tea.KeyDown))
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	if m.tasks.popup != workPopupDeps {
+		t.Errorf("spec form: enter changed the popup to %q", m.tasks.popup)
+	}
+}
+
 // Rule 13: no goal and no task shows the notice, and a goal with no waves
 // shows one empty column.
 func TestWorkEmptyStates(t *testing.T) {

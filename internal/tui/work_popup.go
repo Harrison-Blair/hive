@@ -19,6 +19,21 @@ const (
 	workDepsPopupHeight = 17
 )
 
+// The forms of the dependency popup. Ask a28 (W10) chooses one. The board
+// form is the form of GfWorkDeps: the ready when line, and ↑↓ and enter on
+// a selection with no mark. The keep form adds the ▶ mark and accent bold
+// to the selected row, as on Friction and Health. The spec form is the list
+// of rule 10 with esc only.
+const (
+	workDepsBoardForm = iota
+	workDepsKeepForm
+	workDepsSpecForm
+)
+
+// workDepsForm is the form of the dependency popup until ask a28 has an
+// answer.
+var workDepsForm = workDepsBoardForm
+
 // workLabelWidth is the cells of a label of the task popup with its gap.
 const workLabelWidth = 11
 
@@ -39,6 +54,9 @@ func (m *Model) workPopupView(screen string, width, height int) string {
 		title = s.selectedID + " · dependencies · esc closes"
 		lines = m.workDepsLines()
 		hint = "enter opens the selected task · ↑↓ move · esc closes"
+		if workDepsForm == workDepsSpecForm {
+			hint = "esc closes"
+		}
 	case s.fileOpen:
 		title = s.fileTitle + " · esc closes"
 		text := s.fileContent
@@ -200,7 +218,16 @@ func (m *Model) workDepsLines() []string {
 	if !ok {
 		return nil
 	}
+	index := 0
 	row := func(other taskItem) string {
+		lead, id := "", padCell(other.record.ID, 20)
+		if workDepsForm == workDepsKeepForm {
+			lead = "  "
+			if index == s.depsRow {
+				lead, id = titleStyle.Render("▶")+" ", titleStyle.Render(id)
+			}
+		}
+		index++
 		card := s.card(other, m.now())
 		state, _ := s.cardLine(other, m.now())
 		if strings.HasPrefix(state, "waits on ") {
@@ -210,7 +237,7 @@ func (m *Model) workDepsLines() []string {
 		if other.wave != "" {
 			wave = "wave " + other.wave
 		}
-		return lipgloss.NewStyle().Foreground(card.DotColor).Render(card.Dot) + " " + padCell(other.record.ID, 20) + dimStyle.Render(wave+" · "+state)
+		return lead + lipgloss.NewStyle().Foreground(card.DotColor).Render(card.Dot) + " " + id + dimStyle.Render(wave+" · "+state)
 	}
 	lines := []string{component.DetailSection("WAITS ON")}
 	dependents := s.dependents(item.record.ID)
@@ -228,7 +255,7 @@ func (m *Model) workDepsLines() []string {
 	if len(dependents) == 0 {
 		lines = append(lines, dimStyle.Render("none"))
 	}
-	if waits := s.waitsOn(item.record); len(waits) > 0 {
+	if waits := s.waitsOn(item.record); len(waits) > 0 && workDepsForm != workDepsSpecForm {
 		verb := "lands"
 		if len(waits) > 1 {
 			verb = "land"
