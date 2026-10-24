@@ -32,6 +32,7 @@ var steFiles = []string{
 	".hive/spec/*.md",
 	".hive/spec/golden-frames/README.md",
 	".hive/spec/spec-local-state/README.md",
+	".hive/spec/agents-without-roles/README.md",
 	".hive/spec/golden-frames/screens/*.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
