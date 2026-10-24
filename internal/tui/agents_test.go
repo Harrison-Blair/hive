@@ -90,10 +90,11 @@ func TestAgentsPanelFitsTerminalFrameAtStandardAndLargeSizes(t *testing.T) {
 					t.Fatalf("line %d is %d cells; want %d:\n%s", index, got, size.width, strings.Join(lines, "\n"))
 				}
 			}
-			// Golden-frames decision 2: the panel starts below the title row
-			// and the rule, and ends above the status row.
-			if !strings.HasPrefix(lines[2], "╭─ project agents ") || !strings.HasPrefix(lines[size.height-2], "╰") {
-				t.Fatalf("Agents panel does not fill the content area:\n%s", strings.Join(lines, "\n"))
+			// Golden-frames decision 2: the title row and the rule are above
+			// the body. Golden-frames agents.md rule 1: the body has no
+			// outer box.
+			if !strings.HasPrefix(lines[0], " agents · ") || strings.Contains(strings.Join(lines, "\n"), "project agents") {
+				t.Fatalf("Agents body is not below the title row with no outer box:\n%s", strings.Join(lines, "\n"))
 			}
 		})
 	}
@@ -143,7 +144,8 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 	if m.agents.peekOpen {
 		t.Fatal("esc did not close the peek")
 	}
-	requireView(t, m, "╭─ project agents ")
+	rejectView(t, m, "peek w1:p3 · esc closes")
+	requireView(t, m, " agents · ", "manager-demo")
 	logData, err := os.ReadFile(dailyPath(home, clock.now()))
 	if err != nil {
 		t.Fatal(err)

@@ -38,6 +38,8 @@ type agentGroup struct {
 	keys     []string
 	goal     string
 	goalStop bool
+	// wave is the wave progress of the pod title (agents.md rule 2).
+	wave string
 }
 
 type agentsData struct {
@@ -224,7 +226,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			title += " · " + goalTitle[project.ID]
 		}
 		goal, stop := projectGoalLine(goals, project.ID)
-		data.groups = append(data.groups, agentGroup{id: project.ID, title: title, goal: goal, goalStop: stop})
+		data.groups = append(data.groups, agentGroup{id: project.ID, title: title, goal: goal, goalStop: stop, wave: projectWave(goals, taskByID, project.ID)})
 	}
 	for _, record := range agents {
 		groupIndex := 0

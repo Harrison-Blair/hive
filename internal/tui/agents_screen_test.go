@@ -62,7 +62,7 @@ func agentsDataSets(t *testing.T) map[string]func(t *testing.T) (*Model, string)
 		},
 		"AgentsMany": func(t *testing.T) (*Model, string) {
 			// Decision 62: the overview selects the pod of the card.
-			return newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{}), "━ hive ━"
+			return newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{}), "━ hive · wave A 0/2 ━"
 		},
 		"nine projects": func(t *testing.T) (*Model, string) {
 			var source agentsSource
@@ -189,11 +189,11 @@ func TestAgentsArrowsScrollThePods(t *testing.T) {
 	if m.graph.pod != "example-ml" {
 		t.Fatalf("pod %q after 4 × →; want example-ml", m.graph.pod)
 	}
-	requireView(t, m, "projects 2–5 of 5", "← hive", "◐ manager-ml", "━ example-ml ━")
+	requireView(t, m, "projects 2–5 of 5", "← hive", "◐ manager-ml", "━ example-ml ")
 	for range 4 {
 		m, _ = raise(t, m, key(tea.KeyLeft, ""))
 	}
-	requireView(t, m, "projects 1–4 of 5", "━ hive ━")
+	requireView(t, m, "projects 1–4 of 5", "━ hive ")
 	if m.graph.pod != "hive" {
 		t.Fatalf("pod %q after 4 × ←; want hive", m.graph.pod)
 	}
@@ -315,7 +315,7 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.popupOpen || m.focusState() != "graph" {
 		t.Fatalf("esc did not close the popup: focus %q", m.focusState())
 	}
-	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · t task · h stopped · ? help")
+	requireKeys(t, m, "graph", "←↑↓→ move · enter details · a attach · p peek · t task · h stopped")
 }
 
 // Decision 35: a and p on the graph show the demo notice.
@@ -375,7 +375,7 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	m, cmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 64: one project opens the one-pod view.
-	requireView(t, m, "project agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
+	requireView(t, m, "agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Role: "worker", Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
 	m, cmd = raise(t, m, key('R', "R"))
@@ -462,7 +462,7 @@ func TestAgentsPodHoldsAgentsWithoutAParentRecord(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	writeAgentRecord(t, home, records.Agent{Key: "worker-stenographer-long-key-g7", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working"})
 	m := openAgents(t, home, clock)
-	requireView(t, m, "project agents · demo", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
+	requireView(t, m, "agents · demo", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
 }
 
 // The pods follow the order of the project records. Goal g9 removes a pod
@@ -549,19 +549,19 @@ func requireWholeAgentsBorders(t *testing.T, view string) {
 	}
 }
 
-// closeClippedBoxes adds the missing corner of each box that the region
-// edge cuts. A line of the graph is "│" or "┃", the region, and the border
-// cell. A box runs past the edge when a horizontal border cell is next to
-// its corner, and its border line runs to the edge: border cells and the
-// title, with no other corner and no two blank cells.
+// closeClippedBoxes adds the missing corner of each box that the edge of
+// the screen cuts. The graph has no outer box (golden frames agents.md
+// rule 1), so the region is the full line. A box runs past the edge when a
+// horizontal border cell is next to its corner, and its border line runs to
+// the edge: border cells and the title, with no other corner and no two
+// blank cells.
 func closeClippedBoxes(view string) string {
 	lines := strings.Split(view, "\n")
 	for index, line := range lines {
-		cells := []rune(line)
-		if len(cells) < 3 || !strings.ContainsRune("│┃", cells[0]) {
+		region := strings.TrimRight(line, " ")
+		if len([]rune(region)) < 2 {
 			continue
 		}
-		region := string(cells[1 : len(cells)-1])
 		for _, pair := range [][2]string{{"╭", "╮"}, {"╰", "╯"}, {"┏", "┓"}, {"┗", "┛"}} {
 			opens, closes := strings.Count(line, pair[0]), strings.Count(line, pair[1])
 			if at := strings.LastIndex(region, pair[0]); opens == closes+1 && clippedRun(region[at+len(pair[0]):], true) {
@@ -615,7 +615,9 @@ func TestAgentsHideStoppedAtStart(t *testing.T) {
 // An idle and a stopped card, their joints, and the rail outside a card keep
 // border. A selected working card keeps the heavy accent border. The cells
 // are those of AgentsHome.grid, column hive, below the coordinator card of
-// decision 65, at the body rows of the golden frame (tuiV2Body).
+// decision 65, at the body rows of the golden frame (tuiV2Body). The hive
+// pod has no outer box on its left (golden-frames agents.md rule 1), so its
+// columns are one less.
 func TestAgentsWorkingCardBorder(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsHome.fixture.json", demoSize{})
 	type cell struct {
@@ -635,17 +637,17 @@ func TestAgentsWorkingCardBorder(t *testing.T) {
 		}
 	}
 	check(m, []cell{
-		{12, 4, '╭', cellgrid.Working}, // manager-hive, working
-		{15, 4, '├', cellgrid.Working}, // joint on the working manager card
-		{17, 5, '╭', cellgrid.Border},  // t4-verifier-1, stopped
-		{18, 4, '├', cellgrid.Border},  // rail outside the card
-		{18, 5, '┤', cellgrid.Border},  // joint on the stopped card
-		{22, 5, '╭', cellgrid.Working}, // t5-worker-1, working
-		{23, 4, '├', cellgrid.Border},  // rail outside the working card
-		{23, 5, '┤', cellgrid.Working}, // joint on the working card
-		{25, 28, '╯', cellgrid.Working},
-		{28, 4, '╰', cellgrid.Border},  // rail outside t6-worker-1
-		{28, 5, '┤', cellgrid.Working}, // joint on t6-worker-1, working
+		{12, 3, '╭', cellgrid.Working}, // manager-hive, working
+		{15, 3, '├', cellgrid.Working}, // joint on the working manager card
+		{17, 4, '╭', cellgrid.Border},  // t4-verifier-1, stopped
+		{18, 3, '├', cellgrid.Border},  // rail outside the card
+		{18, 4, '┤', cellgrid.Border},  // joint on the stopped card
+		{22, 4, '╭', cellgrid.Working}, // t5-worker-1, working
+		{23, 3, '├', cellgrid.Border},  // rail outside the working card
+		{23, 4, '┤', cellgrid.Working}, // joint on the working card
+		{25, 27, '╯', cellgrid.Working},
+		{28, 3, '╰', cellgrid.Border},  // rail outside t6-worker-1
+		{28, 4, '┤', cellgrid.Working}, // joint on t6-worker-1, working
 		{22, 44, '╭', cellgrid.Border}, // t3-verifier-1, idle
 		{23, 44, '┤', cellgrid.Border}, // joint on the idle card
 	})

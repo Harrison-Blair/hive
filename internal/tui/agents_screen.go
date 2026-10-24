@@ -27,6 +27,8 @@ const (
 	podMinWidth = component.CardWidth + 4
 	// podMaxWide is the widest pod from 120 columns.
 	podMaxWide = 64
+	// podGap is the space between two pods of the overview.
+	podGap = 2
 	// treeSlot is the narrowest slot of one child in the tree form.
 	treeSlot = component.CardWidth + 2
 	// recentEvents is the number of RECENT lines of the details popup.
@@ -400,8 +402,8 @@ func (m *Model) selectedAgent() (agentNode, int, bool) {
 // agentsColumns gives the number of pods on the screen and the pod width for
 // a body of width cells.
 func agentsColumns(pods, width int, wide bool) (int, int) {
-	visible := max(1, min(pods, (width+1)/(podMinWidth+1)))
-	podWidth := (width - (visible - 1)) / visible
+	visible := max(1, min(pods, (width+podGap)/(podMinWidth+podGap)))
+	podWidth := (width - podGap*(visible-1)) / visible
 	if wide {
 		podWidth = min(podWidth, podMaxWide)
 	}
@@ -414,31 +416,26 @@ func agentsColumns(pods, width int, wide bool) (int, int) {
 func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	pods := m.agentsPods()
 	projects := projectPods(pods)
-	title := fmt.Sprintf("project agents · %d projects", projects)
-	if projects == 1 {
-		title = "project agents · 1 project"
-	}
-	// The hint of h stays on the title while h hides a card (goal g9).
-	hint := ""
-	if hidden := m.hiddenCards(); hidden > 0 {
-		hint = fmt.Sprintf(" · h shows %d stopped", hidden)
-	}
-	panel := component.Panel{Title: title + hint, Focused: focused}
-	bodyWidth, bodyHeight := max(width-4, 1), max(height-2, 0)
 	if m.agents.peekOpen {
-		panel.Title = "peek " + m.agents.peekPane + " · esc closes"
-		panel.Lines = strings.Split(renderAgentPeek(&m.agents, bodyWidth, bodyHeight), "\n")
+		panel := component.Panel{Title: "peek " + m.agents.peekPane + " · esc closes", Focused: focused}
+		panel.Lines = strings.Split(renderAgentPeek(&m.agents, max(width-4, 1), max(height-2, 0)), "\n")
 		return panel.View(width, height)
 	}
+	// The body has no box: it uses the full width with one cell of margin
+	// on each side (agents.md rule 1).
+	bodyWidth, bodyHeight := max(width-2, 1), height
 	coordinator, hasCoordinator := m.coordinatorNode()
 	// With no registered project, or with nothing on the graph, the screen
 	// is the notice. When h hides each project pod, the notice is a body
 	// line below the coordinator card and the home pod (goal g9).
 	if registered := len(m.agents.data.groups) - 1; projects == 0 && (registered == 0 || len(pods) == 0 && !hasCoordinator) {
-		panel.Lines = []string{"", component.Notice{Text: agentsNoneText}.View(bodyWidth)}
-		return panel.View(width, height)
+		return fitBlock(strings.Join([]string{"", " " + component.Notice{Text: agentsNoneText}.View(bodyWidth)}, "\n"), width, height)
 	}
 	wide := width >= component.LongFormWidth
+	if wide {
+		// One blank row stays below the legend, above the status rows.
+		bodyHeight = max(bodyHeight-1, 0)
+	}
 	selected := m.podIndex(pods)
 	m.graph.onePod = len(pods) > 0 && m.inPodView(pods)
 	m.graph.focus = ""
@@ -452,7 +449,6 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	var shown []graphPod
 	visible, podWidth := agentsColumns(len(pods), bodyWidth, wide)
 	if m.graph.onePod {
-		panel.Title = "project agents · " + pods[selected].group.id + hint
 		shown = pods[selected : selected+1]
 		visible, podWidth = agentsColumns(1, bodyWidth, wide)
 		// The pod grows to the width of its tree (decision 75).
@@ -465,7 +461,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	// The canvas columns 0 and inner-1 are the padding cells of the body. A
 	// tree that is wider than the region makes the canvas wider, and the
 	// view scrolls sideways (decision 75).
-	inner := bodyWidth + 2
+	inner := width
 	canvasWidth := inner
 	if m.graph.onePod {
 		canvasWidth = max(inner, podWidth+1)
@@ -509,7 +505,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	m.graph.up = make(map[string]string)
 	m.graph.lines = make(map[[2]string][]point)
 	m.graph.joints = make(map[string]point)
-	group := visible*podWidth + visible - 1
+	group := visible*podWidth + podGap*(visible-1)
 	first := 1 + max(bodyWidth-group, 0)/2
 	x := first
 	var drops []int
@@ -519,7 +515,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		// The drop is at the pod center, or 1 cell after the title when
 		// the title is wider than the left half of the pod.
 		drops = append(drops, max(x+(podWidth-1)/2, x+2+ansi.StringWidth(podTitle(pod, podWidth))+1))
-		x += podWidth + 1
+		x += podWidth + podGap
 	}
 	if hasCoordinator {
 		// In the one-pod view the coordinator card is above the manager
@@ -554,17 +550,16 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		from := (row+m.graph.top)*canvasWidth + m.graph.shift
 		copy(canvas.cells[(row+gap)*inner:(row+gap+1)*inner], tall.cells[from:from+inner])
 	}
-	panel.Bleed = true
-	panel.VMark = component.Thumb(bodyHeight, tall.height, room, m.graph.top)
 	row := bodyHeight - footer
 	if projects == 0 {
 		canvas.text(1, row, agentsNoneText, cellgrid.Dim, false)
 		row++
 	}
 	if wide {
-		canvas.text(1, row, agentsLegend, cellgrid.Dim, false)
-		canvas.text(1+ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), row, agentsLegendLit, cellgrid.Info, false)
-		row++
+		// The legend is the last row of the body (agents.md rule 7).
+		legend := bodyHeight - 1
+		canvas.text(1, legend, agentsLegend+agentsLegendWave, cellgrid.Dim, false)
+		canvas.text(1+ansi.StringWidth(agentsLegend[:strings.Index(agentsLegend, agentsLegendLit)]), legend, agentsLegendLit, cellgrid.Info, false)
 	}
 	if scrolls {
 		end := min(m.graph.left+visible, projects)
@@ -582,16 +577,13 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		}
 		right := strings.Join(edges, "   ")
 		canvas.text(inner-1-ansi.StringWidth(right), row, right, cellgrid.Dim, false)
-		panel.HMark = component.Thumb(width-2, len(pods), visible, m.graph.left)
 	}
 	if sideways {
 		left, right := m.treeScrollText(inner)
 		canvas.text(1, row, left, cellgrid.Dim, false)
 		canvas.text(inner-1-ansi.StringWidth(right), row, right, cellgrid.Dim, false)
-		panel.HMark = component.Thumb(inner, canvasWidth, inner, m.graph.shift)
 	}
-	panel.Lines = canvas.lines()
-	return panel.View(width, height)
+	return fitBlock(strings.Join(canvas.lines(), "\n"), width, height)
 }
 
 // treeScrollText gives the scroll line of the one-pod view on a screen of
@@ -767,9 +759,14 @@ func withArm(arms component.Arms, from, to point, weight component.Weight) compo
 	return arms
 }
 
-// podTitle gives the title of a pod on its top border.
+// podTitle gives the title of a pod on its top border. The title leaves 1
+// border cell and the drop before the corner.
 func podTitle(pod graphPod, width int) string {
-	return " " + ansi.Truncate(pod.group.id, width-6, "…") + " "
+	title := pod.group.id
+	if pod.group.wave != "" {
+		title += " · " + pod.group.wave
+	}
+	return " " + ansi.Truncate(title, width-7, "…") + " "
 }
 
 // podLines gives the number of rows inside the border of a pod.
@@ -1425,17 +1422,7 @@ func (m *Model) moveAgentSelection(key string) bool {
 // its open wave, or the last goal and its status. The flag tells that the
 // open wave needs the user.
 func projectGoalLine(goals []records.Goal, project string) (string, bool) {
-	var goal *records.Goal
-	for index := range goals {
-		candidate := &goals[index]
-		if candidate.Project != project {
-			continue
-		}
-		if goal == nil || (candidate.Status == "active") != (goal.Status == "active") && candidate.Status == "active" ||
-			(candidate.Status == "active") == (goal.Status == "active") && candidate.UpdatedAt > goal.UpdatedAt {
-			goal = candidate
-		}
-	}
+	goal := projectGoal(goals, project)
 	if goal == nil {
 		return "", false
 	}
@@ -1451,6 +1438,23 @@ func projectGoalLine(goals []records.Goal, project string) (string, bool) {
 		}
 	}
 	return goal.ID + " · " + goal.Status, false
+}
+
+// projectGoal gives the goal of a project pod: the active goal, or the last
+// goal. It gives nil when the project has no goal.
+func projectGoal(goals []records.Goal, project string) *records.Goal {
+	var goal *records.Goal
+	for index := range goals {
+		candidate := &goals[index]
+		if candidate.Project != project {
+			continue
+		}
+		if goal == nil || (candidate.Status == "active") != (goal.Status == "active") && candidate.Status == "active" ||
+			(candidate.Status == "active") == (goal.Status == "active") && candidate.UpdatedAt > goal.UpdatedAt {
+			goal = candidate
+		}
+	}
+	return goal
 }
 
 // recentAgentEvents gives the last log events of each agent, newest first,

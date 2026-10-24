@@ -57,9 +57,9 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Agents",
 		regions: []string{"graph"},
 		hints: map[string][]string{
-			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped", "? help"},
-			"pods":    {"←→ select pod", "↑ coordinator", "enter open pod", "h stopped", "? help"},
-			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped", "? help"},
+			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped"},
+			"pods":    {"←→ pod", "↑↓ card", "enter details", "a attach", "p peek", "t task", "h stopped"},
+			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
@@ -312,7 +312,11 @@ func (m *Model) frameView() string {
 	notice := m.noticeLine(width)
 	var rows []string
 	if m.activeTab() != tabChat {
-		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
+		title := component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}
+		if m.activeTab() == tabAgents {
+			title.Facts = m.agentsTitleFacts()
+		}
+		rows = append(rows, title.View(width))
 	}
 	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {

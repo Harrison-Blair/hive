@@ -72,7 +72,7 @@ func TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard(t *testing.T) {
 		t.Fatalf("the last column is %q; want home", last.group.id)
 	}
 	view := ansi.Strip(m.View().Content)
-	requireView(t, m, "project agents · 1 project", "─ home ─", "● review-1", "pi · working · 3m")
+	requireView(t, m, "agents · 1 project", "─ home ─", "● review-1", "pi · working · 3m")
 	_, alpha := cardColumn(t, view, "manager-alpha")
 	_, home := cardColumn(t, view, "review-1")
 	if home <= alpha {
@@ -267,7 +267,7 @@ func TestAgentsCompactHomeIsTheLastPage(t *testing.T) {
 	m := agentsModel(t, source)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.graph.selected = "manager-alpha"
-	requireView(t, m, "project agents · 3 projects", "projects 1–2 of 3")
+	requireView(t, m, "agents · 3 projects", "projects 1–2 of 3")
 	for range 3 {
 		m, _ = raise(t, m, key(tea.KeyRight, ""))
 	}
@@ -323,10 +323,10 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		wants         []string
 		home          map[string]bool // key: in home
 	}{
-		{"AgentsHome", 120, 40, []string{"project agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
+		{"AgentsHome", 120, 40, []string{"agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
 		{"AgentsNested", 120, 40, []string{"t5-research-1", "t5-research-2"}, map[string]bool{"t5-research-1": false, "t5-research-2": false}},
 		{"AgentsHiddenParent", 120, 40, []string{"━ home ━", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
-		{"AgentsCoordinatorChild", 120, 40, []string{"project agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
+		{"AgentsCoordinatorChild", 120, 40, []string{"agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
 		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
 		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "coordinator-g2", "14:15 agent report plan-review-1"}, nil},
 		{"HealthAgentsGeneral", 120, 40, []string{"▶ plan-review-1", "agent"}, nil},
