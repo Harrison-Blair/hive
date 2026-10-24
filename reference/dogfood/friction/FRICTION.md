@@ -16,6 +16,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
+| [A manager spawn marks the live manager stale but leaves its pane running, and agent stop refuses it](entries/manager-respawn-leaves-old-pane.md) | Open |  |
 | [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
 | [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/health-program-test-flakes.md) | Open |  |
 | [Unread inbox records of a stopped agent warn forever, with no way to clear them](entries/ownerless-inbox-records-stay.md) | Open |  |
