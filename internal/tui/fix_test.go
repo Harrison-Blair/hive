@@ -16,9 +16,9 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/x/ansi"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func tickUntilCount(t *testing.T, m *Model, want int) *Model {
