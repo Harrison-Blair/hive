@@ -187,7 +187,7 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	}
 }
 
-// AC9: the verifier does not commit VERIFIED.md. Hive task verify copies it
+// AC9: the verifier keeps VERIFIED.md out of each commit. Hive task verify copies it
 // from the ignored evidence folder to the home.
 func TestVerifierLeavesVerdictUncommitted(t *testing.T) {
 	managerSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))

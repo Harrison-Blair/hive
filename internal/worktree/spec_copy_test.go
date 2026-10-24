@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -170,10 +171,8 @@ func TestCreateFeatureInIgnoringRepoHasNoAllowlistStep(t *testing.T) {
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Create() = %+v, want ok", envelope)
 	}
-	for _, effect := range envelope.Effects {
-		if effect.Resource == "allowlist_needed" {
-			t.Fatalf("effects = %+v, want no allowlist effect", envelope.Effects)
-		}
+	if got, want := effectResources(envelope), []string{"branch", "brief", "spec", "spec_copy", "workspace", "worktree"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("effect resources = %v, want %v", got, want)
 	}
 	if staged := strings.TrimSpace(runGit(t, worktreePath, "diff", "--cached", "--name-only")); staged != "" {
 		t.Fatalf("staged paths = %q, want none", staged)
