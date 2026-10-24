@@ -27,6 +27,7 @@ const (
 	ownerClaimChange = "owner claim"
 	ownerInboxChange = "owner inbox"
 	taskMailChange   = "task mail"
+	inboxSourceField = "migrated_from"
 )
 
 type schemaFile struct {
@@ -222,6 +223,11 @@ func (s *Store) ownerStep(locked *LockedStore, logger *slog.Logger) (int, string
 		return count, failedPath, err
 	}
 	count += inboxes
+	cleaned, failedPath, err := s.cleanInboxMarkers(locked, logger)
+	if err != nil {
+		return count, failedPath, err
+	}
+	count += cleaned
 	tasks, failedPath, err := s.removeTaskMail(locked, logger)
 	if err != nil {
 		return count, failedPath, err
@@ -310,19 +316,21 @@ func (s *Store) moveOwnerInboxes(locked *LockedStore, agents []records.Agent, lo
 	return count, "", nil
 }
 
-// copyUnreadInbox appends each unread record of source to target. A record
-// that target already has is not copied again.
+// copyUnreadInbox appends each unread record of source to target. A moved
+// record keeps a marker of its source until the whole step succeeds, so a
+// retry copies each source record once. A target record without a marker is
+// an earlier copy, for example a record that the owner inbox already had.
 func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logger *slog.Logger) (int, string, error) {
-	_, raw, err := namedRecords(locked, []string{"inbox", source})
+	names, raw, err := namedRecords(locked, []string{"inbox", source})
 	if err != nil {
 		return 0, s.stateRelative("inbox", source), err
 	}
-	copied, err := copiedRecords(locked, target)
+	state, err := targetInboxState(locked, target)
 	if err != nil {
 		return 0, s.stateRelative("inbox", target), err
 	}
 	count := 0
-	for _, data := range raw {
+	for index, data := range raw {
 		var record records.Inbox
 		if err := json.Unmarshal(data, &record); err != nil {
 			return count, s.stateRelative("inbox", source), fmt.Errorf("record invalid: %s", s.stateRelative("inbox", source))
@@ -330,15 +338,20 @@ func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logg
 		if record.ReadAt != "" {
 			continue
 		}
+		sourceID := source + "/" + strings.TrimSuffix(names[index], ".json")
+		if state.markers[sourceID] {
+			continue
+		}
 		signature := inboxSignature(record)
-		if copied[signature] {
+		if state.unmarked[signature] > 0 {
+			state.unmarked[signature]--
 			continue
 		}
 		seq, err := locked.Next("inbox:" + target)
 		if err != nil {
 			return count, s.stateRelative("counters", "inbox:"+target+".json"), err
 		}
-		moved := record
+		moved := movedInbox{Inbox: record, MigratedFrom: sourceID}
 		moved.Seq = seq
 		moved.Role = target
 		moved.NudgedAt = ""
@@ -348,27 +361,46 @@ func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logg
 			return count, s.stateRelative("inbox", target, id+".json"), err
 		}
 		logger.Debug("state migrate record", "path", s.stateRelative("inbox", target, id+".json"), "change", ownerInboxChange)
-		copied[signature] = true
 		count++
 	}
 	return count, "", nil
 }
 
-// copiedRecords returns the signature of each record in one inbox.
-func copiedRecords(locked *LockedStore, key string) (map[string]bool, error) {
+// movedInbox is one copied inbox record. The marker names the source record
+// of a run that did not finish, and it is removed when the step succeeds.
+// It is not a field of records.Inbox, because no reader needs it.
+type movedInbox struct {
+	records.Inbox
+	MigratedFrom string `json:"migrated_from,omitempty"`
+}
+
+// inboxCopyState holds the copies that target already has: the source IDs of
+// records from an earlier run, and the count of each content signature for
+// records that arrived another way.
+type inboxCopyState struct {
+	markers  map[string]bool
+	unmarked map[string]int
+}
+
+// targetInboxState reads the copies in one target inbox.
+func targetInboxState(locked *LockedStore, key string) (inboxCopyState, error) {
 	_, raw, err := namedRecords(locked, []string{"inbox", key})
 	if err != nil {
-		return nil, err
+		return inboxCopyState{}, err
 	}
-	found := make(map[string]bool, len(raw))
+	state := inboxCopyState{markers: map[string]bool{}, unmarked: map[string]int{}}
 	for _, data := range raw {
-		var record records.Inbox
+		var record movedInbox
 		if err := json.Unmarshal(data, &record); err != nil {
-			return nil, fmt.Errorf("record invalid: %s", ".hive/state/inbox/"+key)
+			return inboxCopyState{}, fmt.Errorf("record invalid: %s", ".hive/state/inbox/"+key)
 		}
-		found[inboxSignature(record)] = true
+		if record.MigratedFrom != "" {
+			state.markers[record.MigratedFrom] = true
+			continue
+		}
+		state.unmarked[inboxSignature(record.Inbox)]++
 	}
-	return found, nil
+	return state, nil
 }
 
 // inboxSignature returns the fields that identify a copied inbox record.
@@ -376,6 +408,52 @@ func inboxSignature(record records.Inbox) string {
 	return strings.Join([]string{
 		record.Kind, record.Task, record.Agent, record.Text, record.Path, record.CreatedAt,
 	}, "\x00")
+}
+
+// cleanInboxMarkers removes the source marker from each copied inbox record.
+// A run that stopped after it deleted each source inbox leaves markers with
+// no source left, so a later run removes them too.
+func (s *Store) cleanInboxMarkers(locked *LockedStore, logger *slog.Logger) (int, string, error) {
+	root := filepath.Join(s.stateDir(), "inbox")
+	entries, err := os.ReadDir(root)
+	if errors.Is(err, os.ErrNotExist) {
+		return 0, "", nil
+	}
+	if err != nil {
+		return 0, s.stateRelative("inbox"), err
+	}
+	count := 0
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		key := entry.Name()
+		names, raw, err := namedRecords(locked, []string{"inbox", key})
+		if err != nil {
+			return count, s.stateRelative("inbox", key), err
+		}
+		for index, data := range raw {
+			var object map[string]json.RawMessage
+			if err := json.Unmarshal(data, &object); err != nil {
+				return count, s.stateRelative("inbox", key, names[index]), fmt.Errorf("record invalid: %s", s.stateRelative("inbox", key, names[index]))
+			}
+			if _, ok := object[inboxSourceField]; !ok {
+				continue
+			}
+			delete(object, inboxSourceField)
+			encoded, err := marshalRecord(object)
+			if err != nil {
+				return count, s.stateRelative("inbox", key, names[index]), err
+			}
+			id := strings.TrimSuffix(names[index], ".json")
+			if err := locked.WriteIn([]string{"inbox", key}, id, json.RawMessage(encoded)); err != nil {
+				return count, s.stateRelative("inbox", key, names[index]), err
+			}
+			logger.Debug("state migrate record", "path", s.stateRelative("inbox", key, names[index]), "change", ownerInboxChange)
+			count++
+		}
+	}
+	return count, "", nil
 }
 
 // removeInbox deletes one old inbox folder and its counter.
