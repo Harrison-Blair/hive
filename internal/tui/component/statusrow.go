@@ -9,6 +9,10 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+// LongFormWidth is the width from which a screen shows its long form, such
+// as a list and its details side by side.
+const LongFormWidth = 120
+
 // StatusRow is one status row of golden-frames decisions 8 to 11: segments
 // joined by " · ", and the clock at the right edge. Each segment is text that
 // the caller renders with GlyphText, DimText, StrongText, or AccentText.
@@ -69,3 +73,9 @@ func StrongText(text string) string { return titleStyle.Render(text) }
 
 // AccentText renders text in accent.
 func AccentText(text string) string { return accentStyle.Render(text) }
+
+// fitRow cuts s to width cells, or pads it with plain spaces to width cells.
+func fitRow(s string, width int) string {
+	s = ansi.Truncate(s, width, "")
+	return s + strings.Repeat(" ", max(width-lipgloss.Width(s), 0))
+}

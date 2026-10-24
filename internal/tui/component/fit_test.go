@@ -36,21 +36,11 @@ func checkRows(t *testing.T, name, view string, width, rows int) []string {
 // minimum to 200 columns, with text longer than the width.
 func TestFitFrameRows(t *testing.T) {
 	long := strings.Repeat("long-text-", 30)
-	header := Header{Home: "~/" + long, Coordinator: "working", Supervisor: "stopped", NeedsYou: 12345, Clock: "14:22"}
-	wordy := Header{Home: "~", Coordinator: long, Supervisor: long, NeedsYou: 1, Clock: long}
 	subtabs := SubTabs{Views: []string{"Goals", "Queue", "Tasks", long}, Active: 1}
-	hints := KeyHints{Region: "list", Hints: []string{"↑↓ move", long}}
+	status := StatusRow{Segments: []string{DimText(long), DimText("short")}, Tail: []string{StrongText("? 2 asks")}, Clock: "14:22"}
 	for width := frameMinWidth; width <= maxFitWidth; width++ {
-		checkRows(t, "Header", header.View(width), width, 1)
-		checkRows(t, "Header", wordy.View(width), width, 1)
 		checkRows(t, "SubTabs", subtabs.View(width), width, 1)
-		checkRows(t, "KeyHints", hints.View(width), width, 1)
-		for active := range tabNames {
-			rows := checkRows(t, "TabBar", TabBar{Active: active}.View(width), width, 2)
-			if strings.Trim(rows[len(rows)-1], "─━") != "" {
-				t.Errorf("TabBar at %d: rule %q has a cell that is not ─ or ━", width, rows[len(rows)-1])
-			}
-		}
+		checkRows(t, "StatusRow", status.View(width), width, 1)
 	}
 }
 

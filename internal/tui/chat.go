@@ -367,7 +367,7 @@ func fitRows(rows []string, width int) []string {
 
 // welcomeLines gives the welcome block of chat.md rule 8, from row 1.
 func (m *Model) welcomeLines() []string {
-	home := m.headerView().Home
+	home := m.homeLabel()
 	state := ansi.Strip(m.stateSegment())
 	glyph, rest, _ := strings.Cut(state, " ")
 	glyphStyle := lipgloss.NewStyle().Foreground(stateColor(m.header.coordinator))

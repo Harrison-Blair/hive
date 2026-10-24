@@ -340,33 +340,16 @@ func (m *Model) frameView() string {
 	return screen
 }
 
-// headerView gives the header of decision 2 from the header state.
-func (m *Model) headerView() component.Header {
-	home := m.home
+// homeLabel gives the home of the welcome block: the fixture home in demo
+// mode, else the home with ~ for the user home folder.
+func (m *Model) homeLabel() string {
 	if m.demo != nil {
-		home = m.demo.fixture.Home
-	} else if user, err := os.UserHomeDir(); err == nil && user != "" && strings.HasPrefix(home, user) {
-		home = "~" + strings.TrimPrefix(home, user)
+		return m.demo.fixture.Home
 	}
-	supervisor := "stopped"
-	switch {
-	case m.header.supervisorOld:
-		supervisor = "old"
-	case m.header.supervisor == "fresh":
-		supervisor = "live"
+	if user, err := os.UserHomeDir(); err == nil && user != "" && strings.HasPrefix(m.home, user) {
+		return "~" + strings.TrimPrefix(m.home, user)
 	}
-	coordinator := m.header.coordinator
-	if coordinator == "" {
-		coordinator = "stopped"
-	}
-	return component.Header{
-		Home:        home,
-		Coordinator: coordinator,
-		Supervisor:  supervisor,
-		NeedsYou:    m.header.needsUser,
-		Asks:        m.header.asks,
-		Clock:       m.now().Format("15:04"),
-	}
+	return m.home
 }
 
 // hintKey gives the key of the hints of focus. On the Agents graph it is

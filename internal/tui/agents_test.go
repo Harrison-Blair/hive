@@ -244,21 +244,6 @@ func TestAgentsBoardKeyHintsMatchTheBoard(t *testing.T) {
 	}
 }
 
-func TestAgentsHeaderUsesSpacesAndRightAlignsTime(t *testing.T) {
-	m := agentsBoardModel(t)
-	m.width = 120
-	m.now = func() time.Time { return time.Date(2026, 10, 20, 12, 0, 0, 0, time.Local) }
-	// Decision 2: the header shows the home, the agent states, needs you,
-	// and the clock.
-	line := ansi.Strip(m.headerView().View(m.width))
-	if !strings.HasPrefix(line, " hive  ") || !strings.Contains(line, "needs you 0   12:00 ") {
-		t.Fatalf("Agents header does not have the long form of decision 2: %s", line)
-	}
-	if ansi.StringWidth(line) != 120 || !strings.HasSuffix(line, "12:00 ") {
-		t.Fatalf("Agents header time is not at the right edge: width=%d line=%q", ansi.StringWidth(line), line)
-	}
-}
-
 func agentsBoardModel(t *testing.T) *Model {
 	t.Helper()
 	home := newTestHome(t)

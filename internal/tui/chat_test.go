@@ -730,3 +730,20 @@ func TestChatWordWrappedInputCursorTracksInsertion(t *testing.T) {
 		t.Errorf("cursor must sit on E after inserting Z; expected Z█ND:\n%s", view)
 	}
 }
+
+// Golden-frames chat.md rule 8: the welcome block names the home with ~ for
+// the user home folder, the state, the first hint, the chords, and ? help.
+func TestChatWelcomeNamesTheHomeWithTilde(t *testing.T) {
+	home := newTestHome(t)
+	t.Setenv("HOME", filepath.Dir(home))
+	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
+	t.Cleanup(m.Stop)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
+	rows := viewRows(m)
+	want := []string{" hive · ~/" + filepath.Base(home), " ○ none", " type a message to the coordinator.", " ^g agents  ^t work  ^f friction  ^y health  ^l logs", " ? help"}
+	for index, line := range want {
+		if got := strings.TrimRight(rows[index+1], " "); got != line {
+			t.Errorf("row %d = %q, want %q", index+1, got, line)
+		}
+	}
+}
