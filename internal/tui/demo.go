@@ -486,8 +486,8 @@ func (m *Model) applyDemoAsk(ui demoUIState) {
 // and the restart prompt of the frame from the fixture UI state.
 func (m *Model) applyDemoFrame(ui demoUIState) {
 	tab, view := m.activeTab(), 0
-	switch {
-	case tab == tabWork:
+	switch tab {
+	case tabWork:
 		view = m.screenIndex - 2
 	}
 	m.selectScreen(tab, view)
