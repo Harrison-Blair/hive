@@ -11,14 +11,12 @@ const (
 	colorAccent  = "#f5b942"
 	colorWorking = "#6ee69a"
 	colorDone    = "#7ccf6a"
-	colorInfo    = "#6fb7ff"
 )
 
 var (
 	headerStyle  = lipgloss.NewStyle().Bold(true)
 	workingStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorWorking))
 	doneStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDone))
-	infoStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(colorInfo))
 	titleStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent)).Bold(true)
 	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(colorDim))
 )

@@ -70,6 +70,8 @@ type Model struct {
 	logOffset         int
 	logPendingTime    string
 	logErr            string
+	logFilterErr      string
+	logRaw            bool
 
 	header               headerState
 	headerErr            string
@@ -79,7 +81,7 @@ type Model struct {
 	startupErr           string
 	headerLoader         func(string) (headerState, error)
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader         func(string, *slog.Logger) doctor.Result
+	healthLoader         func(string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
@@ -340,6 +342,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenLoadMsg:
 		m.invalidateView()
 		m.screenLoading = false
+		if msg.request == healthDataRequest {
+			// health.md rule 7: checking ends with the result or the error.
+			// In a demo frame of the checking state, hive doctor never ends.
+			m.health.checking = m.demo != nil && m.demo.fixture.UI.Checking
+		}
 		if msg.request != m.currentScreen().DataRequest() {
 			return m, m.startCurrentScreenLoad()
 		}
@@ -548,11 +555,15 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
 		}
 	case healthDataRequest:
-		// Health › Agents lists the agents beside the checks (decision 18).
+		// health.md rule 4: the agents table is beside the checks.
 		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
 		return func() tea.Msg {
 			agents, err := agentsLoader(home, now())
-			return screenLoadMsg{request: healthDataRequest, health: loader(home, logger), agents: agents, err: err}
+			result, doctorErr := loader(home, logger)
+			if doctorErr != nil {
+				err = fmt.Errorf("hive doctor: %w", doctorErr)
+			}
+			return screenLoadMsg{request: healthDataRequest, health: result, agents: agents, err: err}
 		}
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home

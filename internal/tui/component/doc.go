@@ -24,6 +24,8 @@
 // taskcard.go holds TaskCard, the card of one task on the Work board.
 // wavecolumn.go holds WaveColumn, the column of one wave on the Work board.
 // rail.go holds Rail, the dependency rails between two wave columns.
+// densitystrip.go holds DensityStrip, the event strip and its marker of Logs.
+// checkrow.go holds CheckRow and CheckTile, one area row of the Health grid.
 // seenbar.go holds SeenBar, the bar of occurrences of a friction entry.
 // fold.go holds Fold, the fold line of a group of rows.
 package component

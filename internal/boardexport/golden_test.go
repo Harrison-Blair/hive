@@ -51,19 +51,24 @@ func TestGoldenGridFiles(t *testing.T) {
 	}
 }
 
-// gfDesignDir holds the Gf boards and their golden grids of task 137.
+// gfDesignDir holds the Gf boards and their golden grids of tasks 137, 143,
+// 144, 145, 146, and 148.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
 // gfGrids gives the Gf grids in design/: the 15 boards of Chat and the
-// component sheet of task 137, the 8 Work boards of task 143, the Help
-// board of task 148, and the Friction boards of task 144.
+// component sheet of task 137, the 8 Work boards of task 143, the 4 Logs
+// boards of task 146, the 4 Health boards of task 145, the Friction boards of
+// task 144, and the Help board of task 148.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
 	"GfWork", "GfWorkEmpty", "GfWorkNoGoal", "GfWorkScroll", "GfWorkStops",
-	"GfWorkCancelled", "GfWorkTask", "GfWorkDeps", "GfHelp",
+	"GfWorkCancelled", "GfWorkTask", "GfWorkDeps",
+	"GfLogs", "GfLogsEmpty", "GfLogsError", "GfLogsRaw",
+	"GfHealth", "GfHealthChecking", "GfHealthGreen", "GfHealthRestart",
 	"GfFriction", "GfFrictionEmpty", "GfFrictionFilter", "GfFrictionResolved",
+	"GfHelp",
 }
 
 // TestGfGoldenGridFiles reads each committed Gf grid file of gfGrids. Each
@@ -77,7 +82,7 @@ func TestGfGoldenGridFiles(t *testing.T) {
 	}
 	for _, file := range files {
 		if !slices.Contains(gfGrids, strings.TrimSuffix(filepath.Base(file), ".grid")) {
-			t.Errorf("%s is not one of the Gf grids of gfGrids", file)
+			t.Errorf("%s is not one of the %d Gf grids", file, len(gfGrids))
 		}
 	}
 	for _, board := range gfGrids {

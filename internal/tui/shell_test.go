@@ -37,8 +37,8 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		// Work rule 1: [ and ] change the goal, so the screen stays.
 		{key(']', "]"), tabWork, "Work", "no goals · hive goal create starts one"},
 		{ctrl('f'), tabFriction, "Friction", "open · 0"},
-		{ctrl('y'), tabHealth, "Health", "checks ·"},
-		{key(']', "]"), tabHealth, "Health", "agents ·"},
+		{ctrl('y'), tabHealth, "Health", "↑↓ ←→ tile"},
+		{ctrl(']'), tabHealth, "Health", "agents ·"},
 		{ctrl('l'), tabLogs, "Logs", "events · 0"},
 	} {
 		m, _ = raise(t, m, step.key)

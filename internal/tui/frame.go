@@ -96,23 +96,12 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 	},
 	tabHealth: {
-		label:       "Health",
-		views:       []string{"Home", "Agents"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
+		label:   "Health",
+		regions: []string{"grid", "table"},
+		title:   (*Model).healthTitle,
 		hints: map[string][]string{
-			"Home/list":   {"↑↓ move", "^] box", "[ ] view", "enter open", "R refresh", "? help"},
-			"Agents/list": {"↑↓ move", "^] box", "[ ] view", "enter open", "r restart", "R refresh", "? help"},
-			"details":     {"↑↓ scroll", "^] box", "esc back to list", "? help"},
-		},
-		compact: map[string][]string{
-			"Home/list":   {"↑↓ move", "enter details", "[ ] view", "R refresh", "?"},
-			"Agents/list": {"↑↓ move", "enter details", "[ ] view", "r restart", "R refresh", "?"},
-			"details":     {"↑↓ scroll", "esc back to list"},
-		},
-		panels: map[string]screenPanels{
-			"Home":   {list: (*Model).healthPanel, details: (*Model).healthDetails},
-			"Agents": {list: (*Model).healthPanel, details: (*Model).healthDetails},
+			"grid":  {"↑↓ ←→ tile", "^] agents", "R check again"},
+			"table": {"↑↓ row", "g/G top/end", "pgup/pgdn page", "^] checks", "r restart", "a attach", "p peek", "R check again"},
 		},
 	},
 	tabLogs: {
@@ -120,12 +109,12 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"events", "json"},
 		listDetails: true,
 		hints: map[string][]string{
-			"events": {"↑↓ move", "^] box", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
-			"json":   {"↑↓ scroll", "^] box", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"events": {"↑↓ move", "/ filter", "f follow", "← → day", "j raw", "r request", "^] panel"},
+			"json":   {"↑↓ scroll", "/ filter", "f follow", "← → day", "j raw", "r request", "^] list"},
 		},
 		compact: map[string][]string{
-			"events": {"↑↓ move", "enter details", "f follow", "/ filter", "?"},
-			"json":   {"↑↓ scroll", "esc back to events", "f follow"},
+			"events": {"↑↓ move", "enter details", "/ filter", "f follow", "j raw"},
+			"json":   {"↑↓ scroll", "esc back to events", "j raw"},
 		},
 	},
 }
@@ -174,8 +163,8 @@ func (m *Model) activeTab() int {
 // activeView gives the index of the view of the active tab.
 func (m *Model) activeView() int {
 	switch m.activeTab() {
-	case tabHealth:
-		return m.views[tabHealth]
+	case tabWork:
+		return m.screenIndex - 2
 	}
 	return 0
 }
@@ -283,6 +272,10 @@ func (m *Model) frameView() string {
 	var rows []string
 	if entry := screenRegistry[m.activeTab()]; entry.title != nil {
 		rows = append(rows, entry.title(m).View(width))
+	} else if m.activeTab() == tabLogs {
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		title.Facts, title.Right = m.logsTitle()
+		rows = append(rows, title.View(width))
 	} else if m.activeTab() != tabChat {
 		rows = append(rows, component.TitleRow{Name: strings.ToLower(entry.label)}.View(width))
 	}
@@ -401,6 +394,9 @@ func (m *Model) footerError() string {
 	if m.activeTab() == tabChat {
 		errs = append(errs, m.chatErr)
 	}
+	if m.activeTab() == tabLogs {
+		errs = append(errs, m.logFilterErr)
+	}
 	for _, text := range errs {
 		if text != "" {
 			return text
@@ -438,6 +434,8 @@ func (m *Model) contentView(width, height int) string {
 		body = m.logsContent(width, bodyHeight)
 	case tab == tabFriction:
 		body = m.frictionBody(width, bodyHeight)
+	case tab == tabHealth:
+		body = m.healthContent(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := listRegionWidth(tab, width)
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
@@ -459,7 +457,7 @@ func (m *Model) contentView(width, height int) string {
 // each other list has 13/30.
 func listRegionWidth(tab, width int) int {
 	if tab == tabLogs {
-		return width * 8 / 15
+		return width * 11 / 20
 	}
 	return width * 13 / 30
 }
@@ -559,15 +557,11 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 	}
-	if entry.listDetails && m.detailsFocused() && m.width < component.LongFormWidth {
+	if entry.listDetails && tab != tabLogs && m.detailsFocused() && m.width < component.LongFormWidth {
 		// Decision 21: the overlay takes its scroll keys and its action
 		// keys, and esc closes it. It drops each other key.
 		switch key {
 		case "esc", "up", "k", "down", "j", "pgup", "pgdown":
-		case "<", ">":
-			if tab != tabLogs {
-				return nil
-			}
 		default:
 			if len(key) != 1 || !strings.Contains(actionKeys, key) {
 				return nil
@@ -578,6 +572,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	case m.tuiConfig.Keys["help"]:
 		return m.openHelp()
 	case "R":
+		if tab == tabHealth {
+			// health.md rule 7: the screen shows checking until the result.
+			m.health.checking = true
+		}
 		return batch(m.logAction("refresh"), m.startHeaderLoad(), m.startCurrentScreenLoad())
 	case "tab":
 		// Golden-frames decision 19: there is no tab region move.
@@ -611,12 +609,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		// Decision 19: restart is in Health › Agents, so r does nothing.
 		return m.updateAgentsKey(key)
 	}
-	if tab == tabLogs && (key == "<" || key == ">") {
-		day := "["
-		if key == ">" {
-			day = "]"
-		}
-		return m.currentScreen().Update(tea.KeyPressMsg{Code: rune(day[0]), Text: day})
+	if tab == tabLogs {
+		return m.currentScreen().Update(press)
 	}
 	if entry.listDetails && m.detailsFocused() {
 		switch key {

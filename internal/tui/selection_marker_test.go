@@ -155,8 +155,10 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 		},
 		{
 			// The Health board puts the check glyph between the marker and
-			// the name, so the test reads the marker and the name apart.
-			name: "Health", honey: []string{"▶", "home"}, states: []string{"✓ home", "× herdr socket"},
+			// the tile text, so the test reads the marker and the text
+			// apart. health.md rule 2: the first tile that did not pass is
+			// the first selection.
+			name: "Health", honey: []string{"▶", "socket · unavailable"}, states: []string{"✓ /fixture", "▶ ! socket · unavailable"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 6)
 				m.health.accept(doctor.Result{Checks: []doctor.Check{
@@ -167,7 +169,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN  herdr     network retry"},
+			name: "Logs", honey: []string{"▶", "network retry"}, states: []string{"WARN   herdr      network retry"},
 			model: func(t *testing.T) *Model {
 				clock := fixedClock(t, time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local))
 				m := newTestLogsModel(t, newTestHome(t), clock)

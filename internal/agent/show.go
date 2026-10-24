@@ -70,7 +70,21 @@ func showFailed(home, name, phase, message string) output.Envelope {
 func claimMatchesRecord(claim records.Claim, record records.Agent) bool {
 	return record.Key == claim.Agent &&
 		record.Generation == claim.Generation &&
-		claim.Key == claimKeyFor(record.Role, record.Project)
+		claim.Key == recordClaimKey(record)
+}
+
+// recordClaimKey returns the wave-A claim key of one record from its facts.
+func recordClaimKey(record records.Agent) string {
+	switch {
+	case record.Kind == records.AgentKindCoordinator:
+		return coordinatorClaimKey
+	case record.Kind == records.AgentKindSupervisor:
+		return records.AgentKindSupervisor
+	case record.Owns != "":
+		return "manager-" + record.Owns
+	default:
+		return ""
+	}
 }
 
 func findAgentByName(locked *store.LockedStore, name string, target *records.Agent, found *bool) error {
@@ -99,7 +113,7 @@ func findAgentByName(locked *store.LockedStore, name string, target *records.Age
 		if record.Name != name {
 			continue
 		}
-		if claimKeyFor(record.Role, record.Project) != "" && !heldByClaim(claims, record) {
+		if recordClaimKey(record) != "" && !heldByClaim(claims, record) {
 			continue
 		}
 		candidates = append(candidates, record)
@@ -122,7 +136,7 @@ func findAgentByName(locked *store.LockedStore, name string, target *records.Age
 }
 
 func heldByClaim(claims []records.Claim, record records.Agent) bool {
-	key := claimKeyFor(record.Role, record.Project)
+	key := recordClaimKey(record)
 	for _, claim := range claims {
 		if claim.Key == key && claim.Agent == record.Key && claim.Generation == record.Generation {
 			return true

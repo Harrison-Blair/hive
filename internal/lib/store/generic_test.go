@@ -289,7 +289,7 @@ func TestReadInPathTypes(t *testing.T) {
 		store := openStore(t, home)
 		target := t.TempDir()
 		state := filepath.Join(home, ".hive", "state")
-		if err := os.Remove(state); err != nil {
+		if err := os.RemoveAll(state); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.Symlink(target, state); err != nil {
@@ -381,7 +381,11 @@ func TestReadInPathTypes(t *testing.T) {
 		if err := os.WriteFile(target, []byte("keep"), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.Symlink(target, filepath.Join(store.home, ".hive", "state", "lock")); err != nil {
+		lockPath := filepath.Join(store.home, ".hive", "state", "lock")
+		if err := os.Remove(lockPath); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(target, lockPath); err != nil {
 			t.Fatal(err)
 		}
 		err := store.WriteIn([]string{"tasks"}, "one", map[string]string{"id": "one"})

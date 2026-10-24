@@ -41,3 +41,16 @@ tree. A fresh clone also has no spec tree. The installed CLI remains at
 worktree and fresh clone before tests. Report the skip count. Keep this step
 until the installed binary has task 151. After that install, new worktrees
 get the design files. The tests that read other paths still need those files.
+
+**Fixture version constraint, 2026-10-24:** Task 143's verifier copied 12
+newly landed Health artifacts into branch `08326acb`. That branch predates
+the Health grid registrations. `TestGfGoldenGridFiles` rejected the four
+extra grids. The verifier retained those setup failures and each copied
+path/hash. It removed only its new unmatched copies. With matching fixtures,
+every declared grid ran and the full gate passed with no missing-fixture skip.
+
+Keep fixture versions matched to the checked code. Preserve the task's own
+spec and design copies. A fresh clone must receive those matching copies.
+Do not copy later boards into older code without the corresponding source
+integration. Do not remove a test or add a skip to hide a mismatch. Check the
+newly landed screen after the source merge.
