@@ -140,7 +140,7 @@ func TestAgentsPodViewHangsTheChildrenFromTheTopBorder(t *testing.T) {
 				betaWorker("b1-worker", records.AgentLive, "working", "2026-10-23T10:04:00Z"), nested)
 			m := openHide(t, home, clock, size)
 			m, _ = raise(t, m, key(tea.KeyRight, ""))
-			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			m, _ = raise(t, m, key('o', "o"))
 			requireView(t, m, "agents · beta · one pod · esc pods · h shows 1 stopped", "b1-worker", "b1-helper")
 			rejectView(t, m, "manager-beta", "no manager")
 			grid := renderGrid(t, m, size.Width, size.Height)
@@ -183,7 +183,8 @@ func TestAgentsHintStaysWhenEveryProjectPodHides(t *testing.T) {
 		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentExited, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
 		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Task: "1-a", Harness: "pi", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
 		m := openHide(t, home, clock, size)
-		requireView(t, m, "agents · 0 projects · 0 home · h shows 4 stopped", agentsNoneText)
+		// agents.md rule 13: with no pod, the title has no home count.
+		requireView(t, m, "agents · 0 projects · h shows 4 stopped", agentsNoneText)
 		rejectView(t, m, "alpha", "beta")
 		m, _ = raise(t, m, key('h', "h"))
 		requireView(t, m, "agents · 2 projects · 0 home   ", "○ manager-alpha", "○ manager-beta")
@@ -221,7 +222,7 @@ func TestAgentsSelectionFollowsThePodsOfH(t *testing.T) {
 		m = openHide(t, home, clock, size)
 		m, _ = raise(t, m, key('h', "h"))
 		m, _ = raise(t, m, key(tea.KeyRight, ""))
-		m, _ = raise(t, m, key(tea.KeyEnter, ""))
+		m, _ = raise(t, m, key('o', "o"))
 		if m.graph.selected != "manager-beta" {
 			t.Fatalf("%dx%d: selection %q in the pod; want manager-beta", size.Width, size.Height, m.graph.selected)
 		}
@@ -265,7 +266,7 @@ func TestAgentsGeneralChildOfAHiddenManagerStaysInThePod(t *testing.T) {
 			requireView(t, m, "agents · 2 projects · 0 home · h shows 1 stopped", "─ beta ─", "● beta-helper")
 			rejectView(t, m, "─ home ─", "manager-beta", "no manager")
 			m, _ = raise(t, m, key(tea.KeyRight, ""))
-			m, _ = raise(t, m, key(tea.KeyEnter, ""))
+			m, _ = raise(t, m, key('o', "o"))
 			requireView(t, m, "agents · beta · one pod · esc pods · h shows 1 stopped", "● beta-helper")
 			grid := renderGrid(t, m, size.Width, size.Height)
 			_, coordCol := findText(t, grid, "● coordinator")
@@ -310,14 +311,15 @@ func TestAgentsAllProjectPodsHiddenKeepTheHomePod(t *testing.T) {
 		m := openHide(t, home, clock, size)
 		requireView(t, m, "agents · 0 projects · 1 home · h shows 3 stopped", agentsNoneText, "● coordinator", "━ home ━", "◐ helper")
 		rejectView(t, m, "alpha", "beta")
-		// The home pod is selected; enter opens it.
-		m, _ = raise(t, m, key(tea.KeyEnter, ""))
+		// The home pod is selected; o opens it (agents.md rule 12).
+		m, _ = raise(t, m, key('o', "o"))
 		requireView(t, m, "agents · home · one pod · esc pods · h shows 3 stopped", "◐ helper")
 	}
 }
 
 // Ask a5, Q2: the notice alone shows only when nothing is visible: no
-// coordinator card and no home card.
+// coordinator card and no home card. agents.md rule 13 puts it at the
+// center of the rows above the legend.
 func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 	for _, size := range hideSizes {
 		home, clock := hideHome(t, betaManager(records.AgentStopped))
@@ -327,14 +329,15 @@ func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, StartedAt: "2026-10-23T10:01:00Z"})
 		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
 		m := openHide(t, home, clock, size)
-		requireView(t, m, "agents · 0 projects · 0 home · h shows 3 stopped", agentsNoneText)
-		rejectView(t, m, "│ ● coordinator", "─ home ─", "╭──")
-		// The notice is the second body row, as decision 10 draws it.
-		// Golden-frames decision 2: the body starts on row 2, below the
-		// title row and the rule. Golden-frames agents.md rule 1: the body
-		// has no outer box, so the notice is on row 3, column 2.
-		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != 3 || col != 2 {
-			t.Fatalf("%dx%d: notice at row %d col %d; want row 3 col 2", size.Width, size.Height, row, col)
+		requireView(t, m, "agents · 0 projects · h shows 3 stopped", agentsNoneText)
+		rejectView(t, m, "● coordinator", "─ home ─", "╭──")
+		// 120×40: the body is rows 2 to 37 with the legend on row 37, so
+		// the center of rows 2 to 36 is row 19. 80×24: the body is rows 2
+		// to 22 with no legend, so the center is row 12. The notice has 17
+		// cells.
+		want := map[int][2]int{120: {19, 51}, 80: {12, 31}}[size.Width]
+		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != want[0] || col != want[1] {
+			t.Fatalf("%dx%d: notice at row %d col %d; want row %d col %d", size.Width, size.Height, row, col, want[0], want[1])
 		}
 	}
 }
@@ -361,9 +364,9 @@ func requireCoordinatorHeavy(t *testing.T, m *Model, size tea.WindowSizeMsg, wan
 }
 
 // AC2 and decision 65: with each project pod hidden and only the
-// coordinator card left, ↑ and k select the card and enter opens its
-// details. esc closes the details. h shows the pods again and keeps the
-// selection.
+// coordinator card left, the card is selected (agents.md rule 13), ↑ and k
+// keep it, and enter opens its details. esc closes the details. h shows the
+// pods again and keeps the selection.
 func TestAgentsCoordinatorSelectableWithAllProjectPodsHidden(t *testing.T) {
 	for _, up := range []tea.KeyPressMsg{key(tea.KeyUp, ""), key('k', "k")} {
 		for _, size := range hideSizes {
@@ -371,7 +374,7 @@ func TestAgentsCoordinatorSelectableWithAllProjectPodsHidden(t *testing.T) {
 				home, clock := coordinatorOnlyHome(t)
 				m := openHide(t, home, clock, size)
 				requireView(t, m, agentsNoneText, "● coordinator")
-				requireCoordinatorHeavy(t, m, size, false)
+				requireCoordinatorHeavy(t, m, size, true)
 				m, _ = raise(t, m, up)
 				requireCoordinatorHeavy(t, m, size, true)
 				m, _ = raise(t, m, key(tea.KeyEnter, ""))
@@ -408,22 +411,22 @@ func TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding(t *testing.T) {
 	}
 }
 
-// Decision 10: with no registered project the screen is the notice alone,
-// so the live coordinator, which has no card, cannot be selected or opened.
-func TestAgentsNoRegisteredProjectSelectsNothing(t *testing.T) {
+// agents.md rule 13 (ask a29): with no registered project, the screen shows
+// the coordinator card, selected, and the notice. enter opens the details.
+func TestAgentsNoRegisteredProjectSelectsTheCoordinator(t *testing.T) {
 	for _, size := range hideSizes {
 		t.Run(fmt.Sprintf("%dx%d", size.Width, size.Height), func(t *testing.T) {
 			home := newTestHome(t)
 			clock := fixedClock(t, time.Date(2026, 10, 23, 12, 0, 0, 0, time.UTC))
 			writeAgentRecord(t, home, records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StartedAt: "2026-10-23T10:00:00Z"})
 			m := openHide(t, home, clock, size)
-			requireView(t, m, agentsNoneText)
-			rejectView(t, m, "● coordinator")
+			// The test home has no supervisor claim, so the state is unknown.
+			requireView(t, m, agentsNoneText, "┃ ○ coordinator")
 			m, _ = raise(t, m, key(tea.KeyUp, ""))
 			m, _ = raise(t, m, key(tea.KeyEnter, ""))
-			rejectView(t, m, "esc closes")
-			if m.focusState() == "details" {
-				t.Fatal("enter opened the details")
+			requireView(t, m, "coordinator · esc closes")
+			if m.focusState() != "details" {
+				t.Fatalf("focus %q after enter; want details", m.focusState())
 			}
 		})
 	}

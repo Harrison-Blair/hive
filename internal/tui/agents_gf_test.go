@@ -84,7 +84,7 @@ func TestGfAgentsLegendEndsWithWaveText(t *testing.T) {
 // agents.md rule 4: the screen segment shows the keys of the view.
 func TestGfAgentsScreenKeys(t *testing.T) {
 	m := newGfDemoModel(t, "GfAgents")
-	want := "←→ pod · ↑↓ card · enter details · a attach · p peek · t task · h stopped"
+	want := "←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task · h stopped"
 	if got := strings.Join(m.focusHints(m.width), " · "); got != want {
 		t.Fatalf("overview keys = %q, want %q", got, want)
 	}
@@ -113,7 +113,7 @@ func TestGfAgentsEscReturns(t *testing.T) {
 // The one-pod title of GfAgentsPod: the pod, one pod, esc pods, and the h
 // hint (case A12).
 func TestGfAgentsPodTitleRow(t *testing.T) {
-	_, rows := gfAgentsRows(t, "GfAgents", key(tea.KeyEnter, ""))
+	_, rows := gfAgentsRows(t, "GfAgents", key('o', "o"))
 	want := " agents · hive · one pod · esc pods · h shows 2 stopped"
 	if got := strings.TrimRight(rows[0], " "); got != want {
 		t.Fatalf("row 0 = %q, want %q", got, want)
@@ -162,7 +162,7 @@ func TestGfAgentsLegendIsLastBodyRowWhenScrolling(t *testing.T) {
 func TestGfAgentsKeysLogUserActions(t *testing.T) {
 	home, clock := hideHome(t, betaManager(records.AgentLive))
 	m := openHide(t, home, clock, hideSizes[1])
-	for _, press := range []tea.KeyPressMsg{key(tea.KeyRight, ""), key(tea.KeyEnter, ""), key(tea.KeyEscape, "esc"), key('h', "h")} {
+	for _, press := range []tea.KeyPressMsg{key(tea.KeyRight, ""), key('o', "o"), key(tea.KeyEscape, "esc"), key('h', "h")} {
 		var cmd tea.Cmd
 		m, cmd = raise(t, m, press)
 		m = deliverAgentCommands(t, m, cmd)
@@ -187,9 +187,9 @@ func TestGfAgentsStatusRow(t *testing.T) {
 		keys []tea.KeyPressMsg
 		want string
 	}{
-		{"overview", nil, " ● working 2m · agents · ←→ pod · ↑↓ card · enter details · a attach · p peek · t task · h stopped"},
-		{"one pod", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, " ● working 2m · agents · ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
-		{"details", []tea.KeyPressMsg{key(tea.KeyEnter, ""), key(tea.KeyEnter, "")}, " ● working 2m · details · a attach · p peek · t task · ↑↓ scroll · esc close"},
+		{"overview", nil, " ● working 2m · agents · ←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task · h stopped"},
+		{"one pod", []tea.KeyPressMsg{key('o', "o")}, " ● working 2m · agents · ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
+		{"details", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, " ● working 2m · details · a attach · p peek · t task · ↑↓ scroll · esc close"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			_, rows := gfAgentsRows(t, "GfAgents", tc.keys...)
@@ -198,5 +198,93 @@ func TestGfAgentsStatusRow(t *testing.T) {
 				t.Fatalf("row 39 = %q, want %q", got, want)
 			}
 		})
+	}
+}
+
+// agents.md rule 12 (ask a29, case A2): in the overview, ↑↓ select a card of
+// the selected pod, ↑ from its first card selects the coordinator, ←→
+// select a pod and its first card, enter opens the details of the card, and
+// o opens the one-pod view with the same card selected. esc returns to the
+// overview and keeps the card.
+func TestGfAgentsOverviewSelectsCards(t *testing.T) {
+	m := newGfDemoModel(t, "GfAgents")
+	m.graph.selected, m.graph.pod = "manager-hive-g2", "hive"
+	steps := []struct {
+		press tea.KeyPressMsg
+		want  string
+	}{
+		{key(tea.KeyDown, ""), "t5-worker-1"},
+		{key(tea.KeyDown, ""), "t6-worker-1"},
+		{key(tea.KeyDown, ""), "t6-worker-1"},
+		{key(tea.KeyUp, ""), "t5-worker-1"},
+		{key(tea.KeyUp, ""), "manager-hive-g2"},
+		{key(tea.KeyUp, ""), "coordinator-g8"},
+		{key(tea.KeyDown, ""), "manager-hive-g2"},
+		{key(tea.KeyRight, ""), "manager-api-g1"},
+		{key(tea.KeyLeft, ""), "manager-hive-g2"},
+		{key(tea.KeyDown, ""), "t5-worker-1"},
+	}
+	for index, step := range steps {
+		m, _ = raise(t, m, step.press)
+		if node, _, ok := m.selectedAgent(); !ok || node.record.Key != step.want || m.graph.podView || m.popupOpen {
+			t.Fatalf("step %d: selected %q (ok %v), pod view %v, popup %v; want %q in the overview", index, node.record.Key, ok, m.graph.podView, m.popupOpen, step.want)
+		}
+	}
+	m, _ = raise(t, m, key('o', "o"))
+	if node, _, _ := m.selectedAgent(); !m.graph.podView || node.record.Key != "t5-worker-1" {
+		t.Fatalf("o: pod view %v, selected %q; want the one-pod view of hive with t5-worker-1", m.graph.podView, node.record.Key)
+	}
+	m, _ = raise(t, m, key(tea.KeyEscape, ""))
+	if node, _, _ := m.selectedAgent(); m.graph.podView || node.record.Key != "t5-worker-1" {
+		t.Fatalf("esc: pod view %v, selected %q; want the overview with t5-worker-1", m.graph.podView, node.record.Key)
+	}
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	if title, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "t5-worker-1 ") {
+		t.Fatalf("enter: popup %v, title %q; want the details of t5-worker-1", m.popupOpen, title)
+	}
+}
+
+// Case A2: the selected card of the overview has the heavy accent border,
+// and its pod keeps the heavy border.
+func TestGfAgentsOverviewShowsSelectedCard(t *testing.T) {
+	m := newGfDemoModel(t, "GfAgents")
+	m.graph.selected, m.graph.pod = "t6-worker-1", "hive"
+	m.invalidateView()
+	rows := strings.Split(ansi.Strip(m.View().Content), "\n")
+	if !strings.HasPrefix(rows[8], " ┏━ hive") {
+		t.Fatalf("row 8 = %q, want the heavy border of the selected pod", rows[8])
+	}
+	if got := string([]rune(rows[20])[4:]); !strings.HasPrefix(got, "┏━━") || !strings.Contains(rows[21], "┨ ● t6-worker-1") {
+		t.Fatalf("rows 20 and 21 = %q, %q; want the heavy border of the selected card", rows[20], rows[21])
+	}
+}
+
+// agents.md rule 13 (ask a29, case A15): with no pod on the screen, the
+// coordinator card is at the top and selected, the notice is at the center
+// of the rows above the legend, the title leaves out the home count, and
+// the keys are those of this state. enter opens the details of the
+// coordinator.
+func TestGfAgentsNoPodState(t *testing.T) {
+	m, rows := gfAgentsRows(t, "GfAgentsNone")
+	if got := strings.TrimRight(rows[0], " "); got != " agents · 0 projects · h shows 3 stopped" {
+		t.Fatalf("row 0 = %q", got)
+	}
+	if got := strings.TrimRight(rows[3], " "); got != strings.Repeat(" ", 48)+"┏━━━━━━━━━━━━━━━━━━━━━━┓" {
+		t.Fatalf("row 3 = %q, want the selected coordinator card on column 48", got)
+	}
+	if got := strings.TrimRight(rows[19], " "); got != strings.Repeat(" ", 51)+"no project agents" {
+		t.Fatalf("row 19 = %q, want the notice at the center", got)
+	}
+	for index, row := range rows[7:37] {
+		if index+7 != 19 && strings.TrimSpace(row) != "" {
+			t.Fatalf("row %d = %q, want a blank row", index+7, row)
+		}
+	}
+	if got := strings.Join(m.focusHints(m.width), " · "); got != "↑ coordinator · enter details · a attach · p peek · h stopped" {
+		t.Fatalf("keys = %q", got)
+	}
+	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	if title, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "coordinator-g8 ") {
+		t.Fatalf("enter: popup %v, title %q; want the details of the coordinator", m.popupOpen, title)
 	}
 }

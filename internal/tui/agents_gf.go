@@ -47,7 +47,11 @@ func (m *Model) agentsTitleFacts() string {
 		}
 	}
 	facts := fmt.Sprintf("· %s · %d home", plural(projectPods(pods), "project"), home)
-	if m.inPodView(pods) {
+	switch {
+	case len(pods) == 0:
+		// agents.md rule 13: with no pod, the title has no home count.
+		facts = "· 0 projects"
+	case m.inPodView(pods):
 		facts = "· " + pods[m.podIndex(pods)].group.id + " · one pod"
 		if m.graph.podView {
 			facts += " · esc pods"

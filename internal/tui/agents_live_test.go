@@ -236,14 +236,21 @@ func TestLiveInboxRecordLightsALine(t *testing.T) {
 			liveCell{70, 10, '┸', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working}, liveCell{71, 9, '─', cellgrid.Border})
 	})
 	// The rail of the hive pod in the overview: heavy arms on the lit side.
+	// The selected card is in the other pod, so that no card of the rail
+	// has the heavy border of agents.md rule 12.
+	selectOther := func(m *Model) *Model {
+		m.graph.pod, m.graph.selected = "example-api", ""
+		m.invalidateView()
+		return m
+	}
 	t.Run("rail down", func(t *testing.T) {
-		m := liveModel(t, "LiveOverview", inbox(record("manager-hive", "t6-worker-1")))
+		m := selectOther(liveModel(t, "LiveOverview", inbox(record("manager-hive", "t6-worker-1"))))
 		requireCells(t, m, liveCell{3, 15, '┟', cellgrid.Info}, liveCell{3, 16, '┃', cellgrid.Info}, liveCell{3, 18, '┠', cellgrid.Info},
 			liveCell{4, 18, '┤', cellgrid.Working}, liveCell{3, 21, '┃', cellgrid.Info}, liveCell{3, 22, '▼', cellgrid.Info},
 			liveCell{3, 23, '┗', cellgrid.Info}, liveCell{4, 23, '┥', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working})
 	})
 	t.Run("rail up", func(t *testing.T) {
-		m := liveModel(t, "LiveOverview", inbox(record("t5-worker-1", "manager-hive")))
+		m := selectOther(liveModel(t, "LiveOverview", inbox(record("t5-worker-1", "manager-hive"))))
 		requireCells(t, m, liveCell{4, 18, '┥', cellgrid.Info}, liveCell{3, 18, '┡', cellgrid.Info}, liveCell{3, 17, '┃', cellgrid.Info},
 			liveCell{3, 16, '▲', cellgrid.Info}, liveCell{3, 15, '┟', cellgrid.Info}, liveCell{3, 19, '│', cellgrid.Border})
 	})
@@ -287,13 +294,13 @@ func TestLivePodSelection(t *testing.T) {
 	requireCells(t, m, coordinator...)
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	requireCells(t, m, api...)
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	requireView(t, m, "agents · example-api")
 	if !m.graph.podView {
-		t.Fatal("enter on a pod did not open the one-pod view")
+		t.Fatal("o on a pod did not open the one-pod view")
 	}
 	if m.popupOpen {
-		t.Fatal("enter on a pod opened the details popup")
+		t.Fatal("o on a pod opened the details popup")
 	}
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
 	requireView(t, m, "agents · 2 projects")
@@ -356,10 +363,10 @@ func TestLiveFooters(t *testing.T) {
 		keys  []tea.KeyPressMsg
 		want  string
 	}{
-		{"LiveOverview", nil, "←→ pod · ↑↓ card · enter details · a attach · p peek · t task · h stopped"},
-		{"CompactLiveOverview", nil, "←→ select pod · ↑ coordinator · enter open · ?"},
-		{"LiveOverview", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, "←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
-		{"CompactLiveOverview", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, "←↑↓→ move · enter details · esc pods · ?"},
+		{"LiveOverview", nil, "←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task · h stopped"},
+		{"CompactLiveOverview", nil, "←→ pod · ↑↓ card · enter details · o one pod · ?"},
+		{"LiveOverview", []tea.KeyPressMsg{key('o', "o")}, "←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
+		{"CompactLiveOverview", []tea.KeyPressMsg{key('o', "o")}, "←↑↓→ move · enter details · esc pods · ?"},
 	} {
 		t.Run(tc.board+"/"+tc.want, func(t *testing.T) {
 			// Golden-frames decisions 3 and 11: the status row takes the

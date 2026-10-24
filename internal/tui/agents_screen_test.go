@@ -213,8 +213,8 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 	}{
 		{"Main.fixture.json", "manager-hive", nil, 2, 8, '┯'},
 		{"Main.fixture.json", "t4-worker-1", []tea.KeyPressMsg{key(tea.KeyDown, "")}, -1, 8, '┷'},
-		{"AgentsMany.fixture.json", "t5-worker-1", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, -1, 8, '┷'},
-		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key(tea.KeyEnter, ""), key('k', "k"), key('k', "k")}, 2, 8, '┯'},
+		{"AgentsMany.fixture.json", "t5-worker-1", []tea.KeyPressMsg{key('o', "o")}, -1, 8, '┷'},
+		{"AgentsMany.fixture.json", "manager-hive", []tea.KeyPressMsg{key('o', "o"), key('k', "k"), key('k', "k")}, 2, 8, '┯'},
 	} {
 		m := newTestDemoModel(t, tc.fixture, demoSize{})
 		for _, k := range tc.keys {
@@ -234,8 +234,8 @@ func TestAgentsSelectedCardJoints(t *testing.T) {
 // general-agent): t4-verifier-1, t5-worker-1, t6-worker-1.
 func TestAgentsUpDownMoveInThePod(t *testing.T) {
 	m := newTestDemoModel(t, "AgentsMany.fixture.json", demoSize{})
-	// Decision 62: enter opens the pod of the selected card.
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	// agents.md rule 12: o opens the pod of the selected card.
+	m, _ = raise(t, m, key('o', "o"))
 	for _, step := range []struct {
 		key  tea.KeyPressMsg
 		want string

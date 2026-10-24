@@ -58,13 +58,14 @@ var screenRegistry = [tabCount]frameScreen{
 		regions: []string{"graph"},
 		hints: map[string][]string{
 			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped"},
-			"pods":    {"←→ pod", "↑↓ card", "enter details", "a attach", "p peek", "t task", "h stopped"},
+			"pods":    {"←→ pod", "↑↓ card", "enter details", "o one pod", "a attach", "p peek", "t task", "h stopped"},
 			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped"},
+			"none":    {"↑ coordinator", "enter details", "a attach", "p peek", "h stopped"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
 			"graph": {"←↑↓→ move", "enter details", "a attach", "p peek", "?"},
-			"pods":  {"←→ select pod", "↑ coordinator", "enter open", "?"},
+			"pods":  {"←→ pod", "↑↓ card", "enter details", "o one pod", "?"},
 			"pod":   {"←↑↓→ move", "enter details", "esc pods", "?"},
 		},
 	},
@@ -363,7 +364,9 @@ func (m *Model) hintKey(tab int, focus string) string {
 	}
 	pods := m.agentsPods()
 	switch {
-	case len(pods) == 0 || len(pods) == 1 && projectPods(pods) == 1:
+	case len(pods) == 0:
+		return "none"
+	case len(pods) == 1 && projectPods(pods) == 1:
 		return focus
 	case m.inPodView(pods):
 		return "pod"

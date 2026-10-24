@@ -92,13 +92,14 @@ func TestAgentsHomeColumnIsNotShownWhenEmpty(t *testing.T) {
 	}
 }
 
-// AC1: with no project, the graph keeps its notice and shows no home agent.
+// AC1 and agents.md rule 13: with no project, the graph shows the home pod
+// and the notice, as with each project pod hidden (goal g9).
 func TestAgentsHomeAgentsWithNoProjectKeepTheNotice(t *testing.T) {
 	m := agentsModel(t, agentsSource{agents: []records.Agent{generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")}})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	view := ansi.Strip(m.View().Content)
-	if !strings.Contains(view, agentsNoneText) || strings.Contains(view, "review-1") {
-		t.Fatalf("with no project the graph is not the notice:\n%s", view)
+	if !strings.Contains(view, agentsNoneText) || !strings.Contains(view, "━ home ━") || !strings.Contains(view, "● review-1") {
+		t.Fatalf("with no project the graph does not show the home pod and the notice:\n%s", view)
 	}
 	m.health.agents = m.agents.data
 	m.selectScreen(tabHealth, 1)
@@ -239,7 +240,7 @@ func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "t1-alpha-worker"
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	if m.graph.selected != "helper-1" {
 		t.Fatalf("↓ from the worker selects %q; want helper-1", m.graph.selected)
@@ -250,9 +251,9 @@ func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	}
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	if m.graph.selected != "review-1" {
-		t.Fatalf("→ and enter from the alpha pod select %q; want review-1", m.graph.selected)
+		t.Fatalf("→ and o from the alpha pod select %q; want review-1", m.graph.selected)
 	}
 }
 
@@ -283,7 +284,7 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m := agentsModel(t, homeSource(generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "review-1"
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "model", "gpt", "parent", "coordinator-g1")
 	_, lines := m.agentDetailsPopup()

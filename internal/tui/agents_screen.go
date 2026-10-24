@@ -319,11 +319,10 @@ func (m *Model) coordinatorNode() (agentNode, bool) {
 	return agentNode{}, false
 }
 
-// coordinatorCard gives the coordinator when the screen draws its card:
-// with no registered project the screen is the notice alone (decision 10).
+// coordinatorCard gives the coordinator when the screen draws its card. With
+// no registered project the card shows too (agents.md rule 13).
 func (m *Model) coordinatorCard() (agentNode, bool) {
-	node, ok := m.coordinatorNode()
-	return node, ok && len(m.agents.data.groups) > 1
+	return m.coordinatorNode()
 }
 
 // inPodView reports that the screen shows the one-pod view: after enter on
@@ -340,6 +339,11 @@ func (m *Model) podIndex(pods []graphPod) int {
 			if pod.group.id == m.graph.pod {
 				return index
 			}
+		}
+		if slices.ContainsFunc(m.agents.data.groups, func(group agentGroup) bool { return group.id == m.graph.pod }) {
+			// The remembered pod is hidden. The card of the fallback
+			// selection does not replace it.
+			return -1
 		}
 		for index, pod := range pods {
 			if pod.group.id == m.graph.selected {
@@ -367,23 +371,27 @@ func (m *Model) podIndex(pods []graphPod) int {
 }
 
 // coordinatorSelected reports that the coordinator card is selected in the
-// overview.
+// overview. With no pod on the screen it is always selected (agents.md rule
+// 13).
 func (m *Model) coordinatorSelected(pods []graphPod) bool {
 	node, ok := m.coordinatorCard()
-	return ok && !m.inPodView(pods) && m.graph.selected == node.record.Key
+	return ok && !m.inPodView(pods) && (m.graph.selected == node.record.Key || len(pods) == 0)
 }
 
-// selectedAgent gives the selected card and its pod. In the one-pod view,
-// the first card of the pod is selected when the selection is not in it. In
-// the overview, only the coordinator card can be selected; it is in no pod.
+// selectedAgent gives the selected card and its pod. The first card of the
+// selected pod is selected when the selection is not in it. The coordinator
+// card is in no pod.
 func (m *Model) selectedAgent() (agentNode, int, bool) {
 	pods := m.agentsPods()
 	if m.coordinatorSelected(pods) {
 		node, _ := m.coordinatorNode()
+		// With no pod, the card is selected at once. It stays selected
+		// when h shows the pods again.
+		m.graph.selected = node.record.Key
 		return node, -1, true
 	}
 	column := m.podIndex(pods)
-	if !m.inPodView(pods) {
+	if len(pods) == 0 {
 		return agentNode{}, column, false
 	}
 	nodes := pods[column].nodes()
@@ -425,12 +433,6 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	// on each side (agents.md rule 1).
 	bodyWidth, bodyHeight := max(width-2, 1), height
 	coordinator, hasCoordinator := m.coordinatorNode()
-	// With no registered project, or with nothing on the graph, the screen
-	// is the notice. When h hides each project pod, the notice is a body
-	// line below the coordinator card and the home pod (goal g9).
-	if registered := len(m.agents.data.groups) - 1; projects == 0 && (registered == 0 || len(pods) == 0 && !hasCoordinator) {
-		return fitBlock(strings.Join([]string{"", " " + component.Notice{Text: agentsNoneText}.View(bodyWidth)}, "\n"), width, height)
-	}
 	wide := width >= component.LongFormWidth
 	if wide {
 		// One blank row stays below the legend, above the status rows.
@@ -439,11 +441,9 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	selected := m.podIndex(pods)
 	m.graph.onePod = len(pods) > 0 && m.inPodView(pods)
 	m.graph.focus = ""
-	switch {
-	case m.coordinatorSelected(pods):
+	if m.coordinatorSelected(pods) {
 		m.graph.focus = coordinator.record.Key
-	case m.graph.onePod:
-		node, _, _ := m.selectedAgent()
+	} else if node, _, ok := m.selectedAgent(); ok {
 		m.graph.focus = node.record.Key
 	}
 	var shown []graphPod
@@ -472,7 +472,10 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	if wide {
 		footer++
 	}
-	if projects == 0 {
+	// With the home pod and no project pod, the notice is a body line below
+	// the pods (goal g9). With no pod, it is at the center (agents.md rule
+	// 13).
+	if projects == 0 && len(pods) > 0 {
 		footer++
 	}
 	if scrolls || sideways {
@@ -510,7 +513,7 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 	x := first
 	var drops []int
 	for index, pod := range shown {
-		lit := !m.graph.onePod && m.graph.focus == "" && m.graph.left+index == selected
+		lit := !m.graph.onePod && !m.coordinatorSelected(pods) && m.graph.left+index == selected
 		m.drawPod(tall, pod, x, head, podWidth, podHeight, lit)
 		// The drop is at the pod center, or 1 cell after the title when
 		// the title is wider than the left half of the pod.
@@ -551,7 +554,10 @@ func (m *Model) agentsGraphView(width, height int, focused bool) string {
 		copy(canvas.cells[(row+gap)*inner:(row+gap+1)*inner], tall.cells[from:from+inner])
 	}
 	row := bodyHeight - footer
-	if projects == 0 {
+	switch {
+	case len(pods) == 0:
+		canvas.text((inner-ansi.StringWidth(agentsNoneText))/2, (bodyHeight-footer-1)/2, agentsNoneText, cellgrid.Dim, false)
+	case projects == 0:
 		canvas.text(1, row, agentsNoneText, cellgrid.Dim, false)
 		row++
 	}
@@ -1273,7 +1279,6 @@ func (m *Model) updateAgentsKey(key string) tea.Cmd {
 	case "esc":
 		if m.graph.podView {
 			m.graph.podView = false
-			m.graph.selected = m.graph.pod
 			return m.logAction("agent pod close", slog.String("pod", m.graph.pod))
 		}
 	case "h":
@@ -1287,13 +1292,19 @@ func (m *Model) updateAgentsKey(key string) tea.Cmd {
 	return nil
 }
 
-// updatePodsKey handles a key of the overview of decision 62: ← and →
-// select a pod, ↑ selects the coordinator card, ↓ selects the pod again,
-// and enter opens the pod or the details of the coordinator.
+// updatePodsKey handles a key of the overview (agents.md rule 12): ← and →
+// select a pod and its first card, ↑ and ↓ select a card of the pod, ↑ on
+// the first card selects the coordinator card, enter opens the details of
+// the card, and o opens the one-pod view of the pod.
 func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bool) tea.Cmd {
 	column := m.podIndex(pods)
 	coordinator, hasCoordinator := m.coordinatorCard()
 	selected := m.coordinatorSelected(pods)
+	var nodes []agentNode
+	if len(pods) > 0 {
+		nodes = pods[column].nodes()
+	}
+	at := slices.IndexFunc(nodes, func(n agentNode) bool { return ok && n.record.Key == node.record.Key })
 	switch key {
 	case "left", "right":
 		next := column + 1
@@ -1304,31 +1315,40 @@ func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bo
 			return nil
 		}
 		m.graph.pod = pods[next].group.id
-		m.graph.selected = m.graph.pod
-		return m.logAction("agent pod select", slog.String("pod", m.graph.pod))
+		m.graph.selected = ""
+		m.selectedAgent()
+		return m.logAction("agent pod select", slog.String("pod", m.graph.pod), slog.String("agent_id", m.graph.selected))
 	case "up", "k":
-		if hasCoordinator && !selected {
+		switch {
+		case at > 0:
+			m.graph.selected = nodes[at-1].record.Key
+		case at == 0 && hasCoordinator:
 			m.graph.selected = coordinator.record.Key
-			return m.logAction("agent selection", slog.String("agent_id", m.graph.selected))
+		default:
+			return nil
 		}
+		return m.logAction("agent selection", slog.String("agent_id", m.graph.selected))
 	case "down", "j":
-		if selected {
-			m.graph.selected = m.graph.pod
-			return m.logAction("agent pod select", slog.String("pod", m.graph.pod))
+		switch {
+		case selected && len(nodes) > 0:
+			m.graph.selected = nodes[0].record.Key
+		case !selected && at >= 0 && at < len(nodes)-1:
+			m.graph.selected = nodes[at+1].record.Key
+		default:
+			return nil
 		}
+		return m.logAction("agent selection", slog.String("agent_id", m.graph.selected))
 	case "enter":
-		if selected {
+		if ok {
 			m.popupOpen = true
 			m.popupOffset = 0
 			return m.logAction("agent details open", slog.String("agent_id", node.record.Key))
 		}
-		if len(pods) == 0 {
+	case "o":
+		if selected || len(pods) == 0 {
 			return nil
 		}
 		m.graph.podView = true
-		// The first card of the pod is selected when the selection is not
-		// in it.
-		m.selectedAgent()
 		return m.logAction("agent pod open", slog.String("pod", m.graph.pod), slog.String("agent_id", m.graph.selected))
 	case "h":
 		m.graph.hideStopped = !m.graph.hideStopped
