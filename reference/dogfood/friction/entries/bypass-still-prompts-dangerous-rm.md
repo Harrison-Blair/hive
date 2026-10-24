@@ -66,3 +66,11 @@ t126-worker-1 (`rm -f $C/*.ansi` and `rm -f $H/*.png`), and t131-worker-1
 minutes. The t131 brief had the `"${VAR:?}"` rule, and the worker did not
 obey it. The fix in the worker and verifier skills, or a harness hook, is
 still open.
+
+**Recurrence 2026-10-24 (hive g12 wave C):** workers t146-worker-1
+(`rm $S/*.events.js`) and t145-worker-1 (`rm -f $B/*.png`) hit the same
+dialog during board and capture steps. The supervisor wrote a `blocked`
+record with no reason, and the manager read each pane with
+`herdr pane read` to find the cause. The manager sent each worker an inbox
+record to rewrite the command with `"${VAR:?}"` and let the dialog deny
+itself. Workers spawned by hive still repeat the pattern.
