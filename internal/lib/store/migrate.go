@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -56,6 +58,12 @@ func SchemaVersion(home string) (int, error) {
 	return schema.Version, nil
 }
 
+// migrationContended records a home whose migration lock wait timed out in
+// this process. A later store open of the same home tries the lock once and
+// does not wait again, so one command does not add a two-second wait for each
+// of its store opens. The first store open of the next command waits again.
+var migrationContended sync.Map
+
 // migrate brings the state store to CurrentSchemaVersion under the store
 // lock. An open of a store at the current version takes no lock. The step is
 // idempotent, so a second process that read version 1 before the first
@@ -69,11 +77,57 @@ func (s *Store) migrate() error {
 		return fmt.Errorf("state schema version %d is newer than %d", version, CurrentSchemaVersion)
 	}
 	if version == CurrentSchemaVersion {
+		migrationContended.Delete(s.home)
 		return nil
 	}
-	return s.withLock(context.Background(), func(locked *LockedStore) error {
-		return s.migrateLocked(locked)
-	})
+	if _, contended := migrationContended.Load(s.home); contended {
+		err = s.withLockOnce(func(locked *LockedStore) error {
+			return s.migrateLocked(locked)
+		})
+	} else {
+		err = s.withLock(context.Background(), func(locked *LockedStore) error {
+			return s.migrateLocked(locked)
+		})
+	}
+	if errors.Is(err, ErrLockTimeout) {
+		migrationContended.Store(s.home, struct{}{})
+		return err
+	}
+	migrationContended.Delete(s.home)
+	return err
+}
+
+// withLockOnce runs fn with the store lock only if the lock is free now. It
+// returns ErrLockTimeout without a wait when another process holds the lock.
+// It is the one-try form of withLock for a migration that already waited.
+func (s *Store) withLockOnce(fn func(*LockedStore) error) error {
+	if err := s.checkHive(); err != nil {
+		return err
+	}
+	if err := s.checkRoot(); err != nil {
+		return err
+	}
+	if err := s.checkLock(); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(s.lockPath(), os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return err
+	}
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		_ = file.Close()
+		if errors.Is(err, syscall.EWOULDBLOCK) || errors.Is(err, syscall.EAGAIN) {
+			return ErrLockTimeout
+		}
+		return err
+	}
+	locked := &LockedStore{store: s}
+	defer func() {
+		locked.released.Store(true)
+		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+		_ = file.Close()
+	}()
+	return fn(locked)
 }
 
 func (s *Store) migrateLocked(locked *LockedStore) error {

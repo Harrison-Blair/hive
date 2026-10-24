@@ -231,7 +231,7 @@ func TestRunHeldLock(t *testing.T) {
 	t.Setenv("PATH", pathWithGitOnly(t))
 	started := time.Now()
 	result := Run(context.Background(), home, nil)
-	if elapsed := time.Since(started); elapsed > 25*time.Second {
+	if elapsed := time.Since(started); elapsed > 6*time.Second {
 		t.Fatalf("Run() took %v, want a bounded check", elapsed)
 	}
 	check := findCheck(t, result, "state store")

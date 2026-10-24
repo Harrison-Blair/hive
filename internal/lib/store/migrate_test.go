@@ -4,12 +4,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
+	"time"
 )
 
 func seedState(t *testing.T, home string, parts []string, value any) string {
@@ -206,6 +208,38 @@ func TestMigrationVersionTwoSetsAgentFacts(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestMigrationWaitsOnceOnAHeldLock proves that repeated store opens do not
+// each wait for a held lock. The first open uses the two-second wait. Each
+// later open tries once. After the holder releases the lock, the next open
+// completes the migration.
+func TestMigrationWaitsOnceOnAHeldLock(t *testing.T) {
+	home := t.TempDir()
+	seedHive(t, home)
+	seedState(t, home, []string{"agents", "manager-hive-g1.json"}, map[string]any{
+		"key": "manager-hive-g1", "name": "manager-hive", "role": "manager", "project": "hive", "status": "live", "generation": 1,
+	})
+	release := holdStateLock(t, home)
+	defer release()
+
+	started := time.Now()
+	for attempt := 1; attempt <= 3; attempt++ {
+		if _, err := Open(home); !errors.Is(err, ErrLockTimeout) {
+			t.Fatalf("Open() attempt %d = %v; want ErrLockTimeout", attempt, err)
+		}
+	}
+	if elapsed := time.Since(started); elapsed > 5*time.Second {
+		t.Fatalf("three opens with a held lock took %v; want one bounded wait", elapsed)
+	}
+
+	release()
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() after release = %v; want the migration", err)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 2 {
+		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
 	}
 }
 
