@@ -242,7 +242,7 @@ func (f *demoFixture) check() error {
 		return fmt.Errorf(`field "ui.focus": unknown value %q`, ui.Focus)
 	}
 	for region, scroll := range ui.Scroll {
-		if !slices.Contains(demoFocuses, region) && !(ui.Screen == "work" && waves[region]) {
+		if !slices.Contains(demoFocuses, region) && (ui.Screen != "work" || !waves[region]) {
 			return fmt.Errorf(`field "ui.scroll": unknown region %q`, region)
 		}
 		if scroll.Top < 0 || scroll.Left < 0 {
