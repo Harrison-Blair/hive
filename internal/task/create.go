@@ -16,7 +16,6 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/Harrison-Blair/hive/internal/lib/run"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
@@ -147,7 +146,7 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		return fail("project", err.Error(), "")
 	}
 	if plan.feature != "" && !plan.spec {
-		if err := checkFeatureREADME(project, plan.feature, log.logger); err != nil {
+		if err := checkFeatureREADME(home, plan.feature); err != nil {
 			return fail("validate", err.Error(), "")
 		}
 	}
@@ -218,6 +217,18 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		Path:     briefRelPath(id),
 		Action:   "created",
 	})
+	if paths := TaskFeaturePaths(record); paths != nil {
+		if err := writeWorktreeBrief(home, paths.Brief, plan.brief); err != nil {
+			message := "write feature brief: " + oneLine(err.Error())
+			envelope.Outcome = "partial"
+			envelope.Phase = "brief"
+			envelope.Error = message
+			log.failure("task create", project.ID, id, "", "brief", message)
+			return envelope
+		}
+		log.effect("task create", project.ID, id, "brief", paths.Brief, "created")
+		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "brief", Path: paths.Brief, Action: "created"})
+	}
 	if err := locked.WriteIn([]string{tasksCollection}, id, record); err != nil {
 		message := oneLine(err.Error())
 		envelope.Outcome = "partial"
@@ -235,19 +246,6 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 	envelope.Result = record
 	log.transition("task create", project.ID, id, "", "", record.Status)
 	return envelope
-}
-
-func checkFeatureREADME(project records.Project, feature string, logger *slog.Logger) error {
-	path := filepath.ToSlash(filepath.Join(".hive", "spec", feature, "README.md"))
-	ctx := run.WithLogger(context.Background(), logger)
-	result, err := run.Command(ctx, "", "git", "-C", project.Path, "cat-file", "-e", project.Base+":"+path)
-	if err != nil {
-		return fmt.Errorf("check feature README %s: %s", path, oneLine(err.Error()))
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("feature README missing on base: %s", path)
-	}
-	return nil
 }
 
 // peekCounter reads the current counter value under the lock and returns the

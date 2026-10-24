@@ -303,6 +303,15 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 	if resolved.Key != "" {
 		actorID = resolved.Key
 	}
+	if task, ok := envelope.Result.(records.Task); ok && envelope.Outcome == "ok" {
+		copied, err := copyEvidenceOut(home, command, task)
+		envelope.Effects = append(envelope.Effects, copied...)
+		if err != nil {
+			envelope.Outcome = "partial"
+			envelope.Phase = "evidence"
+			envelope.Error = oneLine(err.Error())
+		}
+	}
 	if task, ok := envelope.Result.(records.Task); ok && hasEffect(envelope.Effects, "task") {
 		log.transition(logCommand, task.Project, task.ID, actorID, prior, task.Status)
 		for _, effect := range envelope.Effects {
