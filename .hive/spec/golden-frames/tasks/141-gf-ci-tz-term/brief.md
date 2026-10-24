@@ -32,7 +32,8 @@ When a cause is not one of these two, stop and report it with
 | Path | Purpose of the edit |
 | --- | --- |
 | The six named tests in `internal/tui/` | AC1. Fix the time zone of each test. |
-| `internal/tui/` non-test files | AC1. Only when a test shows that the code uses the local zone where the spec gives the zone of the fixture or of the TUI clock. |
+| `internal/tui/` non-test files | AC1. Edit them only when a test shows a fault in the code. The fault is a use of the local zone where the spec gives another zone. |
+| `testdata/ste-baseline.json` | One entry of 0 for this brief copy. |
 | `cmd/root_test.go` | AC2. Check the TUI of the golden-frames frame in a form that does not depend on `TERM`. |
 
 Edit no other file. Do not weaken a test. Each test still checks the text
@@ -93,4 +94,4 @@ Each other test. Task 140. `main`.
 
 ## Changes
 
-None.
+- 2026-10-24, manager: STE wording of the source table, no change of scope. Add a baseline entry of 0 for this brief copy.
