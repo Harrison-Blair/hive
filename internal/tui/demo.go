@@ -153,7 +153,7 @@ var (
 		// Health has no views. The tui-v2 fixtures name the old views home
 		// and agents, and the value has no effect.
 		"health": {"", "home", "agents"},
-		"logs":   {""},
+		"logs":   {"", "raw"},
 	}
 	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "grid", "table"}
 	demoOverlays   = []string{"", "details", "help"}
@@ -407,6 +407,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.logPendingTime = ui.Selection
 		m.logOffset = ui.Scroll["events"].Top
 		m.detailsOffset[tabLogs] = ui.Scroll["json"].Top
+		m.logRaw = ui.View == "raw"
 		if ui.Filter.Open {
 			m.mode = editing
 			m.filterDraft = ui.Filter.Text
