@@ -16,8 +16,8 @@ func seedSimple(t *testing.T, home, id, status string, deps []string) {
 	t.Helper()
 	seedTask(t, home, records.Task{
 		ID: id, Project: "one", Title: id,
-		ControllingRole: "manager-one", ActingAgent: "worker-1",
-		Status: status, DependsOn: deps,
+		ActingAgent: "worker-1",
+		Status:      status, DependsOn: deps,
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
 }
@@ -41,7 +41,7 @@ func TestListSortsByProjectThenNumber(t *testing.T) {
 	registerProject(t, home, "two")
 	seedSimple(t, home, "10-c", "created", []string{})
 	seedTask(t, home, records.Task{
-		ID: "3-d", Project: "two", Title: "d", ControllingRole: "manager-two",
+		ID: "3-d", Project: "two", Title: "d",
 		Status: "created", DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
@@ -73,7 +73,7 @@ func TestListFilters(t *testing.T) {
 	seedSimple(t, home, "1-a", "created", []string{})
 	seedSimple(t, home, "2-b", "verified", []string{})
 	seedTask(t, home, records.Task{
-		ID: "3-c", Project: "two", Title: "c", ControllingRole: "manager-two",
+		ID: "3-c", Project: "two", Title: "c",
 		Status: "created", DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
@@ -128,7 +128,7 @@ func TestShowAndListRenderNeedsUser(t *testing.T) {
 	registerProject(t, home, "one")
 	task := records.Task{
 		ID: "8-needs-user", Project: "one", Title: "Needs a decision",
-		ControllingRole: "manager-one", Status: "verified", DependsOn: []string{},
+		Status: "verified", DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
 	registry, err := store.Open(home)

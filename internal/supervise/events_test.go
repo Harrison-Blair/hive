@@ -33,8 +33,10 @@ func workerRecord(key, project, task, pane string) records.Agent {
 func managerRecord(key, project, pane string) records.Agent {
 	return records.Agent{
 		Key:         key,
-		Name:        key,
+		Name:        "manager-" + project,
 		Role:        "manager",
+		Profile:     records.ProfilePlanner,
+		Owns:        project,
 		Project:     project,
 		PaneID:      pane,
 		WorkspaceID: "w1",
@@ -347,6 +349,7 @@ func TestEventsStartingTopologyClosedWithoutControllerUnresolved(t *testing.T) {
 	home := testHome(t)
 	coordinator := records.Agent{
 		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator,
 		PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1",
 		Status: records.AgentStarting, Generation: 1, Spawned: true,
 	}
@@ -408,6 +411,7 @@ func TestEventsNoControllingRoleLogsOnly(t *testing.T) {
 	home := testHome(t)
 	coordinator := records.Agent{
 		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator,
 		PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1",
 		Status: records.AgentLive, AgentStatus: "working", Generation: 1, Spawned: true,
 	}

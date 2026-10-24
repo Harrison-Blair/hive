@@ -15,20 +15,19 @@ func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
 	registerProject(t, home, "one")
 	worktree := t.TempDir()
 	task := records.Task{
-		ID:              "1-seed",
-		Project:         "one",
-		Title:           "Seed",
-		Feature:         "feature-a",
-		ControllingRole: "manager-one",
-		Status:          "assigned",
-		DependsOn:       []string{},
-		CreatedAt:       "2026-01-01T00:00:00Z",
-		UpdatedAt:       "2026-01-01T00:00:00Z",
-		Worktree:        &records.Worktree{Path: worktree},
+		ID:        "1-seed",
+		Project:   "one",
+		Title:     "Seed",
+		Feature:   "feature-a",
+		Status:    "assigned",
+		DependsOn: []string{},
+		CreatedAt: "2026-01-01T00:00:00Z",
+		UpdatedAt: "2026-01-01T00:00:00Z",
+		Worktree:  &records.Worktree{Path: worktree},
 	}
 	seedTask(t, home, task)
 	seedAgent(t, home, records.Agent{
-		Key: "manager-one", Name: "manager-one", Role: "manager", Project: "one",
+		Key: "manager-one", Name: "manager-one", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one",
 		Status: records.AgentLive, PaneID: "w1:manager", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
@@ -36,8 +35,8 @@ func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.WriteIn([]string{"claims"}, "manager-one", records.Claim{
-		Key: "manager-one", Agent: "manager-one", Generation: 1,
+	if err := registry.WriteIn([]string{"claims"}, "owner-one", records.Claim{
+		Key: "owner-one", Agent: "manager-one", Generation: 1,
 	}); err != nil {
 		t.Fatal(err)
 	}

@@ -23,14 +23,13 @@ func testProject(repo string) records.Project {
 
 func testTask() records.Task {
 	return records.Task{
-		ID:              "1-live-demo",
-		Project:         "repo-live",
-		Title:           "live demo",
-		ControllingRole: "manager-repo-live",
-		Status:          "created",
-		DependsOn:       []string{},
-		CreatedAt:       "2026-10-18T00:00:00Z",
-		UpdatedAt:       "2026-10-18T00:00:00Z",
+		ID:        "1-live-demo",
+		Project:   "repo-live",
+		Title:     "live demo",
+		Status:    "created",
+		DependsOn: []string{},
+		CreatedAt: "2026-10-18T00:00:00Z",
+		UpdatedAt: "2026-10-18T00:00:00Z",
 	}
 }
 

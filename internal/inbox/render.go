@@ -68,12 +68,12 @@ func Consumed(envelope output.Envelope) []uint64 {
 }
 
 // WriteReport tells stderr to run the command again with --all.
-func WriteReport(stderr io.Writer, role string, ids []uint64) error {
+func WriteReport(stderr io.Writer, inbox string, ids []uint64) error {
 	for _, id := range ids {
 		if _, err := fmt.Fprintf(stderr, "consumed %d\n", id); err != nil {
 			return err
 		}
 	}
-	_, err := fmt.Fprintf(stderr, "run: hive inbox --role %s --all\n", role)
+	_, err := fmt.Fprintf(stderr, "run: hive inbox --inbox %s --all\n", inbox)
 	return err
 }

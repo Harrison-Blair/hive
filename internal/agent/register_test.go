@@ -29,7 +29,7 @@ func seedProject(t *testing.T, home, id string) {
 	if err := st.WriteIn([]string{"projects"}, id, record); err != nil {
 		t.Fatal(err)
 	}
-	task := records.Task{ID: testTaskID, Project: id, Title: "Task", ControllingRole: "manager-" + id, DependsOn: []string{}, CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z"}
+	task := records.Task{ID: testTaskID, Project: id, Title: "Task", DependsOn: []string{}, CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z"}
 	if err := st.WriteIn([]string{"tasks"}, testTaskID, task); err != nil {
 		t.Fatal(err)
 	}

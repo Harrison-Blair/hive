@@ -118,7 +118,7 @@ func validRecord(record records.Agent, claims map[string]records.Claim) bool {
 	if record.Status != records.AgentLive {
 		return false
 	}
-	key := claimKey(record.Role, record.Project)
+	key := claimKey(record)
 	if key == "" {
 		return true
 	}
@@ -137,7 +137,7 @@ func matchesSelectedClaim(record records.Agent, selected records.Claim, claims m
 	if record.Status != records.AgentLive {
 		return false
 	}
-	if selected.Key != claimKey(record.Role, record.Project) {
+	if selected.Key != claimKey(record) {
 		return false
 	}
 	if selected.Agent != record.Key || selected.Generation != record.Generation {
@@ -168,17 +168,24 @@ func ambiguousError(matches []records.Agent) error {
 	return fmt.Errorf("caller ambiguous: %s", strings.Join(names, ", "))
 }
 
-func claimKey(role, project string) string {
-	switch role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + project
-	case "supervisor":
-		return "supervisor"
+// claimKey returns the singleton claim key of one record from its facts
+// (D7). A record with no kind and no project has no claim.
+func claimKey(record records.Agent) string {
+	switch {
+	case record.Kind == records.AgentKindCoordinator:
+		return records.AgentKindCoordinator
+	case record.Kind == records.AgentKindSupervisor:
+		return records.AgentKindSupervisor
+	case record.Owns != "":
+		return "owner-" + record.Owns
 	default:
 		return ""
 	}
+}
+
+// Agents returns each agent record of one held store handle.
+func Agents(source Reader) ([]records.Agent, error) {
+	return loadAgents(source)
 }
 
 func loadAgents(source Reader) ([]records.Agent, error) {
@@ -262,7 +269,7 @@ func FindHeld(locked Reader, name string) (records.Agent, bool, error) {
 		if !ok {
 			return records.Agent{}, false, nil
 		}
-		if record.Generation != claim.Generation || claimKey(record.Role, record.Project) != claim.Key {
+		if record.Generation != claim.Generation || claimKey(record) != claim.Key {
 			return records.Agent{}, false, nil
 		}
 		return record, true, nil

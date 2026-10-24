@@ -23,7 +23,7 @@ func seedFinishCLI(t *testing.T, status string) (string, string) {
 	}
 	taskID := "1-step"
 	task := records.Task{
-		ID: taskID, Project: "one", Title: "Step", ControllingRole: "manager-one",
+		ID: taskID, Project: "one", Title: "Step",
 		ActingAgent: "worker-1", Status: status, DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
@@ -49,7 +49,7 @@ func assertFinishReport(t *testing.T, stderr string) {
 		"effect: updated task .hive/state/tasks/1-step.json",
 		"inspect: hive task show 1-step",
 		"inspect: hive agent show worker-1",
-		"inspect: hive inbox --role manager-one",
+		"inspect: hive inbox --inbox project:one --all",
 	} {
 		if !strings.Contains(stderr, want) {
 			t.Fatalf("stderr = %q; want %q", stderr, want)
@@ -77,7 +77,7 @@ func TestTaskCompleteShortStdoutReportsKnownEffectsAndDoesNotReplay(t *testing.T
 	if err := registry.ReadIn([]string{"agents"}, "worker-1", &worker); err != nil || !worker.Finished {
 		t.Fatalf("worker = %#v, %v; want finished", worker, err)
 	}
-	inboxRecords, err := registry.ListIn([]string{"inbox", "manager-one"}, nil)
+	inboxRecords, err := registry.ListIn([]string{"inbox", "coordinator"}, nil)
 	if err != nil || len(inboxRecords) != 1 {
 		t.Fatalf("inbox = %d, %v; want one record and no replay", len(inboxRecords), err)
 	}
@@ -90,7 +90,7 @@ func TestTaskVerifyFailedStdoutReportsKnownEffects(t *testing.T) {
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
-	for _, want := range []string{"outcome: ok", "phase: complete", "inspect: hive task show 1-step", "inspect: hive agent show verifier-1", "inspect: hive inbox --role manager-one"} {
+	for _, want := range []string{"outcome: ok", "phase: complete", "inspect: hive task show 1-step", "inspect: hive agent show verifier-1", "inspect: hive inbox --inbox project:one --all"} {
 		if !strings.Contains(stderr.String(), want) {
 			t.Fatalf("stderr = %q; want %q", stderr.String(), want)
 		}
@@ -170,16 +170,16 @@ func TestTaskCompleteLogsResolvedActorAndEffects(t *testing.T) {
 	}
 	for _, resource := range []string{"counter", "inbox"} {
 		if countEvents(events, "task effect", map[string]string{
-			"command": "task complete", "task_id": taskID, "role": "manager-one", "resource": resource,
+			"command": "task complete", "task_id": taskID, "role": "project:one", "resource": resource,
 		}) != 1 {
-			t.Fatalf("log events = %#v; want the controlling role on the %s effect", events, resource)
+			t.Fatalf("log events = %#v; want the project inbox on the %s effect", events, resource)
 		}
 	}
 }
 
 func TestTaskCompletePartialLogsExactPrefix(t *testing.T) {
 	home, taskID := seedFinishCLI(t, "assigned")
-	if err := os.MkdirAll(filepath.Join(home, ".hive", "state", "inbox", "manager-one", "1.json"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, ".hive", "state", "inbox", "coordinator", "1.json"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer

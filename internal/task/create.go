@@ -195,7 +195,6 @@ func createLocked(locked *store.LockedStore, home string, plan createPlan, log o
 		Title:               plan.title,
 		Feature:             plan.feature,
 		Spec:                plan.spec,
-		ControllingRole:     "manager-" + project.ID,
 		ActingAgent:         "",
 		Status:              "created",
 		DependsOn:           dependsOn,

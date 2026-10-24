@@ -424,21 +424,7 @@ func (s *Supervisor) activeAllByField(field, value string) []records.Agent {
 	return found
 }
 
-// controllingRole returns the inbox role that holds the completed record of the
-// task of one agent. A coordinator or a supervisor record has no controlling
-// role.
-func controllingRole(record records.Agent) string {
-	switch record.Role {
-	case "worker", "verifier":
-		return "manager-" + record.Project
-	case "manager":
-		return "coordinator"
-	default:
-		return ""
-	}
-}
-
-// roleForAgent is the inbox role of one agent.
+// roleForAgent is the inbox key of one agent.
 func roleForAgent(record records.Agent) string {
 	return agent.InboxKey(record)
 }
@@ -446,8 +432,8 @@ func roleForAgent(record records.Agent) string {
 // parentInbox returns the inbox that gets the notifications of one record.
 // The coordinator and the supervisor get no notification about themselves.
 func (s *Supervisor) parentInbox(record records.Agent) string {
-	switch record.Role {
-	case "coordinator", "supervisor":
+	switch record.Kind {
+	case records.AgentKindCoordinator, records.AgentKindSupervisor:
 		return ""
 	default:
 		return agent.ParentInbox(s.agents, record)

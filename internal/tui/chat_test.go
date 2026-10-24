@@ -221,7 +221,7 @@ func TestChatCompactAskStatusRowCutsKeys(t *testing.T) {
 func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	home := newTestHome(t)
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, Status: records.AgentLive,
 		AgentStatus: "working", StatusChangedAt: "2026-10-20T11:58:00Z",
 	})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
@@ -263,7 +263,7 @@ func TestChatStateSegmentShowsTheGlyphAndWholeMinuteAge(t *testing.T) {
 			home := newTestHome(t)
 			if tc.name != "no live coordinator" {
 				writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-					Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+					Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, Status: records.AgentLive,
 					AgentStatus: tc.status, StatusChangedAt: tc.changedAt,
 				})
 			}
@@ -425,7 +425,7 @@ func TestChatStartFromProjectsShowsRefusalAndBlocksInput(t *testing.T) {
 func TestChatRefusedSendShowsNoticeAndKeepsDraft(t *testing.T) {
 	home := newTestHome(t)
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1",
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1", WorkspaceID: "w1",
 		Status: records.AgentLive, Generation: 1,
 	})
 	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
@@ -466,7 +466,7 @@ func TestChatSendRunsInBackgroundAndKeepsFailedDraft(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
+		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
 	})
 	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 	fake := newBlockingChatHerdr(t)

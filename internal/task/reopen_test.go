@@ -16,14 +16,15 @@ func seedController(t *testing.T, home, project string) {
 		t.Fatal(err)
 	}
 	agent := records.Agent{
-		Key: "manager-" + project, Name: "manager-" + project, Role: "manager", Project: project,
+		Key: "manager-" + project, Name: "manager-" + project, Role: "manager",
+		Profile: records.ProfilePlanner, Owns: project, Project: project,
 		Status: records.AgentLive, PaneID: "manager-pane", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
 	if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}
-	claim := records.Claim{Key: agent.Key, Agent: agent.Key, Generation: agent.Generation}
+	claim := records.Claim{Key: "owner-" + project, Agent: agent.Key, Generation: agent.Generation}
 	if err := registry.WriteIn([]string{"claims"}, claim.Key, claim); err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +36,7 @@ func verifiedTask(task records.Task, agent, at string) records.Task {
 	return task
 }
 
-func TestReopenVerifiedByControllingRole(t *testing.T) {
+func TestReopenVerifiedByProjectOwner(t *testing.T) {
 	home, task := newSeed(t, "verified")
 	task = verifiedTask(task, "verifier-old", "2026-01-02T00:00:00Z")
 	seedTask(t, home, task)
@@ -70,8 +71,8 @@ func TestReopenByWorkerFails(t *testing.T) {
 	before := taskRecordBytes(t, home, task.ID)
 
 	envelope := Reopen(home, TransitionOptions{Task: task.ID, Agent: "worker-1", Reason: "repair"})
-	if envelope.Outcome != "failed" || envelope.Error != "not the controlling role: worker-1" {
-		t.Fatalf("Reopen() = %#v; want controlling-role refusal", envelope)
+	if envelope.Outcome != "failed" || envelope.Error != "not the owner of project one or the coordinator: worker-1" {
+		t.Fatalf("Reopen() = %#v; want owner refusal", envelope)
 	}
 	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
 		t.Fatal("task record changed after a worker reopen request")

@@ -134,7 +134,7 @@ func TestCompleteFinishWritesTaskCounterRecordAndMark(t *testing.T) {
 	if worker := readFinishAgent(t, home, "worker-1"); !worker.Finished {
 		t.Fatalf("worker = %#v; want finished", worker)
 	}
-	inboxRecords := finishInbox(t, home, "manager-one")
+	inboxRecords := finishInbox(t, home, "coordinator")
 	if len(inboxRecords) != 1 {
 		t.Fatalf("inbox = %#v; want one record", inboxRecords)
 	}
@@ -142,7 +142,7 @@ func TestCompleteFinishWritesTaskCounterRecordAndMark(t *testing.T) {
 	if record.Kind != records.InboxCompleted || record.Task != task.ID || record.Agent != "worker-1" || record.Text != "completed" {
 		t.Fatalf("record = %#v; want completed by worker-1", record)
 	}
-	if value, ok := finishCounter(t, home, "manager-one"); !ok || value != 1 {
+	if value, ok := finishCounter(t, home, "coordinator"); !ok || value != 1 {
 		t.Fatalf("counter = %d, %v; want 1", value, ok)
 	}
 	if got := effectResources(envelope); got != "task,counter,inbox,agent" {
@@ -174,7 +174,7 @@ func TestVerifyFinishWritesVerifiedOrFailRecord(t *testing.T) {
 			if verifier := readFinishAgent(t, home, "verifier-1"); !verifier.Finished {
 				t.Fatalf("verifier = %#v; want finished", verifier)
 			}
-			inboxRecords := finishInbox(t, home, "manager-one")
+			inboxRecords := finishInbox(t, home, "coordinator")
 			if len(inboxRecords) != 1 {
 				t.Fatalf("inbox = %#v; want one record", inboxRecords)
 			}
@@ -182,7 +182,7 @@ func TestVerifyFinishWritesVerifiedOrFailRecord(t *testing.T) {
 			if record.Kind != records.InboxVerified || record.Task != task.ID || record.Agent != "verifier-1" || record.Text != test.wantText {
 				t.Fatalf("record = %#v; want verified with text %q", record, test.wantText)
 			}
-			if value, ok := finishCounter(t, home, "manager-one"); !ok || value != 1 {
+			if value, ok := finishCounter(t, home, "coordinator"); !ok || value != 1 {
 				t.Fatalf("counter = %d, %v; want 1", value, ok)
 			}
 		})
@@ -215,7 +215,7 @@ func TestCompleteFinishAndVerifyWriteFailures(t *testing.T) {
 	}{
 		{"task", func() *finishSeam { return &finishSeam{failUpdate: true, updateCollection: "tasks"} }, "failed", "task", 0, false, false, false, "", ""},
 		{"counter", func() *finishSeam { return &finishSeam{failNext: true} }, "partial", "counter", 1, false, false, false, "task", "task"},
-		{"record", func() *finishSeam { return &finishSeam{failWrite: true, writeCollection: "inbox/manager-one"} }, "partial", "record", 2, true, false, false, "task,counter", "task,counter"},
+		{"record", func() *finishSeam { return &finishSeam{failWrite: true, writeCollection: "inbox/coordinator"} }, "partial", "record", 2, true, false, false, "task,counter", "task,counter"},
 		{"finished", func() *finishSeam { return &finishSeam{failUpdate: true, updateCollection: "agents"} }, "partial", "finished", 3, true, true, false, "task,counter,inbox", "task,counter,inbox"},
 	}
 	for _, command := range commands {
@@ -242,11 +242,11 @@ func TestCompleteFinishAndVerifyWriteFailures(t *testing.T) {
 				} else if gotTask.Status != command.wantStatus {
 					t.Fatalf("task status = %q; want %s", gotTask.Status, command.wantStatus)
 				}
-				value, ok := finishCounter(t, home, "manager-one")
+				value, ok := finishCounter(t, home, "coordinator")
 				if ok != failure.counter || (ok && value != 1) {
 					t.Fatalf("counter = %d, %v; want present=%t", value, ok, failure.counter)
 				}
-				if got := len(finishInbox(t, home, "manager-one")); (got == 1) != failure.record {
+				if got := len(finishInbox(t, home, "coordinator")); (got == 1) != failure.record {
 					t.Fatalf("inbox records = %d; want present=%t", got, failure.record)
 				}
 				caller := command.options.Agent
@@ -273,8 +273,8 @@ func TestCompleteFinishRefusesWrongCallersAndLeavesState(t *testing.T) {
 	cases := []refusal{
 		{"worker of another task", "assigned", "complete", "worker-3", "not the acting agent: worker-3", nil},
 		{"manager", "assigned", "complete", "manager-one", "not the acting agent: manager-one", func(t *testing.T, home string) {
-			seedAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Project: "one", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
-			seedClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g1", Generation: 1})
+			seedAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
+			seedClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
 		}},
 		{"verifier complete", "assigned", "complete", "verifier-1", "not the acting agent: verifier-1", nil},
 		{"worker verify", "completed", "verify", "worker-2", "not a verifier of 1-seed: worker-2", nil},
@@ -302,10 +302,10 @@ func TestCompleteFinishRefusesWrongCallersAndLeavesState(t *testing.T) {
 			if got := readTask(t, home, task.ID); got.Status != test.status || got.ActingAgent != "worker-1" {
 				t.Fatalf("task = %#v; want unchanged %s", got, test.status)
 			}
-			if value, ok := finishCounter(t, home, "manager-one"); ok {
+			if value, ok := finishCounter(t, home, "coordinator"); ok {
 				t.Fatalf("counter = %d; want no counter write", value)
 			}
-			if got := len(finishInbox(t, home, "manager-one")); got != 0 {
+			if got := len(finishInbox(t, home, "coordinator")); got != 0 {
 				t.Fatalf("inbox records = %d; want none", got)
 			}
 			for _, name := range []string{"worker-1", "verifier-1"} {
@@ -322,7 +322,7 @@ func TestCompleteFinishAdvancedRefusalAndFreshRework(t *testing.T) {
 	if envelope := runFinishLocked(t, home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"}, nil); envelope.Outcome != "ok" {
 		t.Fatalf("complete = %#v; want ok", envelope)
 	}
-	beforeInbox := len(finishInbox(t, home, "manager-one"))
+	beforeInbox := len(finishInbox(t, home, "coordinator"))
 	repeated := runFinishLocked(t, home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"}, nil)
 	if repeated.Outcome != "failed" {
 		t.Fatalf("repeated complete = %#v; want failed", repeated)
@@ -336,14 +336,14 @@ func TestCompleteFinishAdvancedRefusalAndFreshRework(t *testing.T) {
 	if got := readTask(t, home, task.ID); got.Status != "completed" {
 		t.Fatalf("task status = %q; want completed", got.Status)
 	}
-	if got := len(finishInbox(t, home, "manager-one")); got != beforeInbox {
+	if got := len(finishInbox(t, home, "coordinator")); got != beforeInbox {
 		t.Fatalf("inbox records = %d; want %d", got, beforeInbox)
 	}
 
 	if envelope := runFinishLocked(t, home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true, Reason: "first"}, nil); envelope.Outcome != "ok" {
 		t.Fatalf("verify fail = %#v; want ok", envelope)
 	}
-	beforeInbox = len(finishInbox(t, home, "manager-one"))
+	beforeInbox = len(finishInbox(t, home, "coordinator"))
 	retry := runFinishLocked(t, home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true, Reason: "changed reason"}, nil)
 	if retry.Outcome != "failed" {
 		t.Fatalf("changed-reason retry = %#v; want failed", retry)
@@ -352,7 +352,7 @@ func TestCompleteFinishAdvancedRefusalAndFreshRework(t *testing.T) {
 	if !strings.Contains(message, "task show") || !strings.Contains(message, "agent show") || !strings.Contains(message, "inbox") {
 		t.Fatalf("changed-reason retry error = %q; want the inspection commands", message)
 	}
-	if got := len(finishInbox(t, home, "manager-one")); got != beforeInbox {
+	if got := len(finishInbox(t, home, "coordinator")); got != beforeInbox {
 		t.Fatalf("inbox records after retry = %d; want %d", got, beforeInbox)
 	}
 	if got := readTask(t, home, task.ID); got.Status != "assigned" {
@@ -402,7 +402,7 @@ func TestVerifyFinishNotificationByteBoundaries(t *testing.T) {
 				if got := readTask(t, home, task.ID); got.Status != "completed" {
 					t.Fatalf("task status = %q; want no task write", got.Status)
 				}
-				if got := len(finishInbox(t, home, "manager-one")); got != 0 {
+				if got := len(finishInbox(t, home, "coordinator")); got != 0 {
 					t.Fatalf("inbox records = %d; want none", got)
 				}
 				if readFinishAgent(t, home, "verifier-1").Finished {
@@ -413,7 +413,7 @@ func TestVerifyFinishNotificationByteBoundaries(t *testing.T) {
 			if envelope.Outcome != "ok" {
 				t.Fatalf("finish = %#v; want ok", envelope)
 			}
-			inboxRecords := finishInbox(t, home, "manager-one")
+			inboxRecords := finishInbox(t, home, "coordinator")
 			if len(inboxRecords) != 1 {
 				t.Fatalf("inbox = %#v; want one record", inboxRecords)
 			}
@@ -474,10 +474,10 @@ func TestCompleteFinishConcurrentAttempts(t *testing.T) {
 	if ok != 1 || failed != 1 {
 		t.Fatalf("ok = %d, failed = %d; want one each", ok, failed)
 	}
-	if got := len(finishInbox(t, home, "manager-one")); got != 1 {
+	if got := len(finishInbox(t, home, "coordinator")); got != 1 {
 		t.Fatalf("inbox records = %d; want one", got)
 	}
-	if value, ok := finishCounter(t, home, "manager-one"); !ok || value != 1 {
+	if value, ok := finishCounter(t, home, "coordinator"); !ok || value != 1 {
 		t.Fatalf("counter = %d, %v; want 1", value, ok)
 	}
 	if !readFinishAgent(t, home, "worker-1").Finished {
@@ -495,7 +495,7 @@ func TestCompleteFinishConcurrentInboxReaders(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for range reads {
-				if _, err := inbox.All(home, "manager-one"); err != nil {
+				if _, err := inbox.All(home, "coordinator"); err != nil {
 					errs <- err
 					return
 				}
@@ -518,7 +518,7 @@ func TestCompleteFinishConcurrentInboxReaders(t *testing.T) {
 	if got := readTask(t, home, task.ID); got.Status != "completed" {
 		t.Fatalf("task status = %q; want completed", got.Status)
 	}
-	inboxRecords := finishInbox(t, home, "manager-one")
+	inboxRecords := finishInbox(t, home, "coordinator")
 	if len(inboxRecords) != 1 || inboxRecords[0].Kind != records.InboxCompleted || inboxRecords[0].ReadAt != "" {
 		t.Fatalf("inbox = %#v; want one coherent completed record", inboxRecords)
 	}
@@ -559,7 +559,7 @@ func TestCompleteFinishResolvedAliasRoutes(t *testing.T) {
 			if !readFinishAgent(t, home, "worker-key").Finished {
 				t.Fatal("the resolved worker is not finished")
 			}
-			inboxRecords := finishInbox(t, home, "manager-one")
+			inboxRecords := finishInbox(t, home, "coordinator")
 			if len(inboxRecords) != 1 || inboxRecords[0].Agent != "worker-name" || inboxRecords[0].Text != "completed" {
 				t.Fatalf("inbox = %#v; want the stored name in the notification", inboxRecords)
 			}
@@ -628,10 +628,10 @@ func TestAdvancedPartialRetriesIncludeInspection(t *testing.T) {
 			if after := taskRecordBytes(t, home, task.ID); string(after) != string(before) {
 				t.Fatal("advanced retry changed the task record")
 			}
-			if value, ok := finishCounter(t, home, "manager-one"); ok {
+			if value, ok := finishCounter(t, home, "coordinator"); ok {
 				t.Fatalf("counter = %d; want no counter write", value)
 			}
-			if got := len(finishInbox(t, home, "manager-one")); got != 0 {
+			if got := len(finishInbox(t, home, "coordinator")); got != 0 {
 				t.Fatalf("inbox records = %d; want none", got)
 			}
 			if readFinishAgent(t, home, test.agent).Finished {

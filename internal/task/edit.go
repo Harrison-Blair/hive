@@ -112,7 +112,7 @@ func Edit(home string, options EditOptions) output.Envelope {
 			return nil
 		}
 		actorID = caller.Key
-		if err := checkControllingRole(task, caller); err != nil {
+		if err := checkOwner(task, caller); err != nil {
 			envelope = failedEnvelope("identity", err.Error())
 			log.failure("task edit", task.Project, task.ID, actorID, envelope.Phase, err.Error())
 			return nil

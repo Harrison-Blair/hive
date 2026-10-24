@@ -88,7 +88,7 @@ func TestReportRefusesEachOtherRole(t *testing.T) {
 			home := testHome(t)
 			record := records.Agent{Key: "x-1", Name: "x-1", Role: role, Project: "hive", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1}
 			writeRecord(t, home, record)
-			if key := map[string]string{"manager": "manager-hive", "coordinator": "coordinator", "supervisor": "supervisor"}[role]; key != "" {
+			if key := map[string]string{"manager": "owner-hive", "coordinator": "coordinator", "supervisor": "supervisor"}[role]; key != "" {
 				writeClaimRecord(t, home, records.Claim{Key: key, Agent: record.Key, Generation: 1})
 			}
 			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("text")})

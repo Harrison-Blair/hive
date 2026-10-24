@@ -238,8 +238,8 @@ func TestMigrationWaitsOnceOnAHeldLock(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after release = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 2 {
-		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
+		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
 	}
 }
 
@@ -272,8 +272,8 @@ func TestMigrationFailedStepKeepsVersionOne(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after the repair = %v; want success", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 2 {
-		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
+		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
 	}
 	if record := readAgentMap(t, home, "manager-hive-g1"); record["owns"] != "hive" || record["profile"] != "planner" {
 		t.Fatalf("record = %#v; want the completed step", record)
@@ -377,7 +377,7 @@ func TestMigrationOfCopiedHomeShapes(t *testing.T) {
 	if record := readAgentMap(t, home, "t1-verifier-1"); record["worktree"] != "/scratch/worktrees/1-shape" {
 		t.Fatalf("verifier worktree = %#v; want the task worktree", record["worktree"])
 	}
-	data, err := os.ReadFile(filepath.Join(home, ".hive", "state", "claims", "manager-demo.json"))
+	data, err := os.ReadFile(filepath.Join(home, ".hive", "state", "claims", "owner-demo.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,7 +385,10 @@ func TestMigrationOfCopiedHomeShapes(t *testing.T) {
 	if err := json.Unmarshal(data, &gotClaim); err != nil {
 		t.Fatal(err)
 	}
-	if gotClaim["key"] != "manager-demo" {
-		t.Fatalf("claim = %#v; want version 2 to keep the claim", gotClaim)
+	if gotClaim["key"] != "owner-demo" {
+		t.Fatalf("claim = %#v; want version 3 to rename the claim", gotClaim)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "claims", "manager-demo.json")); !os.IsNotExist(err) {
+		t.Fatalf("the old manager claim is still present: %v", err)
 	}
 }

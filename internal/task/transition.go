@@ -98,25 +98,16 @@ func transition(writer transitionWriter, command string, options TransitionOptio
 	return result, prior, err
 }
 
+// checkOwner refuses a caller that is not the owner of the project of the
+// task and not the coordinator (D7).
+func checkOwner(task records.Task, caller records.Agent) error {
+	if caller.Kind == records.AgentKindCoordinator || caller.Owns == task.Project {
+		return nil
+	}
+	return fmt.Errorf("not the owner of project %s or the coordinator: %s", task.Project, quoteIfControl(caller.Name))
+}
+
 // applyTransition changes one record for one command.
-func controllingRole(caller records.Agent) string {
-	switch caller.Role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + caller.Project
-	default:
-		return ""
-	}
-}
-
-func checkControllingRole(task records.Task, caller records.Agent) error {
-	if controllingRole(caller) != task.ControllingRole {
-		return fmt.Errorf("not the controlling role: %s", quoteIfControl(caller.Name))
-	}
-	return nil
-}
-
 func applyTransition(record *records.Task, command string, options TransitionOptions) error {
 	key := command
 	if command == "verify" && options.Fail {
@@ -171,7 +162,7 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		if options.ResolvedActor == nil {
 			return errCallerUnknown
 		}
-		if err := checkControllingRole(*record, *options.ResolvedActor); err != nil {
+		if err := checkOwner(*record, *options.ResolvedActor); err != nil {
 			return err
 		}
 		record.VerificationHistory = append(record.VerificationHistory, records.VerificationHistory{
@@ -315,11 +306,11 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 	if task, ok := envelope.Result.(records.Task); ok && hasEffect(envelope.Effects, "task") {
 		log.transition(logCommand, task.Project, task.ID, actorID, prior, task.Status)
 		for _, effect := range envelope.Effects {
-			role := ""
+			inbox := ""
 			if effect.Resource == "counter" || effect.Resource == "inbox" {
-				role = task.ControllingRole
+				inbox = projectAddress(task.Project)
 			}
-			log.finishEffect(logCommand, task.Project, task.ID, actorID, role, effect)
+			log.finishEffect(logCommand, task.Project, task.ID, actorID, inbox, effect)
 		}
 	}
 	if envelope.Error != nil {
@@ -338,13 +329,13 @@ func hasEffect(effects []output.Effect, resource string) bool {
 }
 
 // finishEffect writes one completed write of a finish group.
-func (l operationLog) finishEffect(command, projectID, taskID, agentID, role string, effect output.Effect) {
+func (l operationLog) finishEffect(command, projectID, taskID, agentID, inbox string, effect output.Effect) {
 	if l.logger == nil {
 		return
 	}
 	fields := l.fields(command, projectID, taskID, agentID)
-	if role != "" {
-		fields = append(fields, "role", role)
+	if inbox != "" {
+		fields = append(fields, "role", inbox)
 	}
 	fields = append(fields, "resource", effect.Resource, "path", effect.Path, "action", effect.Action)
 	l.logger.Debug("task effect", fields...)
@@ -438,13 +429,19 @@ func finishNotification(command string, task records.Task, caller records.Agent,
 		}
 	}
 	notification := inbox.AppendOptions{
-		Role:  task.ControllingRole,
+		Role:  projectAddress(task.Project),
 		Kind:  kind,
 		Task:  task.ID,
 		Agent: caller.Name,
 		Text:  text,
 	}
 	return notification, inbox.ValidateAppend(notification)
+}
+
+// projectAddress returns the address that routes mail to the owner of one
+// project (D7).
+func projectAddress(project string) string {
+	return "project:" + project
 }
 
 func sameAgent(record records.Agent, name string) bool {
@@ -479,8 +476,8 @@ func finishInspectionMessage(task records.Task, caller records.Agent, message st
 }
 
 func finishInspectionCommands(task records.Task, caller records.Agent) string {
-	return fmt.Sprintf("run task show %s, agent show %s, and inbox --role %s",
-		task.ID, quoteIfControl(caller.Name), task.ControllingRole)
+	return fmt.Sprintf("run task show %s, agent show %s, and inbox --inbox %s --all",
+		task.ID, quoteIfControl(caller.Name), projectAddress(task.Project))
 }
 
 func statePath(collection, id string) string {

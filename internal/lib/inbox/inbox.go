@@ -22,6 +22,47 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
+// ProjectAddressPrefix starts the address of one project inbox.
+const ProjectAddressPrefix = "project:"
+
+// InboxKey returns the inbox key of one agent. The coordinator keeps the key
+// coordinator, and each other agent uses its name (D7).
+func InboxKey(record records.Agent) string {
+	if record.Kind == records.AgentKindCoordinator {
+		return records.AgentKindCoordinator
+	}
+	return record.Name
+}
+
+// IsProjectAddress reports whether address names a project inbox.
+func IsProjectAddress(address string) bool {
+	return strings.HasPrefix(address, ProjectAddressPrefix)
+}
+
+// ResolveAddress returns the inbox key that address names. A project address
+// goes to the live owner of the project, or to coordinator when the project
+// has no live owner (D7). Each other address stays unchanged.
+func ResolveAddress(agents []records.Agent, address string) string {
+	project, ok := strings.CutPrefix(address, ProjectAddressPrefix)
+	if !ok {
+		return address
+	}
+	owner := ""
+	for _, record := range agents {
+		if record.Status != records.AgentLive || record.Owns != project {
+			continue
+		}
+		key := InboxKey(record)
+		if owner == "" || key < owner {
+			owner = key
+		}
+	}
+	if owner != "" {
+		return owner
+	}
+	return records.AgentKindCoordinator
+}
+
 // MaxTextBytes is the maximum UTF-8 byte length of one inbox record text.
 const MaxTextBytes = 4096
 
@@ -55,6 +96,7 @@ type MarkFunc func(*store.LockedStore, records.Inbox) (records.Inbox, error)
 type lockedWriter interface {
 	Next(name string) (uint64, error)
 	WriteIn(collection []string, id string, value any) error
+	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
 }
 
 type recordLister interface {
@@ -93,18 +135,26 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 	if err := validateAppend(options); err != nil {
 		return failed("validate", err.Error())
 	}
+	key := options.Role
+	if IsProjectAddress(key) {
+		agents, err := inboxAgents(writer)
+		if err != nil {
+			return failed("store", err.Error())
+		}
+		key = ResolveAddress(agents, key)
+	}
 	kind := options.Kind
 	if kind == "" {
 		kind = records.InboxMessage
 	}
-	seq, err := writer.Next("inbox:" + options.Role)
+	seq, err := writer.Next("inbox:" + key)
 	if err != nil {
 		return failed("counter", "next inbox counter: "+err.Error())
 	}
-	effects := []output.Effect{counterEffect(options.Role)}
+	effects := []output.Effect{counterEffect(key)}
 	record := records.Inbox{
 		Seq:       seq,
-		Role:      options.Role,
+		Role:      key,
 		Kind:      kind,
 		Task:      options.Task,
 		Agent:     options.Agent,
@@ -115,10 +165,10 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 		NudgedAt:  "",
 	}
 	id := strconv.FormatUint(seq, 10)
-	if err := writer.WriteIn([]string{"inbox", options.Role}, id, record); err != nil {
+	if err := writer.WriteIn([]string{"inbox", key}, id, record); err != nil {
 		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write inbox record: " + err.Error(), Result: nil}
 	}
-	effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(options.Role, seq), Action: "created"})
+	effects = append(effects, output.Effect{Resource: "inbox", Path: recordPath(key, seq), Action: "created"})
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
 }
 
@@ -352,6 +402,35 @@ func checkKey(key string) error {
 	return nil
 }
 
+// checkAddress accepts an inbox key or a project address.
+func checkAddress(address string) error {
+	project, ok := strings.CutPrefix(address, ProjectAddressPrefix)
+	if !ok {
+		return checkKey(address)
+	}
+	if !records.ValidID(project) {
+		return fmt.Errorf("invalid inbox key: %s", displayValue(address))
+	}
+	return nil
+}
+
+// inboxAgents returns each agent record of one reader.
+func inboxAgents(reader recordLister) ([]records.Agent, error) {
+	raw, err := reader.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return nil, err
+	}
+	found := make([]records.Agent, 0, len(raw))
+	for _, data := range raw {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			return nil, err
+		}
+		found = append(found, record)
+	}
+	return found, nil
+}
+
 func boundedText(text string) error {
 	if len(text) > MaxTextBytes {
 		return fmt.Errorf("inbox text is %d bytes; the maximum is %d", len(text), MaxTextBytes)
@@ -360,7 +439,7 @@ func boundedText(text string) error {
 }
 
 func validateAppend(options AppendOptions) error {
-	if err := checkKey(options.Role); err != nil {
+	if err := checkAddress(options.Role); err != nil {
 		return err
 	}
 	if err := boundedText(options.Text); err != nil {
@@ -516,6 +595,7 @@ func failed(phase, message string) output.Envelope {
 type HeldWriter interface {
 	Next(name string) (uint64, error)
 	WriteIn(collection []string, id string, value any) error
+	ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error)
 }
 
 // ValidateAppend checks one inbox append before a caller writes any record.

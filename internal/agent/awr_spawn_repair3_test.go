@@ -247,15 +247,12 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 			name: "identity",
 			mutate: func(locked *store.LockedStore) error {
 				record := records.Agent{
-					Key: "manager-late-g1", Name: "manager-late", Role: "manager",
+					Key: "manager-late-g1", Name: "manager-late", Role: "agent",
 					Project: "demo", PaneID: "wHome:pUser", WorkspaceID: "wHome",
 					Status: records.AgentLive, Generation: 1,
 				}
 				record.ApplyRoleFacts("")
-				if err := locked.WriteIn([]string{"agents"}, record.Key, record); err != nil {
-					return err
-				}
-				return locked.WriteIn([]string{"claims"}, "manager-demo", records.Claim{Key: "manager-demo", Agent: record.Key, Generation: 1})
+				return locked.WriteIn([]string{"agents"}, record.Key, record)
 			},
 			want: "--owner needs the coordinator or the user: manager-late",
 		},
@@ -284,6 +281,7 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 			writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 			writeRecord(t, home, records.Agent{
 				Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+				Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator,
 				PaneID: "wHome:pC", WorkspaceID: "wHome", Status: records.AgentLive, Generation: 1,
 			})
 			t.Setenv("HERDR_PANE_ID", "wHome:pUser")
