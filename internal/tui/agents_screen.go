@@ -1194,7 +1194,7 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 		if values[0] == "" {
 			return ""
 		}
-		return component.DetailField(label, strings.Join(slices.DeleteFunc(values, func(v string) bool { return v == "" }), " · "))
+		return agentsDetailField(label, strings.Join(slices.DeleteFunc(values, func(v string) bool { return v == "" }), " · "))
 	}
 	clock := func(stamp, prefix string) string {
 		at, err := time.Parse(time.RFC3339Nano, stamp)
@@ -1248,7 +1248,7 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 		at, err := time.Parse(time.RFC3339Nano, sent.CreatedAt)
 		if err == nil {
 			lines = append(lines, "", component.DetailSection("LAST MESSAGE"),
-				component.DetailField(at.In(m.now().Location()).Format("15:04"), "→ "+sent.Role+" · "+sent.Text))
+				agentsDetailField(at.In(m.now().Location()).Format("15:04"), "→ "+sent.Role+" · "+sent.Text))
 		}
 	}
 	keys := []string{"a attach", "p peek"}
@@ -1257,6 +1257,14 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 	}
 	keys = append(keys, "esc closes")
 	return record.Name + " · esc closes", lines, component.DimText(strings.Join(keys, " · "))
+}
+
+// agentsDetailField gives a field line of the details popup: the label in
+// dim and 10 cells wide, then the value. The gap is in fg, as the
+// GfAgentsDetails board draws it.
+func agentsDetailField(label, value string) string {
+	label = ansi.Truncate(label, 9, "…")
+	return component.DimText(label) + strings.Repeat(" ", 10-ansi.StringWidth(label)) + value
 }
 
 // stripCardDot gives the dot of a state in the style of a card.
