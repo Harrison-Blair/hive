@@ -7,22 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
-	"github.com/Harrison-Blair/hive/internal/tui/component"
-	"github.com/charmbracelet/x/ansi"
-)
-
-type frictionTab uint8
-
-const (
-	frictionOpen frictionTab = iota
-	frictionResolved
 )
 
 type frictionSection struct {
@@ -47,23 +38,21 @@ type frictionData struct {
 	entries []frictionEntry
 }
 
-// frictionState is the state of the Friction screen (decision 17). An open
-// entry file shows in the details region and scrolls with its offset.
+// frictionFold is the selection key of the fold line (friction rule 3).
+const frictionFold = "fold"
+
+// frictionState is the state of the Friction screen. The selection is the
+// path of an entry, frictionFold, or empty for no selection. Expanded shows
+// the resolved entries below the fold line. Filter is the applied filter,
+// and the draft is the text of the open filter line (friction rule 6).
 type frictionState struct {
 	data         frictionData
-	tab          frictionTab
 	selectedPath string
+	expanded     bool
 	listOffset   int
-	fileOpen     bool
-	fileLoading  bool
-	fileTitle    string
-	fileContent  string
-}
-
-type frictionFileMsg struct {
-	title   string
-	content string
-	err     error
+	filter       string
+	filterOpen   bool
+	filterDraft  string
 }
 
 var frictionFrontMatterKey = regexp.MustCompile(`^([a-z][a-z0-9_-]*):(?:\s+(.*))?$`)
@@ -247,17 +236,27 @@ func (s *frictionState) accept(data frictionData) {
 	s.acceptSelection()
 }
 
-// visibleEntries gives the entries of the view. Open entries keep the order
-// of the data: the newest opened date first. Resolved entries show the
-// newest resolved date first, then by name.
-func (s frictionState) visibleEntries() []frictionEntry {
+// matches reports that the applied filter matches the entry name or the
+// title, case-insensitive (friction rule 6).
+func (s frictionState) matches(entry frictionEntry) bool {
+	if s.filter == "" {
+		return true
+	}
+	text := strings.ToLower(s.filter)
+	return strings.Contains(strings.ToLower(entry.name()), text) || strings.Contains(strings.ToLower(entry.title), text)
+}
+
+// entries gives the open or the resolved entries that the filter matches.
+// Open entries keep the order of the data: the newest opened date first.
+// Resolved entries show the newest resolved date first, then by name.
+func (s frictionState) entries(resolved bool) []frictionEntry {
 	entries := make([]frictionEntry, 0, len(s.data.entries))
 	for _, entry := range s.data.entries {
-		if (s.tab == frictionResolved) == entry.resolved {
+		if entry.resolved == resolved && s.matches(entry) {
 			entries = append(entries, entry)
 		}
 	}
-	if s.tab == frictionResolved {
+	if resolved {
 		sort.SliceStable(entries, func(i, j int) bool {
 			if a, b := entries[i].resolvedDate(), entries[j].resolvedDate(); a != b {
 				return a > b
@@ -268,47 +267,128 @@ func (s frictionState) visibleEntries() []frictionEntry {
 	return entries
 }
 
-func (s frictionState) selectedIndex() int {
-	for index, entry := range s.visibleEntries() {
-		if entry.path == s.selectedPath {
+// counts gives the number of open and resolved entries, with no filter.
+func (s frictionState) counts() (open, resolved int) {
+	for _, entry := range s.data.entries {
+		if entry.resolved {
+			resolved++
+		} else {
+			open++
+		}
+	}
+	return open, resolved
+}
+
+type frictionRowKind uint8
+
+const (
+	frictionEntryRow frictionRowKind = iota
+	frictionNoteRow
+	frictionBlankRow
+	frictionFoldRow
+)
+
+// frictionRow is one row of the list: an entry, a note in dim, the blank
+// row above the fold line, or the fold line.
+type frictionRow struct {
+	kind  frictionRowKind
+	entry frictionEntry
+	text  string
+}
+
+// key gives the selection key of a row, or empty for a row that cannot have
+// the selection.
+func (r frictionRow) key() string {
+	switch r.kind {
+	case frictionEntryRow:
+		return r.entry.path
+	case frictionFoldRow:
+		return frictionFold
+	}
+	return ""
+}
+
+// rows gives the rows of the list: the open entries, one blank row, the fold
+// line, and the resolved entries while they are expanded (friction rules 3,
+// 6, and 7).
+func (s frictionState) rows() []frictionRow {
+	open, resolved := s.entries(false), s.entries(true)
+	rows := make([]frictionRow, 0, len(open)+len(resolved)+3)
+	switch {
+	case len(open) == 0 && len(resolved) == 0 && s.filter != "":
+		rows = append(rows, frictionRow{kind: frictionNoteRow, text: "no entry matches " + s.filter})
+	case len(open) == 0:
+		rows = append(rows, frictionRow{kind: frictionNoteRow, text: "no open entries"})
+	}
+	for _, entry := range open {
+		rows = append(rows, frictionRow{kind: frictionEntryRow, entry: entry})
+	}
+	rows = append(rows, frictionRow{kind: frictionBlankRow}, frictionRow{kind: frictionFoldRow})
+	if s.expanded {
+		for _, entry := range resolved {
+			rows = append(rows, frictionRow{kind: frictionEntryRow, entry: entry})
+		}
+	}
+	return rows
+}
+
+// selectedRow gives the index of the selected row, or -1.
+func (s frictionState) selectedRow(rows []frictionRow) int {
+	if s.selectedPath == "" {
+		return -1
+	}
+	for index, row := range rows {
+		if row.key() == s.selectedPath {
 			return index
 		}
 	}
-	return 0
+	return -1
 }
 
+// selected gives the selected entry. The fold line is not an entry.
 func (s frictionState) selected() (frictionEntry, bool) {
-	for _, entry := range s.visibleEntries() {
-		if entry.path == s.selectedPath {
-			return entry, true
-		}
+	rows := s.rows()
+	if index := s.selectedRow(rows); index >= 0 && rows[index].kind == frictionEntryRow {
+		return rows[index].entry, true
 	}
 	return frictionEntry{}, false
 }
 
-// acceptSelection keeps the selected entry when the view has it, and selects
-// the first entry when it does not.
+// acceptSelection keeps the selection when the list has it. Else it
+// selects the first open entry, or nothing when no open entry shows
+// (friction rule 2).
 func (s *frictionState) acceptSelection() {
-	if _, ok := s.selected(); ok {
+	rows := s.rows()
+	if s.selectedRow(rows) >= 0 {
 		return
 	}
-	entries := s.visibleEntries()
 	s.selectedPath = ""
-	if len(entries) != 0 {
-		s.selectedPath = entries[0].path
+	if rows[0].kind == frictionEntryRow {
+		s.selectedPath = rows[0].key()
 	}
 	s.listOffset = 0
 }
 
-// moveSelection moves the selection by delta entries, within the entries.
+// moveSelection moves the selection by delta selectable rows. With no
+// selection, a move down starts at the first row and a move up at the last.
 func (s *frictionState) moveSelection(delta int) {
-	entries := s.visibleEntries()
-	if len(entries) == 0 {
-		s.selectedPath = ""
-		return
+	rows := s.rows()
+	keys := make([]string, 0, len(rows))
+	for _, row := range rows {
+		if key := row.key(); key != "" {
+			keys = append(keys, key)
+		}
 	}
-	index := min(max(s.selectedIndex()+delta, 0), len(entries)-1)
-	s.selectedPath = entries[index].path
+	index := slices.Index(keys, s.selectedPath)
+	switch {
+	case index < 0 && delta > 0:
+		index = delta - 1
+	case index < 0:
+		index = len(keys) + delta
+	default:
+		index += delta
+	}
+	s.selectedPath = keys[min(max(index, 0), len(keys)-1)]
 }
 
 type frictionScreen struct{ model *Model }
@@ -317,9 +397,8 @@ func (frictionScreen) DataRequest() dataRequest { return frictionDataRequest }
 
 func (frictionScreen) KeyHints() string { return "" }
 
-// Update takes the list keys of the screen (decisions 21 to 23). The frame
-// takes the other keys. An open entry file takes the scroll keys, and esc
-// closes it.
+// Update takes the keys of the friction key table. The frame takes ctrl+]
+// and esc. The filter line takes the keys while it is open.
 func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 	press, ok := msg.(tea.KeyPressMsg)
 	if !ok {
@@ -328,64 +407,74 @@ func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 	m := s.model
 	state := &m.friction
 	key := press.String()
-	page := max(m.height-frameRows-1-3, 1)
-	if state.fileOpen {
-		switch key {
-		case "esc":
-			state.fileOpen = false
-			state.fileLoading = false
-			state.fileContent = ""
-			m.detailsOffset[tabFriction] = 0
-			return m.logAction("friction file close", slog.String("file", state.fileTitle))
-		case "up", "k":
-			m.detailsOffset[tabFriction]--
-		case "down", "j":
-			m.detailsOffset[tabFriction]++
-		case "pgup":
-			m.detailsOffset[tabFriction] -= page
-		case "pgdown":
-			m.detailsOffset[tabFriction] += page
-		case "g":
-			m.detailsOffset[tabFriction] = 0
-		case "G":
-			m.detailsOffset[tabFriction] = 1 << 16
-		}
-		return nil
+	if state.filterOpen {
+		return m.updateFrictionFilter(press)
 	}
-	if m.detailsFocused() {
-		// The details region takes g and G for its top and end.
+	listRows, boxRows := m.frictionLayout()
+	if m.regionFocus[tabFriction] == 1 {
+		page := max(boxRows-2, 1)
+		offset := &m.detailsOffset[tabFriction]
+		before := *offset
 		switch key {
+		case "up":
+			*offset--
+		case "down":
+			*offset++
+		case "pgup":
+			*offset -= page
+		case "pgdown":
+			*offset += page
 		case "g":
-			m.detailsOffset[tabFriction] = 0
+			*offset = 0
 		case "G":
-			m.detailsOffset[tabFriction] = 1 << 16
+			*offset = 1 << 16
+		default:
+			return nil
 		}
-		return nil
+		*offset = min(max(*offset, 0), m.frictionDetailsMax())
+		if *offset == before {
+			return nil
+		}
+		return m.logAction("friction details scroll", slog.Int("offset", *offset))
 	}
 	delta := 0
 	switch key {
-	case "up", "k":
+	case "up":
 		delta = -1
-	case "down", "j":
+	case "down":
 		delta = 1
 	case "pgup":
-		delta = -page
+		delta = -max(listRows, 1)
 	case "pgdown":
-		delta = page
+		delta = max(listRows, 1)
 	case "g":
-		delta = -len(state.data.entries)
+		delta = -(1 << 16)
 	case "G":
-		delta = len(state.data.entries)
+		delta = 1 << 16
 	case "enter":
-		if selected, ok := state.selected(); ok {
-			path := filepath.Join(m.home, "reference", "dogfood", "friction", selected.path)
-			read := m.startFrictionFileRead(state, path, selected.file)
-			return batch(m.logAction("friction entry open", slog.String("file", selected.file)), read)
+		if state.selectedPath != frictionFold {
+			return nil
 		}
-		return nil
+		state.expanded = !state.expanded
+		action := "friction resolved fold"
+		if state.expanded {
+			action = "friction resolved expand"
+		}
+		return m.logAction(action)
+	case "/":
+		state.filterOpen = true
+		state.filterDraft = state.filter
+		return m.logAction("friction filter open")
 	default:
 		return nil
 	}
+	return m.moveFrictionSelection(delta)
+}
+
+// moveFrictionSelection moves the selection and logs a change. The details
+// box shows a new selection from its top.
+func (m *Model) moveFrictionSelection(delta int) tea.Cmd {
+	state := &m.friction
 	previous := state.selectedPath
 	state.moveSelection(delta)
 	if previous == state.selectedPath {
@@ -395,159 +484,35 @@ func (s frictionScreen) Update(msg tea.Msg) tea.Cmd {
 	return m.logAction("friction selection", slog.String("file", state.selectedPath))
 }
 
-// View gives the list. The frame draws the screen with its panels entries.
+// updateFrictionFilter edits the filter line (friction rule 6). Enter
+// applies the text and closes the line. Esc closes the line and keeps the
+// applied filter.
+func (m *Model) updateFrictionFilter(press tea.KeyPressMsg) tea.Cmd {
+	state := &m.friction
+	switch press.String() {
+	case "enter":
+		state.filter = strings.TrimSpace(state.filterDraft)
+		state.filterOpen = false
+		state.acceptSelection()
+		m.detailsOffset[tabFriction] = 0
+		return m.logAction("friction filter apply", slog.String("filter", state.filter))
+	case "esc":
+		state.filterOpen = false
+		return m.logAction("friction filter close")
+	case "backspace":
+		if runes := []rune(state.filterDraft); len(runes) > 0 {
+			state.filterDraft = string(runes[:len(runes)-1])
+		}
+		return nil
+	}
+	if press.Text != "" {
+		state.filterDraft += press.Text
+	}
+	return nil
+}
+
+// View gives the body of the screen. The frame draws the title row and the
+// status rows.
 func (s frictionScreen) View(width, height int) string {
-	return s.model.frictionList(width, height, true)
-}
-
-// frictionList draws the entries of the view. From 120 columns the date is
-// MM-DD. Below 120 columns the list shows the full date, the seen count, and
-// the hint that enter opens the details.
-func (m *Model) frictionList(width, height int, focused bool) string {
-	state := &m.friction
-	entries := state.visibleEntries()
-	view, dateTitle := "open", "OPENED"
-	if state.tab == frictionResolved {
-		view, dateTitle = "resolved", "RESOLVED"
-	}
-	wide := m.width >= component.LongFormWidth
-	list := component.List{
-		Title:    fmt.Sprintf("%s · %d", view, len(entries)),
-		Focused:  focused,
-		Columns:  []component.Column{{Title: "ENTRY", Width: 34}, {Title: dateTitle}},
-		Selected: state.selectedIndex(),
-		Offset:   state.listOffset,
-	}
-	if !wide {
-		list.Columns = []component.Column{{Title: "ENTRY", Width: 38}, {Title: dateTitle, Width: 12}, {Title: "SEEN"}}
-		list.Hint = "enter opens details"
-	}
-	dim := lipgloss.NewStyle().Foreground(component.Dim)
-	for _, entry := range entries {
-		date := entry.opened
-		if entry.resolved {
-			date = entry.resolvedDate()
-		}
-		if !entry.valid {
-			date = "?"
-		}
-		row := []component.Cell{{Text: entry.name()}}
-		if wide {
-			if len(date) == len("2006-01-02") {
-				date = date[5:]
-			}
-			row = append(row, component.Cell{Text: date, Style: dim})
-		} else {
-			count, _ := entry.seen()
-			row = append(row, component.Cell{Text: date, Style: dim}, component.Cell{Text: strconv.Itoa(count), Style: dim})
-		}
-		list.Rows = append(list.Rows, row)
-	}
-	list.Move(0, height)
-	state.listOffset = list.Offset
-	return list.View(width, height)
-}
-
-// frictionDetails gives the title and the lines of the selected entry, or
-// of the open entry file.
-func (m *Model) frictionDetails(width int) (string, []string) {
-	state := &m.friction
-	if state.fileOpen {
-		text := state.fileContent
-		if state.fileLoading {
-			text = "loading…"
-		}
-		return state.fileTitle + " · esc closes", wrapLines(strings.Split(text, "\n"), width-4)
-	}
-	if entry, ok := state.selected(); ok {
-		return entry.name(), frictionDetailLines(entry, width)
-	}
-	return "details", []string{"", "no entry selected"}
-}
-
-// frictionDetailLines gives the fields of the entry, then each section with
-// its heading in upper case. An open entry shows how many times it was seen,
-// and a resolved entry shows its decision.
-func frictionDetailLines(entry frictionEntry, width int) []string {
-	valueWidth := max(width-14, 1)
-	field := func(label, value string, style lipgloss.Style) string {
-		return component.DetailField(label, style.Render(padCell(ansi.Truncate(value, valueWidth, "…"), valueWidth)))
-	}
-	plain := lipgloss.NewStyle()
-	dim := lipgloss.NewStyle().Foreground(component.Dim)
-	if !entry.valid {
-		return []string{"", field("title", "? "+entry.file, plain), field("status", "?", plain), field("file", entry.path, plain)}
-	}
-	status := lipgloss.NewStyle().Foreground(component.Accent).Bold(true)
-	fourth := field("decision", entry.decision, plain)
-	if entry.resolved {
-		status = lipgloss.NewStyle().Foreground(component.Done)
-	} else {
-		count, last := entry.seen()
-		times := "times"
-		if count == 1 {
-			times = "time"
-		}
-		fourth = field("seen", fmt.Sprintf("%d %s · last %s", count, times, last), plain)
-	}
-	lines := []string{
-		"",
-		field("title", entry.title, plain),
-		field("status", entry.status, status),
-		field("opened", entry.opened, plain),
-		fourth,
-		field("file", entry.path, plain),
-	}
-	for _, section := range entry.sections {
-		lines = append(lines, "", component.DetailSection(strings.ToUpper(section.title)))
-		for _, line := range wrapLines(section.body, width-4) {
-			switch {
-			case strings.EqualFold(section.title, "Occurrences"):
-				line = dim.Render(line)
-			case strings.EqualFold(section.title, "Resolved by"):
-				if name, rest, ok := strings.Cut(line, "  "); ok {
-					line = padCell(name, 16) + dim.Render(strings.TrimSpace(rest))
-				}
-			}
-			lines = append(lines, line)
-		}
-	}
-	return lines
-}
-
-// wrapLines wraps each line to width cells and keeps its indent.
-func wrapLines(lines []string, width int) []string {
-	out := make([]string, 0, len(lines))
-	for _, line := range lines {
-		out = append(out, strings.Split(ansi.Wrap(line, max(width, 1), ""), "\n")...)
-	}
-	return out
-}
-
-func (m *Model) startFrictionFileRead(state *frictionState, path, title string) tea.Cmd {
-	state.fileOpen = true
-	state.fileLoading = true
-	state.fileTitle = title
-	state.fileContent = ""
-	m.detailsOffset[tabFriction] = 0
-	return func() tea.Msg {
-		content, err := m.readScreenFile(path)
-		return frictionFileMsg{title: title, content: content, err: err}
-	}
-}
-
-func (m *Model) acceptFrictionFile(msg frictionFileMsg) {
-	m.friction.fileLoading = false
-	if errors.Is(msg.err, errDemoNoFile) {
-		m.friction.fileContent = demoNoFile
-		m.demo.notice = demoNoFile
-		return
-	}
-	if msg.err != nil {
-		m.friction.fileContent = "error: " + boundedError(msg.err.Error())
-		return
-	}
-	m.friction.fileTitle = msg.title
-	m.friction.fileContent = msg.content
-	m.detailsOffset[tabFriction] = 0
+	return s.model.frictionBody(width, height)
 }

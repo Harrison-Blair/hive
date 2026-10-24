@@ -160,7 +160,7 @@ func TestScreenSelectionsUseHoneyMarkerAndDefaultForeground(t *testing.T) {
 			},
 		},
 		{
-			name: "Friction", honey: []string{"▶", "issue", "[Open]"}, states: []string{"▶ issue", "status    Open"},
+			name: "Friction", honey: []string{"▶", "issue"}, states: []string{"▶ issue", "issue · Open · opened 2026-04-05"},
 			model: func(t *testing.T) *Model {
 				m := selectionModel(t, 5)
 				m.friction.data.entries = []frictionEntry{{file: "issue.md", path: "entries/issue.md", title: "Open issue", status: "Open", opened: "2026-04-05", decision: "Keep", valid: true}}
