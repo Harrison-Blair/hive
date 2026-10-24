@@ -376,3 +376,43 @@ func TestFrictionSeenBarFitsItsColumn(t *testing.T) {
 	m, _ := newFrictionModel(t, map[string]string{"entries/busy.md": frictionText("Busy", "Open", "2026-10-20", "busy decision", "**Occurrences:**\n"+occurrences)})
 	requireRowPrefix(t, m, 3, " ▶ busy                                 3d    ▮▮▮▮▮▮▮▮▮▮ 10-22  busy decision ")
 }
+
+// README decision 34 (the user answer to ask a27): on each screen other than
+// Chat, the default first status row is state, the screen segment, and the
+// clock. The screen segment names the screen, or the popup that has the
+// focus, in accent bold, then its keys in dim.
+func TestFrictionStatusRowIsStateScreenClock(t *testing.T) {
+	m, _ := newFrictionModel(t, frictionHandEntries)
+	requireRowPrefix(t, m, 39, " ○ none · friction · ↑↓ move · enter resolved · / filter · ^] details · pgup/pgdn ")
+	requireRowSuffix(t, m, 39, " 14:22 ")
+	if c := renderGrid(t, m, 120, 40).At(39, 10); c.Token != cellgrid.Accent || !c.Bold {
+		t.Errorf("the screen name is %v bold %v; want accent bold", c.Token, c.Bold)
+	}
+	m = press(t, m, key('/', "/"))
+	requireRowPrefix(t, m, 39, " ○ none · filter · type · enter apply · esc close · backspace ")
+	m = press(t, m, escKey(), ctrl(']'))
+	requireRowPrefix(t, m, 39, " ○ none · friction · ↑↓ scroll ")
+	// Chat keeps the default row of decision 9.
+	m = press(t, m, escKey())
+	requireRowPrefix(t, m, 39, " ○ none · ○ supervisor · ? 0 asks · needs you 0 · ^g agents ")
+}
+
+// The screen segment drops its keys from the right when the row is wider
+// than the pane. The screen name and the clock stay.
+func TestFrictionStatusRowDropsKeysAt80Columns(t *testing.T) {
+	m, _ := newFrictionModel(t, frictionHandEntries)
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
+	row := viewRows(m)[23]
+	if !strings.HasPrefix(row, " ○ none · friction · ↑↓ move") || !strings.HasSuffix(row, " 14:22 ") {
+		t.Fatalf("row 23 = %q; want the state, the screen name, the first keys, and the clock", row)
+	}
+}
+
+// requireRowSuffix fails when row index of the plain view does not end with
+// want.
+func requireRowSuffix(t *testing.T, m *Model, index int, want string) {
+	t.Helper()
+	if got := viewRows(m)[index]; !strings.HasSuffix(got, want) {
+		t.Fatalf("row %d = %q; want the suffix %q", index, got, want)
+	}
+}
