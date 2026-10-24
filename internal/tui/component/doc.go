@@ -21,4 +21,5 @@
 // chat.go holds ChatLines, the lines of the chat feed.
 // statusrow.go holds StatusRow, a status row of segments and the clock.
 // titlerow.go holds TitleRow, the title row and the rule of a screen.
+// checkrow.go holds CheckRow and CheckTile, one area row of the Health grid.
 package component

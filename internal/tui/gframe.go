@@ -112,6 +112,10 @@ func (m *Model) statusRows(width, height int) []string {
 			rows = append(rows, m.askStatusRow(width))
 			continue
 		}
+		if index == 0 && m.focusStatusForm() {
+			rows = append(rows, m.focusStatusRow(width))
+			continue
+		}
 		row := component.StatusRow{}
 		for _, name := range names {
 			switch {
@@ -149,6 +153,37 @@ func (m *Model) askStatusRow(width int) string {
 	}
 	if len(m.openAsks()) > 1 {
 		row.Tail = []string{m.statusSegment("asks")}
+	}
+	return row.View(width)
+}
+
+// focusStatusForm reports that the first status row has the form of the
+// Health boards: the state, the focus name and its keys, and the clock. Ask
+// a27 decides if this form replaces the row of decision 9 on each screen.
+func (m *Model) focusStatusForm() bool {
+	return m.activeTab() == tabHealth && !m.helpOpen
+}
+
+// focusStatusRow gives the status row of the Health boards: the state, the
+// screen name or the restart focus in accent bold, the keys of the focus in
+// dim, the chords, and the clock. Segments go from the right until the row
+// fits.
+func (m *Model) focusStatusRow(width int) string {
+	name := strings.ToLower(screenRegistry[m.activeTab()].label)
+	restart := m.focusState() == "restart"
+	if restart {
+		name = "restart"
+	}
+	row := component.StatusRow{
+		Segments: []string{m.stateSegment(), component.StrongText(name)},
+		Clock:    m.now().Format("15:04"),
+	}
+	for _, key := range m.focusHints(width) {
+		row.Segments = append(row.Segments, component.DimText(key))
+	}
+	if !restart {
+		// The chords do nothing while the restart prompt is open.
+		row.Segments = append(row.Segments, m.statusSegment("chords"))
 	}
 	return row.View(width)
 }

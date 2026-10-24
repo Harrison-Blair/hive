@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"image/color"
 	"log/slog"
 	"slices"
 	"strings"
@@ -16,33 +17,35 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// The views of the Health screen (decision 18).
-const (
-	healthHome = iota
-	healthAgents
-)
-
-// Health column widths of the Health boards, each with its gap.
-const (
-	healthNameWidth      = 22
-	healthCheckWidth     = 24
-	healthRoleWide       = 12
-	healthRoleCompact    = 14
-	healthStateCompact   = 14
-	healthUnresolvedID   = 18
-	healthUnresolvedRole = 10
-	healthUnresolvedSt   = 12
-	healthPromptWidth    = 54
-	healthPromptHeight   = 7
-	healthPromptIndent   = 6
-)
-
 const healthRestartOnly = "restart: coordinator and supervisor only"
 
-var healthAccentStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent))
+// healthNote is the row under the agents table (health.md rule 4).
+const healthNote = "restart: coordinator and supervisor only · hive asks to confirm only when the agent is live · other rows show a notice"
 
-// healthScreen is tab 5 Health. Home lists the checks of hive doctor. Agents
-// lists each agent and holds the restart move of decision 19.
+// healthAreas are the rows of the check grid, in order (rule 1).
+var healthAreas = []string{"herdr", "home", "agents", "supervisor", "harness"}
+
+// The columns of the agents table, each with its gap (rule 4).
+const (
+	healthNameWidth    = 17
+	healthRoleWidth    = 12
+	healthHarnessWidth = 9
+	healthStateWidth   = 14
+	healthPaneWidth    = 10
+	healthStartedWidth = 10
+	healthHeader       = "AGENT             ROLE         HARNESS   STATE          PANE       STARTED   RESTART"
+)
+
+// healthTileWidth is the most cells of a tile text.
+const healthTileWidth = 30
+
+// healthLabelWidth is the cells of a WHAT IT MEANS or NEXT STEP label and
+// its gap.
+const healthLabelWidth = 14
+
+// healthScreen is the Health screen of golden-frames screens/health.md: the
+// check grid of hive doctor, the details box of the selected tile, and the
+// agents table. The grid and the table are its two boxes.
 type healthScreen struct{ model *Model }
 
 type healthState struct {
@@ -51,20 +54,26 @@ type healthState struct {
 	agents        agentsData
 	selected      string
 	selectedAgent string
-	hideStopped   bool
-	checkOffset   int
 	agentOffset   int
+	checking      bool
 }
 
-func loadHealth(home string, logger *slog.Logger) doctor.Result {
-	return doctor.Run(context.Background(), home, logger)
+// loadHealth runs hive doctor in the TUI process. A panic in a check is the
+// error of rule 7, so the TUI keeps running.
+func loadHealth(home string, logger *slog.Logger) (result doctor.Result, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+	return doctor.Run(context.Background(), home, logger), nil
 }
 
 func (healthScreen) DataRequest() dataRequest { return healthDataRequest }
 
 func (healthScreen) KeyHints() string { return "" }
 
-// View is not used: the frame draws the Health regions from the registry.
+// View is not used: the frame draws the Health body with healthContent.
 func (healthScreen) View(int, int) string { return "" }
 
 func (s healthScreen) Update(msg tea.Msg) tea.Cmd {
@@ -73,47 +82,42 @@ func (s healthScreen) Update(msg tea.Msg) tea.Cmd {
 		return nil
 	}
 	m := s.model
-	state := &m.health
 	key := press.String()
-	agents := m.views[tabHealth] == healthAgents
-	if agents && m.agents.restartRunning {
+	if m.agents.restartRunning {
 		return nil
 	}
-	if agents && m.agents.peekOpen && key == "esc" {
+	if m.agents.peekOpen && key == "esc" {
 		pane := m.agents.peekPane
 		m.agents.peekOpen, m.agents.peekText, m.agents.peekPane = false, "", ""
 		return m.logAction("agent peek close", slog.String("pane_id", pane))
 	}
-	page := max(m.height-frameRows-4, 1)
-	switch key {
-	case "up", "k":
-		return s.move(-1)
-	case "down", "j":
-		return s.move(1)
-	case "pgup":
-		return s.move(-page)
-	case "pgdown":
-		return s.move(page)
-	case "g":
-		return s.move(-1 << 20)
-	case "G":
-		return s.move(1 << 20)
-	case "enter":
-		m.regionFocus[tabHealth] = 1
-		m.detailsOffset[tabHealth] = 0
-		return m.logAction("focus region", slog.String("region", "details"))
-	}
-	if !agents {
+	if m.regionFocus[tabHealth] == 0 {
+		switch key {
+		case "up":
+			return s.moveTile(-1, 0)
+		case "down":
+			return s.moveTile(1, 0)
+		case "left":
+			return s.moveTile(0, -1)
+		case "right":
+			return s.moveTile(0, 1)
+		}
+		// health.md keys: r, a, and p act only while the table has the
+		// focus.
 		return nil
 	}
-	node, selected := state.selectedAgentNode()
+	node, selected := m.health.selectedAgentNode()
 	switch key {
+	case "up":
+		return s.moveAgent(-1)
+	case "down":
+		return s.moveAgent(1)
+	case "g":
+		return s.moveAgent(-len(m.health.agentList()))
+	case "G":
+		return s.moveAgent(len(m.health.agentList()))
 	case "r":
 		return m.requestRestart(node, selected)
-	case "h":
-		state.hideStopped = !state.hideStopped
-		state.keepAgentSelection()
-		return m.logAction("agent history visibility", slog.Bool("history", !state.hideStopped))
 	case "a":
 		if selected && node.record.PaneID != "" {
 			return batch(m.logAction("agent attach", slog.String("pane_id", node.record.PaneID)), m.attachCmd(node.record.PaneID))
@@ -129,35 +133,48 @@ func (s healthScreen) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-// move moves the selection of the active view by delta rows.
-func (s healthScreen) move(delta int) tea.Cmd {
+// moveTile moves the grid selection by rows areas and cols tiles. Up and
+// down keep the tile index as far as the row has tiles.
+func (s healthScreen) moveTile(rows, cols int) tea.Cmd {
+	m := s.model
+	grid := m.health.grid()
+	row, col := m.health.selectedTile(grid)
+	if row < 0 {
+		return nil
+	}
+	next := row
+	for step := next + rows; rows != 0 && step >= 0 && step < len(grid); step += rows {
+		if len(grid[step]) > 0 {
+			next = step
+			break
+		}
+	}
+	col = min(max(col+cols, 0), len(grid[next])-1)
+	name := grid[next][col].Name
+	if name == m.health.selected {
+		return nil
+	}
+	m.health.selected = name
+	return m.logAction("health selection", slog.String("check", name))
+}
+
+// moveAgent moves the table selection by delta rows.
+func (s healthScreen) moveAgent(delta int) tea.Cmd {
 	m := s.model
 	state := &m.health
-	if m.views[tabHealth] == healthAgents {
-		nodes := state.agentList()
-		index := slices.IndexFunc(nodes, func(node agentNode) bool { return node.record.Key == state.selectedAgent })
-		next := min(max(index+delta, 0), len(nodes)-1)
-		if next < 0 || next == index {
-			return nil
-		}
-		state.selectedAgent = nodes[next].record.Key
-		m.detailsOffset[tabHealth] = 0
-		return m.logAction("agent selection", slog.String("agent_id", state.selectedAgent))
-	}
-	checks := state.result.Checks
-	index := slices.IndexFunc(checks, func(check doctor.Check) bool { return check.Name == state.selected })
-	next := min(max(index+delta, 0), len(checks)-1)
+	nodes := state.agentList()
+	index := slices.IndexFunc(nodes, func(node agentNode) bool { return node.record.Key == state.selectedAgent })
+	next := min(max(index+delta, 0), len(nodes)-1)
 	if next < 0 || next == index {
 		return nil
 	}
-	state.selected = checks[next].Name
-	m.detailsOffset[tabHealth] = 0
-	return m.logAction("health selection", slog.String("check", state.selected))
+	state.selectedAgent = nodes[next].record.Key
+	return m.logAction("agent selection", slog.String("agent_id", state.selectedAgent))
 }
 
 // requestRestart restarts the selected coordinator or supervisor with the
 // behavior of task 3-tui-restart. It asks first only when the agent is live
-// (decision 19).
+// (health.md rule 6).
 func (m *Model) requestRestart(node agentNode, ok bool) tea.Cmd {
 	state := &m.agents
 	restartable := node.record.Role == "coordinator" || node.record.Role == "supervisor"
@@ -195,13 +212,25 @@ func (m *Model) requestRestart(node agentNode, ok bool) tea.Cmd {
 	)
 }
 
-// accept takes a new doctor result and keeps the selected check.
+// accept takes a new doctor result and keeps the selected check. The first
+// selection is the first tile that did not pass, else the first tile
+// (rule 2).
 func (s *healthState) accept(result doctor.Result) {
 	s.result = result
-	if !slices.ContainsFunc(result.Checks, func(check doctor.Check) bool { return check.Name == s.selected }) {
-		s.selected = ""
-		if len(result.Checks) != 0 {
-			s.selected = result.Checks[0].Name
+	grid := s.grid()
+	if row, _ := s.selectedTile(grid); row >= 0 {
+		return
+	}
+	s.selected = ""
+	for _, area := range grid {
+		for _, check := range area {
+			if s.selected == "" {
+				s.selected = check.Name
+			}
+			if check.Status != doctor.StatusOK {
+				s.selected = check.Name
+				return
+			}
 		}
 	}
 }
@@ -209,10 +238,6 @@ func (s *healthState) accept(result doctor.Result) {
 // acceptAgents takes new agent data and keeps the selected agent.
 func (s *healthState) acceptAgents(data agentsData) {
 	s.agents = data
-	s.keepAgentSelection()
-}
-
-func (s *healthState) keepAgentSelection() {
 	nodes := s.agentList()
 	if slices.ContainsFunc(nodes, func(node agentNode) bool { return node.record.Key == s.selectedAgent }) {
 		return
@@ -221,6 +246,28 @@ func (s *healthState) keepAgentSelection() {
 	if len(nodes) != 0 {
 		s.selectedAgent = nodes[0].record.Key
 	}
+}
+
+// grid gives the checks of each area of healthAreas, in doctor order.
+func (s *healthState) grid() [][]doctor.Check {
+	grid := make([][]doctor.Check, len(healthAreas))
+	for _, check := range s.result.Checks {
+		index := slices.Index(healthAreas, healthArea(check.Name))
+		grid[index] = append(grid[index], check)
+	}
+	return grid
+}
+
+// selectedTile gives the row and the column of the selected check, or -1.
+func (s *healthState) selectedTile(grid [][]doctor.Check) (int, int) {
+	for row, area := range grid {
+		for col, check := range area {
+			if check.Name == s.selected {
+				return row, col
+			}
+		}
+	}
+	return -1, -1
 }
 
 func (s *healthState) selectedCheck() (doctor.Check, bool) {
@@ -241,28 +288,17 @@ func (s *healthState) selectedAgentNode() (agentNode, bool) {
 	return agentNode{}, false
 }
 
-// agentList gives the current agent of each identity, the coordinator and
-// the supervisor first. Hide stopped removes each stopped agent.
+// agentList gives the current record of each agent, the coordinator and the
+// supervisor first (rule 4).
 func (s *healthState) agentList() []agentNode {
 	nodes := make([]agentNode, 0, len(s.agents.nodes))
 	for _, node := range s.agents.nodes {
-		if node.current && (!s.hideStopped || !node.stopped) {
+		if node.current {
 			nodes = append(nodes, node)
 		}
 	}
 	slices.SortStableFunc(nodes, func(a, b agentNode) int { return healthRoleRank(a.record.Role) - healthRoleRank(b.record.Role) })
 	return nodes
-}
-
-// stoppedCount gives the number of current stopped agents.
-func (s *healthState) stoppedCount() int {
-	count := 0
-	for _, node := range s.agents.nodes {
-		if node.current && node.stopped {
-			count++
-		}
-	}
-	return count
 }
 
 func healthRoleRank(role string) int {
@@ -272,232 +308,284 @@ func healthRoleRank(role string) int {
 	return 5
 }
 
-// healthAgentName gives the name of an agent row. The coordinator and the
-// supervisor show their key, which names the generation that restart
-// replaces.
-func healthAgentName(record records.Agent) string {
-	if record.Role == "coordinator" || record.Role == "supervisor" || record.Name == "" {
-		return record.Key
+// healthArea gives the grid row of a check by its name (rule 1).
+func healthArea(name string) string {
+	switch {
+	case strings.HasPrefix(name, "herdr "):
+		return "herdr"
+	case strings.HasPrefix(name, "supervisor"):
+		return "supervisor"
+	case strings.HasPrefix(name, "harness "):
+		return "harness"
 	}
-	return record.Name
+	switch name {
+	case "starting agents", "unresolved agents", "ownerless inbox records", "stale worktrees", "unpushed task branches":
+		return "agents"
+	}
+	return "home"
 }
 
-// healthAgentState gives the state word of an agent, its dot, the style of
-// the dot, and the style of the word. The dot and the word both show the
-// state, so colour is not the only signal.
-func healthAgentState(record records.Agent) (string, string, lipgloss.Style, lipgloss.Style) {
-	plain := lipgloss.NewStyle()
-	switch record.Status {
-	case records.AgentStopped, records.AgentExited:
-		return "stopped", "○", dimStyle, dimStyle
-	case records.AgentUnresolved, records.AgentStale:
-		return record.Status, "●", healthAccentStyle, plain
-	case records.AgentStarting:
-		return "starting", "◐", healthAccentStyle, plain
-	case records.AgentLive:
-		switch record.AgentStatus {
-		case "working":
-			return "working", "●", workingStyle, plain
-		case "idle", "done":
-			return "idle", "◐", healthAccentStyle, plain
-		case "blocked":
-			return "blocked", "●", healthAccentStyle, plain
+// healthTile gives the label and the short result of the tile of a check.
+// The tile text is the two, joined by a space.
+func healthTile(check doctor.Check) (string, string) {
+	detail, ok := check.Detail, check.Status == doctor.StatusOK
+	first, _, _ := strings.Cut(detail, ":")
+	count := func() string {
+		if detail == "none" {
+			return detail
 		}
-		return "live", "●", workingStyle, plain
+		return fmt.Sprint(len(strings.Split(detail, ", ")))
 	}
-	return record.Status, "·", dimStyle, plain
-}
-
-// healthPane gives the pane column of an agent row.
-func healthPane(record records.Agent) string {
-	switch {
-	case record.Status == records.AgentUnresolved:
-		return "gone"
-	case record.Status == records.AgentStopped || record.Status == records.AgentExited || record.PaneID == "":
-		return "—"
-	}
-	return record.PaneID
-}
-
-// healthCheckGlyph gives the glyph of a check status and its style.
-func healthCheckGlyph(status string) (string, lipgloss.Style) {
-	switch status {
-	case doctor.StatusOK:
-		return "✓", doneStyle.Bold(true)
-	case doctor.StatusWarn:
-		return "!", titleStyle
-	case doctor.StatusFail:
-		return "×", titleStyle
-	}
-	return "·", dimStyle.Bold(true)
-}
-
-// healthCheckName gives the short name of a check for its row.
-func healthCheckName(name string) string {
-	if name == "unpushed task branches" {
-		return "unpushed branches"
-	}
-	return name
-}
-
-// healthCheckResult gives the short result of a check for its row.
-func healthCheckResult(check doctor.Check) string {
-	detail := check.Detail
-	ok := check.Status == doctor.StatusOK
-	switch {
-	case check.Name == "herdr socket" && strings.Contains(detail, "protocol "):
-		return detail[strings.Index(detail, "protocol "):]
-	case check.Name == "git":
-		return strings.TrimPrefix(detail, "git version ")
-	case check.Name == "gh":
+	switch name := check.Name; {
+	case name == "herdr socket":
+		if index := strings.Index(detail, "protocol "); index >= 0 {
+			return "socket ·", detail[index:]
+		}
+		return "socket ·", detail
+	case name == "herdr pane":
+		return "pane", detail
+	case name == "home":
+		return "", detail
+	case name == "state store":
+		return "store ·", detail
+	case name == "git":
+		return "git", strings.TrimPrefix(detail, "git version ")
+	case name == "home version" && strings.HasPrefix(detail, "development build"):
+		return "version", "dev"
+	case name == "home version":
+		return "version", detail
+	case name == "gh":
 		version, _, _ := strings.Cut(strings.TrimPrefix(detail, "gh version "), " (")
-		return version
-	case check.Name == "supervisor" && strings.HasPrefix(detail, "supervisor "):
-		return strings.Replace(strings.TrimPrefix(detail, "supervisor "), ": ", " · ", 1)
-	case check.Name == "supervisor binary" && ok:
-		return "current"
-	case check.Name == "supervisor binary" && check.Status == doctor.StatusWarn:
-		return "old"
-	case strings.HasPrefix(check.Name, "harness ") && ok:
-		return "found"
+		return "gh", version
+	case name == "starting agents":
+		return "starting", detail
+	case name == "unresolved agents":
+		return "unresolved", detail
+	case name == "ownerless inbox records":
+		return "ownerless inbox", first
+	case name == "stale worktrees":
+		return "stale worktrees", count()
+	case name == "unpushed task branches":
+		return "unpushed", count()
+	case name == "supervisor":
+		return "", strings.Replace(strings.TrimPrefix(detail, "supervisor "), ": ", " · ", 1)
+	case name == "supervisor binary" && ok:
+		return "binary", "current"
+	case name == "supervisor binary" && (strings.Contains(detail, "older") || strings.Contains(detail, "deleted")):
+		return "binary", "old"
+	case strings.HasPrefix(name, "harness ") && ok:
+		return strings.TrimPrefix(name, "harness "), ""
+	case strings.HasPrefix(name, "harness "):
+		return strings.TrimPrefix(name, "harness "), detail
 	}
-	return detail
+	return check.Name, first
 }
 
-// fitHealthCell cuts text to width-1 cells with … and pads it to width
-// cells, so one cell of gap stays.
-func fitHealthCell(text string, width int) string {
-	text = ansi.Truncate(text, max(width-1, 0), "…")
-	return text + strings.Repeat(" ", max(width-lipgloss.Width(text), 0))
+// healthTileText gives the text of the tile of a check.
+func healthTileText(check doctor.Check) string {
+	label, short := healthTile(check)
+	text := strings.TrimSpace(label + " " + short)
+	return ansi.Truncate(text, healthTileWidth, "…")
 }
 
-// fitHealthLine cuts text to width cells with … and pads it to width cells.
-func fitHealthLine(text string, width int) string {
-	text = ansi.Truncate(text, max(width, 0), "…")
-	return text + strings.Repeat(" ", max(width-lipgloss.Width(text), 0))
-}
+// healthGridShowsSelection reports that the grid shows the ▶ and the accent
+// of its selected tile. The boards show it only while the grid has the
+// focus. Ask a28 decides this rule.
+func healthGridShowsSelection(focused bool) bool { return focused }
 
-// healthMarker gives the selection marker cell and its gap.
-func healthMarker(selected bool) string {
-	if selected {
-		return titleStyle.Render("▶") + " "
-	}
-	return "  "
-}
-
-// healthPanel draws the list region of the active Health view.
-func (m *Model) healthPanel(width, height int, focused bool) string {
-	if m.views[tabHealth] == healthAgents {
-		return m.healthAgentsPanel(width, height, focused)
-	}
+// healthFacts gives the facts of the title row: the counts, the time of the
+// last result, and the R key or the checking mark (rule 7).
+func (m *Model) healthFacts() string {
 	state := &m.health
-	line := max(width-4, 1)
 	checks := state.result.Checks
-	warn, fail := 0, 0
-	rows := make([]string, 0, len(checks))
-	selectedIndex := 0
-	for index, check := range checks {
-		switch check.Status {
-		case doctor.StatusWarn:
-			warn++
-		case doctor.StatusFail:
-			fail++
+	if len(checks) == 0 && state.checkedAt.IsZero() {
+		return "· checking…"
+	}
+	passed := 0
+	for _, check := range checks {
+		if check.Status == doctor.StatusOK {
+			passed++
 		}
-		selected := check.Name == state.selected
-		if selected {
-			selectedIndex = index
-		}
-		glyph, glyphStyle := healthCheckGlyph(check.Status)
-		name, result := lipgloss.NewStyle(), dimStyle
-		if selected {
-			name, result = titleStyle, healthAccentStyle
-		}
-		rest := max(line-4-healthNameWidth, 0)
-		rows = append(rows, healthMarker(selected)+glyphStyle.Render(glyph)+" "+
-			name.Render(fitHealthCell(healthCheckName(check.Name), healthNameWidth))+
-			result.Render(fitHealthLine(healthCheckResult(check), rest)))
 	}
-	title := fmt.Sprintf("checks · %d", len(checks))
-	if warn > 0 {
-		title += fmt.Sprintf(" · %d warn", warn)
+	facts := "· " + plural(len(checks), "check") + fmt.Sprintf(" · %d ok", passed)
+	if warn := len(checks) - passed; warn > 0 {
+		facts += fmt.Sprintf(" · %d warn", warn)
 	}
-	if fail > 0 {
-		title += fmt.Sprintf(" · %d fail", fail)
+	if !state.checkedAt.IsZero() {
+		facts += " · checked " + state.checkedAt.Format("15:04:05")
 	}
-	header := "  " + dimStyle.Render(fitHealthCell("CHECK", healthCheckWidth)+"RESULT")
-	if len(checks) == 0 {
-		rows = append(rows, "  "+dimStyle.Render("loading checks…"))
+	if state.checking {
+		return facts + " · checking…"
 	}
-	return healthListPanel(title, focused, header, rows, nil, selectedIndex, &state.checkOffset, width, height)
+	return facts + " · R checks again"
 }
 
-// healthAgentsPanel draws the list of Health › Agents. Below 120 columns the
-// list has the pane column and the notes of the CompactHealth board.
-func (m *Model) healthAgentsPanel(width, height int, focused bool) string {
+// healthContent draws the Health body at exactly width×height cells: the
+// check grid, the details box, the agents table, and the note under it. The
+// details box and the table take the rows that they need while the rows
+// last. The table scrolls when its rows do not fit.
+func (m *Model) healthContent(width, height int) string {
 	state := &m.health
-	wide := m.width >= component.LongFormWidth
-	line := max(width-4, 1)
-	nodes := state.agentList()
-	stopped := state.stoppedCount()
-	roleWidth, stateWidth := healthRoleCompact, healthStateCompact
-	header := fitHealthCell("AGENT", healthNameWidth) + fitHealthCell("ROLE", healthRoleCompact) + fitHealthCell("STATE", healthStateCompact) + "PANE"
-	if wide {
-		roleWidth = healthRoleWide
-		stateWidth = max(line-2-healthNameWidth-healthRoleWide, 3)
-		header = fitHealthCell("AGENT", healthNameWidth) + fitHealthCell("ROLE", healthRoleWide) + "STATE"
+	gridFocused := m.regionFocus[tabHealth] == 0
+	shown := healthGridShowsSelection(gridFocused)
+	grid := state.grid()
+	rows := make([]string, 0, height)
+	for index, area := range healthAreas {
+		row := component.CheckRow{Area: area}
+		for _, check := range grid[index] {
+			row.Tiles = append(row.Tiles, component.CheckTile{
+				Text:     healthTileText(check),
+				Passed:   check.Status == doctor.StatusOK,
+				Selected: shown && check.Name == state.selected,
+				Dim:      state.checking,
+			})
+		}
+		rows = append(rows, row.View(width))
 	}
+	rows = append(rows, "")
+	rest := height - len(rows)
+	title, lines := m.healthDetails(width)
+	tableRows := m.healthTableRows()
+	tableNeed := len(tableRows) + 3
+	detailsHeight := min(len(lines)+2, max(3, rest-2-min(tableNeed, 5)), rest)
+	if detailsHeight >= 3 {
+		rows = append(rows, component.Panel{Title: title, Lines: lines}.View(width, detailsHeight), "")
+	}
+	room := rest - detailsHeight - 1
+	note := room-1 >= min(tableNeed, 4)
+	if note {
+		room--
+	}
+	if tableHeight := min(tableNeed, room); tableHeight >= 3 {
+		rows = append(rows, m.healthTable(tableRows, width, tableHeight, !gridFocused))
+		if note {
+			rows = append(rows, component.Notice{Text: healthNote}.View(width))
+		}
+	}
+	return fitBlock(strings.Join(rows, "\n"), width, height)
+}
+
+// healthDetails gives the title and the body of the details box of the
+// selected tile (rule 3), or the peek of the selected agent.
+func (m *Model) healthDetails(width int) (string, []string) {
+	state := &m.health
+	line := max(width-4, 1)
+	if m.agents.peekOpen {
+		lines := strings.Split(strings.TrimRight(m.agents.peekText, "\n"), "\n")
+		return "peek · " + m.agents.peekPane + " · esc closes", lines
+	}
+	check, ok := state.selectedCheck()
+	switch {
+	case !ok && state.checkedAt.IsZero():
+		return "checks", []string{dimStyle.Render("loading checks…")}
+	case !ok:
+		return "checks", []string{dimStyle.Render("no checks")}
+	}
+	passed := check.Status == doctor.StatusOK
+	body := lipgloss.NewStyle()
+	source := "source hive doctor · checked " + state.checkedAt.Format("15:04:05")
+	if state.checking {
+		// health.md rule 7: the body is dim until the new result.
+		body = dimStyle
+		source = "source hive doctor · last result " + state.checkedAt.Format("15:04:05") + " · new result pending"
+	}
+	title := "✓ " + check.Name
+	if !passed {
+		_, short := healthTile(check)
+		title = "! " + check.Name
+		if short != "" {
+			title += " · " + short
+		}
+	}
+	var lines []string
+	if check.Name == "unresolved agents" && !passed {
+		lines = append(lines, dimStyle.Bold(true).Render("ID               ROLE      STATE         PANE"))
+		for _, node := range state.agentList() {
+			if record := node.record; record.Status == records.AgentUnresolved {
+				lines = append(lines, body.Render(fitHealthCell(healthAgentName(record), 17)+fitHealthCell(record.Role, 10)+fitHealthCell(record.Status, 14)+healthPane(record)))
+			}
+		}
+	} else {
+		for _, row := range strings.Split(ansi.Wrap(check.Detail, line, ""), "\n") {
+			lines = append(lines, body.Render(row))
+		}
+	}
+	if !passed {
+		lines = append(lines, "")
+		lines = append(lines, healthLabelled("WHAT IT MEANS", healthMeaning(check), line, body)...)
+		lines = append(lines, healthLabelled("NEXT STEP", "Ask the coordinator in Chat. Health only shows state.", line, body)...)
+		lines = append(lines, "")
+	}
+	return title, append(lines, dimStyle.Render(source))
+}
+
+// healthMeaning gives the WHAT IT MEANS text of a check that did not pass.
+func healthMeaning(check doctor.Check) string {
+	if check.Name == "unresolved agents" {
+		return "The record says the agent is live, but hive cannot find its pane. Hive does not change the record."
+	}
+	return "hive doctor gives " + check.Status + " for " + check.Name + ": " + check.Detail
+}
+
+// healthLabelled gives a label in accent bold and its text, wrapped to line
+// cells. Each next row starts below the text.
+func healthLabelled(label, text string, line int, body lipgloss.Style) []string {
+	rows := strings.Split(ansi.Wordwrap(text, max(line-healthLabelWidth, 1), ""), "\n")
+	out := make([]string, len(rows))
+	for index, row := range rows {
+		head := strings.Repeat(" ", healthLabelWidth)
+		if index == 0 {
+			head = titleStyle.Render(label) + strings.Repeat(" ", healthLabelWidth-len(label))
+		}
+		out[index] = head + body.Render(row)
+	}
+	return out
+}
+
+// healthTableRows gives the rows of the agents table (rule 4).
+func (m *Model) healthTableRows() []string {
+	state := &m.health
+	nodes := state.agentList()
 	rows := make([]string, 0, len(nodes))
-	selectedIndex := 0
-	for index, node := range nodes {
-		selected := node.record.Key == state.selectedAgent
+	for _, node := range nodes {
+		record := node.record
+		selected := record.Key == state.selectedAgent
+		marker, name, restart := "  ", lipgloss.NewStyle(), dimStyle
 		if selected {
-			selectedIndex = index
+			marker, name, restart = titleStyle.Render("▶")+" ", titleStyle, healthAccentStyle
 		}
-		name := lipgloss.NewStyle()
-		if selected {
-			name = titleStyle
+		word, dot, dotColor := healthAgentState(record, m.now())
+		started := ""
+		if at, err := time.Parse(time.RFC3339Nano, record.StartedAt); err == nil {
+			started = at.In(m.now().Location()).Format("15:04")
 		}
-		word, dot, dotStyle, wordStyle := healthAgentState(node.record)
-		row := healthMarker(selected) + name.Render(fitHealthCell(healthAgentName(node.record), healthNameWidth)) +
-			dimStyle.Render(fitHealthCell(node.record.Role, roleWidth)) +
-			dotStyle.Render(dot) + " "
-		if wide {
-			row += wordStyle.Render(fitHealthLine(word, stateWidth-2))
-		} else {
-			row += wordStyle.Render(fitHealthCell(word, stateWidth-2)) + dimStyle.Render(healthPane(node.record))
+		row := marker + lipgloss.NewStyle().Foreground(dotColor).Render(dot) + " " +
+			name.Render(fitHealthCell(healthAgentName(record), healthNameWidth)) + " " +
+			dimStyle.Render(fitHealthCell(record.Role, healthRoleWidth)) + " " +
+			dimStyle.Render(fitHealthCell(record.Harness, healthHarnessWidth)) + " " +
+			fitHealthCell(word, healthStateWidth) + " " +
+			dimStyle.Render(fitHealthCell(healthPane(record), healthPaneWidth)) + " " +
+			dimStyle.Render(started) + strings.Repeat(" ", max(healthStartedWidth-lipgloss.Width(started), 0))
+		if record.Role == "coordinator" || record.Role == "supervisor" {
+			row += restart.Render("r restart")
 		}
 		rows = append(rows, row)
 	}
-	if len(nodes) == 0 {
-		rows = append(rows, "  "+dimStyle.Render("no agents"))
+	if len(rows) == 0 {
+		rows = append(rows, "    "+dimStyle.Render("no agents"))
 	}
-	title := fmt.Sprintf("agents · %d", len(nodes))
-	var notes []string
-	plural := "s"
-	if stopped == 1 {
-		plural = ""
-	}
-	switch {
-	case !wide:
-		notes = []string{"", "", dimStyle.Render("r restarts the coordinator or supervisor. It asks first only when live.")}
-		if stopped > 0 && state.hideStopped {
-			notes = append(notes, dimStyle.Render(fmt.Sprintf("h shows %d stopped agent%s.", stopped, plural)))
-		} else if stopped > 0 {
-			notes = append(notes, dimStyle.Render(fmt.Sprintf("h hides %d stopped agent%s.", stopped, plural)))
-		}
-	case stopped > 0 && state.hideStopped:
-		title += fmt.Sprintf(" · h shows %d stopped", stopped)
-	case stopped > 0:
-		title += fmt.Sprintf(" · h hides %d stopped", stopped)
-	}
-	return healthListPanel(title, focused, "  "+dimStyle.Render(header), rows, notes, selectedIndex, &state.agentOffset, width, height)
+	return rows
 }
 
-// healthListPanel draws a list panel: the header, the rows from the offset
-// that keeps the selected row visible, then the notes. The panel draws the
-// scroll mark of decision 5 when the rows do not fit.
-func healthListPanel(title string, focused bool, header string, rows, notes []string, selected int, offset *int, width, height int) string {
-	visible := max(height-3-len(notes), 1)
+// healthTable draws the agents table box at width×height cells. The rows
+// start at the offset that keeps the selected row visible, and the ┃ thumb
+// shows when they do not fit (rule 5).
+func (m *Model) healthTable(rows []string, width, height int, focused bool) string {
+	state := &m.health
+	nodes := state.agentList()
+	selected := max(slices.IndexFunc(nodes, func(node agentNode) bool { return node.record.Key == state.selectedAgent }), 0)
+	visible := max(height-3, 1)
+	offset := &state.agentOffset
 	if visible < len(rows) {
 		*offset = min(*offset, selected)
 		*offset = max(*offset, selected-visible+1)
@@ -505,156 +593,94 @@ func healthListPanel(title string, focused bool, header string, rows, notes []st
 	} else {
 		*offset = 0
 	}
-	shown := rows[*offset:min(*offset+visible, len(rows))]
-	lines := append([]string{header}, shown...)
-	lines = append(lines, notes...)
+	lines := append([]string{"    " + dimStyle.Bold(true).Render(healthHeader)}, rows[*offset:min(*offset+visible, len(rows))]...)
 	mark := component.Thumb(visible, len(rows), visible, *offset)
 	if mark.Size > 0 {
 		mark.Start++
 	}
-	return component.Panel{Title: title, Focused: focused, Lines: lines, VMark: mark}.View(width, height)
+	return component.Panel{Title: m.healthTableTitle(nodes), Focused: focused, Lines: lines, VMark: mark}.View(width, height)
 }
 
-// healthDetails gives the title and the lines of the details region of the
-// active Health view.
-func (m *Model) healthDetails(width int) (string, []string) {
-	line := max(width-4, 1)
-	if m.views[tabHealth] == healthAgents {
-		return m.healthAgentDetails(line)
-	}
-	check, ok := m.health.selectedCheck()
-	if !ok {
-		return "details", []string{"", "no check selected"}
-	}
-	glyphStyle := doneStyle
-	if check.Status != doctor.StatusOK {
-		glyphStyle = titleStyle
-	}
-	result := check.Status + " · " + healthCheckResult(check)
-	unresolved := []agentNode{}
-	if check.Name == "unresolved agents" {
-		for _, node := range m.health.agentList() {
-			if node.record.Status == records.AgentUnresolved {
-				unresolved = append(unresolved, node)
-			}
+// healthTableTitle gives the title of the agents table: the count of the
+// agents and the count of each state that has one.
+func (m *Model) healthTableTitle(nodes []agentNode) string {
+	counts := map[string]int{}
+	for _, node := range nodes {
+		record := node.record
+		switch {
+		case record.Status == records.AgentLive && record.AgentStatus == "idle":
+			counts["idle"]++
+		case record.Status == records.AgentLive:
+			counts["live"]++
+		case record.Status == records.AgentExited:
+			counts["stopped"]++
+		default:
+			counts[record.Status]++
 		}
-		plural := "s"
-		if len(unresolved) == 1 {
-			plural = ""
+	}
+	title := fmt.Sprintf("agents · %d", len(nodes))
+	for _, word := range []string{"live", "idle", records.AgentStarting, records.AgentStopped, records.AgentUnresolved, records.AgentStale} {
+		if counts[word] > 0 {
+			title += fmt.Sprintf(" · %d %s", counts[word], word)
 		}
-		result = fmt.Sprintf("%s · %d agent%s", check.Status, len(unresolved), plural)
 	}
-	checked := "not checked"
-	if !m.health.checkedAt.IsZero() {
-		checked = m.health.checkedAt.Format("15:04:05")
-	}
-	lines := []string{
-		"",
-		component.DetailField("result", glyphStyle.Render(fitHealthLine(result, line-10))),
-		component.DetailField("source", "hive doctor"),
-		component.DetailField("checked", checked+" · R to check again"),
-		"",
-	}
-	if check.Name == "unresolved agents" {
-		lines = append(lines, component.DetailSection("AGENTS"),
-			dimStyle.Render(fitHealthCell("ID", healthUnresolvedID)+fitHealthCell("ROLE", healthUnresolvedRole)+fitHealthCell("STATE", healthUnresolvedSt)+"PANE"))
-		for _, node := range unresolved {
-			lines = append(lines, fitHealthCell(healthAgentName(node.record), healthUnresolvedID)+fitHealthCell(node.record.Role, healthUnresolvedRole)+
-				healthAccentStyle.Render(fitHealthCell(node.record.Status, healthUnresolvedSt))+dimStyle.Render(healthPane(node.record)))
-		}
-		lines = append(lines, "", component.DetailSection("WHAT IT MEANS"))
-		lines = append(lines, strings.Split(ansi.Wordwrap("The record says the agent is live, but hive cannot find its pane. Hive does not change the record by itself.", line, ""), "\n")...)
-	} else {
-		lines = append(lines, component.DetailSection("DETAIL"))
-		lines = append(lines, strings.Split(ansi.Wrap(check.Detail, line, ""), "\n")...)
-	}
-	if check.Status != doctor.StatusOK {
-		lines = append(lines, "", component.DetailSection("NEXT STEP"), dimStyle.Render("Ask the coordinator in 2 Chat. Health only shows state."))
-	}
-	return check.Name, lines
+	return title
 }
 
-// healthAgentDetails gives the details of the selected agent: its fields,
-// its actions, and the restart prompt of decision 19 when it is open.
-func (m *Model) healthAgentDetails(line int) (string, []string) {
-	node, ok := m.health.selectedAgentNode()
-	if !ok {
-		return "details", []string{"", "no agent selected"}
+var healthAccentStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent))
+
+// healthAgentName gives the name of an agent row.
+func healthAgentName(record records.Agent) string {
+	if record.Name == "" {
+		return record.Key
 	}
-	record := node.record
-	name := healthAgentName(record)
-	word, _, dotStyle, _ := healthAgentState(record)
-	restartable := record.Role == "coordinator" || record.Role == "supervisor"
-	lines := []string{"", component.DetailField("role", record.Role), component.DetailField("state", dotStyle.Render(fitHealthLine(word, line-10)))}
-	if node.pid != "" {
-		lines = append(lines, component.DetailField("pid", node.pid))
-	}
-	if !restartable {
-		if record.Project != "" {
-			lines = append(lines, component.DetailField("project", record.Project))
-		}
-		if record.Task != "" {
-			lines = append(lines, component.DetailField("task", record.Task))
-		}
-		if record.Harness != "" {
-			lines = append(lines, component.DetailField("harness", record.Harness))
-		}
-	}
-	pane := healthPane(record)
-	if restartable && record.PaneID != "" && pane != "—" {
-		pane += " · tab " + record.Name
-	}
-	lines = append(lines, component.DetailField("pane", pane))
-	if record.Role == "supervisor" {
-		for _, check := range m.health.result.Checks {
-			if check.Name == "supervisor binary" {
-				binary := healthCheckResult(check)
-				if path, _, found := strings.Cut(strings.TrimPrefix(check.Detail, "supervisor "), " modified"); found {
-					binary += " · " + path
-				}
-				lines = append(lines, component.DetailField("binary", binary))
-			}
-		}
-	}
-	if restartable && record.StartedByHive {
-		lines = append(lines, component.DetailField("started", "by bare hive"))
-	}
-	lines = append(lines, "", component.DetailSection("ACTIONS"))
-	switch record.Role {
-	case "supervisor":
-		lines = append(lines, titleStyle.Render("r")+" restart · runs hive supervise in a new tab")
-	case "coordinator":
-		lines = append(lines, titleStyle.Render("r")+" restart · starts a new coordinator in a new tab")
-	}
-	lines = append(lines, titleStyle.Render("a")+" attach to the pane", titleStyle.Render("p")+" peek at the pane", "")
-	if m.agents.peekOpen && m.agents.peekPane == record.PaneID {
-		lines = append(lines, component.DetailSection("PEEK · "+record.PaneID))
-		lines = append(lines, strings.Split(strings.TrimRight(m.agents.peekText, "\n"), "\n")...)
-		lines = append(lines, dimStyle.Render("esc closes the peek"), "")
-	}
-	if !restartable {
-		return name, append(lines, dimStyle.Render("r restarts only the coordinator and the supervisor."))
-	}
-	if m.agents.restartConfirm && m.agents.restartTarget.Key == record.Key {
-		lines = append(lines, "")
-		indent := strings.Repeat(" ", min(healthPromptIndent, max(line-healthPromptWidth, 0)))
-		for _, row := range strings.Split(restartPrompt(record.Key, min(healthPromptWidth, line)), "\n") {
-			lines = append(lines, indent+row)
-		}
-		lines = append(lines, "")
-	}
-	return name, append(lines, "",
-		dimStyle.Render("r asks to confirm only when the agent is live."),
-		dimStyle.Render("A stale or stopped agent restarts at once."))
+	return record.Name
 }
 
-// restartPrompt draws the restart prompt box of the HealthAgents board.
-func restartPrompt(key string, width int) string {
-	return component.Panel{Title: "restart " + key + "?", Focused: true, Lines: []string{
-		"",
-		"It is live. Hive stops it and starts a new one.",
-		dimStyle.Render("The old record stays on disk as stopped."),
-		"",
-		titleStyle.Render("y") + " restart   " + titleStyle.Render("esc") + " cancel",
-	}}.View(width, healthPromptHeight)
+// healthAgentState gives the state word of an agent, its dot, and the
+// colour of the dot, as tui-v2 decision 55 gives them. A live state has the
+// whole minutes from status_changed_at. The word also shows the state, so
+// colour is not the only signal.
+func healthAgentState(record records.Agent, now time.Time) (string, string, color.Color) {
+	with := func(word string) string {
+		if age := coordinatorStatusAge(record.StatusChangedAt, now); age != "" {
+			return word + " " + age
+		}
+		return word
+	}
+	switch record.Status {
+	case records.AgentLive:
+		switch record.AgentStatus {
+		case "working":
+			return with("working"), "●", component.Working
+		case "blocked":
+			return with("blocked"), "▲", component.Accent
+		case "":
+			return with("live"), "●", component.Working
+		}
+		return with(record.AgentStatus), "○", component.Dim
+	case records.AgentStarting:
+		return "starting", "●", component.Dim
+	case records.AgentStopped, records.AgentExited:
+		return "stopped", "○", component.Dim
+	}
+	return record.Status, "○", component.Dim
+}
+
+// healthPane gives the pane column of an agent row: the pane of a live
+// agent, else gone.
+func healthPane(record records.Agent) string {
+	switch {
+	case record.Status != records.AgentLive && record.Status != records.AgentStarting:
+		return "gone"
+	case record.PaneID == "":
+		return "—"
+	}
+	return record.PaneID
+}
+
+// fitHealthCell cuts text to width cells with … and pads it to width cells.
+func fitHealthCell(text string, width int) string {
+	text = ansi.Truncate(text, max(width, 0), "…")
+	return text + strings.Repeat(" ", max(width-lipgloss.Width(text), 0))
 }

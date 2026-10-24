@@ -120,23 +120,11 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 	},
 	tabHealth: {
-		label:       "Health",
-		views:       []string{"Home", "Agents"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
+		label:   "Health",
+		regions: []string{"grid", "table"},
 		hints: map[string][]string{
-			"Home/list":   {"↑↓ move", "^] box", "[ ] view", "enter open", "R refresh", "? help"},
-			"Agents/list": {"↑↓ move", "^] box", "[ ] view", "enter open", "r restart", "R refresh", "? help"},
-			"details":     {"↑↓ scroll", "^] box", "esc back to list", "? help"},
-		},
-		compact: map[string][]string{
-			"Home/list":   {"↑↓ move", "enter details", "[ ] view", "R refresh", "?"},
-			"Agents/list": {"↑↓ move", "enter details", "[ ] view", "r restart", "R refresh", "?"},
-			"details":     {"↑↓ scroll", "esc back to list"},
-		},
-		panels: map[string]screenPanels{
-			"Home":   {list: (*Model).healthPanel, details: (*Model).healthDetails},
-			"Agents": {list: (*Model).healthPanel, details: (*Model).healthDetails},
+			"grid":  {"↑↓ ←→ tile", "^] agents", "R check again"},
+			"table": {"↑↓ row", "g/G top/end", "^] checks", "r restart", "a attach", "p peek", "R check again"},
 		},
 	},
 	tabLogs: {
@@ -202,8 +190,6 @@ func (m *Model) activeView() int {
 		return m.screenIndex - 2
 	case tabFriction:
 		return int(m.friction.tab)
-	case tabHealth:
-		return m.views[tabHealth]
 	}
 	return 0
 }
@@ -312,7 +298,11 @@ func (m *Model) frameView() string {
 	notice := m.noticeLine(width)
 	var rows []string
 	if m.activeTab() != tabChat {
-		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
+		title := component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}
+		if m.activeTab() == tabHealth {
+			title.Facts = m.healthFacts()
+		}
+		rows = append(rows, title.View(width))
 	}
 	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
@@ -456,6 +446,8 @@ func (m *Model) contentView(width, height int) string {
 		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
+	case tab == tabHealth:
+		body = m.healthContent(width, bodyHeight)
 	case entry.listDetails && width >= component.LongFormWidth:
 		listWidth := listRegionWidth(tab, width)
 		list := strings.Split(m.legacyPanel(listWidth, bodyHeight, focus == entry.regions[0]), "\n")
@@ -652,6 +644,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	case m.tuiConfig.Keys["help"]:
 		return m.openHelp()
 	case "R":
+		if tab == tabHealth {
+			// health.md rule 7: the screen shows checking until the result.
+			m.health.checking = true
+		}
 		return batch(m.logAction("refresh"), m.startHeaderLoad(), m.startCurrentScreenLoad())
 	case "tab":
 		// Golden-frames decision 19: there is no tab region move.
