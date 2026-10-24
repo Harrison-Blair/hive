@@ -312,6 +312,7 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	// supervisor segment, so the config names it.
 	cfg := defaultTUI()
 	cfg.StatusLines = [][]string{{"state", "supervisor", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	// Golden-frames decision 11: the status row shows an old supervisor as
 	// ▲ supervisor. Decision 19: restart is in the Health agents table, so

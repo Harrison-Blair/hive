@@ -380,6 +380,7 @@ func TestLiveFooters(t *testing.T) {
 			m := liveModel(t, tc.board, nil)
 			cfg := defaultTUI()
 			cfg.StatusLines = [][]string{{"screen"}}
+			cfg.StatusLinesExplicit = true
 			m.setTUIConfig(cfg)
 			for _, press := range tc.keys {
 				m, _ = raise(t, m, press)
