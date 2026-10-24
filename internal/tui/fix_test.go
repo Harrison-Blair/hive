@@ -16,6 +16,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
@@ -90,7 +91,10 @@ func TestLogRefreshKeepsFileOrder(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("log order=%q; want %q", got, want)
 	}
-	view := m.View().Content
+	// The list starts at its title. The strip above it names the selected
+	// event.
+	view := ansi.Strip(m.View().Content)
+	view = view[strings.Index(view, "─ events · "):]
 	if strings.Index(view, "append A") > strings.Index(view, "append B") {
 		t.Fatalf("rendered order reversed A then B:\n%s", view)
 	}

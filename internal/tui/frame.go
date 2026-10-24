@@ -144,12 +144,12 @@ var screenRegistry = [tabCount]frameScreen{
 		regions:     []string{"events", "json"},
 		listDetails: true,
 		hints: map[string][]string{
-			"events": {"↑↓ move", "^] box", "enter open", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
-			"json":   {"↑↓ scroll", "^] box", "f follow", "< > day", "/ filter", "g/G top/end", "? help"},
+			"events": {"↑↓ move", "/ filter", "f follow", "← → day", "j raw", "r request", "^] panel"},
+			"json":   {"↑↓ scroll", "/ filter", "f follow", "← → day", "j raw", "r request", "^] list"},
 		},
 		compact: map[string][]string{
-			"events": {"↑↓ move", "enter details", "f follow", "/ filter", "?"},
-			"json":   {"↑↓ scroll", "esc back to events", "f follow"},
+			"events": {"↑↓ move", "enter details", "/ filter", "f follow", "j raw"},
+			"json":   {"↑↓ scroll", "esc back to events", "j raw"},
 		},
 	},
 }
@@ -312,7 +312,11 @@ func (m *Model) frameView() string {
 	notice := m.noticeLine(width)
 	var rows []string
 	if m.activeTab() != tabChat {
-		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
+		title := component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}
+		if m.activeTab() == tabLogs {
+			title.Facts, title.Right = m.logsTitle()
+		}
+		rows = append(rows, title.View(width))
 	}
 	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
@@ -423,6 +427,9 @@ func (m *Model) footerError() string {
 	if m.activeTab() == tabChat {
 		errs = append(errs, m.chatErr)
 	}
+	if m.activeTab() == tabLogs {
+		errs = append(errs, m.logFilterErr)
+	}
 	for _, text := range errs {
 		if text != "" {
 			return text
@@ -477,7 +484,7 @@ func (m *Model) contentView(width, height int) string {
 // each other list has 13/30.
 func listRegionWidth(tab, width int) int {
 	if tab == tabLogs {
-		return width * 8 / 15
+		return width * 11 / 20
 	}
 	return width * 13 / 30
 }
@@ -633,15 +640,11 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 			return nil
 		}
 	}
-	if entry.listDetails && m.detailsFocused() && m.width < component.LongFormWidth {
+	if entry.listDetails && tab != tabLogs && m.detailsFocused() && m.width < component.LongFormWidth {
 		// Decision 21: the overlay takes its scroll keys and its action
 		// keys, and esc closes it. It drops each other key.
 		switch key {
 		case "esc", "up", "k", "down", "j", "pgup", "pgdown":
-		case "<", ">":
-			if tab != tabLogs {
-				return nil
-			}
 		default:
 			if len(key) != 1 || !strings.Contains(actionKeys, key) {
 				return nil
@@ -681,12 +684,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		// Decision 19: restart is in Health › Agents, so r does nothing.
 		return m.updateAgentsKey(key)
 	}
-	if tab == tabLogs && (key == "<" || key == ">") {
-		day := "["
-		if key == ">" {
-			day = "]"
-		}
-		return m.currentScreen().Update(tea.KeyPressMsg{Code: rune(day[0]), Text: day})
+	if tab == tabLogs {
+		return m.currentScreen().Update(press)
 	}
 	if entry.listDetails && m.detailsFocused() {
 		switch key {

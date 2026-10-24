@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -23,26 +24,9 @@ const maxErrorBytes = 300
 // debug events, as the old level filter did.
 const defaultLogFilter = "level:info"
 
-// The cells of the event list columns: the marker, the time, the level, and
-// the component. The marker, the time, and the level include one blank cell
-// after the text. The component cuts a longer name at 10 cells. The message
-// takes the cells that are left.
-const (
-	logMarkerCells    = 2
-	logTimeCells      = 9
-	logLevelCells     = 6
-	logComponentCells = 10
-)
-
-// The cells after the status of the filter bar, from 120 columns and below
-// (the Logs and CompactLogs boards).
-const (
-	logStatusGapWide    = 10
-	logStatusGapCompact = 6
-)
-
 var (
 	accentTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(colorAccent))
+	codeStyle       = lipgloss.NewStyle().Foreground(component.Code)
 )
 
 type logsScreen struct{ model *Model }
@@ -114,6 +98,20 @@ func parseLogFilter(text string) logFilter {
 	return f
 }
 
+// logFilterFields are the typed fields of tui-v2 decision 25.
+var logFilterFields = []string{"level", "comp", "proj", "agent", "task", "req"}
+
+// unknownLogField gives the name of the first typed field of text that is
+// not a field of decision 25, or empty.
+func unknownLogField(text string) string {
+	for _, word := range strings.Fields(text) {
+		if name, value, found := strings.Cut(word, ":"); found && value != "" && !slices.Contains(logFilterFields, name) {
+			return sanitizeText(name)
+		}
+	}
+	return ""
+}
+
 // matches reports that row passes the filter. An agent value matches the
 // agent ID or the agent name before its generation, for example
 // manager-hive for manager-hive-g2.
@@ -135,11 +133,11 @@ func (f logFilter) matches(row logRow) bool {
 	return true
 }
 
-// updateLogKey handles a key of the event list or the JSON panel that the
-// frame gives to the screen.
+// updateLogKey handles a key of the event list or the field panel that the
+// frame gives to the screen (logs.md keys).
 func (m *Model) updateLogKey(press tea.KeyPressMsg) tea.Cmd {
-	jsonFocused := m.detailsFocused()
-	switch press.String() {
+	panel := m.detailsFocused()
+	switch key := press.String(); key {
 	case "/":
 		m.mode = editing
 		m.filterDraft = m.textFilter
@@ -149,11 +147,10 @@ func (m *Model) updateLogKey(press tea.KeyPressMsg) tea.Cmd {
 		if m.follow {
 			m.selectLastLogRow()
 		}
-		return m.logAction("follow")
-	case "[", "]":
-		// The frame gives < and > to the screen as [ and ].
+		return m.logAction("follow", slog.Bool("on", m.follow))
+	case "left", "right":
 		step := -1
-		if press.String() == "]" {
+		if key == "right" {
 			step = 1
 		}
 		m.logDate = startOfDay(m.logDate.AddDate(0, 0, step))
@@ -162,38 +159,51 @@ func (m *Model) updateLogKey(press tea.KeyPressMsg) tea.Cmd {
 		m.logSelection = 0
 		m.logSelectedKey = ""
 		m.logOffset = 0
+		m.detailsOffset[tabLogs] = 0
 		return batch(m.logAction("log day", slogTime("day", m.logDate)), m.startCurrentScreenLoad())
+	case "j":
+		m.logRaw = !m.logRaw
+		m.detailsOffset[tabLogs] = 0
+		return m.logAction("raw json", slog.Bool("on", m.logRaw))
+	case "r":
+		row, ok := m.selectedLogRow()
+		request := logField(row.event, "request_id")
+		if !ok || request == "" {
+			return nil
+		}
+		m.textFilter = "req:" + sanitizeText(request)
+		m.refreshLogSelection()
+		return m.logAction("filter request", slog.String("request_id", request))
 	case "enter":
-		if _, ok := m.selectedLogRow(); ok && !jsonFocused {
+		if _, ok := m.selectedLogRow(); ok && !panel && m.width < component.LongFormWidth {
 			m.regionFocus[tabLogs] = 1
 			m.detailsOffset[tabLogs] = 0
 			return m.logAction("event detail")
 		}
 		return nil
 	case "esc", "escape":
-		m.textFilter = defaultLogFilter
-		m.refreshLogSelection()
-		return m.logAction("filter clear")
+		// The frame gives esc to the screen only to close the overlay of
+		// the field panel below 120 columns.
+		m.regionFocus[tabLogs] = 0
+		return m.logAction("event detail close")
+	}
+	if panel {
+		m.scrollLogPanel(press.String())
+		return nil
+	}
+	switch press.String() {
 	case "g":
-		if jsonFocused {
-			m.detailsOffset[tabLogs] = 0
-			return nil
-		}
 		m.follow = false
 		m.moveLogSelection(-len(m.events))
 		return m.logAction("top")
 	case "G":
-		if jsonFocused {
-			m.detailsOffset[tabLogs] = 1 << 30
-			return nil
-		}
 		m.follow = true
 		m.selectLastLogRow()
 		return m.logAction("bottom")
-	case "up", "k":
+	case "up":
 		m.follow = false
 		m.moveLogSelection(-1)
-	case "down", "j":
+	case "down":
 		m.moveLogSelection(1)
 	case "pgup":
 		m.follow = false
@@ -204,15 +214,43 @@ func (m *Model) updateLogKey(press tea.KeyPressMsg) tea.Cmd {
 	return nil
 }
 
-// updateLogFilter handles a key of the filter bar (decision 21): enter
-// applies the text, and esc closes the bar and keeps the applied filter.
+// scrollLogPanel scrolls the field panel by the key: one row, one page, or
+// to the top or the end.
+func (m *Model) scrollLogPanel(key string) {
+	switch key {
+	case "up":
+		m.detailsOffset[tabLogs]--
+	case "down":
+		m.detailsOffset[tabLogs]++
+	case "pgup":
+		m.detailsOffset[tabLogs] -= m.logPage()
+	case "pgdown":
+		m.detailsOffset[tabLogs] += m.logPage()
+	case "g":
+		m.detailsOffset[tabLogs] = 0
+	case "G":
+		m.detailsOffset[tabLogs] = 1 << 30
+	}
+	m.detailsOffset[tabLogs] = max(m.detailsOffset[tabLogs], 0)
+}
+
+// updateLogFilter handles a key of the open filter line (logs.md rule 7):
+// enter applies the text, and esc closes the line and keeps the applied
+// filter. A field with a bad name keeps the line open and shows the error
+// on the notice line.
 func (m *Model) updateLogFilter(press tea.KeyPressMsg) tea.Cmd {
 	switch press.String() {
 	case "esc", "escape":
 		m.mode = viewing
 		m.filterDraft = ""
+		m.logFilterErr = ""
 		return m.logAction("edit cancel")
 	case "enter":
+		if name := unknownLogField(m.filterDraft); name != "" {
+			m.logFilterErr = "unknown field " + name
+			return m.logAction("filter refused", slog.String("field", name))
+		}
+		m.logFilterErr = ""
 		m.textFilter = m.filterDraft
 		m.mode = viewing
 		m.refreshLogSelection()
@@ -361,168 +399,237 @@ func (m *Model) makeLogRows() []logRow {
 	return rows
 }
 
-// logsContent draws the content area of Logs (decision 20): the filter bar,
-// then the event list and the JSON panel side by side from 120 columns.
-// Below 120 columns the JSON panel is a full-width overlay (decision 9).
+// The rows of the Logs content area above the boxes (logs.md layout): the
+// filter line, a blank row, and the three rows of the density strip. A
+// blank row follows the boxes.
+const (
+	logBoxTop = 5
+	logBoxGap = 1
+)
+
+// The cells of the event list columns (logs.md rule 3): the marker and a
+// blank, the time and a blank, the level and two blanks, and the component
+// and two blanks. The message takes the cells that are left.
+const (
+	logLeadCells      = 2
+	logTimeCells      = 9
+	logLevelCells     = 7
+	logComponentCells = 11
+)
+
+// logListHeader is the title row of the event list.
+const logListHeader = "  TIME     LEVEL  COMP       MESSAGE"
+
+// logFollowCells is the cells after the follow text of the filter line.
+const logFollowCells = 4
+
+// logsContent draws the content area of Logs (logs.md): the filter line,
+// the density strip, and the event list with the field panel. From 120
+// columns the list and the panel sit side by side. Below 120 columns the
+// panel is a full-width overlay while it has the focus.
 func (m *Model) logsContent(width, height int) string {
 	focus := m.focusState()
-	wide := width >= component.LongFormWidth
-	status := m.logDayStatus()
-	gap := logStatusGapCompact
-	if wide {
-		status = dimStyle.Render("follow") + " " + m.followMark() + "  " + status
-		gap = logStatusGapWide
+	rows := m.filteredLogRows()
+	strip := logDensity(rows, width-logStripMargin, m.logSelection, m.now().Location())
+	if len(m.events) == 0 || m.logErr != "" {
+		strip = logDensity(nil, width-logStripMargin, -1, m.now().Location())
 	}
-	text := m.textFilter
-	if m.mode == editing {
-		text = m.filterDraft
-	}
-	bar := component.FilterBar{Text: text, Editing: m.mode == editing, Focused: focus == "filter", Status: status + strings.Repeat(" ", gap)}.View(width)
-	bodyHeight := max(height-3, component.PanelMinHeight)
+	top := m.logFilterLine(width) + "\n\n" + strip.View(width)
+	boxHeight := max(height-logBoxTop-logBoxGap, component.PanelMinHeight)
 	var body string
 	switch {
-	case wide:
+	case width >= component.LongFormWidth:
 		listWidth := listRegionWidth(tabLogs, width)
-		list := strings.Split(m.logEventsPanel(listWidth, bodyHeight, focus == "events"), "\n")
-		details := strings.Split(m.logJSONPanel(width-listWidth, bodyHeight, focus == "json", "", true), "\n")
+		list := strings.Split(m.logEventsPanel(rows, listWidth, boxHeight, focus == "events"), "\n")
+		details := strings.Split(m.logFieldPanel(width-listWidth, boxHeight, focus == "json"), "\n")
 		for index := range list {
 			list[index] += details[index]
 		}
 		body = strings.Join(list, "\n")
 	case m.detailsFocused():
-		body = m.logJSONPanel(width, bodyHeight, focus == "json", " · esc back", false)
+		body = m.logFieldPanel(width, boxHeight, focus == "json")
 	default:
-		body = m.logEventsPanel(width, bodyHeight, focus == "events")
+		body = m.logEventsPanel(rows, width, boxHeight, focus == "events")
 	}
-	return fitBlock(bar+"\n"+body, width, height)
+	return fitBlock(top+"\n"+body, width, height)
 }
 
-func (m *Model) logDayStatus() string {
-	return titleStyle.Render("<") + " " + m.logDate.Format("2006-01-02") + " " + titleStyle.Render(">")
-}
-
-// followMark gives ● when follow is on and ○ when it is off.
-func (m *Model) followMark() string {
-	if m.follow {
-		return workingStyle.Render("●")
+// logsTitle gives the facts and the right text of the Logs title row
+// (logs.md layout): the event count, the warn and error counts when more
+// than 0, and the path of the day file, or the no file text.
+func (m *Model) logsTitle() (string, string) {
+	date := m.logDate.Format("2006-01-02")
+	rows := m.makeLogRows()
+	facts := fmt.Sprintf("· %d events", len(rows))
+	if len(rows) == 0 && m.logErr == "" {
+		return facts + " · no log file for " + date, "← " + date + " → day"
 	}
-	return dimStyle.Render("○")
-}
-
-// logEventsPanel draws the event list. The first body row is blank, as the
-// header row of a list with no column titles. The list keeps the selected
-// row visible and shows no empty row without need. A log error takes the
-// place of the rows.
-func (m *Model) logEventsPanel(width, height int, focused bool) string {
-	rows := m.filteredLogRows()
-	visible := max(height-3, 1)
-	lines := []string{""}
-	if m.logErr != "" {
-		// The log error takes the place of the rows, as on the old screen.
-		lines = append(lines, "error: "+m.logErr)
-		rows = nil
-	} else if len(rows) == 0 {
-		message := "no events on " + m.logDate.Format("2006-01-02")
-		if sameDay(m.logDate, m.now()) {
-			message = "no events today"
+	warn, errs := 0, 0
+	for _, row := range rows {
+		switch logLevel(row.event) {
+		case "WARN":
+			warn++
+		case "ERROR":
+			errs++
 		}
-		lines = append(lines, dimStyle.Render(message))
+	}
+	if warn > 0 {
+		facts += fmt.Sprintf(" · %d warn", warn)
+	}
+	if errs > 0 {
+		facts += fmt.Sprintf(" · %d error", errs)
+	}
+	return facts + " · " + m.homeLabel() + "/.hive/logs/" + date + ".jsonl", "← " + date + " → day"
+}
+
+// logFilterLine gives the filter line of logs.md rule 7: / in accent bold,
+// the filter text, the cursor while the line is open, and the follow state
+// at the right.
+func (m *Model) logFilterLine(width int) string {
+	text := m.textFilter
+	if m.mode == editing {
+		text = m.filterDraft + " █"
+	}
+	mark := dimStyle.Render("○")
+	if m.follow {
+		mark = workingStyle.Render("●")
+	}
+	right := dimStyle.Render("follow ") + mark + dimStyle.Render("  f toggles follow") + strings.Repeat(" ", logFollowCells)
+	room := width - lipgloss.Width(right) - 4
+	if room < 1 {
+		right, room = "", width-3
+	}
+	if m.mode == editing {
+		text = ansi.TruncateLeft(text, max(lipgloss.Width(text)-room, 0), "…")
+	} else {
+		text = ansi.Truncate(text, room, "…")
+	}
+	line := " " + titleStyle.Render("/") + " " + text
+	return fitLine(line, width-lipgloss.Width(right)) + right
+}
+
+// logEventsPanel draws the event list of logs.md rule 3. The list keeps the
+// selected row visible. A log error, a day with no event, and a filter with
+// no match each take the place of the rows.
+func (m *Model) logEventsPanel(rows []logRow, width, height int, focused bool) string {
+	visible := max(height-3, 1)
+	var lines []string
+	switch {
+	case m.logErr != "":
+		lines = []string{"", "error: " + m.logErr}
+		rows = nil
+	case len(m.events) == 0:
+		lines = []string{"", dimStyle.Render("no log file for " + m.logDate.Format("2006-01-02"))}
+	case len(rows) == 0:
+		lines = []string{"", dimStyle.Render("no event matches " + sanitizeText(m.textFilter))}
+	default:
+		lines = []string{dimStyle.Bold(true).Render(logListHeader)}
 	}
 	offset := min(m.logOffset, m.logSelection)
 	offset = max(offset, m.logSelection-visible+1)
 	offset = min(max(offset, 0), max(len(rows)-visible, 0))
 	m.logOffset = offset
-	message := max(width-4-logMarkerCells-logTimeCells-logLevelCells-logComponentCells, 1)
+	message := max(width-4-logLeadCells-logTimeCells-logLevelCells-logComponentCells, 1)
 	for index := offset; index < min(offset+visible, len(rows)); index++ {
 		lines = append(lines, m.logRowLine(rows[index], index == m.logSelection, message))
 	}
-	mark := component.Thumb(visible, len(rows), visible, offset)
-	if mark.Size > 0 {
-		mark.Start++ // the track starts below the blank first row
+	title := fmt.Sprintf("events · %d", len(rows))
+	if len(rows) > 0 {
+		title += " · newest at the end"
 	}
-	panel := component.Panel{Title: fmt.Sprintf("events · %d", len(rows)), Focused: focused, Lines: lines, VMark: mark}
+	panel := component.Panel{Title: title, Focused: focused, Lines: lines, VMark: component.Thumb(height-2, len(rows), visible, offset)}
 	return panel.View(width, height)
 }
 
-// logRowLine gives one row of the event list. The selected row has the
-// marker ▶, its time in accent, and its message in accent and bold. A warn
-// or error level is accent and bold. Each column style covers its padding,
-// as on the Logs board.
+// logRowLine gives one row of the event list (logs.md rule 3). The time
+// and the component are dim. A DEBUG row is dim. The level of a WARN row
+// is accent bold and of an ERROR row error bold. The selected row starts
+// with ▶ and has its time and message in accent bold.
 func (m *Model) logRowLine(row logRow, selected bool, messageCells int) string {
-	marker, timeStyle, messageStyle := " ", dimStyle, lipgloss.NewStyle()
-	if selected {
-		marker, timeStyle, messageStyle = titleStyle.Render("▶"), accentTextStyle, titleStyle
-	}
 	level := logLevel(row.event)
-	levelStyle := dimStyle
-	if level == "WARN" || level == "ERROR" {
+	lead, timeStyle, levelStyle, messageStyle := "  ", dimStyle, lipgloss.NewStyle(), lipgloss.NewStyle()
+	switch level {
+	case "DEBUG":
+		levelStyle, messageStyle = dimStyle, dimStyle
+	case "WARN":
 		levelStyle = titleStyle
+	case "ERROR":
+		levelStyle = errorTextStyle.Bold(true)
 	}
-	return marker + " " +
-		timeStyle.Render(logCell(logTime(row.event, m.now().Location()), logTimeCells-1)) + " " +
-		levelStyle.Render(logCell(level, logLevelCells)) +
-		infoStyle.Render(logCell(fieldOrDash(row.event, "component"), logComponentCells)) +
+	if selected {
+		lead, timeStyle, messageStyle = titleStyle.Render("▶")+" ", titleStyle, titleStyle
+	}
+	return lead +
+		timeStyle.Render(logTime(row.event, m.now().Location())) + " " +
+		levelStyle.Render(logCell(level, logLevelCells-2)) + "  " +
+		dimStyle.Render(logCell(fieldOrDash(row.event, "component"), logComponentCells-2)) + "  " +
 		messageStyle.Render(logCell(row.text, messageCells))
 }
 
-// logJSONPanel draws the JSON of the selected event. The panel scrolls on
-// its own from the details offset of Logs (decision 20). When the lines do
-// not fit, the last body row shows how many lines are below it. From 120
-// columns the first body row is blank, level with the blank first row of the
-// event list.
-func (m *Model) logJSONPanel(width, height int, focused bool, suffix string, blankFirst bool) string {
-	title, lines := "event", []string{dimStyle.Render("no event selected")}
-	if row, ok := m.selectedLogRow(); ok {
-		title = "event " + logTime(row.event, m.now().Location())
-		lines = logJSONLines(row.event, max(width-6, 1))
+// logFieldPanel draws the selected event in the field panel: its fields
+// (logs.md rule 4) or its raw JSON (rule 5). The lines scroll on their own
+// from the details offset of Logs. The key hint sits on the row above the
+// last body row. Below 120 columns the panel is an overlay, and its title
+// ends with "esc back".
+func (m *Model) logFieldPanel(width, height int, focused bool) string {
+	row, ok := m.selectedLogRow()
+	if !ok || m.logErr != "" {
+		return component.Panel{Title: "event", Focused: focused}.View(width, height)
 	}
-	if blankFirst {
-		lines = append([]string{""}, lines...)
+	room := max(width-4, 1)
+	title := "event " + logTime(row.event, m.now().Location())
+	hint := "j raw JSON · r filter by this request"
+	var lines []string
+	if m.logRaw {
+		title += " · raw"
+		hint = "j fields · r filter by this request"
+		lines = logRawLines(row.event.Raw, room)
+	} else {
+		title += " · " + logLevel(row.event)
+		lines = logFieldLines(row.event.Raw, room-logLabelCells)
 	}
 	body := max(height-2, 1)
-	offset := min(max(m.detailsOffset[tabLogs], 0), max(len(lines)-body, 0))
+	region := max(body-2, 1)
+	offset := min(max(m.detailsOffset[tabLogs], 0), max(len(lines)-region, 0))
 	m.detailsOffset[tabLogs] = offset
-	shown := lines[offset:]
-	if len(shown) > body {
-		more := len(shown) - body + 1
-		shown = append(shown[:body-1:body-1], dimStyle.Render(fmt.Sprintf("↓ %d more lines", more)))
+	shown := make([]string, body)
+	copy(shown, lines[offset:min(offset+region, len(lines))])
+	if body > region {
+		shown[region] = dimStyle.Render(hint)
 	}
-	panel := component.Panel{Title: title + suffix, Focused: focused, Lines: shown, VMark: component.Thumb(body, len(lines), body, offset)}
+	if width < component.LongFormWidth {
+		title += " · esc back"
+	}
+	panel := component.Panel{Title: title, Focused: focused, Lines: shown, VMark: component.Thumb(body, len(lines), region, offset)}
 	return panel.View(width, height)
 }
 
-// logJSONLines gives the event JSON with two spaces of indent and each key
-// in info. Each line is cut to width cells with ….
-func logJSONLines(event logs.Event, width int) []string {
+// logRawLines gives the raw JSON of an event with two spaces of indent, in
+// code. A line that is wider than width wraps at a word, and each next row
+// indents by two more cells.
+func logRawLines(raw []byte, width int) []string {
 	var pretty bytes.Buffer
-	if err := json.Indent(&pretty, event.Raw, "", "  "); err != nil {
+	if err := json.Indent(&pretty, raw, "", "  "); err != nil {
 		pretty.Reset()
-		pretty.Write(event.Raw)
+		pretty.Write(raw)
 	}
 	if pretty.Len() == 0 {
 		pretty.WriteString("{}")
 	}
 	var lines []string
 	for line := range strings.SplitSeq(pretty.String(), "\n") {
-		line = ansi.Truncate(sanitizeText(line), width, "…")
-		lines = append(lines, styleJSONKey(line))
+		line = sanitizeText(line)
+		text := strings.TrimLeft(line, " ")
+		indent := line[:len(line)-len(text)]
+		first := wrapLogValue(text, max(width-len(indent), 1))[0]
+		lines = append(lines, codeStyle.Render(indent+first))
+		if rest := strings.TrimPrefix(text[len(first):], " "); rest != "" {
+			for _, next := range wrapLogValue(rest, max(width-len(indent)-2, 1)) {
+				lines = append(lines, codeStyle.Render(indent+"  "+next))
+			}
+		}
 	}
 	return lines
-}
-
-// styleJSONKey styles the key of a "key": value line in info.
-func styleJSONKey(line string) string {
-	body := strings.TrimLeft(line, " ")
-	indent := line[:len(line)-len(body)]
-	if !strings.HasPrefix(body, `"`) {
-		return line
-	}
-	end := strings.Index(body[1:], `":`)
-	if end < 0 {
-		return line
-	}
-	key := body[:end+2]
-	return indent + infoStyle.Render(key) + body[len(key):]
 }
 
 // logCell cuts text to width cells with … and pads it to width cells. A

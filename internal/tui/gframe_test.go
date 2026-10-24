@@ -248,7 +248,7 @@ func TestFrameScreenSegmentShowsTheFocusKeys(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	m, _ = raise(t, m, ctrl('l'))
 	// Decisions 6 and 19: ctrl+] moves the box focus, and tab does not.
-	requireKeys(t, m, "events", "↑↓ move · ^] box · enter open")
+	requireKeys(t, m, "events", "↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel")
 	for _, tab := range []int{tabWork, tabFriction, tabHealth, tabLogs} {
 		m.selectScreen(tab, 0)
 		if keys := keysRow(t, m); strings.Contains(keys, "tab") {
