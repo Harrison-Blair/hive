@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"testing"
 )
@@ -383,6 +384,88 @@ func TestMigrationVersionThreeKeepsEqualRecordsFromTwoInboxes(t *testing.T) {
 		if !fileMissing(t, home, "inbox", "manager-"+project) {
 			t.Fatalf("the old inbox of project %s is still present", project)
 		}
+	}
+}
+
+// seedOwnerAliasHome writes one version 2 home where the live owner of project
+// one is named manager-two, the old inbox key of project two. Project two has
+// no live owner. Each old inbox holds one unread record.
+func seedOwnerAliasHome(t *testing.T) string {
+	t.Helper()
+	home := t.TempDir()
+	seedHive(t, home)
+	seedState(t, home, []string{"schema.json"}, map[string]any{"version": 2})
+	seedState(t, home, []string{"agents", "manager-two-g1.json"}, map[string]any{
+		"key": "manager-two-g1", "name": "manager-two", "role": "manager", "kind": "",
+		"profile": "planner", "owns": "one", "worktree": "", "project": "one", "task": "",
+		"status": "live", "generation": 1,
+	})
+	seedState(t, home, []string{"claims", "manager-one.json"}, map[string]any{
+		"key": "manager-one", "agent": "manager-two-g1", "generation": 1,
+	})
+	for _, project := range []string{"one", "two"} {
+		inbox := "manager-" + project
+		seedState(t, home, []string{"inbox", inbox, "1.json"}, map[string]any{
+			"seq": 1, "role": inbox, "kind": "message", "task": "",
+			"agent": "user", "text": "mail for " + project,
+			"created_at": "2026-01-01T00:00:00Z", "read_at": "",
+		})
+		seedState(t, home, []string{"counters", "inbox:" + inbox + ".json"}, map[string]any{"value": 1})
+	}
+	return home
+}
+
+// TestMigrationVersionThreeKeepsEachSourceDestination proves that each source
+// record keeps the destination of its own project when the live owner of one
+// project is named after the old inbox of another project. The owner inbox
+// manager-two is also the old inbox of project two, so the step must not read
+// its copied record as a source record of project two.
+func TestMigrationVersionThreeKeepsEachSourceDestination(t *testing.T) {
+	home := seedOwnerAliasHome(t)
+
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() = %v; want the migration", err)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
+		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	}
+
+	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
+	wantOwner := map[string]any{
+		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(owner, wantOwner) {
+		t.Fatalf("owner record = %#v; want %#v", owner, wantOwner)
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "manager-two"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("owner inbox records = %d; want one record", len(entries))
+	}
+
+	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
+	wantCoordinator := map[string]any{
+		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(coordinator, wantCoordinator) {
+		t.Fatalf("coordinator record = %#v; want %#v", coordinator, wantCoordinator)
+	}
+
+	if !fileMissing(t, home, "inbox", "manager-one") {
+		t.Fatal("the old inbox of project one is still present")
+	}
+	if !fileMissing(t, home, "counters", "inbox:manager-one.json") {
+		t.Fatal("the old counter of project one is still present")
+	}
+	counter := readJSONMap(t, home, "counters", "inbox:manager-two.json")
+	if counter["value"] != float64(2) {
+		t.Fatalf("owner inbox counter = %#v; want value 2", counter)
 	}
 }
 

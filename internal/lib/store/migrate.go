@@ -276,23 +276,63 @@ func (s *Store) renameOwnerClaims(locked *LockedStore, logger *slog.Logger) (int
 	return count, nil
 }
 
+// managerInbox is one old manager inbox in the version 2 set. Its ids are the
+// records to move, and its target is the inbox of the live owner of its
+// project, or coordinator when the project has no live owner.
+type managerInbox struct {
+	key    string
+	target string
+	ids    []string
+}
+
 // moveOwnerInboxes appends each unread record of an old manager inbox to the
-// inbox of the live owner, or to coordinator. It deletes the old folder and
-// counter. When the owner inbox has the old key, the records already have
-// their place, so the step keeps the folder and the counter.
+// inbox of the live owner, or to coordinator. It deletes each source record,
+// then the old folder and counter. When the owner inbox has the old key, the
+// records already have their place, so the step keeps the folder and counter.
+//
+// An old inbox can also be the owner inbox of another project. The step reads
+// the source records of every old inbox before it copies one, and it deletes
+// only a source record of the inbox. A record that another source appended to
+// the folder stays.
 func (s *Store) moveOwnerInboxes(locked *LockedStore, agents []records.Agent, logger *slog.Logger) (int, string, error) {
+	sources, failedPath, err := s.managerInboxes(locked, agents)
+	if err != nil {
+		return 0, failedPath, err
+	}
+	count := 0
+	for _, source := range sources {
+		copied, failedPath, err := s.copyUnreadInbox(locked, source, logger)
+		count += copied
+		if err != nil {
+			return count, failedPath, err
+		}
+	}
+	for _, source := range sources {
+		removed, err := s.removeMovedInbox(locked, source, logger)
+		count += removed
+		if err != nil {
+			return count, s.stateRelative("inbox", source.key), err
+		}
+	}
+	return count, "", nil
+}
+
+// managerInboxes returns each old manager inbox with its target and the IDs of
+// its source records. A record with a migration marker is a copy from an
+// earlier run, so it is not a source record.
+func (s *Store) managerInboxes(locked *LockedStore, agents []records.Agent) ([]managerInbox, string, error) {
 	root := filepath.Join(s.stateDir(), "inbox")
 	if err := s.checkList(root, []string{"inbox"}); err != nil {
-		return 0, s.stateRelative("inbox"), err
+		return nil, s.stateRelative("inbox"), err
 	}
 	entries, err := os.ReadDir(root)
 	if errors.Is(err, os.ErrNotExist) {
-		return 0, "", nil
+		return nil, "", nil
 	}
 	if err != nil {
-		return 0, s.stateRelative("inbox"), err
+		return nil, s.stateRelative("inbox"), err
 	}
-	count := 0
+	found := []managerInbox{}
 	for _, entry := range entries {
 		source := entry.Name()
 		project := strings.TrimPrefix(source, "manager-")
@@ -303,62 +343,109 @@ func (s *Store) moveOwnerInboxes(locked *LockedStore, agents []records.Agent, lo
 		if target == source {
 			continue
 		}
-		copied, failedPath, err := s.copyUnreadInbox(locked, source, target, logger)
-		count += copied
+		ids, err := s.sourceInboxIDs(locked, source)
 		if err != nil {
-			return count, failedPath, err
+			return nil, s.stateRelative("inbox", source), err
 		}
-		if err := s.removeInbox(source, logger); err != nil {
-			return count, s.stateRelative("inbox", source), err
+		found = append(found, managerInbox{key: source, target: target, ids: ids})
+	}
+	return found, "", nil
+}
+
+// sourceInboxIDs returns the IDs of the records of one old inbox that came
+// from version 2. It skips each record with a migration marker.
+func (s *Store) sourceInboxIDs(locked *LockedStore, source string) ([]string, error) {
+	names, raw, err := namedRecords(locked, []string{"inbox", source})
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(names))
+	for index, data := range raw {
+		var record movedInbox
+		if err := json.Unmarshal(data, &record); err != nil {
+			return nil, fmt.Errorf("record invalid: %s", s.stateRelative("inbox", source, names[index]))
 		}
+		if record.MigratedFrom != "" {
+			continue
+		}
+		ids = append(ids, strings.TrimSuffix(names[index], ".json"))
+	}
+	return ids, nil
+}
+
+// copyUnreadInbox appends each unread source record of one old inbox to its
+// target. A moved record keeps a marker of its source until the whole step
+// succeeds, so a retry copies each source record once. A target record without
+// a marker is a separate record, so it stays even when its content is equal.
+func (s *Store) copyUnreadInbox(locked *LockedStore, source managerInbox, logger *slog.Logger) (int, string, error) {
+	state, err := targetInboxState(locked, source.target)
+	if err != nil {
+		return 0, s.stateRelative("inbox", source.target), err
+	}
+	count := 0
+	for _, id := range source.ids {
+		var record records.Inbox
+		err := locked.ReadIn([]string{"inbox", source.key}, id, &record)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return count, s.stateRelative("inbox", source.key, id+".json"), err
+		}
+		if record.ReadAt != "" {
+			continue
+		}
+		sourceID := source.key + "/" + id
+		if state.markers[sourceID] {
+			continue
+		}
+		seq, err := locked.Next("inbox:" + source.target)
+		if err != nil {
+			return count, s.stateRelative("counters", "inbox:"+source.target+".json"), err
+		}
+		moved := movedInbox{Inbox: record, MigratedFrom: sourceID}
+		moved.Seq = seq
+		moved.Role = source.target
+		moved.NudgedAt = ""
+		moved.NudgedGeneration = 0
+		next := strconv.FormatUint(seq, 10)
+		if err := locked.WriteIn([]string{"inbox", source.target}, next, moved); err != nil {
+			return count, s.stateRelative("inbox", source.target, next+".json"), err
+		}
+		logger.Debug("state migrate record", "path", s.stateRelative("inbox", source.target, next+".json"), "change", ownerInboxChange)
 		count++
 	}
 	return count, "", nil
 }
 
-// copyUnreadInbox appends each unread record of source to target. A moved
-// record keeps a marker of its source until the whole step succeeds, so a
-// retry copies each source record once. A target record without a marker is
-// a separate record, so it stays even when its content is equal.
-func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logger *slog.Logger) (int, string, error) {
-	names, raw, err := namedRecords(locked, []string{"inbox", source})
-	if err != nil {
-		return 0, s.stateRelative("inbox", source), err
-	}
-	state, err := targetInboxState(locked, target)
-	if err != nil {
-		return 0, s.stateRelative("inbox", target), err
-	}
+// removeMovedInbox deletes each moved source record from one old inbox. When
+// the inbox has no record left, it deletes the folder and its counter. A
+// record that another source appended to the folder stays, because the folder
+// is also the target of that source.
+func (s *Store) removeMovedInbox(locked *LockedStore, source managerInbox, logger *slog.Logger) (int, error) {
 	count := 0
-	for index, data := range raw {
-		var record records.Inbox
-		if err := json.Unmarshal(data, &record); err != nil {
-			return count, s.stateRelative("inbox", source), fmt.Errorf("record invalid: %s", s.stateRelative("inbox", source))
-		}
-		if record.ReadAt != "" {
+	for _, id := range source.ids {
+		err := locked.RemoveIn([]string{"inbox", source.key}, id)
+		if errors.Is(err, os.ErrNotExist) {
 			continue
 		}
-		sourceID := source + "/" + strings.TrimSuffix(names[index], ".json")
-		if state.markers[sourceID] {
-			continue
-		}
-		seq, err := locked.Next("inbox:" + target)
 		if err != nil {
-			return count, s.stateRelative("counters", "inbox:"+target+".json"), err
+			return count, err
 		}
-		moved := movedInbox{Inbox: record, MigratedFrom: sourceID}
-		moved.Seq = seq
-		moved.Role = target
-		moved.NudgedAt = ""
-		moved.NudgedGeneration = 0
-		id := strconv.FormatUint(seq, 10)
-		if err := locked.WriteIn([]string{"inbox", target}, id, moved); err != nil {
-			return count, s.stateRelative("inbox", target, id+".json"), err
-		}
-		logger.Debug("state migrate record", "path", s.stateRelative("inbox", target, id+".json"), "change", ownerInboxChange)
+		logger.Debug("state migrate record", "path", s.stateRelative("inbox", source.key, id+".json"), "change", ownerInboxChange)
 		count++
 	}
-	return count, "", nil
+	names, _, err := namedRecords(locked, []string{"inbox", source.key})
+	if err != nil {
+		return count, err
+	}
+	if len(names) > 0 {
+		return count, nil
+	}
+	if err := s.removeInbox(source.key, logger); err != nil {
+		return count, err
+	}
+	return count + 1, nil
 }
 
 // movedInbox is one copied inbox record. The marker names the source record
