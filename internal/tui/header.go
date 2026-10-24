@@ -29,6 +29,7 @@ type headerState struct {
 	coordinator          string
 	coordinatorChangedAt string
 	supervisor           string
+	supervisorChangedAt  string
 	supervisorOld        bool
 	projects             int
 	agents               int
@@ -53,7 +54,7 @@ func readHeader(home string) (headerState, error) {
 	switch {
 	case err == nil:
 		if alive, checkErr := process.Alive(claim.PID, claim.PIDStart); checkErr == nil && alive {
-			state.supervisor = "fresh"
+			state.supervisor, state.supervisorChangedAt = "fresh", claim.ClaimedAt
 			state.supervisorOld = supervisorBinaryIsOld(home, claim)
 		}
 	case errors.Is(err, os.ErrNotExist):

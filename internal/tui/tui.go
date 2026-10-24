@@ -122,6 +122,12 @@ type Model struct {
 	chordActions  map[string]string
 	// statusCommandLine is the first output line of the status command.
 	statusCommandLine string
+	// statusCommandAt is the start of the last run of the status command.
+	statusCommandAt      time.Time
+	statusCommandRunning bool
+	// statusCommandFailed is true after a failure was logged, until a run
+	// succeeds.
+	statusCommandFailed bool
 	quitAt            time.Time
 
 	inputEnded <-chan struct{}
@@ -243,7 +249,7 @@ func (m *Model) Stop() {
 
 // Init starts the first data loads and the refresh tick.
 func (m *Model) Init() tea.Cmd {
-	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad())
+	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad(), m.startStatusCommand())
 }
 
 // Update handles one message.
@@ -280,7 +286,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery())
+		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery(), m.startStatusCommand())
+	case statusCommandMsg:
+		return m, m.updateStatusCommand(msg)
 	case refreshCheckMsg:
 		m.refreshChecking = false
 		headerChanged := msg.header != m.refreshSnapshot.header

@@ -14,4 +14,6 @@
 // logs_screen.go loads, filters, and renders log events, and handles Logs keys.
 // tick.go schedules refreshes and carries background load results.
 // demo.go loads a demo fixture, feeds the screens from it, and draws the too-small notice.
+// gframe.go draws the golden-frames status rows and the notice line, and handles the chords.
+// status_command.go runs the status command and keeps the first line of its output.
 package tui
