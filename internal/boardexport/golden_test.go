@@ -51,17 +51,19 @@ func TestGoldenGridFiles(t *testing.T) {
 	}
 }
 
-// gfDesignDir holds the Gf boards and their golden grids of tasks 137 and
-// 145.
+// gfDesignDir holds the Gf boards and their golden grids of tasks 137,
+// 145, and 148.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
-// gfGrids gives the 19 Gf grids: the boards of Chat and the component sheet
-// of task 137, and the Health boards of task 145.
+// gfGrids gives the 20 Gf grids in design/: the boards of Chat and the
+// component sheet of task 137, the Health boards of task 145, and the Help
+// board of task 148.
 var gfGrids = []string{
 	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
 	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
 	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
 	"GfHealth", "GfHealthChecking", "GfHealthGreen", "GfHealthRestart",
+	"GfHelp",
 }
 
 // TestGfGoldenGridFiles reads each committed Gf grid file of gfGrids. Each
