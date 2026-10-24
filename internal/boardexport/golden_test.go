@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -22,12 +23,16 @@ func TestGoldenGridFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != len(Sizes) {
-		t.Errorf("found %d grid files, want %d: %v", len(files), len(Sizes), files)
+	for _, file := range files {
+		if _, ok := Sizes[strings.TrimSuffix(filepath.Base(file), ".grid")]; !ok {
+			t.Errorf("%s is not in the board table", file)
+		}
 	}
 	for board, size := range Sizes {
 		t.Run(board, func(t *testing.T) {
-			f, err := os.Open(filepath.Join(designDir, board+".grid"))
+			path := filepath.Join(designDir, board+".grid")
+			requireSpecFile(t, path)
+			f, err := os.Open(path)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -49,6 +54,14 @@ func TestGoldenGridFiles(t *testing.T) {
 // gfDesignDir holds the Gf boards and their golden grids of task 137.
 const gfDesignDir = "../../.hive/spec/golden-frames/design"
 
+// gfGrids gives the 15 Gf grids that task 137 copies: the boards of Chat and
+// the component sheet.
+var gfGrids = []string{
+	"GfChat", "GfChatAsk", "GfChatAskInput", "GfChatAskMany", "GfChatAskMulti",
+	"GfChatAskPreview", "GfChatAskReview", "GfChatAskStopped", "GfChatEmpty", "GfChatEvents",
+	"GfChatMarkdown", "GfChatNoCoordinator", "GfChatNotice", "GfChatTall", "GfComponents",
+}
+
 // TestGfGoldenGridFiles reads each committed Gf grid file. Task 137 copies
 // the 15 boards of Chat and the component sheet. Each grid has the size of
 // golden-frames decision 23 and the symbols and tokens of decision 7.
@@ -58,17 +71,20 @@ func TestGfGoldenGridFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 15 {
-		t.Errorf("found %d Gf grid files, want 15: %v", len(files), files)
-	}
 	for _, file := range files {
-		board := strings.TrimSuffix(filepath.Base(file), ".grid")
+		if !slices.Contains(gfGrids, strings.TrimSuffix(filepath.Base(file), ".grid")) {
+			t.Errorf("%s is not one of the 15 Gf grids of task 137", file)
+		}
+	}
+	for _, board := range gfGrids {
 		t.Run(board, func(t *testing.T) {
 			size, ok := GfSizes[board]
 			if !ok {
 				t.Fatalf("%s is not in the board table of decision 23", board)
 			}
-			f, err := os.Open(file)
+			path := filepath.Join(gfDesignDir, board+".grid")
+			requireSpecFile(t, path)
+			f, err := os.Open(path)
 			if err != nil {
 				t.Fatal(err)
 			}
