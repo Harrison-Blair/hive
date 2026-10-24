@@ -1,0 +1,10 @@
+$ test ! -e .hive/tmp/t137-check-verifier
+exit 0
+$ herdr session list
+name                 status   directory                                        socket
+default              running  /home/penguin/.config/herdr                      /home/penguin/.config/herdr/herdr.sock
+$ test ! -e /home/penguin/.config/herdr/sessions/t137-check-verifier
+exit 0
+$ git diff --exit-code -- internal cmd testdata .hive/spec/golden-frames/design
+exit 0
+$ ps: owned scratch processes

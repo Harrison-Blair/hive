@@ -1,0 +1,56 @@
+package tui
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
+	"github.com/charmbracelet/x/ansi"
+)
+
+func TestVerifierLiveCapturesMatch(t *testing.T) {
+	dir := os.Getenv("T137_CAPTURES")
+	var report strings.Builder
+	for _, board := range gfChatBoards {
+		data, err := os.ReadFile(filepath.Join(dir, board+"-120x40.ansi"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
+		if len(lines) > 40 {
+			lines = lines[:40]
+		}
+		for i, line := range lines {
+			lines[i] = ansi.Truncate(line, 120, "")
+		}
+		got, err := cellgrid.Convert(strings.Join(lines, "\n"), 120, 40)
+		if err != nil {
+			t.Fatalf("%s: %v", board, err)
+		}
+		diffs, err := cellgrid.Compare(readGfGrid(t, board), got, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprintf(&report, "%s 120x40: %d cells differ (no mask)\n", board, len(diffs))
+		if len(diffs) > 0 {
+			report.WriteString(cellgrid.FormatDiffs(diffs[:min(len(diffs), 20)]) + "\n")
+			t.Errorf("%s: %d differing cells", board, len(diffs))
+		}
+		f, err := os.Create(filepath.Join(dir, board+"-120x40.grid"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = cellgrid.WriteGrid(f, got)
+		_ = f.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(dir, "boards.diff.txt"), []byte(report.String()), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("\n" + report.String())
+}

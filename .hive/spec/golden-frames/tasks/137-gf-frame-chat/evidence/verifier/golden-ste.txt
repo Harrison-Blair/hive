@@ -1,0 +1,472 @@
+=== RUN   TestCheckAcceptsTheGoldenFramesBoardSizes
+--- PASS: TestCheckAcceptsTheGoldenFramesBoardSizes (0.00s)
+=== RUN   TestCheckAcceptsTheGoldenFramesSymbolsAndError
+--- PASS: TestCheckAcceptsTheGoldenFramesSymbolsAndError (0.00s)
+=== RUN   TestCheckFailsAGoldenFramesBoardOutsideItsLists
+--- PASS: TestCheckFailsAGoldenFramesBoardOutsideItsLists (0.00s)
+=== RUN   TestGoldenGridFiles
+=== RUN   TestGoldenGridFiles/Chat
+=== RUN   TestGoldenGridFiles/CompactChatStatus
+=== RUN   TestGoldenGridFiles/FrictionResolved
+=== RUN   TestGoldenGridFiles/CompactHealth
+=== RUN   TestGoldenGridFiles/Logs
+=== RUN   TestGoldenGridFiles/CompactChatAskReview
+=== RUN   TestGoldenGridFiles/AgentDetails
+=== RUN   TestGoldenGridFiles/Work
+=== RUN   TestGoldenGridFiles/CompactLogs
+=== RUN   TestGoldenGridFiles/ChatNormal
+=== RUN   TestGoldenGridFiles/ChatAsk
+=== RUN   TestGoldenGridFiles/ChatAskStopped
+=== RUN   TestGoldenGridFiles/ChatAskReviewMulti
+=== RUN   TestGoldenGridFiles/CompactAgents
+=== RUN   TestGoldenGridFiles/CompactFriction
+=== RUN   TestGoldenGridFiles/Health
+=== RUN   TestGoldenGridFiles/TooSmall
+=== RUN   TestGoldenGridFiles/AgentsNested
+=== RUN   TestGoldenGridFiles/AgentsHiddenParent
+=== RUN   TestGoldenGridFiles/AgentDetailsGeneral
+=== RUN   TestGoldenGridFiles/HealthAgentsGeneral
+=== RUN   TestGoldenGridFiles/Main
+=== RUN   TestGoldenGridFiles/ChatEvents
+=== RUN   TestGoldenGridFiles/HealthAgents
+=== RUN   TestGoldenGridFiles/Help
+=== RUN   TestGoldenGridFiles/AgentsHome
+=== RUN   TestGoldenGridFiles/CompactLivePod
+=== RUN   TestGoldenGridFiles/ChatInput
+=== RUN   TestGoldenGridFiles/ChatAskPreview
+=== RUN   TestGoldenGridFiles/ChatStatus
+=== RUN   TestGoldenGridFiles/Compact
+=== RUN   TestGoldenGridFiles/CompactAgentsHome
+=== RUN   TestGoldenGridFiles/CompactLiveOverview
+=== RUN   TestGoldenGridFiles/TreeWide
+=== RUN   TestGoldenGridFiles/CompactTreeNested
+=== RUN   TestGoldenGridFiles/CompactChatNormal
+=== RUN   TestGoldenGridFiles/ChatAskReview
+=== RUN   TestGoldenGridFiles/WorkQueue
+=== RUN   TestGoldenGridFiles/AgentsCoordinatorChild
+=== RUN   TestGoldenGridFiles/AgentsMany
+=== RUN   TestGoldenGridFiles/WorkGoals
+=== RUN   TestGoldenGridFiles/Components
+=== RUN   TestGoldenGridFiles/LiveOverview
+=== RUN   TestGoldenGridFiles/LivePod
+=== RUN   TestGoldenGridFiles/TreeNested
+=== RUN   TestGoldenGridFiles/CompactChatAsk
+=== RUN   TestGoldenGridFiles/CompactChat
+=== RUN   TestGoldenGridFiles/Friction
+=== RUN   TestGoldenGridFiles/CompactTreeWide
+=== RUN   TestGoldenGridFiles/ChatAskMulti
+--- PASS: TestGoldenGridFiles (0.01s)
+    --- PASS: TestGoldenGridFiles/Chat (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/FrictionResolved (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactHealth (0.00s)
+    --- PASS: TestGoldenGridFiles/Logs (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatAskReview (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentDetails (0.00s)
+    --- PASS: TestGoldenGridFiles/Work (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLogs (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskStopped (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskReviewMulti (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactFriction (0.00s)
+    --- PASS: TestGoldenGridFiles/Health (0.00s)
+    --- PASS: TestGoldenGridFiles/TooSmall (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsNested (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHiddenParent (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentDetailsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgentsGeneral (0.00s)
+    --- PASS: TestGoldenGridFiles/Main (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatEvents (0.00s)
+    --- PASS: TestGoldenGridFiles/HealthAgents (0.00s)
+    --- PASS: TestGoldenGridFiles/Help (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatInput (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskPreview (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatStatus (0.00s)
+    --- PASS: TestGoldenGridFiles/Compact (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactAgentsHome (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactLiveOverview (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatNormal (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskReview (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkQueue (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsCoordinatorChild (0.00s)
+    --- PASS: TestGoldenGridFiles/AgentsMany (0.00s)
+    --- PASS: TestGoldenGridFiles/WorkGoals (0.00s)
+    --- PASS: TestGoldenGridFiles/Components (0.00s)
+    --- PASS: TestGoldenGridFiles/LiveOverview (0.00s)
+    --- PASS: TestGoldenGridFiles/LivePod (0.00s)
+    --- PASS: TestGoldenGridFiles/TreeNested (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChatAsk (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactChat (0.00s)
+    --- PASS: TestGoldenGridFiles/Friction (0.00s)
+    --- PASS: TestGoldenGridFiles/CompactTreeWide (0.00s)
+    --- PASS: TestGoldenGridFiles/ChatAskMulti (0.00s)
+=== RUN   TestGfGoldenGridFiles
+=== RUN   TestGfGoldenGridFiles/GfChat
+=== RUN   TestGfGoldenGridFiles/GfChatAsk
+=== RUN   TestGfGoldenGridFiles/GfChatAskInput
+=== RUN   TestGfGoldenGridFiles/GfChatAskMany
+=== RUN   TestGfGoldenGridFiles/GfChatAskMulti
+=== RUN   TestGfGoldenGridFiles/GfChatAskPreview
+=== RUN   TestGfGoldenGridFiles/GfChatAskReview
+=== RUN   TestGfGoldenGridFiles/GfChatAskStopped
+=== RUN   TestGfGoldenGridFiles/GfChatEmpty
+=== RUN   TestGfGoldenGridFiles/GfChatEvents
+=== RUN   TestGfGoldenGridFiles/GfChatMarkdown
+=== RUN   TestGfGoldenGridFiles/GfChatNoCoordinator
+=== RUN   TestGfGoldenGridFiles/GfChatNotice
+=== RUN   TestGfGoldenGridFiles/GfChatTall
+=== RUN   TestGfGoldenGridFiles/GfComponents
+--- PASS: TestGfGoldenGridFiles (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChat (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAsk (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskInput (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskMany (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskMulti (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskPreview (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskReview (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatAskStopped (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatEmpty (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatEvents (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatMarkdown (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatNotice (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfChatTall (0.00s)
+    --- PASS: TestGfGoldenGridFiles/GfComponents (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.016s
+=== RUN   TestAgentsHHidesStoppedAgents
+--- PASS: TestAgentsHHidesStoppedAgents (0.00s)
+=== RUN   TestAgentsHideStoppedAtStart
+--- PASS: TestAgentsHideStoppedAtStart (0.01s)
+=== RUN   TestAskReviewForAStoppedAsker
+--- PASS: TestAskReviewForAStoppedAsker (0.00s)
+=== RUN   TestAskCompactReviewForAStoppedAskerKeepsTheTitle
+--- PASS: TestAskCompactReviewForAStoppedAskerKeepsTheTitle (0.00s)
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/80x24
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_120_and_no_route_caption_at_80/120x40
+=== RUN   TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_120_and_no_route_caption_at_80/80x24
+--- PASS: TestAskStoppedReviewKeepsTheStateInTheCard (0.06s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/120x40 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_both_widths/80x24 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/120x40 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/short_caption_at_80/80x24 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/120x40 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/no_route_caption_at_80/80x24 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_120_and_no_route_caption_at_80/120x40 (0.01s)
+    --- PASS: TestAskStoppedReviewKeepsTheStateInTheCard/full_caption_at_120_and_no_route_caption_at_80/80x24 (0.01s)
+=== RUN   TestAskStoppedEditorKeepsTheStateInTheCard
+--- PASS: TestAskStoppedEditorKeepsTheStateInTheCard (0.00s)
+=== RUN   TestAskStoppedAskerShowsTheParent
+--- PASS: TestAskStoppedAskerShowsTheParent (0.00s)
+=== RUN   TestGfChatBoardsMatch
+=== RUN   TestGfChatBoardsMatch/GfChat
+=== RUN   TestGfChatBoardsMatch/GfChatEmpty
+=== RUN   TestGfChatBoardsMatch/GfChatEvents
+=== RUN   TestGfChatBoardsMatch/GfChatTall
+=== RUN   TestGfChatBoardsMatch/GfChatMarkdown
+=== RUN   TestGfChatBoardsMatch/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsMatch/GfChatNotice
+=== RUN   TestGfChatBoardsMatch/GfChatAsk
+=== RUN   TestGfChatBoardsMatch/GfChatAskInput
+=== RUN   TestGfChatBoardsMatch/GfChatAskMulti
+=== RUN   TestGfChatBoardsMatch/GfChatAskPreview
+=== RUN   TestGfChatBoardsMatch/GfChatAskStopped
+=== RUN   TestGfChatBoardsMatch/GfChatAskReview
+=== RUN   TestGfChatBoardsMatch/GfChatAskMany
+--- PASS: TestGfChatBoardsMatch (0.02s)
+    --- PASS: TestGfChatBoardsMatch/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskMany (0.00s)
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChat
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatEmpty
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatEvents
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatTall
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatMarkdown
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatNotice
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAsk
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskInput
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskMulti
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskPreview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskStopped
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskReview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskMany
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChat
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatEmpty
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatEvents
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatTall
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatMarkdown
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatNotice
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAsk
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskInput
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskMulti
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskPreview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskStopped
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskReview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskMany
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChat
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatEmpty
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatEvents
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatTall
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatMarkdown
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatNotice
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAsk
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskInput
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskMulti
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskPreview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskStopped
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskReview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskMany
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChat
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatEmpty
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatEvents
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatTall
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatMarkdown
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatNotice
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAsk
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskInput
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskMulti
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskPreview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskStopped
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskReview
+=== RUN   TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskMany
+--- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint (0.06s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/79x24/GfChatAskMany (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/80x24/GfChatAskMany (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/119x40/GfChatAskMany (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint/120x40/GfChatAskMany (0.00s)
+=== RUN   TestHealthAgentsHTogglesStoppedAgents
+--- PASS: TestHealthAgentsHTogglesStoppedAgents (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.175s
+=== RUN   TestCardGolden
+=== RUN   TestCardGolden/idle
+=== RUN   TestCardGolden/stopped
+--- PASS: TestCardGolden (0.00s)
+    --- PASS: TestCardGolden/idle (0.00s)
+    --- PASS: TestCardGolden/stopped (0.00s)
+=== RUN   TestGfMessagesGolden
+=== RUN   TestGfMessagesGolden/user
+=== RUN   TestGfMessagesGolden/agent
+=== RUN   TestGfMessagesGolden/event
+=== RUN   TestGfMessagesGolden/open_event
+=== RUN   TestGfMessagesGolden/answered
+--- PASS: TestGfMessagesGolden (0.00s)
+    --- PASS: TestGfMessagesGolden/user (0.00s)
+    --- PASS: TestGfMessagesGolden/agent (0.00s)
+    --- PASS: TestGfMessagesGolden/event (0.00s)
+    --- PASS: TestGfMessagesGolden/open_event (0.00s)
+    --- PASS: TestGfMessagesGolden/answered (0.00s)
+=== RUN   TestGfComposerGolden
+--- PASS: TestGfComposerGolden (0.00s)
+=== RUN   TestGfComposerCardFrameGolden
+--- PASS: TestGfComposerCardFrameGolden (0.00s)
+=== RUN   TestDetailsGolden
+--- PASS: TestDetailsGolden (0.00s)
+=== RUN   TestFilterBarGolden
+--- PASS: TestFilterBarGolden (0.00s)
+=== RUN   TestListGolden
+--- PASS: TestListGolden (0.00s)
+=== RUN   TestListFillGolden
+--- PASS: TestListFillGolden (0.00s)
+=== RUN   TestPanelGolden
+=== RUN   TestPanelGolden/unfocused
+=== RUN   TestPanelGolden/focused
+--- PASS: TestPanelGolden (0.00s)
+    --- PASS: TestPanelGolden/unfocused (0.00s)
+    --- PASS: TestPanelGolden/focused (0.00s)
+=== RUN   TestPopupGolden
+--- PASS: TestPopupGolden (0.00s)
+=== RUN   TestStatusRowGolden
+=== RUN   TestStatusRowGolden/working
+=== RUN   TestStatusRowGolden/idle_at_80_columns
+=== RUN   TestStatusRowGolden/blocked
+--- PASS: TestStatusRowGolden (0.00s)
+    --- PASS: TestStatusRowGolden/working (0.00s)
+    --- PASS: TestStatusRowGolden/idle_at_80_columns (0.00s)
+    --- PASS: TestStatusRowGolden/blocked (0.00s)
+=== RUN   TestSubTabsGolden
+=== RUN   TestSubTabsGolden/sheet
+=== RUN   TestSubTabsGolden/work
+=== RUN   TestSubTabsGolden/compact
+--- PASS: TestSubTabsGolden (0.00s)
+    --- PASS: TestSubTabsGolden/sheet (0.00s)
+    --- PASS: TestSubTabsGolden/work (0.00s)
+    --- PASS: TestSubTabsGolden/compact (0.00s)
+=== RUN   TestTitleRowGolden
+--- PASS: TestTitleRowGolden (0.00s)
+=== RUN   TestViewportGolden
+=== RUN   TestViewportGolden/vertical
+=== RUN   TestViewportGolden/horizontal
+--- PASS: TestViewportGolden (0.00s)
+    --- PASS: TestViewportGolden/vertical (0.00s)
+    --- PASS: TestViewportGolden/horizontal (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui/component	0.023s
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Logs/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Agents/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Chat/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/2
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/0
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/1
+=== RUN   TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Logs/0
+--- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint (0.09s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/79x24/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Friction/1 (0.01s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Health/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/80x24/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Health/1 (0.01s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/119x40/Logs/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Agents/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Chat/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Work/2 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Friction/1 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/0 (0.00s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Health/1 (0.01s)
+    --- PASS: TestEachScreenKeepsTheFrameAtEachBreakpoint/120x40/Logs/0 (0.01s)
+=== RUN   TestEachTuiV2GridIsRetiredOrKept
+    retired_test.go:79: 50 tui-v2 grids: 48 retired, 2 kept
+--- PASS: TestEachTuiV2GridIsRetiredOrKept (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.134s
+ok  	github.com/Harrison-Blair/hive	0.836s

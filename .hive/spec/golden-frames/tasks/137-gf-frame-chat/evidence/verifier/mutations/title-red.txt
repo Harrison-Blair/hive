@@ -1,0 +1,165 @@
+$ go test -overlay /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier/title-red.json ./internal/... -count=1 -run ^TestTitleRowGolden$
+ok  	github.com/Harrison-Blair/hive/internal/agent	0.010s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/ask	0.006s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.006s [no tests to run]
+?   	github.com/Harrison-Blair/hive/internal/boardexport/cmd/boardexport	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/chat	0.005s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/doctor	0.003s [no tests to run]
+?   	github.com/Harrison-Blair/hive/internal/goal	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/handoff	0.013s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/homeinit	0.003s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/inbox	0.004s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/land	0.007s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/cellgrid	0.005s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/gitx	0.003s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/harness	0.003s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/herdr	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/home	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/identity	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/inbox	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/log	0.002s [no tests to run]
+?   	github.com/Harrison-Blair/hive/internal/lib/marker	[no test files]
+?   	github.com/Harrison-Blair/hive/internal/lib/output	[no test files]
+ok  	github.com/Harrison-Blair/hive/internal/lib/panelock	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/process	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/records	0.008s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/run	0.008s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/scope	0.007s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/store	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/lib/version	0.001s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/logs	0.001s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/memory	0.001s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/project	0.001s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/supervise	0.002s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/task	0.001s [no tests to run]
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.008s [no tests to run]
+--- FAIL: TestTitleRowGolden (0.00s)
+    titlerow_test.go:13: 118 cells differ from GfComponents.grid (board row and column):
+        row 16 col 1: want '─' border normal, got '━' border normal
+        row 16 col 2: want '─' border normal, got '━' border normal
+        row 16 col 3: want '─' border normal, got '━' border normal
+        row 16 col 4: want '─' border normal, got '━' border normal
+        row 16 col 5: want '─' border normal, got '━' border normal
+        row 16 col 6: want '─' border normal, got '━' border normal
+        row 16 col 7: want '─' border normal, got '━' border normal
+        row 16 col 8: want '─' border normal, got '━' border normal
+        row 16 col 9: want '─' border normal, got '━' border normal
+        row 16 col 10: want '─' border normal, got '━' border normal
+        row 16 col 11: want '─' border normal, got '━' border normal
+        row 16 col 12: want '─' border normal, got '━' border normal
+        row 16 col 13: want '─' border normal, got '━' border normal
+        row 16 col 14: want '─' border normal, got '━' border normal
+        row 16 col 15: want '─' border normal, got '━' border normal
+        row 16 col 16: want '─' border normal, got '━' border normal
+        row 16 col 17: want '─' border normal, got '━' border normal
+        row 16 col 18: want '─' border normal, got '━' border normal
+        row 16 col 19: want '─' border normal, got '━' border normal
+        row 16 col 20: want '─' border normal, got '━' border normal
+        row 16 col 21: want '─' border normal, got '━' border normal
+        row 16 col 22: want '─' border normal, got '━' border normal
+        row 16 col 23: want '─' border normal, got '━' border normal
+        row 16 col 24: want '─' border normal, got '━' border normal
+        row 16 col 25: want '─' border normal, got '━' border normal
+        row 16 col 26: want '─' border normal, got '━' border normal
+        row 16 col 27: want '─' border normal, got '━' border normal
+        row 16 col 28: want '─' border normal, got '━' border normal
+        row 16 col 29: want '─' border normal, got '━' border normal
+        row 16 col 30: want '─' border normal, got '━' border normal
+        row 16 col 31: want '─' border normal, got '━' border normal
+        row 16 col 32: want '─' border normal, got '━' border normal
+        row 16 col 33: want '─' border normal, got '━' border normal
+        row 16 col 34: want '─' border normal, got '━' border normal
+        row 16 col 35: want '─' border normal, got '━' border normal
+        row 16 col 36: want '─' border normal, got '━' border normal
+        row 16 col 37: want '─' border normal, got '━' border normal
+        row 16 col 38: want '─' border normal, got '━' border normal
+        row 16 col 39: want '─' border normal, got '━' border normal
+        row 16 col 40: want '─' border normal, got '━' border normal
+        row 16 col 41: want '─' border normal, got '━' border normal
+        row 16 col 42: want '─' border normal, got '━' border normal
+        row 16 col 43: want '─' border normal, got '━' border normal
+        row 16 col 44: want '─' border normal, got '━' border normal
+        row 16 col 45: want '─' border normal, got '━' border normal
+        row 16 col 46: want '─' border normal, got '━' border normal
+        row 16 col 47: want '─' border normal, got '━' border normal
+        row 16 col 48: want '─' border normal, got '━' border normal
+        row 16 col 49: want '─' border normal, got '━' border normal
+        row 16 col 50: want '─' border normal, got '━' border normal
+        row 16 col 51: want '─' border normal, got '━' border normal
+        row 16 col 52: want '─' border normal, got '━' border normal
+        row 16 col 53: want '─' border normal, got '━' border normal
+        row 16 col 54: want '─' border normal, got '━' border normal
+        row 16 col 55: want '─' border normal, got '━' border normal
+        row 16 col 56: want '─' border normal, got '━' border normal
+        row 16 col 57: want '─' border normal, got '━' border normal
+        row 16 col 58: want '─' border normal, got '━' border normal
+        row 16 col 59: want '─' border normal, got '━' border normal
+        row 16 col 60: want '─' border normal, got '━' border normal
+        row 16 col 61: want '─' border normal, got '━' border normal
+        row 16 col 62: want '─' border normal, got '━' border normal
+        row 16 col 63: want '─' border normal, got '━' border normal
+        row 16 col 64: want '─' border normal, got '━' border normal
+        row 16 col 65: want '─' border normal, got '━' border normal
+        row 16 col 66: want '─' border normal, got '━' border normal
+        row 16 col 67: want '─' border normal, got '━' border normal
+        row 16 col 68: want '─' border normal, got '━' border normal
+        row 16 col 69: want '─' border normal, got '━' border normal
+        row 16 col 70: want '─' border normal, got '━' border normal
+        row 16 col 71: want '─' border normal, got '━' border normal
+        row 16 col 72: want '─' border normal, got '━' border normal
+        row 16 col 73: want '─' border normal, got '━' border normal
+        row 16 col 74: want '─' border normal, got '━' border normal
+        row 16 col 75: want '─' border normal, got '━' border normal
+        row 16 col 76: want '─' border normal, got '━' border normal
+        row 16 col 77: want '─' border normal, got '━' border normal
+        row 16 col 78: want '─' border normal, got '━' border normal
+        row 16 col 79: want '─' border normal, got '━' border normal
+        row 16 col 80: want '─' border normal, got '━' border normal
+        row 16 col 81: want '─' border normal, got '━' border normal
+        row 16 col 82: want '─' border normal, got '━' border normal
+        row 16 col 83: want '─' border normal, got '━' border normal
+        row 16 col 84: want '─' border normal, got '━' border normal
+        row 16 col 85: want '─' border normal, got '━' border normal
+        row 16 col 86: want '─' border normal, got '━' border normal
+        row 16 col 87: want '─' border normal, got '━' border normal
+        row 16 col 88: want '─' border normal, got '━' border normal
+        row 16 col 89: want '─' border normal, got '━' border normal
+        row 16 col 90: want '─' border normal, got '━' border normal
+        row 16 col 91: want '─' border normal, got '━' border normal
+        row 16 col 92: want '─' border normal, got '━' border normal
+        row 16 col 93: want '─' border normal, got '━' border normal
+        row 16 col 94: want '─' border normal, got '━' border normal
+        row 16 col 95: want '─' border normal, got '━' border normal
+        row 16 col 96: want '─' border normal, got '━' border normal
+        row 16 col 97: want '─' border normal, got '━' border normal
+        row 16 col 98: want '─' border normal, got '━' border normal
+        row 16 col 99: want '─' border normal, got '━' border normal
+        row 16 col 100: want '─' border normal, got '━' border normal
+        row 16 col 101: want '─' border normal, got '━' border normal
+        row 16 col 102: want '─' border normal, got '━' border normal
+        row 16 col 103: want '─' border normal, got '━' border normal
+        row 16 col 104: want '─' border normal, got '━' border normal
+        row 16 col 105: want '─' border normal, got '━' border normal
+        row 16 col 106: want '─' border normal, got '━' border normal
+        row 16 col 107: want '─' border normal, got '━' border normal
+        row 16 col 108: want '─' border normal, got '━' border normal
+        row 16 col 109: want '─' border normal, got '━' border normal
+        row 16 col 110: want '─' border normal, got '━' border normal
+        row 16 col 111: want '─' border normal, got '━' border normal
+        row 16 col 112: want '─' border normal, got '━' border normal
+        row 16 col 113: want '─' border normal, got '━' border normal
+        row 16 col 114: want '─' border normal, got '━' border normal
+        row 16 col 115: want '─' border normal, got '━' border normal
+        row 16 col 116: want '─' border normal, got '━' border normal
+        row 16 col 117: want '─' border normal, got '━' border normal
+        row 16 col 118: want '─' border normal, got '━' border normal
+        
+        rendered:
+         [1;38;2;245;185;66mwork · g2-tui-v2[m [38;2;163;157;144m· TUI v2: boards, components, and screens[m                                             [38;2;163;157;144m[ ] goal 2 of 2[m 
+         [38;2;61;58;51m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[m 
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component	0.009s
+ok  	github.com/Harrison-Blair/hive/internal/worktree	0.002s [no tests to run]
+FAIL
+
+exit 1
