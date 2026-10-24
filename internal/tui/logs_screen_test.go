@@ -509,14 +509,15 @@ func TestLogsNormalModeDrawsTheDemoContent(t *testing.T) {
 	}
 }
 
-// Manager decision: an event with a reason shows its msg, " · ", and the
-// reason text before the first ";". The JSON panel keeps the full reason.
-func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
+// logs.md rule 3: an event with a reason shows its msg, " · ", and the
+// reason. The row cuts the text at the column width only. The JSON panel
+// keeps the full reason.
+func TestLogsRowShowsTheWholeReasonWhenItFits(t *testing.T) {
 	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
 	m := logsModelAt(t, 120, 40)
 	events := []string{
-		logsFixtureEvent(t, day, "WARN", "task", "verify fail", map[string]any{"reason": "V4 diff scope; Design section missing"}),
-		logsFixtureEvent(t, day.Add(time.Second), "WARN", "task", "verify fail", map[string]any{"reason": "no evidence"}),
+		logsFixtureEvent(t, day, "WARN", "task", "fault", map[string]any{"reason": "first; suffix"}),
+		logsFixtureEvent(t, day.Add(time.Second), "WARN", "task", "verify fail", map[string]any{"reason": "V4 diff scope; Design section missing"}),
 	}
 	loaded := make([]logs.Event, len(events))
 	for index, line := range events {
@@ -527,10 +528,9 @@ func TestLogsRowShowsTheReasonBeforeItsFirstSemicolon(t *testing.T) {
 		loaded[index] = logs.Event{Raw: []byte(line), Fields: fields}
 	}
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: loaded})
-	requireView(t, m, "12:00:00 WARN   task       verify fail · V4 diff scope ", "verify fail · no evidence ")
-	rejectView(t, m, "verify fail · V4 diff scope;")
+	requireView(t, m, "12:00:00 WARN   task       fault · first; suffix", "verify fail · V4 diff scope;")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
-	requireView(t, m, "reason        V4 diff scope; Design section ", "              missing ")
+	requireView(t, m, "reason        first; suffix")
 }
 
 // Follow selects the newest event when a load brings a new newest event. A

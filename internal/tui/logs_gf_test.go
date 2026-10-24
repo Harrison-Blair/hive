@@ -267,3 +267,27 @@ func TestLogsRowShowsTheError(t *testing.T) {
 	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: []logs.Event{{Raw: []byte(line), Fields: fields}}})
 	requireView(t, m, "ERROR  agent      spawn worker · workspace refused ")
 }
+
+// logs.md rule 4 and README decision 7: a value with wide runes wraps at the
+// cell width and keeps each rune. The field panel does not panic and loses
+// no text.
+func TestLogsFieldPanelWrapsAWideValue(t *testing.T) {
+	day := time.Date(2026, 4, 6, 12, 0, 0, 0, time.Local)
+	value := strings.Repeat("界", 20)
+	line := logsFixtureEvent(t, day, "WARN", "task", "verify fail", map[string]any{"reason": value})
+	var fields map[string]any
+	if err := json.Unmarshal([]byte(line), &fields); err != nil {
+		t.Fatal(err)
+	}
+	m := logsModelAt(t, 120, 40)
+	m, _ = raise(t, m, screenLoadMsg{request: logsDataRequest, events: []logs.Event{{Raw: []byte(line), Fields: fields}}})
+	view := ansi.Strip(m.View().Content)
+	index := strings.Index(view, "reason        ")
+	if index < 0 {
+		t.Fatalf("view has no reason row:\n%s", view)
+	}
+	if got := strings.Count(view[index:], "界"); got != 20 {
+		t.Fatalf("panel has %d wide runes; want 20:\n%s", got, view)
+	}
+	requireView(t, m, "reason        界界界")
+}

@@ -360,7 +360,7 @@ func (m *Model) filteredLogRows() []logRow {
 
 // makeLogRows gives one row for each event. A command start with its
 // command end of the same request folds to one row with the command. An
-// event with a reason adds " · " and the reason text before the first ";".
+// event with an error or a reason adds " · " and that text.
 func (m *Model) makeLogRows() []logRow {
 	ends := make(map[string]int)
 	for index, event := range m.events {
@@ -384,13 +384,13 @@ func (m *Model) makeLogRows() []logRow {
 				message = logField(event, "command")
 			}
 		}
-		// logs.md case L11: the error, or else the reason before its
-		// first ";".
+		// logs.md rule 3 (case L11): the error, or else the reason,
+		// follows the msg. The list cuts the text at its column width.
 		extra := logField(event, "error")
 		if extra == "" {
 			extra = logField(event, "reason")
 		}
-		if extra, _, _ = strings.Cut(extra, ";"); extra != "" {
+		if extra != "" {
 			message += " · " + extra
 		}
 		if event.Malformed() {

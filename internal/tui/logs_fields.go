@@ -113,7 +113,8 @@ func logValueStyle(value string) lipgloss.Style {
 }
 
 // wrapLogValue wraps value at a space into rows of at most cells cells. A
-// word longer than a row breaks at the row width.
+// word longer than a row breaks at the row width. A rune of more than one
+// cell stays whole, so its row has fewer cells than cells.
 func wrapLogValue(value string, cells int) []string {
 	cells = max(cells, 1)
 	var rows []string
@@ -128,13 +129,29 @@ func wrapLogValue(value string, cells int) []string {
 			rows = append(rows, row)
 			row = word
 		}
-		for lipgloss.Width(row) > cells {
-			runes := []rune(row)
-			rows = append(rows, string(runes[:cells]))
-			row = string(runes[cells:])
-		}
+		rows, row = breakLogRow(rows, row, cells)
 	}
 	return append(rows, row)
+}
+
+// breakLogRow moves each full row of row to rows and gives the rest. A rune
+// that is wider than the row goes on a row alone.
+func breakLogRow(rows []string, row string, cells int) ([]string, string) {
+	for lipgloss.Width(row) > cells {
+		runes := []rune(row)
+		width, split := 0, 0
+		for split < len(runes) {
+			next := lipgloss.Width(string(runes[split]))
+			if split > 0 && width+next > cells {
+				break
+			}
+			width += next
+			split++
+		}
+		rows = append(rows, string(runes[:split]))
+		row = string(runes[split:])
+	}
+	return rows, row
 }
 
 // readLogFields reads the fields of a JSON object in their order.

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
@@ -92,6 +93,24 @@ func TestLogFieldLinesOfATruncatedErrorEvent(t *testing.T) {
 		if tok := g.At(0, col).Token; tok != want {
 			t.Errorf("line %d token %v, want %v", line, tok, want)
 		}
+	}
+}
+
+// logs.md rule 4: a value wraps at the cell width. A rune of two cells
+// takes two cells of the row and stays whole.
+func TestWrapLogValueKeepsWideRunes(t *testing.T) {
+	value := strings.Repeat("界", 20)
+	rows := wrapLogValue(value, 36)
+	if got := strings.Join(rows, ""); got != value {
+		t.Fatalf("wrapped value = %q; want %q", got, value)
+	}
+	for index, row := range rows {
+		if width := lipgloss.Width(row); width > 36 {
+			t.Errorf("row %d has %d cells; want at most 36", index, width)
+		}
+	}
+	if len(rows) != 2 || lipgloss.Width(rows[0]) != 36 || lipgloss.Width(rows[1]) != 4 {
+		t.Fatalf("rows = %q; want 36 cells and 4 cells", rows)
 	}
 }
 
