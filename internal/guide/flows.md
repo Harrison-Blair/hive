@@ -41,7 +41,7 @@ the task reads the same brief and repeats each verification item.
 4. After the merge, `hive land` copies each changed spec file into the home.
 5. Remove the worktree with `hive worktree remove --task ID`.
 6. A merge conflict stops the land. Reopen the task with `hive task reopen`.
-   Spawn a repair agent, then a fresh independent agent.
+   Spawn an agent to fix the conflict, then a fresh independent agent.
 
 ## Inbox
 
