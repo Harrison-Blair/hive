@@ -399,7 +399,16 @@ type paneChoice struct {
 func choosePane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (paneChoice, string) {
 	if options.Task != "" {
 		if options.PaneSet {
-			return paneChoice{PaneID: options.PaneID}, ""
+			if options.taskRecord != nil && options.taskRecord.Worktree != nil {
+				worktree := *options.taskRecord.Worktree
+				worktree.RootPane = options.PaneID
+				pane, message, _ := checkWorktreePane(ctx, home, worktree, *options.projectRecord, logger)
+				if message != "" {
+					return paneChoice{}, message
+				}
+				return paneChoice{PaneID: pane.PaneID, Project: options.Project}, ""
+			}
+			return paneChoice{PaneID: options.PaneID, Project: options.Project}, ""
 		}
 		choice, message := resolveTaskPane(ctx, home, options, logger)
 		if message != "" {

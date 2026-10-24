@@ -20,6 +20,8 @@ func setupTaskPaneSpawn(t *testing.T, role string) string {
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	paneID, workspaceID, tabID, name := "w5:p1", "w5", "w5:t1", role+"-demo-1"
+	fake.result("pane.get", workerPaneGetJSON(paneID, workspaceID, tabID, worktree, ""))
+	fake.result("workspace.get", workerWorkspaceGetJSON(workspaceID, "1-worker-demo", repo, worktree))
 	scriptReadyShell(fake, paneID, "term_"+paneID, workspaceID, tabID, worktree)
 	fake.result("agent.start", workerAgentStartJSON(paneID, workspaceID, tabID, name))
 	fake.result("pane.get", workerPaneGetJSON(paneID, workspaceID, tabID, worktree, ""))

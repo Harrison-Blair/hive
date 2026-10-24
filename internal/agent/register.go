@@ -494,6 +494,16 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			return failed("agent", "agent exists: "+recordKey)
 		}
 	}
+	if options.Owns != "" && currentClaim != nil {
+		if holder, ok := agentByKey[currentClaim.Agent]; ok && !(hasExisting && replaceOrphan && existing.Key == currentClaim.Agent) {
+			switch holder.Status {
+			case records.AgentStarting:
+				return failed("agent", "agent is starting: "+holder.Name)
+			case records.AgentLive, records.AgentUnresolved:
+				return failed("validate", "project "+options.Owns+" has an owner: "+holder.Name)
+			}
+		}
+	}
 
 	for _, claim := range claims {
 		if claim.Key == claimKey {

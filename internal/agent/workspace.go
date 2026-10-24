@@ -196,7 +196,7 @@ func createProjectWorkspace(ctx context.Context, home string, project records.Pr
 		choice.cleanup(ctx, home, logger)
 		return projectChoice{}, "workspace cwd mismatch"
 	}
-	if err := writeProjectWorkspace(home, project.ID, workspace); err != nil {
+	if err := writeNewProjectWorkspace(home, project.ID, workspace); err != nil {
 		choice.cleanup(ctx, home, logger)
 		return projectChoice{}, "store: " + err.Error()
 	}
@@ -215,7 +215,7 @@ func (choice projectChoice) cleanup(ctx context.Context, home string, logger *sl
 		} else if logger != nil {
 			logger.Debug("project workspace cleanup closed", "command", "agent spawn", "project_id", choice.ProjectID, "workspace_id", choice.Workspace.ID)
 		}
-		if err := clearProjectWorkspace(home, choice.ProjectID); err != nil && logger != nil {
+		if err := clearProjectWorkspaceIfMatch(home, choice.ProjectID, choice.Workspace.ID); err != nil && logger != nil {
 			logger.Debug("project workspace cleanup clear failed", "command", "agent spawn", "project_id", choice.ProjectID, "error", err.Error())
 		}
 		return
@@ -291,6 +291,29 @@ func writeProjectWorkspace(home, projectID string, workspace records.ProjectWork
 	return mutateProjectWorkspace(home, projectID, func(project *records.Project) {
 		copied := workspace
 		project.Workspace = &copied
+	})
+}
+
+// writeNewProjectWorkspace records a workspace only while the project has no
+// workspace. A concurrent spawn keeps the workspace that it recorded first.
+func writeNewProjectWorkspace(home, projectID string, workspace records.ProjectWorkspace) error {
+	return mutateProjectWorkspace(home, projectID, func(project *records.Project) {
+		if project.Workspace != nil && project.Workspace.ID != "" {
+			return
+		}
+		copied := workspace
+		project.Workspace = &copied
+	})
+}
+
+// clearProjectWorkspaceIfMatch removes the recorded workspace only when it is
+// the workspace of one cleanup.
+func clearProjectWorkspaceIfMatch(home, projectID, workspaceID string) error {
+	return mutateProjectWorkspace(home, projectID, func(project *records.Project) {
+		if project.Workspace == nil || project.Workspace.ID != workspaceID {
+			return
+		}
+		project.Workspace = nil
 	})
 }
 
