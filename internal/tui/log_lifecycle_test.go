@@ -275,8 +275,17 @@ func TestNeverDispatchedQuitActionKeepsOneEvent(t *testing.T) {
 		t.Fatal("the first ctrl+c command batch is empty")
 	}
 	held := batch[0]
-	// Do not invoke held. Close must return without waiting for dispatch.
-	model.Stop()
+	// Do not invoke held. Close must return within the existing test bound.
+	closed := make(chan struct{})
+	go func() {
+		model.Stop()
+		close(closed)
+	}()
+	select {
+	case <-closed:
+	case <-time.After(5 * time.Second):
+		t.Fatal("close did not return within 5s")
+	}
 
 	path := onlyLogFile(t, home)
 	before := readLogFile(t, path)
@@ -285,6 +294,9 @@ func TestNeverDispatchedQuitActionKeepsOneEvent(t *testing.T) {
 	}
 	held()
 	after := readLogFile(t, path)
+	if after != before {
+		t.Fatalf("late command invocation changed the log bytes:\nbefore:\n%s\nafter:\n%s", before, after)
+	}
 	if got := strings.Count(after, `"action":"quit request"`); got != 1 {
 		t.Fatalf("quit events after late command invocation = %d; want exactly 1:\n%s", got, after)
 	}
