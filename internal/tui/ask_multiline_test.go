@@ -11,28 +11,29 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// requireReviewDock fails when a dock body row lacks its left or right
-// border, or when the dock has more than limit rows. It gives the body rows.
+// requireReviewDock fails when a card row lacks its left border, or its
+// right border or the ┃ thumb, or when the composer frame has more than limit
+// rows. It gives the card rows, which are above the ├─┤ rule.
 func requireReviewDock(t *testing.T, m *Model, limit int) []string {
 	t.Helper()
 	var body []string
-	inside, rows := false, 0
-	for line := range strings.SplitSeq(ansi.Strip(m.View().Content), "\n") {
+	top, card := -1, false
+	for index, line := range strings.Split(ansi.Strip(m.View().Content), "\n") {
 		switch {
-		case strings.HasPrefix(line, "┏"):
-			inside, rows = true, 1
-		case strings.HasPrefix(line, "┗"):
-			inside, rows = false, rows+1
-		case inside:
-			rows++
-			if !strings.HasPrefix(line, "┃") || !strings.HasSuffix(line, "┃") {
-				t.Fatalf("dock row has a broken border: %q", line)
+		case strings.HasPrefix(line, "╭"):
+			top, card = index, true
+		case strings.HasPrefix(line, "├"):
+			card = false
+		case strings.HasPrefix(line, "╰"):
+			if rows := index - top + 1; rows > limit {
+				t.Fatalf("frame has %d rows, want at most %d", rows, limit)
+			}
+		case card:
+			if !strings.HasPrefix(line, "│") || !strings.HasSuffix(line, "│") && !strings.HasSuffix(line, "┃") {
+				t.Fatalf("card row has a broken border: %q", line)
 			}
 			body = append(body, line)
 		}
-	}
-	if rows > limit {
-		t.Fatalf("dock has %d rows, want at most %d", rows, limit)
 	}
 	return body
 }
@@ -66,14 +67,14 @@ func TestAskReviewKeepsMultilineTextInsideTheDock(t *testing.T) {
 				Options: []ask.Option{askOption("Plain", "one line")},
 			})
 			m, calls := askModel(t, size[0], size[1], record)
-			m, _ = raise(t, m, ctrl('g'))
-			m, _ = raise(t, m, escKey())
+			m, _ = raise(t, m, key('1', "1"))
+			m, _ = raise(t, m, key('2', "2"))
 			m.askCards["a1"].others[1] = "other one\nother two"
 			m.askCards["a1"].notes[1] = "note one\nnote two"
 			m = run(t, m, enterKey)
 			requireNoCalls(t, calls, "the review")
-			requireView(t, m, "asks · confirm", "┃   Label → First line ", "┃   Second line ",
-				"┃   Other → other one ", "┃   other two · note: note one ", "┃   note two ", "┃ › Send ")
+			requireView(t, m, "asks · confirm", "│   Label → First line ", "│   Second line ",
+				"│   Other → other one ", "│   other two · note: note one ", "│   note two ", "│ › Send ")
 			requireFits(t, m, size[0], size[1])
 			requireReviewDock(t, m, size[1]/2)
 			run(t, m, enterKey)
@@ -90,9 +91,9 @@ func TestAskReviewReachesEachLineOfATallLabel(t *testing.T) {
 	for _, size := range [][2]int{{120, 40}, {80, 24}} {
 		t.Run(fmt.Sprint(size[0]), func(t *testing.T) {
 			m, calls := askModel(t, size[0], size[1], multilineAsk(t, "tall-request.json"))
-			m = run(t, m, ctrl('g'))
+			m = run(t, m, key('1', "1"))
 			requireNoCalls(t, calls, "the review")
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			seen := map[string]bool{}
 			look := func() {
 				requireFits(t, m, size[0], size[1])
@@ -110,12 +111,12 @@ func TestAskReviewReachesEachLineOfATallLabel(t *testing.T) {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 				look()
 			}
-			requireView(t, m, "┃ › Label → ROW01 ")
+			requireView(t, m, "│ › Label → ROW01 ")
 			for range 12 {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 				look()
 			}
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			for row := 1; row <= 30; row++ {
 				if word := fmt.Sprintf("ROW%02d", row); !seen[word] {
 					t.Fatalf("%q never showed", word)

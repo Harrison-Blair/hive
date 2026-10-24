@@ -155,6 +155,12 @@ func (m *Model) updateChat(press tea.KeyPressMsg) tea.Cmd {
 	switch press.String() {
 	case "ctrl+o":
 		return m.toggleChatEvents()
+	}
+	if !m.chatInputActive {
+		// A blocked caller has no input line to type in (rule 2).
+		return nil
+	}
+	switch press.String() {
 	case "enter":
 		return m.sendChat()
 	case "shift+enter", "alt+enter":
@@ -308,9 +314,7 @@ func (m *Model) transcriptRows(width, height int) []string {
 	out := make([]string, 0, height)
 	if len(feed.lines) == 0 {
 		feed.visible = height
-		for _, line := range m.welcomeLines() {
-			out = append(out, line)
-		}
+		out = append(out, m.welcomeLines()...)
 		for len(out) < height {
 			out = append(out, "")
 		}

@@ -82,7 +82,9 @@ func TestFrameChatIsHome(t *testing.T) {
 		if strings.Contains(row, "Agents") && strings.Contains(row, "Friction") {
 			t.Errorf("row %d is a tab bar: %q", i, row)
 		}
-		if strings.Contains(row, "hive ·") {
+		// The welcome block of chat.md rule 8 has hive · HOME on row 1;
+		// the header was on row 0.
+		if strings.Contains(row, "hive ·") && i != 1 {
 			t.Errorf("row %d is a header: %q", i, row)
 		}
 	}

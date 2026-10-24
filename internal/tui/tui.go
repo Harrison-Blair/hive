@@ -204,9 +204,11 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	m.chatInput = newChatInput()
 	m.setTUIConfig(defaultTUI())
 	// Golden-frames decision 19: there is no normal mode, so the composer
-	// has the focus at start.
-	m.chatInputActive = true
-	m.chatInput.Focus()
+	// has the focus at start. A blocked caller cannot type (rule 2).
+	if !m.chatCallerBlocked {
+		m.chatInputActive = true
+		m.chatInput.Focus()
+	}
 	m.screens = m.makeScreens()
 
 	logClock := now

@@ -317,11 +317,7 @@ func (m *Model) frameView() string {
 		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
 	}
 	_, contentHeight := m.contentArea()
-	switch {
-	case m.activeTab() == tabChat:
-		m.screenViewCache = m.chatView(width, contentHeight)
-		m.screenViewCacheValid = false
-	case !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex:
+	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
 		m.screenViewCache = m.contentView(width, contentHeight)
 		m.screenViewCacheValid = true
 		m.screenViewWidth = width
@@ -572,8 +568,8 @@ func (m *Model) helpLines() []string {
 		titleStyle.Render("CHAT"),
 		dimStyle.Render("the composer has the focus · enter sends · shift+enter adds a line"),
 		dimStyle.Render("ctrl+o opens or folds all chat events"),
-		dimStyle.Render("ctrl+r moves the focus between the input line and the ask card"),
-		dimStyle.Render("ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card · esc input"),
+		dimStyle.Render("ctrl+r moves the focus between input and ask card · esc to input"),
+		dimStyle.Render("ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card"),
 		dimStyle.Render("ask review: enter on the last question · ↑↓ question · enter send or change"),
 	}
 }
@@ -776,7 +772,7 @@ const actionKeys = "aprhtbvdosf"
 // startChatInput gives the input line the focus (chat.md rule 17). The
 // text stays.
 func (m *Model) startChatInput() tea.Cmd {
-	if m.chatInputActive {
+	if m.chatCallerBlocked || m.chatInputActive {
 		return nil
 	}
 	m.chatInputActive = true

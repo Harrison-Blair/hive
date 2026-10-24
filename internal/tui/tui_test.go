@@ -54,6 +54,10 @@ func newTestModel(t *testing.T, home string, clock *testClock) *Model {
 	model.chatPaneID = ""
 	model.chatCallerBlocked = false
 	model.chatErr = ""
+	// The test runs below projects/, so New blocked the caller and gave the
+	// input no focus. Golden-frames decision 19 gives the input the focus.
+	model.chatInputActive = true
+	model.chatInput.Focus()
 	t.Cleanup(model.Stop)
 	return model
 }

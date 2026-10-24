@@ -89,9 +89,9 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 		if !m.Open {
 			first, _, _ := strings.Cut(m.Text, "\n")
 			rest := max(width-3-lipgloss.Width(head), 0)
-			return []string{head + dimStyle.Render(fitCell(ansi.Truncate(m.Time+"  "+first, rest, "…"), rest))}, nil
+			return []string{ansi.Truncate(head+dimStyle.Render(fitCell(ansi.Truncate(m.Time+"  "+first, rest, "…"), rest)), width-1, "…")}, nil
 		}
-		lines := []string{head + dimStyle.Render(m.Time)}
+		lines := []string{ansi.Truncate(head+dimStyle.Render(m.Time), width-1, "…")}
 		for _, line := range wordWrap(m.Text, wrap) {
 			lines = append(lines, " "+dimStyle.Render(fitCell(line, width-3)))
 		}
@@ -108,7 +108,7 @@ func chatMessage(m ChatMessage, width int) ([]string, error) {
 	if m.Note != "" {
 		head += m.Note
 	}
-	lines := []string{head}
+	lines := []string{ansi.Truncate(head, width-1, "…")}
 	if m.Kind == ChatAgent {
 		body, err := RenderMarkdown(m.Text, wrap)
 		if err != nil {

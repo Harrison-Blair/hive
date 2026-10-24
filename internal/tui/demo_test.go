@@ -68,7 +68,7 @@ func TestDemoFixtureBadValuesFail(t *testing.T) {
 		{old: `"time": "2026-10-21T14:22:00Z"`, new: `"time": "14:22"`, want: `"clock.time"`},
 		{old: `"width": 120`, new: `"width": 0`, want: `"terminal"`},
 		{old: `"overlay": ""`, new: `"overlay": "brief"`, want: `"ui.overlay"`},
-		{old: `"kind": ""`, new: `"kind": "quit"`, want: `"ui.prompt.kind"`},
+		{old: `"kind": ""`, new: `"kind": "launch"`, want: `"ui.prompt.kind"`},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			data := strings.Replace(string(base), tc.old, tc.new, 1)

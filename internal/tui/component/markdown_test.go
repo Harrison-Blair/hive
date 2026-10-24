@@ -13,7 +13,8 @@ const sampleMarkdown = "# Title\n\nSome **strong** and `code` with [a link](http
 
 // TestMarkdownGrid renders sampleMarkdown at 40 cells and compares it with a
 // hand-written grid. The heading is accent and bold with no "#". The link
-// shows its text in info and no URL. The bullet "• " is accent. The code
+// shows its text in info and no URL. The bullet "• " is fg, as the
+// golden-frames boards GfChat and GfComponents draw it. The code
 // block is code, indented by 2, with its own leading spaces kept. No line
 // has trailing spaces.
 func TestMarkdownGrid(t *testing.T) {
@@ -31,10 +32,10 @@ func TestMarkdownGrid(t *testing.T) {
 		"k|ffffffffffffffffffffffffffffffffffffffff\n" +
 		"b|0000000000000000000000000000000000000000\n" +
 		"t|• one                                   \n" +
-		"k|aaffffffffffffffffffffffffffffffffffffff\n" +
+		"k|ffffffffffffffffffffffffffffffffffffffff\n" +
 		"b|0000000000000000000000000000000000000000\n" +
 		"t|• two                                   \n" +
-		"k|aaffffffffffffffffffffffffffffffffffffff\n" +
+		"k|ffffffffffffffffffffffffffffffffffffffff\n" +
 		"b|0000000000000000000000000000000000000000\n" +
 		"t|                                        \n" +
 		"k|ffffffffffffffffffffffffffffffffffffffff\n" +

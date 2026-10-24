@@ -45,18 +45,17 @@ func rowOf(m *Model, text string) int {
 // writes no answer. enter on Send sends it.
 func TestAskReviewOneQuestion(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m = run(t, m, escKey())
+	m = run(t, m, key('2', "2"))
 	requireNoCalls(t, calls, "the pick")
 	requireView(t, m,
-		"┏━ ? manager-hive asks · confirm ━",
-		" open · 1 of 1 ━┓",
-		"┃   Model → No ",
-		"┃ › Send ",
-		"┗━ enter send · ↑↓ question to change · x drop ━",
-		"manager-hive  ? asked · Model · open below",
+		"╭─ ? manager-hive asks · confirm ─",
+		" open · 1 of 1 ╮",
+		"│   Model → No ",
+		"│ › Send ",
+		"? manager-hive 07:30  asked · Model · in the composer, ^r to answer",
 	)
 	rejectView(t, m, "1 [ ] Yes", "2 [x] No")
-	if got := viewRow(m, 39); strings.TrimRight(got, " ") != " [review] ↑↓ question · enter send · x dismiss · J/K next/prev card" {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · review · ↑↓ question · enter send · x dismiss · J/K card · ^r input") {
 		t.Fatalf("footer = %q", got)
 	}
 	run(t, m, enterKey)
@@ -77,20 +76,20 @@ func TestAskEachCompletionPathOpensTheReview(t *testing.T) {
 			return run(t, m, enterKey)
 		}, "Model → No ", ask.Reply{Picks: []int{2}}},
 		{"digit", func(t *testing.T, m *Model) *Model {
-			return run(t, m, ctrl('t'))
+			return run(t, m, key('3', "3"))
 		}, "Model → Later ", ask.Reply{Picks: []int{3}}},
 		{"click", func(t *testing.T, m *Model) *Model {
 			return run(t, m, click(12, rowOf(m, "2 [ ] No")))
 		}, "Model → No ", ask.Reply{Picks: []int{2}}},
 		{"note", func(t *testing.T, m *Model) *Model {
-			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+			m, _ = raise(t, m, key('n', "n"))
 			for _, r := range "ok" {
 				m, _ = raise(t, m, key(r, string(r)))
 			}
 			return run(t, m, enterKey)
 		}, "Model → Yes · note: ok ", ask.Reply{Picks: []int{1}, Note: "ok"}},
 		{"other", func(t *testing.T, m *Model) *Model {
-			m, _ = raise(t, m, ctrl('f'))
+			m, _ = raise(t, m, key('4', "4"))
 			for _, r := range "soon" {
 				m, _ = raise(t, m, key(r, string(r)))
 			}
@@ -101,7 +100,7 @@ func TestAskEachCompletionPathOpensTheReview(t *testing.T) {
 			m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 			m = tc.keys(t, m)
 			requireNoCalls(t, calls, tc.name)
-			requireView(t, m, "? manager-hive asks · confirm", "┃   "+tc.row, "┃ › Send ")
+			requireView(t, m, "? manager-hive asks · confirm", "│   "+tc.row, "│ › Send ")
 			if m.chatData.asks[0].State != ask.StateOpen {
 				t.Fatalf("state = %q, want open", m.chatData.asks[0].State)
 			}
@@ -114,11 +113,11 @@ func TestAskEachCompletionPathOpensTheReview(t *testing.T) {
 // AC1: an empty Other answer keeps its text line and opens no review.
 func TestAskReviewKeepsTheEmptyOtherCheck(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m, _ = raise(t, m, ctrl('f'))
+	m, _ = raise(t, m, key('4', "4"))
 	m = run(t, m, enterKey)
 	requireNoCalls(t, calls, "the empty Other")
 	rejectView(t, m, "asks · confirm")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other]") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · other ·") {
 		t.Fatalf("footer = %q", got)
 	}
 }
@@ -129,44 +128,44 @@ func TestAskReviewKeepsTheEmptyOtherCheck(t *testing.T) {
 // edited draft.
 func TestAskReviewEditsAQuestionAndSendsTheEditedDraft(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
-	m, _ = raise(t, m, ctrl('g'))
-	m, _ = raise(t, m, ctrl('f'))
+	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, key('4', "4"))
 	for _, r := range "keys" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, enterKey)
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('n', "n"))
 	for _, r := range "small" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, enterKey)
 	requireNoCalls(t, calls, "the last pick")
 	requireView(t, m,
-		"┏━ ? coordinator asks · confirm ━",
-		"┃   Scope → Wheel, keys ",
-		"┃   Order → Card first · note: small ",
-		"┃ › Send ",
+		"╭─ ? coordinator asks · confirm ─",
+		"│   Scope → Wheel, keys ",
+		"│   Order → Card first · note: small ",
+		"│ › Send ",
 	)
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
-	requireView(t, m, "┃ › Order → Card first · note: small ", "┃   Send ",
-		"┗━ enter change · ↑↓ question to change · x drop ━")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [review] ↑↓ question · enter change ·") {
+	requireView(t, m, "│ › Order → Card first · note: small ", "│   Send ")
+	// Decision 33: the review keys stay enter send on a question row.
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · review · ↑↓ question · enter send ·") {
 		t.Fatalf("footer = %q", got)
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
-	requireView(t, m, "┃ › Scope → Wheel, keys ", "┃   Order → Card first · note: small ")
+	requireView(t, m, "│ › Scope → Wheel, keys ", "│   Order → Card first · note: small ")
 	m, _ = raise(t, m, enterKey)
 	requireNoCalls(t, calls, "enter on a question")
-	requireView(t, m, "┃ 1. Which parts?", "┃   1 [x] Wheel", "┃ › 4 [x] Other: type an answer", "other › keys")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
+	requireView(t, m, "│ 1. Which parts?", "│   1 [x] Wheel", "│ › 4 [x] Other: type an answer", "other › keys")
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · ask ·") {
 		t.Fatalf("footer in the edit = %q", got)
 	}
-	m, _ = raise(t, m, escKey())
+	m, _ = raise(t, m, key('2', "2"))
 	m, _ = raise(t, m, enterKey)
 	requireNoCalls(t, calls, "the edit")
-	requireView(t, m, "┃   Scope → Wheel, Click, keys ", "┃   Order → Card first · note: small ", "┃ › Send ")
+	requireView(t, m, "│   Scope → Wheel, Click, keys ", "│   Order → Card first · note: small ", "│ › Send ")
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1, 2, 4}, Other: "keys"}, {Picks: []int{2}, Note: "small"}}}})
 }
@@ -175,19 +174,19 @@ func TestAskReviewEditsAQuestionAndSendsTheEditedDraft(t *testing.T) {
 // shows the new note.
 func TestAskReviewEditsANote(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
-	m, _ = raise(t, m, ctrl('t'))
+	m, _ = raise(t, m, key('3', "3"))
 	m, _ = raise(t, m, enterKey)
-	m, _ = raise(t, m, ctrl('g'))
+	m, _ = raise(t, m, key('1', "1"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	m, _ = raise(t, m, enterKey)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('n', "n"))
 	for _, r := range "later" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, enterKey)
 	requireNoCalls(t, calls, "the note")
-	requireView(t, m, "┃   Scope → Modes · note: later ", "┃   Order → Modes first ", "┃ › Send ")
+	requireView(t, m, "│   Scope → Modes · note: later ", "│   Order → Modes first ", "│ › Send ")
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{3}, Note: "later"}, {Picks: []int{1}}}}})
 }
@@ -196,20 +195,25 @@ func TestAskReviewEditsANote(t *testing.T) {
 // not change the answer and send nothing. A digit does not open a screen.
 func TestAskReviewIgnoresOtherInput(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('n', "n"))
 	m, _ = raise(t, m, key('o', "o"))
 	m = run(t, m, enterKey)
-	requireView(t, m, "┃   Model → Yes · note: o ", "┃ › Send ")
+	requireView(t, m, "│   Model → Yes · note: o ", "│ › Send ")
 	presses := []tea.Msg{
-		ctrl('g'), escKey(), ctrl('t'), ctrl('f'), ctrl('y'),
+		key('1', "1"), key('2', "2"), key('3', "3"), key('4', "4"), key('5', "5"),
 		key(' ', "space"), tea.KeyPressMsg{Code: tea.KeyTab}, key('a', "a"), key('z', "z"),
 		tea.KeyPressMsg{Code: tea.KeyBackspace},
 	}
 	for _, press := range presses {
 		m = run(t, m, press)
 	}
+	// Each card row; a click on the input line below the ├─┤ rule gives it
+	// the focus (rule 17).
 	for row, line := range strings.Split(ansi.Strip(m.View().Content), "\n") {
-		if strings.HasPrefix(line, "┃") {
+		if strings.HasPrefix(line, "├") {
+			break
+		}
+		if strings.HasPrefix(line, "│") {
 			m = run(t, m, click(12, row))
 		}
 	}
@@ -217,9 +221,9 @@ func TestAskReviewIgnoresOtherInput(t *testing.T) {
 	if m.screenIndex != 0 {
 		t.Fatalf("a key opened screen %d", m.screenIndex)
 	}
-	requireView(t, m, "? manager-hive asks · confirm", "┃   Model → Yes · note: o ", "┃ › Send ")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [review]") {
-		t.Fatalf("footer = %q", got)
+	requireView(t, m, "? manager-hive asks · confirm", "│   Model → Yes · note: o ", "│ › Send ")
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · review ·") {
+		t.Fatalf("status row = %q", got)
 	}
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}, Note: "o"}}}})
@@ -228,7 +232,7 @@ func TestAskReviewIgnoresOtherInput(t *testing.T) {
 // AC3: x in the review dismisses the ask, as outside the review.
 func TestAskReviewXDismisses(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m = run(t, m, ctrl('g'))
+	m = run(t, m, key('1', "1"))
 	run(t, m, key('x', "x"))
 	requireCalls(t, calls, []askCall{{"dismiss", "a1", nil}})
 }
@@ -237,31 +241,31 @@ func TestAskReviewXDismisses(t *testing.T) {
 // draft and its review.
 func TestAskReviewSurvivesACardSwitch(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "coordinator"), oneQuestionAsk("a2", "manager-hive"))
-	m = run(t, m, escKey())
+	m = run(t, m, key('2', "2"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	m, _ = raise(t, m, key('J', "J"))
-	requireView(t, m, "? manager-hive asks · Model", "┃ › 1 [ ] Yes")
-	m, _ = raise(t, m, ctrl('t'))
-	requireView(t, m, "? manager-hive asks · confirm", "┃   Model → Later ")
+	requireView(t, m, "? manager-hive asks · Model", "│ › 1 [ ] Yes")
+	m, _ = raise(t, m, key('3', "3"))
+	requireView(t, m, "? manager-hive asks · confirm", "│   Model → Later ")
 	m, _ = raise(t, m, key('K', "K"))
-	requireView(t, m, "? coordinator asks · confirm", "┃ › Model → No ", "┃   Send ")
+	requireView(t, m, "? coordinator asks · confirm", "│ › Model → No ", "│   Send ")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m = run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{2}}}}})
-	requireView(t, m, "? manager-hive asks · confirm", "┃   Model → Later ", "┃ › Send ")
+	requireView(t, m, "? manager-hive asks · confirm", "│   Model → Later ", "│ › Send ")
 }
 
 // AC2: a data refresh keeps the review and the draft.
 func TestAskReviewSurvivesARefresh(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
-	m, _ = raise(t, m, ctrl('g'))
+	m, _ = raise(t, m, key('1', "1"))
 	m, _ = raise(t, m, enterKey)
-	m, _ = raise(t, m, escKey())
+	m, _ = raise(t, m, key('2', "2"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 	agents := []records.Agent{{Key: "coordinator-g1", Name: "coordinator", Status: records.AgentLive}}
 	data := buildChatScreenData(m.chatData.entries, nil, []ask.Record{twoQuestionAsk("a1")}, agents, m.now())
 	m, _ = raise(t, m, screenLoadMsg{request: chatDataRequest, chat: data})
-	requireView(t, m, "? coordinator asks · confirm", "┃   Scope → Wheel ", "┃ › Order → Card first ")
+	requireView(t, m, "? coordinator asks · confirm", "│   Scope → Wheel ", "│ › Order → Card first ")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}}, {Picks: []int{2}}}}})
@@ -277,10 +281,10 @@ func TestAskReviewForAStoppedAsker(t *testing.T) {
 	}
 	m.chatData = buildChatScreenData(m.chatData.entries, nil, m.chatData.asks, agents, m.now())
 	m.rebuildChat()
-	m = run(t, m, ctrl('g'))
+	m = run(t, m, key('1', "1"))
 	requireNoCalls(t, calls, "the pick")
-	requireView(t, m, "? t1-worker asks · confirm", " asker stopped · answer goes to coordinator ━┓",
-		"┃ › Send to coordinator ", "┗━ enter sends to coordinator · ↑↓ question to change · x drop ━")
+	requireView(t, m, "? t1-worker asks · confirm", " asker stopped · answer goes to coordinator ╮",
+		"│ › Send to coordinator ", " review · ↑↓ question · enter send · x dismiss")
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}}}}})
 }
@@ -297,11 +301,11 @@ func TestAskCompactReviewForAStoppedAskerKeepsTheTitle(t *testing.T) {
 	record.Parent, record.ParentKey = "parent-scratch", "parent-scratch"
 	m.chatData = buildChatScreenData(m.chatData.entries, nil, []ask.Record{record}, agents, m.now())
 	m.rebuildChat()
-	m = run(t, m, ctrl('g'))
+	m = run(t, m, key('1', "1"))
 	requireNoCalls(t, calls, "the pick")
 	requireView(t, m,
-		"┏━ ? asker-scratch asks · confirm ━━━━━━━━━ asker stopped · to parent-scratch ━┓",
-		"┃ › Send to parent-scratch ", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━")
+		"╭─ ? asker-scratch asks · confirm ────────── asker stopped · to parent-scratch ╮",
+		"│ › Send to parent-scratch ")
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}}}}})
 }
@@ -338,14 +342,14 @@ const (
 func longReview(t *testing.T, width, height int) (*Model, *[]askCall) {
 	t.Helper()
 	m, calls := askModel(t, width, height, longAsk("a1"))
-	m, _ = raise(t, m, ctrl('g'))
-	m, _ = raise(t, m, escKey())
-	m, _ = raise(t, m, ctrl('f'))
+	m, _ = raise(t, m, key('1', "1"))
+	m, _ = raise(t, m, key('2', "2"))
+	m, _ = raise(t, m, key('4', "4"))
 	for _, r := range longOther {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, enterKey)
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('n', "n"))
 	for _, r := range longNote {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
@@ -357,15 +361,18 @@ func longReview(t *testing.T, width, height int) (*Model, *[]askCall) {
 }
 
 // cardText gives the body text of the card in view, with the rows joined
-// by spaces and the frame removed.
+// by spaces and the frame, the ┃ thumb, and the input line removed.
 func cardText(m *Model) string {
 	var words []string
 	for line := range strings.SplitSeq(ansi.Strip(m.View().Content), "\n") {
-		if !strings.HasPrefix(line, "┃") {
+		if strings.HasPrefix(line, "├") {
+			break // the input line is below the rule
+		}
+		if !strings.HasPrefix(line, "│") {
 			continue
 		}
-		line = strings.TrimSuffix(strings.TrimRight(line, " "), "┃")
-		words = append(words, strings.Fields(strings.Trim(line, "┃ ›"))...)
+		line = strings.TrimRight(strings.TrimRight(line, " │┃"), " ")
+		words = append(words, strings.Fields(strings.Trim(line, "│ ›"))...)
 	}
 	return strings.Join(words, " ")
 }
@@ -381,11 +388,11 @@ func TestAskReviewWrapsAndScrollsLongContent(t *testing.T) {
 			if strings.Contains(cardText(m), "…") {
 				t.Fatalf("card text = %q, want no cut", cardText(m))
 			}
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			for range 6 {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 			}
-			requireView(t, m, "┃ › Scope → Wheel scroll over the feed and the card,")
+			requireView(t, m, "│ › Scope → Wheel scroll over the feed and the card,")
 			text := cardText(m)
 			if size[0] == 120 {
 				want := "Scope → Wheel scroll over the feed and the card, Click focus, " + longOther + " Order → Modes first · note: " + longNote
@@ -397,9 +404,9 @@ func TestAskReviewWrapsAndScrollsLongContent(t *testing.T) {
 			for range 6 {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 			}
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			if size[0] == 80 {
-				rejectView(t, m, "┃ › Scope")
+				rejectView(t, m, "│ › Scope")
 			}
 			if !strings.Contains(cardText(m), "Model → Sonnet Wave → A Tier → Strong Land → Yes") {
 				t.Fatalf("card text = %q, want the last question", cardText(m))
@@ -423,9 +430,9 @@ func TestAskReviewAfterAnEditAtEightyColumns(t *testing.T) {
 	}
 	m, _ = raise(t, m, enterKey)
 	requireView(t, m, "3. Which model?")
-	m, _ = raise(t, m, ctrl('g'))
+	m, _ = raise(t, m, key('1', "1"))
 	requireFits(t, m, 80, 24)
-	requireView(t, m, "┃   Model → Opus ", "┃ › Send ")
+	requireView(t, m, "│   Model → Opus ", "│ › Send ")
 	run(t, m, enterKey)
 	requireCalls(t, calls, []askCall{{"answer", "a1", []ask.Reply{
 		{Picks: []int{1, 2, 4}, Other: longOther},
@@ -438,7 +445,7 @@ func TestAskReviewAfterAnEditAtEightyColumns(t *testing.T) {
 func TestAskReviewBlockedCallerSendsNothing(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	m.chatCallerBlocked = true
-	m = run(t, m, ctrl('g'))
+	m = run(t, m, key('1', "1"))
 	run(t, m, enterKey)
 	requireNoCalls(t, calls, "a blocked caller")
 }
@@ -455,8 +462,8 @@ func TestDemoFixtureShowsTheReview(t *testing.T) {
 		row  string
 		want []string
 	}{
-		{"", []string{"┃   Scope → Mouse wheel (REC), Click to focus, Normal and input mode ", "┃   Order → Modes first (REC) · note: keep the old tab key for one release ", "┃ › Send "}},
-		{`, "review_row": 1`, []string{"┃ › Scope → Mouse wheel (REC),", "┃   Send "}},
+		{"", []string{"│   Scope → Mouse wheel (REC), Click to focus, Normal and input mode ", "│   Order → Modes first (REC) · note: keep the old tab key for one release ", "│ › Send "}},
+		{`, "review_row": 1`, []string{"│ › Scope → Mouse wheel (REC),", "│   Send "}},
 	} {
 		data := strings.Replace(string(base), `"focus": "note"`, `"focus": "review"`, 1)
 		data = strings.Replace(data, `"note_open": true`, `"note_open": false`+tc.row, 1)
@@ -471,15 +478,16 @@ func TestDemoFixtureShowsTheReview(t *testing.T) {
 		m := newDemoModel(t.TempDir(), &demoState{fixture: loaded})
 		t.Cleanup(m.Stop)
 		requireView(t, m, append(tc.want, "? coordinator asks · confirm")...)
-		if got := viewRow(m, 39); !strings.HasPrefix(got, " [review]") {
-			t.Fatalf("footer = %q", got)
+		if got := viewRow(m, 39); !strings.Contains(got, " review · ↑↓ question · enter send") {
+			t.Fatalf("status row = %q", got)
 		}
 	}
 }
 
-// AC3: in the review, only ↑↓, enter, x, and J/K act. i, ctrl+o, pgup,
-// pgdown, ?, and other frame keys do nothing. The footer names only the
-// review keys. ctrl+c twice still quits.
+// AC3 and golden-frames rule 18: in the review, only ↑↓, enter, x, J/K, and
+// the focus keys act. i, pgup, pgdown, ?, and other frame keys do nothing.
+// The status row names the review keys. esc focuses the input line. ctrl+c
+// twice still quits.
 func TestAskReviewKeepsOnlyTheReviewKeys(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	for index := 3; index <= 40; index++ {
@@ -487,12 +495,12 @@ func TestAskReviewKeepsOnlyTheReviewKeys(t *testing.T) {
 		m.chatData.entries[len(m.chatData.entries)-1].ID = fmt.Sprintf("c%d", index)
 	}
 	m.rebuildChat()
-	m = run(t, m, escKey())
+	m = run(t, m, key('2', "2"))
 	before := ansi.Strip(m.View().Content)
 	top := m.chatFeed.top
 	presses := []tea.KeyPressMsg{
-		key('i', "i"), {Code: 'o', Mod: tea.ModCtrl}, {Code: tea.KeyPgUp}, {Code: tea.KeyPgDown},
-		key('?', "?"), key('r', "r"), key('h', "h"), {Code: tea.KeyEsc}, ctrlBracket(),
+		key('i', "i"), {Code: tea.KeyPgUp}, {Code: tea.KeyPgDown},
+		key('?', "?"), key('r', "r"), key('h', "h"), ctrlBracket(),
 		{Code: tea.KeyLeft}, {Code: tea.KeyRight}, key('g', "g"), key('G', "G"),
 	}
 	for _, press := range presses {
@@ -505,8 +513,13 @@ func TestAskReviewKeepsOnlyTheReviewKeys(t *testing.T) {
 		t.Fatalf("a review key acted: top %d→%d, input %v, help %v, screen %d", top, m.chatFeed.top, m.chatInputActive, m.helpOpen, m.screenIndex)
 	}
 	requireNoCalls(t, calls, "the frame keys")
-	if got := viewRow(m, 39); strings.TrimRight(got, " ") != " [review] ↑↓ question · enter send · x dismiss · J/K next/prev card" {
-		t.Fatalf("footer = %q", got)
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · review · ↑↓ question · enter send · x dismiss · J/K card · ^r input") {
+		t.Fatalf("status row = %q", got)
+	}
+	// Rule 18: esc gives the focus to the input line, also from the review.
+	m, _ = raise(t, m, escKey())
+	if m.focusState() != "input" {
+		t.Fatalf("focus after esc = %q, want input", m.focusState())
 	}
 	_, cmd := raise(t, m, tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
 	if cmd == nil {
@@ -541,15 +554,15 @@ func TestAskReviewReachesEachPartOfALongRow(t *testing.T) {
 		t.Run(fmt.Sprint(size[0]), func(t *testing.T) {
 			note := longNoteText(900)
 			m, calls := askModel(t, size[0], size[1], oneQuestionAsk("a1", "manager-hive"))
-			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+			m, _ = raise(t, m, key('n', "n"))
 			m.askCards["a1"].notes[0] = note
 			m = run(t, m, enterKey)
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			seen := map[string]bool{}
 			look := func() {
 				requireFits(t, m, size[0], size[1])
 				view := ansi.Strip(m.View().Content)
-				if !strings.Contains(view, "┃ › ") {
+				if !strings.Contains(view, "│ › ") {
 					t.Fatalf("no › mark in view:\n%s", view)
 				}
 				for _, word := range strings.Fields(cardText(m)) {
@@ -561,17 +574,17 @@ func TestAskReviewReachesEachPartOfALongRow(t *testing.T) {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
 				look()
 			}
-			requireView(t, m, "┃ › Model → Yes · note: w001")
+			requireView(t, m, "│ › Model → Yes · note: w001")
 			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 			look()
 			rejectView(t, m, "note: w001")
 			m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
-			requireView(t, m, "┃ › Model → Yes · note: w001")
+			requireView(t, m, "│ › Model → Yes · note: w001")
 			for range 12 {
 				m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 				look()
 			}
-			requireView(t, m, "┃ › Send ")
+			requireView(t, m, "│ › Send ")
 			for _, word := range append(strings.Fields(note), "Model", "Send") {
 				if !seen[word] {
 					t.Fatalf("%q never showed", word)

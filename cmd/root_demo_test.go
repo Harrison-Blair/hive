@@ -16,8 +16,9 @@ const mainFixture = "../.hive/spec/tui-v2/design/Main.fixture.json"
 
 // TestDemoActionsChangeNoFileAndStartNoProcess runs the CLI entry with --demo
 // and presses the chat send, restart, attach, and peek keys. The keys follow
-// the frame map: p peeks and a attaches on Agents, 5 ] opens Health › Agents
-// where r restarts, 2 opens Chat, i focuses the input, and enter sends.
+// the golden-frames chords: p peeks and a attaches on Agents, ^y ] opens
+// Health › Agents where r restarts, ^y again returns to Chat, where the input
+// line has the focus, and enter sends.
 func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 	home := newRootTestHome(t)
 	methods := newRootFakeHerdr(t)
@@ -46,7 +47,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	before := snapshotFiles(t, home, fixtureDir)
 	var out bytes.Buffer
-	keys := "pa5]r2ihi\r"
+	keys := "pa\x19]r\x19hi\r"
 	status := executeWithStreams([]string{"--demo", fixture}, strings.NewReader(keys), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; output %q", status, out.String())

@@ -32,7 +32,7 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		shows  string
 	}{
 		{ctrl('g'), tabAgents, "Agents", "no project agents"},
-		{escKey(), tabChat, "Chat", "no chat yet"},
+		{escKey(), tabChat, "Chat", "type a message to the coordinator."},
 		{ctrl('t'), tabWork, "Goals", "goals · 0"},
 		{key(']', "]"), tabWork, "Queue", "no tasks"},
 		{key(']', "]"), tabWork, "Tasks", "tasks · 0"},
@@ -49,7 +49,8 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 		title := " " + strings.ToLower(screenRegistry[step.tab].label)
 		titleRow := strings.Split(view, "\n")[0]
 		if step.tab == tabChat {
-			title = "╭─ chat"
+			// Golden-frames chat.md rule 8: the welcome block from row 1.
+			title, titleRow = " hive · ", strings.Split(view, "\n")[1]
 		}
 		if !strings.HasPrefix(titleRow, title) || !strings.Contains(view, step.shows) {
 			t.Fatalf("key %q view omits %q or %q:\n%s", step.key, title, step.shows, view)
@@ -71,7 +72,9 @@ func TestNarrowShellFitsAndShowsTheTabBar(t *testing.T) {
 		t.Fatalf("rendered shell height %d; want 24:\n%s", got, view)
 	}
 	plain := ansi.Strip(view)
-	if strings.Contains(plain, " hive ") || strings.Contains(plain, "1 Agents") {
+	// The welcome block of golden-frames chat.md rule 8 has hive · HOME on
+	// row 1; the header was on row 0.
+	if strings.Contains(strings.Split(plain, "\n")[0], " hive ") || strings.Contains(plain, "1 Agents") {
 		t.Fatalf("narrow shell shows the header or the tab bar:\n%s", plain)
 	}
 	if rows := strings.Split(plain, "\n"); !strings.HasPrefix(rows[23], " ○ none · ○ supervisor · ? 0 asks · needs you 0 ") {
@@ -304,22 +307,27 @@ func TestEightScreensDoNotPaintTerminalBackground(t *testing.T) {
 			m.invalidateView()
 			view := m.View()
 			assertNoPaintedBackgroundSGR(t, view.Content)
-			// Decision 21: the Chat input footer shows the keys of the input.
-			if !strings.Contains(view.Content, "ctrl+] leave input") {
-				t.Error("active Chat footer omits its input controls")
+			// Golden-frames decision 19: the status row shows the chords.
+			if !strings.Contains(ansi.Strip(view.Content), "^g agents  ^t work") {
+				t.Error("active Chat status row omits the chords")
 			}
 			if view.Cursor == nil {
 				t.Fatal("active Chat input omits the real terminal cursor")
 			}
-			// The Input component draws the cursor cell █ after the text,
-			// and the real terminal cursor sits on it.
+			// The composer draws the cursor cell █ after the text, and the
+			// real terminal cursor sits on it. On the empty line the
+			// placeholder follows "> " and the cursor sits on its first cell
+			// (golden-frames chat.md rule 10).
 			plain := ansi.Strip(view.Content)
-			wantText := "> " + draft + "█"
+			wantText, mark := "> "+draft+"█", "█"
+			if draft == "" {
+				wantText, mark = "> no coordinator", "no coordinator"
+			}
 			textIndex := strings.Index(plain, wantText)
 			if textIndex < 0 {
 				t.Fatalf("active Chat input omits %q:\n%s", wantText, plain)
 			}
-			prefix := plain[:strings.Index(plain[textIndex:], "█")+textIndex]
+			prefix := plain[:strings.Index(plain[textIndex:], mark)+textIndex]
 			lineStart := strings.LastIndex(prefix, "\n") + 1
 			want := tea.Position{X: ansi.StringWidth(prefix[lineStart:]), Y: strings.Count(prefix, "\n")}
 			if got := view.Cursor.Position; got != want {

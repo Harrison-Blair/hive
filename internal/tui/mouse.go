@@ -61,7 +61,7 @@ func (m *Model) contentRow(y int) (int, bool) {
 
 // wheel scrolls the region at x, y by step.
 func (m *Model) wheel(x, y, step int) tea.Cmd {
-	row, ok := m.contentRow(y)
+	_, ok := m.contentRow(y)
 	if !ok {
 		return nil
 	}
@@ -74,9 +74,9 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 		m.popupOffset = max(m.popupOffset+step, 0)
 		return nil
 	case tab == tabChat:
-		if row < m.chatFeed.height {
-			m.scrollChat(step * wheelLines)
-		}
+		// chat.md rule 7: the wheel scrolls the transcript. The card has no
+		// wheel, so the wheel over the composer scrolls the transcript too.
+		m.scrollChat(step * wheelLines)
 		return nil
 	case !screenRegistry[tab].listDetails:
 		// Decision 77: the wheel does not move the Agents graph.
