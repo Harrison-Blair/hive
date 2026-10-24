@@ -298,3 +298,38 @@ func TestHelpLogsEachAction(t *testing.T) {
 		t.Fatalf("help actions %v; want %v", got, want)
 	}
 }
+
+// help.md rule 4 and README decision 14: while a notice exists, the notice
+// line shows on the row above the status rows, over the dimmed screen. The
+// box at the center stays clear of it, and the body scrolls with the thumb.
+func TestHelpKeepsTheNoticeLineClear(t *testing.T) {
+	for _, chord := range []tea.KeyPressMsg{{}, ctrl('t')} {
+		m, _ := newFrameModel(t, 120, 40)
+		if chord.Code != 0 {
+			m, _ = raise(t, m, chord)
+		}
+		m, _ = raise(t, m, key('?', "?"))
+		m, _ = raise(t, m, ctrlC())
+		rows := viewRows(m)
+		notice := len(rows) - len(m.statusRows(120, 40)) - 1
+		if !strings.HasPrefix(rows[notice], " press ctrl+c again to quit") {
+			t.Fatalf("screen %d: row %d = %q; want the quit notice above the status rows:\n%s", m.activeTab(), notice, rows[notice], strings.Join(rows, "\n"))
+		}
+		if c := renderGrid(t, m, 120, 40).At(notice, 1); c.Token != cellgrid.Accent {
+			t.Errorf("notice token %s; want accent", c.Token)
+		}
+		top, bottom := helpBox(t, rows)
+		if bottom >= notice || top != 40-1-bottom {
+			t.Fatalf("box rows %d to %d; want it at the center and above row %d", top, bottom, notice)
+		}
+		_, left := cellOf(rows, "╭─ "+helpTitle)
+		edge := left + helpBoxWidth - 1
+		thumb := false
+		for row := top + 1; row < bottom; row++ {
+			thumb = thumb || ansi.Cut(rows[row], edge, edge+1) == "┃"
+		}
+		if !thumb {
+			t.Errorf("screen %d: the body does not fit the smaller box but has no thumb", m.activeTab())
+		}
+	}
+}

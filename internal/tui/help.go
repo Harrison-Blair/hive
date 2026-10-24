@@ -2,6 +2,7 @@ package tui
 
 import (
 	"log/slog"
+	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -112,24 +113,30 @@ func (m *Model) helpLines() []string {
 }
 
 // helpBoxSize gives the size of the Help box at width×height: 104 columns
-// and the rows of the body, cut to the screen.
-func helpBoxSize(lines, width, height int) (int, int) {
+// and the rows of the body, cut to the screen. While a notice exists, the
+// box at the center stays clear of the notice line above the status rows
+// (rule 4).
+func (m *Model) helpBoxSize(lines, width, height int) (int, int) {
+	if m.noticeLine(width) != "" {
+		height -= 2 * (len(m.statusRows(width, height)) + 1)
+	}
 	return min(helpBoxWidth, width), min(lines+2, height)
 }
 
 // helpMaxOffset gives the last scroll offset of the Help body (rule 4).
 func (m *Model) helpMaxOffset() int {
 	lines := len(m.helpLines())
-	_, h := helpBoxSize(lines, m.width, m.height)
+	_, h := m.helpBoxSize(lines, m.width, m.height)
 	return max(lines-max(h-2, 0), 0)
 }
 
 // helpView draws the Help box at the center of screen, a text of
 // width×height cells, and dims the screen (rule 1). A body taller than the
-// box scrolls with the ┃ thumb on the right border (rule 4).
+// box scrolls with the ┃ thumb on the right border. The notice line shows
+// on the row above the status rows (rule 4).
 func (m *Model) helpView(screen string, width, height int) string {
 	lines := m.helpLines()
-	w, h := helpBoxSize(len(lines), width, height)
+	w, h := m.helpBoxSize(len(lines), width, height)
 	body := max(h-2, 0)
 	m.helpOffset = min(max(m.helpOffset, 0), max(len(lines)-body, 0))
 	box := component.Panel{
@@ -138,7 +145,16 @@ func (m *Model) helpView(screen string, width, height int) string {
 		Lines:   lines[m.helpOffset:],
 		VMark:   component.Thumb(body, len(lines), body, m.helpOffset),
 	}.View(w, h)
-	return component.Overlay(screen, box, width, height)
+	screen = component.Overlay(screen, box, width, height)
+	notice := m.noticeLine(width)
+	if notice == "" {
+		return screen
+	}
+	rows := strings.Split(screen, "\n")
+	if row := height - len(m.statusRows(width, height)) - 1; row >= 0 && row < len(rows) {
+		rows[row] = notice
+	}
+	return strings.Join(rows, "\n")
 }
 
 // updateHelpKey handles a key while Help is open: ? or esc closes it, ↑ and
