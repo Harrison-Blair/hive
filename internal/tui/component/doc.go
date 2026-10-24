@@ -21,4 +21,7 @@
 // chat.go holds ChatLines, the lines of the chat feed.
 // statusrow.go holds StatusRow, a status row of segments and the clock.
 // titlerow.go holds TitleRow, the title row and the rule of a screen.
+// taskcard.go holds TaskCard, the card of one task on the Work board.
+// wavecolumn.go holds WaveColumn, the column of one wave on the Work board.
+// rail.go holds Rail, the dependency rails between two wave columns.
 package component
