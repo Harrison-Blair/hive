@@ -199,28 +199,39 @@ func selectedRow(m *Model) int {
 	return -1
 }
 
+// frictionSelectedRow gives the row of the view of m with the marker ▶ at
+// column 1, the selected row of the Friction list.
+func frictionSelectedRow(m *Model) int {
+	for row, line := range strings.Split(ansi.Strip(m.View().Content), "\n") {
+		if strings.HasPrefix(line, " ▶") {
+			return row
+		}
+	}
+	return -1
+}
+
 // The wheel over a list on another tab moves its selection. The wheel over
-// the details scrolls them and keeps the focus. Golden-frames decision 2:
-// the list starts one row higher than in tui-v2.
+// the details scrolls them and keeps the focus. Golden-frames friction.md:
+// the list fills rows 3 to 19 and the details box is below it.
 func TestMouseWheelScrollsTheListUnderThePointer(t *testing.T) {
 	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
-	if got := selectedRow(m); got != 9 {
-		t.Fatalf("selected row = %d, want 9", got)
+	if got := frictionSelectedRow(m); got != 7 {
+		t.Fatalf("selected row = %d, want 7", got)
 	}
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelDown))
-	if got := selectedRow(m); got != 10 {
-		t.Fatalf("selected row after wheel down = %d, want 10", got)
+	if got := frictionSelectedRow(m); got != 8 {
+		t.Fatalf("selected row after wheel down = %d, want 8", got)
 	}
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelUp))
 	m, _ = raise(t, m, wheel(10, 12, tea.MouseWheelUp))
-	if got := selectedRow(m); got != 8 {
-		t.Fatalf("selected row after wheel up = %d, want 8", got)
+	if got := frictionSelectedRow(m); got != 6 {
+		t.Fatalf("selected row after wheel up = %d, want 6", got)
 	}
 	// The details of the first selected entry have more lines than the
 	// region, so they can scroll.
 	m = newTestDemoModel(t, "Friction.fixture.json", demoSize{})
 	before := m.detailsOffset[tabFriction]
-	m, _ = raise(t, m, wheel(80, 12, tea.MouseWheelDown))
+	m, _ = raise(t, m, wheel(80, 25, tea.MouseWheelDown))
 	if m.detailsOffset[tabFriction] <= before {
 		t.Fatalf("details offset = %d, want more than %d", m.detailsOffset[tabFriction], before)
 	}
@@ -282,30 +293,30 @@ func TestMouseWheelOverTheAgentsGraphDoesNothing(t *testing.T) {
 }
 
 // A click on a list row selects it. A click on the details gives them the
-// focus. Golden-frames decision 2: the list starts one row higher than in
-// tui-v2, so each row is one less.
+// focus. Golden-frames friction.md: the list fills rows 3 to 19 and the
+// details box is below it.
 func TestMouseClickSelectsAListRow(t *testing.T) {
 	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
 	m, _ = raise(t, m, click(10, 6))
-	if got := selectedRow(m); got != 6 {
+	if got := frictionSelectedRow(m); got != 6 {
 		t.Fatalf("selected row = %d, want 6", got)
 	}
-	requireView(t, m, "╭─ agent-can-send-user-chat ")
+	requireView(t, m, "╭─ local-gate-misses-ci-tidy ")
 	m, _ = raise(t, m, click(10, 15))
-	if got := selectedRow(m); got != 15 {
+	if got := frictionSelectedRow(m); got != 15 {
 		t.Fatalf("selected row = %d, want 15", got)
 	}
-	m, _ = raise(t, m, click(10, 30))
-	if got := selectedRow(m); got != 19 {
-		t.Fatalf("a click below the last row moved the selection to %d, want 19", got)
+	m, _ = raise(t, m, click(10, 18))
+	if got := frictionSelectedRow(m); got != 15 {
+		t.Fatalf("a click on the blank row above the fold line moved the selection to %d, want 15", got)
 	}
-	m, _ = raise(t, m, click(80, 12))
+	m, _ = raise(t, m, click(80, 25))
 	if m.regionFocus[tabFriction] != 1 {
 		t.Fatal("a click on the details did not give them the focus")
 	}
 	m, _ = raise(t, m, click(10, 8))
-	if m.regionFocus[tabFriction] != 0 || selectedRow(m) != 8 {
-		t.Fatalf("a click on the list: focus %d, row %d", m.regionFocus[tabFriction], selectedRow(m))
+	if m.regionFocus[tabFriction] != 0 || frictionSelectedRow(m) != 8 {
+		t.Fatalf("a click on the list: focus %d, row %d", m.regionFocus[tabFriction], frictionSelectedRow(m))
 	}
 }
 

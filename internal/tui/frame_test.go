@@ -131,7 +131,7 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 		{"AgentDetails", "details", tabAgents, 0},
 		{"Chat", "input", tabChat, 0},
 		{"Compact", "details", tabWork, 2},
-		{"FrictionResolved", "list", tabFriction, 1},
+		{"FrictionResolved", "list", tabFriction, 0},
 		{"HealthAgents", "restart", tabHealth, 1},
 		{"Help", "help", tabAgents, 0},
 		{"Logs", "json", tabLogs, 0},
@@ -144,6 +144,16 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Golden-frames friction.md rule 3: Friction has no views. The fixture view
+// "resolved" expands the fold line of the resolved entries.
+func TestDemoUIStateExpandsTheFrictionResolvedRows(t *testing.T) {
+	m := newTestDemoModel(t, "FrictionResolved.fixture.json", demoSize{})
+	if !m.friction.expanded {
+		t.Fatal("the fixture view resolved did not expand the resolved entries")
+	}
+	requireView(t, m, "▾ resolved · ")
 }
 
 // y in the restart prompt of demo mode shows the demo notice and restarts
@@ -289,8 +299,10 @@ func TestHelpKeys(t *testing.T) {
 
 // AC3: below 120 columns enter opens the details as a full-width overlay,
 // and esc closes it. A resize keeps the overlay and its scroll position.
+// Golden-frames friction.md rule 8 gives Friction no overlay, so the test
+// uses Health.
 func TestDetailsOverlayBelow120Columns(t *testing.T) {
-	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
+	m := newTestDemoModel(t, "Health.fixture.json", demoSize{})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
@@ -298,8 +310,8 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	requireKeys(t, m, "details", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
-	if m.focusState() != "details" || m.detailsOffset[tabFriction] != 1 {
-		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabFriction])
+	if m.focusState() != "details" || m.detailsOffset[tabHealth] != 1 {
+		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabHealth])
 	}
 	requireView(t, m, " · esc back")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
@@ -324,7 +336,6 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
 		{"work overlay", "Compact", "details", true, nil},
-		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
 		{"health overlay", "Health", "details", true, []tea.Msg{compact, enter}},
 		{"logs overlay", "CompactLogs", "json", true, nil},
 		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
