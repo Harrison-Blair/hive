@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"image/color"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -98,9 +99,17 @@ func chordText(key string) string {
 	return key
 }
 
+// screenStatusLine is the first status row of each screen except Chat when
+// the config keeps the default row (ask a27, the boards): state, the screen
+// segment, and the clock.
+var screenStatusLine = []string{"state", "screen", "clock"}
+
 // statusRows gives the status rows of decisions 8 to 11 at width cells.
 func (m *Model) statusRows(width, height int) []string {
 	lines := m.tuiConfig.StatusLines
+	if m.activeTab() != tabChat && len(lines) > 0 && slices.Equal(lines[0], defaultTUI().StatusLines[0]) {
+		lines = append([][]string{screenStatusLine}, lines[1:]...)
+	}
 	if height < statusRowsMin && len(lines) > 1 {
 		lines = lines[:1]
 	}
@@ -179,7 +188,7 @@ func (m *Model) statusSegment(name string) string {
 		return component.DimText(m.selectedProjectID())
 	case "screen":
 		name := strings.ToLower(screenRegistry[m.activeTab()].label)
-		if m.activeTab() == tabWork && m.tasks.popup != "" && workPopupNamesScreen {
+		if m.activeTab() == tabWork && m.tasks.popup != "" {
 			name = m.tasks.popup
 		}
 		return component.StrongText(name) + component.DimText(strings.Join(append([]string{""}, m.focusHints(m.width)...), " · "))

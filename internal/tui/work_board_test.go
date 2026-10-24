@@ -526,17 +526,39 @@ func TestWorkBreakpoints(t *testing.T) {
 	}
 }
 
-// Ask a27 (W1) decides the screen name of the status row while a popup is
-// open. The board form names the popup (GfWorkTask row 39). The other form
-// keeps the name of the screen.
-func TestWorkPopupScreenName(t *testing.T) {
-	t.Cleanup(func() { workPopupNamesScreen = true })
+// Ask a27: with the default config, the first status row of each screen
+// except Chat is state, the screen segment, and clock. The screen segment
+// names the open popup (GfWorkTask row 39). Chat keeps the row of decision
+// 9, and a first row that the user sets stays on each screen.
+func TestWorkStatusRow(t *testing.T) {
 	m := newWorkModel(t, workTestData(), demoUIState{Selection: "8-h"}, 120, 40)
-	m.tuiConfig.StatusLines = [][]string{{"state", "screen", "clock"}}
+	statusRow := func() string {
+		rows := workRows(m)
+		return rows[len(rows)-1]
+	}
+	if row := statusRow(); !strings.Contains(row, " · work · ←→ ↑↓ card · [ ] goal") || strings.Contains(row, "supervisor") {
+		t.Fatalf("Work status row = %q; want state, work and its keys, clock", row)
+	}
 	m = pressWork(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "task · b brief · v verified")
+	if row := statusRow(); !strings.Contains(row, " · task · b brief · v verified") {
+		t.Fatalf("task popup status row = %q; want the popup name task", row)
+	}
 	m = pressWork(t, m, key('d', "d"))
-	requireView(t, m, "deps · ↑↓ move · enter task")
-	workPopupNamesScreen = false
-	requireView(t, m, "work · ↑↓ move · enter task")
+	if row := statusRow(); !strings.Contains(row, " · deps · ↑↓ move · enter task") {
+		t.Fatalf("deps popup status row = %q; want the popup name deps", row)
+	}
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	if m.activeTab() != tabChat {
+		t.Fatalf("tab %d after esc on the board; want Chat", m.activeTab())
+	}
+	if row := statusRow(); !strings.Contains(row, "supervisor") || strings.Contains(row, " · chat · ") {
+		t.Fatalf("Chat status row = %q; want the row of decision 9", row)
+	}
+	m.tuiConfig.StatusLines = [][]string{{"state", "asks", "clock"}}
+	m = pressWork(t, m, ctrl('t'))
+	if row := statusRow(); !strings.Contains(row, "? 0 asks") || strings.Contains(row, " · work · ") {
+		t.Fatalf("Work status row with a user row = %q; want the user row", row)
+	}
 }

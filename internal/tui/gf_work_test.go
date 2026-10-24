@@ -16,19 +16,11 @@ var gfWorkBoards = []string{
 	"GfWorkStops", "GfWorkCancelled", "GfWorkTask", "GfWorkDeps",
 }
 
-// gfWorkStatusLines is the status row of the Work boards: state, screen,
-// and clock. Ask a27 decides if this row is the default of each screen
-// except Chat. Until the answer, the test sets the row in the config.
-var gfWorkStatusLines = [][]string{{"state", "screen", "clock"}}
-
-// newGfWorkModel gives the demo model of a Work board with the status row
-// of the boards.
+// newGfWorkModel gives the demo model of a Work board with the default
+// config.
 func newGfWorkModel(t *testing.T, board string) *Model {
 	t.Helper()
-	m := newGfDemoModel(t, board)
-	m.tuiConfig.StatusLines = gfWorkStatusLines
-	m.invalidateView()
-	return m
+	return newGfDemoModel(t, board)
 }
 
 // newBoardDemoModel gives the demo model of a board: a golden-frames board

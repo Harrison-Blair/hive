@@ -34,11 +34,6 @@ const (
 // answer.
 var workDepsForm = workDepsBoardForm
 
-// workPopupNamesScreen gives the popup name (task, deps) as the screen name
-// of the status row while a popup is open, as the boards show. Ask a27 (W1)
-// decides it.
-var workPopupNamesScreen = true
-
 // workLabelWidth is the cells of a label of the task popup with its gap.
 const workLabelWidth = 11
 
