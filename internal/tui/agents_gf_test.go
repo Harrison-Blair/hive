@@ -2,10 +2,12 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -152,5 +154,26 @@ func TestGfAgentsLegendIsLastBodyRowWhenScrolling(t *testing.T) {
 	}
 	if !strings.Contains(rows[36], "projects 1–4 of 9") {
 		t.Fatalf("row 36 = %q, want the scroll line", rows[36])
+	}
+}
+
+// AC2 of task 147: each key of agents.md rule 4 that changes the screen logs
+// a user action.
+func TestGfAgentsKeysLogUserActions(t *testing.T) {
+	home, clock := hideHome(t, betaManager(records.AgentLive))
+	m := openHide(t, home, clock, hideSizes[1])
+	for _, press := range []tea.KeyPressMsg{key(tea.KeyRight, ""), key(tea.KeyEnter, ""), key(tea.KeyEscape, "esc"), key('h', "h")} {
+		var cmd tea.Cmd
+		m, cmd = raise(t, m, press)
+		m = deliverAgentCommands(t, m, cmd)
+	}
+	logData, err := os.ReadFile(dailyPath(home, clock.now()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"action":"agent pod select"`, `"action":"agent pod open"`, `"action":"agent pod close"`, `"action":"agent hide stopped"`} {
+		if !strings.Contains(string(logData), want) {
+			t.Fatalf("Agents log omits %q:\n%s", want, logData)
+		}
 	}
 }
