@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"image/color"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -159,9 +160,13 @@ func (m *Model) askStatusRow(width int) string {
 
 // focusStatusForm reports that the first status row has the form of the
 // Health boards: the state, the focus name and its keys, and the clock. Ask
-// a27 decides if this form replaces the row of decision 9 on each screen.
+// a27 keeps this form for the default row of decision 9; a configured row
+// stays as configured.
 func (m *Model) focusStatusForm() bool {
-	return m.activeTab() == tabHealth && !m.helpOpen
+	if m.activeTab() != tabHealth || m.helpOpen || len(m.tuiConfig.StatusLines) == 0 {
+		return false
+	}
+	return slices.Equal(m.tuiConfig.StatusLines[0], home.DefaultTUI().StatusLines[0])
 }
 
 // focusStatusRow gives the status row of the Health boards: the state, the

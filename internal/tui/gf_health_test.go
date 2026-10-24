@@ -138,7 +138,9 @@ func TestGfHealthTableKeysSelectARow(t *testing.T) {
 	if cell := grid.At(8, 0); cell.Token != cellgrid.Border {
 		t.Fatalf("details corner = %s; want border", cell.Token)
 	}
-	if got, want := healthStatusRow(m), "health · ↑↓ row · g/G top/end · ^] checks · r restart · a attach · p peek · R check again"; !strings.Contains(got, want) {
+	if got, want := healthStatusRow(m), "health · ↑↓ row · g/G top/end · pgup/pgdn page · ^] checks · r restart · a attach · p peek"; !strings.Contains(got, want) {
+		// Decision 10 drops the keys on the right, before the clock, when
+		// the row is wider than the pane.
 		t.Fatalf("status row = %q; want %q", got, want)
 	}
 	rejectView(t, m, "▶ !")

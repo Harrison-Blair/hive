@@ -124,7 +124,7 @@ var screenRegistry = [tabCount]frameScreen{
 		regions: []string{"grid", "table"},
 		hints: map[string][]string{
 			"grid":  {"↑↓ ←→ tile", "^] agents", "R check again"},
-			"table": {"↑↓ row", "g/G top/end", "^] checks", "r restart", "a attach", "p peek", "R check again"},
+			"table": {"↑↓ row", "g/G top/end", "pgup/pgdn page", "^] checks", "r restart", "a attach", "p peek", "R check again"},
 		},
 	},
 	tabLogs: {

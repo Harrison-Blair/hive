@@ -116,6 +116,10 @@ func (s healthScreen) Update(msg tea.Msg) tea.Cmd {
 		return s.moveAgent(-len(m.health.agentList()))
 	case "G":
 		return s.moveAgent(len(m.health.agentList()))
+	case "pgup":
+		return s.moveAgent(-m.healthPage())
+	case "pgdown":
+		return s.moveAgent(m.healthPage())
 	case "r":
 		return m.requestRestart(node, selected)
 	case "a":
@@ -161,11 +165,17 @@ func (s healthScreen) moveTile(rows, cols int) tea.Cmd {
 // moveAgent moves the table selection by delta rows.
 func (s healthScreen) moveAgent(delta int) tea.Cmd {
 	m := s.model
+	nodes := m.health.agentList()
+	index := slices.IndexFunc(nodes, func(node agentNode) bool { return node.record.Key == m.health.selectedAgent })
+	return m.selectHealthAgent(index + delta)
+}
+
+// selectHealthAgent selects the agent at index of the agents table.
+func (m *Model) selectHealthAgent(index int) tea.Cmd {
 	state := &m.health
 	nodes := state.agentList()
-	index := slices.IndexFunc(nodes, func(node agentNode) bool { return node.record.Key == state.selectedAgent })
-	next := min(max(index+delta, 0), len(nodes)-1)
-	if next < 0 || next == index {
+	next := min(max(index, 0), len(nodes)-1)
+	if next < 0 || nodes[next].record.Key == state.selectedAgent {
 		return nil
 	}
 	state.selectedAgent = nodes[next].record.Key
@@ -443,22 +453,15 @@ func (m *Model) healthContent(width, height int) string {
 		rows = append(rows, row.View(width))
 	}
 	rows = append(rows, "")
-	rest := height - len(rows)
 	title, lines := m.healthDetails(width)
 	tableRows := m.healthTableRows()
-	tableNeed := len(tableRows) + 3
-	detailsHeight := min(len(lines)+2, max(3, rest-2-min(tableNeed, 5)), rest)
-	if detailsHeight >= 3 {
-		rows = append(rows, component.Panel{Title: title, Lines: lines}.View(width, detailsHeight), "")
+	layout := m.healthLayout(height, len(lines), len(tableRows))
+	if layout.details >= 3 {
+		rows = append(rows, component.Panel{Title: title, Lines: lines}.View(width, layout.details), "")
 	}
-	room := rest - detailsHeight - 1
-	note := room-1 >= min(tableNeed, 4)
-	if note {
-		room--
-	}
-	if tableHeight := min(tableNeed, room); tableHeight >= 3 {
-		rows = append(rows, m.healthTable(tableRows, width, tableHeight, !gridFocused))
-		if note {
+	if layout.table >= 3 {
+		rows = append(rows, m.healthTable(tableRows, width, layout.table, !gridFocused))
+		if layout.note {
 			rows = append(rows, component.Notice{Text: healthNote}.View(width))
 		}
 	}
