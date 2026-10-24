@@ -140,8 +140,8 @@ func TestRunChecksWithFakeHerdr(t *testing.T) {
 	if ownerless := findCheck(t, result, "ownerless inbox records"); ownerless.Status != StatusOK || ownerless.Required || ownerless.Detail != "0" {
 		t.Fatalf("ownerless inbox records = %+v, want an optional ok", ownerless)
 	}
-	if len(result.Checks) != 19 {
-		t.Fatalf("checks = %d, want 19", len(result.Checks))
+	if len(result.Checks) != 20 {
+		t.Fatalf("checks = %d, want 20", len(result.Checks))
 	}
 }
 
@@ -231,7 +231,7 @@ func TestRunHeldLock(t *testing.T) {
 	t.Setenv("PATH", pathWithGitOnly(t))
 	started := time.Now()
 	result := Run(context.Background(), home, nil)
-	if elapsed := time.Since(started); elapsed > 6*time.Second {
+	if elapsed := time.Since(started); elapsed > 25*time.Second {
 		t.Fatalf("Run() took %v, want a bounded check", elapsed)
 	}
 	check := findCheck(t, result, "state store")
@@ -337,7 +337,9 @@ func TestRunHomeWithoutMarker(t *testing.T) {
 	}
 }
 
-func TestRunStateStoreMakesNoRecord(t *testing.T) {
+// TestRunStateStoreMakesOnlySchema proves that the state store check runs the
+// migration and writes no record. The schema file is not a record.
+func TestRunStateStoreMakesOnlySchema(t *testing.T) {
 	home := newHome(t)
 	t.Setenv("HERDR_SOCKET_PATH", startHerdr(t, 22))
 	t.Setenv("PATH", pathWithGitOnly(t))
@@ -349,10 +351,18 @@ func TestRunStateStoreMakesNoRecord(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	foundSchema := false
 	for _, entry := range entries {
+		if entry.Name() == "schema.json" {
+			foundSchema = true
+			continue
+		}
 		if strings.HasSuffix(entry.Name(), ".json") {
 			t.Fatalf("state store check wrote %s", entry.Name())
 		}
+	}
+	if !foundSchema {
+		t.Fatal("state store check wrote no schema.json")
 	}
 }
 

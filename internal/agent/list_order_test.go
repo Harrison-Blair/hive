@@ -10,7 +10,7 @@ import (
 func TestListAllShowsStartingStatus(t *testing.T) {
 	home := testHome(t)
 	writeRecord(t, home, records.Agent{
-		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "one",
+		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "one", Task: "1-one",
 		Status: records.AgentStarting, PaneID: "w1:p1", Generation: 1,
 	})
 

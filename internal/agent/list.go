@@ -13,6 +13,7 @@ import (
 type ListOptions struct {
 	Project string
 	Role    string
+	Profile string
 	All     bool
 }
 
@@ -38,7 +39,10 @@ func List(home string, options ListOptions) output.Envelope {
 		if options.Project != "" && record.Project != options.Project {
 			continue
 		}
-		if options.Role != "" && record.Role != options.Role {
+		if options.Role != "" && record.MirrorRole() != options.Role {
+			continue
+		}
+		if options.Profile != "" && record.Profile != options.Profile {
 			continue
 		}
 		found = append(found, record)
@@ -65,6 +69,9 @@ func listFailed(home string, options ListOptions, phase, message string) output.
 	}
 	if options.Role != "" {
 		attrs = append(attrs, "role", options.Role)
+	}
+	if options.Profile != "" {
+		attrs = append(attrs, "profile", options.Profile)
 	}
 	attrs = append(attrs, "phase", phase, "error", message)
 	logAgentEvent(home, "agent list failed", attrs...)
