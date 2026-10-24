@@ -63,7 +63,7 @@ func TestChatInputHasTheFocusAtStart(t *testing.T) {
 // Golden-frames decision 10: below 120 columns the status row cuts segments
 // from the right and keeps the clock.
 func TestChatCompactStatusRowKeepsTheClock(t *testing.T) {
-	m := chatModel(t, 80, 24, 1)
+	m := inEastern(chatModel(t, 80, 24, 1))
 	got := viewRow(m, 23)
 	if !strings.HasPrefix(got, " ○ none · ○ supervisor · ? 0 asks · needs you 0 ") || !strings.HasSuffix(got, " 08:00 ") {
 		t.Fatalf("compact status row = %q", got)
