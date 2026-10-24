@@ -81,27 +81,9 @@ var screenRegistry = [tabCount]frameScreen{
 		},
 	},
 	tabWork: {
-		label:       "Work",
-		views:       []string{"Goals", "Queue", "Tasks"},
-		regions:     []string{"list", "details"},
-		listDetails: true,
-		hints: map[string][]string{
-			"Goals/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "o design", "t task", "? help"},
-			"Queue/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "s stops only", "t task", "? help"},
-			"Tasks/list":    {"↑↓ move", "^] box", "[ ] view", "enter open", "b brief", "v verified", "d deps", "? help"},
-			"details":       {"↑↓ scroll", "^] box", "esc back to list", "? help"},
-			"Tasks/details": {"↑↓ scroll", "^] box", "esc back to list", "b brief", "v verified", "d deps", "? help"},
-		},
-		compact: map[string][]string{
-			"list":          {"↑↓ move", "enter details", "[ ] view", "?"},
-			"details":       {"↑↓ scroll", "esc back to list"},
-			"Tasks/details": {"↑↓ scroll", "esc back to list", "b brief", "v verified", "d deps"},
-		},
-		panels: map[string]screenPanels{
-			"Goals": {list: (*Model).goalsList, details: (*Model).goalDetails},
-			"Queue": {list: (*Model).queueList, details: (*Model).queueDetails},
-			"Tasks": {list: (*Model).workTasksList, details: (*Model).workTasksDetails, back: func(m *Model) bool { return m.tasks.closeFile() }},
-		},
+		label:   "Work",
+		regions: []string{"board"},
+		title:   (*Model).workTitleRow,
 	},
 	tabFriction: {
 		label:   "Friction",
@@ -204,7 +186,7 @@ func (m *Model) selectScreen(tab, view int) {
 	case tabChat:
 		m.screenIndex = 0
 	case tabWork:
-		m.screenIndex = 2 + view
+		m.screenIndex = 2
 	case tabFriction:
 		m.screenIndex = 5
 	case tabHealth:
@@ -230,6 +212,8 @@ func (m *Model) focusState() string {
 		return "filter"
 	case tab == tabAgents && m.popupOpen:
 		return "details"
+	case tab == tabWork && m.tasks.popup != "":
+		return m.tasks.popup
 	case tab == tabChat:
 		if m.chatInputActive {
 			return "input"
@@ -307,6 +291,9 @@ func (m *Model) frameView() string {
 	if notice != "" && m.activeTab() != tabChat {
 		rows = append(rows, notice)
 	}
+	if m.activeTab() == tabWork && m.tasks.popup != "" && !m.helpOpen {
+		rows = []string{m.workPopupView(strings.Join(rows, "\n"), width, height-len(status))}
+	}
 	screen := strings.Join(append(rows, status...), "\n")
 	switch {
 	case m.helpOpen:
@@ -366,6 +353,8 @@ func (m *Model) focusHints(width int) []string {
 		}
 	case "ask", "note", "other", "review":
 		hints = m.askHints(focus)
+	case "board", workPopupTask, workPopupDeps:
+		hints = m.workHints(focus)
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
@@ -384,8 +373,6 @@ func (m *Model) footerNotice() string {
 		return m.agents.restartNotice
 	case m.startupNotice != "":
 		return m.startupNotice
-	case m.screenIndex == 2 && m.goalsQueue.designNotice != "":
-		return m.goalsQueue.designNotice
 	}
 	if err := m.footerError(); err != "" {
 		return "error: " + err
@@ -441,6 +428,8 @@ func (m *Model) contentView(width, height int) string {
 		body = fitBlock(m.currentScreen().View(width, bodyHeight), width, bodyHeight)
 	case tab == tabAgents:
 		body = m.agentsGraphView(width, bodyHeight, focus == "graph")
+	case tab == tabWork:
+		body = m.workBoardView(width, bodyHeight)
 	case tab == tabLogs:
 		body = m.logsContent(width, bodyHeight)
 	case tab == tabFriction:
@@ -496,7 +485,7 @@ func (m *Model) detailsPanel(width, height int, focused bool, suffix string) str
 }
 
 func (m *Model) legacyName() string {
-	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
+	return [...]string{"Chat", "Agents", "Work", "Work", "Work", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
 // padCell pads text with spaces to width cells.
@@ -594,6 +583,10 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	case "ctrl+]":
 		return m.nextRegion()
 	case "[", "]":
+		if tab == tabWork {
+			// Work rule 1: [ and ] change the goal.
+			break
+		}
 		if len(entry.views) == 0 {
 			return nil
 		}

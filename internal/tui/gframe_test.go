@@ -156,20 +156,20 @@ func TestFrameBoxFocusKeys(t *testing.T) {
 	if m.activeTab() != tabChat || !m.chatInputActive {
 		t.Fatalf("ctrl+] on Chat changed the screen %d or the input focus %v", m.activeTab(), m.chatInputActive)
 	}
-	m, _ = raise(t, m, ctrl('t'))
+	m, _ = raise(t, m, ctrl('f'))
 	for _, k := range []tea.KeyPressMsg{key('1', "1"), key('2', "2"), {Code: tea.KeyTab}} {
 		m, _ = raise(t, m, k)
-		if m.activeTab() != tabWork || m.regionFocus[tabWork] != 0 {
-			t.Fatalf("%v moved to screen %d, region %d; want Work, region 0", k, m.activeTab(), m.regionFocus[tabWork])
+		if m.activeTab() != tabFriction || m.regionFocus[tabFriction] != 0 {
+			t.Fatalf("%v moved to screen %d, region %d; want Friction, region 0", k, m.activeTab(), m.regionFocus[tabFriction])
 		}
 	}
 	m, _ = raise(t, m, ctrl(']'))
-	if m.regionFocus[tabWork] != 1 {
-		t.Fatalf("ctrl+] gave region %d; want 1", m.regionFocus[tabWork])
+	if m.regionFocus[tabFriction] != 1 {
+		t.Fatalf("ctrl+] gave region %d; want 1", m.regionFocus[tabFriction])
 	}
 	m, _ = raise(t, m, ctrl(']'))
-	if m.regionFocus[tabWork] != 0 {
-		t.Fatalf("second ctrl+] gave region %d; want 0", m.regionFocus[tabWork])
+	if m.regionFocus[tabFriction] != 0 {
+		t.Fatalf("second ctrl+] gave region %d; want 0", m.regionFocus[tabFriction])
 	}
 }
 

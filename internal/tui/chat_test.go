@@ -34,21 +34,6 @@ func TestChatStatusBoardsMatch(t *testing.T) {
 	}
 }
 
-// pressScreenKey gives a key to the current screen of the tab. The frame
-// gives some keys a new meaning: decision 24 gives a printable key in the
-// Chat feed to the input, and decision 6 gives tab to the regions. A test of
-// a key of a current screen calls the screen directly until wave 6 replaces
-// the screen.
-func pressScreenKey(t *testing.T, m *Model, press tea.KeyPressMsg) (*Model, tea.Cmd) {
-	t.Helper()
-	cmd := m.currentScreen().Update(press)
-	if cmd != nil {
-		m, _ = raise(t, m, cmd())
-	}
-	m.invalidateView()
-	return m, cmd
-}
-
 // The fixture field ui.scroll.feed.top puts that message on row 1, below
 // the earlier row of chat.md, and stops the follow of the end (rule 7).
 func TestChatFixtureScrollPutsTheMessageAtTheTop(t *testing.T) {

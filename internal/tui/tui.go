@@ -83,12 +83,10 @@ type Model struct {
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
 	healthLoader         func(string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
-	goalsQueueLoader     func(string) (goalsQueueData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
 	graph                graphState
 	health               healthState
-	goalsQueue           goalsQueueState
 	tasksLoader          func(string) (tasksData, error)
 	tasks                tasksState
 	frictionLoader       func(string) (frictionData, error)
@@ -187,13 +185,12 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 			events, _, err := dayReader.Read(context.Background(), time.Time{})
 			return events, err
 		},
-		agentsLoader:     loadAgents,
-		healthLoader:     loadHealth,
-		goalsQueueLoader: loadGoalsQueue,
-		paneReader:       readAgentPane,
-		tasksLoader:      loadTasks,
-		frictionLoader:   loadFriction,
-		demo:             demo,
+		agentsLoader:   loadAgents,
+		healthLoader:   loadHealth,
+		paneReader:     readAgentPane,
+		tasksLoader:    loadTasks,
+		frictionLoader: loadFriction,
+		demo:           demo,
 	}
 	if demo != nil {
 		m.useDemoLoaders(demo.fixture)
@@ -369,8 +366,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if tick := m.litTick(); tick != nil {
 				return m, batch(tick, m.finishScreenRefresh())
 			}
-		case goalsQueueDataRequest:
-			m.goalsQueue.accept(msg.goalsQueue)
 		case healthDataRequest:
 			m.health.accept(msg.health)
 			m.health.acceptAgents(msg.agents)
@@ -558,12 +553,6 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		return func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
-		}
-	case goalsQueueDataRequest:
-		loader, home := m.goalsQueueLoader, m.home
-		return func() tea.Msg {
-			data, err := loader(home)
-			return screenLoadMsg{request: goalsQueueDataRequest, goalsQueue: data, err: err}
 		}
 	case healthDataRequest:
 		// health.md rule 4: the agents table is beside the checks.

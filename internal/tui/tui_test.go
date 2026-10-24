@@ -277,9 +277,13 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 		{width: 57, height: 20},
 		{width: 300, height: 80},
 	}
-	screens := []string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}
+	// Slots 3 and 4 also hold the Work board, so the test skips them.
+	screens := []string{"Chat", "Agents", "Work", "", "", "Friction", "Health", "Logs"}
 
 	for screenIndex, screen := range screens {
+		if screen == "" {
+			continue
+		}
 		for _, size := range sizes {
 			t.Run(fmt.Sprintf("%s/%dx%d", screen, size.width, size.height), func(t *testing.T) {
 				home := newTestHome(t)
@@ -303,6 +307,14 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 					if got := ansi.StringWidth(line); got != size.width {
 						t.Fatalf("%s frame line %d has display width %d, want %d: %q", screen, lineIndex+1, got, size.width, line)
 					}
+				}
+				if screen == "Work" {
+					// Work rule 13: with no goal the board shows a notice
+					// and no box.
+					if !strings.Contains(strings.Join(lines, "\n"), "no goals · hive goal create starts one") {
+						t.Errorf("Work frame has no empty notice")
+					}
+					return
 				}
 				foundBorder := false
 				for _, line := range lines {

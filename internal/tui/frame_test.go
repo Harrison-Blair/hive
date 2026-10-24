@@ -130,16 +130,16 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 	}{
 		{"AgentDetails", "details", tabAgents, 0},
 		{"Chat", "input", tabChat, 0},
-		{"Compact", "details", tabWork, 2},
+		{"GfWorkTask", workPopupTask, tabWork, 0},
 		{"FrictionResolved", "list", tabFriction, 0},
 		// Golden-frames health.md: Health has no views.
 		{"HealthAgents", "restart", tabHealth, 0},
 		{"Help", "help", tabAgents, 0},
 		{"Logs", "json", tabLogs, 0},
-		{"WorkQueue", "list", tabWork, 1},
+		{"GfWork", "board", tabWork, 0},
 	} {
 		t.Run(tt.board, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			if m.activeTab() != tt.tab || m.activeView() != tt.view || m.focusState() != tt.focus {
 				t.Fatalf("tab %d, view %d, focus %q; want %d, %d, %q", m.activeTab(), m.activeView(), m.focusState(), tt.tab, tt.view, tt.focus)
 			}
@@ -300,24 +300,24 @@ func TestHelpKeys(t *testing.T) {
 
 // AC3: below 120 columns enter opens the details as a full-width overlay,
 // and esc closes it. A resize keeps the overlay and its scroll position.
-// Golden-frames friction.md and health.md give those screens no list and
-// details overlay, so the test uses Work.
+// Golden-frames work.md and health.md give those screens no list and details
+// overlay, so the test uses Logs.
 func TestDetailsOverlayBelow120Columns(t *testing.T) {
-	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
+	m := newBoardDemoModel(t, "GfLogs")
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, " · esc back")
-	requireKeys(t, m, "details", "")
+	requireView(t, m, " · esc back to events")
+	requireKeys(t, m, "json", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
-	if m.focusState() != "details" || m.detailsOffset[tabWork] != 1 {
-		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabWork])
+	if m.focusState() != "json" || m.detailsOffset[tabLogs] != 1 {
+		t.Fatalf("resize gave focus %q, offset %d; want json, 1", m.focusState(), m.detailsOffset[tabLogs])
 	}
-	requireView(t, m, " · esc back")
+	requireView(t, m, " · esc back to events")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	rejectView(t, m, "esc back")
-	requireKeys(t, m, "list", "")
+	rejectView(t, m, "esc back to events")
+	requireKeys(t, m, "events", "")
 }
 
 // AC2: in each focus state of decision 21 that does not keep the global
@@ -334,7 +334,7 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}{
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
-		{"work overlay", "Compact", "details", true, nil},
+		{"work popup", "GfWorkTask", workPopupTask, true, nil},
 		{"logs overlay", "CompactLogs", "json", true, nil},
 		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
 		{"input", "Chat", "input", false, nil},
@@ -343,7 +343,7 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		chords := map[string]int{"ctrl+g": tabAgents, "ctrl+t": tabWork, "ctrl+f": tabFriction, "ctrl+y": tabHealth, "ctrl+l": tabLogs}
 		for _, press := range []tea.KeyPressMsg{ctrl('g'), escKey(), ctrl('t'), ctrl('f'), ctrl('y'), ctrl('l'), key('[', "["), key(']', "]"), {Code: tea.KeyTab}} {
 			t.Run(tt.name+"/"+press.String(), func(t *testing.T) {
-				m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+				m := newBoardDemoModel(t, tt.board)
 				for _, msg := range tt.keys {
 					m, _ = raise(t, m, msg)
 				}
@@ -378,23 +378,22 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 	}
 }
 
-// AC2: an action key of the overlay still reaches its screen. In the Work
-// Tasks overlay, d opens the dependency graph.
+// AC2: an action key of a popup still reaches its screen. In the Work task
+// popup, d opens the dependency popup (work.md rule 10).
 func TestOverlayGivesActionKeysToTheScreen(t *testing.T) {
-	m := newTestDemoModel(t, "Compact.fixture.json", demoSize{})
+	m := newGfDemoModel(t, "GfWorkTask")
 	m, _ = raise(t, m, key('d', "d"))
-	if !m.tasks.fileOpen || !strings.HasPrefix(m.tasks.fileTitle, "dependency graph") {
-		t.Fatalf("d in the Work overlay gave open %t, title %q; want the dependency graph", m.tasks.fileOpen, m.tasks.fileTitle)
+	if m.focusState() != workPopupDeps {
+		t.Fatalf("focus = %q after d in the task popup; want deps", m.focusState())
 	}
-	if m.focusState() != "details" {
-		t.Fatalf("focus = %q after b; want details", m.focusState())
-	}
+	requireView(t, m, "12-board-fixtures · dependencies · esc closes")
 }
 
 // AC2: from 120 columns the details region sits beside the list, so the
 // screen keys stay global (decision 21).
 func TestWideDetailsKeepsScreenKeys(t *testing.T) {
-	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
+	// The Work board has one region, so the test uses Friction.
+	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
 	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	if m.focusState() != "details" {
 		t.Fatalf("focus = %q; want details", m.focusState())
@@ -419,12 +418,12 @@ func TestCtrlCTwiceQuitsInEachFocusState(t *testing.T) {
 		{"input", "Chat", "input", nil},
 		{"filter", "Logs", "filter", []tea.KeyPressMsg{{Code: '/', Text: "/"}}},
 		{"help", "Help", "help", nil},
-		{"overlay", "Compact", "details", nil},
-		{"popup", "AgentDetails", "details", nil},
+		{"popup", "GfWorkTask", workPopupTask, nil},
+		{"agent popup", "AgentDetails", "details", nil},
 		{"restart", "HealthAgents", "restart", nil},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			m := newTestDemoModel(t, tt.board+".fixture.json", demoSize{})
+			m := newBoardDemoModel(t, tt.board)
 			for _, press := range tt.keys {
 				m, _ = raise(t, m, press)
 			}

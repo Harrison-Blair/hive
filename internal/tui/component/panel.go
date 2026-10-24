@@ -49,6 +49,10 @@ func (p Panel) View(width, height int) string {
 	}
 	if p.Focused {
 		edge, mark = accentStyle, accentStyle
+		if p.Heavy {
+			// Ask a34: the mark is in fg, so it shows on the heavy border.
+			mark = lipgloss.NewStyle()
+		}
 	}
 	inner := width - 2
 	body, room := lipgloss.NewStyle().Padding(0, 1).Width(inner), inner-2

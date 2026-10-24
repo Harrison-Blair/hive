@@ -104,6 +104,7 @@ type demoUIState struct {
 	Prompt         demoPrompt            `json:"prompt"`
 	HideStopped    bool                  `json:"hide_stopped"`
 	StopsOnly      bool                  `json:"stops_only"`
+	ShowCancelled  bool                  `json:"show_cancelled"`
 	Follow         bool                  `json:"follow"`
 	LogDay         string                `json:"log_day"`
 	ChatNoise      string                `json:"chat_noise"`
@@ -148,16 +149,15 @@ var (
 	demoViews   = map[string][]string{
 		"agents":   {"", "pod"},
 		"chat":     {""},
-		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
 		// Health has no views. The tui-v2 fixtures name the old views home
 		// and agents, and the value has no effect.
 		"health": {"", "home", "agents"},
 		"logs":   {"", "raw"},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "grid", "table"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "board", "grid", "table"}
 	demoOverlays   = []string{"", "details", "help"}
-	demoPopups     = []string{"", "agent-details"}
+	demoPopups     = []string{"", "agent-details", workPopupTask, workPopupDeps}
 	demoPrompts    = []string{"", "restart", "quit", "send"}
 	demoChatNoises = []string{"", "quiet", "normal", "all"}
 )
@@ -224,14 +224,28 @@ func (f *demoFixture) check() error {
 	if !slices.Contains(demoScreens, ui.Screen) {
 		return fmt.Errorf(`field "ui.screen": unknown value %q`, ui.Screen)
 	}
-	if !slices.Contains(demoViews[ui.Screen], ui.View) {
+	// The view of Work is its goal: a goal ID, the pseudo-goal, or "" for
+	// the default goal. The tui-v2 fixtures name the old views goals, queue,
+	// and tasks. They select the default goal.
+	waves := map[string]bool{}
+	views := demoViews[ui.Screen]
+	if ui.Screen == "work" {
+		views = []string{"", workNoGoal, "goals", "queue", "tasks"}
+		for _, goal := range f.Data.Goals {
+			views = append(views, goal.ID)
+			for _, wave := range goal.Waves {
+				waves[wave.ID] = true
+			}
+		}
+	}
+	if !slices.Contains(views, ui.View) {
 		return fmt.Errorf(`field "ui.view": unknown value %q for screen %q`, ui.View, ui.Screen)
 	}
 	if ui.Focus != "" && !slices.Contains(demoFocuses, ui.Focus) {
 		return fmt.Errorf(`field "ui.focus": unknown value %q`, ui.Focus)
 	}
 	for region, scroll := range ui.Scroll {
-		if !slices.Contains(demoFocuses, region) {
+		if !slices.Contains(demoFocuses, region) && (ui.Screen != "work" || !waves[region]) {
 			return fmt.Errorf(`field "ui.scroll": unknown region %q`, region)
 		}
 		if scroll.Top < 0 || scroll.Left < 0 {
@@ -305,9 +319,6 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			inbox:           all,
 		}, now), nil
 	}
-	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
-		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks), slices.Clone(data.Agents)), nil
-	}
 	m.tasksLoader = func(string) (tasksData, error) {
 		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{
 			evidence: func(item taskItem) ([]string, error) { return slices.Clone(data.Evidence[item.record.ID]), nil },
@@ -367,16 +378,23 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.graph.podView = ui.View == "pod"
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
-		switch ui.View {
-		case "goals":
-			m.screenIndex = 2
-			m.goalsQueue.selectedGoal = ui.Selection
-		case "queue":
-			m.screenIndex = 3
-			m.goalsQueue.selectedTaskID = ui.Selection
-		default:
-			m.screenIndex = 4
-			m.tasks.selectedID = ui.Selection
+		m.screenIndex = 2
+		m.tasks.goal = ui.View
+		m.tasks.selectedID = ui.Selection
+		m.tasks.stopsOnly = ui.StopsOnly
+		m.tasks.showCancelled = ui.ShowCancelled
+		m.tasks.left = ui.Scroll["board"].Left
+		for key, scroll := range ui.Scroll {
+			if key != "board" {
+				if m.tasks.tops == nil {
+					m.tasks.tops = map[string]int{}
+				}
+				m.tasks.tops[key] = scroll.Top
+			}
+		}
+		switch ui.Popup {
+		case workPopupTask, workPopupDeps:
+			m.tasks.popup = ui.Popup
 		}
 	case "friction":
 		// The view resolved is the state with the resolved entries
@@ -414,7 +432,6 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		}
 	}
 	m.graph.hideStopped = ui.HideStopped
-	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {
 		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, m.now().Location())

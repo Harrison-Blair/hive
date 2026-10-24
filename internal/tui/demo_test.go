@@ -66,7 +66,7 @@ func TestDemoFixtureBadValuesFail(t *testing.T) {
 		old, new, want string
 	}{
 		{old: `"screen": "agents"`, new: `"screen": "queue"`, want: `"ui.screen"`},
-		{old: `"view": ""`, new: `"view": "goals"`, want: `"ui.view"`},
+		{old: `"view": ""`, new: `"view": "g9-none"`, want: `"ui.view"`},
 		{old: `"zone": "UTC"`, new: `"zone": "Mars/Olympus"`, want: `"clock.zone"`},
 		{old: `"time": "2026-10-21T14:22:00Z"`, new: `"time": "14:22"`, want: `"clock.time"`},
 		{old: `"width": 120`, new: `"width": 0`, want: `"terminal"`},
@@ -279,11 +279,6 @@ func demoFileFixture(t *testing.T, root string, ui map[string]any, friction []an
 	if files != nil {
 		fixtureData["files"] = files
 	}
-	if ui["view"] == "goals" {
-		// Goals opens the design of the first wave that is not done.
-		goal := fixtureData["goals"].([]any)[0].(map[string]any)
-		goal["waves"].([]any)[2].(map[string]any)["status"] = "active"
-	}
 	state := fixture["ui"].(map[string]any)
 	maps.Copy(state, ui)
 	text, err := json.Marshal(fixture)
@@ -314,8 +309,8 @@ func deliverFileReads(m *Model, cmd tea.Cmd) {
 
 func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 	const taskDir = ".hive/spec/hive-tui/tasks/4-agents-equal-columns/"
-	tasksUI := map[string]any{"screen": "work", "view": "tasks", "focus": "list", "selection": "4-agents-equal-columns", "scroll": map[string]any{}}
-	goalsUI := map[string]any{"screen": "work", "view": "goals", "focus": "list", "selection": "g1-tui-restart", "scroll": map[string]any{}}
+	// Work rule 9: b and v open the files in the task popup.
+	tasksUI := map[string]any{"screen": "work", "view": "", "focus": "board", "selection": "4-agents-equal-columns", "popup": "task", "scroll": map[string]any{}}
 	friction := []any{map[string]any{"file": "demo-entry.md", "title": "Demo entry", "status": "Open", "opened": "2026-10-21", "body": "## Summary\n\nfixture body"}}
 	for _, tc := range []struct {
 		name, key, livePath string
@@ -329,9 +324,6 @@ func TestDemoOpensFilesOnlyFromTheFixture(t *testing.T) {
 		{name: "evidence from fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI,
 			files: map[string]string{taskDir + "evidence/VERIFIED.md": "fixture evidence text"}, want: "fixture evidence text"},
 		{name: "verification not in fixture", key: "v", livePath: taskDir + "evidence/VERIFIED.md", ui: tasksUI, want: demoNoFile},
-		{name: "design from fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI,
-			files: map[string]string{".hive/spec/hive-tui/README.md": "fixture design text"}, want: "fixture design text"},
-		{name: "design not in fixture", key: "o", livePath: ".hive/spec/hive-tui/README.md", ui: goalsUI, want: demoNoFile},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()
