@@ -112,9 +112,14 @@ func Register(home string, options RegisterOptions) output.Envelope {
 }
 
 // RegisterAndRename registers one agent and best-effort labels its tab. It is
-// the CLI entry, so it refuses each role that hive code registers.
+// the CLI entry, so it refuses each role and name that hive code registers.
 func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
 	if message := hiveOwnedRoleError(options.Role, true); message != "" {
+		envelope := failed("validate", message)
+		logRegistration(home, options, envelope)
+		return envelope
+	}
+	if message := reservedNameError(options.Name, options.NameSet); message != "" {
 		envelope := failed("validate", message)
 		logRegistration(home, options, envelope)
 		return envelope
@@ -155,6 +160,18 @@ func hiveOwnedRoleError(role string, register bool) string {
 		if register {
 			return "manager: hive code registers this role; run hive agent spawn --role manager"
 		}
+	}
+	return ""
+}
+
+// reservedNameError returns the refusal for a CLI name that only hive code
+// registers. Internal callers can use a custom singleton name.
+func reservedNameError(name string, nameSet bool) string {
+	if !nameSet {
+		return ""
+	}
+	if name == records.AgentKindCoordinator || name == records.AgentKindSupervisor {
+		return "name is reserved: " + name
 	}
 	return ""
 }
@@ -292,6 +309,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	claimKey := claimKeyFor(options.Role, options.Project)
 	singleton := claimKey != ""
 
+	worktree := ""
 	if options.Task != "" {
 		message := taskRegistrationError(options.Project, options.Task)
 		if !records.ValidTaskID(options.Task) {
@@ -307,6 +325,9 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 		if task.Project != options.Project {
 			return failed("validate", message)
+		}
+		if task.Worktree != nil {
+			worktree = task.Worktree.Path
 		}
 	}
 
@@ -377,7 +398,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	replaceOrphan := false
 	if hasExisting {
 		replaceOrphan = singleton && existing.Status == records.AgentLive &&
-			existing.Name == name && existing.Role == options.Role &&
+			existing.Name == name && existing.MirrorRole() == options.Role &&
 			existing.Project == options.Project && existing.Task == options.Task &&
 			existing.Generation == generation && existing.PaneID == options.PaneID
 		if !replaceOrphan {
@@ -517,6 +538,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		TabCreatedByHive: options.TabCreatedByHive,
 		FirstPrompt:      options.FirstPrompt,
 	}
+	record.SetRoleFacts(worktree)
 	action := "created"
 	if replaceOrphan {
 		action = "updated"
@@ -575,7 +597,7 @@ func nextSingletonGeneration(name string, options RegisterOptions, agents []reco
 	highest := uint64(0)
 	retryGeneration := uint64(0)
 	for _, record := range agents {
-		if record.Role != options.Role || record.Name != name || record.Project != options.Project || record.Task != options.Task {
+		if record.MirrorRole() != options.Role || record.Name != name || record.Project != options.Project || record.Task != options.Task {
 			continue
 		}
 		if record.Generation > highest {
@@ -620,7 +642,7 @@ func isActiveAgentStatus(status string) bool {
 func replacementKey(role, project, task, currentKey, previousHolderKey string, agents []records.Agent) string {
 	var newest records.Agent
 	for _, candidate := range agents {
-		if candidate.Key == currentKey || candidate.Role != role {
+		if candidate.Key == currentKey || candidate.MirrorRole() != role {
 			continue
 		}
 		switch role {

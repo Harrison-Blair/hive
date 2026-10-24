@@ -124,7 +124,7 @@ func claimCoordinator(ctx context.Context, home string, restart *records.Agent, 
 		}
 		if restart != nil {
 			current, found := findAgent(agents, restart.Key)
-			if !found || current.Role != "coordinator" || current.PaneID != restart.PaneID {
+			if !found || current.Kind != records.AgentKindCoordinator || current.PaneID != restart.PaneID {
 				refusal = fmt.Errorf("coordinator record %s changed: restart changes nothing", restart.Key)
 				return nil
 			}
@@ -203,7 +203,8 @@ func settleDeadLauncher(ctx context.Context, locked *store.LockedStore, claim re
 	record := records.Agent{
 		Key:           fmt.Sprintf("coordinator-g%d", generation),
 		Name:          "coordinator",
-		Role:          "coordinator",
+		Kind:          records.AgentKindCoordinator,
+		Profile:       records.ProfileCoordinator,
 		PaneID:        claim.PaneID,
 		Status:        records.AgentUnresolved,
 		Replaces:      newestCoordinatorKey(agents),
@@ -216,6 +217,7 @@ func settleDeadLauncher(ctx context.Context, locked *store.LockedStore, claim re
 		ProcessName:   found.Name,
 		LastError:     fmt.Sprintf("launcher pid %d stopped after the harness start", claim.PID),
 	}
+	record.SyncRole()
 	if start, startErr := process.Start(record.ProcessPID); startErr == nil {
 		record.ProcessStart = start
 	}
@@ -331,6 +333,9 @@ func (l *CoordinatorLaunch) setPane(paneID string) error {
 // commit writes the coordinator record and sets the claim live in one locked
 // write.
 func (l *CoordinatorLaunch) commit(record records.Agent) error {
+	record.Kind = records.AgentKindCoordinator
+	record.Profile = records.ProfileCoordinator
+	record.SyncRole()
 	registry, err := store.Open(l.home)
 	if err != nil {
 		return err
@@ -388,7 +393,7 @@ func findAgent(agents []records.Agent, key string) (records.Agent, bool) {
 func newestCoordinatorKey(agents []records.Agent) string {
 	var newest records.Agent
 	for _, record := range agents {
-		if record.Role != "coordinator" {
+		if record.Kind != records.AgentKindCoordinator {
 			continue
 		}
 		if newest.Key == "" || record.Generation > newest.Generation {
@@ -403,7 +408,7 @@ func newestCoordinatorKey(agents []records.Agent) string {
 func nextCoordinatorGeneration(claimGeneration uint64, agents []records.Agent) uint64 {
 	generation := claimGeneration
 	for _, record := range agents {
-		if record.Role == "coordinator" && record.Generation > generation {
+		if record.Kind == records.AgentKindCoordinator && record.Generation > generation {
 			generation = record.Generation
 		}
 	}

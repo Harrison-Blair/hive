@@ -190,6 +190,7 @@ func testHome(t *testing.T) string {
 
 func writeRecord(t *testing.T, home string, record records.Agent) {
 	t.Helper()
+	record.ApplyRoleFacts(record.Worktree)
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatalf("store open: %v", err)

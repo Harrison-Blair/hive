@@ -46,6 +46,9 @@ func Open(home string) (*Store, error) {
 	if err := os.MkdirAll(store.stateDir(), 0o755); err != nil {
 		return nil, err
 	}
+	if err := store.migrate(); err != nil {
+		return nil, err
+	}
 	return store, nil
 }
 
@@ -355,6 +358,9 @@ func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, e
 			}
 			nodes = append(nodes, children...)
 		case info.Mode().IsRegular() && root && name == "lock":
+			continue
+		case info.Mode().IsRegular() && root && name == schemaName:
+			// schema.json keeps the store version. It is not a record.
 			continue
 		case info.Mode().IsRegular() && strings.HasPrefix(name, ".") && strings.Contains(name, ".tmp-"):
 			continue
