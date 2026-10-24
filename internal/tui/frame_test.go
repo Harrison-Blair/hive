@@ -131,7 +131,7 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 		{"AgentDetails", "details", tabAgents, 0},
 		{"Chat", "input", tabChat, 0},
 		{"Compact", "details", tabWork, 2},
-		{"FrictionResolved", "list", tabFriction, 1},
+		{"FrictionResolved", "list", tabFriction, 0},
 		// Golden-frames health.md: Health has no views.
 		{"HealthAgents", "restart", tabHealth, 0},
 		{"Help", "help", tabAgents, 0},
@@ -145,6 +145,16 @@ func TestDemoUIStateSetsTheFrameState(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Golden-frames friction.md rule 3: Friction has no views. The fixture view
+// "resolved" expands the fold line of the resolved entries.
+func TestDemoUIStateExpandsTheFrictionResolvedRows(t *testing.T) {
+	m := newTestDemoModel(t, "FrictionResolved.fixture.json", demoSize{})
+	if !m.friction.expanded {
+		t.Fatal("the fixture view resolved did not expand the resolved entries")
+	}
+	requireView(t, m, "▾ resolved · ")
 }
 
 // y in the restart prompt of demo mode shows the demo notice and restarts
@@ -290,8 +300,10 @@ func TestHelpKeys(t *testing.T) {
 
 // AC3: below 120 columns enter opens the details as a full-width overlay,
 // and esc closes it. A resize keeps the overlay and its scroll position.
+// Golden-frames friction.md and health.md give those screens no list and
+// details overlay, so the test uses Work.
 func TestDetailsOverlayBelow120Columns(t *testing.T) {
-	m := newTestDemoModel(t, "Friction.fixture.json", demoSize{})
+	m := newTestDemoModel(t, "Work.fixture.json", demoSize{})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	rejectView(t, m, "esc back")
 	m, _ = raise(t, m, key(0, "enter"))
@@ -299,8 +311,8 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 	requireKeys(t, m, "details", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 100, Height: 30})
-	if m.focusState() != "details" || m.detailsOffset[tabFriction] != 1 {
-		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabFriction])
+	if m.focusState() != "details" || m.detailsOffset[tabWork] != 1 {
+		t.Fatalf("resize gave focus %q, offset %d; want details, 1", m.focusState(), m.detailsOffset[tabWork])
 	}
 	requireView(t, m, " · esc back")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
@@ -315,8 +327,6 @@ func TestDetailsOverlayBelow120Columns(t *testing.T) {
 // focus but help and the restart prompt, and esc closes an overlay, a popup,
 // help, and the filter bar first, on the same screen.
 func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
-	compact := tea.WindowSizeMsg{Width: 80, Height: 24}
-	enter := key(0, "enter")
 	for _, tt := range []struct {
 		name, board, focus string
 		keepFocus          bool
@@ -325,7 +335,6 @@ func TestOverlayKeepsScreenAndViewKeys(t *testing.T) {
 		{"help", "Help", "help", true, nil},
 		{"popup", "AgentDetails", "details", true, nil},
 		{"work overlay", "Compact", "details", true, nil},
-		{"friction overlay", "Friction", "details", true, []tea.Msg{compact, enter}},
 		{"logs overlay", "CompactLogs", "json", true, nil},
 		{"filter", "Logs", "filter", true, []tea.Msg{key('/', "/")}},
 		{"input", "Chat", "input", false, nil},
@@ -449,10 +458,11 @@ func TestNormalModeUsesTheFrame(t *testing.T) {
 	requireView(t, m, "terminal too small", "hive needs at least 80×24")
 }
 
-// The list hints of Work and Friction have no "/ filter" at either size
-// (user decision 6 of 2026-10-21). The events hints of Logs keep it.
-func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
-	for _, tab := range []int{tabWork, tabFriction} {
+// The list hints of Work have no "/ filter" at either size (user decision
+// 6 of 2026-10-21). The events hints of Logs keep it. Golden-frames
+// friction.md rule 6 gives Friction a filter, so its list hints have it.
+func TestListHintsFilterByScreen(t *testing.T) {
+	for _, tab := range []int{tabWork} {
 		s := screenRegistry[tab]
 		for _, view := range append([]string{""}, s.views...) {
 			for _, wide := range []bool{true, false} {
@@ -465,6 +475,9 @@ func TestListHintsHaveNoFilterOnWorkAndFriction(t *testing.T) {
 	for _, wide := range []bool{true, false} {
 		if hints := screenRegistry[tabLogs].keyHints("", "events", wide); !slices.Contains(hints, "/ filter") {
 			t.Errorf("Logs events, wide %t: hints %q have no / filter", wide, hints)
+		}
+		if hints := screenRegistry[tabFriction].keyHints("", "list", wide); !slices.Contains(hints, "/ filter") {
+			t.Errorf("Friction list, wide %t: hints %q have no / filter", wide, hints)
 		}
 	}
 }

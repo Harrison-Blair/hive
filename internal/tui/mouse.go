@@ -79,6 +79,8 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 		return nil
 	case tab == tabHealth:
 		return m.healthWheel(row, step)
+	case tab == tabFriction:
+		return m.frictionWheel(row, step)
 	case !screenRegistry[tab].listDetails:
 		// Decision 77: the wheel does not move the Agents graph.
 		return nil
@@ -124,6 +126,9 @@ func (m *Model) click(x, y int) tea.Cmd {
 	}
 	if tab == tabHealth {
 		return m.healthClick(row)
+	}
+	if tab == tabFriction {
+		return m.frictionClick(row)
 	}
 	entry := screenRegistry[tab]
 	if !entry.listDetails || (m.detailsFocused() && m.width < component.LongFormWidth) {

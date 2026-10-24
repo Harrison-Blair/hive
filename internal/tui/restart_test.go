@@ -308,6 +308,11 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	m.selectScreen(tabAgents, 0)
 	m.width = 120
 	m.header = state
+	// Golden-frames decision 34: the default row of Health has no
+	// supervisor segment, so the config names it.
+	cfg := defaultTUI()
+	cfg.StatusLines = [][]string{{"state", "supervisor", "clock"}}
+	m.setTUIConfig(cfg)
 	// Golden-frames decision 11: the status row shows an old supervisor as
 	// ▲ supervisor. Decision 19: restart is in the Health agents table, so
 	// the frame has no restart hint.

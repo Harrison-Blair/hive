@@ -403,6 +403,11 @@ func healthTileText(check doctor.Check) string {
 // focus. Ask a28 decides this rule.
 func healthGridShowsSelection(focused bool) bool { return focused }
 
+// healthTitle gives the title row of the Health screen (health.md rule 1).
+func (m *Model) healthTitle() component.TitleRow {
+	return component.TitleRow{Name: "health", Facts: m.healthFacts()}
+}
+
 // healthFacts gives the facts of the title row: the counts, the time of the
 // last result, and the R key or the checking mark (rule 7).
 func (m *Model) healthFacts() string {
