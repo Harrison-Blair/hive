@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 
@@ -59,14 +60,15 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Agents",
 		regions: []string{"graph"},
 		hints: map[string][]string{
-			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped", "? help"},
-			"pods":    {"←→ select pod", "↑ coordinator", "enter open pod", "h stopped", "? help"},
-			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped", "? help"},
+			"graph":   {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "h stopped"},
+			"pods":    {"←→ pod", "↑↓ card", "enter details", "o one pod", "a attach", "p peek", "t task", "h stopped"},
+			"pod":     {"←↑↓→ move", "enter details", "a attach", "p peek", "t task", "esc pods", "h stopped"},
+			"none":    {"↑ coordinator", "enter details", "a attach", "p peek", "h stopped"},
 			"details": {"a attach", "p peek", "t task", "↑↓ scroll", "esc close"},
 		},
 		compact: map[string][]string{
 			"graph": {"←↑↓→ move", "enter details", "a attach", "p peek", "?"},
-			"pods":  {"←→ select pod", "↑ coordinator", "enter open", "?"},
+			"pods":  {"←→ pod", "↑↓ card", "enter details", "o one pod", "?"},
 			"pod":   {"←↑↓→ move", "enter details", "esc pods", "?"},
 		},
 	},
@@ -270,14 +272,20 @@ func (m *Model) frameView() string {
 	status := m.statusRows(width, height)
 	notice := m.noticeLine(width)
 	var rows []string
-	if entry := screenRegistry[m.activeTab()]; entry.title != nil {
+	entry := screenRegistry[m.activeTab()]
+	switch {
+	case entry.title != nil:
 		rows = append(rows, entry.title(m).View(width))
-	} else if m.activeTab() == tabLogs {
+	case m.activeTab() == tabLogs:
 		title := component.TitleRow{Name: strings.ToLower(entry.label)}
 		title.Facts, title.Right = m.logsTitle()
 		rows = append(rows, title.View(width))
-	} else if m.activeTab() != tabChat {
-		rows = append(rows, component.TitleRow{Name: strings.ToLower(entry.label)}.View(width))
+	case m.activeTab() != tabChat:
+		title := component.TitleRow{Name: strings.ToLower(entry.label)}
+		if m.activeTab() == tabAgents {
+			title.Facts = m.agentsTitleFacts()
+		}
+		rows = append(rows, title.View(width))
 	}
 	_, contentHeight := m.contentArea()
 	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
@@ -296,12 +304,21 @@ func (m *Model) frameView() string {
 	}
 	screen := strings.Join(append(rows, status...), "\n")
 	switch {
+	case m.activeTab() == tabAgents && m.popupOpen && !m.helpOpen:
+		// agents.md rule 14: the popup covers the rows above the status
+		// rows. The key row is on its last inner row, and the lines above
+		// it scroll.
+		title, lines, keys := m.agentDetailsPopup()
+		room := agentPopupHeight - 3
+		m.popupOffset = min(m.popupOffset, max(len(lines)-room, 0))
+		lines = lines[m.popupOffset:min(m.popupOffset+room, len(lines))]
+		for len(lines) < room {
+			lines = append(lines, "")
+		}
+		top := component.Popup{Details: component.Details{Title: title, Lines: append(lines, keys)}, Width: agentPopupWidth, Height: agentPopupHeight, Tight: true}.View(strings.Join(rows, "\n"), width, height-len(status))
+		screen = strings.Join(append([]string{top}, status...), "\n")
 	case m.helpOpen:
 		screen = m.helpView(screen, width, height)
-	case m.activeTab() == tabAgents && m.popupOpen:
-		title, lines := m.agentDetailsPopup()
-		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
-		screen = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(screen, width, height)
 	}
 	return screen
 }
@@ -327,7 +344,9 @@ func (m *Model) hintKey(tab int, focus string) string {
 	}
 	pods := m.agentsPods()
 	switch {
-	case len(pods) == 0 || len(pods) == 1 && projectPods(pods) == 1:
+	case len(pods) == 0:
+		return "none"
+	case len(pods) == 1 && projectPods(pods) == 1:
 		return focus
 	case m.inPodView(pods):
 		return "pod"
@@ -547,8 +566,15 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 				return m.logAction("agent details close")
 			case "up", "k", "pgup":
 				m.popupOffset = max(m.popupOffset-1, 0)
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
 			case "down", "j", "pgdown":
 				m.popupOffset++
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
+			case "h":
+				m.graph.hideStopped = !m.graph.hideStopped
+				return m.logAction("agent hide stopped", slog.Bool("hide_stopped", m.graph.hideStopped))
+			case m.tuiConfig.Keys["help"]:
+				return m.openHelp()
 			case "a", "p", "t":
 				if node, _, ok := m.selectedAgent(); ok {
 					return m.agentAction(key, node)

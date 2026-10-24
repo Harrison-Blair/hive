@@ -37,6 +37,11 @@ type liveCell struct {
 // row higher. The status row takes the place of the footer.
 const bodyShift = -1
 
+// boxShift is the row offset of the Agents body from the outer box of the
+// tui-v2 boards. Golden-frames agents.md rule 1 removes the outer box, so
+// its top border row goes and the body starts one more row higher.
+const boxShift = -1
+
 // tuiV2Body sizes m so that its body has the rows of the tui-v2 frame at the
 // board size: the golden frame uses one row less than the tui-v2 frame, so
 // the pane gets one row less. It gives the row shift of the body. At the
@@ -44,7 +49,7 @@ const bodyShift = -1
 // its end, and a view that keeps the selection at its end keeps its rows.
 func tuiV2Body(m *Model) (shift int, restore func()) {
 	if m.height <= minimumHeight {
-		return 0, func() {}
+		return boxShift, func() {}
 	}
 	m.height--
 	if m.demo != nil {
@@ -52,11 +57,12 @@ func tuiV2Body(m *Model) (shift int, restore func()) {
 		m.demo.size.Height = m.height
 	}
 	m.invalidateView()
-	return bodyShift, func() { m.height++ }
+	return bodyShift + boxShift, func() { m.height++ }
 }
 
 // requireCells fails when a cell of the view of m is not as want. The rows
-// of want are the rows of the tui-v2 board, which bodyShift moves.
+// of want are the rows of the tui-v2 board, which bodyShift and boxShift
+// move.
 func requireCells(t *testing.T, m *Model, want ...liveCell) {
 	t.Helper()
 	shift, restore := tuiV2Body(m)
@@ -212,34 +218,41 @@ func TestLiveInboxRecordLightsALine(t *testing.T) {
 			}
 		}
 	}
-	dark := []liveCell{{60, 8, '┬', cellgrid.Working}, {60, 9, '┼', cellgrid.Border}, {20, 10, '┷', cellgrid.Accent}, {22, 9, '─', cellgrid.Border}}
+	dark := []liveCell{{60, 8, '┬', cellgrid.Working}, {60, 9, '┴', cellgrid.Border}, {23, 10, '┷', cellgrid.Accent}, {25, 9, '─', cellgrid.Border}}
 	t.Run("no card", func(t *testing.T) {
 		m := liveModel(t, "LiveOverview", inbox(record("user", "manager-hive"), record("supervisor", "manager-hive"), record("ghost-1", "manager-hive"), record("coordinator", "ghost-2")))
 		requireCells(t, m, dark...)
 	})
 	t.Run("coordinator to manager", func(t *testing.T) {
 		m := liveModel(t, "LiveOverview", inbox(record("coordinator", "manager-hive")))
-		requireCells(t, m, liveCell{60, 8, '┰', cellgrid.Info}, liveCell{60, 9, '╃', cellgrid.Info}, liveCell{22, 9, '◀', cellgrid.Info},
-			liveCell{21, 9, '━', cellgrid.Info}, liveCell{20, 9, '┏', cellgrid.Info}, liveCell{20, 10, '┻', cellgrid.Info}, liveCell{61, 9, '─', cellgrid.Border})
+		requireCells(t, m, liveCell{60, 8, '┰', cellgrid.Info}, liveCell{60, 9, '┹', cellgrid.Info}, liveCell{25, 9, '◀', cellgrid.Info},
+			liveCell{24, 9, '━', cellgrid.Info}, liveCell{23, 9, '┏', cellgrid.Info}, liveCell{23, 10, '┻', cellgrid.Info}, liveCell{61, 9, '─', cellgrid.Border})
 	})
 	// The pods have no direct line: the path goes on the bus.
 	t.Run("manager to manager", func(t *testing.T) {
 		m := liveModel(t, "LiveOverview", inbox(record("manager-hive", "manager-api")))
-		requireCells(t, m, liveCell{20, 10, '┻', cellgrid.Info}, liveCell{20, 9, '┏', cellgrid.Info}, liveCell{40, 9, '━', cellgrid.Info},
-			liveCell{58, 9, '▶', cellgrid.Info}, liveCell{59, 9, '━', cellgrid.Info}, liveCell{60, 9, '╅', cellgrid.Info},
-			liveCell{60, 10, '┸', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working}, liveCell{61, 9, '─', cellgrid.Border})
+		requireCells(t, m, liveCell{23, 10, '┻', cellgrid.Info}, liveCell{23, 9, '┏', cellgrid.Info}, liveCell{40, 9, '━', cellgrid.Info},
+			liveCell{60, 9, '┷', cellgrid.Info}, liveCell{68, 9, '▶', cellgrid.Info}, liveCell{69, 9, '━', cellgrid.Info}, liveCell{70, 9, '┱', cellgrid.Info},
+			liveCell{70, 10, '┸', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working}, liveCell{71, 9, '─', cellgrid.Border})
 	})
 	// The rail of the hive pod in the overview: heavy arms on the lit side.
+	// The selected card is in the other pod, so that no card of the rail
+	// has the heavy border of agents.md rule 12.
+	selectOther := func(m *Model) *Model {
+		m.graph.pod, m.graph.selected = "example-api", ""
+		m.invalidateView()
+		return m
+	}
 	t.Run("rail down", func(t *testing.T) {
-		m := liveModel(t, "LiveOverview", inbox(record("manager-hive", "t6-worker-1")))
-		requireCells(t, m, liveCell{4, 15, '┟', cellgrid.Info}, liveCell{4, 16, '┃', cellgrid.Info}, liveCell{4, 18, '┠', cellgrid.Info},
-			liveCell{5, 18, '┤', cellgrid.Working}, liveCell{4, 21, '┃', cellgrid.Info}, liveCell{4, 22, '▼', cellgrid.Info},
-			liveCell{4, 23, '┗', cellgrid.Info}, liveCell{5, 23, '┥', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working})
+		m := selectOther(liveModel(t, "LiveOverview", inbox(record("manager-hive", "t6-worker-1"))))
+		requireCells(t, m, liveCell{3, 15, '┟', cellgrid.Info}, liveCell{3, 16, '┃', cellgrid.Info}, liveCell{3, 18, '┠', cellgrid.Info},
+			liveCell{4, 18, '┤', cellgrid.Working}, liveCell{3, 21, '┃', cellgrid.Info}, liveCell{3, 22, '▼', cellgrid.Info},
+			liveCell{3, 23, '┗', cellgrid.Info}, liveCell{4, 23, '┥', cellgrid.Info}, liveCell{60, 8, '┬', cellgrid.Working})
 	})
 	t.Run("rail up", func(t *testing.T) {
-		m := liveModel(t, "LiveOverview", inbox(record("t5-worker-1", "manager-hive")))
-		requireCells(t, m, liveCell{5, 18, '┥', cellgrid.Info}, liveCell{4, 18, '┡', cellgrid.Info}, liveCell{4, 17, '┃', cellgrid.Info},
-			liveCell{4, 16, '▲', cellgrid.Info}, liveCell{4, 15, '┟', cellgrid.Info}, liveCell{4, 19, '│', cellgrid.Border})
+		m := selectOther(liveModel(t, "LiveOverview", inbox(record("t5-worker-1", "manager-hive"))))
+		requireCells(t, m, liveCell{4, 18, '┥', cellgrid.Info}, liveCell{3, 18, '┡', cellgrid.Info}, liveCell{3, 17, '┃', cellgrid.Info},
+			liveCell{3, 16, '▲', cellgrid.Info}, liveCell{3, 15, '┟', cellgrid.Info}, liveCell{3, 19, '│', cellgrid.Border})
 	})
 	// Two children of one manager in the tree: the path goes on the tree bus.
 	t.Run("tree child to child", func(t *testing.T) {
@@ -257,9 +270,9 @@ func TestLiveInboxRecordLightsALine(t *testing.T) {
 // coordinator card with ↑. ↓ selects the last pod again. enter opens the
 // one-pod view, and esc goes back with the same pod selected.
 func TestLivePodSelection(t *testing.T) {
-	hive := []liveCell{{2, 10, '┏', cellgrid.Accent}, {41, 10, '╭', cellgrid.Border}, {48, 5, '╭', cellgrid.Working}}
-	api := []liveCell{{2, 10, '╭', cellgrid.Border}, {41, 10, '┏', cellgrid.Accent}, {48, 5, '╭', cellgrid.Working}}
-	coordinator := []liveCell{{2, 10, '╭', cellgrid.Border}, {41, 10, '╭', cellgrid.Border}, {48, 5, '┏', cellgrid.Accent}, {60, 8, '┯', cellgrid.Accent}}
+	hive := []liveCell{{1, 10, '┏', cellgrid.Accent}, {41, 10, '╭', cellgrid.Border}, {48, 5, '╭', cellgrid.Working}}
+	api := []liveCell{{1, 10, '╭', cellgrid.Border}, {41, 10, '┏', cellgrid.Accent}, {48, 5, '╭', cellgrid.Working}}
+	coordinator := []liveCell{{1, 10, '╭', cellgrid.Border}, {41, 10, '╭', cellgrid.Border}, {48, 5, '┏', cellgrid.Accent}, {60, 8, '┯', cellgrid.Accent}}
 	m := liveModel(t, "LiveOverview", func(f *demoFixture) { f.Data.Inbox = nil })
 	requireCells(t, m, hive...)
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
@@ -280,19 +293,24 @@ func TestLivePodSelection(t *testing.T) {
 	m, _ = raise(t, m, ctrl('g'))
 	requireCells(t, m, coordinator...)
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
+	if m.graph.selected != "t3-verifier-1" {
+		t.Fatalf("down from the coordinator selected %q; want the last card t3-verifier-1 of example-api", m.graph.selected)
+	}
 	requireCells(t, m, api...)
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "project agents · example-api")
+	m, _ = raise(t, m, key('o', "o"))
+	requireView(t, m, "agents · example-api")
 	if !m.graph.podView {
-		t.Fatal("enter on a pod did not open the one-pod view")
+		t.Fatal("o on a pod did not open the one-pod view")
 	}
 	if m.popupOpen {
-		t.Fatal("enter on a pod opened the details popup")
+		t.Fatal("o on a pod opened the details popup")
 	}
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
-	requireView(t, m, "project agents · 2 projects")
+	requireView(t, m, "agents · 2 projects")
 	requireCells(t, m, api...)
-	m, _ = raise(t, m, key(tea.KeyUp, ""))
+	for range 3 {
+		m, _ = raise(t, m, key(tea.KeyUp, ""))
+	}
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	if !m.popupOpen {
 		t.Fatal("enter on the coordinator card did not open its details")
@@ -315,7 +333,7 @@ func TestLivePodViewSelectsCards(t *testing.T) {
 	if m.graph.selected != "manager-hive-g2" {
 		t.Fatalf("selected = %q; want manager-hive-g2: the coordinator card is not selectable in the one-pod view", m.graph.selected)
 	}
-	requireView(t, m, "project agents · hive")
+	requireView(t, m, "agents · hive")
 }
 
 // Decision 64: with one project and no home pod, the screen opens the one-pod
@@ -323,7 +341,7 @@ func TestLivePodViewSelectsCards(t *testing.T) {
 // to Chat, because the view has no overview to go back to.
 func TestLiveOneProjectOpensThePodView(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
-	requireView(t, m, "project agents · hive")
+	requireView(t, m, "agents · hive")
 	if hints := screenRegistry[tabAgents].keyHints("", m.hintKey(tabAgents, m.focusState()), true); strings.Contains(strings.Join(hints, " "), "esc pods") {
 		t.Fatalf("keys = %v; want no esc pods", hints)
 	}
@@ -334,11 +352,13 @@ func TestLiveOneProjectOpensThePodView(t *testing.T) {
 }
 
 // Decision 65: a pod drop 1 column or less from the coordinator joint moves
-// to the column of the joint. The example-api pod center is column 59.
+// to the column of the joint. The example-api pod center is column 59. With
+// no goal, no pod title has the wave of golden-frames agents.md rule 2, so
+// each drop is at its pod center.
 func TestLiveDropMergesWithTheJoint(t *testing.T) {
-	m := liveModel(t, "LiveOverview", func(f *demoFixture) { f.Data.Inbox = nil })
+	m := liveModel(t, "LiveOverview", func(f *demoFixture) { f.Data.Inbox, f.Data.Goals = nil, nil })
 	requireCells(t, m, liveCell{59, 10, '─', cellgrid.Border}, liveCell{60, 10, '┴', cellgrid.Border}, liveCell{60, 9, '┼', cellgrid.Border},
-		liveCell{98, 9, '╮', cellgrid.Border}, liveCell{98, 10, '┴', cellgrid.Border}, liveCell{20, 9, '╭', cellgrid.Border})
+		liveCell{99, 9, '╮', cellgrid.Border}, liveCell{99, 10, '┴', cellgrid.Border}, liveCell{19, 9, '╭', cellgrid.Border})
 }
 
 // Decisions 69 and 70: the legend and the footers at 120 and at 80 columns.
@@ -348,10 +368,10 @@ func TestLiveFooters(t *testing.T) {
 		keys  []tea.KeyPressMsg
 		want  string
 	}{
-		{"LiveOverview", nil, "←→ select pod · ↑ coordinator · enter open pod · h stopped · ? help"},
-		{"CompactLiveOverview", nil, "←→ select pod · ↑ coordinator · enter open · ?"},
-		{"LiveOverview", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, "←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped · ? help"},
-		{"CompactLiveOverview", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, "←↑↓→ move · enter details · esc pods · ?"},
+		{"LiveOverview", nil, "←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task · h stopped"},
+		{"CompactLiveOverview", nil, "←→ pod · ↑↓ card · enter details · o one pod · ?"},
+		{"LiveOverview", []tea.KeyPressMsg{key('o', "o")}, "←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
+		{"CompactLiveOverview", []tea.KeyPressMsg{key('o', "o")}, "←↑↓→ move · enter details · esc pods · ?"},
 	} {
 		t.Run(tc.board+"/"+tc.want, func(t *testing.T) {
 			// Golden-frames decisions 3 and 11: the status row takes the
@@ -375,11 +395,13 @@ func TestLiveFooters(t *testing.T) {
 }
 
 // Decision 65 with a narrow pod: when the title is wider than the left half
-// of the pod, the drop is 1 cell after the title, and the title stays whole.
-// The 4 pods of AgentsMany are 28 cells wide.
+// of the pod, the drop is 1 cell after the title. The 4 pods of AgentsMany
+// are 28 cells wide. The wave of golden-frames agents.md rule 2 makes each
+// title too wide: the title is cut at its end, and the drop stays inside the
+// corner.
 func TestLiveDropClearsALongTitle(t *testing.T) {
 	m := liveModel(t, "AgentsMany", nil)
-	requireView(t, m, "╭─ example-api ─┴", "╭─ example-web ─┴", "╭─ example-docs ─┴")
-	requireCells(t, m, liveCell{15, 10, '┷', cellgrid.Accent}, liveCell{47, 10, '┴', cellgrid.Border},
-		liveCell{47, 9, '┬', cellgrid.Border}, liveCell{106, 9, '╮', cellgrid.Border})
+	requireView(t, m, "╭─ example-api · wave B… ─┴╮", "╭─ example-web · wave A… ─┴╮", "╭─ example-docs · wave … ─┴╮")
+	requireCells(t, m, liveCell{23, 10, '┷', cellgrid.Accent}, liveCell{57, 10, '┴', cellgrid.Border},
+		liveCell{57, 9, '┬', cellgrid.Border}, liveCell{117, 9, '╮', cellgrid.Border})
 }

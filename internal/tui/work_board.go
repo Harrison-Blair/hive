@@ -35,6 +35,7 @@ type tasksState struct {
 	data          tasksData
 	goal          string
 	selectedID    string
+	openTask      string
 	left          int
 	tops          map[string]int
 	stopsOnly     bool
@@ -70,6 +71,20 @@ type workColumn struct {
 
 func (s *tasksState) accept(data tasksData) {
 	s.data = data
+	if s.openTask != "" {
+		if _, ok := s.data.item(s.openTask); ok {
+			// Keep the task that the Agents key opened across a stale
+			// load that does not hold it.
+			s.selectedID = s.openTask
+			s.popup = workPopupTask
+			s.popupOffset = 0
+			s.closeFile()
+			s.openTask = ""
+		} else {
+			s.selectedID = ""
+			s.popup = ""
+		}
+	}
 	s.normalize()
 }
 
@@ -362,6 +377,8 @@ func (s workScreen) Update(msg tea.Msg) tea.Cmd {
 // workBoardKey handles a key of the board (work.md key table).
 func (m *Model) workBoardKey(key string) tea.Cmd {
 	s := &m.tasks
+	// A user action gives the selection to the board again.
+	s.openTask = ""
 	switch key {
 	case "left", "right", "up", "down", "k", "j", "g", "G":
 		before := s.selectedID

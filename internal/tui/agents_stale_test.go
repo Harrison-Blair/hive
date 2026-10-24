@@ -130,8 +130,8 @@ func TestAgentsPodViewDrawsTheLiveManager(t *testing.T) {
 	rejectView(t, m, "claude · unknown")
 }
 
-// A stale worker with no live successor is on the graph as unknown. h hides
-// it with the stopped agents and counts it.
+// A stale worker with no live successor keeps its stale state on the graph.
+// h hides it with the stopped agents and counts it.
 func TestAgentsHHidesAStaleWorkerWithNoSuccessor(t *testing.T) {
 	agents := staleFixture(t, "coordinator-g8", "manager-qmeter-g4")
 	// A worker record with the shape of manager-qmeter-g1: stale, with no
@@ -146,7 +146,7 @@ func TestAgentsHHidesAStaleWorkerWithNoSuccessor(t *testing.T) {
 	m, _ = raise(t, m, key('h', "h"))
 	m.graph.pod, m.graph.podView = "qmeter", true
 	m.invalidateView()
-	requireView(t, m, "○ worker-qmeter", "claude · unknown", "h hides 1 stopped")
+	requireView(t, m, "○ worker-qmeter", "claude · stale", "h hides 1 stopped")
 	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "h shows 1 stopped")
 	rejectView(t, m, "worker-qmeter")

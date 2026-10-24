@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/tui/component"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -85,11 +86,17 @@ func TestTreeNestedChildrenUseABus(t *testing.T) {
 	requireView(t, m, "t5-research-2")
 }
 
-// treeScrollLine gives the text of the scroll line of the view of m: the
-// row above the bottom border, without the borders and the padding.
+// treeScrollLine gives the text of the scroll line of the view of m, without
+// the padding. It is the last body row above the status row. From 120
+// columns the legend and one blank row are below it (golden-frames
+// agents.md rule 7).
 func treeScrollLine(m *Model) string {
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	return strings.TrimSpace(strings.Trim(lines[len(lines)-3], "│┃"))
+	row := len(lines) - 2
+	if m.width >= component.LongFormWidth {
+		row = len(lines) - 4
+	}
+	return strings.TrimSpace(lines[row])
 }
 
 // scrollLine gives the scroll line of a body of width cells: left, and
@@ -108,40 +115,33 @@ func requireSelected(t *testing.T, m *Model, want string) {
 
 // Decisions 75 and 77: at 80 columns the view scrolls sideways to keep the
 // selected card at the centre when possible. The scroll line names the
-// children on the screen and the next hidden child. The bottom border has
-// the ━ thumb of a track of 78 cells: 45 cells for 78 of 135 columns.
+// children on the screen and the next hidden child. Golden-frames agents.md
+// rules 1 and 8: the body has no scroll thumb, and the scroll line has the
+// full width less one cell of margin on each side.
 func TestTreeScrollsSidewaysAt80(t *testing.T) {
 	m := liveModel(t, "CompactTreeWide", nil)
 	steps := []struct {
-		press     rune
-		selected  string
-		cardX     int
-		line      string
-		thumbFrom int
+		press    rune
+		selected string
+		cardX    int
+		line     string
 	}{
-		{0, "t6-worker-1", 28, scrollLine(76, "←→ at the edge scrolls · children 2–4 of 5", "t7-review-1 →"), 17},
-		{tea.KeyLeft, "t5-verifier-1", 28, scrollLine(76, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →"), 2},
-		{tea.KeyLeft, "t5-worker-1", 5, scrollLine(76, "←→ at the edge scrolls · children 1–2 of 5", "t6-worker-1 →"), 1},
-		{tea.KeyLeft, "t5-worker-1", 5, scrollLine(76, "←→ at the edge scrolls · children 1–2 of 5", "t6-worker-1 →"), 1},
-		{tea.KeyRight, "t5-verifier-1", 28, scrollLine(76, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →"), 2},
-		{tea.KeyRight, "t6-worker-1", 28, scrollLine(76, "←→ at the edge scrolls · children 2–4 of 5", "t7-review-1 →"), 17},
-		{tea.KeyRight, "t6-verifier-1", 28, scrollLine(76, "←→ at the edge scrolls · children 3–5 of 5", "← t5-verifier-1"), 32},
-		{tea.KeyRight, "t7-review-1", 52, scrollLine(76, "←→ at the edge scrolls · children 4–5 of 5", "← t6-worker-1"), 34},
-		{tea.KeyRight, "t7-review-1", 52, scrollLine(76, "←→ at the edge scrolls · children 4–5 of 5", "← t6-worker-1"), 34},
+		{0, "t6-worker-1", 28, scrollLine(78, "←→ at the edge scrolls · children 2–4 of 5", "t7-review-1 →")},
+		{tea.KeyLeft, "t5-verifier-1", 28, scrollLine(78, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →")},
+		{tea.KeyLeft, "t5-worker-1", 4, scrollLine(78, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →")},
+		{tea.KeyLeft, "t5-worker-1", 4, scrollLine(78, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →")},
+		{tea.KeyRight, "t5-verifier-1", 28, scrollLine(78, "←→ at the edge scrolls · children 1–3 of 5", "t6-verifier-1 →")},
+		{tea.KeyRight, "t6-worker-1", 28, scrollLine(78, "←→ at the edge scrolls · children 2–4 of 5", "t7-review-1 →")},
+		{tea.KeyRight, "t6-verifier-1", 28, scrollLine(78, "←→ at the edge scrolls · children 3–5 of 5", "← t5-verifier-1")},
+		{tea.KeyRight, "t7-review-1", 53, scrollLine(78, "←→ at the edge scrolls · children 3–5 of 5", "← t5-verifier-1")},
+		{tea.KeyRight, "t7-review-1", 53, scrollLine(78, "←→ at the edge scrolls · children 3–5 of 5", "← t5-verifier-1")},
 	}
 	for _, step := range steps {
 		if step.press != 0 {
 			m, _ = raise(t, m, key(step.press, ""))
 		}
 		requireSelected(t, m, step.selected)
-		requireCells(t, m, liveCell{step.cardX, 17, '┏', cellgrid.Accent}, liveCell{step.cardX + 12, 17, '┷', cellgrid.Accent},
-			liveCell{step.thumbFrom, 22, '━', cellgrid.Accent}, liveCell{step.thumbFrom + 44, 22, '━', cellgrid.Accent})
-		if step.thumbFrom > 1 {
-			requireCells(t, m, liveCell{step.thumbFrom - 1, 22, '─', cellgrid.Accent})
-		}
-		if step.thumbFrom+45 < 79 {
-			requireCells(t, m, liveCell{step.thumbFrom + 45, 22, '─', cellgrid.Accent})
-		}
+		requireCells(t, m, liveCell{step.cardX, 17, '┏', cellgrid.Accent}, liveCell{step.cardX + 12, 17, '┷', cellgrid.Accent})
 		if got := treeScrollLine(m); got != step.line {
 			t.Fatalf("after %s: scroll line = %q; want %q", step.selected, got, step.line)
 		}
@@ -149,48 +149,47 @@ func TestTreeScrollsSidewaysAt80(t *testing.T) {
 }
 
 // Decision 75: from 120 columns the view scrolls sideways only as far as
-// it must to keep the selected card on the screen. The thumb is 103 of 118
-// cells.
+// it must to keep the selected card on the screen. Golden-frames agents.md
+// rule 8: the body has no scroll thumb.
 func TestTreeScrollsSidewaysAt120(t *testing.T) {
 	m := liveModel(t, "TreeWide", nil)
 	steps := []struct {
-		press     rune
-		selected  string
-		cardX     int
-		line      string
-		thumbFrom int
+		press    rune
+		selected string
+		cardX    int
+		line     string
 	}{
-		{0, "t5-worker-1", 5, "children 1–4 of 5", 1},
-		{tea.KeyRight, "t5-verifier-1", 31, "children 1–4 of 5", 1},
-		{tea.KeyRight, "t6-worker-1", 57, "children 1–4 of 5", 1},
-		{tea.KeyRight, "t6-verifier-1", 83, "children 1–4 of 5", 1},
-		{tea.KeyRight, "t7-review-1", 95, "children 2–5 of 5", 13},
-		{tea.KeyLeft, "t6-verifier-1", 69, "children 2–5 of 5", 13},
-		{tea.KeyLeft, "t6-worker-1", 43, "children 2–5 of 5", 13},
-		{tea.KeyLeft, "t5-verifier-1", 17, "children 2–5 of 5", 13},
-		{tea.KeyLeft, "t5-worker-1", 1, "children 1–4 of 5", 4},
+		{0, "t5-worker-1", 4, "children 1–4 of 5"},
+		{tea.KeyRight, "t5-verifier-1", 30, "children 1–4 of 5"},
+		{tea.KeyRight, "t6-worker-1", 56, "children 1–4 of 5"},
+		{tea.KeyRight, "t6-verifier-1", 82, "children 1–4 of 5"},
+		{tea.KeyRight, "t7-review-1", 96, "children 2–5 of 5"},
+		{tea.KeyLeft, "t6-verifier-1", 70, "children 2–5 of 5"},
+		{tea.KeyLeft, "t6-worker-1", 44, "children 2–5 of 5"},
+		{tea.KeyLeft, "t5-verifier-1", 18, "children 2–5 of 5"},
+		{tea.KeyLeft, "t5-worker-1", 0, "children 1–4 of 5"},
 	}
 	for _, step := range steps {
 		if step.press != 0 {
 			m, _ = raise(t, m, key(step.press, ""))
 		}
 		requireSelected(t, m, step.selected)
-		requireCells(t, m, liveCell{step.cardX, 19, '┏', cellgrid.Accent},
-			liveCell{step.thumbFrom, 38, '━', cellgrid.Accent}, liveCell{step.thumbFrom + 102, 38, '━', cellgrid.Accent},
-			liveCell{step.thumbFrom + 103, 38, '─', cellgrid.Accent})
+		requireCells(t, m, liveCell{step.cardX, 19, '┏', cellgrid.Accent})
 		if got := treeScrollLine(m); !strings.Contains(got, step.line) {
 			t.Fatalf("after %s: scroll line = %q; want %q", step.selected, got, step.line)
 		}
 	}
-	// The legend is above the scroll line (decision 33).
-	requireView(t, m, "one column per project"+strings.Repeat(" ", 29)+"│\n│ ←→ at the edge scrolls")
+	// Golden-frames agents.md rule 7: the legend is the last body row, below
+	// the scroll line.
+	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+	if !strings.HasPrefix(lines[36], " ←→ at the edge scrolls") || !strings.HasPrefix(lines[37], " ── spawn") {
+		t.Fatalf("rows 36 and 37 = %q, %q; want the scroll line, then the legend", lines[36], lines[37])
+	}
 }
 
 // Decision 76: when the tree is higher than the region, the view scrolls
 // vertically and keeps the selected card on the screen. Golden-frames
-// decision 2: at 80×24 the region has 19 rows, from row 3 to row 21, so the
-// right border has the ┃ thumb of 11 rows (19 × 19 / 31, rounded down) for 19
-// of 31 rows. The thumb starts at row 3 + top × 8 / 12.
+// agents.md rule 8: the body has no scroll thumb.
 func TestTreeScrollsVertically(t *testing.T) {
 	m := liveModel(t, "CompactTreeNested", both(addAgent("t5-research-2", "t5-research-1", "idle", "2026-10-21T14:16:00Z"), selectAgent("manager-hive-g2")))
 	steps := []struct {
@@ -198,49 +197,48 @@ func TestTreeScrollsVertically(t *testing.T) {
 		selected string
 		cardX    int
 		cardY    int
-		from     int
 	}{
-		{0, "manager-hive-g2", 28, 10, 3},
-		{tea.KeyDown, "t5-worker-1", 10, 17, 3},
-		{tea.KeyDown, "t5-research-1", 10, 18, 5},
-		{tea.KeyDown, "t5-research-2", 10, 18, 9},
-		{tea.KeyDown, "t5-research-2", 10, 18, 9},
-		{tea.KeyUp, "t5-research-1", 10, 13, 9},
-		{tea.KeyUp, "t5-worker-1", 10, 8, 9},
-		{tea.KeyUp, "manager-hive-g2", 28, 3, 7},
-		{tea.KeyUp, "manager-hive-g2", 28, 3, 7},
+		{0, "manager-hive-g2", 28, 10},
+		{tea.KeyDown, "t5-worker-1", 9, 17},
+		{tea.KeyDown, "t5-research-1", 9, 20},
+		{tea.KeyDown, "t5-research-2", 9, 20},
+		{tea.KeyDown, "t5-research-2", 9, 20},
+		{tea.KeyUp, "t5-research-1", 9, 15},
+		{tea.KeyUp, "t5-worker-1", 9, 10},
+		{tea.KeyUp, "manager-hive-g2", 28, 3},
+		{tea.KeyUp, "manager-hive-g2", 28, 3},
 	}
 	for _, step := range steps {
 		if step.press != 0 {
 			m, _ = raise(t, m, key(step.press, ""))
 		}
 		requireSelected(t, m, step.selected)
-		requireCells(t, m, liveCell{step.cardX, step.cardY, '┏', cellgrid.Accent},
-			liveCell{79, step.from, '┃', cellgrid.Accent}, liveCell{79, step.from + 10, '┃', cellgrid.Accent},
-			liveCell{79, step.from + 11, '│', cellgrid.Accent})
-		if step.from > 3 {
-			requireCells(t, m, liveCell{79, step.from - 1, '│', cellgrid.Accent})
-		}
+		requireCells(t, m, liveCell{step.cardX, step.cardY, '┏', cellgrid.Accent})
 	}
 }
 
 // Decision 77: the view scrolls only to keep the selection on the screen.
-// pgup and pgdn do not move it. Each board starts scrolled: the ends of its
-// thumb are the cells of its grid.
+// pgup and pgdn do not move it. CompactTreeWide and CompactTreeNested start
+// scrolled. Golden-frames agents.md rule 8: the body has no thumb, so the
+// check reads the scroll offsets of the model.
 func TestTreePageKeysDoNotScroll(t *testing.T) {
 	for _, tc := range []struct {
-		board string
-		thumb []liveCell
+		board      string
+		shift, top bool
 	}{
-		{"CompactTreeWide", []liveCell{{16, 22, '─', cellgrid.Accent}, {17, 22, '━', cellgrid.Accent}, {61, 22, '━', cellgrid.Accent}, {62, 22, '─', cellgrid.Accent}}},
-		// Golden-frames decision 2: the region of 19 rows gives a thumb of
-		// 13 rows, from row 6 to row 18.
-		{"CompactTreeNested", []liveCell{{79, 5, '│', cellgrid.Accent}, {79, 6, '┃', cellgrid.Accent}, {79, 18, '┃', cellgrid.Accent}, {79, 19, '│', cellgrid.Accent}}},
-		{"TreeWide", []liveCell{{1, 38, '━', cellgrid.Accent}, {103, 38, '━', cellgrid.Accent}, {104, 38, '─', cellgrid.Accent}}},
+		{"CompactTreeWide", true, false},
+		{"CompactTreeNested", false, true},
+		{"TreeWide", false, false},
 	} {
 		t.Run(tc.board, func(t *testing.T) {
 			m := liveModel(t, tc.board, nil)
-			requireCells(t, m, tc.thumb...)
+			m.View()
+			if got := m.graph.shift > 0; got != tc.shift {
+				t.Fatalf("scrolled sideways = %v; want %v", got, tc.shift)
+			}
+			if got := m.graph.top > 0; got != tc.top {
+				t.Fatalf("scrolled down = %v; want %v", got, tc.top)
+			}
 			want := m.View().Content
 			for _, press := range []rune{tea.KeyPgDown, tea.KeyPgDown, tea.KeyPgUp, tea.KeyPgUp, tea.KeyPgUp} {
 				m, _ = raise(t, m, key(press, ""))

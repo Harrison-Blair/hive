@@ -8,11 +8,12 @@ import (
 
 // Popup is a Details box centered over a dimmed screen (decision 5). The box
 // has the focus and is Width×Height cells. Each line of the details has one
-// more space at its start.
+// more space at its start, unless Tight is set.
 type Popup struct {
 	Details
 	Width  int
 	Height int
+	Tight  bool
 }
 
 // View dims screen, a text of width×height cells, and draws the box centered
@@ -23,7 +24,10 @@ func (p Popup) View(screen string, width, height int) string {
 	d.Focused = true
 	d.Lines = make([]string, len(p.Lines))
 	for i, l := range p.Lines {
-		d.Lines[i] = " " + l
+		d.Lines[i] = l
+		if !p.Tight {
+			d.Lines[i] = " " + l
+		}
 	}
 	return Overlay(screen, d.View(w, h), width, height)
 }
