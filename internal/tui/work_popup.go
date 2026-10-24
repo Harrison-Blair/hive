@@ -33,19 +33,16 @@ func (m *Model) workPopupView(screen string, width, height int) string {
 	w, h := workTaskPopupWidth, workTaskPopupHeight
 	var title, hint string
 	var lines []string
+	depsRow := -1
 	switch {
 	case s.popup == workPopupDeps:
 		w, h = workDepsPopupWidth, workDepsPopupHeight
 		title = s.selectedID + " · dependencies · esc closes"
-		lines = m.workDepsLines()
+		lines, depsRow = m.workDepsLines()
 		hint = "enter opens the selected task · ↑↓ move · esc closes"
 	case s.fileOpen:
 		title = s.fileTitle + " · esc closes"
-		text := s.fileContent
-		if s.fileLoading {
-			text = "loading…"
-		}
-		lines = strings.Split(ansi.Wrap(text, max(min(w, width)-4, 1), ""), "\n")
+		lines = m.workFileLines(width)
 		hint = "↑↓ pgup/pgdn scroll · esc closes"
 	default:
 		title = s.selectedID + " · esc closes"
@@ -55,8 +52,11 @@ func (m *Model) workPopupView(screen string, width, height int) string {
 	w, h = min(w, width), min(h, height)
 	body := max(h-3, 1)
 	offset := 0
-	if s.popup == workPopupTask {
+	switch s.popup {
+	case workPopupTask:
 		offset = min(s.popupOffset, max(len(lines)-body, 0))
+	case workPopupDeps:
+		offset = s.depsVisibleOffset(depsRow, len(lines), body)
 	}
 	shown := make([]string, body+1)
 	copy(shown, lines[min(offset, len(lines)):])
@@ -80,9 +80,53 @@ func (m *Model) workPopupView(screen string, width, height int) string {
 
 // workPopupMaxOffset gives the last scroll offset of the task popup.
 func (m *Model) workPopupMaxOffset() int {
-	_, height := m.contentArea()
-	body := max(min(workTaskPopupHeight, height+2)-3, 1)
-	return max(len(m.workTaskLines())-body, 0)
+	lines := m.workTaskLines()
+	if m.tasks.fileOpen {
+		lines = m.workFileLines(m.width)
+	}
+	return max(len(lines)-m.workPopupBody(), 0)
+}
+
+// workPopupBody gives the content rows of the open popup, which is the
+// popup height above the status rows less its border and its hint row.
+func (m *Model) workPopupBody() int {
+	height := m.height - len(m.statusRows(m.width, m.height))
+	h := workTaskPopupHeight
+	if m.tasks.popup == workPopupDeps {
+		h = workDepsPopupHeight
+	}
+	return max(min(h, height)-3, 1)
+}
+
+// workFileLines gives the wrapped lines of the open file of the task popup.
+func (m *Model) workFileLines(width int) []string {
+	text := m.tasks.fileContent
+	if m.tasks.fileLoading {
+		text = "loading…"
+	}
+	return strings.Split(ansi.Wrap(text, max(min(workTaskPopupWidth, width)-4, 1), ""), "\n")
+}
+
+// depsVisibleOffset gives the first visible line of the dependency popup.
+// The kept offset moves only as far as needed to show the selected row. It
+// shows the end of the list when the selected row is near it, so the reverse
+// section and the ready when line are reachable.
+func (s *tasksState) depsVisibleOffset(selected, total, body int) int {
+	maxOffset := max(total-body, 0)
+	offset := min(max(s.depsOffset, 0), maxOffset)
+	if selected < 0 {
+		return offset
+	}
+	if selected < offset {
+		offset = selected
+	}
+	if selected >= offset+body {
+		offset = min(selected-body+1, maxOffset)
+	}
+	if maxOffset > offset && maxOffset <= selected {
+		offset = maxOffset
+	}
+	return offset
 }
 
 // workField gives a field line of the task popup: the label in dim in 11
@@ -193,15 +237,20 @@ func (m *Model) workTaskLines() []string {
 
 // workDepsLines gives the lines of the dependency popup (rule 10 and the
 // board GfWorkDeps): the dependencies, the tasks that depend on the
-// selected task, and the ready when line.
-func (m *Model) workDepsLines() []string {
+// selected task, and the ready when line. It also gives the line of the
+// selected row, or -1.
+func (m *Model) workDepsLines() ([]string, int) {
 	s := &m.tasks
 	item, ok := s.data.item(s.selectedID)
 	if !ok {
-		return nil
+		return nil, -1
 	}
-	index := 0
+	lines := []string{component.DetailSection("WAITS ON")}
+	index, selected := 0, -1
 	row := func(other taskItem) string {
+		if index == s.depsRow {
+			selected = len(lines)
+		}
 		lead, id := "  ", padCell(other.record.ID, 20)
 		if index == s.depsRow {
 			lead, id = titleStyle.Render("▶")+" ", titleStyle.Render(id)
@@ -218,7 +267,6 @@ func (m *Model) workDepsLines() []string {
 		}
 		return lead + lipgloss.NewStyle().Foreground(card.DotColor).Render(card.Dot) + " " + id + dimStyle.Render(wave+" · "+state)
 	}
-	lines := []string{component.DetailSection("WAITS ON")}
 	dependents := s.dependents(item.record.ID)
 	rows := s.depsRows()
 	for _, other := range rows[:len(rows)-len(dependents)] {
@@ -241,5 +289,5 @@ func (m *Model) workDepsLines() []string {
 		}
 		lines = append(lines, "", dimStyle.Render("ready when")+fmt.Sprintf(" %s %s", strings.Join(waits, ", "), verb))
 	}
-	return lines
+	return lines, selected
 }

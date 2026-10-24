@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"bytes"
+	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 	"testing"
@@ -436,6 +439,80 @@ func TestWorkDepsPopupSelection(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("no selected row ▶ ! 6-f")
+	}
+}
+
+// Rule 9: the brief and VERIFIED.md of the task popup scroll, so each line
+// of a long file is reachable.
+func TestWorkTaskPopupFileScrolls(t *testing.T) {
+	data := workTestData()
+	var lines []string
+	for i := 1; i <= 80; i++ {
+		lines = append(lines, fmt.Sprintf("brief line %02d", i))
+	}
+	data.Files[".hive/spec/board/tasks/5-e/brief.md"] = strings.Join(lines, "\n")
+	data.Files[".hive/spec/board/tasks/5-e/evidence/VERIFIED.md"] = strings.Join(lines, "\n")
+	m := newWorkModel(t, data, demoUIState{Selection: "5-e"}, 120, 40)
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	m = pressWork(t, m, key('b', "b"))
+	requireView(t, m, "brief.md · esc closes", "brief line 01")
+	m = pressWork(t, m, key(tea.KeyPgDown, ""))
+	requireView(t, m, "brief line 11")
+	for range 7 {
+		m = pressWork(t, m, key(tea.KeyPgDown, ""))
+	}
+	requireView(t, m, "brief line 80")
+	for range 8 {
+		m = pressWork(t, m, key(tea.KeyPgUp, ""))
+	}
+	m = pressWork(t, m, key(tea.KeyEscape, ""))
+	m = pressWork(t, m, key('v', "v"))
+	for range 8 {
+		m = pressWork(t, m, key(tea.KeyPgDown, ""))
+	}
+	requireView(t, m, "VERIFIED.md · esc closes", "brief line 80")
+}
+
+// Rule 10: the dependency popup keeps the selected row on the screen when
+// the list is longer than the popup.
+func TestWorkDepsPopupSelectionStaysVisible(t *testing.T) {
+	data := workTestData()
+	for i := 40; i <= 60; i++ {
+		id := fmt.Sprintf("%d-dependency", i)
+		data.Tasks = append(data.Tasks, records.Task{ID: id, Project: "hive", Status: "created"})
+		data.Tasks[7].DependsOn = append(data.Tasks[7].DependsOn, id)
+	}
+	m := newWorkModel(t, data, demoUIState{Selection: "8-h"}, 120, 40)
+	m = pressWork(t, m, key('d', "d"))
+	requireView(t, m, "▶ ○ 5-e")
+	for range 22 {
+		m = pressWork(t, m, arrowKey(tea.KeyDown))
+	}
+	requireView(t, m, "▶ ○ 60-dependency", "WAITED ON BY", "ready when")
+	for range 4 {
+		m = pressWork(t, m, arrowKey(tea.KeyUp))
+	}
+	requireView(t, m, "▶ ○ 56-dependency")
+}
+
+// AC2: each scroll and each selection key of a popup writes one action log
+// event.
+func TestWorkPopupActionsLog(t *testing.T) {
+	m := newWorkModel(t, workTestData(), demoUIState{Selection: "8-h"}, 120, 40)
+	var log bytes.Buffer
+	m.logger = slog.New(slog.NewJSONHandler(&log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	m = pressWork(t, m, key(tea.KeyEnter, ""))
+	log.Reset()
+	m = pressWork(t, m, arrowKey(tea.KeyDown))
+	if !strings.Contains(log.String(), `"action":"work task popup scroll"`) {
+		t.Fatalf("task popup scroll wrote no action log event: %s", log.String())
+	}
+	log.Reset()
+	m = pressWork(t, m, key('d', "d"))
+	log.Reset()
+	pressWork(t, m, arrowKey(tea.KeyDown))
+	if !strings.Contains(log.String(), `"action":"work deps selection"`) {
+		t.Fatalf("dependency selection wrote no action log event: %s", log.String())
 	}
 }
 

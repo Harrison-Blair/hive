@@ -43,6 +43,7 @@ type tasksState struct {
 	depsFromTask  bool
 	popupOffset   int
 	depsRow       int
+	depsOffset    int
 	fileOpen      bool
 	fileLoading   bool
 	fileTitle     string
@@ -391,7 +392,7 @@ func (m *Model) workBoardKey(key string) tea.Cmd {
 		}
 	case "d":
 		if _, ok := s.data.item(s.selectedID); ok && m.workSelectedVisible() {
-			s.popup, s.depsFromTask, s.depsRow = workPopupDeps, false, 0
+			s.popup, s.depsFromTask, s.depsRow, s.depsOffset = workPopupDeps, false, 0, 0
 			m.invalidateView()
 			return m.logAction("work deps popup open", slog.String("task_id", s.selectedID))
 		}
@@ -500,13 +501,13 @@ func (m *Model) workTaskPopupKey(key string) tea.Cmd {
 		return batch(m.logAction("task file open", slog.String("task_id", item.record.ID), slog.String("file", name)), read)
 	case "d":
 		s.closeFile()
-		s.popup, s.depsFromTask, s.depsRow = workPopupDeps, true, 0
+		s.popup, s.depsFromTask, s.depsRow, s.depsOffset = workPopupDeps, true, 0, 0
 		return m.logAction("work deps popup open", slog.String("task_id", s.selectedID))
 	default:
 		return nil
 	}
 	m.invalidateView()
-	return nil
+	return m.logAction("work task popup scroll", slog.String("task_id", s.selectedID), slog.Int("offset", s.popupOffset))
 }
 
 // workPopupPage is the rows of one pgup or pgdn in the task popup.
@@ -523,6 +524,7 @@ func (m *Model) workDepsPopupKey(key string) tea.Cmd {
 		if s.depsFromTask {
 			s.popup = workPopupTask
 		}
+		s.depsOffset = 0
 		m.invalidateView()
 		return m.logAction("work deps popup close", slog.String("task_id", s.selectedID))
 	case "up", "k":
@@ -535,14 +537,16 @@ func (m *Model) workDepsPopupKey(key string) tea.Cmd {
 		}
 		s.selectedID = rows[s.depsRow].record.ID
 		s.normalize()
-		s.popup, s.popupOffset, s.depsFromTask = workPopupTask, 0, false
+		s.popup, s.popupOffset, s.depsFromTask, s.depsOffset = workPopupTask, 0, false, 0
 		m.workKeep()
 		return m.logAction("work task popup open", slog.String("task_id", s.selectedID))
 	default:
 		return nil
 	}
+	lines, selected := m.workDepsLines()
+	s.depsOffset = s.depsVisibleOffset(selected, len(lines), m.workPopupBody())
 	m.invalidateView()
-	return nil
+	return m.logAction("work deps selection", slog.String("task_id", rows[s.depsRow].record.ID))
 }
 
 // depsRows gives the rows of the dependency popup: the dependencies of the
