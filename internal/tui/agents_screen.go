@@ -1267,14 +1267,6 @@ func agentsDetailField(label, value string) string {
 	return component.DimText(label) + strings.Repeat(" ", 10-ansi.StringWidth(label)) + value
 }
 
-// stripCardDot gives the dot of a state in the style of a card.
-func stripCardDot(state string) string {
-	line := strings.Split(component.Card{State: state}.View(), "\n")[1]
-	// The dot is the third cell of the first body row: the border, then
-	// one cell of padding.
-	return ansi.Cut(line, 2, 3)
-}
-
 // updateAgentsKey handles a key of the Agents graph (decisions 14, 22, 23,
 // and 62 to 64).
 func (m *Model) updateAgentsKey(key string) tea.Cmd {
