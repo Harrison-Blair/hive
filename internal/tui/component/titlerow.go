@@ -9,9 +9,11 @@ import (
 
 // TitleRow is the first two rows of each screen other than Chat
 // (golden-frames decision 2): the screen name in accent bold, the facts in
-// dim, the right text in dim, and a rule below.
+// dim, the right text in dim, and a rule below. Note shows in accent two
+// cells after the facts. Line, a styled row, takes the place of the rule.
 type TitleRow struct {
 	Name, Facts, Right string
+	Note, Line         string
 }
 
 // View renders the two rows at exactly width cells. The row starts at column
@@ -34,6 +36,12 @@ func (r TitleRow) View(width int) string {
 			row += " " + dimStyle.Render(ansi.Truncate(r.Facts, room, "…"))
 		}
 	}
+	if r.Note != "" {
+		row += dimStyle.Render("  ") + accentStyle.Render(r.Note)
+	}
 	rule := " " + borderStyle.Render(strings.Repeat("─", max(width-2, 0))) + " "
+	if r.Line != "" {
+		rule = " " + r.Line
+	}
 	return fitRow(row, left) + right + "\n" + fitRow(rule, width)
 }

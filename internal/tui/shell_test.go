@@ -33,9 +33,9 @@ func TestScreenKeysSelectAllSixScreens(t *testing.T) {
 	}{
 		{ctrl('g'), tabAgents, "Agents", "no project agents"},
 		{escKey(), tabChat, "Chat", "type a message to the coordinator."},
-		{ctrl('t'), tabWork, "Goals", "goals · 0"},
-		{key(']', "]"), tabWork, "Queue", "no tasks"},
-		{key(']', "]"), tabWork, "Tasks", "tasks · 0"},
+		{ctrl('t'), tabWork, "Work", "no goals · hive goal create starts one"},
+		// Work rule 1: [ and ] change the goal, so the screen stays.
+		{key(']', "]"), tabWork, "Work", "no goals · hive goal create starts one"},
 		{ctrl('f'), tabFriction, "Friction", "open · 0"},
 		{ctrl('y'), tabHealth, "Health", "checks ·"},
 		{key(']', "]"), tabHealth, "Health", "agents ·"},
@@ -367,8 +367,7 @@ func fixtureBackgroundScreens(m *Model, now time.Time) {
 		Waves: []records.GoalWave{{ID: "wave-a", Title: "Fixture wave", DoneWhen: "dev", Tasks: []string{"100-fixture"}, Status: "active"}},
 	}
 	task := records.Task{ID: "100-fixture", Project: "hive", Title: "Fixture task", Status: "assigned", DependsOn: []string{}}
-	m.goalsQueue.accept(goalsQueueData{goals: []records.Goal{goal}, tasks: []records.Task{task}})
-	m.tasks.accept(tasksData{items: []taskItem{{record: task}}})
+	m.tasks.accept(tasksData{goals: []records.Goal{goal}, items: []taskItem{{record: task, goal: goal.ID, wave: "wave-a"}}})
 	m.friction.accept(frictionData{entries: []frictionEntry{{
 		file: "fixture.md", path: "entries/fixture.md", title: "Fixture friction", status: "Open",
 		opened: "2026-10-20", body: "Fixture summary.", valid: true,

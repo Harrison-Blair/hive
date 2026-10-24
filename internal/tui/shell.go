@@ -29,7 +29,6 @@ const (
 	chatDataRequest dataRequest = iota
 	logsDataRequest
 	agentsDataRequest
-	goalsQueueDataRequest
 	healthDataRequest
 	tasksDataRequest
 	frictionDataRequest
@@ -46,9 +45,11 @@ func (m *Model) makeScreens() []screen {
 	return []screen{
 		chatScreen{model: m},
 		agentsScreen{model: m},
-		goalsScreen{model: m},
-		queueScreen{model: m},
-		workTasksScreen{model: m},
+		// Slots 3 and 4 held the Queue and Tasks views. The Work board is
+		// one screen. The slots stay, so the screen numbers do not change.
+		workScreen{model: m},
+		workScreen{model: m},
+		workScreen{model: m},
 		frictionScreen{model: m},
 		healthScreen{model: m},
 		logsScreen{model: m},
@@ -56,5 +57,3 @@ func (m *Model) makeScreens() []screen {
 }
 
 func (m *Model) currentScreen() screen { return m.screens[m.screenIndex] }
-
-func (m *Model) currentScreenName() string { return m.legacyName() }

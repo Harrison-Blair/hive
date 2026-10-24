@@ -75,7 +75,7 @@ func (m *Model) escCloses() bool {
 	case tab == tabAgents:
 		return m.graph.podView
 	case tab == tabWork:
-		return m.tasks.fileOpen
+		return m.tasks.popup != ""
 	case tab == tabFriction:
 		return m.friction.fileOpen
 	case tab == tabLogs:

@@ -221,8 +221,8 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 	}
 	m.screenLoading = true
 	m, cmd := raise(t, m, key('t', "t"))
-	if m.screenIndex != 4 {
-		t.Fatalf("screen index = %d, want Tasks screen index 4", m.screenIndex)
+	if m.screenIndex != 2 {
+		t.Fatalf("screen index = %d, want Work screen index 2", m.screenIndex)
 	}
 	if m.tasks.selectedID != "10-alpha" {
 		t.Fatalf("Tasks selection = %q, want task 10-alpha", m.tasks.selectedID)
@@ -231,8 +231,9 @@ func TestAgentsBoardTaskShortcutOpensSelectedTask(t *testing.T) {
 		t.Fatal("t did not load the Tasks screen")
 	}
 	m = deliverAgentCommands(t, m, cmd)
-	if view := ansi.Strip(m.currentScreen().View(120, 36)); !strings.Contains(view, "▶ 10-alpha") {
-		t.Fatalf("Tasks screen did not select task 10-alpha:\n%s", view)
+	// Work rule 4: the selected card has the heavy border.
+	if got := selectedCard(t, m); got != "10-alpha" {
+		t.Fatalf("Work board selected %q, want task 10-alpha", got)
 	}
 }
 

@@ -19,9 +19,9 @@ func TestIdleTickDoesNotReloadUnchangedData(t *testing.T) {
 		headerLoads++
 		return headerState{}, nil
 	}
-	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
+	m.tasksLoader = func(string) (tasksData, error) {
 		screenLoads++
-		return goalsQueueData{}, nil
+		return tasksData{}, nil
 	}
 
 	runIdleTick(t, m)
@@ -39,9 +39,9 @@ func TestIdleTickReloadsChangedScreenOnce(t *testing.T) {
 		headerLoads++
 		return headerState{}, nil
 	}
-	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
+	m.tasksLoader = func(string) (tasksData, error) {
 		screenLoads++
-		return goalsQueueData{}, nil
+		return tasksData{}, nil
 	}
 	path := filepath.Join(home, ".hive", "state", "goals", "changed.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {

@@ -104,6 +104,7 @@ type demoUIState struct {
 	Prompt         demoPrompt            `json:"prompt"`
 	HideStopped    bool                  `json:"hide_stopped"`
 	StopsOnly      bool                  `json:"stops_only"`
+	ShowCancelled  bool                  `json:"show_cancelled"`
 	Follow         bool                  `json:"follow"`
 	LogDay         string                `json:"log_day"`
 	ChatNoise      string                `json:"chat_noise"`
@@ -302,9 +303,6 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			inbox:           all,
 		}, now), nil
 	}
-	m.goalsQueueLoader = func(string) (goalsQueueData, error) {
-		return buildGoalsQueue(slices.Clone(data.Goals), slices.Clone(data.Projects), slices.Clone(data.Tasks), slices.Clone(data.Agents)), nil
-	}
 	m.tasksLoader = func(string) (tasksData, error) {
 		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{
 			evidence: func(item taskItem) ([]string, error) { return slices.Clone(data.Evidence[item.record.ID]), nil },
@@ -364,16 +362,22 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.graph.podView = ui.View == "pod"
 		m.graph.left = ui.Scroll["graph"].Left
 	case "work":
-		switch ui.View {
-		case "goals":
-			m.screenIndex = 2
-			m.goalsQueue.selectedGoal = ui.Selection
-		case "queue":
-			m.screenIndex = 3
-			m.goalsQueue.selectedTaskID = ui.Selection
-		default:
-			m.screenIndex = 4
-			m.tasks.selectedID = ui.Selection
+		m.screenIndex = 2
+		m.tasks.selectedID = ui.Selection
+		m.tasks.stopsOnly = ui.StopsOnly
+		m.tasks.showCancelled = ui.ShowCancelled
+		m.tasks.left = ui.Scroll["board"].Left
+		for key, scroll := range ui.Scroll {
+			if key != "board" {
+				if m.tasks.tops == nil {
+					m.tasks.tops = map[string]int{}
+				}
+				m.tasks.tops[key] = scroll.Top
+			}
+		}
+		switch ui.Popup {
+		case workPopupTask, workPopupDeps:
+			m.tasks.popup = ui.Popup
 		}
 	case "friction":
 		m.screenIndex = 5
@@ -405,7 +409,6 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		}
 	}
 	m.graph.hideStopped = ui.HideStopped
-	m.goalsQueue.showStops = ui.StopsOnly
 	m.follow = ui.Follow
 	if ui.LogDay != "" {
 		day, _ := time.ParseInLocation("2006-01-02", ui.LogDay, m.now().Location())
@@ -479,8 +482,6 @@ func (m *Model) applyDemoAsk(ui demoUIState) {
 func (m *Model) applyDemoFrame(ui demoUIState) {
 	tab, view := m.activeTab(), 0
 	switch {
-	case tab == tabWork:
-		view = m.screenIndex - 2
 	case tab == tabFriction && ui.View == "resolved":
 		view = 1
 	case ui.Screen == "health" && ui.View == "agents":
