@@ -26,6 +26,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A scratch harness stub did not override the installed Pi executable](entries/scratch-harness-stub-runs-real-pi.md) | Open | Use the explicit stub executable for scratch delivery checks |
 | [An accepted multiline label breaks ask-option editor borders](entries/ask-editor-multiline-label-breaks-borders.md) | Open | Outside task 135 |
 | [An accepted newline header breaks the ask feed and card title](entries/ask-newline-header-breaks-feed-title.md) | Open | Outside task 135 |
+| [The verification passes and CI then fails on the time zone and TERM](entries/verify-misses-ci-environment.md) | Open | Task 141 |
 | [A scratch coordinator fails with agent_name_taken on the live herdr server](entries/coordinator-name-clash-in-scratch-home.md) | Open |  |
 | [Each brief copy row conflicts in the STE baseline](entries/ste-baseline-row-conflicts.md) | Open |  |
 | [The local gate does not run the module tidy check of CI](entries/local-gate-misses-ci-tidy.md) | Open |  |
