@@ -164,27 +164,34 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 
 func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	m := agentsBoardModel(t)
+	// Golden-frames decision 11: the status row shows the state of the
+	// supervisor and needs you. The header state keeps the agent counts.
+	check := func(screen string) {
+		frame := ansi.Strip(m.View().Content)
+		for _, want := range []string{"● supervisor", "needs you 0"} {
+			if !strings.Contains(frame, want) {
+				t.Errorf("%s header omits %q:\n%s", screen, want, frame)
+			}
+		}
+		if m.header.agents != 5 || m.header.working != 2 || m.header.idle != 3 {
+			t.Errorf("header counts = %d agents, %d working, %d idle; want 5, 2, 3", m.header.agents, m.header.working, m.header.idle)
+		}
+		for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
+			if strings.Contains(frame, unwanted) {
+				t.Errorf("%s header contains %q:\n%s", screen, unwanted, frame)
+			}
+		}
+	}
 	// Ask a27: the default row of Agents has no supervisor and no needs
 	// you segment, so the check names them.
 	cfg := home.DefaultTUI()
 	cfg.StatusLines = [][]string{{"state", "supervisor", "needs_you", "clock"}}
 	m.setTUIConfig(cfg)
-	frame := ansi.Strip(m.View().Content)
-	// Golden-frames decision 11: the status row shows the state of the
-	// supervisor and needs you. The header state keeps the agent counts.
-	for _, want := range []string{"● supervisor", "needs you 0"} {
-		if !strings.Contains(frame, want) {
-			t.Errorf("Agents header omits %q:\n%s", want, frame)
-		}
-	}
-	if m.header.agents != 5 || m.header.working != 2 || m.header.idle != 3 {
-		t.Errorf("header counts = %d agents, %d working, %d idle; want 5, 2, 3", m.header.agents, m.header.working, m.header.idle)
-	}
-	for _, unwanted := range []string{"supervisor fresh", "needs_user"} {
-		if strings.Contains(frame, unwanted) {
-			t.Errorf("Agents header contains %q:\n%s", unwanted, frame)
-		}
-	}
+	check("Agents")
+	// Decision 34: only Chat has these segments in the default row.
+	m.setTUIConfig(home.DefaultTUI())
+	m.selectScreen(tabChat, 0)
+	check("Chat")
 }
 
 func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
