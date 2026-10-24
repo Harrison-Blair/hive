@@ -1,6 +1,0 @@
-=== RUN   TestTabMovesTheAccentBorder
---- PASS: TestTabMovesTheAccentBorder (0.00s)
-=== RUN   TestHelpKeys
---- PASS: TestHelpKeys (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.023s

@@ -1,9 +1,0 @@
-$ go test -race -count=1 -v -run 'TestChatMatchesItsBoard|TestCompactChatMatchesItsBoard|TestChatFitsEachSize' ./internal/tui/
---- PASS: TestChatMatchesItsBoard (0.12s)
---- PASS: TestCompactChatMatchesItsBoard (0.09s)
---- PASS: TestChatFitsEachSize (0.27s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	1.628s
-$ go test -race -count=1 -run 'Chat|Board|FitsEachSize' ./internal/tui/...
-ok  	github.com/Harrison-Blair/hive/internal/tui	10.682s
-ok  	github.com/Harrison-Blair/hive/internal/tui/component	1.183s

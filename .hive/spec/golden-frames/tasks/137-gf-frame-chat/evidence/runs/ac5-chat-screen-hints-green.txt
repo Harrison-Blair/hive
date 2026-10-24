@@ -1,5 +1,0 @@
-$ go test ./internal/tui/ -count=1 -v -run TestChatScreenSegmentShowsTheInputLineKeys
-=== RUN   TestChatScreenSegmentShowsTheInputLineKeys
---- PASS: TestChatScreenSegmentShowsTheInputLineKeys (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	0.010s

@@ -1,1 +1,0 @@
-/home/penguin/source/hive/projects/hive/worktrees/124-live-agent-activity/.hive/spec/tui-v2/tasks/124-live-agent-activity/evidence/verifier/reply-key.expected.grid vs /home/penguin/source/hive/projects/hive/worktrees/124-live-agent-activity/.hive/spec/tui-v2/tasks/124-live-agent-activity/evidence/verifier2/reply-key-29.ansi: 4800 cells, 0 diffs

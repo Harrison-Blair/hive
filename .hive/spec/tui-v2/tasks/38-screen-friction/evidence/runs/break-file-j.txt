@@ -1,1 +1,0 @@
-    friction_test.go:246: j gave first file row "│   ENTRY                             OPENED       ││ ---                                                              ┃"; want the title line

@@ -1,1 +1,0 @@
-    friction_test.go:253: view does not contain "title     Bare hive in a scratch home starts real tabs":

@@ -1,6 +1,6 @@
 ---
 name: hive-worker
-description: Do one hive task in a worktree. Use when a manager gives you one task and a brief. Work test-first, commit and push the task branch, write the evidence, run the gate, and finish the task.
+description: Do one hive task in a worktree. Use when a manager gives you one task and a brief. Work test-first, write the evidence, commit and push the task branch, run the gate, and finish the task.
 ---
 
 # Hive worker
@@ -30,11 +30,12 @@ The brief names the files that you may edit. Read each file before you change
 it. Do not change a file outside the brief.
 
 For a task with a feature, read the worktree brief at
-`.hive/spec/<feature>/tasks/<id>/brief.md`. Commit this file with your work.
+`.hive/spec/<feature>/tasks/<id>/brief.md`. Git ignores `.hive/spec/`. It is
+local state in the home. `hive worktree create` copies the feature folder of
+the home into the worktree. Do not commit a file under `.hive/spec/`.
 
-When hive worktree create shows allowlist_needed, add !.hive/spec/ and
-!.hive/spec/** to the project .gitignore after the rules that ignore the path.
-Commit this change with the feature README.
+For a spec task, write the feature README at `.hive/spec/<feature>/README.md`
+in the worktree. `hive land` copies it to the home.
 
 ## Visual check
 
@@ -67,7 +68,7 @@ herdr pane read PANE --source visible --format ansi > F.ansi
 Use a short scratch script to change the ANSI SGR codes to an HTML `<pre>`.
 Then run the Firefox command above.
 
-Commit screen PNG files to the task evidence directory. Keep each board PNG in
+Write each screen PNG file to the task evidence directory. Keep each board PNG in
 the home under `.hive/tmp/`. Give its path. Never commit a board PNG. Capture
 only your own panes or a scratch run.
 
@@ -114,6 +115,10 @@ For a task with a feature, write each `V<n>.md` file to
 `.hive/spec/<feature>/tasks/<id>/evidence/`. For a task without a feature,
 write each file to the evidence directory that the brief names. The verifier
 writes `VERIFIED.md` in the same directory.
+
+Git ignores the evidence directory of a task with a feature. Do not commit the
+evidence. `hive task complete` copies the evidence directory of the worktree to
+the same path in the home.
 
 ## Commit
 

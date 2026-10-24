@@ -1,6 +1,0 @@
-ChatAsk: staged/copy PNG bytes equal=True; sha256=e8f1dbf0d7a6e51ee3e8b32ae75d5d86ee1a7772a5bfd52688430db0d00c498f
-ChatAskMulti: staged/copy PNG bytes equal=True; sha256=e483fd80278dbfd8ab38fc4e2bf40f9bbd45b1b5b05ca86b7103487dfbf68258
-ChatAskPreview: staged/copy PNG bytes equal=True; sha256=c3abb8b11fef3baf782d4a607bc16fb6a031398142a756f59e752a4aeb49931c
-ChatAskStopped: staged/copy PNG bytes equal=True; sha256=cc880cd9c303c7b9d82db0b8907a3a70616984c01da428987c54cb92f0cd9a77
-CompactChatAsk: staged/copy PNG bytes equal=True; sha256=4f803e5cec20834570482c15d72143f789c1f5ef79f2a8848cfa76efc3a1690a
-Help: staged/copy PNG bytes equal=True; sha256=ef552b3f5418433d389bdf2853c0945c81d783661a9fc1c116536da53144d01a

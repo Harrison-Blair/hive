@@ -1,4 +1,0 @@
-TreeNested at 120x40: selected research, parent worker, manager, worker, research.
-Child selection: both page keys repeated twice leave the ANSI read unchanged.
-Health: ESC[6~ changes the selected row, so the page key reaches hive.
-Colour-free check: 55 tree states have selected-card glyphs and state words.

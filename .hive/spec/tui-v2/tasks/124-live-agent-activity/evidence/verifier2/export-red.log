@@ -1,9 +1,0 @@
-$ go test ./internal/boardexport -run ^TestCheckAcceptsTheLiveBoards$ -count=1 -v
-=== RUN   TestCheckAcceptsTheLiveBoards
-    check_test.go:83: board TooSmall: row 0 col 0: symbol "┰" is not in the list of decision 13
---- FAIL: TestCheckAcceptsTheLiveBoards (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/boardexport	0.001s
-FAIL
-
-exit: 1

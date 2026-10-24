@@ -1,4 +1,0 @@
-pass: Chat-feed.ansi: [feed]
-pass: Chat-type.ansi: [input]
-pass: Chat-type.ansi: 1A, 2A, 3Bx
-pass: Chat-send.ansi: demo mode: no action

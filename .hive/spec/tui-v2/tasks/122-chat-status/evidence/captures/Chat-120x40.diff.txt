@@ -1,1 +1,0 @@
-PASS .hive/tmp/Chat-120x40-b.ansi: 120x40, 4800 cells match

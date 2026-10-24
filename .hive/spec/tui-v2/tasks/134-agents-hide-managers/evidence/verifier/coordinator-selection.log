@@ -1,8 +1,0 @@
-$ HIVE_HOME=/home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/home HIVE_NO_STARTUP=1 TERM=vt100 COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/hive --demo /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/coordinator-only-120.fixture.json --size 120x40
-coordinator-only-120x40: up changes screen: False; enter changes screen: False
-coordinator-only-120x40: with pods: up changes screen: True; enter changes screen: True
-coordinator-only-120x40: selected coordinator, no pods: enter changes screen: False
-$ HIVE_HOME=/home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/home HIVE_NO_STARTUP=1 TERM=vt100 COLORTERM=truecolor /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/hive --demo /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/tmp/verify134/coordinator-only-80.fixture.json --size 80x24
-coordinator-only-80x24: up changes screen: False; enter changes screen: False
-coordinator-only-80x24: with pods: up changes screen: True; enter changes screen: True
-coordinator-only-80x24: selected coordinator, no pods: enter changes screen: False

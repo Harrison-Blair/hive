@@ -1,8 +1,0 @@
-AgentsHome.grid: strict differences 2159, space-cell token or bold only 2159, differences under the live rule 0
-AgentsNested.grid: strict differences 2577, space-cell token or bold only 2577, differences under the live rule 0
-AgentsHiddenParent.grid: strict differences 2517, space-cell token or bold only 2517, differences under the live rule 0
-AgentsCoordinatorChild.grid: strict differences 3072, space-cell token or bold only 3072, differences under the live rule 0
-CompactAgentsHome.grid: strict differences 652, space-cell token or bold only 652, differences under the live rule 0
-AgentDetailsGeneral.grid: strict differences 1632, space-cell token or bold only 1632, differences under the live rule 0
-HealthAgentsGeneral.grid: strict differences 3164, space-cell token or bold only 3164, differences under the live rule 0
-AgentsMany.grid: strict differences 2178, space-cell token or bold only 2178, differences under the live rule 0

@@ -53,6 +53,8 @@ hive goal list --project ID
 
 Use `--spec` to mark the spec task. Land its `.hive/spec/F/README.md` before you create any other task for the feature.
 
+Git ignores `.hive/spec/`. It is local state in the home. `hive task create --feature F` checks `.hive/spec/F/README.md` in the home. It writes the brief to `.hive/spec/F/tasks/ID/brief.md` in the home. `hive worktree create` copies the feature folder into the worktree and records the SHA-256 hash of each file.
+
 Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.
 
 Before you stop for a user decision on a task, set `needs_user` with `hive task edit --task ID --needs-user TEXT`. Clear it when the user gives the decision with `hive task edit --task ID --clear-needs-user`.
@@ -99,8 +101,8 @@ After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeh
 If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.
 
 The verifier reads its skill and its brief. The verifier runs each verification
-item again and writes `VERIFIED.md`. The verifier commits and pushes
-`VERIFIED.md` on the task branch before it runs `hive task verify`.
+item again and writes `VERIFIED.md`. The verifier writes `VERIFIED.md` in the
+evidence folder and does not commit it. `hive task verify` copies it to the home.
 
 ## Landing
 
@@ -111,6 +113,8 @@ mode `merge` merges into the base branch. The mode `pr` opens a pull request.
 hive land --task ID --mode merge --grant TEXT
 hive land --task ID --mode pr --evidence URL
 ```
+
+After the merge, `hive land` copies each changed or new file under `.hive/spec/F/`, outside `tasks/`, from the worktree to the home. When a home file differs from its hash at copy-in, hive does not write it. Hive reports the path and the two hashes as a conflict, and the exit status is not 0. Merge each such file by hand. A file that the task deleted stays in the home.
 
 Remove the worktree of a landed task.
 

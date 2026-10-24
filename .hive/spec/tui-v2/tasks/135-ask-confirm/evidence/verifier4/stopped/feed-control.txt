@@ -1,1 +1,0 @@
-Same accepted ask and reviewed draft: event visible, then 30 valid later coordinator messages hide it. Card is byte-equal and retains its stopped word.

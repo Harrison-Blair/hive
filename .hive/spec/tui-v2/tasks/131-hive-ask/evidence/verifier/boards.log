@@ -1,6 +1,0 @@
-ChatAsk cmp exit=0
-ChatAskMulti cmp exit=0
-ChatAskPreview cmp exit=0
-ChatAskStopped cmp exit=0
-CompactChatAsk cmp exit=0
-Help cmp exit=0

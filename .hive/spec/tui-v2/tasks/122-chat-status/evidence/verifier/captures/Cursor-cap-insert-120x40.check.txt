@@ -1,2 +1,0 @@
-FAIL: expected cursor text xENZ█
-Actual final input row: │   xENZD█                                                                                                             ┃

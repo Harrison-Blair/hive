@@ -1,6 +1,0 @@
-Work-deps ╭─ tasks · 4 ──────────────────────────────────────╮╭─ dependency graph · 2-stale-coordinator-startup ─────────────────╮
-│   ID                        STATUS    WAVE       ││ NEEDS                                                            │
-│ ▶ 2-stale-coordinator-star… landed    A          ││ BLOCKS                                                           │
-Work-brief │   ID                        STATUS    WAVE       ││ # Restart of the coordinator and the supervisor from the TUI     │
-Work-verified │   ID                        STATUS    WAVE       ││ # VERIFIED 3-tui-restart                                         │
-│ ▶ 3-tui-restart             landed    B          ││ Result: pass                                                     │

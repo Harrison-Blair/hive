@@ -16,8 +16,8 @@ func workerPrompt(home, task, path, branch, feature string, spec bool) string {
 		prompt += "The task brief is " + brief + ". Write each V<n>.md to " + evidence + ". "
 	}
 	if spec {
-		prompt += "When hive worktree create shows allowlist_needed, add !.hive/spec/ and !.hive/spec/** to the project .gitignore after the rules that ignore the path. " +
-			"Commit this change with the feature README. "
+		prompt += "Write the feature README at .hive/spec/" + feature + "/README.md in the worktree. " +
+			"Do not commit a file under .hive/spec/. Hive copies it to the home. "
 	}
 	return prompt + "The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
 }

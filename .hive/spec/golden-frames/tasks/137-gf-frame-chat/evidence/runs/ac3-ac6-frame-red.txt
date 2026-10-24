@@ -1,4 +1,0 @@
-# github.com/Harrison-Blair/hive/internal/tui [github.com/Harrison-Blair/hive/internal/tui.test]
-internal/tui/gframe_test.go:193:4: m.setTUIConfig undefined (type *Model has no field or method setTUIConfig)
-FAIL	github.com/Harrison-Blair/hive/internal/tui [build failed]
-FAIL

@@ -1,5 +1,0 @@
-ChatAsk-120x40.ansi rows=40 0 cells differ of 4800
-ChatAskMulti-120x40.ansi rows=40 0 cells differ of 4800
-ChatAskPreview-120x40.ansi rows=40 0 cells differ of 4800
-ChatAskStopped-120x40.ansi rows=40 0 cells differ of 4800
-Help-120x40.ansi rows=40 0 cells differ of 4800

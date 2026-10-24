@@ -1,8 +1,0 @@
---- FAIL: TestAskCardHasTheFocusInNormalMode (0.00s)
---- FAIL: TestAskTwoQuestionsWithMarksAndANote (0.00s)
---- FAIL: TestAskOtherOpensATextLine (0.00s)
---- FAIL: TestAskStoppedAskerShowsTheParent (0.00s)
---- FAIL: TestHelpListsTheAskKeys (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.075s
-FAIL

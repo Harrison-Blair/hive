@@ -1,4 +1,0 @@
-=== RUN   TestAgentsHHidesAManagerWithNoLiveChild
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/tui	42.232s
---- PASS lines: 1350; FAIL lines: 0

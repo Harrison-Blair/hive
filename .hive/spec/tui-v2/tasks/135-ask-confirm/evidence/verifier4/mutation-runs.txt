@@ -1,9 +1,0 @@
-empty-other detected
-blocked-caller detected
-review-digit detected
-switch-draft detected
-refresh-draft detected
-edit-return detected
-cut-row detected
-frame-keys detected
-tall-row detected

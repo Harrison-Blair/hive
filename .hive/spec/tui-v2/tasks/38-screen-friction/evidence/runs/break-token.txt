@@ -1,6 +1,0 @@
---- FAIL: TestFrictionMatchesItsBoards (0.01s)
-    --- FAIL: TestFrictionMatchesItsBoards/Friction (0.00s)
-        friction_test.go:34: 139 cells differ from Friction.grid:
-            row 26 col 54: want '2' dim normal, got '2' fg normal
-            row 26 col 55: want '0' dim normal, got '0' fg normal
-            row 26 col 56: want '2' dim normal, got '2' fg normal

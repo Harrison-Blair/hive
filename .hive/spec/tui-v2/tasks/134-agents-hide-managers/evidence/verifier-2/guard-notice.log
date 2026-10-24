@@ -1,9 +1,0 @@
-$ go test ./internal/tui/ -run ^TestAgentsNoticeAloneWhenNothingIsVisible$ -count=1 -v
-=== RUN   TestAgentsNoticeAloneWhenNothingIsVisible
-    agents_hide_test.go:334: 120x40: notice at row 6 col 3; want row 5 col 3
---- FAIL: TestAgentsNoticeAloneWhenNothingIsVisible (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.009s
-FAIL
-
-exit 1

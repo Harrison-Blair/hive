@@ -1,8 +1,0 @@
---- FAIL: TestChatMatchesItsBoard (0.01s)
-    chat_test.go:41: 14 cells differ from Chat.grid:
-        row 3 col 60: want ' ' dim normal, got ' ' accent bold
-        row 3 col 61: want '↑' dim normal, got '↑' accent bold
-        row 3 col 62: want ' ' dim normal, got ' ' accent bold
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.037s
-FAIL

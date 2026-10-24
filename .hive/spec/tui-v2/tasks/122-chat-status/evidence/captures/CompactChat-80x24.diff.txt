@@ -1,1 +1,0 @@
-PASS .hive/tmp/CompactChat-80x24-b.ansi: 80x24, 1920 cells match

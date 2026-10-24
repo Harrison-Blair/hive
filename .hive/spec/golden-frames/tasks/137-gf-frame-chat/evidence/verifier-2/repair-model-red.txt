@@ -1,9 +1,0 @@
-$ go test -overlay /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/repair-model-red.json ./internal/tui/ -count=1 -v -run ^TestVerifierNamedKeyOpensHelp$
-=== RUN   TestVerifierNamedKeyOpensHelp
-    t137_named_test.go:26: home config /tmp/TestVerifierNamedKeyOpensHelp2692851650/001/hive/config.toml: tui.keys.help: "alt+up" is not a key name
---- FAIL: TestVerifierNamedKeyOpensHelp (0.00s)
-FAIL
-FAIL	github.com/Harrison-Blair/hive/internal/tui	0.007s
-FAIL
-
-exit 1

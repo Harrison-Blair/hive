@@ -1,6 +1,0 @@
-short 120 captured
-short 80 captured
-tall 120 captured
-tall 80 captured
-multiline Other/note 120 captured
-multiline Other/note 80 captured

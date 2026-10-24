@@ -1,6 +1,0 @@
-red-base.txt 1
-multiline-red.txt 1
-compact-title-red.txt 1
-green-count50.txt 0
-green-race.txt 0
-V1 red and green complete

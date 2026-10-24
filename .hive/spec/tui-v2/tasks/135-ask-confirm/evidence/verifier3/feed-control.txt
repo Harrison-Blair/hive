@@ -1,1 +1,0 @@
-feed-visible and feed-hidden control pass; card stays identical and has no explicit stopped signal

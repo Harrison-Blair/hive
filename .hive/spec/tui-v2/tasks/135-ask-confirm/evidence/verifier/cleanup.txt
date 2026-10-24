@@ -1,6 +1,0 @@
-/tmp/hv135-verify: absent
-/home/penguin/source/hive/projects/hive/worktrees/135-ask-confirm/.hive/tmp/verifier135: absent
-/home/penguin/source/hive/.hive/tmp/135-boards: absent
-isolated herdr PID 167556: not running
-tmux -L hv135-verify list-sessions: exit 1; no server running on /tmp/tmux-1000/hv135-verify
-No scratch hive or stub process runs. No project source changed.

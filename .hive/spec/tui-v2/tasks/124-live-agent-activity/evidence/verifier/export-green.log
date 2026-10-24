@@ -1,4 +1,0 @@
-=== RUN   TestCheckAcceptsTheLiveBoards
---- PASS: TestCheckAcceptsTheLiveBoards (0.00s)
-PASS
-ok  	github.com/Harrison-Blair/hive/internal/boardexport	0.001s

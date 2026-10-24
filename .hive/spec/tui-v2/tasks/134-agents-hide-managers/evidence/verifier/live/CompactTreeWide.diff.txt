@@ -1,1 +1,0 @@
-/home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/new-grids/CompactTreeWide.grid vs /home/penguin/source/hive/projects/hive/worktrees/134-agents-hide-managers/.hive/spec/tui-v2/tasks/134-agents-hide-managers/evidence/verifier/live/CompactTreeWide.ansi: 0 cells differ

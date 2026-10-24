@@ -1,1 +1,0 @@
-PASS .hive/spec/tui-v2/tasks/122-chat-status/evidence/captures/CompactChatStatus-120x40.ansi: 120x40, 4800 cells captured

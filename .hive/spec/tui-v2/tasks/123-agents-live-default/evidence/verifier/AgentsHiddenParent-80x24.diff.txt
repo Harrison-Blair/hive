@@ -1,1 +1,0 @@
-No approved golden exists at this size. Card and alignment checks are recorded separately.

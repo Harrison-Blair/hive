@@ -1,7 +1,0 @@
-Owned panes wVS:p2, wVS:p3, wVS:p4: closed. Each pane get returns pane_not_found.
-Only wVS:p1 remains in workspace wVS.
-.hive/tmp/verify124b/: removed (home, base copies, tools, binary, exports, board PNGs, profiles).
-.hive/tmp/herdr-schema.json: removed.
-Temporary ANSI HTML and grid copies in verifier2/: removed.
-No live process names the removed scratch folder (the cleanup shell and its ancestors are excluded).
-Final captures, metadata, comparisons, and logs remain in verifier2/.

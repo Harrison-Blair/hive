@@ -1,4 +1,0 @@
-$ go test ./ -run STE -count=1
-ok  	github.com/Harrison-Blair/hive	0.614s
-
-exit 0

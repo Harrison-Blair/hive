@@ -1,3 +1,0 @@
-ChatAskReview: installed fixture equals approval snapshot .hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/fixtures/ChatAskReview.fixture.json
-ChatAskReviewMulti: installed fixture equals approval snapshot .hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/fixtures/ChatAskReviewMulti.fixture.json
-CompactChatAskReview: installed fixture equals approval snapshot .hive/spec/tui-v2/tasks/135-ask-confirm/evidence/new-grids/fixtures/CompactChatAskReview.fixture.json

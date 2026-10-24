@@ -1,3 +1,0 @@
-row 16 col 60: want '▲' info normal, got '┃' info normal
-row 18 col 75: want '┃' info normal, got '▼' info normal
-2 differing cells

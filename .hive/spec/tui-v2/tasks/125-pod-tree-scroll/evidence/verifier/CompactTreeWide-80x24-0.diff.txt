@@ -1,1 +1,0 @@
-80x24: 0 cells differ

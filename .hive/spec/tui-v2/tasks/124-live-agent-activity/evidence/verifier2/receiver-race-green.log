@@ -1,4 +1,0 @@
-$ go test -race ./internal/tui -run ^TestLiveSendEventGivesTheReceiverByKey$ -count=200
-ok  	github.com/Harrison-Blair/hive/internal/tui	3.599s
-
-exit: 0

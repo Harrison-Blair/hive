@@ -1,6 +1,0 @@
-sh-5.3$ pi parent-scratch-with-long-name-ab
-STUB_READY name=parent-scratch-with-long-name-ab executable=/tmp/hv135-verify4/bin/pi pid=800709
-⬢ user: answer to ask a15 from asker-scratch-with-long-name-abc (asker stopped) · Change → No
-GOT: ⬢ user: answer to ask a15 from asker-scratch-with-long-name-abc (asker stopped) · Change → No
-⬢ user: answer to ask a16 from asker-scratch-with-long-name-abc (asker stopped) · Change → No
-GOT: ⬢ user: answer to ask a16 from asker-scratch-with-long-name-abc (asker stopped) · Change → No

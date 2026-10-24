@@ -1,6 +1,0 @@
-sh-5.3$ pi asker-scratch
-STUB_READY name=asker-scratch executable=/tmp/hv135-reverify/bin/pi pid=383601
-/ask /tmp/hv135-reverify/ask.json
-ask a1 open
-⬢ user: answer to ask a1 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
-GOT: ⬢ user: answer to ask a1 from asker-scratch · Scope → Help line, Header count; Order → Next release · note: keep this
