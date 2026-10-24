@@ -391,3 +391,22 @@ func TestGfHealthOldSupervisorBinaryTile(t *testing.T) {
 	}}})
 	requireView(t, m, "✓ live · pid 7", "▶ ! binary old", "2 checks · 1 ok · 1 warn", "! supervisor binary · old")
 }
+
+// health.md rules 1, 4, and 7 and ask a28: the grid shows its ▶ only while
+// the grid has the focus. The table keeps its ▶ at all times, also while
+// hive doctor runs.
+func TestGfHealthGridSelectionNeedsGridFocus(t *testing.T) {
+	m := gfHealthModel(t, "GfHealth", nil)
+	requireView(t, m, "▶ ! unresolved 1", "▶ ● supervisor")
+	m, _ = raise(t, m, ctrl(']'))
+	rejectView(t, m, "▶ ! unresolved 1")
+	requireView(t, m, "▶ ● supervisor")
+	m, _ = raise(t, m, key('R', "R"))
+	if !m.health.checking {
+		t.Fatal("R did not start checking")
+	}
+	rejectView(t, m, "▶ ! unresolved 1")
+	requireView(t, m, "▶ ● supervisor")
+	m, _ = raise(t, m, ctrl(']'))
+	requireView(t, m, "▶ ! unresolved 1")
+}
