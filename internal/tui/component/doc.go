@@ -15,7 +15,7 @@
 // card.go holds Card, the box of one agent.
 // boxjoin.go holds BoxArms and BoxRune, the light and heavy box joints.
 // notice.go holds Notice, a dim line of one notice.
-// popup.go holds Popup and DimScreen, a Details box over a dimmed screen.
+// popup.go holds Popup, Overlay, and DimScreen, a box over a dimmed screen.
 // markdown.go holds RenderMarkdown, an agent reply rendered by Glamour.
 // markdown_style.go holds the Glamour style of decision 29.
 // chat.go holds ChatLines, the lines of the chat feed.

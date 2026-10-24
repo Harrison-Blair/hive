@@ -73,4 +73,4 @@ dialog during board and capture steps. The supervisor wrote a `blocked`
 record with no reason, and the manager read each pane with
 `herdr pane read` to find the cause. The manager sent each worker an inbox
 record to rewrite the command with `"${VAR:?}"` and let the dialog deny
-itself. Workers spawned by hive still repeat the pattern.
+itself. Workers spawned by hive still repeat the pattern. A third hit came the same day: t144-worker-1 on `rm -rf $SP/*` in its scratchpad cleanup.

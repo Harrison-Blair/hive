@@ -58,3 +58,23 @@ func TestDimScreen(t *testing.T) {
 		"t|ab          \n" + "k|rrrrrrrrrrrr\n" + "b|000000000000\n"
 	checkHandGrid(t, DimScreen(screen, 12, 3), want)
 }
+
+// TestOverlayCentersTheBox draws a 5×3 box over a styled 11×5 screen. The
+// box keeps its own cells, with no indent. Each cell behind it is border and
+// not bold. An odd margin puts the extra row below the box.
+func TestOverlayCentersTheBox(t *testing.T) {
+	bold := lipgloss.NewStyle().Bold(true).Foreground(Accent)
+	screen := bold.Render("hive header") + "\n" + strings.Repeat("x", 11) + "\n" + "abcdefghijk\n" + strings.Repeat("y", 11) + "\n" + "zzzzzzzzzzz"
+	box := Panel{Title: "", Focused: true, Lines: []string{"o"}}.View(5, 3)
+	want := "hive-grid 1 11 5\n" +
+		"t|hive header\n" + "k|rrrrrrrrrrr\n" + "b|00000000000\n" +
+		"t|xxx╭───╮xxx\n" + "k|rrraaaaarrr\n" + "b|00000000000\n" +
+		"t|abc│ o │ijk\n" + "k|rrrafffarrr\n" + "b|00000000000\n" +
+		"t|yyy╰───╯yyy\n" + "k|rrraaaaarrr\n" + "b|00000000000\n" +
+		"t|zzzzzzzzzzz\n" + "k|rrrrrrrrrrr\n" + "b|00000000000\n"
+	checkHandGrid(t, Overlay(screen, box, 11, 5), want)
+	tall := Panel{Focused: true, Lines: []string{"o", "p"}}.View(5, 4)
+	if rows := strings.Split(Overlay(screen, tall, 11, 5), "\n"); !strings.Contains(rows[0], "╭") {
+		t.Errorf("a 4-row box on 5 rows starts below row 0: %q", rows[0])
+	}
+}
