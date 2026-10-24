@@ -319,7 +319,7 @@ func (m *Model) frameView() string {
 	screen := strings.Join(append(rows, status...), "\n")
 	switch {
 	case m.helpOpen:
-		screen = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: m.helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(screen, width, height)
+		screen = m.helpView(screen, width, height)
 	case m.activeTab() == tabAgents && m.popupOpen:
 		title, lines := m.agentDetailsPopup()
 		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
@@ -503,53 +503,6 @@ func (m *Model) legacyName() string {
 	return [...]string{"Chat", "Agents", "Goals", "Queue", "Tasks", "Friction", "Health", "Logs"}[m.screenIndex]
 }
 
-// helpLines gives the key map of the Help overlay. It keeps the layout of
-// tui-v2 decision 21 and lists the keys of golden-frames decision 16 with
-// the keys of the config (Help rule 3).
-func (m *Model) helpLines() []string {
-	key := func(text string, width int) string { return titleStyle.Render(padCell(text, width)) }
-	pair := func(leftKey, left, rightKey, right string) string {
-		line := key(leftKey, 11) + padCell(left, 30)
-		if rightKey != "" {
-			line += key(rightKey, 6) + right
-		}
-		return line
-	}
-	keys := m.tuiConfig.Keys
-	return []string{
-		"",
-		titleStyle.Render("SCREENS · same on every screen") + strings.Repeat(" ", 11) + titleStyle.Render("ACTIONS · one meaning each"),
-		"",
-		pair(keys["agents"], "Agents", "a", "attach to pane"),
-		pair(keys["work"], "Work", "p", "peek pane"),
-		pair(keys["friction"], "Friction", "r", "restart · Health › Agents"),
-		pair(keys["health"], "Health", "h", "show or hide stopped agents"),
-		pair(keys["logs"], "Logs", "t", "open task"),
-		pair("esc", "close, then back to Chat", "b", "task brief"),
-		pair(keys["help"], "this help", "v", "VERIFIED.md"),
-		pair("ctrl+c ×2", "quit", "d", "dependency graph"),
-		pair("ctrl+]", "other box", "o", "goal design"),
-		pair("[ ]", "previous / next view", "s", "stops only"),
-		pair("↑↓ j k", "move", "f", "follow logs"),
-		pair("←→", "move on the graph", "< >", "previous / next day"),
-		pair("pgup pgdn", "page", "R", "refresh now"),
-		pair("g G", "top / end", "", ""),
-		pair("enter", "open / details", "", ""),
-		pair("/", "filter bar", "", ""),
-		"",
-		titleStyle.Render("FILTER FIELDS"),
-		"level:  comp:  proj:  agent:  task:  req:  text",
-		dimStyle.Render("example  / level:warn agent:manager-hive restart"),
-		"",
-		titleStyle.Render("CHAT"),
-		dimStyle.Render("the composer has the focus · enter sends · shift+enter adds a line"),
-		dimStyle.Render("ctrl+o opens or folds all chat events"),
-		dimStyle.Render("ctrl+r moves the focus between input and ask card · esc to input"),
-		dimStyle.Render("ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card"),
-		dimStyle.Render("ask review: enter on the last question · ↑↓ question · enter send or change"),
-	}
-}
-
 // padCell pads text with spaces to width cells.
 func padCell(text string, width int) string {
 	return text + strings.Repeat(" ", max(width-ansi.StringWidth(text), 0))
@@ -578,16 +531,7 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 	entry := screenRegistry[tab]
 	switch m.focusState() {
 	case "help":
-		switch key {
-		case m.tuiConfig.Keys["help"], "esc":
-			m.helpOpen = false
-			return m.logAction("help close")
-		case "up":
-			m.helpOffset = max(m.helpOffset-1, 0)
-		case "down":
-			m.helpOffset = min(m.helpOffset+1, len(m.helpLines()))
-		}
-		return nil
+		return m.updateHelpKey(key)
 	case "restart":
 		return m.screens[1].Update(press)
 	case "filter":

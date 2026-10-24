@@ -68,8 +68,7 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 	tab := m.activeTab()
 	switch {
 	case m.helpOpen:
-		m.helpOffset = min(max(m.helpOffset+step, 0), len(m.helpLines()))
-		return nil
+		return m.scrollHelp(step)
 	case tab == tabAgents && m.popupOpen:
 		m.popupOffset = max(m.popupOffset+step, 0)
 		return nil

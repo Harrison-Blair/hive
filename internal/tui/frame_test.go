@@ -271,11 +271,13 @@ func TestTabMovesTheAccentBorder(t *testing.T) {
 }
 
 // AC4: ? opens the help overlay, ↑ and ↓ scroll it, and ? or esc closes it.
-// Help does not list --demo.
+// Help does not list --demo. At 80×24 the body is taller than the box, so it
+// scrolls (golden-frames screens/help.md rule 4).
 func TestHelpKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
+	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	m, _ = raise(t, m, key('?', "?"))
-	requireView(t, m, "keys · ? or esc closes")
+	requireView(t, m, helpBoxTitle)
 	requireKeys(t, m, "help", "")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
@@ -288,10 +290,10 @@ func TestHelpKeys(t *testing.T) {
 		t.Fatal("a chord changed the screen behind the help overlay")
 	}
 	m, _ = raise(t, m, key('?', "?"))
-	rejectView(t, m, "keys · ? or esc closes")
+	rejectView(t, m, helpBoxTitle)
 	m, _ = raise(t, m, key('?', "?"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	rejectView(t, m, "keys · ? or esc closes")
+	rejectView(t, m, helpBoxTitle)
 	if text := strings.Join(m.helpLines(), "\n"); strings.Contains(text, "--demo") {
 		t.Fatalf("help lists --demo:\n%s", text)
 	}
