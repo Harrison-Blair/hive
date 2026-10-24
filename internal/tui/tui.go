@@ -58,6 +58,7 @@ type Model struct {
 	chatCallerBlocked bool
 	chatNoise         string
 	chatEventsOpen    bool
+	chatEventOpen     map[uint64]bool
 	chatStatusAge     string
 	chatErr           string
 	textFilter        string
@@ -131,7 +132,6 @@ type Model struct {
 	// the ask records and send the prompts.
 	askCards      map[string]*askCard
 	askFocusID    string
-	askFeedFocus  bool
 	askBusy       bool
 	askDelivering bool
 	askRows       []askRow

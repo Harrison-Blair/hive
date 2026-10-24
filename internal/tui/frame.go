@@ -300,7 +300,9 @@ func (m *Model) contentArea() (top, height int) {
 		top = 2
 	}
 	height = m.height - top - len(m.statusRows(m.width, m.height))
-	if m.noticeLine(m.width) != "" {
+	// On Chat the notice line is above the composer, inside the content
+	// area (decision 14).
+	if m.activeTab() != tabChat && m.noticeLine(m.width) != "" {
 		height--
 	}
 	return top, max(1, height)
@@ -315,7 +317,11 @@ func (m *Model) frameView() string {
 		rows = append(rows, component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}.View(width))
 	}
 	_, contentHeight := m.contentArea()
-	if !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex {
+	switch {
+	case m.activeTab() == tabChat:
+		m.screenViewCache = m.chatView(width, contentHeight)
+		m.screenViewCacheValid = false
+	case !m.screenViewCacheValid || m.screenViewWidth != width || m.screenViewHeight != contentHeight || m.screenViewIndex != m.screenIndex:
 		m.screenViewCache = m.contentView(width, contentHeight)
 		m.screenViewCacheValid = true
 		m.screenViewWidth = width
@@ -323,7 +329,7 @@ func (m *Model) frameView() string {
 		m.screenViewIndex = m.screenIndex
 	}
 	rows = append(rows, m.screenViewCache)
-	if notice != "" {
+	if notice != "" && m.activeTab() != tabChat {
 		rows = append(rows, notice)
 	}
 	screen := strings.Join(append(rows, status...), "\n")
@@ -398,7 +404,7 @@ func (m *Model) focusHints(width int) []string {
 	case "filter":
 		hints = filterHints
 	case "ask", "note", "other", "review":
-		hints = m.askHints(focus, width >= component.LongFormWidth)
+		hints = m.askHints(focus)
 	default:
 		hints = screenRegistry[tab].keyHints(m.viewName(), m.hintKey(tab, focus), width >= component.LongFormWidth)
 	}
@@ -618,6 +624,8 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		switch key {
 		case "tab", "esc", "ctrl+]":
 			return nil
+		case "ctrl+r":
+			return m.focusAskCard()
 		case m.tuiConfig.Keys["help"]:
 			if m.chatInput.Value() == "" {
 				return m.openHelp()
@@ -684,9 +692,6 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 		view := (m.activeView() + step) % len(entry.views)
 		m.selectScreen(tab, view)
 		return batch(m.logAction("view select", slogString("view", entry.views[view])), m.startCurrentScreenLoad())
-	}
-	if tab == tabChat {
-		return m.updateChatFeedKey(press)
 	}
 	if key == "esc" && !m.escCloses() {
 		// Golden-frames decision 17: with no popup open, esc returns to Chat.
@@ -768,39 +773,25 @@ func (m *Model) nextRegion() tea.Cmd {
 // gives to its screen.
 const actionKeys = "aprhtbvdosf"
 
-// updateChatFeedKey handles a key in the normal mode of Chat. i starts input
-// mode. Each other letter keeps its shortcut and does not type.
-func (m *Model) updateChatFeedKey(press tea.KeyPressMsg) tea.Cmd {
-	switch press.String() {
-	case "pgup", "pgdown":
-		return m.scrollChatFeed(press)
-	case "i":
-		return m.startChatInput()
-	case "J", "K":
-		if _, _, ok := m.focusedAsk(); ok && m.askFeedFocus {
-			m.askFeedFocus = false
-			m.invalidateView()
-			return m.logAction("ask focus")
-		}
-	}
-	return m.currentScreen().Update(press)
-}
-
-// startChatInput starts the input mode of Chat.
+// startChatInput gives the input line the focus (chat.md rule 17). The
+// text stays.
 func (m *Model) startChatInput() tea.Cmd {
-	if m.chatCallerBlocked || m.chatInputActive {
+	if m.chatInputActive {
 		return nil
 	}
 	m.chatInputActive = true
-	return batch(m.chatInput.Focus(), m.logAction("chat mode", slogString("mode", "input")))
+	m.invalidateView()
+	return batch(m.chatInput.Focus(), m.logAction("chat focus", slogString("focus", "input")))
 }
 
-// stopChatInput starts the normal mode of Chat. The draft stays.
-func (m *Model) stopChatInput() tea.Cmd {
-	if !m.chatInputActive {
+// focusAskCard gives the ask card the focus (chat.md rule 17). The text of
+// the input line stays.
+func (m *Model) focusAskCard() tea.Cmd {
+	if _, _, ok := m.focusedAsk(); !ok || !m.chatInputActive {
 		return nil
 	}
 	m.chatInputActive = false
 	m.chatInput.Blur()
-	return m.logAction("chat mode", slogString("mode", "normal"))
+	m.invalidateView()
+	return m.logAction("chat focus", slogString("focus", "ask"))
 }

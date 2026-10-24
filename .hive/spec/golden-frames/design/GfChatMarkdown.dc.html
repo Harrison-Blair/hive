@@ -144,11 +144,11 @@ var META = {w: 120, h: 40, title: 'Golden frames · Chat, markdown reply'};
 function draw() { var t = T(120, 40); var y = msgYou(t, 0, '14:10', ['which verifier ran each wave B task, and how long did the gate take?']); y++;
   y = msgAgent(t, y, 'coordinator', '14:11', [['Wave B verifiers', 'accent', 1], '']);
   var rows = [['TASK', 'VERIFIER', 'GATE', 'RESULT'], ['10-board-export', 't10-verifier-1', '4m 12s', 'pass'], ['11-demo-mode', 't11-verifier-1', '3m 48s', 'pass'], ['12-board-fixtures', 't12-verifier-2', '5m 02s', 'pass, after one fail on V4']];
-  rows.forEach(function (r, i) { var ry = y + i * 2; put(t, 1, ry, fit(r[0], 19), 'fg'); put(t, 21, ry, '│', 'border'); put(t, 23, ry, fit(r[1], 16), 'fg'); put(t, 40, ry, '│', 'border'); put(t, 42, ry, fit(r[2], 8), 'fg'); put(t, 51, ry, '│', 'border'); put(t, 53, ry, r[3], 'fg'); if (i < rows.length - 1) { put(t, 1, ry + 1, rep('─', 20) + '┼' + rep('─', 18) + '┼' + rep('─', 10) + '┼' + rep('─', 30), 'border'); } });
-  y += rows.length * 2;
+  rows.forEach(function (r, i) { var ry = y + i + (i > 0 ? 1 : 0); put(t, 1, ry, fit(' ' + r[0], 29), 'fg'); put(t, 30, ry, '│', 'border'); put(t, 31, ry, fit(' ' + r[1], 29), 'fg'); put(t, 60, ry, '│', 'border'); put(t, 61, ry, fit(' ' + r[2], 29), 'fg'); put(t, 90, ry, '│', 'border'); put(t, 91, ry, fit(' ' + r[3], 29), 'fg'); if (i === 0) { put(t, 1, ry + 1, rep('─', 29) + '┼' + rep('─', 29) + '┼' + rep('─', 29) + '┼' + rep('─', 28), 'border'); } });
+  y += rows.length + 2;
   put(t, 1, y, 'The gate command of each run was', 'fg'); y += 2;
-  ['  gofmt -l $(git ls-files -co --exclude-standard \'*.go\')', '  go mod tidy -diff', '  go vet ./...', '  golangci-lint run ./...', '  go test -race ./...'].forEach(function (l) { put(t, 1, y, l, 'code'); y++; });
-  y++; put(t, 1, y, 'The second run of 12 passed after the worker fixed the mask file. Details are in', 'fg'); y++; put(t, 1, y, 'tasks/12-board-fixtures/evidence/V4.md', 'code'); put(t, 39, y, '.', 'fg');
+  ['gofmt -l $(git ls-files -co --exclude-standard \'*.go\')', 'go mod tidy -diff', 'go vet ./...', 'golangci-lint run ./...', 'go test -race ./...'].forEach(function (l) { put(t, 3, y, l, 'code'); y++; });
+  y++; put(t, 1, y, 'The second run of 12 passed after the worker fixed the mask file. Details are in', 'fg'); put(t, 82, y, 'tasks/12-board-', 'code'); y++; put(t, 1, y, 'fixtures/evidence/V4.md', 'code'); put(t, 24, y, '.', 'fg');
   composer(t, 36, 3, [], 'type a message · ? help');
   chatStatus(t, 39, '○ idle 3m'); return t; }
 

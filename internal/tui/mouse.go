@@ -2,6 +2,7 @@ package tui
 
 import (
 	"log/slog"
+	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -73,7 +74,7 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 		m.popupOffset = max(m.popupOffset+step, 0)
 		return nil
 	case tab == tabChat:
-		if row < m.chatFeed.height+m.askDockHeight() {
+		if row < m.chatFeed.height {
 			m.scrollChat(step * wheelLines)
 		}
 		return nil
@@ -109,14 +110,16 @@ func (m *Model) click(x, y int) tea.Cmd {
 		return nil
 	}
 	if tab == tabChat {
+		top := m.chatFeed.composerTop
 		switch {
 		case row < m.chatFeed.height:
-			m.askFeedFocus = true
-			return m.stopChatInput()
-		case row < m.chatFeed.height+m.askDockHeight():
-			return m.clickAsk(row - m.chatFeed.height - 1)
+			return m.clickTranscript(row)
+		case row > top && row <= top+len(m.askRows):
+			return m.clickAsk(row - top - 1)
+		case row >= top:
+			return m.startChatInput()
 		}
-		return m.startChatInput()
+		return nil
 	}
 	entry := screenRegistry[tab]
 	if !entry.listDetails || (m.detailsFocused() && m.width < component.LongFormWidth) {
@@ -201,4 +204,29 @@ func samePanel(rows []string, from, row int) bool {
 		}
 	}
 	return true
+}
+
+// clickTranscript opens or folds the event at row of the transcript
+// (chat.md rule 3).
+func (m *Model) clickTranscript(row int) tea.Cmd {
+	feed := &m.chatFeed
+	line := row
+	if len(feed.lines) > feed.height {
+		line = feed.top + row - 1
+	}
+	if line < 0 || line >= len(feed.lines) || len(feed.starts) == 0 {
+		return nil
+	}
+	index := sort.SearchInts(feed.starts, line+1) - 1
+	if index < 0 || index >= len(feed.msgs) || feed.msgs[index].Kind != component.ChatEvent {
+		return nil
+	}
+	if m.chatEventOpen == nil {
+		m.chatEventOpen = map[uint64]bool{}
+	}
+	open := !feed.msgs[index].Open
+	m.chatEventOpen[feed.seqs[index]] = open
+	m.rebuildChat()
+	m.invalidateView()
+	return m.logAction("chat event toggle", slog.Bool("open", open))
 }

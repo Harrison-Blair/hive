@@ -2,6 +2,7 @@ package component
 
 import (
 	"image/color"
+	"slices"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -11,8 +12,11 @@ import (
 // StatusRow is one status row of golden-frames decisions 8 to 11: segments
 // joined by " · ", and the clock at the right edge. Each segment is text that
 // the caller renders with GlyphText, DimText, StrongText, or AccentText.
+// Tail segments follow the segments and are never removed (golden-frames
+// decision 33).
 type StatusRow struct {
 	Segments []string
+	Tail     []string
 	Clock    string
 }
 
@@ -26,10 +30,10 @@ func (s StatusRow) View(width int) string {
 		room -= lipgloss.Width(s.Clock) + 3
 	}
 	segs := s.Segments
-	for len(segs) > 1 && segmentsWidth(segs) > room {
+	for len(segs) > 1 && segmentsWidth(append(slices.Clone(segs), s.Tail...)) > room {
 		segs = segs[:len(segs)-1]
 	}
-	row := " " + strings.Join(segs, dimStyle.Render(" · "))
+	row := " " + strings.Join(append(slices.Clone(segs), s.Tail...), dimStyle.Render(" · "))
 	if s.Clock == "" {
 		return fitRow(row, width)
 	}

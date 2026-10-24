@@ -18,18 +18,22 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// The card layout of decision 93: the columns of an option row in the
-// card text, from the left padding cell.
+// The card layout of golden-frames chat.md rule 15 and the boards: the
+// columns of an option row from the first card column, and the preview box.
+// The preview box shows from askPreviewRows card rows (rule 16).
 const (
-	askLabelCol     = 8
-	askLabelWidth   = 27
-	askDescCol      = 36
-	askPreviewCol   = 42
+	askLabelWidth   = 26
+	askDescCol      = 35
 	askDescRightPad = 2
+	askPreviewCol   = 78
+	askPreviewWidth = 38
+	askPreviewRows  = 8
 )
 
 var (
-	askBoldDim = dimStyle.Bold(true)
+	askBoldDim    = dimStyle.Bold(true)
+	accentStyle   = lipgloss.NewStyle().Foreground(component.Accent)
+	userTextStyle = lipgloss.NewStyle().Foreground(component.User)
 )
 
 // askRoute is the agent that gets the answer of an ask: the live asker, or
@@ -135,11 +139,11 @@ func (m *Model) askCardOf(record ask.Record) *askCard {
 	return card
 }
 
-// askFocused reports that the card has the focus: Chat is in normal mode,
-// an ask is open, and the user did not give the feed the focus.
+// askFocused reports that the card has the focus: an ask is open and the
+// input line does not have the focus (chat.md rule 17).
 func (m *Model) askFocused() bool {
 	_, _, ok := m.focusedAsk()
-	return ok && !m.chatInputActive && !m.askFeedFocus
+	return ok && !m.chatInputActive
 }
 
 // askFocusState gives the focus state of the card: ask, note, other, or
@@ -187,14 +191,9 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 			}
 			card.editing = ""
 			return m.askEnter(record, card), true
-		case "tab":
-			if card.editing == "note" {
-				*text = ""
-				card.noteOpen = false
-				card.editing = ""
-			}
-		case "ctrl+]", "esc":
+		case "ctrl+r", "esc":
 			card.editing = ""
+			return m.startChatInput(), true
 		case "up", "down":
 			if card.editing == "note" {
 				card.move(key, other)
@@ -226,7 +225,7 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 			card.setPick(cursor, true, question.MultiSelect)
 		}
 		return m.askEnter(record, card), true
-	case "tab":
+	case "n":
 		card.noteOpen = true
 		card.editing = "note"
 	case "x":
@@ -235,10 +234,12 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 		return m.moveAskCard(key), true
 	case "pgup", "pgdown":
 		return m.scrollChatFeed(press), true
-	case "i":
+	case "ctrl+r", "esc":
 		return m.startChatInput(), true
 	case "ctrl+o":
-		return m.updateChat(press), true
+		return m.toggleChatEvents(), true
+	case "tab":
+		// chat.md rule 18: tab does nothing on the card.
 	default:
 		if len(key) == 1 && key[0] >= '1' && key[0] <= '9' && int(key[0]-'1') <= other {
 			return m.askPick(record, card, int(key[0]-'1')), true
@@ -248,8 +249,8 @@ func (m *Model) updateAskKey(press tea.KeyPressMsg) (tea.Cmd, bool) {
 	return nil, true
 }
 
-// updateAskReviewKey handles a key in the review. Only ↑↓, enter, x, and
-// J/K act. Each other key does nothing. ↑↓ first pages through a
+// updateAskReviewKey handles a key in the review. Only ↑↓, enter, x, J/K,
+// ctrl+r, and esc act. Each other key does nothing. ↑↓ first pages through a
 // highlighted row that is taller than the dock. A row gets the highlight
 // at its first line.
 func (m *Model) updateAskReviewKey(press tea.KeyPressMsg, record ask.Record, card *askCard) (tea.Cmd, bool) {
@@ -278,6 +279,8 @@ func (m *Model) updateAskReviewKey(press tea.KeyPressMsg, record ask.Record, car
 		return m.closeAsk(record, "dismiss", nil), true
 	case "J", "K":
 		return m.moveAskCard(key), true
+	case "ctrl+r", "esc":
+		return m.startChatInput(), true
 	}
 	return nil, true
 }
@@ -418,9 +421,14 @@ func (m *Model) updateAskDone(msg askDoneMsg) tea.Cmd {
 	}
 	delete(m.askCards, msg.id)
 	m.header.asks = len(m.openAsks())
+	var focus tea.Cmd
+	if m.header.asks == 0 {
+		// chat.md rule 19: the frame returns to the composer alone.
+		focus = m.startChatInput()
+	}
 	m.rebuildChat()
 	m.invalidateView()
-	cmds := []tea.Cmd{m.startHeaderLoad(), m.startCurrentScreenLoad()}
+	cmds := []tea.Cmd{focus, m.startHeaderLoad(), m.startCurrentScreenLoad()}
 	if msg.envelope.Outcome != "ok" {
 		cmds = append(cmds, m.logError("ask delivery", fmt.Errorf("%v", msg.envelope.Error)))
 	}
@@ -437,68 +445,63 @@ func (m *Model) startAskDelivery() tea.Cmd {
 	return func() tea.Msg { return askDeliveredMsg{err: deliver(context.Background(), home)} }
 }
 
-// askHints gives the footer hints of the card.
-func (m *Model) askHints(focus string, wide bool) []string {
+// askHints gives the keys of the focus of the card (golden-frames decision
+// 33).
+func (m *Model) askHints(focus string) []string {
 	record, _, _ := m.focusedAsk()
 	card := m.askCardOf(record)
-	stopped := m.chatData.routes[record.ID].stopped
+	question := record.Questions[card.question]
 	switch focus {
 	case "review":
-		send := "enter send"
-		switch {
-		case card.reviewRow < len(record.Questions):
-			send = "enter change"
-		case stopped:
-			send = "enter send to parent"
-		}
-		if !wide {
-			return []string{"↑↓ question", send, "x dismiss", "J/K card"}
-		}
-		return []string{"↑↓ question", send, "x dismiss", "J/K next/prev card"}
+		return []string{"↑↓ question", "enter send", "x dismiss", "J/K card", "^r input"}
 	case "note":
-		return []string{"type a note", "enter keep note", "tab close note", "ctrl+] leave note", "↑↓ option"}
+		hints := []string{"type the note", "enter keep note", "↑↓ option"}
+		if slices.ContainsFunc(record.Questions, func(q ask.Question) bool { return q.MultiSelect }) {
+			hints = append(hints, "space mark")
+		}
+		return append(hints, "^r input")
 	case "other":
-		return []string{"type the answer", "enter keep answer", "ctrl+] leave"}
+		return []string{"type the answer", "enter keep answer", "^r input"}
 	}
-	if !wide {
-		return []string{"↑↓ move", "enter review", "tab note", "x dismiss", "J/K card"}
+	review := "enter review"
+	if m.chatData.routes[record.ID].stopped {
+		review = "enter review for parent"
 	}
-	pick := fmt.Sprintf("1..%d pick", len(record.Questions[card.question].Options)+1)
-	if stopped {
-		return []string{"↑↓ move", pick, "enter review for parent", "tab note", "x dismiss", "J/K next/prev card"}
-	}
-	return []string{"↑↓ move", pick, "enter review", "tab note", "x dismiss", "J/K next/prev card", "wheel/pgup scroll feed", "i type"}
+	return []string{"↑↓ move", fmt.Sprintf("1..%d pick", len(question.Options)+1), review, "n note", "x dismiss", "J/K card", "^r input", "esc input"}
 }
 
-// askFeedText gives the styled text of the feed line of an ask.
-func (m *Model) askFeedText(record ask.Record, wide bool) string {
-	text := "? asked · " + ask.Headers(record)
-	if m.chatData.routes[record.ID].stopped && record.State == ask.StateOpen {
-		text += " · asker stopped"
-	}
+// askLineText gives the styled text of the ask line after its time
+// (chat.md rule 6).
+func (m *Model) askLineText(record ask.Record) string {
+	text := "asked · " + askHeaders(record)
 	if record.State == ask.StateOpen {
-		focused, index, _ := m.focusedAsk()
-		switch {
-		case focused.ID == record.ID && wide:
-			text += " · open below"
-		case focused.ID == record.ID:
-			text += " · below"
-		default:
-			for place, open := range m.openAsks() {
-				if open.ID == record.ID {
-					index = place
+		if m.chatData.routes[record.ID].stopped {
+			text += " · asker stopped"
+		}
+		focused, _, _ := m.focusedAsk()
+		if focused.ID == record.ID {
+			text += " · in the composer, ^r to answer"
+		} else {
+			open := m.openAsks()
+			for place, other := range open {
+				if other.ID == record.ID {
+					text += fmt.Sprintf(" · waits · %d of %d", place+1, len(open))
 				}
 			}
-			text += fmt.Sprintf(" · waits · %d of %d", index+1, len(m.openAsks()))
 		}
 	}
-	return titleStyle.UnsetBold().Render(text)
+	line := dimStyle.Render(text)
+	if record.LastError != "" {
+		line += accentStyle.Render(" · delivery failed · retrying")
+	}
+	return line
 }
 
-// askAnswerText gives the styled text of the feed line of the answer.
+// askAnswerText gives the text of the line from you after an answer or a
+// dismiss (chat.md rule 6).
 func askAnswerText(record ask.Record) string {
 	if record.State == ask.StateDismissed {
-		return "dismissed " + record.Asker + " · " + ask.Headers(record)
+		return "dismissed " + record.Asker + " · " + askHeaders(record)
 	}
 	var text strings.Builder
 	text.WriteString("answered " + record.Asker + " ·")
@@ -513,155 +516,117 @@ func askAnswerText(record ask.Record) string {
 		picks := make([]string, 0, len(reply.Picks))
 		for _, pick := range reply.Picks {
 			if pick <= len(question.Options) {
-				picks = append(picks, fmt.Sprintf("%d %s", pick, question.Options[pick-1].Label))
+				picks = append(picks, question.Options[pick-1].Label)
 			} else {
 				picks = append(picks, reply.Other)
 			}
 		}
-		text.WriteString(" " + question.Header + " " + titleStyle.Render("→ "+strings.Join(picks, ", ")))
+		text.WriteString(" " + question.Header + " → " + strings.Join(picks, ", "))
 		if reply.Note != "" {
 			text.WriteString(" · note: " + reply.Note)
 		}
 	}
-	return text.String()
+	return safeChatText(text.String())
 }
 
-// askMessages gives the feed lines of the asks: the ask, and the answer or
-// the dismissal.
-func (m *Model) askMessages(wide bool, zone *time.Location) []chatItem {
+// askMessages gives the transcript lines of the asks: the ask line, and the
+// line from you after an answer or a dismiss.
+func (m *Model) askMessages(zone *time.Location) []chatItem {
 	var items []chatItem
 	for _, record := range m.chatData.asks {
 		if at, err := time.Parse(time.RFC3339Nano, record.CreatedAt); err == nil {
-			items = append(items, chatItem{at, component.ChatMessage{
-				Time: at.In(zone).Format("15:04"), Name: record.Asker, Kind: component.ChatAgent,
-				Text: m.askFeedText(record, wide), Styled: true,
+			items = append(items, chatItem{at: at, msg: component.ChatMessage{
+				Time: at.In(zone).Format("15:04"), Name: record.Asker, Kind: component.ChatAsk,
+				Text: m.askLineText(record),
 			}})
 		}
 		if record.State == ask.StateOpen {
 			continue
 		}
 		if at, err := time.Parse(time.RFC3339Nano, record.ClosedAt); err == nil {
-			items = append(items, chatItem{at, component.ChatMessage{
+			items = append(items, chatItem{at: at, msg: component.ChatMessage{
 				Time: at.In(zone).Format("15:04"), Name: "you", Kind: component.ChatUser,
-				Text: askAnswerText(record), Styled: true,
+				Text: askAnswerText(record),
 			}})
 		}
 	}
 	return items
 }
 
-// askDockView draws the card of the focused ask at width cells and at most
-// limit rows. It records the option of each row for a click.
-func (m *Model) askDockView(width, limit int) string {
-	record, index, ok := m.focusedAsk()
-	m.askRows = nil
-	if !ok {
-		return ""
-	}
+// askCardView gives the card of record in the composer frame at width
+// cells and at most rows card rows (chat.md rules 14 to 16). It records the
+// option of each visible row for a click.
+func (m *Model) askCardView(record ask.Record, width, rows int) *component.ComposerCard {
 	card := m.askCardOf(record)
 	focused := m.askFocused()
-	room := width - 4
-	wide := width >= component.LongFormWidth
+	room := width - 3
 	route := m.chatData.routes[record.ID]
-	title := "? " + record.Asker + " asks · " + ask.Headers(record)
-	lines, rows, current := askCardLines(record, card, room)
+	title := "? " + record.Asker + " asks · " + askHeaders(record)
+	var lines []string
+	var refs []askRow
+	var current [2]int
 	if card.review {
 		title = "? " + record.Asker + " asks · confirm"
-		lines, rows, current = askReviewLines(record, card, room, route)
+		lines, refs, current = askReviewLines(record, card, room, route, focused)
+	} else {
+		lines, refs, current = askCardLines(record, card, room, focused, rows >= askPreviewRows)
 	}
-
-	visible := max(min(len(lines), limit-2), 1)
+	visible := max(min(len(lines), rows), 1)
 	offset := max(current[1]-visible+1, 0)
 	offset = min(offset, current[0])
 	if card.review {
-		// A highlighted row taller than the dock scrolls with ↑↓, and its
+		// A highlighted row taller than the card scrolls with ↑↓, and its
 		// first visible line has the › mark.
 		card.reviewMax = max(current[1]-current[0]+1-visible, 0)
 		card.reviewStep = max(visible-1, 1)
 		card.reviewScroll = min(card.reviewScroll, card.reviewMax)
 		if card.reviewMax > 0 {
 			offset = current[0] + card.reviewScroll
-			lines[offset] = titleStyle.Render("›") + ansi.TruncateLeft(lines[offset], 1, "")
+			lines[offset] = askMarkerStyle(focused).Render("›") + ansi.TruncateLeft(lines[offset], 1, "")
 		}
 	}
-	end := min(offset+visible, len(lines))
-	m.askRows = rows[offset:end]
-	panel := component.Panel{
-		Title: title, Focused: focused, Heavy: true,
-		Lines: lines[offset:end], VMark: component.Thumb(visible, len(lines), visible, offset),
-	}
-	out := strings.Split(panel.View(width, visible+2), "\n")
+	m.askRows = refs[offset:min(offset+visible, len(refs))]
 
-	note := dimStyle.Render(fmt.Sprintf(" %d of %d ", index+1, len(m.openAsks())))
-	if wide {
-		next := ""
-		if index+1 < len(m.openAsks()) {
-			next = " · J next"
-		}
-		note = dimStyle.Render(fmt.Sprintf(" open · %d of %d%s ", index+1, len(m.openAsks()), next))
+	_, index, _ := m.focusedAsk()
+	open := len(m.openAsks())
+	note := fmt.Sprintf(" open · %d of %d ", index+1, open)
+	if index+1 < open {
+		note = fmt.Sprintf(" open · %d of %d · J next ", index+1, open)
 	}
 	if route.stopped {
-		// The note must not cover the title, which starts after "┏━ ", or
-		// the " ━" after it. Without room for the parent, the note keeps the
-		// state; Send and the hint name the parent.
+		// Without room for the parent, the note keeps the state. Send names
+		// the parent.
 		note = ""
 		for _, text := range []string{" asker stopped · answer goes to " + route.target + " ", " asker stopped · to " + route.target + " ", " asker stopped "} {
-			if 3+lipgloss.Width(title)+2+lipgloss.Width(text)+2 <= width {
-				note = titleStyle.Render(text)
+			if 2+lipgloss.Width(title)+2+1+lipgloss.Width(text)+1 <= width {
+				note = text
 				break
 			}
 		}
 	}
-	out[0] = overlayCells(out[0], note, width-2-lipgloss.Width(note))
-	out[len(out)-1] = overlayCells(out[len(out)-1], dimStyle.Render(" "+askCardHint(record, card, width, route)+" "), 2)
-	return strings.Join(out, "\n")
+	if note != "" {
+		note = titleStyle.Render(note)
+	}
+	return &component.ComposerCard{Title: title, Note: note, Lines: lines, Offset: offset, Rows: visible}
 }
 
-// askCardHint gives the hint in the bottom border of the card.
-func askCardHint(record ask.Record, card *askCard, width int, route askRoute) string {
-	if card.review {
-		send := "enter send"
-		switch {
-		case card.reviewRow < len(record.Questions):
-			send = "enter change"
-		case route.stopped:
-			send = "enter sends to " + route.target
-		}
-		hint := send + " · ↑↓ question to change · x drop"
-		if lipgloss.Width(" "+hint+" ")+4 > width {
-			// A long parent name keeps its full name in a shorter hint.
-			hint = send + " · ↑↓ change · x drop"
-		}
-		return hint
+// askMarkerStyle gives the style of the › row marker: accent bold while the
+// card has the focus, else dim bold (chat.md rule 17).
+func askMarkerStyle(focused bool) lipgloss.Style {
+	if focused {
+		return titleStyle
 	}
-	question := record.Questions[card.question]
-	multi := slices.ContainsFunc(record.Questions, func(q ask.Question) bool { return q.MultiSelect })
-	switch {
-	case width < component.LongFormWidth:
-		return "enter review · tab note"
-	case route.stopped:
-		return "enter review · sends to " + route.target + " · x dismiss"
-	case askHasPreview(question):
-		return "↑↓ move · the preview follows the option · enter review"
-	case len(record.Questions) > 1:
-		hint := "tab note · enter next question · enter on last reviews"
-		if multi {
-			hint = "space mark · " + hint
-		}
-		return hint
-	case question.MultiSelect:
-		return fmt.Sprintf("↑↓ move · 1..%d mark · space mark · enter review · tab note · x dismiss · J/K card", len(question.Options)+1)
-	}
-	return fmt.Sprintf("↑↓ move · 1..%d pick · enter review · tab note · x dismiss · J/K card", len(question.Options)+1)
+	return askBoldDim
 }
 
 func askHasPreview(question ask.Question) bool {
 	return slices.ContainsFunc(question.Options, func(option ask.Option) bool { return option.Preview != "" })
 }
 
-// askCardLines gives the body lines of the card at room cells, the option
-// of each line, and the first and the last line of the current question.
-func askCardLines(record ask.Record, card *askCard, room int) ([]string, []askRow, [2]int) {
+// askCardLines gives the card rows at room cells, the option of each row,
+// and the first and the last row of the current question. box draws the
+// preview box of the current option.
+func askCardLines(record ask.Record, card *askCard, room int, focused, box bool) ([]string, []askRow, [2]int) {
 	var lines []string
 	var rows []askRow
 	var current [2]int
@@ -681,27 +646,22 @@ func askCardLines(record ask.Record, card *askCard, room int) ([]string, []askRo
 			text = fmt.Sprintf("%d. %s", qi+1, text)
 		}
 		for _, line := range strings.Split(lipgloss.NewStyle().Width(room).Render(safeChatText(text)), "\n") {
-			add(headerStyle.Render(strings.TrimRight(line, " ")), qi, -1)
+			add(strings.TrimRight(line, " "), qi, -1)
 		}
 		add("", qi, -1)
 		first := len(lines)
 		preview := qi == card.question && askHasPreview(question)
-		labelWidth := askLabelWidth
-		if preview {
-			labelWidth = askPreviewCol - askLabelCol - 1
-		}
 		for oi := range len(question.Options) + 1 {
-			add(askOptionLine(question, card, qi, oi, labelWidth, room, preview), qi, oi)
+			add(askOptionLine(question, card, qi, oi, room, preview, box, focused), qi, oi)
 		}
-		if card.notes[qi] != "" || (card.noteOpen && qi == card.question) {
-			add(askTextLine("note", card.notes[qi], card.editing == "note" && qi == card.question), qi, -1)
+		if qi == card.question || card.notes[qi] != "" {
+			add(askTextLine("note", card.notes[qi], card.editing == "note" && qi == card.question, "none · n adds one"), qi, -1)
 		}
 		if card.picks[qi][len(question.Options)] || (card.editing == "other" && qi == card.question) {
-			add(askTextLine("other", card.others[qi], card.editing == "other" && qi == card.question), qi, -1)
+			add(askTextLine("other", card.others[qi], card.editing == "other" && qi == card.question, ""), qi, -1)
 		}
-		if preview {
-			box := askPreviewBox(question, card.cursor[qi], room-askPreviewCol)
-			for index, line := range box {
+		if preview && box {
+			for index, line := range askPreviewBox(question, card.cursor[qi]) {
 				row := first + index
 				if row >= len(lines) {
 					add("", qi, -1)
@@ -716,23 +676,26 @@ func askCardLines(record ask.Record, card *askCard, room int) ([]string, []askRo
 	return lines, rows, current
 }
 
-// askReviewLines gives the body lines of the review at room cells: one
-// answer of each question in full, wrapped, and the Send line. It also gives
-// the first and the last line of the highlighted row.
-func askReviewLines(record ask.Record, card *askCard, room int, route askRoute) ([]string, []askRow, [2]int) {
+// askReviewLines gives the rows of the review at room cells: the answer of
+// each question in full, wrapped, the Send row, and a blank row. It also
+// gives the first and the last row of the highlighted row.
+func askReviewLines(record ask.Record, card *askCard, room int, route askRoute, focused bool) ([]string, []askRow, [2]int) {
 	var lines []string
 	var rows []askRow
 	var current [2]int
-	add := func(index int, words []askWord) {
-		marker, start := " ", len(lines)
+	marker := askMarkerStyle(focused)
+	plain := lipgloss.NewStyle()
+	add := func(index int, text string) {
+		style, start := plain, len(lines)
 		if index == card.reviewRow {
-			marker = "›"
+			style = titleStyle
 		}
-		for row, line := range wrapAskWords(words, room-2) {
-			if row > 0 {
-				marker = " "
+		for row, line := range wrapAskWords(styledWords(style, text), room-2) {
+			mark := " "
+			if row == 0 && index == card.reviewRow {
+				mark = "›"
 			}
-			lines = append(lines, titleStyle.Render(marker)+" "+line)
+			lines = append(lines, marker.Render(mark)+" "+line)
 			rows = append(rows, askRow{index, -1})
 		}
 		if index == card.reviewRow {
@@ -740,29 +703,21 @@ func askReviewLines(record ask.Record, card *askCard, room int, route askRoute) 
 		}
 	}
 	for qi, question := range record.Questions {
-		header := headerStyle
-		if qi == card.reviewRow {
-			header = titleStyle
-		}
-		words := styledWords(header, safeChatText(question.Header))
-		words = append(words, styledWords(titleStyle, "→ "+strings.Join(askReviewPicks(question, card, qi), ", "))...)
+		text := safeChatText(question.Header) + " → " + strings.Join(askReviewPicks(question, card, qi), ", ")
 		if card.notes[qi] != "" {
-			words = append(words, styledWords(dimStyle, "· note:")...)
-			words = append(words, styledWords(lipgloss.NewStyle(), safeChatText(card.notes[qi]))...)
+			text += " · note: " + safeChatText(card.notes[qi])
 		}
-		add(qi, words)
+		add(qi, text)
 	}
-	lines = append(lines, "")
+	lines = append(lines, marker.Render(" "))
 	rows = append(rows, askRow{len(record.Questions), -1})
 	send := "Send"
 	if route.stopped {
 		send = "Send to " + route.target
 	}
-	style := headerStyle
-	if card.reviewRow == len(record.Questions) {
-		style = titleStyle
-	}
-	add(len(record.Questions), styledWords(style, send))
+	add(len(record.Questions), send)
+	lines = append(lines, "")
+	rows = append(rows, askRow{len(record.Questions), -1})
 	return lines, rows, current
 }
 
@@ -821,7 +776,7 @@ func wrapAskWords(words []askWord, width int) []string {
 			size = ansi.StringWidth(word.text)
 		}
 		if used > 0 {
-			line += " "
+			line += word.style.Render(" ")
 			used++
 		}
 		line += word.style.Render(word.text)
@@ -830,47 +785,74 @@ func wrapAskWords(words []askWord, width int) []string {
 	return append(lines, line)
 }
 
-// askOptionLine gives one option row: the current mark ›, the number, the
-// pick mark, the label, and the description.
-func askOptionLine(question ask.Question, card *askCard, qi, oi, labelWidth, room int, preview bool) string {
-	isCurrent := qi == card.question && card.cursor[qi] == oi
-	marker, number := titleStyle.Render(" "), askBoldDim.Render(fmt.Sprint(oi+1))
-	if isCurrent {
-		marker, number = titleStyle.Render("›"), titleStyle.Render(fmt.Sprint(oi+1))
+// askOptionLine gives one option row: the › row marker of the current
+// question, the number, the pick mark, the label, and the description. The
+// preview text replaces the description of the current option when the card
+// has no room for the preview box (chat.md rule 16).
+func askOptionLine(question ask.Question, card *askCard, qi, oi, room int, preview, box, focused bool) string {
+	inQuestion := qi == card.question
+	isCurrent := inQuestion && card.cursor[qi] == oi
+	marker := " "
+	if inQuestion {
+		marker = " "
+		if isCurrent {
+			marker = "›"
+		}
+		marker = askMarkerStyle(focused).Render(marker)
 	}
-	mark := dimStyle.Render("[ ]")
+	mark := "[ ]"
 	if card.picks[qi][oi] {
-		mark = titleStyle.Render("[x]")
+		mark = "[x]"
 	}
 	label, description := ask.OtherLabel, ""
 	if oi < len(question.Options) {
 		label, description = safeChatText(question.Options[oi].Label), safeChatText(question.Options[oi].Description)
+		if isCurrent && preview && !box && question.Options[oi].Preview != "" {
+			description = strings.ReplaceAll(safeChatText(question.Options[oi].Preview), "\n", " ")
+		}
 	}
-	label = ansi.Truncate(label, labelWidth, "…")
-	gap := strings.Repeat(" ", labelWidth-lipgloss.Width(label)+1)
-	if isCurrent {
-		label = titleStyle.Render(label)
+	label = ansi.Truncate(label, askLabelWidth, "…")
+	gap := strings.Repeat(" ", askLabelWidth-lipgloss.Width(label)+1)
+	number := fmt.Sprintf("%d %s ", oi+1, mark)
+	var body string
+	switch {
+	case isCurrent && focused:
+		body = titleStyle.Render(number+label) + gap
+	case card.picks[qi][oi]:
+		body = accentStyle.Render(number) + label + gap
+	default:
+		body = number + label + gap
 	}
-	line := marker + " " + number + " " + mark + " " + label + gap
-	if !preview && description != "" {
-		line += dimStyle.Render(ansi.Truncate(description, max(room-askDescCol-askDescRightPad, 0), "…"))
+	line := marker + " " + body
+	if description != "" {
+		end := room - askDescRightPad
+		if preview && box {
+			end = askPreviewCol - 1
+		}
+		line += dimStyle.Render(ansi.Truncate(description, max(end-askDescCol, 0), "…"))
 	}
 	return line
 }
 
 // askTextLine gives the line of a note or of an Other answer. The cursor
-// █ shows while the line takes the keys.
-func askTextLine(name, text string, editing bool) string {
-	line := "    " + titleStyle.Render(name+" ›") + " " + text
-	if editing {
-		line += titleStyle.UnsetBold().Render("█")
+// █ shows while the line takes the keys. empty shows in dim while the text
+// is empty.
+func askTextLine(name, text string, editing bool, empty string) string {
+	line := dimStyle.Render(name+" ›") + " "
+	switch {
+	case editing:
+		line += userTextStyle.Render(text + "█")
+	case text == "":
+		line += dimStyle.Render(empty)
+	default:
+		line += userTextStyle.Render(text)
 	}
 	return line
 }
 
-// askPreviewBox gives the rows of the preview box of the current option at
-// width cells. Its height holds the longest preview of the question.
-func askPreviewBox(question ask.Question, cursor, width int) []string {
+// askPreviewBox gives the rows of the preview box of the current option. Its
+// height holds the longest preview of the question.
+func askPreviewBox(question ask.Question, cursor int) []string {
 	height := 0
 	for _, option := range question.Options {
 		height = max(height, len(strings.Split(option.Preview, "\n")))
@@ -879,53 +861,50 @@ func askPreviewBox(question ask.Question, cursor, width int) []string {
 	if cursor < len(question.Options) && question.Options[cursor].Preview != "" {
 		text = strings.Split(safeChatText(question.Options[cursor].Preview), "\n")
 	}
-	inner := width - 2
-	title := dimStyle.Render(fmt.Sprintf(" preview · %d ", cursor+1))
+	inner := askPreviewWidth - 2
+	title := titleStyle.Render(fmt.Sprintf(" preview · %d ", cursor+1))
 	edge := lipgloss.NewStyle().Foreground(component.Border)
+	code := lipgloss.NewStyle().Foreground(component.Code)
 	box := []string{edge.Render("╭─") + title + edge.Render(strings.Repeat("─", max(inner-1-lipgloss.Width(title), 0))+"╮")}
 	for index := range height {
 		line := ""
 		if index < len(text) {
 			line = text[index]
 		}
-		box = append(box, edge.Render("│")+" "+fitText(line, inner-2)+" "+edge.Render("│"))
+		box = append(box, edge.Render("│")+" "+code.Render(" "+fitText(line, inner-3))+" "+edge.Render("│"))
 	}
 	return append(box, edge.Render("╰"+strings.Repeat("─", inner)+"╯"))
 }
 
-// overlayCells draws text over row from cell col.
-func overlayCells(row, text string, col int) string {
-	end := col + lipgloss.Width(text)
-	if col < 0 || end > lipgloss.Width(row) {
-		return row
-	}
-	return ansi.Truncate(row, col, "") + text + ansi.TruncateLeft(row, end, "")
-}
-
-// askDockHeight gives the rows of the dock in the last render.
-func (m *Model) askDockHeight() int {
-	if len(m.askRows) == 0 {
-		return 0
-	}
-	return len(m.askRows) + 2
-}
-
-// clickAsk handles a click on body row of the dock. A click on an option
-// row picks the option.
+// clickAsk handles a click on a card row. A click on an option row of the
+// current question picks the option. A click gives the card the focus.
 func (m *Model) clickAsk(row int) tea.Cmd {
-	m.askFeedFocus = false
-	cmd := m.stopChatInput()
 	record, _, ok := m.focusedAsk()
-	if !ok || row < 0 || row >= len(m.askRows) {
-		return cmd
+	if !ok {
+		return nil
+	}
+	m.chatInputActive = false
+	m.invalidateView()
+	if row < 0 || row >= len(m.askRows) {
+		return nil
 	}
 	card := m.askCardOf(record)
 	ref := m.askRows[row]
-	if ref.option < 0 || ref.question != card.question {
-		return cmd
+	if ref.option < 0 || ref.question != card.question || card.review {
+		return nil
 	}
 	card.editing = ""
-	return batch(cmd, m.askPick(record, card, ref.option))
+	return m.askPick(record, card, ref.option)
+}
+
+// askHeaders gives the headers of record joined with ", ", as the boards
+// show them.
+func askHeaders(record ask.Record) string {
+	headers := make([]string, len(record.Questions))
+	for index, question := range record.Questions {
+		headers[index] = safeChatText(question.Header)
+	}
+	return strings.Join(headers, ", ")
 }
 
 // sortAsks puts the asks in the order of their IDs.

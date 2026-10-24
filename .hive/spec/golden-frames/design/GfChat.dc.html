@@ -49,7 +49,7 @@ function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [], 
 
 // Transcript helpers shared by the Chat boards.
 function msgYou(t, y, time, lines) { put(t, 1, y, '›', 'user', 1); put(t, 3, y, 'you', 'user', 1); put(t, 7, y, time, 'dim'); lines.forEach(function (l, i) { put(t, 1, y + 1 + i, l, 'user'); }); return y + 1 + lines.length; }
-function msgAgent(t, y, name, time, lines) { put(t, 1, y, '●', 'info', 1); put(t, 3, y, name, 'info', 1); put(t, 4 + len(name), y, time, 'dim'); lines.forEach(function (l, i) { var k = 'fg', b = 0, s = l; if (typeof l !== 'string') { s = l[0]; k = l[1]; b = l[2] || 0; } put(t, 1, y + 1 + i, s, k, b); }); return y + 1 + lines.length; }
+function msgAgent(t, y, name, time, lines) { put(t, 1, y, '●', 'info', 1); put(t, 3, y, name, 'info', 1); put(t, 4 + len(name), y, time, 'dim'); lines.forEach(function (l, i) { var k = 'fg', b = 0, s = l, dx = 0; if (typeof l !== 'string') { s = l[0]; k = l[1]; b = l[2] || 0; dx = l[3] || 0; } put(t, 1 + dx, y + 1 + i, s, k, b); }); return y + 1 + lines.length; }
 function event(t, y, name, time, text) { put(t, 1, y, '▸', 'dim'); put(t, 3, y, name, 'dim', 1); put(t, 4 + len(name), y, time + '  ' + fit(text, 118 - 7 - len(name) - len(time)), 'dim'); return y + 1; }
 function composer(t, y, h, lines, placeholder) { box(t, 0, y, 120, h, 'accent'); if (placeholder) { put(t, 2, y + 1, '> ', 'user'); put(t, 4, y + 1, placeholder, 'dim'); return; } lines.forEach(function (l, i) { put(t, 2, y + 1 + i, i ? '  ' : '> ', 'user'); put(t, 4, y + 1 + i, l, 'user'); }); var last = lines[lines.length - 1]; put(t, 4 + len(last), y + lines.length, '█', 'user'); }
 
@@ -157,9 +157,9 @@ function draw() {
     ['• A command segment runs your statusline renderer and shows its first line.', 'fg'],
     '',
     ['Config', 'accent', 1],
-    ['  [tui.status]', 'code'],
-    ['  lines = [["state", "supervisor", "asks", "needs_you", "chords", "clock"]]', 'code'],
-    ['  command = "python3 ~/source/agents/statusline/statusline.py render hive"', 'code'],
+    ['[tui.status]', 'code', 0, 2],
+    ['lines = [["state", "supervisor", "asks", "needs_you", "chords", "clock"]]', 'code', 0, 2],
+    ['command = "python3 ~/source/agents/statusline/statusline.py render hive"', 'code', 0, 2],
     '',
     ['Cut rule', 'accent', 1],
     ['• Segments are cut from the right when the width is short, so the chords go first.', 'fg'],

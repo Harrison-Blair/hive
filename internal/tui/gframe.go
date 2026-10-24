@@ -104,12 +104,26 @@ func (m *Model) statusRows(width, height int) []string {
 	if height < statusRowsMin && len(lines) > 1 {
 		lines = lines[:1]
 	}
+	_, _, asking := m.focusedAsk()
+	asking = asking && m.activeTab() == tabChat && !m.helpOpen
 	rows := make([]string, 0, len(lines))
-	for _, names := range lines {
+	for index, names := range lines {
+		if index == 0 && asking && m.askFocused() {
+			rows = append(rows, m.askStatusRow(width))
+			continue
+		}
 		row := component.StatusRow{}
 		for _, name := range names {
-			if name == "clock" {
+			switch {
+			case name == "clock":
 				row.Clock = m.now().Format("15:04")
+				continue
+			case asking && name == "chords":
+				// Decision 33: while an ask is open, this segment is in
+				// place of chords and hints.
+				row.Segments = append(row.Segments, component.AccentText("^r answer the ask"))
+				continue
+			case asking && name == "hints":
 				continue
 			}
 			if segment := m.statusSegment(name); segment != "" {
@@ -119,6 +133,24 @@ func (m *Model) statusRows(width, height int) []string {
 		rows = append(rows, row.View(width))
 	}
 	return rows
+}
+
+// askStatusRow gives the status row of decision 33 while the ask card has
+// the focus: the state, the focus name, the keys of the focus, the asks
+// segment when more than one ask is open, and the clock.
+func (m *Model) askStatusRow(width int) string {
+	focus := m.focusState()
+	row := component.StatusRow{
+		Segments: []string{m.stateSegment(), component.StrongText(focus)},
+		Clock:    m.now().Format("15:04"),
+	}
+	for _, key := range m.askHints(focus) {
+		row.Segments = append(row.Segments, component.DimText(key))
+	}
+	if len(m.openAsks()) > 1 {
+		row.Tail = []string{m.statusSegment("asks")}
+	}
+	return row.View(width)
 }
 
 // statusSegment renders one segment of decision 11. An empty segment is
@@ -184,21 +216,31 @@ func (m *Model) stateSegment() string {
 		}
 		return text + " " + age
 	}
-	var glyph color.Color
 	text := ""
 	switch m.header.coordinator {
 	case "working":
-		glyph, text = component.Working, with("● working")
+		text = with("● working")
 	case "idle":
-		glyph, text = component.Dim, with("○ idle")
+		text = with("○ idle")
 	case "blocked":
-		glyph, text = component.Accent, with("▲ blocked")
+		text = with("▲ blocked")
 	case "":
-		glyph, text = component.Dim, "○ none"
+		text = "○ none"
 	default:
-		glyph, text = component.Dim, "● starting"
+		text = "● starting"
 	}
-	return component.GlyphText(text, glyph)
+	return component.GlyphText(text, stateColor(m.header.coordinator))
+}
+
+// stateColor gives the glyph colour of a coordinator state of decision 11.
+func stateColor(state string) color.Color {
+	switch state {
+	case "working":
+		return component.Working
+	case "blocked":
+		return component.Accent
+	}
+	return component.Dim
 }
 
 // selectedProjectID gives the project of the selected agent, or empty.

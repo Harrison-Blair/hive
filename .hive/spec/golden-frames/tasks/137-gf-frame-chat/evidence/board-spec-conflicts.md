@@ -147,3 +147,66 @@ board, and needs the user)?
   starts on row 1 and stays as it is.
 - The worker recommends option B, because it follows the layout table, and
   the model tests of C10 then check row 0 and row 1 for overflowing content.
+
+## C12 GfChatMarkdown: the table is not the Glamour table
+
+- Board rows 6 to 12: each column has the width of its widest cell plus 3
+  or 4 cells, the table is 82 cells wide, and a `─┼─` rule row separates each
+  two body rows.
+- Spec: rule 4 and the state table give "the Glamour table at 118 cells".
+  `tui-v2` decision 32 (a user decision of 2026-10-21) says that Glamour
+  v2.0.1 draws each table, and hive does not change the result. Glamour
+  widens the narrowest column until the table is 118 cells wide, and it
+  draws one rule row, below the header only.
+- Option A (worker recommends): change the board rows 6 to 12 to the Glamour
+  output at 118 cells. The rows below the table move up by 2 rows.
+- Option B: hive draws its own table as the board shows. This reverses
+  decision 32.
+
+## C13 GfChat and GfChatMarkdown: the token of the code block margin
+
+- Board: the 2 margin cells to the left of each code line (GfChat rows 14 to
+  16, GfChatMarkdown rows 16 to 20, columns 1 and 2) are spaces in `code`.
+- Glamour v2.0.1 writes the margin of a code block with no style, so the
+  cells are spaces in `fg`. A space shows no colour, so the screen looks the
+  same. `tui-v2` decision 31 keeps the Glamour output.
+- Option A (worker recommends): change the token of these spaces on the
+  boards to `fg`.
+- Option B: hive styles the margin. This changes the Glamour output.
+
+## C14 GfChatAskMulti: `n close note` while the note takes the keys
+
+- Board row 39: `note · type the note · enter keep note · n close note · …`.
+- Spec key table: `n` opens the `note` line on the ask card. While the note
+  takes the keys, a printable key types. Then `n` types the letter n, and
+  it cannot close the note.
+- Option A (worker recommends): `n` types in the note. The hint on the board
+  stays as it is, and a separate change corrects the hint text.
+- Option B: `n` closes the note, and the user cannot type the letter n in a
+  note.
+
+## C15 GfComponents: the open event row is not padded
+
+- Board row 44: the text of the open event ends after its last word.
+- GfChatEvents rows 3 to 6: the text of each open event is padded with `dim`
+  spaces to column 117. A space shows no colour.
+- Option A (worker recommends): pad the GfComponents row to column 117 in
+  `dim`, as GfChatEvents shows.
+- Option B: change GfChatEvents to no padding.
+
+## Rulings C12 to C15
+
+The manager ruled on 2026-10-23, under the ask a18 answer: the spec wins, and
+the worker fixes the copies. C12: the board shows the Glamour table. C13: the
+board token is what Glamour gives. C14: in the note focus, `n` types n; the
+`n close note` hint goes from GfChatAskMulti and decision 33. C15: the
+GfComponents open event row is padded as GfChatEvents shows.
+`board-changes.md` records each change.
+
+## C16 GfChatNoCoordinator: the token of `· not delivered`
+
+- Board row 8: `· not delivered` is `dim`. The state table says `no board`
+  for this state, but the board shows it.
+- Rule 5: `· not delivered` is `accent`.
+- The worker applied the a18 ruling (the spec wins) and changed the board
+  token to `accent`.

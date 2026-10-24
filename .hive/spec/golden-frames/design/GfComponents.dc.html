@@ -172,7 +172,7 @@ function draw() {
   msgYou(t, 37, '14:02', ['move the status out of the composer border.']);
   msgAgent(t, 39, 'coordinator', '14:06', [['Status row, summary', 'accent', 1], ['• Segments are cut from the right. Config under ', 'fg']]); put(t, 49, 41, '[tui.status]', 'code'); put(t, 61, 41, '.', 'fg');
   event(t, 42, 'manager-hive', '14:09', 'quiet');
-  put(t, 1, 43, '▾', 'dim'); put(t, 3, 43, 'manager-store', 'dim', 1); put(t, 17, 43, '14:05', 'dim'); put(t, 1, 44, 'g2-live-scroll DONE: task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails', 'dim');
+  put(t, 1, 43, '▾', 'dim'); put(t, 3, 43, 'manager-store', 'dim', 1); put(t, 17, 43, '14:05', 'dim'); put(t, 1, 44, fit('g2-live-scroll DONE: task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails', 117), 'dim');
   msgYou(t, 45, '14:23', ['answered manager-hive · Model → Yes, restart now']);
   put(t, 62, 37, '›  you          user color, bold name', 'dim'); put(t, 62, 38, '●  agent        info name · Glamour markdown body', 'dim'); put(t, 62, 39, '▸  event        dim, folded to one line', 'dim'); put(t, 62, 40, '▾  event open   dim, the full text below', 'dim'); put(t, 62, 41, '?  ask          accent · in the composer while open', 'dim');
   cap(t, 47, 'TaskCard', '24×4 · dot = status · line 2 = worker and age, or landed commit, or the wait · heavy accent = selected');

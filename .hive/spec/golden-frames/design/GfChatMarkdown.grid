@@ -17,26 +17,20 @@ b|011111111111111110000000000000000000000000000000000000000000000000000000000000
 t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| TASK                │ VERIFIER         │ GATE     │ RESULT                                                             
-k|fffffffffffffffffffffrffffffffffffffffffrffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t|  TASK                        │ VERIFIER                    │ GATE                        │ RESULT                      
+k|ffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ────────────────────┼──────────────────┼──────────┼──────────────────────────────                                      
-k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffff
+t| ─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────────────── 
+k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrf
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| 10-board-export     │ t10-verifier-1   │ 4m 12s   │ pass                                                               
-k|fffffffffffffffffffffrffffffffffffffffffrffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t|  10-board-export             │ t10-verifier-1              │ 4m 12s                      │ pass                        
+k|ffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ────────────────────┼──────────────────┼──────────┼──────────────────────────────                                      
-k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffff
+t|  11-demo-mode                │ t11-verifier-1              │ 3m 48s                      │ pass                        
+k|ffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| 11-demo-mode        │ t11-verifier-1   │ 3m 48s   │ pass                                                               
-k|fffffffffffffffffffffrffffffffffffffffffrffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| ────────────────────┼──────────────────┼──────────┼──────────────────────────────                                      
-k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrffffffffffffffffffffffffffffffffffffff
-b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| 12-board-fixtures   │ t12-verifier-2   │ 5m 02s   │ pass, after one fail on V4                                         
-k|fffffffffffffffffffffrffffffffffffffffffrffffffffffrffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t|  12-board-fixtures           │ t12-verifier-2              │ 5m 02s                      │ pass, after one fail on V4  
+k|ffffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffffrfffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -48,28 +42,34 @@ t|
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|   gofmt -l $(git ls-files -co --exclude-standard '*.go')                                                               
-k|fccccccccccccccccccccccccccccccccccccccccccccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+k|fffccccccccccccccccccccccccccccccccccccccccccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|   go mod tidy -diff                                                                                                    
-k|fcccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+k|fffcccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|   go vet ./...                                                                                                         
-k|fccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+k|fffccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|   golangci-lint run ./...                                                                                              
-k|fcccccccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+k|fffcccccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|   go test -race ./...                                                                                                  
-k|fcccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+k|fffcccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| The second run of 12 passed after the worker fixed the mask file. Details are in                                       
+t| The second run of 12 passed after the worker fixed the mask file. Details are in tasks/12-board-                       
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcccccccccccccccfffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| fixtures/evidence/V4.md.                                                                                               
+k|fcccccccccccccccccccccccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-t| tasks/12-board-fixtures/evidence/V4.md.                                                                                
-k|fccccccccccccccccccccccccccccccccccccccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 t|                                                                                                                        
 k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff

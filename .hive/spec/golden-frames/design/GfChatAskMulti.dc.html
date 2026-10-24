@@ -149,7 +149,7 @@ function draw() { var t = T(120, 40); transcript(t, CHAT_ITEMS.slice(0, 4).conca
   [['Modes first (REC)', 'the card uses the new modes', true], ['Card first', 'modes come later', false], ['Other: type an answer', '', false]].forEach(function (o, i) { var oy = y + 11 + i, sel = i === 0; put(t, 2, oy, sel ? '›' : ' ', 'accent', 1); put(t, 4, oy, (i + 1) + ' [' + (o[2] ? 'x' : ' ') + '] ', sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, 10, oy, o[0], sel ? 'accent' : 'fg', sel ? 1 : 0); put(t, 37, oy, o[1], 'dim'); });
   put(t, 2, y + 14, 'note ›', 'dim'); put(t, 9, y + 14, 'keep the old tab key for one release', 'user'); put(t, 45, y + 14, '█', 'user');
   put(t, 0, y + h - 3, '├' + rep('─', 118) + '┤', 'accent'); put(t, 2, y + h - 2, '> ', 'user'); put(t, 4, y + h - 2, 'type a message · ? help', 'dim');
-  statusRow(t, 39, [stateSeg('● working 1m', 'working'), ['note', 'accent', 1], ['type the note', 'dim', 0], ['enter keep note', 'dim', 0], ['n close note', 'dim', 0], ['↑↓ option', 'dim', 0], ['space mark', 'dim', 0], ['^r input', 'dim', 0]], '14:22'); return t; }
+  statusRow(t, 39, [stateSeg('● working 1m', 'working'), ['note', 'accent', 1], ['type the note', 'dim', 0], ['enter keep note', 'dim', 0], ['↑↓ option', 'dim', 0], ['space mark', 'dim', 0], ['^r input', 'dim', 0]], '14:22'); return t; }
 
 class Component extends DCLogic {
   renderVals() { return { rows: rows(draw()) }; }

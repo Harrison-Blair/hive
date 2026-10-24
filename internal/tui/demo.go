@@ -155,7 +155,7 @@ var (
 	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json"}
 	demoOverlays   = []string{"", "details", "help"}
 	demoPopups     = []string{"", "agent-details"}
-	demoPrompts    = []string{"", "restart"}
+	demoPrompts    = []string{"", "restart", "quit", "send"}
 	demoChatNoises = []string{"", "quiet", "normal", "all"}
 )
 
@@ -430,13 +430,17 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 	m.applyDemoFrame(ui)
 }
 
-// applyDemoAsk sets the card state of the fixture. The focus feed gives the
-// feed the focus.
+// applyDemoAsk sets the card state of the fixture. A focus of the card
+// takes the focus from the input line.
 func (m *Model) applyDemoAsk(ui demoUIState) {
 	if ui.Screen != "chat" {
 		return
 	}
-	m.askFeedFocus = ui.Focus == "feed"
+	switch ui.Focus {
+	case "ask", "note", "other", "review":
+		m.chatInputActive = false
+		m.chatInput.Blur()
+	}
 	if ui.Ask.Card == "" || m.demo == nil {
 		return
 	}
@@ -488,10 +492,17 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 	}
 	m.helpOpen = ui.Overlay == "help"
 	m.popupOpen = ui.Popup == "agent-details"
-	if ui.Prompt.Kind == "restart" {
+	switch ui.Prompt.Kind {
+	case "restart":
 		m.agents.restartConfirm = true
 		m.agents.restartTarget = records.Agent{Key: ui.Prompt.Target}
 		m.agents.restartNotice = "restart " + ui.Prompt.Target + "? y/n"
+	case "quit":
+		// The state after the first ctrl+c (decision 14).
+		m.quitNotice = true
+	case "send":
+		// The state after enter on Chat (chat.md rule 12).
+		_ = m.sendChat()
 	}
 }
 
