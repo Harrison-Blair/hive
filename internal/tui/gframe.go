@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"image/color"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -112,6 +113,11 @@ func (m *Model) statusRows(width, height int) []string {
 			rows = append(rows, m.askStatusRow(width))
 			continue
 		}
+		if index == 0 && m.activeTab() != tabChat && slices.Equal(names, home.DefaultTUI().StatusLines[0]) {
+			// Ask a27: on a screen other than Chat, the default first row
+			// is the state, the screen segment, and the clock.
+			names = []string{"state", "screen", "clock"}
+		}
 		row := component.StatusRow{}
 		for _, name := range names {
 			switch {
@@ -179,6 +185,10 @@ func (m *Model) statusSegment(name string) string {
 		return component.DimText(m.selectedProjectID())
 	case "screen":
 		name := strings.ToLower(screenRegistry[m.activeTab()].label)
+		if m.popupOpen {
+			// Ask a27: while a popup is open, the segment names the popup.
+			name = m.focusState()
+		}
 		return component.StrongText(name) + component.DimText(strings.Join(append([]string{""}, m.focusHints(m.width)...), " · "))
 	case "chords":
 		parts := make([]string, 0, len(chordTabs))

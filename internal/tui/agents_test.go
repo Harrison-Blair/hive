@@ -9,6 +9,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/charmbracelet/x/ansi"
@@ -163,6 +164,11 @@ func TestAgentsPeekReadsInCommandAndEscClosesIt(t *testing.T) {
 
 func TestAgentsHeaderUsesBoardLabels(t *testing.T) {
 	m := agentsBoardModel(t)
+	// Ask a27: the default row of Agents has no supervisor and no needs
+	// you segment, so the check names them.
+	cfg := home.DefaultTUI()
+	cfg.StatusLines = [][]string{{"state", "supervisor", "needs_you", "clock"}}
+	m.setTUIConfig(cfg)
 	frame := ansi.Strip(m.View().Content)
 	// Golden-frames decision 11: the status row shows the state of the
 	// supervisor and needs you. The header state keeps the agent counts.

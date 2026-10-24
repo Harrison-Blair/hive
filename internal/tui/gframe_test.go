@@ -115,8 +115,10 @@ func TestFrameChordsOpenScreens(t *testing.T) {
 			if rows[1] != " "+strings.Repeat("─", 118)+" " {
 				t.Fatalf("row 1 = %q; want the rule", rows[1])
 			}
-			if !strings.Contains(rows[39], "esc chat") {
-				t.Errorf("status row %q does not show esc chat", rows[39])
+			// Ask a27: on a screen other than Chat, the default status row
+			// is the state, the screen segment, and the clock.
+			if !strings.Contains(rows[39], " · "+tc.name+" · ") || strings.Contains(rows[39], "esc chat") {
+				t.Errorf("status row %q does not show the screen segment %q in place of the chords", rows[39], tc.name)
 			}
 			back := escKey()
 			if tc.name == "work" {
@@ -194,6 +196,9 @@ func TestFrameKeysRebind(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	cfg := home.DefaultTUI()
 	cfg.Keys["agents"] = "ctrl+a"
+	// Ask a27: the default row of a screen other than Chat has no chords,
+	// so the check names the chords segment.
+	cfg.StatusLines = [][]string{{"chords", "clock"}}
 	m.setTUIConfig(cfg)
 	m, _ = raise(t, m, ctrl('g'))
 	if m.activeTab() != tabChat {

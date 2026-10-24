@@ -177,3 +177,26 @@ func TestGfAgentsKeysLogUserActions(t *testing.T) {
 		}
 	}
 }
+
+// Ask a27 (1): on a screen other than Chat, the default first status row is
+// state, the screen segment, and the clock. While the details popup is open,
+// the screen segment names the popup.
+func TestGfAgentsStatusRow(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		keys []tea.KeyPressMsg
+		want string
+	}{
+		{"overview", nil, " ● working 2m · agents · ←→ pod · ↑↓ card · enter details · a attach · p peek · t task · h stopped"},
+		{"one pod", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, " ● working 2m · agents · ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
+		{"details", []tea.KeyPressMsg{key(tea.KeyEnter, ""), key(tea.KeyEnter, "")}, " ● working 2m · details · a attach · p peek · t task · ↑↓ scroll · esc close"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, rows := gfAgentsRows(t, "GfAgents", tc.keys...)
+			want := tc.want + strings.Repeat(" ", 120-1-5-ansi.StringWidth(tc.want)) + "14:22 "
+			if got := rows[39]; got != want {
+				t.Fatalf("row 39 = %q, want %q", got, want)
+			}
+		})
+	}
+}
