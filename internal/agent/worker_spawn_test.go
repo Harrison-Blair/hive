@@ -244,12 +244,9 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	if !strings.HasPrefix(params.Text, "⬢ ") {
 		t.Fatalf("worker prompt = %q; want the hive marker prefix", params.Text)
 	}
-	want := "⬢ Read " + home + "/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. " +
-		"Follow that brief. Your worktree is '" + worktree + "' on the branch '" + branch + "'. " +
-		"The task brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
-		"Write each V<n>.md to .hive/spec/spec-feature/tasks/1-worker-demo/evidence/. " +
-		"Write the feature README at .hive/spec/spec-feature/README.md in the worktree. Do not commit a file under .hive/spec/. Hive copies it to the home. " +
-		"The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
+	want := "⬢ You are worker-1. Your project is demo. Your task is 1-worker-demo. Your worktree is " + worktree + ". " +
+		"Your brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
+		"Your evidence is .hive/spec/spec-feature/tasks/1-worker-demo/evidence/."
 	if params.Text != want {
 		t.Fatalf("prompt = %q; want %q", params.Text, want)
 	}
@@ -590,7 +587,7 @@ func loadAgentByName(home, name string) (records.Agent, bool, error) {
 	return records.Agent{}, false, nil
 }
 
-func TestWorkerRespawnRejectsLiveActingWorker(t *testing.T) {
+func TestWorkerRespawnBindsWithoutActingAgent(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)
 	writeProjectPath(t, home, "demo", repo)
@@ -602,34 +599,24 @@ func TestWorkerRespawnRejectsLiveActingWorker(t *testing.T) {
 		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
 		Task: task.ID, PaneID: "w4:p1", Status: records.AgentLive,
 	})
-	beforeTask, err := json.Marshal(readTaskRecord(t, home, task.ID))
-	if err != nil {
-		t.Fatal(err)
-	}
+	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
 	fake.result("workspace.get", workerWorkspaceGetJSON("w5", task.ID, repo, worktree))
-	scriptReadyShell(fake, "w5:p1", "term_w5:p1", "w5", "w5:t1", worktree)
-	fake.failure("agent.start", "agent_pane_busy", "pane is busy")
+	fake.result("tab.create", tabCreateJSON("w5", "w5:t2", "w5:p2", worktree))
+	scriptWorkerSuccess(fake, sleep, "w5:p2", "w5", "w5:t2", worktree, "t16-builder-2")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-worker-2", NameSet: true,
+		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-builder-2", NameSet: true,
 	})
-	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task 16-quiet-no-nudge has a live worker: t16-worker-1") {
-		t.Fatalf("envelope = %#v; want the live acting worker refusal", envelope)
+	if envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if len(fake.recorded("agent.start")) != 0 {
-		t.Fatalf("live worker refusal started an agent")
+	afterTask := readTaskRecord(t, home, task.ID)
+	if afterTask.ActingAgent != "t16-worker-1" || afterTask.Status != "assigned" {
+		t.Fatalf("task acting agent/status = %q/%q; want the old acting agent and assigned", afterTask.ActingAgent, afterTask.Status)
 	}
-	afterTask, err := json.Marshal(readTaskRecord(t, home, task.ID))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(afterTask) != string(beforeTask) {
-		t.Fatalf("task changed from %s to %s", beforeTask, afterTask)
-	}
-	if keys := agentKeys(t, home); len(keys) != 1 || keys[0] != "t16-worker-1" {
-		t.Fatalf("agent keys = %v; want only the old worker record", keys)
+	if keys := agentKeys(t, home); len(keys) != 2 {
+		t.Fatalf("agent keys = %v; want both records", keys)
 	}
 	if old := readAgent(t, home, "t16-worker-1"); old.Status != records.AgentLive {
 		t.Fatalf("old worker status = %q; want live", old.Status)
@@ -682,15 +669,15 @@ func TestWorkerSpawnWithoutNamePicksLowestFreeTaskName(t *testing.T) {
 	writeProjectPath(t, home, "demo", repo)
 	task := workerTask(home, repo, worktree, branch, "assigned")
 	task.ID = "16-quiet-no-nudge"
-	task.ActingAgent = "t16-worker-1"
+	task.ActingAgent = "t16-builder-1"
 	writeTaskRecord(t, home, task)
 	writeRecord(t, home, records.Agent{
-		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Key: "t16-builder-1", Name: "t16-builder-1", Role: "worker", Project: "demo",
 		Task: task.ID, PaneID: "w4:p1", Status: records.AgentExited,
 	})
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t16-worker-2")
+	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t16-builder-2")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
 		Role: "worker", Task: task.ID, Harness: "claude", Model: "m",
@@ -698,11 +685,11 @@ func TestWorkerSpawnWithoutNamePicksLowestFreeTaskName(t *testing.T) {
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if got := spawnResultAgent(envelope).Name; got != "t16-worker-2" {
-		t.Fatalf("agent name = %q; want t16-worker-2", got)
+	if got := spawnResultAgent(envelope).Name; got != "t16-builder-2" {
+		t.Fatalf("agent name = %q; want t16-builder-2", got)
 	}
-	if got := readTaskRecord(t, home, task.ID).ActingAgent; got != "t16-worker-2" {
-		t.Fatalf("acting agent = %q; want t16-worker-2", got)
+	if got := readTaskRecord(t, home, task.ID).ActingAgent; got != "t16-builder-2" {
+		t.Fatalf("acting agent = %q; want t16-builder-2", got)
 	}
 }
 
@@ -772,11 +759,9 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	if !strings.HasPrefix(params.Text, "⬢ ") {
 		t.Fatalf("verifier prompt = %q; want the hive marker prefix", params.Text)
 	}
-	wantPrompt := "⬢ Read " + home + "/.agents/skills/hive-verifier/SKILL.md first. Then run: " +
-		"hive task show '1-worker-demo' --brief. The task brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
-		"You are the verifier. Run each verification item again, write VERIFIED.md to .hive/spec/spec-feature/tasks/1-worker-demo/evidence/, then run: " +
-		"hive task verify --task '1-worker-demo', or add --fail --reason. Never write VERIFIED.md at the checkout root. " +
-		"The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex."
+	wantPrompt := "⬢ You are verifier-1. Your project is demo. Your task is 1-worker-demo. Your worktree is " + worktree + ". " +
+		"Your brief is .hive/spec/spec-feature/tasks/1-worker-demo/brief.md. " +
+		"Your evidence is .hive/spec/spec-feature/tasks/1-worker-demo/evidence/."
 	if params.Text != wantPrompt {
 		t.Fatalf("prompt = %q; want %q", params.Text, wantPrompt)
 	}
@@ -834,29 +819,30 @@ func TestVerifierSpawnRefusals(t *testing.T) {
 		home := testHome(t)
 		repo, worktree, branch := taskWorktree(t)
 		writeProjectPath(t, home, "demo", repo)
-		writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "assigned"))
+		writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "verified"))
 		fake := newFakeHerdr(t)
 		envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m"})
-		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task is assigned") {
-			t.Fatalf("envelope = %#v; want task is assigned", envelope)
+		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task is verified") {
+			t.Fatalf("envelope = %#v; want task is verified", envelope)
 		}
 		if len(fake.recorded("workspace.get")) != 0 {
 			t.Fatalf("status refusal read a workspace")
 		}
 	})
-	t.Run("live worker", func(t *testing.T) {
+	t.Run("no worktree", func(t *testing.T) {
 		home := testHome(t)
 		repo, worktree, branch := taskWorktree(t)
 		writeProjectPath(t, home, "demo", repo)
-		writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "completed"))
-		writeRecord(t, home, records.Agent{Key: "worker-1", Name: "worker-1", Role: "worker", Project: "demo", Task: "1-worker-demo", PaneID: "w5:p1", Status: records.AgentLive})
+		task := workerTask(home, repo, worktree, branch, "completed")
+		task.Worktree = nil
+		writeTaskRecord(t, home, task)
 		fake := newFakeHerdr(t)
 		envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m"})
-		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "worker still live: worker-1") {
-			t.Fatalf("envelope = %#v; want worker still live", envelope)
+		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task has no worktree") {
+			t.Fatalf("envelope = %#v; want the no-worktree refusal", envelope)
 		}
 		if len(fake.recorded("workspace.get")) != 0 {
-			t.Fatalf("live refusal read a workspace")
+			t.Fatalf("worktree refusal read a workspace")
 		}
 	})
 }

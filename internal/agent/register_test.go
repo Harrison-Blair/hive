@@ -880,8 +880,8 @@ func TestRegisterLogsTransitionsAndErrors(t *testing.T) {
 	}
 	events := readAgentLogEvents(t, home)
 	recordEvent := findAgentLogEvent(events, "agent record written")
-	if recordEvent == nil || recordEvent["agent_id"] != "coordinator-g1" || recordEvent["role"] != "coordinator" {
-		t.Fatalf("record event = %#v; want agent_id coordinator-g1 and role coordinator", recordEvent)
+	if recordEvent == nil || recordEvent["agent_id"] != "coordinator-g1" || recordEvent["profile"] != "coordinator" {
+		t.Fatalf("record event = %#v; want agent_id coordinator-g1 and profile coordinator", recordEvent)
 	}
 	claimEvent := findAgentLogEvent(events, "agent claim written")
 	if claimEvent == nil || claimEvent["agent_id"] != "coordinator-g1" {
@@ -898,8 +898,8 @@ func TestRegisterLogsTransitionsAndErrors(t *testing.T) {
 		t.Fatalf("events = %#v; want an agent registration failure event", errorEvents)
 	}
 	message, _ := failureEvent["error"].(string)
-	if !strings.Contains(message, "invalid role: boss") || failureEvent["role"] != "boss" {
-		t.Fatalf("failure event = %#v; want role boss and the error text", failureEvent)
+	if !strings.Contains(message, "invalid role: boss") {
+		t.Fatalf("failure event = %#v; want the role error text", failureEvent)
 	}
 }
 

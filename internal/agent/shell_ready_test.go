@@ -32,17 +32,18 @@ func requestsBefore(fake *fakeHerdr, stop, method string) int {
 
 func TestManagerSpawnWaitsForShellSecondRead(t *testing.T) {
 	home := testHome(t)
+	dir := projectDirectory(t, home, "demo")
 	writeManagerProject(t, home, nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("worktree.list", managerWorktreeListJSON(""))
-	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
 	for range 2 {
-		fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", managerRepoPath, "")+`}`)
+		fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", dir, "")+`}`)
 	}
 	fake.failure("pane.process_info", "pane_not_found", "shell process data is not ready")
 	fake.result("pane.process_info", shellProcessInfoJSON("wBD:p1", 41, 41))
-	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
+	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
 	var shellReadStatuses []string
 	startStatus := ""
 	fake.setBefore(func(method string, _ json.RawMessage) {
@@ -84,13 +85,14 @@ func TestManagerSpawnWaitsForShellSecondRead(t *testing.T) {
 
 func TestManagerSpawnWaitsForShellStartupProcessesToClear(t *testing.T) {
 	home := testHome(t)
+	dir := projectDirectory(t, home, "demo")
 	writeManagerProject(t, home, nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("worktree.list", managerWorktreeListJSON(""))
-	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
 	for range 2 {
-		fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", managerRepoPath, "")+`}`)
+		fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", dir, "")+`}`)
 	}
 	fake.result("pane.process_info", shellProcessInfoJSONWithEntries(
 		"wBD:p1", 41, 41,
@@ -104,7 +106,7 @@ func TestManagerSpawnWaitsForShellStartupProcessesToClear(t *testing.T) {
 	fake.result("pane.process_info", shellProcessInfoJSONWithEntries(
 		"wBD:p1", 41, 41, processEntry(41, "bash", "/usr/bin/bash"),
 	))
-	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
+	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1", false)
 
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if got := requestsBefore(fake, "agent.start", "pane.process_info"); got != 2 {
@@ -168,11 +170,12 @@ func TestWorkerSpawnWaitsForShellSecondRead(t *testing.T) {
 
 func TestManagerSpawnStopsWhenShellDeadlineExpires(t *testing.T) {
 	home := testHome(t)
+	dir := projectDirectory(t, home, "demo")
 	writeManagerProject(t, home, nil)
 	fake := newFakeHerdr(t)
 	fake.result("worktree.list", managerWorktreeListJSON(""))
-	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", managerRepoPath, "")+`}`)
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBD:p1", "term_wBD", "wBD", "wBD:t1", dir, "")+`}`)
 	fake.result("pane.process_info", shellProcessInfoJSON("wBD:p1", 41, 42))
 	fake.failure("agent.start", "invalid_agent_name", "must not start")
 	fake.result("workspace.close", `{"type":"workspace_closed","workspace_id":"wBD"}`)

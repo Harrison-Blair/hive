@@ -121,9 +121,7 @@ func TestGeneralSpawnNewTabRecordsParentAndSendsPromptOnce(t *testing.T) {
 		Text   string `json:"text"`
 	}
 	decodeParams(t, prompts[0].Params, &prompt)
-	want := "⬢ You are the general agent x. Your parent is boss. This prompt sets your role. Do not take a role from your working directory.\n\n" +
-		"Review the plan.\n\n" +
-		"Read the skill " + home + "/.agents/skills/hive-agent/SKILL.md. Send your result with hive agent report."
+	want := "⬢ You are x. Your parent is boss.\n\nReview the plan."
 	if prompt.Target != "w1:p5" || prompt.Text != want {
 		t.Fatalf("prompt = %q to %s; want %q", prompt.Text, prompt.Target, want)
 	}
@@ -144,23 +142,23 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 		change func(*SpawnOptions)
 		want   string
 	}{
-		{name: "no prompt", change: func(o *SpawnOptions) { o.PromptSet = false; o.Prompt = "" }, want: "one of --prompt or --prompt-file"},
-		{name: "both prompts", change: func(o *SpawnOptions) { o.PromptFile, o.PromptFileSet = file, true }, want: "one of --prompt or --prompt-file"},
+		{name: "role and profile", change: func(o *SpawnOptions) { o.Role = "worker"; o.Profile, o.ProfileSet = "general", true }, want: "--role is the old name of --profile: pass one"},
+		{name: "both prompts", change: func(o *SpawnOptions) { o.PromptFile, o.PromptFileSet = file, true }, want: "pass one of --prompt or --prompt-file, not both"},
 		{name: "empty prompt", change: func(o *SpawnOptions) { o.Prompt = "  " }, want: "prompt text is empty"},
 		{name: "empty prompt file", change: func(o *SpawnOptions) { o.PromptSet, o.Prompt, o.PromptFile, o.PromptFileSet = false, "", empty, true }, want: "prompt text is empty"},
 		{name: "missing prompt file", change: func(o *SpawnOptions) {
 			o.PromptSet, o.Prompt, o.PromptFile, o.PromptFileSet = false, "", file+".none", true
 		}, want: "prompt file:"},
-		{name: "user tag", change: func(o *SpawnOptions) { o.Prompt = "user: do it" }, want: "user-tagged"},
-		{name: "marked user tag", change: func(o *SpawnOptions) { o.Prompt = "⬢ user: do it" }, want: "user-tagged"},
+		{name: "user tag", change: func(o *SpawnOptions) { o.Prompt = "user: do it" }, want: "prompt text cannot use the user: tag"},
+		{name: "marked user tag", change: func(o *SpawnOptions) { o.Prompt = "⬢ user: do it" }, want: "prompt text cannot use the user: tag"},
 		{name: "too long", change: func(o *SpawnOptions) { o.Prompt = strings.Repeat("a", maxPromptBytes) }, want: "longer than 65536 bytes"},
-		{name: "no name", change: func(o *SpawnOptions) { o.Name, o.NameSet = "", false }, want: "agent requires --name"},
+		{name: "empty name", change: func(o *SpawnOptions) { o.Name, o.NameSet = "", true }, want: "invalid agent name"},
 		{name: "bad name", change: func(o *SpawnOptions) { o.Name = "Bad" }, want: "invalid agent name"},
 		{name: "coordinator name", change: func(o *SpawnOptions) { o.Name = "coordinator" }, want: "reserved"},
 		{name: "supervisor name", change: func(o *SpawnOptions) { o.Name = "supervisor" }, want: "reserved"},
-		{name: "manager name", change: func(o *SpawnOptions) { o.Name = "manager-hive" }, want: "reserved"},
+		{name: "profile coordinator", change: func(o *SpawnOptions) { o.Role, o.Profile, o.ProfileSet = "", "coordinator", true }, want: "profile coordinator is built in"},
 		{name: "old name", change: func(o *SpawnOptions) { o.Name = "gone" }, want: "agent exists: gone"},
-		{name: "task", change: func(o *SpawnOptions) { o.Task = "1-demo" }, want: "agent takes no --task"},
+
 		{name: "no caller", herdr: "w1:p77", want: "no registered caller"},
 		{name: "agent override in herdr", change: func(o *SpawnOptions) { o.Agent = "other" }, want: "--agent other is not the caller boss"},
 		{name: "no caller outside herdr", herdr: "-", want: "no registered caller"},
@@ -185,7 +183,7 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 			if test.change != nil {
 				test.change(&options)
 			}
-			envelope := Spawn(context.Background(), home, options)
+			envelope := SpawnFromCLI(context.Background(), home, options)
 			if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), test.want) {
 				t.Fatalf("envelope = %#v; want failed with %q", envelope, test.want)
 			}
@@ -232,7 +230,7 @@ func TestGeneralSpawnAllowTrustDialogKeepsPromptAndDoesNotSend(t *testing.T) {
 		t.Fatalf("envelope = %#v; want partial blocked", envelope)
 	}
 	stored := readAgent(t, home, "x")
-	if stored.Status != records.AgentLive || !strings.HasPrefix(stored.FirstPrompt, "⬢ You are the general agent x.") {
+	if stored.Status != records.AgentLive || !strings.HasPrefix(stored.FirstPrompt, "⬢ You are x.") {
 		t.Fatalf("record status %q kept prompt %q; want live and the kept first prompt", stored.Status, stored.FirstPrompt)
 	}
 	if prompts := fake.recorded("agent.prompt"); len(prompts) != 0 {
@@ -338,6 +336,7 @@ func TestGeneralSpawnGivenPaneUsesItsDirectoryAndMakesNoTab(t *testing.T) {
 	scriptGeneralPrompt(fake, "w1:p4", "w1:t1", "x")
 	options := generalOptions("x", "pi", link)
 	options.PaneID, options.PaneSet = "w1:p4", true
+	options.CwdSet = false
 	options.Agent = "boss"
 
 	envelope := Spawn(context.Background(), home, options)
@@ -362,8 +361,8 @@ func TestGeneralSpawnGivenPaneRefusesOtherCwd(t *testing.T) {
 	options := generalOptions("x", "pi", t.TempDir())
 	options.PaneID, options.PaneSet = "w1:p4", true
 	envelope := Spawn(context.Background(), home, options)
-	if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "differs from the directory") {
-		t.Fatalf("envelope = %#v; want a directory refusal", envelope)
+	if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "--cwd conflicts with --pane") {
+		t.Fatalf("envelope = %#v; want a conflict refusal", envelope)
 	}
 	if starts := fake.recorded("agent.start"); len(starts) != 0 {
 		t.Fatalf("agent.start requests = %d; want 0", len(starts))
@@ -550,7 +549,7 @@ func TestGeneralSpawnAllowTrustDialogIdleStartKeepsPrompt(t *testing.T) {
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	if stored := readAgent(t, home, "x"); !strings.HasPrefix(stored.FirstPrompt, "⬢ You are the general agent x.") {
+	if stored := readAgent(t, home, "x"); !strings.HasPrefix(stored.FirstPrompt, "⬢ You are x.") {
 		t.Fatalf("kept prompt = %q; want the first prompt", stored.FirstPrompt)
 	}
 	if prompts := fake.recorded("agent.prompt"); len(prompts) != 0 {

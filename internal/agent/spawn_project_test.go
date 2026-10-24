@@ -27,6 +27,7 @@ func setupTaskPaneSpawn(t *testing.T, role string) string {
 	fake.result("agent.get", workerAgentInfoJSON(paneID, workspaceID, tabID, "idle", name))
 	fake.result("pane.process_info", workerProcessJSON(paneID, sleep))
 	fake.result("agent.get", workerAgentInfoJSON(paneID, workspaceID, tabID, "idle", name))
+	fake.result("agent.prompt", workerAgentPromptedJSON(paneID, workspaceID, tabID, name))
 	return home
 }
 
@@ -77,7 +78,7 @@ func TestSpawnPaneRejectsDifferentTaskProject(t *testing.T) {
 		Role: "worker", Project: "other", Task: "1-worker-demo", Harness: "claude", Model: "m",
 		Name: "worker-demo-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 	})
-	want := "task 1-worker-demo is in project demo"
+	want := "task 1-worker-demo is in project demo, not other"
 	if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != want {
 		t.Fatalf("envelope = %#v; want failure %q", envelope, want)
 	}

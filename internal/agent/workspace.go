@@ -3,7 +3,6 @@ package agent
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -14,21 +13,43 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
-// managerChoice is the workspace and pane that one manager spawn selected.
-type managerChoice struct {
+// projectChoice is the workspace and pane that one project agent spawn
+// selected.
+type projectChoice struct {
 	PaneID     string
 	ProjectID  string
+	Directory  string
 	Workspace  records.ProjectWorkspace
 	Created    bool
 	CreatedTab bool
 }
 
-// resolveManagerWorkspace resolves one manager pane from the project record or
-// the parent workspace that herdr reports for the repository.
-func resolveManagerWorkspace(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (managerChoice, string) {
-	project, message := readProjectRecord(home, options.Project)
-	if message != "" {
-		return managerChoice{}, message
+// resolveProjectPane resolves one pane of a project agent. The agent works in
+// projects/P/ of the home, in the hive:P workspace.
+func resolveProjectPane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (projectChoice, string) {
+	if options.projectRecord == nil {
+		return projectChoice{}, "project not found: " + displayValue(options.Project)
+	}
+	project := *options.projectRecord
+	directory := filepath.Join(home, "projects", project.ID)
+	if err := os.MkdirAll(directory, 0o755); err != nil {
+		return projectChoice{}, "create project directory: " + err.Error()
+	}
+	resolved, err := filepath.EvalSymlinks(directory)
+	if err != nil {
+		return projectChoice{}, "project directory: " + err.Error()
+	}
+	directory = resolved
+
+	if options.Adopt != "" {
+		workspace, err := herdr.WorkspaceGet(ctx, options.Adopt, herdr.WithLogger(logger))
+		if err != nil {
+			return projectChoice{}, "workspace get: " + err.Error()
+		}
+		if workspace.WorkspaceID != options.Adopt {
+			return projectChoice{}, "workspace get: returned workspace ID differs"
+		}
+		return createProjectTab(ctx, home, project, directory, records.ProjectWorkspace{ID: workspace.WorkspaceID}, options, logger)
 	}
 
 	var recorded *records.ProjectWorkspace
@@ -36,94 +57,45 @@ func resolveManagerWorkspace(ctx context.Context, home string, options SpawnOpti
 		workspace, err := herdr.WorkspaceGet(ctx, project.Workspace.ID, herdr.WithLogger(logger))
 		if err != nil {
 			if !isHerdrCode(err, herdr.CodeWorkspaceNotFound) {
-				return managerChoice{}, "workspace get: " + err.Error()
+				return projectChoice{}, "workspace get: " + err.Error()
 			}
 			if clearErr := clearProjectWorkspace(home, project.ID); clearErr != nil {
-				return managerChoice{}, "clear project workspace: " + clearErr.Error()
+				return projectChoice{}, "clear project workspace: " + clearErr.Error()
 			}
 			logWorkspaceReset(logger, project.ID, project.Workspace.ID, "workspace not found")
 		} else if workspace.WorkspaceID != project.Workspace.ID {
-			return managerChoice{}, "workspace get: returned workspace ID differs"
+			return projectChoice{}, "workspace get: returned workspace ID differs"
 		} else {
 			copy := *project.Workspace
 			recorded = &copy
 		}
 	}
-
-	parentID, err := managerParentWorkspace(ctx, project.Path, logger)
-	if err != nil {
-		return managerChoice{}, "worktree list: " + err.Error()
-	}
-	if recorded != nil && parentID != recorded.ID {
-		if clearErr := clearProjectWorkspace(home, project.ID); clearErr != nil {
-			return managerChoice{}, "clear project workspace: " + clearErr.Error()
-		}
-		logWorkspaceReset(logger, project.ID, recorded.ID, "workspace does not hold parent checkout")
-		recorded = nil
-	}
 	if recorded != nil {
 		if recorded.TabID != "" {
-			choice, reusable, message := reuseManagerTab(ctx, home, project, *recorded, logger)
+			choice, reusable, message := reuseProjectTab(ctx, home, project, directory, *recorded, logger)
 			if message != "" {
-				return managerChoice{}, message
+				return projectChoice{}, message
 			}
 			if reusable {
 				return choice, ""
 			}
 		}
 		if err := clearProjectTab(home, project.ID, *recorded); err != nil {
-			return managerChoice{}, "clear project tab: " + err.Error()
+			return projectChoice{}, "clear project tab: " + err.Error()
 		}
 		recorded.RootPane = ""
 		recorded.TabID = ""
 		recorded.TabCreatedByHive = false
-		return createManagerTab(ctx, home, project, *recorded, options, logger)
+		return createProjectTab(ctx, home, project, directory, *recorded, options, logger)
 	}
-
-	if options.Adopt != "" {
-		if parentID == "" || options.Adopt != parentID {
-			return managerChoice{}, fmt.Sprintf("workspace %s does not hold the parent checkout", options.Adopt)
-		}
-		workspace, err := herdr.WorkspaceGet(ctx, options.Adopt, herdr.WithLogger(logger))
-		if err != nil {
-			return managerChoice{}, "workspace get: " + err.Error()
-		}
-		if workspace.WorkspaceID != options.Adopt {
-			return managerChoice{}, "workspace get: returned workspace ID differs"
-		}
-		return createManagerTab(ctx, home, project, records.ProjectWorkspace{ID: workspace.WorkspaceID}, options, logger)
-	}
-	if parentID != "" {
-		workspace, err := herdr.WorkspaceGet(ctx, parentID, herdr.WithLogger(logger))
-		if err != nil {
-			return managerChoice{}, "workspace get: " + err.Error()
-		}
-		if workspace.WorkspaceID != parentID {
-			return managerChoice{}, "workspace get: returned workspace ID differs"
-		}
-		return createManagerTab(ctx, home, project, records.ProjectWorkspace{ID: workspace.WorkspaceID}, options, logger)
-	}
-	if options.Adopt != "" {
-		return managerChoice{}, fmt.Sprintf("workspace %s does not hold the parent checkout", options.Adopt)
-	}
-	return createManagerWorkspace(ctx, home, project, logger)
+	return createProjectWorkspace(ctx, home, project, directory, logger)
 }
 
-// managerParentWorkspace gets the workspace that holds the repository's parent
-// checkout. An empty ID means that no workspace holds it.
-func managerParentWorkspace(ctx context.Context, repositoryPath string, logger *slog.Logger) (string, error) {
-	listing, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: repositoryPath}, herdr.WithLogger(logger))
-	if err != nil {
-		return "", err
-	}
-	return listing.Source.SourceWorkspaceID, nil
-}
-
-// reuseManagerTab reuses the recorded hive tab only when it holds one free shell.
-func reuseManagerTab(ctx context.Context, home string, project records.Project, recorded records.ProjectWorkspace, logger *slog.Logger) (managerChoice, bool, string) {
+// reuseProjectTab reuses the recorded hive tab only when it holds one free shell.
+func reuseProjectTab(ctx context.Context, home string, project records.Project, directory string, recorded records.ProjectWorkspace, logger *slog.Logger) (projectChoice, bool, string) {
 	tabs, err := herdr.TabList(ctx, recorded.ID, herdr.WithLogger(logger))
 	if err != nil {
-		return managerChoice{}, false, "tab list: " + err.Error()
+		return projectChoice{}, false, "tab list: " + err.Error()
 	}
 	var tab *herdr.TabInfo
 	for index := range tabs {
@@ -133,11 +105,11 @@ func reuseManagerTab(ctx context.Context, home string, project records.Project, 
 		}
 	}
 	if tab == nil || tab.PaneCount != 1 {
-		return managerChoice{}, false, ""
+		return projectChoice{}, false, ""
 	}
 	panes, err := herdr.PaneList(ctx, recorded.ID, herdr.WithLogger(logger))
 	if err != nil {
-		return managerChoice{}, false, "pane list: " + err.Error()
+		return projectChoice{}, false, "pane list: " + err.Error()
 	}
 	var pane *herdr.PaneInfo
 	for index := range panes {
@@ -145,72 +117,71 @@ func reuseManagerTab(ctx context.Context, home string, project records.Project, 
 			continue
 		}
 		if pane != nil {
-			return managerChoice{}, false, ""
+			return projectChoice{}, false, ""
 		}
 		pane = &panes[index]
 	}
-	if pane == nil || pane.PaneID == "" || pane.WorkspaceID != recorded.ID || pane.TabID != recorded.TabID || !sameDirectory(paneCwd(*pane), project.Path) || shellUnavailable(*pane) != "" {
-		return managerChoice{}, false, ""
+	if pane == nil || pane.PaneID == "" || pane.WorkspaceID != recorded.ID || pane.TabID != recorded.TabID || !sameDirectory(paneCwd(*pane), directory) || shellUnavailable(*pane) != "" {
+		return projectChoice{}, false, ""
 	}
 	processInfo, err := herdr.PaneProcessInfoGet(ctx, pane.PaneID, herdr.WithLogger(logger))
 	if err != nil || processInfo.PaneID != pane.PaneID || processInfo.ShellPID == nil || processInfo.ForegroundProcessGroupID == nil || *processInfo.ShellPID != *processInfo.ForegroundProcessGroupID {
-		return managerChoice{}, false, ""
+		return projectChoice{}, false, ""
 	}
 	if recorded.RootPane != pane.PaneID {
 		recorded.RootPane = pane.PaneID
 		if err := writeProjectWorkspace(home, project.ID, recorded); err != nil {
-			return managerChoice{}, false, "store: " + err.Error()
+			return projectChoice{}, false, "store: " + err.Error()
 		}
 	}
-	return managerChoice{PaneID: pane.PaneID, ProjectID: project.ID, Workspace: recorded}, true, ""
+	return projectChoice{PaneID: pane.PaneID, ProjectID: project.ID, Directory: directory, Workspace: recorded}, true, ""
 }
 
-// createManagerTab creates one manager tab in the workspace that holds the
-// repository's parent checkout.
-func createManagerTab(ctx context.Context, home string, project records.Project, workspace records.ProjectWorkspace, options SpawnOptions, logger *slog.Logger) (managerChoice, string) {
+// createProjectTab creates one project agent tab in an existing workspace.
+func createProjectTab(ctx context.Context, home string, project records.Project, directory string, workspace records.ProjectWorkspace, options SpawnOptions, logger *slog.Logger) (projectChoice, string) {
 	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{
 		WorkspaceID: workspace.ID,
-		Cwd:         project.Path,
-		Label:       managerAgentName(options),
+		Cwd:         directory,
+		Label:       options.Name,
 		Focus:       false,
 	}, herdr.WithLogger(logger))
 	if err != nil {
-		return managerChoice{}, "tab create: " + err.Error()
+		return projectChoice{}, "tab create: " + err.Error()
 	}
 	if created.Tab.TabID == "" || created.Tab.WorkspaceID != workspace.ID || created.RootPane.PaneID == "" || created.RootPane.WorkspaceID != workspace.ID || created.RootPane.TabID != created.Tab.TabID {
-		return managerChoice{}, "tab create: returned topology does not match the request"
+		return projectChoice{}, "tab create: returned topology does not match the request"
 	}
 	workspace.RootPane = created.RootPane.PaneID
 	workspace.TabID = created.Tab.TabID
 	workspace.TabCreatedByHive = true
-	choice := managerChoice{PaneID: created.RootPane.PaneID, ProjectID: project.ID, Workspace: workspace, CreatedTab: true}
-	if !sameDirectory(paneCwd(created.RootPane), project.Path) {
+	choice := projectChoice{PaneID: created.RootPane.PaneID, ProjectID: project.ID, Directory: directory, Workspace: workspace, CreatedTab: true}
+	if !sameDirectory(paneCwd(created.RootPane), directory) {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, "workspace cwd mismatch"
+		return projectChoice{}, "workspace cwd mismatch"
 	}
 	if err := writeProjectWorkspace(home, project.ID, workspace); err != nil {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, "store: " + err.Error()
+		return projectChoice{}, "store: " + err.Error()
 	}
 	if message := shellUnavailable(created.RootPane); message != "" {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, message
+		return projectChoice{}, message
 	}
 	return choice, ""
 }
 
-// createManagerWorkspace makes a workspace at the repository path.
-func createManagerWorkspace(ctx context.Context, home string, project records.Project, logger *slog.Logger) (managerChoice, string) {
+// createProjectWorkspace makes the hive:P workspace at the project directory.
+func createProjectWorkspace(ctx context.Context, home string, project records.Project, directory string, logger *slog.Logger) (projectChoice, string) {
 	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{
-		Cwd:   project.Path,
+		Cwd:   directory,
 		Label: "hive:" + project.ID,
 		Focus: false,
 	}, herdr.WithLogger(logger))
 	if err != nil {
-		return managerChoice{}, "workspace create: " + err.Error()
+		return projectChoice{}, "workspace create: " + err.Error()
 	}
 	if created.Tab.TabID == "" || created.Tab.WorkspaceID != created.Workspace.WorkspaceID || created.RootPane.PaneID == "" || created.RootPane.WorkspaceID != created.Workspace.WorkspaceID || created.RootPane.TabID != created.Tab.TabID {
-		return managerChoice{}, "workspace create: returned topology does not match the request"
+		return projectChoice{}, "workspace create: returned topology does not match the request"
 	}
 	workspace := records.ProjectWorkspace{
 		ID:               created.Workspace.WorkspaceID,
@@ -220,41 +191,32 @@ func createManagerWorkspace(ctx context.Context, home string, project records.Pr
 		TabID:            created.Tab.TabID,
 		TabCreatedByHive: false,
 	}
-	choice := managerChoice{PaneID: created.RootPane.PaneID, ProjectID: project.ID, Workspace: workspace, Created: true}
-	if !sameDirectory(paneCwd(created.RootPane), project.Path) {
+	choice := projectChoice{PaneID: created.RootPane.PaneID, ProjectID: project.ID, Directory: directory, Workspace: workspace, Created: true}
+	if !sameDirectory(paneCwd(created.RootPane), directory) {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, "workspace cwd mismatch"
+		return projectChoice{}, "workspace cwd mismatch"
 	}
 	if err := writeProjectWorkspace(home, project.ID, workspace); err != nil {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, "store: " + err.Error()
+		return projectChoice{}, "store: " + err.Error()
 	}
 	if message := shellUnavailable(created.RootPane); message != "" {
 		choice.cleanup(ctx, home, logger)
-		return managerChoice{}, message
+		return projectChoice{}, message
 	}
 	return choice, ""
 }
-
-func managerAgentName(options SpawnOptions) string {
-	if options.NameSet {
-		return options.Name
-	}
-	return defaultSingletonName("manager", options.Project)
-}
-
-// cleanup closes only topology that this spawn made.
-func (choice managerChoice) cleanup(ctx context.Context, home string, logger *slog.Logger) {
+func (choice projectChoice) cleanup(ctx context.Context, home string, logger *slog.Logger) {
 	if choice.Created {
 		if err := herdr.WorkspaceClose(ctx, choice.Workspace.ID, false, herdr.WithLogger(logger)); err != nil {
 			if logger != nil {
-				logger.Debug("manager workspace cleanup close failed", "command", "agent spawn", "project_id", choice.ProjectID, "workspace_id", choice.Workspace.ID, "error", err.Error())
+				logger.Debug("project workspace cleanup close failed", "command", "agent spawn", "project_id", choice.ProjectID, "workspace_id", choice.Workspace.ID, "error", err.Error())
 			}
 		} else if logger != nil {
-			logger.Debug("manager workspace cleanup closed", "command", "agent spawn", "project_id", choice.ProjectID, "workspace_id", choice.Workspace.ID)
+			logger.Debug("project workspace cleanup closed", "command", "agent spawn", "project_id", choice.ProjectID, "workspace_id", choice.Workspace.ID)
 		}
 		if err := clearProjectWorkspace(home, choice.ProjectID); err != nil && logger != nil {
-			logger.Debug("manager workspace cleanup clear failed", "command", "agent spawn", "project_id", choice.ProjectID, "error", err.Error())
+			logger.Debug("project workspace cleanup clear failed", "command", "agent spawn", "project_id", choice.ProjectID, "error", err.Error())
 		}
 		return
 	}

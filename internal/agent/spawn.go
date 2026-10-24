@@ -8,14 +8,16 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Harrison-Blair/hive/internal/chat"
+	"github.com/Harrison-Blair/hive/internal/lib/gitx"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
-	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -35,7 +37,16 @@ var (
 
 // SpawnOptions holds explicit values for one agent spawn.
 type SpawnOptions struct {
-	Role          string
+	// Role is the wave-A old name of a profile. A new caller passes Profile.
+	Role    string
+	Profile string
+	// ProfileSet marks an explicit --profile.
+	ProfileSet bool
+	// Kind is the built-in kind of a record that hive code starts.
+	Kind string
+	// Owner marks the one live owner of the project. Owns is its project.
+	Owner         bool
+	Owns          string
 	Agent         string
 	Project       string
 	Task          string
@@ -50,8 +61,8 @@ type SpawnOptions struct {
 	QuietAfterSet bool
 	ExtraArgs     []string
 	PID           int64
-	// Prompt, PromptFile, Cwd, and AllowTrustDialog are the inputs of a
-	// general agent spawn (role agent).
+	// Prompt and PromptFile are the spawner text. Cwd and AllowTrustDialog
+	// are the placement and trust inputs of a spawn with no task or project.
 	Prompt            string
 	PromptSet         bool
 	PromptFile        string
@@ -60,8 +71,20 @@ type SpawnOptions struct {
 	CwdSet            bool
 	AllowTrustDialog  bool
 	shellReadyTimeout time.Duration
-	renameTab         bool
 	general           *generalSpawn
+	taskRecord        *records.Task
+	projectRecord     *records.Project
+	caller            records.Agent
+	callerKnown       bool
+	firstPrompt       string
+	fromCLI           bool
+}
+
+func (options SpawnOptions) callerKey() string {
+	if options.callerKnown {
+		return options.caller.Key
+	}
+	return ""
 }
 
 // SpawnResult is the record and optional claim of one spawn.
@@ -70,30 +93,17 @@ type SpawnResult struct {
 	Claim *records.Claim `json:"claim,omitempty"`
 }
 
-// SpawnFromCLI is the CLI entry of spawn. It refuses each role that hive code
-// starts, before it changes a claim or a record.
+// SpawnFromCLI is the CLI entry of spawn. It applies the caller rules of the
+// CLI, such as the rule for --owner.
 func SpawnFromCLI(ctx context.Context, home string, options SpawnOptions) output.Envelope {
-	if message := hiveOwnedRoleError(options.Role, false); message != "" {
-		logAgentEvent(home, "agent spawn refused", "command", "agent spawn", "role", options.Role, "error", message)
-		return failed("validate", message)
-	}
+	options.fromCLI = true
 	return Spawn(ctx, home, options)
 }
 
-// Spawn writes the intent record, starts one agent, and records its identity.
+// Spawn validates one spawn, then starts the agent.
 func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelope {
 	if ctx == nil {
 		ctx = context.Background()
-	}
-	profile, err := harness.Lookup(options.Harness)
-	if err != nil {
-		return failed("validate", err.Error())
-	}
-	if err := harness.Check(profile); err != nil {
-		return failed("validate", err.Error())
-	}
-	if message := validateExtraArgs(options.ExtraArgs); message != "" {
-		return failed("validate", message)
 	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
 	if err != nil {
@@ -101,54 +111,62 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	defer func() { _ = writer.Close() }()
 	logger := slog.New(writer)
-	if options.Role == "agent" && options.general == nil {
+
+	profile, err := harness.Lookup(options.Harness)
+	if err != nil {
+		envelope := failed("validate", err.Error())
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	if err := harness.Check(profile); err != nil {
+		envelope := failed("validate", err.Error())
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	options, message := normalizeSpawn(ctx, home, options, logger)
+	if message != "" {
+		envelope := failed("validate", message)
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	if message := validateExtraArgs(options.ExtraArgs); message != "" {
+		envelope := failed("validate", message)
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	if options.Kind != "" {
+		if !options.PaneSet {
+			envelope := failed("validate", "pane required: pass --pane")
+			logSpawn(logger, envelope, options, "")
+			return envelope
+		}
+		return spawnInPane(ctx, home, options, profile, options.PaneID, false, logger)
+	}
+	if options.Task == "" && options.Project == "" {
 		return spawnGeneral(ctx, home, options, profile, logger)
 	}
-
 	choice, paneError := choosePane(ctx, home, options, logger)
 	if paneError != "" {
-		return failed("validate", paneError)
+		envelope := failed("validate", paneError)
+		logSpawn(logger, envelope, options, "")
+		return envelope
 	}
-	if choice.Project != "" {
-		options.Project = choice.Project
-	}
-	if choice.Task != nil {
-		return spawnTaskAgent(ctx, home, options, choice.Task, logger)
-	}
-	paneID := choice.PaneID
-	manager := choice.Manager
-	renameTab := options.renameTab
-	if manager != nil && !manager.Workspace.TabCreatedByHive {
-		renameTab = true
-	}
-	managerInstructions := ""
-	if options.Role == "manager" {
-		project, projectMessage := readProjectRecord(home, options.Project)
-		if projectMessage != "" {
-			if manager != nil {
-				manager.cleanup(ctx, home, logger)
-			}
-			return failed("validate", projectMessage)
+	if options.Task != "" {
+		if choice.Task == nil {
+			choice.Task = givenPaneTaskChoice(ctx, home, options, choice.PaneID)
 		}
-		if instructionMessage := writeProjectInstructions(home, project, logger); instructionMessage != "" {
-			if manager != nil {
-				manager.cleanup(ctx, home, logger)
-			}
-			return failed("instructions", instructionMessage)
-		}
-		instructionPath := filepath.Join(home, "projects", project.ID, "AGENTS.md")
-		content, readErr := os.ReadFile(instructionPath)
-		if readErr != nil {
-			if manager != nil {
-				manager.cleanup(ctx, home, logger)
-			}
-			return failed("instructions", "read manager instructions: "+readErr.Error())
-		}
-		managerInstructions = string(content)
+		return spawnTaskAgent(ctx, home, options, profile, choice.Task, logger)
 	}
+	return spawnProjectAgent(ctx, home, options, profile, choice.ProjectChoice, logger)
+}
 
+// spawnInPane registers one agent, starts it in paneID, and records its
+// identity. The caller sends the first prompt.
+func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, paneID string, renameTab bool, logger *slog.Logger) output.Envelope {
 	registered := Register(home, RegisterOptions{
-		Role:          options.Role,
+		Profile:       options.Profile,
+		Kind:          options.Kind,
+		Owns:          options.Owns,
 		Project:       options.Project,
 		Task:          options.Task,
 		Harness:       options.Harness,
@@ -167,9 +185,6 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		FirstPrompt:      options.general.keptPrompt(),
 	})
 	if registered.Outcome != "ok" {
-		if manager != nil {
-			manager.cleanup(ctx, home, logger)
-		}
 		logSpawn(logger, registered, options, "")
 		return registered
 	}
@@ -181,7 +196,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	record := result.Agent
 	effects := append([]output.Effect{}, registered.Effects...)
-	logger.Debug("agent spawn intent", "command", "agent spawn", "agent_id", record.Key, "pane_id", paneID, "role", options.Role)
+	logger.Debug("agent spawn intent", "command", "agent spawn", "agent_id", record.Key, "pane_id", paneID, "profile", options.Profile)
 
 	readyTimeout := options.shellReadyTimeout
 	if readyTimeout <= 0 {
@@ -193,9 +208,6 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 			override = "first tab busy: stop the agent or pass --pane"
 		}
 		envelope := spawnStartFailure(home, logger, options, record, result.Claim, effects, waitErr, override)
-		if manager != nil {
-			manager.cleanup(ctx, home, logger)
-		}
 		return envelope
 	}
 
@@ -213,9 +225,6 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 			override = "first tab busy: stop the agent or pass --pane"
 		}
 		envelope := spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr, override)
-		if manager != nil {
-			manager.cleanup(ctx, home, logger)
-		}
 		return envelope
 	}
 	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
@@ -375,48 +384,370 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		return envelope
 	}
 	envelope := spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
-	if options.Role == "manager" {
-		envelope = promptManagerInstructions(ctx, paneID, managerInstructions, record, result.Claim, effects, logger)
-	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
 }
 
-// paneChoice is the pane of one spawn and, for a manager, its workspace.
+// paneChoice is the pane and the placement of one spawn.
 type paneChoice struct {
-	PaneID  string
-	Project string
-	Manager *managerChoice
-	Task    *taskChoice
+	PaneID        string
+	Project       string
+	Task          *taskChoice
+	ProjectChoice *projectChoice
 }
 
 func choosePane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (paneChoice, string) {
-	if options.PaneSet && options.PaneID != "" {
-		if options.Task != "" && (options.Role == "worker" || options.Role == "verifier") {
-			project, message := resolveTaskProject(home, options)
-			if message != "" {
-				return paneChoice{}, message
-			}
-			return paneChoice{PaneID: options.PaneID, Project: project}, ""
+	if options.Task != "" {
+		if options.PaneSet {
+			return paneChoice{PaneID: options.PaneID}, ""
 		}
-		return paneChoice{PaneID: options.PaneID}, ""
-	}
-	switch options.Role {
-	case "manager":
-		choice, message := resolveManagerWorkspace(ctx, home, options, logger)
-		if message != "" {
-			return paneChoice{}, message
-		}
-		return paneChoice{PaneID: choice.PaneID, Manager: &choice}, ""
-	case "worker", "verifier":
 		choice, message := resolveTaskPane(ctx, home, options, logger)
 		if message != "" {
 			return paneChoice{}, message
 		}
-		return paneChoice{PaneID: choice.PaneID, Task: &choice}, ""
-	default:
-		return paneChoice{}, "pane required: pass --pane"
+		return paneChoice{PaneID: choice.PaneID, Project: options.Project, Task: &choice}, ""
 	}
+	if options.PaneSet {
+		return paneChoice{PaneID: options.PaneID, Project: options.Project, ProjectChoice: &projectChoice{PaneID: options.PaneID, ProjectID: options.Project}}, ""
+	}
+	choice, message := resolveProjectPane(ctx, home, options, logger)
+	if message != "" {
+		return paneChoice{}, message
+	}
+	return paneChoice{PaneID: choice.PaneID, Project: options.Project, ProjectChoice: &choice}, ""
+}
+
+// givenPaneTaskChoice builds the task facts of a spawn in a given pane.
+func givenPaneTaskChoice(ctx context.Context, home string, options SpawnOptions, paneID string) *taskChoice {
+	choice := &taskChoice{PaneID: paneID}
+	if options.taskRecord != nil {
+		choice.Task = *options.taskRecord
+		choice.ShouldAssign = taskNeedsActingAgent(home, options.taskRecord)
+		if options.taskRecord.Worktree != nil {
+			choice.Worktree = *options.taskRecord.Worktree
+			if branch, err := gitx.CurrentBranch(ctx, choice.Worktree.Path); err == nil {
+				choice.Branch = branch
+			}
+		}
+	}
+	if options.projectRecord != nil {
+		choice.Project = *options.projectRecord
+	}
+	return choice
+}
+
+// spawnProjectAgent starts one project agent, writes the project
+// instructions, and sends the first prompt.
+func spawnProjectAgent(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, choice *projectChoice, logger *slog.Logger) output.Envelope {
+	if choice == nil {
+		envelope := failed("validate", "pane required: pass --pane")
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	if options.projectRecord != nil {
+		if message := writeProjectInstructions(home, *options.projectRecord, logger); message != "" {
+			choice.cleanup(ctx, home, logger)
+			envelope := failed("instructions", message)
+			logSpawn(logger, envelope, options, "")
+			return envelope
+		}
+	}
+	renameTab := false
+	if !options.PaneSet {
+		renameTab = !choice.Workspace.TabCreatedByHive
+	}
+	envelope := spawnInPane(ctx, home, options, profile, choice.PaneID, renameTab, logger)
+	if envelope.Outcome == "failed" {
+		choice.cleanup(ctx, home, logger)
+	}
+	record := spawnResultAgent(envelope)
+	if record.Key == "" {
+		return envelope
+	}
+	switch {
+	case envelope.Outcome == "ok":
+		return promptPlacedAgent(ctx, options.firstPrompt, record, envelope, logger)
+	case envelope.Outcome == "partial" && isBlockedEnvelope(envelope):
+		hint := "hive agent send --agent " + record.Name + " " + shellQuote(options.firstPrompt)
+		envelope.Error = appendHint(envelope.Error, hint)
+	}
+	return envelope
+}
+
+// normalizeSpawn checks each input of one spawn and sets its facts. It writes
+// no agent record, starts no process, and changes no task.
+func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (SpawnOptions, string) {
+	if options.Role != "" {
+		if options.ProfileSet || options.Profile != "" {
+			return options, "--role is the old name of --profile: pass one"
+		}
+		if options.fromCLI {
+			if message := hiveOwnedRoleError(options.Role, false); message != "" {
+				return options, message
+			}
+		}
+		profile, kind, owner, message := profileFromRole(options.Role)
+		if message != "" {
+			return options, message
+		}
+		options.Profile = profile
+		options.Kind = kind
+		options.Owner = options.Owner || owner
+		logAgentEvent(home, "agent spawn old role flag", "command", "agent spawn", "role", options.Role, "profile", profile, "owner", options.Owner)
+		options.Role = ""
+	}
+	if options.Profile == "" && options.Kind != records.AgentKindSupervisor {
+		options.Profile = records.ProfileGeneral
+	}
+	if options.fromCLI && options.Profile == records.ProfileCoordinator {
+		return options, "profile coordinator is built in: run bare hive, or the restart in Health › Agents"
+	}
+	if options.Profile != "" && (!namePattern.MatchString(options.Profile) || (options.ProfileSet && !profileFileExists(home, options.Profile))) {
+		return options, "profile not found: profiles/" + displayValue(options.Profile) + ".md"
+	}
+	if options.Task != "" && options.CwdSet {
+		return options, "--cwd conflicts with --task: a task agent works in its worktree"
+	}
+	if options.Project != "" && options.CwdSet {
+		return options, "--cwd conflicts with --project: a project agent works in projects/" + options.Project + "/"
+	}
+	if options.PaneSet && options.CwdSet {
+		return options, "--cwd conflicts with --pane"
+	}
+	text, message := readSpawnPrompt(options)
+	if message != "" {
+		return options, message
+	}
+	if (options.PromptSet || options.PromptFileSet) && strings.TrimSpace(text) == "" {
+		return options, "prompt text is empty"
+	}
+	if isUserTagged(text) {
+		return options, "prompt text cannot use the user: tag"
+	}
+	if options.NameSet {
+		if message := reservedNameError(options.Name, true); message != "" {
+			return options, message
+		}
+		if options.Name == "" || !namePattern.MatchString(options.Name) {
+			return options, "invalid agent name: " + displayValue(options.Name)
+		}
+	}
+	if options.Owner && options.Project == "" && options.Task == "" {
+		return options, "--owner needs --project or --task"
+	}
+
+	resolveSpawnCaller(ctx, home, &options)
+
+	if options.Task != "" {
+		task, message := readSpawnTask(home, options.Task)
+		if message != "" {
+			return options, message
+		}
+		options.taskRecord = task
+		if options.Project != "" && options.Project != task.Project {
+			return options, fmt.Sprintf("task %s is in project %s, not %s", task.ID, task.Project, options.Project)
+		}
+		options.Project = task.Project
+	}
+	if options.Project != "" {
+		project, message := readProjectRecord(home, options.Project)
+		if message != "" {
+			return options, message
+		}
+		options.projectRecord = &project
+	}
+	if options.Owner {
+		if options.fromCLI {
+			if message := checkOwnerCaller(ctx, home, options); message != "" {
+				return options, message
+			}
+		} else if options.callerKnown && !isCoordinator(options.caller) {
+			return options, "--owner needs the coordinator or the user: " + options.caller.Name
+		}
+		if name, found := liveOwner(home, options.Project); found {
+			return options, fmt.Sprintf("project %s has an owner: %s", options.Project, name)
+		}
+		options.Owns = options.Project
+	}
+	name, message := spawnName(home, options)
+	if message != "" {
+		return options, message
+	}
+	options.Name = name
+	options.NameSet = true
+	plan := records.Agent{Name: options.Name, Parent: options.callerKey(), Project: options.Project, Task: options.Task}
+	if options.taskRecord != nil && options.taskRecord.Worktree != nil {
+		plan.Worktree = options.taskRecord.Worktree.Path
+	}
+	options.firstPrompt = firstPrompt(plan, options.taskRecord, text)
+	if len(options.firstPrompt) > maxPromptBytes {
+		return options, fmt.Sprintf("first prompt is longer than %d bytes", maxPromptBytes)
+	}
+	return options, ""
+}
+
+// profileFromRole maps the wave-A role to a profile, a kind, and the owner
+// fact. The CLI refuses the roles that hive code starts before this call.
+func profileFromRole(role string) (string, string, bool, string) {
+	switch role {
+	case "manager":
+		return records.ProfilePlanner, "", true, ""
+	case "worker":
+		return records.ProfileBuilder, "", false, ""
+	case "verifier":
+		return records.ProfileVerifier, "", false, ""
+	case "agent":
+		return records.ProfileGeneral, "", false, ""
+	case records.AgentKindCoordinator:
+		return records.ProfileCoordinator, records.AgentKindCoordinator, false, ""
+	case records.AgentKindSupervisor:
+		return "", records.AgentKindSupervisor, false, ""
+	default:
+		return "", "", false, "invalid role: " + displayValue(role)
+	}
+}
+
+func profileFileExists(home, profile string) bool {
+	info, err := os.Stat(filepath.Join(home, "profiles", profile+".md"))
+	return err == nil && !info.IsDir()
+}
+
+func readSpawnPrompt(options SpawnOptions) (string, string) {
+	if options.PromptSet && options.PromptFileSet {
+		return "", "pass one of --prompt or --prompt-file, not both"
+	}
+	text := options.Prompt
+	if options.PromptFileSet {
+		data, err := os.ReadFile(options.PromptFile)
+		if err != nil {
+			return "", "prompt file: " + err.Error()
+		}
+		text = string(data)
+	}
+	return text, ""
+}
+
+func resolveSpawnCaller(ctx context.Context, home string, options *SpawnOptions) {
+	registry, err := store.Open(home)
+	if err != nil {
+		return
+	}
+	_ = registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		caller, callerErr := Caller(locked, CallerOptions{Agent: options.Agent, HerdrPane: os.Getenv("HERDR_PANE_ID")})
+		if callerErr == nil {
+			options.caller = caller
+			options.callerKnown = true
+			options.Agent = caller.Key
+		}
+		return nil
+	})
+}
+
+func checkOwnerCaller(ctx context.Context, home string, options SpawnOptions) string {
+	if options.callerKnown {
+		if isCoordinator(options.caller) {
+			return ""
+		}
+		return "--owner needs the coordinator or the user: " + options.caller.Name
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		cwd = ""
+	}
+	if err := chat.ValidateCaller(ctx, home, options.Agent, os.Getenv("HERDR_PANE_ID"), cwd); err != nil {
+		name := options.Agent
+		if name == "" {
+			name = "the caller"
+		}
+		return "--owner needs the coordinator or the user: " + displayValue(name)
+	}
+	return ""
+}
+
+func isCoordinator(record records.Agent) bool {
+	return record.Kind == records.AgentKindCoordinator || record.MirrorRole() == records.AgentKindCoordinator
+}
+
+func liveOwner(home, projectID string) (string, bool) {
+	registry, err := store.Open(home)
+	if err != nil {
+		return "", false
+	}
+	agents, err := loadAgentRecords(registry)
+	if err != nil {
+		return "", false
+	}
+	for _, record := range agents {
+		owns := record.Owns
+		if owns == "" && record.MirrorRole() == "manager" {
+			owns = record.Project
+		}
+		if owns != projectID {
+			continue
+		}
+		switch record.Status {
+		case records.AgentStarting, records.AgentLive, records.AgentUnresolved:
+			return record.Name, true
+		}
+	}
+	return "", false
+}
+
+func spawnName(home string, options SpawnOptions) (string, string) {
+	if options.NameSet {
+		return options.Name, ""
+	}
+	if key := claimKeyForFacts(options.Kind, options.Owns); key != "" {
+		return defaultSingletonName(options.Profile, options.Kind, options.Owns), ""
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return "", "store: " + err.Error()
+	}
+	agents, err := loadAgentRecords(registry)
+	if err != nil {
+		return "", "store: " + err.Error()
+	}
+	claims, err := loadClaims(registry)
+	if err != nil {
+		return "", "store: " + err.Error()
+	}
+	if options.Task != "" {
+		return nextTaskAgentName(options.Task, options.Profile, agents, claims), ""
+	}
+	occupied := map[string]bool{}
+	for _, record := range agents {
+		occupied[record.Key] = true
+		occupied[record.Name] = true
+	}
+	for _, claim := range claims {
+		occupied[claim.Key] = true
+		occupied[claim.Agent] = true
+	}
+	for index := uint64(1); ; index++ {
+		candidate := fmt.Sprintf("%s-%d", options.Profile, index)
+		if !occupied[candidate] {
+			return candidate, ""
+		}
+	}
+}
+
+func readSpawnTask(home, taskID string) (*records.Task, string) {
+	if !records.ValidTaskID(taskID) {
+		return nil, "task not found: " + displayValue(taskID)
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		return nil, "store: " + err.Error()
+	}
+	var task records.Task
+	if err := registry.ReadIn([]string{"tasks"}, taskID, &task); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, "task not found: " + displayValue(taskID)
+		}
+		return nil, "store: " + err.Error()
+	}
+	return &task, ""
 }
 
 func validateExtraArgs(args []string) string {
@@ -463,34 +794,6 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
-}
-
-func promptManagerInstructions(ctx context.Context, paneID, content string, record records.Agent, claim *records.Claim, effects []output.Effect, logger *slog.Logger) output.Envelope {
-	info, err := promptFirstTurn(ctx, paneID, marker.Prefix+content, logger)
-	if err != nil {
-		message := managerPromptError(record.Name, err)
-		envelope := spawnEnvelope("partial", "prompt", effects, message, SpawnResult{})
-		envelope.Result = nil
-		return envelope
-	}
-	if info.AgentStatus == "blocked" {
-		message := "agent blocked: " + record.Name + " in " + paneID
-		envelope := spawnEnvelope("partial", "prompt", effects, message, SpawnResult{})
-		envelope.Result = nil
-		return envelope
-	}
-	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
-	return spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: record, Claim: claim})
-}
-
-func managerPromptError(name string, err error) string {
-	if isHerdrCode(err, herdr.CodeAgentBlocked) {
-		return "agent blocked: " + name + ": " + err.Error()
-	}
-	if isHerdrCode(err, herdr.CodeAgentPromptStalled) {
-		return "first prompt for agent " + name + " stalled: " + err.Error()
-	}
-	return "manager prompt: " + err.Error() + "; then run hive agent send --agent " + name
 }
 
 func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, profile harness.Profile, waitInfo herdr.AgentInfo, waitErr error, getInfo herdr.AgentInfo, getErr error, session *sessionTrack, sessionReason string) output.Envelope {
@@ -759,7 +1062,7 @@ func checkCurrentRecord(locked *store.LockedStore, current, expected records.Age
 }
 
 func checkCurrentRecordChecked(locked *store.LockedStore, current, expected records.Agent, allowedStatus string, requireSpawned bool) error {
-	if current.Key != expected.Key || current.Name != expected.Name || current.Role != expected.Role ||
+	if current.Key != expected.Key || current.Name != expected.Name ||
 		current.Project != expected.Project || current.Task != expected.Task ||
 		current.PaneID != expected.PaneID || current.Generation != expected.Generation {
 		return errRecordChanged
@@ -770,7 +1073,7 @@ func checkCurrentRecordChecked(locked *store.LockedStore, current, expected reco
 	if requireSpawned && !current.Spawned {
 		return errRecordChanged
 	}
-	claimKey := claimKeyFor(current.Role, current.Project)
+	claimKey := claimKeyForFacts(current.Kind, current.Owns)
 	if claimKey == "" {
 		return nil
 	}
@@ -806,7 +1109,7 @@ func logSpawn(logger *slog.Logger, envelope output.Envelope, options SpawnOption
 	if logger == nil {
 		return
 	}
-	attrs := []any{"command", "agent spawn", "role", options.Role, "outcome", envelope.Outcome, "phase", envelope.Phase}
+	attrs := []any{"command", "agent spawn", "profile", options.Profile, "outcome", envelope.Outcome, "phase", envelope.Phase}
 	if key != "" {
 		attrs = append(attrs, "agent_id", key)
 	}

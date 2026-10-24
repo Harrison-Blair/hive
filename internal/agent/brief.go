@@ -4,46 +4,48 @@ import (
 	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-// workerPrompt is the first prompt of one worker. It is one line.
-func workerPrompt(home, task, path, branch, feature string, spec bool) string {
-	prompt := marker.Prefix + "Read " + home + "/.agents/skills/hive-worker/SKILL.md first. Then run: " +
-		"hive task show " + shellQuote(task) + " --brief. " +
-		"Follow that brief. Your worktree is " + shellQuote(path) + " on the branch " + shellQuote(branch) + ". "
-	if feature != "" {
-		brief, evidence := featurePromptPaths(task, feature)
-		prompt += "The task brief is " + brief + ". Write each V<n>.md to " + evidence + ". "
+// firstPrompt returns the first prompt of one spawned agent (D3). It gives the
+// facts of the record first, then the spawner text.
+func firstPrompt(record records.Agent, task *records.Task, spawner string) string {
+	facts := []string{"You are " + record.Name + "."}
+	if record.Parent != "" {
+		facts = append(facts, "Your parent is "+record.Parent+".")
 	}
-	if spec {
-		prompt += "Write the feature README at .hive/spec/" + feature + "/README.md in the worktree. " +
-			"Do not commit a file under .hive/spec/. Hive copies it to the home. "
+	if record.Project != "" {
+		facts = append(facts, "Your project is "+record.Project+".")
 	}
-	return prompt + "The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex."
+	if record.Task != "" {
+		facts = append(facts, "Your task is "+record.Task+".")
+	}
+	if record.Worktree != "" {
+		facts = append(facts, "Your worktree is "+record.Worktree+".")
+	}
+	if task != nil {
+		brief, evidence := taskPromptPaths(*task)
+		if brief != "" {
+			facts = append(facts, "Your brief is "+brief+".")
+		}
+		if evidence != "" {
+			facts = append(facts, "Your evidence is "+evidence+".")
+		}
+	}
+	text := marker.Prefix + strings.Join(facts, " ")
+	if strings.TrimSpace(spawner) != "" {
+		text += "\n\n" + spawner
+	}
+	return text
 }
 
-// verifierPrompt is the first prompt of one verifier. It is one line.
-func verifierPrompt(home, task, feature string) string {
-	prompt := marker.Prefix + "Read " + home + "/.agents/skills/hive-verifier/SKILL.md first. Then run: " +
-		"hive task show " + shellQuote(task) + " --brief. "
-	if feature != "" {
-		brief, _ := featurePromptPaths(task, feature)
-		prompt += "The task brief is " + brief + ". "
+// taskPromptPaths gives the brief and evidence paths of one task. The evidence
+// path is empty for a task with no feature, because its brief names it.
+func taskPromptPaths(task records.Task) (string, string) {
+	if task.Feature == "" {
+		return ".hive/state/briefs/" + task.ID + ".md", ""
 	}
-	prompt += "You are the verifier. Run each verification item again, write VERIFIED.md"
-	if feature != "" {
-		_, evidence := featurePromptPaths(task, feature)
-		prompt += " to " + evidence
-	}
-	prompt += ", then run: hive task verify --task " + shellQuote(task) + ", or add --fail --reason. "
-	if feature != "" {
-		prompt += "Never write VERIFIED.md at the checkout root. "
-	}
-	return prompt + "The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex."
-}
-
-func featurePromptPaths(task, feature string) (string, string) {
-	root := ".hive/spec/" + feature + "/tasks/" + task
+	root := ".hive/spec/" + task.Feature + "/tasks/" + task.ID
 	return root + "/brief.md", root + "/evidence/"
 }
 

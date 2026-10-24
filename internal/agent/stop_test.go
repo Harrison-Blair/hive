@@ -17,6 +17,8 @@ func spawnedRecord(sleep sleepProcess) records.Agent {
 		Key:          "t10-coord-g1",
 		Name:         "t10-coord",
 		Role:         "coordinator",
+		Kind:         records.AgentKindCoordinator,
+		Profile:      records.ProfileCoordinator,
 		Harness:      "claude",
 		PaneID:       "w1:p1",
 		WorkspaceID:  "w1",
@@ -35,7 +37,7 @@ func spawnedRecord(sleep sleepProcess) records.Agent {
 func writeStopRecord(t *testing.T, home string, record records.Agent) {
 	t.Helper()
 	writeRecord(t, home, record)
-	if key := claimKeyFor(record.Role, record.Project); key != "" {
+	if key := claimKeyForFacts(record.Kind, record.Owns); key != "" {
 		writeClaimRecord(t, home, records.Claim{Key: key, Agent: record.Key, Generation: record.Generation})
 	}
 }

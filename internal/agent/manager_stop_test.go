@@ -82,14 +82,14 @@ func TestStopConfirmationRequiredKeepsStoppedRecordAndWorkspace(t *testing.T) {
 
 func TestManagerStartFailureCleansOnlyCreatedAdoptedTab(t *testing.T) {
 	home := testHome(t)
-	writeManagerProject(t, home, nil)
+	dir := projectDirectory(t, home, "demo")
+	writeManagerProject(t, home, &records.ProjectWorkspace{ID: "wBC", CreatedByHive: false})
 	fake := newFakeHerdr(t)
-	fake.result("worktree.list", managerWorktreeListJSON("wBC"))
 	fake.result("workspace.get", managerWorkspaceGetJSON("wBC", "project-home"))
-	fake.result("tab.create", managerTabCreatedJSON("wBC", "wBC:t2", "wBC:p2", managerRepoPath))
-	scriptReadyShell(fake, "wBC:p2", "term_wBC", "wBC", "wBC:t2", managerRepoPath)
+	fake.result("tab.create", managerTabCreatedJSON("wBC", "wBC:t2", "wBC:p2", dir))
+	scriptReadyShell(fake, "wBC:p2", "term_wBC", "wBC", "wBC:t2", dir)
 	fake.failure("agent.start", "invalid_agent_name", "name is too long")
-	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBC:p2", "term_wBC", "wBC", "wBC:t2", managerRepoPath, "")+`}`)
+	fake.result("pane.get", `{"type":"pane_info","pane":`+managerPaneInfoJSON("wBC:p2", "term_wBC", "wBC", "wBC:t2", dir, "")+`}`)
 	fake.result("pane.close", `{"type":"ok"}`)
 
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
