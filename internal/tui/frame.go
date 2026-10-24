@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 
@@ -583,8 +584,15 @@ func (m *Model) updateFrameKey(press tea.KeyPressMsg) tea.Cmd {
 				return m.logAction("agent details close")
 			case "up", "k", "pgup":
 				m.popupOffset = max(m.popupOffset-1, 0)
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
 			case "down", "j", "pgdown":
 				m.popupOffset++
+				return m.logAction("agent details scroll", slog.Int("offset", m.popupOffset))
+			case "h":
+				m.graph.hideStopped = !m.graph.hideStopped
+				return m.logAction("agent hide stopped", slog.Bool("hide_stopped", m.graph.hideStopped))
+			case m.tuiConfig.Keys["help"]:
+				return m.openHelp()
 			case "a", "p", "t":
 				if node, _, ok := m.selectedAgent(); ok {
 					return m.agentAction(key, node)

@@ -219,7 +219,7 @@ func TestGfAgentsOverviewSelectsCards(t *testing.T) {
 		{key(tea.KeyUp, ""), "t5-worker-1"},
 		{key(tea.KeyUp, ""), "manager-hive-g2"},
 		{key(tea.KeyUp, ""), "coordinator-g8"},
-		{key(tea.KeyDown, ""), "manager-hive-g2"},
+		{key(tea.KeyDown, ""), "t6-worker-1"},
 		{key(tea.KeyRight, ""), "manager-api-g1"},
 		{key(tea.KeyLeft, ""), "manager-hive-g2"},
 		{key(tea.KeyDown, ""), "t5-worker-1"},

@@ -453,11 +453,15 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 		}
 		return "working"
 	}
-	if record.Status == records.AgentStopped || record.Status == records.AgentExited {
+	switch record.Status {
+	case records.AgentStopped, records.AgentExited:
 		return "stopped"
-	}
-	if record.Status == records.AgentStale {
-		return "unknown"
+	case records.AgentStarting:
+		return "starting"
+	case records.AgentUnresolved:
+		return "unresolved"
+	case records.AgentStale:
+		return "stale"
 	}
 	switch record.AgentStatus {
 	case "working":
@@ -466,6 +470,12 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 		return "idle"
 	case "blocked":
 		return "blocked"
+	case records.AgentStarting:
+		return "starting"
+	case records.AgentUnresolved:
+		return "unresolved"
+	case records.AgentStale:
+		return "stale"
 	default:
 		return "unknown"
 	}

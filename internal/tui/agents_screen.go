@@ -1341,7 +1341,7 @@ func (m *Model) updatePodsKey(key string, pods []graphPod, node agentNode, ok bo
 	case "down", "j":
 		switch {
 		case selected && len(nodes) > 0:
-			m.graph.selected = nodes[0].record.Key
+			m.graph.selected = nodes[len(nodes)-1].record.Key
 		case !selected && at >= 0 && at < len(nodes)-1:
 			m.graph.selected = nodes[at+1].record.Key
 		default:

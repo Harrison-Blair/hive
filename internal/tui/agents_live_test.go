@@ -293,6 +293,9 @@ func TestLivePodSelection(t *testing.T) {
 	m, _ = raise(t, m, ctrl('g'))
 	requireCells(t, m, coordinator...)
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
+	if m.graph.selected != "t3-verifier-1" {
+		t.Fatalf("down from the coordinator selected %q; want the last card t3-verifier-1 of example-api", m.graph.selected)
+	}
 	requireCells(t, m, api...)
 	m, _ = raise(t, m, key('o', "o"))
 	requireView(t, m, "agents · example-api")
@@ -305,7 +308,9 @@ func TestLivePodSelection(t *testing.T) {
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
 	requireView(t, m, "agents · 2 projects")
 	requireCells(t, m, api...)
-	m, _ = raise(t, m, key(tea.KeyUp, ""))
+	for range 3 {
+		m, _ = raise(t, m, key(tea.KeyUp, ""))
+	}
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	if !m.popupOpen {
 		t.Fatal("enter on the coordinator card did not open its details")

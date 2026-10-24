@@ -475,14 +475,15 @@ func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 	}
 }
 
-// A stale agent is unknown. h hides it with the stopped agents, and h on
-// shows it. When the supervisor claim is stale, each card is unknown.
-func TestAgentsCardsShowUnknownWhenTheSupervisorIsStale(t *testing.T) {
+// A stale agent keeps its stale state. h hides it with the stopped agents,
+// and h on shows it. When the supervisor claim is stale, each card is
+// unknown.
+func TestAgentsCardsShowTheirStateWhenTheSupervisorIsStale(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := openAgents(t, home, clock)
 	m, _ = raise(t, m, key('h', "h"))
-	requireView(t, m, "claude · idle · 3m", "pi · unknown")
+	requireView(t, m, "claude · idle · 3m", "pi · stale")
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
 	m = refreshAgents(t, m)
 	requireView(t, m, "claude · unknown", "codex · unknown · 5m")
