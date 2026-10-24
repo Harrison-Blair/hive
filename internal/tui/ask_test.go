@@ -514,18 +514,20 @@ func TestANewAskRefreshesTheHeaderAndChat(t *testing.T) {
 	}
 }
 
-// Help lists the keys of the ask card.
+// Help lists the keys of the ask card in its ASK CARD section (golden-frames
+// screens/help.md rule 2, chat.md rules 17 and 18).
 func TestHelpListsTheAskKeys(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
 	m, _ = raise(t, m, key('?', "?"))
-	// The ask lines are at the end of the help text.
-	for range 40 {
-		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	}
-	// Golden-frames chat.md rules 17 and 18 give the card keys.
-	requireView(t, m, "│  ctrl+r moves the focus between input and ask card · esc to input ",
-		"│  ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card ",
-		"│  ask review: enter on the last question · ↑↓ question · enter send or change")
+	requireView(t, m, "│ ASK CARD ",
+		"│ ctrl+r      card focus, or back to the input ",
+		"│ ↑↓ · 1..9   move · pick ",
+		"│ space       mark, when the ask allows many ",
+		"│ enter       review, then send ",
+		"│ n           note ",
+		"│ x           dismiss ",
+		"│ J K         next or previous card ",
+		"│ esc         back to the input ")
 }
 
 // The status row shows the count of the open ask records at 0, 1, and 2, at

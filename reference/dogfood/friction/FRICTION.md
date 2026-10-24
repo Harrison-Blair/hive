@@ -22,6 +22,7 @@ For all other files, the coordinator and manager never change a project source f
 | [TestUpdateCallbackRunsUnderLock fails at times under heavy load](entries/store-lock-test-flakes-under-load.md) | Open |  |
 | [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
 | [The verifier skill names no inbox for a report](entries/verifier-skill-names-no-report-inbox.md) | Open | Fix in the g13 verifier profile |
+| [A worktree and CI skip the tests that read the spec of another feature](entries/worktree-skips-other-feature-spec-tests.md) | Open |  |
 | [herdr pane send-keys has no page up or page down key name](entries/herdr-send-keys-no-page-keys.md) | Open |  |
 | [A new herdr tab reports 120 columns but its terminal has 119](entries/herdr-terminal-width-mismatch.md) | Open | Use an isolated larger scratch server for live captures |
 | [A scratch harness stub did not override the installed Pi executable](entries/scratch-harness-stub-runs-real-pi.md) | Open | Use the explicit stub executable for scratch delivery checks |
@@ -69,3 +70,5 @@ For all other files, the coordinator and manager never change a project source f
 | [Agents overview draws a card from a stale record instead of the live one](entries/resolved/agents-card-shows-stale-record.md) | Resolved 2026-10-23 | Task 129 (3d97c49a) joins the name and lineage identities of each record, so each name has one current record: the live record, else the newest. h hides a stale card as it hides a stopped card. h does not hide a manager card. |
 | [A restart can silently run a stale hive binary](entries/restart-runs-stale-binary.md) | Open |  |
 | [A test that passes in the local zone fails the UTC CI gate](entries/ci-zone-local-test.md) | Open | Task 132 fixes the two tests. The gate still runs in the local zone. |
+| [The manager startup list does not name overrides/verifier-model.md](entries/manager-startup-skips-verifier-model.md) | Open |  |
+| [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |

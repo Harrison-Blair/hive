@@ -29,15 +29,22 @@ func (p Popup) View(screen string, width, height int) string {
 			d.Lines[i] = " " + l
 		}
 	}
-	box := strings.Split(d.View(w, h), "\n")
+	return Overlay(screen, d.View(w, h), width, height)
+}
+
+// Overlay dims screen, a text of width×height cells, and draws box, a text
+// of at most width×height cells, centered on it.
+func Overlay(screen, box string, width, height int) string {
+	lines := strings.Split(box, "\n")
+	w, h := ansi.StringWidth(lines[0]), len(lines)
 	rows := plainRows(screen, width, height)
 	x, y := (width-w)/2, (height-h)/2
 	for i, row := range rows {
-		if i < y || i >= y+len(box) {
+		if i < y || i >= y+h {
 			rows[i] = borderStyle.Render(row)
 			continue
 		}
-		rows[i] = borderStyle.Render(ansi.Truncate(row, x, "")) + box[i-y] + borderStyle.Render(ansi.TruncateLeft(row, x+w, ""))
+		rows[i] = borderStyle.Render(ansi.Truncate(row, x, "")) + lines[i-y] + borderStyle.Render(ansi.TruncateLeft(row, x+w, ""))
 	}
 	return strings.Join(rows, "\n")
 }
