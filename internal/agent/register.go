@@ -369,9 +369,12 @@ func taskRegistrationError(project, task string) string {
 }
 
 // recheckOwnerCaller applies the owner caller rule with facts read under the
-// registration lock. It reads no remote state and writes no record.
+// registration lock. It reads no remote state and writes no record. An
+// explicit caller must still resolve to a live coordinator after the remote
+// calls, with or without a caller pane. Only a caller with no agent name may
+// fall back to the user workspace rule.
 func recheckOwnerCaller(locked *store.LockedStore, options RegisterOptions) string {
-	if options.Owns == "" || options.CallerPaneID == "" {
+	if options.Owns == "" {
 		return ""
 	}
 	caller, err := identitylib.ResolveHeld(locked, options.CallerAgent, options.CallerPaneID)
@@ -381,10 +384,10 @@ func recheckOwnerCaller(locked *store.LockedStore, options RegisterOptions) stri
 		}
 		return "--owner needs the coordinator or the user: " + caller.Name
 	}
-	if !errors.Is(err, identitylib.ErrCallerUnknown) {
+	if options.CallerAgent != "" || !errors.Is(err, identitylib.ErrCallerUnknown) {
 		return ownerCallerName(options)
 	}
-	if err := chat.ValidateCallerAtWorkspace(locked, options.CallerAgent, options.CallerPaneID, options.CallerPaneWorkspace); err != nil {
+	if err := chat.ValidateCallerAtWorkspace(locked, "", options.CallerPaneID, options.CallerPaneWorkspace); err != nil {
 		return ownerCallerName(options)
 	}
 	return ""
