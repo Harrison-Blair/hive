@@ -642,6 +642,7 @@ func TestWorkStatusRow(t *testing.T) {
 		t.Fatalf("Chat status row = %q; want the row of decision 9", row)
 	}
 	m.tuiConfig.StatusLines = [][]string{{"state", "asks", "clock"}}
+	m.tuiConfig.StatusLinesExplicit = true
 	m = pressWork(t, m, ctrl('t'))
 	if row := statusRow(); !strings.Contains(row, "? 0 asks") || strings.Contains(row, " · work · ") {
 		t.Fatalf("Work status row with a user row = %q; want the user row", row)

@@ -763,6 +763,7 @@ func TestChatScreenSegmentShowsTheInputLineKeys(t *testing.T) {
 		m := chatModel(t, width, 40, 1)
 		cfg := m.tuiConfig
 		cfg.StatusLines = [][]string{{"screen"}}
+		cfg.StatusLinesExplicit = true
 		m.setTUIConfig(cfg)
 		row := strings.TrimRight(viewRow(m, 39), " ")
 		if !strings.HasPrefix(row, " chat · enter send · ") || strings.Contains(row, "ctrl+]") {

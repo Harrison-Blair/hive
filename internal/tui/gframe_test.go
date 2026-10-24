@@ -200,6 +200,7 @@ func TestFrameKeysRebind(t *testing.T) {
 	// Decision 34 gives the default row only on Chat. A config with its own
 	// rows keeps the chords on each screen.
 	cfg.StatusLines = [][]string{{"state", "chords", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	m, _ = raise(t, m, ctrl('g'))
 	if m.activeTab() != tabChat {
@@ -248,6 +249,7 @@ func TestFrameScreenStatusRowIsStateScreenClock(t *testing.T) {
 	}
 	cfg := home.DefaultTUI()
 	cfg.StatusLines = [][]string{{"state", "asks", "clock"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	if row := viewRows(m)[39]; !strings.Contains(row, "? 0 asks") || strings.Contains(row, "· work") {
 		t.Errorf("Work status row %q with a config row; want the config segments", row)
@@ -261,6 +263,7 @@ func keysRow(t *testing.T, m *Model) string {
 	saved := m.tuiConfig
 	cfg := defaultTUI()
 	cfg.StatusLines = [][]string{{"screen"}}
+	cfg.StatusLinesExplicit = true
 	m.setTUIConfig(cfg)
 	defer m.setTUIConfig(saved)
 	rows := viewRows(m)
