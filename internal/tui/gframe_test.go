@@ -270,7 +270,7 @@ func TestFrameScreenSegmentShowsTheFocusKeys(t *testing.T) {
 // in accent bold, and the key that answers it clears it.
 func TestFrameRestartPromptOnTheNoticeLine(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
-	m.selectScreen(tabHealth, 1)
+	selectHealthTable(m)
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{

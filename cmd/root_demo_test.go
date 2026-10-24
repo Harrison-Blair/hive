@@ -22,9 +22,9 @@ const gfChatFixture = "../.hive/spec/golden-frames/design/GfChat.fixture.json"
 
 // TestDemoActionsChangeNoFileAndStartNoProcess runs the CLI entry with --demo
 // and presses the chat send, restart, attach, and peek keys. The keys follow
-// the golden-frames chords: p peeks and a attaches on Agents, ^y ] opens
-// Health › Agents where r restarts, ^y again returns to Chat, where the input
-// line has the focus, and enter sends.
+// the golden-frames chords: p peeks and a attaches on Agents, ^y opens
+// Health and ^] focuses its agents table where r restarts, ^y again returns
+// to Chat, where the input line has the focus, and enter sends.
 func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 	home := newRootTestHome(t)
 	methods := newRootFakeHerdr(t)
@@ -54,7 +54,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	before := snapshotFiles(t, home, fixtureDir)
 	var out bytes.Buffer
-	keys := "pa\x19]r\x19hi\r"
+	keys := "pa\x19\x1dr\x19hi\r"
 	status := executeWithStreams([]string{"--demo", fixture}, strings.NewReader(keys), &out, &out)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; output %q", status, out.String())

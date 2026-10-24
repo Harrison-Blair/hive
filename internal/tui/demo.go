@@ -109,6 +109,7 @@ type demoUIState struct {
 	ChatNoise      string                `json:"chat_noise"`
 	ChatInput      string                `json:"chat_input"`
 	ChatEventsOpen bool                  `json:"chat_events_open"`
+	Checking       bool                  `json:"checking"`
 	Ask            demoAsk               `json:"ask"`
 }
 
@@ -149,10 +150,12 @@ var (
 		"chat":     {""},
 		"work":     {"goals", "queue", "tasks"},
 		"friction": {"open", "resolved"},
-		"health":   {"home", "agents"},
-		"logs":     {""},
+		// Health has no views. The tui-v2 fixtures name the old views home
+		// and agents, and the value has no effect.
+		"health": {"", "home", "agents"},
+		"logs":   {""},
 	}
-	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json"}
+	demoFocuses    = []string{"graph", "feed", "input", "ask", "note", "other", "review", "list", "details", "filter", "events", "json", "grid", "table"}
 	demoOverlays   = []string{"", "details", "help"}
 	demoPopups     = []string{"", "agent-details"}
 	demoPrompts    = []string{"", "restart", "quit", "send"}
@@ -329,8 +332,8 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		sortFrictionEntries(entries)
 		return frictionData{entries: entries}, nil
 	}
-	m.healthLoader = func(string, *slog.Logger) doctor.Result {
-		return doctor.Result{Checks: slices.Clone(data.Checks)}
+	m.healthLoader = func(string, *slog.Logger) (doctor.Result, error) {
+		return doctor.Result{Checks: slices.Clone(data.Checks)}, nil
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
 		return buildChatScreenData(data.Chat, slices.Clone(data.Inbox["coordinator"]), data.Asks, data.Agents, now), nil
@@ -397,12 +400,7 @@ func (m *Model) applyDemoUI(ui demoUIState) {
 		m.detailsOffset[tabFriction] = ui.Scroll["details"].Top
 	case "health":
 		m.screenIndex = 6
-		m.health.hideStopped = ui.HideStopped
-		if ui.View == "agents" {
-			m.health.selectedAgent = ui.Selection
-		} else {
-			m.health.selected = ui.Selection
-		}
+		m.health.selectedAgent = ui.Selection
 	case "logs":
 		m.screenIndex = 7
 		m.textFilter = ui.Filter.Text
@@ -488,11 +486,9 @@ func (m *Model) applyDemoAsk(ui demoUIState) {
 // and the restart prompt of the frame from the fixture UI state.
 func (m *Model) applyDemoFrame(ui demoUIState) {
 	tab, view := m.activeTab(), 0
-	switch {
-	case tab == tabWork:
+	switch tab {
+	case tabWork:
 		view = m.screenIndex - 2
-	case ui.Screen == "health" && ui.View == "agents":
-		tab, view = tabHealth, 1
 	}
 	m.selectScreen(tab, view)
 	if index := slices.Index(screenRegistry[tab].regions, ui.Focus); index > 0 {
@@ -504,6 +500,13 @@ func (m *Model) applyDemoFrame(ui demoUIState) {
 	case "restart":
 		m.agents.restartConfirm = true
 		m.agents.restartTarget = records.Agent{Key: ui.Prompt.Target}
+		if m.demo != nil {
+			// The prompt names the role of its target (health.md rule 6).
+			agents := m.demo.fixture.Data.Agents
+			if index := slices.IndexFunc(agents, func(a records.Agent) bool { return a.Key == ui.Prompt.Target }); index >= 0 {
+				m.agents.restartTarget = agents[index]
+			}
+		}
 		m.agents.restartNotice = "restart " + ui.Prompt.Target + "? y/n"
 	case "quit":
 		// The state after the first ctrl+c (decision 14).

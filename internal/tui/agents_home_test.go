@@ -334,7 +334,7 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		// agents.md rule 14 (ask a29): the parent row shows the name of the
 		// parent, and the key row is in the place of RECENT.
 		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "parent    coordinator", "a attach · p peek · esc closes"}, nil},
-		{"HealthAgentsGeneral", 120, 40, []string{"▶ plan-review-1", "agent"}, nil},
+		{"HealthAgentsGeneral", 120, 40, []string{"▶ ● plan-review-1", "agent"}, nil},
 	} {
 		t.Run(tc.board, func(t *testing.T) {
 			path := filepath.Join(designDir, tc.board+".fixture.json")
