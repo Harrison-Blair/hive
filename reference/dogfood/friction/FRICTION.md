@@ -16,6 +16,7 @@ For all other files, the coordinator and manager never change a project source f
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
 | [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
+| [A manager spawn marks the live manager stale but leaves its pane running, and agent stop refuses it](entries/manager-respawn-leaves-old-pane.md) | Open |  |
 | [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
 | [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/health-program-test-flakes.md) | Open |  |
 | [Unread inbox records of a stopped agent warn forever, with no way to clear them](entries/ownerless-inbox-records-stay.md) | Open |  |
@@ -70,3 +71,5 @@ For all other files, the coordinator and manager never change a project source f
 | [Agents overview draws a card from a stale record instead of the live one](entries/resolved/agents-card-shows-stale-record.md) | Resolved 2026-10-23 | Task 129 (3d97c49a) joins the name and lineage identities of each record, so each name has one current record: the live record, else the newest. h hides a stale card as it hides a stopped card. h does not hide a manager card. |
 | [A restart can silently run a stale hive binary](entries/restart-runs-stale-binary.md) | Open |  |
 | [A test that passes in the local zone fails the UTC CI gate](entries/ci-zone-local-test.md) | Open | Task 132 fixes the two tests. The gate still runs in the local zone. |
+| [The manager startup list does not name overrides/verifier-model.md](entries/manager-startup-skips-verifier-model.md) | Open |  |
+| [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |
