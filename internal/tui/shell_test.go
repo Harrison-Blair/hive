@@ -118,7 +118,7 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	}
 	m, keyCmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, keyCmd)
-	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
+	if !strings.Contains(ansi.Strip(m.View().Content), " agents · ") {
 		t.Fatalf("key did not update while header load was blocked:\n%s", m.View().Content)
 	}
 	m.screenIndex = 7
@@ -164,7 +164,7 @@ func TestSlowScreenLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 		t.Fatal("screen load did not start")
 	}
 	m, _ = raise(t, m, ctrl('g'))
-	if !strings.Contains(ansi.Strip(m.View().Content), "╭─ project agents ") {
+	if !strings.Contains(ansi.Strip(m.View().Content), " agents · ") {
 		t.Fatalf("key did not update while screen load was blocked:\n%s", m.View().Content)
 	}
 	m, _ = raise(t, m, ctrl('l'))

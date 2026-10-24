@@ -130,6 +130,11 @@ func (m *Model) statusRows(width, height int) []string {
 			rows = append(rows, m.askStatusRow(width))
 			continue
 		}
+		if index == 0 && m.activeTab() != tabChat && slices.Equal(names, home.DefaultTUI().StatusLines[0]) {
+			// Ask a27: on a screen other than Chat, the default first row
+			// is the state, the screen segment, and the clock.
+			names = []string{"state", "screen", "clock"}
+		}
 		row := component.StatusRow{}
 		for _, name := range names {
 			switch {

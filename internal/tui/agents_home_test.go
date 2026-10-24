@@ -72,7 +72,7 @@ func TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard(t *testing.T) {
 		t.Fatalf("the last column is %q; want home", last.group.id)
 	}
 	view := ansi.Strip(m.View().Content)
-	requireView(t, m, "project agents · 1 project", "─ home ─", "● review-1", "pi · working · 3m")
+	requireView(t, m, "agents · 1 project", "─ home ─", "● review-1", "pi · working · 3m")
 	_, alpha := cardColumn(t, view, "manager-alpha")
 	_, home := cardColumn(t, view, "review-1")
 	if home <= alpha {
@@ -92,13 +92,14 @@ func TestAgentsHomeColumnIsNotShownWhenEmpty(t *testing.T) {
 	}
 }
 
-// AC1: with no project, the graph keeps its notice and shows no home agent.
+// AC1 and agents.md rule 13: with no project, the graph shows the home pod
+// and the notice, as with each project pod hidden (goal g9).
 func TestAgentsHomeAgentsWithNoProjectKeepTheNotice(t *testing.T) {
 	m := agentsModel(t, agentsSource{agents: []records.Agent{generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")}})
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	view := ansi.Strip(m.View().Content)
-	if !strings.Contains(view, agentsNoneText) || strings.Contains(view, "review-1") {
-		t.Fatalf("with no project the graph is not the notice:\n%s", view)
+	if !strings.Contains(view, agentsNoneText) || !strings.Contains(view, "━ home ━") || !strings.Contains(view, "● review-1") {
+		t.Fatalf("with no project the graph does not show the home pod and the notice:\n%s", view)
 	}
 	m.health.agents = m.agents.data
 	m.selectScreen(tabHealth, 1)
@@ -239,7 +240,7 @@ func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "t1-alpha-worker"
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	if m.graph.selected != "helper-1" {
 		t.Fatalf("↓ from the worker selects %q; want helper-1", m.graph.selected)
@@ -250,9 +251,9 @@ func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	}
 	m, _ = raise(t, m, key(tea.KeyEscape, ""))
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
+	m, _ = raise(t, m, key('o', "o"))
 	if m.graph.selected != "review-1" {
-		t.Fatalf("→ and enter from the alpha pod select %q; want review-1", m.graph.selected)
+		t.Fatalf("→ and o from the alpha pod select %q; want review-1", m.graph.selected)
 	}
 }
 
@@ -267,7 +268,7 @@ func TestAgentsCompactHomeIsTheLastPage(t *testing.T) {
 	m := agentsModel(t, source)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.graph.selected = "manager-alpha"
-	requireView(t, m, "project agents · 3 projects", "projects 1–2 of 3")
+	requireView(t, m, "agents · 3 projects", "projects 1–2 of 3")
 	for range 3 {
 		m, _ = raise(t, m, key(tea.KeyRight, ""))
 	}
@@ -283,10 +284,12 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m := agentsModel(t, homeSource(generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m.graph.selected = "review-1"
+	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "model", "gpt", "parent", "coordinator-g1")
-	_, lines := m.agentDetailsPopup()
+	// agents.md rule 14: the model is on the harness row, and the parent
+	// row shows the name of the parent record coordinator-g1.
+	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "pi · gpt", "parent    coordinator")
+	_, lines, _ := m.agentDetailsPopup()
 	for _, line := range lines {
 		fields := strings.Fields(ansi.Strip(line))
 		if len(fields) == 1 && (fields[0] == "project" || fields[0] == "nudged" || fields[0] == "goal" || fields[0] == "replaces") {
@@ -323,12 +326,14 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		wants         []string
 		home          map[string]bool // key: in home
 	}{
-		{"AgentsHome", 120, 40, []string{"project agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
+		{"AgentsHome", 120, 40, []string{"agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
 		{"AgentsNested", 120, 40, []string{"t5-research-1", "t5-research-2"}, map[string]bool{"t5-research-1": false, "t5-research-2": false}},
 		{"AgentsHiddenParent", 120, 40, []string{"━ home ━", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
-		{"AgentsCoordinatorChild", 120, 40, []string{"project agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
+		{"AgentsCoordinatorChild", 120, 40, []string{"agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
 		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
-		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "coordinator-g2", "14:15 agent report plan-review-1"}, nil},
+		// agents.md rule 14 (ask a29): the parent row shows the name of the
+		// parent, and the key row is in the place of RECENT.
+		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "parent    coordinator", "a attach · p peek · esc closes"}, nil},
 		{"HealthAgentsGeneral", 120, 40, []string{"▶ ● plan-review-1", "agent"}, nil},
 	} {
 		t.Run(tc.board, func(t *testing.T) {

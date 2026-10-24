@@ -308,6 +308,11 @@ func TestFramesMatchTerminalSizesOnEveryScreen(t *testing.T) {
 						t.Fatalf("%s frame line %d has display width %d, want %d: %q", screen, lineIndex+1, got, size.width, line)
 					}
 				}
+				// Golden-frames agents.md rule 1: the Agents body has no
+				// outer box, so it has no top border to check.
+				if screen == "Agents" {
+					return
+				}
 				if screen == "Work" {
 					// Work rule 13: with no goal the board shows a notice
 					// and no box.

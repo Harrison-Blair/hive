@@ -51,6 +51,8 @@ func cardDot(state string) string {
 		return lipgloss.NewStyle().Foreground(Working).Render("●")
 	case "idle":
 		return accentStyle.Render("◐")
+	case "blocked":
+		return accentStyle.Render("▲")
 	default:
 		return dimStyle.Render("○")
 	}
