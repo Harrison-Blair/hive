@@ -286,7 +286,32 @@ func (h *gatedHandler) WithGroup(name string) slog.Handler {
 type logGate struct {
 	mu     sync.Mutex
 	closed bool
+	tasks  map[*logTask]struct{}
 	active sync.WaitGroup
+	// testHook observes acceptance, command creation, execution, and close.
+	// It is nil in production.
+	testHook func(string)
+}
+
+type logTask struct {
+	gate  *logGate
+	once  sync.Once
+	err   error
+	write func() error
+}
+
+func (t *logTask) run() error {
+	t.once.Do(func() {
+		t.err = t.write()
+		t.gate.unregister(t)
+	})
+	return t.err
+}
+
+func (g *logGate) note(event string) {
+	if g.testHook != nil {
+		g.testHook(event)
+	}
 }
 
 func (g *logGate) begin() bool {
@@ -303,26 +328,45 @@ func (g *logGate) end() {
 	g.active.Done()
 }
 
-// close waits for each started log command, then refuses a new one.
-func (g *logGate) close() {
+// register records an accepted log task. It refuses a task created after the
+// gate is sealed.
+func (g *logGate) register(task *logTask) bool {
 	g.mu.Lock()
-	g.closed = true
-	g.mu.Unlock()
-	g.active.Wait()
+	defer g.mu.Unlock()
+	if g.closed {
+		return false
+	}
+	if g.tasks == nil {
+		g.tasks = make(map[*logTask]struct{})
+	}
+	g.tasks[task] = struct{}{}
+	return true
 }
 
-// trackLogCmd marks a command that can write a log event.
-func (m *Model) trackLogCmd(command tea.Cmd) tea.Cmd {
-	if command == nil {
-		return nil
+func (g *logGate) unregister(task *logTask) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	delete(g.tasks, task)
+}
+
+// close resolves every accepted task, then waits for each started write. A
+// task whose command was never dispatched runs here, so close is bounded and
+// the event is written exactly once.
+func (g *logGate) close() {
+	g.note("close-enter")
+	g.mu.Lock()
+	g.closed = true
+	tasks := make([]*logTask, 0, len(g.tasks))
+	for task := range g.tasks {
+		tasks = append(tasks, task)
 	}
-	return func() tea.Msg {
-		if !m.logs.begin() {
-			return nil
-		}
-		defer m.logs.end()
-		return command()
+	g.mu.Unlock()
+	g.note("close-sealed")
+	for _, task := range tasks {
+		task.run()
 	}
+	g.active.Wait()
+	g.note("close-done")
 }
 
 // Init starts the first data loads and the refresh tick.
@@ -714,11 +758,21 @@ func (m *Model) recordLogCmd(message string, attrs ...slog.Attr) tea.Cmd {
 		return nil
 	}
 	logger, now := m.logger, m.now
-	return m.trackLogCmd(func() tea.Msg {
+	task := &logTask{gate: &m.logs, write: func() error {
 		record := slog.NewRecord(now(), slog.LevelDebug, message, 0)
 		record.AddAttrs(attrs...)
-		return logWriteErrMsg{err: logger.Handler().Handle(context.Background(), record)}
-	})
+		return logger.Handler().Handle(context.Background(), record)
+	}}
+	if !m.logs.register(task) {
+		return nil
+	}
+	m.logs.note("command-created")
+	return func() tea.Msg {
+		m.logs.note("command-start")
+		err := task.run()
+		m.logs.note("command-end")
+		return logWriteErrMsg{err: err}
+	}
 }
 
 func batch(cmds ...tea.Cmd) tea.Cmd {

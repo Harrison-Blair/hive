@@ -11,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 // blockingLogHandler holds one log event until the test releases it. It proves
@@ -111,11 +113,10 @@ func TestRunProgramStopsLogWritesBeforeReturn(t *testing.T) {
 	}
 
 	command := model.logAction("after return")
-	if command == nil {
-		t.Fatal("logAction returned no command")
-	}
-	if msg := command(); msg != nil {
-		t.Fatalf("a log command after the return gave %T; want no write", msg)
+	if command != nil {
+		if msg := command(); msg != nil {
+			t.Fatalf("a log command after the return gave %T; want no write", msg)
+		}
 	}
 	if after := readLogFile(t, path); after != before {
 		t.Fatalf("a log command after the return changed the log file:\nbefore:\n%s\nafter:\n%s", before, after)
@@ -140,6 +141,152 @@ func TestRunHomeKeepsLogEventsBeforeReturn(t *testing.T) {
 	after := readLogFile(t, path)
 	if !strings.Contains(after, `"action":"quit request"`) {
 		t.Fatalf("log file after the return omits the quit event:\n%s", after)
+	}
+}
+
+// TestInputEndedTickQuitsWithoutQuitAction isolates hypothesis A: the input
+// end tick can quit the program before a ctrl+c key Update runs. The tick path
+// returns tea.Quit and creates no quit action.
+func TestInputEndedTickQuitsWithoutQuitAction(t *testing.T) {
+	home := newTestHome(t)
+	model := New(home, nil)
+	defer model.Stop()
+	ended := make(chan struct{})
+	close(ended)
+	model.inputEnded = ended
+
+	_, cmd := model.Update(tickMsg{})
+	if cmd == nil {
+		t.Fatal("the input-end tick did not return a quit command")
+	}
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatalf("the input-end tick returned %T; want tea.QuitMsg", cmd())
+	}
+	if model.quitNotice {
+		t.Fatal("the input-end tick set the quit notice")
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(data), `"action":"quit request"`) {
+			t.Fatalf("the input-end tick wrote a quit action:\n%s", data)
+		}
+	}
+}
+
+// TestQueuedQuitActionSurvivesClose isolates hypothesis B: the first ctrl+c
+// is accepted and creates the quit log command, but that command has not
+// started when close runs. The regression holds the real command at its start
+// hook, closes the real gate, then releases it. A correct drain retains the
+// quit event; the current gate drops it.
+func TestQueuedQuitActionSurvivesClose(t *testing.T) {
+	home := newTestHome(t)
+	model := New(home, nil)
+	defer model.Stop()
+	model.logger.Debug("seed")
+
+	started := make(chan struct{})
+	release := make(chan struct{})
+	finished := make(chan struct{})
+	closeWaiting := make(chan struct{})
+	closeSealed := make(chan struct{})
+	var startOnce, finishOnce, waitingOnce, sealedOnce sync.Once
+	model.logs.testHook = func(event string) {
+		switch event {
+		case "command-start":
+			startOnce.Do(func() { close(started) })
+			<-release
+		case "command-end", "command-dropped":
+			finishOnce.Do(func() { close(finished) })
+		case "close-waiting":
+			waitingOnce.Do(func() { close(closeWaiting) })
+		case "close-sealed":
+			sealedOnce.Do(func() { close(closeSealed) })
+		}
+	}
+
+	model, cmd := raise(t, model, ctrlC())
+	if !model.quitNotice {
+		t.Fatal("the first ctrl+c was not accepted")
+	}
+	if cmd == nil {
+		t.Fatal("the first ctrl+c returned no command")
+	}
+	msg := cmd()
+	batch, ok := msg.(tea.BatchMsg)
+	if !ok {
+		t.Fatalf("the first ctrl+c command gave %T; want tea.BatchMsg", msg)
+	}
+	for _, sub := range batch {
+		go sub()
+	}
+	<-started
+
+	closed := make(chan struct{})
+	go func() {
+		model.logs.close()
+		close(closed)
+	}()
+	select {
+	case <-closeWaiting:
+	case <-closeSealed:
+	}
+	close(release)
+	<-finished
+	<-closed
+	model.Stop()
+
+	path := onlyLogFile(t, home)
+	after := readLogFile(t, path)
+	if !strings.Contains(after, `"action":"quit request"`) {
+		t.Fatalf("the accepted pre-close quit action was dropped:\n%s", after)
+	}
+}
+
+// TestNeverDispatchedQuitActionKeepsOneEvent covers the case where Bubble Tea
+// quits before it dispatches the command: the accepted first ctrl+c must write
+// the quit event exactly once at creation, close must return, and invoking the
+// held command after close must not append a second event.
+func TestNeverDispatchedQuitActionKeepsOneEvent(t *testing.T) {
+	home := newTestHome(t)
+	model := New(home, nil)
+	defer model.Stop()
+	model.logger.Debug("seed")
+
+	model, cmd := raise(t, model, ctrlC())
+	if !model.quitNotice {
+		t.Fatal("the first ctrl+c was not accepted")
+	}
+	if cmd == nil {
+		t.Fatal("the first ctrl+c returned no command")
+	}
+	msg := cmd()
+	batch, ok := msg.(tea.BatchMsg)
+	if !ok {
+		t.Fatalf("the first ctrl+c command gave %T; want tea.BatchMsg", msg)
+	}
+	if len(batch) == 0 {
+		t.Fatal("the first ctrl+c command batch is empty")
+	}
+	held := batch[0]
+	// Do not invoke held. Close must return without waiting for dispatch.
+	model.Stop()
+
+	path := onlyLogFile(t, home)
+	before := readLogFile(t, path)
+	if got := strings.Count(before, `"action":"quit request"`); got != 1 {
+		t.Fatalf("quit events after close = %d; want exactly 1:\n%s", got, before)
+	}
+	held()
+	after := readLogFile(t, path)
+	if got := strings.Count(after, `"action":"quit request"`); got != 1 {
+		t.Fatalf("quit events after late command invocation = %d; want exactly 1:\n%s", got, after)
 	}
 }
 
