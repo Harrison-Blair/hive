@@ -10,11 +10,27 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 )
 
-// designDir holds the golden grid of each board.
-const designDir = "../../../.hive/spec/tui-v2/design/"
+// designDir holds the golden grid of each tui-v2 board. gfDesignDir holds
+// the golden grid of each golden-frames board, whose name starts with Gf.
+const (
+	designDir   = "../../../.hive/spec/tui-v2/design/"
+	gfDesignDir = "../../../.hive/spec/golden-frames/design/"
+)
 
-// sheet is the component sheet, Components.dc.html.
-const sheet = "Components"
+// sheet is the component sheet, Components.dc.html. gfSheet is the
+// golden-frames component sheet, GfComponents.dc.html.
+const (
+	sheet   = "Components"
+	gfSheet = "GfComponents"
+)
+
+// boardPath gives the golden grid file of board.
+func boardPath(board string) string {
+	if strings.HasPrefix(board, "Gf") {
+		return gfDesignDir + board + ".grid"
+	}
+	return designDir + board + ".grid"
+}
 
 // rect is a cell rectangle of a board: zero-based row and column of the
 // top-left cell, then the width and the height.
@@ -23,7 +39,7 @@ type rect struct{ row, col, w, h int }
 // boardRect gives the cells of r from the golden grid of board.
 func boardRect(t *testing.T, board string, r rect) cellgrid.Grid {
 	t.Helper()
-	f, err := os.Open(designDir + board + ".grid")
+	f, err := os.Open(boardPath(board))
 	if err != nil {
 		t.Fatalf("open board: %v", err)
 	}

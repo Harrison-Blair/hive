@@ -68,7 +68,7 @@ func TestDemoFixtureBadValuesFail(t *testing.T) {
 		{old: `"time": "2026-10-21T14:22:00Z"`, new: `"time": "14:22"`, want: `"clock.time"`},
 		{old: `"width": 120`, new: `"width": 0`, want: `"terminal"`},
 		{old: `"overlay": ""`, new: `"overlay": "brief"`, want: `"ui.overlay"`},
-		{old: `"kind": ""`, new: `"kind": "quit"`, want: `"ui.prompt.kind"`},
+		{old: `"kind": ""`, new: `"kind": "launch"`, want: `"ui.prompt.kind"`},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			data := strings.Replace(string(base), tc.old, tc.new, 1)
@@ -103,7 +103,8 @@ func TestDemoMainShowsFixtureDataAtTheFixtureClock(t *testing.T) {
 		t.Fatalf("selected agent = %q; want the fixture selection manager-hive-g2", m.graph.selected)
 	}
 	first := ansi.Strip(m.View().Content)
-	for _, want := range []string{"14:22", "~/source/hive", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
+	// Golden-frames decision 2: no header shows the home path.
+	for _, want := range []string{"14:22", "manager-hive", "t4-worker-1", "t4-verifier-1"} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("view does not contain %q:\n%s", want, first)
 		}
@@ -190,10 +191,10 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 		{Code: 'r', Text: "r"},
 	} {
 		if key.Text == "r" {
-			m.Update(tea.KeyPressMsg{Code: '5', Text: "5"})
+			m.Update(ctrl('y'))
 			m.Update(tea.KeyPressMsg{Code: ']', Text: "]"})
 			if m.activeTab() != tabHealth || m.activeView() != healthAgents {
-				t.Fatalf("5 ] did not select Health › Agents: tab %d, view %d", m.activeTab(), m.activeView())
+				t.Fatalf("ctrl+y ] did not select Health › Agents: tab %d, view %d", m.activeTab(), m.activeView())
 			}
 		}
 		m.Update(key)
@@ -208,7 +209,7 @@ func TestDemoActionKeysShowTheNotice(t *testing.T) {
 			t.Fatalf("notice stays after the next key:\n%s", view)
 		}
 	}
-	m.Update(tea.KeyPressMsg{Code: '2', Text: "2"})
+	m.Update(escKey())
 	m.Update(tea.KeyPressMsg{Code: 'i', Text: "i"})
 	m.Update(tea.KeyPressMsg{Code: 'h', Text: "h"})
 	if cmd := m.updateKey(tea.KeyPressMsg{Code: tea.KeyEnter}); m.chatSending {

@@ -1,0 +1,6 @@
+## break: GfComponents size 120x66 in the Gf size table (AC1)
+$ go test ./internal/boardexport/ -count=1 -run TestGfGoldenGridFiles
+--- FAIL: TestGfGoldenGridFiles (0.00s)
+    --- FAIL: TestGfGoldenGridFiles/GfComponents (0.00s)
+        golden_test.go:77: size 120×67, want 120×66
+        golden_test.go:80: board GfComponents: size 120×67, want 120×66

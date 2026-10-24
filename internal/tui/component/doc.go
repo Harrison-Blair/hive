@@ -4,13 +4,10 @@
 // measures text with lipgloss.Width and uses only the palette of decision 26.
 //
 // palette.go holds the palette tokens and their styles.
-// header.go holds Header, the first row with the home and the agent states.
-// tabbar.go holds TabBar, the screen labels and the rule below them.
 // subtabs.go holds SubTabs, the views of a screen.
 // panel.go holds Panel, a region with a rounded border and a title.
 // scrollmark.go holds ScrollMark and Thumb, the scroll marks of a region.
 // viewport.go holds Viewport, a Panel whose body scrolls.
-// keyhints.go holds KeyHints, the footer with the region and its keys.
 // list.go holds List, a Panel of rows in fixed columns with a selection.
 // details.go holds Details, a Panel of label and value lines that scrolls.
 // filterbar.go holds FilterBar, the filter text of the log screen.
@@ -22,4 +19,6 @@
 // markdown.go holds RenderMarkdown, an agent reply rendered by Glamour.
 // markdown_style.go holds the Glamour style of decision 29.
 // chat.go holds ChatLines, the lines of the chat feed.
+// statusrow.go holds StatusRow, a status row of segments and the clock.
+// titlerow.go holds TitleRow, the title row and the rule of a screen.
 package component

@@ -15,6 +15,9 @@ import (
 // AC2: the demo view of the WorkQueue fixture matches its golden grid cell
 // for cell.
 func TestWorkQueueMatchesItsBoard(t *testing.T) {
+	if skipRetired(t, "WorkQueue") {
+		return
+	}
 	want := readBoardGrid(t, "WorkQueue")
 	m := newTestDemoModel(t, "WorkQueue.fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)
@@ -162,15 +165,16 @@ func TestQueueKeys(t *testing.T) {
 // the overlay, and t still works in it.
 func TestQueueFocusStates(t *testing.T) {
 	m := queueModel(t, goalsQueueFixture(t), 120, 40)
-	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · s stops only · t task · ? help")
+	requireKeys(t, m, "list", "↑↓ move · ^] box · [ ] view · enter open · s stops only · t task · ? help")
 	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
-	requireView(t, m, "[details] ↑↓ scroll · tab region · esc back to list · ? help")
+	requireKeys(t, m, "details", "↑↓ scroll · ^] box · esc back to list · ? help")
 	m, _ = raise(t, m, key(tea.KeyEscape, "esc"))
-	requireView(t, m, "[list]")
+	requireKeys(t, m, "list", "")
 
 	m = queueModel(t, goalsQueueFixture(t), 80, 24)
 	m, _ = raise(t, m, key(tea.KeyEnter, "enter"))
-	requireView(t, m, "╭─ 1-alpha · esc back ─", "[details] ↑↓ scroll · esc back to list")
+	requireView(t, m, "╭─ 1-alpha · esc back ─")
+	requireKeys(t, m, "details", "↑↓ scroll · esc back to list")
 	m, cmd := raise(t, m, key('t', "t"))
 	m = deliverAgentCommands(t, m, cmd)
 	if m.viewName() != "Tasks" || m.tasks.selectedID != "1-alpha" {

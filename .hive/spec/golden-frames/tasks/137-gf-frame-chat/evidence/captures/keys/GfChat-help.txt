@@ -1,0 +1,40 @@
+ › you 14:02
+ move the status out of the composer border. one row under it, like claude code, and keep the chords on it.
+
+ ▸ manager-store 14:05  g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit pa…
+
+ ● coordinator 14:06
+ Status row, summary
+
+ Segments
+ • The row is built from segments: state, supervisor, asks, needs_you, chords, hints, clock, and command.
+ • The default order is state, supervisor, asks, needs you, chords, clock.
+ • A command segment runs your statusline renderer and shows its first line.
+
+ Config
+   [tui.status]
+   lines = [["state", "supervisor", "asks", "needs_you", "chords", "clock"]]
+   command = "python3 ~/source/agents/statusline/statusline.py render hive"
+
+ Cut rule
+ • Segments are cut from the right when the width is short, so the chords go first.
+ • Under 30 rows the row count is capped at 1.
+
+ Reply yes to confirm, or name the line to change.
+
+ ▸ manager-hive 14:09  quiet                                                                                         
+
+ › you 14:21 · pending
+ yes
+
+
+
+
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen:        │
+│   Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each │
+│   line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me  │
+│   the draft so I can read it before the tag.?█                                                                       │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 2m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22

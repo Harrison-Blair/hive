@@ -1,0 +1,33 @@
+$ go test ./internal/tui/ -run TestGfChatBoardsMatch -v
+=== RUN   TestGfChatBoardsMatch
+=== RUN   TestGfChatBoardsMatch/GfChat
+=== RUN   TestGfChatBoardsMatch/GfChatEmpty
+=== RUN   TestGfChatBoardsMatch/GfChatEvents
+=== RUN   TestGfChatBoardsMatch/GfChatTall
+=== RUN   TestGfChatBoardsMatch/GfChatMarkdown
+=== RUN   TestGfChatBoardsMatch/GfChatNoCoordinator
+=== RUN   TestGfChatBoardsMatch/GfChatNotice
+=== RUN   TestGfChatBoardsMatch/GfChatAsk
+=== RUN   TestGfChatBoardsMatch/GfChatAskInput
+=== RUN   TestGfChatBoardsMatch/GfChatAskMulti
+=== RUN   TestGfChatBoardsMatch/GfChatAskPreview
+=== RUN   TestGfChatBoardsMatch/GfChatAskStopped
+=== RUN   TestGfChatBoardsMatch/GfChatAskReview
+=== RUN   TestGfChatBoardsMatch/GfChatAskMany
+--- PASS: TestGfChatBoardsMatch (0.02s)
+    --- PASS: TestGfChatBoardsMatch/GfChat (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatEmpty (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatEvents (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatTall (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatMarkdown (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatNoCoordinator (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatNotice (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAsk (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskInput (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskMulti (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskPreview (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskStopped (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskReview (0.00s)
+    --- PASS: TestGfChatBoardsMatch/GfChatAskMany (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.023s

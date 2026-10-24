@@ -1,0 +1,14 @@
+GfChat: live and revised PNG bytes match
+GfChatAsk: live and revised PNG bytes match
+GfChatAskInput: live and revised PNG bytes match
+GfChatAskMany: live and revised PNG bytes match
+GfChatAskMulti: live and revised PNG bytes match
+GfChatAskPreview: live and revised PNG bytes match
+GfChatAskReview: live and revised PNG bytes match
+GfChatAskStopped: live and revised PNG bytes match
+GfChatEmpty: live and revised PNG bytes match
+GfChatEvents: live and revised PNG bytes match
+GfChatMarkdown: live and revised PNG bytes match
+GfChatNoCoordinator: live and revised PNG bytes match
+GfChatNotice: live and revised PNG bytes match
+GfChatTall: live and revised PNG bytes match

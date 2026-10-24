@@ -1,0 +1,43 @@
+--- FAIL: TestParseConfigTUIDefaults (0.00s)
+    config_tui_test.go:20: status lines = []; want [["state" "supervisor" "asks" "needs_you" "chords" "hints" "clock"]]
+    config_tui_test.go:30: keys = map[]; want map[agents:ctrl+g friction:ctrl+f health:ctrl+y help:? logs:ctrl+l work:ctrl+t]
+--- FAIL: TestParseConfigTUITables (0.00s)
+    config_tui_test.go:45: line 3: unknown table "tui.status"
+--- FAIL: TestParseConfigTUIRefusesBadValues (0.00s)
+    --- FAIL: TestParseConfigTUIRefusesBadValues/no_rows (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.lines
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name 1 to 3
+    --- FAIL: TestParseConfigTUIRefusesBadValues/four_rows (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.lines
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name 1 to 3
+    --- FAIL: TestParseConfigTUIRefusesBadValues/empty_row (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.lines
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name row 2
+    --- FAIL: TestParseConfigTUIRefusesBadValues/unknown_segment (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.lines
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name "weather"
+    --- FAIL: TestParseConfigTUIRefusesBadValues/not_a_list (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.lines
+    --- FAIL: TestParseConfigTUIRefusesBadValues/command_not_a_string (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name tui.status.command
+    --- FAIL: TestParseConfigTUIRefusesBadValues/unknown_status_key (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.status\"" does not name "rows"
+    --- FAIL: TestParseConfigTUIRefusesBadValues/unknown_action (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name "quit"
+    --- FAIL: TestParseConfigTUIRefusesBadValues/tab (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name tui.keys.logs
+    --- FAIL: TestParseConfigTUIRefusesBadValues/two_actions (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name tui.keys.logs
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name ctrl+g
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name agents
+    --- FAIL: TestParseConfigTUIRefusesBadValues/fixed_key (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name tui.keys.work
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name ctrl+o
+    --- FAIL: TestParseConfigTUIRefusesBadValues/bad_key_name (0.00s)
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name tui.keys.work
+        config_tui_test.go:87: error "line 2: unknown table \"tui.keys\"" does not name "ctrl+"
+--- FAIL: TestReadTUISettings (0.00s)
+    config_tui_test.go:103: no config file gave {StatusLines:[] StatusCommand: Keys:map[]}; want the defaults
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/lib/home	0.001s
+FAIL

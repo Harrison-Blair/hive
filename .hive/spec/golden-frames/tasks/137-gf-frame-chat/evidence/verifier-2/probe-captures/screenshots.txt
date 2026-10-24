@@ -1,0 +1,5 @@
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/profiles/probe-ask-resize-after --window-size=1220,780 --screenshot /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/tasks/137-gf-frame-chat/evidence/verifier-2/probe-captures/ask-resize-after.png file:///home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/html/probe-ask-resize-after.dc.html
+*** You are running in headless mode.
+
+$ firefox --headless --no-remote --profile /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/profiles/probe-ask-resize-before --window-size=1220,780 --screenshot /home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/tasks/137-gf-frame-chat/evidence/verifier-2/probe-captures/ask-resize-before.png file:///home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/html/probe-ask-resize-before.dc.html
+*** You are running in headless mode.

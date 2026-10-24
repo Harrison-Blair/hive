@@ -1,0 +1,18 @@
+keys-agents: title agents on row 0; esc chat in status
+keys-work: title work on row 0; esc chat in status
+keys-friction: title friction on row 0; esc chat in status
+keys-health: title health on row 0; esc chat in status
+keys-logs: title logs on row 0; esc chat in status
+keys-agents-back: equals the starting Chat capture
+keys-work-esc: equals the starting Chat capture
+keys-friction-esc: equals the starting Chat capture
+keys-health-esc: equals the starting Chat capture
+keys-logs-back: equals the starting Chat capture
+keys-chat-esc: equals the starting Chat capture
+keys-box-noop: equals the starting Chat capture
+keys-events-folded: equals the starting Chat capture
+ctrl+o: event headers use ▾, then fold to the start capture
+ctrl+c: first press gives the quit notice; second press ends the app
+ctrl+r: input focus, then card focus; second press restores the first card capture
+esc on card: input focus, same as ctrl+r
+? on empty input: opens Help; esc restores Chat

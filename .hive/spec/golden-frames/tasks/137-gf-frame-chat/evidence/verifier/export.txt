@@ -1,0 +1,17 @@
+GfChatAskMulti.grid: export is unchanged
+GfChatAskPreview.grid: export is unchanged
+GfChatAskMany.grid: export is unchanged
+GfChatNotice.grid: export is unchanged
+GfChatEmpty.grid: export is unchanged
+GfChatAskReview.grid: export is unchanged
+GfComponents.grid: export is unchanged
+GfChatAskStopped.grid: export is unchanged
+GfChatEvents.grid: export is unchanged
+GfChat.grid: export is unchanged
+GfChatAsk.grid: export is unchanged
+GfChatAskInput.grid: export is unchanged
+GfChatNoCoordinator.grid: export is unchanged
+GfChatMarkdown.grid: export is unchanged
+GfChatTall.grid: export is unchanged
+$ git status --short .hive/spec/golden-frames/design/
+(no output)

@@ -199,14 +199,14 @@ func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	requireRestartPrompt(t, m, "restart supervisor? y/n")
 }
 
-// requireRestartPrompt checks the restart prompt. Decision 21 gives the
-// footer the fixed text "[restart] y restart · any other key cancels". The
+// requireRestartPrompt checks the restart prompt. Golden-frames decision 11
+// gives the keys "y restart · any other key cancels" in the screen segment. The
 // current Agents screen keeps the prompt that names the agent. The Health ›
 // Agents task of wave 6 shows it in the content area, as the HealthAgents
 // board does.
 func requireRestartPrompt(t *testing.T, m *Model, prompt string) {
 	t.Helper()
-	requireView(t, m, "[restart] y restart · any other key cancels")
+	requireKeys(t, m, "restart", "y restart · any other key cancels")
 	if m.agents.restartNotice != prompt {
 		t.Fatalf("restart prompt = %q; want %q", m.agents.restartNotice, prompt)
 	}
@@ -312,9 +312,10 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	m.selectScreen(tabHealth, 1)
 	m.width = 120
 	m.header = state
-	// Decisions 2 and 19: the header shows the supervisor state word, and
-	// restart moves to Health › Agents, so the header has no restart hint.
-	requireView(t, m, "supervisor ○ old")
+	// Golden-frames decision 11: the status row shows an old supervisor as
+	// ▲ supervisor. Decision 19: restart moves to Health › Agents, so the
+	// frame has no restart hint.
+	requireView(t, m, "▲ supervisor")
 	rejectView(t, m, "r to restart")
 }
 

@@ -1,0 +1,13 @@
+diff --git a/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/internal/tui/status_command.go b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/mutations/demo-command.go
+index 4f640fed..8a798146 100644
+--- a/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/internal/tui/status_command.go
++++ b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/tmp/t137-check-verifier-2/mutations/demo-command.go
+@@ -54,7 +54,7 @@ type statusCommandInput struct {
+ func (m *Model) startStatusCommand() tea.Cmd {
+ 	command := m.tuiConfig.StatusCommand
+ 	used := slices.ContainsFunc(m.tuiConfig.StatusLines, func(names []string) bool { return slices.Contains(names, "command") })
+-	if command == "" || !used || m.demo != nil || m.statusCommandRunning {
++	if command == "" || !used || m.statusCommandRunning {
+ 		return nil
+ 	}
+ 	now := m.now()

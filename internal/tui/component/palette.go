@@ -2,7 +2,7 @@ package component
 
 import "charm.land/lipgloss/v2"
 
-// The palette tokens of decision 26. fg and the background are the terminal
+// The palette tokens of decision 26, and error of golden-frames decision 21. fg and the background are the terminal
 // defaults, so text in fg has no colour.
 var (
 	Border  = lipgloss.Color("#3d3a33")
@@ -13,6 +13,7 @@ var (
 	Info    = lipgloss.Color("#6fb7ff")
 	User    = lipgloss.Color("#e9cf9b")
 	Code    = lipgloss.Color("#9fd0ff")
+	Error   = lipgloss.Color("#e8705f")
 )
 
 var (

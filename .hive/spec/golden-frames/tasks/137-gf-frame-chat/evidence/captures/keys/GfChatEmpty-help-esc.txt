@@ -1,0 +1,40 @@
+
+ hive · ~/source/hive
+ ● working 2m
+ type a message to the coordinator.
+ ^g agents  ^t work  ^f friction  ^y health  ^l logs
+ ? help
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > type a message · ? help                                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 2m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22

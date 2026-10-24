@@ -1,0 +1,41 @@
+import json, pathlib, subprocess
+root = pathlib.Path.cwd()
+scratch = root / '.hive/tmp/t137-check-verifier'
+out = root / '.hive/spec/golden-frames/tasks/137-gf-frame-chat/evidence/verifier/mutations'
+out.mkdir(exist_ok=True)
+cases = [
+('error', 'internal/lib/cellgrid/palette.go', 'TestConvertErrorNoticePrefix'),
+('chord', 'internal/tui/gframe.go', 'TestFrameChordsOpenScreens'),
+('status-lines', 'internal/tui/gframe.go', 'TestVerifierStatusRowsHeight'),
+('status-join', 'internal/tui/component/statusrow.go', 'TestStatusRowGolden'),
+('title', 'internal/tui/component/titlerow.go', 'TestTitleRowGolden'),
+('throttle', 'internal/tui/status_command.go', 'TestStatusCommandRunsAtMostOnceEach300ms'),
+('demo-command', 'internal/tui/status_command.go', 'TestStatusCommandRunsOnlyWhenItApplies'),
+('notice', 'internal/tui/frame.go', 'TestFooterShowsStartupNoticeBeforeError'),
+('box', 'internal/tui/frame.go', 'TestFrameBoxFocusKeys'),
+('placeholder', 'internal/tui/chat.go', 'TestVerifierChatStatePlaceholders'),
+('send', 'internal/tui/chat.go', 'TestChatSendWithNoCoordinatorKeepsTheText'),
+('earlier', 'internal/tui/chat.go', 'TestChatTallTranscriptFollowsItsEnd'),
+('messages', 'internal/tui/component/chat.go', 'TestChatBlankRows'),
+]
+probe = {str(root/'internal/tui/t137_verifier_test.go'): str(root/'.hive/spec/golden-frames/tasks/137-gf-frame-chat/evidence/verifier/probes_test.go.txt')}
+summary = []
+for name, source, test in cases:
+    replacement = scratch / 'mutations' / (name + '.go')
+    diff = subprocess.run(['git','diff','--no-index','--', str(root/source), str(replacement)], capture_output=True, text=True)
+    (out/(name+'.patch')).write_text(diff.stdout)
+    statuses = []
+    for mode in ['red','green']:
+        mapping = dict(probe) if test.startswith('TestVerifier') else {}
+        if mode == 'red': mapping[str(root/source)] = str(replacement)
+        overlay = scratch/(name+'-'+mode+'.json')
+        overlay.write_text(json.dumps({'Replace':mapping}))
+        cmd = ['go','test','-overlay',str(overlay),'./internal/...','-count=1','-run','^'+test+'$']
+        p = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120)
+        (out/(name+'-'+mode+'.txt')).write_text('$ '+' '.join(cmd)+'\n'+p.stdout+'\nexit '+str(p.returncode)+'\n')
+        statuses.append(p.returncode)
+    result = 'pass' if statuses[0] != 0 and statuses[1] == 0 else 'FAIL'
+    summary.append(f'{name}: {test}: red {statuses[0]}, green {statuses[1]}: {result}')
+    print(summary[-1], flush=True)
+(out/'summary.txt').write_text('\n'.join(summary)+'\n')
+assert all(line.endswith(': pass') for line in summary)

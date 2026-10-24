@@ -64,7 +64,7 @@ func openHide(t *testing.T, home string, clock *testClock, size tea.WindowSizeMs
 	t.Helper()
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, size)
-	m, cmd := raise(t, m, key('1', "1"))
+	m, cmd := raise(t, m, ctrl('g'))
 	return deliverAgentCommands(t, m, cmd)
 }
 
@@ -330,8 +330,10 @@ func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 		requireView(t, m, "project agents · 0 projects · h shows 3 stopped", agentsNoneText)
 		rejectView(t, m, "│ ● coordinator", "─ home ─", "╭──")
 		// The notice is the second body row, as decision 10 draws it.
-		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != 5 || col != 3 {
-			t.Fatalf("%dx%d: notice at row %d col %d; want row 5 col 3", size.Width, size.Height, row, col)
+		// Golden-frames decision 2: the body starts on row 2, below the
+		// title row and the rule, so the notice is on row 4.
+		if row, col := findText(t, renderGrid(t, m, size.Width, size.Height), agentsNoneText); row != 4 || col != 3 {
+			t.Fatalf("%dx%d: notice at row %d col %d; want row 4 col 3", size.Width, size.Height, row, col)
 		}
 	}
 }
@@ -372,7 +374,8 @@ func TestAgentsCoordinatorSelectableWithAllProjectPodsHidden(t *testing.T) {
 				m, _ = raise(t, m, up)
 				requireCoordinatorHeavy(t, m, size, true)
 				m, _ = raise(t, m, key(tea.KeyEnter, ""))
-				requireView(t, m, "coordinator · esc closes", "[details]")
+				requireView(t, m, "coordinator · esc closes")
+				requireKeys(t, m, "details", "")
 				m, _ = raise(t, m, key(tea.KeyEscape, ""))
 				rejectView(t, m, "coordinator · esc closes")
 				requireCoordinatorHeavy(t, m, size, true)
@@ -398,7 +401,8 @@ func TestAgentsCoordinatorSelectionSurvivesTheLastPodHiding(t *testing.T) {
 			requireView(t, m, agentsNoneText)
 			requireCoordinatorHeavy(t, m, size, true)
 			m, _ = raise(t, m, key(tea.KeyEnter, ""))
-			requireView(t, m, "coordinator · esc closes", "[details]")
+			requireView(t, m, "coordinator · esc closes")
+			requireKeys(t, m, "details", "")
 		})
 	}
 }
@@ -416,7 +420,10 @@ func TestAgentsNoRegisteredProjectSelectsNothing(t *testing.T) {
 			rejectView(t, m, "● coordinator")
 			m, _ = raise(t, m, key(tea.KeyUp, ""))
 			m, _ = raise(t, m, key(tea.KeyEnter, ""))
-			rejectView(t, m, "esc closes", "[details]")
+			rejectView(t, m, "esc closes")
+			if m.focusState() == "details" {
+				t.Fatal("enter opened the details")
+			}
 		})
 	}
 }

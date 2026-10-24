@@ -1,0 +1,202 @@
+hive-grid 1 120 67
+t|GOLDEN FRAMES · COMPONENTS  Lip Gloss + Bubbles · one reusable Go component per block · no header row, no tab bar       
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffff
+b|111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Palette  terminal default background and foreground · error is new                                                      
+k|aaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|██ fg       ██ border   ██ dim      ██ accent   ██ working  ██ done     ██ info     ██ user     ██ code     ██ error    
+k|ffffffffffffrrffffffffffddffffffffffaaffffffffffwwffffffffffooffffffffffiiffffffffffuuffffffffffccffffffffffeeffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|   default     #3d3a33     #a39d90     #f5b942     #6ee69a     #7ccf6a     #6fb7ff     #e9cf9b     #9fd0ff     #e8705f n
+k|fffdddddddfffffdddddddfffffdddddddfffffdddddddfffffdddddddfffffdddddddfffffdddddddfffffdddddddfffffdddddddfffffddddddddd
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|StatusRow  last row · segments joined by · · clock pinned right · cut from the right until it fits · 1 to 3 rows        
+k|aaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffff
+b|111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ● working 2m · ● supervisor · ? 1 ask · needs you 1 · ^g agents  ^t work  ^f friction  ^y health  ^l logs        14:22 
+k|fwddddddddddddddwddddddddddddddaaaaaaadddaaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffffdddddf
+b|010000000000000010000000000000011111110001111111111100000000000000000000000000000000000000000000000000000000000000000000
+t| ○ idle 5m · ● supervisor · ? 0 asks · needs you 0                        14:22    ← the same row at 80 columns: the cho
+k|fddddddddddddwddddddddddddddddddddddddddddddddddddffffffffffffffffffffffffdddddffffddddddddddddddddddddddddddddddddddddd
+b|010000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ▲ blocked 1m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22 
+k|faddddddddddddddwddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffdddddf
+b|010000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Chords  ctrl+letter opens a screen · on that screen it reads esc chat · ? in an empty composer opens Help · tab reserved
+k|aaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ^g agents  ^t work  ^f friction  ^y health  ^l logs    on Work: ^g agents  esc chat  ^f friction  ^y health  ^l logs   
+k|fdddddddddddddddddddddddddddddddddddddddddddddddddddffffddddddddfddddddddddddddddddddddddddddddddddddddddddddddddddddfff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|TitleRow  row 0 of a screen · name in accent · facts in dim · right text · a rule below                                 
+k|aaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffff
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| work · g2-tui-v2 · TUI v2: boards, components, and screens                                             [ ] goal 2 of 2 
+k|faaaaaaaaaaaaaaaafdddddddddddddddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddf
+b|011111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
+k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrf
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Composer  above the status row · grows to 1/3 of the screen · placeholder dim · typed text in user color · accent = focu
+k|aaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭────────────────────────────────────────────────────────╮    ╭────────────────────────────────────────────────────────╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > type a message · ? help                              │    │ > restart the supervisor please█                       │
+k|afuudddddddddddddddddddddddffffffffffffffffffffffffffffffaffffafuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰────────────────────────────────────────────────────────╯    ╰────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Composer + AskCard  the card sits in the frame above the input line · the title becomes the ask · ctrl+r moves the focus
+k|aaaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╭─ ? manager-hive asks · Model ───────────────────────────────────────────────────────────────────────── open · 1 of 1 ╮
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|001111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000001111111111111110
+t|│ Restart manager-hive on DeepSeek? It runs on Opus now.                            card    ↑↓ 1..9 space enter n x J/K│
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffddddddddddddddddddddddddddddddddddda
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│                                                                                   review  enter sends · ↑↓ question  │
+k|afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddddddffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ › 1 [ ] Yes, restart now (REC)     stop it, then spawn on deepseek-v4.1-flash     stopped title says so · to parent  │
+k|afafaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffddddddddddddddddddddddddddddddddddddddddddfffffdddddddddddddddddddddddddddddddddffa
+b|001011111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   2 [ ] After g6 lands             restart when the goal is done                                                     │
+k|afaffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   3 [ ] No, keep Opus              no change                                                                         │
+k|afaffffffffffffffffffffffffffffffffffdddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│   4 [ ] Other: type an answer                                                                                        │
+k|afaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ note › none · n adds one                                                                                             │
+k|afddddddfdddddddddddddddddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|│ > typed text stays while the card has the focus                                                                      │
+k|afuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|Message  marker · name · time on line 1 · text from the left edge at every width · a blank line between messages        
+k|aaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffff
+b|111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| › you 14:02                                                  ›  you          user color, bold name                     
+k|fufuuufdddddffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddddddddddfffffffffffffffffffff
+b|010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| move the status out of the composer border.                  ●  agent        info name · Glamour markdown body         
+k|fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffffffffffffffffffdddddddddddddddddddddddddddddddddddddddddddddddddfffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ● coordinator 14:06                                          ▸  event        dim, folded to one line                   
+k|fifiiiiiiiiiiifdddddffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddddddddddddfffffffffffffffffff
+b|010111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| Status row, summary                                          ▾  event open   dim, the full text below                  
+k|faaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffffffffddddddddddddddddddddddddddddddddddddddddffffffffffffffffff
+b|011111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| • Segments are cut from the right. Config under [tui.status].?  ask          accent · in the composer while open       
+k|fffffffffffffffffffffffffffffffffffffffffffffffffccccccccccccfdddddddddddddddddddddddddddddddddddddddddddddddddddfffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ▸ manager-hive 14:09  quiet                                                                                            
+k|fdfddddddddddddfdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddfff
+b|000111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ▾ manager-store 14:05                                                                                                  
+k|fdfdddddddddddddfdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| g2-live-scroll DONE: task 121-live-transcript-scroll verified by t121-verifier-2 · 2772 unit passes · 0 fails          
+k|fdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| › you 14:23                                                                                                            
+k|fufuuufdddddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|010111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| answered manager-hive · Model → Yes, restart now                                                                       
+k|fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|TaskCard  24×4 · dot = status · line 2 = worker and age, or landed commit, or the wait · heavy accent = selected        
+k|aaaaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddffffffff
+b|111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ╭──────────────────────╮  ╭──────────────────────╮  ┏━━━━━━━━━━━━━━━━━━━━━━┓  ╭──────────────────────╮                 
+k|frrrrrrrrrrrrrrrrrrrrrrrrffrrrrrrrrrrrrrrrrrrrrrrrrffaaaaaaaaaaaaaaaaaaaaaaaaffrrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| │ ● 10-board-export    │  │ ◐ 11-demo-mode       │  ┃ ○ 12-board-fixtures  ┃  │ ! 21-components-1    │  ● landed       
+k|frfoffffffffffffffffffffrffrfwffffffffffffffffffffrffafdfaaaaaaaaaaaaaaaaaafaffrfaffffffffffffffffffffrffodddddddfffffff
+b|000000000000000000000000000000000000000000000000000000000111111111111111111000000000000000000000000000000000000000000000
+t| │ landed · 2adaf0      │  │ verified · V5 pass   │  ┃ t12-worker-1 · 12m   ┃  │ needs you · mask ok? │  ◐ verified     
+k|frfddddddddddddddddddddfrffrfddddddddddddddddddddfrffafddddddddddddddddddddfaffrfddddddddddddddddddddfrffwdddddddddfffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ╰──────────────────────╯  ╰──────────────────────╯  ┗━━━━━━━━━━━━━━━━━━━━━━┛  ╰──────────────────────╯  ○ assigned     
+k|frrrrrrrrrrrrrrrrrrrrrrrrffrrrrrrrrrrrrrrrrrrrrrrrrffaaaaaaaaaaaaaaaaaaaaaaaaffrrrrrrrrrrrrrrrrrrrrrrrrffddddddddddfffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                         ! needs you    
+k|fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaddddddddddffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|WaveColumn + Rail  28 wide · title: wave · state · n/m · done when at the foot · ─▶ rail from a dependency into the next
+k|aaaaaaaaaaaaaaaaaffddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ╭─ A · done · 3/3 ─────────╮    ┏━ B · running · 2/4 ━━━━━━┓                                                           
+k|frraaaaaaaaaaaaaaaarrrrrrrrrrffffaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000111111111111111100000000000000001111111111111111111000000000000000000000000000000000000000000000000000000000000000000
+t| │                          │    ┃                          ┃ Popup · Thumb · Fold                                      
+k|frffffffffffffffffffffffffffrffffaffffffffffffffffffffffffffafaaaaaaaaaaaaaaaaaaaaffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000001111111111111111111100000000000000000000000000000000000000
+t| │ ╭──────────────────────╮ │    ┃ ╭──────────────────────╮ ┃ ╭─ t6-worker-1 · esc closes ─────────────╮ centered over a
+k|frfrrrrrrrrrrrrrrrrrrrrrrrrfrffffafrrrrrrrrrrrrrrrrrrrrrrrrfafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafddddddddddddddd
+b|000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111000000000000000000000000000000
+t| │ │ ● 9-cellgrid         │ ┤───▶┠ │ ● 10-board-export    │ ┃ │ task      6-starting-status            ┃ dimmed screen  
+k|frfrfoffffffffffffffffffffrfrrrrrafrfoffffffffffffffffffffrfafafdddddddddddddddddddddddddddffffffffffffafdddddddddddddff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| │ │ landed · 0026af      │ │    ┃ │ landed · 2adaf0      │ ┃ │ harness   pi · working · 1m            ┃                
+k|frfrfddddddddddddddddddddfrfrffffafrfddddddddddddddddddddfrfafafdddddddddddddddddddddddddddffffffffffffaffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| │ ╰──────────────────────╯ │    ┃ ╰──────────────────────╯ ┃ │ a attach · p peek · t task             │ ▸ resolved · 23
+k|frfrrrrrrrrrrrrrrrrrrrrrrrrfrffffafrrrrrrrrrrrrrrrrrrrrrrrrfafafddddddddddddddddddddddddddfffffffffffffafddddddddddddddd
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| │                          │    ┃                          ┃ │                                        │ a fold line    
+k|frffffffffffffffffffffffffffrffffaffffffffffffffffffffffffffafaffffffffffffffffffffffffffffffffffffffffafdddddddddddffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| │ done when dev ✓ done     │    ┃ done when dev            ┃ ╰────────────────────────────────────────╯                
+k|frfdddddddddddddfoooooofffffrffffafdddddddddddddffffffffffffafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| ╰──────────────────────────╯    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                           
+k|frrrrrrrrrrrrrrrrrrrrrrrrrrrrffffaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|CheckTile · DensityStrip · SeenBar  tiles in rows by area · a bar per 2 minutes, the warn cell in accent · one ▮ per occ
+k|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+b|111111111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t| agents       ✓ starting 0    ! unresolved 1      13:00 ▁▁▂▁▃▁▁▁▂▁▁▁▇▃▂▁▁▁▂▁ 14:22    ▮▮▮▮▮ ▮▮ ▮  seen 5 · 2 · 1        
+k|fddddddfffffffofffffffffffffffafffffffffffffffffffdddddfddddddddddddadddddddfdddddffffaaaaafddfdffddddddddddddddffffffff
+b|011111100000001000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+t|                                                                                                                        
+k|ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+b|000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

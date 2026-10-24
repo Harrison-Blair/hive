@@ -47,10 +47,11 @@ func TestPopupDimsScreen(t *testing.T) {
 	checkHandGrid(t, p.View(screen, 11, 5), want)
 }
 
-// TestDimScreen checks that each cell of a styled header and tab bar is
-// border and not bold, and that short rows are padded to the width.
+// TestDimScreen checks that each cell of styled rows is border and not
+// bold, and that short rows are padded to the width.
 func TestDimScreen(t *testing.T) {
-	screen := TabBar{Active: 1}.View(12) + "\n" + lipgloss.NewStyle().Bold(true).Render("ab")
+	screen := titleStyle.Render("  1 Agents  ") + "\n" + borderStyle.Render("───────────") + accentStyle.Render("━") +
+		"\n" + lipgloss.NewStyle().Bold(true).Render("ab")
 	want := "hive-grid 1 12 3\n" +
 		"t|  1 Agents  \n" + "k|rrrrrrrrrrrr\n" + "b|000000000000\n" +
 		"t|───────────━\n" + "k|rrrrrrrrrrrr\n" + "b|000000000000\n" +

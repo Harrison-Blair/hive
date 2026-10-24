@@ -2,6 +2,7 @@ package tui
 
 import (
 	"log/slog"
+	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -13,8 +14,9 @@ import (
 const wheelLines = 3
 
 // updateMouse handles one click or one wheel step. The wheel scrolls the
-// region under the pointer. A click on a tab name opens the tab, a click on
-// a region gives it the focus, and a click on a list row selects the row. A
+// region under the pointer. A click on a region gives it the focus, and a
+// click on a list row selects the row. Golden-frames decision 2 removes the
+// tab bar, so no click opens a screen. A
 // mouse action that changes the screen is logged.
 func (m *Model) updateMouse(msg tea.MouseMsg) tea.Cmd {
 	if _, _, small := m.tooSmall(); small || m.agents.restartConfirm {
@@ -52,28 +54,29 @@ func (m *Model) updateMouse(msg tea.MouseMsg) tea.Cmd {
 
 // contentRow gives the row of the content area at screen row y.
 func (m *Model) contentRow(y int) (int, bool) {
-	row := y - 3
-	return row, row >= 0 && row < m.height-frameRows
+	top, height := m.contentArea()
+	row := y - top
+	return row, row >= 0 && row < height
 }
 
 // wheel scrolls the region at x, y by step.
 func (m *Model) wheel(x, y, step int) tea.Cmd {
-	row, ok := m.contentRow(y)
+	_, ok := m.contentRow(y)
 	if !ok {
 		return nil
 	}
 	tab := m.activeTab()
 	switch {
 	case m.helpOpen:
-		m.helpOffset = min(max(m.helpOffset+step, 0), len(helpLines()))
+		m.helpOffset = min(max(m.helpOffset+step, 0), len(m.helpLines()))
 		return nil
 	case tab == tabAgents && m.popupOpen:
 		m.popupOffset = max(m.popupOffset+step, 0)
 		return nil
 	case tab == tabChat:
-		if row < m.chatFeed.height+m.askDockHeight() {
-			m.scrollChat(step * wheelLines)
-		}
+		// chat.md rule 7: the wheel scrolls the transcript. The card has no
+		// wheel, so the wheel over the composer scrolls the transcript too.
+		m.scrollChat(step * wheelLines)
 		return nil
 	case !screenRegistry[tab].listDetails:
 		// Decision 77: the wheel does not move the Agents graph.
@@ -101,26 +104,22 @@ func (m *Model) wheel(x, y, step int) tea.Cmd {
 
 // click handles a left click at x, y.
 func (m *Model) click(x, y int) tea.Cmd {
-	if y == 1 && !m.helpOpen && (m.activeTab() != tabAgents || !m.popupOpen) {
-		if tab, ok := (component.TabBar{}).TabAt(x, m.width); ok {
-			return m.openTab(tab)
-		}
-		return nil
-	}
 	row, ok := m.contentRow(y)
 	tab := m.activeTab()
 	if !ok || m.helpOpen || tab == tabAgents || m.focusState() == "filter" {
 		return nil
 	}
 	if tab == tabChat {
+		top := m.chatFeed.composerTop
 		switch {
 		case row < m.chatFeed.height:
-			m.askFeedFocus = true
-			return m.stopChatInput()
-		case row < m.chatFeed.height+m.askDockHeight():
-			return m.clickAsk(row - m.chatFeed.height - 1)
+			return m.clickTranscript(row)
+		case row > top && row <= top+len(m.askRows):
+			return m.clickAsk(row - top - 1)
+		case row >= top:
+			return m.startChatInput()
 		}
-		return m.startChatInput()
+		return nil
 	}
 	entry := screenRegistry[tab]
 	if !entry.listDetails || (m.detailsFocused() && m.width < component.LongFormWidth) {
@@ -158,7 +157,8 @@ func (m *Model) regionAt(tab, x int) int {
 func (m *Model) selectListRow(row int) tea.Cmd {
 	marker := func() []string {
 		m.invalidateView()
-		return strings.Split(ansi.Strip(m.contentView(m.width, m.height-frameRows)), "\n")
+		_, height := m.contentArea()
+		return strings.Split(ansi.Strip(m.contentView(m.width, height)), "\n")
 	}
 	rows := marker()
 	selected := markerRow(rows)
@@ -204,4 +204,29 @@ func samePanel(rows []string, from, row int) bool {
 		}
 	}
 	return true
+}
+
+// clickTranscript opens or folds the event at row of the transcript
+// (chat.md rule 3).
+func (m *Model) clickTranscript(row int) tea.Cmd {
+	feed := &m.chatFeed
+	line := row
+	if len(feed.lines) > feed.height {
+		line = feed.top + row - 1
+	}
+	if line < 0 || line >= len(feed.lines) || len(feed.starts) == 0 {
+		return nil
+	}
+	index := sort.SearchInts(feed.starts, line+1) - 1
+	if index < 0 || index >= len(feed.msgs) || feed.msgs[index].Kind != component.ChatEvent {
+		return nil
+	}
+	if m.chatEventOpen == nil {
+		m.chatEventOpen = map[uint64]bool{}
+	}
+	open := !feed.msgs[index].Open
+	m.chatEventOpen[feed.seqs[index]] = open
+	m.rebuildChat()
+	m.invalidateView()
+	return m.logAction("chat event toggle", slog.Bool("open", open))
 }

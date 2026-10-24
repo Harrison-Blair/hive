@@ -1,0 +1,6 @@
+$ go test ./internal/tui/ -count=1 -v -run "TestChatSendWithNoCoordinatorKeepsTheText|TestChatWelcomeNamesTheHomeWithTilde|TestGfChatBoardsKeepTheFrameAtEachBreakpoint"
+--- PASS: TestChatWelcomeNamesTheHomeWithTilde (0.00s)
+--- PASS: TestChatSendWithNoCoordinatorKeepsTheText (0.00s)
+--- PASS: TestGfChatBoardsKeepTheFrameAtEachBreakpoint (0.04s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/tui	0.052s

@@ -157,7 +157,7 @@ func TestWorkTasksFileKeys(t *testing.T) {
 	if m.focusState() != "details" {
 		t.Fatalf("enter gave focus %q, want details", m.focusState())
 	}
-	requireView(t, m, "[details] ↑↓ scroll · tab region · esc back to list · b brief · v verified · d deps · ? help")
+	requireKeys(t, m, "details", "↑↓ scroll · ^] box · esc back to list · b brief · v verified · d deps · ? help")
 	m, _ = raise(t, m, key(0, "esc"))
 	rejectView(t, m, "dependency graph")
 	if m.focusState() != "details" {
@@ -173,19 +173,21 @@ func TestWorkTasksFileKeys(t *testing.T) {
 // keys. A file key keeps the overlay. esc closes the file, then the overlay.
 func TestWorkTasksOverlayKeys(t *testing.T) {
 	m := newTestDemoModel(t, "Compact.fixture.json", demoSize{})
-	requireView(t, m, "[details] ↑↓ scroll · esc back to list · b brief · v verified · d deps")
+	requireKeys(t, m, "details", "↑↓ scroll · esc back to list · b brief · v verified · d deps")
+	selected := m.tasks.selectedID
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	if m.detailsOffset[tabWork] != 1 {
-		t.Fatalf("↓ gave offset %d, want 1", m.detailsOffset[tabWork])
+	// Golden-frames decision 2 gives the overlay one row more than tui-v2,
+	// so each line of the details fits. ↓ moves the details, not the list.
+	if m.detailsOffset[tabWork] != 1 || m.tasks.selectedID != selected {
+		t.Fatalf("↓ gave offset %d, selection %q; want 1, %q", m.detailsOffset[tabWork], m.tasks.selectedID, selected)
 	}
 	requireView(t, m, "│ goal      g1-tui-restart · wave B")
-	rejectView(t, m, "│ status    landed")
 	m, cmd := raise(t, m, key('b', "b"))
 	deliverFileReads(m, cmd)
 	requireView(t, m, "╭─ brief.md · esc back")
 	m, _ = raise(t, m, key(0, "esc"))
 	requireView(t, m, "╭─ 3-tui-restart · esc back")
 	m, _ = raise(t, m, key(0, "esc"))
-	requireView(t, m, "[list] ↑↓ move · enter details · [ ] view · ?")
+	requireKeys(t, m, "list", "↑↓ move · enter details · [ ] view · ?")
 	rejectView(t, m, "esc back")
 }

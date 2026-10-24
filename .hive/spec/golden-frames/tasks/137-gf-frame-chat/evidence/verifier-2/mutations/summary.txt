@@ -1,0 +1,13 @@
+error: TestConvertErrorNoticePrefix: red 1, green 0: pass
+chord: TestFrameChordsOpenScreens: red 1, green 0: pass
+status-lines: TestVerifierStatusRowsHeight: red 1, green 0: pass
+status-join: TestStatusRowGolden: red 1, green 0: pass
+title: TestTitleRowGolden: red 1, green 0: pass
+throttle: TestStatusCommandRunsAtMostOnceEach300ms: red 1, green 0: pass
+demo-command: TestStatusCommandRunsOnlyWhenItApplies: red 1, green 0: pass
+notice: TestFooterShowsStartupNoticeBeforeError: red 1, green 0: pass
+box: TestFrameBoxFocusKeys: red 1, green 0: pass
+placeholder: TestVerifierChatStatePlaceholders: red 1, green 0: pass
+send: TestChatSendWithNoCoordinatorKeepsTheText: red 1, green 0: pass
+earlier: TestChatTallTranscriptFollowsItsEnd: red 1, green 0: pass
+messages: TestChatBlankRows: red 1, green 0: pass

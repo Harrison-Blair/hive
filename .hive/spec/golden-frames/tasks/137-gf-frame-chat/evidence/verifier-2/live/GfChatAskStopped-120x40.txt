@@ -1,0 +1,40 @@
+ › you 14:02
+ I want a tool for you to ask questions, like the native ask tool, here in hive.
+
+ ● coordinator 14:03
+ Interrogate round 1. Who can ask, how the answer gets back, and where it shows.
+
+ › you 14:05
+ any agent can ask. the answer goes to its inbox. it shows in the chat, in the composer, never over it.
+
+ ▸ manager-hive 14:19  goal g6-hive-ask created · wave A started · worker t12-worker-1 spawned on pi                 
+
+ ? t12-worker-1 14:21  asked · Model · asker stopped · in the composer, ^r to answer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+╭─ ? t12-worker-1 asks · Model ─────────────────────────────────────────── asker stopped · answer goes to manager-hive ╮
+│ The fixture names deepseek-v4.1-flash. Keep it, or use the project default?                                          │
+│                                                                                                                      │
+│ › 1 [ ] Keep it (REC)              the board shows that name                                                         │
+│   2 [ ] Project default            claude-opus-5-5                                                                   │
+│   3 [ ] Other: type an answer                                                                                        │
+│ note › none · n adds one                                                                                             │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ > type a message · ? help                                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 1m · ask · ↑↓ move · 1..3 pick · enter review for parent · n note · x dismiss · J/K card · ^r input    14:22

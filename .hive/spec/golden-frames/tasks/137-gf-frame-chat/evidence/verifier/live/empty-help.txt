@@ -1,0 +1,40 @@
+
+ hive · ~/source/hive                                                                                                   
+ ● working 2m                                                                                                           
+ type a message to the coordinator.                                                                                     
+ ^g agents  ^t work  ^f friction  ^y health  ^l logs                                                                    
+ ? help           ╭─ keys · ? or esc closes ─────────────────────────────────────────────────────────╮                  
+                  │                                                                                  ┃                  
+                  │  SCREENS · same on every screen           ACTIONS · one meaning each             ┃                  
+                  │                                                                                  ┃                  
+                  │  ctrl+g     Agents                        a     attach to pane                   ┃                  
+                  │  ctrl+t     Work                          p     peek pane                        ┃                  
+                  │  ctrl+f     Friction                      r     restart · Health › Agents        ┃                  
+                  │  ctrl+y     Health                        h     show or hide stopped agents      ┃                  
+                  │  ctrl+l     Logs                          t     open task                        ┃                  
+                  │  esc        close, then back to Chat      b     task brief                       ┃                  
+                  │  ?          this help                     v     VERIFIED.md                      ┃                  
+                  │  ctrl+c ×2  quit                          d     dependency graph                 ┃                  
+                  │  ctrl+]     other box                     o     goal design                      ┃                  
+                  │  [ ]        previous / next view          s     stops only                       ┃                  
+                  │  ↑↓ j k     move                          f     follow logs                      ┃                  
+                  │  ←→         move on the graph             < >   previous / next day              ┃                  
+                  │  pgup pgdn  page                          R     refresh now                      ┃                  
+                  │  g G        top / end                                                            ┃                  
+                  │  enter      open / details                                                       ┃                  
+                  │  /          filter bar                                                           ┃                  
+                  │                                                                                  ┃                  
+                  │  FILTER FIELDS                                                                   ┃                  
+                  │  level:  comp:  proj:  agent:  task:  req:  text                                 ┃                  
+                  │  example  / level:warn agent:manager-hive restart                                ┃                  
+                  │                                                                                  │                  
+                  │  CHAT                                                                            │                  
+                  │  the composer has the focus · enter sends · shift+enter adds a line              │                  
+                  │ ↓ 4 more lines                                                                   │                  
+                  ╰──────────────────────────────────────────────────────────────────────────────────╯                  
+
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > type a message · ? help                                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 2m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22 

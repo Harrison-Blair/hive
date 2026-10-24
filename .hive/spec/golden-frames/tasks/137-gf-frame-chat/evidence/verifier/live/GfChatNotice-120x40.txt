@@ -1,0 +1,40 @@
+ › you 14:02
+ I want a tool for you to ask questions, like the native ask tool, here in hive.
+
+ ● coordinator 14:03
+ Interrogate round 1. Who can ask, how the answer gets back, and where it shows.
+
+ › you 14:05
+ any agent can ask. the answer goes to its inbox. it shows in the chat, in the composer, never over it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ press ctrl+c again to quit
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > restart the supervisor pl█                                                                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ ● working 2m · ● supervisor · ? 0 asks · needs you 0 · ^g agents  ^t work  ^f friction  ^y health  ^l logs       14:22

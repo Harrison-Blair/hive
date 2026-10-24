@@ -58,6 +58,7 @@ type Model struct {
 	chatCallerBlocked bool
 	chatNoise         string
 	chatEventsOpen    bool
+	chatEventOpen     map[uint64]bool
 	chatStatusAge     string
 	chatErr           string
 	textFilter        string
@@ -117,7 +118,17 @@ type Model struct {
 	popupOpen     bool
 	popupOffset   int
 	quitNotice    bool
-	quitAt        time.Time
+	tuiConfig     home.TUIConfig
+	chordActions  map[string]string
+	// statusCommandLine is the first output line of the status command.
+	statusCommandLine string
+	// statusCommandAt is the start of the last run of the status command.
+	statusCommandAt      time.Time
+	statusCommandRunning bool
+	// statusCommandFailed is true after a failure was logged, until a run
+	// succeeds.
+	statusCommandFailed bool
+	quitAt              time.Time
 
 	inputEnded <-chan struct{}
 	width      int
@@ -127,7 +138,6 @@ type Model struct {
 	// the ask records and send the prompts.
 	askCards      map[string]*askCard
 	askFocusID    string
-	askFeedFocus  bool
 	askBusy       bool
 	askDelivering bool
 	askRows       []askRow
@@ -198,6 +208,13 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	}
 	m.reader = logs.NewReaderWithClock(home, now)
 	m.chatInput = newChatInput()
+	m.setTUIConfig(defaultTUI())
+	// Golden-frames decision 19: there is no normal mode, so the composer
+	// has the focus at start. A blocked caller cannot type (rule 2).
+	if !m.chatCallerBlocked {
+		m.chatInputActive = true
+		m.chatInput.Focus()
+	}
 	m.screens = m.makeScreens()
 
 	logClock := now
@@ -232,7 +249,7 @@ func (m *Model) Stop() {
 
 // Init starts the first data loads and the refresh tick.
 func (m *Model) Init() tea.Cmd {
-	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad())
+	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad(), m.startStatusCommand())
 }
 
 // Update handles one message.
@@ -269,7 +286,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery())
+		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery(), m.startStatusCommand())
+	case statusCommandMsg:
+		return m, m.updateStatusCommand(msg)
 	case refreshCheckMsg:
 		m.refreshChecking = false
 		headerChanged := msg.header != m.refreshSnapshot.header
@@ -471,6 +490,9 @@ func (m *Model) updateKey(press tea.KeyPressMsg) tea.Cmd {
 	if m.demo != nil {
 		m.demo.notice = ""
 	}
+	if cmd, ok := m.updateChord(press); ok {
+		return cmd
+	}
 	return m.updateFrameKey(press)
 }
 
@@ -660,7 +682,12 @@ func Run(in io.Reader, out io.Writer) error {
 // output at this boundary. A finite input end or a stream fault settles the
 // program and the log writer.
 func RunHome(home string, in io.Reader, out io.Writer) error {
+	cfg, err := readTUISettings()
+	if err != nil {
+		return err
+	}
 	model := New(home, time.Now)
+	model.setTUIConfig(cfg)
 	defer model.Stop()
 	notice, startupErr := setupSession(home, model.logger)
 	model.startupNotice = notice

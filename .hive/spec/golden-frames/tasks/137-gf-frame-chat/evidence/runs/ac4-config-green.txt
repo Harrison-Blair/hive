@@ -1,0 +1,36 @@
+=== RUN   TestParseConfigTUIDefaults
+--- PASS: TestParseConfigTUIDefaults (0.00s)
+=== RUN   TestParseConfigTUITables
+--- PASS: TestParseConfigTUITables (0.00s)
+=== RUN   TestParseConfigTUIRefusesBadValues
+=== RUN   TestParseConfigTUIRefusesBadValues/no_rows
+=== RUN   TestParseConfigTUIRefusesBadValues/four_rows
+=== RUN   TestParseConfigTUIRefusesBadValues/empty_row
+=== RUN   TestParseConfigTUIRefusesBadValues/unknown_segment
+=== RUN   TestParseConfigTUIRefusesBadValues/not_a_list
+=== RUN   TestParseConfigTUIRefusesBadValues/command_not_a_string
+=== RUN   TestParseConfigTUIRefusesBadValues/unknown_status_key
+=== RUN   TestParseConfigTUIRefusesBadValues/unknown_action
+=== RUN   TestParseConfigTUIRefusesBadValues/tab
+=== RUN   TestParseConfigTUIRefusesBadValues/two_actions
+=== RUN   TestParseConfigTUIRefusesBadValues/fixed_key
+=== RUN   TestParseConfigTUIRefusesBadValues/bad_key_name
+=== RUN   TestParseConfigTUIRefusesBadValues/unknown_table
+--- PASS: TestParseConfigTUIRefusesBadValues (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/no_rows (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/four_rows (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/empty_row (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/unknown_segment (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/not_a_list (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/command_not_a_string (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/unknown_status_key (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/unknown_action (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/tab (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/two_actions (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/fixed_key (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/bad_key_name (0.00s)
+    --- PASS: TestParseConfigTUIRefusesBadValues/unknown_table (0.00s)
+=== RUN   TestReadTUISettings
+--- PASS: TestReadTUISettings (0.00s)
+PASS
+ok  	github.com/Harrison-Blair/hive/internal/lib/home	0.001s

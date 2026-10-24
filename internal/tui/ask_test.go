@@ -12,7 +12,6 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/charmbracelet/x/ansi"
 )
 
 func TestAskBoardsMatch(t *testing.T) {
@@ -75,8 +74,14 @@ func askModel(t *testing.T, width, height int, asks ...ask.Record) (*Model, *[]a
 		agents = append(agents, records.Agent{Key: record.AskerKey, Name: record.Asker, Status: records.AgentLive})
 	}
 	m.chatData = buildChatScreenData(m.chatData.entries, nil, asks, agents, m.now())
+	m.header.asks = len(m.openAsks())
 	m.rebuildChat()
 	m.invalidateView()
+	// Golden-frames chat.md rule 17: the input line has the focus at start,
+	// and ctrl+r gives the card the focus.
+	if len(m.openAsks()) > 0 {
+		m, _ = raise(t, m, ctrl('r'))
+	}
 	return m, calls
 }
 
@@ -110,25 +115,36 @@ func flatten(cmd tea.Cmd) []tea.Msg {
 	return []tea.Msg{msg}
 }
 
-func TestAskCardHasTheFocusInNormalMode(t *testing.T) {
+// Golden-frames chat.md rules 14, 15, and 17 and decision 33: the card sits
+// in the composer frame above the input line, the ask line in the transcript
+// names the composer, and the status row gives the keys of the card.
+func TestAskCardSitsInTheComposerFrame(t *testing.T) {
 	m, _ := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	requireView(t, m,
-		"┏━ ? manager-hive asks · Model ━",
-		" open · 1 of 1 ━┓",
-		"┃ Restart manager-hive?",
-		"┃ › 1 [ ] Yes                         stop it",
-		"┃   2 [ ] No                          no change",
-		"┃   4 [ ] Other: type an answer",
-		"┗━ ↑↓ move · 1..4 pick · enter review · tab note · x dismiss · J/K card ━",
-		"manager-hive  ? asked · Model · open below",
+		"╭─ ? manager-hive asks · Model ─",
+		" open · 1 of 1 ╮",
+		"│ Restart manager-hive?",
+		"│ › 1 [ ] Yes                        stop it",
+		"│   2 [ ] No                         no change",
+		"│   4 [ ] Other: type an answer",
+		"│ note › none · n adds one",
+		"├──────",
+		"? manager-hive 07:30  asked · Model · in the composer, ^r to answer",
 	)
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask] ↑↓ move · 1..4 pick · enter review · tab note · x dismiss · J/K next/prev card · wheel/pgup scroll feed · i type") {
-		t.Fatalf("footer = %q", got)
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · ask · ↑↓ move · 1..4 pick · enter review · n note · x dismiss · J/K card · ^r input · esc input") {
+		t.Fatalf("status row = %q", got)
 	}
+	top := rowOf(m, "╭─ ? manager-hive")
 	grid := renderGrid(t, m, 120, 40)
-	requireCell(t, grid, 3, 0, "╭", cellgrid.Border)
+	requireCell(t, grid, top, 0, "╭", cellgrid.Accent)
+	requireCell(t, grid, top+3, 2, "›", cellgrid.Accent)
+	if bottom := rowOf(m, "╰─"); bottom != 38 {
+		t.Fatalf("frame bottom on row %d, want 38, above the status row", bottom)
+	}
 }
 
+// Rule 16: the frame is at most half of the content rows, and the card
+// scrolls to the current question.
 func TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen(t *testing.T) {
 	record := oneQuestionAsk("a1", "manager-hive")
 	record.Questions = nil
@@ -141,26 +157,28 @@ func TestAskCardSitsAboveTheInputAndTakesAtMostHalfTheScreen(t *testing.T) {
 	m, _ := askModel(t, 80, 24, record)
 	view := requireFits(t, m, 80, 24)
 	rows := strings.Split(view, "\n")
-	top, bottom := -1, -1
+	top, rule, bottom := -1, -1, -1
 	for index, row := range rows {
-		if strings.HasPrefix(row, "┏━") {
+		switch {
+		case strings.HasPrefix(row, "╭─"):
 			top = index
-		}
-		if strings.HasPrefix(row, "┗━") {
+		case strings.HasPrefix(row, "├─"):
+			rule = index
+		case strings.HasPrefix(row, "╰─"):
 			bottom = index
 		}
 	}
-	if top < 0 || bottom < 0 || !strings.HasPrefix(rows[bottom+1], "╭─ message") {
-		t.Fatalf("no card above the input:\n%s", view)
+	if top < 0 || rule <= top || bottom != rule+2 || !strings.HasPrefix(rows[rule+1], "│ > ") {
+		t.Fatalf("no card above the input line:\n%s", view)
 	}
-	if height := bottom - top + 1; height > 24/2 {
-		t.Fatalf("card height = %d, want at most 12:\n%s", height, view)
+	// 23 content rows above the status row: the frame has at most 11.
+	if height := bottom - top + 1; height > 23/2 {
+		t.Fatalf("frame height = %d, want at most 11:\n%s", height, view)
 	}
 	requireView(t, m, "1. Question 1?")
 	for range 3 {
 		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	}
-	// The card scrolls to the current question.
 	requireView(t, m, "4. Question 4?")
 	rejectView(t, m, "1. Question 1?")
 }
@@ -182,9 +200,9 @@ func TestAskArrowsAndEnterPickTheCurrentOption(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	requireView(t, m, "┃ › 3 [ ] Later")
+	requireView(t, m, "│ › 3 [ ] Later")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyUp})
-	requireView(t, m, "┃ › 2 [ ] No")
+	requireView(t, m, "│ › 2 [ ] No")
 	m = run(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	run(t, m, enterKey)
 	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{2}}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
@@ -194,20 +212,19 @@ func TestAskArrowsAndEnterPickTheCurrentOption(t *testing.T) {
 
 func TestAskTwoQuestionsWithMarksAndANote(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
-	requireView(t, m, "┗━ space mark · tab note · enter next question · enter on last reviews ━")
 	m, _ = raise(t, m, key(' ', "space"))
 	m, _ = raise(t, m, key('3', "3"))
-	requireView(t, m, "┃   1 [x] Wheel", "┃ › 3 [x] Modes")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [note] type a note · enter keep note · tab close note · ctrl+] leave note · ↑↓ option") {
-		t.Fatalf("footer = %q", got)
+	requireView(t, m, "│   1 [x] Wheel", "│ › 3 [x] Modes")
+	m, _ = raise(t, m, key('n', "n"))
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · note · type the note · enter keep note · ↑↓ option · space mark · ^r input") {
+		t.Fatalf("status row = %q", got)
 	}
 	for _, r := range "small" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
-	requireView(t, m, "┃     note › small█")
+	requireView(t, m, "│ note › small█")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
-	requireView(t, m, "┃ 2. Which first?", "┃ › 1 [ ] Modes first")
+	requireView(t, m, "│ 2. Which first?", "│ › 1 [ ] Modes first")
 	if len(*calls) != 0 {
 		t.Fatalf("enter on question 1 sent %v", *calls)
 	}
@@ -223,7 +240,7 @@ func TestAskTwoQuestionsWithMarksAndANote(t *testing.T) {
 func TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = raise(t, m, key('n', "n"))
 	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key('k', "k"))
 	m = run(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
@@ -233,26 +250,30 @@ func TestAskEnterFromANoteBeforeAPickPicksTheCurrentOption(t *testing.T) {
 	}
 }
 
-func TestAskNoteTabDropsAndCtrlBracketKeeps(t *testing.T) {
+// Rule 18 and ruling C14: tab does nothing on the card, n opens the note, n
+// types in the note, enter keeps the note, and esc gives the input line the
+// focus with the note kept.
+func TestAskNoteKeys(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
+	before := m.View().Content
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	m, _ = raise(t, m, key('x', "x"))
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	rejectView(t, m, "note ›")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
-		t.Fatalf("footer after tab = %q", got)
+	if m.View().Content != before {
+		t.Fatal("tab changed the card")
 	}
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	m, _ = raise(t, m, key('o', "o"))
-	m, _ = raise(t, m, key('k', "k"))
-	m, _ = raise(t, m, ctrlBracket())
-	requireView(t, m, "┃     note › ok ")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
-		t.Fatalf("footer after ctrl+] = %q", got)
+	m, _ = raise(t, m, key('n', "n"))
+	for _, r := range "no" {
+		m, _ = raise(t, m, key(r, string(r)))
 	}
+	requireView(t, m, "│ note › no█")
+	m, _ = raise(t, m, escKey())
+	if m.focusState() != "input" {
+		t.Fatalf("focus after esc = %q, want input", m.focusState())
+	}
+	requireView(t, m, "│ note › no ")
+	m, _ = raise(t, m, ctrl('r'))
 	m = run(t, m, key('1', "1"))
 	run(t, m, enterKey)
-	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}, Note: "ok"}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
+	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{1}, Note: "no"}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
 		t.Fatalf("calls = %v, want %v", *calls, want)
 	}
 }
@@ -263,14 +284,14 @@ func TestAskOtherOpensATextLine(t *testing.T) {
 	if len(*calls) != 0 {
 		t.Fatalf("Other sent %v before the text", *calls)
 	}
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other] type the answer · enter keep answer · ctrl+] leave") {
-		t.Fatalf("footer = %q", got)
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · other · type the answer · enter keep answer · ^r input") {
+		t.Fatalf("status row = %q", got)
 	}
 	for _, r := range "tomorrow" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
-	requireView(t, m, "┃     other › tomorro█")
+	requireView(t, m, "│ other › tomorro█")
 	m = run(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	run(t, m, enterKey)
 	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{4}, Other: "tomorro"}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
@@ -288,11 +309,11 @@ func TestAskXDismisses(t *testing.T) {
 
 func TestAskJAndKMoveBetweenCards(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "coordinator"), oneQuestionAsk("a2", "manager-hive"))
-	requireView(t, m, "? coordinator asks · Model", " open · 1 of 2 · J next ━┓",
-		"coordinator   ? asked · Model · open below", "manager-hive  ? asked · Model · waits · 2 of 2")
+	requireView(t, m, "? coordinator asks · Model", " open · 1 of 2 · J next ╮",
+		"? coordinator 07:30  asked · Model · in the composer, ^r to answer", "? manager-hive 07:30  asked · Model · waits · 2 of 2")
 	m, _ = raise(t, m, key('J', "J"))
-	requireView(t, m, "? manager-hive asks · Model", " open · 2 of 2 ━┓",
-		"coordinator   ? asked · Model · waits · 1 of 2", "manager-hive  ? asked · Model · open below")
+	requireView(t, m, "? manager-hive asks · Model", " open · 2 of 2 ╮",
+		"? coordinator 07:30  asked · Model · waits · 1 of 2", "? manager-hive 07:30  asked · Model · in the composer, ^r to answer")
 	m, _ = raise(t, m, key('K', "K"))
 	requireView(t, m, "? coordinator asks · Model")
 	run(t, m, key('x', "x"))
@@ -310,13 +331,15 @@ func TestAskStoppedAskerShowsTheParent(t *testing.T) {
 	m.chatData = buildChatScreenData(m.chatData.entries, nil, m.chatData.asks, agents, m.now())
 	m.rebuildChat()
 	m.invalidateView()
-	requireView(t, m, " asker stopped · answer goes to coordinator ━┓", "┗━ enter review · sends to coordinator · x dismiss ━",
-		"? asked · Model · asker stopped · open below")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask] ↑↓ move · 1..4 pick · enter review for parent · tab note · x dismiss · J/K next/prev card") {
-		t.Fatalf("footer = %q", got)
+	requireView(t, m, " asker stopped · answer goes to coordinator ╮",
+		"asked · Model · asker stopped · in the composer, ^r to answer")
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · ask · ↑↓ move · 1..4 pick · enter review for parent · n note · x dismiss · J/K card") {
+		t.Fatalf("status row = %q", got)
 	}
 }
 
+// Rule 6: after an answer or a dismiss, the line from you follows the ask
+// line. Two ask lines have no blank row between them.
 func TestAskHistoryShowsTheAnswerAndTheDismissal(t *testing.T) {
 	answered := twoQuestionAsk("a1")
 	answered.State, answered.ClosedAt = ask.StateAnswered, "2026-10-20T11:40:00Z"
@@ -325,61 +348,62 @@ func TestAskHistoryShowsTheAnswerAndTheDismissal(t *testing.T) {
 	dismissed.State, dismissed.ClosedAt = ask.StateDismissed, "2026-10-20T11:41:00Z"
 	m, _ := askModel(t, 120, 40, answered, dismissed)
 	requireView(t, m,
-		"coordinator   ? asked · Scope · Order",
-		"you           answered coordinator · Scope → 1 Wheel, Header · note: small; Order → 2 Card first",
-		"you           dismissed manager-hive · Model",
+		"? manager-hive 07:30  asked · Model",
+		"? coordinator 07:31  asked · Scope, Order",
+		"› you 07:40",
+		"answered coordinator · Scope → Wheel, Header · note: small; Order → Card first",
+		"› you 07:41",
+		"dismissed manager-hive · Model",
 	)
-	rejectView(t, m, "┏━", "open below")
-	// Ask lines have no blank line between them.
-	rows := strings.Split(ansi.Strip(m.View().Content), "\n")
-	for index, row := range rows {
-		if strings.Contains(row, "? asked · Scope · Order") {
-			if next := rows[index+1]; !strings.Contains(next, "answered coordinator") {
-				t.Fatalf("row after the ask = %q, want the answer", next)
-			}
-		}
+	rejectView(t, m, "╭─ ?", "in the composer")
+	if next := viewRow(m, rowOf(m, "? manager-hive 07:30")+1); !strings.Contains(next, "? coordinator 07:31") {
+		t.Fatalf("row after the first ask line = %q, want the second ask line", next)
 	}
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [normal]") {
-		t.Fatalf("footer = %q", got)
+	if got := viewRow(m, 39); !strings.Contains(got, "^g agents") {
+		t.Fatalf("status row = %q, want the chords", got)
 	}
 }
 
+// A click on an option row picks it and gives the card the focus, also from
+// the input line.
 func TestAskMouseFocusesAndScrolls(t *testing.T) {
 	m, calls := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m, _ = raise(t, m, click(10, 5))
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [normal]") {
-		t.Fatalf("footer after a feed click = %q", got)
+	m, _ = raise(t, m, ctrl('r'))
+	if m.focusState() != "input" {
+		t.Fatalf("focus after ctrl+r = %q, want input", m.focusState())
 	}
 	grid := renderGrid(t, m, 120, 40)
-	requireCell(t, grid, 3, 0, "╭", cellgrid.Accent)
-	rows := strings.Split(ansi.Strip(m.View().Content), "\n")
-	row := -1
-	for index, line := range rows {
-		if strings.Contains(line, "2 [ ] No") {
-			row = index
-		}
+	requireCell(t, grid, rowOf(m, "╭─ ? manager-hive"), 0, "╭", cellgrid.Accent)
+	// The pick of the one question opens the review.
+	m = run(t, m, click(12, rowOf(m, "2 [ ] No")))
+	if m.focusState() != "review" {
+		t.Fatalf("focus after a click on an option = %q, want review", m.focusState())
 	}
-	m = run(t, m, click(12, row))
 	run(t, m, enterKey)
 	if want := []askCall{{"answer", "a1", []ask.Reply{{Picks: []int{2}}}}}; fmt.Sprint(*calls) != fmt.Sprint(want) {
 		t.Fatalf("calls = %v, want %v", *calls, want)
 	}
 }
 
+// Rule 17: a click on the card gives it the focus, a click on the input line
+// gives the input line the focus, and ctrl+r moves the focus both ways.
 func TestAskClickOnTheCardGivesItTheFocus(t *testing.T) {
 	m, _ := askModel(t, 120, 40, oneQuestionAsk("a1", "manager-hive"))
-	m, _ = raise(t, m, click(10, 5))
-	m, _ = raise(t, m, click(60, 30))
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
-		t.Fatalf("footer after a card click = %q", got)
+	m, _ = raise(t, m, click(60, rowOf(m, "│ > ")))
+	if m.focusState() != "input" {
+		t.Fatalf("focus after an input click = %q, want input", m.focusState())
 	}
-	m, _ = raise(t, m, key('i', "i"))
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [input]") {
-		t.Fatalf("footer after i = %q", got)
+	m, _ = raise(t, m, click(60, rowOf(m, "Restart manager-hive?")))
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · ask ·") {
+		t.Fatalf("status row after a card click = %q", got)
 	}
-	m, _ = raise(t, m, ctrlBracket())
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
-		t.Fatalf("footer after ctrl+] = %q", got)
+	m, _ = raise(t, m, ctrl('r'))
+	if m.focusState() != "input" {
+		t.Fatalf("focus after ctrl+r = %q, want input", m.focusState())
+	}
+	m, _ = raise(t, m, ctrl('r'))
+	if m.focusState() != "ask" {
+		t.Fatalf("focus after a second ctrl+r = %q, want ask", m.focusState())
 	}
 }
 
@@ -397,8 +421,8 @@ func TestAskWheelOverTheCardScrollsTheFeed(t *testing.T) {
 	if m.chatFeed.top >= before {
 		t.Fatalf("feed top = %d after the wheel, want less than %d", m.chatFeed.top, before)
 	}
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [ask]") {
-		t.Fatalf("footer after the wheel = %q", got)
+	if m.focusState() != "ask" {
+		t.Fatalf("focus after the wheel = %q, want ask", m.focusState())
 	}
 }
 
@@ -481,23 +505,29 @@ func TestANewAskRefreshesTheHeaderAndChat(t *testing.T) {
 func TestHelpListsTheAskKeys(t *testing.T) {
 	m := chatModel(t, 120, 40, 1)
 	m, _ = raise(t, m, key('?', "?"))
-	requireView(t, m, "│  ask card: ↑↓ move · 1–5 pick · space mark · tab note · x dismiss · J/K card",
+	// The ask lines are at the end of the help text.
+	for range 40 {
+		m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	}
+	// Golden-frames chat.md rules 17 and 18 give the card keys.
+	requireView(t, m, "│  ctrl+r moves the focus between input and ask card · esc to input ",
+		"│  ask card: ↑↓ move · 1–9 pick · space mark · n note · x dismiss · J/K card ",
 		"│  ask review: enter on the last question · ↑↓ question · enter send or change")
 }
 
-// The header shows the count of the open ask records at 0, 1, and 2, at
-// both widths.
+// The status row shows the count of the open ask records at 0, 1, and 2, at
+// both widths (golden-frames decision 11).
 func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 	for _, tc := range []struct {
 		open, width int
 		want        string
 	}{
-		{0, 120, "   ? 0 asks   needs you 0   08:00 "},
-		{1, 120, "   ? 1 ask   needs you 0   08:00 "},
-		{2, 120, "   ? 2 asks   needs you 0   08:00 "},
-		{0, 80, " · ? 0 · needs you 0 · 08:00 "},
-		{1, 80, " · ? 1 · needs you 0 · 08:00 "},
-		{2, 80, " · ? 2 · needs you 0 · 08:00 "},
+		{0, 120, " · ? 0 asks · needs you 0 · "},
+		{1, 120, " · ? 1 ask · needs you 0 · "},
+		{2, 120, " · ? 2 asks · needs you 0 · "},
+		{0, 80, " · ? 0 asks · needs you 0 "},
+		{1, 80, " · ? 1 ask · needs you 0 "},
+		{2, 80, " · ? 2 asks · needs you 0 "},
 	} {
 		home := newTestHome(t)
 		closed := oneQuestionAsk("a9", "manager-hive")
@@ -517,8 +547,9 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 		m.invalidateView()
 		m.View()
 		m, _ = raise(t, m, headerLoadMsg{state: state})
-		if got := viewRow(m, 0); !strings.HasSuffix(got, tc.want) {
-			t.Errorf("%d open at %d: header = %q, want suffix %q", tc.open, tc.width, got, tc.want)
+		rows := viewRows(m)
+		if got := rows[len(rows)-1]; !strings.Contains(got, tc.want) || !strings.HasSuffix(got, " 08:00 ") {
+			t.Errorf("%d open at %d: status row = %q, want %q and the clock 08:00", tc.open, tc.width, got, tc.want)
 		}
 	}
 }
@@ -529,13 +560,13 @@ func TestAskOtherInAMultiSelectQuestion(t *testing.T) {
 	m, calls := askModel(t, 120, 40, twoQuestionAsk("a1"))
 	m, _ = raise(t, m, key('1', "1"))
 	m, _ = raise(t, m, key('4', "4"))
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " [other]") {
-		t.Fatalf("footer = %q, want the Other line", got)
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ○ none · other ·") {
+		t.Fatalf("status row = %q, want the Other line", got)
 	}
 	for _, r := range "keys" {
 		m, _ = raise(t, m, key(r, string(r)))
 	}
-	requireView(t, m, "┃     other › keys█")
+	requireView(t, m, "│ other › keys█")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	m = run(t, m, key('2', "2"))
 	run(t, m, enterKey)

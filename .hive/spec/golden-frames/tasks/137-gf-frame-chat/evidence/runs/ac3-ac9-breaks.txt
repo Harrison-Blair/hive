@@ -1,0 +1,84 @@
+# 9 deliberate breaks of AC3 to AC9, run by a scratch script on 2026-10-24T00:34:47Z. Each break was restored after its run.
+
+## rule 12 no coordinator sends
+file: internal/tui/chat.go
+break: 'if m.header.coordinator == "" {' -> 'if false {'
+tests: TestChatSendWithNoCoordinatorKeepsTheText
+result: CAUGHT
+--- FAIL: TestChatSendWithNoCoordinatorKeepsTheText (0.00s)
+    chat_test.go:761: sending true, draft "hi", want no send and hi kept
+
+## rule 7 wheel does not scroll Chat
+file: internal/tui/mouse.go
+break: 'm.scrollChat(step * wheelLines)\n\t\treturn nil' -> 'return nil'
+tests: TestChatWheel|TestAsk.*Wheel|TestChat.*Mouse
+result: CAUGHT
+--- FAIL: TestAskWheelOverTheCardScrollsTheFeed (0.00s)
+    ask_test.go:422: feed top = 94 after the wheel, want less than 94
+--- FAIL: TestChatWheelScrollsTheFeed (0.01s)
+    chat_modes_test.go:145: view contains "line-40":
+
+## rule 8 welcome block has no help line
+file: internal/tui/chat.go
+break: '" " + dimStyle.Render("type a message to the coordinator."),' -> '"",'
+tests: TestChatWelcomeNamesTheHomeWithTilde
+result: CAUGHT
+--- FAIL: TestChatWelcomeNamesTheHomeWithTilde (0.00s)
+    chat_test.go:746: row 3 = "", want " type a message to the coordinator."
+
+## C10 earlier marker at col 50
+file: internal/tui/chat.go
+break: 'const chatEarlierCol = 52' -> 'const chatEarlierCol = 50'
+tests: TestChatTallTranscriptFollowsItsEnd
+result: CAUGHT
+--- FAIL: TestChatTallTranscriptFollowsItsEnd (0.00s)
+    chat_modes_test.go:179: row 0 = "                                                  · · · 28 earlier · · ·                                                " (· at 50), want the earlier row from column 52
+
+## decision 8 status row joins with /
+file: internal/tui/component/statusrow.go
+break: 'dimStyle.Render(" · "))' -> 'dimStyle.Render(" / "))'
+tests: TestGf|TestStatusRow
+result: CAUGHT
+--- FAIL: TestStatusRowGolden (0.00s)
+        statusrow_test.go:17: 4 cells differ from GfComponents.grid (board row and column):
+        statusrow_test.go:21: 3 cells differ from GfComponents.grid (board row and column):
+        statusrow_test.go:25: 4 cells differ from GfComponents.grid (board row and column):
+
+## rule 3 folded event cut 1 cell late
+file: internal/tui/component/chat.go
+break: 'rest := max(width-3-lipgloss.Width(head), 0)' -> 'rest := max(width-2-lipgloss.Width(head), 0)'
+tests: TestFoldedEventCutsAtColumn118|TestGfMessagesGolden
+result: CAUGHT
+--- FAIL: TestGfMessagesGolden (0.00s)
+        chat_test.go:50: 1 cells differ from GfComponents.grid (board row and column):
+--- FAIL: TestFoldedEventCutsAtColumn118 (0.00s)
+    chat_test.go:128: folded event = " ▸ manager-hive 14:09  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…" (118 cells), want one row cut with … at column 116
+
+## rule 2 no blank row between messages
+file: internal/tui/component/chat.go
+break: 'if i > 0 && !chatJoined(msgs[i-1], m) {\n\t\t\tout = append(out, "")' -> 'if i < 0 && !chatJoined(msgs[i-1], m) {\n\t\t\tout = append(out, "")'
+tests: TestChatBlankRows
+result: CAUGHT
+--- FAIL: TestChatBlankRows (0.00s)
+    chat_test.go:83: user, user: lines = [" › you 14:02" " hi" " › you 14:02" " hi"], want [" › you 14:02" " hi" "" " › you 14:02" " hi"]
+    chat_test.go:83: open, event: lines = [" ▾ manager-hive 14:03" " quiet" " ▸ manager-hive 14:03  quiet"], want [" ▾ manager-hive 14:03" " quiet" "" " ▸ manager-hive 14:03  quiet"]
+    chat_test.go:83: user, ask: lines = [" › you 14:02" " hi" " ? manager-hive 14:04  asked · Model"], want [" › you 14:02" " hi" "" " ? manager-hive 14:04  asked · Model"]
+
+## rule 11 input cap ignored
+file: internal/tui/chat.go
+break: 'inputRows := max(rows/3-2, 1)' -> 'inputRows := max(rows, 1)'
+tests: TestChatInputCapsAndKeepsCursorVisible
+result: CAUGHT
+--- FAIL: TestChatInputCapsAndKeepsCursorVisible (0.00s)
+        chat_test.go:312: frame is not rows 26 to 38:
+        chat_test.go:312: frame is not rows 16 to 22:
+
+## AC9 notice row makes the view one row too tall
+file: internal/tui/chat.go
+break: '\tif notice != "" {\n\t\ttranscript--\n\t}' -> '\tif notice != "" {\n\t\t_ = transcript\n\t}'
+tests: TestGfChatBoardsKeepTheFrameAtEachBreakpoint
+result: CAUGHT
+--- FAIL: TestGfChatBoardsKeepTheFrameAtEachBreakpoint (0.04s)
+        gf_chat_test.go:101: composer frame rows 21 to -1, want it to close on row 22 above 1 status rows:
+        gf_chat_test.go:101: composer frame rows 21 to -1, want it to close on row 22 above 1 status rows:
+        gf_chat_test.go:101: composer frame rows 37 to -1, want it to close on row 38 above 1 status rows:

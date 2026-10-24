@@ -1,0 +1,31 @@
+    --- FAIL: TestGfChatBoardsMatch/GfChat (0.00s)
+        gf_chat_test.go:65: 1993 cells differ from GfChat.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatEmpty (0.00s)
+        gf_chat_test.go:65: 478 cells differ from GfChatEmpty.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatEvents (0.00s)
+        gf_chat_test.go:65: 1601 cells differ from GfChatEvents.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatTall (0.00s)
+        gf_chat_test.go:65: 1756 cells differ from GfChatTall.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatMarkdown (0.00s)
+        gf_chat_test.go:65: 1507 cells differ from GfChatMarkdown.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatNoCoordinator (0.00s)
+        gf_chat_test.go:57: fixture ../../.hive/spec/golden-frames/design/GfChatNoCoordinator.fixture.json: field "ui.prompt.kind": unknown value "send"
+    --- FAIL: TestGfChatBoardsMatch/GfChatNotice (0.00s)
+        gf_chat_test.go:57: fixture ../../.hive/spec/golden-frames/design/GfChatNotice.fixture.json: field "ui.prompt.kind": unknown value "quit"
+    --- FAIL: TestGfChatBoardsMatch/GfChatAsk (0.00s)
+        gf_chat_test.go:65: 1369 cells differ from GfChatAsk.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskInput (0.00s)
+        gf_chat_test.go:65: 1356 cells differ from GfChatAskInput.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskMulti (0.00s)
+        gf_chat_test.go:65: 1900 cells differ from GfChatAskMulti.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskPreview (0.00s)
+        gf_chat_test.go:65: 1960 cells differ from GfChatAskPreview.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskStopped (0.00s)
+        gf_chat_test.go:65: 1387 cells differ from GfChatAskStopped.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskReview (0.00s)
+        gf_chat_test.go:65: 1280 cells differ from GfChatAskReview.grid:
+    --- FAIL: TestGfChatBoardsMatch/GfChatAskMany (0.00s)
+        gf_chat_test.go:65: 1502 cells differ from GfChatAskMany.grid:
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.027s
+FAIL

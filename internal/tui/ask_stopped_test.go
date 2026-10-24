@@ -60,13 +60,13 @@ func askCardText(t *testing.T, m *Model) string {
 	var card []string
 	inside := false
 	for line := range strings.SplitSeq(ansi.Strip(m.View().Content), "\n") {
-		if strings.HasPrefix(line, "┏") {
+		if strings.HasPrefix(line, "╭") {
 			inside = true
 		}
 		if inside {
 			card = append(card, line)
 		}
-		if strings.HasPrefix(line, "┗") {
+		if strings.HasPrefix(line, "╰") {
 			inside = false
 		}
 	}
@@ -85,14 +85,12 @@ func requireCard(t *testing.T, m *Model, texts ...string) {
 }
 
 // AC1 and decision 114: the stopped review card keeps the full title, an
-// explicit asker stopped state, the full parent in Send, and the parent in
-// the hint at both widths, for names up to the 32-character limit. The state
+// explicit asker stopped state, and the full parent in Send at both widths, for names up to the 32-character limit. The state
 // stays in the card when the ask event leaves the feed viewport, through an
 // edit, the return to review, and a resize. Send keeps the parent route.
 func TestAskStoppedReviewKeepsTheStateInTheCard(t *testing.T) {
 	type view struct {
 		caption string
-		hint    string
 	}
 	for _, tc := range []struct {
 		name, asker, parent string
@@ -100,23 +98,25 @@ func TestAskStoppedReviewKeepsTheStateInTheCard(t *testing.T) {
 	}{
 		{
 			name: "full caption at both widths", asker: "t1", parent: "p1",
-			wide:    view{"━ asker stopped · answer goes to p1 ━┓", "┗━ enter sends to p1 · ↑↓ question to change · x drop ━"},
-			compact: view{"━ asker stopped · answer goes to p1 ━┓", "┗━ enter sends to p1 · ↑↓ question to change · x drop ━"},
+			wide:    view{"─ asker stopped · answer goes to p1 ╮"},
+			compact: view{"─ asker stopped · answer goes to p1 ╮"},
 		},
 		{
 			name: "short caption at 80", asker: "asker-scratch", parent: "parent-scratch",
-			wide:    view{"━ asker stopped · answer goes to parent-scratch ━┓", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━"},
-			compact: view{"━ asker stopped · to parent-scratch ━┓", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━"},
+			wide:    view{"─ asker stopped · answer goes to parent-scratch ╮"},
+			compact: view{"─ asker stopped · to parent-scratch ╮"},
 		},
 		{
 			name: "no route caption at 80", asker: longAsker, parent: "parent-scratch",
-			wide:    view{"━ asker stopped · answer goes to parent-scratch ━┓", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━"},
-			compact: view{"━ asker stopped ━┓", "┗━ enter sends to parent-scratch · ↑↓ question to change · x drop ━"},
+			wide:    view{"─ asker stopped · answer goes to parent-scratch ╮"},
+			compact: view{"─ asker stopped ╮"},
 		},
 		{
-			name: "short caption at 120 and no route caption at 80", asker: longAsker, parent: longParent,
-			wide:    view{"━ asker stopped · to " + longParent + " ━┓", "┗━ enter sends to " + longParent + " · ↑↓ question to change · x drop ━"},
-			compact: view{"━ asker stopped ━┓", "┗━ enter sends to " + longParent + " · ↑↓ change · x drop ━"},
+			// The golden frame has no ─ before ╮, so the full caption fits at
+			// 120 columns with one fill cell.
+			name: "full caption at 120 and no route caption at 80", asker: longAsker, parent: longParent,
+			wide:    view{"╭─ ? " + longAsker + " asks · confirm ─ asker stopped · answer goes to " + longParent + " ╮"},
+			compact: view{"─ asker stopped ╮"},
 		},
 	} {
 		for _, start := range []demoSize{{120, 40}, {80, 24}} {
@@ -129,8 +129,10 @@ func TestAskStoppedReviewKeepsTheStateInTheCard(t *testing.T) {
 				check := func(m *Model, width, height int) {
 					t.Helper()
 					requireFits(t, m, width, height)
-					requireCard(t, m, "┏━ ? "+tc.asker+" asks · confirm ━", sizes[width].caption,
-						"┃ › Send to "+tc.parent+" ", sizes[width].hint)
+					requireCard(t, m, "╭─ ? "+tc.asker+" asks · confirm ─", sizes[width].caption,
+						"│ › Send to "+tc.parent+" ")
+					// Golden-frames decision 33: the keys are on the status row.
+					requireView(t, m, " review · ↑↓ question · enter send")
 				}
 				m, calls := stoppedAskModel(t, start.Width, start.Height, tc.asker, tc.parent)
 				if strings.Contains(ansi.Strip(m.View().Content), "? asked · Change") {
@@ -163,5 +165,5 @@ func TestAskStoppedReviewKeepsTheStateInTheCard(t *testing.T) {
 func TestAskStoppedEditorKeepsTheStateInTheCard(t *testing.T) {
 	m, _ := stoppedAskModel(t, 80, 24, longAsker, "parent-scratch")
 	requireFits(t, m, 80, 24)
-	requireCard(t, m, "┏━ ? "+longAsker+" asks · Change ━", "━ asker stopped ━┓")
+	requireCard(t, m, "╭─ ? "+longAsker+" asks · Change ─", "─ asker stopped ╮")
 }

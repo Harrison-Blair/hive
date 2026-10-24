@@ -22,7 +22,7 @@ func TestWorkGoalsMatchesItsBoard(t *testing.T) {
 func goalsModel(t *testing.T, home string, width, height int) *Model {
 	t.Helper()
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
-	m, cmd := raise(t, m, key('3', "3"))
+	m, cmd := raise(t, m, ctrl('t'))
 	m = deliverAgentCommands(t, m, cmd)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: width, Height: height})
 	return m
@@ -84,20 +84,21 @@ func TestGoalsSortAndCountOnlyPushedDeliveries(t *testing.T) {
 }
 
 // AC2: the selected row has the marker ▶ in accent and bold, and its ID in
-// accent and bold. Each other row keeps its ID in fg.
+// accent and bold. Each other row keeps its ID in fg. Golden-frames decision
+// 2 moves the rows of the tui-v2 board up by one.
 func TestGoalsSelectedRowIsAccentBold(t *testing.T) {
 	m := newTestDemoModel(t, "WorkGoals.fixture.json", demoSize{})
 	grid := renderGrid(t, m, 120, 40)
 	for col, char := range []rune("▶ g1-tui-restart") {
-		cell := grid.At(7, 2+col)
+		cell := grid.At(6, 2+col)
 		if cell.Rune != char {
-			t.Fatalf("row 7 col %d = %q; want %q", 2+col, cell.Rune, char)
+			t.Fatalf("row 6 col %d = %q; want %q", 2+col, cell.Rune, char)
 		}
 		if char != ' ' && (cell.Token != cellgrid.Accent || !cell.Bold) {
-			t.Fatalf("row 7 col %d %q is %s bold %t; want accent bold", 2+col, cell.Rune, cell.Token, cell.Bold)
+			t.Fatalf("row 6 col %d %q is %s bold %t; want accent bold", 2+col, cell.Rune, cell.Token, cell.Bold)
 		}
 	}
-	if cell := grid.At(6, 4); cell.Token != cellgrid.FG || cell.Bold {
+	if cell := grid.At(5, 4); cell.Token != cellgrid.FG || cell.Bold {
 		t.Fatalf("unselected ID is %s bold %t; want fg", cell.Token, cell.Bold)
 	}
 }
@@ -195,16 +196,17 @@ func TestGoalsKeysAndHints(t *testing.T) {
 		}
 		requireView(t, m, "─ "+step.want+" ─")
 	}
-	requireView(t, m, "[list] ↑↓ move · tab region · [ ] view · enter open · o design · t task · ? help")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
-	requireView(t, m, "[details] ↑↓ scroll · tab region · esc back to list · ? help")
-	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	requireKeys(t, m, "list", "↑↓ move · ^] box · [ ] view · enter open · o design · t task · ? help")
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
+	requireKeys(t, m, "details", "↑↓ scroll · ^] box · esc back to list · ? help")
+	m, _ = raise(t, m, ctrl(']')) // golden-frames decision 6
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 80, Height: 24})
-	requireView(t, m, "[list] ↑↓ move · enter details · [ ] view · ?")
+	requireKeys(t, m, "list", "↑↓ move · enter details · [ ] view · ?")
 	m, _ = raise(t, m, key(0, "enter"))
-	requireView(t, m, "[details] ↑↓ scroll · esc back to list", "─ g1-demo · esc back ─")
+	requireView(t, m, "─ g1-demo · esc back ─")
+	requireKeys(t, m, "details", "↑↓ scroll · esc back to list")
 	m, _ = raise(t, m, tea.KeyPressMsg{Code: tea.KeyEscape})
-	requireView(t, m, "[list]")
+	requireKeys(t, m, "list", "")
 }
 
 // AC1, AC4: the Goals view has no s key. Only the Queue view shows stops,
@@ -223,12 +225,13 @@ func TestGoalsHasNoStopsOnlyKey(t *testing.T) {
 	}
 }
 
-// AC4: o on a goal with no design shows the notice in the footer at each
-// width, and t opens the first task of the current wave in Tasks.
+// AC4: o on a goal with no design shows the notice at each width, and t
+// opens the first task of the current wave in Tasks. Golden-frames decision
+// 14 puts the notice on the notice line above the status row.
 func TestGoalsDesignNoticeAndTaskKey(t *testing.T) {
 	m := goalsModel(t, goalsQueueFixture(t), 80, 24)
 	m, _ = raise(t, m, key('o', "o"))
-	if footer := footerRow(m); !strings.Contains(footer, "[list] no design for this wave") {
+	if footer := footerRow(m); !strings.Contains(footer, " no design for this wave") || m.focusState() != "list" {
 		t.Fatalf("footer = %q; want the design notice", footer)
 	}
 	m, _ = raise(t, m, key('j', "j"))
@@ -240,10 +243,11 @@ func TestGoalsDesignNoticeAndTaskKey(t *testing.T) {
 	}
 }
 
-// footerRow gives the plain text of the last row of the view.
+// footerRow gives the plain text of the notice line of golden-frames
+// decision 14: the row above the status row.
 func footerRow(m *Model) string {
 	lines := strings.Split(ansi.Strip(m.View().Content), "\n")
-	return lines[len(lines)-1]
+	return lines[len(lines)-2]
 }
 
 // AC3: refresh in normal mode reloads the goal records and keeps the
@@ -261,7 +265,7 @@ func TestGoalsRefreshReloadsRecords(t *testing.T) {
 func TestGoalsProgramUsesStringReader(t *testing.T) {
 	home := goalsQueueFixture(t)
 	var out strings.Builder
-	if err := RunHome(home, strings.NewReader("3\x03\x03"), &out); err != nil {
+	if err := RunHome(home, strings.NewReader("\x14\x03\x03"), &out); err != nil {
 		t.Fatalf("RunHome: %v", err)
 	}
 	if !strings.Contains(out.String(), "[Goals]") || !strings.Contains(out.String(), "goals · ") {

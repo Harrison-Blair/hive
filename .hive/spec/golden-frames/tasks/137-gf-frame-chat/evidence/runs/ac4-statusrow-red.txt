@@ -1,0 +1,14 @@
+# github.com/Harrison-Blair/hive/internal/tui/component [github.com/Harrison-Blair/hive/internal/tui/component.test]
+internal/tui/component/statusrow_test.go:17:8: undefined: StatusRow
+internal/tui/component/statusrow_test.go:17:37: undefined: GlyphText
+internal/tui/component/statusrow_test.go:17:113: undefined: StrongText
+internal/tui/component/statusrow_test.go:17:163: undefined: DimText
+internal/tui/component/statusrow_test.go:21:8: undefined: StatusRow
+internal/tui/component/statusrow_test.go:21:37: undefined: GlyphText
+internal/tui/component/statusrow_test.go:21:106: undefined: DimText
+internal/tui/component/statusrow_test.go:25:8: undefined: StatusRow
+internal/tui/component/statusrow_test.go:25:37: undefined: GlyphText
+internal/tui/component/statusrow_test.go:25:112: undefined: DimText
+internal/tui/component/statusrow_test.go:25:112: too many errors
+FAIL	github.com/Harrison-Blair/hive/internal/tui/component [build failed]
+FAIL

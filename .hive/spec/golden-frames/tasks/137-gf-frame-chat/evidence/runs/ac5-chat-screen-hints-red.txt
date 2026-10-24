@@ -1,0 +1,7 @@
+$ go test ./internal/tui/ -count=1 -run TestChatScreenSegmentShowsTheInputLineKeys
+--- FAIL: TestChatScreenSegmentShowsTheInputLineKeys (0.00s)
+    chat_test.go:783: status row at 120 = " chat · enter send · shift+enter newline · ctrl+] leave input · ctrl+o events · wheel or pgup/pgdn scroll", want the chat keys with no ctrl+]
+    chat_test.go:783: status row at 80 = " chat · enter send · ctrl+] leave · wheel or pgup/pgdn scroll", want the chat keys with no ctrl+]
+FAIL
+FAIL	github.com/Harrison-Blair/hive/internal/tui	0.010s
+FAIL

@@ -1,0 +1,50 @@
+diff --git a/home/penguin/source/hive/.hive/tmp/golden-frames-1792795470-106f/project/GfChat.dc.html b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/design/GfChat.dc.html
+index c5af7669..a4aaa569 100644
+--- a/home/penguin/source/hive/.hive/tmp/golden-frames-1792795470-106f/project/GfChat.dc.html
++++ b/home/penguin/source/hive/projects/hive/worktrees/137-gf-frame-chat/.hive/spec/golden-frames/design/GfChat.dc.html
+@@ -49,7 +49,7 @@ function rows(t) { var out = []; for (var y = 0; y < t.h; y++) { var runs = [],
+ 
+ // Transcript helpers shared by the Chat boards.
+ function msgYou(t, y, time, lines) { put(t, 1, y, '›', 'user', 1); put(t, 3, y, 'you', 'user', 1); put(t, 7, y, time, 'dim'); lines.forEach(function (l, i) { put(t, 1, y + 1 + i, l, 'user'); }); return y + 1 + lines.length; }
+-function msgAgent(t, y, name, time, lines) { put(t, 1, y, '●', 'info', 1); put(t, 3, y, name, 'info', 1); put(t, 4 + len(name), y, time, 'dim'); lines.forEach(function (l, i) { var k = 'fg', b = 0, s = l; if (typeof l !== 'string') { s = l[0]; k = l[1]; b = l[2] || 0; } put(t, 1, y + 1 + i, s, k, b); }); return y + 1 + lines.length; }
++function msgAgent(t, y, name, time, lines) { put(t, 1, y, '●', 'info', 1); put(t, 3, y, name, 'info', 1); put(t, 4 + len(name), y, time, 'dim'); lines.forEach(function (l, i) { var k = 'fg', b = 0, s = l, dx = 0; if (typeof l !== 'string') { s = l[0]; k = l[1]; b = l[2] || 0; dx = l[3] || 0; } put(t, 1 + dx, y + 1 + i, s, k, b); }); return y + 1 + lines.length; }
+ function event(t, y, name, time, text) { put(t, 1, y, '▸', 'dim'); put(t, 3, y, name, 'dim', 1); put(t, 4 + len(name), y, time + '  ' + fit(text, 118 - 7 - len(name) - len(time)), 'dim'); return y + 1; }
+ function composer(t, y, h, lines, placeholder) { box(t, 0, y, 120, h, 'accent'); if (placeholder) { put(t, 2, y + 1, '> ', 'user'); put(t, 4, y + 1, placeholder, 'dim'); return; } lines.forEach(function (l, i) { put(t, 2, y + 1 + i, i ? '  ' : '> ', 'user'); put(t, 4, y + 1 + i, l, 'user'); }); var last = lines[lines.length - 1]; put(t, 4 + len(last), y + lines.length, '█', 'user'); }
+ 
+@@ -143,8 +143,7 @@ function agentsStatus(t, y, keys) { statusRow(t, y, [stateSeg('● working 2m',
+ var META = {w: 120, h: 40, title: 'Golden frames · Chat'};
+ function draw() {
+   var t = T(120, 40);
+-  put(t, 52, 0, '· · · 42 earlier · · ·', 'dim');
+-  var y = 2;
++  var y = 0;
+   y = msgYou(t, y, '14:02', ['move the status out of the composer border. one row under it, like claude code, and keep the chords on it.']);
+   y++;
+   y = event(t, y, 'manager-store', '14:05', 'g2-live-scroll DONE: task 121-live-transcript-scroll verified (t121-verifier-2, 2772 unit passes, 0 fails)');
+@@ -158,9 +157,9 @@ function draw() {
+     ['• A command segment runs your statusline renderer and shows its first line.', 'fg'],
+     '',
+     ['Config', 'accent', 1],
+-    ['  [tui.status]', 'code'],
+-    ['  lines = [["state", "supervisor", "asks", "needs_you", "chords", "clock"]]', 'code'],
+-    ['  command = "python3 ~/source/agents/statusline/statusline.py render hive"', 'code'],
++    ['[tui.status]', 'code', 0, 2],
++    ['lines = [["state", "supervisor", "asks", "needs_you", "chords", "clock"]]', 'code', 0, 2],
++    ['command = "python3 ~/source/agents/statusline/statusline.py render hive"', 'code', 0, 2],
+     '',
+     ['Cut rule', 'accent', 1],
+     ['• Segments are cut from the right when the width is short, so the chords go first.', 'fg'],
+@@ -168,12 +167,11 @@ function draw() {
+     '',
+     ['Reply yes to confirm, or name the line to change.', 'fg']]);
+   // inline code on one bullet
+-  put(t, 35, 11, 'state', 'code'); put(t, 40, 11, ', ', 'fg'); put(t, 42, 11, 'supervisor', 'code'); put(t, 52, 11, ', ', 'fg'); put(t, 54, 11, 'asks', 'code'); put(t, 58, 11, ', ', 'fg'); put(t, 60, 11, 'needs_you', 'code'); put(t, 69, 11, ', ', 'fg'); put(t, 71, 11, 'chords', 'code'); put(t, 77, 11, ', ', 'fg'); put(t, 79, 11, 'hints', 'code'); put(t, 84, 11, ', ', 'fg'); put(t, 86, 11, 'clock', 'code'); put(t, 91, 11, ', and ', 'fg'); put(t, 97, 11, 'command', 'code'); put(t, 104, 11, '.', 'fg');
++  put(t, 35, 9, 'state', 'code'); put(t, 40, 9, ', ', 'fg'); put(t, 42, 9, 'supervisor', 'code'); put(t, 52, 9, ', ', 'fg'); put(t, 54, 9, 'asks', 'code'); put(t, 58, 9, ', ', 'fg'); put(t, 60, 9, 'needs_you', 'code'); put(t, 69, 9, ', ', 'fg'); put(t, 71, 9, 'chords', 'code'); put(t, 77, 9, ', ', 'fg'); put(t, 79, 9, 'hints', 'code'); put(t, 84, 9, ', ', 'fg'); put(t, 86, 9, 'clock', 'code'); put(t, 91, 9, ', and ', 'fg'); put(t, 97, 9, 'command', 'code'); put(t, 104, 9, '.', 'fg');
+   y++;
+   y = event(t, y, 'manager-hive', '14:09', 'quiet');
+   y++;
+   y = msgYou(t, y, '14:21 · pending', ['yes']);
+-  thumb(t, 119, 0, 33, 120, 87, 'dim');
+   composer(t, 33, 6, ['Next, the release notes. Keep the changelog short, one line for each change, and group the lines by screen:', 'Agents, Chat, Work, Friction, Health, Logs. Put breaking changes at the top with a short migration note. Link each', 'line to its task ID so a reader can find the brief. Leave out changes that touch only tests or docs. Then send me', 'the draft so I can read it before the tag.']);
+   statusRow(t, 39, [stateSeg('● working 2m', 'working'), stateSeg('● supervisor', 'working'), ['? 0 asks', 'dim', 0], ['needs you 0', 'dim', 0], chords('chat'), ['? help', 'dim', 0]], '14:22');
+   return t;

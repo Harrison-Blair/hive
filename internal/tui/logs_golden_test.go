@@ -11,6 +11,9 @@ import (
 // golden grid of the board (decision 42).
 func checkLogsBoard(t *testing.T, board string) {
 	t.Helper()
+	if skipRetired(t, board) {
+		return
+	}
 	want := readBoardGrid(t, board)
 	m := newTestDemoModel(t, board+".fixture.json", demoSize{})
 	got := renderGrid(t, m, want.Width, want.Height)

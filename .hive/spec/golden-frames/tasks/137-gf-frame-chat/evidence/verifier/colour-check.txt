@@ -1,0 +1,14 @@
+GfChat: state without colour: pending
+GfChatEmpty: state without colour: type a message to the coordinator.
+GfChatNoCoordinator: state without colour: error: no live coordinator
+GfChatEvents: state without colour: ▾
+GfChatTall: state without colour: > Next, the release notes.
+GfChatMarkdown: state without colour: ○ idle 3m
+GfChatNotice: state without colour: press ctrl+c again to quit
+GfChatAsk: state without colour: open · 1 of 1
+GfChatAskInput: state without colour: ^r answer the ask
+GfChatAskMulti: state without colour: [x]
+GfChatAskPreview: state without colour: preview · 1
+GfChatAskStopped: state without colour: asker stopped
+GfChatAskReview: state without colour: › Send
+GfChatAskMany: state without colour: waits · 3 of 3
