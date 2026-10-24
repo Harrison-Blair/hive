@@ -188,9 +188,11 @@ func TestMigrationVersionThreeKeepsInboxWhenOwnerNameMatches(t *testing.T) {
 	}
 }
 
-// TestMigrationVersionThreeDoesNotCopyTwice shows the step is safe to run
-// again after a partial copy.
-func TestMigrationVersionThreeDoesNotCopyTwice(t *testing.T) {
+// TestMigrationVersionThreeKeepsAnEqualUnreadSourceRecord proves that the
+// step moves an unread source record even when the owner inbox already has a
+// record with equal content. A record without a marker is not a copy of the
+// source record.
+func TestMigrationVersionThreeKeepsAnEqualUnreadSourceRecord(t *testing.T) {
 	home := seedVersionTwoHome(t)
 	seedState(t, home, []string{"inbox", "owner-demo", "1.json"}, map[string]any{
 		"seq": 1, "role": "owner-demo", "kind": "completed", "task": "1-task",
@@ -207,12 +209,88 @@ func TestMigrationVersionThreeDoesNotCopyTwice(t *testing.T) {
 	if !fileMissing(t, home, "inbox", "manager-demo") {
 		t.Fatal("the old manager inbox folder is still present")
 	}
+	want := []map[string]any{
+		{
+			"seq": float64(1), "role": "owner-demo", "kind": "completed", "task": "1-task",
+			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z", "read_at": "",
+		},
+		{
+			"seq": float64(2), "role": "owner-demo", "kind": "completed", "task": "1-task",
+			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z", "read_at": "",
+		},
+	}
 	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "owner-demo"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(entries) != 1 {
-		t.Fatalf("owner inbox records = %d; want one copy", len(entries))
+	if len(entries) != len(want) {
+		t.Fatalf("owner inbox records = %d; want %d", len(entries), len(want))
+	}
+	for index, entry := range entries {
+		record := readJSONMap(t, home, "inbox", "owner-demo", entry.Name())
+		for field, value := range want[index] {
+			if record[field] != value {
+				t.Errorf("record %d field %s = %#v; want %#v", index+1, field, record[field], value)
+			}
+		}
+		if _, ok := record["migrated_from"]; ok {
+			t.Errorf("record %d = %#v; want no migration marker", index+1, record)
+		}
+	}
+}
+
+// TestMigrationVersionThreeKeepsAnEqualReadCoordinatorRecord proves that the
+// coordinator fallback keeps a read record that already has equal content and
+// appends the unread source record.
+func TestMigrationVersionThreeKeepsAnEqualReadCoordinatorRecord(t *testing.T) {
+	home := seedVersionTwoHome(t)
+	seedState(t, home, []string{"agents", "owner-demo-g1.json"}, map[string]any{
+		"key": "owner-demo-g1", "name": "owner-demo", "role": "manager", "kind": "",
+		"profile": "planner", "owns": "demo", "worktree": "", "project": "demo", "task": "",
+		"status": "stopped", "generation": 1,
+	})
+	seedState(t, home, []string{"inbox", "coordinator", "1.json"}, map[string]any{
+		"seq": 1, "role": "coordinator", "kind": "completed", "task": "1-task",
+		"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "2026-01-02T00:00:00Z",
+	})
+	seedState(t, home, []string{"counters", "inbox:coordinator.json"}, map[string]any{"value": 1})
+
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() = %v; want the migration", err)
+	}
+	if !fileMissing(t, home, "inbox", "manager-demo") {
+		t.Fatal("the old manager inbox folder is still present")
+	}
+	want := []map[string]any{
+		{
+			"seq": float64(1), "role": "coordinator", "kind": "completed", "task": "1-task",
+			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z",
+			"read_at": "2026-01-02T00:00:00Z",
+		},
+		{
+			"seq": float64(2), "role": "coordinator", "kind": "completed", "task": "1-task",
+			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z",
+			"read_at": "",
+		},
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "coordinator"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != len(want) {
+		t.Fatalf("coordinator inbox records = %d; want %d", len(entries), len(want))
+	}
+	for index, entry := range entries {
+		record := readJSONMap(t, home, "inbox", "coordinator", entry.Name())
+		for field, value := range want[index] {
+			if record[field] != value {
+				t.Errorf("record %d field %s = %#v; want %#v", index+1, field, record[field], value)
+			}
+		}
+		if _, ok := record["migrated_from"]; ok {
+			t.Errorf("record %d = %#v; want no migration marker", index+1, record)
+		}
 	}
 }
 
@@ -338,13 +416,15 @@ func TestMigrationVersionThreeSkipsAMarkedCopy(t *testing.T) {
 	}
 }
 
-// TestMigrationVersionThreeResumesAfterAPartialEqualCopy proves that a retry
-// after one equal record moved copies the remaining unread record.
-func TestMigrationVersionThreeResumesAfterAPartialEqualCopy(t *testing.T) {
+// TestMigrationVersionThreeResumesFromTheSourceMarker proves that a retry
+// after a partial copy uses the source marker of the moved record and copies
+// each remaining unread source record once.
+func TestMigrationVersionThreeResumesFromTheSourceMarker(t *testing.T) {
 	home := seedEqualUnreadHome(t)
 	seedState(t, home, []string{"inbox", "owner-demo", "1.json"}, map[string]any{
 		"seq": 1, "role": "owner-demo", "kind": "message", "task": "",
 		"agent": "user", "text": "same text", "created_at": "2026-01-01T00:00:00Z", "read_at": "",
+		"migrated_from": "manager-demo/1",
 	})
 	seedState(t, home, []string{"counters", "inbox:owner-demo.json"}, map[string]any{"value": 1})
 
@@ -356,7 +436,16 @@ func TestMigrationVersionThreeResumesAfterAPartialEqualCopy(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(entries) != 2 {
-		t.Fatalf("owner inbox records = %d; want two copies", len(entries))
+		t.Fatalf("owner inbox records = %d; want the first copy and the remaining record", len(entries))
+	}
+	for _, entry := range entries {
+		record := readJSONMap(t, home, "inbox", "owner-demo", entry.Name())
+		if _, ok := record["migrated_from"]; ok {
+			t.Fatalf("record %s = %#v; want no migration marker", entry.Name(), record)
+		}
+		if record["role"] != "owner-demo" || record["text"] != "same text" {
+			t.Fatalf("record %s = %#v; want the owner copy", entry.Name(), record)
+		}
 	}
 	if !fileMissing(t, home, "inbox", "manager-demo") {
 		t.Fatal("the old manager inbox folder is still present")

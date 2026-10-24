@@ -319,7 +319,7 @@ func (s *Store) moveOwnerInboxes(locked *LockedStore, agents []records.Agent, lo
 // copyUnreadInbox appends each unread record of source to target. A moved
 // record keeps a marker of its source until the whole step succeeds, so a
 // retry copies each source record once. A target record without a marker is
-// an earlier copy, for example a record that the owner inbox already had.
+// a separate record, so it stays even when its content is equal.
 func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logger *slog.Logger) (int, string, error) {
 	names, raw, err := namedRecords(locked, []string{"inbox", source})
 	if err != nil {
@@ -340,11 +340,6 @@ func (s *Store) copyUnreadInbox(locked *LockedStore, source, target string, logg
 		}
 		sourceID := source + "/" + strings.TrimSuffix(names[index], ".json")
 		if state.markers[sourceID] {
-			continue
-		}
-		signature := inboxSignature(record)
-		if state.unmarked[signature] > 0 {
-			state.unmarked[signature]--
 			continue
 		}
 		seq, err := locked.Next("inbox:" + target)
@@ -374,21 +369,19 @@ type movedInbox struct {
 	MigratedFrom string `json:"migrated_from,omitempty"`
 }
 
-// inboxCopyState holds the copies that target already has: the source IDs of
-// records from an earlier run, and the count of each content signature for
-// records that arrived another way.
+// inboxCopyState holds the source IDs of the records that target already has
+// from an earlier run of the step.
 type inboxCopyState struct {
-	markers  map[string]bool
-	unmarked map[string]int
+	markers map[string]bool
 }
 
-// targetInboxState reads the copies in one target inbox.
+// targetInboxState reads the migration markers in one target inbox.
 func targetInboxState(locked *LockedStore, key string) (inboxCopyState, error) {
 	_, raw, err := namedRecords(locked, []string{"inbox", key})
 	if err != nil {
 		return inboxCopyState{}, err
 	}
-	state := inboxCopyState{markers: map[string]bool{}, unmarked: map[string]int{}}
+	state := inboxCopyState{markers: map[string]bool{}}
 	for _, data := range raw {
 		var record movedInbox
 		if err := json.Unmarshal(data, &record); err != nil {
@@ -396,18 +389,9 @@ func targetInboxState(locked *LockedStore, key string) (inboxCopyState, error) {
 		}
 		if record.MigratedFrom != "" {
 			state.markers[record.MigratedFrom] = true
-			continue
 		}
-		state.unmarked[inboxSignature(record.Inbox)]++
 	}
 	return state, nil
-}
-
-// inboxSignature returns the fields that identify a copied inbox record.
-func inboxSignature(record records.Inbox) string {
-	return strings.Join([]string{
-		record.Kind, record.Task, record.Agent, record.Text, record.Path, record.CreatedAt,
-	}, "\x00")
 }
 
 // cleanInboxMarkers removes the source marker from each copied inbox record.
