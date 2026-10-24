@@ -14,7 +14,6 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/Harrison-Blair/hive/internal/lib/cellgrid"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/Harrison-Blair/hive/internal/tui/component"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -31,8 +30,6 @@ const (
 	podGap = 2
 	// treeSlot is the narrowest slot of one child in the tree form.
 	treeSlot = component.CardWidth + 2
-	// recentEvents is the number of RECENT lines of the details popup.
-	recentEvents = 4
 )
 
 // The texts of the Agents screen.
@@ -1184,69 +1181,82 @@ func agentCardSub(node agentNode) string {
 	return strings.Join(slices.DeleteFunc(parts, func(text string) bool { return text == "" }), " · ")
 }
 
-// agentDetailsPopup gives the title and the lines of the details popup of
-// the selected agent.
-func (m *Model) agentDetailsPopup() (string, []string) {
-	node, column, ok := m.selectedAgent()
+// agentDetailsPopup gives the title, the lines, and the key row of the
+// details popup of the selected agent (agents.md rule 14). Each field comes
+// from stored data. An empty field is left out.
+func (m *Model) agentDetailsPopup() (string, []string, string) {
+	node, _, ok := m.selectedAgent()
 	if !ok {
-		return "details", []string{"no agent selected"}
+		return "details", []string{"no agent selected"}, ""
 	}
 	record := node.record
-	status := record.Status
-	if record.Status == records.AgentLive {
-		status += " · " + node.status
-	}
-	field := func(label, value string) string {
-		if value == "" {
+	field := func(label string, values ...string) string {
+		if values[0] == "" {
 			return ""
 		}
-		return component.DetailField(label, value)
+		return component.DetailField(label, strings.Join(slices.DeleteFunc(values, func(v string) bool { return v == "" }), " · "))
 	}
-	// The coordinator card is in no pod and has no goal line.
-	goal := ""
-	if column >= 0 {
-		goal = m.agentsPods()[column].group.goal
+	clock := func(stamp, prefix string) string {
+		at, err := time.Parse(time.RFC3339Nano, stamp)
+		if err != nil {
+			return ""
+		}
+		return prefix + at.In(m.now().Location()).Format("15:04:05")
+	}
+	age := node.age
+	if age == "?" {
+		age = ""
+	}
+	parent := node.parentName
+	if parent == "" {
+		parent = record.Parent
+	}
+	by := ""
+	if parent != "" {
+		by = "by " + parent
 	}
 	nudged := ""
 	if node.nudgedAt != "" {
 		nudged = activityAge(node.nudgedAt, m.now()) + " ago by supervisor"
 	}
-	lines := []string{"",
+	worktree := strings.TrimPrefix(strings.TrimPrefix(node.worktree, m.home+"/"), m.homeLabel()+"/")
+	tab := ""
+	if record.PaneID != "" {
+		// hive gives the tab of an agent the name of the agent.
+		tab = "tab " + record.Name
+	}
+	unread := ""
+	if record.Name != "" {
+		unread = fmt.Sprintf("%d unread", node.unread)
+	}
+	lines := slices.DeleteFunc([]string{
 		field("role", record.Role),
 		field("project", record.Project),
-		component.DetailField("status", stripCardDot(node.status)+" "+status),
-		field("nudged", nudged),
-		field("harness", record.Harness),
-		field("model", record.Model),
-		field("pane", record.PaneID),
-		field("tab", record.Name),
-		field("goal", goal),
-		field("parent", record.Parent),
+		field("task", record.Task, node.taskStatus),
+		field("harness", record.Harness, record.Model),
+		field("state", node.status, age, clock(record.StatusChangedAt, "changed ")),
+		field("parent", parent),
 		field("replaces", record.Replaces),
-	}
-	lines = slices.DeleteFunc(lines[1:], func(line string) bool { return line == "" })
-	lines = append([]string{""}, lines...)
-	key := lipgloss.NewStyle().Foreground(component.Accent).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(component.Dim)
-	task := key.Render("t") + "  open task · " + record.Task
-	if record.Task == "" {
-		task = dim.Bold(true).Render("t") + dim.Render("  open task · none")
-	}
-	lines = append(lines, "", component.DetailSection("ACTIONS"),
-		key.Render("a")+"  attach to pane",
-		key.Render("p")+"  peek pane",
-		task,
-	)
-	if len(node.recent) > 0 {
-		lines = append(lines, "", component.DetailSection("RECENT"))
-		for index, text := range node.recent {
-			if index > 0 {
-				text = dim.Render(text)
-			}
-			lines = append(lines, text)
+		field("pane", record.PaneID, tab),
+		field("worktree", worktree),
+		field("branch", node.branch),
+		field("started", clock(record.StartedAt, ""), by),
+		field("inbox", unread),
+		field("nudged", nudged),
+	}, func(line string) bool { return line == "" })
+	if sent := node.lastSent; sent != nil {
+		at, err := time.Parse(time.RFC3339Nano, sent.CreatedAt)
+		if err == nil {
+			lines = append(lines, "", component.DetailSection("LAST MESSAGE"),
+				component.DetailField(at.In(m.now().Location()).Format("15:04"), "→ "+sent.Role+" · "+sent.Text))
 		}
 	}
-	return record.Name + " · esc closes", lines
+	keys := []string{"a attach", "p peek"}
+	if record.Task != "" {
+		keys = append(keys, "t task")
+	}
+	keys = append(keys, "esc closes")
+	return record.Name + " · esc closes", lines, component.DimText(strings.Join(keys, " · "))
 }
 
 // stripCardDot gives the dot of a state in the style of a card.
@@ -1475,34 +1485,6 @@ func projectGoal(goals []records.Goal, project string) *records.Goal {
 		}
 	}
 	return goal
-}
-
-// recentAgentEvents gives the last log events of each agent, newest first,
-// as "HH:MM message" in zone.
-func recentAgentEvents(events []logs.Event, zone *time.Location) map[string][]string {
-	type entry struct {
-		at   time.Time
-		text string
-	}
-	byAgent := make(map[string][]entry)
-	for _, event := range events {
-		agentID, _ := event.Fields["agent_id"].(string)
-		stamp, _ := event.Fields["time"].(string)
-		message, _ := event.Fields["msg"].(string)
-		at, err := time.Parse(time.RFC3339Nano, stamp)
-		if agentID == "" || err != nil {
-			continue
-		}
-		byAgent[agentID] = append(byAgent[agentID], entry{at: at, text: at.In(zone).Format("15:04") + " " + message})
-	}
-	out := make(map[string][]string, len(byAgent))
-	for agentID, entries := range byAgent {
-		slices.SortStableFunc(entries, func(a, b entry) int { return b.at.Compare(a.at) })
-		for _, item := range entries[:min(len(entries), recentEvents)] {
-			out[agentID] = append(out[agentID], item.text)
-		}
-	}
-	return out
 }
 
 // litWindow is the time that a line stays lit after a message (decision 67).
@@ -1852,5 +1834,5 @@ func tokenStyle(token cellgrid.Token, bold bool) lipgloss.Style {
 // The size of the details popup of the Agents screen.
 const (
 	agentPopupWidth  = 60
-	agentPopupHeight = 27
+	agentPopupHeight = 20
 )

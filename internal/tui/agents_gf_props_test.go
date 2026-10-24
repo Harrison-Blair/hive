@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -49,8 +50,22 @@ func TestGfAgentsBoardsKeepTheFrameAtEachBreakpoint(t *testing.T) {
 				// A lit line (decision 66) uses heavy glyphs on a light bus,
 				// as ┏━◀━┹───╮. The light form of each heavy glyph gives
 				// whole pairs again, so the check covers the lit line too.
-				requireWholeAgentsBorders(t, gfLightGlyphs.Replace(view))
-				if !strings.HasPrefix(rows[0], " agents ") || strings.Trim(rows[1], "─ ") != "" {
+				if m.popupOpen {
+					// The popup covers the graph: the graph borders are
+					// checked with the popup closed, and the popup box on
+					// its own.
+					requireWholePopupBox(t, rows)
+					m.popupOpen = false
+					m.invalidateView()
+					requireWholeAgentsBorders(t, gfLightGlyphs.Replace(ansi.Strip(m.View().Content)))
+					m.popupOpen = true
+					m.invalidateView()
+				} else {
+					requireWholeAgentsBorders(t, gfLightGlyphs.Replace(view))
+				}
+				// At 80×24 the popup, at the center of the rows above the
+				// status row, covers the rule.
+				if !strings.HasPrefix(rows[0], " agents ") || !m.popupOpen && strings.Trim(rows[1], "─ ") != "" {
 					t.Fatalf("rows 0 and 1 = %q, %q; want the title row and the rule", rows[0], rows[1])
 				}
 				if !strings.Contains(view, gfAgentsSelected[board]) {
@@ -65,6 +80,32 @@ func TestGfAgentsBoardsKeepTheFrameAtEachBreakpoint(t *testing.T) {
 			})
 		}
 	}
+}
+
+// requireWholePopupBox checks that the details popup is one whole box: a
+// top row with the title, side borders on each row, and a bottom row.
+func requireWholePopupBox(t *testing.T, rows []string) {
+	t.Helper()
+	for index, row := range rows {
+		cells := []rune(row)
+		left := strings.Index(row, "╭─ ")
+		if left < 0 || !strings.Contains(row, " · esc closes ─") {
+			continue
+		}
+		x := len([]rune(row[:left]))
+		right := x + slices.Index(cells[x:], '╮')
+		for _, below := range rows[index+1:] {
+			line := []rune(below)
+			if line[x] == '╰' && line[right] == '╯' {
+				return
+			}
+			if line[x] != '│' || line[right] != '│' {
+				t.Fatalf("popup row %q has no side border at columns %d and %d", below, x, right)
+			}
+		}
+		t.Fatalf("popup from row %d has no bottom row", index)
+	}
+	t.Fatal("no popup title row")
 }
 
 // gfLightGlyphs replaces each heavy box glyph with its light form.

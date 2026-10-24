@@ -29,7 +29,16 @@ type agentNode struct {
 	pid      string
 	nudgedAt string
 	result   string
-	recent   []string
+	// The fields below are the stored data of the details popup
+	// (agents.md rule 14): the task status, the worktree path and branch of
+	// the task, the name of the parent, the unread records of the inbox of
+	// the agent, and the last record that the agent sent.
+	taskStatus string
+	worktree   string
+	branch     string
+	parentName string
+	unread     int
+	lastSent   *records.Inbox
 }
 
 type agentGroup struct {
@@ -202,6 +211,10 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		taskByID[task.ID] = task
 	}
 	currentAgents := currentAgentKeys(agents)
+	names := make(map[string]string, len(agents))
+	for _, record := range agents {
+		names[record.Key] = record.Name
+	}
 	nudgedAt := make(map[string]string)
 	for _, name := range inboxAgentNames(agents) {
 		for _, item := range source.unread[name] {
@@ -210,7 +223,6 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			}
 		}
 	}
-	recent := recentAgentEvents(source.events, now.Location())
 	goalTitle := make(map[string]string)
 	for _, goal := range goals {
 		if goal.Status == "active" && goalTitle[goal.Project] == "" {
@@ -257,7 +269,25 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		}
 		node := agentNode{
 			record: record, status: status, age: age, stopped: stopped, current: currentAgents[record.Key],
-			pid: pid, result: result, recent: recent[record.Key],
+			pid: pid, result: result, parentName: names[record.Parent],
+		}
+		if task, ok := taskByID[record.Task]; ok {
+			node.taskStatus = task.Status
+			if task.Worktree != nil {
+				node.worktree, node.branch = task.Worktree.Path, task.Worktree.Branch
+			}
+		}
+		inboxName := record.Name
+		if record.Role == "coordinator" {
+			inboxName = "coordinator"
+		}
+		for index, item := range source.inbox {
+			if item.Role == inboxName && item.ReadAt == "" {
+				node.unread++
+			}
+			if item.Agent == inboxName && (node.lastSent == nil || item.CreatedAt > node.lastSent.CreatedAt) {
+				node.lastSent = &source.inbox[index]
+			}
 		}
 		if node.current {
 			node.nudgedAt = nudgedAt[record.Name]

@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -297,7 +296,9 @@ func TestAgentsDetailsPopupKeys(t *testing.T) {
 	if m.focusState() != "details" {
 		t.Fatalf("focus %q after enter; want details", m.focusState())
 	}
-	requireView(t, m, "manager-hive · esc closes", "ACTIONS")
+	// agents.md rule 14: the key row is in the place of ACTIONS. The manager
+	// has no task, so the row has no t task.
+	requireView(t, m, "manager-hive · esc closes", "a attach · p peek · esc closes")
 	requireKeys(t, m, "details", "a attach · p peek · t task · ↑↓ scroll · esc close")
 	popup := m.View().Content
 	m, cmd = raise(t, m, key('r', "r"))
@@ -361,16 +362,6 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	for _, record := range agents {
 		writeAgentRecord(t, home, record)
 	}
-	logDir := filepath.Join(home, ".hive", "logs")
-	if err := os.MkdirAll(logDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	// The popup shows the event time in the zone of the clock.
-	at := time.Date(2026, 10, 21, 14, 10, 0, 0, clock.now().Location()).Format(time.RFC3339)
-	event := `{"time":"` + at + `","level":"INFO","msg":"task land 1-alpha","agent_id":"manager-alpha"}` + "\n"
-	if err := os.WriteFile(dailyPath(home, clock.now()), []byte(event), 0o644); err != nil {
-		t.Fatal(err)
-	}
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	m, cmd := raise(t, m, ctrl('g'))
@@ -389,7 +380,9 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	}
 	m, _ = raise(t, m, key(tea.KeyUp, ""))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "RECENT", "14:10 task land 1-alpha")
+	// agents.md rule 14 (ask a29) replaces RECENT with the fields of the
+	// board.
+	requireView(t, m, "manager-alpha · esc closes", "role      manager", "project   alpha")
 }
 
 // openAgents opens the Agents tab of a normal-mode model at 120×40 and

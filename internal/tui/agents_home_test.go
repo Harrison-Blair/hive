@@ -286,8 +286,10 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m.graph.selected = "review-1"
 	m, _ = raise(t, m, key('o', "o"))
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "model", "gpt", "parent", "coordinator-g1")
-	_, lines := m.agentDetailsPopup()
+	// agents.md rule 14: the model is on the harness row, and the parent
+	// row shows the name of the parent record coordinator-g1.
+	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "pi · gpt", "parent    coordinator")
+	_, lines, _ := m.agentDetailsPopup()
 	for _, line := range lines {
 		fields := strings.Fields(ansi.Strip(line))
 		if len(fields) == 1 && (fields[0] == "project" || fields[0] == "nudged" || fields[0] == "goal" || fields[0] == "replaces") {
@@ -329,7 +331,9 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		{"AgentsHiddenParent", 120, 40, []string{"━ home ━", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
 		{"AgentsCoordinatorChild", 120, 40, []string{"agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
 		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
-		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "coordinator-g2", "14:15 agent report plan-review-1"}, nil},
+		// agents.md rule 14 (ask a29): the parent row shows the name of the
+		// parent, and the key row is in the place of RECENT.
+		{"AgentDetailsGeneral", 120, 40, []string{"plan-review-1 · esc closes", "agent", "parent    coordinator", "a attach · p peek · esc closes"}, nil},
 		{"HealthAgentsGeneral", 120, 40, []string{"▶ plan-review-1", "agent"}, nil},
 	} {
 		t.Run(tc.board, func(t *testing.T) {

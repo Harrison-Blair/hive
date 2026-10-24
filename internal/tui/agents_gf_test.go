@@ -239,7 +239,7 @@ func TestGfAgentsOverviewSelectsCards(t *testing.T) {
 		t.Fatalf("esc: pod view %v, selected %q; want the overview with t5-worker-1", m.graph.podView, node.record.Key)
 	}
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	if title, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "t5-worker-1 ") {
+	if title, _, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "t5-worker-1 ") {
 		t.Fatalf("enter: popup %v, title %q; want the details of t5-worker-1", m.popupOpen, title)
 	}
 }
@@ -284,7 +284,45 @@ func TestGfAgentsNoPodState(t *testing.T) {
 		t.Fatalf("keys = %q", got)
 	}
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
-	if title, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "coordinator-g8 ") {
+	if title, _, _ := m.agentDetailsPopup(); !m.popupOpen || !strings.HasPrefix(title, "coordinator-g8 ") {
 		t.Fatalf("enter: popup %v, title %q; want the details of the coordinator", m.popupOpen, title)
+	}
+}
+
+// agents.md rule 14 (ask a29, case A13): the details popup has the fields
+// of the board from stored data, the last message that the agent sent, and
+// the key row on its last inner row. It covers the rows above the status
+// row, at their center.
+func TestGfAgentsDetailsPopup(t *testing.T) {
+	_, rows := gfAgentsRows(t, "GfAgentsDetails")
+	want := []string{
+		"╭─ t6-worker-1 · esc closes ───────────────────────────────╮",
+		"│ role      worker                                         │",
+		"│ project   hive                                           │",
+		"│ task      6-starting-status · assigned                   │",
+		"│ harness   pi · openai-codex/gpt-6.1-sol                  │",
+		"│ state     working · 1m · changed 14:21:02                │",
+		"│ parent    manager-hive                                   │",
+		"│ pane      w6A:p1 · tab t6-worker-1                       │",
+		"│ worktree  projects/hive/worktrees/6-starting-status      │",
+		"│ branch    task/6-starting-status                         │",
+		"│ started   14:19:33 · by manager-hive                     │",
+		"│ inbox     0 unread                                       │",
+		"│                                                          │",
+		"│ LAST MESSAGE                                             │",
+		"│ 14:21     → manager-hive · gate green, writing V2        │",
+		"│                                                          │",
+		"│                                                          │",
+		"│                                                          │",
+		"│ a attach · p peek · t task · esc closes                  │",
+		"╰──────────────────────────────────────────────────────────╯",
+	}
+	for index, line := range want {
+		if got := string([]rune(rows[9+index])[30:90]); got != line {
+			t.Fatalf("row %d = %q, want %q", 9+index, got, line)
+		}
+	}
+	if !strings.Contains(rows[39], "details · a attach") {
+		t.Fatalf("row 39 = %q, want the status row of the details popup", rows[39])
 	}
 }

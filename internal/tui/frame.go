@@ -333,12 +333,21 @@ func (m *Model) frameView() string {
 	}
 	screen := strings.Join(append(rows, status...), "\n")
 	switch {
+	case m.activeTab() == tabAgents && m.popupOpen && !m.helpOpen:
+		// agents.md rule 14: the popup covers the rows above the status
+		// rows. The key row is on its last inner row, and the lines above
+		// it scroll.
+		title, lines, keys := m.agentDetailsPopup()
+		room := agentPopupHeight - 3
+		m.popupOffset = min(m.popupOffset, max(len(lines)-room, 0))
+		lines = lines[m.popupOffset:min(m.popupOffset+room, len(lines))]
+		for len(lines) < room {
+			lines = append(lines, "")
+		}
+		top := component.Popup{Details: component.Details{Title: title, Lines: append(lines, keys)}, Width: agentPopupWidth, Height: agentPopupHeight, Tight: true}.View(strings.Join(rows, "\n"), width, height-len(status))
+		screen = strings.Join(append([]string{top}, status...), "\n")
 	case m.helpOpen:
 		screen = component.Popup{Details: component.Details{Title: "keys · ? or esc closes", Lines: m.helpLines(), Offset: m.helpOffset}, Width: 84, Height: 29}.View(screen, width, height)
-	case m.activeTab() == tabAgents && m.popupOpen:
-		title, lines := m.agentDetailsPopup()
-		m.popupOffset = min(m.popupOffset, max(len(lines)-agentPopupHeight+2, 0))
-		screen = component.Popup{Details: component.Details{Title: title, Lines: lines, Offset: m.popupOffset}, Width: agentPopupWidth, Height: agentPopupHeight}.View(screen, width, height)
 	}
 	return screen
 }
