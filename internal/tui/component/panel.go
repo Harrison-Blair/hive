@@ -33,11 +33,6 @@ type Panel struct {
 	Bleed   bool
 }
 
-// HeavyThumbFg draws the scroll mark on a heavy focused border in fg, so it
-// shows against the accent border. Ask a28 (W8) is held: false keeps the
-// board form, the mark in accent.
-var HeavyThumbFg = false
-
 // View renders the panel at exactly width×height cells.
 func (p Panel) View(width, height int) string {
 	width = max(width, PanelMinWidth)
@@ -52,7 +47,8 @@ func (p Panel) View(width, height int) string {
 	}
 	if p.Focused {
 		edge, mark = accentStyle, accentStyle
-		if p.Heavy && HeavyThumbFg {
+		if p.Heavy {
+			// Ask a34: the mark is in fg, so it shows on the heavy border.
 			mark = lipgloss.NewStyle()
 		}
 	}
