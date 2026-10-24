@@ -1,94 +1,54 @@
 package agent
 
 import (
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-func TestBriefPromptsStartWithHiveMarker(t *testing.T) {
-	for name, prompt := range map[string]string{
-		"worker":   workerPrompt("/tmp/home", "task", "/tmp/worktree", "task/branch", "", false),
-		"verifier": verifierPrompt("/tmp/home", "task", ""),
-	} {
-		t.Run(name, func(t *testing.T) {
-			if !strings.HasPrefix(prompt, "⬢ ") {
-				t.Fatalf("prompt = %q; want the hive marker prefix", prompt)
-			}
-		})
+func TestFirstPromptStartsWithHiveMarker(t *testing.T) {
+	got := firstPrompt(records.Agent{Name: "builder-1"}, nil, "")
+	if !strings.HasPrefix(got, "⬢ ") {
+		t.Fatalf("prompt = %q; want the hive marker prefix", got)
 	}
 }
 
-func TestBriefPrompt(t *testing.T) {
-	home := "/tmp/a b'c"
-	task := "1-worker-demo"
-	path := "/tmp/wt with space"
-	branch := "task/1-worker-demo"
-	workerWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
-	verifierWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive task verify --task '1-worker-demo', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
-	workerFeatureWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The task brief is .hive/spec/feature-a/tasks/1-worker-demo/brief.md. Write each V<n>.md to .hive/spec/feature-a/tasks/1-worker-demo/evidence/. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
-	workerSpecWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The task brief is .hive/spec/feature-a/tasks/1-worker-demo/brief.md. Write each V<n>.md to .hive/spec/feature-a/tasks/1-worker-demo/evidence/. Write the feature README at .hive/spec/feature-a/README.md in the worktree. Do not commit a file under .hive/spec/. Hive copies it to the home. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
-	verifierFeatureWant := `⬢ Read /tmp/a b'c/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. The task brief is .hive/spec/feature-a/tasks/1-worker-demo/brief.md. You are the verifier. Run each verification item again, write VERIFIED.md to .hive/spec/feature-a/tasks/1-worker-demo/evidence/, then run: hive task verify --task '1-worker-demo', or add --fail --reason. Never write VERIFIED.md at the checkout root. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
-
-	if got := workerPrompt(home, task, path, branch, "", false); got != workerWant {
-		t.Fatalf("worker prompt = %q; want %q", got, workerWant)
+func TestFirstPromptGivesFactsThenSpawnerText(t *testing.T) {
+	record := records.Agent{
+		Name:     "builder-1",
+		Parent:   "manager-hive-g1",
+		Project:  "hive",
+		Task:     "154-awr-spawn",
+		Worktree: "/home/user/projects/hive/worktrees/154-awr-spawn",
 	}
-	if got := verifierPrompt(home, task, ""); got != verifierWant {
-		t.Fatalf("verifier prompt = %q; want %q", got, verifierWant)
-	}
-	if got := workerPrompt(home, task, path, branch, "feature-a", false); got != workerFeatureWant {
-		t.Fatalf("feature worker prompt = %q; want %q", got, workerFeatureWant)
-	}
-	if got := workerPrompt(home, task, path, branch, "feature-a", true); got != workerSpecWant {
-		t.Fatalf("spec worker prompt = %q; want %q", got, workerSpecWant)
-	}
-	if got := verifierPrompt(home, task, "feature-a"); got != verifierFeatureWant {
-		t.Fatalf("feature verifier prompt = %q; want %q", got, verifierFeatureWant)
+	task := &records.Task{ID: "154-awr-spawn", Project: "hive", Feature: "agents-without-roles"}
+	got := firstPrompt(record, task, "Do the task.")
+	want := "⬢ You are builder-1. Your parent is manager-hive-g1. Your project is hive. " +
+		"Your task is 154-awr-spawn. Your worktree is /home/user/projects/hive/worktrees/154-awr-spawn. " +
+		"Your brief is .hive/spec/agents-without-roles/tasks/154-awr-spawn/brief.md. " +
+		"Your evidence is .hive/spec/agents-without-roles/tasks/154-awr-spawn/evidence/.\n\nDo the task."
+	if got != want {
+		t.Fatalf("prompt = %q; want %q", got, want)
 	}
 }
 
-func TestBriefPromptShellSafe(t *testing.T) {
-	home := "/tmp/home path"
-	task := "1-worker-demo"
-	path := "/tmp/wt with space"
-	branch := "task/1-worker-demo"
-	workerWant := `⬢ Read /tmp/home path/.agents/skills/hive-worker/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. Follow that brief. Your worktree is '/tmp/wt with space' on the branch 'task/1-worker-demo'. The skill hive-worker is /hive-worker in Claude Code and $hive-worker in Codex.`
-	verifierWant := `⬢ Read /tmp/home path/.agents/skills/hive-verifier/SKILL.md first. Then run: hive task show '1-worker-demo' --brief. You are the verifier. Run each verification item again, write VERIFIED.md, then run: hive task verify --task '1-worker-demo', or add --fail --reason. The skill hive-verifier is /hive-verifier in Claude Code and $hive-verifier in Codex.`
-
-	dir := t.TempDir()
-	script := filepath.Join(dir, "hive")
-	if err := os.WriteFile(script, []byte("#!/bin/sh\nfor arg in \"$@\"; do printf '%s\\n' \"$arg\"; done\n"), 0o755); err != nil {
-		t.Fatal(err)
+func TestFirstPromptSkipsEmptyFacts(t *testing.T) {
+	got := firstPrompt(records.Agent{Name: "general-1"}, nil, "")
+	want := "⬢ You are general-1."
+	if got != want {
+		t.Fatalf("prompt = %q; want %q", got, want)
 	}
+}
 
-	for _, testCase := range []struct {
-		prompt string
-		want   string
-	}{
-		{workerPrompt(home, task, path, branch, "", false), workerWant},
-		{verifierPrompt(home, task, ""), verifierWant},
-	} {
-		prompt := testCase.prompt
-		if prompt != testCase.want {
-			t.Fatalf("prompt = %q; want %q", prompt, testCase.want)
-		}
-		start := strings.Index(prompt, "hive task show ")
-		end := strings.Index(prompt, "--brief")
-		if start < 0 || end < 0 {
-			t.Fatalf("prompt = %q; want the brief retrieval command", prompt)
-		}
-		command := prompt[start : end+len("--brief")]
-		cmd := exec.Command("sh", "-c", command)
-		cmd.Env = append(os.Environ(), "PATH="+dir)
-		out, err := cmd.Output()
-		if err != nil {
-			t.Fatalf("sh -c %q error = %v", command, err)
-		}
-		want := strings.Join([]string{"task", "show", task, "--brief"}, "\n") + "\n"
-		if string(out) != want {
-			t.Fatalf("script args = %q; want %q", out, want)
-		}
+func TestFirstPromptUsesTheTaskBriefWithoutFeature(t *testing.T) {
+	record := records.Agent{Name: "builder-1", Task: "1-simple"}
+	task := &records.Task{ID: "1-simple"}
+	got := firstPrompt(record, task, "")
+	if !strings.Contains(got, "Your brief is .hive/state/briefs/1-simple.md.") {
+		t.Fatalf("prompt = %q; want the task brief path", got)
+	}
+	if strings.Contains(got, "Your evidence is") {
+		t.Fatalf("prompt = %q; want no evidence path for a task with no feature", got)
 	}
 }

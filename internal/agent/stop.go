@@ -67,7 +67,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if !record.Spawned {
 		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+" was not spawned by hive: exit it by hand", record)
 	}
-	if record.Role == "agent" && !record.StartedByHive {
+	if record.Kind == "" && record.MirrorRole() == "agent" && !record.StartedByHive {
 		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+": hive did not start it: exit it by hand", record)
 	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
@@ -195,7 +195,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if record.TabCreatedByHive {
 		effects = appendEffect(effects, stoppedTabEffect(ctx, logger, record, result))
 	}
-	if record.Role == "manager" && record.Project != "" {
+	if record.Owns != "" && record.Project != "" {
 		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)
 		effects = appendEffect(effects, workspaceEffect)
 		if workspaceErr != nil {
@@ -212,7 +212,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 }
 
 // recordStoppedWorkspace updates the project record from the post-close
-// topology of one manager stop.
+// topology of one owner stop.
 func recordStoppedWorkspace(home string, record records.Agent, result StopResult) (output.Effect, error) {
 	switch result.Topology {
 	case "closed":
@@ -294,7 +294,7 @@ func waitForStartingRecord(ctx context.Context, home string, expected records.Ag
 		if err := registry.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
 			return expected, err
 		}
-		if current.Key != expected.Key || current.Name != expected.Name || current.Role != expected.Role ||
+		if current.Key != expected.Key || current.Name != expected.Name ||
 			current.Project != expected.Project || current.Task != expected.Task ||
 			current.PaneID != expected.PaneID || current.Generation != expected.Generation {
 			return current, errRecordChanged

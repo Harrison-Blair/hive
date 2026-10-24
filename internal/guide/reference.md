@@ -62,20 +62,22 @@ hive agent show: show one agent record
 hive agent spawn: spawn an agent in a pane
   --adopt string: adopt an existing workspace
   --agent string: caller agent name or key
-  --allow-trust-dialog bool: start a general agent that can show a trust dialog; keep its first prompt for the supervisor
+  --allow-trust-dialog bool: start an agent that can show a trust dialog; keep its first prompt for the supervisor
   --arg stringArray: native agent argument
-  --cwd string: working directory of a general agent in a new tab
+  --cwd string: working directory of an agent in a new tab
   --harness string: harness kind
   -h, --help bool: help for spawn
   --json bool: write JSON output
   --model string: model name
   --name string: agent name
+  --owner bool: make the agent the owner of its project
   --pane string: destination herdr pane ID: hive starts the agent in this pane, and agent stop closes it; herdr then closes its tab or workspace when it holds no other pane
+  --profile string: profile name: the default is general
   --project string: project ID
-  --prompt string: spawner text of a general agent (role agent)
-  --prompt-file string: file with the spawner text of a general agent (role agent)
+  --prompt string: spawner text of the agent
+  --prompt-file string: file with the spawner text of the agent
   --quiet-after int: quiet minutes
-  --role string: agent role
+  --role string: old name of --profile (wave A)
   --task string: task ID
 
 hive agent stop: stop an agent that hive started

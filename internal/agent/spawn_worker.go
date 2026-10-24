@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/gitx"
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -29,89 +30,50 @@ type taskChoice struct {
 	CreatedTab            bool
 	CreatedWorkspaceTabs  uint
 	CreatedWorkspacePanes uint
+	ShouldAssign          bool
 }
 
-// resolveTaskProject reads the project of one worker or verifier task.
-func resolveTaskProject(home string, options SpawnOptions) (string, string) {
-	if !records.ValidTaskID(options.Task) {
-		return "", "task not found: " + displayValue(options.Task)
-	}
-	registry, err := store.Open(home)
-	if err != nil {
-		return "", "store: " + err.Error()
-	}
-	var task records.Task
-	if err := registry.ReadIn([]string{"tasks"}, options.Task, &task); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return "", "task not found: " + displayValue(options.Task)
-		}
-		return "", "store: " + err.Error()
-	}
-	if options.Project != "" && options.Project != task.Project {
-		return "", fmt.Sprintf("task %s is in project %s", task.ID, task.Project)
-	}
-	return task.Project, ""
-}
-
-// resolveTaskPane checks the task and the pane of one worker or verifier
-// spawn. It returns the choice and an error message.
+// resolveTaskPane checks the task and the worktree of one task agent. It
+// returns the placement and sets the acting agent only when the task facts
+// allow it.
 func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (taskChoice, string) {
-	if !records.ValidTaskID(options.Task) {
+	if options.taskRecord == nil || options.projectRecord == nil {
 		return taskChoice{}, "task not found: " + displayValue(options.Task)
 	}
-	registry, err := store.Open(home)
-	if err != nil {
-		return taskChoice{}, "store: " + err.Error()
+	task := *options.taskRecord
+	choice := taskChoice{Task: task, Project: *options.projectRecord}
+	if task.Worktree == nil || task.Worktree.RootPane == "" {
+		return taskChoice{}, "task has no worktree: run hive worktree create --task " + task.ID
 	}
-	var task records.Task
-	if err := registry.ReadIn([]string{"tasks"}, options.Task, &task); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return taskChoice{}, "task not found: " + displayValue(options.Task)
-		}
-		return taskChoice{}, "store: " + err.Error()
-	}
-	if options.Project != "" && options.Project != task.Project {
-		return taskChoice{}, fmt.Sprintf("task %s is in project %s", task.ID, task.Project)
-	}
-	var project records.Project
-	if err := registry.ReadIn([]string{"projects"}, task.Project, &project); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return taskChoice{}, "project not found: " + displayValue(task.Project)
-		}
-		return taskChoice{}, "store: " + err.Error()
-	}
-	choice := taskChoice{Task: task, Project: project}
-	switch options.Role {
-	case "worker":
-		if message := checkWorkerTask(&choice, registry); message != "" {
-			return taskChoice{}, message
-		}
-	case "verifier":
-		if message := checkVerifierTask(&choice, registry); message != "" {
-			return taskChoice{}, message
-		}
-	default:
-		return taskChoice{}, "invalid role: " + displayValue(options.Role)
-	}
-	if options.Role == "verifier" {
+	choice.Worktree = *task.Worktree
+	choice.ShouldAssign = taskNeedsActingAgent(home, &task)
+
+	if !choice.ShouldAssign {
 		resolved, message := resolveVerifierTopology(ctx, home, choice, logger)
 		if message != "" {
 			return taskChoice{}, message
 		}
 		choice = resolved
-	}
-	pane, message, missing := checkWorktreePane(ctx, home, choice.Worktree, project, logger)
-	if missing && options.Role == "worker" {
-		choice, message = resolveWorkerTopology(ctx, home, choice, logger)
-		if message == "" {
-			pane, message, _ = checkWorktreePane(ctx, home, choice.Worktree, project, logger)
+		pane, message, _ := checkWorktreePane(ctx, home, choice.Worktree, choice.Project, logger)
+		if message != "" {
+			choice.cleanup(ctx, home, logger)
+			return taskChoice{}, message
 		}
+		choice.PaneID = pane.PaneID
+	} else {
+		pane, message, missing := checkWorktreePane(ctx, home, choice.Worktree, choice.Project, logger)
+		if missing {
+			choice, message = resolveWorkerTopology(ctx, home, choice, logger)
+			if message == "" {
+				pane, message, _ = checkWorktreePane(ctx, home, choice.Worktree, choice.Project, logger)
+			}
+		}
+		if message != "" {
+			choice.cleanup(ctx, home, logger)
+			return taskChoice{}, message
+		}
+		choice.PaneID = pane.PaneID
 	}
-	if message != "" {
-		choice.cleanup(ctx, home, logger)
-		return taskChoice{}, message
-	}
-	choice.PaneID = pane.PaneID
 	if choice.Branch == "" {
 		branch, err := gitx.CurrentBranch(ctx, choice.Worktree.Path)
 		if err != nil {
@@ -123,58 +85,34 @@ func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, log
 	return choice, ""
 }
 
-// checkWorkerTask holds the task rules of one worker spawn.
-func checkWorkerTask(choice *taskChoice, registry *store.Store) string {
-	if choice.Task.Status != "created" && choice.Task.Status != "assigned" {
-		return "task is " + choice.Task.Status
+// taskNeedsActingAgent reports whether a task spawn sets the acting agent. A
+// spawn sets it when the task is created or assigned and has no live acting
+// agent.
+func taskNeedsActingAgent(home string, task *records.Task) bool {
+	if task.Status != "created" && task.Status != "assigned" {
+		return false
 	}
-	if choice.Task.Worktree == nil || choice.Task.Worktree.RootPane == "" {
-		return "task has no worktree: run hive worktree create --task " + choice.Task.ID
+	if task.ActingAgent == "" {
+		return true
 	}
-	if choice.Task.Status == "assigned" && choice.Task.ActingAgent != "" {
-		agents, err := loadAgentRecords(registry)
-		if err != nil {
-			return "store: " + err.Error()
-		}
-		for _, record := range agents {
-			if record.Role == "worker" && record.Task == choice.Task.ID &&
-				(record.Name == choice.Task.ActingAgent || record.Key == choice.Task.ActingAgent) && record.Status == records.AgentLive {
-				return fmt.Sprintf("task %s has a live worker: %s", choice.Task.ID, record.Name)
-			}
-		}
-	}
-	choice.Worktree = *choice.Task.Worktree
-	return ""
-}
-
-// checkVerifierTask holds the task rules of one verifier spawn.
-func checkVerifierTask(choice *taskChoice, registry *store.Store) string {
-	if choice.Task.Status != "completed" {
-		return "task is " + choice.Task.Status
+	registry, err := store.Open(home)
+	if err != nil {
+		return true
 	}
 	agents, err := loadAgentRecords(registry)
 	if err != nil {
-		return "store: " + err.Error()
+		return true
 	}
 	for _, record := range agents {
-		if record.Task != choice.Task.ID || record.Role != "worker" {
+		if record.Name != task.ActingAgent && record.Key != task.ActingAgent {
 			continue
 		}
 		switch record.Status {
-		case records.AgentLive:
-			return "worker still live: " + record.Name
-		case records.AgentUnresolved:
-			return "pane has an unresolved record: " + record.Name
-		case records.AgentStopped, records.AgentExited:
-		default:
-			return "worker is " + record.Status + ": " + record.Name
+		case records.AgentStarting, records.AgentLive, records.AgentUnresolved:
+			return false
 		}
 	}
-	if choice.Task.Worktree == nil || choice.Task.Worktree.RootPane == "" {
-		return "task has no worktree: run hive worktree create --task " + choice.Task.ID
-	}
-	choice.Worktree = *choice.Task.Worktree
-	return ""
+	return true
 }
 
 // resolveVerifierTopology reopens the worktree or makes a new tab for one
@@ -395,15 +333,14 @@ func logTaskCleanup(logger *slog.Logger, choice *taskChoice, resource, message s
 		"resource", resource, "workspace_id", choice.Worktree.WorkspaceID, "error", message)
 }
 
-// spawnTaskAgent runs the T10 core with the resolved pane, then assigns and
-// prompts the worker or prompts the verifier.
-func spawnTaskAgent(ctx context.Context, home string, options SpawnOptions, choice *taskChoice, logger *slog.Logger) output.Envelope {
+// spawnTaskAgent starts one task agent in the resolved pane, then applies the
+// acting-agent rule and sends the first prompt.
+func spawnTaskAgent(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, choice *taskChoice, logger *slog.Logger) output.Envelope {
 	inner := options
 	inner.Project = choice.Task.Project
 	inner.PaneID = choice.PaneID
 	inner.PaneSet = true
-	inner.renameTab = !options.PaneSet
-	envelope := Spawn(ctx, home, inner)
+	envelope := spawnInPane(ctx, home, inner, profile, choice.PaneID, !options.PaneSet, logger)
 	if envelope.Outcome == "failed" {
 		choice.cleanup(ctx, home, logger)
 	}
@@ -411,52 +348,41 @@ func spawnTaskAgent(ctx context.Context, home string, options SpawnOptions, choi
 	if record.Key == "" {
 		return envelope
 	}
-	if options.Role == "worker" {
-		return finishWorkerSpawn(ctx, home, choice, record, envelope, logger)
-	}
-	return finishVerifierSpawn(ctx, home, choice, record, envelope, logger)
+	return finishTaskSpawn(ctx, home, options, choice, record, envelope, logger)
 }
 
-// finishWorkerSpawn assigns the task and sends the worker prompt after a
-// settled start.
-func finishWorkerSpawn(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
+// finishTaskSpawn assigns the task when the facts allow it, then sends the
+// first prompt after a settled start.
+func finishTaskSpawn(ctx context.Context, home string, options SpawnOptions, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	if envelope.Outcome == "ok" {
-		if message := assignTask(home, choice.Task.ID, record.Name); message != "" {
-			envelope.Outcome = "partial"
-			envelope.Phase = "assign"
-			envelope.Error = message
-			return envelope
+		if choice.ShouldAssign {
+			assigned, message := assignTask(home, choice.Task.ID, record.Name)
+			if message != "" {
+				envelope.Outcome = "partial"
+				envelope.Phase = "assign"
+				envelope.Error = message
+				return envelope
+			}
+			if assigned {
+				envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: statePath("tasks", choice.Task.ID), Action: "assigned"})
+			}
 		}
-		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: statePath("tasks", choice.Task.ID), Action: "assigned"})
-		return promptTaskAgent(ctx, home, choice, record, envelope, logger)
+		return promptPlacedAgent(ctx, options.firstPrompt, record, envelope, logger)
 	}
 	if envelope.Outcome == "partial" && isBlockedEnvelope(envelope) {
-		hint := "hive task assign --task " + choice.Task.ID + " --agent " + record.Name
-		hint += " and hive agent send --agent " + record.Name + " " + shellQuote(workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature, choice.Task.Spec))
+		hint := ""
+		if choice.ShouldAssign {
+			hint = "hive task assign --task " + choice.Task.ID + " --agent " + record.Name + " and "
+		}
+		hint += "hive agent send --agent " + record.Name + " " + shellQuote(options.firstPrompt)
 		envelope.Error = appendHint(envelope.Error, hint)
 	}
 	return envelope
 }
 
-// finishVerifierSpawn sends the verifier prompt after a settled start.
-func finishVerifierSpawn(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
-	if envelope.Outcome == "ok" {
-		return promptTaskAgent(ctx, home, choice, record, envelope, logger)
-	}
-	if envelope.Outcome == "partial" && isBlockedEnvelope(envelope) {
-		hint := "hive agent send --agent " + record.Name + " " + shellQuote(verifierPrompt(home, choice.Task.ID, choice.Task.Feature))
-		envelope.Error = appendHint(envelope.Error, hint)
-	}
-	return envelope
-}
-
-// promptTaskAgent sends the first prompt of one task agent.
-func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
-	prompt := verifierPrompt(home, choice.Task.ID, choice.Task.Feature)
-	if record.Role != "verifier" {
-		prompt = workerPrompt(home, choice.Task.ID, choice.Worktree.Path, choice.Branch, choice.Task.Feature, choice.Task.Spec)
-	}
-	info, err := promptFirstTurn(ctx, choice.PaneID, prompt, logger)
+// promptPlacedAgent sends the first prompt of one placed agent.
+func promptPlacedAgent(ctx context.Context, prompt string, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
+	info, err := promptFirstTurn(ctx, record.PaneID, prompt, logger)
 	if err != nil {
 		envelope.Outcome = "partial"
 		envelope.Phase = "prompt"
@@ -467,7 +393,7 @@ func promptTaskAgent(ctx context.Context, home string, choice *taskChoice, recor
 	if info.AgentStatus == "blocked" {
 		envelope.Outcome = "partial"
 		envelope.Phase = "prompt"
-		envelope.Error = "agent blocked: " + record.Name + " in " + choice.PaneID
+		envelope.Error = "agent blocked: " + record.Name + " in " + record.PaneID
 		envelope.Result = nil
 		return envelope
 	}
@@ -550,13 +476,16 @@ func waitAgentInteractive(ctx context.Context, paneID string, logger *slog.Logge
 	}
 }
 
-// assignTask assigns one task under the store lock. A changed status fails with
-// the current status.
-func assignTask(home, taskID, agentName string) string {
+// assignTask selects the acting agent of one task under the store lock when
+// the task still allows a selection. A task in another status, or one with a
+// live acting agent, keeps its facts. It returns whether it wrote the task and
+// a message.
+func assignTask(home, taskID, agentName string) (bool, string) {
 	registry, err := store.Open(home)
 	if err != nil {
-		return "store: " + err.Error()
+		return false, "store: " + err.Error()
 	}
+	assigned := false
 	message := ""
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		var task records.Task
@@ -569,7 +498,14 @@ func assignTask(home, taskID, agentName string) string {
 			return nil
 		}
 		if task.Status != "created" && task.Status != "assigned" {
-			message = "task is " + task.Status
+			return nil
+		}
+		live, err := taskHasLiveActingAgent(locked, task.ActingAgent)
+		if err != nil {
+			message = "store: " + err.Error()
+			return nil
+		}
+		if live {
 			return nil
 		}
 		task.ActingAgent = agentName
@@ -579,12 +515,39 @@ func assignTask(home, taskID, agentName string) string {
 			message = "store: " + err.Error()
 			return nil
 		}
+		assigned = true
 		return nil
 	})
 	if err != nil {
-		return "store: " + err.Error()
+		return false, "store: " + err.Error()
 	}
-	return message
+	return assigned, message
+}
+
+// taskHasLiveActingAgent reports whether one acting-agent name has a live
+// record under the store lock.
+func taskHasLiveActingAgent(locked *store.LockedStore, name string) (bool, error) {
+	if name == "" {
+		return false, nil
+	}
+	raw, err := locked.ListIn([]string{"agents"}, nil)
+	if err != nil {
+		return false, err
+	}
+	for _, data := range raw {
+		var record records.Agent
+		if err := json.Unmarshal(data, &record); err != nil {
+			return false, err
+		}
+		if record.Name != name && record.Key != name {
+			continue
+		}
+		switch record.Status {
+		case records.AgentStarting, records.AgentLive, records.AgentUnresolved:
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // spawnResultAgent returns the agent record of one spawn envelope.

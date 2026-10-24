@@ -82,13 +82,14 @@ func TestSpawnRenamesWorkerAndVerifierTabs(t *testing.T) {
 func TestSpawnRenamesHiveCreatedManagerRootAndSkipsHiveTabAndPane(t *testing.T) {
 	t.Run("manager root workspace", func(t *testing.T) {
 		home := testHome(t)
+		dir := projectDirectory(t, home, "demo")
 		writeManagerProject(t, home, nil)
 		sleep := startSleep(t)
 		fake := newFakeHerdr(t)
 		fake.result("worktree.list", managerWorktreeListJSON(""))
-		fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
+		fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
 		fake.result("tab.rename", tabInfoReply("wBD:t1", "wBD", "manager-demo"))
-		scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
+		scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 
 		envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 		if envelope.Outcome != "ok" || envelope.Error != nil {
@@ -99,15 +100,16 @@ func TestSpawnRenamesHiveCreatedManagerRootAndSkipsHiveTabAndPane(t *testing.T) 
 
 	t.Run("manager hive tab", func(t *testing.T) {
 		home := testHome(t)
+		dir := projectDirectory(t, home, "demo")
 		writeManagerProject(t, home, &records.ProjectWorkspace{ID: "wBC", RootPane: "wBC:p1", TabID: "wBC:t1", TabCreatedByHive: true})
 		sleep := startSleep(t)
 		fake := newFakeHerdr(t)
 		fake.result("workspace.get", managerWorkspaceGetJSON("wBC", "hive"))
 		fake.result("worktree.list", managerWorktreeListJSON("wBC"))
 		fake.result("tab.list", managerTabListJSON(managerTabJSON("wBC", "wBC:t1", 1, 1)))
-		fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("wBC:p1", "term_wBC", "wBC", "wBC:t1", managerRepoPath, "")))
+		fake.result("pane.list", managerPaneListJSON(managerPaneInfoJSON("wBC:p1", "term_wBC", "wBC", "wBC:t1", dir, "")))
 		fake.result("pane.process_info", managerProcessInfoJSON("wBC:p1", sleep))
-		scriptManagerSpawnTail(t, fake, sleep, "wBC:p1", "wBC", "wBC:t1")
+		scriptManagerSpawnTail(t, home, fake, sleep, "wBC:p1", "wBC", "wBC:t1")
 
 		envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 		if envelope.Outcome != "ok" || envelope.Error != nil {
@@ -121,7 +123,7 @@ func TestSpawnRenamesHiveCreatedManagerRootAndSkipsHiveTabAndPane(t *testing.T) 
 		sleep := startSleep(t)
 		fake := newFakeHerdr(t)
 		scriptSpawnSuccess(t, fake, home, sleep, "idle")
-		envelope := Spawn(context.Background(), home, baseSpawnOptions("coordinator"))
+		envelope := Spawn(context.Background(), home, baseSpawnOptions("t10-coord"))
 		if envelope.Outcome != "ok" || envelope.Error != nil {
 			t.Fatalf("Spawn() = %#v; want success", envelope)
 		}
@@ -131,13 +133,14 @@ func TestSpawnRenamesHiveCreatedManagerRootAndSkipsHiveTabAndPane(t *testing.T) 
 
 func TestSpawnRenameFailureIsNonFatalAndLogged(t *testing.T) {
 	home := testHome(t)
+	dir := projectDirectory(t, home, "demo")
 	writeManagerProject(t, home, nil)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
 	fake.result("worktree.list", managerWorktreeListJSON(""))
-	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
 	fake.failure("tab.rename", "tab_not_found", "tab disappeared")
-	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
+	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {

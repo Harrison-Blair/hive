@@ -20,12 +20,12 @@ func scriptManagerPromptSpawn(t *testing.T, home string, fake *fakeHerdr, sleep 
 		projectAgentsTemplate = "You are the manager of project {{PROJECT_ID}}.\n\n" + strings.Repeat("instruction ", 500)
 		t.Cleanup(func() { projectAgentsTemplate = original })
 	}
-	fake.result("worktree.list", managerWorktreeListJSON(""))
-	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", managerRepoPath, "wBD:p1"))
-	scriptManagerSpawnTail(t, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
+	dir := projectDirectory(t, home, "demo")
+	fake.result("workspace.create", managerWorkspaceCreateJSON("wBD", "hive:demo", dir, "wBD:p1"))
+	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 }
 
-func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
+func TestManagerPromptSendsFactsAfterReady(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
@@ -48,15 +48,11 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	if err := json.Unmarshal([]byte(requests[0].Params), &params); err != nil {
 		t.Fatalf("decode prompt params: %v", err)
 	}
-	content, err := os.ReadFile(filepath.Join(home, "projects", "demo", "AGENTS.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	if !strings.HasPrefix(params.Text, "⬢ ") {
 		t.Fatalf("manager prompt = %q; want the hive marker prefix", params.Text)
 	}
-	if params.Target != "wBD:p1" || params.Text != "⬢ "+string(content) {
-		t.Fatalf("prompt target/text = %q/%q; want wBD:p1 and marked generated instructions", params.Target, params.Text)
+	if params.Target != "wBD:p1" || params.Text != "⬢ You are manager-demo. Your project is demo." {
+		t.Fatalf("prompt target/text = %q/%q; want the facts prompt", params.Target, params.Text)
 	}
 	if params.Wait == nil {
 		t.Fatal("manager prompt has no wait")
@@ -66,21 +62,6 @@ func TestManagerPromptSendsGeneratedInstructionsAfterReady(t *testing.T) {
 	}
 	if params.Wait.TimeoutMS != 10000 {
 		t.Fatalf("manager prompt wait.timeout_ms = %d; want 10000", params.Wait.TimeoutMS)
-	}
-	if !strings.HasPrefix(params.Text, "⬢ You are the manager of project demo.") {
-		t.Fatalf("manager instructions do not start with the role: %q", params.Text[:min(len(params.Text), 80)])
-	}
-	frictionPath := filepath.Join(home, "reference", "dogfood", "friction") + string(filepath.Separator)
-	resolvedPath := filepath.Join(frictionPath, "entries", "resolved") + string(filepath.Separator)
-	normalizedInstructions := strings.Join(strings.Fields(params.Text), " ")
-	if !strings.Contains(normalizedInstructions, "You never change a source file except `"+frictionPath+"` as described below.") {
-		t.Fatal("manager instructions do not name the home friction folder exception")
-	}
-	if !strings.Contains(normalizedInstructions, "You can edit `"+frictionPath+"` directly.") {
-		t.Fatal("manager instructions do not allow direct friction folder edits")
-	}
-	if !strings.Contains(normalizedInstructions, "To resolve an entry, set its status, move its file to `"+resolvedPath+"`, and update its row.") {
-		t.Fatal("manager instructions do not give the friction entry resolve steps")
 	}
 	fake.mu.Lock()
 	var waitIndex, promptIndex = -1, -1
@@ -227,8 +208,11 @@ func TestManagerPromptLogCapsLargeBody(t *testing.T) {
 	home := testHome(t)
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	scriptManagerPromptSpawn(t, home, fake, sleep, true)
-	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
+	scriptManagerPromptSpawn(t, home, fake, sleep, false)
+	options := managerSpawnOptions("demo")
+	options.Prompt = strings.Repeat("instruction ", 500)
+	options.PromptSet = true
+	envelope := Spawn(context.Background(), home, options)
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}

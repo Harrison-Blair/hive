@@ -81,7 +81,7 @@ func recordClaimKey(record records.Agent) string {
 	case record.Kind == records.AgentKindSupervisor:
 		return records.AgentKindSupervisor
 	case record.Owns != "":
-		return "manager-" + record.Owns
+		return "owner-" + record.Owns
 	default:
 		return ""
 	}

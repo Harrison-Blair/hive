@@ -74,6 +74,7 @@ type fakeHerdr struct {
 	requests      []promptRequest
 	promptErr     bool
 	paneWorkspace string
+	before        func(method string, params json.RawMessage)
 }
 
 func newFakeHerdr(t *testing.T) *fakeHerdr {
@@ -114,7 +115,11 @@ func (f *fakeHerdr) handle(conn net.Conn) {
 	f.mu.Lock()
 	f.requests = append(f.requests, request)
 	promptErr := f.promptErr
+	before := f.before
 	f.mu.Unlock()
+	if before != nil {
+		before(request.Method, request.Params)
+	}
 	var result, serverError string
 	switch request.Method {
 	case "ping":
@@ -172,6 +177,12 @@ func (f *fakeHerdr) setPaneWorkspace(workspaceID string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.paneWorkspace = workspaceID
+}
+
+func (f *fakeHerdr) setBefore(fn func(method string, params json.RawMessage)) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.before = fn
 }
 
 func chatFiles(t *testing.T, home string) []string {
@@ -493,6 +504,154 @@ func assertSendRefused(t *testing.T, home string, fake *fakeHerdr, envelope outp
 	message := fmt.Sprint(envelope.Error)
 	if envelope.Outcome != "failed" || !strings.HasPrefix(message, "chat send is for the user only") || !strings.Contains(message, rule) {
 		t.Fatalf("Send() = %#v; want %s refusal", envelope, rule)
+	}
+	if files := chatFiles(t, home); len(files) != 0 {
+		t.Fatalf("chat files = %v; want none", files)
+	}
+	if got := len(fake.recorded("agent.prompt")); got != 0 {
+		t.Fatalf("agent.prompt calls = %d; want none", got)
+	}
+}
+
+// probeStoreWrite writes one unrelated record while a remote call waits.
+func probeStoreWrite(registry *store.Store, mutate func(locked *store.LockedStore) error) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+	return registry.WithLock(ctx, mutate)
+}
+
+// TestValidateCallerKeepsStoreUnlockedDuringPaneGet proves that the caller
+// pane read does not hold the global store lock.
+func TestValidateCallerKeepsStoreUnlockedDuringPaneGet(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := newFakeHerdr(t)
+	var probeErr error
+	fake.setBefore(func(method string, params json.RawMessage) {
+		if method != "pane.get" {
+			return
+		}
+		probeErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
+			_, err := locked.Next("probe")
+			return err
+		})
+	})
+	if err := ValidateCaller(context.Background(), home, "", "w1:p2", ""); err != nil {
+		t.Fatalf("ValidateCaller() error = %v; want the user pane allowed", err)
+	}
+	if probeErr != nil {
+		t.Fatalf("store write during pane.get = %v; want no global lock", probeErr)
+	}
+}
+
+// TestValidateCallerRefusesChangedIdentityAfterPaneGet proves that the final
+// locked check reads the caller identity and claim facts again.
+func TestValidateCallerRefusesChangedIdentityAfterPaneGet(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := newFakeHerdr(t)
+	fake.setPaneWorkspace("wUser")
+	var mutationErr error
+	fake.setBefore(func(method string, params json.RawMessage) {
+		if method != "pane.get" {
+			return
+		}
+		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
+			record := records.Agent{
+				Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo",
+				PaneID: "wUser:p1", WorkspaceID: "wUser", Status: records.AgentLive, Generation: 1,
+			}
+			if err := locked.WriteIn([]string{"agents"}, record.Key, record); err != nil {
+				return err
+			}
+			return locked.WriteIn([]string{"claims"}, "manager-demo", records.Claim{Key: "manager-demo", Agent: record.Key, Generation: 1})
+		})
+	})
+	err = ValidateCaller(context.Background(), home, "", "wUser:p1", "")
+	if mutationErr != nil {
+		t.Fatalf("caller identity change = %v; want the store write to complete", mutationErr)
+	}
+	want := "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live manager agent)"
+	if err == nil || err.Error() != want {
+		t.Fatalf("ValidateCaller() error = %v; want the fresh rule 1 refusal", err)
+	}
+}
+
+// TestValidateCallerRefusesRemovedCoordinatorClaimAfterPaneGet proves that the
+// final locked check reads the coordinator claim again.
+func TestValidateCallerRefusesRemovedCoordinatorClaimAfterPaneGet(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := newFakeHerdr(t)
+	var mutationErr error
+	fake.setBefore(func(method string, params json.RawMessage) {
+		if method != "pane.get" {
+			return
+		}
+		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
+			if err := locked.RemoveIn([]string{"claims"}, "coordinator"); err != nil {
+				return err
+			}
+			record := records.Agent{
+				Key: "worker-late", Name: "worker-late", Role: "worker", Project: "demo",
+				PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1,
+			}
+			return locked.WriteIn([]string{"agents"}, record.Key, record)
+		})
+	})
+	err = ValidateCaller(context.Background(), home, "", "w1:p2", "")
+	if mutationErr != nil {
+		t.Fatalf("caller claim change = %v; want the store write to complete", mutationErr)
+	}
+	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)"
+	if err == nil || err.Error() != want {
+		t.Fatalf("ValidateCaller() error = %v; want the fresh rule 3 refusal", err)
+	}
+}
+
+// TestSendRefusesChangedCallerWorkspaceBeforeAppend proves that the final
+// locked check reads fresh facts before the chat append.
+func TestSendRefusesChangedCallerWorkspaceBeforeAppend(t *testing.T) {
+	home := chatHome(t)
+	seedCoordinator(t, home)
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fake := newFakeHerdr(t)
+	fake.setPaneWorkspace("wUser")
+	var mutationErr error
+	fake.setBefore(func(method string, params json.RawMessage) {
+		if method != "pane.get" {
+			return
+		}
+		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
+			record := records.Agent{
+				Key: "worker-late", Name: "worker-late", Role: "worker", Project: "demo",
+				PaneID: "wUser:p9", WorkspaceID: "wUser", Status: records.AgentLive, Generation: 1,
+			}
+			return locked.WriteIn([]string{"agents"}, record.Key, record)
+		})
+	})
+	envelope := Send(context.Background(), home, SendOptions{PaneID: "wUser:p1", Text: "hello"})
+	if mutationErr != nil {
+		t.Fatalf("caller workspace change = %v; want the store write to complete", mutationErr)
+	}
+	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)"
+	if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != want {
+		t.Fatalf("Send() = %#v; want the fresh rule 3 refusal", envelope)
 	}
 	if files := chatFiles(t, home); len(files) != 0 {
 		t.Fatalf("chat files = %v; want none", files)

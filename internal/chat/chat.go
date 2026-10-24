@@ -92,6 +92,8 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 	var entry Entry
 	var date string
 	var phase, message string
+	// Rule 1 and the coordinator run under the first lock, before any remote
+	// read. The final lock repeats them with fresh facts before the append.
 	lockErr := registry.WithLock(ctx, func(locked *store.LockedStore) error {
 		if err := checkAgentCaller(locked, options.Agent, options.PaneID); err != nil {
 			phase, message = "identity", err.Error()
@@ -100,10 +102,39 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		coordinator, err = identity.ResolveHeld(locked, "coordinator", "")
 		if err != nil {
 			phase, message = "coordinator", "no live coordinator: "+err.Error()
+		}
+		return nil
+	})
+	if lockErr != nil {
+		return failed("store", lockErr.Error(), nil)
+	}
+	if message != "" {
+		return failed(phase, message, nil)
+	}
+
+	// Rule 2 and the remote pane read run without the global lock.
+	if err := checkCallerWorkingDir(home, options.WorkingDir); err != nil {
+		return failed("identity", err.Error(), nil)
+	}
+	paneWorkspace := ""
+	if options.PaneID != "" {
+		pane, err := herdr.PaneGet(ctx, options.PaneID)
+		if err != nil {
+			return failed("identity", callerPaneError(err).Error(), nil)
+		}
+		paneWorkspace = pane.WorkspaceID
+	}
+
+	// The final lock reads authoritative identity and claim facts again, then
+	// appends the message. A stale authorization cannot grant an append.
+	lockErr = registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		if err := ValidateCallerAtWorkspace(locked, options.Agent, options.PaneID, paneWorkspace); err != nil {
+			phase, message = "identity", err.Error()
 			return nil
 		}
-		if err := checkCallerContext(ctx, locked, home, options.PaneID, options.WorkingDir); err != nil {
-			phase, message = "identity", err.Error()
+		coordinator, err = identity.ResolveHeld(locked, "coordinator", "")
+		if err != nil {
+			phase, message = "coordinator", "no live coordinator: "+err.Error()
 			return nil
 		}
 		at := time.Now().UTC().Format(time.RFC3339Nano)
@@ -150,28 +181,63 @@ const userOnlyPrefix = "chat send is for the user only"
 
 // ValidateCaller checks whether one caller can send user chat.
 func ValidateCaller(ctx context.Context, homePath, agentFlag, paneID, workingDir string) error {
+	_, err := ValidateCallerWorkspace(ctx, homePath, agentFlag, paneID, workingDir)
+	return err
+}
+
+// ValidateCallerWorkspace checks one caller and returns the workspace observed
+// for paneID. It returns an empty workspace when paneID is empty. Rule 1 runs
+// before the remote read. The final lock reads authoritative identity and claim
+// facts again after the remote read.
+func ValidateCallerWorkspace(ctx context.Context, homePath, agentFlag, paneID, workingDir string) (string, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	registry, err := store.Open(homePath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	var inner error
 	if err := registry.WithLock(ctx, func(locked *store.LockedStore) error {
-		inner = checkUserCaller(ctx, locked, homePath, agentFlag, paneID, workingDir)
+		inner = checkAgentCaller(locked, agentFlag, paneID)
 		return nil
 	}); err != nil {
-		return err
+		return "", err
 	}
-	return inner
+	if inner != nil {
+		return "", inner
+	}
+	if err := checkCallerWorkingDir(homePath, workingDir); err != nil {
+		return "", err
+	}
+	if paneID == "" {
+		return "", nil
+	}
+	pane, err := herdr.PaneGet(ctx, paneID)
+	if err != nil {
+		return "", callerPaneError(err)
+	}
+	if err := registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		inner = ValidateCallerAtWorkspace(locked, agentFlag, paneID, pane.WorkspaceID)
+		return nil
+	}); err != nil {
+		return "", err
+	}
+	if inner != nil {
+		return "", inner
+	}
+	return pane.WorkspaceID, nil
 }
 
-func checkUserCaller(ctx context.Context, locked *store.LockedStore, homePath, agentFlag, paneID, workingDir string) error {
+// ValidateCallerAtWorkspace applies the caller rules with store facts read from
+// one held store handle. It performs no remote I/O. paneWorkspace is the
+// workspace last read for paneID. A refusal writes no record and starts no
+// process.
+func ValidateCallerAtWorkspace(locked *store.LockedStore, agentFlag, paneID, paneWorkspace string) error {
 	if err := checkAgentCaller(locked, agentFlag, paneID); err != nil {
 		return err
 	}
-	return checkCallerContext(ctx, locked, homePath, paneID, workingDir)
+	return checkCallerWorkspace(locked, paneID, paneWorkspace)
 }
 
 func checkAgentCaller(locked *store.LockedStore, agentFlag, paneID string) error {
@@ -191,25 +257,30 @@ func checkAgentCaller(locked *store.LockedStore, agentFlag, paneID string) error
 	return nil
 }
 
-func checkCallerContext(ctx context.Context, locked *store.LockedStore, homePath, paneID, workingDir string) error {
-	if workingDir != "" {
-		below, err := callerBelowProjects(homePath, workingDir)
-		if err != nil {
-			return fmt.Errorf("%s: only the user can send chat; rule 2 check failed: %w", userOnlyPrefix, err)
-		}
-		if below {
-			return fmt.Errorf("%s: only the user can send chat; rule 2 (working directory is below projects/)", userOnlyPrefix)
-		}
+func checkCallerWorkingDir(homePath, workingDir string) error {
+	if workingDir == "" {
+		return nil
 	}
+	below, err := callerBelowProjects(homePath, workingDir)
+	if err != nil {
+		return fmt.Errorf("%s: only the user can send chat; rule 2 check failed: %w", userOnlyPrefix, err)
+	}
+	if below {
+		return fmt.Errorf("%s: only the user can send chat; rule 2 (working directory is below projects/)", userOnlyPrefix)
+	}
+	return nil
+}
+
+func callerPaneError(err error) error {
+	return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read caller pane: %w", userOnlyPrefix, err)
+}
+
+func checkCallerWorkspace(locked *store.LockedStore, paneID, paneWorkspace string) error {
 	if paneID == "" {
 		return nil
 	}
-	pane, err := herdr.PaneGet(ctx, paneID)
-	if err != nil {
-		return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: read caller pane: %w", userOnlyPrefix, err)
-	}
 	coordinator, err := identity.ResolveHeld(locked, "coordinator", "")
-	if err == nil && pane.WorkspaceID == coordinator.WorkspaceID {
+	if err == nil && paneWorkspace == coordinator.WorkspaceID {
 		return nil
 	}
 	agents, err := locked.ListIn([]string{"agents"}, nil)
@@ -221,7 +292,7 @@ func checkCallerContext(ctx context.Context, locked *store.LockedStore, homePath
 		if err := json.Unmarshal(data, &record); err != nil {
 			return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: decode agent record: %w", userOnlyPrefix, err)
 		}
-		if record.Status == records.AgentLive && record.WorkspaceID == pane.WorkspaceID &&
+		if record.Status == records.AgentLive && record.WorkspaceID == paneWorkspace &&
 			(record.Role == "manager" || record.Role == "worker" || record.Role == "verifier") {
 			return fmt.Errorf("%s: only the user can send chat; rule 3 (caller pane shares a live %s workspace)", userOnlyPrefix, record.Role)
 		}
