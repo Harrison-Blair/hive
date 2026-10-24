@@ -51,6 +51,7 @@ var keptGrids = map[string]string{
 // AC9: each tui-v2 grid is retired with a reason or keeps its check. The
 // kept checks run in the tests that keptGrids names.
 func TestEachTuiV2GridIsRetiredOrKept(t *testing.T) {
+	requireSpecFile(t, designDir)
 	files, err := filepath.Glob(filepath.Join(designDir, "*.grid"))
 	if err != nil || len(files) == 0 {
 		t.Fatalf("no tui-v2 grids: %v", err)

@@ -42,6 +42,7 @@ func requireReviewDock(t *testing.T, m *Model, limit int) []string {
 // evidence of the first verification.
 func multilineAsk(t *testing.T, name string) ask.Record {
 	t.Helper()
+	requireSpecFile(t, "../../.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier/multiline/"+name)
 	data, err := os.ReadFile("../../.hive/spec/tui-v2/tasks/135-ask-confirm/evidence/verifier/multiline/" + name)
 	if err != nil {
 		t.Fatal(err)

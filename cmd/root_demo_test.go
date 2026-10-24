@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -32,6 +33,7 @@ func TestDemoActionsChangeNoFileAndStartNoProcess(t *testing.T) {
 
 	fixtureDir := t.TempDir()
 	fixture := filepath.Join(fixtureDir, "Main.fixture.json")
+	requireSpecFile(t, mainFixture)
 	data, err := os.ReadFile(mainFixture)
 	if err != nil {
 		t.Fatal(err)
@@ -137,6 +139,7 @@ func TestDemoFlagsAreHiddenFromHelp(t *testing.T) {
 // --demo with the GfChat fixture draws the golden-frames Chat at the board
 // size: the composer with the draft and the status row. Two ctrl+c quit.
 func TestDemoRunsTheGfChatBoard(t *testing.T) {
+	requireSpecFile(t, gfChatFixture)
 	newRootTestHome(t)
 	var out bytes.Buffer
 	status := executeWithStreams([]string{"--demo", gfChatFixture}, strings.NewReader("\x03\x03"), &out, &out)
@@ -214,4 +217,14 @@ func snapshotFiles(t *testing.T, roots ...string) map[string][32]byte {
 		}
 	}
 	return files
+}
+
+// requireSpecFile skips the test when a file or a folder of the local spec is
+// missing. Git does not track .hive/spec/, so a clean clone has no grid and
+// no fixture. The test runs as before when the file exists.
+func requireSpecFile(t testing.TB, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("local spec file missing: %s: Git does not track .hive/spec/", path)
+	}
 }

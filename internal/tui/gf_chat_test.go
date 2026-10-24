@@ -28,6 +28,7 @@ var gfChatBoards = []string{
 // board.
 func newGfDemoModel(t *testing.T, board string) *Model {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(gfDesignDir, board+".fixture.json"))
 	loaded, err := loadDemoFixture(filepath.Join(gfDesignDir, board+".fixture.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -40,6 +41,7 @@ func newGfDemoModel(t *testing.T, board string) *Model {
 // readGfGrid reads the golden grid of a golden-frames board.
 func readGfGrid(t *testing.T, board string) cellgrid.Grid {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(gfDesignDir, board+".grid"))
 	file, err := os.Open(filepath.Join(gfDesignDir, board+".grid"))
 	if err != nil {
 		t.Fatal(err)

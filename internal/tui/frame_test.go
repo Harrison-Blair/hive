@@ -17,6 +17,7 @@ import (
 // readBoardGrid reads the golden grid of one board.
 func readBoardGrid(t *testing.T, board string) cellgrid.Grid {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, board+".grid"))
 	file, err := os.Open(filepath.Join(designDir, board+".grid"))
 	if err != nil {
 		t.Fatal(err)

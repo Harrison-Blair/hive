@@ -1,6 +1,8 @@
 package boardexport
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +17,7 @@ const designDir = "../../.hive/spec/tui-v2/design"
 // TestGoldenGridFiles reads each committed grid file. It checks the size
 // against the spec table and checks each symbol. It runs no Node.js.
 func TestGoldenGridFiles(t *testing.T) {
+	requireSpecFile(t, designDir)
 	files, err := filepath.Glob(filepath.Join(designDir, "*.grid"))
 	if err != nil {
 		t.Fatal(err)
@@ -50,6 +53,7 @@ const gfDesignDir = "../../.hive/spec/golden-frames/design"
 // the 15 boards of Chat and the component sheet. Each grid has the size of
 // golden-frames decision 23 and the symbols and tokens of decision 7.
 func TestGfGoldenGridFiles(t *testing.T) {
+	requireSpecFile(t, gfDesignDir)
 	files, err := filepath.Glob(filepath.Join(gfDesignDir, "*.grid"))
 	if err != nil {
 		t.Fatal(err)
@@ -80,5 +84,15 @@ func TestGfGoldenGridFiles(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+// requireSpecFile skips the test when a file or a folder of the local spec is
+// missing. Git does not track .hive/spec/, so a clean clone has no grid and
+// no fixture. The test runs as before when the file exists.
+func requireSpecFile(t testing.TB, path string) {
+	t.Helper()
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("local spec file missing: %s: Git does not track .hive/spec/", path)
 	}
 }

@@ -17,6 +17,7 @@ var specBoardRow = regexp.MustCompile("^\\| `([A-Za-z]+)\\.dc\\.html` \\|.*\\| (
 // the spec table with the demo loader. The size of each fixture must be the
 // size in the spec table.
 func TestEachBoardFixtureLoadsAtItsSpecSize(t *testing.T) {
+	requireSpecFile(t, filepath.Join(designDir, "..", "README.md"))
 	readme, err := os.ReadFile(filepath.Join(designDir, "..", "README.md"))
 	if err != nil {
 		t.Fatal(err)
@@ -32,6 +33,7 @@ func TestEachBoardFixtureLoadsAtItsSpecSize(t *testing.T) {
 		width, _ := strconv.Atoi(match[2])
 		height, _ := strconv.Atoi(match[3])
 		t.Run(board, func(t *testing.T) {
+			requireSpecFile(t, filepath.Join(designDir, board+".fixture.json"))
 			fixture, err := loadDemoFixture(filepath.Join(designDir, board+".fixture.json"))
 			if err != nil {
 				t.Fatal(err)

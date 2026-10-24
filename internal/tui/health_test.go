@@ -50,6 +50,7 @@ func TestCompactHealthMatchesItsBoard(t *testing.T) {
 // edits its fixture.
 func healthDemoModel(t *testing.T, board string, change func(*demoFixture)) *Model {
 	t.Helper()
+	requireSpecFile(t, filepath.Join(designDir, board+".fixture.json"))
 	fixture, err := loadDemoFixture(filepath.Join(designDir, board+".fixture.json"))
 	if err != nil {
 		t.Fatal(err)
