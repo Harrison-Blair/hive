@@ -30,12 +30,14 @@ func TestLogDensityBuckets(t *testing.T) {
 		stripRow(t, "2026-10-21T13:00:30Z", "INFO", "b"),
 		stripRow(t, "2026-10-21T13:01:00Z", "WARN", "c"),
 		stripRow(t, "2026-10-21T13:03:59Z", "ERROR", "d"),
+		stripRow(t, "2026-10-21T13:03:59Z", "WARN", "e"),
 		stripRow(t, "2026-10-21T13:04:00Z", "INFO", "verify fail"),
 	}
 	// 4 minutes in 4 cells: 13:00, 13:01, 13:02, 13:03. The last event at
-	// the end of the range is in the last cell.
-	got := logDensity(rows, 4, 4, time.UTC)
-	want := []component.DensityCell{{Count: 2}, {Count: 1, Level: "WARN"}, {}, {Count: 2, Level: "ERROR"}}
+	// the end of the range is in the last cell. A WARN after an ERROR keeps
+	// the ERROR of the cell.
+	got := logDensity(rows, 4, 5, time.UTC)
+	want := []component.DensityCell{{Count: 2}, {Count: 1, Level: "WARN"}, {}, {Count: 3, Level: "ERROR"}}
 	if len(got.Cells) != len(want) {
 		t.Fatalf("cells = %+v, want %+v", got.Cells, want)
 	}
