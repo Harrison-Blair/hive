@@ -15,6 +15,7 @@
   ".hive/spec/agents-without-roles/README.md": 0,
   ".hive/spec/agents-without-roles/tasks/149-awr-spec/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/152-awr-record/brief.md": 0,
+  ".hive/spec/agents-without-roles/tasks/153-awr-guide/brief.md": 0,
   ".hive/spec/ci/tasks/11-ci-workflow/brief.md": 0,
   ".hive/spec/ci/tasks/27-ci-flake-fix/brief.md": 0,
   ".hive/spec/coordinator-startup/tasks/13-coordinator-autostart/brief.md": 0,
@@ -182,5 +183,6 @@
   ".hive/spec/tui-v2/tasks/9-cellgrid/brief.md": 0,
   "AGENTS.md": 0,
   "internal/agent/templates/presets.md": 0,
-  "internal/agent/templates/project-agents.md": 0
+  "internal/agent/templates/project-agents.md": 0,
+  "internal/guide/flows.md": 0
 }

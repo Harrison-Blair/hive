@@ -13,6 +13,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/cmd/doctor"
 	goalcmd "github.com/Harrison-Blair/hive/cmd/goal"
+	"github.com/Harrison-Blair/hive/cmd/guide"
 	"github.com/Harrison-Blair/hive/cmd/handoff"
 	"github.com/Harrison-Blair/hive/cmd/homeinit"
 	"github.com/Harrison-Blair/hive/cmd/inbox"
@@ -84,7 +85,7 @@ func NewRootCmd() *cobra.Command {
 	root.Flags().String("size", "", "draw the demo TUI at WxH cells")
 	_ = root.Flags().MarkHidden("demo")
 	_ = root.Flags().MarkHidden("size")
-	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), homeinit.New(), memory.New(), handoff.New(), worktree.New(), land.New(), supervise.New(), goalcmd.New(), chat.New(), ask.New())
+	root.AddCommand(version.New(), project.New(), logs.New(), doctor.New(), task.New(), agent.New(), inbox.New(), homeinit.New(), memory.New(), handoff.New(), worktree.New(), land.New(), supervise.New(), goalcmd.New(), chat.New(), ask.New(), guide.New())
 	return root
 }
 
