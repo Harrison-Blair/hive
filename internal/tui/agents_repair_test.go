@@ -5,8 +5,10 @@ import (
 	"log/slog"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/tui/component"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -63,6 +65,54 @@ func TestGfAgentsDetailsScrollLogs(t *testing.T) {
 	}
 }
 
+// gfAgentsStateFixture gives the small synthetic fixture of one Agents state
+// case. It has one project, one live supervisor, and two worker cards. The
+// second worker is selected, so a broken selection does not give it by
+// default. The test reads no design file, so it runs in a checkout without
+// the local spec.
+func gfAgentsStateFixture(status, agentStatus string) *demoFixture {
+	const (
+		nowText     = "2026-10-23T14:22:00Z"
+		stampText   = "2026-10-23T14:21:00Z"
+		earlierText = "2026-10-23T14:19:00Z"
+	)
+	return &demoFixture{
+		Board:    "GfAgents.dc.html",
+		Terminal: demoSize{Width: 120, Height: 40},
+		Clock:    demoClock{Time: nowText, Zone: "UTC"},
+		Home:     "~/source/hive",
+		Data: demoData{
+			Supervisor: demoSupervisor{Live: true, Agent: "supervisor-g4", PID: 1620686},
+			Projects: []records.Project{
+				{ID: "hive", Path: "~/source/hive", Base: "dev", RegisteredAt: stampText},
+			},
+			Agents: []records.Agent{
+				{
+					Key: "supervisor-g4", Name: "supervisor", Role: "supervisor", Harness: "hive",
+					Status: records.AgentLive, AgentStatus: "working", StartedAt: stampText, UpdatedAt: stampText,
+				},
+				{
+					Key: "t5-worker-1", Name: "t5-worker-1", Role: "worker", Project: "hive",
+					Task: "5-tui-v2-spec", Harness: "pi", Status: records.AgentLive, AgentStatus: "working",
+					Parent: "manager-hive-g2", StatusChangedAt: earlierText, Generation: 1,
+					StartedAt: earlierText, UpdatedAt: earlierText, Spawned: true,
+				},
+				{
+					Key: "t6-worker-1", Name: "t6-worker-1", Role: "worker", Project: "hive",
+					Task: "6-tui-v2-boards", Harness: "pi", Status: status, AgentStatus: agentStatus,
+					Parent: "manager-hive-g2", StatusChangedAt: stampText, Generation: 1,
+					StartedAt: stampText, UpdatedAt: stampText, Spawned: true,
+				},
+			},
+		},
+		UI: demoUIState{
+			Screen: "agents", Focus: "graph", Selection: "t6-worker-1",
+			HideStopped: false, Follow: true,
+		},
+		now: time.Date(2026, 10, 23, 14, 22, 0, 0, time.UTC),
+	}
+}
+
 // agents.md state table: starting, blocked, unresolved, and stale keep their
 // stored word. A blocked card uses the triangle of tui-v2 decision 55, and
 // an idle agent keeps the Agents ◐ override. A live supervisor is required
@@ -83,20 +133,7 @@ func TestGfAgentsCardStates(t *testing.T) {
 		{"idle override", "live", "idle", "idle", "◐"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			loaded, err := loadDemoFixture(gfDesignDir + "/GfAgents.fixture.json")
-			if err != nil {
-				t.Fatal(err)
-			}
-			loaded.Data.Supervisor.Live = true
-			loaded.UI.HideStopped = false
-			for index := range loaded.Data.Agents {
-				agent := &loaded.Data.Agents[index]
-				if agent.Key == "t6-worker-1" {
-					agent.Status = tc.status
-					agent.AgentStatus = tc.agentStatus
-				}
-			}
-			m := newDemoModel(t.TempDir(), &demoState{fixture: loaded})
+			m := newDemoModel(t.TempDir(), &demoState{fixture: gfAgentsStateFixture(tc.status, tc.agentStatus)})
 			t.Cleanup(m.Stop)
 			if !m.agents.data.supervisorLive {
 				t.Fatal("precondition: the supervisor is not fresh and live")
