@@ -22,15 +22,17 @@ const (
 // bottom border. Heavy draws the border with heavy lines (┏━┓┃┗┛). Edge,
 // when set, is the colour of the border of a panel without focus. Bleed
 // draws the lines over the padding cells too: each line has width-2 cells.
+// DimTitle draws the title in dim bold in place of accent bold.
 type Panel struct {
-	Title   string
-	Focused bool
-	Heavy   bool
-	Edge    color.Color
-	Lines   []string
-	VMark   ScrollMark
-	HMark   ScrollMark
-	Bleed   bool
+	Title    string
+	DimTitle bool
+	Focused  bool
+	Heavy    bool
+	Edge     color.Color
+	Lines    []string
+	VMark    ScrollMark
+	HMark    ScrollMark
+	Bleed    bool
 }
 
 // View renders the panel at exactly width×height cells.
@@ -88,7 +90,11 @@ func (p Panel) top(inner int, b lipgloss.Border, edge lipgloss.Style) string {
 	if p.Title == "" || room < 1 {
 		return edge.Render(strings.Repeat(b.Top, inner))
 	}
-	title := titleStyle.Render(" " + ansi.Truncate(p.Title, room, "…") + " ")
+	style := titleStyle
+	if p.DimTitle {
+		style = dimStyle.Bold(true)
+	}
+	title := style.Render(" " + ansi.Truncate(p.Title, room, "…") + " ")
 	rest := inner - 1 - lipgloss.Width(title)
 	return edge.Render(b.Top) + title + edge.Render(strings.Repeat(b.Top, rest))
 }

@@ -115,9 +115,9 @@ func TestFrameChordsOpenScreens(t *testing.T) {
 			if rows[1] != " "+strings.Repeat("─", 118)+" " {
 				t.Fatalf("row 1 = %q; want the rule", rows[1])
 			}
-			// Ask a27: the status row names the screen.
-			if !strings.Contains(rows[39], " · "+tc.name+" · ") {
-				t.Errorf("status row %q does not name %s", rows[39], tc.name)
+			// Decision 34: the status row names the screen after the state.
+			if !strings.HasPrefix(rows[39], " ○ none · "+tc.name+" · ") {
+				t.Errorf("status row %q does not name the screen %s", rows[39], tc.name)
 			}
 			back := escKey()
 			if tc.name == "work" {
@@ -195,7 +195,8 @@ func TestFrameKeysRebind(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	cfg := home.DefaultTUI()
 	cfg.Keys["agents"] = "ctrl+a"
-	// A user row with chords shows them on each screen (ask a27).
+	// Decision 34 gives the default row only on Chat. A config with its own
+	// rows keeps the chords on each screen.
 	cfg.StatusLines = [][]string{{"state", "chords", "clock"}}
 	m.setTUIConfig(cfg)
 	m, _ = raise(t, m, ctrl('g'))

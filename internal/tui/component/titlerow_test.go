@@ -1,6 +1,7 @@
 package component
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/x/ansi"
@@ -29,5 +30,20 @@ func TestTitleRowFit(t *testing.T) {
 		if got := ansi.Strip(tc.row.View(tc.width)); got != tc.want {
 			t.Errorf("View(%d) =\n%q\nwant\n%q", tc.width, got, tc.want)
 		}
+	}
+}
+
+// Friction rule 6: while a filter applies, the title row shows the tag
+// "· / TEXT" in accent after the facts. The tag stays when the facts are cut.
+func TestTitleRowTag(t *testing.T) {
+	want := "hive-grid 1 40 1\n" +
+		"t| friction · 2 open · / agent   / filter \n" +
+		"k|faaaaaaaafddddddddfaaaaaaaaafffddddddddf\n" +
+		"b|0111111110000000000000000000000000000000\n"
+	got := TitleRow{Name: "friction", Facts: "· 2 open", Tag: "· / agent", Right: "/ filter"}.View(40)
+	checkHandGrid(t, strings.Split(got, "\n")[0], want)
+	cut := TitleRow{Name: "friction", Facts: "· 15 open · 23 resolved", Tag: "· / agent", Right: "/ filter"}.View(40)
+	if row := ansi.Strip(strings.Split(cut, "\n")[0]); row != " friction · 15 open… · / agent / filter " {
+		t.Errorf("cut row = %q", row)
 	}
 }

@@ -25,14 +25,6 @@ var workLegend = []struct{ glyph, text, color string }{
 // rule 6.
 const workScrollTrack = 44
 
-// titleRow gives the title row and the row below it of the active screen.
-func (m *Model) titleRow() component.TitleRow {
-	if m.activeTab() == tabWork {
-		return m.workTitleRow()
-	}
-	return component.TitleRow{Name: strings.ToLower(screenRegistry[m.activeTab()].label)}
-}
-
 // workTitleRow gives the title row and the wave line of the Work board
 // (work.md layout, rules 1, 2, and 11). With no goal and no task, row 1 is
 // the rule.
