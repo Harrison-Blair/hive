@@ -450,8 +450,12 @@ func TestWorkTaskPopupFileScrolls(t *testing.T) {
 	for i := 1; i <= 80; i++ {
 		lines = append(lines, fmt.Sprintf("brief line %02d", i))
 	}
+	var verified []string
+	for i := 1; i <= 80; i++ {
+		verified = append(verified, fmt.Sprintf("verified line %02d", i))
+	}
 	data.Files[".hive/spec/board/tasks/5-e/brief.md"] = strings.Join(lines, "\n")
-	data.Files[".hive/spec/board/tasks/5-e/evidence/VERIFIED.md"] = strings.Join(lines, "\n")
+	data.Files[".hive/spec/board/tasks/5-e/evidence/VERIFIED.md"] = strings.Join(verified, "\n")
 	m := newWorkModel(t, data, demoUIState{Selection: "5-e"}, 120, 40)
 	m = pressWork(t, m, key(tea.KeyEnter, ""))
 	m = pressWork(t, m, key('b', "b"))
@@ -470,7 +474,7 @@ func TestWorkTaskPopupFileScrolls(t *testing.T) {
 	for range 8 {
 		m = pressWork(t, m, key(tea.KeyPgDown, ""))
 	}
-	requireView(t, m, "VERIFIED.md · esc closes", "brief line 80")
+	requireView(t, m, "VERIFIED.md · esc closes", "verified line 80")
 }
 
 // Rule 10: the dependency popup keeps the selected row on the screen when
