@@ -517,9 +517,6 @@ const workPopupPage = 10
 func (m *Model) workDepsPopupKey(key string) tea.Cmd {
 	s := &m.tasks
 	rows := s.depsRows()
-	if workDepsForm == workDepsSpecForm && key != "esc" {
-		return nil
-	}
 	switch key {
 	case "esc":
 		s.popup = ""

@@ -134,9 +134,6 @@ func (m *Model) workHints(focus string) []string {
 	case workPopupTask:
 		return []string{"b brief", "v verified", "d deps", "↑↓ scroll", "esc close"}
 	case workPopupDeps:
-		if workDepsForm == workDepsSpecForm {
-			return []string{"esc close"}
-		}
 		return []string{"↑↓ move", "enter task", "esc close"}
 	}
 	stops, cancelled := "s stops", "h cancelled"

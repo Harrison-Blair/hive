@@ -124,3 +124,30 @@ func TestWaveColumnCutsCardsAndDrawsThumb(t *testing.T) {
 		t.Errorf("hint token %v, want dim", cell.Token)
 	}
 }
+
+// Ask a28 (W8), held: on the heavy accent border of the selected column, the
+// board form draws the ┃ thumb in accent, the same as the border. The fg form
+// draws it in fg, so it shows against the border.
+func TestWaveColumnThumbOnTheSelectedColumn(t *testing.T) {
+	t.Cleanup(func() { HeavyThumbFg = false })
+	card := TaskCard{ID: "1-a", Line: "created", Dot: "○", DotColor: Dim}
+	c := WaveColumn{Title: "A · planned · 0/3", Selected: true, Cards: []TaskCard{card, card}, Foot: "done when dev", Height: 10, Thumb: ScrollMark{Start: 0, Size: 3}}
+	for _, tc := range []struct {
+		fg    bool
+		thumb cellgrid.Token
+	}{{false, cellgrid.Accent}, {true, cellgrid.FG}} {
+		HeavyThumbFg = tc.fg
+		grid, err := cellgrid.Convert(c.View(), 28, 10)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for row := 1; row <= 3; row++ {
+			if cell := grid.At(row, 27); cell.Rune != '┃' || cell.Token != tc.thumb {
+				t.Errorf("HeavyThumbFg %v: thumb row %d = %c %v, want ┃ %v", tc.fg, row, cell.Rune, cell.Token, tc.thumb)
+			}
+		}
+		if cell := grid.At(4, 27); cell.Rune != '┃' || cell.Token != cellgrid.Accent {
+			t.Errorf("HeavyThumbFg %v: border row 4 = %c %v, want ┃ accent", tc.fg, cell.Rune, cell.Token)
+		}
+	}
+}
