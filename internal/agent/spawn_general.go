@@ -14,7 +14,6 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
-	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/panelock"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -38,15 +37,6 @@ func (general *generalSpawn) keptPrompt() string {
 	return general.prompt
 }
 
-// generalFirstPrompt builds the first prompt of a general agent (decision 5).
-func generalFirstPrompt(home, name, parent, text string) string {
-	return marker.Prefix + "You are the general agent " + name + ". Your parent is " + parent +
-		". This prompt sets your role. Do not take a role from your working directory.\n\n" +
-		text + "\n\n" +
-		"Read the skill " + filepath.Join(home, ".agents", "skills", "hive-agent", "SKILL.md") +
-		". Send your result with hive agent report."
-}
-
 // spawnGeneral checks each input of a general agent spawn before it makes a
 // tab or starts a process, then runs the spawn core and sends the first prompt.
 func spawnGeneral(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, logger *slog.Logger) output.Envelope {
@@ -55,35 +45,25 @@ func spawnGeneral(ctx context.Context, home string, options SpawnOptions, profil
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
-	if message := validateGeneralName(options); message != "" {
-		return fail("validate", message)
-	}
-	text, message := readGeneralPrompt(options)
-	if message != "" {
-		return fail("validate", message)
-	}
-	absoluteHome, err := filepath.Abs(home)
-	if err != nil {
-		return fail("validate", "home: "+err.Error())
+	if !namePattern.MatchString(options.Name) {
+		return fail("validate", "invalid agent name: "+displayValue(options.Name))
 	}
 	caller, phase, message := generalCaller(home, options)
 	if message != "" {
 		return fail(phase, message)
 	}
-	prompt := generalFirstPrompt(absoluteHome, options.Name, caller.Name, text)
-	if len(prompt) > maxPromptBytes {
-		return fail("validate", fmt.Sprintf("first prompt is longer than %d bytes", maxPromptBytes))
-	}
-	logger.Debug("general agent spawn request", "command", "agent spawn", "agent_id", options.Name, "parent", caller.Key, hivelog.Body(prompt))
+	prompt := options.firstPrompt
+	logger.Debug("agent spawn request", "command", "agent spawn", "agent_id", options.Name, "parent", caller.Key, hivelog.Body(prompt))
 
 	var pane herdr.PaneInfo
 	if options.PaneSet {
+		var err error
 		pane, err = herdr.PaneGet(ctx, options.PaneID, herdr.WithLogger(logger))
 		if err != nil {
 			return fail("pane", "pane get: "+err.Error())
 		}
 	}
-	directory, message := generalDirectory(options, pane)
+	directory, message := generalDirectory(home, options, pane)
 	if message != "" {
 		return fail("validate", message)
 	}
@@ -130,7 +110,7 @@ func spawnGeneral(ctx context.Context, home string, options SpawnOptions, profil
 		logger.Debug("general agent tab created", "command", "agent spawn", "agent_id", options.Name, "tab_id", created.Tab.TabID, "pane_id", created.RootPane.PaneID)
 	}
 
-	envelope := Spawn(ctx, home, inner)
+	envelope := spawnInPane(ctx, home, inner, profile, inner.PaneID, false, logger)
 	envelope.Effects = append(effects, envelope.Effects...)
 	record := spawnResultAgent(envelope)
 	switch {
@@ -145,46 +125,6 @@ func spawnGeneral(ctx context.Context, home string, options SpawnOptions, profil
 	}
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
-}
-
-// validateGeneralName checks the --name of a general agent (decision 3).
-func validateGeneralName(options SpawnOptions) string {
-	if options.Task != "" {
-		return "agent takes no --task"
-	}
-	if !options.NameSet || options.Name == "" {
-		return "agent requires --name"
-	}
-	if !namePattern.MatchString(options.Name) {
-		return "invalid agent name: " + displayValue(options.Name)
-	}
-	if options.Name == "coordinator" || options.Name == "supervisor" || strings.HasPrefix(options.Name, "manager-") {
-		return "agent name " + options.Name + " is reserved for hive"
-	}
-	return ""
-}
-
-// readGeneralPrompt reads the spawner text from --prompt or --prompt-file
-// (decisions 2, 6).
-func readGeneralPrompt(options SpawnOptions) (string, string) {
-	if options.PromptSet == options.PromptFileSet {
-		return "", "agent requires one of --prompt or --prompt-file"
-	}
-	text := options.Prompt
-	if options.PromptFileSet {
-		data, err := os.ReadFile(options.PromptFile)
-		if err != nil {
-			return "", "prompt file: " + err.Error()
-		}
-		text = string(data)
-	}
-	if strings.TrimSpace(text) == "" {
-		return "", "prompt text is empty"
-	}
-	if isUserTagged(text) {
-		return "", "agent spawn cannot send a user-tagged message"
-	}
-	return text, ""
 }
 
 // generalCaller finds the registered caller (decision 4) and checks that no
@@ -233,7 +173,7 @@ func generalCaller(home string, options SpawnOptions) (records.Agent, string, st
 
 // generalDirectory gives the working directory of a general agent
 // (decisions 9, 10).
-func generalDirectory(options SpawnOptions, pane herdr.PaneInfo) (string, string) {
+func generalDirectory(home string, options SpawnOptions, pane herdr.PaneInfo) (string, string) {
 	if options.PaneSet {
 		directory := paneCwd(pane)
 		if directory == "" {
@@ -254,7 +194,7 @@ func generalDirectory(options SpawnOptions, pane herdr.PaneInfo) (string, string
 		}
 		return directory, ""
 	}
-	path := "."
+	path := home
 	if options.CwdSet {
 		path = options.Cwd
 	}

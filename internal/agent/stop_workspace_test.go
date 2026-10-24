@@ -22,6 +22,8 @@ func managerStopRecord(sleep sleepProcess, project, workspaceID string) records.
 		Key:          "manager-" + project + "-g1",
 		Name:         "manager-" + project,
 		Role:         "manager",
+		Profile:      records.ProfilePlanner,
+		Owns:         project,
 		Project:      project,
 		Harness:      "claude",
 		PaneID:       "w1:p1",

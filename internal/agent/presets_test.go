@@ -191,7 +191,7 @@ func TestPresetsWrittenAtManagerSpawn(t *testing.T) {
 	fake := newFakeHerdr(t)
 	fake.result("worktree.list", managerWorktreeListJSON(""))
 	fake.result("workspace.list", managerWorkspaceListJSON())
-	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", managerRepoPath, "w6:p1"))
+	fake.result("workspace.create", managerWorkspaceCreateJSON("w6", "hive:demo", dir, "w6:p1"))
 	scriptManagerAgent(t, fake, sleep, "w6:p1", "w6", "manager-demo-g1", dir)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
 	if envelope.Outcome != "ok" || envelope.Error != nil {

@@ -15,6 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Harrison-Blair/hive/internal/chat"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	identitylib "github.com/Harrison-Blair/hive/internal/lib/identity"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -32,21 +33,32 @@ var namePattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,31}$`)
 
 // RegisterOptions holds explicit values for one agent registration.
 type RegisterOptions struct {
-	Role          string
-	Project       string
-	Task          string
-	Harness       string
-	Model         string
-	Name          string
-	NameSet       bool
-	PaneID        string
-	CallerAgent   string
-	CallerPaneID  string
-	WorkspaceID   string
-	TabID         string
-	QuietAfterMin int
-	QuietAfterSet bool
-	PID           int64
+	// Role is the wave-A input name of a profile. A new caller passes Profile
+	// and Owns instead. Register writes only the facts.
+	Role    string
+	Profile string
+	// Kind is the built-in kind of a record that hive code starts.
+	Kind string
+	// Owns is the project ID that the agent owns, or empty.
+	Owns         string
+	Project      string
+	Task         string
+	Harness      string
+	Model        string
+	Name         string
+	NameSet      bool
+	PaneID       string
+	CallerAgent  string
+	CallerPaneID string
+	// CallerPaneWorkspace is the workspace observed for CallerPaneID by the
+	// caller-context check. An owner registration rechecks the caller facts
+	// under the store lock with this workspace. It is a fact, not a grant.
+	CallerPaneWorkspace string
+	WorkspaceID         string
+	TabID               string
+	QuietAfterMin       int
+	QuietAfterSet       bool
+	PID                 int64
 	// PIDStart is the start time of the holder process from /proc/<pid>/stat.
 	// A singleton claim stores it so a later start can tell a reused PID apart.
 	PIDStart uint64
@@ -75,6 +87,12 @@ type lockedWriter interface {
 
 // Register validates and records one agent session.
 func Register(home string, options RegisterOptions) output.Envelope {
+	options, message := normalizeRegistration(options)
+	if message != "" {
+		envelope := failed("validate", message)
+		logRegistration(home, options, envelope)
+		return envelope
+	}
 	if message := validateRegistration(options); message != "" {
 		envelope := failed("validate", message)
 		logRegistration(home, options, envelope)
@@ -200,26 +218,48 @@ func logTabLabel(home string, logger *slog.Logger, command, agentID, tabID, labe
 	logAgentEvent(home, message, attrs...)
 }
 
-func validateRegistration(options RegisterOptions) string {
+// normalizeRegistration sets the facts of one registration from the wave-A
+// role, or defaults the profile. It returns the refusal of an old role that
+// hive code starts.
+func normalizeRegistration(options RegisterOptions) (RegisterOptions, string) {
+	if options.Role == "" {
+		if options.Kind == records.AgentKindCoordinator {
+			options.Profile = records.ProfileCoordinator
+		}
+		return options, ""
+	}
 	switch options.Role {
-	case "coordinator", "supervisor":
-		if options.Project != "" || options.Task != "" {
-			return options.Role + " takes no --project or --task"
-		}
+	case records.AgentKindCoordinator:
+		options.Kind = records.AgentKindCoordinator
+		options.Profile = records.ProfileCoordinator
+	case records.AgentKindSupervisor:
+		options.Kind = records.AgentKindSupervisor
+		options.Profile = ""
 	case "manager":
-		if options.Project == "" {
-			return "manager requires --project"
-		}
-	case "worker", "verifier":
-		if options.Project == "" || options.Task == "" {
-			return options.Role + " requires --project and --task"
-		}
+		options.Profile = records.ProfilePlanner
+		options.Owns = options.Project
+	case "worker":
+		options.Profile = records.ProfileBuilder
+	case "verifier":
+		options.Profile = records.ProfileVerifier
 	case "agent":
-		if options.Task != "" {
-			return "agent takes no --task"
-		}
+		options.Profile = records.ProfileGeneral
 	default:
+		return options, "invalid role: " + displayValue(options.Role)
+	}
+	return options, ""
+}
+
+func validateRegistration(options RegisterOptions) string {
+	options, _ = normalizeRegistration(options)
+	if message := validateLegacyRole(options); message != "" {
+		return message
+	}
+	if options.Profile == "" && options.Kind == "" {
 		return "invalid role: " + displayValue(options.Role)
+	}
+	if options.Owns != "" && options.Project == "" {
+		return "owner requires --project"
 	}
 	if options.PaneID == "" {
 		return "no pane: run inside herdr or pass --pane"
@@ -247,8 +287,8 @@ func validateRegistration(options RegisterOptions) string {
 		if !namePattern.MatchString(options.Name) {
 			return "invalid agent name: " + displayValue(options.Name)
 		}
-	} else if claimKeyFor(options.Role, options.Project) != "" {
-		name := defaultSingletonName(options.Role, options.Project)
+	} else if claimKeyForFacts(options.Kind, options.Owns) != "" {
+		name := defaultSingletonName(options.Profile, options.Kind, options.Owns)
 		if !namePattern.MatchString(name) {
 			return "invalid agent name: " + displayValue(name)
 		}
@@ -258,6 +298,30 @@ func validateRegistration(options RegisterOptions) string {
 	}
 	if options.PID < 0 {
 		return fmt.Sprintf("invalid --pid: %d", options.PID)
+	}
+	return ""
+}
+
+// validateLegacyRole keeps the rules of the wave-A role input until the role
+// flag goes away.
+func validateLegacyRole(options RegisterOptions) string {
+	switch options.Role {
+	case records.AgentKindCoordinator, records.AgentKindSupervisor:
+		if options.Project != "" || options.Task != "" {
+			return options.Role + " takes no --project or --task"
+		}
+	case "manager":
+		if options.Project == "" {
+			return "manager requires --project"
+		}
+	case "worker", "verifier":
+		if options.Project == "" || options.Task == "" {
+			return options.Role + " requires --project and --task"
+		}
+	case "agent":
+		if options.Task != "" {
+			return "agent takes no --task"
+		}
 	}
 	return ""
 }
@@ -274,23 +338,27 @@ func validateField(label, value string) string {
 	return ""
 }
 
-func defaultSingletonName(role, project string) string {
-	switch role {
-	case "manager":
-		return "manager-" + project
+func defaultSingletonName(profile, kind, owns string) string {
+	switch {
+	case owns != "":
+		return "manager-" + owns
+	case kind == records.AgentKindCoordinator:
+		return records.AgentKindCoordinator
+	case kind == records.AgentKindSupervisor:
+		return records.AgentKindSupervisor
 	default:
-		return role
+		return profile
 	}
 }
 
-func claimKeyFor(role, project string) string {
-	switch role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + project
-	case "supervisor":
-		return "supervisor"
+func claimKeyForFacts(kind, owns string) string {
+	switch {
+	case kind == records.AgentKindCoordinator:
+		return records.AgentKindCoordinator
+	case kind == records.AgentKindSupervisor:
+		return records.AgentKindSupervisor
+	case owns != "":
+		return "owner-" + owns
 	default:
 		return ""
 	}
@@ -300,13 +368,57 @@ func taskRegistrationError(project, task string) string {
 	return fmt.Sprintf("task not found in %s: %s", displayValue(project), displayValue(task))
 }
 
+// recheckOwnerCaller applies the owner caller rule with facts read under the
+// registration lock. It reads no remote state and writes no record. An
+// explicit caller must still resolve to a live coordinator after the remote
+// calls, with or without a caller pane. Only a caller with no agent name may
+// fall back to the user workspace rule.
+func recheckOwnerCaller(locked *store.LockedStore, options RegisterOptions) string {
+	if options.Owns == "" {
+		return ""
+	}
+	caller, err := identitylib.ResolveHeld(locked, options.CallerAgent, options.CallerPaneID)
+	if err == nil {
+		if isCoordinator(caller) {
+			return ""
+		}
+		return "--owner needs the coordinator or the user: " + caller.Name
+	}
+	if options.CallerAgent != "" || !errors.Is(err, identitylib.ErrCallerUnknown) {
+		return ownerCallerName(options)
+	}
+	if err := chat.ValidateCallerAtWorkspace(locked, "", options.CallerPaneID, options.CallerPaneWorkspace); err != nil {
+		return ownerCallerName(options)
+	}
+	return ""
+}
+
+func ownerCallerName(options RegisterOptions) string {
+	name := options.CallerAgent
+	if name == "" {
+		name = "the caller"
+	}
+	return "--owner needs the coordinator or the user: " + displayValue(name)
+}
+
 func registerLocked(locked *store.LockedStore, writer lockedWriter, options RegisterOptions) output.Envelope {
+	options, message := normalizeRegistration(options)
+	if message != "" {
+		return failed("validate", message)
+	}
+	if message := recheckOwnerCaller(locked, options); message != "" {
+		return failed("validate", message)
+	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	quietAfter := defaultQuietAfterMin
 	if options.QuietAfterSet {
 		quietAfter = options.QuietAfterMin
 	}
-	claimKey := claimKeyFor(options.Role, options.Project)
+	legacy := options.Role != ""
+	claimKey := claimKeyForFacts(options.Kind, options.Owns)
+	if legacy && options.Role == "manager" {
+		claimKey = "manager-" + options.Project
+	}
 	singleton := claimKey != ""
 
 	worktree := ""
@@ -335,9 +447,14 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	counterEffect := output.Effect{Resource: "counter", Path: ".hive/state/counters/agent.json", Action: "updated"}
 	name := options.Name
 	generated := false
-	taskName := !options.NameSet && options.Spawned && options.Task != "" && (options.Role == "worker" || options.Role == "verifier")
+	taskName := !options.NameSet && options.Spawned && options.Task != ""
 	if !options.NameSet && !taskName {
-		if options.Role == "worker" || options.Role == "verifier" {
+		switch {
+		case singleton:
+			name = defaultSingletonName(options.Profile, options.Kind, options.Owns)
+		case legacy && options.Role == "agent":
+			name = "agent"
+		case legacy && (options.Role == "worker" || options.Role == "verifier"):
 			var counter struct {
 				Value uint64 `json:"value"`
 			}
@@ -348,8 +465,17 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			candidate := counter.Value + 1
 			name = fmt.Sprintf("%s-%s-%d", options.Role, options.Project, candidate)
 			generated = true
-		} else {
-			name = defaultSingletonName(options.Role, options.Project)
+		default:
+			var counter struct {
+				Value uint64 `json:"value"`
+			}
+			err := locked.ReadIn([]string{"counters"}, "agent", &counter)
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				return failed("agent", "read agent counter: "+err.Error())
+			}
+			candidate := counter.Value + 1
+			name = fmt.Sprintf("%s-%d", options.Profile, candidate)
+			generated = true
 		}
 	}
 	if !taskName && !namePattern.MatchString(name) {
@@ -365,7 +491,11 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		return failed("store", err.Error())
 	}
 	if taskName {
-		name = nextTaskAgentName(options.Task, options.Role, agentRecords, claims)
+		label := options.Profile
+		if legacy && (options.Role == "worker" || options.Role == "verifier") {
+			label = options.Role
+		}
+		name = nextTaskAgentName(options.Task, label, agentRecords, claims)
 	}
 	if !namePattern.MatchString(name) {
 		return failed("validate", "invalid agent name: "+displayValue(name))
@@ -398,11 +528,21 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	replaceOrphan := false
 	if hasExisting {
 		replaceOrphan = singleton && existing.Status == records.AgentLive &&
-			existing.Name == name && existing.MirrorRole() == options.Role &&
+			existing.Name == name && sameRegisteredFacts(existing, options) &&
 			existing.Project == options.Project && existing.Task == options.Task &&
 			existing.Generation == generation && existing.PaneID == options.PaneID
 		if !replaceOrphan {
 			return failed("agent", "agent exists: "+recordKey)
+		}
+	}
+	if options.Owns != "" && currentClaim != nil {
+		if holder, ok := agentByKey[currentClaim.Agent]; ok && (!replaceOrphan || existing.Key != currentClaim.Agent) {
+			switch holder.Status {
+			case records.AgentStarting:
+				return failed("agent", "agent is starting: "+holder.Name)
+			case records.AgentLive, records.AgentUnresolved:
+				return failed("validate", "project "+options.Owns+" has an owner: "+holder.Name)
+			}
 		}
 	}
 
@@ -504,7 +644,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			!strings.HasPrefix(err.Error(), "caller ambiguous:") {
 			return failed("identity", err.Error())
 		}
-		replaces = replacementKey(options.Role, options.Project, options.Task, recordKey, previousHolderKey, agentRecords)
+		replaces = replacementKey(options.Profile, options.Kind, options.Owns, options.Project, options.Task, recordKey, previousHolderKey, agentRecords)
 	}
 
 	startedAt := now
@@ -514,7 +654,10 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	record := records.Agent{
 		Key:           recordKey,
 		Name:          name,
-		Role:          options.Role,
+		Profile:       options.Profile,
+		Kind:          options.Kind,
+		Owns:          options.Owns,
+		Worktree:      worktree,
 		Project:       options.Project,
 		Task:          options.Task,
 		Harness:       options.Harness,
@@ -538,7 +681,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		TabCreatedByHive: options.TabCreatedByHive,
 		FirstPrompt:      options.FirstPrompt,
 	}
-	record.SetRoleFacts(worktree)
+	record.SyncRole()
 	action := "created"
 	if replaceOrphan {
 		action = "updated"
@@ -587,17 +730,23 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 }
 
 func startupStartedByHive(options RegisterOptions) bool {
-	if options.Role != "coordinator" && options.Role != "supervisor" {
+	if options.Kind == "" {
 		return false
 	}
-	return os.Getenv("HIVE_STARTUP_ROLE") == options.Role && os.Getenv("HERDR_PANE_ID") == options.PaneID
+	return os.Getenv("HIVE_STARTUP_ROLE") == options.Kind && os.Getenv("HERDR_PANE_ID") == options.PaneID
+}
+
+// sameRegisteredFacts reports whether one record has the same facts as a
+// registration.
+func sameRegisteredFacts(record records.Agent, options RegisterOptions) bool {
+	return record.Profile == options.Profile && record.Kind == options.Kind && record.Owns == options.Owns
 }
 
 func nextSingletonGeneration(name string, options RegisterOptions, agents []records.Agent) uint64 {
 	highest := uint64(0)
 	retryGeneration := uint64(0)
 	for _, record := range agents {
-		if record.MirrorRole() != options.Role || record.Name != name || record.Project != options.Project || record.Task != options.Task {
+		if !sameRegisteredFacts(record, options) || record.Name != name || record.Project != options.Project || record.Task != options.Task {
 			continue
 		}
 		if record.Generation > highest {
@@ -639,23 +788,24 @@ func isActiveAgentStatus(status string) bool {
 	return status == records.AgentStarting || status == records.AgentLive
 }
 
-func replacementKey(role, project, task, currentKey, previousHolderKey string, agents []records.Agent) string {
+func replacementKey(profile, kind, owns, project, task, currentKey, previousHolderKey string, agents []records.Agent) string {
+	matches := func(candidate records.Agent) bool {
+		switch {
+		case kind == records.AgentKindCoordinator:
+			return candidate.Kind == records.AgentKindCoordinator
+		case kind == records.AgentKindSupervisor:
+			return candidate.Kind == records.AgentKindSupervisor
+		case owns != "":
+			return candidate.Owns == owns
+		case task != "":
+			return candidate.Task == task && candidate.Profile == profile
+		default:
+			return false
+		}
+	}
 	var newest records.Agent
 	for _, candidate := range agents {
-		if candidate.Key == currentKey || candidate.MirrorRole() != role {
-			continue
-		}
-		switch role {
-		case "worker", "verifier":
-			if candidate.Task != task {
-				continue
-			}
-		case "manager":
-			if candidate.Project != project {
-				continue
-			}
-		case "coordinator":
-		default:
+		if candidate.Key == currentKey || !matches(candidate) {
 			continue
 		}
 		if candidate.Status == records.AgentLive && candidate.Key != previousHolderKey {
@@ -669,7 +819,7 @@ func replacementKey(role, project, task, currentKey, previousHolderKey string, a
 	return newest.Key
 }
 
-func nextTaskAgentName(taskID, role string, agentRecords []records.Agent, claims []records.Claim) string {
+func nextTaskAgentName(taskID, profile string, agentRecords []records.Agent, claims []records.Claim) string {
 	prefix := taskID[:strings.IndexByte(taskID, '-')]
 	occupied := make(map[string]bool, len(agentRecords)*2+len(claims)*2)
 	for _, record := range agentRecords {
@@ -681,7 +831,7 @@ func nextTaskAgentName(taskID, role string, agentRecords []records.Agent, claims
 		occupied[claim.Agent] = true
 	}
 	for index := uint64(1); ; index++ {
-		candidate := fmt.Sprintf("t%s-%s-%d", prefix, role, index)
+		candidate := fmt.Sprintf("t%s-%s-%d", prefix, profile, index)
 		if !occupied[candidate] {
 			return candidate
 		}
@@ -746,7 +896,7 @@ func logAgentEvent(home, message string, attrs ...any) {
 }
 
 func logRegistration(home string, options RegisterOptions, envelope output.Envelope) {
-	attrs := []any{"role", options.Role}
+	attrs := []any{"profile", options.Profile}
 	if options.Project != "" {
 		attrs = append(attrs, "project_id", options.Project)
 	}
