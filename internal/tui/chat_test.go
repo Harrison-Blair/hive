@@ -768,3 +768,19 @@ func TestChatSendWithNoCoordinatorKeepsTheText(t *testing.T) {
 		t.Fatalf("row 36 = %q, want the composer below the notice", rows[36])
 	}
 }
+
+// Golden-frames decisions 11 and 19: the screen segment on Chat shows the
+// keys of the input line from the chat.md key table. ctrl+] has no function
+// on Chat, so the segment does not show it.
+func TestChatScreenSegmentShowsTheInputLineKeys(t *testing.T) {
+	for _, width := range []int{120, 80} {
+		m := chatModel(t, width, 40, 1)
+		cfg := m.tuiConfig
+		cfg.StatusLines = [][]string{{"screen"}}
+		m.setTUIConfig(cfg)
+		row := strings.TrimRight(viewRow(m, 39), " ")
+		if !strings.HasPrefix(row, " chat · enter send · ") || strings.Contains(row, "ctrl+]") {
+			t.Errorf("status row at %d = %q, want the chat keys with no ctrl+]", width, row)
+		}
+	}
+}

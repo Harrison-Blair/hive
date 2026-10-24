@@ -72,12 +72,10 @@ var screenRegistry = [tabCount]frameScreen{
 		label:   "Chat",
 		regions: []string{"feed", "input"},
 		hints: map[string][]string{
-			"normal": {"i type", "↑↓ j/k scroll", "wheel scroll", "pgup/pgdn page", "g/G top/end", "ctrl+o events", "? help"},
-			"input":  {"enter send", "shift+enter newline", "ctrl+] leave input", "ctrl+o events", "wheel or pgup/pgdn scroll"},
+			"input": {"enter send", "shift+enter newline", "ctrl+o events", "wheel or pgup/pgdn scroll"},
 		},
 		compact: map[string][]string{
-			"normal": {"i type", "↑↓ wheel scroll", "pgup/pgdn", "ctrl+o events", "? help"},
-			"input":  {"enter send", "ctrl+] leave", "wheel or pgup/pgdn scroll"},
+			"input": {"enter send", "wheel or pgup/pgdn scroll"},
 		},
 	},
 	tabWork: {
