@@ -456,6 +456,13 @@ func TestMigrationVersionThreeKeepsEachSourceDestination(t *testing.T) {
 	if !reflect.DeepEqual(coordinator, wantCoordinator) {
 		t.Fatalf("coordinator record = %#v; want %#v", coordinator, wantCoordinator)
 	}
+	entries, err = os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "coordinator"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("coordinator inbox records = %d; want one record", len(entries))
+	}
 
 	if !fileMissing(t, home, "inbox", "manager-one") {
 		t.Fatal("the old inbox of project one is still present")
@@ -502,6 +509,13 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry(t *testing.T) {
 	}
 	if !reflect.DeepEqual(coordinator, wantCoordinator) {
 		t.Fatalf("coordinator record = %#v; want %#v", coordinator, wantCoordinator)
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "coordinator"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("coordinator inbox records = %d; want one record", len(entries))
 	}
 	if !fileMissing(t, home, "inbox", "manager-one") {
 		t.Fatal("the old inbox of project one is still present")
