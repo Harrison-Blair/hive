@@ -368,7 +368,7 @@ func (g *logGate) close() {
 	g.mu.Unlock()
 	g.note("close-sealed")
 	for _, task := range tasks {
-		task.run()
+		_ = task.run()
 	}
 	g.active.Wait()
 	g.note("close-done")
