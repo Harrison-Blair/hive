@@ -70,12 +70,6 @@ func Open(home, component string) (*slog.Logger, error) {
 
 // NewWriter creates a log writer with an explicit clock dependency.
 func NewWriter(home, component string, clock func() time.Time) (*Writer, error) {
-	gate := homeGate(home)
-	gate.RLock()
-	defer gate.RUnlock()
-	if homeClosed(home) {
-		return nil, errClosed
-	}
 	date := clock().Local().Format("2006-01-02")
 	if err := checkStaticLogPath(home, date); err != nil {
 		return nil, err
@@ -90,34 +84,6 @@ func NewWriter(home, component string, clock func() time.Time) (*Writer, error) 
 	}, nil
 }
 
-// homeGates guards each home. CloseHome takes the write lock, so it waits for
-// each write in progress. A writer created after CloseHome writes no event and
-// creates no log file.
-var homeGates sync.Map
-
-// closedHomes records each home that CloseHome settled.
-var closedHomes sync.Map
-
-func homeGate(home string) *sync.RWMutex {
-	gate, _ := homeGates.LoadOrStore(home, &sync.RWMutex{})
-	return gate.(*sync.RWMutex)
-}
-
-func homeClosed(home string) bool {
-	_, closed := closedHomes.Load(home)
-	return closed
-}
-
-// CloseHome stops each log writer of home and waits for each write in
-// progress. A writer created after CloseHome fails, so a late command cannot
-// recreate the log file.
-func CloseHome(home string) {
-	gate := homeGate(home)
-	gate.Lock()
-	closedHomes.Store(home, struct{}{})
-	gate.Unlock()
-}
-
 // Body returns a body attribute. The writer caps it at 4096 bytes.
 func Body(text string) slog.Attr {
 	return slog.String("body", text)
@@ -126,12 +92,6 @@ func Body(text string) slog.Attr {
 func (w *Writer) Enabled(context.Context, slog.Level) bool { return true }
 
 func (w *Writer) Handle(_ context.Context, record slog.Record) error {
-	gate := homeGate(w.state.home)
-	gate.RLock()
-	defer gate.RUnlock()
-	if homeClosed(w.state.home) {
-		return errClosed
-	}
 	w.state.mu.Lock()
 	defer w.state.mu.Unlock()
 	if w.state.closed {

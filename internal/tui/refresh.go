@@ -32,13 +32,13 @@ func (m *Model) startRefreshCheck() tea.Cmd {
 	request := m.currentScreen().DataRequest()
 	day := startOfDay(m.logDate)
 	tasks := m.tasks.data
-	return func() tea.Msg {
+	return m.startLoad(func() tea.Msg {
 		return refreshCheckMsg{
 			request: request,
 			header:  pathSignature(headerRefreshPaths(home)),
 			screen:  pathSignature(screenRefreshPaths(home, request, day, tasks)),
 		}
-	}
+	})
 }
 
 func snapshotRefreshState(home string, day time.Time, tasks tasksData) refreshSnapshot {

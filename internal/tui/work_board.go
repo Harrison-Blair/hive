@@ -728,10 +728,10 @@ func (m *Model) startTaskFileRead(path, title string) tea.Cmd {
 	s.fileContent = ""
 	s.popupOffset = 0
 	m.invalidateView()
-	return func() tea.Msg {
+	return m.startLoad(func() tea.Msg {
 		content, err := m.readScreenFile(path)
 		return taskFileMsg{title: title, content: content, err: err}
-	}
+	})
 }
 
 func (m *Model) acceptTaskFile(msg taskFileMsg) {

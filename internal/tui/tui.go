@@ -45,6 +45,7 @@ type Model struct {
 	gatedLogger *slog.Logger
 	closer      io.Closer
 	logs        logGate
+	loads       loadGate
 
 	events      []logs.Event
 	filterDraft string
@@ -249,13 +250,80 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	return m
 }
 
-// Stop closes the TUI log writer.
+// Stop settles the loaders, writes accepted log events, and closes the TUI
+// log writer. Each step can run more than once.
 func (m *Model) Stop() {
+	m.shutdown()
+}
+
+// shutdown settles each admitted loader, resolves the accepted log events, and
+// closes the TUI writer before the program returns.
+func (m *Model) shutdown() {
+	m.loads.close()
 	m.logs.close()
 	if m.closer != nil {
 		_ = m.closer.Close()
 	}
-	hivelog.CloseHome(m.home)
+}
+
+// loaderStoppedMsg tells that a loader callback did not start because the
+// program shutdown began.
+type loaderStoppedMsg struct{}
+
+// loadGate admits home-access loader callbacks until shutdown. Shutdown refuses
+// a new callback and waits for each admitted callback to settle.
+type loadGate struct {
+	mu     sync.Mutex
+	closed bool
+	active sync.WaitGroup
+	// testHook observes admission and close. It is nil in production.
+	testHook func(string)
+}
+
+func (g *loadGate) note(event string) {
+	if g.testHook != nil {
+		g.testHook(event)
+	}
+}
+
+func (g *loadGate) begin() bool {
+	g.mu.Lock()
+	if g.closed {
+		g.mu.Unlock()
+		g.note("refused")
+		return false
+	}
+	g.active.Add(1)
+	g.mu.Unlock()
+	g.note("begin")
+	return true
+}
+
+func (g *loadGate) end() {
+	g.active.Done()
+	g.note("end")
+}
+
+func (g *loadGate) close() {
+	g.note("close-enter")
+	g.mu.Lock()
+	g.closed = true
+	g.mu.Unlock()
+	g.note("close-sealed")
+	g.active.Wait()
+	g.note("close-done")
+}
+
+// startLoad wraps one home-access loader. A callback that starts after
+// shutdown returns loaderStoppedMsg and touches no file.
+func (m *Model) startLoad(run func() tea.Msg) tea.Cmd {
+	return func() tea.Msg {
+		if !m.loads.begin() {
+			return loaderStoppedMsg{}
+		}
+		defer m.loads.end()
+		return run()
+	}
 }
 
 var errLogClosed = errors.New("tui: log writer is closed")
@@ -663,10 +731,10 @@ func (m *Model) startHeaderLoad() tea.Cmd {
 	}
 	m.headerLoading = true
 	loader, home := m.headerLoader, m.home
-	return func() tea.Msg {
+	return m.startLoad(func() tea.Msg {
 		state, err := loader(home)
 		return headerLoadMsg{state: state, err: err}
-	}
+	})
 }
 
 func (m *Model) startCurrentScreenLoad() tea.Cmd {
@@ -678,48 +746,48 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 	switch request {
 	case agentsDataRequest:
 		loader, home, now := m.agentsLoader, m.home, m.now
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: agentsDataRequest, agents: data, err: err}
-		}
+		})
 	case chatDataRequest:
 		loader, home, now := m.chatLoader, m.home, m.now
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
-		}
+		})
 	case healthDataRequest:
 		// health.md rule 4: the agents table is beside the checks.
 		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.gatedLogger, m.now
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			agents, err := agentsLoader(home, now())
 			result, doctorErr := loader(home, logger)
 			if doctorErr != nil {
 				err = fmt.Errorf("hive doctor: %w", doctorErr)
 			}
 			return screenLoadMsg{request: healthDataRequest, health: result, agents: agents, err: err}
-		}
+		})
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home)
 			return screenLoadMsg{request: tasksDataRequest, tasks: data, err: err}
-		}
+		})
 	case frictionDataRequest:
 		loader, home := m.frictionLoader, m.home
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home)
 			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
-		}
+		})
 	default:
 		loader, reader, day := m.logLoader, m.reader, startOfDay(m.logDate)
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			events, err := loader(reader, day)
 			if err == nil {
 				events = eventsOnDay(events, day)
 			}
 			return screenLoadMsg{request: logsDataRequest, day: day, events: events, err: err}
-		}
+		})
 	}
 }
 
@@ -874,7 +942,7 @@ func runProgram(model *Model, in io.Reader, out io.Writer, width, height int) er
 
 	_, runErr := program.Run()
 	close(watched)
-	model.logs.close()
+	model.shutdown()
 
 	if err := outputGuard.Err(); err != nil {
 		return fmt.Errorf("tui: output: %w", err)
