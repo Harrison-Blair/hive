@@ -567,7 +567,7 @@ type coordinatorRestartCheckMsg struct {
 }
 
 func (m *Model) startCoordinatorRestartCheck(record records.Agent) tea.Cmd {
-	home, logger := m.home, m.logger
+	home, logger := m.home, m.gatedLogger
 	return func() tea.Msg {
 		gone, err := coordinatorPaneGone(context.Background(), home, record, logger)
 		return coordinatorRestartCheckMsg{record: record, gone: gone, err: err}
@@ -609,7 +609,7 @@ func (m *Model) acceptCoordinatorRestartCheck(msg coordinatorRestartCheckMsg) te
 }
 
 func (m *Model) startAgentRestart(record records.Agent) tea.Cmd {
-	home, logger := m.home, m.logger
+	home, logger := m.home, m.gatedLogger
 	return func() tea.Msg {
 		result, err := agent.Restart(context.Background(), home, record, logger)
 		return agentRestartMsg{agentKey: record.Key, result: result, err: err}

@@ -49,6 +49,7 @@
   ".hive/spec/golden-frames/tasks/146-gf-logs/brief.md": 0,
   ".hive/spec/golden-frames/tasks/147-gf-agents/brief.md": 0,
   ".hive/spec/golden-frames/tasks/148-gf-help/brief.md": 0,
+  ".hive/spec/golden-frames/tasks/150-tui-log-flakes/brief.md": 0,
   ".hive/spec/golden-frames/tasks/155-explicit-status-lines/brief.md": 0,
   ".hive/spec/golden-frames/tasks/156-gf-agents-state-unit/brief.md": 0,
   ".hive/spec/golden-frames/tasks/157-shared-readiness/brief.md": 0,

@@ -45,7 +45,7 @@ func TestStartupTakesStartingClaimBeforeCoordinatorTab(t *testing.T) {
 	if claimErr != nil || claim.Status != records.ClaimStarting || claim.PID != int64(os.Getpid()) || claim.PIDStart != currentProcessStart(t) {
 		t.Fatalf("claim at coordinator start = %#v, %v; want the starting claim of this launcher", claim, claimErr)
 	}
-	requireStartupLabels(t, server.requests, "coordinator", "supervisor")
+	requireStartupLabels(t, server.recorded(), "coordinator", "supervisor")
 }
 
 // TestStartupRefusesWhileAnotherLauncherStarts covers decision 31: a starting
@@ -86,7 +86,7 @@ func TestStartupRefusesWhileAnotherLauncherStarts(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "coordinator is starting") {
 		t.Fatalf("setupSessionWith() = %v; want the starting claim refusal", err)
 	}
-	if created := requestsFor(server.requests, "tab.create"); len(created) != 0 {
+	if created := requestsFor(server.recorded(), "tab.create"); len(created) != 0 {
 		t.Fatalf("tab.create = %#v; want no coordinator tab", created)
 	}
 	if claim, err := readStartupClaim(t, homePath); err != nil || claim != held {
