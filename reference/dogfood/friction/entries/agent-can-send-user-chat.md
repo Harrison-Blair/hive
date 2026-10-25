@@ -2,7 +2,7 @@
 title: "An agent can send a user chat message through the TUI"
 status: "Open"
 opened: 2026-10-20
-decision: ""
+decision: "Ask a22, 2026-10-25: retain the external supervisor and defer the extra second-TUI restriction. Keep the landed CLI block and D8 checks."
 ---
 
 **Summary:**
@@ -31,3 +31,18 @@ caller in the pane of a live agent, a caller with a working directory below
 verifier. The TUI passes its pane and working directory. A gap stays open: an
 agent can open a tab in the hive session workspace with a working directory
 outside `projects/`, and that tab can still send a user chat message.
+
+**Decision 2026-10-25 (ask a22):**
+Task 162 landed the CLI block. `hive chat send` refuses all calls and writes
+no user message. The D8 caller checks remain in the TUI path.
+
+The user cancelled task 166 and kept the supervisor in its separate tab.
+The user deferred D10 relocation and the additional D14 restriction for a
+second TUI. The external supervisor holds its claim. TUI chat does not require
+that its own process holds this claim.
+
+This entry stays open. A TUI in another tab that passes the D8 pane,
+workspace, and working-directory checks can still send user chat. No task
+closed that gap. Task 166's unlanded candidate and incomplete independent
+verification remain preserved. A future approved task can define separate
+TUI ownership if the user wants this restriction.

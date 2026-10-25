@@ -9,7 +9,7 @@ For all other files, the coordinator and manager never change a project source f
 
 | Issue | Status | Decision |
 | --- | --- | --- |
-| [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open |  |
+| [An agent can send a user chat message through the TUI](entries/agent-can-send-user-chat.md) | Open | Ask a22 defers the extra second-TUI restriction. Keep the external supervisor, landed CLI block, and D8 checks. |
 | [A verified task that never landed cannot be cancelled](entries/resolved/verified-task-cannot-cancel.md) | Resolved 2026-10-20 | Task 105 adds cancel from verified and the already-merged land |
 | [A brief tells a worker to read its inbox, but a worker has no inbox](entries/resolved/worker-has-no-inbox.md) | Resolved 2026-10-23 | Workers and verifiers have inbox keys now: the t126-worker-1 inbox holds records, and the doctor ownerless check reads them |
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
@@ -78,3 +78,4 @@ For all other files, the coordinator and manager never change a project source f
 | [A test that passes in the local zone fails the UTC CI gate](entries/ci-zone-local-test.md) | Open | Task 132 fixes the two tests. The gate still runs in the local zone. |
 | [The manager startup list does not name overrides/verifier-model.md](entries/manager-startup-skips-verifier-model.md) | Open |  |
 | [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |
+| [Task dependencies cannot be changed through Hive](entries/task-dependencies-cannot-edit.md) | Open | Ask a22 uses replacement tasks 180–182 and preserves cancelled originals. No new CLI feature. |
