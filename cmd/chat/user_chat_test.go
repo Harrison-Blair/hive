@@ -33,6 +33,7 @@ func TestChatSendRefusesEachCaller(t *testing.T) {
 		{name: "no flags", args: []string{"chat", "send", "hello"}},
 		{name: "agent flag", args: []string{"chat", "send", "--agent", "coordinator", "hello"}},
 		{name: "pane in a new tab", args: []string{"chat", "send", "hello"}, pane: "w1:p2", wantPane: "w1:p2"},
+		{name: "agent flag in a user pane", args: []string{"chat", "send", "--agent", "coordinator", "hello"}, pane: "w1:p2", wantPane: "w1:p2"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			home := newChatCommandHome(t)

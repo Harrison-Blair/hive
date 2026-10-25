@@ -28,19 +28,13 @@ func newSend() *cobra.Command {
 		Hidden: true,
 	}
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
-		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "chat send", func(home string) (output.Envelope, string, error) {
 			workingDir, err := os.Getwd()
 			if err != nil {
 				return output.Envelope{}, "", err
 			}
-			refused := common.CheckCaller(home, agent)
-			envelope := chatlib.RefuseSend(home, pane, workingDir)
-			if refused != nil {
-				return *refused, "", nil
-			}
-			return envelope, "", nil
+			return chatlib.RefuseSend(home, pane, workingDir), "", nil
 		})
 	}
 	return command
