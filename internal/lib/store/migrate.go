@@ -353,7 +353,9 @@ func (s *Store) managerInboxes(locked *LockedStore, agents []records.Agent) ([]m
 }
 
 // sourceInboxIDs returns the IDs of the records of one old inbox that came
-// from version 2. It skips each record with a migration marker.
+// from version 2. It skips each record with a migration marker. It reads only
+// the marker, so a record with another invalid field does not stop the step
+// before it copies the records that come first.
 func (s *Store) sourceInboxIDs(locked *LockedStore, source string) ([]string, error) {
 	names, raw, err := namedRecords(locked, []string{"inbox", source})
 	if err != nil {
@@ -361,11 +363,13 @@ func (s *Store) sourceInboxIDs(locked *LockedStore, source string) ([]string, er
 	}
 	ids := make([]string, 0, len(names))
 	for index, data := range raw {
-		var record movedInbox
-		if err := json.Unmarshal(data, &record); err != nil {
+		var marker struct {
+			MigratedFrom string `json:"migrated_from"`
+		}
+		if err := json.Unmarshal(data, &marker); err != nil {
 			return nil, fmt.Errorf("record invalid: %s", s.stateRelative("inbox", source, names[index]))
 		}
-		if record.MigratedFrom != "" {
+		if marker.MigratedFrom != "" {
 			continue
 		}
 		ids = append(ids, strings.TrimSuffix(names[index], ".json"))
