@@ -255,6 +255,7 @@ func (m *Model) Stop() {
 	if m.closer != nil {
 		_ = m.closer.Close()
 	}
+	hivelog.CloseHome(m.home)
 }
 
 var errLogClosed = errors.New("tui: log writer is closed")

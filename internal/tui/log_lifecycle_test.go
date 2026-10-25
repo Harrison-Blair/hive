@@ -302,6 +302,46 @@ func TestNeverDispatchedQuitActionKeepsOneEvent(t *testing.T) {
 	}
 }
 
+// TestHeaderLoadAfterCloseWritesNoLog checks that a header load which starts
+// after the close cannot make the store migration writer create a log file.
+// The header load runs store.Open, which logs a schema migration.
+func TestHeaderLoadAfterCloseWritesNoLog(t *testing.T) {
+	home := newTestHome(t)
+	model := New(home, nil)
+
+	logsDir := filepath.Join(home, ".hive", "logs")
+	if err := os.RemoveAll(logsDir); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(logsDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	stateDir := filepath.Join(home, ".hive", "state")
+	if err := os.MkdirAll(stateDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(stateDir, "schema.json"), []byte("{\n  \"version\": 1\n}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cmd := model.startHeaderLoad()
+	if cmd == nil {
+		t.Fatal("no header load")
+	}
+	model.Stop()
+	cmd()
+
+	entries, err := os.ReadDir(logsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".jsonl") {
+			t.Fatalf("a header load after close wrote %s", entry.Name())
+		}
+	}
+}
+
 // onlyLogFile gives the one daily log file of home.
 func onlyLogFile(t *testing.T, home string) string {
 	t.Helper()
