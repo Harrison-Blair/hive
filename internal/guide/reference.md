@@ -225,12 +225,14 @@ hive init: write the global hive home config
   --json bool: write JSON output
 
 hive land: deliver a verified task branch
+  --agent string: caller agent
   --draft bool: open a draft pull request
   --evidence string: evidence URL or path
   --grant string: grant citation
   -h, --help bool: help for land
   --json bool: write JSON output
   --mode string: merge or pr
+  --pane string: herdr pane ID
   --task string: task ID
 
 hive logs: read the daily log files

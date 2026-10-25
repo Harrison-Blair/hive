@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/chat"
+	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -39,6 +41,13 @@ type Options struct {
 	Evidence string
 	Draft    bool
 	Logger   *slog.Logger
+	// Agent is the value of --agent.
+	Agent string
+	// Pane is the caller pane of --pane or HERDR_PANE_ID.
+	Pane string
+	// WorkingDir is the working directory of the command. It is the user
+	// rule input when the caller has no agent record.
+	WorkingDir string
 	// MergeTimeout and PushTimeout override the git bounds in a test. A zero
 	// value uses the fixed bound.
 	MergeTimeout time.Duration
@@ -85,7 +94,7 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 		return fail("validate", "mode must be merge or pr")
 	}
 	if options.Grant == "" {
-		logWarning(logger, "no grant cited", "", options.Task)
+		return fail("validate", "land refused: pass --grant")
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -100,6 +109,10 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 		return fail("store", "read task: "+oneLine(err.Error()))
 	}
 	failProjectID = pre.Project
+
+	if err := checkCaller(ctx, home, registry, pre, options); err != nil {
+		return fail("identity", err.Error())
+	}
 
 	lock, err := store.LockNamed(ctx, home, "land-"+pre.Project)
 	if err != nil {
@@ -154,6 +167,34 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 		return landSpec(home, scoped, task, landMerge(ctx, registry, scoped, options, task, project))
 	}
 	return landPR(ctx, registry, scoped, home, options, task, project)
+}
+
+// checkCaller applies the caller rules of D8 to one landing. An agent caller
+// must be the live owner of the task project or the coordinator. A caller with
+// no agent record is the user when chat.ValidateCaller accepts its pane and
+// working directory.
+func checkCaller(ctx context.Context, home string, registry *store.Store, task records.Task, options Options) error {
+	var caller records.Agent
+	var callerErr error
+	if err := registry.WithLock(ctx, func(locked *store.LockedStore) error {
+		caller, callerErr = identity.ResolveHeld(locked, options.Agent, options.Pane)
+		return nil
+	}); err != nil {
+		return err
+	}
+	if callerErr == nil {
+		if caller.Kind == records.AgentKindCoordinator || caller.Owns == task.Project {
+			return nil
+		}
+		return fmt.Errorf("land refused: %s is not the owner of project %s or the coordinator", oneLine(caller.Name), task.Project)
+	}
+	if !errors.Is(callerErr, identity.ErrCallerUnknown) {
+		return errors.New("caller unknown: pass --agent")
+	}
+	if err := chat.ValidateCaller(ctx, home, options.Agent, options.Pane, options.WorkingDir); err != nil {
+		return fmt.Errorf("land refused: the caller is not the user: %s", err.Error())
+	}
+	return nil
 }
 
 // storeDelivery writes the delivery fields under the store lock.
@@ -298,20 +339,6 @@ func logEvent(logger *slog.Logger, message, projectID, taskID string, attrs ...a
 
 func logEffect(logger *slog.Logger, projectID, taskID, resource, path, action string) {
 	logEvent(logger, "land effect", projectID, taskID, "resource", resource, "path", path, "action", action)
-}
-
-func logWarning(logger *slog.Logger, message, projectID, taskID string) {
-	if logger == nil {
-		return
-	}
-	fields := []any{"command", "land"}
-	if projectID != "" {
-		fields = append(fields, "project_id", projectID)
-	}
-	if taskID != "" {
-		fields = append(fields, "task_id", taskID)
-	}
-	logger.Warn(message, fields...)
 }
 
 func logFailure(logger *slog.Logger, projectID, taskID, phase, message string) {

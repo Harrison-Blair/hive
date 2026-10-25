@@ -89,7 +89,7 @@ func TestMerge(t *testing.T) {
 		writeProject(t, home, testProject(repo))
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Land() = %+v, want ok", envelope)
 		}
@@ -120,7 +120,7 @@ func TestMerge(t *testing.T) {
 		writeProject(t, home, testProject(repo))
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" {
 			t.Fatalf("Land() = %+v, want failed", envelope)
 		}
@@ -141,7 +141,7 @@ func TestMerge(t *testing.T) {
 		writeProject(t, home, testProject(repo))
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "partial" {
 			t.Fatalf("Land() = %+v, want partial", envelope)
 		}
@@ -159,7 +159,7 @@ func TestMerge(t *testing.T) {
 
 		bare := newBare(t)
 		runGit(t, repo, "remote", "set-url", "origin", bare)
-		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if retry.Outcome != "ok" {
 			t.Fatalf("retry = %+v, want ok", retry)
 		}
@@ -187,7 +187,7 @@ func TestMerge(t *testing.T) {
 		writeProject(t, home, testProject(repo))
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" {
 			t.Fatalf("Land() = %+v, want failed", envelope)
 		}
@@ -214,7 +214,7 @@ func TestMerge(t *testing.T) {
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
 		started := time.Now()
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", MergeTimeout: 200 * time.Millisecond})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test", MergeTimeout: 200 * time.Millisecond})
 		if envelope.Outcome != "failed" {
 			t.Fatalf("Land() = %+v, want failed", envelope)
 		}
@@ -242,7 +242,7 @@ func TestMerge(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 		defer cancel()
-		envelope := Land(ctx, home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(ctx, home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" {
 			t.Fatalf("Land() = %+v, want failed", envelope)
 		}
@@ -274,7 +274,7 @@ func TestMerge(t *testing.T) {
 			t.Fatalf("write hook: %v", err)
 		}
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Land() = %+v, want ok", envelope)
 		}
@@ -284,7 +284,7 @@ func TestMerge(t *testing.T) {
 		}
 	})
 
-	t.Run("a retry without citations keeps the recorded grant and evidence", func(t *testing.T) {
+	t.Run("a retry without evidence keeps the recorded evidence", func(t *testing.T) {
 		repo := newRepo(t)
 		runGit(t, repo, "remote", "add", "origin", filepath.Join(t.TempDir(), "missing.git"))
 		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
@@ -303,7 +303,7 @@ func TestMerge(t *testing.T) {
 
 		bare := newBare(t)
 		runGit(t, repo, "remote", "set-url", "origin", bare)
-		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "grant-1"})
 		if retry.Outcome != "ok" {
 			t.Fatalf("retry = %+v, want ok", retry)
 		}

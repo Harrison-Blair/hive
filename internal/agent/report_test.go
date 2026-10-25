@@ -82,26 +82,25 @@ func TestReportTwiceWritesTwoRecords(t *testing.T) {
 	}
 }
 
-func TestReportRefusesEachOtherRole(t *testing.T) {
+func TestReportUsesTheParentFactForEachOldRole(t *testing.T) {
 	for _, role := range []string{"worker", "verifier", "manager", "coordinator", "supervisor"} {
 		t.Run(role, func(t *testing.T) {
 			home := testHome(t)
 			record := records.Agent{Key: "x-1", Name: "x-1", Role: role, Project: "hive", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1}
 			writeRecord(t, home, record)
+			writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
 			if key := map[string]string{"manager": "owner-hive", "coordinator": "coordinator", "supervisor": "supervisor"}[role]; key != "" {
 				writeClaimRecord(t, home, records.Claim{Key: key, Agent: record.Key, Generation: 1})
 			}
 			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("text")})
-			if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "only a general agent") {
-				t.Fatalf("Report() = %#v; want the role refusal", envelope)
+			if envelope.Outcome != "ok" {
+				t.Fatalf("Report() = %#v; want ok for a caller with a parent", envelope)
 			}
-			for _, key := range []string{"boss", "coordinator"} {
-				if found := inboxRecords(t, home, key); len(found) != 0 {
-					t.Fatalf("%s inbox = %#v; want none", key, found)
-				}
+			if found := inboxRecords(t, home, "boss"); len(found) != 1 {
+				t.Fatalf("boss inbox = %#v; want one record", found)
 			}
-			if readAgentRecord(t, home, "x-1").ReportedAt != "" {
-				t.Fatal("reported_at is set; want empty")
+			if readAgentRecord(t, home, "x-1").ReportedAt == "" {
+				t.Fatal("reported_at is empty; want the report mark")
 			}
 		})
 	}
@@ -193,9 +192,10 @@ func TestReportRoutesWithTheParentRule(t *testing.T) {
 			t.Fatalf("boss-2 inbox = %#v; want one record", found)
 		}
 	})
-	t.Run("no parent goes to coordinator", func(t *testing.T) {
+	t.Run("a stopped parent with no successor goes to coordinator", func(t *testing.T) {
 		home := testHome(t)
-		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentStopped, Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
 		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
 			t.Fatalf("Report() = %#v; want ok", envelope)
 		}

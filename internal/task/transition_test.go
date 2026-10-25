@@ -195,7 +195,7 @@ func TestTransitionCompleteWrongAgent(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	before := taskRecordBytes(t, home, task.ID)
 	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
-	if envelope.Outcome != "failed" || envelope.Error != "not the acting agent: worker-2" {
+	if envelope.Outcome != "failed" || envelope.Error != "not the acting agent of 1-seed: worker-2" {
 		t.Fatalf("Complete() = %#v; want a wrong agent error", envelope)
 	}
 	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
@@ -234,7 +234,7 @@ func TestVerifySelf(t *testing.T) {
 	home, task := newSeed(t, "completed")
 	before := taskRecordBytes(t, home, task.ID)
 	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
-	if envelope.Outcome != "failed" || envelope.Error != "verifier must not be the acting agent" {
+	if envelope.Outcome != "failed" || envelope.Error != "self verify refused: worker-1 is the acting agent of 1-seed" {
 		t.Fatalf("Verify() = %#v; want a self-verification refusal", envelope)
 	}
 	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {

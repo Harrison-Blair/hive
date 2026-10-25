@@ -53,11 +53,11 @@ func TestGoalCommandsManageWavesAndEnforceOwner(t *testing.T) {
 		t.Fatalf("list output = %q; want goal", listed)
 	}
 	status, _, stderr = cli.run("goal", "edit", "--goal", goalID, "--status", "done", "--agent", "worker-demo")
-	if status == 0 || !strings.Contains(stderr, "not authorized") {
+	if status == 0 || !strings.Contains(stderr, "not the owner of project demo or the coordinator: worker-demo") {
 		t.Fatalf("worker edit status = %d, stderr %q; want authorization refusal", status, stderr)
 	}
 	status, _, stderr = cli.run("goal", "edit", "--goal", goalID, "--status", "done", "--agent", "manager-other")
-	if status == 0 || !strings.Contains(stderr, "not authorized") {
+	if status == 0 || !strings.Contains(stderr, "not the owner of project demo or the coordinator: manager-other") {
 		t.Fatalf("other manager edit status = %d, stderr %q; want project authorization refusal", status, stderr)
 	}
 	cli.mustRun(t, "goal", "edit", "--goal", goalID, "--wave", "B", "--status", "done", "--agent", "manager-demo")

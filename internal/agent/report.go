@@ -145,8 +145,8 @@ func reportHeld(locked lockedWriter, options ReportOptions, text, path string) o
 		}
 		return failed("identity", err.Error())
 	}
-	if caller.Role != "agent" {
-		return failed("validate", "only a general agent can report: "+caller.Name+" has the role "+caller.Role)
+	if caller.Parent == "" {
+		return failed("validate", "agent report needs a parent: "+displayValue(caller.Name)+" has none")
 	}
 	found, err := loadAgents(locked)
 	if err != nil {

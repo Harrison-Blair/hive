@@ -20,8 +20,6 @@ import (
 var (
 	// errCallerUnknown reports a transition that needs an agent name.
 	errCallerUnknown = errors.New("caller unknown: pass --agent")
-	// errSelfVerify reports a verifier that owns the task.
-	errSelfVerify = errors.New("verifier must not be the acting agent")
 	// errReasonNeeded reports a failed check without a reason.
 	errReasonNeeded = errors.New("--fail needs --reason")
 	// errReopenReasonNeeded reports a reopen without a reason.
@@ -127,15 +125,18 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		if !hasCaller(options) {
 			return errCallerUnknown
 		}
-		if !isActingAgent(record.ActingAgent, options) {
-			return fmt.Errorf("not the acting agent: %s", quoteIfControl(callerName(options)))
+		if !isActingAgent(record.ActingAgent, options) || (options.ResolvedActor != nil && options.ResolvedActor.Task != record.ID) {
+			return fmt.Errorf("not the acting agent of %s: %s", quoteIfControl(record.ID), quoteIfControl(callerName(options)))
 		}
 	case "verify":
 		if !hasCaller(options) {
 			return errCallerUnknown
 		}
+		if options.ResolvedActor != nil && options.ResolvedActor.Task != record.ID {
+			return fmt.Errorf("not bound to %s: %s", quoteIfControl(record.ID), quoteIfControl(callerName(options)))
+		}
 		if isActingAgent(record.ActingAgent, options) {
-			return errSelfVerify
+			return fmt.Errorf("self verify refused: %s is the acting agent of %s", quoteIfControl(callerName(options)), quoteIfControl(record.ID))
 		}
 		if options.Fail && options.Reason == "" {
 			return errReasonNeeded
@@ -374,15 +375,15 @@ func finishLocked(writer finishWriter, command string, options TransitionOptions
 		return failedEnvelope("finished", advancedFinishMessage(task, caller))
 	}
 	if command == "complete" {
-		if !sameAgent(caller, task.ActingAgent) || caller.Role != "worker" || caller.Project != task.Project || caller.Task != task.ID {
-			return failedEnvelope("identity", "not the acting agent: "+quoteIfControl(caller.Name))
+		if !sameAgent(caller, task.ActingAgent) || caller.Task != task.ID {
+			return failedEnvelope("identity", fmt.Sprintf("not the acting agent of %s: %s", quoteIfControl(task.ID), quoteIfControl(caller.Name)))
 		}
 	} else {
-		if sameAgent(caller, task.ActingAgent) {
-			return failedEnvelope("identity", errSelfVerify.Error())
+		if caller.Task != task.ID {
+			return failedEnvelope("identity", fmt.Sprintf("not bound to %s: %s", quoteIfControl(task.ID), quoteIfControl(caller.Name)))
 		}
-		if caller.Role != "verifier" || caller.Project != task.Project || caller.Task != task.ID {
-			return failedEnvelope("identity", "not a verifier of "+task.ID+": "+quoteIfControl(caller.Name))
+		if sameAgent(caller, task.ActingAgent) {
+			return failedEnvelope("identity", fmt.Sprintf("self verify refused: %s is the acting agent of %s", quoteIfControl(caller.Name), quoteIfControl(task.ID)))
 		}
 		if options.Fail && options.Reason == "" {
 			return failedEnvelope("transition", errReasonNeeded.Error())

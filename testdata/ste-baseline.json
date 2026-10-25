@@ -193,5 +193,6 @@
   "internal/guide/flows.md": 0,
   ".hive/spec/agents-without-roles/tasks/154-awr-spawn/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/158-awr-spawn-reconcile/brief.md": 0,
-  ".hive/spec/agents-without-roles/tasks/159-awr-owner/brief.md": 0
+  ".hive/spec/agents-without-roles/tasks/159-awr-owner/brief.md": 0,
+  ".hive/spec/agents-without-roles/tasks/161-awr-checks/brief.md": 0
 }

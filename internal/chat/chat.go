@@ -249,7 +249,7 @@ func checkAgentCaller(locked *store.LockedStore, agentFlag, paneID string) error
 	}
 	caller, err := identity.ResolveHeld(locked, "", paneID)
 	if err == nil {
-		return fmt.Errorf("%s: only the user can send chat; rule 1 (caller pane belongs to the live %s agent)", userOnlyPrefix, caller.Role)
+		return fmt.Errorf("%s: only the user can send chat; rule 1 (caller pane belongs to the live agent %s)", userOnlyPrefix, caller.Name)
 	}
 	if !errors.Is(err, identity.ErrCallerUnknown) {
 		return fmt.Errorf("%s: only the user can send chat; rule 1 check failed: resolve caller: %w", userOnlyPrefix, err)
@@ -292,9 +292,8 @@ func checkCallerWorkspace(locked *store.LockedStore, paneID, paneWorkspace strin
 		if err := json.Unmarshal(data, &record); err != nil {
 			return fmt.Errorf("%s: only the user can send chat; rule 3 check failed: decode agent record: %w", userOnlyPrefix, err)
 		}
-		if record.Status == records.AgentLive && record.WorkspaceID == paneWorkspace &&
-			(record.Role == "manager" || record.Role == "worker" || record.Role == "verifier") {
-			return fmt.Errorf("%s: only the user can send chat; rule 3 (caller pane shares a live %s workspace)", userOnlyPrefix, record.Role)
+		if record.Status == records.AgentLive && record.Kind == "" && record.WorkspaceID == paneWorkspace {
+			return fmt.Errorf("%s: only the user can send chat; rule 3 (caller pane shares the workspace of the live agent %s)", userOnlyPrefix, record.Name)
 		}
 	}
 	return nil
@@ -364,7 +363,7 @@ func Reply(home string, options ReplyOptions) output.Envelope {
 	var phase, message string
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		caller, err := identity.ResolveHeld(locked, options.Agent, options.PaneID)
-		if err != nil || caller.Role != "coordinator" {
+		if err != nil || caller.Kind != records.AgentKindCoordinator {
 			phase = "identity"
 			message = "only the coordinator can run hive chat reply"
 			if err != nil {
