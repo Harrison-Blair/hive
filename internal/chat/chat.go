@@ -18,6 +18,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/panelock"
@@ -35,6 +36,18 @@ type Entry struct {
 	Text     string `json:"text,omitempty"`
 	Delivery string `json:"delivery,omitempty"`
 	ReplyTo  string `json:"reply_to,omitempty"`
+}
+
+// SendRefusal is the D14 text of a refused chat send.
+const SendRefusal = "chat send is for the user only: type in the Chat screen of the hive TUI"
+
+// RefuseSend logs one refused CLI chat send and returns its failure. It
+// writes no chat record and sends no prompt.
+func RefuseSend(home, paneID, workingDir string) output.Envelope {
+	if logger, err := hivelog.Open(home, "chat"); err == nil {
+		logger.Debug("chat send refused", "pane_id", paneID, "cwd", workingDir)
+	}
+	return failed("identity", SendRefusal, nil)
 }
 
 // SendOptions holds the caller and text of one user message.
@@ -585,15 +598,6 @@ func appendLine(home, date string, value any) error {
 
 func failed(phase, message string, result any) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: result}
-}
-
-// SendText renders the ID and delivery state of one user message.
-func SendText(envelope output.Envelope) string {
-	result, ok := envelope.Result.(SendResult)
-	if !ok {
-		return ""
-	}
-	return fmt.Sprintf("chat %s %s\n", result.ID, result.Delivery)
 }
 
 // ReplyText renders the ID of one coordinator reply.

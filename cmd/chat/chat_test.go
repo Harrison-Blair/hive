@@ -127,10 +127,10 @@ func TestChatSendRefusesProjectsWorkingDirectories(t *testing.T) {
 			var out bytes.Buffer
 			err := cmd.ExecuteWithArgs([]string{"chat", "send", "hello"}, strings.NewReader(""), &out)
 			if err == nil {
-				t.Fatal("chat send succeeded; want a rule 2 refusal")
+				t.Fatal("chat send succeeded; want a refusal")
 			}
-			if !strings.Contains(out.String(), "chat send is for the user only") || !strings.Contains(out.String(), "rule 2") {
-				t.Fatalf("output = %q; want a rule 2 refusal", out.String())
+			if got, want := out.String(), "hive: "+userChatRefusal+"\n"; got != want {
+				t.Fatalf("output = %q; want %q", got, want)
 			}
 			assertNoChatHistory(t, home)
 			if paneGets, prompts := fake.counts(); paneGets != 0 || prompts != 0 {
@@ -140,27 +140,21 @@ func TestChatSendRefusesProjectsWorkingDirectories(t *testing.T) {
 	}
 }
 
-func TestChatSendAllowsUserPaneAtHomeRoot(t *testing.T) {
+func TestChatSendRefusesUserPaneAtHomeRoot(t *testing.T) {
 	home := newChatCommandHome(t)
 	fake := newFakeChatHerdr(t, "w1")
 	runChatCommandFrom(t, home, home, "w1:p2")
 
 	var out bytes.Buffer
-	if err := cmd.ExecuteWithArgs([]string{"chat", "send", "hello"}, strings.NewReader(""), &out); err != nil {
-		t.Fatalf("chat send: %v: %s", err, out.String())
+	if err := cmd.ExecuteWithArgs([]string{"chat", "send", "hello"}, strings.NewReader(""), &out); err == nil {
+		t.Fatalf("chat send succeeded; want a refusal; output %q", out.String())
 	}
-	if !strings.Contains(out.String(), "chat c1 sent") {
-		t.Fatalf("output = %q; want a sent message", out.String())
+	if got, want := out.String(), "hive: "+userChatRefusal+"\n"; got != want {
+		t.Fatalf("output = %q; want %q", got, want)
 	}
-	files, err := filepath.Glob(filepath.Join(home, ".hive", "state", "chat", "*.jsonl"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(files) != 1 {
-		t.Fatalf("chat history files = %v; want one", files)
-	}
-	if paneGets, prompts := fake.counts(); paneGets != 1 || prompts != 1 {
-		t.Fatalf("herdr calls = pane.get %d, agent.prompt %d; want one each", paneGets, prompts)
+	assertNoChatHistory(t, home)
+	if paneGets, prompts := fake.counts(); paneGets != 0 || prompts != 0 {
+		t.Fatalf("herdr calls = pane.get %d, agent.prompt %d; want none", paneGets, prompts)
 	}
 }
 

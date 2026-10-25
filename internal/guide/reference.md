@@ -113,12 +113,6 @@ hive chat reply: save a coordinator reply
   --pane string: herdr pane ID
   --to string: user message ID
 
-hive chat send: send a message to the coordinator
-  --agent string: calling agent name
-  -h, --help bool: help for send
-  --json bool: write JSON output
-  --pane string: herdr pane ID
-
 hive completion: Generate the autocompletion script for the specified shell
   -h, --help bool: help for completion
   --json bool: write JSON output

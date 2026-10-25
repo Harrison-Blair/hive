@@ -53,8 +53,9 @@ func TestChatSendWithoutCoordinatorWritesNoChatEntry(t *testing.T) {
 	home := newRootTestHome(t)
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams([]string{"chat", "send", "hello"}, strings.NewReader(""), &stdout, &stderr)
-	if status == 0 || !strings.Contains(stderr.String(), "no live coordinator") {
-		t.Fatalf("status = %d, stderr = %q; want no-live-coordinator failure", status, stderr.String())
+	want := "hive: chat send is for the user only: type in the Chat screen of the hive TUI\n"
+	if status != 1 || stderr.String() != want {
+		t.Fatalf("status = %d, stderr = %q; want status 1 and %q", status, stderr.String(), want)
 	}
 	if files := chatCommandFiles(t, home); len(files) != 0 {
 		t.Fatalf("chat files = %v; want none", files)
@@ -73,8 +74,9 @@ func TestChatSendAsRegisteredAgentWritesNoChatEntry(t *testing.T) {
 			seedChatCommandWorker(t, home)
 			var stdout, stderr bytes.Buffer
 			status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr)
-			if status == 0 || !strings.Contains(stderr.String(), "only the user") {
-				t.Fatalf("status = %d, stderr = %q; want registered-agent refusal", status, stderr.String())
+			want := "hive: chat send is for the user only: type in the Chat screen of the hive TUI\n"
+			if status != 1 || stderr.String() != want {
+				t.Fatalf("status = %d, stderr = %q; want status 1 and %q", status, stderr.String(), want)
 			}
 			if files := chatCommandFiles(t, home); len(files) != 0 {
 				t.Fatalf("chat files = %v; want none", files)

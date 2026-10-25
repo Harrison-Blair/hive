@@ -48,8 +48,12 @@ func TestCallerAgentOverrideInPaneFailsForCallerFlags(t *testing.T) {
 			t.Setenv("HERDR_PANE_ID", "w1:p1")
 			var stdout, stderr bytes.Buffer
 			status := executeWithStreams(append(args, "--agent", "agent-b"), strings.NewReader(""), &stdout, &stderr)
-			if status == 0 || !strings.Contains(stderr.String(), "--agent agent-b is not the caller agent-a") {
-				t.Fatalf("status = %d, stdout = %q, stderr = %q; want the --agent refusal", status, stdout.String(), stderr.String())
+			want := "--agent agent-b is not the caller agent-a"
+			if args[0] == "chat" && args[1] == "send" {
+				want = "chat send is for the user only: type in the Chat screen of the hive TUI"
+			}
+			if status == 0 || !strings.Contains(stderr.String(), want) {
+				t.Fatalf("status = %d, stdout = %q, stderr = %q; want %q", status, stdout.String(), stderr.String(), want)
 			}
 			after := stateFiles(t, home)
 			if len(after) != len(before) {

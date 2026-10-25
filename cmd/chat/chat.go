@@ -21,28 +21,20 @@ func New() *cobra.Command {
 }
 
 func newSend() *cobra.Command {
-	command := &cobra.Command{Use: "send TEXT", Short: "send a message to the coordinator", Args: cobra.ExactArgs(1)}
-	command.RunE = func(cmd *cobra.Command, args []string) error {
-		agent, _ := cmd.Flags().GetString("agent")
+	command := &cobra.Command{
+		Use:    "send TEXT",
+		Short:  "send a message to the coordinator",
+		Args:   cobra.ExactArgs(1),
+		Hidden: true,
+	}
+	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "chat send", func(home string) (output.Envelope, string, error) {
-			if refused := common.CheckCaller(home, agent); refused != nil {
-				return *refused, "", nil
-			}
 			workingDir, err := os.Getwd()
 			if err != nil {
 				return output.Envelope{}, "", err
 			}
-			text := args[0]
-			if text == "-" {
-				data, err := io.ReadAll(cmd.InOrStdin())
-				if err != nil {
-					return output.Envelope{}, "", err
-				}
-				text = string(data)
-			}
-			envelope := chatlib.Send(cmd.Context(), home, chatlib.SendOptions{Agent: agent, PaneID: pane, WorkingDir: workingDir, Text: text})
-			return envelope, chatlib.SendText(envelope), nil
+			return chatlib.RefuseSend(home, pane, workingDir), "", nil
 		})
 	}
 	return command
