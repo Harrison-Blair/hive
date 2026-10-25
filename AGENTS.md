@@ -25,7 +25,7 @@ The prompt from hive wins over each other source. A brief wins over your working
 | `projects/<project-id>/` with no prompt from hive | no work | this section |
 | The root of this checkout with no prompt from hive | no role | this section |
 
-- Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](.agents/skills/hive-coordinator/SKILL.md#startup).
+- Only a prompt from hive makes a session the coordinator. That session runs the coordinator startup before its first reply. Read [Startup](profiles/coordinator.md#startup).
 - A session in the root of this checkout with no prompt from hive has no role. It does not run the coordinator startup. It tells the user that it has no role.
 - A session with a prompt or a brief that names another profile does not run coordinator startup.
 - An agent that is not the coordinator never runs coordinator startup. This rule also applies after a context reset.
@@ -36,7 +36,7 @@ The prompt from hive wins over each other source. A brief wins over your working
 
 ## Project
 
-Hive coordinates coding agents in herdr from one home. The user talks to one coordinator. A manager owns each project. Workers do one task each in their own checkout. Hive builds hive: this checkout is the home and the first registered project.
+Hive coordinates coding agents in herdr from one home. The user talks to one coordinator. A planner owns each project. Builders do one task each in their own checkout. Hive builds hive: this checkout is the home and the first registered project.
 
 [.hive/spec/hive-v1/README.md](.hive/spec/hive-v1/README.md) is the design authority. It gives the goals, the features, the architecture, the risks, and the task plan. The branches `plan/hive-v1` and `integration/hive-v1` are history. Do not import them.
 
@@ -46,6 +46,7 @@ Hive coordinates coding agents in herdr from one home. The user talks to one coo
 hive/                            the checkout is the home
 ├─ AGENTS.md  STE-GLOSSARY.md    instructions          tracked
 ├─ main.go  cmd/  internal/      Go source             tracked
+├─ profiles/                     agent profiles        tracked
 ├─ reference/                    API and dogfood docs    tracked
 ├─ .hive/README.md               home marker           tracked
 ├─ .hive/spec/                   feature specs         ignored
@@ -62,25 +63,25 @@ hive/                            the checkout is the home
 
 ## Coordinator
 
-The coordinator runs in a pane of the hive session. Bare `hive` starts the coordinator and the supervisor in their own tabs. Hive writes the coordinator record before it sends the startup prompt. At startup the coordinator reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a manager when the user asks. It starts `hive supervise` only when the supervisor claim is stale and the `supervisor` tab is gone. It records a preference in `overrides/` when the user states one. The coordinator and a manager can edit files in `reference/dogfood/friction/` directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file. Read `.agents/skills/hive-coordinator/SKILL.md` for the full coordinator procedure.
+The coordinator runs in a pane of the hive session. Bare `hive` starts the coordinator and the supervisor in their own tabs. Hive writes the coordinator record before it sends the startup prompt. At startup the coordinator reads `handoff.md`, checks the saved and live state, and reports open decisions and project status. It spawns a planner when the user asks. It starts `hive supervise` only when the supervisor claim is stale and the `supervisor` tab is gone. It records a preference in `overrides/` when the user states one. The coordinator and a planner can edit files in `reference/dogfood/friction/` directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no builder or verifier for this edit. For all other files, the coordinator and a planner never change a project source file. Read `profiles/coordinator.md` for the full coordinator procedure.
 
 ## herdr layout
 
 - The hive session is the one herdr session that hosts the home. The coordinator and the supervisor run there.
-- Each managed project has one workspace with the label `hive:<project>`. Hive makes it when it spawns the manager, with the project directory as the working directory. The manager runs in the root pane of the first tab.
-- Hive makes each worktree with `worktree.create`. The source is the registered repository path in `cwd`, never the `hive:<project>` workspace. The request gives an explicit `path` below `projects/<project-id>/worktrees/`, the branch `task/<task-id>`, the base branch of the project, and the task ID as the label. The worker starts in the root pane of the first tab of the new workspace.
+- Each managed project has one workspace with the label `hive:<project>`. Hive makes it when it spawns the planner, with the project directory as the working directory. The planner runs in the root pane of the first tab.
+- Hive makes each worktree with `worktree.create`. The source is the registered repository path in `cwd`, never the `hive:<project>` workspace. The request gives an explicit `path` below `projects/<project-id>/worktrees/`, the branch `task/<task-id>`, the base branch of the project, and the task ID as the label. The builder starts in the root pane of the first tab of the new workspace.
 - A first tab is never an empty shell. Hive starts the agent in the pane that herdr returns.
 - Hive closes what it made. `agent stop` closes the pane in which hive started the agent, and herdr closes the workspace with its last pane. `worktree remove` closes an open worktree workspace, then removes the worktree with Git. Hive never closes the pane of an agent that it did not start.
 
 ## Development
 
-These rules apply to a worker on the hive project.
+These rules apply to a builder on the hive project.
 
 ### Task flow
 
-Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The manager skill gives the manager flow. The worker skill gives the worker flow. Read `.agents/skills/hive-manager/SKILL.md` for manager work. Read `.agents/skills/hive-worker/SKILL.md` for worker work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A worker edits only named files and new tests beside them.
+Each feature task brief is at `.hive/spec/<feature>/tasks/<task-id>/brief.md`. Read the brief before you start. The planner profile gives the planner flow. The builder profile gives the builder flow. Read `profiles/planner.md` for planner work. Read `profiles/builder.md` for builder work. For a v1 task, read `.hive/spec/hive-v1/05-tracker.md` for the v1 plan and procedures. A builder edits only named files and new tests beside them.
 
-Git ignores `.hive/spec/`. `hive worktree create` copies the feature folder of the home into the worktree. A worker and a verifier do not add the evidence to Git. `hive task complete` copies the evidence folder to the home. `hive task verify` copies `VERIFIED.md` to the home. `hive land` merges the code. Then it copies each changed spec file outside `tasks/` to the home.
+Git ignores `.hive/spec/`. `hive worktree create` copies the feature folder of the home into the worktree. A builder and a verifier do not add the evidence to Git. `hive task complete` copies the evidence folder to the home. `hive task verify` copies `VERIFIED.md` to the home. `hive land` merges the code. Then it copies each changed spec file outside `tasks/` to the home.
 
 ### Go layout
 
@@ -131,14 +132,14 @@ A command prints text for people by default. With `--json` it prints one JSON ob
 
 ### Instruction text
 
-Write instruction text in ASD-STE100 Strict: this file, skills, role instructions, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
+Write instruction text in ASD-STE100 Strict: this file, profiles, skills, role instructions, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
 
 ### Git
 
 - Work on `dev` or on a branch from `dev`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
 - Write a commit subject as `type(scope): summary`, for example `feat(tui): add the log view`.
 - Never add an agent as a co-author.
-- An agent commits and pushes its own work. It does not wait for a request from the user. A worker commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
+- An agent commits and pushes its own work. It does not wait for a request from the user. A builder commits on its task branch and pushes that branch. `.hive/spec/hive-v1/05-tracker.md` gives the v1 steps.
 
 ### herdr reference
 
@@ -146,4 +147,4 @@ Write instruction text in ASD-STE100 Strict: this file, skills, role instruction
 
 ### Dogfooding
 
-When hive offers a capability, use hive for it instead of a harness built-in. Record each bug, missing capability, or workaround in `reference/dogfood/friction/` with its Issue, Status, Summary, and Reproduction steps fields. The coordinator and a manager can edit files in this folder directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no worker or verifier for this edit. For all other files, the coordinator and a manager never change a project source file.
+When hive offers a capability, use hive for it instead of a harness built-in. Record each bug, missing capability, or workaround in `reference/dogfood/friction/` with its Issue, Status, Summary, and Reproduction steps fields. The coordinator and a planner can edit files in this folder directly. They can add or extend an entry. To resolve an entry, set its status to `Resolved YYYY-MM-DD`, move its file to `entries/resolved/`, and update its row. They edit only this folder in this way. They commit on `dev` with subject `docs(dogfood): SUMMARY` and push `dev`. They use no builder or verifier for this edit. For all other files, the coordinator and a planner never change a project source file.

@@ -32,6 +32,10 @@ func (opencodeProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (opencodeProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (opencodeProfile) ProcessNames() []string      { return []string{"opencode"} }
 
+// SystemPromptArg is empty: OpenCode takes the profile and the guide at the
+// start of the first prompt (D4).
+func (opencodeProfile) SystemPromptArg() string { return "" }
+
 // Trust gives the trust result of OpenCode 1.18.32. A new directory shows no
 // trust dialog, so the method adds nothing.
 func (opencodeProfile) Trust() Trust {

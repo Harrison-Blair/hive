@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
@@ -52,7 +54,7 @@ func TestStartCoordinatorSendsStartupPromptAfterHiveRegisters(t *testing.T) {
 	if err := json.Unmarshal([]byte(requests[0].Params), &params); err != nil {
 		t.Fatalf("decode prompt params: %v", err)
 	}
-	for _, want := range []string{"coordinator", ".agents/skills/hive-coordinator/SKILL.md", "startup"} {
+	for _, want := range []string{"coordinator", "profiles/coordinator.md", "startup"} {
 		if !strings.Contains(params.Text, want) {
 			t.Errorf("first prompt %q does not contain %q", params.Text, want)
 		}
@@ -179,4 +181,90 @@ func jsonBool(value bool) string {
 		return "true"
 	}
 	return "false"
+}
+
+// TestStartCoordinatorDeliversProfileAndGuide proves AC2 and AC3 for bare
+// hive: each harness gets the coordinator profile and the guide, with both
+// approved coordinator instructions and the fixed manager inbox key.
+func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
+	for _, kind := range []string{"claude", "pi", "codex", "opencode", "cursor"} {
+		t.Run(kind, func(t *testing.T) {
+			home := testHome(t)
+			writeProfileHome(t, home)
+			profile, err := harness.Lookup(kind)
+			if err != nil {
+				t.Fatalf("Lookup(%s): %v", kind, err)
+			}
+			processName := profile.ProcessNames()[0]
+			sleep := startSleep(t)
+			fake := newFakeHerdr(t)
+			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
+			fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
+			fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "coordinator")+`,"argv":["`+kind+`"]}`)
+			fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "coordinator")+`}`)
+			fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", false, true)+`}`)
+			fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(sleep.pid, processName, processName))+`}`)
+			fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "coordinator")+`}`)
+
+			if err := startCoordinatorWith(context.Background(), home, "w1:p1", kind, "m", nil); err != nil {
+				t.Fatalf("start coordinator: %v", err)
+			}
+			starts := fake.recorded("agent.start")
+			if len(starts) != 1 {
+				t.Fatalf("agent.start requests = %d; want 1", len(starts))
+			}
+			var start struct {
+				Args []string `json:"args"`
+			}
+			if err := json.Unmarshal([]byte(starts[0].Params), &start); err != nil {
+				t.Fatalf("decode agent.start params: %v", err)
+			}
+			prompts := fake.recorded("agent.prompt")
+			if len(prompts) != 1 {
+				t.Fatalf("agent.prompt requests = %d; want 1", len(prompts))
+			}
+			var prompt struct {
+				Text string `json:"text"`
+			}
+			if err := json.Unmarshal([]byte(prompts[0].Params), &prompt); err != nil {
+				t.Fatalf("decode agent.prompt params: %v", err)
+			}
+			systemIndex := -1
+			for index, arg := range start.Args {
+				if arg == "--append-system-prompt" {
+					systemIndex = index
+					break
+				}
+			}
+			contextText := prompt.Text
+			if profile.SystemPromptArg() != "" {
+				if systemIndex < 0 || systemIndex+1 >= len(start.Args) {
+					t.Fatalf("agent.start args = %#v; want --append-system-prompt TEXT", start.Args)
+				}
+				contextText = start.Args[systemIndex+1] + "\n\n" + prompt.Text
+			} else if systemIndex >= 0 {
+				t.Fatalf("agent.start args = %#v; want the text in the first prompt", start.Args)
+			}
+			profileIndex := strings.Index(contextText, readProfile(t, "coordinator"))
+			guideIndex := strings.Index(contextText, guide.Text())
+			startupIndex := strings.Index(contextText, "profiles/coordinator.md")
+			if profileIndex < 0 || guideIndex < 0 || startupIndex < 0 {
+				t.Fatalf("starting context misses the profile, the guide, or the startup prompt")
+			}
+			if profileIndex >= guideIndex || guideIndex >= startupIndex {
+				t.Fatalf("starting context order is profile %d, guide %d, startup %d", profileIndex, guideIndex, startupIndex)
+			}
+			for _, want := range []string{
+				"Hive-started exchanges get replies through Hive. Use the native harness only when the user starts the exchange there.",
+				"Address manager messages to the inbox key `manager-PROJECT`. For project hive, this is `manager-hive`.",
+			} {
+				if !strings.Contains(contextText, want) {
+					t.Errorf("starting context does not contain %q", want)
+				}
+			}
+			if strings.Contains(contextText, "manager-hive-g1") {
+				t.Error("starting context names the generation-specific record key")
+			}
+		})
+	}
 }

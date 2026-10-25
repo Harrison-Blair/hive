@@ -28,7 +28,7 @@ func TestInstructionsWritten(t *testing.T) {
 		t.Fatalf("instruction file: %v", err)
 	}
 	text := string(data)
-	if !strings.HasPrefix(text, "You are the manager of project demo.") {
+	if !strings.HasPrefix(text, "You are the planner of project demo.") {
 		t.Fatalf("first line = %q; want the generated line", strings.SplitN(text, "\n", 2)[0])
 	}
 	for _, want := range []string{"demo", home, "/tmp/demo"} {

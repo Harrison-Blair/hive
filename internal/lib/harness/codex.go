@@ -38,6 +38,10 @@ func (codexProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (codexProfile) ProcessNames() []string      { return []string{"codex"} }
 
+// SystemPromptArg is empty: Codex takes the profile and the guide at the start
+// of the first prompt (D4).
+func (codexProfile) SystemPromptArg() string { return "" }
+
 // Trust gives the trust result of Codex 0.160.1. A directory outside a Git
 // repository shows no trust dialog. A Git repository with no saved trust shows
 // the folder trust dialog, also with --dangerously-bypass-approvals-and-sandbox.

@@ -148,15 +148,24 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	}
 	for name, text := range instructions {
 		normalized := strings.Join(strings.Fields(text), " ")
+		spawnWorker, spawnVerifier := "hive agent spawn --role worker --task ID --harness KIND --model MODEL", "hive agent spawn --role verifier --task ID --harness KIND --model MODEL"
+		repairWorker := "After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`."
+		repairLand := "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`."
+		if name == "template" {
+			spawnWorker = "hive agent spawn --profile builder --task ID --harness KIND --model MODEL"
+			spawnVerifier = "hive agent spawn --profile verifier --task ID --harness KIND --model MODEL"
+			repairWorker = "After a verify fail, spawn a builder for the task. Hive sets the acting agent. Do not run `hive task assign`."
+			repairLand = "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`."
+		}
 		for _, want := range []string{
 			"Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.",
-			"hive agent spawn --role worker --task ID --harness KIND --model MODEL",
-			"hive agent spawn --role verifier --task ID --harness KIND --model MODEL",
+			spawnWorker,
+			spawnVerifier,
 			"Use `hive task edit --task ID --brief FILE` to change a brief before the work is complete.",
 			"Before you stop for a user decision on a task, set `needs_user` with `hive task edit --task ID --needs-user TEXT`. Clear it when the user gives the decision with `hive task edit --task ID --clear-needs-user`.",
-			"After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`.",
+			repairWorker,
 			"After a verify fail, spawn a fresh verifier with no `--pane`. Do not make placeholder tabs.",
-			"If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
+			repairLand,
 		} {
 			if !strings.Contains(normalized, want) {
 				t.Errorf("%s does not contain %q", name, want)
@@ -196,10 +205,13 @@ func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`."
+	wants := map[string]string{
+		"template": "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`.",
+		"skill":    "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
+	}
 	for name, instructions := range map[string]string{"template": projectAgentsTemplate, "skill": string(skill)} {
-		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), want) {
-			t.Errorf("%s does not contain %q", name, want)
+		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), wants[name]) {
+			t.Errorf("%s does not contain %q", name, wants[name])
 		}
 	}
 }
