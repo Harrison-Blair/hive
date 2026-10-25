@@ -294,16 +294,17 @@ func TestPruneKeepsReferencedRecords(t *testing.T) {
 		}
 	})
 
-	t.Run("replaces chain from the parent", func(t *testing.T) {
+	t.Run("four generation replaces chain from the parent", func(t *testing.T) {
 		home := newHome(t)
 		seedAgent(t, home, records.Agent{Key: "manager-old", Name: "manager", Status: records.AgentStopped})
 		seedAgent(t, home, records.Agent{Key: "manager-middle", Name: "manager", Replaces: "manager-old", Status: records.AgentExited})
-		seedAgent(t, home, records.Agent{Key: "manager-new", Name: "manager", Replaces: "manager-middle", Status: records.AgentLive})
+		seedAgent(t, home, records.Agent{Key: "manager-newer", Name: "manager", Replaces: "manager-middle", Status: records.AgentExited})
+		seedAgent(t, home, records.Agent{Key: "manager-new", Name: "manager", Replaces: "manager-newer", Status: records.AgentLive})
 		seedAgent(t, home, records.Agent{Key: "worker", Name: "worker", Parent: "manager-old", Status: records.AgentLive})
 		if _, err := Run(context.Background(), home); err != nil {
 			t.Fatal(err)
 		}
-		for _, key := range []string{"manager-old", "manager-middle", "manager-new"} {
+		for _, key := range []string{"manager-old", "manager-middle", "manager-newer", "manager-new"} {
 			if !agentExists(t, home, key) {
 				t.Fatalf("%s in the parent replaces chain was pruned", key)
 			}
@@ -342,6 +343,31 @@ func TestPruneKeepsReferencedRecords(t *testing.T) {
 		}
 		if !agentExists(t, home, "worker-1") {
 			t.Fatalf("unresolved record was pruned")
+		}
+	})
+
+	t.Run("unresolved facts do not keep other records", func(t *testing.T) {
+		for _, relation := range []string{"parent", "replaces"} {
+			t.Run(relation, func(t *testing.T) {
+				home := newHome(t)
+				seedAgent(t, home, records.Agent{Key: "old", Name: "old", Status: records.AgentStopped})
+				uncertain := records.Agent{Key: "uncertain", Name: "uncertain", Status: records.AgentUnresolved}
+				if relation == "parent" {
+					uncertain.Parent = "old"
+				} else {
+					uncertain.Replaces = "old"
+				}
+				seedAgent(t, home, uncertain)
+				if _, err := Run(context.Background(), home); err != nil {
+					t.Fatal(err)
+				}
+				if agentExists(t, home, "old") {
+					t.Fatalf("stopped record kept by the %s fact of an unresolved agent", relation)
+				}
+				if !agentExists(t, home, "uncertain") {
+					t.Fatalf("unresolved record was pruned")
+				}
+			})
 		}
 	})
 
@@ -510,7 +536,7 @@ func TestPruneScratchHomeLifecycle(t *testing.T) {
 	seedAgent(t, home, records.Agent{Key: "manager-new", Name: "manager", Replaces: "manager-old", Status: records.AgentLive})
 	seedAgent(t, home, records.Agent{Key: "worker-child", Name: "worker-child", Parent: "manager-new", Status: records.AgentLive})
 	seedAgent(t, home, records.Agent{Key: "worker-busy", Name: "worker-busy", Status: records.AgentStopped})
-	seedAgent(t, home, records.Agent{Key: "worker-lost", Name: "worker-lost", Status: records.AgentUnresolved})
+	seedAgent(t, home, records.Agent{Key: "worker-lost", Name: "worker-lost", Parent: "worker-stray", Status: records.AgentUnresolved})
 	seedAgent(t, home, records.Agent{Key: "worker-stray", Name: "worker-stray", Project: "demo", Status: records.AgentStopped})
 	seedTask(t, home, records.Task{ID: "1-demo", Project: "demo", ActingAgent: "worker-busy", Status: "assigned"})
 	seedInbox(t, home, "worker-stray", records.Inbox{Agent: "owner-demo", Text: "still open"})
