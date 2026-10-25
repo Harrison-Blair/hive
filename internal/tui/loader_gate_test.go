@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"log/slog"
 	"path/filepath"
 	"sync"
@@ -231,9 +232,9 @@ func TestLoaderGateHealthCompositeLoadsAgentsAndChecks(t *testing.T) {
 		agentsCalls.Add(1)
 		return realAgents(home, now)
 	}
-	model.healthLoader = func(home string, logger *slog.Logger) (doctor.Result, error) {
+	model.healthLoader = func(ctx context.Context, home string, logger *slog.Logger) (doctor.Result, error) {
 		healthCalls.Add(1)
-		return realHealth(home, logger)
+		return realHealth(ctx, home, logger)
 	}
 
 	cmd := model.startCurrentScreenLoad()

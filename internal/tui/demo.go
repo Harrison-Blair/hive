@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -343,7 +344,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		sortFrictionEntries(entries)
 		return frictionData{entries: entries}, nil
 	}
-	m.healthLoader = func(string, *slog.Logger) (doctor.Result, error) {
+	m.healthLoader = func(context.Context, string, *slog.Logger) (doctor.Result, error) {
 		return doctor.Result{Checks: slices.Clone(data.Checks)}, nil
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {

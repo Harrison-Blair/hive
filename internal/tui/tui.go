@@ -84,7 +84,7 @@ type Model struct {
 	startupErr           string
 	headerLoader         func(string) (headerState, error)
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader         func(string, *slog.Logger) (doctor.Result, error)
+	healthLoader         func(context.Context, string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
@@ -200,6 +200,7 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		frictionLoader: loadFriction,
 		demo:           demo,
 	}
+	m.loads.ctx, m.loads.cancel = context.WithCancel(context.Background())
 	if demo != nil {
 		m.useDemoLoaders(demo.fixture)
 	} else if callerCwd, err := os.Getwd(); err != nil {
@@ -276,6 +277,10 @@ type loadGate struct {
 	mu     sync.Mutex
 	closed bool
 	active sync.WaitGroup
+	// ctx is the owner context of the admitted home-access work. Close
+	// cancels it before it waits for that work to settle.
+	ctx    context.Context
+	cancel context.CancelFunc
 	// testHook observes admission and close. It is nil in production.
 	testHook func(string)
 }
@@ -306,6 +311,9 @@ func (g *loadGate) end() {
 
 func (g *loadGate) close() {
 	g.note("close-enter")
+	if g.cancel != nil {
+		g.cancel()
+	}
 	g.mu.Lock()
 	g.closed = true
 	g.mu.Unlock()
@@ -758,10 +766,10 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 		})
 	case healthDataRequest:
 		// health.md rule 4: the agents table is beside the checks.
-		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.gatedLogger, m.now
+		loader, agentsLoader, home, logger, now, ctx := m.healthLoader, m.agentsLoader, m.home, m.gatedLogger, m.now, m.loads.ctx
 		return m.startLoad(func() tea.Msg {
 			agents, err := agentsLoader(home, now())
-			result, doctorErr := loader(home, logger)
+			result, doctorErr := loader(ctx, home, logger)
 			if doctorErr != nil {
 				err = fmt.Errorf("hive doctor: %w", doctorErr)
 			}

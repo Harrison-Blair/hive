@@ -60,13 +60,13 @@ type healthState struct {
 
 // loadHealth runs hive doctor in the TUI process. A panic in a check is the
 // error of rule 7, so the TUI keeps running.
-func loadHealth(home string, logger *slog.Logger) (result doctor.Result, err error) {
+func loadHealth(ctx context.Context, home string, logger *slog.Logger) (result doctor.Result, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	return doctor.Run(context.Background(), home, logger), nil
+	return doctor.Run(ctx, home, logger), nil
 }
 
 func (healthScreen) DataRequest() dataRequest { return healthDataRequest }
