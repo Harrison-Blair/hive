@@ -31,9 +31,9 @@ func (piProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (piProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (piProfile) ProcessNames() []string      { return []string{"pi"} }
 
-// SystemPromptArg carries the profile text and the guide as one system prompt
-// (D4).
-func (piProfile) SystemPromptArg() string { return "--append-system-prompt" }
+// SystemPromptArg selects first-prompt delivery. Herdr start arguments cannot
+// carry the multiline profile text and guide.
+func (piProfile) SystemPromptArg() string { return "" }
 
 // Trust gives the trust method of Pi 1.3.0. Pi shows the project trust dialog
 // only for project-local resources, for example .pi/settings.json. --approve
