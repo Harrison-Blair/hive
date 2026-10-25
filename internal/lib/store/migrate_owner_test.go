@@ -525,6 +525,139 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry(t *testing.T) {
 	}
 }
 
+// checkOwnerAliasDestinations proves the D2 and D7 result of the alias home:
+// the owner inbox of project one holds only its own record, and the
+// coordinator inbox holds only the record of project two.
+func checkOwnerAliasDestinations(t *testing.T, home string) {
+	t.Helper()
+	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
+	wantOwner := map[string]any{
+		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(owner, wantOwner) {
+		t.Fatalf("owner record = %#v; want %#v", owner, wantOwner)
+	}
+	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "manager-two"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("owner inbox records = %d; want one record", len(entries))
+	}
+	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
+	wantCoordinator := map[string]any{
+		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(coordinator, wantCoordinator) {
+		t.Fatalf("coordinator record = %#v; want %#v", coordinator, wantCoordinator)
+	}
+	entries, err = os.ReadDir(filepath.Join(home, ".hive", "state", "inbox", "coordinator"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("coordinator inbox records = %d; want one record", len(entries))
+	}
+	if !fileMissing(t, home, "inbox", "manager-one") {
+		t.Fatal("the old inbox of project one is still present")
+	}
+	if !fileMissing(t, home, "counters", "inbox:manager-one.json") {
+		t.Fatal("the old counter of project one is still present")
+	}
+}
+
+// TestMigrationVersionThreeKeepsEachSourceDestinationAfterTaskFailure proves
+// that a retry after a failed task step keeps the destination of each moved
+// record. The failed run copies the mail and clears the markers, so the retry
+// must not read the owner record as a source record of project two.
+func TestMigrationVersionThreeKeepsEachSourceDestinationAfterTaskFailure(t *testing.T) {
+	home := seedOwnerAliasHome(t)
+	taskPath := filepath.Join(home, ".hive", "state", "tasks", "1-bad.json")
+	seedState(t, home, []string{"tasks", "1-bad.json"}, []any{})
+
+	_, err := Open(home)
+	if err == nil || err.Error() != "record invalid: "+taskPath {
+		t.Fatalf("Open() = %v; want record invalid: %s", err, taskPath)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 2 {
+		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
+	}
+	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
+	if owner["text"] != "mail for one" || owner["role"] != "manager-two" {
+		t.Fatalf("owner record = %#v; want mail for one in the owner inbox", owner)
+	}
+	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
+	if coordinator["text"] != "mail for two" || coordinator["role"] != "coordinator" {
+		t.Fatalf("coordinator record = %#v; want mail for two in the coordinator inbox", coordinator)
+	}
+
+	seedState(t, home, []string{"tasks", "1-bad.json"}, map[string]any{
+		"id": "1-bad", "project": "one", "title": "Task", "controlling_role": "manager-one",
+		"status": "created", "acting_agent": "", "depends_on": []string{},
+	})
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() after the repair = %v; want the migration", err)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
+		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	}
+	checkOwnerAliasDestinations(t, home)
+	task := readJSONMap(t, home, "tasks", "1-bad.json")
+	if _, ok := task["controlling_role"]; ok {
+		t.Fatalf("task = %#v; want no controlling_role", task)
+	}
+	before := stateFingerprints(t, home)
+	if _, err := Open(home); err != nil {
+		t.Fatalf("second Open() = %v; want no change", err)
+	}
+	after := stateFingerprints(t, home)
+	if len(before) != len(after) {
+		t.Fatalf("state files = %d then %d; want no change", len(before), len(after))
+	}
+	for index := range before {
+		if before[index] != after[index] {
+			t.Fatalf("file changed on the second open: %s then %s", before[index], after[index])
+		}
+	}
+}
+
+// TestMigrationVersionThreeKeepsEachSourceDestinationAfterMarkerFailure
+// proves that a failure during the marker cleanup keeps the destination of a
+// record whose marker is already gone. The destinations of the failed run
+// decide the retry, so the owner record is not a source record of project two.
+func TestMigrationVersionThreeKeepsEachSourceDestinationAfterMarkerFailure(t *testing.T) {
+	home := seedOwnerAliasHome(t)
+	badPath := filepath.Join(home, ".hive", "state", "inbox", "zzz", "1.json")
+	seedState(t, home, []string{"inbox", "zzz", "1.json"}, []any{})
+
+	_, err := Open(home)
+	if err == nil || err.Error() != "record invalid: "+badPath {
+		t.Fatalf("Open() = %v; want record invalid: %s", err, badPath)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 2 {
+		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
+	}
+	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
+	if _, ok := owner[inboxSourceField]; ok {
+		t.Fatalf("owner record = %#v; want the marker cleanup before the failing folder", owner)
+	}
+
+	if err := os.RemoveAll(filepath.Join(home, ".hive", "state", "inbox", "zzz")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() after the repair = %v; want the migration", err)
+	}
+	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
+		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	}
+	checkOwnerAliasDestinations(t, home)
+}
+
 // TestMigrationVersionThreeSkipsAMarkedCopy proves that the marker of a
 // source record stops a second copy after a run that stopped early.
 func TestMigrationVersionThreeSkipsAMarkedCopy(t *testing.T) {
