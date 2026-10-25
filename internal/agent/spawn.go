@@ -78,6 +78,7 @@ type SpawnOptions struct {
 	callerKnown       bool
 	callerWorkspace   string
 	firstPrompt       string
+	instructions      string
 	fromCLI           bool
 }
 
@@ -124,7 +125,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
-	options, message := normalizeSpawn(ctx, home, options, logger)
+	options, message := normalizeSpawn(ctx, home, options, profile, logger)
 	if message != "" {
 		envelope := failed("validate", message)
 		logSpawn(logger, envelope, options, "")
@@ -213,7 +214,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		return envelope
 	}
 
-	args := profile.Args(options.Model, options.ExtraArgs)
+	args := profile.Args(options.Model, append(systemPromptArgs(profile, options.instructions), options.ExtraArgs...))
 	started, startErr := herdr.AgentStart(ctx, herdr.AgentStartParams{
 		Name:      record.Key,
 		Kind:      profile.Kind(),
@@ -487,7 +488,7 @@ func spawnProjectAgent(ctx context.Context, home string, options SpawnOptions, p
 
 // normalizeSpawn checks each input of one spawn and sets its facts. It writes
 // no agent record, starts no process, and changes no task.
-func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (SpawnOptions, string) {
+func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, logger *slog.Logger) (SpawnOptions, string) {
 	if options.Role != "" {
 		if options.ProfileSet || options.Profile != "" {
 			return options, "--role is the old name of --profile: pass one"
@@ -516,6 +517,11 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, logg
 	if options.Profile != "" && (!namePattern.MatchString(options.Profile) || (options.ProfileSet && !profileFileExists(home, options.Profile))) {
 		return options, "profile not found: profiles/" + displayValue(options.Profile) + ".md"
 	}
+	instructions, message := instructionsText(home, options.Profile)
+	if message != "" {
+		return options, message
+	}
+	options.instructions = instructions
 	if options.Task != "" && options.CwdSet {
 		return options, "--cwd conflicts with --task: a task agent works in its worktree"
 	}
@@ -592,7 +598,7 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, logg
 	if options.taskRecord != nil && options.taskRecord.Worktree != nil {
 		plan.Worktree = options.taskRecord.Worktree.Path
 	}
-	options.firstPrompt = firstPrompt(plan, options.taskRecord, text)
+	options.firstPrompt = firstPromptWithInstructions(plan, options.taskRecord, text, options.instructions, profile.SystemPromptArg() == "")
 	if len(options.firstPrompt) > maxPromptBytes {
 		return options, fmt.Sprintf("first prompt is longer than %d bytes", maxPromptBytes)
 	}

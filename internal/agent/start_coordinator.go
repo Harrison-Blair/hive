@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -13,8 +14,9 @@ import (
 )
 
 // CoordinatorPrompt is the startup prompt of the coordinator. Hive registers
-// the coordinator, so the prompt does not tell it to register.
-const CoordinatorPrompt = marker.Prefix + "You are the coordinator. Hive started you and wrote your record. Run the coordinator startup in .agents/skills/hive-coordinator/SKILL.md now."
+// the coordinator, so the prompt does not tell it to register. It names the
+// profile in place of the old skill (D4).
+const CoordinatorPrompt = marker.Prefix + "You are the coordinator. Hive started you and wrote your record. Read profiles/coordinator.md and run the coordinator startup now."
 
 // Start starts the configured harness in paneID under the starting claim.
 // When the harness start fails, Start removes the claim. After the start, it
@@ -45,6 +47,14 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 	if err := harness.Check(profile); err != nil {
 		return err
 	}
+	instructions, message := instructionsText(l.home, records.ProfileCoordinator)
+	if message != "" {
+		return errors.New(message)
+	}
+	prompt := CoordinatorPrompt
+	if profile.SystemPromptArg() == "" && instructions != "" {
+		prompt = instructions + "\n\n" + prompt
+	}
 	if err := l.setPane(paneID); err != nil {
 		return fmt.Errorf("set starting claim pane: %w", err)
 	}
@@ -59,7 +69,7 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 		Name:      "coordinator",
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
-		Args:      profile.Args(model, nil),
+		Args:      profile.Args(model, systemPromptArgs(profile, instructions)),
 		TimeoutMS: uint64(profile.StartTimeout().Milliseconds()),
 	}, options...)
 	if err != nil {
@@ -100,7 +110,7 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 	if logger != nil {
 		logger.Debug("coordinator record written", "command", l.command, "agent_id", record.Key, "pane_id", record.PaneID, "process_pid", record.ProcessPID)
 	}
-	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: CoordinatorPrompt}, options...); err != nil {
+	if _, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: record.PaneID, Text: prompt}, options...); err != nil {
 		failure := fmt.Errorf("send coordinator startup prompt: %w", err)
 		if markErr := l.markUnresolved(record.Key, failure.Error()); markErr != nil {
 			return fmt.Errorf("%w; mark %s unresolved: %v", failure, record.Key, markErr)

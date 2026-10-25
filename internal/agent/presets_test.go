@@ -217,16 +217,16 @@ func TestProjectInstructionsOrder(t *testing.T) {
 	}
 	text := string(data)
 	lines := strings.SplitN(text, "\n", 2)
-	if !strings.HasPrefix(lines[0], "You are the manager of project demo.") {
+	if !strings.HasPrefix(lines[0], "You are the planner of project demo.") {
 		t.Fatalf("first line = %q; want the generated line", lines[0])
 	}
 	roleGate := strings.Index(text, "## Role gate")
-	skillPath := strings.Index(text, filepath.Join(home, ".agents", "skills", "hive-manager", "SKILL.md"))
-	delegate := strings.Index(text, "Delegate each source change to one worker.")
-	if roleGate < 0 || skillPath < 0 || delegate < 0 {
+	profilePath := strings.Index(text, filepath.Join(home, "profiles", "planner.md"))
+	delegate := strings.Index(text, "Delegate each source change to one builder.")
+	if roleGate < 0 || profilePath < 0 || delegate < 0 {
 		t.Fatalf("rendered text misses a part:\n%s", text)
 	}
-	if roleGate >= skillPath || skillPath >= delegate {
-		t.Fatalf("rendered order is role gate %d, skill path %d, delegate %d", roleGate, skillPath, delegate)
+	if roleGate >= profilePath || profilePath >= delegate {
+		t.Fatalf("rendered order is role gate %d, profile path %d, delegate %d", roleGate, profilePath, delegate)
 	}
 }

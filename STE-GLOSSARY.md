@@ -17,6 +17,12 @@ meanings agree.
 | project directory | The directory `projects/<project-id>/` in the home: the working directory of the manager of that project. | project context directory |
 | worktree | A linked Git worktree of a project at `projects/<project-id>/worktrees/<task-id>/`, shown by herdr as a workspace: the working directory of one worker. | task checkout, worktree checkout |
 | role | The job that an agent session holds: coordinator, manager, worker, or verifier. | |
+| profile | A tracked Markdown file `profiles/NAME.md` in the home. It tells an agent how to do one kind of work. The agent record keeps its name as a free label. | |
+| fact | One field of the agent record that hive uses for a mechanic: `project`, `task`, `worktree`, `owns`, `parent`, or `kind`. | |
+| owner | The one live agent that owns a project. Mail for the project goes to it. | |
+| built-in kind | The `kind` field of a record that hive code starts. Its values are `coordinator` and `supervisor`. | |
+| planner | The first profile that plans and lands the work of one project. It replaces the manager skill. | |
+| builder | The first profile that does one task in a worktree. It replaces the worker skill. | |
 | coordinator | The one role that talks to the user. It runs in the root of the home, in the hive session. | orchestrator |
 | manager | The one role for each project. It owns the approved goals of that project and dispatches tasks. | |
 | worker | An agent that a manager spawns for one task in a worktree. | sub-agent, subagent |
