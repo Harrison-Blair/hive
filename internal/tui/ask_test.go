@@ -450,7 +450,7 @@ func TestReadHeaderCountsTheOpenAsks(t *testing.T) {
 	for _, record := range []ask.Record{open, second, closed, waiting} {
 		writeRecord(t, home, []string{"asks"}, record.ID, record)
 	}
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -552,7 +552,7 @@ func TestHeaderShowsTheOpenAskRecords(t *testing.T) {
 			id := fmt.Sprintf("a%d", index+1)
 			writeRecord(t, home, []string{"asks"}, id, oneQuestionAsk(id, "manager-hive"))
 		}
-		state, err := readHeader(home)
+		state, err := readHeader(context.Background(), home)
 		if err != nil {
 			t.Fatal(err)
 		}

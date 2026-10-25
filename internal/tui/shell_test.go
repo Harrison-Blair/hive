@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,7 +101,7 @@ func TestSlowHeaderLoadDoesNotBlockKeysOrStartTwice(t *testing.T) {
 	releaseLoad := func() { releaseOnce.Do(func() { close(release) }) }
 	defer releaseLoad()
 	var loads atomic.Int32
-	m.headerLoader = func(string) (headerState, error) {
+	m.headerLoader = func(context.Context, string) (headerState, error) {
 		started <- struct{}{}
 		if loads.Add(1) == 1 {
 			<-release

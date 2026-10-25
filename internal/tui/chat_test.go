@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -227,7 +228,7 @@ func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
 	t.Cleanup(m.Stop)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +271,7 @@ func TestChatStateSegmentShowsTheGlyphAndWorkingDuration(t *testing.T) {
 			}
 			m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
 			defer m.Stop()
-			state, err := readHeader(home)
+			state, err := readHeader(context.Background(), home)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -446,7 +447,7 @@ func TestChatRefusedSendShowsNoticeAndKeepsDraft(t *testing.T) {
 	m := New(home, clock.now)
 	t.Cleanup(m.Stop)
 	// Rule 12 refuses a send while no live coordinator is in the header.
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -472,7 +473,7 @@ func TestChatSendRunsInBackgroundAndKeepsFailedDraft(t *testing.T) {
 	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 	fake := newBlockingChatHerdr(t)
 	m := newTestModel(t, home, clock)
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatal(err)
 	}

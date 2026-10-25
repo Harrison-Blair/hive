@@ -38,11 +38,14 @@ const (
 
 // Model is the root Bubble Tea model for the eight-screen shell.
 type Model struct {
-	home   string
-	now    func() time.Time
-	reader *logs.Reader
-	logger *slog.Logger
-	closer io.Closer
+	home        string
+	now         func() time.Time
+	reader      *logs.Reader
+	logger      *slog.Logger
+	gatedLogger *slog.Logger
+	closer      io.Closer
+	logs        logGate
+	loads       loadGate
 
 	events      []logs.Event
 	filterDraft string
@@ -79,9 +82,9 @@ type Model struct {
 	attachErr            string
 	startupNotice        string
 	startupErr           string
-	headerLoader         func(string) (headerState, error)
+	headerLoader         func(context.Context, string) (headerState, error)
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
-	healthLoader         func(string, *slog.Logger) (doctor.Result, error)
+	healthLoader         func(context.Context, string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
 	paneReader           func(context.Context, string) (string, error)
 	agents               agentsState
@@ -197,6 +200,7 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		frictionLoader: loadFriction,
 		demo:           demo,
 	}
+	m.loads.ctx, m.loads.cancel = context.WithCancel(context.Background())
 	if demo != nil {
 		m.useDemoLoaders(demo.fixture)
 	} else if callerCwd, err := os.Getwd(); err != nil {
@@ -231,9 +235,12 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 		m.logErr = boundedError("log: " + err.Error())
 	} else {
 		m.closer = writer
+		handler := &gatedHandler{gate: &m.logs, next: writer}
 		m.logger = slog.New(writer)
+		m.gatedLogger = slog.New(handler)
 		if demo != nil {
 			m.logger = slog.New(writer.WithAttrs([]slog.Attr{slog.Bool("demo", true)}))
+			m.gatedLogger = slog.New(handler.WithAttrs([]slog.Attr{slog.Bool("demo", true)}))
 		}
 	}
 	if demo != nil {
@@ -244,11 +251,204 @@ func newModel(home string, now func() time.Time, demo *demoState) *Model {
 	return m
 }
 
-// Stop closes the TUI log writer.
+// Stop settles the loaders, writes accepted log events, and closes the TUI
+// log writer. Each step can run more than once.
 func (m *Model) Stop() {
+	m.shutdown()
+}
+
+// shutdown settles each admitted loader, resolves the accepted log events, and
+// closes the TUI writer before the program returns.
+func (m *Model) shutdown() {
+	m.loads.close()
+	m.logs.close()
 	if m.closer != nil {
 		_ = m.closer.Close()
 	}
+}
+
+// loaderStoppedMsg tells that a loader callback did not start because the
+// program shutdown began.
+type loaderStoppedMsg struct{}
+
+// loadGate admits home-access loader callbacks until shutdown. Shutdown refuses
+// a new callback and waits for each admitted callback to settle.
+type loadGate struct {
+	mu     sync.Mutex
+	closed bool
+	active sync.WaitGroup
+	// ctx is the owner context of the admitted home-access work. Close
+	// cancels it before it waits for that work to settle.
+	ctx    context.Context
+	cancel context.CancelFunc
+	// testHook observes admission and close. It is nil in production.
+	testHook func(string)
+}
+
+func (g *loadGate) note(event string) {
+	if g.testHook != nil {
+		g.testHook(event)
+	}
+}
+
+func (g *loadGate) begin() bool {
+	g.mu.Lock()
+	if g.closed {
+		g.mu.Unlock()
+		g.note("refused")
+		return false
+	}
+	g.active.Add(1)
+	g.mu.Unlock()
+	g.note("begin")
+	return true
+}
+
+func (g *loadGate) end() {
+	g.active.Done()
+	g.note("end")
+}
+
+func (g *loadGate) close() {
+	g.note("close-enter")
+	if g.cancel != nil {
+		g.cancel()
+	}
+	g.mu.Lock()
+	g.closed = true
+	g.mu.Unlock()
+	g.note("close-sealed")
+	g.active.Wait()
+	g.note("close-done")
+}
+
+// startLoad wraps one home-access loader. A callback that starts after
+// shutdown returns loaderStoppedMsg and touches no file.
+func (m *Model) startLoad(run func() tea.Msg) tea.Cmd {
+	return func() tea.Msg {
+		if !m.loads.begin() {
+			return loaderStoppedMsg{}
+		}
+		defer m.loads.end()
+		return run()
+	}
+}
+
+var errLogClosed = errors.New("tui: log writer is closed")
+
+// gatedHandler passes a log event to the writer until the program ends. A late
+// event is dropped, so a running loader cannot keep the log file open.
+type gatedHandler struct {
+	gate *logGate
+	next slog.Handler
+}
+
+func (h *gatedHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.next.Enabled(ctx, level)
+}
+
+func (h *gatedHandler) Handle(ctx context.Context, record slog.Record) error {
+	if !h.gate.begin() {
+		return errLogClosed
+	}
+	defer h.gate.end()
+	return h.next.Handle(ctx, record)
+}
+
+func (h *gatedHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &gatedHandler{gate: h.gate, next: h.next.WithAttrs(attrs)}
+}
+
+func (h *gatedHandler) WithGroup(name string) slog.Handler {
+	return &gatedHandler{gate: h.gate, next: h.next.WithGroup(name)}
+}
+
+// logGate stops a log write after the program ends. A command that started
+// before the close finishes; a command that starts after it does not write.
+type logGate struct {
+	mu     sync.Mutex
+	closed bool
+	tasks  map[*logTask]struct{}
+	active sync.WaitGroup
+	// testHook observes acceptance, command creation, execution, and close.
+	// It is nil in production.
+	testHook func(string)
+}
+
+type logTask struct {
+	gate  *logGate
+	once  sync.Once
+	err   error
+	write func() error
+}
+
+func (t *logTask) run() error {
+	t.once.Do(func() {
+		t.err = t.write()
+		t.gate.unregister(t)
+	})
+	return t.err
+}
+
+func (g *logGate) note(event string) {
+	if g.testHook != nil {
+		g.testHook(event)
+	}
+}
+
+func (g *logGate) begin() bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.closed {
+		return false
+	}
+	g.active.Add(1)
+	return true
+}
+
+func (g *logGate) end() {
+	g.active.Done()
+}
+
+// register records an accepted log task. It refuses a task created after the
+// gate is sealed.
+func (g *logGate) register(task *logTask) bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.closed {
+		return false
+	}
+	if g.tasks == nil {
+		g.tasks = make(map[*logTask]struct{})
+	}
+	g.tasks[task] = struct{}{}
+	return true
+}
+
+func (g *logGate) unregister(task *logTask) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	delete(g.tasks, task)
+}
+
+// close resolves every accepted task, then waits for each started write. A
+// task whose command was never dispatched runs here, so close is bounded and
+// the event is written exactly once.
+func (g *logGate) close() {
+	g.note("close-enter")
+	g.mu.Lock()
+	g.closed = true
+	tasks := make([]*logTask, 0, len(g.tasks))
+	for task := range g.tasks {
+		tasks = append(tasks, task)
+	}
+	g.mu.Unlock()
+	g.note("close-sealed")
+	for _, task := range tasks {
+		_ = task.run()
+	}
+	g.active.Wait()
+	g.note("close-done")
 }
 
 // Init starts the first data loads and the refresh tick.
@@ -538,11 +738,11 @@ func (m *Model) startHeaderLoad() tea.Cmd {
 		return nil
 	}
 	m.headerLoading = true
-	loader, home := m.headerLoader, m.home
-	return func() tea.Msg {
-		state, err := loader(home)
+	loader, home, ctx := m.headerLoader, m.home, m.loads.ctx
+	return m.startLoad(func() tea.Msg {
+		state, err := loader(ctx, home)
 		return headerLoadMsg{state: state, err: err}
-	}
+	})
 }
 
 func (m *Model) startCurrentScreenLoad() tea.Cmd {
@@ -554,48 +754,48 @@ func (m *Model) startCurrentScreenLoad() tea.Cmd {
 	switch request {
 	case agentsDataRequest:
 		loader, home, now := m.agentsLoader, m.home, m.now
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: agentsDataRequest, agents: data, err: err}
-		}
+		})
 	case chatDataRequest:
 		loader, home, now := m.chatLoader, m.home, m.now
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home, now())
 			return screenLoadMsg{request: chatDataRequest, chat: data, err: err}
-		}
+		})
 	case healthDataRequest:
 		// health.md rule 4: the agents table is beside the checks.
-		loader, agentsLoader, home, logger, now := m.healthLoader, m.agentsLoader, m.home, m.logger, m.now
-		return func() tea.Msg {
+		loader, agentsLoader, home, logger, now, ctx := m.healthLoader, m.agentsLoader, m.home, m.gatedLogger, m.now, m.loads.ctx
+		return m.startLoad(func() tea.Msg {
 			agents, err := agentsLoader(home, now())
-			result, doctorErr := loader(home, logger)
+			result, doctorErr := loader(ctx, home, logger)
 			if doctorErr != nil {
 				err = fmt.Errorf("hive doctor: %w", doctorErr)
 			}
 			return screenLoadMsg{request: healthDataRequest, health: result, agents: agents, err: err}
-		}
+		})
 	case tasksDataRequest:
 		loader, home := m.tasksLoader, m.home
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home)
 			return screenLoadMsg{request: tasksDataRequest, tasks: data, err: err}
-		}
+		})
 	case frictionDataRequest:
 		loader, home := m.frictionLoader, m.home
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			data, err := loader(home)
 			return screenLoadMsg{request: frictionDataRequest, friction: data, err: err}
-		}
+		})
 	default:
 		loader, reader, day := m.logLoader, m.reader, startOfDay(m.logDate)
-		return func() tea.Msg {
+		return m.startLoad(func() tea.Msg {
 			events, err := loader(reader, day)
 			if err == nil {
 				events = eventsOnDay(events, day)
 			}
 			return screenLoadMsg{request: logsDataRequest, day: day, events: events, err: err}
-		}
+		})
 	}
 }
 
@@ -645,10 +845,20 @@ func (m *Model) recordLogCmd(message string, attrs ...slog.Attr) tea.Cmd {
 		return nil
 	}
 	logger, now := m.logger, m.now
-	return func() tea.Msg {
+	task := &logTask{gate: &m.logs, write: func() error {
 		record := slog.NewRecord(now(), slog.LevelDebug, message, 0)
 		record.AddAttrs(attrs...)
-		return logWriteErrMsg{err: logger.Handler().Handle(context.Background(), record)}
+		return logger.Handler().Handle(context.Background(), record)
+	}}
+	if !m.logs.register(task) {
+		return nil
+	}
+	m.logs.note("command-created")
+	return func() tea.Msg {
+		m.logs.note("command-start")
+		err := task.run()
+		m.logs.note("command-end")
+		return logWriteErrMsg{err: err}
 	}
 }
 
@@ -740,6 +950,7 @@ func runProgram(model *Model, in io.Reader, out io.Writer, width, height int) er
 
 	_, runErr := program.Run()
 	close(watched)
+	model.shutdown()
 
 	if err := outputGuard.Err(); err != nil {
 		return fmt.Errorf("tui: output: %w", err)

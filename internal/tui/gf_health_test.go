@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -246,7 +247,7 @@ func TestGfHealthCheckAgainShowsCheckingAndTheError(t *testing.T) {
 	if got := viewRows(m)[0]; !strings.HasSuffix(strings.TrimSpace(got), "· 2 checks · 1 ok · 1 warn · checked "+checked+" · R checks again") {
 		t.Fatalf("title row = %q", got)
 	}
-	m.healthLoader = func(string, *slog.Logger) (doctor.Result, error) {
+	m.healthLoader = func(context.Context, string, *slog.Logger) (doctor.Result, error) {
 		return doctor.Result{}, errors.New("state store locked")
 	}
 	m, cmd := raise(t, m, key('R', "R"))

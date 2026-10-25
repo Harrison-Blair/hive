@@ -2,6 +2,7 @@ package tui
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -293,7 +294,7 @@ func ParseDemoSize(value string) (int, int, error) {
 // The screen renderers stay the same.
 func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	data := fixture.Data
-	m.headerLoader = func(string) (headerState, error) {
+	m.headerLoader = func(context.Context, string) (headerState, error) {
 		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks, data.Asks), nil
 	}
 	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {
@@ -343,7 +344,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 		sortFrictionEntries(entries)
 		return frictionData{entries: entries}, nil
 	}
-	m.healthLoader = func(string, *slog.Logger) (doctor.Result, error) {
+	m.healthLoader = func(context.Context, string, *slog.Logger) (doctor.Result, error) {
 		return doctor.Result{Checks: slices.Clone(data.Checks)}, nil
 	}
 	m.chatLoader = func(_ string, now time.Time) (chatScreenData, error) {
