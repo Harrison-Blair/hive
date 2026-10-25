@@ -28,6 +28,9 @@ const (
 	ownerInboxChange = "owner inbox"
 	taskMailChange   = "task mail"
 	inboxSourceField = "migrated_from"
+	// ownerInboxPlanName is the work list of the version 3 inbox change. The
+	// step keeps it until it writes schema version 3.
+	ownerInboxPlanName = "migrate-v3.json"
 )
 
 type schemaFile struct {
@@ -82,6 +85,9 @@ func (s *Store) migrate() error {
 		return fmt.Errorf("state schema version %d is newer than %d", version, CurrentSchemaVersion)
 	}
 	if version == CurrentSchemaVersion {
+		if err := s.removeOwnerInboxPlan(); err != nil {
+			return err
+		}
 		migrationContended.Delete(s.home)
 		return nil
 	}
@@ -171,6 +177,14 @@ func (s *Store) migrateLocked(locked *LockedStore) error {
 		if err := s.writeSchema(stepTo); err != nil {
 			logger.Debug("state migrate failed", "from", stepFrom, "to", stepTo, "path", s.schemaRelative(), "error", err.Error())
 			return err
+		}
+		if stepTo == 3 {
+			// The version 3 plan stays until its schema version is written,
+			// so a failed write continues from the same plan.
+			if err := s.removeOwnerInboxPlan(); err != nil {
+				logger.Debug("state migrate failed", "from", stepFrom, "to", stepTo, "path", s.stateRelative(ownerInboxPlanName), "error", err.Error())
+				return err
+			}
 		}
 		logger.Debug("state migrate done", "from", stepFrom, "to", stepTo, "count", count, "duration_ms", time.Since(started).Milliseconds())
 	}
@@ -317,22 +331,48 @@ func (s *Store) moveOwnerInboxes(locked *LockedStore, agents []records.Agent, lo
 	return count, "", nil
 }
 
-// managerInboxes returns each old manager inbox with its target and the IDs of
-// its source records. A record with a migration marker is a copy from an
-// earlier run, so it is not a source record.
+// managerInboxes returns each old manager inbox with its destination and the
+// IDs of its source records. The step writes its plan before it copies a
+// record and keeps the plan until the schema version is written, so a retry
+// after a failure reads the same sources and destinations. Without a plan,
+// the step reads the old inbox folders.
 func (s *Store) managerInboxes(locked *LockedStore, agents []records.Agent) ([]managerInbox, string, error) {
+	plan, found, err := s.ownerInboxPlan()
+	if err != nil {
+		return nil, s.stateRelative(ownerInboxPlanName), err
+	}
+	if !found {
+		failedPath := ""
+		plan, failedPath, err = s.discoverManagerInboxes(locked, agents)
+		if err != nil {
+			return nil, failedPath, err
+		}
+		if err := s.writeOwnerInboxPlan(plan); err != nil {
+			return nil, s.stateRelative(ownerInboxPlanName), err
+		}
+	}
+	sources := make([]managerInbox, 0, len(plan.Sources))
+	for _, source := range plan.Sources {
+		sources = append(sources, managerInbox{key: source.Key, target: source.Target, ids: source.IDs})
+	}
+	return sources, "", nil
+}
+
+// discoverManagerInboxes returns the work list of the version 3 inbox change
+// from the old inbox folders of the store.
+func (s *Store) discoverManagerInboxes(locked *LockedStore, agents []records.Agent) (ownerInboxPlan, string, error) {
 	root := filepath.Join(s.stateDir(), "inbox")
 	if err := s.checkList(root, []string{"inbox"}); err != nil {
-		return nil, s.stateRelative("inbox"), err
+		return ownerInboxPlan{}, s.stateRelative("inbox"), err
 	}
 	entries, err := os.ReadDir(root)
 	if errors.Is(err, os.ErrNotExist) {
-		return nil, "", nil
+		return ownerInboxPlan{}, "", nil
 	}
 	if err != nil {
-		return nil, s.stateRelative("inbox"), err
+		return ownerInboxPlan{}, s.stateRelative("inbox"), err
 	}
-	found := []managerInbox{}
+	plan := ownerInboxPlan{}
 	for _, entry := range entries {
 		source := entry.Name()
 		project := strings.TrimPrefix(source, "manager-")
@@ -345,11 +385,73 @@ func (s *Store) managerInboxes(locked *LockedStore, agents []records.Agent) ([]m
 		}
 		ids, err := s.sourceInboxIDs(locked, source)
 		if err != nil {
-			return nil, s.stateRelative("inbox", source), err
+			return ownerInboxPlan{}, s.stateRelative("inbox", source), err
 		}
-		found = append(found, managerInbox{key: source, target: target, ids: ids})
+		plan.Sources = append(plan.Sources, ownerInboxPlanSource{Key: source, Target: target, IDs: ids})
 	}
-	return found, "", nil
+	return plan, "", nil
+}
+
+// ownerInboxPlan is the work list of the version 3 inbox change. A source is
+// an old inbox folder. Its target is the inbox that receives its unread
+// records, and its IDs are the records to move.
+type ownerInboxPlan struct {
+	Sources []ownerInboxPlanSource `json:"sources"`
+}
+
+type ownerInboxPlanSource struct {
+	Key    string   `json:"key"`
+	Target string   `json:"target"`
+	IDs    []string `json:"ids"`
+}
+
+// ownerInboxPlan reads the work list of the version 3 inbox change. A missing
+// file means that the step has not read the old inboxes yet.
+func (s *Store) ownerInboxPlan() (ownerInboxPlan, bool, error) {
+	path := filepath.Join(s.stateDir(), ownerInboxPlanName)
+	data, err := readRecordFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return ownerInboxPlan{}, false, nil
+	}
+	if err != nil {
+		return ownerInboxPlan{}, false, err
+	}
+	var plan ownerInboxPlan
+	if err := json.Unmarshal(data, &plan); err != nil {
+		return ownerInboxPlan{}, false, fmt.Errorf("record invalid: %s", s.stateRelative(ownerInboxPlanName))
+	}
+	for _, source := range plan.Sources {
+		project := strings.TrimPrefix(source.Key, "manager-")
+		valid := project != source.Key && records.ValidID(project) &&
+			source.Target != source.Key && validateComponent("inbox", source.Target) == nil
+		for _, id := range source.IDs {
+			if validateComponent("id", id) != nil {
+				valid = false
+			}
+		}
+		if !valid {
+			return ownerInboxPlan{}, false, fmt.Errorf("record invalid: %s", s.stateRelative(ownerInboxPlanName))
+		}
+	}
+	return plan, true, nil
+}
+
+// writeOwnerInboxPlan writes the work list of the version 3 inbox change.
+func (s *Store) writeOwnerInboxPlan(plan ownerInboxPlan) error {
+	data, err := marshalRecord(plan)
+	if err != nil {
+		return err
+	}
+	return writeRecordFile(filepath.Join(s.stateDir(), ownerInboxPlanName), data)
+}
+
+// removeOwnerInboxPlan deletes the work list of the version 3 inbox change.
+func (s *Store) removeOwnerInboxPlan() error {
+	err := os.Remove(filepath.Join(s.stateDir(), ownerInboxPlanName))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
 }
 
 // sourceInboxIDs returns the IDs of the records of one old inbox that came

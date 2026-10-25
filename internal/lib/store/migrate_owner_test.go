@@ -610,6 +610,9 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterTaskFailure(t *test
 	if _, ok := task["controlling_role"]; ok {
 		t.Fatalf("task = %#v; want no controlling_role", task)
 	}
+	if !fileMissing(t, home, "migrate-v3.json") {
+		t.Fatal("the version 3 plan is still present")
+	}
 	before := stateFingerprints(t, home)
 	if _, err := Open(home); err != nil {
 		t.Fatalf("second Open() = %v; want no change", err)
@@ -642,7 +645,7 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterMarkerFailure(t *te
 		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
 	}
 	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
-	if _, ok := owner[inboxSourceField]; ok {
+	if _, ok := owner["migrated_from"]; ok {
 		t.Fatalf("owner record = %#v; want the marker cleanup before the failing folder", owner)
 	}
 
@@ -656,6 +659,9 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterMarkerFailure(t *te
 		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
 	}
 	checkOwnerAliasDestinations(t, home)
+	if !fileMissing(t, home, "migrate-v3.json") {
+		t.Fatal("the version 3 plan is still present")
+	}
 }
 
 // TestMigrationVersionThreeSkipsAMarkedCopy proves that the marker of a
