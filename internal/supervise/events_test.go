@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func workerRecord(key, project, task, pane string) records.Agent {
@@ -298,6 +300,7 @@ func TestEventsAgentDetectedReleasedExited(t *testing.T) {
 	home := testHome(t)
 	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
 	writeAgent(t, home, worker)
+	writeTaskRecord(t, home, records.Task{ID: "1-demo", Project: "demo", ActingAgent: "worker-1", Status: "assigned"})
 	ops := newFakeOps()
 	s := handlerSupervisor(t, home, ops, newFakeClock())
 
@@ -311,6 +314,30 @@ func TestEventsAgentDetectedReleasedExited(t *testing.T) {
 	}
 	if updated := readAgent(t, home, worker.Key); updated.Status != records.AgentExited {
 		t.Fatalf("status = %q; want exited", updated.Status)
+	}
+}
+
+func TestEventsAgentDetectedReleasedExitedPrunesWithoutTask(t *testing.T) {
+	home := testHome(t)
+	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	writeAgent(t, home, worker)
+	ops := newFakeOps()
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	event := eventOf("pane_agent_detected", `{"pane_id":"w1:p2","workspace_id":"w1","released":true,"final_status":"unknown"}`)
+	if err := s.handleEvent(context.Background(), event); err != nil {
+		t.Fatal(err)
+	}
+	if all := readInbox(t, home, "coordinator"); len(all) != 1 || all[0].Kind != records.InboxExited {
+		t.Fatalf("inbox = %+v; want one exited record", all)
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record records.Agent
+	if err := registry.ReadIn([]string{"agents"}, worker.Key, &record); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("pruned record read = %v; want not exist", err)
 	}
 }
 

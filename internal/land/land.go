@@ -15,6 +15,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/prune"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -164,9 +165,22 @@ func Land(ctx context.Context, home string, options Options) output.Envelope {
 	logEvent(scoped, "land start", project.ID, options.Task, "mode", options.Mode, "base", project.Base)
 
 	if options.Mode == "merge" {
-		return landSpec(home, scoped, task, landMerge(ctx, registry, scoped, options, task, project))
+		return pruneAfterLand(ctx, home, scoped, landSpec(home, scoped, task, landMerge(ctx, registry, scoped, options, task, project)))
 	}
-	return landPR(ctx, registry, scoped, home, options, task, project)
+	return pruneAfterLand(ctx, home, scoped, landPR(ctx, registry, scoped, home, options, task, project))
+}
+
+// pruneAfterLand deletes each agent record that the delivery no longer
+// references. A prune failure does not change the delivery.
+func pruneAfterLand(ctx context.Context, home string, logger *slog.Logger, envelope output.Envelope) output.Envelope {
+	result, ok := envelope.Result.(Result)
+	if !ok {
+		return envelope
+	}
+	if _, err := prune.Run(ctx, home); err != nil {
+		logFailure(logger, result.Task.Project, result.Task.ID, "prune", err.Error())
+	}
+	return envelope
 }
 
 // checkCaller applies the caller rules of D8 to one landing. An agent caller

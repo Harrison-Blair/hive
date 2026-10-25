@@ -12,6 +12,7 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
+	"github.com/Harrison-Blair/hive/internal/lib/prune"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -194,6 +195,9 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	logger.Debug("agent stop topology", "command", "agent stop", "agent_id", record.Key, "topology", result.Topology)
 	if record.TabCreatedByHive {
 		effects = appendEffect(effects, stoppedTabEffect(ctx, logger, record, result))
+	}
+	if _, pruneErr := prune.Run(ctx, home); pruneErr != nil {
+		logger.Debug("agent stop prune failed", "command", "agent stop", "agent_id", record.Key, "error", pruneErr.Error())
 	}
 	if record.Owns != "" && record.Project != "" {
 		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)

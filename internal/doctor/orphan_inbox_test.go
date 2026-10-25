@@ -1,9 +1,11 @@
 package doctor
 
 import (
+	"context"
 	"testing"
 
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
+	"github.com/Harrison-Blair/hive/internal/lib/prune"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
@@ -11,6 +13,24 @@ func appendDoctorInbox(t *testing.T, home, key, text string) {
 	t.Helper()
 	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: key, Kind: records.InboxMessage, Text: text}); envelope.Outcome != "ok" {
 		t.Fatalf("Append(%s) = %#v", key, envelope)
+	}
+}
+
+func TestDoctorOwnerlessInboxClearsAfterPrune(t *testing.T) {
+	home := newHome(t)
+	seedDoctorAgent(t, home, records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive})
+	seedDoctorAgent(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Status: records.AgentStopped})
+	appendDoctorInbox(t, home, "worker-old", "unread")
+	if check := checkOwnerlessInboxes(home); check.Status != StatusWarn {
+		t.Fatalf("check before prune = %+v; want warn", check)
+	}
+
+	if _, err := prune.Run(context.Background(), home); err != nil {
+		t.Fatal(err)
+	}
+	check := checkOwnerlessInboxes(home)
+	if check.Status != StatusOK || check.Detail != "0" {
+		t.Fatalf("check after prune = %+v; want ok with 0", check)
 	}
 }
 

@@ -2,10 +2,13 @@ package supervise
 
 import (
 	"context"
+	"errors"
+	"os"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func TestReconcileMatchingTerminalKeepsLive(t *testing.T) {
@@ -55,6 +58,7 @@ func TestReconcileAgentNotFoundShellPaneExited(t *testing.T) {
 	home := testHome(t)
 	record := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
 	writeAgent(t, home, record)
+	writeTaskRecord(t, home, records.Task{ID: "1-demo", Project: "demo", ActingAgent: "worker-1", Status: "assigned"})
 	ops := newFakeOps()
 	ops.pane["w1:p2"] = herdr.PaneInfo{PaneID: "w1:p2", TerminalID: "term-a", WorkspaceID: "w1", TabID: "w1:t2", AgentStatus: "unknown"}
 	s := handlerSupervisor(t, home, ops, newFakeClock())
@@ -69,6 +73,30 @@ func TestReconcileAgentNotFoundShellPaneExited(t *testing.T) {
 	all := readInbox(t, home, "coordinator")
 	if len(all) != 1 || all[0].Kind != records.InboxExited {
 		t.Fatalf("inbox = %+v; want one exited record", all)
+	}
+}
+
+func TestReconcilePrunesExitedRecordWithoutReference(t *testing.T) {
+	home := testHome(t)
+	record := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
+	writeAgent(t, home, record)
+	ops := newFakeOps()
+	ops.pane["w1:p2"] = herdr.PaneInfo{PaneID: "w1:p2", TerminalID: "term-a", WorkspaceID: "w1", TabID: "w1:t2", AgentStatus: "unknown"}
+	s := handlerSupervisor(t, home, ops, newFakeClock())
+
+	if err := s.reconcile(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if all := readInbox(t, home, "coordinator"); len(all) != 1 || all[0].Kind != records.InboxExited {
+		t.Fatalf("inbox = %+v; want one exited record", all)
+	}
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stored records.Agent
+	if err := registry.ReadIn([]string{"agents"}, record.Key, &stored); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("pruned record read = %v; want not exist", err)
 	}
 }
 
@@ -155,6 +183,7 @@ func TestReconcileOldSupervisorStoppedWithoutHerdr(t *testing.T) {
 		Status: records.AgentLive, AgentStatus: "idle", Generation: 0, Spawned: false,
 	}
 	writeAgent(t, home, old)
+	writeAgent(t, home, records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", Kind: records.AgentKindSupervisor, Replaces: old.Key, Status: records.AgentLive, Generation: 1})
 	ops := newFakeOps()
 	s := handlerSupervisor(t, home, ops, newFakeClock())
 

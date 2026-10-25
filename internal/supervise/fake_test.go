@@ -276,6 +276,17 @@ func writeClaim(t *testing.T, home string, claim records.Claim) {
 	}
 }
 
+func writeTaskRecord(t *testing.T, home string, task records.Task) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.WriteIn([]string{"tasks"}, task.ID, task); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func readAgent(t *testing.T, home, key string) records.Agent {
 	t.Helper()
 	registry, err := store.Open(home)
