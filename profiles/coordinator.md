@@ -190,5 +190,5 @@ The answer comes to your pane as one prompt:
 - For all other files, the coordinator never changes a project source file.
 - The coordinator never polls. Read the inbox after each nudge.
 - Address manager messages to the inbox key `manager-PROJECT`. For project hive, this is `manager-hive`.
-- Do not use the live agent record key with a generation number.
+- Do not use the live agent record key `manager-PROJECT-gN` for a manager message.
 - Send one escalation to a manager with `hive inbox send --to manager-PROJECT TEXT`.

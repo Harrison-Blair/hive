@@ -146,7 +146,7 @@ func TestCoordinatorProfileHasTheApprovedInstructions(t *testing.T) {
 	for _, want := range []string{
 		"Hive-started exchanges get replies through Hive. Use the native harness only when the user starts the exchange there.",
 		"Address manager messages to the inbox key `manager-PROJECT`. For project hive, this is `manager-hive`.",
-		"Do not use the live agent record key with a generation number.",
+		"Do not use the live agent record key `manager-PROJECT-gN` for a manager message.",
 		"hive agent spawn --profile planner --project ID --owner",
 	} {
 		if !strings.Contains(text, want) {
