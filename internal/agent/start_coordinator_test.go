@@ -229,6 +229,18 @@ func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
 			if err := json.Unmarshal([]byte(prompts[0].Params), &prompt); err != nil {
 				t.Fatalf("decode agent.prompt params: %v", err)
 			}
+			if kind == "pi" {
+				for index, arg := range start.Args {
+					if arg == "--append-system-prompt" || strings.ContainsAny(arg, "\r\n") {
+						t.Errorf("Pi coordinator start argument %d carries unsafe instructions", index)
+					}
+				}
+				want := strings.TrimSpace(readProfile(t, "coordinator")) + "\n\n" + strings.TrimSpace(guide.Text()) +
+					"\n\nRead `profiles/coordinator.md` and run `hive guide` after a context reset.\n\n" + CoordinatorPrompt
+				if prompt.Text != want {
+					t.Error("Pi coordinator first prompt must contain the profile, guide, reset reminder, and startup prompt in order")
+				}
+			}
 			systemIndex := -1
 			for index, arg := range start.Args {
 				if arg == "--append-system-prompt" {
