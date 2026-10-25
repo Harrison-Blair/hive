@@ -141,7 +141,7 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 	activePath := t.TempDir()
 	activeTask := featureTaskRecord{
 		Task: records.Task{
-			ID: activeID, Project: "one", Title: "Active worktree", ControllingRole: "manager-one",
+			ID: activeID, Project: "one", Title: "Active worktree",
 			Status: "created", DependsOn: []string{}, Worktree: &records.Worktree{Path: activePath},
 		},
 		Feature: "f",
@@ -174,18 +174,18 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 
 	oldID := "90-old-task"
 	oldTask := records.Task{
-		ID: oldID, Project: "one", Title: "Old record", ControllingRole: "manager-one",
+		ID: oldID, Project: "one", Title: "Old record",
 		Status: "verified", DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
 	if err := registry.Write("tasks", oldID, oldTask); err != nil {
 		t.Fatal(err)
 	}
-	agent := records.Agent{Key: "manager-agent", Name: "manager-agent", Role: "manager", Project: "one", Status: records.AgentLive, Generation: 1}
+	agent := records.Agent{Key: "manager-agent", Name: "manager-agent", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1}
 	if err := registry.Write("agents", agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.Write("claims", "manager-one", records.Claim{Key: "manager-one", Agent: agent.Key, Generation: 1}); err != nil {
+	if err := registry.Write("claims", "owner-one", records.Claim{Key: "owner-one", Agent: agent.Key, Generation: 1}); err != nil {
 		t.Fatal(err)
 	}
 	workerTask := oldTask
@@ -202,7 +202,7 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 		Error string `json:"error"`
 	}
 	decodeJSON(t, unauthorized, &unauthorizedResult)
-	if !strings.Contains(unauthorizedResult.Error, "not the controlling role") {
+	if !strings.Contains(unauthorizedResult.Error, "not the owner of project one or the coordinator") {
 		t.Fatalf("non-controlling edit error = %q", unauthorizedResult.Error)
 	}
 	edited := runHive(t, "--json", "task", "edit", "--task", oldID, "--feature", "g", "--agent", agent.Name)

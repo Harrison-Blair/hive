@@ -126,9 +126,6 @@ func TestCreateRecordFields(t *testing.T) {
 	if task.ID != "1-spawn-worker" || task.Project != "one" || task.Title != "Spawn worker" {
 		t.Errorf("record = %#v; want the ID, project, and title", task)
 	}
-	if task.ControllingRole != "manager-one" {
-		t.Errorf("controlling_role = %q; want manager-one", task.ControllingRole)
-	}
 	if task.ActingAgent != "" {
 		t.Errorf("acting_agent = %q; want empty", task.ActingAgent)
 	}

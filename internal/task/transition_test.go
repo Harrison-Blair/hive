@@ -43,15 +43,14 @@ func newSeed(t *testing.T, status string) (string, records.Task) {
 	home := newHome(t)
 	registerProject(t, home, "one")
 	task := records.Task{
-		ID:              "1-seed",
-		Project:         "one",
-		Title:           "Seed",
-		ControllingRole: "manager-one",
-		ActingAgent:     "worker-1",
-		Status:          status,
-		DependsOn:       []string{},
-		CreatedAt:       "2026-01-01T00:00:00Z",
-		UpdatedAt:       "2026-01-01T00:00:00Z",
+		ID:          "1-seed",
+		Project:     "one",
+		Title:       "Seed",
+		ActingAgent: "worker-1",
+		Status:      status,
+		DependsOn:   []string{},
+		CreatedAt:   "2026-01-01T00:00:00Z",
+		UpdatedAt:   "2026-01-01T00:00:00Z",
 	}
 	seedTask(t, home, task)
 	for i, name := range []string{"worker-1", "worker-2"} {

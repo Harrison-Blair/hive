@@ -9,13 +9,17 @@ const maxTaskIDLength = 61
 
 // Task is one durable task record.
 type Task struct {
-	ID                  string                `json:"id"`
-	Project             string                `json:"project"`
-	Title               string                `json:"title"`
-	Feature             string                `json:"feature,omitempty"`
-	NeedsUser           string                `json:"needs_user,omitempty"`
-	Spec                bool                  `json:"spec,omitempty"`
-	ControllingRole     string                `json:"controlling_role"`
+	ID        string `json:"id"`
+	Project   string `json:"project"`
+	Title     string `json:"title"`
+	Feature   string `json:"feature,omitempty"`
+	NeedsUser string `json:"needs_user,omitempty"`
+	Spec      bool   `json:"spec,omitempty"`
+	// ControllingRole is the old task mail field. This build writes no value,
+	// and migration version 3 removes the field from each stored record. It
+	// stays so that an old record or a TUI fixture decodes, and omitempty
+	// keeps it out of each record that this build writes.
+	ControllingRole     string                `json:"controlling_role,omitempty"`
 	ActingAgent         string                `json:"acting_agent"`
 	Status              string                `json:"status"`
 	DependsOn           []string              `json:"depends_on"`

@@ -208,9 +208,10 @@ hive inbox: read and send inbox records
   --agent string: reading agent
   --all bool: print each record and set nothing
   -h, --help bool: help for inbox
+  --inbox string: inbox key or project:ID
   --json bool: write JSON output
   --pane string: herdr pane ID
-  --role string: inbox key
+  --role string: old name of --inbox
 
 hive inbox send: append a message record
   --agent string: sending agent

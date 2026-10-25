@@ -4,22 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // ReadOptions holds the values of one inbox read.
 type ReadOptions struct {
-	Role    string
-	RoleSet bool
-	All     bool
-	Agent   string
-	PaneID  string
+	// Inbox is the value of --inbox, or the old --role value.
+	Inbox    string
+	InboxSet bool
+	All      bool
+	Agent    string
+	PaneID   string
 	// HerdrPane is HERDR_PANE_ID. An empty value means outside herdr.
 	HerdrPane string
 }
@@ -46,16 +47,24 @@ func Read(home string, options ReadOptions) output.Envelope {
 
 		ownKey := agent.InboxKey(caller)
 		key = ownKey
-		if options.RoleSet {
-			key = options.Role
+		if options.InboxSet {
+			key = options.Inbox
 			if err := inboxlib.ValidateAppend(inboxlib.AppendOptions{Role: key}); err != nil {
 				envelope = failedRead("validate", err.Error())
 				return nil
 			}
+			if inboxlib.IsProjectAddress(key) {
+				agents, err := identity.Agents(locked)
+				if err != nil {
+					envelope = failedRead("read", err.Error())
+					return nil
+				}
+				key = inboxlib.ResolveAddress(agents, key)
+			}
 		}
 
 		ownerRead := key == ownKey
-		coordinatorRead := caller.Role == "coordinator" && !ownerRead
+		coordinatorRead := caller.Kind == records.AgentKindCoordinator && !ownerRead
 		if !ownerRead && !coordinatorRead {
 			envelope = failedRead("validate", fmt.Sprintf("inbox %s belongs to %s", key, inboxOwner(key)))
 			return nil
@@ -95,20 +104,9 @@ func Read(home string, options ReadOptions) output.Envelope {
 	return envelope
 }
 
-func managerProject(key string) string {
-	project := strings.TrimPrefix(key, "manager-")
-	if project == key {
-		return ""
-	}
-	return project
-}
-
 func inboxOwner(key string) string {
-	if key == "coordinator" {
+	if key == records.AgentKindCoordinator {
 		return "the coordinator"
-	}
-	if project := managerProject(key); project != "" {
-		return "the manager of project " + project
 	}
 	return "the agent " + key
 }

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
@@ -195,19 +196,20 @@ func (s *Supervisor) markNudged(ctx context.Context, role string, expected recor
 }
 
 // hasCompletedRecord reports whether the task of one record has a completed
-// inbox record. A store read failure is returned, not treated as no record.
+// inbox record in the inbox of its project. A store read failure is returned,
+// not treated as no record.
 func (s *Supervisor) hasCompletedRecord(ctx context.Context, record records.Agent) (bool, error) {
-	role := controllingRole(record)
-	if role == "" || record.Task == "" {
+	if record.Task == "" || record.Project == "" {
 		return false, nil
 	}
+	key := agent.ResolveInbox(s.agents, "project:"+record.Project)
 	registry, err := store.Open(s.options.Home)
 	if err != nil {
 		return false, err
 	}
 	found := false
 	err = registry.WithLock(ctx, func(locked *store.LockedStore) error {
-		all, err := inbox.AllHeld(locked, role)
+		all, err := inbox.AllHeld(locked, key)
 		if err != nil {
 			return err
 		}

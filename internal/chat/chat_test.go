@@ -44,7 +44,7 @@ func seedAgent(t *testing.T, home string, record records.Agent) {
 
 func seedCoordinator(t *testing.T, home string) {
 	t.Helper()
-	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
 	seedAgent(t, home, coordinator)
 	registry, err := store.Open(home)
 	if err != nil {
@@ -475,13 +475,13 @@ func TestSendRefusesCoordinatorWorkspaceCallerBelowProjectsByRule2(t *testing.T)
 
 func seedManager(t *testing.T, home string) {
 	t.Helper()
-	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
+	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
 	seedAgent(t, home, manager)
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: manager.Key, Generation: 1}); err != nil {
+	if err := registry.WriteIn([]string{"claims"}, "owner-hive", records.Claim{Key: "owner-hive", Agent: manager.Key, Generation: 1}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -566,13 +566,13 @@ func TestValidateCallerRefusesChangedIdentityAfterPaneGet(t *testing.T) {
 		}
 		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
 			record := records.Agent{
-				Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo",
+				Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo",
 				PaneID: "wUser:p1", WorkspaceID: "wUser", Status: records.AgentLive, Generation: 1,
 			}
 			if err := locked.WriteIn([]string{"agents"}, record.Key, record); err != nil {
 				return err
 			}
-			return locked.WriteIn([]string{"claims"}, "manager-demo", records.Claim{Key: "manager-demo", Agent: record.Key, Generation: 1})
+			return locked.WriteIn([]string{"claims"}, "owner-demo", records.Claim{Key: "owner-demo", Agent: record.Key, Generation: 1})
 		})
 	})
 	err = ValidateCaller(context.Background(), home, "", "wUser:p1", "")

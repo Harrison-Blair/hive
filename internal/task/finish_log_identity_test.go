@@ -49,7 +49,7 @@ func seedFinishLogHome(t *testing.T, status string) string {
 	home := newHome(t)
 	registerProject(t, home, "one")
 	seedTask(t, home, records.Task{
-		ID: "1-literal", Project: "one", Title: "Literal", ControllingRole: "manager-one",
+		ID: "1-literal", Project: "one", Title: "Literal",
 		ActingAgent: "worker-name", Status: status, DependsOn: []string{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
@@ -135,7 +135,7 @@ func TestDirectFinishLogsResolvedKeyWithoutOutputPointer(t *testing.T) {
 		{"success", "", "ok", "complete", []string{"task", "counter", "inbox", "agent"}},
 		{"task", filepath.Join(".hive", "state", "tasks"), "failed", "task", nil},
 		{"counter", filepath.Join(".hive", "state", "counters"), "partial", "counter", []string{"task"}},
-		{"record", filepath.Join(".hive", "state", "inbox", "manager-one"), "partial", "record", []string{"task", "counter"}},
+		{"record", filepath.Join(".hive", "state", "inbox", "coordinator"), "partial", "record", []string{"task", "counter"}},
 		{"finished", filepath.Join(".hive", "state", "agents"), "partial", "finished", []string{"task", "counter", "inbox"}},
 		{"refusal", "", "failed", "identity", nil},
 	}
@@ -208,8 +208,8 @@ func TestDirectFinishLogsResolvedKeyWithoutOutputPointer(t *testing.T) {
 							resource, _ := event["resource"].(string)
 							resources = append(resources, resource)
 							if resource == "counter" || resource == "inbox" {
-								if event["role"] != "manager-one" {
-									t.Errorf("effect %s lost the controlling role: %#v", resource, event)
+								if event["role"] != "project:one" {
+									t.Errorf("effect %s lost the project inbox: %#v", resource, event)
 								}
 							}
 						case "task error":

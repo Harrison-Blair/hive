@@ -40,7 +40,7 @@ func TestNeedsUserEditFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	task := records.Task{
-		ID: "90-decision", Project: "one", Title: "Decision task", ControllingRole: "manager-one",
+		ID: "90-decision", Project: "one", Title: "Decision task",
 		Status: "verified", DependsOn: []string{},
 		Verification: &records.Verification{Agent: "verifier", Result: "pass", At: "2026-01-01T00:00:00Z"},
 		CreatedAt:    "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
@@ -49,14 +49,14 @@ func TestNeedsUserEditFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, agent := range []records.Agent{
-		{Key: "manager", Name: "manager", Role: "manager", Project: "one", Status: records.AgentLive, Generation: 1},
+		{Key: "manager", Name: "manager", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1},
 		{Key: "worker", Name: "worker", Role: "worker", Project: "one", Status: records.AgentLive, Generation: 1},
 	} {
 		if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if err := registry.WriteIn([]string{"claims"}, "manager-one", records.Claim{Key: "manager-one", Agent: "manager", Generation: 1}); err != nil {
+	if err := registry.WriteIn([]string{"claims"}, "owner-one", records.Claim{Key: "owner-one", Agent: "manager", Generation: 1}); err != nil {
 		t.Fatal(err)
 	}
 	briefPath := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
@@ -142,8 +142,8 @@ func TestNeedsUserEditFlow(t *testing.T) {
 	}
 
 	unauthorized, err := runFailure("--json", "task", "edit", "--task", task.ID, "--needs-user", "worker text", "--agent", "worker")
-	if err == nil || !strings.Contains(unauthorized, "not the controlling role") {
-		t.Fatalf("worker edit = %q, %v; want controlling-role refusal", unauthorized, err)
+	if err == nil || !strings.Contains(unauthorized, "not the owner of project one or the coordinator") {
+		t.Fatalf("worker edit = %q, %v; want owner refusal", unauthorized, err)
 	}
 
 	completed := task

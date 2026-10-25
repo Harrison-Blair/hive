@@ -1,6 +1,7 @@
 package inbox
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -18,16 +19,25 @@ func New() *cobra.Command {
 		Short: "read and send inbox records",
 		Args:  cobra.NoArgs,
 	}
-	command.Flags().String("role", "", "inbox key")
+	command.Flags().String("inbox", "", "inbox key or project:ID")
+	command.Flags().String("role", "", "old name of --inbox")
 	command.Flags().String("agent", "", "reading agent")
 	command.Flags().Bool("all", false, "print each record and set nothing")
 	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
 	command.AddCommand(newSend())
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
+		inboxKey, _ := cmd.Flags().GetString("inbox")
+		inboxSet := cmd.Flags().Lookup("inbox").Changed
 		role, _ := cmd.Flags().GetString("role")
-		roleFlag := cmd.Flags().Lookup("role")
-		roleSet := roleFlag != nil && roleFlag.Changed
-		agent, _ := cmd.Flags().GetString("agent")
+		roleSet := cmd.Flags().Lookup("role").Changed
+		if roleSet {
+			if inboxSet {
+				return fmt.Errorf("pass one of --inbox or --role, not both")
+			}
+			inboxKey = role
+			inboxSet = true
+		}
+		agentName, _ := cmd.Flags().GetString("agent")
 		all, _ := cmd.Flags().GetBool("all")
 		pane, _ := cmd.Flags().GetString("pane")
 		var envelope output.Envelope
@@ -36,7 +46,7 @@ func New() *cobra.Command {
 		cmd.SetOut(tracker)
 		err := common.Run(cmd, "inbox", func(home string) (output.Envelope, string, error) {
 			envelope = inboxlogic.Read(home, inboxlogic.ReadOptions{
-				Role: role, RoleSet: roleSet, All: all, Agent: agent, PaneID: pane, HerdrPane: os.Getenv("HERDR_PANE_ID"),
+				Inbox: inboxKey, InboxSet: inboxSet, All: all, Agent: agentName, PaneID: pane, HerdrPane: os.Getenv("HERDR_PANE_ID"),
 			})
 			return envelope, inboxlogic.ReadText(envelope), nil
 		})
@@ -44,13 +54,13 @@ func New() *cobra.Command {
 		if tracker.err != nil {
 			ids := inboxlogic.Consumed(envelope)
 			if len(ids) > 0 {
-				reportRole := role
-				if !roleSet {
+				reportInbox := inboxKey
+				if !inboxSet {
 					if result, ok := envelope.Result.(inboxlib.Result); ok && len(result.Records) > 0 {
-						reportRole = result.Records[0].Role
+						reportInbox = result.Records[0].Role
 					}
 				}
-				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), reportRole, ids)
+				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), reportInbox, ids)
 			}
 		}
 		return err

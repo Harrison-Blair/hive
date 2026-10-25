@@ -122,16 +122,16 @@ func TestResolveAmbiguousPaneSortsNames(t *testing.T) {
 func TestResolveSingletonGenerationAndClaimKey(t *testing.T) {
 	t.Run("old generation", func(t *testing.T) {
 		home := t.TempDir()
-		writeAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g2", Generation: 2})
+		writeAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+		writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g2", Generation: 2})
 		if _, err := resolveHeld(t, home, "", "w1:p1"); !errors.Is(err, ErrCallerUnknown) {
 			t.Fatalf("ResolveHeld(old generation) error = %v; want caller unknown", err)
 		}
 	})
 	t.Run("cross claim", func(t *testing.T) {
 		home := t.TempDir()
-		writeAgent(t, home, records.Agent{Key: "manager-two-g1", Name: "manager-two", Role: "manager", Project: "two", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-two-g1", Generation: 1})
+		writeAgent(t, home, records.Agent{Key: "manager-two-g1", Name: "manager-two", Role: "manager", Owns: "two", Project: "two", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+		writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-two-g1", Generation: 1})
 		if _, err := resolveHeld(t, home, "", "w1:p1"); !errors.Is(err, ErrCallerUnknown) {
 			t.Fatalf("ResolveHeld(cross claim) error = %v; want caller unknown", err)
 		}
@@ -141,8 +141,8 @@ func TestResolveSingletonGenerationAndClaimKey(t *testing.T) {
 	})
 	t.Run("valid claim", func(t *testing.T) {
 		home := t.TempDir()
-		writeAgent(t, home, records.Agent{Key: "manager-one-g2", Name: "manager-one", Role: "manager", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 2})
-		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g2", Generation: 2})
+		writeAgent(t, home, records.Agent{Key: "manager-one-g2", Name: "manager-one", Role: "manager", Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 2})
+		writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g2", Generation: 2})
 		byPane, err := resolveHeld(t, home, "", "w1:p1")
 		if err != nil || byPane.Key != "manager-one-g2" {
 			t.Fatalf("ResolveHeld(pane) = %#v, %v; want manager-one-g2", byPane, err)
@@ -156,8 +156,8 @@ func TestResolveSingletonGenerationAndClaimKey(t *testing.T) {
 
 func TestResolveFlagAndPaneUseTheSameClaimCheck(t *testing.T) {
 	home := t.TempDir()
-	writeAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-	writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g1", Generation: 2})
+	writeAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+	writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 2})
 	for _, route := range []struct{ flag, pane string }{{"manager-one", ""}, {"", "w1:p1"}} {
 		record, err := resolveHeld(t, home, route.flag, route.pane)
 		if err == nil || record.Key != "" {
@@ -187,22 +187,22 @@ func renameRecord(t *testing.T, home, collection, oldName, newName string) {
 func managerFixture(t *testing.T, home string) {
 	t.Helper()
 	writeAgent(t, home, records.Agent{
-		Key: "manager-one-g7", Name: "manager-one", Role: "manager", Project: "one",
+		Key: "manager-one-g7", Name: "manager-one", Role: "manager", Owns: "one", Project: "one",
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 7,
 	})
-	writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-one-g7", Generation: 7})
+	writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g7", Generation: 7})
 }
 
 func TestResolveRejectsSelectedClaimAlias(t *testing.T) {
 	t.Run("other project holder", func(t *testing.T) {
 		home := t.TempDir()
 		writeAgent(t, home, records.Agent{
-			Key: "manager-two-g7", Name: "manager-two", Role: "manager", Project: "two",
+			Key: "manager-two-g7", Name: "manager-two", Role: "manager", Owns: "two", Project: "two",
 			Status: records.AgentLive, PaneID: "w2:p2", Generation: 7,
 		})
-		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "manager-two-g7", Generation: 7})
-		writeClaim(t, home, records.Claim{Key: "manager-two", Agent: "manager-two-g7", Generation: 7})
-		if _, err := resolveHeld(t, home, "manager-one", ""); err == nil || err.Error() != "agent not found: manager-one" {
+		writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-two-g7", Generation: 7})
+		writeClaim(t, home, records.Claim{Key: "owner-two", Agent: "manager-two-g7", Generation: 7})
+		if _, err := resolveHeld(t, home, "owner-one", ""); err == nil || err.Error() != "agent not found: owner-one" {
 			t.Fatalf("ResolveHeld(manager-one) error = %v; want agent not found", err)
 		}
 		if record, err := resolveHeld(t, home, "", "w2:p2"); err != nil || record.Key != "manager-two-g7" {
@@ -212,8 +212,8 @@ func TestResolveRejectsSelectedClaimAlias(t *testing.T) {
 	t.Run("worker holder", func(t *testing.T) {
 		home := t.TempDir()
 		writeAgent(t, home, liveWorker("worker-key", "worker-name", "w1:p1", 1))
-		writeClaim(t, home, records.Claim{Key: "manager-one", Agent: "worker-key", Generation: 1})
-		if _, err := resolveHeld(t, home, "manager-one", ""); err == nil || err.Error() != "agent not found: manager-one" {
+		writeClaim(t, home, records.Claim{Key: "owner-one", Agent: "worker-key", Generation: 1})
+		if _, err := resolveHeld(t, home, "owner-one", ""); err == nil || err.Error() != "agent not found: owner-one" {
 			t.Fatalf("ResolveHeld(manager-one) error = %v; want agent not found", err)
 		}
 	})
@@ -225,7 +225,7 @@ func TestResolveRejectsPathKeyMismatch(t *testing.T) {
 		agent string
 		pane  string
 	}{
-		{"claim key", "manager-one", ""},
+		{"claim key", "owner-one", ""},
 		{"holder key", "manager-one-g7", ""},
 		{"pane", "", "w1:p1"},
 		{"history", "", "w1:p0"},
@@ -237,7 +237,7 @@ func TestResolveRejectsPathKeyMismatch(t *testing.T) {
 		newName    string
 	}{
 		{"holder", "agents", "manager-one-g7", "wrong-holder"},
-		{"claim", "claims", "manager-one", "wrong-claim"},
+		{"claim", "claims", "owner-one", "wrong-claim"},
 	}
 	for _, mismatch := range mismatches {
 		for _, route := range routes {
@@ -246,7 +246,7 @@ func TestResolveRejectsPathKeyMismatch(t *testing.T) {
 				managerFixture(t, home)
 				if route.name == "history" {
 					writeAgent(t, home, records.Agent{
-						Key: "manager-one-g7", Name: "manager-one", Role: "manager", Project: "one",
+						Key: "manager-one-g7", Name: "manager-one", Role: "manager", Owns: "one", Project: "one",
 						Status: records.AgentLive, PaneID: "w1:p1", PaneHistory: []string{"w1:p0"}, Generation: 7,
 					})
 				}

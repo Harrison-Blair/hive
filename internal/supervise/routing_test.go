@@ -9,7 +9,8 @@ import (
 
 func coordinatorRecord(key, pane string) records.Agent {
 	return records.Agent{
-		Key: key, Name: "coordinator", Role: "coordinator", PaneID: pane,
+		Key: key, Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator,
+		Profile: records.ProfileCoordinator, PaneID: pane,
 		WorkspaceID: "w0", TabID: "w0:t1", Status: records.AgentLive,
 		AgentStatus: "idle", Generation: 1,
 	}

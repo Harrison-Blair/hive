@@ -84,14 +84,13 @@ func testProject(repo string) records.Project {
 
 func testTask(id, branch string) records.Task {
 	return records.Task{
-		ID:              id,
-		Project:         "repo-land",
-		Title:           "task " + id,
-		ControllingRole: "manager-repo-land",
-		ActingAgent:     "worker-1",
-		Status:          "verified",
-		DependsOn:       []string{},
-		Verification:    &records.Verification{Agent: "verifier-1", Result: "pass", At: "2026-10-18T00:00:00Z"},
+		ID:           id,
+		Project:      "repo-land",
+		Title:        "task " + id,
+		ActingAgent:  "worker-1",
+		Status:       "verified",
+		DependsOn:    []string{},
+		Verification: &records.Verification{Agent: "verifier-1", Result: "pass", At: "2026-10-18T00:00:00Z"},
 		Worktree: &records.Worktree{
 			Path:   filepath.Join("/tmp", id),
 			Branch: branch,

@@ -118,7 +118,7 @@ func validRecord(record records.Agent, claims map[string]records.Claim) bool {
 	if record.Status != records.AgentLive {
 		return false
 	}
-	key := claimKey(record.Role, record.Project)
+	key := claimKey(record)
 	if key == "" {
 		return true
 	}
@@ -130,15 +130,22 @@ func validRecord(record records.Agent, claims map[string]records.Claim) bool {
 }
 
 // matchesSelectedClaim checks the claim that the caller selected by name. The
-// holder record must agree with the selected claim key, the holder key, the
-// role, the project, and the generation. A valid claim of another role does
-// not make the selected alias valid.
+// holder record must agree with the selected claim key, the holder key, and
+// the generation. A valid claim of another key does not make the selected
+// alias valid.
 func matchesSelectedClaim(record records.Agent, selected records.Claim, claims map[string]records.Claim) bool {
 	if record.Status != records.AgentLive {
 		return false
 	}
-	if selected.Key != claimKey(record.Role, record.Project) {
-		return false
+	if selected.Key != claimKey(record) {
+		// A record without its facts has no claim key yet. The built-in
+		// singleton claims are the one exception: a live record named by the
+		// coordinator or supervisor claim is that built-in record. The TUI
+		// tests write this old shape, and migration version 2 gives the facts
+		// to each record of a real home.
+		if !legacyBuiltinClaim(record, selected.Key) {
+			return false
+		}
 	}
 	if selected.Agent != record.Key || selected.Generation != record.Generation {
 		return false
@@ -148,6 +155,15 @@ func matchesSelectedClaim(record records.Agent, selected records.Claim, claims m
 		return false
 	}
 	return own.Key == selected.Key && own.Agent == record.Key && own.Generation == record.Generation
+}
+
+// legacyBuiltinClaim reports whether key is the claim of a built-in record
+// that has no facts yet.
+func legacyBuiltinClaim(record records.Agent, key string) bool {
+	if record.Kind != "" || record.Owns != "" || record.Task != "" {
+		return false
+	}
+	return key == records.AgentKindCoordinator || key == records.AgentKindSupervisor
 }
 
 func hasPane(history []string, paneID string) bool {
@@ -168,17 +184,24 @@ func ambiguousError(matches []records.Agent) error {
 	return fmt.Errorf("caller ambiguous: %s", strings.Join(names, ", "))
 }
 
-func claimKey(role, project string) string {
-	switch role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + project
-	case "supervisor":
-		return "supervisor"
+// claimKey returns the singleton claim key of one record from its facts
+// (D7). A record with no kind and no project has no claim.
+func claimKey(record records.Agent) string {
+	switch {
+	case record.Kind == records.AgentKindCoordinator:
+		return records.AgentKindCoordinator
+	case record.Kind == records.AgentKindSupervisor:
+		return records.AgentKindSupervisor
+	case record.Owns != "":
+		return "owner-" + record.Owns
 	default:
 		return ""
 	}
+}
+
+// Agents returns each agent record of one held store handle.
+func Agents(source Reader) ([]records.Agent, error) {
+	return loadAgents(source)
 }
 
 func loadAgents(source Reader) ([]records.Agent, error) {
@@ -262,7 +285,7 @@ func FindHeld(locked Reader, name string) (records.Agent, bool, error) {
 		if !ok {
 			return records.Agent{}, false, nil
 		}
-		if record.Generation != claim.Generation || claimKey(record.Role, record.Project) != claim.Key {
+		if record.Generation != claim.Generation || claimKey(record) != claim.Key {
 			return records.Agent{}, false, nil
 		}
 		return record, true, nil

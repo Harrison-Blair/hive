@@ -67,14 +67,15 @@ func (c *taskCLI) seedController(t *testing.T) {
 		t.Fatal(err)
 	}
 	agent := records.Agent{
-		Key: "manager-repo", Name: "manager-repo", Role: "manager", Project: "repo",
+		Key: "manager-repo", Name: "manager-repo", Role: "manager",
+		Profile: records.ProfilePlanner, Owns: "repo", Project: "repo",
 		Status: records.AgentLive, PaneID: "manager-pane", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
 	if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}
-	claim := records.Claim{Key: agent.Key, Agent: agent.Key, Generation: agent.Generation}
+	claim := records.Claim{Key: "owner-repo", Agent: agent.Key, Generation: agent.Generation}
 	if err := registry.WriteIn([]string{"claims"}, claim.Key, claim); err != nil {
 		t.Fatal(err)
 	}
@@ -208,7 +209,7 @@ func TestTaskCLIEditBrief(t *testing.T) {
 	workerID := cli.createTask(t, "Edit by worker")
 	cli.seedAgent(t, "worker-edit", "worker", workerID)
 	status, stdout, stderr = cli.run("task", "edit", "--task", workerID, "--brief", briefFile, "--agent", "worker-edit")
-	if status != 1 || stdout != "" || !strings.Contains(stderr, "not the controlling role: worker-edit") {
+	if status != 1 || stdout != "" || !strings.Contains(stderr, "not the owner of project repo or the coordinator: worker-edit") {
 		t.Fatalf("worker edit status = %d; stdout %q, stderr %q; want role refusal", status, stdout, stderr)
 	}
 	if got := cli.mustRun(t, "task", "show", "--brief", workerID); got != "Edit by worker" {
@@ -410,7 +411,7 @@ func TestTaskCLIReopenTextJSONShowHistoryAndLog(t *testing.T) {
 func TestTaskCLIReopenRegisteredManagerUsesClaimKey(t *testing.T) {
 	cli := newTaskCLI(t)
 	// The CLI refuses the manager role, so hive code registers the manager.
-	if envelope := agentlib.Register(cli.home, agentlib.RegisterOptions{Role: "manager", Project: "repo", Name: "manager-repo", NameSet: true, PaneID: "w1:manager", Harness: "pi", Model: "test"}); envelope.Outcome != "ok" {
+	if envelope := agentlib.Register(cli.home, agentlib.RegisterOptions{Profile: records.ProfilePlanner, Owns: "repo", Project: "repo", Name: "manager-repo", NameSet: true, PaneID: "w1:manager", Harness: "pi", Model: "test"}); envelope.Outcome != "ok" {
 		t.Fatalf("register manager = %#v", envelope)
 	}
 
@@ -423,10 +424,10 @@ func TestTaskCLIReopenRegisteredManagerUsesClaimKey(t *testing.T) {
 		t.Fatal(err)
 	}
 	var claim records.Claim
-	if err := registry.ReadIn([]string{"claims"}, "manager-repo", &claim); err != nil {
+	if err := registry.ReadIn([]string{"claims"}, "owner-repo", &claim); err != nil {
 		t.Fatal(err)
 	}
-	if manager.Key != "manager-repo-g1" || manager.Name != "manager-repo" || claim.Key != "manager-repo" || claim.Agent != manager.Key {
+	if manager.Key != "manager-repo-g1" || manager.Name != "manager-repo" || claim.Key != "owner-repo" || claim.Agent != manager.Key {
 		t.Fatalf("manager = %#v, claim = %#v; want generation-suffixed agent and inbox-key claim", manager, claim)
 	}
 

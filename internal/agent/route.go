@@ -1,19 +1,25 @@
 package agent
 
-import "github.com/Harrison-Blair/hive/internal/lib/records"
+import (
+	"github.com/Harrison-Blair/hive/internal/lib/inbox"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
+)
 
-// InboxKey returns the inbox key of one agent (decision 26). The coordinator
-// keeps coordinator and a manager keeps manager-PROJECT. Each other agent uses
-// its agent name.
+// InboxKey returns the inbox key of one agent. The coordinator keeps
+// coordinator, and each other agent uses its name (D7).
 func InboxKey(record records.Agent) string {
-	switch record.Role {
-	case "coordinator":
-		return "coordinator"
-	case "manager":
-		return "manager-" + record.Project
-	default:
-		return record.Name
+	return inbox.InboxKey(record)
+}
+
+// ResolveInbox returns the inbox key that address names. A project address
+// goes to the live owner of the project, or to coordinator when the project
+// has no live owner (D7). agents maps each agent key to its record.
+func ResolveInbox(agents map[string]records.Agent, address string) string {
+	list := make([]records.Agent, 0, len(agents))
+	for _, record := range agents {
+		list = append(list, record)
 	}
+	return inbox.ResolveAddress(list, address)
 }
 
 // ParentInbox returns the inbox that gets the nudges of record (decision 28).
@@ -30,7 +36,7 @@ func ParentInbox(agents map[string]records.Agent, record records.Agent) string {
 		seen[current.Key] = true
 		current, ok = successor(agents, current.Key)
 	}
-	return "coordinator"
+	return records.AgentKindCoordinator
 }
 
 // successor returns the newest record that replaces key.

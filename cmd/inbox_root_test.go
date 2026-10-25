@@ -35,11 +35,11 @@ func TestInboxAgentReadConsumesOwnRole(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
+	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
 	if err := st.WriteIn([]string{"agents"}, manager.Key, manager); err != nil {
 		t.Fatal(err)
 	}
-	if err := st.WriteIn([]string{"claims"}, "manager-hive", records.Claim{Key: "manager-hive", Agent: manager.Key, Generation: 1}); err != nil {
+	if err := st.WriteIn([]string{"claims"}, "owner-hive", records.Claim{Key: "owner-hive", Agent: manager.Key, Generation: 1}); err != nil {
 		t.Fatal(err)
 	}
 	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "owner message"}); envelope.Outcome != "ok" {
@@ -62,7 +62,7 @@ func seedInboxCoordinator(t *testing.T, home string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w0:p1", Status: records.AgentLive, Generation: 1}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w0:p1", Status: records.AgentLive, Generation: 1}
 	if err := st.WriteIn([]string{"agents"}, coordinator.Key, coordinator); err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +139,7 @@ func TestInboxShortStdoutReturnsOneAndReportsActualIDs(t *testing.T) {
 			if status != 1 {
 				t.Fatalf("status = %d; want 1 after a short stdout write (stderr %q)", status, stderr.String())
 			}
-			for _, id := range []string{"consumed 1", "consumed 2", "hive inbox --role coordinator --all"} {
+			for _, id := range []string{"consumed 1", "consumed 2", "hive inbox --inbox coordinator --all"} {
 				if !strings.Contains(stderr.String(), id) {
 					t.Fatalf("stderr = %q; want %q", stderr.String(), id)
 				}
@@ -213,7 +213,7 @@ func TestInboxFailedStdoutKeepsMarksAndReportsAll(t *testing.T) {
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr.String())
 	}
-	if !strings.Contains(stderr.String(), "1") || !strings.Contains(stderr.String(), "hive inbox --role coordinator --all") {
+	if !strings.Contains(stderr.String(), "1") || !strings.Contains(stderr.String(), "hive inbox --inbox coordinator --all") {
 		t.Fatalf("stderr = %q; want consumed sequence 1 and the --all command", stderr.String())
 	}
 
@@ -372,5 +372,66 @@ func TestInboxAgentCannotReadOtherAgentInbox(t *testing.T) {
 	found, err := inbox.All(home, "agent-b")
 	if err != nil || len(found) != 1 || found[0].ReadAt != "" {
 		t.Fatalf("All(agent-b) = %#v, %v; want one unread record", found, err)
+	}
+}
+
+func seedProjectOwner(t *testing.T, home string) {
+	t.Helper()
+	st, err := store.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner := records.Agent{
+		Key: "owner-hive-g1", Name: "manager-hive", Role: "manager", Profile: records.ProfilePlanner,
+		Owns: "hive", Project: "hive", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
+	}
+	if err := st.WriteIn([]string{"agents"}, owner.Key, owner); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.WriteIn([]string{"claims"}, "owner-hive", records.Claim{Key: "owner-hive", Agent: owner.Key, Generation: 1}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestInboxProjectAddressSendAndRead proves AC1 through the CLI: send to
+// project:hive writes to the owner, and --inbox project:hive reads at read
+// time.
+func TestInboxProjectAddressSendAndRead(t *testing.T) {
+	home := testHome(t)
+	seedProjectOwner(t, home)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"inbox", "send", "--to", "project:hive", "--agent", "worker-x", "hello"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 {
+		t.Fatalf("status = %d, stderr = %q; want send to the owner", status, stderr.String())
+	}
+	found, err := inbox.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].Text != "hello" || found[0].Agent != "worker-x" {
+		t.Fatalf("All(manager-hive) = %#v, %v; want the sent record", found, err)
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	status = executeWithStreams([]string{"inbox", "--agent", "manager-hive", "--inbox", "project:hive"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 || !strings.Contains(stdout.String(), "hello") {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want the owner read", status, stdout.String(), stderr.String())
+	}
+	found, err = inbox.All(home, "manager-hive")
+	if err != nil || len(found) != 1 || found[0].ReadAt == "" {
+		t.Fatalf("All(manager-hive) = %#v, %v; want one consumed record", found, err)
+	}
+}
+
+// TestInboxProjectAddressFallsBackToCoordinator proves the read of a project
+// with no live owner uses the coordinator inbox.
+func TestInboxProjectAddressFallsBackToCoordinator(t *testing.T) {
+	home := testHome(t)
+	seedInboxCoordinator(t, home)
+	if envelope := inbox.Append(home, inbox.AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "for coordinator"}); envelope.Outcome != "ok" {
+		t.Fatalf("Append() = %#v", envelope)
+	}
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams([]string{"inbox", "--agent", "coordinator", "--inbox", "project:missing"}, strings.NewReader(""), &stdout, &stderr)
+	if status != 0 || !strings.Contains(stdout.String(), "for coordinator") {
+		t.Fatalf("status = %d, stdout = %q, stderr = %q; want the coordinator read", status, stdout.String(), stderr.String())
 	}
 }

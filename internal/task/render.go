@@ -49,7 +49,7 @@ func ShowText(envelope output.Envelope) string {
 		"id: " + task.ID,
 		"project: " + oneLine(task.Project),
 		"title: " + oneLine(task.Title),
-		"controlling_role: " + oneLine(task.ControllingRole),
+		"mail: " + projectAddress(task.Project),
 		"acting_agent: " + oneLine(task.ActingAgent),
 		"acting_agent_status: " + agentStatus(result.Agent),
 		"status: " + task.Status,
@@ -83,10 +83,10 @@ func ShowText(envelope output.Envelope) string {
 // FailureReport renders the known effects and the inspection commands of one
 // finish failure. It never replays the finish group.
 func FailureReport(envelope output.Envelope, taskID, agent string) string {
-	role := ""
+	project := ""
 	if result, ok := envelope.Result.(records.Task); ok {
 		taskID = result.ID
-		role = result.ControllingRole
+		project = result.Project
 		if agent == "" {
 			if result.Verification != nil && result.Verification.Agent != "" {
 				agent = result.Verification.Agent
@@ -111,8 +111,8 @@ func FailureReport(envelope output.Envelope, taskID, agent string) string {
 	if agent != "" {
 		lines = append(lines, "inspect: hive agent show "+oneLine(agent))
 	}
-	if role != "" {
-		lines = append(lines, "inspect: hive inbox --role "+role)
+	if project != "" {
+		lines = append(lines, "inspect: hive inbox --inbox "+projectAddress(project)+" --all")
 	} else {
 		lines = append(lines, "inspect: hive inbox")
 	}

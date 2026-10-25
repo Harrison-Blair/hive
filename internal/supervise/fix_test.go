@@ -208,7 +208,7 @@ func TestVerifyMalformedInboxReadStopsEvent(t *testing.T) {
 	worker := workerRecord("worker-1", "demo", "1-demo", "w1:p2")
 	worker.AgentStatus = "working"
 	writeAgent(t, home, worker)
-	inboxDir := filepath.Join(home, ".hive", "state", "inbox", "manager-demo")
+	inboxDir := filepath.Join(home, ".hive", "state", "inbox", "coordinator")
 	if err := os.MkdirAll(inboxDir, 0o755); err != nil {
 		t.Fatal(err)
 	}

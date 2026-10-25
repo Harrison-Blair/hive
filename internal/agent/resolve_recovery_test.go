@@ -15,7 +15,7 @@ import (
 func TestResolveManualUnresolvedExits(t *testing.T) {
 	home := testHome(t)
 	writeProjectPath(t, home, "demo", t.TempDir())
-	writeTaskRecord(t, home, records.Task{ID: "1-task", Project: "demo", Title: "Task", ControllingRole: "manager-demo"})
+	writeTaskRecord(t, home, records.Task{ID: "1-task", Project: "demo", Title: "Task"})
 	registered := Register(home, RegisterOptions{
 		Role: "worker", Project: "demo", Task: "1-task", Harness: "claude", PaneID: "w1:p1",
 	})

@@ -200,11 +200,15 @@ func (c *goalCLI) seedAgent(t *testing.T, agent records.Agent, controller bool) 
 	}
 	agent.Status = records.AgentLive
 	agent.Generation = 1
+	if agent.Role == "manager" {
+		agent.Profile = records.ProfilePlanner
+		agent.Owns = agent.Project
+	}
 	if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}
 	if controller {
-		claimKey := "manager-" + agent.Project
+		claimKey := "owner-" + agent.Project
 		claim := records.Claim{Key: claimKey, Agent: agent.Key, Generation: agent.Generation}
 		if err := registry.WriteIn([]string{"claims"}, claimKey, claim); err != nil {
 			t.Fatal(err)
