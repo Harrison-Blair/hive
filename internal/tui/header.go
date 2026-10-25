@@ -43,7 +43,7 @@ type headerState struct {
 	queueWaits           int
 }
 
-func readHeader(home string) (headerState, error) {
+func readHeader(ctx context.Context, home string) (headerState, error) {
 	state := headerState{supervisor: "stale"}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -55,7 +55,7 @@ func readHeader(home string) (headerState, error) {
 	case err == nil:
 		if alive, checkErr := process.Alive(claim.PID, claim.PIDStart); checkErr == nil && alive {
 			state.supervisor, state.supervisorChangedAt = "fresh", claim.ClaimedAt
-			state.supervisorOld = supervisorBinaryIsOld(home, claim)
+			state.supervisorOld = supervisorBinaryIsOld(ctx, home, claim)
 		}
 	case errors.Is(err, os.ErrNotExist):
 	default:
@@ -139,7 +139,7 @@ func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project
 	return state
 }
 
-func supervisorBinaryIsOld(home string, claim records.Claim) bool {
+func supervisorBinaryIsOld(ctx context.Context, home string, claim records.Claim) bool {
 	hivePath, err := exec.LookPath("hive")
 	if err != nil {
 		return false
@@ -159,7 +159,7 @@ func supervisorBinaryIsOld(home string, claim records.Claim) bool {
 		return supervisorBinaryCache.old
 	}
 	old := false
-	for _, check := range doctor.Run(context.Background(), home, nil).Checks {
+	for _, check := range doctor.Run(ctx, home, nil).Checks {
 		if check.Name == "supervisor binary" {
 			old = check.Status == doctor.StatusWarn && strings.Contains(check.Detail, "supervisor binary is older")
 			break

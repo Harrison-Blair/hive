@@ -82,7 +82,7 @@ type Model struct {
 	attachErr            string
 	startupNotice        string
 	startupErr           string
-	headerLoader         func(string) (headerState, error)
+	headerLoader         func(context.Context, string) (headerState, error)
 	logLoader            func(*logs.Reader, time.Time) ([]logs.Event, error)
 	healthLoader         func(context.Context, string, *slog.Logger) (doctor.Result, error)
 	agentsLoader         func(string, time.Time) (agentsData, error)
@@ -738,9 +738,9 @@ func (m *Model) startHeaderLoad() tea.Cmd {
 		return nil
 	}
 	m.headerLoading = true
-	loader, home := m.headerLoader, m.home
+	loader, home, ctx := m.headerLoader, m.home, m.loads.ctx
 	return m.startLoad(func() tea.Msg {
-		state, err := loader(home)
+		state, err := loader(ctx, home)
 		return headerLoadMsg{state: state, err: err}
 	})
 }

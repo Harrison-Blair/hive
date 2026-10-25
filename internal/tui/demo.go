@@ -294,7 +294,7 @@ func ParseDemoSize(value string) (int, int, error) {
 // The screen renderers stay the same.
 func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	data := fixture.Data
-	m.headerLoader = func(string) (headerState, error) {
+	m.headerLoader = func(context.Context, string) (headerState, error) {
 		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks, data.Asks), nil
 	}
 	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -27,7 +28,7 @@ func statusCommandModel(t *testing.T, command string) (*Model, *testClock) {
 	m := newTestModel(t, home, clock)
 	t.Cleanup(m.Stop)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatal(err)
 	}

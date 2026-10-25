@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +16,7 @@ func TestIdleTickDoesNotReloadUnchangedData(t *testing.T) {
 	m := newTestModel(t, newTestHome(t), fixedClock(t, time.Now()))
 	m.screenIndex = 2
 	headerLoads, screenLoads := 0, 0
-	m.headerLoader = func(string) (headerState, error) {
+	m.headerLoader = func(context.Context, string) (headerState, error) {
 		headerLoads++
 		return headerState{}, nil
 	}
@@ -35,7 +36,7 @@ func TestIdleTickReloadsChangedScreenOnce(t *testing.T) {
 	m := newTestModel(t, home, fixedClock(t, time.Now()))
 	m.screenIndex = 2
 	headerLoads, screenLoads := 0, 0
-	m.headerLoader = func(string) (headerState, error) {
+	m.headerLoader = func(context.Context, string) (headerState, error) {
 		headerLoads++
 		return headerState{}, nil
 	}

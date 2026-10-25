@@ -34,10 +34,10 @@ func TestRunProgramSettlesAdmittedHeaderLoad(t *testing.T) {
 	started := make(chan struct{})
 	release := make(chan struct{})
 	loaded := make(chan struct{})
-	model.headerLoader = func(h string) (headerState, error) {
+	model.headerLoader = func(ctx context.Context, h string) (headerState, error) {
 		close(started)
 		<-release
-		state, err := realLoader(h)
+		state, err := realLoader(ctx, h)
 		close(loaded)
 		return state, err
 	}

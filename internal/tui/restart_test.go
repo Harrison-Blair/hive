@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -294,7 +295,7 @@ func TestHeaderMarksOldSupervisorBinaryAndShowsRestartHint(t *testing.T) {
 	}
 	t.Setenv("PATH", installedDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-	state, err := readHeader(home)
+	state, err := readHeader(context.Background(), home)
 	if err != nil {
 		t.Fatalf("readHeader(): %v", err)
 	}
