@@ -671,8 +671,16 @@ func shortSHA(commit string) string {
 	return commit
 }
 
+// taskWorkingMarker reports that a task card shows the working marker. The
+// card cases cancel, land, stop, and needs-you before this marker, so the
+// timer must use the same order.
+func (s *tasksState) taskWorkingMarker(item taskItem) bool {
+	task := item.record
+	return task.Status == "verified" && !taskLanded(task) && task.NeedsUser == "" && !s.isStop(item)
+}
+
 // card gives the card of a task (rule 4).
-func (s *tasksState) card(item taskItem, now time.Time) component.TaskCard {
+func (s *tasksState) card(item taskItem, now time.Time, frame int) component.TaskCard {
 	line, accent := s.cardLine(item, now)
 	card := component.TaskCard{ID: item.record.ID, Line: line, Dot: "○", DotColor: component.Dim, Selected: item.record.ID == s.selectedID}
 	if accent {
@@ -685,8 +693,8 @@ func (s *tasksState) card(item taskItem, now time.Time) component.TaskCard {
 		card.Dot, card.DotColor = "●", component.Done
 	case s.isStop(item):
 		card.Dot, card.DotColor = "!", component.Accent
-	case task.Status == "verified":
-		card.Dot, card.DotColor = "◐", component.Working
+	case s.taskWorkingMarker(item):
+		card.Dot, card.DotColor = component.WorkingGlyph(frame, "◐"), component.Working
 	}
 	if agent, ok := s.data.agents[item.record.ActingAgent]; ok && item.record.ActingAgent != "" && agent.AgentStatus == "working" {
 		card.Working = true

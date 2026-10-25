@@ -20,16 +20,19 @@ type Card struct {
 	Sub      string
 	State    string
 	Selected bool
+	// Frame is the working marker frame of the view. Frame 0 keeps the
+	// static state glyph of the approved boards.
+	Frame int
 }
 
 // View renders the card at exactly CardWidth×CardHeight cells: the state dot
 // and the name, then the sub line in dim. Each is cut with … to fit.
 func (c Card) View() string {
-	dot, name := cardDot(c.State), lipgloss.NewStyle()
+	dot, name := cardDot(c.State, c.Frame), lipgloss.NewStyle()
 	switch {
 	case c.Selected:
 		name = titleStyle
-	case dot == cardDot("stopped"):
+	case dot == cardDot("stopped", c.Frame):
 		name = dimStyle
 	}
 	room := CardWidth - 4
@@ -45,9 +48,12 @@ func (c Card) View() string {
 }
 
 // cardDot gives the dot of an agent state, as stateDot does, but not bold.
-func cardDot(state string) string {
+// A working dot uses the working marker frame.
+func cardDot(state string, frame int) string {
 	switch state {
-	case "working", "live":
+	case "working":
+		return lipgloss.NewStyle().Foreground(Working).Render(WorkingGlyph(frame, "●"))
+	case "live":
 		return lipgloss.NewStyle().Foreground(Working).Render("●")
 	case "idle":
 		return accentStyle.Render("◐")

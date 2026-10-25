@@ -562,7 +562,7 @@ func (m *Model) healthTableRows() []string {
 		if selected {
 			marker, name, restart = titleStyle.Render("▶")+" ", titleStyle, healthAccentStyle
 		}
-		word, dot, dotColor := healthAgentState(record, m.now())
+		word, dot, dotColor := healthAgentState(record, m.now(), m.markerFrame)
 		started := ""
 		if at, err := time.Parse(time.RFC3339Nano, record.StartedAt); err == nil {
 			started = at.In(m.now().Location()).Format("15:04")
@@ -649,7 +649,7 @@ func healthAgentName(record records.Agent) string {
 // colour of the dot, as tui-v2 decision 55 gives them. A live state has the
 // whole minutes from status_changed_at. The word also shows the state, so
 // colour is not the only signal.
-func healthAgentState(record records.Agent, now time.Time) (string, string, color.Color) {
+func healthAgentState(record records.Agent, now time.Time, frame int) (string, string, color.Color) {
 	with := func(word string) string {
 		if age := coordinatorStatusAge(record.StatusChangedAt, now); age != "" {
 			return word + " " + age
@@ -660,7 +660,7 @@ func healthAgentState(record records.Agent, now time.Time) (string, string, colo
 	case records.AgentLive:
 		switch record.AgentStatus {
 		case "working":
-			return with("working"), "●", component.Working
+			return with("working"), component.WorkingGlyph(frame, "●"), component.Working
 		case "blocked":
 			return with("blocked"), "▲", component.Accent
 		case "":

@@ -54,12 +54,48 @@ func readGfGrid(t *testing.T, board string) cellgrid.Grid {
 	return grid
 }
 
+// idleDurationOverride gives the expected grid of GfChatMarkdown with the
+// idle duration removed. Task 164 overrides golden-frames decision 11: only a
+// working coordinator shows its duration. Decision 10 then keeps the hints
+// segment, which no longer needs to drop to fit the row.
+func idleDurationOverride(want cellgrid.Grid) cellgrid.Grid {
+	const (
+		row       = 39
+		ageStart  = 8
+		ageWidth  = 3
+		logsEnd   = 104
+		clock     = 114
+		separator = " · ? help"
+		gap       = "    "
+	)
+	got := want
+	got.Cells = append([]cellgrid.Cell(nil), want.Cells...)
+	base := row * want.Width
+	next := base + ageStart
+	copy(got.Cells[next:], want.Cells[base+ageStart+ageWidth:base+logsEnd])
+	next += logsEnd - ageStart - ageWidth
+	for _, r := range separator {
+		got.Cells[next] = cellgrid.Cell{Rune: r, Token: cellgrid.Dim}
+		next++
+	}
+	for _, r := range gap {
+		got.Cells[next] = cellgrid.Cell{Rune: r, Token: cellgrid.FG}
+		next++
+	}
+	copy(got.Cells[next:], want.Cells[base+clock:base+want.Width])
+	return got
+}
+
 // AC8, tui-v2 decisions 42 and 44: each Chat board of the golden frames
-// matches the View of its fixture cell for cell, with no mask.
+// matches the View of its fixture cell for cell, with no mask. Task 164
+// overrides the idle duration of GfChatMarkdown.
 func TestGfChatBoardsMatch(t *testing.T) {
 	for _, board := range gfChatBoards {
 		t.Run(board, func(t *testing.T) {
 			want := readGfGrid(t, board)
+			if board == "GfChatMarkdown" {
+				want = idleDurationOverride(want)
+			}
 			m := newGfDemoModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)

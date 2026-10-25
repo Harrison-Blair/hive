@@ -1159,7 +1159,7 @@ func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy r
 // drawCard draws the card of one agent with component.Card. Only the
 // focus card has the heavy border.
 func (m *Model) drawCard(c *cellCanvas, node agentNode, x, y int) {
-	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.focus}
+	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.focus, Frame: m.markerFrame}
 	if card.Selected {
 		m.graph.cardRow, m.graph.cardCol = y, x
 	}

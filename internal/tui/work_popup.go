@@ -256,7 +256,7 @@ func (m *Model) workDepsLines() ([]string, int) {
 			lead, id = titleStyle.Render("▶")+" ", titleStyle.Render(id)
 		}
 		index++
-		card := s.card(other, m.now())
+		card := s.card(other, m.now(), m.markerFrame)
 		state, _ := s.cardLine(other, m.now())
 		if strings.HasPrefix(state, "waits on ") {
 			state = other.record.Status

@@ -244,16 +244,17 @@ func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	requireView(t, m, "│ > type a message · ? help ")
 }
 
-// Decision 11: the state segment forms and the whole-minute age.
-func TestChatStateSegmentShowsTheGlyphAndWholeMinuteAge(t *testing.T) {
+// Task 164 changes decision 11: only the working state shows the whole-minute
+// duration. Idle, blocked, starting, and none have no duration.
+func TestChatStateSegmentShowsTheGlyphAndWorkingDuration(t *testing.T) {
 	cases := []struct {
 		name, status, changedAt, want string
 	}{
 		{"working zero", "working", "2026-10-20T12:00:00Z", "● working 0m"},
 		{"working one", "working", "2026-10-20T11:59:00Z", "● working 1m"},
 		{"working fifty-nine", "working", "2026-10-20T11:01:00Z", "● working 59m"},
-		{"idle", "idle", "2026-10-20T11:59:00Z", "○ idle 1m"},
-		{"blocked", "blocked", "2026-10-20T12:00:00Z", "▲ blocked 0m"},
+		{"idle", "idle", "2026-10-20T11:59:00Z", "○ idle"},
+		{"blocked", "blocked", "2026-10-20T12:00:00Z", "▲ blocked"},
 		{"other", "waiting", "2026-10-20T11:59:00Z", "● starting"},
 		{"no time", "idle", "", "○ idle"},
 		{"no live coordinator", "", "", "○ none"},

@@ -128,7 +128,12 @@ type Model struct {
 	// statusCommandFailed is true after a failure was logged, until a run
 	// succeeds.
 	statusCommandFailed bool
-	quitAt              time.Time
+	// markerFrame is the working-marker frame of the view. Frame 0 keeps
+	// the static glyph of the approved boards.
+	markerFrame int
+	// markerTickRunning is true while a working-marker timer runs.
+	markerTickRunning bool
+	quitAt            time.Time
 
 	inputEnded <-chan struct{}
 	width      int
@@ -248,7 +253,10 @@ func (m *Model) Stop() {
 
 // Init starts the first data loads and the refresh tick.
 func (m *Model) Init() tea.Cmd {
-	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad(), m.startStatusCommand())
+	// The first program start owns the marker timer. A demo model loads its
+	// fixture before Init, so the loads can return a timer that Init replaces.
+	m.markerTickRunning = false
+	return batch(m.tick(), m.startHeaderLoad(), m.startCurrentScreenLoad(), m.startStatusCommand(), m.startMarkerTick())
 }
 
 // Update handles one message.
@@ -285,7 +293,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 			}
 		}
-		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery(), m.startStatusCommand())
+		return m, batch(m.tick(), m.startRefreshCheck(), m.startAskDelivery(), m.startStatusCommand(), m.startMarkerTick())
+	case markerTickMsg:
+		return m, m.advanceMarkerTick()
 	case statusCommandMsg:
 		return m, m.updateStatusCommand(msg)
 	case refreshCheckMsg:
@@ -336,9 +346,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.headerErr = ""
 		if m.headerRefreshPending {
 			m.headerRefreshPending = false
-			return m, m.startHeaderLoad()
+			return m, batch(m.startHeaderLoad(), m.startMarkerTick())
 		}
-		return m, nil
+		return m, m.startMarkerTick()
 	case screenLoadMsg:
 		m.invalidateView()
 		m.screenLoading = false
@@ -384,9 +394,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.acceptLogEvents(msg.events)
 		default:
-			return m, nil
+			return m, m.startMarkerTick()
 		}
-		return m, m.finishScreenRefresh()
+		return m, batch(m.finishScreenRefresh(), m.startMarkerTick())
 	case agentsLitMsg:
 		m.graph.litAt = time.Time{}
 		m.invalidateView()
@@ -461,10 +471,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		m.invalidateView()
-		return m, m.updateKey(msg)
+		return m, batch(m.updateKey(msg), m.startMarkerTick())
 	case tea.MouseClickMsg, tea.MouseWheelMsg:
 		m.invalidateView()
-		return m, m.updateMouse(msg.(tea.MouseMsg))
+		return m, batch(m.updateMouse(msg.(tea.MouseMsg)), m.startMarkerTick())
 	}
 	return m, nil
 }
