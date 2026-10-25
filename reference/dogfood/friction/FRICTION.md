@@ -18,10 +18,10 @@ For all other files, the coordinator and manager never change a project source f
 | [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
 | [A manager spawn marks the live manager stale but leaves its pane running, and agent stop refuses it](entries/manager-respawn-leaves-old-pane.md) | Open |  |
 | [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
-| [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/health-program-test-flakes.md) | Open |  |
+| [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/resolved/health-program-test-flakes.md) | Resolved 2026-10-25 | Tasks 165 and 179 settle home-access loaders and close the TUI writer before return. |
 | [Unread inbox records of a stopped agent warn forever, with no way to clear them](entries/ownerless-inbox-records-stay.md) | Open |  |
 | [TestUpdateCallbackRunsUnderLock fails at times under heavy load](entries/store-lock-test-flakes-under-load.md) | Open |  |
-| [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/startup-failure-footer-test-flakes.md) | Open |  |
+| [TestStartupFailureShowsInFooterAndDoesNotStopTUI fails at times in full package runs](entries/resolved/startup-failure-footer-test-flakes.md) | Resolved 2026-10-25 | Tasks 165 and 179 settle header work before return and preserve the startup error and log events. |
 | [The verifier skill names no inbox for a report](entries/verifier-skill-names-no-report-inbox.md) | Open | Fix in the g13 verifier profile |
 | [Memory write help omits the required frontmatter](entries/memory-write-help-omits-frontmatter.md) | Open | Supply YAML name and description fields on standard input. |
 | [Supplemental verifier evidence stays in the worktree](entries/verifier-evidence-stays-in-worktree.md) | Open | Copy the full supplemental folder to the home and check hashes before review or worktree removal. |
