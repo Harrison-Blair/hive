@@ -243,21 +243,17 @@ func countText(text string, n int) string {
 // stateSegment gives the coordinator state of decision 11. A live record
 // with no agent status shows as starting.
 func (m *Model) stateSegment() string {
-	age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
-	with := func(text string) string {
-		if age == "" {
-			return text
-		}
-		return text + " " + age
-	}
 	text := ""
 	switch m.header.coordinator {
 	case "working":
-		text = with("● working")
+		text = component.WorkingGlyph(m.markerFrame, "●") + " working"
+		if age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now()); age != "" {
+			text += " " + age
+		}
 	case "idle":
-		text = with("○ idle")
+		text = "○ idle"
 	case "blocked":
-		text = with("▲ blocked")
+		text = "▲ blocked"
 	case "":
 		text = "○ none"
 	default:

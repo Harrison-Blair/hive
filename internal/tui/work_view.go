@@ -193,7 +193,7 @@ func (m *Model) workColumnsView(columns []workColumn, width, columnHeight int) [
 		}
 		cards := column.cards[tops[index]:]
 		for _, item := range cards[:min(len(cards), slots[index])] {
-			view.Cards = append(view.Cards, s.card(item, m.now()))
+			view.Cards = append(view.Cards, s.card(item, m.now(), m.markerFrame))
 		}
 		view.Thumb = component.Thumb(columnHeight-2, len(column.cards), slots[index], tops[index])
 		views[index] = view

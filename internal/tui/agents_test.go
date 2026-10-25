@@ -382,6 +382,10 @@ func deliverAgentCommands(t *testing.T, model *Model, cmd tea.Cmd) *Model {
 		return model
 	}
 	msg := cmd()
+	if _, ok := msg.(markerTickMsg); ok {
+		// The marker timer recurs. Its own tests drive each frame.
+		return model
+	}
 	if batch, ok := msg.(tea.BatchMsg); ok {
 		for _, command := range batch {
 			model = deliverAgentCommands(t, model, command)
