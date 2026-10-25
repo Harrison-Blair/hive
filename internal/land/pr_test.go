@@ -65,7 +65,7 @@ func TestPR(t *testing.T) {
 		t.Setenv("GH_CREATE_OUTPUT", "https://example.com/pr/create")
 		t.Setenv("GH_VIEW_OUTPUT", `{"url":"https://example.com/pr/view"}`)
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Evidence: "https://evidence/1", Draft: true})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test", Evidence: "https://evidence/1", Draft: true})
 		if envelope.Outcome != "ok" || envelope.Error != nil {
 			t.Fatalf("Land() = %+v, want ok", envelope)
 		}
@@ -114,7 +114,7 @@ func TestPR(t *testing.T) {
 		t.Setenv("GH_CREATE_OUTPUT", "gh create failed")
 		t.Setenv("GH_CREATE_EXIT", "1")
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if envelope.Outcome != "partial" || envelope.Phase != "pull request" {
 			t.Fatalf("Land() = %+v, want partial pull request", envelope)
 		}
@@ -146,7 +146,7 @@ func TestPR(t *testing.T) {
 		t.Setenv("GH_VIEW_OUTPUT", `{"url":"https://example.com/pr/view"}`)
 		t.Setenv("GH_CREATE_OUTPUT", "https://example.com/pr/create")
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Land() = %+v, want ok", envelope)
 		}
@@ -184,7 +184,7 @@ func TestPR(t *testing.T) {
 		t.Setenv("GH_CREATE_OUTPUT", "https://example.com/pr/create")
 		t.Setenv("GH_VIEW_OUTPUT", `{"url":"https://example.com/pr/view"}`)
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Land() = %+v, want ok", envelope)
 		}
@@ -207,7 +207,7 @@ func TestPR(t *testing.T) {
 		writeProject(t, home, testProject(repo))
 		writeTask(t, home, testTask("1-a", "task/1-a"))
 
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if envelope.Outcome != "partial" || envelope.Phase != "brief" {
 			t.Fatalf("Land() = %+v, want partial brief", envelope)
 		}
@@ -233,7 +233,7 @@ func TestPR(t *testing.T) {
 		t.Setenv("GH_VIEW_EXIT", "1")
 		t.Setenv("GH_CREATE_OUTPUT", "https://example.com/pr/create")
 
-		first := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		first := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if first.Outcome != "partial" {
 			t.Fatalf("Land() = %+v, want partial", first)
 		}
@@ -255,7 +255,7 @@ func TestPR(t *testing.T) {
 
 		bare := newBare(t)
 		runGit(t, repo, "remote", "set-url", "origin", bare)
-		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		retry := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if retry.Outcome != "ok" {
 			t.Fatalf("retry = %+v, want ok", retry)
 		}

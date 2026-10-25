@@ -338,10 +338,10 @@ func authorize(locked *store.LockedStore, agent, paneID, project string) (record
 	if err != nil {
 		return records.Agent{}, err
 	}
-	if caller.Role == "coordinator" || caller.Role == "manager" && caller.Project == project {
+	if caller.Kind == records.AgentKindCoordinator || caller.Owns == project {
 		return caller, nil
 	}
-	return caller, fmt.Errorf("not authorized: caller cannot change a goal for project %s", project)
+	return caller, fmt.Errorf("not the owner of project %s or the coordinator: %s", project, oneLine(caller.Name))
 }
 
 func editAction(options EditOptions) (string, error) {

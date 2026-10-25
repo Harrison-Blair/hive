@@ -135,7 +135,7 @@ func TestWrongActorErrorStaysOneLine(t *testing.T) {
 		t.Fatalf("Complete() = %#v; want failed", envelope)
 	}
 	message := assertOneLineError(t, "Complete", envelope.Error)
-	if !strings.HasPrefix(message, "not the acting agent: ") {
+	if !strings.HasPrefix(message, "not the acting agent of 1-seed: ") {
 		t.Fatalf("Complete() error = %q; want a wrong actor message", message)
 	}
 	if !strings.Contains(message, `"bad\nactor"`) {

@@ -26,7 +26,7 @@ func TestPreconditions(t *testing.T) {
 		home, task := seedOne(t, repo)
 		task.Status = "created"
 		writeTask(t, home, task)
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task is created: land needs verified" {
 			t.Fatalf("Land() = %+v, want failed with the status message", envelope)
 		}
@@ -37,7 +37,7 @@ func TestPreconditions(t *testing.T) {
 		home, task := seedOne(t, repo)
 		task.Worktree = nil
 		writeTask(t, home, task)
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task has no worktree branch" {
 			t.Fatalf("Land() = %+v, want failed with the branch message", envelope)
 		}
@@ -48,7 +48,7 @@ func TestPreconditions(t *testing.T) {
 		addTaskBranch(t, repo, "task/1-a", "a.txt", "a\n")
 		home, _ := seedOne(t, repo)
 		runGit(t, repo, "checkout", "-q", "-b", "other")
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "base branch not checked out: main" {
 			t.Fatalf("Land() = %+v, want failed with the base message", envelope)
 		}
@@ -61,7 +61,7 @@ func TestPreconditions(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(repo, "README.md"), []byte("dirty\n"), 0o644); err != nil {
 			t.Fatalf("write dirty file: %v", err)
 		}
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "repository is dirty" {
 			t.Fatalf("Land() = %+v, want failed with the dirty message", envelope)
 		}
@@ -72,7 +72,7 @@ func TestPreconditions(t *testing.T) {
 		home, task := seedOne(t, repo)
 		task.Delivery = &records.Delivery{Mode: "merge", Commit: "deadbeef"}
 		writeTask(t, home, task)
-		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr"})
+		envelope := Land(context.Background(), home, Options{Task: "1-a", Mode: "pr", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task delivered in mode merge" {
 			t.Fatalf("Land() = %+v, want failed with the delivered-mode message", envelope)
 		}
@@ -131,13 +131,13 @@ func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
 		task.Verification = nil
 		writeTask(t, home, task)
 
-		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task is assigned: land needs verified" {
 			t.Fatalf("Land() = %+v; want the assigned status error", envelope)
 		}
 		task.Status = "completed"
 		writeTask(t, home, task)
-		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task is completed: land needs verified" {
 			t.Fatalf("Land() after completion without a new verification = %+v; want the completed status error", envelope)
 		}
@@ -145,7 +145,7 @@ func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
 		task.Status = "verified"
 		task.Verification = &records.Verification{Agent: "verifier-new", Result: "pass", At: "2026-10-19T00:00:00Z"}
 		writeTask(t, home, task)
-		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		envelope = Land(context.Background(), home, Options{Task: task.ID, Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Land() after a new pass = %+v; want ok", envelope)
 		}
@@ -158,7 +158,7 @@ func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
 		task.Verification = nil
 		writeTask(t, home, task)
 
-		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task verification is not a pass" {
 			t.Fatalf("Land() = %+v; want a missing verification error", envelope)
 		}
@@ -171,7 +171,7 @@ func TestReopenedTaskRequiresFreshPassVerificationBeforeLand(t *testing.T) {
 		task.Verification.Result = "fail"
 		writeTask(t, home, task)
 
-		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge"})
+		envelope := Land(context.Background(), home, Options{Task: task.ID, Mode: "merge", Grant: "test"})
 		if envelope.Outcome != "failed" || envelope.Error != "task verification is not a pass" {
 			t.Fatalf("Land() = %+v; want a failed verification error", envelope)
 		}

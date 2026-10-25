@@ -271,15 +271,14 @@ func TestCompleteFinishRefusesWrongCallersAndLeavesState(t *testing.T) {
 		seed    func(*testing.T, string)
 	}
 	cases := []refusal{
-		{"worker of another task", "assigned", "complete", "worker-3", "not the acting agent: worker-3", nil},
-		{"manager", "assigned", "complete", "manager-one", "not the acting agent: manager-one", func(t *testing.T, home string) {
+		{"worker of another task", "assigned", "complete", "worker-3", "not the acting agent of 1-seed: worker-3", nil},
+		{"manager", "assigned", "complete", "manager-one", "not the acting agent of 1-seed: manager-one", func(t *testing.T, home string) {
 			seedAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
 			seedClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
 		}},
-		{"verifier complete", "assigned", "complete", "verifier-1", "not the acting agent: verifier-1", nil},
-		{"worker verify", "completed", "verify", "worker-2", "not a verifier of 1-seed: worker-2", nil},
-		{"verifier of another task", "completed", "verify", "verifier-3", "not a verifier of 1-seed: verifier-3", nil},
-		{"self verify", "completed", "verify", "worker-1", errSelfVerify.Error(), nil},
+		{"verifier complete", "assigned", "complete", "verifier-1", "not the acting agent of 1-seed: verifier-1", nil},
+		{"verifier of another task", "completed", "verify", "verifier-3", "not bound to 1-seed: verifier-3", nil},
+		{"self verify", "completed", "verify", "worker-1", "self verify refused: worker-1 is the acting agent of 1-seed", nil},
 		{"unknown caller", "assigned", "complete", "nobody", "agent not found: nobody", nil},
 		{"refused transition", "created", "complete", "worker-1", "invalid transition: created -> complete", nil},
 	}

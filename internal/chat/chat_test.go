@@ -437,7 +437,7 @@ func TestSendRefusesManagerPaneInCoordinatorWorkspaceByRule1(t *testing.T) {
 	seedManager(t, home)
 	fake := newFakeHerdr(t)
 	envelope := Send(context.Background(), home, SendOptions{PaneID: "w1:p2", Text: "hello"})
-	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live manager agent)")
+	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live agent manager-hive)")
 }
 
 func TestSendRefusesUserPaneInLiveWorkerWorkspaceByRule3(t *testing.T) {
@@ -447,7 +447,7 @@ func TestSendRefusesUserPaneInLiveWorkerWorkspaceByRule3(t *testing.T) {
 	fake := newFakeHerdr(t)
 	fake.setPaneWorkspace("w2")
 	envelope := Send(context.Background(), home, SendOptions{PaneID: "w2:p2", Text: "hello"})
-	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)")
+	assertSendDenied(t, home, fake, envelope, "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares the workspace of the live agent worker-one)")
 }
 
 func TestValidateCallerRefusesWorkerWorkspaceWithoutCoordinatorByRule3(t *testing.T) {
@@ -456,7 +456,7 @@ func TestValidateCallerRefusesWorkerWorkspaceWithoutCoordinatorByRule3(t *testin
 	fake := newFakeHerdr(t)
 	fake.setPaneWorkspace("w2")
 	err := ValidateCaller(context.Background(), home, "", "w2:p2", "")
-	if err == nil || err.Error() != "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)" {
+	if err == nil || err.Error() != "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares the workspace of the live agent worker-one)" {
 		t.Fatalf("ValidateCaller() error = %v; want rule 3 refusal", err)
 	}
 }
@@ -579,7 +579,7 @@ func TestValidateCallerRefusesChangedIdentityAfterPaneGet(t *testing.T) {
 	if mutationErr != nil {
 		t.Fatalf("caller identity change = %v; want the store write to complete", mutationErr)
 	}
-	want := "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live manager agent)"
+	want := "chat send is for the user only: only the user can send chat; rule 1 (caller pane belongs to the live agent manager-demo)"
 	if err == nil || err.Error() != want {
 		t.Fatalf("ValidateCaller() error = %v; want the fresh rule 1 refusal", err)
 	}
@@ -615,7 +615,7 @@ func TestValidateCallerRefusesRemovedCoordinatorClaimAfterPaneGet(t *testing.T) 
 	if mutationErr != nil {
 		t.Fatalf("caller claim change = %v; want the store write to complete", mutationErr)
 	}
-	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)"
+	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares the workspace of the live agent worker-late)"
 	if err == nil || err.Error() != want {
 		t.Fatalf("ValidateCaller() error = %v; want the fresh rule 3 refusal", err)
 	}
@@ -649,7 +649,7 @@ func TestSendRefusesChangedCallerWorkspaceBeforeAppend(t *testing.T) {
 	if mutationErr != nil {
 		t.Fatalf("caller workspace change = %v; want the store write to complete", mutationErr)
 	}
-	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares a live worker workspace)"
+	want := "chat send is for the user only: only the user can send chat; rule 3 (caller pane shares the workspace of the live agent worker-late)"
 	if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != want {
 		t.Fatalf("Send() = %#v; want the fresh rule 3 refusal", envelope)
 	}
