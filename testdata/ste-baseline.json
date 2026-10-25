@@ -196,6 +196,7 @@
   ".hive/spec/agents-without-roles/tasks/159-awr-owner/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/160-awr-profiles/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/161-awr-checks/brief.md": 0,
+  ".hive/spec/agents-without-roles/tasks/162-awr-user-chat/brief.md": 0,
   "profiles/coordinator.md": 0,
   "profiles/planner.md": 0,
   "profiles/builder.md": 0,
