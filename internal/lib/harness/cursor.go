@@ -36,6 +36,10 @@ func (cursorProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (cursorProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (cursorProfile) ProcessNames() []string      { return []string{"cursor-agent"} }
 
+// SystemPromptArg is empty: the Cursor agent takes the profile and the guide at
+// the start of the first prompt (D4).
+func (cursorProfile) SystemPromptArg() string { return "" }
+
 // Trust gives the trust result of Cursor agent 2026.10.19-6bbf2c4. A new
 // directory shows the workspace trust dialog. The --trust flag skips it, but
 // writes ~/.cursor/projects/<slug>/.workspace-trusted, so the directory stays

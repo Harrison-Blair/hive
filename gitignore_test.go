@@ -31,6 +31,31 @@ func TestTrackedFilesAreNotIgnored(t *testing.T) {
 	}
 }
 
+// TestProfileFilesAreNotIgnored checks that Git tracks each profile. The
+// coordinator, planner, builder, verifier, and general profiles give each
+// agent its instructions.
+func TestProfileFilesAreNotIgnored(t *testing.T) {
+	skipWithoutGit(t)
+	for _, path := range []string{
+		"profiles/coordinator.md",
+		"profiles/planner.md",
+		"profiles/builder.md",
+		"profiles/verifier.md",
+		"profiles/general.md",
+	} {
+		// check-ignore exits 1 when the path is not ignored.
+		err := exec.Command("git", "check-ignore", "-q", path).Run()
+		if err == nil {
+			t.Errorf("git ignores %s; add the narrowest allow rule for each profile", path)
+			continue
+		}
+		var exit *exec.ExitError
+		if !errors.As(err, &exit) || exit.ExitCode() != 1 {
+			t.Errorf("git check-ignore %s: %v", path, err)
+		}
+	}
+}
+
 func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	err := exec.Command("git", "check-ignore", "--no-index", "-q", ".github/workflows/ci.yml").Run()

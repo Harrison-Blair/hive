@@ -17,6 +17,10 @@ type Profile interface {
 	ReadyTimeout() time.Duration
 	ProcessNames() []string
 	Trust() Trust
+	// SystemPromptArg returns the flag that carries the profile text and the
+	// guide as a system prompt. It returns the empty string when the harness
+	// takes that text at the start of the first prompt (D4).
+	SystemPromptArg() string
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the

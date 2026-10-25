@@ -37,6 +37,7 @@ var steFiles = []string{
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
 	"internal/guide/flows.md",
+	"profiles/*.md",
 	".agents/skills/hive-coordinator/SKILL.md",
 	".agents/skills/hive-manager/SKILL.md",
 	".agents/skills/hive-worker/SKILL.md",

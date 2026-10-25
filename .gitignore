@@ -16,6 +16,9 @@
 !reference/herdr/raw/llms.txt
 !reference/herdr/raw/default-config.toml
 
+# Agent profiles
+!profiles/*.md
+
 # Repo config
 !.gitignore
 !.github/workflows/ci.yml
