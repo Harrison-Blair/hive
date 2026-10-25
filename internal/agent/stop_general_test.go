@@ -74,8 +74,9 @@ func TestStopGeneralAgentClosesItsPaneAndReportsTheTab(t *testing.T) {
 			if (test.want == nil) != (tabEffect == nil) || (test.want != nil && *tabEffect != *test.want) {
 				t.Fatalf("tab effect = %#v; want %#v", tabEffect, test.want)
 			}
-			if stored := readAgent(t, home, "x"); stored.Status != records.AgentStopped {
-				t.Fatalf("record status = %q; want stopped", stored.Status)
+			result, ok := envelope.Result.(StopResult)
+			if !ok || result.Agent.Status != records.AgentStopped {
+				t.Fatalf("result = %#v; want stopped", envelope.Result)
 			}
 		})
 	}

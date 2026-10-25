@@ -210,6 +210,9 @@ func (s *Supervisor) notify(ctx context.Context, event herdr.Event, n notificati
 		return newStorageError(envelope)
 	}
 	s.writeLine(n.kind + " record for " + n.role)
+	if n.lifecycle == records.AgentExited || n.lifecycle == records.AgentStale {
+		s.pruneAgents(ctx)
+	}
 	return s.snapshot(ctx)
 }
 

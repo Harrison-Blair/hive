@@ -7,6 +7,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/prune"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -114,7 +115,16 @@ func (s *Supervisor) reconcile(ctx context.Context) error {
 		}
 	}
 	s.reconcileUnknownAgents(ctx)
+	s.pruneAgents(ctx)
 	return s.snapshot(ctx)
+}
+
+// pruneAgents deletes each agent record that no open task and no live agent
+// refers to. A prune failure does not stop the reconcile pass.
+func (s *Supervisor) pruneAgents(ctx context.Context) {
+	if _, err := prune.Run(ctx, s.options.Home); err != nil {
+		s.logger.Debug("supervisor prune failed", "command", "supervise", "error", err.Error())
+	}
 }
 
 func (s *Supervisor) reconcileRecord(ctx context.Context, record records.Agent) error {

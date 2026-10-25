@@ -3,6 +3,8 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -296,8 +298,8 @@ func TestStopSuccessClosed(t *testing.T) {
 	if !hasEffect(envelope.Effects, "pane", "closed") {
 		t.Fatalf("effects = %#v; want pane closed", envelope.Effects)
 	}
-	if got := readAgent(t, home, record.Key).Status; got != records.AgentStopped {
-		t.Fatalf("stored status = %q", got)
+	if _, err := os.Stat(filepath.Join(home, ".hive", "state", "agents", record.Key+".json")); !os.IsNotExist(err) {
+		t.Fatalf("stored record still exists: %v", err)
 	}
 	if len(fake.recorded("workspace.get")) != 2 {
 		t.Fatalf("workspace.get requests = %d; want pre-close and post-close", len(fake.recorded("workspace.get")))
