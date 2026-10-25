@@ -243,10 +243,10 @@ func promptText(t *testing.T, fake *fakeHerdr) string {
 	return params.Text
 }
 
-// TestSpawnDeliversProfileWithSystemPrompt proves AC1: Claude Code and Pi take
+// TestSpawnDeliversProfileWithSystemPrompt proves AC1: Claude Code takes
 // the profile and the guide with --append-system-prompt.
 func TestSpawnDeliversProfileWithSystemPrompt(t *testing.T) {
-	for _, harnessName := range []string{"claude", "pi"} {
+	for _, harnessName := range []string{"claude"} {
 		t.Run(harnessName, func(t *testing.T) {
 			_, fake, _ := spawnProfileTask(t, harnessName)
 			args := startArgs(t, fake)
@@ -285,10 +285,10 @@ func TestSpawnDeliversProfileWithSystemPrompt(t *testing.T) {
 	}
 }
 
-// TestSpawnDeliversProfileFirstInPrompt proves AC2: Codex, OpenCode, and the
-// Cursor agent take the profile and the guide at the start of the first prompt.
+// TestSpawnDeliversProfileFirstInPrompt proves AC2: Pi, Codex, OpenCode, and
+// the Cursor agent take the profile and guide at the start of the first prompt.
 func TestSpawnDeliversProfileFirstInPrompt(t *testing.T) {
-	for _, harnessName := range []string{"codex", "opencode", "cursor"} {
+	for _, harnessName := range []string{"pi", "codex", "opencode", "cursor"} {
 		t.Run(harnessName, func(t *testing.T) {
 			_, fake, _ := spawnProfileTask(t, harnessName)
 			args := startArgs(t, fake)
