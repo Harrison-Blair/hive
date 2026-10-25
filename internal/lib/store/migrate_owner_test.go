@@ -469,6 +469,48 @@ func TestMigrationVersionThreeKeepsEachSourceDestination(t *testing.T) {
 	}
 }
 
+// TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry proves that a
+// retry after a partial copy keeps the copied record in the owner inbox. The
+// marked copy in manager-two is not a source record of project two.
+func TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry(t *testing.T) {
+	home := seedOwnerAliasHome(t)
+	seedState(t, home, []string{"inbox", "manager-two", "2.json"}, map[string]any{
+		"seq": 2, "role": "manager-two", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": 0,
+		"migrated_from": "manager-one/1",
+	})
+	seedState(t, home, []string{"counters", "inbox:manager-two.json"}, map[string]any{"value": 2})
+
+	if _, err := Open(home); err != nil {
+		t.Fatalf("Open() = %v; want the migration", err)
+	}
+	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
+	wantOwner := map[string]any{
+		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(owner, wantOwner) {
+		t.Fatalf("owner record = %#v; want %#v", owner, wantOwner)
+	}
+	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
+	wantCoordinator := map[string]any{
+		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
+		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
+	}
+	if !reflect.DeepEqual(coordinator, wantCoordinator) {
+		t.Fatalf("coordinator record = %#v; want %#v", coordinator, wantCoordinator)
+	}
+	if !fileMissing(t, home, "inbox", "manager-one") {
+		t.Fatal("the old inbox of project one is still present")
+	}
+	if !fileMissing(t, home, "counters", "inbox:manager-one.json") {
+		t.Fatal("the old counter of project one is still present")
+	}
+}
+
 // TestMigrationVersionThreeSkipsAMarkedCopy proves that the marker of a
 // source record stops a second copy after a run that stopped early.
 func TestMigrationVersionThreeSkipsAMarkedCopy(t *testing.T) {
