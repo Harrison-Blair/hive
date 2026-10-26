@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/report"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,7 @@ func New() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "agent report", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Report(home, agentlib.ReportOptions{
+			envelope := operation.Run(home, operation.Options{
 				Agent:     agent,
 				Pane:      pane,
 				HerdrPane: os.Getenv("HERDR_PANE_ID"),
@@ -34,7 +34,7 @@ func New() *cobra.Command {
 				File:      file,
 				FileSet:   cmd.Flags().Lookup("file").Changed,
 			})
-			return envelope, agentlib.ReportText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

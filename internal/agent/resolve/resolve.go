@@ -1,4 +1,5 @@
-package agent
+// Package resolve settles an unresolved agent record for the agent resolve command.
+package resolve
 
 import (
 	"context"
@@ -6,35 +7,36 @@ import (
 	"log/slog"
 	"path/filepath"
 
+	agentlib "github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-// ResolveOptions holds the values of one agent resolve.
-type ResolveOptions struct {
+// Options holds the values of one agent resolve.
+type Options struct {
 	Agent  string
 	As     string
 	Logger *slog.Logger
 }
 
-// ResolveResult is the settled record of one resolve.
-type ResolveResult struct {
+// Result is the settled record of one resolve.
+type Result struct {
 	Agent records.Agent `json:"agent"`
 }
 
-// Resolve settles an unresolved agent record by hand. The record must hold the
+// Run settles an unresolved agent record by hand. The record must hold the
 // status unresolved. The exited choice ends it. The live choice compares the
 // identity of the named live agent with the record before it trusts the name.
-func Resolve(ctx context.Context, home string, options ResolveOptions) output.Envelope {
+func Run(ctx context.Context, home string, options Options) output.Envelope {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	if options.As != records.AgentExited && options.As != records.AgentLive {
 		return resolveFailure(home, options, "validate", "resolve requires --as exited or --as live")
 	}
-	shown := Show(home, options.Agent)
+	shown := agentlib.Show(home, options.Agent)
 	if shown.Outcome != "ok" {
 		return shown
 	}
@@ -129,10 +131,10 @@ func canonicalDir(path string) string {
 }
 
 // resolveWrite settles the record under one held store handle.
-func resolveWrite(home string, options ResolveOptions, record records.Agent, status string, live *herdr.AgentInfo) output.Envelope {
+func resolveWrite(home string, options Options, record records.Agent, status string, live *herdr.AgentInfo) output.Envelope {
 	// The live choice checks a live identity and needs a spawned record. The
 	// exited choice settles any unresolved record, including a hand-made one.
-	updated, effect, err := mutateAgentRecordChecked(home, record, records.AgentUnresolved, live != nil, func(current *records.Agent) {
+	updated, effect, err := agentlib.MutateAgentRecordChecked(home, record, records.AgentUnresolved, live != nil, func(current *records.Agent) {
 		current.Status = status
 		current.LastError = ""
 		if live != nil {
@@ -144,22 +146,22 @@ func resolveWrite(home string, options ResolveOptions, record records.Agent, sta
 	}, "resolved")
 	if err != nil {
 		envelope := resolveFailure(home, options, "store", "agent resolve: "+err.Error())
-		envelope.Effects = appendEffect([]output.Effect{}, effect)
+		envelope.Effects = agentlib.AppendEffect([]output.Effect{}, effect)
 		return envelope
 	}
-	logAgentEvent(home, "agent resolve", "name", displayValue(options.Agent), "status", status)
+	agentlib.LogAgentEvent(home, "agent resolve", "name", agentlib.DisplayValue(options.Agent), "status", status)
 	return output.Envelope{
 		Outcome: "ok",
 		Phase:   "complete",
-		Effects: appendEffect([]output.Effect{}, effect),
+		Effects: agentlib.AppendEffect([]output.Effect{}, effect),
 		Error:   nil,
-		Result:  ResolveResult{Agent: updated},
+		Result:  Result{Agent: updated},
 	}
 }
 
 // resolveHerdrFailure renders one herdr failure. The agent_not_found code gets
 // its own message.
-func resolveHerdrFailure(home string, options ResolveOptions, record records.Agent, err error) output.Envelope {
+func resolveHerdrFailure(home string, options Options, record records.Agent, err error) output.Envelope {
 	message := err.Error()
 	var serverError *herdr.Error
 	if errors.As(err, &serverError) && serverError.Code == herdr.CodeAgentNotFound {
@@ -168,18 +170,18 @@ func resolveHerdrFailure(home string, options ResolveOptions, record records.Age
 	return resolveFailure(home, options, "herdr", message)
 }
 
-func resolveFailure(home string, options ResolveOptions, phase, message string) output.Envelope {
-	logAgentEvent(home, "agent resolve failed", "name", displayValue(options.Agent), "phase", phase, "error", message)
-	return failed(phase, message)
+func resolveFailure(home string, options Options, phase, message string) output.Envelope {
+	agentlib.LogAgentEvent(home, "agent resolve failed", "name", agentlib.DisplayValue(options.Agent), "phase", phase, "error", message)
+	return agentlib.Failed(phase, message)
 }
 
-// ResolveText renders the settled record of one resolve.
-func ResolveText(envelope output.Envelope) string {
-	text := effectsText(envelope)
+// Text renders the settled record of one resolve.
+func Text(envelope output.Envelope) string {
+	text := agentlib.EffectsText(envelope)
 	if envelope.Error != nil {
 		return text
 	}
-	result, ok := envelope.Result.(ResolveResult)
+	result, ok := envelope.Result.(Result)
 	if !ok {
 		return text
 	}

@@ -152,7 +152,7 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 		}, want: "prompt file:"},
 		{name: "user tag", change: func(o *SpawnOptions) { o.Prompt = "user: do it" }, want: "prompt text cannot use the user: tag"},
 		{name: "marked user tag", change: func(o *SpawnOptions) { o.Prompt = "⬢ user: do it" }, want: "prompt text cannot use the user: tag"},
-		{name: "too long", change: func(o *SpawnOptions) { o.Prompt = strings.Repeat("a", maxPromptBytes) }, want: "longer than 65536 bytes"},
+		{name: "too long", change: func(o *SpawnOptions) { o.Prompt = strings.Repeat("a", MaxPromptBytes) }, want: "longer than 65536 bytes"},
 		{name: "empty name", change: func(o *SpawnOptions) { o.Name, o.NameSet = "", true }, want: "invalid agent name"},
 		{name: "bad name", change: func(o *SpawnOptions) { o.Name = "Bad" }, want: "invalid agent name"},
 		{name: "coordinator name", change: func(o *SpawnOptions) { o.Name = "coordinator" }, want: "reserved"},

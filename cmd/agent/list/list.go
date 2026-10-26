@@ -4,6 +4,7 @@ package list
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/list"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,7 @@ func New() *cobra.Command {
 		all, _ := cmd.Flags().GetBool("all")
 		return common.Run(cmd, "agent list", func(home string) (output.Envelope, string, error) {
 			envelope := agentlib.List(home, agentlib.ListOptions{Project: project, Profile: profile, All: all})
-			return envelope, agentlib.ListText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

@@ -24,19 +24,6 @@ type StopResult struct {
 	Workspace *herdr.WorkspaceInfo `json:"workspace,omitempty"`
 }
 
-// StopByName resolves one agent name and stops its record.
-func StopByName(ctx context.Context, home, name string) (StopResult, output.Envelope) {
-	shown := Show(home, name)
-	if shown.Outcome != "ok" {
-		return StopResult{}, shown
-	}
-	record, ok := shown.Result.(records.Agent)
-	if !ok {
-		return StopResult{}, failed("agent", "agent record missing")
-	}
-	return Stop(ctx, home, record)
-}
-
 // Stop closes the pane of one spawned agent. T13 and T15 call it with a record.
 func Stop(ctx context.Context, home string, record records.Agent) (StopResult, output.Envelope) {
 	if ctx == nil {
@@ -48,11 +35,11 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 			message := waitErr.Error()
 			if errors.Is(waitErr, errStartSettleTimeout) {
 				updated, effect, updateErr := setRecordStatus(home, record, records.AgentStarting, records.AgentUnresolved, message, "unresolved")
-				effects := appendEffect(nil, effect)
+				effects := AppendEffect(nil, effect)
 				if updateErr != nil {
 					message += "; " + updateErr.Error()
 				}
-				updated = chooseRecord(updated, record)
+				updated = ChooseRecord(updated, record)
 				return StopResult{Agent: updated}, stopEnvelope("failed", "start", effects, message, updated)
 			}
 			return StopResult{Agent: record}, stopEnvelope("failed", "start", nil, message, record)
@@ -88,22 +75,22 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 			message = "pane " + record.PaneID + " not found: record unresolved"
 		}
 		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
-		effects = appendEffect(effects, effect)
+		effects = AppendEffect(effects, effect)
 		if updateErr != nil {
 			message += "; " + updateErr.Error()
 		}
-		envelope := stopEnvelope("failed", "pane", effects, message, chooseRecord(updated, record))
+		envelope := stopEnvelope("failed", "pane", effects, message, ChooseRecord(updated, record))
 		logStop(logger, envelope, record.Key)
 		return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 	}
 	if record.TerminalID != "" && pane.TerminalID != record.TerminalID {
 		message := "pane " + record.PaneID + " holds another terminal: record unresolved"
 		updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
-		effects = appendEffect(effects, effect)
+		effects = AppendEffect(effects, effect)
 		if updateErr != nil {
 			message += "; " + updateErr.Error()
 		}
-		envelope := stopEnvelope("failed", "identity", effects, message, chooseRecord(updated, record))
+		envelope := stopEnvelope("failed", "identity", effects, message, ChooseRecord(updated, record))
 		logStop(logger, envelope, record.Key)
 		return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 	}
@@ -133,7 +120,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if updateErr != nil {
 		if errors.Is(updateErr, errRecordChanged) || errors.Is(updateErr, errStopIdentityChanged) {
 			message := "agent record changed: no close"
-			envelope := stopEnvelope("failed", "identity", effects, message, chooseRecord(stopped, record))
+			envelope := stopEnvelope("failed", "identity", effects, message, ChooseRecord(stopped, record))
 			logStop(logger, envelope, record.Key)
 			return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 		}
@@ -141,7 +128,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		logStop(logger, envelope, record.Key)
 		return StopResult{Agent: record}, envelope
 	}
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	record = stopped
 	logger.Debug("agent stopped", "command", "agent stop", "agent_id", record.Key, "pane_id", record.PaneID)
 
@@ -151,11 +138,11 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		if errors.As(closeErr, &serverError) && serverError.Code == herdr.CodePaneNotFound {
 			message := "pane " + record.PaneID + " not found: record unresolved"
 			updated, unresolvedEffect, updateFail := setRecordStatus(home, record, records.AgentStopped, records.AgentUnresolved, message, "unresolved")
-			effects = appendEffect(effects, unresolvedEffect)
+			effects = AppendEffect(effects, unresolvedEffect)
 			if updateFail != nil {
 				message += "; " + updateFail.Error()
 			}
-			envelope := stopEnvelope("failed", "close", effects, message, chooseRecord(updated, record))
+			envelope := stopEnvelope("failed", "close", effects, message, ChooseRecord(updated, record))
 			logStop(logger, envelope, record.Key)
 			return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 		}
@@ -170,11 +157,11 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 		}
 		message := "pane close: " + closeErr.Error()
 		restored, liveEffect, restoreErr := setRecordStatus(home, record, records.AgentStopped, records.AgentLive, message, "live")
-		effects = appendEffect(effects, liveEffect)
+		effects = AppendEffect(effects, liveEffect)
 		if restoreErr != nil {
 			message += "; " + restoreErr.Error()
 		}
-		envelope := stopEnvelope("failed", "close", effects, message, chooseRecord(restored, record))
+		envelope := stopEnvelope("failed", "close", effects, message, ChooseRecord(restored, record))
 		logStop(logger, envelope, record.Key)
 		return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 	}
@@ -194,14 +181,14 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	}
 	logger.Debug("agent stop topology", "command", "agent stop", "agent_id", record.Key, "topology", result.Topology)
 	if record.TabCreatedByHive {
-		effects = appendEffect(effects, stoppedTabEffect(ctx, logger, record, result))
+		effects = AppendEffect(effects, stoppedTabEffect(ctx, logger, record, result))
 	}
 	if _, pruneErr := prune.Run(ctx, home); pruneErr != nil {
 		logger.Debug("agent stop prune failed", "command", "agent stop", "agent_id", record.Key, "error", pruneErr.Error())
 	}
 	if record.Owns != "" && record.Project != "" {
 		workspaceEffect, workspaceErr := recordStoppedWorkspace(home, record, result)
-		effects = appendEffect(effects, workspaceEffect)
+		effects = AppendEffect(effects, workspaceEffect)
 		if workspaceErr != nil {
 			envelope := stopEnvelope("partial", "workspace", effects, workspaceErr.Error(), result.Agent)
 			envelope.Result = result
@@ -332,7 +319,7 @@ func waitForStartingRecord(ctx context.Context, home string, expected records.Ag
 // stopRecord makes the final stopped transition under one held store handle.
 // It refuses when the checked ownership tuple changed since the external reads.
 func stopRecord(home string, expected records.Agent) (records.Agent, output.Effect, error) {
-	effect := output.Effect{Resource: "agent", Path: statePath("agents", expected.Key), Action: "stopped"}
+	effect := output.Effect{Resource: "agent", Path: StatePath("agents", expected.Key), Action: "stopped"}
 	registry, err := store.Open(home)
 	if err != nil {
 		return expected, output.Effect{}, err
@@ -444,11 +431,11 @@ func checkProcessIdentity(record records.Agent, info herdr.PaneProcessInfo, sess
 
 func stopUnresolved(home string, logger *slog.Logger, record records.Agent, effects []output.Effect, message string) (StopResult, output.Envelope) {
 	updated, effect, updateErr := setRecordStatus(home, record, records.AgentLive, records.AgentUnresolved, message, "unresolved")
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		message += "; " + updateErr.Error()
 	}
-	envelope := stopEnvelope("failed", "identity", effects, message, chooseRecord(updated, record))
+	envelope := stopEnvelope("failed", "identity", effects, message, ChooseRecord(updated, record))
 	logStop(logger, envelope, record.Key)
 	return StopResult{Agent: envelope.Result.(StopResult).Agent}, envelope
 }
@@ -469,17 +456,4 @@ func logStop(logger *slog.Logger, envelope output.Envelope, key string) {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
 	logger.Debug("agent stop end", attrs...)
-}
-
-// StopText renders the effects and the post-close topology of one stop.
-func StopText(envelope output.Envelope) string {
-	text := effectsText(envelope)
-	if envelope.Error != nil {
-		return text
-	}
-	result, ok := envelope.Result.(StopResult)
-	if !ok {
-		return text
-	}
-	return text + "workspace " + result.Topology + "\n"
 }

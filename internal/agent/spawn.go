@@ -18,6 +18,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/process"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -25,14 +26,17 @@ import (
 )
 
 const (
-	maxExtraArgs  = 64
-	maxExtraBytes = 512
-	waitSettled   = "idle, blocked, done"
+	// MaxPromptBytes bounds the text of one prompt.
+	MaxPromptBytes = 64 * 1024
+	maxExtraArgs   = 64
+	maxExtraBytes  = 512
+	waitSettled    = "idle, blocked, done"
 )
 
 var (
 	errRecordChanged = errors.New("agent record changed")
-	settledStatuses  = []string{"idle", "blocked", "done"}
+	// SettledStatuses are the agent statuses that end a prompt wait.
+	SettledStatuses = []string{"idle", "blocked", "done"}
 )
 
 // SpawnOptions holds explicit values for one agent spawn.
@@ -107,36 +111,36 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
 	if err != nil {
-		return failed("log", err.Error())
+		return Failed("log", err.Error())
 	}
 	defer func() { _ = writer.Close() }()
 	logger := slog.New(writer)
 
 	profile, err := harness.Lookup(options.Harness)
 	if err != nil {
-		envelope := failed("validate", err.Error())
+		envelope := Failed("validate", err.Error())
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	if err := harness.Check(profile); err != nil {
-		envelope := failed("validate", err.Error())
+		envelope := Failed("validate", err.Error())
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	options, message := normalizeSpawn(ctx, home, options, profile)
 	if message != "" {
-		envelope := failed("validate", message)
+		envelope := Failed("validate", message)
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	if message := validateExtraArgs(options.ExtraArgs); message != "" {
-		envelope := failed("validate", message)
+		envelope := Failed("validate", message)
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	if options.Kind != "" {
 		if !options.PaneSet {
-			envelope := failed("validate", "pane required: pass --pane")
+			envelope := Failed("validate", "pane required: pass --pane")
 			logSpawn(logger, envelope, options, "")
 			return envelope
 		}
@@ -147,7 +151,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 	}
 	choice, paneError := choosePane(ctx, home, options, logger)
 	if paneError != "" {
-		envelope := failed("validate", paneError)
+		envelope := Failed("validate", paneError)
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
@@ -165,7 +169,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, paneID string, renameTab bool, logger *slog.Logger) (envelope output.Envelope) {
 	systemArgs, file, err := prepareInstructions(home, profile, options.instructions)
 	if err != nil {
-		envelope := failed("instructions", err.Error())
+		envelope := Failed("instructions", err.Error())
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
@@ -239,12 +243,12 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		envelope := spawnStartFailure(home, logger, options, record, result.Claim, effects, startErr, override)
 		return envelope
 	}
-	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "started"})
+	effects = append(effects, output.Effect{Resource: "agent", Path: StatePath("agents", record.Key), Action: "started"})
 	if options.general != nil {
 		updated, effect, updateErr := mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 			current.StartedByHive = true
 		}, "updated")
-		effects = appendEffect(effects, effect)
+		effects = AppendEffect(effects, effect)
 		if updateErr != nil {
 			envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 			logSpawn(logger, envelope, options, record.Key)
@@ -253,13 +257,13 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		record = updated
 	}
 	if renameTab {
-		effects = append(effects, renameAgentTab(ctx, home, logger, started.Agent.TabID, record.Name, "agent spawn", record.Key))
+		effects = append(effects, RenameAgentTab(ctx, home, logger, started.Agent.TabID, record.Name, "agent spawn", record.Key))
 	}
 	logArgv(logger, record.Key, started.Argv)
 
 	session := &sessionTrack{first: started.Agent.AgentSession}
 	updated, effect, updateErr := persistSession(home, record, session.first)
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
@@ -283,7 +287,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		current.Cwd = cwd
 		setSessionRef(current, session.first)
 	}, "updated")
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
@@ -296,7 +300,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 
 	waitInfo, waitErr := herdr.AgentWait(ctx, herdr.AgentWaitParams{
 		Target:    paneID,
-		Until:     settledStatuses,
+		Until:     SettledStatuses,
 		TimeoutMS: uint64(profile.ReadyTimeout() / time.Millisecond),
 	}, herdr.WithDeadline(profile.ReadyTimeout()+5*time.Second), herdr.WithLogger(logger))
 
@@ -306,7 +310,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 	}
 	if sessionReason == "" && waitErr == nil {
 		updated, effect, updateErr := persistSession(home, record, session.first)
-		effects = appendEffect(effects, effect)
+		effects = AppendEffect(effects, effect)
 		if updateErr != nil {
 			envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 			logSpawn(logger, envelope, options, record.Key)
@@ -334,7 +338,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		return spawnUnresolved(home, logger, options, record, result.Claim, effects, session.first, "wait", sessionReason)
 	}
 	updated, effect, updateErr = persistSession(home, record, session.first)
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
@@ -344,8 +348,8 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 	status := waitInfo.AgentStatus
 	if status != "idle" && status != "done" && status != "blocked" {
 		updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentUnresolved, "unexpected agent status: "+status, "unresolved")
-		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("partial", "wait", effects, "unexpected agent status: "+status, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+		effects = AppendEffect(effects, effect)
+		envelope := spawnEnvelope("partial", "wait", effects, "unexpected agent status: "+status, SpawnResult{Agent: ChooseRecord(updated, record), Claim: result.Claim})
 		if updateErr != nil {
 			envelope.Error = updateErr.Error()
 		}
@@ -365,7 +369,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 			current.AgentSessionRef = sessionRef(identity.session)
 		}
 	}, "updated")
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
@@ -382,20 +386,20 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 			effects = append(effects, blockedEffects...)
 		} else {
 			updated, effect, _ = setRecordStatus(home, record, record.Status, records.AgentLive, message, "updated")
-			effects = appendEffect(effects, effect)
+			effects = AppendEffect(effects, effect)
 		}
-		envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+		envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: ChooseRecord(updated, record), Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
 	updated, effect, updateErr = setRecordStatus(home, record, record.Status, records.AgentLive, "", "updated")
-	effects = appendEffect(effects, effect)
+	effects = AppendEffect(effects, effect)
 	if updateErr != nil {
 		envelope := spawnEnvelope("partial", "agent", effects, updateErr.Error(), SpawnResult{Agent: record, Claim: result.Claim})
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
-	envelope = spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+	envelope = spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: ChooseRecord(updated, record), Claim: result.Claim})
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
 }
@@ -461,14 +465,14 @@ func givenPaneTaskChoice(ctx context.Context, home string, options SpawnOptions,
 // instructions, and sends the first prompt.
 func spawnProjectAgent(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, choice *projectChoice, logger *slog.Logger) output.Envelope {
 	if choice == nil {
-		envelope := failed("validate", "pane required: pass --pane")
+		envelope := Failed("validate", "pane required: pass --pane")
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	if options.projectRecord != nil {
 		if message := writeProjectInstructions(home, *options.projectRecord, logger); message != "" {
 			choice.cleanup(ctx, home, logger)
-			envelope := failed("instructions", message)
+			envelope := Failed("instructions", message)
 			logSpawn(logger, envelope, options, "")
 			return envelope
 		}
@@ -505,7 +509,7 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, prof
 		return options, "profile coordinator is built in: run bare hive, or the restart in Health › Agents"
 	}
 	if options.Profile != "" && (!namePattern.MatchString(options.Profile) || (options.ProfileSet && !profileFileExists(home, options.Profile))) {
-		return options, "profile not found: profiles/" + displayValue(options.Profile) + ".md"
+		return options, "profile not found: profiles/" + DisplayValue(options.Profile) + ".md"
 	}
 	instructions, message := instructionsText(home, options.Profile)
 	if message != "" {
@@ -528,15 +532,15 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, prof
 	if (options.PromptSet || options.PromptFileSet) && strings.TrimSpace(text) == "" {
 		return options, "prompt text is empty"
 	}
-	if isUserTagged(text) {
+	if IsUserTagged(text) {
 		return options, "prompt text cannot use the user: tag"
 	}
 	if options.NameSet {
-		if message := reservedNameError(options.Name, true); message != "" {
+		if message := ReservedNameError(options.Name, true); message != "" {
 			return options, message
 		}
 		if options.Name == "" || !namePattern.MatchString(options.Name) {
-			return options, "invalid agent name: " + displayValue(options.Name)
+			return options, "invalid agent name: " + DisplayValue(options.Name)
 		}
 	}
 	if options.Owner && options.Project == "" && options.Task == "" {
@@ -589,8 +593,8 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, prof
 		plan.Worktree = options.taskRecord.Worktree.Path
 	}
 	options.firstPrompt = firstPromptWithInstructions(plan, options.taskRecord, text, options.instructions, profile.SystemPromptArg() == "")
-	if len(options.firstPrompt) > maxPromptBytes {
-		return options, fmt.Sprintf("first prompt is longer than %d bytes", maxPromptBytes)
+	if len(options.firstPrompt) > MaxPromptBytes {
+		return options, fmt.Sprintf("first prompt is longer than %d bytes", MaxPromptBytes)
 	}
 	return options, ""
 }
@@ -598,6 +602,12 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, prof
 func profileFileExists(home, profile string) bool {
 	info, err := os.Stat(filepath.Join(home, "profiles", profile+".md"))
 	return err == nil && !info.IsDir()
+}
+
+// IsUserTagged reports whether text starts with the user tag.
+func IsUserTagged(text string) bool {
+	text = strings.TrimPrefix(text, marker.Prefix)
+	return strings.HasPrefix(text, "user:")
 }
 
 func readSpawnPrompt(options SpawnOptions) (string, string) {
@@ -648,7 +658,7 @@ func checkOwnerCaller(ctx context.Context, home string, options SpawnOptions) (s
 		if name == "" {
 			name = "the caller"
 		}
-		return "--owner needs the coordinator or the user: " + displayValue(name), ""
+		return "--owner needs the coordinator or the user: " + DisplayValue(name), ""
 	}
 	return "", workspace
 }
@@ -719,7 +729,7 @@ func spawnName(home string, options SpawnOptions) (string, string) {
 
 func readSpawnTask(home, taskID string) (*records.Task, string) {
 	if !records.ValidTaskID(taskID) {
-		return nil, "task not found: " + displayValue(taskID)
+		return nil, "task not found: " + DisplayValue(taskID)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -728,7 +738,7 @@ func readSpawnTask(home, taskID string) (*records.Task, string) {
 	var task records.Task
 	if err := registry.ReadIn([]string{"tasks"}, taskID, &task); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, "task not found: " + displayValue(taskID)
+			return nil, "task not found: " + DisplayValue(taskID)
 		}
 		return nil, "store: " + err.Error()
 	}
@@ -783,8 +793,8 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 	var serverError *herdr.Error
 	if errors.As(startErr, &serverError) {
 		updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentExited, message, "exited")
-		effects = appendEffect(effects, effect)
-		envelope := spawnEnvelope("failed", "start", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+		effects = AppendEffect(effects, effect)
+		envelope := spawnEnvelope("failed", "start", effects, message, SpawnResult{Agent: ChooseRecord(updated, record), Claim: claim})
 		if updateErr != nil {
 			envelope.Error = message + "; " + updateErr.Error()
 		}
@@ -792,8 +802,8 @@ func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, r
 		return envelope
 	}
 	updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentUnresolved, message, "unresolved")
-	effects = appendEffect(effects, effect)
-	envelope := spawnEnvelope("partial", "start", effects, "agent start: "+message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+	effects = AppendEffect(effects, effect)
+	envelope := spawnEnvelope("partial", "start", effects, "agent start: "+message, SpawnResult{Agent: ChooseRecord(updated, record), Claim: claim})
 	if updateErr != nil {
 		envelope.Error = "agent start: " + message + "; " + updateErr.Error()
 	}
@@ -823,8 +833,8 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 						current.AgentSessionRef = sessionRef(identity.session)
 					}
 				}, "updated")
-				effects = appendEffect(effects, effect)
-				envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+				effects = AppendEffect(effects, effect)
+				envelope := spawnEnvelope("partial", "wait", effects, message, SpawnResult{Agent: ChooseRecord(updated, record), Claim: claim})
 				if updateErr != nil {
 					envelope.Error = message + "; " + updateErr.Error()
 				}
@@ -841,9 +851,9 @@ func spawnWaitFailure(ctx context.Context, home string, logger *slog.Logger, opt
 			}
 			return spawnUnresolved(home, logger, options, record, claim, effects, session.first, "wait", reason)
 		case herdr.CodeAgentNotRunning, herdr.CodeAgentNotFound:
-			inspection := inspectAgent(ctx, home, record, logger)
-			effects = appendEffect(effects, inspection.effect)
-			envelope := spawnEnvelope("failed", "wait", effects, inspection.messageForStart(), SpawnResult{Agent: chooseRecord(inspection.record, record), Claim: claim})
+			inspection := InspectAgent(ctx, home, record, logger)
+			effects = AppendEffect(effects, inspection.Effect)
+			envelope := spawnEnvelope("failed", "wait", effects, inspection.messageForStart(), SpawnResult{Agent: ChooseRecord(inspection.Record, record), Claim: claim})
 			logSpawn(logger, envelope, options, record.Key)
 			return envelope
 		}
@@ -857,8 +867,8 @@ func spawnUnresolved(home string, logger *slog.Logger, options SpawnOptions, rec
 		current.LastError = message
 		setSessionRef(current, first)
 	}, "unresolved")
-	effects = appendEffect(effects, effect)
-	envelope := spawnEnvelope("partial", phase, effects, message, SpawnResult{Agent: chooseRecord(updated, record), Claim: claim})
+	effects = AppendEffect(effects, effect)
+	envelope := spawnEnvelope("partial", phase, effects, message, SpawnResult{Agent: ChooseRecord(updated, record), Claim: claim})
 	if updateErr != nil {
 		envelope.Error = message + "; " + updateErr.Error()
 	}
@@ -1028,13 +1038,13 @@ func setRecordStatus(home string, record records.Agent, allowedStatus, status, m
 }
 
 func mutateAgentRecord(home string, expected records.Agent, allowedStatus string, apply func(*records.Agent), action string) (records.Agent, output.Effect, error) {
-	return mutateAgentRecordChecked(home, expected, allowedStatus, true, apply, action)
+	return MutateAgentRecordChecked(home, expected, allowedStatus, true, apply, action)
 }
 
-// mutateAgentRecordChecked writes a record mutation. A false requireSpawned
+// MutateAgentRecordChecked writes a record mutation. A false requireSpawned
 // settles a record that a person registered by hand.
-func mutateAgentRecordChecked(home string, expected records.Agent, allowedStatus string, requireSpawned bool, apply func(*records.Agent), action string) (records.Agent, output.Effect, error) {
-	effect := output.Effect{Resource: "agent", Path: statePath("agents", expected.Key), Action: action}
+func MutateAgentRecordChecked(home string, expected records.Agent, allowedStatus string, requireSpawned bool, apply func(*records.Agent), action string) (records.Agent, output.Effect, error) {
+	effect := output.Effect{Resource: "agent", Path: StatePath("agents", expected.Key), Action: action}
 	registry, err := store.Open(home)
 	if err != nil {
 		return expected, output.Effect{}, err
@@ -1096,14 +1106,16 @@ func spawnEnvelope(outcome, phase string, effects []output.Effect, err any, resu
 	return output.Envelope{Outcome: outcome, Phase: phase, Effects: effects, Error: err, Result: result}
 }
 
-func appendEffect(effects []output.Effect, effect output.Effect) []output.Effect {
+// AppendEffect appends an effect that has a resource.
+func AppendEffect(effects []output.Effect, effect output.Effect) []output.Effect {
 	if effect.Resource == "" {
 		return effects
 	}
 	return append(effects, effect)
 }
 
-func chooseRecord(updated, fallback records.Agent) records.Agent {
+// ChooseRecord gives the updated record, or the fallback when it has no key.
+func ChooseRecord(updated, fallback records.Agent) records.Agent {
 	if updated.Key != "" {
 		return updated
 	}
@@ -1139,17 +1151,4 @@ func logArgv(logger *slog.Logger, key string, argv []string) {
 		return
 	}
 	logger.Debug("agent start argv", "command", "agent spawn", "agent_id", key, hivelog.Body(string(data)))
-}
-
-// SpawnText renders the effects and the display name of one spawn.
-func SpawnText(envelope output.Envelope) string {
-	text := effectsText(envelope)
-	if envelope.Error != nil {
-		return text
-	}
-	result, ok := envelope.Result.(SpawnResult)
-	if !ok {
-		return text
-	}
-	return text + fmt.Sprintf("agent %s %s\n", result.Agent.Name, result.Agent.Status)
 }
