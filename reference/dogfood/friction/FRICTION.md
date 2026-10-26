@@ -80,3 +80,5 @@ For all other files, the coordinator and manager never change a project source f
 | [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |
 | [Task dependencies cannot be changed through Hive](entries/task-dependencies-cannot-edit.md) | Open | Ask a22 uses replacement tasks 180–182 and preserves cancelled originals. No new CLI feature. |
 | [Optional Codex helper spawn stops at the saved-trust check](entries/codex-helper-spawn-requires-saved-trust.md) | Open | Keep trust unchanged. Isolated archived checks continue under the parent verifier. |
+| [Hive has no native command for a scheduled action](entries/no-native-scheduled-action.md) | Open | Use the authorized one-shot user timer and effective-time override. No product fix requested. |
+| [A prose-only result has no accepted completion status without verification](entries/prose-completion-needs-verification-status.md) | Open | Preserve accepted external completion. Cancel only the waived workflow and start approved dependents by explicit ID. |
