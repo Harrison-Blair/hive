@@ -11,31 +11,34 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
-type inspection struct {
+// Inspection is the result of InspectAgent: the settled record and the
+// effect of its update.
+type Inspection struct {
 	status string
 	detail string
-	record records.Agent
-	effect output.Effect
+	Record records.Agent
+	Effect output.Effect
 }
 
-func (i inspection) messageForStart() string {
+func (i Inspection) messageForStart() string {
 	if i.status == records.AgentExited {
 		return "agent exited during start"
 	}
 	return "agent start unresolved: " + i.detail
 }
 
-func (i inspection) messageForSend() string {
+// MessageForSend gives the refusal of a prompt to the inspected agent.
+func (i Inspection) MessageForSend() string {
 	if i.status == records.AgentExited {
 		return "agent exited"
 	}
 	return "agent unresolved: " + i.detail
 }
 
-// inspectAgent decides whether an agent that herdr no longer names left the
+// InspectAgent decides whether an agent that herdr no longer names left the
 // pane or still runs there. Only positive shell evidence in the recorded
 // terminal permits the exited result.
-func inspectAgent(ctx context.Context, home string, record records.Agent, logger *slog.Logger) inspection {
+func InspectAgent(ctx context.Context, home string, record records.Agent, logger *slog.Logger) Inspection {
 	pane, err := herdr.PaneGet(ctx, record.PaneID, herdr.WithLogger(logger))
 	if err != nil {
 		var serverError *herdr.Error
@@ -101,18 +104,18 @@ func shellProof(info herdr.PaneProcessInfo) bool {
 	return err == nil && alive
 }
 
-func markInspection(home string, record records.Agent, status, detail string, logger *slog.Logger) inspection {
+func markInspection(home string, record records.Agent, status, detail string, logger *slog.Logger) Inspection {
 	updated, effect, err := setRecordStatus(home, record, record.Status, status, detail, status)
 	if err != nil {
 		if logger != nil {
 			logger.Debug("agent inspection update failed", "command", "agent inspect", "agent_id", record.Key, "status", status, "error", err.Error())
 		}
-		return inspection{status: records.AgentUnresolved, detail: detail + "; " + err.Error(), record: record}
+		return Inspection{status: records.AgentUnresolved, detail: detail + "; " + err.Error(), Record: record}
 	}
 	if logger != nil {
 		logger.Debug("agent inspection", "command", "agent inspect", "agent_id", record.Key, "status", status, "detail", detail)
 	}
-	return inspection{status: status, detail: detail, record: updated, effect: effect}
+	return Inspection{status: status, detail: detail, Record: updated, Effect: effect}
 }
 
 func isServerError(err error, target **herdr.Error) bool {

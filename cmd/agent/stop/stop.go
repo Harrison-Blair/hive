@@ -3,7 +3,7 @@ package stop
 
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/stop"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -22,8 +22,8 @@ func New() *cobra.Command {
 			return common.Usage(cmd, "agent stop requires --agent")
 		}
 		return common.Run(cmd, "agent stop", func(home string) (output.Envelope, string, error) {
-			_, envelope := agentlib.StopByName(cmd.Context(), home, name)
-			return envelope, agentlib.StopText(envelope), nil
+			_, envelope := operation.Run(cmd.Context(), home, name)
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

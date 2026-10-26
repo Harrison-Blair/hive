@@ -41,12 +41,12 @@ func (general *generalSpawn) keptPrompt() string {
 // tab or starts a process, then runs the spawn core and sends the first prompt.
 func spawnGeneral(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, logger *slog.Logger) output.Envelope {
 	fail := func(phase, message string) output.Envelope {
-		envelope := failed(phase, message)
+		envelope := Failed(phase, message)
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
 	if !namePattern.MatchString(options.Name) {
-		return fail("validate", "invalid agent name: "+displayValue(options.Name))
+		return fail("validate", "invalid agent name: "+DisplayValue(options.Name))
 	}
 	caller, phase, message := generalCaller(home, options)
 	if message != "" {
@@ -142,7 +142,7 @@ func generalCaller(home string, options SpawnOptions) (records.Agent, string, st
 			phase, message = "identity", "no registered caller: "+callerErr.Error()
 			return nil
 		}
-		agents, err := loadAgents(locked)
+		agents, err := LoadAgents(locked)
 		if err != nil {
 			return err
 		}
@@ -264,7 +264,7 @@ func blockGeneralRecord(home string, record records.Agent, message string) (reco
 		if err := checkCurrentRecordChecked(locked, current, record, record.Status, true); err != nil {
 			return err
 		}
-		agents, err := loadAgents(locked)
+		agents, err := LoadAgents(locked)
 		if err != nil {
 			return err
 		}
@@ -286,7 +286,7 @@ func blockGeneralRecord(home string, record records.Agent, message string) (reco
 			return err
 		}
 		updated = current
-		effects = append(append(effects, appended.Effects...), output.Effect{Resource: "agent", Path: statePath("agents", current.Key), Action: "updated"})
+		effects = append(append(effects, appended.Effects...), output.Effect{Resource: "agent", Path: StatePath("agents", current.Key), Action: "updated"})
 		return nil
 	})
 	return updated, effects, err
@@ -299,7 +299,7 @@ func keepGeneralPrompt(home string, general *generalSpawn, record records.Agent,
 		updated, effect, err := mutateAgentRecord(home, record, record.Status, func(current *records.Agent) {
 			current.FirstPrompt = general.prompt
 		}, "prompt kept")
-		envelope.Effects = appendEffect(envelope.Effects, effect)
+		envelope.Effects = AppendEffect(envelope.Effects, effect)
 		if err != nil {
 			envelope.Error = fmt.Sprint(envelope.Error) + "; keep first prompt: " + err.Error()
 			return envelope
@@ -314,7 +314,7 @@ func keepGeneralPrompt(home string, general *generalSpawn, record records.Agent,
 // (decision 6), or keeps it for the supervisor.
 func deliverGeneralPrompt(ctx context.Context, home string, general *generalSpawn, record records.Agent, envelope output.Envelope, logger *slog.Logger) output.Envelope {
 	if general.keep {
-		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompt kept"})
+		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: StatePath("agents", record.Key), Action: "prompt kept"})
 		return envelope
 	}
 	paneLock, err := panelock.Lock(ctx, home, record.PaneID)
@@ -336,21 +336,21 @@ func deliverGeneralPrompt(ctx context.Context, home string, general *generalSpaw
 	var serverError *herdr.Error
 	switch {
 	case promptErr == nil, isHerdrCode(promptErr, herdr.CodeTimeout):
-		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
+		envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: StatePath("agents", record.Key), Action: "prompted"})
 		return envelope
 	case errors.As(promptErr, &serverError) && serverError.Code != herdr.CodeAgentPromptStalled:
 		return keepGeneralPromptAfter(home, general, record, envelope, "first prompt not sent: "+promptErr.Error())
 	}
 	message := "first prompt delivery is not certain: " + promptErr.Error() + "; run hive agent resolve --agent " + record.Name
 	updated, effect, updateErr := setRecordStatus(home, record, record.Status, records.AgentUnresolved, message, "unresolved")
-	envelope.Effects = appendEffect(envelope.Effects, effect)
+	envelope.Effects = AppendEffect(envelope.Effects, effect)
 	envelope.Outcome = "partial"
 	envelope.Phase = "prompt"
 	envelope.Error = message
 	if updateErr != nil {
 		envelope.Error = message + "; " + updateErr.Error()
 	}
-	envelope.Result = SpawnResult{Agent: chooseRecord(updated, record)}
+	envelope.Result = SpawnResult{Agent: ChooseRecord(updated, record)}
 	return envelope
 }
 

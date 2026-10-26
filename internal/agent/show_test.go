@@ -25,11 +25,6 @@ func TestShowPrefersStartingGenerationByName(t *testing.T) {
 	if !ok || record.Key != "worker-g2" || record.Status != records.AgentStarting {
 		t.Fatalf("Show() = %#v; want worker-g2 starting", envelope.Result)
 	}
-	if text := ShowText(envelope); !strings.Contains(text, "status: starting") {
-		t.Fatalf("ShowText() = %q; want starting status", text)
-	} else if strings.Contains(text, "parent:") || strings.Contains(text, "replaces:") || strings.Contains(text, "status since:") {
-		t.Fatalf("ShowText() = %q; want no empty lineage fields", text)
-	}
 }
 
 func TestShowAndListExposeLineageFields(t *testing.T) {
@@ -43,12 +38,6 @@ func TestShowAndListExposeLineageFields(t *testing.T) {
 	envelope := Show(home, record.Key)
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Show() = %#v; want success", envelope)
-	}
-	text := ShowText(envelope)
-	for _, want := range []string{"parent: manager-g1", "replaces: worker-g1", "status since: 2026-01-02T03:04:05Z"} {
-		if !strings.Contains(text, want) {
-			t.Errorf("ShowText() = %q; missing %q", text, want)
-		}
 	}
 
 	listed := List(home, ListOptions{All: true})

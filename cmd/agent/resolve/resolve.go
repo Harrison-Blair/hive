@@ -3,7 +3,7 @@ package resolve
 
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/resolve"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -24,8 +24,8 @@ func New() *cobra.Command {
 			return common.Usage(cmd, "agent resolve requires --agent")
 		}
 		return common.Run(cmd, "agent resolve", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Resolve(cmd.Context(), home, agentlib.ResolveOptions{Agent: name, As: as})
-			return envelope, agentlib.ResolveText(envelope), nil
+			envelope := operation.Run(cmd.Context(), home, operation.Options{Agent: name, As: as})
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command
