@@ -1,4 +1,4 @@
-package chat_test
+package send_test
 
 import (
 	"bufio"

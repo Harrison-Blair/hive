@@ -18,7 +18,6 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/Harrison-Blair/hive/internal/lib/identity"
-	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/panelock"
@@ -26,7 +25,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
-var chatIDPattern = regexp.MustCompile(`^c[1-9][0-9]*$`)
+// IDPattern matches one chat message ID.
+var IDPattern = regexp.MustCompile(`^c[1-9][0-9]*$`)
 
 // Entry is one message in the chat history.
 type Entry struct {
@@ -36,18 +36,6 @@ type Entry struct {
 	Text     string `json:"text,omitempty"`
 	Delivery string `json:"delivery,omitempty"`
 	ReplyTo  string `json:"reply_to,omitempty"`
-}
-
-// SendRefusal is the D14 text of a refused chat send.
-const SendRefusal = "chat send is for the user only: type in the Chat screen of the hive TUI"
-
-// RefuseSend logs one refused CLI chat send and returns its failure. It
-// writes no chat record and sends no prompt.
-func RefuseSend(home, paneID, workingDir string) output.Envelope {
-	if logger, err := hivelog.Open(home, "chat"); err == nil {
-		logger.Debug("chat send refused", "pane_id", paneID, "cwd", workingDir)
-	}
-	return failed("identity", SendRefusal, nil)
 }
 
 // SendOptions holds the caller and text of one user message.
@@ -62,19 +50,6 @@ type SendOptions struct {
 type SendResult struct {
 	ID       string `json:"id"`
 	Delivery string `json:"delivery"`
-}
-
-// ReplyOptions holds the caller and text of one coordinator reply.
-type ReplyOptions struct {
-	Agent  string
-	PaneID string
-	To     string
-	Text   string
-}
-
-// ReplyResult reports one coordinator reply.
-type ReplyResult struct {
-	Entry Entry `json:"entry"`
 }
 
 // LogOptions filters the chat history.
@@ -95,11 +70,11 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		ctx = context.Background()
 	}
 	if options.Text == "" {
-		return failed("validate", "chat text is empty", nil)
+		return Failed("validate", "chat text is empty", nil)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error(), nil)
+		return Failed("store", err.Error(), nil)
 	}
 	var coordinator records.Agent
 	var entry Entry
@@ -119,21 +94,21 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		return nil
 	})
 	if lockErr != nil {
-		return failed("store", lockErr.Error(), nil)
+		return Failed("store", lockErr.Error(), nil)
 	}
 	if message != "" {
-		return failed(phase, message, nil)
+		return Failed(phase, message, nil)
 	}
 
 	// Rule 2 and the remote pane read run without the global lock.
 	if err := checkCallerWorkingDir(home, options.WorkingDir); err != nil {
-		return failed("identity", err.Error(), nil)
+		return Failed("identity", err.Error(), nil)
 	}
 	paneWorkspace := ""
 	if options.PaneID != "" {
 		pane, err := herdr.PaneGet(ctx, options.PaneID)
 		if err != nil {
-			return failed("identity", callerPaneError(err).Error(), nil)
+			return Failed("identity", callerPaneError(err).Error(), nil)
 		}
 		paneWorkspace = pane.WorkspaceID
 	}
@@ -158,16 +133,16 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		}
 		entry = Entry{ID: fmt.Sprintf("c%d", seq), At: at, From: "user", Text: options.Text, Delivery: "pending"}
 		date = at[:10]
-		if err := appendLine(home, date, entry); err != nil {
+		if err := AppendLine(home, date, entry); err != nil {
 			phase, message = "write", "append chat message: "+err.Error()
 		}
 		return nil
 	})
 	if lockErr != nil {
-		return failed("store", lockErr.Error(), nil)
+		return Failed("store", lockErr.Error(), nil)
 	}
 	if message != "" {
-		return failed(phase, message, nil)
+		return Failed(phase, message, nil)
 	}
 
 	promptErr := prompt(ctx, home, coordinator.PaneID, marker.Prefix+"user: "+options.Text)
@@ -176,10 +151,10 @@ func Send(ctx context.Context, home string, options SendOptions) output.Envelope
 		delivery = "unknown"
 	}
 	if err := appendDelivery(ctx, home, date, entry.ID, delivery); err != nil {
-		return failed("delivery", "write chat delivery state: "+err.Error(), SendResult{ID: entry.ID, Delivery: "pending"})
+		return Failed("delivery", "write chat delivery state: "+err.Error(), SendResult{ID: entry.ID, Delivery: "pending"})
 	}
 	if promptErr != nil {
-		return failed("delivery", "chat delivery is unknown: "+promptErr.Error(), SendResult{ID: entry.ID, Delivery: delivery})
+		return Failed("delivery", "chat delivery is unknown: "+promptErr.Error(), SendResult{ID: entry.ID, Delivery: delivery})
 	}
 	return output.Envelope{
 		Outcome: "ok",
@@ -359,72 +334,8 @@ func appendDelivery(ctx context.Context, home, date, id, delivery string) error 
 	}
 	return registry.WithLock(ctx, func(locked *store.LockedStore) error {
 		update := Entry{ID: id, At: time.Now().UTC().Format(time.RFC3339Nano), Delivery: delivery}
-		return appendLine(home, date, update)
+		return AppendLine(home, date, update)
 	})
-}
-
-// Reply appends one message from the live coordinator.
-func Reply(home string, options ReplyOptions) output.Envelope {
-	if options.Text == "" {
-		return failed("validate", "chat reply text is empty", nil)
-	}
-	registry, err := store.Open(home)
-	if err != nil {
-		return failed("store", err.Error(), nil)
-	}
-	var entry Entry
-	var phase, message string
-	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		caller, err := identity.ResolveHeld(locked, options.Agent, options.PaneID)
-		if err != nil || caller.Kind != records.AgentKindCoordinator {
-			phase = "identity"
-			message = "only the coordinator can run hive chat reply"
-			if err != nil {
-				message += ": " + err.Error()
-			}
-			return nil
-		}
-		if options.To != "" {
-			if !chatIDPattern.MatchString(options.To) {
-				phase, message = "validate", "chat user message not found: "+options.To
-				return nil
-			}
-			existing, _, err := readEntriesLocked(home, "")
-			if err != nil {
-				phase, message = "read", "read chat history: "+err.Error()
-				return nil
-			}
-			found := false
-			for _, candidate := range existing {
-				if candidate.ID == options.To && candidate.From == "user" {
-					found = true
-					break
-				}
-			}
-			if !found {
-				phase, message = "validate", "chat user message not found: "+options.To
-				return nil
-			}
-		}
-		at := time.Now().UTC().Format(time.RFC3339Nano)
-		seq, err := locked.Next("chat")
-		if err != nil {
-			phase, message = "counter", "next chat ID: "+err.Error()
-			return nil
-		}
-		entry = Entry{ID: fmt.Sprintf("c%d", seq), At: at, From: "coordinator", Text: options.Text, ReplyTo: options.To}
-		if err := appendLine(home, at[:10], entry); err != nil {
-			phase, message = "write", "append chat reply: "+err.Error()
-		}
-		return nil
-	})
-	if lockErr != nil {
-		return failed("store", lockErr.Error(), nil)
-	}
-	if message != "" {
-		return failed(phase, message, nil)
-	}
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: ReplyResult{Entry: entry}}
 }
 
 // Log reads messages in order and applies the requested filters.
@@ -432,23 +343,23 @@ func Log(home string, options LogOptions) output.Envelope {
 	if options.Since != "" {
 		parsed, err := time.Parse("2006-01-02", options.Since)
 		if err != nil || parsed.Format("2006-01-02") != options.Since {
-			return failed("validate", "--since must use YYYY-MM-DD", nil)
+			return Failed("validate", "--since must use YYYY-MM-DD", nil)
 		}
 	}
 	if options.Limit < 0 {
-		return failed("validate", "--limit must be zero or greater", nil)
+		return Failed("validate", "--limit must be zero or greater", nil)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error(), nil)
+		return Failed("store", err.Error(), nil)
 	}
 	var result LogResult
 	if err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		var err error
-		result.Entries, result.BadLines, err = readEntriesLocked(home, options.Since)
+		result.Entries, result.BadLines, err = ReadEntriesLocked(home, options.Since)
 		return err
 	}); err != nil {
-		return failed("read", "read chat history: "+err.Error(), nil)
+		return Failed("read", "read chat history: "+err.Error(), nil)
 	}
 	if options.Limit > 0 && len(result.Entries) > options.Limit {
 		result.Entries = result.Entries[len(result.Entries)-options.Limit:]
@@ -456,7 +367,9 @@ func Log(home string, options LogOptions) output.Envelope {
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: result}
 }
 
-func readEntriesLocked(home, since string) ([]Entry, int, error) {
+// ReadEntriesLocked reads the chat history on or after since. The caller holds
+// the store lock.
+func ReadEntriesLocked(home, since string) ([]Entry, int, error) {
 	dir := filepath.Join(home, ".hive", "state", "chat")
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
@@ -499,7 +412,7 @@ func readEntriesLocked(home, since string) ([]Entry, int, error) {
 			line, readErr := reader.ReadString('\n')
 			if len(line) != 0 {
 				var entry Entry
-				if err := json.Unmarshal([]byte(strings.TrimSpace(line)), &entry); err != nil || !validTimestamp(entry.At) || !chatIDPattern.MatchString(entry.ID) {
+				if err := json.Unmarshal([]byte(strings.TrimSpace(line)), &entry); err != nil || !validTimestamp(entry.At) || !IDPattern.MatchString(entry.ID) {
 					badLines++
 				} else if entry.From == "" && entry.Text == "" && entry.ReplyTo == "" {
 					index, found := messageIndex[entry.ID]
@@ -548,13 +461,15 @@ func validMessage(entry Entry) bool {
 	case "user":
 		return entry.Delivery == "pending" && entry.ReplyTo == ""
 	case "coordinator":
-		return entry.Delivery == "" && (entry.ReplyTo == "" || chatIDPattern.MatchString(entry.ReplyTo))
+		return entry.Delivery == "" && (entry.ReplyTo == "" || IDPattern.MatchString(entry.ReplyTo))
 	default:
 		return false
 	}
 }
 
-func appendLine(home, date string, value any) error {
+// AppendLine appends one JSON line to the chat file of one UTC date. The caller
+// holds the store lock.
+func AppendLine(home, date string, value any) error {
 	parsed, err := time.Parse("2006-01-02", date)
 	if err != nil || parsed.Format("2006-01-02") != date {
 		return fmt.Errorf("invalid chat date %q", date)
@@ -596,38 +511,7 @@ func appendLine(home, date string, value any) error {
 	return file.Close()
 }
 
-func failed(phase, message string, result any) output.Envelope {
+// Failed returns one failed chat envelope.
+func Failed(phase, message string, result any) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: result}
-}
-
-// ReplyText renders the ID of one coordinator reply.
-func ReplyText(envelope output.Envelope) string {
-	result, ok := envelope.Result.(ReplyResult)
-	if !ok {
-		return ""
-	}
-	return fmt.Sprintf("chat %s reply saved\n", result.Entry.ID)
-}
-
-// LogText renders each message and the count of malformed lines.
-func LogText(envelope output.Envelope) string {
-	result, ok := envelope.Result.(LogResult)
-	if !ok {
-		return ""
-	}
-	var text strings.Builder
-	for _, entry := range result.Entries {
-		fmt.Fprintf(&text, "%s %s", entry.ID, entry.From)
-		if entry.Delivery != "" {
-			fmt.Fprintf(&text, " [%s]", entry.Delivery)
-		}
-		if entry.ReplyTo != "" {
-			fmt.Fprintf(&text, " -> %s", entry.ReplyTo)
-		}
-		fmt.Fprintf(&text, ": %s\n", entry.Text)
-	}
-	if result.BadLines != 0 {
-		fmt.Fprintf(&text, "skipped %d bad chat lines\n", result.BadLines)
-	}
-	return text.String()
 }

@@ -1,4 +1,4 @@
-package chat_test
+package send_test
 
 import (
 	"bytes"
@@ -68,7 +68,7 @@ func TestChatSendRefusesEachCaller(t *testing.T) {
 
 // TestNoCmdFileCallsChatSend proves AC4 over the live command tree.
 func TestNoCmdFileCallsChatSend(t *testing.T) {
-	offenders, err := filesCallingChatSend("..")
+	offenders, err := filesCallingChatSend("../..")
 	if err != nil {
 		t.Fatal(err)
 	}

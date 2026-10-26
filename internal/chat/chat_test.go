@@ -294,33 +294,6 @@ func TestSendMarksPromptFailureUnknownWithoutRetry(t *testing.T) {
 	}
 }
 
-func TestReplyRequiresCoordinatorAndSetsReplyTo(t *testing.T) {
-	home := chatHome(t)
-	seedCoordinator(t, home)
-	seedWorker(t, home)
-	registry, err := store.Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := registry.Next("chat"); err != nil {
-		t.Fatal(err)
-	}
-	appendChatLine(t, home, "2026-01-02", Entry{ID: "c1", At: "2026-01-02T03:04:05Z", From: "user", Text: "hello", Delivery: "pending"})
-	appendChatLine(t, home, "2026-01-02", Entry{ID: "c1", At: "2026-01-02T03:04:06Z", Delivery: "sent"})
-	denied := Reply(home, ReplyOptions{Agent: "worker-one", Text: "answer"})
-	if denied.Outcome != "failed" || !strings.Contains(fmt.Sprint(denied.Error), "coordinator") {
-		t.Fatalf("Reply() as worker = %#v; want coordinator-role error", denied)
-	}
-	allowed := Reply(home, ReplyOptions{Agent: "coordinator", To: "c1", Text: "answer"})
-	if allowed.Outcome != "ok" {
-		t.Fatalf("Reply() as coordinator = %#v; want ok", allowed)
-	}
-	result, ok := allowed.Result.(ReplyResult)
-	if !ok || result.Entry.ID != "c2" || result.Entry.From != "coordinator" || result.Entry.ReplyTo != "c1" {
-		t.Fatalf("reply result = %#v; want coordinator c2 reply_to c1", allowed.Result)
-	}
-}
-
 func TestLogSkipsBadLinesAppliesSinceAndLimit(t *testing.T) {
 	home := chatHome(t)
 	appendChatLine(t, home, "2026-01-01", Entry{ID: "c1", At: "2026-01-01T01:00:00Z", From: "user", Text: "old", Delivery: "pending"})
