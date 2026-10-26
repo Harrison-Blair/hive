@@ -79,3 +79,4 @@ For all other files, the coordinator and manager never change a project source f
 | [The manager startup list does not name overrides/verifier-model.md](entries/manager-startup-skips-verifier-model.md) | Open |  |
 | [hive land of a git rm --cached commit deletes the files from the project checkout](entries/land-untrack-deletes-files-on-disk.md) | Open | qmeter g15: back up with cp -a before hive land, restore after |
 | [Task dependencies cannot be changed through Hive](entries/task-dependencies-cannot-edit.md) | Open | Ask a22 uses replacement tasks 180–182 and preserves cancelled originals. No new CLI feature. |
+| [Optional Codex helper spawn stops at the saved-trust check](entries/codex-helper-spawn-requires-saved-trust.md) | Open | Keep trust unchanged. Isolated archived checks continue under the parent verifier. |
