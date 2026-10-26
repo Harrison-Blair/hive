@@ -17,7 +17,6 @@ func New() *cobra.Command {
 		Short: "register the current agent session",
 		Args:  cobra.NoArgs,
 	}
-	command.Flags().String("role", "", "agent role")
 	command.Flags().String("project", "", "project ID")
 	command.Flags().String("task", "", "task ID")
 	command.Flags().String("harness", "", "harness kind")
@@ -27,7 +26,6 @@ func New() *cobra.Command {
 	command.Flags().Int("quiet-after", 10, "quiet minutes")
 	command.Flags().Int64("pid", 0, "holder process ID")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
-		role, _ := cmd.Flags().GetString("role")
 		project, _ := cmd.Flags().GetString("project")
 		task, _ := cmd.Flags().GetString("task")
 		harness, _ := cmd.Flags().GetString("harness")
@@ -42,7 +40,6 @@ func New() *cobra.Command {
 		}
 		return common.Run(cmd, "agent register", func(home string) (output.Envelope, string, error) {
 			envelope := agentlib.RegisterAndRename(home, agentlib.RegisterOptions{
-				Role:          role,
 				Project:       project,
 				Task:          task,
 				Harness:       harness,

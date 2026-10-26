@@ -145,8 +145,8 @@ func TestCoordinatorProfileHasTheApprovedInstructions(t *testing.T) {
 	text := readProfile(t, "coordinator")
 	for _, want := range []string{
 		"Hive-started exchanges get replies through Hive. Use the native harness only when the user starts the exchange there.",
-		"Address manager messages to the inbox key `manager-PROJECT`. For project hive, this is `manager-hive`.",
-		"Do not use the live agent record key `manager-PROJECT-gN` for a manager message.",
+		"Address project messages to the inbox address `project:ID`. For project hive, this is `project:hive`.",
+		"The address goes to the live owner of the project, or to the coordinator when the project has no live owner.",
 		"hive agent spawn --profile planner --project ID --owner",
 	} {
 		if !strings.Contains(text, want) {

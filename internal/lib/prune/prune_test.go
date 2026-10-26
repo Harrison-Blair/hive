@@ -64,7 +64,7 @@ func seedInbox(t *testing.T, home, key string, items ...records.Inbox) {
 				return err
 			}
 			item.Seq = seq
-			item.Role = key
+			item.Inbox = key
 			if item.Kind == "" {
 				item.Kind = records.InboxMessage
 			}

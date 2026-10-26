@@ -104,7 +104,7 @@ func (s *Supervisor) reconcile(ctx context.Context) error {
 		if record.Key == s.ownKey || (record.Status != records.AgentLive && record.Status != records.AgentStarting) {
 			continue
 		}
-		if record.Role == "supervisor" && record.Generation != s.generation {
+		if record.Kind == records.AgentKindSupervisor && record.Generation != s.generation {
 			if err := s.markLifecycle(ctx, record, records.AgentStopped); err != nil {
 				return err
 			}

@@ -39,9 +39,9 @@ func hideHome(t *testing.T, agents ...records.Agent) (string, *testClock) {
 		writeRecord(t, home, []string{"projects"}, id, records.Project{ID: id, Path: "/repo/" + id, Base: "dev"})
 	}
 	base := []records.Agent{
-		{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:00:00Z"},
-		{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:01:00Z"},
-		{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Task: "1-a", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-alpha", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:02:00Z"},
+		{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:00:00Z"},
+		{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:01:00Z"},
+		{Key: "a1-worker", Name: "a1-worker", Profile: records.ProfileBuilder, Project: "alpha", Task: "1-a", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-alpha", StatusChangedAt: "2026-10-23T11:58:00Z", StartedAt: "2026-10-23T10:02:00Z"},
 	}
 	for _, record := range append(base, agents...) {
 		writeAgentRecord(t, home, record)
@@ -51,12 +51,12 @@ func hideHome(t *testing.T, agents ...records.Agent) (string, *testClock) {
 
 // betaManager gives the beta manager record in state.
 func betaManager(state string) records.Agent {
-	return records.Agent{Key: "manager-beta", Name: "manager-beta", Role: "manager", Project: "beta", Harness: "codex", Status: state, AgentStatus: "done", Parent: "coordinator", StatusChangedAt: "2026-10-23T11:00:00Z", StartedAt: "2026-10-23T10:03:00Z"}
+	return records.Agent{Key: "manager-beta", Name: "manager-beta", Profile: records.ProfilePlanner, Owns: "beta", Project: "beta", Harness: "codex", Status: state, AgentStatus: "done", Parent: "coordinator", StatusChangedAt: "2026-10-23T11:00:00Z", StartedAt: "2026-10-23T10:03:00Z"}
 }
 
 // betaWorker gives a beta worker record with the parent manager-beta.
 func betaWorker(name, state, agentStatus, started string) records.Agent {
-	return records.Agent{Key: name, Name: name, Role: "worker", Project: "beta", Task: name, Harness: "pi", Status: state, AgentStatus: agentStatus, Parent: "manager-beta", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: started}
+	return records.Agent{Key: name, Name: name, Profile: records.ProfileBuilder, Project: "beta", Task: name, Harness: "pi", Status: state, AgentStatus: agentStatus, Parent: "manager-beta", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: started}
 }
 
 // openHide opens Agents on the home at size.
@@ -135,7 +135,7 @@ func TestAgentsHiddenManagerKeepsThePodOfALiveChild(t *testing.T) {
 func TestAgentsPodViewHangsTheChildrenFromTheTopBorder(t *testing.T) {
 	for _, state := range managerStates {
 		for _, size := range hideSizes {
-			nested := records.Agent{Key: "b1-helper", Name: "b1-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b1-worker", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
+			nested := records.Agent{Key: "b1-helper", Name: "b1-helper", Profile: records.ProfileGeneral, Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b1-worker", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
 			home, clock := hideHome(t, betaManager(state),
 				betaWorker("b1-worker", records.AgentLive, "working", "2026-10-23T10:04:00Z"), nested)
 			m := openHide(t, home, clock, size)
@@ -180,8 +180,8 @@ func TestAgentsHintStaysWhenEveryProjectPodHides(t *testing.T) {
 	for _, size := range hideSizes {
 		home, clock := hideHome(t, betaManager(records.AgentStopped), betaWorker("b2-worker", records.AgentStopped, "done", "2026-10-23T10:05:00Z"))
 		// alpha also stops: the manager is exited and the worker is stale.
-		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentExited, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
-		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Task: "1-a", Harness: "pi", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Status: records.AgentExited, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Profile: records.ProfileBuilder, Project: "alpha", Task: "1-a", Harness: "pi", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
 		m := openHide(t, home, clock, size)
 		// agents.md rule 13: with no pod, the title has no home count.
 		requireView(t, m, "agents · 0 projects · h shows 4 stopped", agentsNoneText)
@@ -205,7 +205,7 @@ func TestAgentsNoHintWithNothingHidden(t *testing.T) {
 func TestAgentsSelectionFollowsThePodsOfH(t *testing.T) {
 	for _, size := range hideSizes {
 		home, clock := hideHome(t, betaManager(records.AgentStopped))
-		writeAgentRecord(t, home, records.Agent{Key: "helper", Name: "helper", Role: "agent", Harness: "pi", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StartedAt: "2026-10-23T10:07:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "helper", Name: "helper", Profile: records.ProfileGeneral, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StartedAt: "2026-10-23T10:07:00Z"})
 		m := openHide(t, home, clock, size)
 		requireView(t, m, "agents · 1 project · 1 home · h shows 1 stopped", "━ alpha ━", "─ home ─")
 		m, _ = raise(t, m, key('h', "h"))
@@ -240,7 +240,7 @@ func TestAgentsSelectionFollowsThePodsOfH(t *testing.T) {
 func TestAgentsScrollStaysValidWhenPodsHide(t *testing.T) {
 	home, clock := hideHome(t, betaManager(records.AgentStopped))
 	writeRecord(t, home, []string{"projects"}, "gamma", records.Project{ID: "gamma", Path: "/repo/gamma", Base: "dev"})
-	writeAgentRecord(t, home, records.Agent{Key: "manager-gamma", Name: "manager-gamma", Role: "manager", Project: "gamma", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator", StartedAt: "2026-10-23T10:08:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "manager-gamma", Name: "manager-gamma", Profile: records.ProfilePlanner, Owns: "gamma", Project: "gamma", Harness: "pi", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator", StartedAt: "2026-10-23T10:08:00Z"})
 	m := openHide(t, home, clock, hideSizes[1])
 	m, _ = raise(t, m, key('h', "h"))
 	m, _ = raise(t, m, key(tea.KeyRight, ""))
@@ -260,7 +260,7 @@ func TestAgentsScrollStaysValidWhenPodsHide(t *testing.T) {
 func TestAgentsGeneralChildOfAHiddenManagerStaysInThePod(t *testing.T) {
 	for _, state := range managerStates {
 		for _, size := range hideSizes {
-			helper := records.Agent{Key: "beta-helper", Name: "beta-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-beta", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
+			helper := records.Agent{Key: "beta-helper", Name: "beta-helper", Profile: records.ProfileGeneral, Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-beta", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
 			home, clock := hideHome(t, betaManager(state), helper)
 			m := openHide(t, home, clock, size)
 			requireView(t, m, "agents · 2 projects · 0 home · h shows 1 stopped", "─ beta ─", "● beta-helper")
@@ -289,7 +289,7 @@ func TestAgentsGeneralChildOfAHiddenManagerStaysInThePod(t *testing.T) {
 
 // D11: a hidden worker parent does not move its live project child to home.
 func TestAgentsGeneralChildOfAHiddenWorkerStaysInThePod(t *testing.T) {
-	helper := records.Agent{Key: "b2-helper", Name: "b2-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b2-worker", StartedAt: "2026-10-23T10:06:00Z"}
+	helper := records.Agent{Key: "b2-helper", Name: "b2-helper", Profile: records.ProfileGeneral, Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b2-worker", StartedAt: "2026-10-23T10:06:00Z"}
 	home, clock := hideHome(t, betaManager(records.AgentLive), betaWorker("b2-worker", records.AgentStopped, "done", "2026-10-23T10:05:00Z"), helper)
 	m := openHide(t, home, clock, hideSizes[0])
 	requireView(t, m, "─ beta ─", "◐ b2-helper", "manager-beta", "h shows 1 stopped")
@@ -310,9 +310,9 @@ func TestAgentsGeneralChildOfAHiddenWorkerStaysInThePod(t *testing.T) {
 func TestAgentsAllProjectPodsHiddenKeepTheHomePod(t *testing.T) {
 	for _, size := range hideSizes {
 		home, clock := hideHome(t, betaManager(records.AgentStopped))
-		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
-		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
-		writeAgentRecord(t, home, records.Agent{Key: "helper", Name: "helper", Role: "agent", Harness: "pi", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StartedAt: "2026-10-23T10:07:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Profile: records.ProfileBuilder, Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "helper", Name: "helper", Profile: records.ProfileGeneral, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator", StartedAt: "2026-10-23T10:07:00Z"})
 		m := openHide(t, home, clock, size)
 		requireView(t, m, "agents · 0 projects · 1 home · h shows 3 stopped", agentsNoneText, "● coordinator", "━ home ━", "◐ helper")
 		rejectView(t, m, "alpha", "beta")
@@ -331,8 +331,8 @@ func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 		if err := os.Remove(filepath.Join(home, ".hive", "state", "agents", "coordinator.json")); err != nil {
 			t.Fatal(err)
 		}
-		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, StartedAt: "2026-10-23T10:01:00Z"})
-		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Status: records.AgentStopped, StartedAt: "2026-10-23T10:01:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Profile: records.ProfileBuilder, Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
 		m := openHide(t, home, clock, size)
 		requireView(t, m, "agents · 0 projects · h shows 3 stopped", agentsNoneText)
 		rejectView(t, m, "● coordinator", "─ home ─", "╭──")
@@ -352,8 +352,8 @@ func TestAgentsNoticeAloneWhenNothingIsVisible(t *testing.T) {
 func coordinatorOnlyHome(t *testing.T) (string, *testClock) {
 	t.Helper()
 	home, clock := hideHome(t, betaManager(records.AgentStopped))
-	writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Role: "worker", Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Status: records.AgentStopped, Parent: "coordinator", StartedAt: "2026-10-23T10:01:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "a1-worker", Name: "a1-worker", Profile: records.ProfileBuilder, Project: "alpha", Harness: "pi", Status: records.AgentStopped, Parent: "manager-alpha", StartedAt: "2026-10-23T10:02:00Z"})
 	return home, clock
 }
 
@@ -423,7 +423,7 @@ func TestAgentsNoRegisteredProjectSelectsTheCoordinator(t *testing.T) {
 		t.Run(fmt.Sprintf("%dx%d", size.Width, size.Height), func(t *testing.T) {
 			home := newTestHome(t)
 			clock := fixedClock(t, time.Date(2026, 10, 23, 12, 0, 0, 0, time.UTC))
-			writeAgentRecord(t, home, records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StartedAt: "2026-10-23T10:00:00Z"})
+			writeAgentRecord(t, home, records.Agent{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Harness: "claude", Status: records.AgentLive, AgentStatus: "working", StartedAt: "2026-10-23T10:00:00Z"})
 			m := openHide(t, home, clock, size)
 			// The test home has no supervisor claim, so the state is unknown.
 			requireView(t, m, agentsNoneText, "┃ ○ coordinator")

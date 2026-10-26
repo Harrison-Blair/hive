@@ -11,7 +11,7 @@ import (
 
 func generalStopRecord(sleep sleepProcess, tabCreated bool) records.Agent {
 	record := spawnedRecord(sleep)
-	record.Key, record.Name, record.Role = "x", "x", "agent"
+	record.Key, record.Name = "x", "x"
 	record.Kind, record.Profile = "", records.ProfileGeneral
 	record.Parent = "boss"
 	record.StartedByHive = true

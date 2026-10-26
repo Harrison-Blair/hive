@@ -50,8 +50,8 @@ func workTestData() demoData {
 	return demoData{
 		Projects: []records.Project{{ID: "hive", Path: "/home/hive"}},
 		Agents: []records.Agent{
-			{Key: "t5-worker-1", Name: "t5-worker-1", Role: "worker", Status: "live", AgentStatus: "working", StatusChangedAt: "2026-10-23T14:10:00Z"},
-			{Key: "t20-worker-1", Name: "t20-worker-1", Role: "worker", Status: "unresolved"},
+			{Key: "t5-worker-1", Name: "t5-worker-1", Profile: records.ProfileBuilder, Status: "live", AgentStatus: "working", StatusChangedAt: "2026-10-23T14:10:00Z"},
+			{Key: "t20-worker-1", Name: "t20-worker-1", Profile: records.ProfileBuilder, Status: "unresolved"},
 		},
 		Goals: []records.Goal{
 			{ID: "g2-board", Project: "hive", Title: "The board", Grant: "grant line", Status: "active", CreatedAt: "2026-10-22T10:00:00Z", Waves: []records.GoalWave{

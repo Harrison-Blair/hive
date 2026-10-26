@@ -24,7 +24,7 @@ func seedChatCommandAgent(t *testing.T, home string, record records.Agent) {
 
 func seedChatCommandCoordinator(t *testing.T, home string) {
 	t.Helper()
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", Status: records.AgentLive, Generation: 1}
 	seedChatCommandAgent(t, home, record)
 	registry, err := store.Open(home)
 	if err != nil {
@@ -37,7 +37,7 @@ func seedChatCommandCoordinator(t *testing.T, home string) {
 
 func seedChatCommandWorker(t *testing.T, home string) {
 	t.Helper()
-	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
 }
 
 func chatCommandFiles(t *testing.T, home string) []string {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 func setupTaskPaneSpawn(t *testing.T, role string) string {
@@ -36,7 +38,7 @@ func setupTaskPaneSpawn(t *testing.T, role string) string {
 func TestVerifierSpawnPaneUsesTaskProject(t *testing.T) {
 	home := setupTaskPaneSpawn(t, "verifier")
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m",
+		Profile: records.ProfileVerifier, Task: "1-worker-demo", Harness: "claude", Model: "m",
 		Name: "verifier-demo-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 	})
 	if envelope.Outcome != "ok" {
@@ -54,7 +56,7 @@ func TestVerifierSpawnPaneUsesTaskProject(t *testing.T) {
 func TestWorkerSpawnPaneUsesTaskProject(t *testing.T) {
 	home := setupTaskPaneSpawn(t, "worker")
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 		Name: "worker-demo-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 	})
 	if envelope.Outcome != "ok" {
@@ -77,7 +79,7 @@ func TestSpawnPaneRejectsDifferentTaskProject(t *testing.T) {
 	fake := newFakeHerdr(t)
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Project: "other", Task: "1-worker-demo", Harness: "claude", Model: "m",
+		Profile: records.ProfileBuilder, Project: "other", Task: "1-worker-demo", Harness: "claude", Model: "m",
 		Name: "worker-demo-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 	})
 	want := "task 1-worker-demo is in project demo, not other"

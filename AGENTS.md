@@ -32,7 +32,6 @@ The prompt from hive wins over each other source. A brief wins over your working
 - A session with no work tells the user that hive gave it no work. It does not take work from its working directory.
 - When the evidence is missing or in conflict, hold and report the conflict to the user. Do not take the coordinator role.
 - Claude Code loads this file in every checkout below the root. The role gate applies there too.
-- Transition rule, until wave A of goal g13 lands: a prompt from hive can name a role. Read that role as a profile: `manager` is `planner`, `worker` is `builder`, `verifier` is `verifier`, and a general agent is `general`.
 
 ## Project
 
@@ -132,7 +131,7 @@ A command prints text for people by default. With `--json` it prints one JSON ob
 
 ### Instruction text
 
-Write instruction text in ASD-STE100 Strict: this file, profiles, skills, role instructions, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
+Write instruction text in ASD-STE100 Strict: this file, profiles, feature briefs, and the v1 tracker. `STE-GLOSSARY.md` gives one meaning for each term. Use each term only with that meaning. `ste_test.go` checks the files in `steFiles` against `testdata/ste-baseline.json`. A count can fall. It cannot rise. When you add an instruction file, add it to `steFiles` with a baseline of 0.
 
 ### Git
 

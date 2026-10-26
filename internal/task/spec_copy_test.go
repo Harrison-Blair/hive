@@ -109,7 +109,7 @@ func TestEditBriefWritesHomeFeatureBrief(t *testing.T) {
 	}
 	seedTask(t, home, task)
 	seedAgent(t, home, records.Agent{
-		Key: "manager-one", Name: "manager-one", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one",
+		Key: "manager-one", Name: "manager-one", Profile: records.ProfilePlanner, Owns: "one", Project: "one",
 		Status: records.AgentLive, PaneID: "w1:manager", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})

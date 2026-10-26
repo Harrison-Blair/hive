@@ -18,11 +18,11 @@ const keptText = "⬢ You are the general agent helper. Your parent is boss."
 func keptRecords(t *testing.T, home, agentStatus string) records.Agent {
 	t.Helper()
 	writeAgent(t, home, records.Agent{
-		Key: "boss", Name: "boss", Role: "agent", PaneID: "w1:p9", WorkspaceID: "w1", TabID: "w1:t1",
+		Key: "boss", Name: "boss", Profile: records.ProfileGeneral, PaneID: "w1:p9", WorkspaceID: "w1", TabID: "w1:t1",
 		Status: records.AgentLive, AgentStatus: "working", Generation: 1, Spawned: true,
 	})
 	helper := records.Agent{
-		Key: "helper", Name: "helper", Role: "agent", Parent: "boss", PaneID: "w1:p5",
+		Key: "helper", Name: "helper", Profile: records.ProfileGeneral, Parent: "boss", PaneID: "w1:p5",
 		WorkspaceID: "w1", TabID: "w1:t3", TerminalID: "term-h", Status: records.AgentLive,
 		AgentStatus: agentStatus, Generation: 1, Spawned: true, FirstPrompt: keptText,
 	}

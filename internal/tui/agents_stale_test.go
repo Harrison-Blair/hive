@@ -89,10 +89,10 @@ func TestCurrentAgentKeysGiveOneRecordForEachName(t *testing.T) {
 // The live record is current when a stale record of its lineage is newer.
 func TestCurrentAgentKeysPreferTheLiveRecord(t *testing.T) {
 	agents := staleFixture(t, "manager-qmeter-g4", "manager-qmeter-g3")
-	// A stale manager of qmeter with another name, a parent, and a change
-	// after the live g4 changed.
+	// A stale manager of qmeter with another key, the same name, a parent,
+	// and a change after the live g4 changed.
 	other := &agents[1]
-	other.Key, other.Name, other.Parent = "manager-qmeter-other", "manager-qmeter-other", "coordinator-g8"
+	other.Key, other.Name, other.Parent = "manager-qmeter-other", "manager-qmeter", "coordinator-g8"
 	other.StatusChangedAt = "2026-10-23T02:30:00Z"
 	current := currentAgentKeys(agents)
 	if !current["manager-qmeter-g4"] || len(current) != 1 {
@@ -137,7 +137,8 @@ func TestAgentsHHidesAStaleWorkerWithNoSuccessor(t *testing.T) {
 	// A worker record with the shape of manager-qmeter-g1: stale, with no
 	// parent and no replaces.
 	worker := staleFixture(t, "manager-qmeter-g1")[0]
-	worker.Key, worker.Name, worker.Role, worker.Task = "worker-qmeter-g1", "worker-qmeter", "worker", "07-old"
+	worker.Key, worker.Name, worker.Profile, worker.Task = "worker-qmeter-g1", "worker-qmeter", records.ProfileBuilder, "07-old"
+	worker.Owns = ""
 	agents = append(agents, worker)
 	home, clock := staleHome(t, agents)
 	m := openAgents(t, home, clock)

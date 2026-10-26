@@ -16,8 +16,8 @@ func seedController(t *testing.T, home, project string) {
 		t.Fatal(err)
 	}
 	agent := records.Agent{
-		Key: "manager-" + project, Name: "manager-" + project, Role: "manager",
-		Profile: records.ProfilePlanner, Owns: project, Project: project,
+		Key: "manager-" + project, Name: "manager-" + project, Profile: records.ProfilePlanner,
+		Owns: project, Project: project,
 		Status: records.AgentLive, PaneID: "manager-pane", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}

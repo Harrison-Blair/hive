@@ -31,8 +31,8 @@ func seedFinishCLI(t *testing.T, status string) (string, string) {
 		t.Fatal(err)
 	}
 	for _, record := range []records.Agent{
-		{Key: "worker-1", Name: "worker-1", Role: "worker", Project: "one", Task: taskID, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1},
-		{Key: "verifier-1", Name: "verifier-1", Role: "verifier", Project: "one", Task: taskID, Status: records.AgentLive, PaneID: "w1:p2", Generation: 1},
+		{Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "one", Task: taskID, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1},
+		{Key: "verifier-1", Name: "verifier-1", Profile: records.ProfileVerifier, Project: "one", Task: taskID, Status: records.AgentLive, PaneID: "w1:p2", Generation: 1},
 	} {
 		if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
 			t.Fatal(err)
@@ -170,7 +170,7 @@ func TestTaskCompleteLogsResolvedActorAndEffects(t *testing.T) {
 	}
 	for _, resource := range []string{"counter", "inbox"} {
 		if countEvents(events, "task effect", map[string]string{
-			"command": "task complete", "task_id": taskID, "role": "project:one", "resource": resource,
+			"command": "task complete", "task_id": taskID, "inbox": "project:one", "resource": resource,
 		}) != 1 {
 			t.Fatalf("log events = %#v; want the project inbox on the %s effect", events, resource)
 		}
@@ -257,7 +257,7 @@ func TestTaskCompleteShortStdoutReportsOperationActor(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := registry.WriteIn([]string{"agents"}, "worker-3", records.Agent{
-		Key: "worker-3", Name: "worker-3", Role: "worker", Project: "one", Task: taskID,
+		Key: "worker-3", Name: "worker-3", Profile: records.ProfileBuilder, Project: "one", Task: taskID,
 		Status: records.AgentLive, PaneID: "w1:p3", Generation: 1,
 	}); err != nil {
 		t.Fatal(err)

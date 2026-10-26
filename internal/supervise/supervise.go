@@ -125,7 +125,7 @@ func newSupervisor(options Options) *Supervisor {
 func (s *Supervisor) run(ctx context.Context) (Result, output.Envelope) {
 	s.logger.Debug("supervisor start", "command", "supervise", "home", s.options.Home)
 	started := agent.StartSupervisor(s.options.Home, agent.RegisterOptions{
-		Role:        "supervisor",
+		Kind:        records.AgentKindSupervisor,
 		PaneID:      s.options.PaneID,
 		WorkspaceID: s.options.WorkspaceID,
 		TabID:       s.options.TabID,
@@ -491,7 +491,7 @@ func (s *Supervisor) appendAndStatus(ctx context.Context, n notification) output
 	envelope := output.Envelope{}
 	now := s.clock.Now().UTC().Format(time.RFC3339Nano)
 	err = registry.WithLock(ctx, func(locked *store.LockedStore) error {
-		appended := inbox.AppendHeld(locked, inbox.AppendOptions{Role: n.role, Kind: n.kind, Task: n.task, Agent: n.agent, Text: n.text})
+		appended := inbox.AppendHeld(locked, inbox.AppendOptions{Inbox: n.role, Kind: n.kind, Task: n.task, Agent: n.agent, Text: n.text})
 		if appended.Outcome != "ok" {
 			envelope = appended
 			return nil
@@ -565,7 +565,7 @@ func (s *Supervisor) statusOnly(ctx context.Context, record records.Agent, statu
 }
 
 func (s *Supervisor) logNotification(n notification, envelope output.Envelope) {
-	inbox.LogAppend(s.options.Home, inbox.AppendOptions{Role: n.role, Kind: n.kind, Task: n.task, Agent: n.agent, Text: n.text}, envelope)
+	inbox.LogAppend(s.options.Home, inbox.AppendOptions{Inbox: n.role, Kind: n.kind, Task: n.task, Agent: n.agent, Text: n.text}, envelope)
 }
 
 func failedEnvelope(phase, message string) output.Envelope {

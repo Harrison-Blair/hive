@@ -20,7 +20,7 @@ import (
 
 func appendMessage(t *testing.T, home, role, text string) output.Envelope {
 	t.Helper()
-	envelope := Append(home, AppendOptions{Role: role, Kind: records.InboxMessage, Agent: "worker-x", Text: text})
+	envelope := Append(home, AppendOptions{Inbox: role, Kind: records.InboxMessage, Agent: "worker-x", Text: text})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
@@ -76,7 +76,7 @@ func TestNumericSequenceIDsListAndOrder(t *testing.T) {
 	}
 	ids := []uint64{1, 2, 10, ^uint64(0)}
 	for _, seq := range ids {
-		record := records.Inbox{Seq: seq, Role: "coordinator", Kind: records.InboxMessage, Text: strconv.FormatUint(seq, 10)}
+		record := records.Inbox{Seq: seq, Inbox: "coordinator", Kind: records.InboxMessage, Text: strconv.FormatUint(seq, 10)}
 		if err := st.WriteIn([]string{"inbox", "coordinator"}, strconv.FormatUint(seq, 10), record); err != nil {
 			t.Fatal(err)
 		}
@@ -117,8 +117,8 @@ func TestConsumeRejectsNoncanonicalSequenceName(t *testing.T) {
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	selected := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "SELECTED-01", CreatedAt: "2026-01-01T00:00:00Z"}
-	other := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "OTHER-1", CreatedAt: "2026-01-01T00:00:00Z", ReadAt: "2026-01-02T00:00:00Z"}
+	selected := records.Inbox{Seq: 1, Inbox: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "SELECTED-01", CreatedAt: "2026-01-01T00:00:00Z"}
+	other := records.Inbox{Seq: 1, Inbox: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "OTHER-1", CreatedAt: "2026-01-01T00:00:00Z", ReadAt: "2026-01-02T00:00:00Z"}
 	selectedData, err := json.Marshal(selected)
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +187,7 @@ func TestParallelAppendsLoseNoRecord(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			for j := 0; j < each; j++ {
-				envelope := Append(home, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: fmt.Sprintf("%d-%d", i, j)})
+				envelope := Append(home, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: fmt.Sprintf("%d-%d", i, j)})
 				if envelope.Outcome != "ok" {
 					errs <- fmt.Sprintf("%v", envelope.Error)
 				}
@@ -253,7 +253,7 @@ func TestInvalidKeysFailBeforeFileOperation(t *testing.T) {
 	for _, key := range []string{"../x", "A", "", strings.Repeat("a", 42)} {
 		t.Run(key, func(t *testing.T) {
 			home := t.TempDir()
-			envelope := Append(home, AppendOptions{Role: key, Text: "hello"})
+			envelope := Append(home, AppendOptions{Inbox: key, Text: "hello"})
 			if envelope.Outcome != "failed" || envelope.Error != "invalid inbox key: "+key {
 				t.Fatalf("Append() = %#v; want invalid key", envelope)
 			}
@@ -275,12 +275,12 @@ func TestInvalidKeysFailBeforeFileOperation(t *testing.T) {
 
 func TestKeyLengthBoundaries(t *testing.T) {
 	accepted := strings.Repeat("a", 41)
-	if envelope := Append(t.TempDir(), AppendOptions{Role: accepted, Text: "hello"}); envelope.Outcome != "ok" {
+	if envelope := Append(t.TempDir(), AppendOptions{Inbox: accepted, Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v; want the literal 41-byte key accepted", envelope)
 	}
 	refused := strings.Repeat("a", 42)
 	home := t.TempDir()
-	envelope := Append(home, AppendOptions{Role: refused, Text: "hello"})
+	envelope := Append(home, AppendOptions{Inbox: refused, Text: "hello"})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Append() = %#v; want the literal 42-byte key refused", envelope)
 	}
@@ -305,7 +305,7 @@ func TestTextByteBoundaries(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			home := t.TempDir()
-			envelope := Append(home, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: test.text})
+			envelope := Append(home, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: test.text})
 			if test.want {
 				if envelope.Outcome != "ok" {
 					t.Fatalf("Append() = %#v; want %d bytes accepted", envelope, len(test.text))
@@ -324,7 +324,7 @@ func TestTextByteBoundaries(t *testing.T) {
 
 func TestInvalidKindFails(t *testing.T) {
 	home := t.TempDir()
-	envelope := Append(home, AppendOptions{Role: "coordinator", Kind: "note", Text: "hello"})
+	envelope := Append(home, AppendOptions{Inbox: "coordinator", Kind: "note", Text: "hello"})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("Append() = %#v; want invalid kind", envelope)
 	}
@@ -348,7 +348,7 @@ func markNth(calls *int, failAt int, now string) MarkFunc {
 			return record, errors.New("seam mark failure")
 		}
 		var updated records.Inbox
-		err := locked.UpdateIn([]string{"inbox", record.Role}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
+		err := locked.UpdateIn([]string{"inbox", record.Inbox}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
 			if err := json.Unmarshal(raw, &updated); err != nil {
 				return nil, err
 			}
@@ -478,7 +478,7 @@ func runAppendLocked(t *testing.T, home string, seam *appendSeam, options Append
 func TestAppendRecordFailureLeavesCounterGap(t *testing.T) {
 	home := t.TempDir()
 	seam := &appendSeam{failWrite: true}
-	envelope := runAppendLocked(t, home, seam, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "hello"})
+	envelope := runAppendLocked(t, home, seam, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: "hello"})
 	if envelope.Outcome != "partial" || envelope.Phase != "record" {
 		t.Fatalf("appendLocked() = %#v; want partial record", envelope)
 	}
@@ -508,7 +508,7 @@ func TestAppendRecordFailureLeavesCounterGap(t *testing.T) {
 func TestAppendCounterFailureHasNoEffect(t *testing.T) {
 	home := t.TempDir()
 	seam := &appendSeam{failNext: true}
-	envelope := runAppendLocked(t, home, seam, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "hello"})
+	envelope := runAppendLocked(t, home, seam, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: "hello"})
 	if envelope.Outcome != "failed" || len(envelope.Effects) != 0 {
 		t.Fatalf("appendLocked() = %#v; want failed with no effect", envelope)
 	}
@@ -526,7 +526,7 @@ func TestConsumeMarksReadAtAndPreservesOtherFields(t *testing.T) {
 	if after.ReadAt == "" {
 		t.Fatal("record 1 read_at is empty; want a completed mark")
 	}
-	if after.Seq != before.Seq || after.Role != before.Role || after.Kind != before.Kind ||
+	if after.Seq != before.Seq || after.Inbox != before.Inbox || after.Kind != before.Kind ||
 		after.Task != before.Task || after.Agent != before.Agent || after.Text != before.Text ||
 		after.CreatedAt != before.CreatedAt || after.NudgedAt != before.NudgedAt {
 		t.Fatalf("mark changed a field other than read_at: before %#v after %#v", before, after)
@@ -540,7 +540,7 @@ func TestConsumeRefusesCrossRoleStoredRecord(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, key := range []string{"coordinator", "supervisor"} {
-		record := records.Inbox{Seq: 1, Role: "supervisor", Kind: records.InboxMessage, Agent: "worker-x", Text: key}
+		record := records.Inbox{Seq: 1, Inbox: "supervisor", Kind: records.InboxMessage, Agent: "worker-x", Text: key}
 		if err := st.WriteIn([]string{"inbox", key}, "1", record); err != nil {
 			t.Fatal(err)
 		}
@@ -566,7 +566,7 @@ func TestConsumeLockedKeepsTheRecordPathWithoutHome(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	record := records.Inbox{Seq: 1, Role: "supervisor", Kind: records.InboxMessage, Text: "cross-role"}
+	record := records.Inbox{Seq: 1, Inbox: "supervisor", Kind: records.InboxMessage, Text: "cross-role"}
 	if err := st.WriteIn([]string{"inbox", "coordinator"}, "1", record); err != nil {
 		t.Fatal(err)
 	}
@@ -594,7 +594,7 @@ func TestConsumeRefusesSequencePathMismatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	record := records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Text: "mismatch"}
+	record := records.Inbox{Seq: 1, Inbox: "coordinator", Kind: records.InboxMessage, Text: "mismatch"}
 	if err := st.WriteIn([]string{"inbox", "coordinator"}, "2", record); err != nil {
 		t.Fatal(err)
 	}
@@ -720,7 +720,7 @@ func TestInboxLogsTransitionsAndErrors(t *testing.T) {
 	if envelope := Consume(home, "coordinator"); envelope.Outcome != "ok" {
 		t.Fatalf("Consume() = %#v", envelope)
 	}
-	if envelope := Append(home, AppendOptions{Role: "../x", Text: "secret message text"}); envelope.Outcome != "failed" {
+	if envelope := Append(home, AppendOptions{Inbox: "../x", Text: "secret message text"}); envelope.Outcome != "failed" {
 		t.Fatalf("invalid key Append() = %#v", envelope)
 	}
 	if _, err := All(home, "../all"); err == nil {
@@ -731,12 +731,12 @@ func TestInboxLogsTransitionsAndErrors(t *testing.T) {
 	}
 	events := readInboxLogEvents(t, home)
 	appendEvent := findInboxLogEvent(events, "inbox record appended")
-	if appendEvent == nil || appendEvent["role"] != "coordinator" || appendEvent["sequence"] != float64(1) || appendEvent["agent"] != "worker-x" {
-		t.Fatalf("append event = %#v; want role, sequence 1, and agent", appendEvent)
+	if appendEvent == nil || appendEvent["inbox"] != "coordinator" || appendEvent["sequence"] != float64(1) || appendEvent["agent"] != "worker-x" {
+		t.Fatalf("append event = %#v; want inbox, sequence 1, and agent", appendEvent)
 	}
 	consumeEvent := findInboxLogEvent(events, "inbox record consumed")
-	if consumeEvent == nil || consumeEvent["role"] != "coordinator" || consumeEvent["sequence"] != float64(1) || consumeEvent["agent"] != "worker-x" || consumeEvent["agent_id"] != "worker-x" {
-		t.Fatalf("consume event = %#v; want role, sequence 1, and the stored sender", consumeEvent)
+	if consumeEvent == nil || consumeEvent["inbox"] != "coordinator" || consumeEvent["sequence"] != float64(1) || consumeEvent["agent"] != "worker-x" || consumeEvent["agent_id"] != "worker-x" {
+		t.Fatalf("consume event = %#v; want inbox, sequence 1, and the stored sender", consumeEvent)
 	}
 	for _, want := range []string{"invalid inbox key: ../x", "invalid inbox key: ../all", "invalid inbox key: ../unread"} {
 		found := false
@@ -776,7 +776,7 @@ func TestAppendUsesTheLockedCounter(t *testing.T) {
 	seam := &appendSeam{}
 	err = st.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		seam.LockedStore = locked
-		envelope := appendLocked(locked, seam, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: "hello"}, time.Now)
+		envelope := appendLocked(locked, seam, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: "hello"}, time.Now)
 		if envelope.Outcome != "ok" {
 			t.Fatalf("appendLocked() = %#v", envelope)
 		}
@@ -792,7 +792,7 @@ func TestAppendUsesTheLockedCounter(t *testing.T) {
 
 func TestAppendReportKindKeepsPath(t *testing.T) {
 	home := t.TempDir()
-	envelope := Append(home, AppendOptions{Role: "boss", Kind: "report", Agent: "rev", Text: "head", Path: "/work/result.md"})
+	envelope := Append(home, AppendOptions{Inbox: "boss", Kind: "report", Agent: "rev", Text: "head", Path: "/work/result.md"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v; want ok", envelope)
 	}

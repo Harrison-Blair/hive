@@ -37,8 +37,6 @@ var (
 
 // SpawnOptions holds explicit values for one agent spawn.
 type SpawnOptions struct {
-	// Role is the wave-A old name of a profile. A new caller passes Profile.
-	Role    string
 	Profile string
 	// ProfileSet marks an explicit --profile.
 	ProfileSet bool
@@ -125,7 +123,7 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 		logSpawn(logger, envelope, options, "")
 		return envelope
 	}
-	options, message := normalizeSpawn(ctx, home, options, profile, logger)
+	options, message := normalizeSpawn(ctx, home, options, profile)
 	if message != "" {
 		envelope := failed("validate", message)
 		logSpawn(logger, envelope, options, "")
@@ -488,26 +486,7 @@ func spawnProjectAgent(ctx context.Context, home string, options SpawnOptions, p
 
 // normalizeSpawn checks each input of one spawn and sets its facts. It writes
 // no agent record, starts no process, and changes no task.
-func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, logger *slog.Logger) (SpawnOptions, string) {
-	if options.Role != "" {
-		if options.ProfileSet || options.Profile != "" {
-			return options, "--role is the old name of --profile: pass one"
-		}
-		if options.fromCLI {
-			if message := hiveOwnedRoleError(options.Role, false); message != "" {
-				return options, message
-			}
-		}
-		profile, kind, owner, message := profileFromRole(options.Role)
-		if message != "" {
-			return options, message
-		}
-		options.Profile = profile
-		options.Kind = kind
-		options.Owner = options.Owner || owner
-		logAgentEvent(home, "agent spawn old role flag", "command", "agent spawn", "role", options.Role, "profile", profile, "owner", options.Owner)
-		options.Role = ""
-	}
+func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, profile harness.Profile) (SpawnOptions, string) {
 	if options.Profile == "" && options.Kind != records.AgentKindSupervisor {
 		options.Profile = records.ProfileGeneral
 	}
@@ -605,27 +584,6 @@ func normalizeSpawn(ctx context.Context, home string, options SpawnOptions, prof
 	return options, ""
 }
 
-// profileFromRole maps the wave-A role to a profile, a kind, and the owner
-// fact. The CLI refuses the roles that hive code starts before this call.
-func profileFromRole(role string) (string, string, bool, string) {
-	switch role {
-	case "manager":
-		return records.ProfilePlanner, "", true, ""
-	case "worker":
-		return records.ProfileBuilder, "", false, ""
-	case "verifier":
-		return records.ProfileVerifier, "", false, ""
-	case "agent":
-		return records.ProfileGeneral, "", false, ""
-	case records.AgentKindCoordinator:
-		return records.ProfileCoordinator, records.AgentKindCoordinator, false, ""
-	case records.AgentKindSupervisor:
-		return "", records.AgentKindSupervisor, false, ""
-	default:
-		return "", "", false, "invalid role: " + displayValue(role)
-	}
-}
-
 func profileFileExists(home, profile string) bool {
 	info, err := os.Stat(filepath.Join(home, "profiles", profile+".md"))
 	return err == nil && !info.IsDir()
@@ -685,7 +643,7 @@ func checkOwnerCaller(ctx context.Context, home string, options SpawnOptions) (s
 }
 
 func isCoordinator(record records.Agent) bool {
-	return record.Kind == records.AgentKindCoordinator || record.MirrorRole() == records.AgentKindCoordinator
+	return record.Kind == records.AgentKindCoordinator
 }
 
 func liveOwner(home, projectID string) (string, bool) {
@@ -698,11 +656,7 @@ func liveOwner(home, projectID string) (string, bool) {
 		return "", false
 	}
 	for _, record := range agents {
-		owns := record.Owns
-		if owns == "" && record.MirrorRole() == "manager" {
-			owns = record.Project
-		}
-		if owns != projectID {
+		if record.Owns != projectID {
 			continue
 		}
 		switch record.Status {

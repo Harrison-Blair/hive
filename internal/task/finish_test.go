@@ -273,7 +273,7 @@ func TestCompleteFinishRefusesWrongCallersAndLeavesState(t *testing.T) {
 	cases := []refusal{
 		{"worker of another task", "assigned", "complete", "worker-3", "not the acting agent of 1-seed: worker-3", nil},
 		{"manager", "assigned", "complete", "manager-one", "not the acting agent of 1-seed: manager-one", func(t *testing.T, home string) {
-			seedAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
+			seedAgent(t, home, records.Agent{Key: "manager-one-g1", Name: "manager-one", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
 			seedClaim(t, home, records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
 		}},
 		{"verifier complete", "assigned", "complete", "verifier-1", "not the acting agent of 1-seed: verifier-1", nil},
@@ -285,8 +285,8 @@ func TestCompleteFinishRefusesWrongCallersAndLeavesState(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			home, task := newSeed(t, test.status)
-			seedAgent(t, home, records.Agent{Key: "worker-3", Name: "worker-3", Role: "worker", Project: "one", Task: "2-other", Status: records.AgentLive, PaneID: "w1:p9", Generation: 1})
-			seedAgent(t, home, records.Agent{Key: "verifier-3", Name: "verifier-3", Role: "verifier", Project: "one", Task: "2-other", Status: records.AgentLive, PaneID: "w1:p10", Generation: 1})
+			seedAgent(t, home, records.Agent{Key: "worker-3", Name: "worker-3", Profile: records.ProfileBuilder, Project: "one", Task: "2-other", Status: records.AgentLive, PaneID: "w1:p9", Generation: 1})
+			seedAgent(t, home, records.Agent{Key: "verifier-3", Name: "verifier-3", Profile: records.ProfileVerifier, Project: "one", Task: "2-other", Status: records.AgentLive, PaneID: "w1:p10", Generation: 1})
 			if test.seed != nil {
 				test.seed(t, home)
 			}
@@ -539,7 +539,7 @@ func TestCompleteFinishResolvedAliasRoutes(t *testing.T) {
 		t.Run(route.name, func(t *testing.T) {
 			home, task := newSeed(t, "assigned")
 			record := records.Agent{
-				Key: "worker-key", Name: "worker-name", Role: "worker", Project: "one", Task: task.ID,
+				Key: "worker-key", Name: "worker-name", Profile: records.ProfileBuilder, Project: "one", Task: task.ID,
 				Status: records.AgentLive, PaneID: "w1:p7", Generation: 1,
 			}
 			if route.history {
@@ -579,7 +579,7 @@ func TestVerifyFinishResolvedAliasRoutes(t *testing.T) {
 		t.Run(route.name, func(t *testing.T) {
 			home, task := newSeed(t, "completed")
 			seedAgent(t, home, records.Agent{
-				Key: "verifier-key", Name: "verifier-name", Role: "verifier", Project: "one", Task: task.ID,
+				Key: "verifier-key", Name: "verifier-name", Profile: records.ProfileVerifier, Project: "one", Task: task.ID,
 				Status: records.AgentLive, PaneID: "w1:p8", Generation: 1,
 			})
 			envelope := runFinishLocked(t, home, "verify", TransitionOptions{Task: task.ID, Agent: route.agent, PaneID: route.pane}, nil)

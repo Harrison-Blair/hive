@@ -18,7 +18,6 @@ func spawnedRecord(sleep sleepProcess) records.Agent {
 	return records.Agent{
 		Key:          "t10-coord-g1",
 		Name:         "t10-coord",
-		Role:         "coordinator",
 		Kind:         records.AgentKindCoordinator,
 		Profile:      records.ProfileCoordinator,
 		Harness:      "claude",
@@ -125,7 +124,7 @@ func TestStopStartingTimeoutMarksUnresolved(t *testing.T) {
 
 func TestStopRefusesManualRegistration(t *testing.T) {
 	home := testHome(t)
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Spawned: false, Generation: 1}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", Status: records.AgentLive, Spawned: false, Generation: 1}
 	writeStopRecord(t, home, record)
 	fake := newFakeHerdr(t)
 	result, envelope := Stop(context.Background(), home, record)

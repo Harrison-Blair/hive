@@ -12,10 +12,10 @@ const (
 	InboxReport     = "report"
 )
 
-// Inbox is one durable record in the inbox of a role.
+// Inbox is one durable record in one inbox.
 type Inbox struct {
 	Seq   uint64 `json:"seq"`
-	Role  string `json:"role"`
+	Inbox string `json:"inbox"`
 	Kind  string `json:"kind"`
 	Task  string `json:"task"`
 	Agent string `json:"agent"`

@@ -27,7 +27,7 @@ func TestSingletonLiveProcessBlocks(t *testing.T) {
 		t.Fatal(err)
 	}
 	writeClaim(t, home, records.Claim{Key: "supervisor", Agent: "supervisor-g1", Generation: 1, PID: pid, PIDStart: start})
-	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Role: "supervisor", PaneID: "w1:p0", PID: pid, PIDStart: start})
+	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Kind: records.AgentKindSupervisor, PaneID: "w1:p0", PID: pid, PIDStart: start})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("outcome = %q; want failed", envelope.Outcome)
 	}
@@ -45,7 +45,7 @@ func TestSingletonDeadPIDTakesGeneration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Role: "supervisor", PaneID: "w1:p0", PID: pid, PIDStart: start})
+	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Kind: records.AgentKindSupervisor, PaneID: "w1:p0", PID: pid, PIDStart: start})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("outcome = %q error = %v; want ok", envelope.Outcome, envelope.Error)
 	}
@@ -63,7 +63,7 @@ func TestSingletonOwnPIDAnotherStartIsStale(t *testing.T) {
 		t.Fatal(err)
 	}
 	writeClaim(t, home, records.Claim{Key: "supervisor", Agent: "supervisor-g1", Generation: 1, PID: pid, PIDStart: start + 1})
-	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Role: "supervisor", PaneID: "w1:p0", PID: pid, PIDStart: start})
+	envelope := agent.StartSupervisor(home, agent.RegisterOptions{Kind: records.AgentKindSupervisor, PaneID: "w1:p0", PID: pid, PIDStart: start})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("outcome = %q error = %v; want ok", envelope.Outcome, envelope.Error)
 	}
@@ -87,7 +87,7 @@ func TestSingletonTwentyStartsGiveOneClaim(t *testing.T) {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
-			results[index] = agent.StartSupervisor(home, agent.RegisterOptions{Role: "supervisor", PaneID: "w1:p0", PID: pid, PIDStart: start})
+			results[index] = agent.StartSupervisor(home, agent.RegisterOptions{Kind: records.AgentKindSupervisor, PaneID: "w1:p0", PID: pid, PIDStart: start})
 		}(index)
 	}
 	wg.Wait()

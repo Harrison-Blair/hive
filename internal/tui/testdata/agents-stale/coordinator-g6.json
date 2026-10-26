@@ -1,7 +1,6 @@
 {
   "key": "coordinator-g6",
   "name": "coordinator",
-  "role": "coordinator",
   "project": "",
   "task": "",
   "harness": "",
@@ -17,5 +16,7 @@
   "generation": 6,
   "started_at": "2026-10-20T03:57:32.418672861Z",
   "updated_at": "2026-10-20T14:41:50.743993109Z",
-  "spawned": false
+  "spawned": false,
+  "kind": "coordinator",
+  "profile": "coordinator"
 }

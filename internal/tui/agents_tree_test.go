@@ -27,7 +27,7 @@ func TestTreeBoardsMatchTheirGrids(t *testing.T) {
 func addAgent(key, parent, state, started string) func(*demoFixture) {
 	return func(f *demoFixture) {
 		f.Data.Agents = append(f.Data.Agents, records.Agent{
-			Key: key, Name: key, Role: "agent", Harness: "pi", PaneID: "w90:p1", Status: "live",
+			Key: key, Name: key, Profile: records.ProfileGeneral, Harness: "pi", PaneID: "w90:p1", Status: "live",
 			AgentStatus: state, Parent: parent, StatusChangedAt: "2026-10-21T14:21:00Z",
 			Generation: 1, StartedAt: started, UpdatedAt: "2026-10-21T14:21:00Z",
 		})

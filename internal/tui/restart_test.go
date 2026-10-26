@@ -26,7 +26,7 @@ func TestAgentsRestartConfirmsLiveCoordinatorAndCancelsOnOtherKey(t *testing.T) 
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", Status: records.AgentLive},
+			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p2", Status: records.AgentLive},
 			status: "idle", current: true,
 		}},
 		supervisorLive: true,
@@ -69,7 +69,7 @@ func TestAgentsRestartMissingCoordinatorPaneTakesStalePath(t *testing.T) {
 	server.paneFailures = map[string]startupPaneFailure{
 		"w1:p9": {Code: "pane_not_found", Message: "pane w1:p9 not found"},
 	}
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
 	// health.md keys: r acts in the agents table of Health.
@@ -104,7 +104,7 @@ func TestAgentsRestartCoordinatorLookupErrorKeepsConfirmation(t *testing.T) {
 	server.paneFailures = map[string]startupPaneFailure{
 		"w1:p9": {Code: "server_error", Message: "pane lookup unavailable"},
 	}
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRecord(t, home, []string{"agents"}, record.Key, record)
 	m := newTestModel(t, home, clock)
 	// health.md keys: r acts in the agents table of Health.
@@ -165,7 +165,7 @@ func TestHealthTableKeepsStoppedAgents(t *testing.T) {
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", Status: records.AgentStopped},
+			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p2", Status: records.AgentStopped},
 			status: "stopped", current: true, stopped: true,
 		}},
 	})
@@ -184,7 +184,7 @@ func TestAgentsRestartLiveSupervisorAsksForConfirmation(t *testing.T) {
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", PaneID: "w1:p3", Status: records.AgentLive},
+			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Kind: records.AgentKindSupervisor, PaneID: "w1:p3", Status: records.AgentLive},
 			status: "idle", current: true,
 		}},
 		supervisorLive: true,
@@ -238,7 +238,7 @@ func TestAgentsRestartStaleCoordinatorStartsWithoutConfirmation(t *testing.T) {
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator-g1"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentStale},
+			record: records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentStale},
 			status: "unknown", current: true,
 		}},
 	})
@@ -344,7 +344,7 @@ func TestAgentsRestartKeyExplainsUnsupportedNode(t *testing.T) {
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "demo", title: "demo", keys: []string{"manager-demo"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "manager-demo", Name: "manager-demo", Role: "manager", Status: records.AgentLive},
+			record: records.Agent{Key: "manager-demo", Name: "manager-demo", Profile: records.ProfilePlanner, Status: records.AgentLive},
 			status: "working", current: true,
 		}},
 		supervisorLive: true,

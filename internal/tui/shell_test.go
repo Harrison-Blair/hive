@@ -355,7 +355,7 @@ func fixtureBackgroundScreens(m *Model, now time.Time) {
 	m.rebuildChat()
 
 	node := agentNode{
-		record: records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Status: records.AgentLive},
+		record: records.Agent{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive},
 		status: "working", age: "now",
 	}
 	m.agents.accept(agentsData{

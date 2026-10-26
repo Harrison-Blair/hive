@@ -17,7 +17,7 @@ func TestResolveManualUnresolvedExits(t *testing.T) {
 	writeProjectPath(t, home, "demo", t.TempDir())
 	writeTaskRecord(t, home, records.Task{ID: "1-task", Project: "demo", Title: "Task"})
 	registered := Register(home, RegisterOptions{
-		Role: "worker", Project: "demo", Task: "1-task", Harness: "claude", PaneID: "w1:p1",
+		Profile: records.ProfileBuilder, Project: "demo", Task: "1-task", Harness: "claude", PaneID: "w1:p1",
 	})
 	if registered.Outcome != "ok" {
 		t.Fatalf("Register() = %+v, want ok", registered)

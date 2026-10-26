@@ -1,7 +1,6 @@
 {
   "key": "manager-stenographer-g1",
   "name": "manager-stenographer",
-  "role": "manager",
   "project": "stenographer",
   "task": "",
   "harness": "claude",
@@ -16,5 +15,7 @@
   "started_at": "2026-10-19T02:37:59.797469092Z",
   "updated_at": "2026-10-19T02:38:01.805821769Z",
   "last_error": "first tab busy: stop the agent or pass --pane",
-  "spawned": true
+  "spawned": true,
+  "profile": "planner",
+  "owns": "stenographer"
 }

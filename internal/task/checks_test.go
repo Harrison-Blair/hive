@@ -26,7 +26,7 @@ func TestCompleteRefusesCallerThatIsNotTheActingAgent(t *testing.T) {
 func TestCompleteRefusesActingNameWithoutTheTaskFact(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	seedAgent(t, home, records.Agent{
-		Key: "worker-1", Name: "worker-1", Role: "worker", Project: "one", Task: "2-other",
+		Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "one", Task: "2-other",
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 1,
 	})
 	before := taskRecordBytes(t, home, task.ID)
@@ -58,7 +58,7 @@ func TestVerifyAllowsAnotherBoundAgent(t *testing.T) {
 func TestVerifyRefusesCallerNotBoundToTheTask(t *testing.T) {
 	home, task := newSeed(t, "completed")
 	seedAgent(t, home, records.Agent{
-		Key: "verifier-3", Name: "verifier-3", Role: "verifier", Project: "one", Task: "2-other",
+		Key: "verifier-3", Name: "verifier-3", Profile: records.ProfileVerifier, Project: "one", Task: "2-other",
 		Status: records.AgentLive, PaneID: "w1:p3", Generation: 1,
 	})
 	before := taskRecordBytes(t, home, task.ID)

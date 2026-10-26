@@ -12,7 +12,7 @@ import (
 func TestReadTextEscapesTerminalControls(t *testing.T) {
 	envelope := output.Envelope{Result: inboxlib.Result{Records: []records.Inbox{{
 		Seq:       1,
-		Role:      "coordinator",
+		Inbox:     "coordinator",
 		Kind:      "message\nFORGED",
 		Agent:     "worker\x1b[31m",
 		CreatedAt: "today\nFORGED",
@@ -36,7 +36,7 @@ func TestReadTextEscapesTerminalControls(t *testing.T) {
 func TestReadTextKeepsSafeTextUnchanged(t *testing.T) {
 	envelope := output.Envelope{Result: inboxlib.Result{Records: []records.Inbox{{
 		Seq:       10,
-		Role:      "coordinator",
+		Inbox:     "coordinator",
 		Kind:      records.InboxMessage,
 		Agent:     "worker-x",
 		CreatedAt: "2026-01-01T00:00:00Z",
@@ -51,7 +51,7 @@ func TestReadTextKeepsSafeTextUnchanged(t *testing.T) {
 func TestReadTextShowsTheReportPath(t *testing.T) {
 	envelope := output.Envelope{Result: inboxlib.Result{Records: []records.Inbox{{
 		Seq:       3,
-		Role:      "boss",
+		Inbox:     "boss",
 		Kind:      records.InboxReport,
 		Agent:     "rev",
 		CreatedAt: "2026-01-01T00:00:00Z",

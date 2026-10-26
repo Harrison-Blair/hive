@@ -1218,7 +1218,7 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 		at, err := time.Parse(time.RFC3339Nano, sent.CreatedAt)
 		if err == nil {
 			lines = append(lines, "", component.DetailSection("LAST MESSAGE"),
-				agentsDetailField(at.In(m.now().Location()).Format("15:04"), "→ "+sent.Role+" · "+sent.Text))
+				agentsDetailField(at.In(m.now().Location()).Format("15:04"), "→ "+sent.Inbox+" · "+sent.Text))
 		}
 	}
 	keys := []string{"a attach", "p peek"}

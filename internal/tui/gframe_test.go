@@ -313,7 +313,7 @@ func TestFrameRestartPromptOnTheNoticeLine(t *testing.T) {
 	m.health.acceptAgents(agentsData{
 		groups: []agentGroup{{id: "home", title: "home", keys: []string{"supervisor-g1"}}},
 		nodes: []agentNode{{
-			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", PaneID: "w1:p3", Status: records.AgentLive},
+			record: records.Agent{Key: "supervisor-g1", Name: "supervisor", Kind: records.AgentKindSupervisor, PaneID: "w1:p3", Status: records.AgentLive},
 			status: "idle", current: true,
 		}},
 		supervisorLive: true,

@@ -51,7 +51,7 @@ func TestRemoveAgentGuard(t *testing.T) {
 		{
 			name: "record of the task",
 			seed: func(t *testing.T, home, path string) {
-				writeGuardAgent(t, home, records.Agent{Key: "worker-3", Name: "worker-3", Role: "worker", Task: "1-live-demo", Status: records.AgentLive, Cwd: "/tmp/elsewhere"})
+				writeGuardAgent(t, home, records.Agent{Key: "worker-3", Name: "worker-3", Profile: records.ProfileBuilder, Task: "1-live-demo", Status: records.AgentLive, Cwd: "/tmp/elsewhere"})
 			},
 			fake: guardHerdr,
 			want: "agent live: worker-3",
@@ -59,7 +59,7 @@ func TestRemoveAgentGuard(t *testing.T) {
 		{
 			name: "record with the workspace",
 			seed: func(t *testing.T, home, path string) {
-				writeGuardAgent(t, home, records.Agent{Key: "worker-4", Name: "worker-4", Role: "worker", Task: "9-other", WorkspaceID: "w2", Status: records.AgentUnresolved, Cwd: "/tmp/elsewhere"})
+				writeGuardAgent(t, home, records.Agent{Key: "worker-4", Name: "worker-4", Profile: records.ProfileBuilder, Task: "9-other", WorkspaceID: "w2", Status: records.AgentUnresolved, Cwd: "/tmp/elsewhere"})
 			},
 			fake: guardHerdr,
 			want: "agent unresolved: worker-4",
@@ -67,7 +67,7 @@ func TestRemoveAgentGuard(t *testing.T) {
 		{
 			name: "record with the path",
 			seed: func(t *testing.T, home, path string) {
-				writeGuardAgent(t, home, records.Agent{Key: "worker-5", Name: "worker-5", Role: "worker", Task: "9-other", Cwd: path, Status: records.AgentLive})
+				writeGuardAgent(t, home, records.Agent{Key: "worker-5", Name: "worker-5", Profile: records.ProfileBuilder, Task: "9-other", Cwd: path, Status: records.AgentLive})
 			},
 			fake: guardHerdr,
 			want: "agent live: worker-5",
@@ -110,8 +110,8 @@ func TestRemoveAgentGuard(t *testing.T) {
 
 	t.Run("stopped and exited records are allowed", func(t *testing.T) {
 		repo, home, path := guardFixture(t)
-		writeGuardAgent(t, home, records.Agent{Key: "worker-6", Name: "worker-6", Role: "worker", Task: "1-live-demo", Status: records.AgentStopped, Cwd: path})
-		writeGuardAgent(t, home, records.Agent{Key: "worker-7", Name: "worker-7", Role: "worker", Task: "1-live-demo", Status: records.AgentExited, WorkspaceID: "w2"})
+		writeGuardAgent(t, home, records.Agent{Key: "worker-6", Name: "worker-6", Profile: records.ProfileBuilder, Task: "1-live-demo", Status: records.AgentStopped, Cwd: path})
+		writeGuardAgent(t, home, records.Agent{Key: "worker-7", Name: "worker-7", Profile: records.ProfileBuilder, Task: "1-live-demo", Status: records.AgentExited, WorkspaceID: "w2"})
 		startFakeHerdr(t, func(request fakeRequest) fakeReply {
 			switch request.Method {
 			case "workspace.get":

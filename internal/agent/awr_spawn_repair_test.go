@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 // TestSpawnTaskPaneMustBeInWorktree proves that a supplied pane obeys the
@@ -26,7 +27,7 @@ func TestSpawnTaskPaneMustBeInWorktree(t *testing.T) {
 		scriptWorkerSuccess(fake, sleep, "wWrong:p1", "wWrong", "wWrong:t1", home, "wrong-place")
 
 		envelope := Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "wrong-place", NameSet: true, PaneID: "wWrong:p1", PaneSet: true,
 		})
 		if envelope.Outcome != "failed" {
@@ -60,7 +61,7 @@ func TestSpawnTaskPaneMustBeInWorktree(t *testing.T) {
 		scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "builder-1")
 
 		envelope := Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "builder-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 		})
 		if envelope.Outcome != "ok" {
@@ -78,20 +79,20 @@ func TestSpawnTaskPaneMustBeInWorktree(t *testing.T) {
 func TestRegisterOwnerRefusesLiveHolder(t *testing.T) {
 	home := t.TempDir()
 	seedProject(t, home, "demo")
-	first := Register(home, RegisterOptions{Role: "manager", Project: "demo", PaneID: "w1:p1"})
+	first := Register(home, RegisterOptions{Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", PaneID: "w1:p1"})
 	if first.Outcome != "ok" {
 		t.Fatalf("first owner = %#v; want ok", first)
 	}
-	before := readClaim(t, home, "manager-demo")
+	before := readClaim(t, home, "owner-demo")
 
-	second := Register(home, RegisterOptions{Role: "manager", Project: "demo", PaneID: "w1:p2", Name: "owner-two", NameSet: true})
+	second := Register(home, RegisterOptions{Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", PaneID: "w1:p2", Name: "owner-two", NameSet: true})
 	if second.Outcome != "failed" || toString(second.Error) != "project demo has an owner: manager-demo" {
 		t.Fatalf("second owner = %#v; want the live owner refusal", second)
 	}
 	if len(second.Effects) != 0 {
 		t.Fatalf("second owner effects = %#v; want none", second.Effects)
 	}
-	if after := readClaim(t, home, "manager-demo"); after != before {
+	if after := readClaim(t, home, "owner-demo"); after != before {
 		t.Fatalf("claim changed: before %#v after %#v", before, after)
 	}
 	if record := readAgent(t, home, firstResultKey(t, first)); record.Status != "live" {

@@ -88,17 +88,17 @@ func gfAgentsStateFixture(status, agentStatus string) *demoFixture {
 			},
 			Agents: []records.Agent{
 				{
-					Key: "supervisor-g4", Name: "supervisor", Role: "supervisor", Harness: "hive",
+					Key: "supervisor-g4", Name: "supervisor", Kind: records.AgentKindSupervisor, Harness: "hive",
 					Status: records.AgentLive, AgentStatus: "working", StartedAt: stampText, UpdatedAt: stampText,
 				},
 				{
-					Key: "t5-worker-1", Name: "t5-worker-1", Role: "worker", Project: "hive",
+					Key: "t5-worker-1", Name: "t5-worker-1", Profile: records.ProfileBuilder, Project: "hive",
 					Task: "5-tui-v2-spec", Harness: "pi", Status: records.AgentLive, AgentStatus: "working",
 					Parent: "manager-hive-g2", StatusChangedAt: earlierText, Generation: 1,
 					StartedAt: earlierText, UpdatedAt: earlierText, Spawned: true,
 				},
 				{
-					Key: "t6-worker-1", Name: "t6-worker-1", Role: "worker", Project: "hive",
+					Key: "t6-worker-1", Name: "t6-worker-1", Profile: records.ProfileBuilder, Project: "hive",
 					Task: "6-tui-v2-boards", Harness: "pi", Status: status, AgentStatus: agentStatus,
 					Parent: "manager-hive-g2", StatusChangedAt: stampText, Generation: 1,
 					StartedAt: stampText, UpdatedAt: stampText, Spawned: true,

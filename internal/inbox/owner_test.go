@@ -11,8 +11,7 @@ import (
 // liveOwner returns one live owner record with the facts of D1 and D7.
 func liveOwner(key, name, project, pane string) records.Agent {
 	return records.Agent{
-		Key: key, Name: name, Role: "manager", Profile: records.ProfilePlanner,
-		Owns: project, Project: project, PaneID: pane,
+		Key: key, Name: name, Profile: records.ProfilePlanner, Owns: project, Project: project, PaneID: pane,
 		Status: records.AgentLive, Generation: 1,
 	}
 }
@@ -24,12 +23,12 @@ func TestSendProjectAddressWritesToLiveOwner(t *testing.T) {
 	seedInboxAgent(t, home, liveOwner("owner-demo-g1", "owner-demo", "demo", "w1:p1"),
 		&records.Claim{Key: "owner-demo", Agent: "owner-demo-g1", Generation: 1})
 
-	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "project:demo", Kind: records.InboxMessage, Agent: "builder-1", Text: "hello"})
+	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "project:demo", Kind: records.InboxMessage, Agent: "builder-1", Text: "hello"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v; want ok", envelope)
 	}
 	record, ok := envelope.Result.(records.Inbox)
-	if !ok || record.Role != "owner-demo" || record.Text != "hello" {
+	if !ok || record.Inbox != "owner-demo" || record.Text != "hello" {
 		t.Fatalf("Append() result = %#v; want the record in inbox owner-demo", envelope.Result)
 	}
 	found, err := inboxlib.All(home, "owner-demo")
@@ -49,12 +48,12 @@ func TestSendProjectAddressUsesCoordinatorWithoutLiveOwner(t *testing.T) {
 	stopped.Status = records.AgentStopped
 	seedInboxAgent(t, home, stopped, nil)
 
-	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "project:demo", Kind: records.InboxMessage, Text: "hello"})
+	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "project:demo", Kind: records.InboxMessage, Text: "hello"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v; want ok", envelope)
 	}
 	record, ok := envelope.Result.(records.Inbox)
-	if !ok || record.Role != "coordinator" {
+	if !ok || record.Inbox != "coordinator" {
 		t.Fatalf("Append() result = %#v; want the coordinator inbox", envelope.Result)
 	}
 	found, err := inboxlib.All(home, "coordinator")
@@ -67,7 +66,7 @@ func TestSendProjectAddressUsesCoordinatorWithoutLiveOwner(t *testing.T) {
 // before any write.
 func TestSendRefusesInvalidProjectAddress(t *testing.T) {
 	home := t.TempDir()
-	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "project:Bad ID", Kind: records.InboxMessage, Text: "hello"})
+	envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "project:Bad ID", Kind: records.InboxMessage, Text: "hello"})
 	if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), "invalid inbox key:") {
 		t.Fatalf("Append() = %#v; want an invalid inbox key", envelope)
 	}

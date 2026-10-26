@@ -10,8 +10,7 @@ import (
 // ownerRecord returns one live owner record with the facts of D1 and D7.
 func ownerRecord(key, name, project, pane string) records.Agent {
 	return records.Agent{
-		Key: key, Name: name, Role: "manager", Profile: records.ProfilePlanner,
-		Owns: project, Project: project, PaneID: pane,
+		Key: key, Name: name, Profile: records.ProfilePlanner, Owns: project, Project: project, PaneID: pane,
 		WorkspaceID: "w1", TabID: "w1:t1", Status: records.AgentLive,
 		AgentStatus: "idle", Generation: 1, Spawned: true,
 	}

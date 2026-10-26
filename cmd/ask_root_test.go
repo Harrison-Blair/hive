@@ -24,7 +24,7 @@ func askCommandFiles(t *testing.T, home string) []string {
 
 func TestAskReadsStdinAndPrintsTheID(t *testing.T) {
 	home := newRootTestHome(t)
-	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
 	var stdout, stderr bytes.Buffer
 	status := executeWithStreams([]string{"ask", "--agent", "worker-one", "--file", "-"}, strings.NewReader(askCommandJSON), &stdout, &stderr)
 	if status != 0 || stdout.String() != "ask a1 open\n" {
@@ -37,7 +37,7 @@ func TestAskReadsStdinAndPrintsTheID(t *testing.T) {
 
 func TestAskReadsAFileAndPrintsTheEnvelope(t *testing.T) {
 	home := newRootTestHome(t)
-	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
 	path := filepath.Join(t.TempDir(), "ask.json")
 	if err := os.WriteFile(path, []byte(askCommandJSON), 0o644); err != nil {
 		t.Fatal(err)
@@ -61,7 +61,7 @@ func TestAskReadsAFileAndPrintsTheEnvelope(t *testing.T) {
 
 func TestAskRejectsABadAskWithNoRecord(t *testing.T) {
 	home := newRootTestHome(t)
-	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
+	seedChatCommandAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", Status: records.AgentLive, Generation: 1})
 	var stdout, stderr bytes.Buffer
 	bad := strings.Replace(askCommandJSON, `"Model"`, `"A long header"`, 1)
 	status := executeWithStreams([]string{"ask", "--agent", "worker-one", "--file", "-"}, strings.NewReader(bad), &stdout, &stderr)

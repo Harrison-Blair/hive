@@ -16,12 +16,12 @@ import (
 // writeGeneralParent writes the live registered caller boss in pane w1:p9.
 func writeGeneralParent(t *testing.T, home string) {
 	t.Helper()
-	writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentLive, PaneID: "w1:p9", Generation: 1, Spawned: true})
+	writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p9", Generation: 1, Spawned: true})
 }
 
 func generalOptions(name, harnessKind, cwd string) SpawnOptions {
 	return SpawnOptions{
-		Role:      "agent",
+		Profile:   records.ProfileGeneral,
 		Harness:   harnessKind,
 		Model:     "m",
 		Name:      name,
@@ -87,8 +87,8 @@ func TestGeneralSpawnNewTabRecordsParentAndSendsPromptOnce(t *testing.T) {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
 	stored := readAgent(t, home, "x")
-	if stored.Role != "agent" || stored.Parent != "boss" || stored.Status != records.AgentLive || stored.Project != "" || stored.Task != "" {
-		t.Fatalf("record role/parent/status/project/task = %q/%q/%q/%q/%q", stored.Role, stored.Parent, stored.Status, stored.Project, stored.Task)
+	if stored.Profile != records.ProfileGeneral || stored.Kind != "" || stored.Parent != "boss" || stored.Status != records.AgentLive || stored.Project != "" || stored.Task != "" {
+		t.Fatalf("record profile/kind/parent/status/project/task = %q/%q/%q/%q/%q/%q", stored.Profile, stored.Kind, stored.Parent, stored.Status, stored.Project, stored.Task)
 	}
 	if !stored.TabCreatedByHive || !stored.StartedByHive || stored.PaneID != "w1:p5" || stored.FirstPrompt != "" {
 		t.Fatalf("ownership = tab %t started %t pane %q kept %q; want true true w1:p5 empty", stored.TabCreatedByHive, stored.StartedByHive, stored.PaneID, stored.FirstPrompt)
@@ -142,7 +142,6 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 		change func(*SpawnOptions)
 		want   string
 	}{
-		{name: "role and profile", change: func(o *SpawnOptions) { o.Role = "worker"; o.Profile, o.ProfileSet = "general", true }, want: "--role is the old name of --profile: pass one"},
 		{name: "both prompts", change: func(o *SpawnOptions) { o.PromptFile, o.PromptFileSet = file, true }, want: "pass one of --prompt or --prompt-file, not both"},
 		{name: "empty prompt", change: func(o *SpawnOptions) { o.Prompt = "  " }, want: "prompt text is empty"},
 		{name: "empty prompt file", change: func(o *SpawnOptions) { o.PromptSet, o.Prompt, o.PromptFile, o.PromptFileSet = false, "", empty, true }, want: "prompt text is empty"},
@@ -156,7 +155,7 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 		{name: "bad name", change: func(o *SpawnOptions) { o.Name = "Bad" }, want: "invalid agent name"},
 		{name: "coordinator name", change: func(o *SpawnOptions) { o.Name = "coordinator" }, want: "reserved"},
 		{name: "supervisor name", change: func(o *SpawnOptions) { o.Name = "supervisor" }, want: "reserved"},
-		{name: "profile coordinator", change: func(o *SpawnOptions) { o.Role, o.Profile, o.ProfileSet = "", "coordinator", true }, want: "profile coordinator is built in"},
+		{name: "profile coordinator", change: func(o *SpawnOptions) { o.Profile, o.ProfileSet = "coordinator", true }, want: "profile coordinator is built in"},
 		{name: "old name", change: func(o *SpawnOptions) { o.Name = "gone" }, want: "agent exists: gone"},
 
 		{name: "no caller", herdr: "w1:p77", want: "no registered caller"},
@@ -169,8 +168,8 @@ func TestGeneralSpawnRefusesBeforeAnyHerdrCall(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			home := testHome(t)
 			writeGeneralParent(t, home)
-			writeRecord(t, home, records.Agent{Key: "other", Name: "other", Role: "agent", Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
-			writeRecord(t, home, records.Agent{Key: "gone", Name: "gone", Role: "agent", Status: records.AgentStopped, PaneID: "w1:p7", Generation: 1})
+			writeRecord(t, home, records.Agent{Key: "other", Name: "other", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p8", Generation: 1})
+			writeRecord(t, home, records.Agent{Key: "gone", Name: "gone", Profile: records.ProfileGeneral, Status: records.AgentStopped, PaneID: "w1:p7", Generation: 1})
 			pane := "w1:p9"
 			if test.herdr == "-" {
 				pane = ""

@@ -59,7 +59,7 @@ func TestStartCoordinatorSendsStartupPromptAfterHiveRegisters(t *testing.T) {
 			t.Errorf("first prompt %q does not contain %q", params.Text, want)
 		}
 	}
-	agents := List(home, ListOptions{Role: "coordinator", All: true})
+	agents := List(home, ListOptions{Profile: records.ProfileCoordinator, All: true})
 	if agents.Outcome != "ok" || len(agents.Result.([]records.Agent)) != 1 || agents.Result.([]records.Agent)[0].Status != records.AgentLive {
 		t.Fatalf("coordinator records after start = %#v; want the live record that hive wrote", agents)
 	}
@@ -268,7 +268,8 @@ func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
 			}
 			for _, want := range []string{
 				"Hive-started exchanges get replies through Hive. Use the native harness only when the user starts the exchange there.",
-				"Address manager messages to the inbox key `manager-PROJECT`. For project hive, this is `manager-hive`.",
+				"Address project messages to the inbox address `project:ID`. For project hive, this is `project:hive`.",
+				"The address goes to the live owner of the project, or to the coordinator when the project has no live owner.",
 			} {
 				if !strings.Contains(contextText, want) {
 					t.Errorf("starting context does not contain %q", want)

@@ -1,7 +1,6 @@
 package inbox
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -20,7 +19,6 @@ func New() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	command.Flags().String("inbox", "", "inbox key or project:ID")
-	command.Flags().String("role", "", "old name of --inbox")
 	command.Flags().String("agent", "", "reading agent")
 	command.Flags().Bool("all", false, "print each record and set nothing")
 	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
@@ -28,15 +26,6 @@ func New() *cobra.Command {
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		inboxKey, _ := cmd.Flags().GetString("inbox")
 		inboxSet := cmd.Flags().Lookup("inbox").Changed
-		role, _ := cmd.Flags().GetString("role")
-		roleSet := cmd.Flags().Lookup("role").Changed
-		if roleSet {
-			if inboxSet {
-				return fmt.Errorf("pass one of --inbox or --role, not both")
-			}
-			inboxKey = role
-			inboxSet = true
-		}
 		agentName, _ := cmd.Flags().GetString("agent")
 		all, _ := cmd.Flags().GetBool("all")
 		pane, _ := cmd.Flags().GetString("pane")
@@ -57,7 +46,7 @@ func New() *cobra.Command {
 				reportInbox := inboxKey
 				if !inboxSet {
 					if result, ok := envelope.Result.(inboxlib.Result); ok && len(result.Records) > 0 {
-						reportInbox = result.Records[0].Role
+						reportInbox = result.Records[0].Inbox
 					}
 				}
 				_ = inboxlogic.WriteReport(cmd.ErrOrStderr(), reportInbox, ids)
@@ -81,7 +70,7 @@ func newSend() *cobra.Command {
 		agent, _ := cmd.Flags().GetString("agent")
 		pane, _ := cmd.Flags().GetString("pane")
 		return common.Run(cmd, "inbox send", func(home string) (output.Envelope, string, error) {
-			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Role: to, Kind: "message", Agent: agent, Text: args[0]}, pane, os.Getenv("HERDR_PANE_ID"))
+			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Inbox: to, Kind: "message", Agent: agent, Text: args[0]}, pane, os.Getenv("HERDR_PANE_ID"))
 			return envelope, inboxlogic.SendText(envelope), nil
 		})
 	}

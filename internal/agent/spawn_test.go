@@ -16,7 +16,7 @@ import (
 
 func baseSpawnOptions(name string) SpawnOptions {
 	return SpawnOptions{
-		Role:    "coordinator",
+		Kind:    records.AgentKindCoordinator,
 		Harness: "claude",
 		Model:   "m",
 		Name:    name,
@@ -388,7 +388,7 @@ func TestSpawnClaimReplacementDuringWaitPreventsUpdate(t *testing.T) {
 			return
 		}
 		replaced = true
-		writeRecord(t, home, records.Agent{Key: "other-g2", Name: "other", Role: "coordinator", Status: records.AgentLive, PaneID: "w2:p1", Spawned: true, Generation: 2})
+		writeRecord(t, home, records.Agent{Key: "other-g2", Name: "other", Kind: records.AgentKindCoordinator, Status: records.AgentLive, PaneID: "w2:p1", Spawned: true, Generation: 2})
 		writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "other-g2", Generation: 2})
 	})
 	fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t10-coord-g1")+`}`)
@@ -453,7 +453,7 @@ func TestSpawnWorkerWithRealTask(t *testing.T) {
 	fake.result("agent.get", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "t12-builder-1")+`}`)
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(sleep.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "t12-builder-1")+`}`)
-	options := SpawnOptions{Role: "worker", Project: "hive", Task: "12-spawn-worker", Harness: "claude", Model: "m", PaneID: "w1:p1", PaneSet: true}
+	options := SpawnOptions{Profile: "builder", Project: "hive", Task: "12-spawn-worker", Harness: "claude", Model: "m", PaneID: "w1:p1", PaneSet: true}
 	envelope := Spawn(context.Background(), home, options)
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -523,7 +523,7 @@ func TestSpawnStoresNoRecordBeforeValidation(t *testing.T) {
 func TestManualRegisterLeavesSpawnedFalse(t *testing.T) {
 	home := testHome(t)
 	envelope := Register(home, RegisterOptions{
-		Role:    "coordinator",
+		Kind:    records.AgentKindCoordinator,
 		Harness: "claude",
 		PaneID:  "w1:p1",
 	})

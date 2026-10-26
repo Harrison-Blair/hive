@@ -80,14 +80,14 @@ func TestManagerPromptSendsFactsAfterReady(t *testing.T) {
 }
 
 func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
-	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	skill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "planner.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	markerRule := "Hive uses `⬢` to mark each message that it delivers. A message that starts with `⬢ user:` came from the user, who wrote it in the TUI. It has the authority of the user. Each other `⬢` message carries an instruction under the approved goals and grants. A message without `⬢` came from the user. The marker shows that hive delivered the message. It does not add authority. It does not widen a grant."
 	escalationRule := "Before you stop for a user decision, or when a harness blocks an action, send the coordinator one record. The record names the decision or the block. Then end your turn."
 	command := "hive inbox send --to coordinator TEXT --agent NAME"
-	for name, text := range map[string]string{"template": projectAgentsTemplate, "manager skill": string(skill)} {
+	for name, text := range map[string]string{"template": projectAgentsTemplate, "planner profile": string(skill)} {
 		normalized := strings.Join(strings.Fields(text), " ")
 		for _, want := range []string{markerRule, escalationRule, command} {
 			if !strings.Contains(normalized, want) {
@@ -98,7 +98,7 @@ func TestManagerTemplateAndSkillHaveMarkerAndEscalationRules(t *testing.T) {
 }
 
 func TestCoordinatorInstructionsRequireChatReplies(t *testing.T) {
-	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-coordinator", "SKILL.md"))
+	skill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "coordinator.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,13 +110,13 @@ func TestCoordinatorInstructionsRequireChatReplies(t *testing.T) {
 		"Send each answer to the user through `hive chat reply`.",
 	} {
 		if !strings.Contains(text, want) {
-			t.Errorf("coordinator skill does not contain %q", want)
+			t.Errorf("coordinator profile does not contain %q", want)
 		}
 	}
 }
 
 func TestManagerInstructionsRequireFeatureTaskRules(t *testing.T) {
-	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	skill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "planner.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +138,7 @@ func TestManagerInstructionsRequireFeatureTaskRules(t *testing.T) {
 }
 
 func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
-	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	skill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "planner.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,14 +148,13 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 	}
 	for name, text := range instructions {
 		normalized := strings.Join(strings.Fields(text), " ")
-		spawnWorker, spawnVerifier := "hive agent spawn --role worker --task ID --harness KIND --model MODEL", "hive agent spawn --role verifier --task ID --harness KIND --model MODEL"
-		repairWorker := "After a verify fail, spawn a worker for the task. Hive sets the acting worker. Do not run `hive task assign`."
-		repairLand := "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`."
-		if name == "template" {
-			spawnWorker = "hive agent spawn --profile builder --task ID --harness KIND --model MODEL"
-			spawnVerifier = "hive agent spawn --profile verifier --task ID --harness KIND --model MODEL"
-			repairWorker = "After a verify fail, spawn a builder for the task. Hive sets the acting agent. Do not run `hive task assign`."
-			repairLand = "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`."
+		spawnWorker := "hive agent spawn --profile builder --task ID --harness KIND --model MODEL"
+		spawnVerifier := "hive agent spawn --profile verifier --task ID --harness KIND --model MODEL"
+		repairWorker := "After a verify fail, spawn a builder for the task. Hive sets the acting agent. Do not run `hive task assign`."
+		repairLand := "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`."
+		if name == "skill" {
+			spawnWorker = "hive agent spawn --profile builder --task ID"
+			spawnVerifier = "hive agent spawn --profile verifier --task ID"
 		}
 		for _, want := range []string{
 			"Hive picks a free name when you omit `--name`. Use `--name NAME` only when you need a fixed name.",
@@ -180,19 +179,19 @@ func TestManagerInstructionsRequireRespawnRules(t *testing.T) {
 // AC9: the verifier keeps VERIFIED.md out of each commit. Hive task verify copies it
 // from the ignored evidence folder to the home.
 func TestVerifierLeavesVerdictUncommitted(t *testing.T) {
-	managerSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	managerSkill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "planner.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	verifierSkill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-verifier", "SKILL.md"))
+	verifierSkill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "verifier.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := "The verifier writes `VERIFIED.md` in the evidence folder and does not commit it. `hive task verify` copies it to the home."
 	for name, instructions := range map[string]string{
-		"template":       projectAgentsTemplate,
-		"manager skill":  string(managerSkill),
-		"verifier skill": string(verifierSkill),
+		"template":         projectAgentsTemplate,
+		"planner profile":  string(managerSkill),
+		"verifier profile": string(verifierSkill),
 	} {
 		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), want) {
 			t.Errorf("%s does not contain %q", name, want)
@@ -201,13 +200,13 @@ func TestVerifierLeavesVerdictUncommitted(t *testing.T) {
 }
 
 func TestManagerInstructionsRequireFreshVerifierAfterFail(t *testing.T) {
-	skill, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", "hive-manager", "SKILL.md"))
+	skill, err := os.ReadFile(filepath.Join("..", "..", "profiles", "planner.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	wants := map[string]string{
 		"template": "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`.",
-		"skill":    "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair worker. Then spawn a fresh verifier with no `--pane`.",
+		"skill":    "If `hive land` fails with a merge conflict, reopen the task with `hive task reopen`. Spawn a repair builder. Then spawn a fresh verifier with no `--pane`.",
 	}
 	for name, instructions := range map[string]string{"template": projectAgentsTemplate, "skill": string(skill)} {
 		if !strings.Contains(strings.Join(strings.Fields(instructions), " "), wants[name]) {

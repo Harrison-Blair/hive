@@ -19,8 +19,8 @@ import (
 func seedReport(t *testing.T) string {
 	t.Helper()
 	home := testHome(t)
-	writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-	writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+	writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+	writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
 	return home
 }
 
@@ -82,15 +82,28 @@ func TestReportTwiceWritesTwoRecords(t *testing.T) {
 	}
 }
 
-func TestReportUsesTheParentFactForEachOldRole(t *testing.T) {
-	for _, role := range []string{"worker", "verifier", "manager", "coordinator", "supervisor"} {
-		t.Run(role, func(t *testing.T) {
+func TestReportUsesTheParentFactForEachFactShape(t *testing.T) {
+	cases := []struct {
+		name    string
+		profile string
+		kind    string
+		owns    string
+		claim   string
+	}{
+		{"builder", records.ProfileBuilder, "", "", ""},
+		{"verifier", records.ProfileVerifier, "", "", ""},
+		{"planner", records.ProfilePlanner, "", "hive", "owner-hive"},
+		{"coordinator", records.ProfileCoordinator, records.AgentKindCoordinator, "", "coordinator"},
+		{"supervisor", "", records.AgentKindSupervisor, "", "supervisor"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
 			home := testHome(t)
-			record := records.Agent{Key: "x-1", Name: "x-1", Role: role, Project: "hive", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1}
+			record := records.Agent{Key: "x-1", Name: "x-1", Profile: test.profile, Kind: test.kind, Owns: test.owns, Project: "hive", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1}
 			writeRecord(t, home, record)
 			writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-			if key := map[string]string{"manager": "owner-hive", "coordinator": "coordinator", "supervisor": "supervisor"}[role]; key != "" {
-				writeClaimRecord(t, home, records.Claim{Key: key, Agent: record.Key, Generation: 1})
+			if test.claim != "" {
+				writeClaimRecord(t, home, records.Claim{Key: test.claim, Agent: record.Key, Generation: 1})
 			}
 			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("text")})
 			if envelope.Outcome != "ok" {
@@ -182,9 +195,9 @@ func TestReportFileRefusals(t *testing.T) {
 func TestReportRoutesWithTheParentRule(t *testing.T) {
 	t.Run("stopped parent goes to its live successor", func(t *testing.T) {
 		home := testHome(t)
-		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentStopped, Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "boss-2", Name: "boss-2", Role: "agent", Status: records.AgentLive, PaneID: "w1:p1", Replaces: "boss", Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "boss-2", Name: "boss-2", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Replaces: "boss", Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
 		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
 			t.Fatalf("Report() = %#v; want ok", envelope)
 		}
@@ -194,8 +207,8 @@ func TestReportRoutesWithTheParentRule(t *testing.T) {
 	})
 	t.Run("a stopped parent with no successor goes to coordinator", func(t *testing.T) {
 		home := testHome(t)
-		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentStopped, Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
+		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
 		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
 			t.Fatalf("Report() = %#v; want ok", envelope)
 		}

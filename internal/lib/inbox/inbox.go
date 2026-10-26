@@ -75,7 +75,7 @@ var keyPattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,40}$`)
 
 // AppendOptions holds explicit values for one inbox record.
 type AppendOptions struct {
-	Role  string
+	Inbox string
 	Kind  string
 	Task  string
 	Agent string
@@ -135,7 +135,7 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 	if err := validateAppend(options); err != nil {
 		return failed("validate", err.Error())
 	}
-	key := options.Role
+	key := options.Inbox
 	if IsProjectAddress(key) {
 		agents, err := inboxAgents(writer)
 		if err != nil {
@@ -154,7 +154,7 @@ func appendLocked(locked *store.LockedStore, writer lockedWriter, options Append
 	effects := []output.Effect{counterEffect(key)}
 	record := records.Inbox{
 		Seq:       seq,
-		Role:      key,
+		Inbox:     key,
 		Kind:      kind,
 		Task:      options.Task,
 		Agent:     options.Agent,
@@ -233,7 +233,7 @@ func consumeLocked(locked *store.LockedStore, key string, mark MarkFunc, home ..
 
 func markRead(locked *store.LockedStore, record records.Inbox) (records.Inbox, error) {
 	var updated records.Inbox
-	err := locked.UpdateIn([]string{"inbox", record.Role}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
+	err := locked.UpdateIn([]string{"inbox", record.Inbox}, strconv.FormatUint(record.Seq, 10), func(raw json.RawMessage) (json.RawMessage, error) {
 		if err := json.Unmarshal(raw, &updated); err != nil {
 			return nil, err
 		}
@@ -316,8 +316,8 @@ func listLocked(lister recordLister, key string, all bool, home ...string) ([]re
 		if record.Seq != seq {
 			return nil, fmt.Errorf("record invalid: %s: sequence %d does not match the record path", path, record.Seq)
 		}
-		if record.Role != key {
-			return nil, fmt.Errorf("record invalid: %s: role %q does not match inbox %q", path, record.Role, key)
+		if record.Inbox != key {
+			return nil, fmt.Errorf("record invalid: %s: inbox %q does not match key %q", path, record.Inbox, key)
 		}
 		if !all && record.ReadAt != "" {
 			continue
@@ -375,14 +375,14 @@ func UnreadCountAll(home string) (map[string]int, error) {
 		if checkKey(key) != nil {
 			continue
 		}
-		rolePath := filepath.Join(root, key)
-		roleInfo, err := os.Lstat(rolePath)
+		inboxPath := filepath.Join(root, key)
+		inboxInfo, err := os.Lstat(inboxPath)
 		if err != nil {
 			logReadFailure(home, key, err.Error())
 			return nil, err
 		}
-		if roleInfo.Mode()&os.ModeSymlink != 0 || !roleInfo.IsDir() {
-			message := fmt.Sprintf("store path invalid: %s", rolePath)
+		if inboxInfo.Mode()&os.ModeSymlink != 0 || !inboxInfo.IsDir() {
+			message := fmt.Sprintf("store path invalid: %s", inboxPath)
 			logReadFailure(home, key, message)
 			return nil, errors.New(message)
 		}
@@ -439,7 +439,7 @@ func boundedText(text string) error {
 }
 
 func validateAppend(options AppendOptions) error {
-	if err := checkAddress(options.Role); err != nil {
+	if err := checkAddress(options.Inbox); err != nil {
 		return err
 	}
 	if err := boundedText(options.Text); err != nil {
@@ -501,7 +501,7 @@ func logInboxEvent(home, message string, attrs ...any) {
 func logReadFailure(home, key, message string) {
 	attrs := []any{"phase", "read", "error", message}
 	if key != "" {
-		attrs = append([]any{"role", key}, attrs...)
+		attrs = append([]any{"inbox", key}, attrs...)
 	}
 	logInboxEvent(home, "inbox operation failed", attrs...)
 }
@@ -511,7 +511,7 @@ func logAppend(home string, options AppendOptions, envelope output.Envelope) {
 	if kind == "" {
 		kind = records.InboxMessage
 	}
-	attrs := []any{"role", options.Role, "agent", options.Agent, "agent_id", options.Agent, "kind", kind}
+	attrs := []any{"inbox", options.Inbox, "agent", options.Agent, "agent_id", options.Agent, "kind", kind}
 	sequence := uint64(0)
 	for _, effect := range envelope.Effects {
 		switch effect.Resource {
@@ -536,7 +536,7 @@ func logAppend(home string, options AppendOptions, envelope output.Envelope) {
 func logConsume(home, key string, envelope output.Envelope) {
 	attrs := []any{}
 	if key != "" {
-		attrs = append(attrs, "role", key)
+		attrs = append(attrs, "inbox", key)
 	}
 	senders := map[uint64]string{}
 	if result, ok := envelope.Result.(Result); ok {

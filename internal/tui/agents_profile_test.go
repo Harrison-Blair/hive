@@ -27,7 +27,6 @@ func profileAgent(key, profile, project, owns, parent, started string) records.A
 // from owns, not from the wave-A role mirror.
 func TestAgentsGroupsByProjectOwnerFirstAndHome(t *testing.T) {
 	ownerAlpha := profileAgent("owner-alpha", records.ProfilePlanner, "alpha", "alpha", "", "2026-10-21T14:05:00Z")
-	ownerAlpha.Role = "worker"
 	source := agentsSource{
 		projects: []records.Project{{ID: "alpha", Path: "/repo/alpha", Base: "dev"}, {ID: "beta", Path: "/repo/beta", Base: "dev"}},
 		agents: []records.Agent{
@@ -61,9 +60,7 @@ func TestAgentsGroupsByProjectOwnerFirstAndHome(t *testing.T) {
 // when its parent card is not on the graph.
 func TestAgentsGeneralAgentWithProjectStaysInItsProject(t *testing.T) {
 	owner := profileAgent("owner-alpha", records.ProfilePlanner, "alpha", "alpha", "", "2026-10-21T14:00:00Z")
-	owner.Role = "manager"
 	review := profileAgent("review-alpha", records.ProfileGeneral, "alpha", "", "missing-gone", "2026-10-21T14:01:00Z")
-	review.Role = "agent"
 	source := agentsSource{
 		projects: []records.Project{{ID: "alpha", Path: "/repo/alpha", Base: "dev"}},
 		agents:   []records.Agent{owner, review},
@@ -95,8 +92,7 @@ func TestAgentsAgentWithoutProjectGoesHome(t *testing.T) {
 // A record written before the facts migration keeps its profile label,
 // derived from the facts.
 func TestAgentsDetailsShowProfileLabels(t *testing.T) {
-	legacy := profileAgent("legacy-worker", "", "alpha", "", "owner-alpha", "2026-10-21T14:04:00Z")
-	legacy.Role = "worker"
+	legacy := profileAgent("legacy-worker", records.ProfileBuilder, "alpha", "", "owner-alpha", "2026-10-21T14:04:00Z")
 	source := agentsSource{
 		projects: []records.Project{{ID: "alpha", Path: "/repo/alpha", Base: "dev"}},
 		agents: []records.Agent{
@@ -143,7 +139,6 @@ func d11Agent(key, profile, project, owns, parent, started string) records.Agent
 		Harness: "pi", Status: records.AgentLive, AgentStatus: "idle",
 		StatusChangedAt: "2026-10-21T14:19:00Z", StartedAt: started, UpdatedAt: started,
 	}
-	record.SyncRole()
 	return record
 }
 
@@ -190,7 +185,6 @@ func TestAgentsHiddenParentKeepsTheChildInItsProject(t *testing.T) {
 	parent := d11Agent("parent", records.ProfileBuilder, "alpha", "", "owner", "2026-10-21T14:01:00Z")
 	parent.Task = "task-parent"
 	parent.Status = records.AgentStopped
-	parent.SyncRole()
 	child := d11Agent("child", records.ProfileGeneral, "alpha", "", "parent", "2026-10-21T14:02:00Z")
 	m := agentsModel(t, agentsSource{
 		projects: []records.Project{{ID: "alpha", Path: "/repo/alpha", Base: "dev"}},

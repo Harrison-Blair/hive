@@ -217,7 +217,6 @@ func settleDeadLauncher(ctx context.Context, locked *store.LockedStore, claim re
 		ProcessName:   found.Name,
 		LastError:     fmt.Sprintf("launcher pid %d stopped after the harness start", claim.PID),
 	}
-	record.SyncRole()
 	if start, startErr := process.Start(record.ProcessPID); startErr == nil {
 		record.ProcessStart = start
 	}
@@ -335,7 +334,6 @@ func (l *CoordinatorLaunch) setPane(paneID string) error {
 func (l *CoordinatorLaunch) commit(record records.Agent) error {
 	record.Kind = records.AgentKindCoordinator
 	record.Profile = records.ProfileCoordinator
-	record.SyncRole()
 	registry, err := store.Open(l.home)
 	if err != nil {
 		return err

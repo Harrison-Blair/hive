@@ -236,13 +236,13 @@ func TestLiveLineGoesDarkOnTheExpiryMessage(t *testing.T) {
 // A sender or a receiver with no card lights nothing.
 func TestLiveInboxRecordLightsALine(t *testing.T) {
 	record := func(from, to string) records.Inbox {
-		return records.Inbox{Seq: 1, Role: to, Kind: "message", Agent: from, Text: "hi", CreatedAt: "2026-10-21T14:21:58Z"}
+		return records.Inbox{Seq: 1, Inbox: to, Kind: "message", Agent: from, Text: "hi", CreatedAt: "2026-10-21T14:21:58Z"}
 	}
 	inbox := func(items ...records.Inbox) func(*demoFixture) {
 		return func(f *demoFixture) {
 			f.Data.Inbox = map[string][]records.Inbox{}
 			for _, item := range items {
-				f.Data.Inbox[item.Role] = append(f.Data.Inbox[item.Role], item)
+				f.Data.Inbox[item.Inbox] = append(f.Data.Inbox[item.Inbox], item)
 			}
 		}
 	}

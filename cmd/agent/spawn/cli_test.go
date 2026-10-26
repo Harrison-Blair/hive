@@ -112,7 +112,33 @@ func cliHome(t *testing.T) string {
 	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("fixture\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	writeCLIProfiles(t, home)
 	return home
+}
+
+// writeCLIProfiles copies the tracked profiles into a CLI test home.
+func writeCLIProfiles(t *testing.T, home string) {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join("..", "..", "..", "profiles"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(home, "profiles")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join("..", "..", "..", "profiles", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, entry.Name()), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func runCLI(t *testing.T, home string, args ...string) (int, string, string) {
@@ -141,7 +167,7 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 	home := cliHome(t)
 	fake := newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"name is too long"}}`)
 	seedWorkerTask(t, home)
-	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
+	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--profile", "builder", "--task", "1-demo", "--harness", "claude", "--model", "m", "--name", "t10-cli", "--arg", "--one", "--arg", "two")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 (stderr %q)", status, stderr)
 	}
@@ -179,7 +205,10 @@ func TestSpawnJSONOneObjectAndArgs(t *testing.T) {
 		t.Fatalf("status = %q; want exited", envelope.Result.Agent.Status)
 	}
 	request := fake.requestText()
-	if !strings.Contains(request, `"args":["--dangerously-skip-permissions","--model","m","--one","two"]`) {
+	if !strings.Contains(request, `"args":["--dangerously-skip-permissions","--model","m",`) {
+		t.Fatalf("start request = %s; want native permissions and model m", request)
+	}
+	if !strings.Contains(request, `"--one","two"]`) {
 		t.Fatalf("start request = %s; want repeated --arg values", request)
 	}
 }
@@ -202,7 +231,7 @@ func TestSpawnRecordsCallerAsParent(t *testing.T) {
 				t.Fatal(err)
 			}
 			parent := records.Agent{
-				Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive",
+				Key: "manager-hive-g1", Name: "manager-hive", Profile: records.ProfilePlanner, Project: "hive",
 				Status: records.AgentLive, PaneID: "w1:p9", Generation: 1,
 			}
 			if err := registry.WriteIn([]string{"agents"}, parent.Key, parent); err != nil {
@@ -214,7 +243,7 @@ func TestSpawnRecordsCallerAsParent(t *testing.T) {
 			seedWorkerTask(t, home)
 			newCLIFake(t, "agent.start", `{"error":{"code":"invalid_agent_name","message":"bad"}}`)
 			t.Setenv("HERDR_PANE_ID", test.pane)
-			args := []string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude", "--name", "new-worker"}
+			args := []string{"--json", "agent", "spawn", "--pane", "w1:p1", "--profile", "builder", "--task", "1-demo", "--harness", "claude", "--name", "new-worker"}
 			if test.flag != "" {
 				args = append(args, "--agent", test.flag)
 			}
@@ -241,7 +270,7 @@ func TestSpawnRecordsCallerAsParent(t *testing.T) {
 
 func TestSpawnTextDefaultAndExit(t *testing.T) {
 	home := cliHome(t)
-	status, stdout, stderr := runCLI(t, home, "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "nope")
+	status, stdout, stderr := runCLI(t, home, "agent", "spawn", "--pane", "w1:p1", "--profile", "builder", "--task", "1-demo", "--harness", "nope")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1", status)
 	}
@@ -257,7 +286,7 @@ func TestSpawnPartialExitIsNonzero(t *testing.T) {
 	home := cliHome(t)
 	seedWorkerTask(t, home)
 	newCLIFake(t, "agent.start", "")
-	status, stdout, _ := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--role", "worker", "--task", "1-demo", "--harness", "claude")
+	status, stdout, _ := runCLI(t, home, "--json", "agent", "spawn", "--pane", "w1:p1", "--profile", "builder", "--task", "1-demo", "--harness", "claude")
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 for partial", status)
 	}
@@ -272,7 +301,7 @@ func TestSpawnWriterErrorIsObservable(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("HIVE_HOME", home)
 	root := cmd.NewRootCmd()
-	root.SetArgs([]string{"--json", "agent", "spawn", "--pane", "w1:p1", "--role", "coordinator", "--harness", "claude"})
+	root.SetArgs([]string{"--json", "agent", "spawn", "--pane", "w1:p1", "--profile", "coordinator", "--harness", "claude"})
 	root.SetOut(failingWriter{})
 	root.SetErr(&bytes.Buffer{})
 	err := root.Execute()

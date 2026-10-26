@@ -21,7 +21,7 @@ func statusCommandModel(t *testing.T, command string) (*Model, *testClock) {
 	t.Helper()
 	home := newTestHome(t)
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive,
 		AgentStatus: "working", StatusChangedAt: "2026-10-20T11:58:00Z",
 	})
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))

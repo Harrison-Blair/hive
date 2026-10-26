@@ -3,6 +3,8 @@ package agent
 import (
 	"context"
 	"testing"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 // agentSeqInfoJSON is one agent_info reply with an explicit state change
@@ -47,7 +49,7 @@ func TestWorkerSpawnCompletedTurnSubmitsOnce(t *testing.T) {
 	}
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok with one submission", envelope)
@@ -76,7 +78,7 @@ func TestVerifierSpawnCleanupPreservesAddedTab(t *testing.T) {
 	fake.failure("agent.start", "agent_pane_busy", "pane is busy")
 	fake.result("workspace.get", workerWorkspaceCountJSON("w6", "1-worker-demo", repo, worktree, 2, 2))
 
-	envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
+	envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("envelope = %#v; want failed", envelope)
 	}

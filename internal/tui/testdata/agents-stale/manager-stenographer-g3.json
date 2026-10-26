@@ -1,7 +1,6 @@
 {
   "key": "manager-stenographer-g3",
   "name": "manager-stenographer",
-  "role": "manager",
   "project": "stenographer",
   "task": "",
   "harness": "claude",
@@ -15,5 +14,7 @@
   "generation": 3,
   "started_at": "2026-10-19T13:14:56.297589358Z",
   "updated_at": "2026-10-19T13:15:41.898602701Z",
-  "spawned": true
+  "spawned": true,
+  "profile": "planner",
+  "owns": "stenographer"
 }

@@ -9,8 +9,7 @@ import (
 
 func coordinatorRecord(key, pane string) records.Agent {
 	return records.Agent{
-		Key: key, Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator,
-		Profile: records.ProfileCoordinator, PaneID: pane,
+		Key: key, Name: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: pane,
 		WorkspaceID: "w0", TabID: "w0:t1", Status: records.AgentLive,
 		AgentStatus: "idle", Generation: 1,
 	}
@@ -45,7 +44,7 @@ func TestRoutingUsualParentsMatchCurrentRule(t *testing.T) {
 	worker := workerRecord("t1-worker-1", "demo", "1-demo", "w1:p2")
 	worker.Parent = manager.Key
 	verifier := workerRecord("t1-verifier-1", "demo", "1-demo", "w1:p3")
-	verifier.Role = "verifier"
+	verifier.Profile = records.ProfileVerifier
 	verifier.Parent = manager.Key
 	for _, tc := range []struct {
 		name string

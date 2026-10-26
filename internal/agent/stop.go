@@ -68,7 +68,7 @@ func Stop(ctx context.Context, home string, record records.Agent) (StopResult, o
 	if !record.Spawned {
 		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+" was not spawned by hive: exit it by hand", record)
 	}
-	if record.Kind == "" && record.MirrorRole() == "agent" && !record.StartedByHive {
+	if record.Kind == "" && record.Owns == "" && record.Task == "" && !record.StartedByHive {
 		return StopResult{Agent: record}, stopEnvelope("failed", "validate", nil, "agent "+record.Name+": hive did not start it: exit it by hand", record)
 	}
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)

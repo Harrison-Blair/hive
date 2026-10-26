@@ -98,7 +98,7 @@ func TestSpawnTaskBindingEveryStatus(t *testing.T) {
 			}
 
 			envelope := Spawn(context.Background(), home, SpawnOptions{
-				Role: "worker", Task: task.ID, Harness: "claude", Model: "m",
+				Profile: records.ProfileBuilder, Task: task.ID, Harness: "claude", Model: "m",
 				Name: "new-worker", NameSet: true,
 			})
 			if envelope.Outcome != "ok" {
@@ -176,7 +176,7 @@ func TestSpawnTaskConcurrentSelectionKeepsLiveActingAgent(t *testing.T) {
 	firstCh := make(chan output.Envelope, 1)
 	go func() {
 		firstCh <- Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "task-first", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 		})
 	}()
@@ -190,7 +190,7 @@ func TestSpawnTaskConcurrentSelectionKeepsLiveActingAgent(t *testing.T) {
 	secondCh := make(chan output.Envelope, 1)
 	go func() {
 		secondCh <- Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "task-second", NameSet: true, PaneID: "w5:p2", PaneSet: true,
 		})
 	}()
@@ -247,11 +247,10 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 			name: "identity",
 			mutate: func(locked *store.LockedStore) error {
 				record := records.Agent{
-					Key: "manager-late-g1", Name: "manager-late", Role: "agent",
+					Key: "manager-late-g1", Name: "manager-late", Profile: records.ProfileGeneral,
 					Project: "demo", PaneID: "wHome:pUser", WorkspaceID: "wHome",
 					Status: records.AgentLive, Generation: 1,
 				}
-				record.ApplyRoleFacts("")
 				return locked.WriteIn([]string{"agents"}, record.Key, record)
 			},
 			want: "--owner needs the coordinator or the user: manager-late",
@@ -263,11 +262,10 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 					return err
 				}
 				record := records.Agent{
-					Key: "worker-late", Name: "worker-late", Role: "worker",
+					Key: "worker-late", Name: "worker-late", Profile: records.ProfileBuilder,
 					Project: "demo", PaneID: "wHome:p9", WorkspaceID: "wHome",
 					Status: records.AgentLive, Generation: 1,
 				}
-				record.ApplyRoleFacts("")
 				return locked.WriteIn([]string{"agents"}, record.Key, record)
 			},
 			want: "--owner needs the coordinator or the user: the caller",
@@ -280,9 +278,9 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 			writeManagerProject(t, home, nil)
 			writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 			writeRecord(t, home, records.Agent{
-				Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
-				Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator,
-				PaneID: "wHome:pC", WorkspaceID: "wHome", Status: records.AgentLive, Generation: 1,
+				Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator,
+				Profile: records.ProfileCoordinator,
+				PaneID:  "wHome:pC", WorkspaceID: "wHome", Status: records.AgentLive, Generation: 1,
 			})
 			t.Setenv("HERDR_PANE_ID", "wHome:pUser")
 			t.Chdir(t.TempDir())
@@ -307,7 +305,7 @@ func TestSpawnOwnerRechecksCallerBeforeRegistration(t *testing.T) {
 			})
 
 			envelope := SpawnFromCLI(context.Background(), home, SpawnOptions{
-				Role: "manager", Project: "demo", Harness: "claude", Model: "m",
+				Profile: records.ProfilePlanner, Owner: true, Project: "demo", Harness: "claude", Model: "m",
 				Name: "owner-check", NameSet: true,
 			})
 			if mutationErr != nil {

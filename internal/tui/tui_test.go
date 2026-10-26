@@ -232,13 +232,13 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	})
 	writeRecord(t, home, []string{"projects"}, "demo", records.Project{ID: "demo", Path: "/repo/demo", Base: "dev"})
 	writeRecord(t, home, []string{"agents"}, "agent-one", records.Agent{
-		Key: "agent-one", Name: "agent-one", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "working",
+		Key: "agent-one", Name: "agent-one", Profile: records.ProfileBuilder, Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "working",
 	})
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
-		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "done",
+		Key: "agent-two", Name: "agent-two", Profile: records.ProfileBuilder, Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "done",
 	})
 	writeRecord(t, home, []string{"agents"}, "agent-starting", records.Agent{
-		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentStarting,
+		Key: "agent-starting", Name: "agent-starting", Profile: records.ProfileBuilder, Project: "demo", Task: "1-first", Status: records.AgentStarting,
 	})
 	writeRecord(t, home, []string{"tasks"}, "1-first", records.Task{ID: "1-first", Project: "demo", Title: "first", NeedsUser: "choose"})
 	m = loadHeader(t, m)
@@ -246,7 +246,7 @@ func TestHeaderShowsProjectAgentAndNeedsUserCounts(t *testing.T) {
 	requireHeaderCounts(t, m.header, 1, 2, 1, 1)
 
 	writeRecord(t, home, []string{"agents"}, "agent-two", records.Agent{
-		Key: "agent-two", Name: "agent-two", Role: "worker", Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "idle",
+		Key: "agent-two", Name: "agent-two", Profile: records.ProfileBuilder, Project: "demo", Task: "1-first", Status: records.AgentLive, AgentStatus: "idle",
 	})
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{
 		Key: "supervisor", Agent: "supervisor", Generation: 2, PID: 0,

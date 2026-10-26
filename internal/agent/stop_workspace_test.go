@@ -21,7 +21,6 @@ func managerStopRecord(sleep sleepProcess, project, workspaceID string) records.
 	return records.Agent{
 		Key:          "manager-" + project + "-g1",
 		Name:         "manager-" + project,
-		Role:         "manager",
 		Profile:      records.ProfilePlanner,
 		Owns:         project,
 		Project:      project,

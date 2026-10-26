@@ -19,9 +19,9 @@ func TestAgentsLegacyGenerationFallbackUsesStatusChangeThenRecordTime(t *testing
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC))
 	for _, agent := range []records.Agent{
-		{Key: "legacy-a", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
-		{Key: "legacy-b", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:56:00Z"},
-		{Key: "legacy-c", Name: "legacy-coordinator", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:57:00Z"},
+		{Key: "legacy-a", Name: "legacy-coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "legacy-b", Name: "legacy-coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:56:00Z"},
+		{Key: "legacy-c", Name: "legacy-coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:57:00Z"},
 	} {
 		writeAgentRecord(t, home, agent)
 	}
@@ -51,15 +51,15 @@ func agentsGenerationFixture(t *testing.T) (string, *testClock) {
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor-current", Generation: 2, PID: int64(os.Getpid()), PIDStart: pidStart})
 	writeRecord(t, home, []string{"projects"}, "demo", records.Project{ID: "demo", Path: "/repo/demo", Base: "dev"})
 	for _, record := range []records.Agent{
-		{Key: "coordinator-old", Name: "coordinator-old", Role: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
-		{Key: "coordinator-current", Name: "coordinator-current", Role: "coordinator", Status: records.AgentLive, AgentStatus: "working", Replaces: "coordinator-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
-		{Key: "supervisor-old", Name: "supervisor-old", Role: "supervisor", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
-		{Key: "supervisor-current", Name: "supervisor-current", Role: "supervisor", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "supervisor-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
-		{Key: "manager-old", Name: "manager-old", Role: "manager", Project: "demo", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator-old", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
-		{Key: "manager-current", Name: "manager-current", Role: "manager", Project: "demo", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "manager-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
-		{Key: "live-worker", Name: "live-worker", Role: "worker", Project: "demo", Task: "10-live", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:00Z"},
-		{Key: "active-ghost", Name: "active-ghost", Role: "worker", Project: "demo", Task: "11-active", Status: records.AgentStopped, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:57:00Z"},
-		{Key: "landed-ghost", Name: "landed-ghost", Role: "worker", Project: "demo", Task: "12-landed", Status: records.AgentExited, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:56:00Z"},
+		{Key: "coordinator-old", Name: "coordinator-old", Kind: records.AgentKindCoordinator, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "coordinator-current", Name: "coordinator-current", Kind: records.AgentKindCoordinator, Status: records.AgentLive, AgentStatus: "working", Replaces: "coordinator-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "supervisor-old", Name: "supervisor-old", Kind: records.AgentKindSupervisor, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "supervisor-current", Name: "supervisor-current", Kind: records.AgentKindSupervisor, Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "supervisor-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "manager-old", Name: "manager-old", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", Status: records.AgentLive, AgentStatus: "idle", Parent: "coordinator-old", StatusChangedAt: "2026-05-22T11:59:00Z", UpdatedAt: "2026-05-22T11:55:00Z"},
+		{Key: "manager-current", Name: "manager-current", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", Status: records.AgentLive, AgentStatus: "working", Parent: "coordinator-current", Replaces: "manager-old", StatusChangedAt: "2026-05-22T11:58:00Z", UpdatedAt: "2026-05-22T11:59:00Z"},
+		{Key: "live-worker", Name: "live-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "10-live", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:00Z"},
+		{Key: "active-ghost", Name: "active-ghost", Profile: records.ProfileBuilder, Project: "demo", Task: "11-active", Status: records.AgentStopped, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:57:00Z"},
+		{Key: "landed-ghost", Name: "landed-ghost", Profile: records.ProfileBuilder, Project: "demo", Task: "12-landed", Status: records.AgentExited, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:56:00Z"},
 	} {
 		writeAgentRecord(t, home, record)
 	}
@@ -205,7 +205,7 @@ func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 		Key: "supervisor", Agent: "supervisor-g16", Generation: 16, PID: int64(os.Getpid()), PIDStart: pidStart,
 	})
 	writeAgentRecord(t, m.home, records.Agent{
-		Key: "supervisor-g16", Name: "supervisor", Role: "supervisor", Status: records.AgentLive,
+		Key: "supervisor-g16", Name: "supervisor", Kind: records.AgentKindSupervisor, Status: records.AgentLive,
 		Generation: 16, PaneID: "wBC:p19", StartedAt: "2026-10-20T11:10:00Z", UpdatedAt: "2026-10-20T11:10:00Z",
 	})
 	m = refreshAgents(t, m)
@@ -296,12 +296,12 @@ func agentsBoardModel(t *testing.T) *Model {
 		writeRecord(t, home, []string{"tasks"}, task.ID, task)
 	}
 	for _, record := range []records.Agent{
-		{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Model: "model-coordinator", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-20T11:59:00Z"},
-		{Key: "supervisor", Name: "supervisor", Role: "supervisor", Harness: "pi", Model: "model-supervisor", PaneID: "w1:p2", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "done", StatusChangedAt: "2026-10-20T11:58:00Z"},
-		{Key: "manager-alpha", Name: "manager-alpha", Role: "manager", Project: "alpha", Harness: "claude", Model: "model-manager-alpha", PaneID: "w1:p3", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:57:00Z"},
-		{Key: "worker-alpha", Name: "worker-alpha", Role: "worker", Project: "alpha", Task: "10-alpha", Harness: "pi", Model: "model-alpha", PaneID: "w1:p4", Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-20T11:56:00Z"},
-		{Key: "manager-beta", Name: "manager-beta", Role: "manager", Project: "beta", Harness: "claude", Model: "model-manager-beta", PaneID: "w1:p5", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:55:00Z"},
-		{Key: "ghost-beta", Name: "ghost-beta", Role: "worker", Project: "beta", Task: "20-ghost", Harness: "pi", Model: "model-ghost", PaneID: "w1:p6", Parent: "manager-beta", Status: records.AgentStopped, StatusChangedAt: "2026-10-20T11:54:00Z"},
+		{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Harness: "claude", Model: "model-coordinator", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-20T11:59:00Z"},
+		{Key: "supervisor", Name: "supervisor", Kind: records.AgentKindSupervisor, Harness: "pi", Model: "model-supervisor", PaneID: "w1:p2", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "done", StatusChangedAt: "2026-10-20T11:58:00Z"},
+		{Key: "manager-alpha", Name: "manager-alpha", Profile: records.ProfilePlanner, Owns: "alpha", Project: "alpha", Harness: "claude", Model: "model-manager-alpha", PaneID: "w1:p3", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:57:00Z"},
+		{Key: "worker-alpha", Name: "worker-alpha", Profile: records.ProfileBuilder, Project: "alpha", Task: "10-alpha", Harness: "pi", Model: "model-alpha", PaneID: "w1:p4", Parent: "manager-alpha", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-20T11:56:00Z"},
+		{Key: "manager-beta", Name: "manager-beta", Profile: records.ProfilePlanner, Owns: "beta", Project: "beta", Harness: "claude", Model: "model-manager-beta", PaneID: "w1:p5", Parent: "coordinator", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-20T11:55:00Z"},
+		{Key: "ghost-beta", Name: "ghost-beta", Profile: records.ProfileBuilder, Project: "beta", Task: "20-ghost", Harness: "pi", Model: "model-ghost", PaneID: "w1:p6", Parent: "manager-beta", Status: records.AgentStopped, StatusChangedAt: "2026-10-20T11:54:00Z"},
 	} {
 		writeAgentRecord(t, home, record)
 	}
@@ -340,16 +340,16 @@ func agentsFixture(t *testing.T, workers int) (string, *testClock) {
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: int64(os.Getpid()), PIDStart: pidStart})
 	writeRecord(t, home, []string{"projects"}, "demo", records.Project{ID: "demo", Path: "/repo/demo", Base: "dev"})
 	writeRecord(t, home, []string{"goals"}, "g1-demo", records.Goal{ID: "g1-demo", Project: "demo", Title: "Active demo goal", Status: "active"})
-	writeRecord(t, home, []string{"agents"}, "coordinator", records.Agent{Key: "coordinator", Name: "coordinator", Role: "coordinator", Harness: "claude", Model: "model-coordinator", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:59:00Z"})
-	writeRecord(t, home, []string{"agents"}, "supervisor", records.Agent{Key: "supervisor", Name: "supervisor", Role: "supervisor", Harness: "pi", Model: "model-supervisor", PaneID: "w1:p2", Status: records.AgentLive, AgentStatus: "done", StatusChangedAt: "2026-05-22T11:58:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "manager-demo", Name: "manager-demo", Role: "manager", Project: "demo", Harness: "claude", Model: "model-manager", PaneID: "w1:p3", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:57:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "worker-1", Name: "worker-1", Role: "worker", Project: "demo", Task: "10-build", Harness: "pi", Model: "model-worker", PaneID: "w1:p4", Status: records.AgentLive, AgentStatus: "blocked", Parent: "manager-demo", Replaces: "old-worker", StatusChangedAt: "2026-05-22T11:56:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "legacy-verifier", Name: "legacy-verifier", Role: "verifier", Project: "demo", Task: "10-build", Harness: "codex", Model: "model-verifier", PaneID: "w1:p6", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:55:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "old-worker", Name: "old-worker", Role: "worker", Project: "demo", Task: "9-old", Harness: "pi", PaneID: "w1:p7", Status: records.AgentExited, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:54:00Z"})
-	writeAgentRecord(t, home, records.Agent{Key: "old-verifier", Name: "old-verifier", Role: "verifier", Project: "demo", Task: "8-old", Harness: "codex", PaneID: "w1:p8", Status: records.AgentStopped, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:53:00Z"})
+	writeRecord(t, home, []string{"agents"}, "coordinator", records.Agent{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Harness: "claude", Model: "model-coordinator", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:59:00Z"})
+	writeRecord(t, home, []string{"agents"}, "supervisor", records.Agent{Key: "supervisor", Name: "supervisor", Kind: records.AgentKindSupervisor, Harness: "pi", Model: "model-supervisor", PaneID: "w1:p2", Status: records.AgentLive, AgentStatus: "done", StatusChangedAt: "2026-05-22T11:58:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "manager-demo", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", Harness: "claude", Model: "model-manager", PaneID: "w1:p3", Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:57:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "demo", Task: "10-build", Harness: "pi", Model: "model-worker", PaneID: "w1:p4", Status: records.AgentLive, AgentStatus: "blocked", Parent: "manager-demo", Replaces: "old-worker", StatusChangedAt: "2026-05-22T11:56:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "legacy-verifier", Name: "legacy-verifier", Profile: records.ProfileVerifier, Project: "demo", Task: "10-build", Harness: "codex", Model: "model-verifier", PaneID: "w1:p6", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:55:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "old-worker", Name: "old-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "9-old", Harness: "pi", PaneID: "w1:p7", Status: records.AgentExited, AgentStatus: "idle", StatusChangedAt: "2026-05-22T11:54:00Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "old-verifier", Name: "old-verifier", Profile: records.ProfileVerifier, Project: "demo", Task: "8-old", Harness: "codex", PaneID: "w1:p8", Status: records.AgentStopped, AgentStatus: "working", StatusChangedAt: "2026-05-22T11:53:00Z"})
 	for i := 0; i < workers; i++ {
 		key := fmt.Sprintf("worker-%02d", i)
-		writeAgentRecord(t, home, records.Agent{Key: key, Name: key, Role: "worker", Project: "demo", Task: fmt.Sprintf("task-%02d", i), Harness: "pi", Model: "model", PaneID: fmt.Sprintf("w1:p%d", i+10), Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo", StatusChangedAt: "2026-05-22T11:56:00Z"})
+		writeAgentRecord(t, home, records.Agent{Key: key, Name: key, Profile: records.ProfileBuilder, Project: "demo", Task: fmt.Sprintf("task-%02d", i), Harness: "pi", Model: "model", PaneID: fmt.Sprintf("w1:p%d", i+10), Status: records.AgentLive, AgentStatus: "working", Parent: "manager-demo", StatusChangedAt: "2026-05-22T11:56:00Z"})
 	}
 	return home, clock
 }

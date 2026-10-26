@@ -114,10 +114,10 @@ func TestGfHealthTablePageKeys(t *testing.T) {
 	})
 	t.Run("many agents", func(t *testing.T) {
 		m := gfHealthModel(t, "GfHealth", func(f *demoFixture) {
-			f.Data.Agents = []records.Agent{{Key: "coordinator", Name: "coordinator", Role: "coordinator", Status: records.AgentLive, PaneID: "w1:p1"}}
+			f.Data.Agents = []records.Agent{{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive, PaneID: "w1:p1"}}
 			for index := range 60 {
 				name := fmt.Sprintf("w%02d", index)
-				f.Data.Agents = append(f.Data.Agents, records.Agent{Key: name, Name: name, Role: "worker", Status: records.AgentLive, PaneID: "w9:p1"})
+				f.Data.Agents = append(f.Data.Agents, records.Agent{Key: name, Name: name, Profile: records.ProfileBuilder, Status: records.AgentLive, PaneID: "w9:p1"})
 			}
 			f.UI.Selection = "w00"
 		})

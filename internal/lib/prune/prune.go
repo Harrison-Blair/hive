@@ -178,7 +178,7 @@ func copyUnread(locked *store.LockedStore, agents []records.Agent, address strin
 	}
 	moved := item
 	moved.Seq = seq
-	moved.Role = key
+	moved.Inbox = key
 	moved.ReadAt = ""
 	moved.NudgedAt = ""
 	moved.NudgedGeneration = 0

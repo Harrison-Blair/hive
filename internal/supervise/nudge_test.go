@@ -20,7 +20,7 @@ func appendInbox(t *testing.T, home, role, kind, task, agent, text string) {
 		t.Fatal(err)
 	}
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		envelope := inbox.AppendHeld(locked, inbox.AppendOptions{Role: role, Kind: kind, Task: task, Agent: agent, Text: text})
+		envelope := inbox.AppendHeld(locked, inbox.AppendOptions{Inbox: role, Kind: kind, Task: task, Agent: agent, Text: text})
 		if envelope.Outcome != "ok" {
 			return fmt.Errorf("append: %v", envelope.Error)
 		}

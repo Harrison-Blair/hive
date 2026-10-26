@@ -79,8 +79,8 @@ func TestMigrationVersionThreeMovesOwnerRecords(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 
 	claim := readJSONMap(t, home, "claims", "owner-demo.json")
@@ -93,7 +93,7 @@ func TestMigrationVersionThreeMovesOwnerRecords(t *testing.T) {
 
 	moved := readJSONMap(t, home, "inbox", "owner-demo", "1.json")
 	for field, want := range map[string]any{
-		"seq": float64(1), "role": "owner-demo", "kind": "completed",
+		"seq": float64(1), "inbox": "owner-demo", "kind": "completed",
 		"task": "1-task", "agent": "worker-1", "text": "completed",
 		"created_at": "2026-01-01T00:00:00Z",
 	} {
@@ -146,7 +146,7 @@ func TestMigrationVersionThreeUsesCoordinatorWithoutLiveOwner(t *testing.T) {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
 	moved := readJSONMap(t, home, "inbox", "coordinator", "1.json")
-	if moved["text"] != "completed" || moved["agent"] != "worker-1" || moved["role"] != "coordinator" {
+	if moved["text"] != "completed" || moved["agent"] != "worker-1" || moved["inbox"] != "coordinator" {
 		t.Fatalf("coordinator record = %#v; want the unread manager record", moved)
 	}
 }
@@ -204,19 +204,19 @@ func TestMigrationVersionThreeKeepsAnEqualUnreadSourceRecord(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 	if !fileMissing(t, home, "inbox", "manager-demo") {
 		t.Fatal("the old manager inbox folder is still present")
 	}
 	want := []map[string]any{
 		{
-			"seq": float64(1), "role": "owner-demo", "kind": "completed", "task": "1-task",
+			"seq": float64(1), "inbox": "owner-demo", "kind": "completed", "task": "1-task",
 			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z", "read_at": "",
 		},
 		{
-			"seq": float64(2), "role": "owner-demo", "kind": "completed", "task": "1-task",
+			"seq": float64(2), "inbox": "owner-demo", "kind": "completed", "task": "1-task",
 			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z", "read_at": "",
 		},
 	}
@@ -265,12 +265,12 @@ func TestMigrationVersionThreeKeepsAnEqualReadCoordinatorRecord(t *testing.T) {
 	}
 	want := []map[string]any{
 		{
-			"seq": float64(1), "role": "coordinator", "kind": "completed", "task": "1-task",
+			"seq": float64(1), "inbox": "coordinator", "kind": "completed", "task": "1-task",
 			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z",
 			"read_at": "2026-01-02T00:00:00Z",
 		},
 		{
-			"seq": float64(2), "role": "coordinator", "kind": "completed", "task": "1-task",
+			"seq": float64(2), "inbox": "coordinator", "kind": "completed", "task": "1-task",
 			"agent": "worker-1", "text": "completed", "created_at": "2026-01-01T00:00:00Z",
 			"read_at": "",
 		},
@@ -341,7 +341,7 @@ func TestMigrationVersionThreeKeepsEqualUnreadRecords(t *testing.T) {
 	for _, entry := range entries {
 		id := entry.Name()
 		record := readJSONMap(t, home, "inbox", "owner-demo", id)
-		if record["seq"] != float64(len(seen)+1) || record["role"] != "owner-demo" || record["text"] != "same text" {
+		if record["seq"] != float64(len(seen)+1) || record["inbox"] != "owner-demo" || record["text"] != "same text" {
 			t.Fatalf("moved record = %#v; want the next owner sequence, owner-demo, same text", record)
 		}
 		if _, ok := record["migrated_from"]; ok {
@@ -426,13 +426,13 @@ func TestMigrationVersionThreeKeepsEachSourceDestination(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 
 	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
 	wantOwner := map[string]any{
-		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"seq": float64(2), "inbox": "manager-two", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -449,7 +449,7 @@ func TestMigrationVersionThreeKeepsEachSourceDestination(t *testing.T) {
 
 	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
 	wantCoordinator := map[string]any{
-		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"seq": float64(1), "inbox": "coordinator", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -494,7 +494,7 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry(t *testing.T) {
 	}
 	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
 	wantOwner := map[string]any{
-		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"seq": float64(2), "inbox": "manager-two", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -503,7 +503,7 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationOnRetry(t *testing.T) {
 	}
 	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
 	wantCoordinator := map[string]any{
-		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"seq": float64(1), "inbox": "coordinator", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -532,7 +532,7 @@ func checkOwnerAliasDestinations(t *testing.T, home string) {
 	t.Helper()
 	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
 	wantOwner := map[string]any{
-		"seq": float64(2), "role": "manager-two", "kind": "message", "task": "",
+		"seq": float64(2), "inbox": "manager-two", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for one", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -548,7 +548,7 @@ func checkOwnerAliasDestinations(t *testing.T, home string) {
 	}
 	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
 	wantCoordinator := map[string]any{
-		"seq": float64(1), "role": "coordinator", "kind": "message", "task": "",
+		"seq": float64(1), "inbox": "coordinator", "kind": "message", "task": "",
 		"agent": "user", "text": "mail for two", "created_at": "2026-01-01T00:00:00Z",
 		"read_at": "", "nudged_at": "", "nudged_generation": float64(0),
 	}
@@ -587,11 +587,11 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterTaskFailure(t *test
 		t.Fatalf("schema version = %d, present %t; want 2", version, ok)
 	}
 	owner := readJSONMap(t, home, "inbox", "manager-two", "2.json")
-	if owner["text"] != "mail for one" || owner["role"] != "manager-two" {
+	if owner["text"] != "mail for one" || owner["inbox"] != "manager-two" {
 		t.Fatalf("owner record = %#v; want mail for one in the owner inbox", owner)
 	}
 	coordinator := readJSONMap(t, home, "inbox", "coordinator", "1.json")
-	if coordinator["text"] != "mail for two" || coordinator["role"] != "coordinator" {
+	if coordinator["text"] != "mail for two" || coordinator["inbox"] != "coordinator" {
 		t.Fatalf("coordinator record = %#v; want mail for two in the coordinator inbox", coordinator)
 	}
 
@@ -602,8 +602,8 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterTaskFailure(t *test
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after the repair = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 	checkOwnerAliasDestinations(t, home)
 	task := readJSONMap(t, home, "tasks", "1-bad.json")
@@ -655,8 +655,8 @@ func TestMigrationVersionThreeKeepsEachSourceDestinationAfterMarkerFailure(t *te
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after the repair = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 	checkOwnerAliasDestinations(t, home)
 	if !fileMissing(t, home, "migrate-v3.json") {
@@ -721,7 +721,7 @@ func TestMigrationVersionThreeResumesFromTheSourceMarker(t *testing.T) {
 		if _, ok := record["migrated_from"]; ok {
 			t.Fatalf("record %s = %#v; want no migration marker", entry.Name(), record)
 		}
-		if record["role"] != "owner-demo" || record["text"] != "same text" {
+		if record["inbox"] != "owner-demo" || record["text"] != "same text" {
 			t.Fatalf("record %s = %#v; want the owner copy", entry.Name(), record)
 		}
 	}
@@ -750,8 +750,8 @@ func TestMigrationVersionThreeRunsAfterVersionTwo(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 	record := readAgentMap(t, home, "manager-demo-g1")
 	if record["owns"] != "demo" || record["profile"] != "planner" {

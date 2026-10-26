@@ -169,7 +169,7 @@ func hasLiveCoordinator(ctx context.Context, homePath string, logger *slog.Logge
 		if err := json.Unmarshal(data, &record); err != nil {
 			return false, err
 		}
-		if record.Role != "coordinator" || record.Status != records.AgentLive {
+		if record.Kind != records.AgentKindCoordinator || record.Status != records.AgentLive {
 			continue
 		}
 		gone, err := coordinatorPaneGone(ctx, homePath, record, logger)
@@ -219,7 +219,7 @@ func markCoordinatorStale(homePath string, expected records.Agent) error {
 			}
 			return err
 		}
-		if current.Role != "coordinator" || current.Status != records.AgentLive || current.PaneID != expected.PaneID {
+		if current.Kind != records.AgentKindCoordinator || current.Status != records.AgentLive || current.PaneID != expected.PaneID {
 			return nil
 		}
 		current.Status = records.AgentStale

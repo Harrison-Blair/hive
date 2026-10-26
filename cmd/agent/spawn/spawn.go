@@ -15,7 +15,6 @@ func New() *cobra.Command {
 		Short: "spawn an agent in a pane",
 		Args:  cobra.NoArgs,
 	}
-	command.Flags().String("role", "", "old name of --profile (wave A)")
 	command.Flags().String("agent", "", "caller agent name or key")
 	command.Flags().String("harness", "", "harness kind")
 	command.Flags().String("pane", "", "destination herdr pane ID: hive starts the agent in this pane, and agent stop closes it; herdr then closes its tab or workspace when it holds no other pane")
@@ -33,7 +32,6 @@ func New() *cobra.Command {
 	command.Flags().Bool("allow-trust-dialog", false, "start an agent that can show a trust dialog; keep its first prompt for the supervisor")
 	command.Flags().Bool("owner", false, "make the agent the owner of its project")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
-		role, _ := cmd.Flags().GetString("role")
 		profile, _ := cmd.Flags().GetString("profile")
 		owner, _ := cmd.Flags().GetBool("owner")
 		agent, _ := cmd.Flags().GetString("agent")
@@ -52,7 +50,6 @@ func New() *cobra.Command {
 		allowTrust, _ := cmd.Flags().GetBool("allow-trust-dialog")
 		return common.Run(cmd, "agent spawn", func(home string) (output.Envelope, string, error) {
 			envelope := agentlib.SpawnFromCLI(cmd.Context(), home, agentlib.SpawnOptions{
-				Role:          role,
 				Profile:       profile,
 				ProfileSet:    cmd.Flags().Lookup("profile").Changed,
 				Owner:         owner,

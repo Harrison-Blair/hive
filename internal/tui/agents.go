@@ -41,40 +41,10 @@ type agentNode struct {
 	lastSent   *records.Inbox
 }
 
-// agentProfile gives the profile label of a record. A record written before
-// the facts migration has no profile, so its wave-A role gives the label.
+// agentProfile gives the profile label of a record. The profile is a free
+// label, and the record keeps it as a fact.
 func agentProfile(record records.Agent) string {
-	if record.Profile != "" {
-		return record.Profile
-	}
-	switch record.Role {
-	case records.AgentKindCoordinator:
-		return records.ProfileCoordinator
-	case records.AgentKindSupervisor:
-		return ""
-	case "manager":
-		return records.ProfilePlanner
-	case "builder", "worker":
-		return records.ProfileBuilder
-	case "verifier":
-		return records.ProfileVerifier
-	case "general", "agent":
-		return records.ProfileGeneral
-	}
-	switch record.MirrorRole() {
-	case records.AgentKindCoordinator:
-		return records.ProfileCoordinator
-	case records.AgentKindSupervisor:
-		return ""
-	case "manager":
-		return records.ProfilePlanner
-	case "verifier":
-		return records.ProfileVerifier
-	case "worker":
-		return records.ProfileBuilder
-	default:
-		return records.ProfileGeneral
-	}
+	return record.Profile
 }
 
 // agentLabel gives the label of a restart target: its built-in kind, or its
@@ -86,41 +56,19 @@ func agentLabel(record records.Agent) string {
 	return agentProfile(record)
 }
 
-// agentBuiltin gives the built-in kind of a record. A record written before
-// the facts migration has no kind, so its wave-A role gives the kind.
+// agentBuiltin gives the built-in kind of a record.
 func agentBuiltin(record records.Agent) string {
-	if record.Kind != "" {
-		return record.Kind
-	}
-	if record.Profile == records.ProfileCoordinator {
-		return records.AgentKindCoordinator
-	}
-	switch record.Role {
-	case records.AgentKindCoordinator, records.AgentKindSupervisor:
-		return record.Role
-	default:
-		return ""
-	}
+	return record.Kind
 }
 
-// agentOwned reports that the record owns a project. A migrated record
-// declares ownership only with owns. A record written before the facts
-// migration keeps its owner in the wave-A manager role.
+// agentOwned reports that the record owns a project.
 func agentOwned(record records.Agent) bool {
-	if record.Owns != "" {
-		return true
-	}
-	return record.Profile == "" && record.Role == "manager"
+	return record.Owns != ""
 }
 
-// agentOwns reports that the record owns project. A migrated record
-// declares ownership only with owns. A record written before the facts
-// migration keeps its owner in the wave-A manager role.
+// agentOwns reports that the record owns project.
 func agentOwns(record records.Agent, project string) bool {
-	if record.Owns != "" {
-		return record.Owns == project
-	}
-	return record.Profile == "" && record.Project == project && record.Role == "manager"
+	return record.Owns == project
 }
 
 type agentGroup struct {
@@ -251,7 +199,7 @@ func agentMessages(items []records.Inbox, events []logs.Event) []agentMessage {
 	var out []agentMessage
 	for _, item := range items {
 		if sent, err := time.Parse(time.RFC3339Nano, item.CreatedAt); err == nil {
-			out = append(out, agentMessage{from: item.Agent, to: item.Role, at: sent})
+			out = append(out, agentMessage{from: item.Agent, to: item.Inbox, at: sent})
 		}
 	}
 	for _, event := range events {
@@ -364,7 +312,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			inboxName = "coordinator"
 		}
 		for index, item := range source.inbox {
-			if item.Role == inboxName && item.ReadAt == "" {
+			if item.Inbox == inboxName && item.ReadAt == "" {
 				node.unread++
 			}
 			if item.Agent == inboxName && (node.lastSent == nil || item.CreatedAt > node.lastSent.CreatedAt) {
@@ -440,13 +388,6 @@ func agentIdentities(record records.Agent) []string {
 		return []string{"key\x00" + record.Key}
 	}
 	identities := []string{"name\x00" + record.Name}
-	// A record written before the facts migration has no profile. Its wave-A
-	// role, project, and task give the lineage, so a newer name of that
-	// lineage still replaces the older record. A free profile label never
-	// joins records: distinct custom-profile agents stay distinct.
-	if record.Profile == "" && (record.Parent != "" || record.Replaces != "") {
-		identities = append(identities, strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00"))
-	}
 	return identities
 }
 
@@ -673,7 +614,7 @@ func (m *Model) acceptCoordinatorRestartCheck(msg coordinatorRestartCheckMsg) te
 		state.restartNotice = "restarting"
 		return batch(
 			m.logAction("agent restart pane check", slog.String("agent_id", target.Key), slog.String("outcome", "gone")),
-			m.logAction("agent restart request", slog.String("agent_id", target.Key), slog.String("role", target.Role), slog.String("result", "started immediately")),
+			m.logAction("agent restart request", slog.String("agent_id", target.Key), slog.String("profile", agentLabel(target)), slog.String("result", "started immediately")),
 			m.startAgentRestart(target),
 		)
 	}
@@ -689,7 +630,7 @@ func (m *Model) acceptCoordinatorRestartCheck(msg coordinatorRestartCheckMsg) te
 	}
 	return batch(
 		m.logAction("agent restart pane check", attrs...),
-		m.logAction("agent restart request", slog.String("agent_id", msg.record.Key), slog.String("role", msg.record.Role), slog.String("result", "confirmation required")),
+		m.logAction("agent restart request", slog.String("agent_id", msg.record.Key), slog.String("profile", agentLabel(msg.record)), slog.String("result", "confirmation required")),
 		m.logError("coordinator pane check", msg.err),
 	)
 }

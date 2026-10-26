@@ -15,10 +15,10 @@ func TestStopPrunesUnreferencedAgentAndInbox(t *testing.T) {
 	sleep := startSleep(t)
 	record := spawnedRecord(sleep)
 	record.Key, record.Name = "worker-1", "worker-1"
-	record.Kind, record.Profile, record.Role = "", records.ProfileBuilder, "worker"
+	record.Kind, record.Profile = "", records.ProfileBuilder
 	record.StartedByHive = true
 	writeStopRecord(t, home, record)
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: record.Name, Agent: "manager", Text: "unread"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: record.Name, Agent: "manager", Text: "unread"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	fake := newFakeHerdr(t)
