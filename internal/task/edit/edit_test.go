@@ -1,4 +1,4 @@
-package task
+package edit
 
 import (
 	"os"
@@ -8,11 +8,12 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
 func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	worktree := t.TempDir()
 	task := records.Task{
 		ID:        "1-seed",
@@ -25,8 +26,8 @@ func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
 		UpdatedAt: "2026-01-01T00:00:00Z",
 		Worktree:  &records.Worktree{Path: worktree},
 	}
-	seedTask(t, home, task)
-	seedAgent(t, home, records.Agent{
+	tasktest.SeedTask(t, home, task)
+	tasktest.SeedAgent(t, home, records.Agent{
 		Key: "manager-one", Name: "manager-one", Profile: records.ProfilePlanner, Owns: "one", Project: "one",
 		Status: records.AgentLive, PaneID: "w1:manager", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
@@ -49,7 +50,7 @@ func TestEditCopiesFeatureBriefToActiveWorktree(t *testing.T) {
 	}
 
 	const updated = "updated brief\n"
-	envelope := Edit(home, EditOptions{
+	envelope := Run(home, Options{
 		Task: task.ID, Agent: "manager-one", BriefSet: true, BriefPath: "-", Input: strings.NewReader(updated),
 	})
 	if envelope.Outcome != "ok" || envelope.Error != nil {

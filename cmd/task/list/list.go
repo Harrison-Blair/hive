@@ -5,6 +5,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/list"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,7 @@ func New() *cobra.Command {
 			status, _ := cmd.Flags().GetString("status")
 			ready, _ := cmd.Flags().GetBool("ready")
 			envelope := tasklib.List(home, tasklib.ListOptions{Project: project, Feature: feature, Status: status, Ready: ready})
-			return envelope, tasklib.ListText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

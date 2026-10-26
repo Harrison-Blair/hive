@@ -5,6 +5,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/reopen"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +29,7 @@ func New() *cobra.Command {
 			if refused := common.CheckCaller(home, agent); refused != nil {
 				return *refused, "", nil
 			}
-			envelope := tasklib.Reopen(home, tasklib.TransitionOptions{
+			envelope := operation.Run(home, tasklib.TransitionOptions{
 				Task: taskID, Agent: agent, PaneID: pane, Reason: reason,
 			})
 			return envelope, tasklib.TransitionText(envelope), nil

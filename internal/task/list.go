@@ -26,18 +26,18 @@ type ListOptions struct {
 // List returns task records in project and number order. A plain list takes no
 // lock. The ready query uses one lock for the list and each dependency read.
 func List(home string, options ListOptions) output.Envelope {
-	log := openOperationLog(home, options.Logger)
-	defer log.close()
+	log := OpenLog(home, options.Logger)
+	defer log.Close()
 	fail := func(phase, message string) output.Envelope {
-		log.failure("task list", options.Project, "", "", phase, message)
-		return failedEnvelope(phase, message)
+		log.Failure("task list", options.Project, "", "", phase, message)
+		return FailedEnvelope(phase, message)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
 		return fail("store", err.Error())
 	}
 	if !options.Ready {
-		raw, err := registry.ListIn([]string{tasksCollection}, nil)
+		raw, err := registry.ListIn([]string{TasksCollection}, nil)
 		if err != nil {
 			return fail("store", err.Error())
 		}
@@ -49,7 +49,7 @@ func List(home string, options ListOptions) output.Envelope {
 	}
 	var envelope output.Envelope
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		raw, err := locked.ListIn([]string{tasksCollection}, nil)
+		raw, err := locked.ListIn([]string{TasksCollection}, nil)
 		if err != nil {
 			envelope = fail("store", err.Error())
 			return nil
@@ -70,7 +70,7 @@ func List(home string, options ListOptions) output.Envelope {
 			}
 		}
 		sortTasks(ready)
-		envelope = okEnvelope(ready)
+		envelope = OKEnvelope(ready)
 		return nil
 	})
 	if lockErr != nil {
@@ -83,7 +83,7 @@ func List(home string, options ListOptions) output.Envelope {
 func dependenciesVerified(locked *store.LockedStore, task records.Task) bool {
 	for _, dependencyID := range task.DependsOn {
 		var dependency records.Task
-		if err := locked.ReadIn([]string{tasksCollection}, dependencyID, &dependency); err != nil {
+		if err := locked.ReadIn([]string{TasksCollection}, dependencyID, &dependency); err != nil {
 			return false
 		}
 		if dependency.Status != "verified" {
@@ -128,7 +128,7 @@ func filterTasks(tasks []records.Task, options ListOptions) []records.Task {
 func listEnvelope(tasks []records.Task, options ListOptions) output.Envelope {
 	filtered := filterTasks(tasks, options)
 	sortTasks(filtered)
-	return okEnvelope(filtered)
+	return OKEnvelope(filtered)
 }
 
 // sortTasks orders tasks by project, then by number, then by ID.
@@ -158,7 +158,7 @@ func taskNumber(id string) uint64 {
 	return number
 }
 
-// okEnvelope builds one success outcome.
-func okEnvelope(result any) output.Envelope {
+// OKEnvelope builds one success outcome.
+func OKEnvelope(result any) output.Envelope {
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: result}
 }

@@ -1,4 +1,4 @@
-package task
+package create
 
 import (
 	"bytes"
@@ -15,38 +15,13 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
-// newHome makes one fixture home with its marker.
-func newHome(t *testing.T) string {
-	t.Helper()
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	return home
-}
-
-// registerProject writes one project record.
-func registerProject(t *testing.T, home, id string) {
-	t.Helper()
-	registry, err := store.Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	record := records.Project{ID: id, Path: filepath.Join(home, "repo-"+id), Base: "main"}
-	if err := registry.Write("projects", id, record); err != nil {
-		t.Fatal(err)
-	}
-}
-
 // createOK creates one task and checks a success outcome.
-func createOK(t *testing.T, home string, options CreateOptions) records.Task {
+func createOK(t *testing.T, home string, options Options) records.Task {
 	t.Helper()
-	envelope := Create(home, options)
+	envelope := Run(home, options)
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Create(%+v) = %#v; want ok", options, envelope)
 	}
@@ -84,15 +59,15 @@ func assertNoTaskRecord(t *testing.T, home, id string) {
 }
 
 func TestCreateCounterAcrossProjects(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	registerProject(t, home, "two")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	tasktest.RegisterProject(t, home, "two")
 
-	first := createOK(t, home, CreateOptions{Project: "one", Title: "First step"})
+	first := createOK(t, home, Options{Project: "one", Title: "First step"})
 	if first.ID != "1-first-step" {
 		t.Fatalf("first ID = %q; want 1-first-step", first.ID)
 	}
-	second := createOK(t, home, CreateOptions{Project: "two", Title: "Second step"})
+	second := createOK(t, home, Options{Project: "two", Title: "Second step"})
 	if second.ID != "2-second-step" {
 		t.Fatalf("second ID = %q; want 2-second-step from the one home counter", second.ID)
 	}
@@ -102,10 +77,10 @@ func TestCreateCounterAcrossProjects(t *testing.T) {
 }
 
 func TestCreateRecordFields(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 
-	envelope := Create(home, CreateOptions{Project: "one", Title: "Spawn worker"})
+	envelope := Run(home, Options{Project: "one", Title: "Spawn worker"})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Create() = %#v; want ok", envelope)
 	}
@@ -157,11 +132,11 @@ func TestCreateRecordFields(t *testing.T) {
 }
 
 func TestCreateDependsOn(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 
-	first := createOK(t, home, CreateOptions{Project: "one", Title: "First step"})
-	second := createOK(t, home, CreateOptions{
+	first := createOK(t, home, Options{Project: "one", Title: "First step"})
+	second := createOK(t, home, Options{
 		Project:    "one",
 		Title:      "Second step",
 		DependsOn:  first.ID,
@@ -173,14 +148,14 @@ func TestCreateDependsOn(t *testing.T) {
 }
 
 func TestCreateBriefFromFile(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	path := filepath.Join(t.TempDir(), "brief.md")
 	const content = "# Brief\n\nThe body.\n"
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	task := createOK(t, home, CreateOptions{
+	task := createOK(t, home, Options{
 		Project:   "one",
 		Title:     "First step",
 		BriefPath: path,
@@ -196,9 +171,9 @@ func TestCreateBriefFromFile(t *testing.T) {
 }
 
 func TestCreateBriefFromStdin(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	task := createOK(t, home, CreateOptions{
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	task := createOK(t, home, Options{
 		Project:   "one",
 		Title:     "First step",
 		BriefPath: "-",
@@ -215,9 +190,9 @@ func TestCreateBriefFromStdin(t *testing.T) {
 }
 
 func TestCreateBriefDefaultsToTitle(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	task := createOK(t, home, CreateOptions{Project: "one", Title: "Second step"})
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	task := createOK(t, home, Options{Project: "one", Title: "Second step"})
 	brief, err := os.ReadFile(filepath.Join(home, ".hive", "state", "briefs", task.ID+".md"))
 	if err != nil {
 		t.Fatal(err)
@@ -230,13 +205,13 @@ func TestCreateBriefDefaultsToTitle(t *testing.T) {
 func TestCreateBriefCapBoundary(t *testing.T) {
 	for _, size := range []int{1048575, 1048576, 1048577, 5242880} {
 		t.Run(fmt.Sprintf("%d-bytes", size), func(t *testing.T) {
-			home := newHome(t)
-			registerProject(t, home, "one")
+			home := tasktest.NewHome(t)
+			tasktest.RegisterProject(t, home, "one")
 			path := filepath.Join(t.TempDir(), "brief.md")
 			if err := os.WriteFile(path, bytes.Repeat([]byte("a"), size), 0o644); err != nil {
 				t.Fatal(err)
 			}
-			envelope := Create(home, CreateOptions{
+			envelope := Run(home, Options{
 				Project:   "one",
 				Title:     "Big brief",
 				BriefPath: path,
@@ -270,8 +245,8 @@ func TestCreateBriefCapBoundary(t *testing.T) {
 }
 
 func TestCreateBriefDeadline(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	readEnd, writeEnd, err := os.Pipe()
 	if err != nil {
 		t.Fatal(err)
@@ -279,7 +254,7 @@ func TestCreateBriefDeadline(t *testing.T) {
 	defer func() { _ = readEnd.Close() }()
 
 	started := time.Now()
-	envelope := Create(home, CreateOptions{
+	envelope := Run(home, Options{
 		Project:   "one",
 		Title:     "Stalled",
 		BriefPath: "-",
@@ -309,8 +284,8 @@ func TestCreateBriefDeadline(t *testing.T) {
 }
 
 func TestCreateBriefRejectsNonRegularPath(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	target := filepath.Join(t.TempDir(), "target.md")
 	if err := os.WriteFile(target, []byte("target"), 0o644); err != nil {
 		t.Fatal(err)
@@ -334,7 +309,7 @@ func TestCreateBriefRejectsNonRegularPath(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			envelope := Create(home, CreateOptions{
+			envelope := Run(home, Options{
 				Project:   "one",
 				Title:     "First step",
 				BriefPath: c.path,
@@ -354,10 +329,10 @@ func TestCreateBriefRejectsNonRegularPath(t *testing.T) {
 }
 
 func TestCreateFortyCharacterSlug(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	slug := strings.Repeat("a", 40)
-	task := createOK(t, home, CreateOptions{Project: "one", Title: "Long slug", Slug: slug, SlugSet: true})
+	task := createOK(t, home, Options{Project: "one", Title: "Long slug", Slug: slug, SlugSet: true})
 	if task.ID != "1-"+slug {
 		t.Fatalf("ID = %q; want 1-%s", task.ID, slug)
 	}
@@ -393,9 +368,9 @@ func TestSlugRules(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			home := newHome(t)
-			registerProject(t, home, "one")
-			envelope := Create(home, CreateOptions{
+			home := tasktest.NewHome(t)
+			tasktest.RegisterProject(t, home, "one")
+			envelope := Run(home, Options{
 				Project: "one", Title: c.title, Slug: c.slug, SlugSet: c.slugSet,
 			})
 			if c.wantErr != "" {
@@ -419,9 +394,9 @@ func TestSlugRules(t *testing.T) {
 }
 
 func TestCreateMissingDependency(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	envelope := Create(home, CreateOptions{
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	envelope := Run(home, Options{
 		Project:    "one",
 		Title:      "First step",
 		DependsOn:  "9-missing",
@@ -436,11 +411,11 @@ func TestCreateMissingDependency(t *testing.T) {
 }
 
 func TestCreateDependencyOtherProject(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	registerProject(t, home, "two")
-	other := createOK(t, home, CreateOptions{Project: "one", Title: "Other"})
-	envelope := Create(home, CreateOptions{
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	tasktest.RegisterProject(t, home, "two")
+	other := createOK(t, home, Options{Project: "one", Title: "Other"})
+	envelope := Run(home, Options{
 		Project:    "two",
 		Title:      "First step",
 		DependsOn:  other.ID,
@@ -455,11 +430,11 @@ func TestCreateDependencyOtherProject(t *testing.T) {
 }
 
 func TestCreateInvalidDependencyStrings(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	for _, value := range []string{"../x", "a/b", "1-a,,2-b", "1-a,1-a", "bad\nid"} {
 		t.Run(fmt.Sprintf("%q", value), func(t *testing.T) {
-			envelope := Create(home, CreateOptions{
+			envelope := Run(home, Options{
 				Project:    "one",
 				Title:      "First step",
 				DependsOn:  value,
@@ -476,13 +451,13 @@ func TestCreateInvalidDependencyStrings(t *testing.T) {
 }
 
 func TestCreatePartialBriefDirectory(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	briefPath := filepath.Join(home, ".hive", "state", "briefs", "1-first-step.md")
 	if err := os.MkdirAll(briefPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Create(home, CreateOptions{Project: "one", Title: "First step"})
+	envelope := Run(home, Options{Project: "one", Title: "First step"})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("outcome = %q; want partial", envelope.Outcome)
 	}
@@ -502,13 +477,13 @@ func TestCreatePartialBriefDirectory(t *testing.T) {
 }
 
 func TestCreatePartialTaskDirectory(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	taskPath := filepath.Join(home, ".hive", "state", "tasks", "1-first-step.json")
 	if err := os.MkdirAll(taskPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Create(home, CreateOptions{Project: "one", Title: "First step"})
+	envelope := Run(home, Options{Project: "one", Title: "First step"})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("outcome = %q; want partial", envelope.Outcome)
 	}
@@ -542,8 +517,8 @@ func TestCreatePartialTaskDirectory(t *testing.T) {
 }
 
 func TestCreateConcurrent(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	start := make(chan struct{})
 	envelopes := make([]output.Envelope, 2)
 	var wait sync.WaitGroup
@@ -552,7 +527,7 @@ func TestCreateConcurrent(t *testing.T) {
 		go func(index int) {
 			defer wait.Done()
 			<-start
-			envelopes[index] = Create(home, CreateOptions{
+			envelopes[index] = Run(home, Options{
 				Project: "one",
 				Title:   fmt.Sprintf("Task %d", index+1),
 			})
@@ -578,10 +553,10 @@ func TestCreateConcurrent(t *testing.T) {
 }
 
 func TestCycle(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	first := createOK(t, home, CreateOptions{Project: "one", Title: "A"})
-	second := createOK(t, home, CreateOptions{
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	first := createOK(t, home, Options{Project: "one", Title: "A"})
+	second := createOK(t, home, Options{
 		Project:    "one",
 		Title:      "B",
 		DependsOn:  first.ID,
@@ -595,7 +570,7 @@ func TestCycle(t *testing.T) {
 	if err := registry.WriteIn([]string{"tasks"}, first.ID, first); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Create(home, CreateOptions{
+	envelope := Run(home, Options{
 		Project:    "one",
 		Title:      "C",
 		DependsOn:  first.ID,

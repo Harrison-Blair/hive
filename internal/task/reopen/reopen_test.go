@@ -1,4 +1,4 @@
-package task
+package reopen
 
 import (
 	"bytes"
@@ -7,6 +7,10 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	"github.com/Harrison-Blair/hive/internal/task/complete"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
+	"github.com/Harrison-Blair/hive/internal/task/verify"
 )
 
 func seedController(t *testing.T, home, project string) {
@@ -37,16 +41,16 @@ func verifiedTask(task records.Task, agent, at string) records.Task {
 }
 
 func TestReopenVerifiedByProjectOwner(t *testing.T) {
-	home, task := newSeed(t, "verified")
+	home, task := tasktest.NewSeed(t, "verified")
 	task = verifiedTask(task, "verifier-old", "2026-01-02T00:00:00Z")
-	seedTask(t, home, task)
+	tasktest.SeedTask(t, home, task)
 	seedController(t, home, task.Project)
 
-	envelope := Reopen(home, TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "merge conflict"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "merge conflict"})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Reopen() = %#v; want ok", envelope)
 	}
-	got := readTask(t, home, task.ID)
+	got := tasktest.ReadTask(t, home, task.ID)
 	if got.Status != "assigned" || got.ActingAgent != task.ActingAgent || got.Verification != nil {
 		t.Fatalf("task = %#v; want assigned, same acting agent, and no current verification", got)
 	}
@@ -64,17 +68,17 @@ func TestReopenVerifiedByProjectOwner(t *testing.T) {
 }
 
 func TestReopenByWorkerFails(t *testing.T) {
-	home, task := newSeed(t, "verified")
+	home, task := tasktest.NewSeed(t, "verified")
 	task = verifiedTask(task, "verifier-old", "2026-01-02T00:00:00Z")
-	seedTask(t, home, task)
+	tasktest.SeedTask(t, home, task)
 	seedController(t, home, task.Project)
-	before := taskRecordBytes(t, home, task.ID)
+	before := tasktest.TaskRecordBytes(t, home, task.ID)
 
-	envelope := Reopen(home, TransitionOptions{Task: task.ID, Agent: "worker-1", Reason: "repair"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "worker-1", Reason: "repair"})
 	if envelope.Outcome != "failed" || envelope.Error != "not the owner of project one or the coordinator: worker-1" {
 		t.Fatalf("Reopen() = %#v; want owner refusal", envelope)
 	}
-	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
+	if after := tasktest.TaskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
 		t.Fatal("task record changed after a worker reopen request")
 	}
 }
@@ -82,15 +86,15 @@ func TestReopenByWorkerFails(t *testing.T) {
 func TestReopenNonVerifiedStatusesFail(t *testing.T) {
 	for _, status := range []string{"created", "assigned", "completed", "cancelled"} {
 		t.Run(status, func(t *testing.T) {
-			home, task := newSeed(t, status)
+			home, task := tasktest.NewSeed(t, status)
 			seedController(t, home, task.Project)
-			before := taskRecordBytes(t, home, task.ID)
+			before := tasktest.TaskRecordBytes(t, home, task.ID)
 
-			envelope := Reopen(home, TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "repair"})
+			envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "repair"})
 			if envelope.Outcome != "failed" || envelope.Error != "invalid transition: "+status+" -> reopen" {
 				t.Fatalf("Reopen() = %#v; want invalid transition", envelope)
 			}
-			if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
+			if after := tasktest.TaskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
 				t.Fatal("task record changed after an invalid transition")
 			}
 		})
@@ -98,44 +102,44 @@ func TestReopenNonVerifiedStatusesFail(t *testing.T) {
 }
 
 func TestReopenRequiresReason(t *testing.T) {
-	home, task := newSeed(t, "verified")
+	home, task := tasktest.NewSeed(t, "verified")
 	task = verifiedTask(task, "verifier-old", "2026-01-02T00:00:00Z")
-	seedTask(t, home, task)
+	tasktest.SeedTask(t, home, task)
 	seedController(t, home, task.Project)
-	before := taskRecordBytes(t, home, task.ID)
+	before := tasktest.TaskRecordBytes(t, home, task.ID)
 
-	envelope := Reopen(home, TransitionOptions{Task: task.ID, Agent: "manager-one"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "manager-one"})
 	if envelope.Outcome != "failed" || envelope.Error != "--reason is required" {
 		t.Fatalf("Reopen() = %#v; want required reason error", envelope)
 	}
-	if after := taskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
+	if after := tasktest.TaskRecordBytes(t, home, task.ID); !bytes.Equal(before, after) {
 		t.Fatal("task record changed after a reopen request without a reason")
 	}
 }
 
 func TestReopenKeepsVerificationHistoryAcrossReopens(t *testing.T) {
-	home, task := newSeed(t, "verified")
+	home, task := tasktest.NewSeed(t, "verified")
 	task = verifiedTask(task, "verifier-old", "2026-01-02T00:00:00Z")
-	seedTask(t, home, task)
+	tasktest.SeedTask(t, home, task)
 	seedController(t, home, task.Project)
 
-	first := Reopen(home, TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "first repair"})
+	first := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "first repair"})
 	if first.Outcome != "ok" {
 		t.Fatalf("first Reopen() = %#v; want ok", first)
 	}
-	if envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "ok" {
+	if envelope := complete.Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "ok" {
 		t.Fatalf("Complete() = %#v; want ok", envelope)
 	}
-	if envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1"}); envelope.Outcome != "ok" {
+	if envelope := verify.Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "verifier-1"}); envelope.Outcome != "ok" {
 		t.Fatalf("Verify() = %#v; want ok", envelope)
 	}
-	secondVerification := readTask(t, home, task.ID).Verification
-	second := Reopen(home, TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "second repair"})
+	secondVerification := tasktest.ReadTask(t, home, task.ID).Verification
+	second := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "manager-one", Reason: "second repair"})
 	if second.Outcome != "ok" {
 		t.Fatalf("second Reopen() = %#v; want ok", second)
 	}
 
-	got := readTask(t, home, task.ID)
+	got := tasktest.ReadTask(t, home, task.ID)
 	if got.Verification != nil || len(got.VerificationHistory) != 2 {
 		t.Fatalf("task = %#v; want no current check and two history items", got)
 	}

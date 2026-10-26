@@ -7,31 +7,31 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
-// operationLog writes task events with the task component.
-type operationLog struct {
-	logger *slog.Logger
+// Log writes task events with the task component.
+type Log struct {
+	Logger *slog.Logger
 	closer func()
 }
 
-// openOperationLog uses an injected logger or opens the task log writer.
-func openOperationLog(home string, injected *slog.Logger) operationLog {
+// OpenLog uses an injected logger or opens the task log writer.
+func OpenLog(home string, injected *slog.Logger) Log {
 	if injected != nil {
-		return operationLog{logger: injected, closer: func() {}}
+		return Log{Logger: injected, closer: func() {}}
 	}
 	writer, err := hivelog.NewWriter(home, "task", time.Now)
 	if err != nil {
-		return operationLog{closer: func() {}}
+		return Log{closer: func() {}}
 	}
-	return operationLog{logger: slog.New(writer), closer: func() { _ = writer.Close() }}
+	return Log{Logger: slog.New(writer), closer: func() { _ = writer.Close() }}
 }
 
-// close releases the task log writer.
-func (l operationLog) close() {
+// Close releases the task log writer.
+func (l Log) Close() {
 	l.closer()
 }
 
-// fields returns the identifiers that apply to one event.
-func (l operationLog) fields(command, projectID, taskID, agentID string) []any {
+// Fields returns the identifiers that apply to one event.
+func (l Log) Fields(command, projectID, taskID, agentID string) []any {
 	fields := []any{"command", command}
 	if projectID != "" {
 		fields = append(fields, "project_id", projectID)
@@ -45,49 +45,39 @@ func (l operationLog) fields(command, projectID, taskID, agentID string) []any {
 	return fields
 }
 
-// transition writes one completed state transition.
-func (l operationLog) transition(command, projectID, taskID, agentID, from, to string, extra ...any) {
-	if l.logger == nil {
+// Transition writes one completed state transition.
+func (l Log) Transition(command, projectID, taskID, agentID, from, to string, extra ...any) {
+	if l.Logger == nil {
 		return
 	}
-	fields := l.fields(command, projectID, taskID, agentID)
+	fields := l.Fields(command, projectID, taskID, agentID)
 	if from != "" {
 		fields = append(fields, "from_status", from)
 	}
 	fields = append(fields, "to_status", to)
 	fields = append(fields, extra...)
-	l.logger.Debug("task transition", fields...)
+	l.Logger.Debug("task transition", fields...)
 }
 
-// briefEdit writes one completed brief replacement without its text.
-func (l operationLog) briefEdit(projectID, taskID, agentID string, oldSize, newSize int) {
-	if l.logger == nil {
+// Effect writes one completed write in the task prefix order.
+func (l Log) Effect(command, projectID, taskID, resource, path, action string) {
+	if l.Logger == nil {
 		return
 	}
-	fields := l.fields("task edit", projectID, taskID, agentID)
-	fields = append(fields, "old_size", oldSize, "new_size", newSize)
-	l.logger.Debug("task brief edit", fields...)
-}
-
-// effect writes one completed write in the task prefix order.
-func (l operationLog) effect(command, projectID, taskID, resource, path, action string) {
-	if l.logger == nil {
-		return
-	}
-	fields := l.fields(command, projectID, taskID, "")
+	fields := l.Fields(command, projectID, taskID, "")
 	fields = append(fields, "resource", resource, "path", path, "action", action)
-	l.logger.Debug("task effect", fields...)
+	l.Logger.Debug("task effect", fields...)
 }
 
-// failure writes one task error.
-func (l operationLog) failure(command, projectID, taskID, agentID, phase, message string) {
-	if l.logger == nil {
+// Failure writes one task error.
+func (l Log) Failure(command, projectID, taskID, agentID, phase, message string) {
+	if l.Logger == nil {
 		return
 	}
-	fields := l.fields(command, projectID, taskID, agentID)
+	fields := l.Fields(command, projectID, taskID, agentID)
 	if phase != "" {
 		fields = append(fields, "phase", phase)
 	}
 	fields = append(fields, "error", message)
-	l.logger.Error("task error", fields...)
+	l.Logger.Error("task error", fields...)
 }

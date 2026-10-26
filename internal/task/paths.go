@@ -27,13 +27,13 @@ func TaskFeaturePaths(task records.Task) *FeaturePaths {
 	}
 }
 
-// checkFeature validates the feature slug.
-func checkFeature(feature string) error {
+// CheckFeature validates the feature slug.
+func CheckFeature(feature string) error {
 	if feature == "" {
 		return fmt.Errorf("feature requires a value")
 	}
-	if len(feature) > maxSlugLength || !slugPattern.MatchString(feature) {
-		return fmt.Errorf("invalid feature: %s", quoteIfControl(feature))
+	if !ValidSlug(feature) {
+		return fmt.Errorf("invalid feature: %s", QuoteIfControl(feature))
 	}
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/verify"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +44,7 @@ func New() *cobra.Command {
 			options := tasklib.TransitionOptions{
 				Task: taskID, Agent: agent, PaneID: pane, Fail: fail, Reason: reason, ResolvedActor: &resolved,
 			}
-			envelope = tasklib.Verify(home, options)
+			envelope = operation.Run(home, options)
 			return envelope, tasklib.TransitionText(envelope), nil
 		})
 		cmd.SetOut(original)

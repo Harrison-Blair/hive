@@ -101,19 +101,19 @@ type transitionCommand struct {
 func transitionCommands() []transitionCommand {
 	return []transitionCommand{
 		{"assign", "assign", func(home, id string) output.Envelope {
-			return Assign(home, TransitionOptions{Task: id, Agent: "worker-2"})
+			return RunTransition(home, "assign", TransitionOptions{Task: id, Agent: "worker-2"})
 		}},
 		{"complete", "complete", func(home, id string) output.Envelope {
-			return Complete(home, TransitionOptions{Task: id, Agent: "worker-1"})
+			return RunFinish(home, "complete", TransitionOptions{Task: id, Agent: "worker-1"})
 		}},
 		{"verify", "verify", func(home, id string) output.Envelope {
-			return Verify(home, TransitionOptions{Task: id, Agent: "verifier-1"})
+			return RunFinish(home, "verify", TransitionOptions{Task: id, Agent: "verifier-1"})
 		}},
 		{"verify-fail", "verify", func(home, id string) output.Envelope {
-			return Verify(home, TransitionOptions{Task: id, Agent: "verifier-1", Fail: true, Reason: "differs"})
+			return RunFinish(home, "verify", TransitionOptions{Task: id, Agent: "verifier-1", Fail: true, Reason: "differs"})
 		}},
 		{"cancel", "cancel", func(home, id string) output.Envelope {
-			return Cancel(home, TransitionOptions{Task: id})
+			return RunTransition(home, "cancel", TransitionOptions{Task: id})
 		}},
 	}
 }
@@ -185,7 +185,7 @@ func TestTransitionTable(t *testing.T) {
 func TestTransitionMissingTask(t *testing.T) {
 	home := newHome(t)
 	registerProject(t, home, "one")
-	envelope := Complete(home, TransitionOptions{Task: "9-missing", Agent: "worker-1"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: "9-missing", Agent: "worker-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "task not found: 9-missing" {
 		t.Fatalf("Complete() = %#v; want a missing task error", envelope)
 	}
@@ -194,7 +194,7 @@ func TestTransitionMissingTask(t *testing.T) {
 func TestTransitionCompleteWrongAgent(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-2"})
 	if envelope.Outcome != "failed" || envelope.Error != "not the acting agent of 1-seed: worker-2" {
 		t.Fatalf("Complete() = %#v; want a wrong agent error", envelope)
 	}
@@ -205,7 +205,7 @@ func TestTransitionCompleteWrongAgent(t *testing.T) {
 
 func TestTransitionCompleteWithoutAgent(t *testing.T) {
 	home, task := newSeed(t, "assigned")
-	envelope := Complete(home, TransitionOptions{Task: task.ID})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID})
 	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent" {
 		t.Fatalf("Complete() = %#v; want a caller error", envelope)
 	}
@@ -213,7 +213,7 @@ func TestTransitionCompleteWithoutAgent(t *testing.T) {
 
 func TestTransitionAssignWithoutAgent(t *testing.T) {
 	home, task := newSeed(t, "created")
-	envelope := Assign(home, TransitionOptions{Task: task.ID})
+	envelope := RunTransition(home, "assign", TransitionOptions{Task: task.ID})
 	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent" {
 		t.Fatalf("Assign() = %#v; want a caller error", envelope)
 	}
@@ -221,7 +221,7 @@ func TestTransitionAssignWithoutAgent(t *testing.T) {
 
 func TestTransitionAssignReplacesAgent(t *testing.T) {
 	home, task := newSeed(t, "assigned")
-	envelope := Assign(home, TransitionOptions{Task: task.ID, Agent: "worker-9"})
+	envelope := RunTransition(home, "assign", TransitionOptions{Task: task.ID, Agent: "worker-9"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Assign() = %#v; want ok", envelope)
 	}
@@ -233,7 +233,7 @@ func TestTransitionAssignReplacesAgent(t *testing.T) {
 func TestVerifySelf(t *testing.T) {
 	home, task := newSeed(t, "completed")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+	envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "worker-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "self verify refused: worker-1 is the acting agent of 1-seed" {
 		t.Fatalf("Verify() = %#v; want a self-verification refusal", envelope)
 	}
@@ -245,7 +245,7 @@ func TestVerifySelf(t *testing.T) {
 func TestVerifyFailWithoutReason(t *testing.T) {
 	home, task := newSeed(t, "completed")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true})
+	envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true})
 	if envelope.Outcome != "failed" || envelope.Error != "--fail needs --reason" {
 		t.Fatalf("Verify() = %#v; want a reason error", envelope)
 	}
@@ -261,10 +261,10 @@ func TestVerifyReplacement(t *testing.T) {
 	}
 	seedTask(t, home, task)
 
-	if envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "ok" {
+	if envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "ok" {
 		t.Fatalf("Complete() = %#v; want ok", envelope)
 	}
-	failed := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true, Reason: "V3 output differs"})
+	failed := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-1", Fail: true, Reason: "V3 output differs"})
 	if failed.Outcome != "ok" {
 		t.Fatalf("Verify(fail) = %#v; want ok", failed)
 	}
@@ -278,13 +278,13 @@ func TestVerifyReplacement(t *testing.T) {
 		t.Fatalf("verification = %#v; want the failed check of verifier-1", got.Verification)
 	}
 
-	if envelope := Assign(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+	if envelope := RunTransition(home, "assign", TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
 		t.Fatalf("Assign() = %#v; want the fresh worker", envelope)
 	}
-	if envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+	if envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
 		t.Fatalf("second Complete() = %#v; want the fresh worker", envelope)
 	}
-	passed := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-2"})
+	passed := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-2"})
 	if passed.Outcome != "ok" {
 		t.Fatalf("Verify() = %#v; want ok", passed)
 	}
@@ -298,7 +298,7 @@ func TestVerifyReplacement(t *testing.T) {
 	}
 
 	before := taskRecordBytes(t, home, task.ID)
-	again := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-2"})
+	again := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-2"})
 	if again.Outcome != "failed" {
 		t.Fatalf("Verify() = %#v; want a refused repeated finish", again)
 	}
@@ -315,7 +315,7 @@ func TestVerifyReplacement(t *testing.T) {
 
 func TestTransitionCancelStoresReason(t *testing.T) {
 	home, task := newSeed(t, "assigned")
-	envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "user stopped the work"})
+	envelope := RunTransition(home, "cancel", TransitionOptions{Task: task.ID, Reason: "user stopped the work"})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Cancel() = %#v; want ok", envelope)
 	}
@@ -328,7 +328,7 @@ func TestTransitionCancelStoresReason(t *testing.T) {
 func TestTransitionCancelVerifiedTask(t *testing.T) {
 	t.Run("without delivery", func(t *testing.T) {
 		home, task := newSeed(t, "verified")
-		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		envelope := RunTransition(home, "cancel", TransitionOptions{Task: task.ID, Reason: "stop work"})
 		if envelope.Outcome != "ok" || envelope.Error != nil {
 			t.Fatalf("Cancel() = %#v; want ok", envelope)
 		}
@@ -342,7 +342,7 @@ func TestTransitionCancelVerifiedTask(t *testing.T) {
 		home, task := newSeed(t, "verified")
 		task.Delivery = &records.Delivery{Mode: "merge", Target: "main", Commit: "abc123"}
 		seedTask(t, home, task)
-		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		envelope := RunTransition(home, "cancel", TransitionOptions{Task: task.ID, Reason: "stop work"})
 		if envelope.Outcome != "ok" || envelope.Error != nil {
 			t.Fatalf("Cancel() = %#v; want ok", envelope)
 		}
@@ -357,7 +357,7 @@ func TestTransitionCancelVerifiedTask(t *testing.T) {
 		task.Delivery = &records.Delivery{Mode: "merge", Target: "main", Commit: "abc123", Pushed: true}
 		seedTask(t, home, task)
 		before := taskRecordBytes(t, home, task.ID)
-		envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"})
+		envelope := RunTransition(home, "cancel", TransitionOptions{Task: task.ID, Reason: "stop work"})
 		if envelope.Outcome != "failed" || envelope.Error != "task is landed: cancel refused" {
 			t.Fatalf("Cancel() = %#v; want landed-task refusal", envelope)
 		}
@@ -370,7 +370,7 @@ func TestTransitionCancelVerifiedTask(t *testing.T) {
 func TestTransitionRecordInvalidID(t *testing.T) {
 	home := newHome(t)
 	registerProject(t, home, "one")
-	envelope := Complete(home, TransitionOptions{Task: "not-a-task", Agent: "worker-1"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: "not-a-task", Agent: "worker-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "task not found: not-a-task" {
 		t.Fatalf("Complete() = %#v; want a plain not found error", envelope)
 	}
