@@ -1,4 +1,5 @@
-package project
+// Package register validates and records one project repository.
+package register
 
 import (
 	"encoding/json"
@@ -12,12 +13,11 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	projectlib "github.com/Harrison-Blair/hive/internal/project"
 )
 
-const invalidIDRule = "an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
-
-// RegisterOptions holds the values for one project registration.
-type RegisterOptions struct {
+// Options holds the values for one project registration.
+type Options struct {
 	Path       string
 	ID         string
 	IDSet      bool
@@ -26,51 +26,51 @@ type RegisterOptions struct {
 	WorkingDir string
 }
 
-// Register validates and records one Git repository.
-func Register(home string, options RegisterOptions) output.Envelope {
-	if hasControl(options.Path) {
-		return failed("validate", fmt.Sprintf("invalid path: %q", options.Path))
+// Run validates and records one Git repository.
+func Run(home string, options Options) output.Envelope {
+	if projectlib.HasControl(options.Path) {
+		return projectlib.Failed("validate", fmt.Sprintf("invalid path: %q", options.Path))
 	}
 	if options.Path == "" {
-		return failed("validate", "PATH requires a value")
+		return projectlib.Failed("validate", "PATH requires a value")
 	}
 	base := options.Base
 	if !options.BaseSet {
 		base = "main"
 	}
 	if invalidBase(base) {
-		return failed("validate", fmt.Sprintf("invalid base branch: %q", base))
+		return projectlib.Failed("validate", fmt.Sprintf("invalid base branch: %q", base))
 	}
 	path, err := resolveProjectPath(options.Path, options.WorkingDir)
 	if err != nil || !isGitRepository(path) {
-		return failed("validate", fmt.Sprintf("not a git repository: %s", path))
+		return projectlib.Failed("validate", fmt.Sprintf("not a git repository: %s", path))
 	}
 	id := options.ID
 	if !options.IDSet {
 		id = strings.ToLower(filepath.Base(path))
 	}
 	if !records.ValidID(id) {
-		return failed("validate", invalidIDMessage(id))
+		return projectlib.Failed("validate", projectlib.InvalidIDMessage(id))
 	}
 
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		return projectlib.Failed("store", err.Error())
 	}
 	found, err := registry.List("projects")
 	if err != nil {
-		return failed("store", err.Error())
+		return projectlib.Failed("store", err.Error())
 	}
 	for _, raw := range found {
 		var existing records.Project
 		if err := json.Unmarshal(raw, &existing); err != nil {
-			return failed("store", err.Error())
+			return projectlib.Failed("store", err.Error())
 		}
 		if existing.ID == id {
-			return failed("register", "project exists: "+id)
+			return projectlib.Failed("register", "project exists: "+id)
 		}
 		if existing.Path == path {
-			return failed("register", "path registered as "+existing.ID)
+			return projectlib.Failed("register", "path registered as "+existing.ID)
 		}
 	}
 
@@ -81,7 +81,7 @@ func Register(home string, options RegisterOptions) output.Envelope {
 		RegisteredAt: time.Now().UTC().Format(time.RFC3339Nano),
 	}
 	if err := registry.Write("projects", id, record); err != nil {
-		return failed("store", err.Error())
+		return projectlib.Failed("store", err.Error())
 	}
 	envelope := output.Envelope{
 		Outcome: "ok",
@@ -147,22 +147,14 @@ func invalidBase(base string) bool {
 	return false
 }
 
-func invalidIDMessage(id string) string {
-	if hasControl(id) {
-		id = fmt.Sprintf("%q", id)
+// Text renders the effects of project registration.
+func Text(envelope output.Envelope) string {
+	var lines []string
+	for _, effect := range envelope.Effects {
+		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
 	}
-	return fmt.Sprintf("invalid project id: %s: %s", id, invalidIDRule)
-}
-
-func hasControl(value string) bool {
-	for _, r := range value {
-		if unicode.IsControl(r) {
-			return true
-		}
+	if len(lines) == 0 {
+		return ""
 	}
-	return false
-}
-
-func failed(phase, message string) output.Envelope {
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
+	return strings.Join(lines, "\n") + "\n"
 }
