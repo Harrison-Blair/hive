@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/cmd/inbox/send"
 	inboxlogic "github.com/Harrison-Blair/hive/internal/inbox"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -22,7 +23,7 @@ func New() *cobra.Command {
 	command.Flags().String("agent", "", "reading agent")
 	command.Flags().Bool("all", false, "print each record and set nothing")
 	command.PersistentFlags().String("pane", os.Getenv("HERDR_PANE_ID"), "herdr pane ID")
-	command.AddCommand(newSend())
+	command.AddCommand(send.New())
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
 		inboxKey, _ := cmd.Flags().GetString("inbox")
 		inboxSet := cmd.Flags().Lookup("inbox").Changed
@@ -53,26 +54,6 @@ func New() *cobra.Command {
 			}
 		}
 		return err
-	}
-	return command
-}
-
-func newSend() *cobra.Command {
-	command := &cobra.Command{
-		Use:   "send TEXT",
-		Short: "append a message record",
-		Args:  cobra.ExactArgs(1),
-	}
-	command.Flags().String("to", "", "inbox key")
-	command.Flags().String("agent", "", "sending agent")
-	command.RunE = func(cmd *cobra.Command, args []string) error {
-		to, _ := cmd.Flags().GetString("to")
-		agent, _ := cmd.Flags().GetString("agent")
-		pane, _ := cmd.Flags().GetString("pane")
-		return common.Run(cmd, "inbox send", func(home string) (output.Envelope, string, error) {
-			envelope := inboxlogic.Send(home, inboxlib.AppendOptions{Inbox: to, Kind: "message", Agent: agent, Text: args[0]}, pane, os.Getenv("HERDR_PANE_ID"))
-			return envelope, inboxlogic.SendText(envelope), nil
-		})
 	}
 	return command
 }
