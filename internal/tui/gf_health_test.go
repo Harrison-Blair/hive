@@ -384,11 +384,11 @@ func TestGfHealthTableStates(t *testing.T) {
 		agent("coordinator", records.ProfileCoordinator, records.AgentStopped, ""),
 	}})
 	for _, want := range []string{
-		"▶ ○ coordinator", "stopped           gone",
+		"▶ ○ coordinator", "stopped          gone",
 		"▲ w-blocked", "blocked 00:07:00",
 		"○ w-idle", "idle 00:07:00",
 		"● w-plain", "live 00:07:00",
-		"○ w-stale", "stale             gone",
+		"○ w-stale", "stale            gone",
 		"agents · 5 · 2 live · 1 idle · 1 stopped · 1 stale",
 	} {
 		requireView(t, m, want)

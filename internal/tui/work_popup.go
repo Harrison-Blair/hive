@@ -173,7 +173,7 @@ func (m *Model) workTaskLines() []string {
 	if item.goal != "" {
 		goal = item.goal + " · wave " + item.wave
 	}
-	worker := "none"
+	worker := workField("worker", "none")
 	if task.ActingAgent != "" {
 		status, age := "", ""
 		if agent, ok := s.data.agents[task.ActingAgent]; ok {
