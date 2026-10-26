@@ -1,10 +1,11 @@
-package goal
+package edit
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
+	goallib "github.com/Harrison-Blair/hive/internal/goal"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
@@ -52,7 +53,7 @@ func goalOwnerHome(t *testing.T) string {
 		Status: "active", Waves: []records.GoalWave{},
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}
-	if err := registry.WriteIn([]string{goalsCollection}, goal.ID, goal); err != nil {
+	if err := registry.WriteIn([]string{goallib.GoalsCollection}, goal.ID, goal); err != nil {
 		t.Fatal(err)
 	}
 	return home
@@ -70,7 +71,7 @@ func TestGoalEditNeedsTheProjectOwnerOrCoordinator(t *testing.T) {
 			t.Fatal(err)
 		}
 		var record records.Goal
-		if err := registry.ReadIn([]string{goalsCollection}, goalID, &record); err != nil {
+		if err := registry.ReadIn([]string{goallib.GoalsCollection}, goalID, &record); err != nil {
 			t.Fatal(err)
 		}
 		return record.Status
@@ -82,17 +83,17 @@ func TestGoalEditNeedsTheProjectOwnerOrCoordinator(t *testing.T) {
 			t.Fatal(err)
 		}
 		var record records.Goal
-		if err := registry.ReadIn([]string{goalsCollection}, goalID, &record); err != nil {
+		if err := registry.ReadIn([]string{goallib.GoalsCollection}, goalID, &record); err != nil {
 			t.Fatal(err)
 		}
 		record.Status = "active"
-		if err := registry.WriteIn([]string{goalsCollection}, goalID, record); err != nil {
+		if err := registry.WriteIn([]string{goallib.GoalsCollection}, goalID, record); err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for _, agent := range []string{"owner-demo", "coordinator"} {
-		envelope := Edit(home, EditOptions{Goal: goalID, Agent: agent, Status: "done", StatusSet: true})
+		envelope := Run(home, Options{Goal: goalID, Agent: agent, Status: "done", StatusSet: true})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Edit(%s) = %#v; want ok", agent, envelope)
 		}
@@ -102,7 +103,7 @@ func TestGoalEditNeedsTheProjectOwnerOrCoordinator(t *testing.T) {
 		reset()
 	}
 
-	refused := Edit(home, EditOptions{Goal: goalID, Agent: "builder-demo", Status: "done", StatusSet: true})
+	refused := Run(home, Options{Goal: goalID, Agent: "builder-demo", Status: "done", StatusSet: true})
 	if refused.Outcome != "failed" || refused.Error != "not the owner of project demo or the coordinator: builder-demo" {
 		t.Fatalf("Edit(builder-demo) = %#v; want the exact owner refusal", refused)
 	}
