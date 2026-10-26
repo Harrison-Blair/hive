@@ -6,7 +6,7 @@ import (
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	scopelib "github.com/Harrison-Blair/hive/internal/lib/scope"
-	memorylib "github.com/Harrison-Blair/hive/internal/memory"
+	operation "github.com/Harrison-Blair/hive/internal/memory/write"
 	"github.com/spf13/cobra"
 )
 
@@ -22,14 +22,14 @@ func New() *cobra.Command {
 		return common.Run(cmd, "memory write", func(home string) (output.Envelope, string, error) {
 			scopeValue, _ := cmd.Flags().GetString("scope")
 			logger, _ := hivelog.Open(home, "memory")
-			envelope := memorylib.Write(home, memorylib.WriteOptions{
+			envelope := operation.Write(home, operation.WriteOptions{
 				Scope:    scopeValue,
 				Name:     args[0],
 				Input:    cmd.InOrStdin(),
 				Deadline: scopelib.DefaultDeadline,
 				Logger:   logger,
 			})
-			return envelope, memorylib.WriteText(envelope), nil
+			return envelope, operation.WriteText(envelope), nil
 		})
 	}
 	return command

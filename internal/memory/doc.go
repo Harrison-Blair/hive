@@ -1,6 +1,8 @@
-// Package memory writes memory Markdown files and the memory index.
+// Package memory holds the shared memory rules: the memory files, the index,
+// and the atomic file write that handoff uses.
 //
-// write.go reads input, checks paths, and writes one memory under the store lock.
-// index.go builds the index from memory files.
+// index.go reads memory files, builds the index, and writes one file atomically.
 // frontmatter.go parses the memory frontmatter block.
+// errors.go returns the user text and the safe log text of an error.
+// The memory write operation is in the child package write.
 package memory

@@ -61,14 +61,14 @@ func parseFrontmatter(data []byte) (map[string]string, error) {
 	return values, nil
 }
 
-// parseMemory parses frontmatter and checks the memory name.
-func parseMemory(data []byte, name string) (map[string]string, error) {
+// ParseMemory parses frontmatter and checks the memory name.
+func ParseMemory(data []byte, name string) (map[string]string, error) {
 	values, err := parseFrontmatter(data)
 	if err != nil {
 		return nil, err
 	}
 	if values["name"] != name {
-		message := fmt.Sprintf("frontmatter: name %s differs from %s", displayValue(values["name"]), displayValue(name))
+		message := fmt.Sprintf("frontmatter: name %s differs from %s", DisplayValue(values["name"]), DisplayValue(name))
 		return nil, newFrontmatterError("frontmatter: name differs", message)
 	}
 	return values, nil
@@ -86,7 +86,8 @@ func splitFrontmatterLine(line string) (string, string, bool) {
 	return strings.TrimSpace(key), strings.TrimSpace(value), true
 }
 
-func displayValue(value string) string {
+// DisplayValue quotes a value that is not valid UTF-8 or has a control character.
+func DisplayValue(value string) string {
 	if !utf8.ValidString(value) {
 		return fmt.Sprintf("%q", value)
 	}

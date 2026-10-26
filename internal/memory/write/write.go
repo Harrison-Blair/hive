@@ -1,4 +1,6 @@
-package memory
+// Package write reads one memory, checks its paths, and writes it and the
+// memory index under the store lock.
+package write
 
 import (
 	"context"
@@ -16,6 +18,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	scopelib "github.com/Harrison-Blair/hive/internal/lib/scope"
 	storelib "github.com/Harrison-Blair/hive/internal/lib/store"
+	memorylib "github.com/Harrison-Blair/hive/internal/memory"
 )
 
 var memoryNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
@@ -47,19 +50,19 @@ func Write(home string, options WriteOptions) output.Envelope {
 	}
 	options.Logger = logWithProject(options.Logger, resolved.ProjectID)
 	if !memoryNamePattern.MatchString(options.Name) {
-		return failEnvelope(options.Logger, "memory write", options.Scope, "validate", fmt.Errorf("invalid memory name: %s", displayValue(options.Name)))
+		return failEnvelope(options.Logger, "memory write", options.Scope, "validate", fmt.Errorf("invalid memory name: %s", memorylib.DisplayValue(options.Name)))
 	}
 	content, err := scopelib.ReadInput(options.Input, 1<<20, options.Deadline)
 	if err != nil {
 		return failEnvelope(options.Logger, "memory write", options.Scope, "input", err)
 	}
-	values, err := parseMemory(content, options.Name)
+	values, err := memorylib.ParseMemory(content, options.Name)
 	if err != nil {
 		return failEnvelope(options.Logger, "memory write", options.Scope, "frontmatter", err)
 	}
 	memoryDir := filepath.Join(resolved.Dir, "memory")
 	memoryPath := filepath.Join(memoryDir, options.Name+".md")
-	indexPath := filepath.Join(memoryDir, indexName)
+	indexPath := filepath.Join(memoryDir, memorylib.IndexName)
 	if err := scopelib.CheckDir(home, memoryDir); err != nil {
 		return failEnvelope(options.Logger, "memory write", options.Scope, "path", err)
 	}
@@ -91,7 +94,7 @@ func writeMemory(home string, resolved scopelib.Scope, options WriteOptions, mem
 		if err := os.MkdirAll(memoryDir, 0o755); err != nil {
 			return &phaseError{phase: "memory", err: err}
 		}
-		entries, err := scanMemoryFiles(memoryDir)
+		entries, err := memorylib.ScanMemoryFiles(memoryDir)
 		if err != nil {
 			return &phaseError{phase: "scan", err: err}
 		}
@@ -106,7 +109,7 @@ func writeMemory(home string, resolved scopelib.Scope, options WriteOptions, mem
 		case !errors.Is(err, os.ErrNotExist):
 			return &phaseError{phase: "path", err: err}
 		}
-		if err := writeAtomic(memoryPath, content); err != nil {
+		if err := memorylib.WriteAtomic(memoryPath, content); err != nil {
 			return &phaseError{phase: "memory", err: err}
 		}
 		memoryEffect := output.Effect{
@@ -115,21 +118,21 @@ func writeMemory(home string, resolved scopelib.Scope, options WriteOptions, mem
 			Action:   action,
 		}
 		logEffect(options.Logger, "memory write", options.Scope, memoryEffect)
-		entries = upsertEntry(entries, indexEntry{Name: options.Name, Description: description})
+		entries = memorylib.UpsertEntry(entries, memorylib.IndexEntry{Name: options.Name, Description: description})
 		sort.Slice(entries, func(left, right int) bool {
 			return entries[left].Name < entries[right].Name
 		})
-		writeIndex := writeAtomic
+		writeIndex := memorylib.WriteAtomic
 		if options.IndexWrite != nil {
 			writeIndex = options.IndexWrite
 		}
-		if err := writeIndex(indexPath, buildIndex(entries)); err != nil {
+		if err := writeIndex(indexPath, memorylib.BuildIndex(entries)); err != nil {
 			logFailure(options.Logger, "memory write", options.Scope, "index", err)
 			result = output.Envelope{
 				Outcome: "partial",
 				Phase:   "index",
 				Effects: []output.Effect{memoryEffect},
-				Error:   displayValue(err.Error()),
+				Error:   memorylib.DisplayValue(err.Error()),
 				Result:  nil,
 			}
 			return nil
@@ -186,14 +189,14 @@ func failed(phase, message string) output.Envelope {
 		Outcome: "failed",
 		Phase:   phase,
 		Effects: []output.Effect{},
-		Error:   displayValue(message),
+		Error:   memorylib.DisplayValue(message),
 		Result:  nil,
 	}
 }
 
 func failEnvelope(logger *slog.Logger, command, scope, phase string, err error) output.Envelope {
 	logFailure(logger, command, scope, phase, err)
-	return failed(phase, userErrorText(err))
+	return failed(phase, memorylib.UserErrorText(err))
 }
 
 func logEffect(logger *slog.Logger, command, scope string, effect output.Effect) {
@@ -207,30 +210,6 @@ func logEffect(logger *slog.Logger, command, scope string, effect output.Effect)
 		"path", effect.Path,
 		"action", effect.Action,
 	)
-}
-
-type userMessaged interface {
-	UserMessage() string
-}
-
-type logCategorized interface {
-	LogCategory() string
-}
-
-func userErrorText(err error) string {
-	var messaged userMessaged
-	if errors.As(err, &messaged) {
-		return messaged.UserMessage()
-	}
-	return err.Error()
-}
-
-func logErrorText(err error) string {
-	var categorized logCategorized
-	if errors.As(err, &categorized) {
-		return categorized.LogCategory()
-	}
-	return displayValue(err.Error())
 }
 
 func logWithProject(logger *slog.Logger, projectID string) *slog.Logger {
@@ -248,6 +227,6 @@ func logFailure(logger *slog.Logger, command, scope, phase string, err error) {
 		"command", command,
 		"scope", scope,
 		"phase", phase,
-		"error", logErrorText(err),
+		"error", memorylib.LogErrorText(err),
 	)
 }
