@@ -1,4 +1,4 @@
-package task
+package show
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
 func seedBrief(t *testing.T, home, id string) {
@@ -23,33 +24,33 @@ func seedBrief(t *testing.T, home, id string) {
 func TestShowAgentStatus(t *testing.T) {
 	for _, status := range []string{records.AgentLive, records.AgentUnresolved, records.AgentExited, records.AgentStopped} {
 		t.Run(status, func(t *testing.T) {
-			home, task := newSeed(t, "assigned")
-			seedAgent(t, home, records.Agent{
+			home, task := tasktest.NewSeed(t, "assigned")
+			tasktest.SeedAgent(t, home, records.Agent{
 				Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "one", Task: task.ID,
 				Status: status, PaneID: "w1:p1", Generation: 1,
 				StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 			})
 			seedBrief(t, home, task.ID)
-			envelope := Show(home, task.ID, ShowOptions{})
+			envelope := Run(home, task.ID, Options{})
 			if envelope.Outcome != "ok" {
 				t.Fatalf("Show() = %+v, want ok", envelope)
 			}
-			if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: "+status) {
+			if text := Text(envelope); !strings.Contains(text, "acting_agent_status: "+status) {
 				t.Fatalf("ShowText() = %q, want the %s status", text, status)
 			}
 		})
 	}
 
 	t.Run("missing record", func(t *testing.T) {
-		home, task := newSeed(t, "assigned")
+		home, task := tasktest.NewSeed(t, "assigned")
 		task.ActingAgent = "missing-agent"
-		seedTask(t, home, task)
+		tasktest.SeedTask(t, home, task)
 		seedBrief(t, home, task.ID)
-		envelope := Show(home, task.ID, ShowOptions{})
+		envelope := Run(home, task.ID, Options{})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Show() = %+v, want ok", envelope)
 		}
-		if text := ShowText(envelope); !strings.Contains(text, "acting_agent_status: no record") {
+		if text := Text(envelope); !strings.Contains(text, "acting_agent_status: no record") {
 			t.Fatalf("ShowText() = %q, want no record", text)
 		}
 	})

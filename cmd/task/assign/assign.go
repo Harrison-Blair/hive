@@ -5,6 +5,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/assign"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ func New() *cobra.Command {
 		return common.Run(cmd, "task assign", func(home string) (output.Envelope, string, error) {
 			taskID, _ := cmd.Flags().GetString("task")
 			agent, _ := cmd.Flags().GetString("agent")
-			envelope := tasklib.Assign(home, tasklib.TransitionOptions{Task: taskID, Agent: agent})
+			envelope := operation.Run(home, tasklib.TransitionOptions{Task: taskID, Agent: agent})
 			return envelope, tasklib.TransitionText(envelope), nil
 		})
 	}

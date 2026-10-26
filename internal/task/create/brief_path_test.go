@@ -1,4 +1,4 @@
-package task
+package create
 
 import (
 	"os"
@@ -7,18 +7,14 @@ import (
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
-// briefAncestorPath returns the computed brief directory of a home.
-func briefAncestorPath(home string) string {
-	return filepath.Join(home, ".hive", "state", "briefs")
-}
-
 func TestCreateRejectsLinkedBriefAncestor(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	external := t.TempDir()
-	briefs := briefAncestorPath(home)
+	briefs := tasktest.BriefAncestorPath(home)
 	if err := os.MkdirAll(filepath.Dir(briefs), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +22,7 @@ func TestCreateRejectsLinkedBriefAncestor(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	envelope := Create(home, CreateOptions{Project: "one", Title: "Seed"})
+	envelope := Run(home, Options{Project: "one", Title: "Seed"})
 	if envelope.Outcome != "failed" || envelope.Error == nil {
 		t.Fatalf("Create() = %#v; want a failed outcome", envelope)
 	}
@@ -47,9 +43,9 @@ func TestCreateRejectsLinkedBriefAncestor(t *testing.T) {
 }
 
 func TestCreateRejectsWrongTypeBriefAncestor(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	briefs := briefAncestorPath(home)
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
+	briefs := tasktest.BriefAncestorPath(home)
 	if err := os.MkdirAll(filepath.Dir(briefs), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +53,7 @@ func TestCreateRejectsWrongTypeBriefAncestor(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	envelope := Create(home, CreateOptions{Project: "one", Title: "Seed"})
+	envelope := Run(home, Options{Project: "one", Title: "Seed"})
 	if envelope.Outcome != "failed" || envelope.Error == nil {
 		t.Fatalf("Create() = %#v; want a failed outcome", envelope)
 	}
@@ -67,44 +63,9 @@ func TestCreateRejectsWrongTypeBriefAncestor(t *testing.T) {
 	assertNoTaskRecord(t, home, "1-seed")
 }
 
-func TestShowRejectsLinkedBriefAncestor(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
-	task := createOK(t, home, CreateOptions{Project: "one", Title: "Second step"})
-
-	briefs := briefAncestorPath(home)
-	archived := filepath.Join(home, ".hive", "state", "briefs-original")
-	if err := os.Rename(briefs, archived); err != nil {
-		t.Fatal(err)
-	}
-	external := t.TempDir()
-	const externalBrief = "external brief"
-	if err := os.WriteFile(filepath.Join(external, task.ID+".md"), []byte(externalBrief), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Symlink(external, briefs); err != nil {
-		t.Fatal(err)
-	}
-
-	envelope := Show(home, task.ID, ShowOptions{})
-	if envelope.Outcome != "failed" || envelope.Error == nil {
-		t.Fatalf("Show() = %#v; want a failed outcome", envelope)
-	}
-	if _, ok := envelope.Result.(ShowResult); ok {
-		t.Fatalf("Show() result = %#v; want no brief from the external directory", envelope.Result)
-	}
-	data, err := os.ReadFile(filepath.Join(external, task.ID+".md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(data) != externalBrief {
-		t.Fatalf("external brief = %q; want %q", data, externalBrief)
-	}
-}
-
 func TestCreateKeepsUserBriefBelowLinkedDirectory(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	target := t.TempDir()
 	const userBrief = "user selected brief"
 	if err := os.WriteFile(filepath.Join(target, "brief.md"), []byte(userBrief), 0o644); err != nil {
@@ -115,13 +76,13 @@ func TestCreateKeepsUserBriefBelowLinkedDirectory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	task := createOK(t, home, CreateOptions{
+	task := createOK(t, home, Options{
 		Project:   "one",
 		Title:     "Step",
 		BriefPath: filepath.Join(alias, "brief.md"),
 		BriefSet:  true,
 	})
-	data, err := os.ReadFile(filepath.Join(briefAncestorPath(home), task.ID+".md"))
+	data, err := os.ReadFile(filepath.Join(tasktest.BriefAncestorPath(home), task.ID+".md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,14 +92,14 @@ func TestCreateKeepsUserBriefBelowLinkedDirectory(t *testing.T) {
 }
 
 func TestCreateAcceptsSymlinkedHomeRoot(t *testing.T) {
-	home := newHome(t)
-	registerProject(t, home, "one")
+	home := tasktest.NewHome(t)
+	tasktest.RegisterProject(t, home, "one")
 	alias := filepath.Join(filepath.Dir(home), "alias")
 	if err := os.Symlink(home, alias); err != nil {
 		t.Fatal(err)
 	}
 
-	envelope := Create(alias, CreateOptions{Project: "one", Title: "Step"})
+	envelope := Run(alias, Options{Project: "one", Title: "Step"})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Create() with a symlinked home root = %#v; want ok", envelope)
 	}

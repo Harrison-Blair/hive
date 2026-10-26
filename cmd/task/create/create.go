@@ -4,7 +4,7 @@ package create
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/create"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ func New() *cobra.Command {
 			slug, _ := cmd.Flags().GetString("slug")
 			dependsOn, _ := cmd.Flags().GetString("depends-on")
 			briefPath, _ := cmd.Flags().GetString("brief")
-			envelope := tasklib.Create(home, tasklib.CreateOptions{
+			envelope := operation.Run(home, operation.Options{
 				Project:        project,
 				Title:          title,
 				Feature:        feature,
@@ -46,7 +46,7 @@ func New() *cobra.Command {
 				BriefSet:       cmd.Flags().Changed("brief"),
 				Input:          cmd.InOrStdin(),
 			})
-			return envelope, tasklib.CreateText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

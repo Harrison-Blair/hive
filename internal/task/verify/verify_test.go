@@ -1,4 +1,4 @@
-package task
+package verify
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/gitx"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
 func runVerifyGit(t *testing.T, dir string, args ...string) string {
@@ -99,9 +101,9 @@ func snapshotTaskState(t *testing.T, home string) map[string][]byte {
 
 func verifyWithWorktree(t *testing.T, repo string) (string, records.Task) {
 	t.Helper()
-	home, task := newSeed(t, "completed")
+	home, task := tasktest.NewSeed(t, "completed")
 	task.Worktree = &records.Worktree{Path: repo, Branch: "task/verify"}
-	seedTask(t, home, task)
+	tasktest.SeedTask(t, home, task)
 	return home, task
 }
 
@@ -110,7 +112,7 @@ func TestVerifyRefusesDirtyWorktreeWithoutChanges(t *testing.T) {
 	home, task := verifyWithWorktree(t, repo)
 	before := snapshotTaskState(t, home)
 
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "verifier-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "worktree is dirty: commit and push before verify" {
 		t.Fatalf("Verify() = %#v; want dirty worktree refusal", envelope)
 	}
@@ -124,7 +126,7 @@ func TestVerifyRefusesBranchWithoutRemoteWithoutChanges(t *testing.T) {
 	home, task := verifyWithWorktree(t, repo)
 	before := snapshotTaskState(t, home)
 
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "verifier-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "branch not pushed: task/verify" {
 		t.Fatalf("Verify() = %#v; want missing remote branch refusal", envelope)
 	}
@@ -138,7 +140,7 @@ func TestVerifyRefusesBranchAheadOfOriginWithoutChanges(t *testing.T) {
 	home, task := verifyWithWorktree(t, repo)
 	before := snapshotTaskState(t, home)
 
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "verifier-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "branch not pushed: task/verify has commits not on origin" {
 		t.Fatalf("Verify() = %#v; want unpushed commit refusal", envelope)
 	}
@@ -152,11 +154,11 @@ func TestVerifyAcceptsCleanPushedWorktree(t *testing.T) {
 	home, task := verifyWithWorktree(t, repo)
 	remoteTip := runVerifyGit(t, repo, "rev-parse", "HEAD")
 
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-1"})
+	envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Agent: "verifier-1"})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Verify() = %#v; want clean pushed branch to pass", envelope)
 	}
-	if got := readTask(t, home, task.ID); got.Status != "verified" || got.Verification == nil || got.Verification.Result != "pass" {
+	if got := tasktest.ReadTask(t, home, task.ID); got.Status != "verified" || got.Verification == nil || got.Verification.Result != "pass" {
 		t.Fatalf("task = %#v; want verified pass", got)
 	}
 	if got := runVerifyGit(t, repo, "rev-parse", "refs/remotes/origin/task/verify"); got != remoteTip {

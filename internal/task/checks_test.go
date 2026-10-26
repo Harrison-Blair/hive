@@ -12,7 +12,7 @@ import (
 func TestCompleteRefusesCallerThatIsNotTheActingAgent(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-2"})
 	if envelope.Outcome != "failed" || envelope.Error != "not the acting agent of 1-seed: worker-2" {
 		t.Fatalf("Complete() = %#v; want the exact D8 refusal", envelope)
 	}
@@ -30,7 +30,7 @@ func TestCompleteRefusesActingNameWithoutTheTaskFact(t *testing.T) {
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 1,
 	})
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "not the acting agent of 1-seed: worker-1" {
 		t.Fatalf("Complete() = %#v; want the exact D8 refusal", envelope)
 	}
@@ -43,7 +43,7 @@ func TestCompleteRefusesActingNameWithoutTheTaskFact(t *testing.T) {
 // fact that is not the acting agent can verify the task.
 func TestVerifyAllowsAnotherBoundAgent(t *testing.T) {
 	home, task := newSeed(t, "completed")
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
+	envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "worker-2"})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Verify() = %#v; want ok for another bound agent", envelope)
 	}
@@ -62,7 +62,7 @@ func TestVerifyRefusesCallerNotBoundToTheTask(t *testing.T) {
 		Status: records.AgentLive, PaneID: "w1:p3", Generation: 1,
 	})
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "verifier-3"})
+	envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "verifier-3"})
 	if envelope.Outcome != "failed" || envelope.Error != "not bound to 1-seed: verifier-3" {
 		t.Fatalf("Verify() = %#v; want the exact D8 refusal", envelope)
 	}
@@ -75,7 +75,7 @@ func TestVerifyRefusesCallerNotBoundToTheTask(t *testing.T) {
 func TestVerifyRefusesTheActingAgent(t *testing.T) {
 	home, task := newSeed(t, "completed")
 	before := taskRecordBytes(t, home, task.ID)
-	envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+	envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "worker-1"})
 	if envelope.Outcome != "failed" || envelope.Error != "self verify refused: worker-1 is the acting agent of 1-seed" {
 		t.Fatalf("Verify() = %#v; want the exact self-verify refusal", envelope)
 	}
@@ -91,10 +91,10 @@ func TestVerifyRefusesTheActingAgent(t *testing.T) {
 // meaningful: a builder that verifies is finished and cannot then complete.
 func TestVerifyBoundBuilderCannotCompleteAfterItsVerify(t *testing.T) {
 	home, task := newSeed(t, "completed")
-	if envelope := Verify(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+	if envelope := RunFinish(home, "verify", TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
 		t.Fatalf("Verify() = %#v; want ok", envelope)
 	}
-	refused := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-2"})
+	refused := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-2"})
 	if refused.Outcome != "failed" || !strings.Contains(refused.Error.(string), "agent finished: worker-2") {
 		t.Fatalf("Complete() = %#v; want the finished-agent refusal", refused)
 	}

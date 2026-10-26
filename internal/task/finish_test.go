@@ -358,13 +358,13 @@ func TestCompleteFinishAdvancedRefusalAndFreshRework(t *testing.T) {
 		t.Fatalf("task status = %q; want assigned", got.Status)
 	}
 
-	if envelope := Assign(home, TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "failed" || envelope.Error != "agent finished: worker-1: use a fresh agent" {
+	if envelope := RunTransition(home, "assign", TransitionOptions{Task: task.ID, Agent: "worker-1"}); envelope.Outcome != "failed" || envelope.Error != "agent finished: worker-1: use a fresh agent" {
 		t.Fatalf("same-agent assign = %#v; want the finished-agent refusal", envelope)
 	}
 	if got := readTask(t, home, task.ID); got.ActingAgent != "worker-1" {
 		t.Fatalf("acting agent = %q; want unchanged worker-1", got.ActingAgent)
 	}
-	if envelope := Assign(home, TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
+	if envelope := RunTransition(home, "assign", TransitionOptions{Task: task.ID, Agent: "worker-2"}); envelope.Outcome != "ok" {
 		t.Fatalf("fresh assign = %#v; want ok", envelope)
 	}
 	if envelope := runFinishLocked(t, home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-2"}, nil); envelope.Outcome != "ok" {
@@ -432,7 +432,7 @@ func TestCompleteFinishCancelKeepsExistingReasonBehavior(t *testing.T) {
 		t.Fatalf("verify fail = %#v; want ok", envelope)
 	}
 	reason := strings.Repeat("x", 5000)
-	if envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: reason}); envelope.Outcome != "ok" {
+	if envelope := RunTransition(home, "cancel", TransitionOptions{Task: task.ID, Reason: reason}); envelope.Outcome != "ok" {
 		t.Fatalf("cancel = %#v; want ok without a new reason cap", envelope)
 	}
 	if got := readTask(t, home, task.ID); got.Status != "cancelled" || got.CancelReason != reason {
@@ -454,7 +454,7 @@ func TestCompleteFinishConcurrentAttempts(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			results <- Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+			results <- RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"})
 		}()
 	}
 	wg.Wait()
@@ -504,7 +504,7 @@ func TestCompleteFinishConcurrentInboxReaders(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		envelope := Complete(home, TransitionOptions{Task: task.ID, Agent: "worker-1"})
+		envelope := RunFinish(home, "complete", TransitionOptions{Task: task.ID, Agent: "worker-1"})
 		if envelope.Outcome != "ok" {
 			errs <- errors.New("the finish did not complete")
 		}

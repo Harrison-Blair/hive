@@ -1,4 +1,5 @@
-package task
+// Package verify records one independent check of a task.
+package verify
 
 import (
 	"context"
@@ -10,28 +11,29 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/run"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
 )
 
-// Verify records one independent check of a task.
-func Verify(home string, options TransitionOptions) output.Envelope {
+// Run records one independent check of a task.
+func Run(home string, options tasklib.TransitionOptions) output.Envelope {
 	if records.ValidTaskID(options.Task) {
 		registry, err := store.Open(home)
 		if err == nil {
 			var task records.Task
-			if err := registry.ReadIn([]string{tasksCollection}, options.Task, &task); err == nil && task.Worktree != nil {
-				log := openOperationLog(home, options.Logger)
-				defer log.close()
+			if err := registry.ReadIn([]string{tasklib.TasksCollection}, options.Task, &task); err == nil && task.Worktree != nil {
+				log := tasklib.OpenLog(home, options.Logger)
+				defer log.Close()
 				if options.Logger == nil {
-					options.Logger = log.logger
+					options.Logger = log.Logger
 				}
 				if err := checkVerifyWorktree(task.Worktree, options.Logger); err != nil {
-					log.failure("task verify", task.Project, task.ID, options.Agent, "worktree", err.Error())
-					return failedEnvelope("worktree", err.Error())
+					log.Failure("task verify", task.Project, task.ID, options.Agent, "worktree", err.Error())
+					return tasklib.FailedEnvelope("worktree", err.Error())
 				}
 			}
 		}
 	}
-	return runFinish(home, "verify", options)
+	return tasklib.RunFinish(home, "verify", options)
 }
 
 func checkVerifyWorktree(worktree *records.Worktree, logger *slog.Logger) error {

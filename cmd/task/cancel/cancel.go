@@ -5,6 +5,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/cancel"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ func New() *cobra.Command {
 		return common.Run(cmd, "task cancel", func(home string) (output.Envelope, string, error) {
 			taskID, _ := cmd.Flags().GetString("task")
 			reason, _ := cmd.Flags().GetString("reason")
-			envelope := tasklib.Cancel(home, tasklib.TransitionOptions{Task: taskID, Reason: reason})
+			envelope := operation.Run(home, tasklib.TransitionOptions{Task: taskID, Reason: reason})
 			return envelope, tasklib.TransitionText(envelope), nil
 		})
 	}

@@ -171,9 +171,9 @@ func TestDirectFinishLogsResolvedKeyWithoutOutputPointer(t *testing.T) {
 					opts.Logger = slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
 					var envelope output.Envelope
 					if op.command == "complete" {
-						envelope = Complete(home, opts)
+						envelope = RunFinish(home, "complete", opts)
 					} else {
-						envelope = Verify(home, opts)
+						envelope = RunFinish(home, "verify", opts)
 					}
 					if envelope.Outcome != phase.outcome || envelope.Phase != phase.phase {
 						t.Fatalf("finish = %#v; want %s/%s", envelope, phase.outcome, phase.phase)
@@ -272,9 +272,9 @@ func TestDirectFinishDefaultLoggerKeepsResolvedKey(t *testing.T) {
 			opts := TransitionOptions{Task: "1-literal", PaneID: op.pane, Fail: op.fail, Reason: op.reason}
 			var envelope output.Envelope
 			if op.command == "task complete" {
-				envelope = Complete(home, opts)
+				envelope = RunFinish(home, "complete", opts)
 			} else {
-				envelope = Verify(home, opts)
+				envelope = RunFinish(home, "verify", opts)
 			}
 			if envelope.Outcome != "ok" || len(envelope.Effects) != 4 {
 				t.Fatalf("finish = %#v; want ok with four effects", envelope)
@@ -304,7 +304,7 @@ func TestDirectFinishDefaultLoggerKeepsResolvedKeyOnCounterFailure(t *testing.T)
 	home := seedFinishLogHome(t, "assigned")
 	restore := readOnlyFinishDir(t, filepath.Join(home, ".hive", "state", "counters"))
 	defer restore()
-	envelope := Complete(home, TransitionOptions{Task: "1-literal", PaneID: "worker-pane"})
+	envelope := RunFinish(home, "complete", TransitionOptions{Task: "1-literal", PaneID: "worker-pane"})
 	if envelope.Outcome != "partial" || envelope.Phase != "counter" {
 		t.Fatalf("finish = %#v; want partial/counter", envelope)
 	}
@@ -323,7 +323,7 @@ func TestDirectFinishOutputPointerAndInvocationIsolation(t *testing.T) {
 	home := seedFinishLogHome(t, "assigned")
 	var actor records.Agent
 	var first bytes.Buffer
-	firstEnvelope := Complete(home, TransitionOptions{
+	firstEnvelope := RunFinish(home, "complete", TransitionOptions{
 		Task: "1-literal", PaneID: "worker-pane", ResolvedActor: &actor,
 		Logger: slog.New(slog.NewJSONHandler(&first, &slog.HandlerOptions{Level: slog.LevelDebug})),
 	})
@@ -334,7 +334,7 @@ func TestDirectFinishOutputPointerAndInvocationIsolation(t *testing.T) {
 		t.Fatalf("first log has %d resolved key events; want five: %s", count, first.String())
 	}
 	var second bytes.Buffer
-	secondEnvelope := Verify(home, TransitionOptions{
+	secondEnvelope := RunFinish(home, "verify", TransitionOptions{
 		Task: "1-literal", PaneID: "verifier-pane", ResolvedActor: &actor,
 		Logger: slog.New(slog.NewJSONHandler(&second, &slog.HandlerOptions{Level: slog.LevelDebug})),
 	})
@@ -349,7 +349,7 @@ func TestDirectFinishOutputPointerAndInvocationIsolation(t *testing.T) {
 	}
 	var third bytes.Buffer
 	thirdHome := seedFinishLogHome(t, "assigned")
-	thirdEnvelope := Complete(thirdHome, TransitionOptions{
+	thirdEnvelope := RunFinish(thirdHome, "complete", TransitionOptions{
 		Task: "1-literal", PaneID: "worker-history",
 		Logger: slog.New(slog.NewJSONHandler(&third, &slog.HandlerOptions{Level: slog.LevelDebug})),
 	})

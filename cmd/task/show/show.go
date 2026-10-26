@@ -4,7 +4,7 @@ package show
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/show"
 	"github.com/spf13/cobra"
 )
 
@@ -20,10 +20,10 @@ func New() *cobra.Command {
 	command.RunE = func(cmd *cobra.Command, args []string) error {
 		return common.Run(cmd, "task show", func(home string) (output.Envelope, string, error) {
 			brief, _ := cmd.Flags().GetBool("brief")
-			envelope := tasklib.Show(home, args[0], tasklib.ShowOptions{Brief: brief})
-			text := tasklib.ShowText(envelope)
+			envelope := operation.Run(home, args[0], operation.Options{Brief: brief})
+			text := operation.Text(envelope)
 			if brief {
-				text = tasklib.ShowBriefText(envelope)
+				text = operation.BriefText(envelope)
 			}
 			return envelope, text, nil
 		})

@@ -1,4 +1,4 @@
-package task
+package cancel
 
 import (
 	"encoding/json"
@@ -8,10 +8,12 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	"github.com/Harrison-Blair/hive/internal/task/tasktest"
 )
 
 func TestCancelPrunesStoppedActingAgent(t *testing.T) {
-	home, task := newSeed(t, "assigned")
+	home, task := tasktest.NewSeed(t, "assigned")
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +29,7 @@ func TestCancelPrunesStoppedActingAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if envelope := Cancel(home, TransitionOptions{Task: task.ID, Reason: "stop work"}); envelope.Outcome != "ok" {
+	if envelope := Run(home, tasklib.TransitionOptions{Task: task.ID, Reason: "stop work"}); envelope.Outcome != "ok" {
 		t.Fatalf("Cancel() = %#v; want ok", envelope)
 	}
 	var record records.Agent

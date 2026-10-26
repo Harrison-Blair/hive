@@ -4,7 +4,7 @@ package edit
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	tasklib "github.com/Harrison-Blair/hive/internal/task"
+	operation "github.com/Harrison-Blair/hive/internal/task/edit"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ func New() *cobra.Command {
 			if refused := common.CheckCaller(home, agent); refused != nil {
 				return *refused, "", nil
 			}
-			envelope := tasklib.Edit(home, tasklib.EditOptions{
+			envelope := operation.Run(home, operation.Options{
 				Task: taskID, Agent: agent, PaneID: pane,
 				Feature: feature, FeatureSet: cmd.Flags().Changed("feature"),
 				BriefSet:  cmd.Flags().Changed("brief"),
@@ -41,7 +41,7 @@ func New() *cobra.Command {
 				ClearNeedsUser: clearNeedsUser,
 				BriefPath:      briefPath, Input: cmd.InOrStdin(),
 			})
-			return envelope, tasklib.EditText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

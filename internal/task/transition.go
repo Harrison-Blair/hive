@@ -55,13 +55,13 @@ var transitions = map[string]map[string]string{
 func transition(writer transitionWriter, command string, options TransitionOptions) (records.Task, string, error) {
 	var result records.Task
 	var prior string
-	err := writer.UpdateIn([]string{tasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
+	err := writer.UpdateIn([]string{TasksCollection}, options.Task, func(raw json.RawMessage) (json.RawMessage, error) {
 		if len(raw) == 0 {
-			return nil, fmt.Errorf("task not found: %s", quoteIfControl(options.Task))
+			return nil, fmt.Errorf("task not found: %s", QuoteIfControl(options.Task))
 		}
 		var record records.Task
 		if err := json.Unmarshal(raw, &record); err != nil {
-			return nil, fmt.Errorf("record invalid: %s", taskRelPath(options.Task))
+			return nil, fmt.Errorf("record invalid: %s", TaskRelPath(options.Task))
 		}
 		prior = record.Status
 		result = record
@@ -83,7 +83,7 @@ func transition(writer transitionWriter, command string, options TransitionOptio
 				return nil, err
 			}
 			if found && known.Finished {
-				return nil, fmt.Errorf("agent finished: %s: use a fresh agent", quoteIfControl(known.Name))
+				return nil, fmt.Errorf("agent finished: %s: use a fresh agent", QuoteIfControl(known.Name))
 			}
 		}
 		if err := applyTransition(&record, command, options); err != nil {
@@ -96,13 +96,13 @@ func transition(writer transitionWriter, command string, options TransitionOptio
 	return result, prior, err
 }
 
-// checkOwner refuses a caller that is not the owner of the project of the
+// CheckOwner refuses a caller that is not the owner of the project of the
 // task and not the coordinator (D7).
-func checkOwner(task records.Task, caller records.Agent) error {
+func CheckOwner(task records.Task, caller records.Agent) error {
 	if caller.Kind == records.AgentKindCoordinator || caller.Owns == task.Project {
 		return nil
 	}
-	return fmt.Errorf("not the owner of project %s or the coordinator: %s", task.Project, quoteIfControl(caller.Name))
+	return fmt.Errorf("not the owner of project %s or the coordinator: %s", task.Project, QuoteIfControl(caller.Name))
 }
 
 // applyTransition changes one record for one command.
@@ -113,7 +113,7 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 	}
 	next, ok := transitions[record.Status][key]
 	if !ok {
-		return fmt.Errorf("invalid transition: %s -> %s", quoteIfControl(record.Status), quoteIfControl(command))
+		return fmt.Errorf("invalid transition: %s -> %s", QuoteIfControl(record.Status), QuoteIfControl(command))
 	}
 	switch command {
 	case "assign":
@@ -126,17 +126,17 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 			return errCallerUnknown
 		}
 		if !isActingAgent(record.ActingAgent, options) || (options.ResolvedActor != nil && options.ResolvedActor.Task != record.ID) {
-			return fmt.Errorf("not the acting agent of %s: %s", quoteIfControl(record.ID), quoteIfControl(callerName(options)))
+			return fmt.Errorf("not the acting agent of %s: %s", QuoteIfControl(record.ID), QuoteIfControl(callerName(options)))
 		}
 	case "verify":
 		if !hasCaller(options) {
 			return errCallerUnknown
 		}
 		if options.ResolvedActor != nil && options.ResolvedActor.Task != record.ID {
-			return fmt.Errorf("not bound to %s: %s", quoteIfControl(record.ID), quoteIfControl(callerName(options)))
+			return fmt.Errorf("not bound to %s: %s", QuoteIfControl(record.ID), QuoteIfControl(callerName(options)))
 		}
 		if isActingAgent(record.ActingAgent, options) {
-			return fmt.Errorf("self verify refused: %s is the acting agent of %s", quoteIfControl(callerName(options)), quoteIfControl(record.ID))
+			return fmt.Errorf("self verify refused: %s is the acting agent of %s", QuoteIfControl(callerName(options)), QuoteIfControl(record.ID))
 		}
 		if options.Fail && options.Reason == "" {
 			return errReasonNeeded
@@ -163,7 +163,7 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 		if options.ResolvedActor == nil {
 			return errCallerUnknown
 		}
-		if err := checkOwner(*record, *options.ResolvedActor); err != nil {
+		if err := CheckOwner(*record, *options.ResolvedActor); err != nil {
 			return err
 		}
 		record.VerificationHistory = append(record.VerificationHistory, records.VerificationHistory{
@@ -178,21 +178,21 @@ func applyTransition(record *records.Task, command string, options TransitionOpt
 	return nil
 }
 
-// runTransition runs one transition command under one lock.
-func runTransition(home, command string, options TransitionOptions) output.Envelope {
-	log := openOperationLog(home, options.Logger)
-	defer log.close()
+// RunTransition runs one transition command under one lock.
+func RunTransition(home, command string, options TransitionOptions) output.Envelope {
+	log := OpenLog(home, options.Logger)
+	defer log.Close()
 	logCommand := "task " + command
 	actorID := options.Agent
 	if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
 		actorID = options.ResolvedActor.Key
 	}
 	fail := func(phase, message string) output.Envelope {
-		log.failure(logCommand, "", options.Task, actorID, phase, message)
-		return failedEnvelope(phase, message)
+		log.Failure(logCommand, "", options.Task, actorID, phase, message)
+		return FailedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
-		return fail("validate", "task not found: "+quoteIfControl(options.Task))
+		return fail("validate", "task not found: "+QuoteIfControl(options.Task))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -202,11 +202,11 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		record, prior, innerErr := transition(locked, command, options)
 		if innerErr != nil {
-			envelope = failedEnvelope("transition", innerErr.Error())
+			envelope = FailedEnvelope("transition", innerErr.Error())
 			if options.ResolvedActor != nil && options.ResolvedActor.Key != "" {
 				actorID = options.ResolvedActor.Key
 			}
-			log.failure(logCommand, record.Project, options.Task, actorID, "transition", innerErr.Error())
+			log.Failure(logCommand, record.Project, options.Task, actorID, "transition", innerErr.Error())
 			return nil
 		}
 		envelope = output.Envelope{
@@ -220,9 +220,9 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 			actorID = options.ResolvedActor.Key
 		}
 		if command == "reopen" {
-			log.transition(logCommand, record.Project, record.ID, actorID, prior, record.Status, "reason", options.Reason)
+			log.Transition(logCommand, record.Project, record.ID, actorID, prior, record.Status, "reason", options.Reason)
 		} else {
-			log.transition(logCommand, record.Project, record.ID, actorID, prior, record.Status)
+			log.Transition(logCommand, record.Project, record.ID, actorID, prior, record.Status)
 		}
 		return nil
 	})
@@ -232,9 +232,9 @@ func runTransition(home, command string, options TransitionOptions) output.Envel
 	return envelope
 }
 
-// failedEnvelope builds one failed outcome.
-func failedEnvelope(phase, message string) output.Envelope {
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: oneLine(message), Result: nil}
+// FailedEnvelope builds one failed outcome.
+func FailedEnvelope(phase, message string) output.Envelope {
+	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: OneLine(message), Result: nil}
 }
 
 // transitionWriter holds the store operations of one transition under a held handle.
@@ -251,17 +251,17 @@ type finishWriter interface {
 	Next(name string) (uint64, error)
 }
 
-// runFinish runs one complete or verify command under one lock.
-func runFinish(home, command string, options TransitionOptions) output.Envelope {
-	log := openOperationLog(home, options.Logger)
-	defer log.close()
+// RunFinish runs one complete or verify command under one lock.
+func RunFinish(home, command string, options TransitionOptions) output.Envelope {
+	log := OpenLog(home, options.Logger)
+	defer log.Close()
 	logCommand := "task " + command
 	fail := func(phase, message string) output.Envelope {
-		log.failure(logCommand, "", options.Task, options.Agent, phase, message)
-		return failedEnvelope(phase, message)
+		log.Failure(logCommand, "", options.Task, options.Agent, phase, message)
+		return FailedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
-		return fail("validate", "task not found: "+quoteIfControl(options.Task))
+		return fail("validate", "task not found: "+QuoteIfControl(options.Task))
 	}
 	// One fresh actor belongs to this invocation. The finish group writes it
 	// for the logs. The optional caller output receives the same record after
@@ -278,7 +278,7 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 	project := ""
 	lockErr := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
 		var current records.Task
-		if err := locked.ReadIn([]string{tasksCollection}, options.Task, &current); err == nil {
+		if err := locked.ReadIn([]string{TasksCollection}, options.Task, &current); err == nil {
 			prior = current.Status
 			project = current.Project
 		}
@@ -301,21 +301,21 @@ func runFinish(home, command string, options TransitionOptions) output.Envelope 
 		if err != nil {
 			envelope.Outcome = "partial"
 			envelope.Phase = "evidence"
-			envelope.Error = oneLine(err.Error())
+			envelope.Error = OneLine(err.Error())
 		}
 	}
 	if task, ok := envelope.Result.(records.Task); ok && hasEffect(envelope.Effects, "task") {
-		log.transition(logCommand, task.Project, task.ID, actorID, prior, task.Status)
+		log.Transition(logCommand, task.Project, task.ID, actorID, prior, task.Status)
 		for _, effect := range envelope.Effects {
 			inbox := ""
 			if effect.Resource == "counter" || effect.Resource == "inbox" {
-				inbox = projectAddress(task.Project)
+				inbox = ProjectAddress(task.Project)
 			}
 			log.finishEffect(logCommand, task.Project, task.ID, actorID, inbox, effect)
 		}
 	}
 	if envelope.Error != nil {
-		log.failure(logCommand, project, options.Task, actorID, envelope.Phase, fmt.Sprint(envelope.Error))
+		log.Failure(logCommand, project, options.Task, actorID, envelope.Phase, fmt.Sprint(envelope.Error))
 	}
 	return envelope
 }
@@ -330,68 +330,68 @@ func hasEffect(effects []output.Effect, resource string) bool {
 }
 
 // finishEffect writes one completed write of a finish group.
-func (l operationLog) finishEffect(command, projectID, taskID, agentID, inbox string, effect output.Effect) {
-	if l.logger == nil {
+func (l Log) finishEffect(command, projectID, taskID, agentID, inbox string, effect output.Effect) {
+	if l.Logger == nil {
 		return
 	}
-	fields := l.fields(command, projectID, taskID, agentID)
+	fields := l.Fields(command, projectID, taskID, agentID)
 	if inbox != "" {
 		fields = append(fields, "inbox", inbox)
 	}
 	fields = append(fields, "resource", effect.Resource, "path", effect.Path, "action", effect.Action)
-	l.logger.Debug("task effect", fields...)
+	l.Logger.Debug("task effect", fields...)
 }
 
 // LogOutputFailure writes one output stream error after a durable finish. It
 // separates the successful durable effects from the failed output.
 func LogOutputFailure(home, command, projectID, taskID, agentID string, outputErr error) {
-	log := openOperationLog(home, nil)
-	defer log.close()
-	if log.logger == nil {
+	log := OpenLog(home, nil)
+	defer log.Close()
+	if log.Logger == nil {
 		return
 	}
-	fields := log.fields(command, projectID, taskID, agentID)
+	fields := log.Fields(command, projectID, taskID, agentID)
 	fields = append(fields, "phase", "output", "error", outputErr.Error())
-	log.logger.Error("task output error", fields...)
+	log.Logger.Error("task output error", fields...)
 }
 
 // finishLocked performs the finish group under one held handle.
 func finishLocked(writer finishWriter, command string, options TransitionOptions) output.Envelope {
 	var task records.Task
-	if err := writer.ReadIn([]string{tasksCollection}, options.Task, &task); err != nil {
+	if err := writer.ReadIn([]string{TasksCollection}, options.Task, &task); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return failedEnvelope("transition", "task not found: "+quoteIfControl(options.Task))
+			return FailedEnvelope("transition", "task not found: "+QuoteIfControl(options.Task))
 		}
-		return failedEnvelope("store", err.Error())
+		return FailedEnvelope("store", err.Error())
 	}
 	caller, err := identity.ResolveHeld(writer, options.Agent, options.PaneID)
 	if err != nil {
-		return failedEnvelope("identity", err.Error())
+		return FailedEnvelope("identity", err.Error())
 	}
 	if options.ResolvedActor != nil {
 		*options.ResolvedActor = caller
 	}
 	if caller.Finished {
-		return failedEnvelope("finished", advancedFinishMessage(task, caller))
+		return FailedEnvelope("finished", advancedFinishMessage(task, caller))
 	}
 	if command == "complete" {
 		if !sameAgent(caller, task.ActingAgent) || caller.Task != task.ID {
-			return failedEnvelope("identity", fmt.Sprintf("not the acting agent of %s: %s", quoteIfControl(task.ID), quoteIfControl(caller.Name)))
+			return FailedEnvelope("identity", fmt.Sprintf("not the acting agent of %s: %s", QuoteIfControl(task.ID), QuoteIfControl(caller.Name)))
 		}
 	} else {
 		if caller.Task != task.ID {
-			return failedEnvelope("identity", fmt.Sprintf("not bound to %s: %s", quoteIfControl(task.ID), quoteIfControl(caller.Name)))
+			return FailedEnvelope("identity", fmt.Sprintf("not bound to %s: %s", QuoteIfControl(task.ID), QuoteIfControl(caller.Name)))
 		}
 		if sameAgent(caller, task.ActingAgent) {
-			return failedEnvelope("identity", fmt.Sprintf("self verify refused: %s is the acting agent of %s", quoteIfControl(caller.Name), quoteIfControl(task.ID)))
+			return FailedEnvelope("identity", fmt.Sprintf("self verify refused: %s is the acting agent of %s", QuoteIfControl(caller.Name), QuoteIfControl(task.ID)))
 		}
 		if options.Fail && options.Reason == "" {
-			return failedEnvelope("transition", errReasonNeeded.Error())
+			return FailedEnvelope("transition", errReasonNeeded.Error())
 		}
 	}
 	notification, err := finishNotification(command, task, caller, options)
 	if err != nil {
-		return failedEnvelope("validate", err.Error())
+		return FailedEnvelope("validate", err.Error())
 	}
 	resolved := caller
 	transitionOptions := options
@@ -401,9 +401,9 @@ func finishLocked(writer finishWriter, command string, options TransitionOptions
 	result, _, err := transition(writer, command, transitionOptions)
 	if err != nil {
 		if task.Status == "created" {
-			return failedEnvelope("task", err.Error())
+			return FailedEnvelope("task", err.Error())
 		}
-		return failedEnvelope("task", finishInspectionMessage(task, caller, err.Error()))
+		return FailedEnvelope("task", finishInspectionMessage(task, caller, err.Error()))
 	}
 	effects := []output.Effect{{Resource: "task", Path: statePath("tasks", result.ID), Action: "updated"}}
 	appended := inbox.AppendHeld(writer, notification)
@@ -430,7 +430,7 @@ func finishNotification(command string, task records.Task, caller records.Agent,
 		}
 	}
 	notification := inbox.AppendOptions{
-		Inbox: projectAddress(task.Project),
+		Inbox: ProjectAddress(task.Project),
 		Kind:  kind,
 		Task:  task.ID,
 		Agent: caller.Name,
@@ -439,9 +439,9 @@ func finishNotification(command string, task records.Task, caller records.Agent,
 	return notification, inbox.ValidateAppend(notification)
 }
 
-// projectAddress returns the address that routes mail to the owner of one
+// ProjectAddress returns the address that routes mail to the owner of one
 // project (D7).
-func projectAddress(project string) string {
+func ProjectAddress(project string) string {
 	return "project:" + project
 }
 
@@ -469,7 +469,7 @@ func isActingAgent(acting string, options TransitionOptions) bool {
 
 func advancedFinishMessage(task records.Task, caller records.Agent) string {
 	return fmt.Sprintf("agent finished: %s: %s",
-		quoteIfControl(caller.Name), finishInspectionCommands(task, caller))
+		QuoteIfControl(caller.Name), finishInspectionCommands(task, caller))
 }
 
 func finishInspectionMessage(task records.Task, caller records.Agent, message string) string {
@@ -478,7 +478,7 @@ func finishInspectionMessage(task records.Task, caller records.Agent, message st
 
 func finishInspectionCommands(task records.Task, caller records.Agent) string {
 	return fmt.Sprintf("run task show %s, agent show %s, and inbox --inbox %s --all",
-		task.ID, quoteIfControl(caller.Name), projectAddress(task.Project))
+		task.ID, QuoteIfControl(caller.Name), ProjectAddress(task.Project))
 }
 
 func statePath(collection, id string) string {
