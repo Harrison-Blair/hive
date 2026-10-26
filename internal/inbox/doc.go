@@ -1,3 +1,3 @@
-// Package inbox holds the command logic for the inbox command.
-// read.go consumes or lists records; send.go appends a record; render.go formats results and the failed-stdout report.
+// Package inbox holds the shared logic of the inbox command and its read operation.
+// read.go consumes or lists records; render.go formats read results and the failed-stdout report.
 package inbox

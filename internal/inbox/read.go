@@ -30,7 +30,7 @@ type ReadOptions struct {
 func Read(home string, options ReadOptions) output.Envelope {
 	registry, err := store.Open(home)
 	if err != nil {
-		return failedRead("store", err.Error())
+		return Failed("store", err.Error())
 	}
 	var envelope output.Envelope
 	var key string
@@ -38,9 +38,9 @@ func Read(home string, options ReadOptions) output.Envelope {
 		caller, err := agent.Caller(locked, agent.CallerOptions{Agent: options.Agent, Pane: options.PaneID, HerdrPane: options.HerdrPane})
 		if err != nil {
 			if errors.Is(err, identity.ErrCallerUnknown) {
-				envelope = failedRead("validate", "caller unknown: pass --agent or run inside herdr")
+				envelope = Failed("validate", "caller unknown: pass --agent or run inside herdr")
 			} else {
-				envelope = failedRead("identity", err.Error())
+				envelope = Failed("identity", err.Error())
 			}
 			return nil
 		}
@@ -50,13 +50,13 @@ func Read(home string, options ReadOptions) output.Envelope {
 		if options.InboxSet {
 			key = options.Inbox
 			if err := inboxlib.ValidateAppend(inboxlib.AppendOptions{Inbox: key}); err != nil {
-				envelope = failedRead("validate", err.Error())
+				envelope = Failed("validate", err.Error())
 				return nil
 			}
 			if inboxlib.IsProjectAddress(key) {
 				agents, err := identity.Agents(locked)
 				if err != nil {
-					envelope = failedRead("read", err.Error())
+					envelope = Failed("read", err.Error())
 					return nil
 				}
 				key = inboxlib.ResolveAddress(agents, key)
@@ -66,14 +66,14 @@ func Read(home string, options ReadOptions) output.Envelope {
 		ownerRead := key == ownKey
 		coordinatorRead := caller.Kind == records.AgentKindCoordinator && !ownerRead
 		if !ownerRead && !coordinatorRead {
-			envelope = failedRead("validate", fmt.Sprintf("inbox %s belongs to %s", key, inboxOwner(key)))
+			envelope = Failed("validate", fmt.Sprintf("inbox %s belongs to %s", key, inboxOwner(key)))
 			return nil
 		}
 
 		if options.All || coordinatorRead {
 			found, err := inboxlib.AllHeld(locked, key)
 			if err != nil {
-				envelope = failedRead("read", err.Error())
+				envelope = Failed("read", err.Error())
 				return nil
 			}
 			if coordinatorRead && !options.All {
@@ -98,7 +98,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 		return nil
 	})
 	if lockErr != nil {
-		return failedRead("store", lockErr.Error())
+		return Failed("store", lockErr.Error())
 	}
 	inboxlib.LogConsume(home, key, envelope)
 	return envelope
@@ -111,6 +111,7 @@ func inboxOwner(key string) string {
 	return "the agent " + key
 }
 
-func failedRead(phase, message string) output.Envelope {
+// Failed returns one failed inbox envelope with no effects.
+func Failed(phase, message string) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
 }

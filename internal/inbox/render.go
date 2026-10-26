@@ -38,18 +38,6 @@ func renderValue(value string) string {
 	return value
 }
 
-// SendText renders the effects of one append.
-func SendText(envelope output.Envelope) string {
-	lines := make([]string, 0, len(envelope.Effects))
-	for _, effect := range envelope.Effects {
-		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
-	}
-	if len(lines) == 0 {
-		return ""
-	}
-	return strings.Join(lines, "\n") + "\n"
-}
-
 // Consumed returns the sequence IDs of completed consume effects.
 func Consumed(envelope output.Envelope) []uint64 {
 	ids := make([]uint64, 0, len(envelope.Effects))
