@@ -111,19 +111,19 @@ var durationSpans = map[string][]durationSpan{
 	},
 }
 
-// healthDurationSpans gives the table state column 2 more cells for the
-// complete time. The old field has 14 cells and the new one has 16, so PANE,
-// STARTED, and RESTART move right by 2 and the gap before the right border
-// loses 2 cells.
+// healthDurationSpans gives the table state column 3 more cells for the
+// complete time. The old field has 14 cells and the new one has 17, so PANE,
+// STARTED, and RESTART move right by 3 and the gap before the right border
+// loses 3 cells.
 var healthDurationSpans = []durationSpan{
-	{-1, "HARNESS   STATE          PANE", "HARNESS   STATE            PANE"},
-	{-1, "working 2m" + strings.Repeat(" ", 5), "working 00:02:05 "},
-	{-1, "live 62m" + strings.Repeat(" ", 7), "live 01:02:05" + strings.Repeat(" ", 4)},
-	{-1, "working 3m" + strings.Repeat(" ", 5), "working 00:03:05 "},
-	{-1, "working 1m" + strings.Repeat(" ", 5), "working 00:01:05 "},
-	{-1, "idle 6m" + strings.Repeat(" ", 8), "idle 00:06:05" + strings.Repeat(" ", 4)},
-	{-1, "unresolved     ", "unresolved       "},
-	{-1, "stopped        ", "stopped          "},
+	{-1, "HARNESS   STATE          PANE", "HARNESS   STATE             PANE"},
+	{-1, "working 2m" + strings.Repeat(" ", 5), "working 00:02:05  "},
+	{-1, "live 62m" + strings.Repeat(" ", 7), "live 01:02:05" + strings.Repeat(" ", 5)},
+	{-1, "working 3m" + strings.Repeat(" ", 5), "working 00:03:05  "},
+	{-1, "working 1m" + strings.Repeat(" ", 5), "working 00:01:05  "},
+	{-1, "idle 6m" + strings.Repeat(" ", 8), "idle 00:06:05" + strings.Repeat(" ", 5)},
+	{-1, "unresolved     ", "unresolved        "},
+	{-1, "stopped        ", "stopped           "},
 	{-1, "working 2m", "working 00:02:05"},
 }
 

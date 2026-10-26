@@ -30,10 +30,10 @@ const (
 	healthNameWidth    = 17
 	healthProfileWidth = 12
 	healthHarnessWidth = 9
-	healthStateWidth   = 16
+	healthStateWidth   = 17
 	healthPaneWidth    = 10
 	healthStartedWidth = 10
-	healthHeader       = "AGENT             PROFILE      HARNESS   STATE            PANE       STARTED   RESTART"
+	healthHeader       = "AGENT             PROFILE      HARNESS   STATE             PANE       STARTED   RESTART"
 )
 
 // healthTileWidth is the most cells of a tile text.
