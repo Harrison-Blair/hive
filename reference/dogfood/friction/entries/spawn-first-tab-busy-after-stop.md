@@ -72,3 +72,17 @@ model substitution, or runtime restart is part of this workaround.
 Task 174 evidence keeps both failed starts, both successful retries,
 identity reads, and the separate historical evidence exception. The
 underlying startup issue remains open.
+
+**Occurrence: task 175 on 2026-10-26**
+The first fresh verifier start failed before work with `first tab busy`.
+The original builder PID 1344672 was absent. The failed target `w13X:p1`
+returned `pane_not_found`, and no task actor was live. One fresh native
+retry under coordinator record 324 succeeded as `t175-verifier-2` in
+`w13Y:p1`, PID 2208364. It used the same model and no pane override.
+No placeholder, source edit, settings change, or manual record edit was used.
+The failed verifier ran no tests and gave no verdict.
+
+Task 175 evidence retains the failed start and absence/retry receipts in
+`manager-verifier-spawn.*`, `manager-verifier-retry324/`, and
+`manager-known-friction-occurrence-175.md`. The later independent pass and
+delivery are separate from this startup failure. The issue remains open.

@@ -15,7 +15,7 @@ For all other files, the coordinator and manager never change a project source f
 | [Bare hive in a scratch home starts real coordinator and supervisor tabs](entries/scratch-hive-starts-real-agents.md) | Open | Task 8-no-startup adds the opt-in switch --no-startup and HIVE_NO_STARTUP=1 |
 | [A stale coordinator record blocks bare hive startup](entries/resolved/stale-coordinator-blocks-startup.md) | Resolved 2026-10-21 | Task 2 makes bare hive check the coordinator pane at startup, and task 3 adds the r restart on the Agents screen |
 | [The --agent flag of agent send names the target, but names the sender in inbox send](entries/agent-send-flag-means-target.md) | Open |  |
-| [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open |  |
+| [A spawn after a stop fails with first tab busy, and a retry works](entries/spawn-first-tab-busy-after-stop.md) | Open | One fresh same-model native retry after actual target absence and no live owned actor; keep each refusal and retry receipt. |
 | [A manager spawn marks the live manager stale but leaves its pane running, and agent stop refuses it](entries/manager-respawn-leaves-old-pane.md) | Open |  |
 | [A worker spawn with --pane starts the agent but assigns nothing and sends no first prompt](entries/spawn-with-pane-skips-assign-and-prompt.md) | Open |  |
 | [TestHealthProgramUsesStringReader fails at times on TempDir cleanup](entries/resolved/health-program-test-flakes.md) | Resolved 2026-10-25 | Tasks 165 and 179 settle home-access loaders and close the TUI writer before return. |
@@ -86,3 +86,4 @@ For all other files, the coordinator and manager never change a project source f
 | [Native stop refuses a general agent that Hive created](entries/native-stop-refuses-created-general-agent.md) | Open | Preserve the refusal. Close only the actually created pane after current process identity checks. No product fix. |
 | [Native Claude spawn rejects the multiline system prompt](entries/resolved/claude-system-prompt-multiline-argv.md) | Resolved 2026-10-26 | Task 186 fixes both native start paths with exact private instruction files and independently checked consumption. |
 | [A pending CI handoff has no completion event and stalls the next task](entries/ci-handoff-has-no-completion-event.md) | Open | Use a bounded one-shot gh run watch and send its actual outcome to the native project inbox. No product fix or observer agent. |
+| [An inbox report over 4096 bytes is refused](entries/inbox-report-byte-limit.md) | Open | Send a concise report within the limit and link the full evidence. Preserve the refused attempt. |

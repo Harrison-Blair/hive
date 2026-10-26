@@ -79,3 +79,25 @@ Task 182's earlier accepted closure and task 184's historical failed verdict
 remain unchanged. This actual result replaces no earlier history.
 The separate verifier was required for native closure. The status limitation
 and the user's preference remain open process friction.
+
+**Actual task 177 audit closure on 2026-10-26:**
+Task 177 updated the ignored command inventory and feature README. Its only
+tracked change was its own STE baseline entry at zero. It changed no Go
+source or test. The accepted audit brief and delivery grant still required
+a real independent pass before native landing. The manager used that
+fallback and did not ask the user for another decision.
+
+The fresh verifier checked all 42 inventory rows, the actual predecessor
+deliveries, retained APIs, CLI behavior, and the required gate. It added no
+regression test or semantic-break campaign for this documentation audit.
+The executed CLI check had 264 passes and no skips. The passing race gate
+had 3,792 passes and 17 actual skips; those skipped paths remain unverified.
+Its first reporting-setting failure and unchanged-base comparison remain
+preserved separately from the passing gate.
+
+Native pass 366 permitted merge/push to `dev` at
+`8fbb6029130071e8779289b6f570befa2b216d6a`. Native landing also copied the
+ignored final inventory and README to the home; their bytes were checked.
+This records the required fallback. It does not resolve the user's request
+to skip separate verification for prose-only work. Direct friction-log
+updates continue to need no builder or verifier under the project rules.
