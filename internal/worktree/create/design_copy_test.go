@@ -1,4 +1,4 @@
-package worktree
+package create
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
 )
 
 // AC1, AC3: worktree create copies the design folder of each other feature,
@@ -54,7 +56,7 @@ func TestCreateCopiesDesignFoldersOfOtherFeatures(t *testing.T) {
 	}
 
 	// AC2: the hash record holds only the feature of the task.
-	record, found, err := ReadSpecCopy(home, task.ID)
+	record, found, err := worktreelib.ReadSpecCopy(home, task.ID)
 	if err != nil || !found {
 		t.Fatalf("ReadSpecCopy() = %v, %v", found, err)
 	}
@@ -65,7 +67,7 @@ func TestCreateCopiesDesignFoldersOfOtherFeatures(t *testing.T) {
 	}
 
 	// AC3: text, JSON result, and log give the counts.
-	if text := CreateText(envelope); !strings.Contains(text, "copied design 2 features 3 files\n") {
+	if text := Text(envelope); !strings.Contains(text, "copied design 2 features 3 files\n") {
 		t.Errorf("CreateText() = %q, want the line %q", text, "copied design 2 features 3 files")
 	}
 	data, err := json.Marshal(envelope.Result)

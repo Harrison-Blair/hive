@@ -1,4 +1,4 @@
-package worktree
+package create
 
 import (
 	"context"
@@ -10,33 +10,30 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/Harrison-Blair/hive/internal/lib/gitx"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
-	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/run"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
 )
 
 const (
-	commandCreate = "worktree create"
-	commandRemove = "worktree remove"
+	command       = "worktree create"
 	createTimeout = 60 * time.Second
-	maxLogText    = 4096
 )
 
-// CreateOptions holds the values of one worktree create.
-type CreateOptions struct {
+// Options holds the values of one worktree create.
+type Options struct {
 	Task   string
 	Focus  bool
 	Logger *slog.Logger
 }
 
-// CreateResult is the record and topology of one worktree create.
-type CreateResult struct {
+// Result is the record and topology of one worktree create.
+type Result struct {
 	Task            records.Task `json:"task"`
 	WorkspaceID     string       `json:"workspace_id"`
 	TabID           string       `json:"tab_id"`
@@ -56,26 +53,26 @@ func (e *createReadFailure) Error() string {
 	return e.message
 }
 
-// Create makes the worktree of one task.
-func Create(ctx context.Context, home string, options CreateOptions) output.Envelope {
+// Run makes the worktree of one task.
+func Run(ctx context.Context, home string, options Options) output.Envelope {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	logger, closeLog := openWorktreeLogger(home, options.Logger)
+	logger, closeLog := worktreelib.OpenLogger(home, options.Logger)
 	defer closeLog()
 	ctx = run.WithLogger(ctx, logger)
 	failProjectID := ""
 	failTaskID := options.Task
 	fail := func(phase, message string) output.Envelope {
-		logFailure(logger, commandCreate, failProjectID, failTaskID, phase, message)
-		return failedEnvelope(phase, message)
+		worktreelib.LogFailure(logger, command, failProjectID, failTaskID, phase, message)
+		return worktreelib.FailedEnvelope(phase, message)
 	}
 	if !records.ValidTaskID(options.Task) {
 		return fail("validate", "task not found: "+options.Task)
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		return fail("store", "open store: "+oneLine(err.Error()))
+		return fail("store", "open store: "+worktreelib.OneLine(err.Error()))
 	}
 	var task records.Task
 	var project records.Project
@@ -84,7 +81,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 			if errors.Is(err, os.ErrNotExist) {
 				return &createReadFailure{"task", "task not found: " + options.Task}
 			}
-			return &createReadFailure{"store", "read task: " + oneLine(err.Error())}
+			return &createReadFailure{"store", "read task: " + worktreelib.OneLine(err.Error())}
 		}
 		if task.ID != options.Task || !records.ValidTaskID(task.ID) {
 			return &createReadFailure{"task", "task record id mismatch: " + task.ID + " != " + options.Task}
@@ -102,7 +99,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 			if errors.Is(err, os.ErrNotExist) {
 				return &createReadFailure{"project", "project not found: " + task.Project}
 			}
-			return &createReadFailure{"store", "read project: " + oneLine(err.Error())}
+			return &createReadFailure{"store", "read project: " + worktreelib.OneLine(err.Error())}
 		}
 		if project.ID != task.Project || !records.ValidID(project.ID) {
 			return &createReadFailure{"project", "project record id mismatch: " + project.ID + " != " + task.Project}
@@ -114,7 +111,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		if errors.As(readErr, &failure) {
 			return fail(failure.phase, failure.message)
 		}
-		return fail("store", "read records: "+oneLine(readErr.Error()))
+		return fail("store", "read records: "+worktreelib.OneLine(readErr.Error()))
 	}
 	failProjectID = project.ID
 	scoped := logger
@@ -124,25 +121,25 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	ctx = run.WithLogger(ctx, scoped)
 	worktreePath := filepath.Join(home, "projects", project.ID, "worktrees", options.Task)
 	branch := "task/" + options.Task
-	logEvent(logger, "worktree create start", commandCreate, project.ID, options.Task, "status", task.Status)
+	worktreelib.LogEvent(logger, "worktree create start", command, project.ID, options.Task, "status", task.Status)
 
 	linked, err := gitx.IsLinkedWorktree(ctx, project.Path)
 	if err != nil {
-		return fail("precheck", "read repository: "+oneLine(err.Error()))
+		return fail("precheck", "read repository: "+worktreelib.OneLine(err.Error()))
 	}
 	if linked {
 		return fail("precheck", "repository is a linked worktree: register the primary checkout")
 	}
 	exists, err := gitx.RefExists(ctx, project.Path, project.Base)
 	if err != nil {
-		return fail("precheck", "read base ref: "+oneLine(err.Error()))
+		return fail("precheck", "read base ref: "+worktreelib.OneLine(err.Error()))
 	}
 	if !exists {
 		return fail("precheck", "base ref not found: "+project.Base)
 	}
 	exists, err = gitx.BranchExists(ctx, project.Path, branch)
 	if err != nil {
-		return fail("precheck", "read branch: "+oneLine(err.Error()))
+		return fail("precheck", "read branch: "+worktreelib.OneLine(err.Error()))
 	}
 	if exists {
 		return fail("precheck", "branch exists: "+branch)
@@ -150,13 +147,13 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	if _, err := os.Lstat(worktreePath); err == nil {
 		return fail("precheck", "path exists: "+worktreePath)
 	} else if !errors.Is(err, os.ErrNotExist) {
-		return fail("precheck", "check path: "+oneLine(err.Error()))
+		return fail("precheck", "check path: "+worktreelib.OneLine(err.Error()))
 	}
 	featureBrief := featureBriefRelativePath(task)
 
 	before, err := herdr.WorkspaceList(ctx, herdr.WithLogger(scoped))
 	if err != nil {
-		return fail("workspace", "list workspaces: "+oneLine(err.Error()))
+		return fail("workspace", "list workspaces: "+worktreelib.OneLine(err.Error()))
 	}
 	params := herdr.WorktreeCreateParams{
 		Cwd:    project.Path,
@@ -166,7 +163,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		Label:  options.Task,
 		Focus:  options.Focus,
 	}
-	logEvent(logger, "worktree create request", commandCreate, project.ID, options.Task, "cwd", project.Path, "branch", branch, "base", project.Base, "path", worktreePath, "focus", options.Focus)
+	worktreelib.LogEvent(logger, "worktree create request", command, project.ID, options.Task, "cwd", project.Path, "branch", branch, "base", project.Base, "path", worktreePath, "focus", options.Focus)
 	result, callErr := herdr.WorktreeCreate(ctx, params, herdr.WithDeadline(createTimeout), herdr.WithLogger(scoped))
 	if callErr != nil {
 		var herdrErr *herdr.Error
@@ -177,12 +174,12 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	}
 
 	actualPath := result.Worktree.Path
-	if !samePath(actualPath, worktreePath) {
+	if !worktreelib.SamePath(actualPath, worktreePath) {
 		effects := createEffects(result.Workspace.WorkspaceID, actualPath, branch, "")
-		logEffects(logger, commandCreate, project.ID, options.Task, effects)
+		logEffects(logger, command, project.ID, options.Task, effects)
 		message := "worktree mismatch: path: " + actualPath + " does not match " + worktreePath
-		logFailure(logger, commandCreate, project.ID, options.Task, "request", message)
-		return partialEnvelope("request", message, effects, createResult(records.Task{}, result.Workspace.WorkspaceID, result.Tab.TabID, result.RootPane.PaneID, actualPath, branch, ""))
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, "request", message)
+		return worktreelib.PartialEnvelope("request", message, effects, createResult(records.Task{}, result.Workspace.WorkspaceID, result.Tab.TabID, result.RootPane.PaneID, actualPath, branch, ""))
 	}
 
 	after, listErr := herdr.WorkspaceList(ctx, herdr.WithLogger(scoped))
@@ -197,7 +194,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 		RootPane:    result.RootPane.PaneID,
 		Path:        worktreePath,
 		Branch:      branch,
-		CreatedAt:   now(),
+		CreatedAt:   worktreelib.Now(),
 	}
 	effects := createEffects(worktree.WorkspaceID, worktreePath, branch, repoWorkspaceID)
 	var specCopyErr error
@@ -206,16 +203,16 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 	if task.Feature != "" {
 		specCopy, err := copySpecIn(home, worktreePath, task)
 		if err == nil {
-			err = writeSpecCopy(registry, specCopy)
+			err = worktreelib.WriteSpecCopy(registry, specCopy)
 		}
 		if err != nil {
 			specCopyErr = err
 		} else {
 			effects = append(effects,
 				output.Effect{Resource: "spec", Path: filepath.Join(worktreePath, filepath.FromSlash(featureSpecRelDir(task.Feature))) + "/", Action: "copied"},
-				output.Effect{Resource: "spec_copy", Path: SpecCopyRelPath(task.ID), Action: "created"},
+				output.Effect{Resource: "spec_copy", Path: worktreelib.SpecCopyRelPath(task.ID), Action: "created"},
 			)
-			logEvent(logger, "worktree spec copy-in", commandCreate, project.ID, options.Task, "path", featureSpecRelDir(task.Feature), "files", len(specCopy.Files))
+			worktreelib.LogEvent(logger, "worktree spec copy-in", command, project.ID, options.Task, "path", featureSpecRelDir(task.Feature), "files", len(specCopy.Files))
 		}
 		counts, err := copyDesignIn(home, worktreePath, task)
 		if err != nil {
@@ -227,7 +224,7 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 			if counts.Features > 0 {
 				effects = append(effects, output.Effect{Resource: "design", Path: fmt.Sprintf("%d features %d files", counts.Features, counts.Files), Action: "copied"})
 			}
-			logEvent(logger, "worktree design copy-in", commandCreate, project.ID, options.Task, "features", counts.Features, "files", counts.Files)
+			worktreelib.LogEvent(logger, "worktree design copy-in", command, project.ID, options.Task, "features", counts.Features, "files", counts.Files)
 		}
 		if err := copyFeatureBrief(home, worktreePath, task, featureBrief); err != nil {
 			briefCopyErr = err
@@ -239,34 +236,34 @@ func Create(ctx context.Context, home string, options CreateOptions) output.Enve
 			})
 		}
 	}
-	logEffects(logger, commandCreate, project.ID, options.Task, effects)
+	logEffects(logger, command, project.ID, options.Task, effects)
 	updated, phase, persistErr := persistCreate(registry, project, options.Task, &worktree, repoWorkspaceID)
 	if persistErr != nil {
 		message := createPersistMessage(phase, persistErr)
-		logFailure(logger, commandCreate, project.ID, options.Task, phase, message)
-		return partialEnvelope(phase, message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, phase, message)
+		return worktreelib.PartialEnvelope(phase, message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
 	if listErr != nil {
-		message := "list workspaces after create: " + oneLine(listErr.Error())
-		logFailure(logger, commandCreate, project.ID, options.Task, "workspace", message)
-		return partialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
+		message := "list workspaces after create: " + worktreelib.OneLine(listErr.Error())
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, "workspace", message)
+		return worktreelib.PartialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
 	}
 	if repoAmbiguous {
 		message := "repository workspace is uncertain: more than one new workspace matches the repository"
-		logFailure(logger, commandCreate, project.ID, options.Task, "workspace", message)
-		return partialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, "workspace", message)
+		return worktreelib.PartialEnvelope("workspace", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, ""))
 	}
 	if specCopyErr != nil {
-		message := oneLine(specCopyErr.Error())
-		logFailure(logger, commandCreate, project.ID, options.Task, "spec", message)
-		return partialEnvelope("spec", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
+		message := worktreelib.OneLine(specCopyErr.Error())
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, "spec", message)
+		return worktreelib.PartialEnvelope("spec", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
 	if briefCopyErr != nil {
-		message := "copy feature brief: " + oneLine(briefCopyErr.Error())
-		logFailure(logger, commandCreate, project.ID, options.Task, "brief", message)
-		return partialEnvelope("brief", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
+		message := "copy feature brief: " + worktreelib.OneLine(briefCopyErr.Error())
+		worktreelib.LogFailure(logger, command, project.ID, options.Task, "brief", message)
+		return worktreelib.PartialEnvelope("brief", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID))
 	}
-	logEvent(logger, "worktree create done", commandCreate, project.ID, options.Task, "workspace_id", worktree.WorkspaceID, "path", worktreePath, "branch", branch)
+	worktreelib.LogEvent(logger, "worktree create done", command, project.ID, options.Task, "workspace_id", worktree.WorkspaceID, "path", worktreePath, "branch", branch)
 	created := createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktreePath, branch, repoWorkspaceID)
 	created.Design = design
 	return output.Envelope{
@@ -291,21 +288,21 @@ func typedCreateFailure(ctx context.Context, logger *slog.Logger, project record
 			effects = append(effects, output.Effect{Resource: "branch", Path: branch, Action: "created"})
 			message += "; branch " + branch + " stays"
 		}
-		logEffects(logger, commandCreate, project.ID, taskID, effects)
-		logFailure(logger, commandCreate, project.ID, taskID, "request", message)
-		return failedEnvelopeWithEffects("request", message, effects)
+		logEffects(logger, command, project.ID, taskID, effects)
+		worktreelib.LogFailure(logger, command, project.ID, taskID, "request", message)
+		return worktreelib.FailedEnvelopeWithEffects("request", message, effects)
 	case "worktree_operation_in_progress":
 		message = "worktree operation in progress: retry later"
-		logFailure(logger, commandCreate, project.ID, taskID, "request", message)
-		return failedEnvelope("request", message)
+		worktreelib.LogFailure(logger, command, project.ID, taskID, "request", message)
+		return worktreelib.FailedEnvelope("request", message)
 	default:
-		logFailure(logger, commandCreate, project.ID, taskID, "request", message)
-		return failedEnvelope("request", message)
+		worktreelib.LogFailure(logger, command, project.ID, taskID, "request", message)
+		return worktreelib.FailedEnvelope("request", message)
 	}
 }
 
 func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, scoped *slog.Logger, project records.Project, taskID, worktreePath, branch string, before []herdr.WorkspaceInfo, callErr error) output.Envelope {
-	message := oneLine(callErr.Error())
+	message := worktreelib.OneLine(callErr.Error())
 	worktree := records.Worktree{}
 	worktreeProven := false
 	branchObserved := false
@@ -313,7 +310,7 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 		linked, linkedErr := gitx.IsLinkedWorktree(ctx, worktreePath)
 		switch {
 		case linkedErr != nil:
-			message += "; inspect worktree: " + oneLine(linkedErr.Error())
+			message += "; inspect worktree: " + worktreelib.OneLine(linkedErr.Error())
 		case !linked:
 			message += "; path is not a linked worktree: " + worktreePath
 		default:
@@ -321,40 +318,40 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 			repoCommon, repoErr := gitx.CommonDir(ctx, project.Path)
 			switch {
 			case targetErr != nil:
-				message += "; inspect worktree common dir: " + oneLine(targetErr.Error())
+				message += "; inspect worktree common dir: " + worktreelib.OneLine(targetErr.Error())
 			case repoErr != nil:
-				message += "; inspect repository common dir: " + oneLine(repoErr.Error())
+				message += "; inspect repository common dir: " + worktreelib.OneLine(repoErr.Error())
 			case targetCommon != repoCommon:
 				message += "; path worktree repo_root mismatch: " + worktreePath
 			default:
 				current, branchErr := gitx.CurrentBranch(ctx, worktreePath)
 				switch {
 				case branchErr != nil:
-					message += "; inspect current branch: " + oneLine(branchErr.Error())
+					message += "; inspect current branch: " + worktreelib.OneLine(branchErr.Error())
 				case current != branch:
 					message += "; worktree branch is " + current + ", want " + branch
 				default:
 					worktree.Path = worktreePath
 					worktree.Branch = branch
-					worktree.CreatedAt = now()
+					worktree.CreatedAt = worktreelib.Now()
 					worktreeProven = true
 					branchObserved = true
 				}
 			}
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
-		message += "; inspect path: " + oneLine(err.Error())
+		message += "; inspect path: " + worktreelib.OneLine(err.Error())
 	}
 	exists, branchErr := gitx.BranchExists(ctx, project.Path, branch)
 	if branchErr != nil {
-		message += "; inspect branch: " + oneLine(branchErr.Error())
+		message += "; inspect branch: " + worktreelib.OneLine(branchErr.Error())
 	} else if exists {
 		branchObserved = true
 	}
 	repoWorkspaceID := ""
 	after, listErr := herdr.WorkspaceList(ctx, herdr.WithLogger(scoped))
 	if listErr != nil {
-		message += "; list workspaces: " + oneLine(listErr.Error())
+		message += "; list workspaces: " + worktreelib.OneLine(listErr.Error())
 	} else {
 		workspace, repoID, repoAmbiguous := findWorktreeWorkspace(before, after, project.Path, worktreePath)
 		if workspace != nil {
@@ -362,7 +359,7 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 			worktree.TabID = workspace.ActiveTabID
 			if !worktreeProven {
 				worktree.Path = worktreePath
-				worktree.CreatedAt = now()
+				worktree.CreatedAt = worktreelib.Now()
 				worktreeProven = true
 			}
 		}
@@ -373,7 +370,7 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 		}
 	}
 	effects := createUnknownEffects(worktreeProven, worktree.WorkspaceID, worktreePath, branchObserved, branch, repoWorkspaceID)
-	logEffects(logger, commandCreate, project.ID, taskID, effects)
+	logEffects(logger, command, project.ID, taskID, effects)
 	var persisted *records.Worktree
 	if worktreeProven {
 		persisted = &worktree
@@ -381,11 +378,11 @@ func inspectUnknownCreate(ctx context.Context, registry *store.Store, logger, sc
 	updated, phase, persistErr := persistCreate(registry, project, taskID, persisted, repoWorkspaceID)
 	if persistErr != nil {
 		message += "; " + createPersistMessage(phase, persistErr)
-		logFailure(logger, commandCreate, project.ID, taskID, phase, message)
-		return partialEnvelope(phase, message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktree.Path, worktree.Branch, repoWorkspaceID))
+		worktreelib.LogFailure(logger, command, project.ID, taskID, phase, message)
+		return worktreelib.PartialEnvelope(phase, message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktree.Path, worktree.Branch, repoWorkspaceID))
 	}
-	logFailure(logger, commandCreate, project.ID, taskID, "request", message)
-	return partialEnvelope("request", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktree.Path, worktree.Branch, repoWorkspaceID))
+	worktreelib.LogFailure(logger, command, project.ID, taskID, "request", message)
+	return worktreelib.PartialEnvelope("request", message, effects, createResult(updated, worktree.WorkspaceID, worktree.TabID, worktree.RootPane, worktree.Path, worktree.Branch, repoWorkspaceID))
 }
 
 func createUnknownEffects(worktreeProven bool, workspaceID, path string, branchObserved bool, branch, repoWorkspaceID string) []output.Effect {
@@ -433,20 +430,20 @@ func copyFeatureBrief(home, worktreePath string, task records.Task, relativePath
 	source := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
 	data, err := os.ReadFile(source)
 	if err != nil {
-		return fmt.Errorf("read state brief: %s", oneLine(err.Error()))
+		return fmt.Errorf("read state brief: %s", worktreelib.OneLine(err.Error()))
 	}
 	destination := filepath.Join(worktreePath, filepath.FromSlash(relativePath))
 	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
-		return fmt.Errorf("create feature brief directory: %s", oneLine(err.Error()))
+		return fmt.Errorf("create feature brief directory: %s", worktreelib.OneLine(err.Error()))
 	}
 	if err := os.WriteFile(destination, data, 0o644); err != nil {
-		return fmt.Errorf("write feature brief: %s", oneLine(err.Error()))
+		return fmt.Errorf("write feature brief: %s", worktreelib.OneLine(err.Error()))
 	}
 	return nil
 }
 
-func createResult(task records.Task, workspaceID, tabID, rootPane, path, branch, repoWorkspaceID string) CreateResult {
-	return CreateResult{
+func createResult(task records.Task, workspaceID, tabID, rootPane, path, branch, repoWorkspaceID string) Result {
+	return Result{
 		Task:            task,
 		WorkspaceID:     workspaceID,
 		TabID:           tabID,
@@ -467,10 +464,10 @@ func findWorktreeWorkspace(before, after []herdr.WorkspaceInfo, repoPath, worktr
 	for _, workspace := range before {
 		seen[workspace.WorkspaceID] = true
 	}
-	repoCanonical := canonicalPath(repoPath)
+	repoCanonical := worktreelib.CanonicalPath(repoPath)
 	worktreeCanonical := ""
 	if worktreePath != "" {
-		worktreeCanonical = canonicalPath(worktreePath)
+		worktreeCanonical = worktreelib.CanonicalPath(worktreePath)
 	}
 	var linked *herdr.WorkspaceInfo
 	linkedCount := 0
@@ -482,11 +479,11 @@ func findWorktreeWorkspace(before, after []herdr.WorkspaceInfo, repoPath, worktr
 		if workspace.Worktree == nil {
 			continue
 		}
-		if !samePath(workspace.Worktree.RepoRoot, repoCanonical) {
+		if !worktreelib.SamePath(workspace.Worktree.RepoRoot, repoCanonical) {
 			continue
 		}
 		if workspace.Worktree.IsLinkedWorktree {
-			if worktreeCanonical == "" || !samePath(workspace.Worktree.CheckoutPath, worktreeCanonical) {
+			if worktreeCanonical == "" || !worktreelib.SamePath(workspace.Worktree.CheckoutPath, worktreeCanonical) {
 				continue
 			}
 			candidate := workspace
@@ -494,7 +491,7 @@ func findWorktreeWorkspace(before, after []herdr.WorkspaceInfo, repoPath, worktr
 			linkedCount++
 			continue
 		}
-		if samePath(workspace.Worktree.CheckoutPath, repoCanonical) {
+		if worktreelib.SamePath(workspace.Worktree.CheckoutPath, repoCanonical) {
 			repositoryIDs = append(repositoryIDs, workspace.WorkspaceID)
 		}
 	}
@@ -532,7 +529,7 @@ func persistCreate(registry *store.Store, project records.Project, taskID string
 					return nil, fmt.Errorf("task has a worktree: %s", record.Worktree.Path)
 				}
 				record.Worktree = worktree
-				record.UpdatedAt = now()
+				record.UpdatedAt = worktreelib.Now()
 				updated = record
 				return json.Marshal(record)
 			}); err != nil {
@@ -552,7 +549,7 @@ func persistCreate(registry *store.Store, project records.Project, taskID string
 				if record.ID != project.ID {
 					return nil, fmt.Errorf("project record changed: %s", record.ID)
 				}
-				if !samePath(record.Path, project.Path) {
+				if !worktreelib.SamePath(record.Path, project.Path) {
 					return nil, fmt.Errorf("project record changed: path %s", record.Path)
 				}
 				if record.RepoWorkspaceID != project.RepoWorkspaceID && record.RepoWorkspaceID != repoWorkspaceID {
@@ -576,126 +573,43 @@ func persistCreate(registry *store.Store, project records.Project, taskID string
 func createPersistMessage(phase string, err error) string {
 	switch phase {
 	case "task":
-		return "persist worktree: " + oneLine(err.Error())
+		return "persist worktree: " + worktreelib.OneLine(err.Error())
 	case "project":
-		return "persist repository workspace: " + oneLine(err.Error())
+		return "persist repository workspace: " + worktreelib.OneLine(err.Error())
 	default:
-		return "persist records: " + oneLine(err.Error())
+		return "persist records: " + worktreelib.OneLine(err.Error())
 	}
-}
-
-func canonicalPath(path string) string {
-	absolute, err := filepath.Abs(path)
-	if err != nil {
-		return filepath.Clean(path)
-	}
-	resolved, err := filepath.EvalSymlinks(absolute)
-	if err != nil {
-		return filepath.Clean(absolute)
-	}
-	return resolved
-}
-
-func samePath(left, right string) bool {
-	return canonicalPath(left) == canonicalPath(right)
-}
-
-func now() string {
-	return time.Now().UTC().Format(time.RFC3339Nano)
-}
-
-func failedEnvelope(phase, message string) output.Envelope {
-	return failedEnvelopeWithEffects(phase, message, nil)
-}
-
-func failedEnvelopeWithEffects(phase, message string, effects []output.Effect) output.Envelope {
-	if effects == nil {
-		effects = []output.Effect{}
-	}
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: effects, Error: oneLine(message), Result: nil}
-}
-
-func partialEnvelope(phase, message string, effects []output.Effect, result any) output.Envelope {
-	if effects == nil {
-		effects = []output.Effect{}
-	}
-	return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: oneLine(message), Result: result}
-}
-
-func oneLine(value string) string {
-	return strings.Map(func(character rune) rune {
-		if character < 0x20 || character == 0x7f {
-			return ' '
-		}
-		return character
-	}, value)
-}
-
-func openWorktreeLogger(home string, injected *slog.Logger) (*slog.Logger, func()) {
-	if injected != nil {
-		return injected, func() {}
-	}
-	writer, err := hivelog.NewWriter(home, "worktree", time.Now)
-	if err != nil {
-		return nil, func() {}
-	}
-	return slog.New(writer), func() { _ = writer.Close() }
-}
-
-func logEvent(logger *slog.Logger, message, command, projectID, taskID string, attrs ...any) {
-	if logger == nil {
-		return
-	}
-	fields := []any{"command", command}
-	if projectID != "" {
-		fields = append(fields, "project_id", projectID)
-	}
-	if taskID != "" {
-		fields = append(fields, "task_id", taskID)
-	}
-	fields = append(fields, attrs...)
-	logger.Debug(message, fields...)
-}
-
-func logEffect(logger *slog.Logger, command, projectID, taskID, resource, path, action string) {
-	logEvent(logger, "worktree effect", command, projectID, taskID, "resource", resource, "path", path, "action", action)
 }
 
 func logEffects(logger *slog.Logger, command, projectID, taskID string, effects []output.Effect) {
 	for _, effect := range effects {
-		logEffect(logger, command, projectID, taskID, effect.Resource, effect.Path, effect.Action)
+		worktreelib.LogEffect(logger, command, projectID, taskID, effect.Resource, effect.Path, effect.Action)
 	}
 }
 
-func logFailure(logger *slog.Logger, command, projectID, taskID, phase, message string) {
-	if logger == nil {
-		return
+// Text renders the result and effects of one worktree create.
+func Text(envelope output.Envelope) string {
+	lines := []string{}
+	if result, ok := envelope.Result.(Result); ok {
+		if result.WorkspaceID != "" {
+			lines = append(lines, "workspace: "+result.WorkspaceID)
+		}
+		if result.TabID != "" {
+			lines = append(lines, "tab: "+result.TabID)
+		}
+		if result.RootPane != "" {
+			lines = append(lines, "root_pane: "+result.RootPane)
+		}
+		if result.Path != "" {
+			lines = append(lines, "path: "+result.Path)
+		}
+		if result.Branch != "" {
+			lines = append(lines, "branch: "+result.Branch)
+		}
 	}
-	fields := []any{"command", command}
-	if projectID != "" {
-		fields = append(fields, "project_id", projectID)
+	lines = append(lines, worktreelib.EffectLines(envelope.Effects)...)
+	if len(lines) == 0 {
+		return ""
 	}
-	if taskID != "" {
-		fields = append(fields, "task_id", taskID)
-	}
-	if phase != "" {
-		fields = append(fields, "phase", phase)
-	}
-	text, truncated := boundLogText(oneLine(message))
-	fields = append(fields, "error", text)
-	if truncated {
-		fields = append(fields, "truncated", true)
-	}
-	logger.Error("worktree error", fields...)
-}
-
-func boundLogText(text string) (string, bool) {
-	if len(text) <= maxLogText {
-		return text, false
-	}
-	cut := maxLogText
-	for cut > 0 && !utf8.RuneStart(text[cut]) {
-		cut--
-	}
-	return text[:cut], true
+	return strings.Join(lines, "\n") + "\n"
 }

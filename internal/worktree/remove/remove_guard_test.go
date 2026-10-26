@@ -1,4 +1,4 @@
-package worktree
+package remove
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/worktree/worktreetest"
 )
 
 func writeGuardAgent(t *testing.T, home string, record records.Agent) {
@@ -24,20 +25,20 @@ func writeGuardAgent(t *testing.T, home string, record records.Agent) {
 
 func guardFixture(t *testing.T) (string, string, string) {
 	t.Helper()
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
 	path := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
-	addLinkedWorktree(t, repo, path, "task/1-live-demo", "main")
-	writeProject(t, home, testProject(repo))
-	task := worktreeTask(path, "task/1-live-demo")
+	worktreetest.AddLinkedWorktree(t, repo, path, "task/1-live-demo", "main")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	task := worktreetest.WorktreeTask(path, "task/1-live-demo")
 	task.Status = "verified"
-	writeTask(t, home, task)
+	worktreetest.WriteTask(t, home, task)
 	return repo, home, path
 }
 
-func guardHerdr(_ *testing.T, _, _ string) func(fakeRequest) fakeReply {
-	return func(fakeRequest) fakeReply {
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+func guardHerdr(_ *testing.T, _, _ string) func(worktreetest.FakeRequest) worktreetest.FakeReply {
+	return func(worktreetest.FakeRequest) worktreetest.FakeReply {
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	}
 }
 
@@ -45,7 +46,7 @@ func TestRemoveAgentGuard(t *testing.T) {
 	cases := []struct {
 		name string
 		seed func(t *testing.T, home, path string)
-		fake func(t *testing.T, repo, path string) func(fakeRequest) fakeReply
+		fake func(t *testing.T, repo, path string) func(worktreetest.FakeRequest) worktreetest.FakeReply
 		want string
 	}{
 		{
@@ -75,15 +76,15 @@ func TestRemoveAgentGuard(t *testing.T) {
 		{
 			name: "live herdr agent in the workspace",
 			seed: func(t *testing.T, home, path string) {},
-			fake: func(t *testing.T, repo, path string) func(fakeRequest) fakeReply {
-				return func(request fakeRequest) fakeReply {
+			fake: func(t *testing.T, repo, path string) func(worktreetest.FakeRequest) worktreetest.FakeReply {
+				return func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 					switch request.Method {
 					case "workspace.get":
-						return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+						return worktreetest.FakeReply{Result: worktreetest.WorkspaceInfoReply(t, worktreetest.LinkedWorkspace("w2", path, repo))}
 					case "agent.list":
-						return fakeReply{Result: `{"type":"agent_list","agents":[{"pane_id":"w2:p9","terminal_id":"term_x","workspace_id":"w2","tab_id":"w2:t1","agent_status":"idle","focused":false,"revision":1}]}`}
+						return worktreetest.FakeReply{Result: `{"type":"agent_list","agents":[{"pane_id":"w2:p9","terminal_id":"term_x","workspace_id":"w2","tab_id":"w2:t1","agent_status":"idle","focused":false,"revision":1}]}`}
 					}
-					return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+					return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 				}
 			},
 			want: "agent in workspace: w2:p9",
@@ -96,8 +97,8 @@ func TestRemoveAgentGuard(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				repo, home, path := guardFixture(t)
 				tc.seed(t, home, path)
-				startFakeHerdr(t, tc.fake(t, repo, path))
-				envelope := Remove(context.Background(), home, RemoveOptions{Task: "1-live-demo", Force: force})
+				worktreetest.StartFakeHerdr(t, tc.fake(t, repo, path))
+				envelope := Run(context.Background(), home, Options{Task: "1-live-demo", Force: force})
 				if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != tc.want {
 					t.Fatalf("Remove() = %+v, want %q", envelope, tc.want)
 				}
@@ -112,18 +113,18 @@ func TestRemoveAgentGuard(t *testing.T) {
 		repo, home, path := guardFixture(t)
 		writeGuardAgent(t, home, records.Agent{Key: "worker-6", Name: "worker-6", Profile: records.ProfileBuilder, Task: "1-live-demo", Status: records.AgentStopped, Cwd: path})
 		writeGuardAgent(t, home, records.Agent{Key: "worker-7", Name: "worker-7", Profile: records.ProfileBuilder, Task: "1-live-demo", Status: records.AgentExited, WorkspaceID: "w2"})
-		startFakeHerdr(t, func(request fakeRequest) fakeReply {
+		worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 			switch request.Method {
 			case "workspace.get":
-				return fakeReply{Result: workspaceInfoReply(t, linkedWorkspace("w2", path, repo))}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceInfoReply(t, worktreetest.LinkedWorkspace("w2", path, repo))}
 			case "workspace.close":
-				return fakeReply{Result: `{"type":"ok"}`}
+				return worktreetest.FakeReply{Result: `{"type":"ok"}`}
 			case "agent.list":
-				return fakeReply{Result: `{"type":"agent_list","agents":[]}`}
+				return worktreetest.FakeReply{Result: `{"type":"agent_list","agents":[]}`}
 			}
-			return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+			return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 		})
-		envelope := Remove(context.Background(), home, RemoveOptions{Task: "1-live-demo"})
+		envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 		if envelope.Outcome != "ok" {
 			t.Fatalf("Remove() = %+v, want ok", envelope)
 		}
