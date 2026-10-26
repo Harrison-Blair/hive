@@ -51,3 +51,17 @@ Task 182 evidence contains `manager-prose-only-waiver.json`,
 reports, and the preserved historical failed verdict.
 `internal/land/land.go` requires status `verified` and a pass.
 The manager recorded no fresh verifier, false pass, or native delivery for this closure.
+
+
+**Later decision and required fallback:**
+Coordinator records 197 and 198 preserve the actual accepted closure of task
+182. The next prose task must not use cancellation merely to clear guards.
+The user permits real verification if needed to continue, while preferring
+to skip it. The native normal closure still requires a pass and has no waiver.
+For task 184, the manager plans one real summary and evidence check if that
+requirement remains. This check runs no code gate or product test.
+After a real pass, normal already-merged delivery can close the task honestly.
+This is process friction: a prose-only update needs a separate verifier solely
+for native completion bookkeeping. The plan does not claim that the future
+check already ran or passed. The manager reports the exact disposition before
+finalization. This entry requests no source feature or runtime change.
