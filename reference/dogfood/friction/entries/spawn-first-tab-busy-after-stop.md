@@ -45,3 +45,30 @@ Task 170 evidence preserves `manager-verifier-spawn.json`, stderr and exit,
 `manager-verifier-retry265/`, pane-absence receipts, and the correction
 history. This occurrence uses the same documented workaround. The underlying
 startup issue remains open. No speculative product repair is requested.
+
+
+**Occurrence: task 174 on 2026-10-26**
+After native completion 317, a fresh verifier start failed before its turn
+with `first tab busy`. Hive recorded `t174-verifier-1` as exited. The
+builder's post-completion cleanup had a separate blocked prompt. Later
+reads found the builder stopped, PID 1343853 absent, and owned pane
+`w13N:p1` absent. One normal fresh verifier retry with no `--pane`
+succeeded as `t174-verifier-2` in `w13S:p1`. No placeholder tab or
+permission change was used. Its later evidence verdict is a separate event.
+
+During the bounded evidence correction, `t174-builder-2` also failed before
+start with `first tab busy` at 17:35:29 UTC. Coordinator record 324 and
+the manager's own read found failed target `w13T:p1` absent and no live
+task actor. One fresh same-model native retry, with no pane override,
+succeeded as `t174-builder-3` in `w13V:p1`. The source stayed frozen.
+
+Coordinator 324 permits this limited recovery for the remaining G2 starts:
+one fresh normal retry of a known prestart first-tab-busy failure, only
+after actual target absence and no live owned actor are established. An
+occupied target, uncertain identity, or failed retry still requires an
+actual-state escalation. No retry loop, placeholder, manual record edit,
+model substitution, or runtime restart is part of this workaround.
+
+Task 174 evidence keeps both failed starts, both successful retries,
+identity reads, and the separate historical evidence exception. The
+underlying startup issue remains open.
