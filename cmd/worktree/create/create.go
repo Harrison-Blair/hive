@@ -4,7 +4,7 @@ package create
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
+	operation "github.com/Harrison-Blair/hive/internal/worktree/create"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +22,8 @@ func New() *cobra.Command {
 		return common.Run(cmd, "worktree create", func(home string) (output.Envelope, string, error) {
 			task, _ := cmd.Flags().GetString("task")
 			focus, _ := cmd.Flags().GetBool("focus")
-			envelope := worktreelib.Create(cmd.Context(), home, worktreelib.CreateOptions{Task: task, Focus: focus})
-			return envelope, worktreelib.CreateText(envelope), nil
+			envelope := operation.Run(cmd.Context(), home, operation.Options{Task: task, Focus: focus})
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

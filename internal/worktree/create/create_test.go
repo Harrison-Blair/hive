@@ -1,4 +1,4 @@
-package worktree
+package create
 
 import (
 	"context"
@@ -15,32 +15,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/worktree/worktreetest"
 )
-
-func testProject(repo string) records.Project {
-	return records.Project{ID: "repo-live", Path: repo, Base: "main", RegisteredAt: "2026-10-18T00:00:00Z"}
-}
-
-func testTask() records.Task {
-	return records.Task{
-		ID:        "1-live-demo",
-		Project:   "repo-live",
-		Title:     "live demo",
-		Status:    "created",
-		DependsOn: []string{},
-		CreatedAt: "2026-10-18T00:00:00Z",
-		UpdatedAt: "2026-10-18T00:00:00Z",
-	}
-}
-
-func hasEffect(envelope output.Envelope, resource, action, path string) bool {
-	for _, effect := range envelope.Effects {
-		if effect.Resource == resource && effect.Action == action && effect.Path == path {
-			return true
-		}
-	}
-	return false
-}
 
 func effectCount(envelope output.Envelope, resource, action string) int {
 	count := 0
@@ -67,33 +43,33 @@ func effectResources(envelope output.Envelope) []string {
 }
 
 func TestCreateRecordsWorktreeAndRepositoryWorkspace(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantPath := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
 	wantBranch := "task/1-live-demo"
 	unrelated := herdrWorkspace("w9", "/tmp/unrelated")
 
 	var listCalls atomic.Int32
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t, unrelated)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t, unrelated)}
 			}
-			return fakeReply{Result: workspaceListReply(t,
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t,
 				unrelated,
-				linkedWorkspace("w2", wantPath, repo),
-				repositoryWorkspace("w7", repo),
+				worktreetest.LinkedWorkspace("w2", wantPath, repo),
+				worktreetest.RepositoryWorkspace("w7", repo),
 			)}
 		case "worktree.create":
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo)}
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "ok" || envelope.Phase != "complete" || envelope.Error != nil {
 		t.Fatalf("Create() = %+v, want ok complete", envelope)
 	}
@@ -107,14 +83,14 @@ func TestCreateRecordsWorktreeAndRepositoryWorkspace(t *testing.T) {
 		{"branch", "created", wantBranch},
 		{"workspace", "opened", "w7"},
 	} {
-		if !hasEffect(envelope, want.resource, want.action, want.path) {
+		if !worktreetest.HasEffect(envelope, want.resource, want.action, want.path) {
 			t.Fatalf("effects = %+v, want %s %s %s", envelope.Effects, want.action, want.resource, want.path)
 		}
 	}
 
-	request, found := server.requestFor("worktree.create")
+	request, found := server.RequestFor("worktree.create")
 	if !found {
-		t.Fatalf("methods = %v, want worktree.create", server.methods())
+		t.Fatalf("methods = %v, want worktree.create", server.Methods())
 	}
 	checks := []struct {
 		field string
@@ -127,21 +103,21 @@ func TestCreateRecordsWorktreeAndRepositoryWorkspace(t *testing.T) {
 		{"label", "1-live-demo"},
 	}
 	for _, check := range checks {
-		if got := request.stringParam(t, check.field); got != check.want {
+		if got := request.StringParam(t, check.field); got != check.want {
 			t.Fatalf("worktree.create %s = %q, want %q", check.field, got, check.want)
 		}
 	}
-	if request.boolParam(t, "focus") {
+	if request.BoolParam(t, "focus") {
 		t.Fatalf("worktree.create focus = true, want false")
 	}
-	if request.hasParam("workspace_id") {
+	if request.HasParam("workspace_id") {
 		t.Fatalf("worktree.create params = %s, want no workspace_id", request.Params)
 	}
-	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.list", "worktree.create", "workspace.list"}) {
+	if methods := server.Methods(); !reflect.DeepEqual(methods, []string{"workspace.list", "worktree.create", "workspace.list"}) {
 		t.Fatalf("methods = %v, want [workspace.list worktree.create workspace.list]", methods)
 	}
 
-	task := readTask(t, home, "1-live-demo")
+	task := worktreetest.ReadTask(t, home, "1-live-demo")
 	if task.Worktree == nil {
 		t.Fatalf("task worktree = nil, want a record")
 	}
@@ -154,11 +130,11 @@ func TestCreateRecordsWorktreeAndRepositoryWorkspace(t *testing.T) {
 	if task.Worktree.CreatedAt == "" || task.Worktree.RemovedAt != "" {
 		t.Fatalf("task worktree times = %+v, want created_at set and removed_at empty", task.Worktree)
 	}
-	project := readProject(t, home, "repo-live")
+	project := worktreetest.ReadProject(t, home, "repo-live")
 	if project.RepoWorkspaceID != "w7" {
 		t.Fatalf("project repo_workspace_id = %q, want w7", project.RepoWorkspaceID)
 	}
-	result, ok := envelope.Result.(CreateResult)
+	result, ok := envelope.Result.(Result)
 	if !ok {
 		t.Fatalf("result = %T, want CreateResult", envelope.Result)
 	}
@@ -180,9 +156,9 @@ func TestCreateRefusalsSendNoRequestAndChangeNoRecord(t *testing.T) {
 		{
 			name: "task has a worktree",
 			setup: func(t *testing.T, home, repo string) (records.Task, records.Project) {
-				task := testTask()
+				task := worktreetest.Task()
 				task.Worktree = &records.Worktree{Path: "/tmp/already", Branch: "task/old"}
-				return task, testProject(repo)
+				return task, worktreetest.Project(repo)
 			},
 			wantErr: "task has a worktree: /tmp/already",
 		},
@@ -190,27 +166,27 @@ func TestCreateRefusalsSendNoRequestAndChangeNoRecord(t *testing.T) {
 			name: "repository is a linked worktree",
 			setup: func(t *testing.T, home, repo string) (records.Task, records.Project) {
 				linked := filepath.Join(t.TempDir(), "linked")
-				addLinkedWorktree(t, repo, linked, "task/other", "main")
-				project := testProject(repo)
+				worktreetest.AddLinkedWorktree(t, repo, linked, "task/other", "main")
+				project := worktreetest.Project(repo)
 				project.Path = linked
-				return testTask(), project
+				return worktreetest.Task(), project
 			},
 			wantErr: "repository is a linked worktree: register the primary checkout",
 		},
 		{
 			name: "missing base ref",
 			setup: func(t *testing.T, home, repo string) (records.Task, records.Project) {
-				project := testProject(repo)
+				project := worktreetest.Project(repo)
 				project.Base = "trunk"
-				return testTask(), project
+				return worktreetest.Task(), project
 			},
 			wantErr: "base ref not found: trunk",
 		},
 		{
 			name: "existing branch",
 			setup: func(t *testing.T, home, repo string) (records.Task, records.Project) {
-				runGit(t, repo, "branch", "task/1-live-demo")
-				return testTask(), testProject(repo)
+				worktreetest.RunGit(t, repo, "branch", "task/1-live-demo")
+				return worktreetest.Task(), worktreetest.Project(repo)
 			},
 			wantErr: "branch exists: task/1-live-demo",
 		},
@@ -221,36 +197,36 @@ func TestCreateRefusalsSendNoRequestAndChangeNoRecord(t *testing.T) {
 				if err := os.MkdirAll(path, 0o755); err != nil {
 					t.Fatalf("mkdir path: %v", err)
 				}
-				return testTask(), testProject(repo)
+				return worktreetest.Task(), worktreetest.Project(repo)
 			},
 			wantErr: "path exists: ",
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			repo := newTestRepo(t)
-			home := newTestHome(t, "repo-live")
+			repo := worktreetest.NewTestRepo(t)
+			home := worktreetest.NewTestHome(t, "repo-live")
 			task, project := tc.setup(t, home, repo)
-			writeProject(t, home, project)
-			writeTask(t, home, task)
-			server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
-				return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+			worktreetest.WriteProject(t, home, project)
+			worktreetest.WriteTask(t, home, task)
+			server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
+				return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 			})
 
-			envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+			envelope := Run(context.Background(), home, Options{Task: task.ID})
 			if envelope.Outcome != "failed" || envelope.Error == nil {
 				t.Fatalf("Create() = %+v, want failed", envelope)
 			}
 			if got := fmt.Sprint(envelope.Error); !strings.Contains(got, tc.wantErr) {
 				t.Fatalf("error = %q, want %q", got, tc.wantErr)
 			}
-			if methods := server.methods(); len(methods) != 0 {
+			if methods := server.Methods(); len(methods) != 0 {
 				t.Fatalf("methods = %v, want no request", methods)
 			}
-			if got := readTask(t, home, task.ID); !reflect.DeepEqual(got, task) {
+			if got := worktreetest.ReadTask(t, home, task.ID); !reflect.DeepEqual(got, task) {
 				t.Fatalf("task changed to %+v, want %+v", got, task)
 			}
-			if got := readProject(t, home, project.ID); !reflect.DeepEqual(got, project) {
+			if got := worktreetest.ReadProject(t, home, project.ID); !reflect.DeepEqual(got, project) {
 				t.Fatalf("project changed to %+v, want %+v", got, project)
 			}
 		})
@@ -258,62 +234,62 @@ func TestCreateRefusalsSendNoRequestAndChangeNoRecord(t *testing.T) {
 }
 
 func TestCreatePathMismatchIsPartial(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantPath := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
 	actualPath := filepath.Join(t.TempDir(), "other")
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
-			return fakeReply{Result: workspaceListReply(t)}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 		case "worktree.create":
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", actualPath, "task/1-live-demo", repo)}
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", actualPath, "task/1-live-demo", repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "partial" || envelope.Error == nil {
 		t.Fatalf("Create() = %+v, want partial", envelope)
 	}
 	if !strings.Contains(fmt.Sprint(envelope.Error), "path") {
 		t.Fatalf("error = %q, want a path mismatch", fmt.Sprint(envelope.Error))
 	}
-	if !hasEffect(envelope, "worktree", "created", actualPath) {
+	if !worktreetest.HasEffect(envelope, "worktree", "created", actualPath) {
 		t.Fatalf("effects = %+v, want the actual worktree path", envelope.Effects)
 	}
-	if task := readTask(t, home, "1-live-demo"); task.Worktree != nil {
+	if task := worktreetest.ReadTask(t, home, "1-live-demo"); task.Worktree != nil {
 		t.Fatalf("task worktree = %+v, want nil", task.Worktree)
 	}
-	if project := readProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
+	if project := worktreetest.ReadProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
 		t.Fatalf("project repo_workspace_id = %q, want empty", project.RepoWorkspaceID)
 	}
-	if methods := server.methods(); !reflect.DeepEqual(methods, []string{"workspace.list", "worktree.create"}) {
+	if methods := server.Methods(); !reflect.DeepEqual(methods, []string{"workspace.list", "worktree.create"}) {
 		t.Fatalf("methods = %v, want the precheck list and the create", methods)
 	}
 	_ = wantPath
 }
 
 func TestCreateFailedBranchStays(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantBranch := "task/1-live-demo"
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
-			return fakeReply{Result: workspaceListReply(t)}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 		case "worktree.create":
-			runGit(t, repo, "branch", wantBranch)
-			return fakeReply{Error: `{"code":"worktree_create_failed","message":"fatal: test failure"}`}
+			worktreetest.RunGit(t, repo, "branch", wantBranch)
+			return worktreetest.FakeReply{Error: `{"code":"worktree_create_failed","message":"fatal: test failure"}`}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "failed" || envelope.Phase != "request" {
 		t.Fatalf("Create() = %+v, want failed request", envelope)
 	}
@@ -321,69 +297,69 @@ func TestCreateFailedBranchStays(t *testing.T) {
 	if !strings.Contains(message, "fatal: test failure") || !strings.Contains(message, "branch "+wantBranch+" stays") {
 		t.Fatalf("error = %q, want the herdr message and the branch note", message)
 	}
-	if !hasEffect(envelope, "branch", "created", wantBranch) {
+	if !worktreetest.HasEffect(envelope, "branch", "created", wantBranch) {
 		t.Fatalf("effects = %+v, want branch created", envelope.Effects)
 	}
-	if task := readTask(t, home, "1-live-demo"); task.Worktree != nil {
+	if task := worktreetest.ReadTask(t, home, "1-live-demo"); task.Worktree != nil {
 		t.Fatalf("task worktree = %+v, want nil", task.Worktree)
 	}
 	_ = server
 }
 
 func TestCreateOperationInProgress(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
-			return fakeReply{Result: workspaceListReply(t)}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 		case "worktree.create":
-			return fakeReply{Error: `{"code":"worktree_operation_in_progress","message":"worktree operation is already in progress for this checkout"}`}
+			return worktreetest.FakeReply{Error: `{"code":"worktree_operation_in_progress","message":"worktree operation is already in progress for this checkout"}`}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "failed" || fmt.Sprint(envelope.Error) != "worktree operation in progress: retry later" {
 		t.Fatalf("Create() = %+v, want the retry message", envelope)
 	}
-	if task := readTask(t, home, "1-live-demo"); task.Worktree != nil {
+	if task := worktreetest.ReadTask(t, home, "1-live-demo"); task.Worktree != nil {
 		t.Fatalf("task worktree = %+v, want nil", task.Worktree)
 	}
-	if project := readProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
+	if project := worktreetest.ReadProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
 		t.Fatalf("project repo_workspace_id = %q, want empty", project.RepoWorkspaceID)
 	}
 	_ = server
 }
 
 func TestCreateClosedConnectionIsPartial(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantPath := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
 	wantBranch := "task/1-live-demo"
 	var listCalls atomic.Int32
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t,
-				linkedWorkspace("w2", wantPath, repo),
-				repositoryWorkspace("w7", repo),
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t,
+				worktreetest.LinkedWorkspace("w2", wantPath, repo),
+				worktreetest.RepositoryWorkspace("w7", repo),
 			)}
 		case "worktree.create":
-			runGit(t, repo, "worktree", "add", "-q", "-b", wantBranch, wantPath, "main")
-			return fakeReply{Close: true}
+			worktreetest.RunGit(t, repo, "worktree", "add", "-q", "-b", wantBranch, wantPath, "main")
+			return worktreetest.FakeReply{Close: true}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "partial" || envelope.Phase != "request" {
 		t.Fatalf("Create() = %+v, want partial request", envelope)
 	}
@@ -397,11 +373,11 @@ func TestCreateClosedConnectionIsPartial(t *testing.T) {
 		{"branch", "created", wantBranch},
 		{"workspace", "opened", "w7"},
 	} {
-		if !hasEffect(envelope, want.resource, want.action, want.path) {
+		if !worktreetest.HasEffect(envelope, want.resource, want.action, want.path) {
 			t.Fatalf("effects = %+v, want %s %s %s", envelope.Effects, want.action, want.resource, want.path)
 		}
 	}
-	task := readTask(t, home, "1-live-demo")
+	task := worktreetest.ReadTask(t, home, "1-live-demo")
 	if task.Worktree == nil {
 		t.Fatalf("task worktree = nil, want the observed fields")
 	}
@@ -411,57 +387,57 @@ func TestCreateClosedConnectionIsPartial(t *testing.T) {
 	if task.Worktree.Path != wantPath || task.Worktree.Branch != wantBranch || task.Worktree.CreatedAt == "" {
 		t.Fatalf("task worktree = %+v, want path, branch, and created_at", task.Worktree)
 	}
-	if project := readProject(t, home, "repo-live"); project.RepoWorkspaceID != "w7" {
+	if project := worktreetest.ReadProject(t, home, "repo-live"); project.RepoWorkspaceID != "w7" {
 		t.Fatalf("project repo_workspace_id = %q, want w7", project.RepoWorkspaceID)
 	}
 	_ = server
 }
 
 func TestCreatePreservesConcurrentTaskChange(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantPath := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
 	wantBranch := "task/1-live-demo"
 	arrived := make(chan struct{})
 	release := make(chan struct{})
 	var listCalls atomic.Int32
-	startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", wantPath, repo))}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t, worktreetest.LinkedWorkspace("w2", wantPath, repo))}
 		case "worktree.create":
 			close(arrived)
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo), Hold: release}
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo), Hold: release}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
 	done := make(chan output.Envelope, 1)
-	go func() { done <- Create(context.Background(), home, CreateOptions{Task: "1-live-demo"}) }()
+	go func() { done <- Run(context.Background(), home, Options{Task: "1-live-demo"}) }()
 	select {
 	case <-arrived:
 	case <-time.After(2 * time.Second):
 		t.Fatal("create sent no worktree.create request")
 	}
-	changed := testTask()
+	changed := worktreetest.Task()
 	changed.Title = "changed title"
 	changed.Status = "cancelled"
 	changed.ActingAgent = "worker-a"
 	changed.CancelReason = "user stopped it"
 	changed.DependsOn = []string{"9-other"}
 	changed.Verification = &records.Verification{Agent: "verifier-a", Result: "pass", Reason: "checked", At: "2026-10-18T01:00:00Z"}
-	writeTask(t, home, changed)
+	worktreetest.WriteTask(t, home, changed)
 	close(release)
 	envelope := <-done
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Create() = %+v, want ok", envelope)
 	}
-	task := readTask(t, home, "1-live-demo")
+	task := worktreetest.ReadTask(t, home, "1-live-demo")
 	if task.Title != "changed title" || task.Status != "cancelled" || task.ActingAgent != "worker-a" || task.CancelReason != "user stopped it" {
 		t.Fatalf("task = %+v, want the concurrent fields", task)
 	}
@@ -474,18 +450,18 @@ func TestCreatePreservesConcurrentTaskChange(t *testing.T) {
 }
 
 func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
-	repo := newTestRepo(t)
+	repo := worktreetest.NewTestRepo(t)
 	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!.gitignore\n.hive/*\n!.hive/README.md\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	runGit(t, repo, "add", "-f", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "ignore the feature spec")
-	home := newTestHome(t, "repo-live")
-	task := testTask()
+	worktreetest.RunGit(t, repo, "add", "-f", ".gitignore")
+	worktreetest.RunGit(t, repo, "commit", "-q", "-m", "ignore the feature spec")
+	home := worktreetest.NewTestHome(t, "repo-live")
+	task := worktreetest.Task()
 	task.Feature = "f"
 	task.Spec = true
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, task)
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, task)
 	stateBrief := filepath.Join(home, ".hive", "state", "briefs", task.ID+".md")
 	if err := os.MkdirAll(filepath.Dir(stateBrief), 0o755); err != nil {
 		t.Fatal(err)
@@ -497,21 +473,21 @@ func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
 	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
 	branch := "task/" + task.ID
 	var listCalls atomic.Int32
-	startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", worktreePath, repo))}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t, worktreetest.LinkedWorkspace("w2", worktreePath, repo))}
 		case "worktree.create":
-			runGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
+			worktreetest.RunGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+	envelope := Run(context.Background(), home, Options{Task: task.ID})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Create() = %+v, want ok", envelope)
 	}
@@ -519,7 +495,7 @@ func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
 	if got, err := os.ReadFile(featureBrief); err != nil || string(got) != brief {
 		t.Fatalf("worktree brief = %q, %v; want %q", got, err, brief)
 	}
-	if !hasEffect(envelope, "brief", "copied", featureBrief) {
+	if !worktreetest.HasEffect(envelope, "brief", "copied", featureBrief) {
 		t.Fatalf("effects = %+v, want copied brief at %s", envelope.Effects, featureBrief)
 	}
 	// AC7: the effects have no allowlist step.
@@ -527,46 +503,46 @@ func TestCreateCopiesFeatureBriefIntoUntrackedWorktree(t *testing.T) {
 		t.Fatalf("effect resources = %v, want %v", got, want)
 	}
 	// AC1: the repository ignores the copied brief, so the worktree is clean.
-	if status := runGit(t, worktreePath, "status", "--short", "--untracked-files=all"); status != "" {
+	if status := worktreetest.RunGit(t, worktreePath, "status", "--short", "--untracked-files=all"); status != "" {
 		t.Fatalf("git status = %q, want a clean worktree", status)
 	}
-	runGit(t, worktreePath, "check-ignore", "-q", ".hive/spec/f/tasks/1-live-demo/brief.md")
+	worktreetest.RunGit(t, worktreePath, "check-ignore", "-q", ".hive/spec/f/tasks/1-live-demo/brief.md")
 }
 
 func TestCreateWithoutFeatureSkipsFeatureIgnoreCheckAndCopy(t *testing.T) {
-	repo := newTestRepo(t)
+	repo := worktreetest.NewTestRepo(t)
 	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	runGit(t, repo, "add", "-f", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "ignore files")
-	home := newTestHome(t, "repo-live")
-	task := testTask()
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, task)
+	worktreetest.RunGit(t, repo, "add", "-f", ".gitignore")
+	worktreetest.RunGit(t, repo, "commit", "-q", "-m", "ignore files")
+	home := worktreetest.NewTestHome(t, "repo-live")
+	task := worktreetest.Task()
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, task)
 	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
 	branch := "task/" + task.ID
 	var listCalls atomic.Int32
-	server := startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	server := worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", worktreePath, repo))}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t, worktreetest.LinkedWorkspace("w2", worktreePath, repo))}
 		case "worktree.create":
-			runGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
+			worktreetest.RunGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: task.ID})
+	envelope := Run(context.Background(), home, Options{Task: task.ID})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Create() = %+v, want ok", envelope)
 	}
-	if len(server.methods()) != 3 {
-		t.Fatalf("methods = %v, want the workspace lists and worktree create", server.methods())
+	if len(server.Methods()) != 3 {
+		t.Fatalf("methods = %v, want the workspace lists and worktree create", server.Methods())
 	}
 	featureBrief := filepath.Join(worktreePath, ".hive", "spec", "f", "tasks", task.ID, "brief.md")
 	if _, err := os.Lstat(featureBrief); !os.IsNotExist(err) {
@@ -575,44 +551,44 @@ func TestCreateWithoutFeatureSkipsFeatureIgnoreCheckAndCopy(t *testing.T) {
 }
 
 func TestCreateAmbiguousRepositoryWorkspaceIsPartial(t *testing.T) {
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, testTask())
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, worktreetest.Task())
 	wantPath := filepath.Join(home, "projects", "repo-live", "worktrees", "1-live-demo")
 	wantBranch := "task/1-live-demo"
 	var listCalls atomic.Int32
-	startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t,
-				linkedWorkspace("w2", wantPath, repo),
-				repositoryWorkspace("w7", repo),
-				repositoryWorkspace("w8", repo),
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t,
+				worktreetest.LinkedWorkspace("w2", wantPath, repo),
+				worktreetest.RepositoryWorkspace("w7", repo),
+				worktreetest.RepositoryWorkspace("w8", repo),
 			)}
 		case "worktree.create":
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo)}
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", wantPath, wantBranch, repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
 
-	envelope := Create(context.Background(), home, CreateOptions{Task: "1-live-demo"})
+	envelope := Run(context.Background(), home, Options{Task: "1-live-demo"})
 	if envelope.Outcome != "partial" || envelope.Phase != "workspace" {
 		t.Fatalf("Create() = %+v, want partial workspace", envelope)
 	}
 	if effectCount(envelope, "workspace", "opened") != 0 {
 		t.Fatalf("effects = %+v, want no repository workspace claim", envelope.Effects)
 	}
-	if !hasEffect(envelope, "workspace", "created", "w2") || !hasEffect(envelope, "worktree", "created", wantPath) {
+	if !worktreetest.HasEffect(envelope, "workspace", "created", "w2") || !worktreetest.HasEffect(envelope, "worktree", "created", wantPath) {
 		t.Fatalf("effects = %+v, want only the known effects", envelope.Effects)
 	}
-	if project := readProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
+	if project := worktreetest.ReadProject(t, home, "repo-live"); project.RepoWorkspaceID != "" {
 		t.Fatalf("project repo_workspace_id = %q, want empty", project.RepoWorkspaceID)
 	}
-	if task := readTask(t, home, "1-live-demo"); task.Worktree == nil || task.Worktree.WorkspaceID != "w2" {
+	if task := worktreetest.ReadTask(t, home, "1-live-demo"); task.Worktree == nil || task.Worktree.WorkspaceID != "w2" {
 		t.Fatalf("task worktree = %+v, want the returned workspace", task.Worktree)
 	}
 }

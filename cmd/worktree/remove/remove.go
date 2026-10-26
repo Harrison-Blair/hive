@@ -4,7 +4,7 @@ package remove
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
+	operation "github.com/Harrison-Blair/hive/internal/worktree/remove"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +22,8 @@ func New() *cobra.Command {
 		return common.Run(cmd, "worktree remove", func(home string) (output.Envelope, string, error) {
 			task, _ := cmd.Flags().GetString("task")
 			force, _ := cmd.Flags().GetBool("force")
-			envelope := worktreelib.Remove(cmd.Context(), home, worktreelib.RemoveOptions{Task: task, Force: force})
-			return envelope, worktreelib.RemoveText(envelope), nil
+			envelope := operation.Run(cmd.Context(), home, operation.Options{Task: task, Force: force})
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

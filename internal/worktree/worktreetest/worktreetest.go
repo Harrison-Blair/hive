@@ -1,4 +1,6 @@
-package worktree
+// Package worktreetest holds the fixture helpers that the tests of the worktree
+// operation packages share. Only tests import it.
+package worktreetest
 
 import (
 	"encoding/json"
@@ -7,22 +9,139 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
-type fakeRequest struct {
+// Project returns the fixture project record of the repository.
+func Project(repo string) records.Project {
+	return records.Project{ID: "repo-live", Path: repo, Base: "main", RegisteredAt: "2026-10-18T00:00:00Z"}
+}
+
+// Task returns the fixture task record with no worktree.
+func Task() records.Task {
+	return records.Task{
+		ID:        "1-live-demo",
+		Project:   "repo-live",
+		Title:     "live demo",
+		Status:    "created",
+		DependsOn: []string{},
+		CreatedAt: "2026-10-18T00:00:00Z",
+		UpdatedAt: "2026-10-18T00:00:00Z",
+	}
+}
+
+// HasEffect reports whether the envelope has the effect.
+func HasEffect(envelope output.Envelope, resource, action, path string) bool {
+	for _, effect := range envelope.Effects {
+		if effect.Resource == resource && effect.Action == action && effect.Path == path {
+			return true
+		}
+	}
+	return false
+}
+
+// WorktreeTask returns the fixture verified task record with a worktree.
+func WorktreeTask(path, branch string) records.Task {
+	task := Task()
+	task.Status = "verified"
+	task.Worktree = &records.Worktree{
+		WorkspaceID: "w2",
+		TabID:       "w2:t1",
+		RootPane:    "w2:p1",
+		Path:        path,
+		Branch:      branch,
+		CreatedAt:   "2026-10-18T00:00:00Z",
+	}
+	return task
+}
+
+// WriteTaskAt writes a task record at the key.
+func WriteTaskAt(t *testing.T, home, key string, task records.Task) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatalf("open store: %v", err)
+	}
+	if err := registry.WriteIn([]string{"tasks"}, key, task); err != nil {
+		t.Fatalf("write task at %s: %v", key, err)
+	}
+}
+
+// WriteProjectAt writes a project record at the key.
+func WriteProjectAt(t *testing.T, home, key string, project records.Project) {
+	t.Helper()
+	registry, err := store.Open(home)
+	if err != nil {
+		t.Fatalf("open store: %v", err)
+	}
+	if err := registry.Write("projects", key, project); err != nil {
+		t.Fatalf("write project at %s: %v", key, err)
+	}
+}
+
+// PermittedPath returns the worktree path that hive permits for the task.
+func PermittedPath(home, projectID, taskID string) string {
+	return filepath.Join(home, "projects", projectID, "worktrees", taskID)
+}
+
+// LogEvents returns each log event of the home.
+func LogEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	files, err := filepath.Glob(filepath.Join(home, ".hive", "logs", "*.jsonl"))
+	if err != nil {
+		t.Fatalf("glob logs: %v", err)
+	}
+	events := []map[string]any{}
+	for _, path := range files {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read log %s: %v", path, err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line == "" {
+				continue
+			}
+			var event map[string]any
+			if err := json.Unmarshal([]byte(line), &event); err != nil {
+				t.Fatalf("parse log line: %v", err)
+			}
+			events = append(events, event)
+		}
+	}
+	return events
+}
+
+// ExternalEvents returns each herdr and process log event of the home.
+func ExternalEvents(t *testing.T, home string) []map[string]any {
+	t.Helper()
+	external := []map[string]any{}
+	for _, event := range LogEvents(t, home) {
+		message, _ := event["msg"].(string)
+		switch message {
+		case "herdr request", "herdr reply", "process start", "process end":
+			external = append(external, event)
+		}
+	}
+	return external
+}
+
+// FakeRequest is one request that the fake herdr received.
+type FakeRequest struct {
 	ID     string          `json:"id"`
 	Method string          `json:"method"`
 	Params json.RawMessage `json:"params"`
 }
 
-func (r fakeRequest) stringParam(t *testing.T, field string) string {
+// StringParam returns one string parameter of the request.
+func (r FakeRequest) StringParam(t *testing.T, field string) string {
 	t.Helper()
 	var values map[string]json.RawMessage
 	if err := json.Unmarshal(r.Params, &values); err != nil {
@@ -39,7 +158,8 @@ func (r fakeRequest) stringParam(t *testing.T, field string) string {
 	return value
 }
 
-func (r fakeRequest) hasParam(field string) bool {
+// HasParam reports whether the request has the parameter.
+func (r FakeRequest) HasParam(field string) bool {
 	var values map[string]json.RawMessage
 	if err := json.Unmarshal(r.Params, &values); err != nil {
 		return false
@@ -48,7 +168,8 @@ func (r fakeRequest) hasParam(field string) bool {
 	return found
 }
 
-func (r fakeRequest) boolParam(t *testing.T, field string) bool {
+// BoolParam returns one boolean parameter of the request.
+func (r FakeRequest) BoolParam(t *testing.T, field string) bool {
 	t.Helper()
 	var values map[string]json.RawMessage
 	if err := json.Unmarshal(r.Params, &values); err != nil {
@@ -65,7 +186,8 @@ func (r fakeRequest) boolParam(t *testing.T, field string) bool {
 	return value
 }
 
-type fakeReply struct {
+// FakeReply is the reply of the fake herdr to one request.
+type FakeReply struct {
 	Result string
 	Error  string
 	Delay  time.Duration
@@ -73,7 +195,8 @@ type fakeReply struct {
 	Close  bool
 }
 
-type fakeHerdr struct {
+// FakeHerdr is a herdr socket server that a test controls.
+type FakeHerdr struct {
 	t       *testing.T
 	path    string
 	ln      net.Listener
@@ -81,11 +204,12 @@ type fakeHerdr struct {
 	once    sync.Once
 	wg      sync.WaitGroup
 	mu      sync.Mutex
-	reqs    []fakeRequest
-	handler func(fakeRequest) fakeReply
+	reqs    []FakeRequest
+	handler func(FakeRequest) FakeReply
 }
 
-func startFakeHerdr(t *testing.T, handler func(fakeRequest) fakeReply) *fakeHerdr {
+// StartFakeHerdr starts a fake herdr and points HERDR_SOCKET_PATH at it.
+func StartFakeHerdr(t *testing.T, handler func(FakeRequest) FakeReply) *FakeHerdr {
 	t.Helper()
 	dir, err := os.MkdirTemp("", "t09sock-")
 	if err != nil {
@@ -97,7 +221,7 @@ func startFakeHerdr(t *testing.T, handler func(fakeRequest) fakeReply) *fakeHerd
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	fake := &fakeHerdr{t: t, path: path, ln: listener, done: make(chan struct{}), handler: handler}
+	fake := &FakeHerdr{t: t, path: path, ln: listener, done: make(chan struct{}), handler: handler}
 	fake.wg.Add(1)
 	go func() {
 		defer fake.wg.Done()
@@ -115,10 +239,10 @@ func startFakeHerdr(t *testing.T, handler func(fakeRequest) fakeReply) *fakeHerd
 	return fake
 }
 
-func (f *fakeHerdr) serve(conn net.Conn) {
+func (f *FakeHerdr) serve(conn net.Conn) {
 	defer f.wg.Done()
 	defer func() { _ = conn.Close() }()
-	var request fakeRequest
+	var request FakeRequest
 	if err := json.NewDecoder(conn).Decode(&request); err != nil {
 		return
 	}
@@ -146,7 +270,7 @@ func (f *fakeHerdr) serve(conn net.Conn) {
 	f.write(conn, request.ID, reply.Result, reply.Error)
 }
 
-func (f *fakeHerdr) write(conn net.Conn, id, result, errText string) {
+func (f *FakeHerdr) write(conn net.Conn, id, result, errText string) {
 	switch {
 	case errText != "":
 		_, _ = fmt.Fprintf(conn, `{"id":%q,"error":%s}`+"\n", id, errText)
@@ -155,7 +279,8 @@ func (f *fakeHerdr) write(conn net.Conn, id, result, errText string) {
 	}
 }
 
-func (f *fakeHerdr) Close() {
+// Close stops the fake herdr and waits for each connection.
+func (f *FakeHerdr) Close() {
 	f.once.Do(func() {
 		close(f.done)
 		_ = f.ln.Close()
@@ -163,30 +288,34 @@ func (f *fakeHerdr) Close() {
 	})
 }
 
-func (f *fakeHerdr) requests() []fakeRequest {
+// Requests returns each request other than ping.
+func (f *FakeHerdr) Requests() []FakeRequest {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	return append([]fakeRequest(nil), f.reqs...)
+	return append([]FakeRequest(nil), f.reqs...)
 }
 
-func (f *fakeHerdr) methods() []string {
+// Methods returns the method of each request other than ping.
+func (f *FakeHerdr) Methods() []string {
 	var methods []string
-	for _, request := range f.requests() {
+	for _, request := range f.Requests() {
 		methods = append(methods, request.Method)
 	}
 	return methods
 }
 
-func (f *fakeHerdr) requestFor(method string) (fakeRequest, bool) {
-	for _, request := range f.requests() {
+// RequestFor returns the first request of the method.
+func (f *FakeHerdr) RequestFor(method string) (FakeRequest, bool) {
+	for _, request := range f.Requests() {
 		if request.Method == method {
 			return request, true
 		}
 	}
-	return fakeRequest{}, false
+	return FakeRequest{}, false
 }
 
-func jsonText(t *testing.T, value any) string {
+// JSONText returns the JSON text of the value.
+func JSONText(t *testing.T, value any) string {
 	t.Helper()
 	data, err := json.Marshal(value)
 	if err != nil {
@@ -195,23 +324,26 @@ func jsonText(t *testing.T, value any) string {
 	return string(data)
 }
 
-func workspaceListReply(t *testing.T, workspaces ...herdr.WorkspaceInfo) string {
+// WorkspaceListReply returns a workspace.list result.
+func WorkspaceListReply(t *testing.T, workspaces ...herdr.WorkspaceInfo) string {
 	t.Helper()
-	return jsonText(t, struct {
+	return JSONText(t, struct {
 		Type       string                `json:"type"`
 		Workspaces []herdr.WorkspaceInfo `json:"workspaces"`
 	}{Type: "workspace_list", Workspaces: workspaces})
 }
 
-func workspaceInfoReply(t *testing.T, workspace herdr.WorkspaceInfo) string {
+// WorkspaceInfoReply returns a workspace.get result.
+func WorkspaceInfoReply(t *testing.T, workspace herdr.WorkspaceInfo) string {
 	t.Helper()
-	return jsonText(t, struct {
+	return JSONText(t, struct {
 		Type      string              `json:"type"`
 		Workspace herdr.WorkspaceInfo `json:"workspace"`
 	}{Type: "workspace_info", Workspace: workspace})
 }
 
-func linkedWorkspace(id, path, repo string) herdr.WorkspaceInfo {
+// LinkedWorkspace returns a workspace of a linked worktree.
+func LinkedWorkspace(id, path, repo string) herdr.WorkspaceInfo {
 	return herdr.WorkspaceInfo{
 		WorkspaceID: id,
 		Label:       filepath.Base(path),
@@ -227,7 +359,8 @@ func linkedWorkspace(id, path, repo string) herdr.WorkspaceInfo {
 	}
 }
 
-func repositoryWorkspace(id, repo string) herdr.WorkspaceInfo {
+// RepositoryWorkspace returns a workspace of the primary checkout.
+func RepositoryWorkspace(id, repo string) herdr.WorkspaceInfo {
 	return herdr.WorkspaceInfo{
 		WorkspaceID: id,
 		Label:       filepath.Base(repo),
@@ -243,9 +376,10 @@ func repositoryWorkspace(id, repo string) herdr.WorkspaceInfo {
 	}
 }
 
-func createReply(t *testing.T, workspaceID, tabID, paneID, path, branch, repo string) string {
+// CreateReply returns a worktree.create result.
+func CreateReply(t *testing.T, workspaceID, tabID, paneID, path, branch, repo string) string {
 	t.Helper()
-	return jsonText(t, herdr.WorktreeCreateResult{
+	return JSONText(t, herdr.WorktreeCreateResult{
 		Type: "worktree_created",
 		Workspace: herdr.WorkspaceInfo{
 			WorkspaceID: workspaceID,
@@ -284,7 +418,8 @@ func createReply(t *testing.T, workspaceID, tabID, paneID, path, branch, repo st
 	})
 }
 
-func runGit(t *testing.T, dir string, args ...string) string {
+// RunGit runs one Git command in the directory and returns its output.
+func RunGit(t *testing.T, dir string, args ...string) string {
 	t.Helper()
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
@@ -302,24 +437,26 @@ func runGit(t *testing.T, dir string, args ...string) string {
 	return string(output)
 }
 
-func newTestRepo(t *testing.T) string {
+// NewTestRepo makes a Git repository with one commit on main.
+func NewTestRepo(t *testing.T) string {
 	t.Helper()
 	repo := filepath.Join(t.TempDir(), "repo")
 	if err := os.MkdirAll(repo, 0o755); err != nil {
 		t.Fatalf("mkdir repo: %v", err)
 	}
-	runGit(t, repo, "init", "-q", "-b", "main")
-	runGit(t, repo, "config", "user.name", "Hive Test")
-	runGit(t, repo, "config", "user.email", "test@example.com")
+	RunGit(t, repo, "init", "-q", "-b", "main")
+	RunGit(t, repo, "config", "user.name", "Hive Test")
+	RunGit(t, repo, "config", "user.email", "test@example.com")
 	if err := os.WriteFile(filepath.Join(repo, "README.md"), []byte("base\n"), 0o644); err != nil {
 		t.Fatalf("write file: %v", err)
 	}
-	runGit(t, repo, "add", "README.md")
-	runGit(t, repo, "commit", "-q", "-m", "init")
+	RunGit(t, repo, "add", "README.md")
+	RunGit(t, repo, "commit", "-q", "-m", "init")
 	return repo
 }
 
-func newTestHome(t *testing.T, projectID string) string {
+// NewTestHome makes a fixture home with its marker and the project worktrees folder.
+func NewTestHome(t *testing.T, projectID string) string {
 	t.Helper()
 	home := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
@@ -334,7 +471,8 @@ func newTestHome(t *testing.T, projectID string) string {
 	return home
 }
 
-func writeProject(t *testing.T, home string, project records.Project) {
+// WriteProject writes one project record.
+func WriteProject(t *testing.T, home string, project records.Project) {
 	t.Helper()
 	registry, err := store.Open(home)
 	if err != nil {
@@ -345,7 +483,8 @@ func writeProject(t *testing.T, home string, project records.Project) {
 	}
 }
 
-func writeTask(t *testing.T, home string, task records.Task) {
+// WriteTask writes one task record.
+func WriteTask(t *testing.T, home string, task records.Task) {
 	t.Helper()
 	registry, err := store.Open(home)
 	if err != nil {
@@ -356,7 +495,8 @@ func writeTask(t *testing.T, home string, task records.Task) {
 	}
 }
 
-func readTask(t *testing.T, home, taskID string) records.Task {
+// ReadTask reads one task record.
+func ReadTask(t *testing.T, home, taskID string) records.Task {
 	t.Helper()
 	registry, err := store.Open(home)
 	if err != nil {
@@ -369,7 +509,8 @@ func readTask(t *testing.T, home, taskID string) records.Task {
 	return task
 }
 
-func readProject(t *testing.T, home, projectID string) records.Project {
+// ReadProject reads one project record.
+func ReadProject(t *testing.T, home, projectID string) records.Project {
 	t.Helper()
 	registry, err := store.Open(home)
 	if err != nil {
@@ -382,10 +523,11 @@ func readProject(t *testing.T, home, projectID string) records.Project {
 	return project
 }
 
-func addLinkedWorktree(t *testing.T, repo, path, branch, base string) {
+// AddLinkedWorktree adds a linked worktree on a new branch.
+func AddLinkedWorktree(t *testing.T, repo, path, branch, base string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("mkdir worktree parent: %v", err)
 	}
-	runGit(t, repo, "worktree", "add", "-q", "-b", branch, path, base)
+	RunGit(t, repo, "worktree", "add", "-q", "-b", branch, path, base)
 }

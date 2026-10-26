@@ -1,4 +1,4 @@
-package worktree
+package create
 
 import (
 	"bytes"
@@ -17,6 +17,8 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
+	worktreelib "github.com/Harrison-Blair/hive/internal/worktree"
+	"github.com/Harrison-Blair/hive/internal/worktree/worktreetest"
 )
 
 func writeSpecFile(t *testing.T, root, relative, body string) {
@@ -42,30 +44,30 @@ func createFeatureWorktree(t *testing.T, repo, home string, task records.Task, l
 	worktreePath := filepath.Join(home, "projects", task.Project, "worktrees", task.ID)
 	branch := "task/" + task.ID
 	var listCalls atomic.Int32
-	startFakeHerdr(t, func(request fakeRequest) fakeReply {
+	worktreetest.StartFakeHerdr(t, func(request worktreetest.FakeRequest) worktreetest.FakeReply {
 		switch request.Method {
 		case "workspace.list":
 			if listCalls.Add(1) == 1 {
-				return fakeReply{Result: workspaceListReply(t)}
+				return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t)}
 			}
-			return fakeReply{Result: workspaceListReply(t, linkedWorkspace("w2", worktreePath, repo))}
+			return worktreetest.FakeReply{Result: worktreetest.WorkspaceListReply(t, worktreetest.LinkedWorkspace("w2", worktreePath, repo))}
 		case "worktree.create":
-			runGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
-			return fakeReply{Result: createReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
+			worktreetest.RunGit(t, repo, "worktree", "add", "-q", "-b", branch, worktreePath, "main")
+			return worktreetest.FakeReply{Result: worktreetest.CreateReply(t, "w2", "w2:t1", "w2:p1", worktreePath, branch, repo)}
 		}
-		return fakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
+		return worktreetest.FakeReply{Error: `{"code":"unknown_method","message":"unexpected method"}`}
 	})
-	return Create(context.Background(), home, CreateOptions{Task: task.ID, Logger: logger}), worktreePath
+	return Run(context.Background(), home, Options{Task: task.ID, Logger: logger}), worktreePath
 }
 
 func featureFixture(t *testing.T) (string, string, records.Task) {
 	t.Helper()
-	repo := newTestRepo(t)
-	home := newTestHome(t, "repo-live")
-	task := testTask()
+	repo := worktreetest.NewTestRepo(t)
+	home := worktreetest.NewTestHome(t, "repo-live")
+	task := worktreetest.Task()
 	task.Feature = "f"
-	writeProject(t, home, testProject(repo))
-	writeTask(t, home, task)
+	worktreetest.WriteProject(t, home, worktreetest.Project(repo))
+	worktreetest.WriteTask(t, home, task)
 	writeSpecFile(t, home, ".hive/state/briefs/"+task.ID+".md", "# Brief\n")
 	return repo, home, task
 }
@@ -140,7 +142,7 @@ func TestCreateCopiesFeatureSpecInAndRecordsHashes(t *testing.T) {
 			t.Errorf("recorded hash of %s = %q, want %q", path, got[path], hash)
 		}
 	}
-	if !hasEffect(envelope, "spec", "copied", worktreePath+"/.hive/spec/f/") {
+	if !worktreetest.HasEffect(envelope, "spec", "copied", worktreePath+"/.hive/spec/f/") {
 		t.Fatalf("effects = %+v, want the copied spec folder", envelope.Effects)
 	}
 
@@ -163,8 +165,8 @@ func TestCreateFeatureInIgnoringRepoHasNoAllowlistStep(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(repo, ".gitignore"), []byte("*\n!*/\n!*.md\n!.gitignore\n.hive/*\n!.hive/README.md\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	runGit(t, repo, "add", ".gitignore")
-	runGit(t, repo, "commit", "-q", "-m", "ignore the spec")
+	worktreetest.RunGit(t, repo, "add", ".gitignore")
+	worktreetest.RunGit(t, repo, "commit", "-q", "-m", "ignore the spec")
 	writeSpecFile(t, home, ".hive/spec/f/README.md", "# F\n")
 
 	envelope, worktreePath := createFeatureWorktree(t, repo, home, task, nil)
@@ -174,10 +176,10 @@ func TestCreateFeatureInIgnoringRepoHasNoAllowlistStep(t *testing.T) {
 	if got, want := effectResources(envelope), []string{"branch", "brief", "spec", "spec_copy", "workspace", "worktree"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("effect resources = %v, want %v", got, want)
 	}
-	if staged := strings.TrimSpace(runGit(t, worktreePath, "diff", "--cached", "--name-only")); staged != "" {
+	if staged := strings.TrimSpace(worktreetest.RunGit(t, worktreePath, "diff", "--cached", "--name-only")); staged != "" {
 		t.Fatalf("staged paths = %q, want none", staged)
 	}
-	if status := strings.TrimSpace(runGit(t, worktreePath, "status", "--porcelain")); status != "" {
+	if status := strings.TrimSpace(worktreetest.RunGit(t, worktreePath, "status", "--porcelain")); status != "" {
 		t.Fatalf("git status = %q, want a clean worktree", status)
 	}
 	if _, err := os.Stat(filepath.Join(worktreePath, ".hive", "spec", "f", "README.md")); err != nil {
@@ -194,7 +196,7 @@ func TestSpecCopyRecordIsSorted(t *testing.T) {
 	if envelope, _ := createFeatureWorktree(t, repo, home, task, nil); envelope.Outcome != "ok" {
 		t.Fatalf("Create() = %+v, want ok", envelope)
 	}
-	record, found, err := ReadSpecCopy(home, task.ID)
+	record, found, err := worktreelib.ReadSpecCopy(home, task.ID)
 	if err != nil || !found {
 		t.Fatalf("ReadSpecCopy() = %v, %v", found, err)
 	}
