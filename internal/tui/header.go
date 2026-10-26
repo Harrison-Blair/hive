@@ -106,7 +106,7 @@ func buildHeader(supervisorFresh, supervisorOld bool, projects []records.Project
 		if record.Status != records.AgentLive {
 			continue
 		}
-		if record.Role == "coordinator" && currentAgents[record.Key] {
+		if agentBuiltin(record) == records.AgentKindCoordinator && currentAgents[record.Key] {
 			state.coordinator = "live"
 			if record.AgentStatus != "" {
 				state.coordinator = record.AgentStatus

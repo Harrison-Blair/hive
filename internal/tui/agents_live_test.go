@@ -82,7 +82,35 @@ func requireCells(t *testing.T, m *Model, want ...liveCell) {
 // liveModel gives the demo model of board after change edits its fixture.
 func liveModel(t *testing.T, board string, change func(*demoFixture)) *Model {
 	t.Helper()
-	return healthDemoModel(t, board, change)
+	return healthDemoModel(t, board, func(f *demoFixture) {
+		if change != nil {
+			change(f)
+		}
+		projectGeneralAgents(f)
+	})
+}
+
+// projectGeneralAgents puts a general agent with no project in the project
+// of its parent. The tree boards test decision 74, not the D11 home rule.
+func projectGeneralAgents(f *demoFixture) {
+	projectByKey := make(map[string]string)
+	for _, agent := range f.Data.Agents {
+		projectByKey[agent.Key] = agent.Project
+	}
+	for changed := true; changed; {
+		changed = false
+		for index := range f.Data.Agents {
+			agent := &f.Data.Agents[index]
+			if agent.Profile != "" && agent.Profile != records.ProfileGeneral || agent.Project != "" {
+				continue
+			}
+			if project := projectByKey[agent.Parent]; project != "" {
+				agent.Project = project
+				projectByKey[agent.Key] = project
+				changed = true
+			}
+		}
+	}
 }
 
 // at sets the fixture clock to the clock plus offset.

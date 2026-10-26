@@ -41,6 +41,88 @@ type agentNode struct {
 	lastSent   *records.Inbox
 }
 
+// agentProfile gives the profile label of a record. A record written before
+// the facts migration has no profile, so its wave-A role gives the label.
+func agentProfile(record records.Agent) string {
+	if record.Profile != "" {
+		return record.Profile
+	}
+	switch record.Role {
+	case records.AgentKindCoordinator:
+		return records.ProfileCoordinator
+	case records.AgentKindSupervisor:
+		return ""
+	case "manager":
+		return records.ProfilePlanner
+	case "builder", "worker":
+		return records.ProfileBuilder
+	case "verifier":
+		return records.ProfileVerifier
+	case "general", "agent":
+		return records.ProfileGeneral
+	}
+	switch record.MirrorRole() {
+	case records.AgentKindCoordinator:
+		return records.ProfileCoordinator
+	case records.AgentKindSupervisor:
+		return ""
+	case "manager":
+		return records.ProfilePlanner
+	case "verifier":
+		return records.ProfileVerifier
+	case "worker":
+		return records.ProfileBuilder
+	default:
+		return records.ProfileGeneral
+	}
+}
+
+// agentLabel gives the label of a restart target: its built-in kind, or its
+// profile.
+func agentLabel(record records.Agent) string {
+	if kind := agentBuiltin(record); kind != "" {
+		return kind
+	}
+	return agentProfile(record)
+}
+
+// agentBuiltin gives the built-in kind of a record. A record written before
+// the facts migration has no kind, so its wave-A role gives the kind.
+func agentBuiltin(record records.Agent) string {
+	if record.Kind != "" {
+		return record.Kind
+	}
+	if record.Profile == records.ProfileCoordinator {
+		return records.AgentKindCoordinator
+	}
+	switch record.Role {
+	case records.AgentKindCoordinator, records.AgentKindSupervisor:
+		return record.Role
+	default:
+		return ""
+	}
+}
+
+// agentOwned reports that the record owns a project. A migrated record
+// declares ownership only with owns. A record written before the facts
+// migration keeps its owner in the wave-A manager role.
+func agentOwned(record records.Agent) bool {
+	if record.Owns != "" {
+		return true
+	}
+	return record.Profile == "" && record.Role == "manager"
+}
+
+// agentOwns reports that the record owns project. A migrated record
+// declares ownership only with owns. A record written before the facts
+// migration keeps its owner in the wave-A manager role.
+func agentOwns(record records.Agent, project string) bool {
+	if record.Owns != "" {
+		return record.Owns == project
+	}
+	return record.Profile == "" && record.Project == project && record.Role == "manager"
+}
+
 type agentGroup struct {
 	id       string
 	title    string
@@ -151,10 +233,10 @@ func messageInboxNames(agents []records.Agent) []string {
 	checked := make(map[string]bool)
 	for _, record := range agents {
 		name := record.Name
-		if record.Role == "coordinator" {
+		if agentBuiltin(record) == records.AgentKindCoordinator {
 			name = "coordinator"
 		}
-		if !current[record.Key] || name == "" || checked[name] || record.Role == "supervisor" {
+		if !current[record.Key] || name == "" || checked[name] || agentBuiltin(record) == records.AgentKindSupervisor {
 			continue
 		}
 		checked[name] = true
@@ -194,7 +276,7 @@ func inboxAgentNames(agents []records.Agent) []string {
 	names := []string{}
 	checked := make(map[string]bool)
 	for _, record := range agents {
-		if !currentAgents[record.Key] || record.Name == "" || checked[record.Name] || (record.Role != "coordinator" && record.Role != "manager") {
+		if !currentAgents[record.Key] || record.Name == "" || checked[record.Name] || (agentBuiltin(record) != records.AgentKindCoordinator && !agentOwned(record)) {
 			continue
 		}
 		checked[record.Name] = true
@@ -242,7 +324,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 	}
 	for _, record := range agents {
 		groupIndex := 0
-		if record.Role != "coordinator" && record.Role != "supervisor" {
+		if agentBuiltin(record) == "" {
 			if index, ok := groupByProject[record.Project]; ok {
 				groupIndex = index
 			}
@@ -251,7 +333,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		status := agentStatus(record, fresh)
 		age := activityAge(record.StatusChangedAt, now)
 		pid := ""
-		if record.Role == "supervisor" {
+		if agentBuiltin(record) == records.AgentKindSupervisor {
 			if record.StatusChangedAt == "" {
 				age = activityAge(record.StartedAt, now)
 			}
@@ -278,7 +360,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			}
 		}
 		inboxName := record.Name
-		if record.Role == "coordinator" {
+		if agentBuiltin(record) == records.AgentKindCoordinator {
 			inboxName = "coordinator"
 		}
 		for index, item := range source.inbox {
@@ -354,11 +436,15 @@ func currentAgentKeys(agents []records.Agent) map[string]bool {
 // identity are generations of one agent.
 func agentIdentities(record records.Agent) []string {
 	// Each general agent is its own identity: many can share a parent.
-	if record.Role == generalRole {
+	if agentProfile(record) == records.ProfileGeneral {
 		return []string{"key\x00" + record.Key}
 	}
 	identities := []string{"name\x00" + record.Name}
-	if record.Parent != "" || record.Replaces != "" {
+	// A record written before the facts migration has no profile. Its wave-A
+	// role, project, and task give the lineage, so a newer name of that
+	// lineage still replaces the older record. A free profile label never
+	// joins records: distinct custom-profile agents stay distinct.
+	if record.Profile == "" && (record.Parent != "" || record.Replaces != "") {
 		identities = append(identities, strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00"))
 	}
 	return identities
@@ -434,7 +520,7 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 	if !supervisorLive {
 		return "unknown"
 	}
-	if record.Role == "supervisor" {
+	if agentBuiltin(record) == records.AgentKindSupervisor {
 		if record.Status == records.AgentStopped || record.Status == records.AgentExited {
 			return "stopped"
 		}

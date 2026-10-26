@@ -142,133 +142,103 @@ func (m *Model) hiddenCards() int {
 
 // allPods gives one pod for each project, in the order of the records, and
 // the home pod last. The coordinator and the supervisor are in no pod
-// (decision 14). A general agent is under the card of its parent when that
-// card is on the graph, otherwise in home (decision 39 of general-agent).
+// (decision 14). An agent is in the pod of its project, and the owner heads
+// the pod (D11). An agent with no project is in home. A child stays under its
+// parent in the same pod. A hidden or absent parent card does not change the
+// project of its child.
 func (m *Model) allPods() []graphPod {
 	nodes := m.agents.nodeMap()
 	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.hideable() }
-	// kids gives the children of each card on the graph.
-	kids := make(map[string][]agentNode)
-	// podOf gives the pod index of each card on the graph, and of each
-	// hidden manager.
-	podOf := make(map[string]int)
-	// hiddenManager marks each hidden manager. Its children are top cards of
-	// its pod (goal g9).
-	hiddenManager := make(map[string]bool)
 	var pods []graphPod
-	var roots [][]agentNode
 	for _, group := range m.agents.data.groups {
 		if group.id == "home" {
 			continue
 		}
-		pod := graphPod{group: group}
+		ownerKey := ""
 		for _, key := range group.keys {
 			node := nodes[key]
-			if node.record.Role == "manager" && node.current && pod.manager == nil && !pod.managerHidden {
-				if hidden(node) {
-					pod.hidden++
-					pod.managerHidden = true
-					hiddenManager[key] = true
-					podOf[key] = len(pods)
-					continue
-				}
-				pod.manager = &node
-				podOf[key] = len(pods)
+			if node.current && agentBuiltin(node.record) == "" && agentOwns(node.record, group.id) {
+				ownerKey = key
+				break
 			}
 		}
-		var top []agentNode
+		pod := graphPod{group: group}
+		if ownerKey != "" {
+			node := nodes[ownerKey]
+			if hidden(node) {
+				pod.hidden++
+				pod.managerHidden = true
+			} else {
+				pod.manager = &node
+			}
+		}
+		var members []agentNode
+		memberSet := make(map[string]bool)
 		for _, key := range group.keys {
+			if key == ownerKey {
+				continue
+			}
 			node := nodes[key]
-			if node.record.Role == "manager" || node.record.Role == generalRole || !node.current {
+			if !node.current || agentBuiltin(node.record) != "" {
 				continue
 			}
 			if hidden(node) {
 				pod.hidden++
 				continue
 			}
-			top = append(top, node)
-			podOf[key] = len(pods)
+			members = append(members, node)
+			memberSet[key] = true
+		}
+		kids := make(map[string][]agentNode)
+		var roots []agentNode
+		for _, node := range members {
+			if node.record.Parent == ownerKey || !memberSet[node.record.Parent] {
+				roots = append(roots, node)
+				continue
+			}
+			kids[node.record.Parent] = append(kids[node.record.Parent], node)
 		}
 		if pod.manager != nil {
-			kids[pod.manager.record.Key] = top
-			top = nil
+			pod.children, pod.levels = flattenCards(kids, roots, 1)
+		} else {
+			pod.children, pod.levels = flattenCards(kids, roots, 0)
 		}
 		pods = append(pods, pod)
-		roots = append(roots, top)
-	}
-	var pending []agentNode
-	for _, node := range m.agents.data.nodes {
-		if node.current && node.record.Role == generalRole {
-			pending = append(pending, node)
-		}
 	}
 	home := graphPod{group: agentGroup{id: "home"}, homeColumn: true}
-	homeIndex := len(pods)
-	// place puts each pending general agent under its parent card, until
-	// no more agent moves. A hidden agent counts in the pod of its parent.
-	place := func(hiddenIn func(index int) *graphPod) {
-		for moved := true; moved; {
-			moved = false
-			rest := pending[:0:0]
-			for _, node := range pending {
-				index, ok := podOf[node.record.Parent]
-				switch {
-				case !ok:
-					rest = append(rest, node)
-					continue
-				case hidden(node):
-					hiddenIn(index).hidden++
-				case hiddenManager[node.record.Parent]:
-					roots[index] = append(roots[index], node)
-					podOf[node.record.Key] = index
-				default:
-					kids[node.record.Parent] = append(kids[node.record.Parent], node)
-					podOf[node.record.Key] = index
-				}
-				moved = true
+	var members []agentNode
+	for _, group := range m.agents.data.groups {
+		if group.id != "home" {
+			continue
+		}
+		for _, key := range group.keys {
+			node := nodes[key]
+			if !node.current || agentBuiltin(node.record) != "" {
+				continue
 			}
-			pending = rest
+			if hidden(node) {
+				home.hidden++
+				continue
+			}
+			members = append(members, node)
 		}
 	}
-	place(func(index int) *graphPod { return &pods[index] })
-	// The rest go to home. A home agent whose parent is also in home is
-	// under it there.
-	waiting := make(map[string]bool, len(pending))
-	for _, node := range pending {
-		waiting[node.record.Key] = true
+	memberSet := make(map[string]bool, len(members))
+	for _, node := range members {
+		memberSet[node.record.Key] = true
 	}
-	var homeRoots []agentNode
-	rest := pending[:0:0]
-	for _, node := range pending {
-		switch {
-		case waiting[node.record.Parent]:
-			rest = append(rest, node)
-		case hidden(node):
-			home.hidden++
-		default:
-			homeRoots = append(homeRoots, node)
-			podOf[node.record.Key] = homeIndex
+	kids := make(map[string][]agentNode)
+	var roots []agentNode
+	for _, node := range members {
+		if !memberSet[node.record.Parent] {
+			roots = append(roots, node)
+			continue
 		}
+		kids[node.record.Parent] = append(kids[node.record.Parent], node)
 	}
-	pending = rest
-	place(func(int) *graphPod { return &home })
-	// Each agent that is left is in a loop of parents. It is a root.
-	homeRoots = append(homeRoots, pending...)
-	var out []graphPod
-	for index, pod := range pods {
-		if pod.manager != nil {
-			pod.children, pod.levels = flattenCards(kids, kids[pod.manager.record.Key], 1)
-		} else {
-			pod.children, pod.levels = flattenCards(kids, roots[index], 0)
-		}
-		out = append(out, pod)
-	}
-	home.children, home.levels = flattenCards(kids, homeRoots, 0)
-	return append(out, home)
+	home.children, home.levels = flattenCards(kids, roots, 0)
+	return append(pods, home)
 }
-
-// generalRole is the role of a general agent.
-const generalRole = "agent"
 
 // flattenCards gives the cards of a subtree in the order of the selection:
 // each card, then its children in order of creation time. It also gives the
@@ -309,7 +279,7 @@ func (p graphPod) nested() bool {
 // top of the screen (decision 65).
 func (m *Model) coordinatorNode() (agentNode, bool) {
 	for _, node := range m.agents.data.nodes {
-		if node.current && node.record.Role == "coordinator" {
+		if node.current && agentBuiltin(node.record) == records.AgentKindCoordinator {
 			return node, true
 		}
 	}
@@ -1230,7 +1200,7 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 		unread = fmt.Sprintf("%d unread", node.unread)
 	}
 	lines := slices.DeleteFunc([]string{
-		field("role", record.Role),
+		field("profile", agentProfile(record)),
 		field("project", record.Project),
 		field("task", record.Task, node.taskStatus),
 		field("harness", record.Harness, record.Model),
@@ -1564,12 +1534,12 @@ func (m *Model) nextLitExpiry() (time.Time, bool) {
 // the last view: "coordinator" is the coordinator card.
 func (m *Model) graphKey(name string) (string, bool) {
 	for _, node := range m.agents.data.nodes {
-		if !node.current || node.record.Role == "supervisor" {
+		if !node.current || agentBuiltin(node.record) == records.AgentKindSupervisor {
 			continue
 		}
-		if node.record.Key == name || node.record.Name == name || name == "coordinator" && node.record.Role == "coordinator" {
+		if node.record.Key == name || node.record.Name == name || name == "coordinator" && agentBuiltin(node.record) == records.AgentKindCoordinator {
 			_, onGraph := m.graph.up[node.record.Key]
-			if onGraph || node.record.Role == "coordinator" {
+			if onGraph || agentBuiltin(node.record) == records.AgentKindCoordinator {
 				return node.record.Key, true
 			}
 		}

@@ -297,7 +297,7 @@ func TestGfAgentsDetailsPopup(t *testing.T) {
 	_, rows := gfAgentsRows(t, "GfAgentsDetails")
 	want := []string{
 		"╭─ t6-worker-1 · esc closes ───────────────────────────────╮",
-		"│ role      worker                                         │",
+		"│ profile   builder                                        │",
 		"│ project   hive                                           │",
 		"│ task      6-starting-status · assigned                   │",
 		"│ harness   pi · openai-codex/gpt-6.1-sol                  │",
