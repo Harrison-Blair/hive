@@ -58,7 +58,7 @@ func TestTreeNestedChild(t *testing.T) {
 		liveCell{45, 24, '┷', cellgrid.Accent}, liveCell{33, 24, '┏', cellgrid.Accent},
 		liveCell{33, 19, '╭', cellgrid.Working}, liveCell{63, 19, '╭', cellgrid.Working},
 		liveCell{28, 30, '╰', cellgrid.Border}, liveCell{91, 30, '╯', cellgrid.Border})
-	requireView(t, m, "│ h shows 1 stopped")
+	requireView(t, m, "│ h shows 2 stopped")
 	rejectView(t, m, "├┤", "╰┤")
 }
 

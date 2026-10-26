@@ -401,7 +401,7 @@ func (m *Model) footerNotice() string {
 
 // restartPrompt gives the restart prompt of health.md rule 6.
 func (m *Model) restartPrompt() string {
-	target := m.agents.restartTarget.Role
+	target := agentLabel(m.agents.restartTarget)
 	if target == "" {
 		target = m.agents.restartTarget.Key
 	}

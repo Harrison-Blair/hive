@@ -135,7 +135,7 @@ func TestAgentsHiddenManagerKeepsThePodOfALiveChild(t *testing.T) {
 func TestAgentsPodViewHangsTheChildrenFromTheTopBorder(t *testing.T) {
 	for _, state := range managerStates {
 		for _, size := range hideSizes {
-			nested := records.Agent{Key: "b1-helper", Name: "b1-helper", Role: "agent", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b1-worker", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
+			nested := records.Agent{Key: "b1-helper", Name: "b1-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b1-worker", StatusChangedAt: "2026-10-23T11:50:00Z", StartedAt: "2026-10-23T10:06:00Z"}
 			home, clock := hideHome(t, betaManager(state),
 				betaWorker("b1-worker", records.AgentLive, "working", "2026-10-23T10:04:00Z"), nested)
 			m := openHide(t, home, clock, size)

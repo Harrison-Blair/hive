@@ -385,7 +385,7 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	// agents.md rule 14 (ask a29) replaces RECENT with the fields of the
 	// board.
-	requireView(t, m, "manager-alpha · esc closes", "role      manager", "project   alpha")
+	requireView(t, m, "manager-alpha · esc closes", "profile   planner", "project   alpha")
 }
 
 // openAgents opens the Agents tab of a normal-mode model at 120×40 and
@@ -617,7 +617,13 @@ func TestAgentsHideStoppedAtStart(t *testing.T) {
 // pod has no outer box on its left (golden-frames agents.md rule 1), so its
 // columns are one less.
 func TestAgentsWorkingCardBorder(t *testing.T) {
-	m := newTestDemoModel(t, "AgentsHome.fixture.json", demoSize{})
+	m := healthDemoModel(t, "AgentsHome", func(f *demoFixture) {
+		for index := range f.Data.Agents {
+			if f.Data.Agents[index].Key == "spec-check-1" {
+				f.Data.Agents[index].Project = ""
+			}
+		}
+	})
 	type cell struct {
 		row, col int
 		r        rune

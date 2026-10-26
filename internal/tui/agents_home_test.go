@@ -15,8 +15,15 @@ import (
 
 // generalAgent gives a live general agent with parent, started at started.
 func generalAgent(key, parent, started string) records.Agent {
+	return generalAgentIn("", key, parent, started)
+}
+
+// generalAgentIn gives a live general agent in project, with parent, started
+// at started.
+func generalAgentIn(project, key, parent, started string) records.Agent {
 	return records.Agent{
-		Key: key, Name: key, Role: "agent", Harness: "pi", Model: "gpt", PaneID: "w9:" + key, Parent: parent,
+		Key: key, Name: key, Role: "agent", Profile: records.ProfileGeneral, Project: project,
+		Harness: "pi", Model: "gpt", PaneID: "w9:" + key, Parent: parent,
 		Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-21T14:19:00Z",
 		StartedAt: started, UpdatedAt: started,
 	}
@@ -82,7 +89,7 @@ func TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard(t *testing.T) {
 
 // AC1: home is not shown when it is empty.
 func TestAgentsHomeColumnIsNotShownWhenEmpty(t *testing.T) {
-	m := agentsModel(t, homeSource(generalAgent("child-1", "manager-alpha", "2026-10-21T14:00:00Z")))
+	m := agentsModel(t, homeSource(generalAgentIn("alpha", "child-1", "manager-alpha", "2026-10-21T14:00:00Z")))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	if strings.Contains(ansi.Strip(m.View().Content), " home ") {
 		t.Fatal("the graph shows an empty home column")
@@ -113,8 +120,8 @@ func TestAgentsHomeAgentsWithNoProjectKeepTheNotice(t *testing.T) {
 // bottom of the parent card and one │ row (decision 74).
 func TestAgentsNestGeneralAgentsUnderTheirParentCard(t *testing.T) {
 	m := agentsModel(t, homeSource(
-		generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
-		generalAgent("helper-2", "helper-1", "2026-10-21T14:01:00Z"),
+		generalAgentIn("alpha", "helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
+		generalAgentIn("alpha", "helper-2", "helper-1", "2026-10-21T14:01:00Z"),
 	))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
 	for key, want := range map[string]int{"t1-alpha-worker": 1, "helper-1": 2, "helper-2": 3} {
@@ -150,7 +157,7 @@ func TestAgentsNestGeneralAgentsUnderTheirParentCard(t *testing.T) {
 // children fit side by side in the tree form. The one-pod view always uses
 // the tree (decision 74).
 func TestAgentsNestingUsesTheRailFormInTheOverview(t *testing.T) {
-	source := homeSource(generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
+	source := homeSource(generalAgentIn("alpha", "helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
 	projects, agents := agentsProject("beta", "pi", 1)
 	source.projects, source.agents = append(source.projects, projects...), append(source.agents, agents...)
 	m := agentsModel(t, source)
@@ -167,8 +174,8 @@ func TestAgentsNestingUsesTheRailFormInTheOverview(t *testing.T) {
 // together.
 func TestAgentsChildrenAreInOrderOfCreationTime(t *testing.T) {
 	source := homeSource(
-		generalAgent("late-helper", "manager-alpha", "2026-10-21T14:10:00Z"),
-		generalAgent("early-helper", "manager-alpha", "2026-10-21T13:50:00Z"),
+		generalAgentIn("alpha", "late-helper", "manager-alpha", "2026-10-21T14:10:00Z"),
+		generalAgentIn("alpha", "early-helper", "manager-alpha", "2026-10-21T13:50:00Z"),
 	)
 	source.agents[2].StartedAt = "2026-10-21T14:00:00Z" // t1-alpha-worker
 	m := agentsModel(t, source)
@@ -189,7 +196,7 @@ func TestAgentsChildrenAreInOrderOfCreationTime(t *testing.T) {
 // AC2: when h hides a stopped parent, its live child moves to home. It moves
 // back when h shows the parent.
 func TestAgentsHMovesTheChildOfAHiddenParent(t *testing.T) {
-	source := homeSource(generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
+	source := homeSource(generalAgentIn("alpha", "helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
 	source.agents[2].Status = records.AgentStopped
 	m := agentsModel(t, source)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
@@ -235,7 +242,7 @@ func TestAgentsManagerWithoutChildrenShowsNoChildAgents(t *testing.T) {
 // in the overview, and enter opens it.
 func TestAgentsArrowsReachNestedAndHomeAgents(t *testing.T) {
 	m := agentsModel(t, homeSource(
-		generalAgent("helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
+		generalAgentIn("alpha", "helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"),
 		generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z"),
 	))
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
@@ -288,7 +295,7 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 	m, _ = raise(t, m, key(tea.KeyEnter, ""))
 	// agents.md rule 14: the model is on the harness row, and the parent
 	// row shows the name of the parent record coordinator-g1.
-	requireView(t, m, "review-1 · esc closes", "role", "agent", "harness", "pi · gpt", "parent    coordinator")
+	requireView(t, m, "review-1 · esc closes", "profile", "general", "harness", "pi · gpt", "parent    coordinator")
 	_, lines, _ := m.agentDetailsPopup()
 	for _, line := range lines {
 		fields := strings.Fields(ansi.Strip(line))
@@ -326,8 +333,8 @@ func TestGeneralAgentBoardFixtures(t *testing.T) {
 		wants         []string
 		home          map[string]bool // key: in home
 	}{
-		{"AgentsHome", 120, 40, []string{"agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": true}},
-		{"AgentsNested", 120, 40, []string{"t5-research-1", "t5-research-2"}, map[string]bool{"t5-research-1": false, "t5-research-2": false}},
+		{"AgentsHome", 120, 40, []string{"agents · 2 projects", "━ home ━", "plan-review-1", "spec-check-1"}, map[string]bool{"plan-review-1": true, "spec-check-1": false}},
+		{"AgentsNested", 120, 40, []string{"t5-research-1", "t5-research-2"}, map[string]bool{"t5-research-1": true, "t5-research-2": true}},
 		{"AgentsHiddenParent", 120, 40, []string{"━ home ━", "t4-review-1", "h shows 1 stopped"}, map[string]bool{"t4-review-1": true}},
 		{"AgentsCoordinatorChild", 120, 40, []string{"agents · home", "plan-review-2"}, map[string]bool{"plan-review-1": true, "plan-review-2": true}},
 		{"CompactAgentsHome", 80, 24, []string{"━ home ━", "plan-review-1", "projects 2–2 of 2 · home", "← hive"}, map[string]bool{"plan-review-1": true}},
