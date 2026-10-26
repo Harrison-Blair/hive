@@ -3,12 +3,13 @@ package harness
 import "testing"
 
 // TestSystemPromptDelivery gives the delivery of each harness. Claude Code
-// takes the profile and the guide with --append-system-prompt. Each other
-// harness takes them at the start of the first prompt (D4). Pi uses this path
-// because Herdr start arguments cannot carry multiline text.
+// reads the profile and the guide from the file that
+// --append-system-prompt-file names. Herdr start arguments cannot carry
+// multiline text. Each other
+// harness takes them at the start of the first prompt (D4).
 func TestSystemPromptDelivery(t *testing.T) {
 	cases := map[string]string{
-		"claude":   "--append-system-prompt",
+		"claude":   "--append-system-prompt-file",
 		"pi":       "",
 		"codex":    "",
 		"opencode": "",

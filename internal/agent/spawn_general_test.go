@@ -3,8 +3,10 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -553,5 +555,89 @@ func TestGeneralSpawnAllowTrustDialogIdleStartKeepsPrompt(t *testing.T) {
 	}
 	if prompts := fake.recorded("agent.prompt"); len(prompts) != 0 {
 		t.Fatalf("agent.prompt requests = %d; want 0", len(prompts))
+	}
+}
+
+func TestClaudeInstructionFileGeneralSpawnDeliversExactPrivateFile(t *testing.T) {
+	home := testHome(t)
+	writeGeneralParent(t, home)
+	writeKnownProfile(t, home, records.ProfileGeneral)
+	t.Setenv("HERDR_PANE_ID", "w1:p9")
+	dir := t.TempDir()
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	reader := readStartFile(t, fake)
+	scriptGeneralNewTab(fake, sleep, dir, "x", "claude", "idle")
+	scriptGeneralPrompt(fake, "w1:p5", "w1:t3", "x")
+	if envelope := Spawn(context.Background(), home, generalOptions("x", "claude", dir)); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %#v; want ok", envelope)
+	}
+	read := reader.only(t)
+	checkStartFile(t, read, home, wantKnownInstructions(records.ProfileGeneral))
+	if want := []string{"--dangerously-skip-permissions", "--model", "m", claudeFileFlag, read.path}; !reflect.DeepEqual(read.args, want) {
+		t.Fatalf("agent.start args = %q; want %q", read.args, want)
+	}
+	var create struct {
+		Env map[string]string `json:"env"`
+	}
+	decodeParams(t, fake.recorded("tab.create")[0].Params, &create)
+	if create.Env["CLAUDE_CODE_SANDBOXED"] != "1" {
+		t.Fatalf("tab.create env = %#v; want CLAUDE_CODE_SANDBOXED=1", create.Env)
+	}
+	prompts := fake.recorded("agent.prompt")
+	if len(prompts) != 1 || strings.Contains(prompts[0].Params, "T186-CANARY") || !strings.Contains(prompts[0].Params, "Review the plan.") {
+		t.Fatalf("agent.prompt requests = %#v; want one prompt with the spawner text and no instructions", prompts)
+	}
+	if _, err := os.Lstat(read.path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("instruction file after a ready start: %v; want it removed", err)
+	}
+}
+
+func TestClaudeInstructionFileGeneralSpawnStartOutcomes(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		outcome string
+		kept    bool
+		start   func(fake *fakeHerdr, dir string)
+	}{
+		{name: "refused", outcome: "failed", start: func(fake *fakeHerdr, dir string) {
+			fake.failure("agent.start", "invalid_agent_argument", "refused")
+			fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p5", "term_x", "w1", "w1:t3", dir)+`}`)
+			fake.result("pane.list", `{"type":"pane_list","panes":[`+paneInfoJSON("w1:p5", "term_x", "w1", "w1:t3", dir)+`]}`)
+			fake.result("pane.close", `{"type":"ok"}`)
+		}},
+		{name: "start reply lost", outcome: "partial", kept: true, start: func(fake *fakeHerdr, _ string) {
+			fake.drop("agent.start")
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			home := testHome(t)
+			writeGeneralParent(t, home)
+			writeKnownProfile(t, home, records.ProfileGeneral)
+			t.Setenv("HERDR_PANE_ID", "w1:p9")
+			dir := t.TempDir()
+			fake := newFakeHerdr(t)
+			reader := readStartFile(t, fake)
+			fake.result("pane.get", `{"type":"pane_info","pane":`+paneInfoJSON("w1:p9", "term_p", "w1", "w1:t1", "/tmp")+`}`)
+			fake.result("tab.create", tabCreatedJSON("w1:t3", "w1:p5", dir))
+			scriptReadyShell(fake, "w1:p5", "term_x", "w1", "w1:t3", dir)
+			test.start(fake, dir)
+			envelope := Spawn(context.Background(), home, generalOptions("x", "claude", dir))
+			if envelope.Outcome != test.outcome {
+				t.Fatalf("envelope = %#v; want %s", envelope, test.outcome)
+			}
+			read := reader.only(t)
+			checkStartFile(t, read, home, wantKnownInstructions(records.ProfileGeneral))
+			_, err := os.Lstat(read.path)
+			if test.kept && err != nil {
+				t.Fatalf("instruction file after an uncertain start: %v; want it kept", err)
+			}
+			if !test.kept && !errors.Is(err, os.ErrNotExist) {
+				t.Fatalf("instruction file after a refused start: %v; want it removed", err)
+			}
+			if keptEffect(envelope, home, read.path) != test.kept {
+				t.Fatalf("effects = %#v; want kept effect %t", envelope.Effects, test.kept)
+			}
+		})
 	}
 }

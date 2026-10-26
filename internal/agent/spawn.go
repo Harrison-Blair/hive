@@ -162,7 +162,17 @@ func Spawn(ctx context.Context, home string, options SpawnOptions) output.Envelo
 
 // spawnInPane registers one agent, starts it in paneID, and records its
 // identity. The caller sends the first prompt.
-func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, paneID string, renameTab bool, logger *slog.Logger) output.Envelope {
+func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile harness.Profile, paneID string, renameTab bool, logger *slog.Logger) (envelope output.Envelope) {
+	systemArgs, file, err := prepareInstructions(home, profile, options.instructions)
+	if err != nil {
+		envelope := failed("instructions", err.Error())
+		logSpawn(logger, envelope, options, "")
+		return envelope
+	}
+	startSent := false
+	if file != nil {
+		defer func() { envelope = settleInstructionFile(logger, file, startSent, envelope) }()
+	}
 	registered := Register(home, RegisterOptions{
 		Profile:             options.Profile,
 		Kind:                options.Kind,
@@ -212,7 +222,8 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		return envelope
 	}
 
-	args := profile.Args(options.Model, append(systemPromptArgs(profile, options.instructions), options.ExtraArgs...))
+	args := profile.Args(options.Model, append(systemArgs, options.ExtraArgs...))
+	startSent = true
 	started, startErr := herdr.AgentStart(ctx, herdr.AgentStartParams{
 		Name:      record.Key,
 		Kind:      profile.Kind(),
@@ -384,7 +395,7 @@ func spawnInPane(ctx context.Context, home string, options SpawnOptions, profile
 		logSpawn(logger, envelope, options, record.Key)
 		return envelope
 	}
-	envelope := spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
+	envelope = spawnEnvelope("ok", "complete", effects, nil, SpawnResult{Agent: chooseRecord(updated, record), Claim: result.Claim})
 	logSpawn(logger, envelope, options, record.Key)
 	return envelope
 }
@@ -742,6 +753,26 @@ func validateExtraArgs(args []string) string {
 		}
 	}
 	return ""
+}
+
+// settleInstructionFile removes the instruction file of one spawn after a
+// known outcome: no start request, a ready start, or an exited agent. Claude
+// Code reads the file before it draws its prompt, so a ready start with a
+// checked process identity has read it. For each other outcome the harness
+// can still read the file, so the file stays until the owner settles the
+// agent.
+func settleInstructionFile(logger *slog.Logger, file *instructionFile, startSent bool, envelope output.Envelope) output.Envelope {
+	agent := spawnResultAgent(envelope)
+	if !startSent || envelope.Outcome == "ok" || agent.Status == records.AgentExited {
+		err := file.remove()
+		if err == nil {
+			return envelope
+		}
+		logger.Error("instruction file remove", "command", "agent spawn", "agent_id", agent.Key, "path", file.path, "error", err.Error())
+	}
+	envelope.Effects = append(envelope.Effects, file.keptEffect())
+	logger.Debug("instruction file kept", "command", "agent spawn", "agent_id", agent.Key, "path", file.path, "cleanup", "remove the file after the owner settles agent "+agent.Key)
+	return envelope
 }
 
 func spawnStartFailure(home string, logger *slog.Logger, options SpawnOptions, record records.Agent, claim *records.Claim, effects []output.Effect, startErr error, override string) output.Envelope {

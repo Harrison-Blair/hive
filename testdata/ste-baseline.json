@@ -21,6 +21,7 @@
   ".hive/spec/agents-without-roles/tasks/178-pi-safe-profile-delivery/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/180-awr-agents-group-external/brief.md": 0,
   ".hive/spec/agents-without-roles/tasks/181-awr-cleanup-external/brief.md": 0,
+  ".hive/spec/agents-without-roles/tasks/186-native-claude-instruction-file/brief.md": 0,
   ".hive/spec/ci/tasks/11-ci-workflow/brief.md": 0,
   ".hive/spec/ci/tasks/27-ci-flake-fix/brief.md": 0,
   ".hive/spec/coordinator-startup/tasks/13-coordinator-autostart/brief.md": 0,

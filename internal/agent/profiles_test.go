@@ -243,39 +243,34 @@ func promptText(t *testing.T, fake *fakeHerdr) string {
 	return params.Text
 }
 
-// TestSpawnDeliversProfileWithSystemPrompt proves AC1: Claude Code takes
-// the profile and the guide with --append-system-prompt.
+// TestSpawnDeliversProfileWithSystemPrompt proves AC1: Claude Code reads
+// the profile and the guide from the private file that
+// --append-system-prompt-file names.
 func TestSpawnDeliversProfileWithSystemPrompt(t *testing.T) {
 	for _, harnessName := range []string{"claude"} {
 		t.Run(harnessName, func(t *testing.T) {
-			_, fake, _ := spawnProfileTask(t, harnessName)
-			args := startArgs(t, fake)
-			index := -1
-			for position, arg := range args {
-				if arg == "--append-system-prompt" {
-					index = position
-					break
-				}
+			home := testHome(t)
+			writeProfileHome(t, home)
+			repo, worktree, branch := taskWorktree(t)
+			writeProjectPath(t, home, "demo", repo)
+			writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
+			sleep := startSleep(t)
+			fake := newFakeHerdr(t)
+			reader := readStartFile(t, fake)
+			scriptProfileTaskSpawn(fake, sleep, harnessName, "w5:p1", "w5", "w5:t1", worktree, "builder-1")
+			envelope := Spawn(context.Background(), home, SpawnOptions{
+				Profile: "builder", ProfileSet: true, Task: "1-worker-demo",
+				Harness: harnessName, Model: "m", Name: "builder-1", NameSet: true,
+			})
+			if envelope.Outcome != "ok" || envelope.Error != nil {
+				t.Fatalf("spawn outcome = %s error = %v; want ok", envelope.Outcome, envelope.Error)
 			}
-			if index < 0 || index+1 >= len(args) {
-				t.Fatalf("agent.start args = %#v; want --append-system-prompt TEXT", args)
-			}
-			text := args[index+1]
-			profile := readProfile(t, "builder")
-			guideText := guide.Text()
-			profileIndex := strings.Index(text, profile)
-			guideIndex := strings.Index(text, guideText)
-			if profileIndex < 0 || guideIndex < 0 {
-				t.Fatalf("system prompt does not hold the profile and the guide")
-			}
-			if profileIndex >= guideIndex {
-				t.Fatalf("system prompt puts the guide before the profile")
-			}
-			if !strings.Contains(text, "Read `profiles/builder.md` and run `hive guide` after a context reset.") {
-				t.Errorf("system prompt does not name the profile path and the guide command")
-			}
+			read := reader.only(t)
+			want := strings.TrimSpace(readProfile(t, "builder")) + "\n\n" + strings.TrimSpace(guide.Text()) +
+				"\n\nRead `profiles/builder.md` and run `hive guide` after a context reset."
+			checkStartFile(t, read, home, []byte(want))
 			prompt := promptText(t, fake)
-			if strings.Contains(prompt, guideText) {
+			if strings.Contains(prompt, guide.Text()) {
 				t.Errorf("first prompt holds the guide; want the system prompt to carry it")
 			}
 			if !strings.HasPrefix(prompt, "⬢ You are builder-1.") {
@@ -293,7 +288,7 @@ func TestSpawnDeliversProfileFirstInPrompt(t *testing.T) {
 			_, fake, _ := spawnProfileTask(t, harnessName)
 			args := startArgs(t, fake)
 			for _, arg := range args {
-				if arg == "--append-system-prompt" {
+				if arg == "--append-system-prompt" || arg == claudeFileFlag {
 					t.Fatalf("agent.start args = %#v; want no system prompt argument", args)
 				}
 			}

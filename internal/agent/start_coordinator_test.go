@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -198,6 +202,7 @@ func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
 			processName := profile.ProcessNames()[0]
 			sleep := startSleep(t)
 			fake := newFakeHerdr(t)
+			reader := readStartFile(t, fake)
 			scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
 			fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
 			fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "coordinator")+`,"argv":["`+kind+`"]}`)
@@ -241,21 +246,25 @@ func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
 					t.Error("Pi coordinator first prompt must contain the profile, guide, reset reminder, and startup prompt in order")
 				}
 			}
-			systemIndex := -1
-			for index, arg := range start.Args {
-				if arg == "--append-system-prompt" {
-					systemIndex = index
-					break
-				}
-			}
 			contextText := prompt.Text
 			if profile.SystemPromptArg() != "" {
-				if systemIndex < 0 || systemIndex+1 >= len(start.Args) {
-					t.Fatalf("agent.start args = %#v; want --append-system-prompt TEXT", start.Args)
+				read := reader.only(t)
+				want := strings.TrimSpace(readProfile(t, "coordinator")) + "\n\n" + strings.TrimSpace(guide.Text()) +
+					"\n\nRead `profiles/coordinator.md` and run `hive guide` after a context reset."
+				checkStartFile(t, read, home, []byte(want))
+				if prompt.Text != CoordinatorPrompt {
+					t.Errorf("Claude coordinator first prompt = %q; want only the startup prompt", prompt.Text)
 				}
-				contextText = start.Args[systemIndex+1] + "\n\n" + prompt.Text
-			} else if systemIndex >= 0 {
-				t.Fatalf("agent.start args = %#v; want the text in the first prompt", start.Args)
+				if _, err := os.Lstat(read.path); !errors.Is(err, os.ErrNotExist) {
+					t.Errorf("coordinator instruction file after a ready start: %v; want it removed", err)
+				}
+				contextText = string(read.data) + "\n\n" + prompt.Text
+			} else {
+				for _, arg := range start.Args {
+					if arg == "--append-system-prompt" || arg == claudeFileFlag {
+						t.Fatalf("agent.start args = %#v; want the text in the first prompt", start.Args)
+					}
+				}
 			}
 			profileIndex := strings.Index(contextText, readProfile(t, "coordinator"))
 			guideIndex := strings.Index(contextText, guide.Text())
@@ -279,5 +288,128 @@ func TestStartCoordinatorDeliversProfileAndGuide(t *testing.T) {
 				t.Error("starting context names the generation-specific record key")
 			}
 		})
+	}
+}
+
+// startKnownCoordinator starts a coordinator with knownProfile. script gives
+// the herdr replies after the shell checks.
+func startKnownCoordinator(t *testing.T, setup func(home string), script func(fake *fakeHerdr, sleep sleepProcess)) (string, *fakeHerdr, *startReader, error) {
+	t.Helper()
+	home := testHome(t)
+	writeKnownProfile(t, home, "coordinator")
+	if setup != nil {
+		setup(home)
+	}
+	sleep := startSleep(t)
+	fake := newFakeHerdr(t)
+	reader := readStartFile(t, fake)
+	scriptReadyShell(fake, "w1:p1", "term_a", "w1", "w1:t1", home)
+	fake.result("pane.wait_for_output", `{"type":"output_matched"}`)
+	script(fake, sleep)
+	err := startCoordinatorWith(context.Background(), home, "w1:p1", "claude", "m", nil)
+	return home, fake, reader, err
+}
+
+func coordinatorStarted(fake *fakeHerdr) {
+	fake.result("agent.start", `{"type":"agent_started","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "unknown", "coordinator")+`,"argv":["claude"]}`)
+}
+
+func TestClaudeInstructionFileCoordinatorReadyRemovesOwnFile(t *testing.T) {
+	var other string
+	home, fake, reader, err := startKnownCoordinator(t, func(home string) { other = writeOtherAttemptFile(t, home) }, func(fake *fakeHerdr, sleep sleepProcess) {
+		coordinatorStarted(fake)
+		fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "coordinator")+`}`)
+		fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", false, true)+`}`)
+		fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p1", processEntry(sleep.pid, "claude", "claude"))+`}`)
+		fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "working", "coordinator")+`}`)
+	})
+	if err != nil {
+		t.Fatalf("start coordinator: %v", err)
+	}
+	read := reader.only(t)
+	checkStartFile(t, read, home, wantKnownInstructions("coordinator"))
+	if want := []string{"--dangerously-skip-permissions", "--model", "m", claudeFileFlag, read.path}; !reflect.DeepEqual(read.args, want) {
+		t.Fatalf("agent.start args = %q; want %q", read.args, want)
+	}
+	if prompts := fake.recorded("agent.prompt"); len(prompts) != 1 || strings.Contains(prompts[0].Params, "T186-CANARY") {
+		t.Fatalf("agent.prompt requests = %#v; want one startup prompt with no instructions", prompts)
+	}
+	if _, err := os.Lstat(read.path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("own instruction file: %v; want it removed", err)
+	}
+	if data, err := os.ReadFile(other); err != nil || string(data) != "other attempt\n" {
+		t.Fatalf("other attempt file = %q, %v; want it unchanged", data, err)
+	}
+}
+
+func TestClaudeInstructionFileCoordinatorRefusalRemovesFile(t *testing.T) {
+	home, _, reader, err := startKnownCoordinator(t, nil, func(fake *fakeHerdr, _ sleepProcess) {
+		fake.failure("agent.start", "invalid_agent_argument", "refused")
+	})
+	if err == nil {
+		t.Fatal("start coordinator succeeded; want the refusal")
+	}
+	read := reader.only(t)
+	checkStartFile(t, read, home, wantKnownInstructions("coordinator"))
+	if _, statErr := os.Lstat(read.path); !errors.Is(statErr, os.ErrNotExist) {
+		t.Fatalf("instruction file after a refused start: %v; want it removed", statErr)
+	}
+	if strings.Contains(err.Error(), read.path) {
+		t.Fatalf("error = %v; want no kept file", err)
+	}
+}
+
+// TestClaudeInstructionFileCoordinatorUncertainKeepsFile covers a lost start
+// reply and a harness that does not become ready. Hive keeps the file and
+// names it in the error.
+func TestClaudeInstructionFileCoordinatorUncertainKeepsFile(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		script func(fake *fakeHerdr, sleep sleepProcess)
+	}{
+		{name: "start reply lost", script: func(fake *fakeHerdr, _ sleepProcess) { fake.drop("agent.start") }},
+		{name: "not ready", script: func(fake *fakeHerdr, _ sleepProcess) {
+			coordinatorStarted(fake)
+			fake.result("agent.wait", `{"type":"agent_info","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "blocked", "coordinator")+`}`)
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			home, _, reader, err := startKnownCoordinator(t, nil, test.script)
+			if err == nil {
+				t.Fatal("start coordinator succeeded; want an uncertain start")
+			}
+			read := reader.only(t)
+			checkStartFile(t, read, home, wantKnownInstructions("coordinator"))
+			data, readErr := os.ReadFile(read.path)
+			if readErr != nil || !bytes.Equal(data, wantKnownInstructions("coordinator")) {
+				t.Fatalf("kept instruction file = %d bytes, %v; want the exact instructions", len(data), readErr)
+			}
+			if !strings.Contains(err.Error(), "instruction file kept") || !strings.Contains(err.Error(), read.path) {
+				t.Fatalf("error = %v; want it to name the kept file %s", err, read.path)
+			}
+		})
+	}
+}
+
+func TestClaudeInstructionFileCoordinatorWriteFailureStartsNothing(t *testing.T) {
+	block := func(home string) {
+		if err := os.WriteFile(filepath.Join(home, ".hive", "tmp"), []byte("not a folder\n"), 0o644); err != nil {
+			t.Fatalf("write .hive/tmp file: %v", err)
+		}
+	}
+	home := testHome(t)
+	writeKnownProfile(t, home, "coordinator")
+	block(home)
+	fake := newFakeHerdr(t)
+	if err := startCoordinatorWith(context.Background(), home, "w1:p1", "claude", "m", nil); err == nil {
+		t.Fatal("start coordinator succeeded; want the file write failure")
+	}
+	for _, method := range []string{"agent.start", "pane.wait_for_shell_prompt", "agent.prompt"} {
+		if requests := fake.recorded(method); len(requests) != 0 {
+			t.Fatalf("%s requests = %d; want 0", method, len(requests))
+		}
+	}
+	if data, err := os.ReadFile(filepath.Join(home, ".hive", "tmp")); err != nil || string(data) != "not a folder\n" {
+		t.Fatalf(".hive/tmp = %q, %v; want it unchanged", data, err)
 	}
 }
