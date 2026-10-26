@@ -65,3 +65,17 @@ This is process friction: a prose-only update needs a separate verifier solely
 for native completion bookkeeping. The plan does not claim that the future
 check already ran or passed. The manager reports the exact disposition before
 finalization. This entry requests no source feature or runtime change.
+
+
+**Actual task 184 fallback:**
+Task 184 used the permitted real-check fallback after the user asked to skip
+separate prose verification. The final fresh verifier checked only PR 49,
+its evidence, and all 105 authenticated remote image bytes. It ran no product
+test, code gate, build, or new capture. V1, V2, and V3 passed.
+The manager then used normal already-merged merge-mode delivery at
+`f683e0c304e65400bd7f0cfd871c8a551dc7fcad`, with the existing PR as evidence.
+Native delivery reported that the branch was already on `dev` and pushed it.
+Task 182's earlier accepted closure and task 184's historical failed verdict
+remain unchanged. This actual result replaces no earlier history.
+The separate verifier was required for native closure. The status limitation
+and the user's preference remain open process friction.
