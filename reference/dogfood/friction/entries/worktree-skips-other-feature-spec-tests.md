@@ -54,3 +54,25 @@ spec and design copies. A fresh clone must receive those matching copies.
 Do not copy later boards into older code without the corresponding source
 integration. Do not remove a test or add a skip to hide a mismatch. Check the
 newly landed screen after the source merge.
+
+
+**Clean-checkout duration regression, 2026-10-26:**
+Task 183 local checks had all 3,208 design and task 135 inputs. Its delivered
+CI failed because two new Health width regressions directly opened the
+ignored `GfHealth.fixture.json`. The failure was not a product render failure.
+Task `185-duration-ci-inputs` replaces only their input with fixed,
+self-contained records and clock values. Every original literal assertion,
+size, boundary, and column check remains intact. No skip was added.
+
+Independent verification reproduced all 13 missing-file failures in the
+pre-fix clean archive. The fixed clean archive ran all 13 cases successfully,
+with zero skips. A deliberate width break failed the assertions and exact
+restoration passed. Product source bytes remained unchanged.
+The delivered fix is `1b53a389968f77d7d93e326597edb779586ca7b4`.
+Both actual CI runs, `40276720423` and `40276713655`, completed successfully
+at that exact head. Evidence is in task 185's `evidence/` folder.
+
+This narrow fix leaves the broader issue open. The independent clean-suite
+inventory still has 575 historical design-input skips and one memory-helper
+skip. The complete local UI, component, and board-export run has 1,572 passes
+and zero skips. Keep both input modes and their limits separate.
