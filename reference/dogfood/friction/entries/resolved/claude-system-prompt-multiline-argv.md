@@ -1,13 +1,13 @@
 ---
 title: "Native Claude spawn rejects the multiline system prompt"
-status: "Open"
+status: "Resolved 2026-10-26"
 opened: 2026-10-26
 decision: "Fix the existing D4 instruction delivery with a private file. Keep model and trust behavior unchanged."
 ---
 
 **Issue:** Native Claude spawn puts multiline instructions in an argument that herdr refuses.
 
-**Status:** Open.
+**Status:** Resolved 2026-10-26.
 
 **Summary:**
 On 2026-10-26, the task 184 upload fix needed the new approved Claude Code
@@ -50,3 +50,24 @@ identity checks, pane close, process absence, and native exited settlement.
 The manual file route succeeded. It did not fix ordinary native spawn.
 Coordinator records 245 and 247 require a bounded D4 source fix before G2.
 No generic framework, schema change, encoder bypass, or UI change is requested.
+
+
+**Resolution:**
+Task 186 fixes both ordinary spawn and coordinator startup at
+`0bdf7883e307f38285f1e5de59a3c9934c1d9507`, delivered to `dev` at
+`72a338da0e80a48e640a4a7175c1336833bdc143` under the G1 grant.
+A fresh Codex verifier independently passed the boundary tests, original
+red run, deliberate break, restored green run, and five-command Go gate.
+Its real isolated native Claude Opus 5.5 run returned a fresh file-only
+canary after file removal and the first prompt. This establishes actual
+instruction consumption. A blocked raw startup retained its file through
+owned cleanup. Private file mode, exact bytes, absolute path, native
+registration, model, trust, permission arguments, and other harness behavior
+were checked. The UI tree and all 105 task 184 assets match f683.
+
+This resolves the source defect. The installed accepted control binary was
+unchanged by the task. A later hashed accepted-control CLI pin can use the
+fix after exact-head CI succeeds, without installing or restarting a TUI or
+supervisor. The original manual-bootstrap metadata and all failure history
+remain in evidence. The first builder gate setup log was overwritten; its
+summary remains, and the independent verifier retained its own raw runs.
