@@ -1,4 +1,4 @@
-package project
+package register
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 func TestRegisterCreatesRecordAndProjectDirectories(t *testing.T) {
 	home := t.TempDir()
 	repo := makeRepo(t, filepath.Join(t.TempDir(), "Repo-One"), true)
-	envelope := Register(home, RegisterOptions{Path: repo, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Register() = %#v; want success", envelope)
 	}
@@ -42,7 +42,7 @@ func TestRegisterCreatesRecordAndProjectDirectories(t *testing.T) {
 func TestRegisterAcceptsGitFile(t *testing.T) {
 	home := t.TempDir()
 	repo := makeRepo(t, filepath.Join(t.TempDir(), "repo"), false)
-	envelope := Register(home, RegisterOptions{Path: repo, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Register() error = %v; want a .git file accepted", envelope.Error)
 	}
@@ -51,7 +51,7 @@ func TestRegisterAcceptsGitFile(t *testing.T) {
 func TestRegisterAcceptsThreePartID(t *testing.T) {
 	home := t.TempDir()
 	repo := makeRepo(t, filepath.Join(t.TempDir(), "repo"), true)
-	envelope := Register(home, RegisterOptions{Path: repo, ID: "a-b-c", IDSet: true, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: repo, ID: "a-b-c", IDSet: true, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Register() error = %v; want valid ID a-b-c accepted", envelope.Error)
 	}
@@ -62,7 +62,7 @@ func TestRegisterRejectsInvalidIDs(t *testing.T) {
 		t.Run(id, func(t *testing.T) {
 			home := t.TempDir()
 			repo := makeRepo(t, filepath.Join(t.TempDir(), "repo"), true)
-			envelope := Register(home, RegisterOptions{Path: repo, ID: id, IDSet: true, WorkingDir: t.TempDir()})
+			envelope := Run(home, Options{Path: repo, ID: id, IDSet: true, WorkingDir: t.TempDir()})
 			wantID := id
 			if strings.ContainsAny(id, "\n\r\t") {
 				wantID = quote(id)
@@ -83,7 +83,7 @@ func TestRegisterRejectsInvalidBaseBranches(t *testing.T) {
 		t.Run(base, func(t *testing.T) {
 			home := t.TempDir()
 			repo := makeRepo(t, filepath.Join(t.TempDir(), "repo"), true)
-			envelope := Register(home, RegisterOptions{Path: repo, Base: base, BaseSet: true, WorkingDir: t.TempDir()})
+			envelope := Run(home, Options{Path: repo, Base: base, BaseSet: true, WorkingDir: t.TempDir()})
 			want := "invalid base branch: " + quote(base)
 			if envelope.Error != want {
 				t.Fatalf("error = %v; want %q", envelope.Error, want)
@@ -98,7 +98,7 @@ func TestRegisterRejectsInvalidBaseBranches(t *testing.T) {
 func TestRegisterRejectsPathControlCharacterBeforePathAccess(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "missing") + "\x01"
 	home := t.TempDir()
-	envelope := Register(home, RegisterOptions{Path: path, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: path, WorkingDir: t.TempDir()})
 	if envelope.Error != "invalid path: "+quote(path) {
 		t.Fatalf("error = %v; want quoted invalid path", envelope.Error)
 	}
@@ -114,7 +114,7 @@ func TestRegisterResolvesSymbolicPath(t *testing.T) {
 	if err := os.Symlink(repo, alias); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Register(home, RegisterOptions{Path: alias, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: alias, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "ok" || envelope.Result.(records.Project).Path != repo {
 		t.Fatalf("Register() = %#v; want canonical repository path %q", envelope, repo)
 	}
@@ -123,7 +123,7 @@ func TestRegisterResolvesSymbolicPath(t *testing.T) {
 func TestRegisterResolvesRelativePathWithoutTrimming(t *testing.T) {
 	workingDir := t.TempDir()
 	repo := makeRepo(t, filepath.Join(workingDir, " repo "), true)
-	envelope := Register(t.TempDir(), RegisterOptions{Path: " repo ", ID: "spaced", IDSet: true, WorkingDir: workingDir})
+	envelope := Run(t.TempDir(), Options{Path: " repo ", ID: "spaced", IDSet: true, WorkingDir: workingDir})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Register() error = %v; want path with spaces accepted", envelope.Error)
 	}
@@ -138,7 +138,7 @@ func TestRegisterRejectsNonGitRepository(t *testing.T) {
 	if err := os.Mkdir(path, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Register(home, RegisterOptions{Path: path, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: path, WorkingDir: t.TempDir()})
 	if envelope.Error != "not a git repository: "+path {
 		t.Fatalf("error = %v; want not a git repository", envelope.Error)
 	}
@@ -157,7 +157,7 @@ func TestRegisterRejectsSymbolicGitMarker(t *testing.T) {
 	if err := os.Symlink(gitDir, filepath.Join(path, ".git")); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Register(home, RegisterOptions{Path: path, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: path, WorkingDir: t.TempDir()})
 	if envelope.Error != "not a git repository: "+path {
 		t.Fatalf("error = %v; want symbolic .git marker refused", envelope.Error)
 	}
@@ -166,15 +166,15 @@ func TestRegisterRejectsSymbolicGitMarker(t *testing.T) {
 func TestRegisterRejectsDuplicateIDAndPath(t *testing.T) {
 	home := t.TempDir()
 	repo := makeRepo(t, filepath.Join(t.TempDir(), "repo"), true)
-	first := Register(home, RegisterOptions{Path: repo, ID: "first", IDSet: true, WorkingDir: t.TempDir()})
+	first := Run(home, Options{Path: repo, ID: "first", IDSet: true, WorkingDir: t.TempDir()})
 	if first.Outcome != "ok" {
 		t.Fatal(first.Error)
 	}
-	duplicateID := Register(home, RegisterOptions{Path: repo, ID: "first", IDSet: true, WorkingDir: t.TempDir()})
+	duplicateID := Run(home, Options{Path: repo, ID: "first", IDSet: true, WorkingDir: t.TempDir()})
 	if duplicateID.Error != "project exists: first" {
 		t.Fatalf("duplicate ID error = %v", duplicateID.Error)
 	}
-	duplicatePath := Register(home, RegisterOptions{Path: repo, ID: "second", IDSet: true, WorkingDir: t.TempDir()})
+	duplicatePath := Run(home, Options{Path: repo, ID: "second", IDSet: true, WorkingDir: t.TempDir()})
 	if duplicatePath.Error != "path registered as first" {
 		t.Fatalf("duplicate path error = %v", duplicatePath.Error)
 	}
@@ -189,7 +189,7 @@ func TestRegisterReportsPartialDirectoryFailure(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, "projects", "repo-two"), []byte("file"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Register(home, RegisterOptions{Path: repo, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "partial" || envelope.Phase != "dirs" || len(envelope.Effects) != 1 || !strings.Contains(envelope.Error.(string), "projects/repo-two") {
 		t.Fatalf("Register() = %#v; want partial dirs outcome", envelope)
 	}
@@ -201,7 +201,7 @@ func TestRegisterExistingDirectoriesRemainAndReportExists(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(home, "projects", "repo", "worktrees"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	envelope := Register(home, RegisterOptions{Path: repo, WorkingDir: t.TempDir()})
+	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
 	if envelope.Outcome != "ok" || envelope.Effects[2].Action != "exists" {
 		t.Fatalf("Register() = %#v; want existing worktrees directory", envelope)
 	}

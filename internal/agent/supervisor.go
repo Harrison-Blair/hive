@@ -22,14 +22,14 @@ func StartSupervisor(home string, options RegisterOptions) output.Envelope {
 	options.Project = ""
 	options.Task = ""
 	if message := validateRegistration(options); message != "" {
-		envelope := failed("validate", message)
-		logRegistration(home, options, envelope)
+		envelope := Failed("validate", message)
+		LogRegistration(home, options, envelope)
 		return envelope
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		envelope := failed("store", err.Error())
-		logRegistration(home, options, envelope)
+		envelope := Failed("store", err.Error())
+		LogRegistration(home, options, envelope)
 		return envelope
 	}
 	var envelope output.Envelope
@@ -40,20 +40,20 @@ func StartSupervisor(home string, options RegisterOptions) output.Envelope {
 		case claimErr == nil:
 			alive, aliveErr := process.Alive(claim.PID, claim.PIDStart)
 			if aliveErr == nil && alive {
-				envelope = failed("claim", fmt.Sprintf("supervisor live: pid %d", claim.PID))
+				envelope = Failed("claim", fmt.Sprintf("supervisor live: pid %d", claim.PID))
 				return nil
 			}
 		case errors.Is(claimErr, os.ErrNotExist):
 		default:
-			envelope = failed("store", "read supervisor claim: "+claimErr.Error())
+			envelope = Failed("store", "read supervisor claim: "+claimErr.Error())
 			return nil
 		}
 		envelope = registerLocked(locked, locked, options)
 		return nil
 	})
 	if err != nil {
-		envelope = failed("store", err.Error())
+		envelope = Failed("store", err.Error())
 	}
-	logRegistration(home, options, envelope)
+	LogRegistration(home, options, envelope)
 	return envelope
 }

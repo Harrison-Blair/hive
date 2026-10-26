@@ -1,4 +1,5 @@
-package agent
+// Package report sends the result of a general agent for the agent report command.
+package report
 
 import (
 	"context"
@@ -11,6 +12,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	agentlib "github.com/Harrison-Blair/hive/internal/agent"
 	identitylib "github.com/Harrison-Blair/hive/internal/lib/identity"
 	inboxlib "github.com/Harrison-Blair/hive/internal/lib/inbox"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -19,8 +21,8 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
-// ReportOptions holds the inputs of one hive agent report.
-type ReportOptions struct {
+// Options holds the inputs of one hive agent report.
+type Options struct {
 	// Agent is the value of --agent.
 	Agent string
 	// Pane is the value of --pane. It names the caller.
@@ -34,18 +36,18 @@ type ReportOptions struct {
 	FileSet bool
 }
 
-// ReportResult is the inbox record of one report.
-type ReportResult struct {
+// Result is the inbox record of one report.
+type Result struct {
 	Inbox  string        `json:"inbox"`
 	Record records.Inbox `json:"record"`
 }
 
-// Report sends the result of a general agent to the inbox of its parent
+// Run sends the result of a general agent to the inbox of its parent
 // (decisions 18 to 22). It writes the inbox record, then sets reported_at.
-func Report(home string, options ReportOptions) output.Envelope {
+func Run(home string, options Options) output.Envelope {
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
 	if err != nil {
-		return failed("log", err.Error())
+		return agentlib.Failed("log", err.Error())
 	}
 	defer func() { _ = writer.Close() }()
 	logger := slog.New(writer)
@@ -53,7 +55,7 @@ func Report(home string, options ReportOptions) output.Envelope {
 
 	envelope := report(home, options, logger)
 	attrs := []any{"command", "agent report", "outcome", envelope.Outcome, "phase", envelope.Phase}
-	if result, ok := envelope.Result.(ReportResult); ok {
+	if result, ok := envelope.Result.(Result); ok {
 		attrs = append(attrs, "agent_id", result.Record.Agent, "inbox", result.Inbox)
 	}
 	if envelope.Error != nil {
@@ -65,15 +67,15 @@ func Report(home string, options ReportOptions) output.Envelope {
 	return envelope
 }
 
-func report(home string, options ReportOptions, logger *slog.Logger) output.Envelope {
+func report(home string, options Options, logger *slog.Logger) output.Envelope {
 	text, path, message := readReport(options)
 	if message != "" {
-		return failed("validate", message)
+		return agentlib.Failed("validate", message)
 	}
 	logger.Debug("agent report text", "command", "agent report", "path", path, hivelog.Body(text))
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		return agentlib.Failed("store", err.Error())
 	}
 	var envelope output.Envelope
 	err = registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
@@ -81,7 +83,7 @@ func report(home string, options ReportOptions, logger *slog.Logger) output.Enve
 		return nil
 	})
 	if err != nil {
-		return failed("store", err.Error())
+		return agentlib.Failed("store", err.Error())
 	}
 	return envelope
 }
@@ -89,7 +91,7 @@ func report(home string, options ReportOptions, logger *slog.Logger) output.Enve
 // readReport reads the result text from the input (decision 19) or from
 // --file (decision 20). It returns the text, the absolute file path, and a
 // refusal message.
-func readReport(options ReportOptions) (string, string, string) {
+func readReport(options Options) (string, string, string) {
 	if !options.FileSet {
 		if options.Input == nil {
 			return "", "", "report text is empty"
@@ -137,32 +139,32 @@ func readReport(options ReportOptions) (string, string, string) {
 // reportHeld finds the caller, writes the inbox record of its parent, then
 // sets reported_at (decision 21). When the second write fails, it lists the
 // first write as an effect.
-func reportHeld(locked lockedWriter, options ReportOptions, text, path string) output.Envelope {
-	caller, err := Caller(locked, CallerOptions{Agent: options.Agent, Pane: options.Pane, HerdrPane: options.HerdrPane})
+func reportHeld(locked agentlib.LockedWriter, options Options, text, path string) output.Envelope {
+	caller, err := agentlib.Caller(locked, agentlib.CallerOptions{Agent: options.Agent, Pane: options.Pane, HerdrPane: options.HerdrPane})
 	if err != nil {
 		if errors.Is(err, identitylib.ErrCallerUnknown) {
-			return failed("identity", "caller unknown: pass --agent")
+			return agentlib.Failed("identity", "caller unknown: pass --agent")
 		}
-		return failed("identity", err.Error())
+		return agentlib.Failed("identity", err.Error())
 	}
 	if caller.Parent == "" {
-		return failed("validate", "agent report needs a parent: "+displayValue(caller.Name)+" has none")
+		return agentlib.Failed("validate", "agent report needs a parent: "+agentlib.DisplayValue(caller.Name)+" has none")
 	}
-	found, err := loadAgents(locked)
+	found, err := agentlib.LoadAgents(locked)
 	if err != nil {
-		return failed("store", err.Error())
+		return agentlib.Failed("store", err.Error())
 	}
 	agents := make(map[string]records.Agent, len(found))
 	for _, record := range found {
 		agents[record.Key] = record
 	}
-	key := ParentInbox(agents, caller)
+	key := agentlib.ParentInbox(agents, caller)
 	appended := inboxlib.AppendHeld(locked, inboxlib.AppendOptions{Inbox: key, Kind: records.InboxReport, Agent: caller.Name, Text: text, Path: path})
 	if appended.Outcome != "ok" {
 		return appended
 	}
 	inbox, _ := appended.Result.(records.Inbox)
-	result := ReportResult{Inbox: key, Record: inbox}
+	result := Result{Inbox: key, Record: inbox}
 	effects := appended.Effects
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	caller.ReportedAt = now
@@ -170,13 +172,13 @@ func reportHeld(locked lockedWriter, options ReportOptions, text, path string) o
 	if err := locked.WriteIn([]string{"agents"}, caller.Key, caller); err != nil {
 		return output.Envelope{Outcome: "partial", Phase: "agent", Effects: effects, Error: "set reported_at: " + err.Error(), Result: result}
 	}
-	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", caller.Key), Action: "reported"})
+	effects = append(effects, output.Effect{Resource: "agent", Path: agentlib.StatePath("agents", caller.Key), Action: "reported"})
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
 }
 
-// ReportText renders the inbox of one report.
-func ReportText(envelope output.Envelope) string {
-	result, ok := envelope.Result.(ReportResult)
+// Text renders the inbox of one report.
+func Text(envelope output.Envelope) string {
+	result, ok := envelope.Result.(Result)
 	if !ok || envelope.Error != nil {
 		return ""
 	}

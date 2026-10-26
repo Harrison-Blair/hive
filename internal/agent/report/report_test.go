@@ -1,8 +1,9 @@
-package agent
+package report
 
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,9 +19,9 @@ import (
 // rev in pane w1:p2 whose parent is boss.
 func seedReport(t *testing.T) string {
 	t.Helper()
-	home := testHome(t)
-	writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
-	writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+	home := agenttest.NewHome(t)
+	agenttest.WriteRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+	agenttest.WriteRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
 	return home
 }
 
@@ -48,9 +49,9 @@ func inboxRecords(t *testing.T, home, key string) []records.Inbox {
 
 func TestReportStdinWritesOneParentInboxRecord(t *testing.T) {
 	home := seedReport(t)
-	envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("the plan is sound")})
+	envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader("the plan is sound")})
 	if envelope.Outcome != "ok" {
-		t.Fatalf("Report() = %#v; want ok", envelope)
+		t.Fatalf("Run() = %#v; want ok", envelope)
 	}
 	found := inboxRecords(t, home, "boss")
 	if len(found) != 1 || found[0].Kind != "report" || found[0].Text != "the plan is sound" || found[0].Agent != "rev" || found[0].Path != "" {
@@ -60,8 +61,8 @@ func TestReportStdinWritesOneParentInboxRecord(t *testing.T) {
 
 func TestReportSetsReportedAtAndNotFinished(t *testing.T) {
 	home := seedReport(t)
-	if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("one")}); envelope.Outcome != "ok" {
-		t.Fatalf("Report() = %#v; want ok", envelope)
+	if envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader("one")}); envelope.Outcome != "ok" {
+		t.Fatalf("Run() = %#v; want ok", envelope)
 	}
 	record := readAgentRecord(t, home, "rev")
 	if record.ReportedAt == "" || record.Finished || record.Status != records.AgentLive {
@@ -72,8 +73,8 @@ func TestReportSetsReportedAtAndNotFinished(t *testing.T) {
 func TestReportTwiceWritesTwoRecords(t *testing.T) {
 	home := seedReport(t)
 	for _, text := range []string{"first", "second"} {
-		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader(text)}); envelope.Outcome != "ok" {
-			t.Fatalf("Report(%s) = %#v; want ok", text, envelope)
+		if envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader(text)}); envelope.Outcome != "ok" {
+			t.Fatalf("Run(%s) = %#v; want ok", text, envelope)
 		}
 	}
 	found := inboxRecords(t, home, "boss")
@@ -98,16 +99,16 @@ func TestReportUsesTheParentFactForEachFactShape(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			home := testHome(t)
+			home := agenttest.NewHome(t)
 			record := records.Agent{Key: "x-1", Name: "x-1", Profile: test.profile, Kind: test.kind, Owns: test.owns, Project: "hive", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1}
-			writeRecord(t, home, record)
-			writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
+			agenttest.WriteRecord(t, home, record)
+			agenttest.WriteRecord(t, home, records.Agent{Key: "boss", Name: "boss", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1})
 			if test.claim != "" {
-				writeClaimRecord(t, home, records.Claim{Key: test.claim, Agent: record.Key, Generation: 1})
+				agenttest.WriteClaimRecord(t, home, records.Claim{Key: test.claim, Agent: record.Key, Generation: 1})
 			}
-			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("text")})
+			envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader("text")})
 			if envelope.Outcome != "ok" {
-				t.Fatalf("Report() = %#v; want ok for a caller with a parent", envelope)
+				t.Fatalf("Run() = %#v; want ok for a caller with a parent", envelope)
 			}
 			if found := inboxRecords(t, home, "boss"); len(found) != 1 {
 				t.Fatalf("boss inbox = %#v; want one record", found)
@@ -131,16 +132,16 @@ func TestReportStdinLimits(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			home := seedReport(t)
-			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader(test.text)})
+			envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader(test.text)})
 			found := inboxRecords(t, home, "boss")
 			if test.error == "" {
 				if envelope.Outcome != "ok" || len(found) != 1 || found[0].Text != test.text {
-					t.Fatalf("Report() = %#v, inbox = %d records; want ok with the text", envelope, len(found))
+					t.Fatalf("Run() = %#v, inbox = %d records; want ok with the text", envelope, len(found))
 				}
 				return
 			}
 			if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), test.error) || len(found) != 0 {
-				t.Fatalf("Report() = %#v, inbox = %d records; want %q and no record", envelope, len(found), test.error)
+				t.Fatalf("Run() = %#v, inbox = %d records; want %q and no record", envelope, len(found), test.error)
 			}
 		})
 	}
@@ -155,9 +156,9 @@ func TestReportFileKeepsAbsolutePathAndCutsAtRuneBoundary(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Chdir(directory)
-	envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", File: "result.md", FileSet: true})
+	envelope := Run(home, Options{HerdrPane: "w1:p2", File: "result.md", FileSet: true})
 	if envelope.Outcome != "ok" {
-		t.Fatalf("Report() = %#v; want ok", envelope)
+		t.Fatalf("Run() = %#v; want ok", envelope)
 	}
 	found := inboxRecords(t, home, "boss")
 	if len(found) != 1 || found[0].Path != filepath.Join(directory, "result.md") || found[0].Text != strings.Repeat("a", 4095) {
@@ -181,9 +182,9 @@ func TestReportFileRefusals(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			home := seedReport(t)
-			envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", File: test.file, FileSet: true})
+			envelope := Run(home, Options{HerdrPane: "w1:p2", File: test.file, FileSet: true})
 			if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), test.error) {
-				t.Fatalf("Report() = %#v; want %q", envelope, test.error)
+				t.Fatalf("Run() = %#v; want %q", envelope, test.error)
 			}
 			if found := inboxRecords(t, home, "boss"); len(found) != 0 {
 				t.Fatalf("boss inbox = %#v; want none", found)
@@ -194,23 +195,23 @@ func TestReportFileRefusals(t *testing.T) {
 
 func TestReportRoutesWithTheParentRule(t *testing.T) {
 	t.Run("stopped parent goes to its live successor", func(t *testing.T) {
-		home := testHome(t)
-		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "boss-2", Name: "boss-2", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Replaces: "boss", Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
-		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
-			t.Fatalf("Report() = %#v; want ok", envelope)
+		home := agenttest.NewHome(t)
+		agenttest.WriteRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
+		agenttest.WriteRecord(t, home, records.Agent{Key: "boss-2", Name: "boss-2", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Replaces: "boss", Generation: 1})
+		agenttest.WriteRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+		if envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
+			t.Fatalf("Run() = %#v; want ok", envelope)
 		}
 		if found := inboxRecords(t, home, "boss-2"); len(found) != 1 {
 			t.Fatalf("boss-2 inbox = %#v; want one record", found)
 		}
 	})
 	t.Run("a stopped parent with no successor goes to coordinator", func(t *testing.T) {
-		home := testHome(t)
-		writeRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
-		writeRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
-		if envelope := Report(home, ReportOptions{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
-			t.Fatalf("Report() = %#v; want ok", envelope)
+		home := agenttest.NewHome(t)
+		agenttest.WriteRecord(t, home, records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentStopped, Generation: 1})
+		agenttest.WriteRecord(t, home, records.Agent{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1})
+		if envelope := Run(home, Options{HerdrPane: "w1:p2", Input: strings.NewReader("r")}); envelope.Outcome != "ok" {
+			t.Fatalf("Run() = %#v; want ok", envelope)
 		}
 		if found := inboxRecords(t, home, "coordinator"); len(found) != 1 {
 			t.Fatalf("coordinator inbox = %#v; want one record", found)
@@ -221,30 +222,30 @@ func TestReportRoutesWithTheParentRule(t *testing.T) {
 func TestReportCallerOverrides(t *testing.T) {
 	for _, test := range []struct {
 		name    string
-		options ReportOptions
+		options Options
 		error   string
 	}{
-		{name: "agent override in a pane", options: ReportOptions{HerdrPane: "w1:p2", Agent: "boss"}, error: "--agent boss is not the caller rev"},
-		{name: "pane override in a pane", options: ReportOptions{HerdrPane: "w1:p2", Pane: "w1:p1"}, error: "--pane w1:p1 is not the caller pane w1:p2"},
-		{name: "own agent in a pane", options: ReportOptions{HerdrPane: "w1:p2", Agent: "rev"}},
-		{name: "own pane in a pane", options: ReportOptions{HerdrPane: "w1:p2", Pane: "w1:p2"}},
-		{name: "agent outside herdr", options: ReportOptions{Agent: "rev"}},
-		{name: "pane outside herdr", options: ReportOptions{Pane: "w1:p2"}},
+		{name: "agent override in a pane", options: Options{HerdrPane: "w1:p2", Agent: "boss"}, error: "--agent boss is not the caller rev"},
+		{name: "pane override in a pane", options: Options{HerdrPane: "w1:p2", Pane: "w1:p1"}, error: "--pane w1:p1 is not the caller pane w1:p2"},
+		{name: "own agent in a pane", options: Options{HerdrPane: "w1:p2", Agent: "rev"}},
+		{name: "own pane in a pane", options: Options{HerdrPane: "w1:p2", Pane: "w1:p2"}},
+		{name: "agent outside herdr", options: Options{Agent: "rev"}},
+		{name: "pane outside herdr", options: Options{Pane: "w1:p2"}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			home := seedReport(t)
 			options := test.options
 			options.Input = strings.NewReader("r")
-			envelope := Report(home, options)
+			envelope := Run(home, options)
 			found := inboxRecords(t, home, "boss")
 			if test.error == "" {
 				if envelope.Outcome != "ok" || len(found) != 1 || found[0].Agent != "rev" {
-					t.Fatalf("Report() = %#v, inbox = %#v; want one record from rev", envelope, found)
+					t.Fatalf("Run() = %#v, inbox = %#v; want one record from rev", envelope, found)
 				}
 				return
 			}
 			if envelope.Outcome != "failed" || !strings.Contains(envelope.Error.(string), test.error) || len(found) != 0 {
-				t.Fatalf("Report() = %#v, inbox = %#v; want %q and no record", envelope, found, test.error)
+				t.Fatalf("Run() = %#v, inbox = %#v; want %q and no record", envelope, found, test.error)
 			}
 			if readAgentRecord(t, home, "rev").ReportedAt != "" || readAgentRecord(t, home, "boss").ReportedAt != "" {
 				t.Fatal("reported_at is set; want empty")
@@ -280,7 +281,7 @@ func TestReportAgentWriteFailureListsTheInboxRecord(t *testing.T) {
 	}
 	var envelope output.Envelope
 	err = registry.WithLock(t.Context(), func(locked *store.LockedStore) error {
-		envelope = reportHeld(failAgentWrite{locked}, ReportOptions{HerdrPane: "w1:p2"}, "result", "")
+		envelope = reportHeld(failAgentWrite{locked}, Options{HerdrPane: "w1:p2"}, "result", "")
 		return nil
 	})
 	if err != nil {

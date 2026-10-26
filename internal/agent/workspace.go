@@ -28,7 +28,7 @@ type projectChoice struct {
 // projects/P/ of the home, in the hive:P workspace.
 func resolveProjectPane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (projectChoice, string) {
 	if options.projectRecord == nil {
-		return projectChoice{}, "project not found: " + displayValue(options.Project)
+		return projectChoice{}, "project not found: " + DisplayValue(options.Project)
 	}
 	project := *options.projectRecord
 	directory := filepath.Join(home, "projects", project.ID)

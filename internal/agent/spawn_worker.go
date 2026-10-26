@@ -38,7 +38,7 @@ type taskChoice struct {
 // allow it.
 func resolveTaskPane(ctx context.Context, home string, options SpawnOptions, logger *slog.Logger) (taskChoice, string) {
 	if options.taskRecord == nil || options.projectRecord == nil {
-		return taskChoice{}, "task not found: " + displayValue(options.Task)
+		return taskChoice{}, "task not found: " + DisplayValue(options.Task)
 	}
 	task := *options.taskRecord
 	choice := taskChoice{Task: task, Project: *options.projectRecord}
@@ -364,7 +364,7 @@ func finishTaskSpawn(ctx context.Context, home string, options SpawnOptions, cho
 				return envelope
 			}
 			if assigned {
-				envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: statePath("tasks", choice.Task.ID), Action: "assigned"})
+				envelope.Effects = append(envelope.Effects, output.Effect{Resource: "task", Path: StatePath("tasks", choice.Task.ID), Action: "assigned"})
 			}
 		}
 		return promptPlacedAgent(ctx, options.firstPrompt, record, envelope, logger)
@@ -397,7 +397,7 @@ func promptPlacedAgent(ctx context.Context, prompt string, record records.Agent,
 		envelope.Result = nil
 		return envelope
 	}
-	envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: statePath("agents", record.Key), Action: "prompted"})
+	envelope.Effects = append(envelope.Effects, output.Effect{Resource: "agent", Path: StatePath("agents", record.Key), Action: "prompted"})
 	return envelope
 }
 
@@ -491,7 +491,7 @@ func assignTask(home, taskID, agentName string) (bool, string) {
 		var task records.Task
 		if err := locked.ReadIn([]string{"tasks"}, taskID, &task); err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				message = "task not found: " + displayValue(taskID)
+				message = "task not found: " + DisplayValue(taskID)
 			} else {
 				message = "store: " + err.Error()
 			}

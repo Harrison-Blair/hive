@@ -4,6 +4,7 @@ package spawn
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/spawn"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -75,7 +76,7 @@ func New() *cobra.Command {
 				CwdSet:           cmd.Flags().Lookup("cwd").Changed,
 				AllowTrustDialog: allowTrust,
 			})
-			return envelope, agentlib.SpawnText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command
