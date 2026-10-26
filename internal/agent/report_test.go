@@ -112,9 +112,13 @@ func TestReportUsesTheParentFactForEachFactShape(t *testing.T) {
 			if found := inboxRecords(t, home, "boss"); len(found) != 1 {
 				t.Fatalf("boss inbox = %#v; want one record", found)
 			}
+			if readAgentRecord(t, home, "x-1").ReportedAt == "" {
+				t.Fatal("reported_at is empty; want the report mark")
+			}
 		})
 	}
 }
+
 func TestReportStdinLimits(t *testing.T) {
 	for _, test := range []struct {
 		name  string

@@ -185,7 +185,7 @@ func TestSpawnOwnerKeepsGenuineUserWithoutPane(t *testing.T) {
 	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 
 	envelope := SpawnFromCLI(context.Background(), home, SpawnOptions{
-		Profile: records.ProfilePlanner, Project: "demo", Harness: "claude", Model: "m",
+		Profile: records.ProfilePlanner, Owner: true, Project: "demo", Harness: "claude", Model: "m",
 		Name: "owner-user", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {

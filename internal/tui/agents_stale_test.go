@@ -138,6 +138,7 @@ func TestAgentsHHidesAStaleWorkerWithNoSuccessor(t *testing.T) {
 	// parent and no replaces.
 	worker := staleFixture(t, "manager-qmeter-g1")[0]
 	worker.Key, worker.Name, worker.Profile, worker.Task = "worker-qmeter-g1", "worker-qmeter", records.ProfileBuilder, "07-old"
+	worker.Owns = ""
 	agents = append(agents, worker)
 	home, clock := staleHome(t, agents)
 	m := openAgents(t, home, clock)
