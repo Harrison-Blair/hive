@@ -2,13 +2,14 @@ package tui
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 // TestStatusDurationHealthKeepsHundredHoursAtEachWidth is the literal
@@ -17,10 +18,7 @@ import (
 func TestStatusDurationHealthKeepsHundredHoursAtEachWidth(t *testing.T) {
 	for _, size := range []struct{ width, height int }{{120, 40}, {119, 40}, {80, 24}} {
 		t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
-			fixture, err := loadDemoFixture(filepath.Join(gfDesignDir, "GfHealth.fixture.json"))
-			if err != nil {
-				t.Fatal(err)
-			}
+			fixture := statusDurationHealthFixture(statusDurationDay)
 			changed := fixture.now.Add(-100 * time.Hour).Format(time.RFC3339)
 			for index := range fixture.Data.Agents {
 				fixture.Data.Agents[index].StatusChangedAt = changed
@@ -84,10 +82,7 @@ func TestStatusDurationHealthStateBudgetFollowsDisplayedStateAtEachWidth(t *test
 		t.Run(boundary.name, func(t *testing.T) {
 			for _, size := range []struct{ width, height int }{{120, 40}, {119, 40}, {80, 24}} {
 				t.Run(fmt.Sprintf("%dx%d", size.width, size.height), func(t *testing.T) {
-					fixture, err := loadDemoFixture(filepath.Join(gfDesignDir, "GfHealth.fixture.json"))
-					if err != nil {
-						t.Fatal(err)
-					}
+					fixture := statusDurationHealthFixture(statusDurationDay)
 					low := fixture.now.Add(-time.Duration(boundary.low) * time.Hour).Format(time.RFC3339)
 					high := fixture.now.Add(-time.Duration(boundary.high) * time.Hour).Format(time.RFC3339)
 					for index := range fixture.Data.Agents {
@@ -132,6 +127,36 @@ func TestStatusDurationWorkDetailsEmptyWorkerKeepsLabelAtEachWidth(t *testing.T)
 			requireWorkFits(t, m, size.width, size.height, workTaskPopupWidth, workTaskPopupHeight)
 			requireView(t, m, "worker     none")
 		})
+	}
+}
+
+// statusDurationHealthFixture gives the fixed Health records and clock of
+// the width regressions. The fixture is self-contained, so the regressions
+// run in a clean checkout with no design tree.
+func statusDurationHealthFixture(now time.Time) *demoFixture {
+	started := now.Add(-time.Hour).Format(time.RFC3339)
+	return &demoFixture{
+		Terminal: demoSize{Width: 120, Height: 40},
+		Clock:    demoClock{Time: now.Format(time.RFC3339), Zone: "UTC"},
+		Home:     "~/hive",
+		Data: demoData{Agents: []records.Agent{
+			{
+				Key: "coordinator-g2", Name: "coordinator",
+				Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator,
+				Harness: "claude", PaneID: "w58:p2",
+				Status: records.AgentLive, AgentStatus: "working",
+				StatusChangedAt: now.Format(time.RFC3339), StartedAt: started,
+			},
+			{
+				Key: "supervisor-g4", Name: "supervisor",
+				Kind:    records.AgentKindSupervisor,
+				Harness: "hive", PaneID: "w58:p3",
+				Status:          records.AgentLive,
+				StatusChangedAt: now.Format(time.RFC3339), StartedAt: started,
+			},
+		}},
+		UI:  demoUIState{Screen: "health", Selection: "supervisor-g4"},
+		now: now,
 	}
 }
 
