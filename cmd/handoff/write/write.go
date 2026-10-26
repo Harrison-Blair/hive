@@ -3,7 +3,7 @@ package write
 
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
-	"github.com/Harrison-Blair/hive/internal/handoff"
+	operation "github.com/Harrison-Blair/hive/internal/handoff/write"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	scopelib "github.com/Harrison-Blair/hive/internal/lib/scope"
@@ -22,13 +22,13 @@ func New() *cobra.Command {
 		return common.Run(cmd, "handoff write", func(home string) (output.Envelope, string, error) {
 			scopeValue, _ := cmd.Flags().GetString("scope")
 			logger, _ := hivelog.Open(home, "handoff")
-			envelope := handoff.Write(home, handoff.WriteOptions{
+			envelope := operation.Write(home, operation.WriteOptions{
 				Scope:    scopeValue,
 				Input:    cmd.InOrStdin(),
 				Deadline: scopelib.DefaultDeadline,
 				Logger:   logger,
 			})
-			return envelope, handoff.WriteText(envelope), nil
+			return envelope, operation.WriteText(envelope), nil
 		})
 	}
 	return command
