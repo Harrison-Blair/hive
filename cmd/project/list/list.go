@@ -5,6 +5,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	projectlib "github.com/Harrison-Blair/hive/internal/project"
+	projectlist "github.com/Harrison-Blair/hive/internal/project/list"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ func New() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return common.Run(cmd, "project list", func(home string) (output.Envelope, string, error) {
 				envelope := projectlib.List(home)
-				return envelope, projectlib.ListText(envelope), nil
+				return envelope, projectlist.Text(envelope), nil
 			})
 		},
 	}

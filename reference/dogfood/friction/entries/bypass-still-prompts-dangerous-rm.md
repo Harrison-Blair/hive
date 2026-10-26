@@ -92,3 +92,25 @@ worker continued with the isolated checks. The block/read receipts remain
 under task 171 `evidence/harness-block274/`. Subsequent source verification
 and the separate probe-order correction preserve their own actual results;
 this prompt is not represented as a source defect or a product fix.
+
+
+**Occurrence 2026-10-26 (hive task 174):**
+After native completion, the approved Claude builder tried a guarded loop
+with `rm -rf -- "$S/$d"` for its two recorded scratch directories,
+`trees` and `specsnap-home`. Hive sent blocked record 319. Coordinator
+record 320 read the actual dangerous-removal prompt in owned pane
+`w13N:p1`. No person approved that command.
+
+The original session result at 17:15:53 UTC says that the safety check
+denied the variable form and did not run it. The builder then used the
+two literal absolute paths at 17:15:58. Its tool result at 17:15:59 has
+no error. Later manager reads found both directories, the original PID,
+and the owned pane absent. The manager sent no stale key, approval, stop,
+or removal command. No model, permission, or trust setting changed.
+
+Task 174 `evidence/manager-cleanup-320/` preserves the original denied and
+literal-rewrite session records, directory-absence checks, and input
+manifest hashes. The 113 original builder evidence rows still matched
+the home and worktree. This cleanup did not recover the separately lost
+first compile-attempt raw files; their explicit exception and original
+failed verdict remain separate records.

@@ -67,6 +67,6 @@ func listFailed(home string, options ListOptions, phase, message string) output.
 		attrs = append(attrs, "profile", options.Profile)
 	}
 	attrs = append(attrs, "phase", phase, "error", message)
-	logAgentEvent(home, "agent list failed", attrs...)
-	return failed(phase, message)
+	LogAgentEvent(home, "agent list failed", attrs...)
+	return Failed(phase, message)
 }

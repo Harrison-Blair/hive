@@ -74,7 +74,8 @@ type RegisterResult struct {
 	Claim *records.Claim `json:"claim,omitempty"`
 }
 
-type lockedWriter interface {
+// LockedWriter is the held store API that registration and reports use.
+type LockedWriter interface {
 	ReadIn(collection []string, id string, target any) error
 	WriteIn(collection []string, id string, value any) error
 	UpdateIn(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error
@@ -86,19 +87,19 @@ type lockedWriter interface {
 func Register(home string, options RegisterOptions) output.Envelope {
 	options, message := normalizeRegistration(options)
 	if message != "" {
-		envelope := failed("validate", message)
-		logRegistration(home, options, envelope)
+		envelope := Failed("validate", message)
+		LogRegistration(home, options, envelope)
 		return envelope
 	}
 	if message := validateRegistration(options); message != "" {
-		envelope := failed("validate", message)
-		logRegistration(home, options, envelope)
+		envelope := Failed("validate", message)
+		LogRegistration(home, options, envelope)
 		return envelope
 	}
 	registry, err := store.Open(home)
 	if err != nil {
-		envelope := failed("store", err.Error())
-		logRegistration(home, options, envelope)
+		envelope := Failed("store", err.Error())
+		LogRegistration(home, options, envelope)
 		return envelope
 	}
 	if options.Project != "" {
@@ -106,11 +107,11 @@ func Register(home string, options RegisterOptions) output.Envelope {
 		if err := registry.ReadIn([]string{"projects"}, options.Project, &project); err != nil {
 			var envelope output.Envelope
 			if errors.Is(err, os.ErrNotExist) {
-				envelope = failed("validate", "project not found: "+displayValue(options.Project))
+				envelope = Failed("validate", "project not found: "+DisplayValue(options.Project))
 			} else {
-				envelope = failed("store", err.Error())
+				envelope = Failed("store", err.Error())
 			}
-			logRegistration(home, options, envelope)
+			LogRegistration(home, options, envelope)
 			return envelope
 		}
 	}
@@ -120,48 +121,15 @@ func Register(home string, options RegisterOptions) output.Envelope {
 		return nil
 	})
 	if err != nil {
-		envelope = failed("store", err.Error())
+		envelope = Failed("store", err.Error())
 	}
-	logRegistration(home, options, envelope)
+	LogRegistration(home, options, envelope)
 	return envelope
 }
 
-// RegisterAndRename registers one agent and best-effort labels its tab. It is
-// the CLI entry, so it refuses each name that hive code registers.
-func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
-	if message := reservedNameError(options.Name, options.NameSet); message != "" {
-		envelope := failed("validate", message)
-		logRegistration(home, options, envelope)
-		return envelope
-	}
-	envelope := Register(home, options)
-	if envelope.Outcome != "ok" {
-		return envelope
-	}
-	result, ok := envelope.Result.(RegisterResult)
-	if !ok {
-		return envelope
-	}
-
-	var logger *slog.Logger
-	writer, writerErr := hivelog.NewWriter(home, "agent", time.Now)
-	if writerErr == nil {
-		defer func() { _ = writer.Close() }()
-		logger = slog.New(writer)
-	}
-	pane, err := herdr.PaneGet(context.Background(), options.PaneID, herdr.WithLogger(logger))
-	if err != nil {
-		logTabLabel(home, logger, "agent register", result.Agent.Key, "", "", err)
-		return envelope
-	}
-	effect := renameAgentTab(context.Background(), home, logger, pane.TabID, result.Agent.Name, "agent register", result.Agent.Key)
-	envelope.Effects = append(envelope.Effects, effect)
-	return envelope
-}
-
-// reservedNameError returns the refusal for a CLI name that only hive code
+// ReservedNameError returns the refusal for a CLI name that only hive code
 // registers. Internal callers can use a custom singleton name.
-func reservedNameError(name string, nameSet bool) string {
+func ReservedNameError(name string, nameSet bool) string {
 	if !nameSet {
 		return ""
 	}
@@ -171,17 +139,19 @@ func reservedNameError(name string, nameSet bool) string {
 	return ""
 }
 
-func renameAgentTab(ctx context.Context, home string, logger *slog.Logger, tabID, label, command, agentID string) output.Effect {
+// RenameAgentTab labels the tab of an agent and logs the result.
+func RenameAgentTab(ctx context.Context, home string, logger *slog.Logger, tabID, label, command, agentID string) output.Effect {
 	err := herdr.TabRename(ctx, tabID, label, herdr.WithLogger(logger))
 	action := "renamed"
 	if err != nil {
 		action = "rename failed"
 	}
-	logTabLabel(home, logger, command, agentID, tabID, label, err)
+	LogTabLabel(home, logger, command, agentID, tabID, label, err)
 	return output.Effect{Resource: "tab", Path: tabID, Action: action}
 }
 
-func logTabLabel(home string, logger *slog.Logger, command, agentID, tabID, label string, err error) {
+// LogTabLabel logs one tab label result.
+func LogTabLabel(home string, logger *slog.Logger, command, agentID, tabID, label string, err error) {
 	attrs := []any{"command", command, "agent_id", agentID, "tab_id", tabID, "label", label}
 	message := "agent tab renamed"
 	if err != nil {
@@ -192,7 +162,7 @@ func logTabLabel(home string, logger *slog.Logger, command, agentID, tabID, labe
 		logger.Debug(message, attrs...)
 		return
 	}
-	logAgentEvent(home, message, attrs...)
+	LogAgentEvent(home, message, attrs...)
 }
 
 // normalizeRegistration defaults the profile of a registration. The caller
@@ -219,7 +189,7 @@ func validateRegistration(options RegisterOptions) string {
 		return "no pane: run inside herdr or pass --pane"
 	}
 	if options.Project != "" && !records.ValidID(options.Project) {
-		return "project not found: " + displayValue(options.Project)
+		return "project not found: " + DisplayValue(options.Project)
 	}
 	for _, field := range []struct {
 		label string
@@ -239,12 +209,12 @@ func validateRegistration(options RegisterOptions) string {
 	}
 	if options.NameSet {
 		if !namePattern.MatchString(options.Name) {
-			return "invalid agent name: " + displayValue(options.Name)
+			return "invalid agent name: " + DisplayValue(options.Name)
 		}
 	} else if claimKeyForFacts(options.Kind, options.Owns) != "" {
 		name := defaultSingletonName(options.Profile, options.Kind, options.Owns)
 		if !namePattern.MatchString(name) {
-			return "invalid agent name: " + displayValue(name)
+			return "invalid agent name: " + DisplayValue(name)
 		}
 	}
 	if options.QuietAfterSet && options.QuietAfterMin < 0 {
@@ -295,7 +265,7 @@ func claimKeyForFacts(kind, owns string) string {
 }
 
 func taskRegistrationError(project, task string) string {
-	return fmt.Sprintf("task not found in %s: %s", displayValue(project), displayValue(task))
+	return fmt.Sprintf("task not found in %s: %s", DisplayValue(project), DisplayValue(task))
 }
 
 // recheckOwnerCaller applies the owner caller rule with facts read under the
@@ -328,16 +298,16 @@ func ownerCallerName(options RegisterOptions) string {
 	if name == "" {
 		name = "the caller"
 	}
-	return "--owner needs the coordinator or the user: " + displayValue(name)
+	return "--owner needs the coordinator or the user: " + DisplayValue(name)
 }
 
-func registerLocked(locked *store.LockedStore, writer lockedWriter, options RegisterOptions) output.Envelope {
+func registerLocked(locked *store.LockedStore, writer LockedWriter, options RegisterOptions) output.Envelope {
 	options, message := normalizeRegistration(options)
 	if message != "" {
-		return failed("validate", message)
+		return Failed("validate", message)
 	}
 	if message := recheckOwnerCaller(locked, options); message != "" {
-		return failed("validate", message)
+		return Failed("validate", message)
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	quietAfter := defaultQuietAfterMin
@@ -351,18 +321,18 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	if options.Task != "" {
 		message := taskRegistrationError(options.Project, options.Task)
 		if !records.ValidTaskID(options.Task) {
-			return failed("validate", message)
+			return Failed("validate", message)
 		}
 		var task records.Task
 		err := writer.ReadIn([]string{"tasks"}, options.Task, &task)
 		if errors.Is(err, os.ErrNotExist) {
-			return failed("validate", message)
+			return Failed("validate", message)
 		}
 		if err != nil {
-			return failed("store", err.Error())
+			return Failed("store", err.Error())
 		}
 		if task.Project != options.Project {
-			return failed("validate", message)
+			return Failed("validate", message)
 		}
 		if task.Worktree != nil {
 			worktree = task.Worktree.Path
@@ -384,7 +354,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			}
 			err := locked.ReadIn([]string{"counters"}, "agent", &counter)
 			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				return failed("agent", "read agent counter: "+err.Error())
+				return Failed("agent", "read agent counter: "+err.Error())
 			}
 			candidate := counter.Value + 1
 			name = fmt.Sprintf("%s-%d", options.Profile, candidate)
@@ -392,22 +362,22 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 	}
 	if !taskName && !namePattern.MatchString(name) {
-		return failed("validate", "invalid agent name: "+displayValue(name))
+		return Failed("validate", "invalid agent name: "+DisplayValue(name))
 	}
 
-	agentRecords, err := loadAgents(writer)
+	agentRecords, err := LoadAgents(writer)
 	if err != nil {
-		return failed("store", err.Error())
+		return Failed("store", err.Error())
 	}
 	claims, err := loadClaims(writer)
 	if err != nil {
-		return failed("store", err.Error())
+		return Failed("store", err.Error())
 	}
 	if taskName {
 		name = nextTaskAgentName(options.Task, options.Profile, agentRecords, claims)
 	}
 	if !namePattern.MatchString(name) {
-		return failed("validate", "invalid agent name: "+displayValue(name))
+		return Failed("validate", "invalid agent name: "+DisplayValue(name))
 	}
 	agentByKey := make(map[string]records.Agent, len(agentRecords))
 	for _, record := range agentRecords {
@@ -441,16 +411,16 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			existing.Project == options.Project && existing.Task == options.Task &&
 			existing.Generation == generation && existing.PaneID == options.PaneID
 		if !replaceOrphan {
-			return failed("agent", "agent exists: "+recordKey)
+			return Failed("agent", "agent exists: "+recordKey)
 		}
 	}
 	if options.Owns != "" && currentClaim != nil {
 		if holder, ok := agentByKey[currentClaim.Agent]; ok && (!replaceOrphan || existing.Key != currentClaim.Agent) {
 			switch holder.Status {
 			case records.AgentStarting:
-				return failed("agent", "agent is starting: "+holder.Name)
+				return Failed("agent", "agent is starting: "+holder.Name)
 			case records.AgentLive, records.AgentUnresolved:
-				return failed("validate", "project "+options.Owns+" has an owner: "+holder.Name)
+				return Failed("validate", "project "+options.Owns+" has an owner: "+holder.Name)
 			}
 		}
 	}
@@ -461,18 +431,18 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		}
 		switch {
 		case claim.Key == name:
-			return failed("agent", "agent exists: "+name)
+			return Failed("agent", "agent exists: "+name)
 		case claim.Key == recordKey || claim.Agent == recordKey:
-			return failed("agent", "agent exists: "+recordKey)
+			return Failed("agent", "agent exists: "+recordKey)
 		}
 	}
 	if singleton {
 		if _, ok := agentByKey[claimKey]; ok {
-			return failed("agent", "agent exists: "+claimKey)
+			return Failed("agent", "agent exists: "+claimKey)
 		}
 		if currentClaim != nil {
 			if holder, ok := agentByKey[currentClaim.Agent]; ok && holder.Status == records.AgentStarting {
-				return failed("agent", "agent is starting: "+holder.Name)
+				return Failed("agent", "agent is starting: "+holder.Name)
 			}
 		}
 	}
@@ -484,16 +454,16 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			continue
 		}
 		if record.Key == name {
-			return failed("agent", "agent exists: "+name)
+			return Failed("agent", "agent exists: "+name)
 		}
 		if isActiveAgentStatus(record.Status) && record.Name == name {
-			return failed("agent", "agent exists: "+name)
+			return Failed("agent", "agent exists: "+name)
 		}
 		if singleton && isActiveAgentStatus(record.Status) && record.Name == claimKey {
-			return failed("agent", "agent exists: "+claimKey)
+			return Failed("agent", "agent exists: "+claimKey)
 		}
 		if isActiveAgentStatus(record.Status) && record.Name == recordKey {
-			return failed("agent", "agent exists: "+recordKey)
+			return Failed("agent", "agent exists: "+recordKey)
 		}
 	}
 	for _, record := range agentRecords {
@@ -513,13 +483,13 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			}
 		}
 		if !allowed {
-			return failed("agent", "pane busy: "+options.PaneID+" holds "+displayValue(record.Name))
+			return Failed("agent", "pane busy: "+options.PaneID+" holds "+DisplayValue(record.Name))
 		}
 	}
 
 	if generated {
 		if _, err := writer.Next("agent"); err != nil {
-			return failed("agent", "next agent counter: "+err.Error())
+			return Failed("agent", "next agent counter: "+err.Error())
 		}
 		effects = append(effects, counterEffect)
 	}
@@ -536,9 +506,9 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 				return json.Marshal(record)
 			})
 			if err != nil {
-				return failed("agent", "write stale agent: "+err.Error())
+				return Failed("agent", "write stale agent: "+err.Error())
 			}
-			effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", holder.Key), Action: "stale"})
+			effects = append(effects, output.Effect{Resource: "agent", Path: StatePath("agents", holder.Key), Action: "stale"})
 		}
 	}
 
@@ -551,7 +521,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		} else if !errors.Is(err, identitylib.ErrCallerUnknown) &&
 			!strings.HasPrefix(err.Error(), "agent not found:") &&
 			!strings.HasPrefix(err.Error(), "caller ambiguous:") {
-			return failed("identity", err.Error())
+			return Failed("identity", err.Error())
 		}
 		replaces = replacementKey(options.Profile, options.Kind, options.Owns, options.Project, options.Task, recordKey, previousHolderKey, agentRecords)
 	}
@@ -596,11 +566,11 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	}
 	if err := writer.WriteIn([]string{"agents"}, recordKey, record); err != nil {
 		if len(effects) == 0 {
-			return failed("agent", "write agent: "+err.Error())
+			return Failed("agent", "write agent: "+err.Error())
 		}
 		return output.Envelope{Outcome: "partial", Phase: "agent", Effects: effects, Error: "write agent: " + err.Error(), Result: nil}
 	}
-	effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", recordKey), Action: action})
+	effects = append(effects, output.Effect{Resource: "agent", Path: StatePath("agents", recordKey), Action: action})
 
 	result := RegisterResult{Agent: record}
 	if !singleton {
@@ -627,12 +597,12 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 			if settleErr := writer.WriteIn([]string{"agents"}, recordKey, record); settleErr != nil {
 				message += "; settle agent record: " + settleErr.Error()
 			} else {
-				effects = append(effects, output.Effect{Resource: "agent", Path: statePath("agents", recordKey), Action: "unresolved"})
+				effects = append(effects, output.Effect{Resource: "agent", Path: StatePath("agents", recordKey), Action: "unresolved"})
 			}
 		}
 		return output.Envelope{Outcome: "partial", Phase: "claim", Effects: effects, Error: message, Result: nil}
 	}
-	effects = append(effects, output.Effect{Resource: "claim", Path: statePath("claims", claimKey), Action: "updated"})
+	effects = append(effects, output.Effect{Resource: "claim", Path: StatePath("claims", claimKey), Action: "updated"})
 	result.Claim = &claim
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
 }
@@ -746,7 +716,8 @@ func nextTaskAgentName(taskID, profile string, agentRecords []records.Agent, cla
 	}
 }
 
-func loadAgents(writer lockedWriter) ([]records.Agent, error) {
+// LoadAgents reads each agent record under the held store.
+func LoadAgents(writer LockedWriter) ([]records.Agent, error) {
 	raw, err := writer.ListIn([]string{"agents"}, nil)
 	if err != nil {
 		return nil, err
@@ -762,7 +733,7 @@ func loadAgents(writer lockedWriter) ([]records.Agent, error) {
 	return found, nil
 }
 
-func loadClaims(writer lockedWriter) ([]records.Claim, error) {
+func loadClaims(writer LockedWriter) ([]records.Claim, error) {
 	raw, err := writer.ListIn([]string{"claims"}, nil)
 	if err != nil {
 		return nil, err
@@ -778,11 +749,13 @@ func loadClaims(writer lockedWriter) ([]records.Claim, error) {
 	return found, nil
 }
 
-func statePath(collection, id string) string {
+// StatePath gives the home-relative path of one state record.
+func StatePath(collection, id string) string {
 	return filepath.ToSlash(filepath.Join(".hive", "state", collection, id+".json"))
 }
 
-func displayValue(value string) string {
+// DisplayValue quotes a value that holds invalid UTF-8 or a control character.
+func DisplayValue(value string) string {
 	if !utf8.ValidString(value) {
 		return strconv.Quote(value)
 	}
@@ -794,7 +767,8 @@ func displayValue(value string) string {
 	return value
 }
 
-func logAgentEvent(home, message string, attrs ...any) {
+// LogAgentEvent writes one agent log event at level debug.
+func LogAgentEvent(home, message string, attrs ...any) {
 	writer, err := hivelog.NewWriter(home, "agent", time.Now)
 	if err != nil {
 		return
@@ -803,7 +777,8 @@ func logAgentEvent(home, message string, attrs ...any) {
 	slog.New(writer).Debug(message, attrs...)
 }
 
-func logRegistration(home string, options RegisterOptions, envelope output.Envelope) {
+// LogRegistration logs the effects and the error of one registration.
+func LogRegistration(home string, options RegisterOptions, envelope output.Envelope) {
 	attrs := []any{"profile", options.Profile}
 	if options.Project != "" {
 		attrs = append(attrs, "project_id", options.Project)
@@ -815,17 +790,17 @@ func logRegistration(home string, options RegisterOptions, envelope output.Envel
 	for _, effect := range envelope.Effects {
 		switch {
 		case effect.Resource == "counter":
-			logAgentEvent(home, "agent counter updated", append(attrs, "path", effect.Path)...)
+			LogAgentEvent(home, "agent counter updated", append(attrs, "path", effect.Path)...)
 		case effect.Resource == "agent" && effect.Action == "stale":
 			id := effectID(effect.Path)
-			logAgentEvent(home, "agent holder marked stale", append(attrs, "agent_id", id)...)
+			LogAgentEvent(home, "agent holder marked stale", append(attrs, "agent_id", id)...)
 		case effect.Resource == "agent":
 			holderID = effectID(effect.Path)
-			logAgentEvent(home, "agent record written", append(attrs, "agent_id", holderID)...)
+			LogAgentEvent(home, "agent record written", append(attrs, "agent_id", holderID)...)
 		case effect.Resource == "claim":
 			claimAttrs := append(attrs, "agent_id", holderID)
 			claimAttrs = append(claimAttrs, "claim_id", effectID(effect.Path))
-			logAgentEvent(home, "agent claim written", claimAttrs...)
+			LogAgentEvent(home, "agent claim written", claimAttrs...)
 		}
 	}
 	if envelope.Error == nil {
@@ -836,13 +811,14 @@ func logRegistration(home string, options RegisterOptions, envelope output.Envel
 		errorAttrs = append(errorAttrs, "agent_id", holderID)
 	}
 	errorAttrs = append(errorAttrs, "phase", envelope.Phase, "error", fmt.Sprint(envelope.Error))
-	logAgentEvent(home, "agent registration failed", errorAttrs...)
+	LogAgentEvent(home, "agent registration failed", errorAttrs...)
 }
 
 func effectID(path string) string {
 	return strings.TrimSuffix(filepath.Base(path), ".json")
 }
 
-func failed(phase, message string) output.Envelope {
+// Failed gives a failed envelope with no effects.
+func Failed(phase, message string) output.Envelope {
 	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
 }

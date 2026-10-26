@@ -3,7 +3,7 @@ package send
 
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/send"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -26,14 +26,14 @@ func New() *cobra.Command {
 		wait, _ := cmd.Flags().GetBool("wait")
 		timeout, _ := cmd.Flags().GetInt("timeout")
 		return common.Run(cmd, "agent send", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Send(cmd.Context(), home, agentlib.SendOptions{
+			envelope := operation.Run(cmd.Context(), home, operation.Options{
 				Agent:      name,
 				Text:       args[0],
 				Wait:       wait,
 				Timeout:    timeout,
 				TimeoutSet: cmd.Flags().Lookup("timeout").Changed,
 			})
-			return envelope, agentlib.SendText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

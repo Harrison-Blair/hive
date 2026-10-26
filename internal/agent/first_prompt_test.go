@@ -73,8 +73,8 @@ func TestWorkerFirstPromptRetriesOneStall(t *testing.T) {
 		t.Fatalf("agent.prompt requests = %d; want first prompt and one retry", len(requests))
 	}
 	requireFirstPromptWait(t, requests)
-	if text := SpawnText(envelope); !strings.Contains(text, "agent worker-1 live\n") {
-		t.Fatalf("spawn text = %q; want live after confirmed prompt", text)
+	if result, ok := envelope.Result.(SpawnResult); !ok || result.Agent.Name != "worker-1" || result.Agent.Status != records.AgentLive {
+		t.Fatalf("spawn result = %#v; want worker-1 live after confirmed prompt", envelope.Result)
 	}
 }
 
@@ -97,8 +97,8 @@ func TestWorkerFirstPromptFailsAfterTwoStalls(t *testing.T) {
 		t.Fatalf("agent.prompt requests = %d; want exactly two", len(requests))
 	}
 	requireFirstPromptWait(t, requests)
-	if text := SpawnText(envelope); strings.Contains(text, "agent worker-1 live") {
-		t.Fatalf("spawn text = %q; must not report live without a confirmed prompt", text)
+	if envelope.Error == nil {
+		t.Fatalf("envelope = %#v; must carry the error so the spawn text reports no live agent", envelope)
 	}
 	data, err := json.Marshal(envelope)
 	if err != nil {

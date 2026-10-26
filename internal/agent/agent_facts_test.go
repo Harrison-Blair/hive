@@ -143,13 +143,4 @@ func TestListAndShowExposeAgentFacts(t *testing.T) {
 	if shown.Outcome != "ok" {
 		t.Fatalf("Show() = %#v; want ok", shown)
 	}
-	text := ShowText(shown)
-	for _, want := range []string{"profile: planner", "kind: ", "owns: hive"} {
-		if !strings.Contains(text, want) {
-			t.Errorf("ShowText() = %q; missing %q", text, want)
-		}
-	}
-	if strings.Contains(text, "role:") {
-		t.Errorf("ShowText() = %q; want no role field", text)
-	}
 }
