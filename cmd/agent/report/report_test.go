@@ -32,8 +32,8 @@ func reportHome(t *testing.T) string {
 		t.Fatal(err)
 	}
 	for _, record := range []records.Agent{
-		{Key: "boss", Name: "boss", Role: "agent", Status: records.AgentLive, PaneID: "w1:p1", Generation: 1},
-		{Key: "rev", Name: "rev", Role: "agent", Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1},
+		{Key: "boss", Name: "boss", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p1", Generation: 1},
+		{Key: "rev", Name: "rev", Profile: records.ProfileGeneral, Status: records.AgentLive, PaneID: "w1:p2", Parent: "boss", Generation: 1},
 	} {
 		if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
 			t.Fatal(err)

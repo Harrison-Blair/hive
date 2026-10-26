@@ -144,11 +144,6 @@ func TestSpawnD3ErrorTable(t *testing.T) {
 			want: "profile coordinator is built in: run bare hive, or the restart in Health › Agents",
 		},
 		{
-			name: "role and profile",
-			args: []string{"--pane", "w1:p1", "--role", "worker", "--profile", "general"},
-			want: "--role is the old name of --profile: pass one",
-		},
-		{
 			name: "task and cwd",
 			args: []string{"--task", "1-demo", "--cwd", "/tmp"},
 			want: "--cwd conflicts with --task: a task agent works in its worktree",
@@ -300,7 +295,7 @@ func TestSpawnOwnerFromCoordinatorAndUser(t *testing.T) {
 	t.Run("coordinator", func(t *testing.T) {
 		home := cliHome(t)
 		d3WriteProject(t, home, "demo")
-		d3WriteAgent(t, home, records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, Role: "coordinator", Status: records.AgentLive, PaneID: "w1:pc", Generation: 1})
+		d3WriteAgent(t, home, records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, Status: records.AgentLive, PaneID: "w1:pc", Generation: 1})
 		registry, err := store.Open(home)
 		if err != nil {
 			t.Fatal(err)

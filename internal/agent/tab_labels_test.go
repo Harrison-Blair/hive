@@ -68,8 +68,12 @@ func TestSpawnRenamesWorkerAndVerifierTabs(t *testing.T) {
 			}
 			fake.result("tab.rename", tabInfoReply(tabID, "w5", label))
 
+			profile := records.ProfileBuilder
+			if role == "verifier" {
+				profile = records.ProfileVerifier
+			}
 			envelope := Spawn(context.Background(), home, SpawnOptions{
-				Role: role, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: label, NameSet: true,
+				Profile: profile, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: label, NameSet: true,
 			})
 			if envelope.Outcome != "ok" || envelope.Error != nil {
 				t.Fatalf("Spawn() = %#v; want success", envelope)

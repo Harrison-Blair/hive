@@ -71,8 +71,8 @@ func TestStartupCreatesCoordinatorAndSupervisorTabs(t *testing.T) {
 		if params.Cwd != homePath || params.Env["HIVE_HOME"] != homePath || params.Env["XDG_CONFIG_HOME"] != configDir {
 			t.Errorf("tab.create cwd/env = %q/%#v; want home %q and config %q", params.Cwd, params.Env, homePath, configDir)
 		}
-		if params.Env["HIVE_STARTUP_ROLE"] != params.Label {
-			t.Errorf("tab.create startup role = %q; want %q", params.Env["HIVE_STARTUP_ROLE"], params.Label)
+		if params.Env["HIVE_STARTUP_KIND"] != params.Label {
+			t.Errorf("tab.create startup role = %q; want %q", params.Env["HIVE_STARTUP_KIND"], params.Label)
 		}
 	}
 	inputs := requestsFor(server.recorded(), "pane.send_input")
@@ -308,7 +308,7 @@ func writeStartupCoordinator(t *testing.T, homePath string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.WriteIn([]string{"agents"}, "coordinator-g1", records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p9", Status: records.AgentLive}); err != nil {
+	if err := registry.WriteIn([]string{"agents"}, "coordinator-g1", records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p9", Status: records.AgentLive}); err != nil {
 		t.Fatal(err)
 	}
 }

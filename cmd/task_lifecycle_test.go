@@ -51,9 +51,15 @@ func (c *taskCLI) seedAgent(t *testing.T, name, role, taskID string) {
 		t.Fatal(err)
 	}
 	record := records.Agent{
-		Key: name, Name: name, Role: role, Project: "repo", Task: taskID,
+		Key: name, Name: name, Project: "repo", Task: taskID,
 		Status: records.AgentLive, PaneID: "w1:" + name, Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
+	}
+	switch role {
+	case "worker":
+		record.Profile = records.ProfileBuilder
+	case "verifier":
+		record.Profile = records.ProfileVerifier
 	}
 	if err := registry.WriteIn([]string{"agents"}, name, record); err != nil {
 		t.Fatal(err)
@@ -67,8 +73,8 @@ func (c *taskCLI) seedController(t *testing.T) {
 		t.Fatal(err)
 	}
 	agent := records.Agent{
-		Key: "manager-repo", Name: "manager-repo", Role: "manager",
-		Profile: records.ProfilePlanner, Owns: "repo", Project: "repo",
+		Key: "manager-repo", Name: "manager-repo", Profile: records.ProfilePlanner,
+		Owns: "repo", Project: "repo",
 		Status: records.AgentLive, PaneID: "manager-pane", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	}

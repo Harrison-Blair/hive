@@ -12,7 +12,7 @@ import (
 )
 
 func managerSpawnOptions(project string) SpawnOptions {
-	return SpawnOptions{Role: "manager", Project: project, Harness: "claude", Model: "m"}
+	return SpawnOptions{Profile: "planner", Owner: true, Project: project, Harness: "claude", Model: "m"}
 }
 
 func projectDirectory(t *testing.T, home, id string) string {

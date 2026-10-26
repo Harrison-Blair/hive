@@ -80,7 +80,6 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 	record := records.Agent{
 		Key:           fmt.Sprintf("coordinator-g%d", l.generation),
 		Name:          "coordinator",
-		Role:          "coordinator",
 		Harness:       profile.Kind(),
 		Model:         model,
 		PaneID:        launched.Agent.PaneID,

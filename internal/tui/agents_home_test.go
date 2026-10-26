@@ -22,7 +22,7 @@ func generalAgent(key, parent, started string) records.Agent {
 // at started.
 func generalAgentIn(project, key, parent, started string) records.Agent {
 	return records.Agent{
-		Key: key, Name: key, Role: "agent", Profile: records.ProfileGeneral, Project: project,
+		Key: key, Name: key, Profile: records.ProfileGeneral, Project: project,
 		Harness: "pi", Model: "gpt", PaneID: "w9:" + key, Parent: parent,
 		Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-21T14:19:00Z",
 		StartedAt: started, UpdatedAt: started,
@@ -33,7 +33,7 @@ func generalAgentIn(project, key, parent, started string) records.Agent {
 // coordinator, and the extra agents.
 func homeSource(extra ...records.Agent) agentsSource {
 	projects, agents := agentsProject("alpha", "pi", 1)
-	agents = append([]records.Agent{{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle"}}, agents...)
+	agents = append([]records.Agent{{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Harness: "claude", Status: records.AgentLive, AgentStatus: "idle"}}, agents...)
 	return agentsSource{projects: projects, agents: append(agents, extra...)}
 }
 

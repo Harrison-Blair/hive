@@ -12,7 +12,6 @@ import (
 // ListOptions filters the agent list.
 type ListOptions struct {
 	Project string
-	Role    string
 	Profile string
 	All     bool
 }
@@ -39,9 +38,6 @@ func List(home string, options ListOptions) output.Envelope {
 		if options.Project != "" && record.Project != options.Project {
 			continue
 		}
-		if options.Role != "" && record.MirrorRole() != options.Role {
-			continue
-		}
 		if options.Profile != "" && record.Profile != options.Profile {
 			continue
 		}
@@ -66,9 +62,6 @@ func listFailed(home string, options ListOptions, phase, message string) output.
 	attrs := []any{}
 	if options.Project != "" {
 		attrs = append(attrs, "project_id", options.Project)
-	}
-	if options.Role != "" {
-		attrs = append(attrs, "role", options.Role)
 	}
 	if options.Profile != "" {
 		attrs = append(attrs, "profile", options.Profile)

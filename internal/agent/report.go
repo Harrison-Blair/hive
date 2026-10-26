@@ -157,7 +157,7 @@ func reportHeld(locked lockedWriter, options ReportOptions, text, path string) o
 		agents[record.Key] = record
 	}
 	key := ParentInbox(agents, caller)
-	appended := inboxlib.AppendHeld(locked, inboxlib.AppendOptions{Role: key, Kind: records.InboxReport, Agent: caller.Name, Text: text, Path: path})
+	appended := inboxlib.AppendHeld(locked, inboxlib.AppendOptions{Inbox: key, Kind: records.InboxReport, Agent: caller.Name, Text: text, Path: path})
 	if appended.Outcome != "ok" {
 		return appended
 	}

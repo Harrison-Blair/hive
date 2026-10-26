@@ -22,7 +22,7 @@ func TestHeldAppendAndConsumeStayOnOneHandle(t *testing.T) {
 	}
 	var appended outputEnvelope
 	err = st.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		appended.envelope = AppendHeld(locked, AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "held"})
+		appended.envelope = AppendHeld(locked, AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Agent: "worker-x", Text: "held"})
 		return nil
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func TestValidateAppendUsesTheLiteralByteBound(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			err := ValidateAppend(AppendOptions{Role: "coordinator", Kind: records.InboxMessage, Text: test.text})
+			err := ValidateAppend(AppendOptions{Inbox: "coordinator", Kind: records.InboxMessage, Text: test.text})
 			if (err == nil) != test.ok {
 				t.Fatalf("ValidateAppend(%d bytes) = %v; want ok=%t", len(test.text), err, test.ok)
 			}

@@ -158,7 +158,7 @@ func TestReconcileStartingShellWaitsForSpawn(t *testing.T) {
 func TestReconcileAdoptsTerminalID(t *testing.T) {
 	home := testHome(t)
 	coordinator := records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator,
 		PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1",
 		Status: records.AgentLive, AgentStatus: "idle", Generation: 1, Spawned: true,
 	}
@@ -178,12 +178,12 @@ func TestReconcileAdoptsTerminalID(t *testing.T) {
 func TestReconcileOldSupervisorStoppedWithoutHerdr(t *testing.T) {
 	home := testHome(t)
 	old := records.Agent{
-		Key: "supervisor-g0", Name: "supervisor", Role: "supervisor",
+		Key: "supervisor-g0", Name: "supervisor", Kind: records.AgentKindSupervisor,
 		PaneID: "w1:p9", WorkspaceID: "w1", TabID: "w1:t9",
 		Status: records.AgentLive, AgentStatus: "idle", Generation: 0, Spawned: false,
 	}
 	writeAgent(t, home, old)
-	writeAgent(t, home, records.Agent{Key: "supervisor-g1", Name: "supervisor", Role: "supervisor", Kind: records.AgentKindSupervisor, Replaces: old.Key, Status: records.AgentLive, Generation: 1})
+	writeAgent(t, home, records.Agent{Key: "supervisor-g1", Name: "supervisor", Kind: records.AgentKindSupervisor, Replaces: old.Key, Status: records.AgentLive, Generation: 1})
 	ops := newFakeOps()
 	s := handlerSupervisor(t, home, ops, newFakeClock())
 

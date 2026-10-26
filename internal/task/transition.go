@@ -336,7 +336,7 @@ func (l operationLog) finishEffect(command, projectID, taskID, agentID, inbox st
 	}
 	fields := l.fields(command, projectID, taskID, agentID)
 	if inbox != "" {
-		fields = append(fields, "role", inbox)
+		fields = append(fields, "inbox", inbox)
 	}
 	fields = append(fields, "resource", effect.Resource, "path", effect.Path, "action", effect.Action)
 	l.logger.Debug("task effect", fields...)
@@ -430,7 +430,7 @@ func finishNotification(command string, task records.Task, caller records.Agent,
 		}
 	}
 	notification := inbox.AppendOptions{
-		Role:  projectAddress(task.Project),
+		Inbox: projectAddress(task.Project),
 		Kind:  kind,
 		Task:  task.ID,
 		Agent: caller.Name,

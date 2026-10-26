@@ -61,8 +61,8 @@ func TestChatLoadsRecentConversationAndInboxEvents(t *testing.T) {
 	appendChatFixture(t, home, chatlib.Entry{ID: "c3", At: "2026-10-19T13:00:00Z", From: "coordinator", Text: "**answer**", ReplyTo: "c2"})
 	appendChatFixture(t, home, chatlib.Entry{ID: "c4", At: "2026-10-19T14:00:00Z", From: "user", Text: "delivered message", Delivery: "pending"})
 	appendChatFixture(t, home, chatlib.Entry{ID: "c4", At: "2026-10-19T14:00:01Z", Delivery: "sent"})
-	appendInboxFixture(t, home, records.Inbox{Seq: 1, Role: "coordinator", Kind: records.InboxMessage, Agent: "worker-one", Text: "message first line\nmessage second line", CreatedAt: "2026-10-19T12:30:00Z"})
-	appendInboxFixture(t, home, records.Inbox{Seq: 2, Role: "coordinator", Kind: records.InboxExited, Agent: "worker-two", Text: "exited is noise", CreatedAt: "2026-10-19T12:45:00Z"})
+	appendInboxFixture(t, home, records.Inbox{Seq: 1, Inbox: "coordinator", Kind: records.InboxMessage, Agent: "worker-one", Text: "message first line\nmessage second line", CreatedAt: "2026-10-19T12:30:00Z"})
+	appendInboxFixture(t, home, records.Inbox{Seq: 2, Inbox: "coordinator", Kind: records.InboxExited, Agent: "worker-two", Text: "exited is noise", CreatedAt: "2026-10-19T12:45:00Z"})
 
 	m := newTestModel(t, home, clock)
 	m, _ = raise(t, m, tea.WindowSizeMsg{Width: 120, Height: 40})
@@ -222,7 +222,7 @@ func TestChatCompactAskStatusRowCutsKeys(t *testing.T) {
 func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	home := newTestHome(t)
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive,
 		AgentStatus: "working", StatusChangedAt: "2026-10-20T11:58:00Z",
 	})
 	m := newTestModel(t, home, fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)))
@@ -265,7 +265,7 @@ func TestChatStateSegmentShowsTheGlyphAndWorkingDuration(t *testing.T) {
 			home := newTestHome(t)
 			if tc.name != "no live coordinator" {
 				writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-					Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Status: records.AgentLive,
+					Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive,
 					AgentStatus: tc.status, StatusChangedAt: tc.changedAt,
 				})
 			}
@@ -427,7 +427,7 @@ func TestChatStartFromProjectsShowsRefusalAndBlocksInput(t *testing.T) {
 func TestChatRefusedSendShowsNoticeAndKeepsDraft(t *testing.T) {
 	home := newTestHome(t)
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1",
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1",
 		Status: records.AgentLive, Generation: 1,
 	})
 	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
@@ -468,7 +468,7 @@ func TestChatSendRunsInBackgroundAndKeepsFailedDraft(t *testing.T) {
 	home := newTestHome(t)
 	clock := fixedClock(t, time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC))
 	writeRecord(t, home, []string{"agents"}, "coordinator-g1", records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
 	})
 	writeRecord(t, home, []string{"claims"}, "coordinator", records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 	fake := newBlockingChatHerdr(t)

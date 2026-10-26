@@ -20,7 +20,6 @@ hive agent list: list agent records
   --json bool: write JSON output
   --profile string: agent profile
   --project string: project ID
-  --role string: agent role
 
 hive agent register: register the current agent session
   --harness string: harness kind
@@ -32,7 +31,6 @@ hive agent register: register the current agent session
   --pid int64: holder process ID
   --project string: project ID
   --quiet-after int: quiet minutes
-  --role string: agent role
   --task string: task ID
 
 hive agent report: send the result of a general agent to its parent
@@ -77,7 +75,6 @@ hive agent spawn: spawn an agent in a pane
   --prompt string: spawner text of the agent
   --prompt-file string: file with the spawner text of the agent
   --quiet-after int: quiet minutes
-  --role string: old name of --profile (wave A)
   --task string: task ID
 
 hive agent stop: stop an agent that hive started
@@ -205,7 +202,6 @@ hive inbox: read and send inbox records
   --inbox string: inbox key or project:ID
   --json bool: write JSON output
   --pane string: herdr pane ID
-  --role string: old name of --inbox
 
 hive inbox send: append a message record
   --agent string: sending agent

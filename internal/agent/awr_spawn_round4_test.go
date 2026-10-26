@@ -25,7 +25,6 @@ func loseCoordinatorIdentity(locked *store.LockedStore) error {
 			return nil, err
 		}
 		record.Kind = ""
-		record.Role = "worker"
 		record.Profile = records.ProfileBuilder
 		record.Owns = ""
 		record.Project = "demo"
@@ -68,7 +67,7 @@ func TestSpawnOwnerRechecksExplicitCallerBeforeRegistration(t *testing.T) {
 			writeManagerProject(t, home, nil)
 			writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 			writeRecord(t, home, records.Agent{
-				Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+				Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator,
 				PaneID: "wHome:pC", WorkspaceID: "wHome", Status: records.AgentLive, Generation: 1,
 			})
 			t.Setenv("HERDR_PANE_ID", test.pane)
@@ -93,7 +92,7 @@ func TestSpawnOwnerRechecksExplicitCallerBeforeRegistration(t *testing.T) {
 			})
 
 			envelope := SpawnFromCLI(context.Background(), home, SpawnOptions{
-				Role: "manager", Project: "demo", Harness: "claude", Model: "m",
+				Profile: records.ProfilePlanner, Owner: true, Project: "demo", Harness: "claude", Model: "m",
 				Name: "owner-check", NameSet: true, Agent: "coordinator-g1",
 			})
 			if mutationErr != nil {
@@ -138,7 +137,7 @@ func TestSpawnOwnerAcceptsFreshExplicitCallerWithoutPane(t *testing.T) {
 	writeManagerProject(t, home, nil)
 	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 	writeRecord(t, home, records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator,
 		PaneID: "wHome:pC", WorkspaceID: "wHome", Status: records.AgentLive, Generation: 1,
 	})
 	t.Setenv("HERDR_PANE_ID", "")
@@ -150,7 +149,7 @@ func TestSpawnOwnerAcceptsFreshExplicitCallerWithoutPane(t *testing.T) {
 	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 
 	envelope := SpawnFromCLI(context.Background(), home, SpawnOptions{
-		Role: "manager", Project: "demo", Harness: "claude", Model: "m",
+		Profile: records.ProfilePlanner, Owner: true, Project: "demo", Harness: "claude", Model: "m",
 		Name: "owner-check", NameSet: true, Agent: "coordinator-g1",
 	})
 	if envelope.Outcome != "ok" {
@@ -186,7 +185,7 @@ func TestSpawnOwnerKeepsGenuineUserWithoutPane(t *testing.T) {
 	scriptManagerSpawnTail(t, home, fake, sleep, "wBD:p1", "wBD", "wBD:t1")
 
 	envelope := SpawnFromCLI(context.Background(), home, SpawnOptions{
-		Role: "manager", Project: "demo", Harness: "claude", Model: "m",
+		Profile: records.ProfilePlanner, Project: "demo", Harness: "claude", Model: "m",
 		Name: "owner-user", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {

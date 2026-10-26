@@ -24,12 +24,12 @@ func readAgentFields(t *testing.T, home, key string) map[string]any {
 	return record
 }
 
-// TestRegisterWritesAgentFacts covers AC1 and AC7 for a new record of each
-// role: the record gets its facts, and the role mirror follows the facts.
+// TestRegisterWritesAgentFacts covers AC1 and AC7: a registration writes the
+// facts directly and no role field.
 func TestRegisterWritesAgentFacts(t *testing.T) {
 	cases := []struct {
 		name         string
-		role         string
+		options      RegisterOptions
 		project      string
 		worktree     string
 		wantKey      string
@@ -37,14 +37,37 @@ func TestRegisterWritesAgentFacts(t *testing.T) {
 		wantKind     string
 		wantOwns     string
 		wantWorktree string
-		wantRole     string
 	}{
-		{name: "coordinator", role: "coordinator", wantKey: "coordinator-g1", wantProfile: "coordinator", wantKind: "coordinator", wantRole: "coordinator"},
-		{name: "supervisor", role: "supervisor", wantKey: "supervisor-g1", wantKind: "supervisor", wantRole: "supervisor"},
-		{name: "manager", role: "manager", project: "hive", wantKey: "manager-hive-g1", wantProfile: "planner", wantOwns: "hive", wantRole: "manager"},
-		{name: "worker", role: "worker", project: "hive", worktree: "/tmp/worktrees/1-facts", wantKey: "worker-hive-1", wantProfile: "builder", wantWorktree: "/tmp/worktrees/1-facts", wantRole: "worker"},
-		{name: "verifier", role: "verifier", project: "hive", worktree: "/tmp/worktrees/1-facts", wantKey: "verifier-hive-1", wantProfile: "verifier", wantWorktree: "/tmp/worktrees/1-facts", wantRole: "verifier"},
-		{name: "agent", role: "agent", wantKey: "agent", wantProfile: "general", wantRole: "agent"},
+		{
+			name:    "coordinator",
+			options: RegisterOptions{Kind: records.AgentKindCoordinator, Name: "coordinator", NameSet: true},
+			wantKey: "coordinator-g1", wantProfile: "coordinator", wantKind: "coordinator",
+		},
+		{
+			name:    "supervisor",
+			options: RegisterOptions{Kind: records.AgentKindSupervisor, Name: "supervisor", NameSet: true},
+			wantKey: "supervisor-g1", wantKind: "supervisor",
+		},
+		{
+			name:    "planner",
+			options: RegisterOptions{Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", Name: "manager-hive", NameSet: true},
+			project: "hive", wantKey: "manager-hive-g1", wantProfile: "planner", wantOwns: "hive",
+		},
+		{
+			name:    "builder",
+			options: RegisterOptions{Profile: records.ProfileBuilder, Project: "hive", Task: testTaskID, Name: "builder-1", NameSet: true},
+			project: "hive", worktree: "/tmp/worktrees/1-facts", wantKey: "builder-1", wantProfile: "builder", wantWorktree: "/tmp/worktrees/1-facts",
+		},
+		{
+			name:    "verifier",
+			options: RegisterOptions{Profile: records.ProfileVerifier, Project: "hive", Task: testTaskID, Name: "verifier-1", NameSet: true},
+			project: "hive", worktree: "/tmp/worktrees/1-facts", wantKey: "verifier-1", wantProfile: "verifier", wantWorktree: "/tmp/worktrees/1-facts",
+		},
+		{
+			name:    "general",
+			options: RegisterOptions{Profile: records.ProfileGeneral, Name: "general-1", NameSet: true},
+			wantKey: "general-1", wantProfile: "general",
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -66,13 +89,17 @@ func TestRegisterWritesAgentFacts(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			envelope := Register(home, RegisterOptions{Role: c.role, Project: c.project, Task: task, PaneID: "w1:p1"})
+			options := c.options
+			options.PaneID = "w1:p1"
+			if options.Task == "" {
+				options.Task = task
+			}
+			envelope := Register(home, options)
 			if envelope.Outcome != "ok" {
 				t.Fatalf("Register() = %#v; want ok", envelope)
 			}
 			record := readAgentFields(t, home, c.wantKey)
 			for field, want := range map[string]string{
-				"role":     c.wantRole,
 				"profile":  c.wantProfile,
 				"kind":     c.wantKind,
 				"owns":     c.wantOwns,
@@ -82,6 +109,9 @@ func TestRegisterWritesAgentFacts(t *testing.T) {
 					t.Errorf("%s = %#v, present %t; want %q", field, got, ok, want)
 				}
 			}
+			if _, ok := record["role"]; ok {
+				t.Errorf("record has a role field: %#v", record)
+			}
 		})
 	}
 }
@@ -90,7 +120,7 @@ func TestRegisterWritesAgentFacts(t *testing.T) {
 func TestListAndShowExposeAgentFacts(t *testing.T) {
 	home := testHome(t)
 	writeProject(t, home, "hive")
-	if envelope := Register(home, RegisterOptions{Role: "manager", Project: "hive", PaneID: "w1:p1"}); envelope.Outcome != "ok" {
+	if envelope := Register(home, RegisterOptions{Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p1"}); envelope.Outcome != "ok" {
 		t.Fatal(envelope.Error)
 	}
 	listed := List(home, ListOptions{All: true})
@@ -101,19 +131,25 @@ func TestListAndShowExposeAgentFacts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`"profile":"planner"`, `"kind":""`, `"owns":"hive"`, `"role":"manager"`} {
+	for _, want := range []string{`"profile":"planner"`, `"kind":""`, `"owns":"hive"`} {
 		if !strings.Contains(string(data), want) {
 			t.Errorf("List JSON = %s; missing %s", data, want)
 		}
+	}
+	if strings.Contains(string(data), `"role"`) {
+		t.Errorf("List JSON = %s; want no role field", data)
 	}
 	shown := Show(home, "manager-hive-g1")
 	if shown.Outcome != "ok" {
 		t.Fatalf("Show() = %#v; want ok", shown)
 	}
 	text := ShowText(shown)
-	for _, want := range []string{"profile: planner", "kind: ", "owns: hive", "role: manager"} {
+	for _, want := range []string{"profile: planner", "kind: ", "owns: hive"} {
 		if !strings.Contains(text, want) {
 			t.Errorf("ShowText() = %q; missing %q", text, want)
 		}
+	}
+	if strings.Contains(text, "role:") {
+		t.Errorf("ShowText() = %q; want no role field", text)
 	}
 }

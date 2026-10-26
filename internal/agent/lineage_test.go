@@ -12,56 +12,58 @@ import (
 func TestSpawnedRegistrationSelectsNewestMatchingReplacement(t *testing.T) {
 	cases := []struct {
 		name       string
-		role       string
+		profile    string
+		kind       string
+		owns       string
 		project    string
 		task       string
 		candidates []records.Agent
 		want       string
 	}{
 		{
-			name: "worker same task",
-			role: "worker", project: "hive", task: testTaskID,
+			name:    "worker same task",
+			profile: records.ProfileBuilder, project: "hive", task: testTaskID,
 			candidates: []records.Agent{
-				{Key: "worker-old", Name: "worker-old", Role: "worker", Project: "hive", Task: testTaskID, Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
-				{Key: "worker-newer", Name: "worker-newer", Role: "worker", Project: "hive", Task: testTaskID, Status: records.AgentExited, StartedAt: "2026-01-02T00:00:00Z"},
-				{Key: "worker-wrong-task", Name: "worker-wrong-task", Role: "worker", Project: "hive", Task: "2-task", Status: records.AgentStopped, StartedAt: "2026-01-03T00:00:00Z"},
-				{Key: "worker-live", Name: "worker-live", Role: "worker", Project: "hive", Task: testTaskID, Status: records.AgentLive, StartedAt: "2026-01-04T00:00:00Z"},
+				{Key: "worker-old", Name: "worker-old", Profile: records.ProfileBuilder, Project: "hive", Task: testTaskID, Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
+				{Key: "worker-newer", Name: "worker-newer", Profile: records.ProfileBuilder, Project: "hive", Task: testTaskID, Status: records.AgentExited, StartedAt: "2026-01-02T00:00:00Z"},
+				{Key: "worker-wrong-task", Name: "worker-wrong-task", Profile: records.ProfileBuilder, Project: "hive", Task: "2-task", Status: records.AgentStopped, StartedAt: "2026-01-03T00:00:00Z"},
+				{Key: "worker-live", Name: "worker-live", Profile: records.ProfileBuilder, Project: "hive", Task: testTaskID, Status: records.AgentLive, StartedAt: "2026-01-04T00:00:00Z"},
 			},
 			want: "worker-newer",
 		},
 		{
-			name: "verifier same task",
-			role: "verifier", project: "hive", task: testTaskID,
+			name:    "verifier same task",
+			profile: records.ProfileVerifier, project: "hive", task: testTaskID,
 			candidates: []records.Agent{
-				{Key: "verifier-old", Name: "verifier-old", Role: "verifier", Project: "hive", Task: testTaskID, Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
-				{Key: "verifier-other-task", Name: "verifier-other-task", Role: "verifier", Project: "hive", Task: "2-task", Status: records.AgentStopped, StartedAt: "2026-01-02T00:00:00Z"},
+				{Key: "verifier-old", Name: "verifier-old", Profile: records.ProfileVerifier, Project: "hive", Task: testTaskID, Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
+				{Key: "verifier-other-task", Name: "verifier-other-task", Profile: records.ProfileVerifier, Project: "hive", Task: "2-task", Status: records.AgentStopped, StartedAt: "2026-01-02T00:00:00Z"},
 			},
 			want: "verifier-old",
 		},
 		{
-			name: "manager same project",
-			role: "manager", project: "hive",
+			name:    "manager same project",
+			profile: records.ProfilePlanner, owns: "hive", project: "hive",
 			candidates: []records.Agent{
-				{Key: "manager-old", Name: "manager-old", Role: "manager", Project: "hive", Status: records.AgentStale, StartedAt: "2026-01-01T00:00:00Z"},
-				{Key: "manager-other-project", Name: "manager-other-project", Role: "manager", Project: "other", Status: records.AgentStopped, StartedAt: "2026-01-02T00:00:00Z"},
+				{Key: "manager-old", Name: "manager-old", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", Status: records.AgentStale, StartedAt: "2026-01-01T00:00:00Z"},
+				{Key: "manager-other-project", Name: "manager-other-project", Profile: records.ProfilePlanner, Owns: "other", Project: "other", Status: records.AgentStopped, StartedAt: "2026-01-02T00:00:00Z"},
 			},
 			want: "manager-old",
 		},
 		{
 			name: "coordinator same role",
-			role: "coordinator", project: "",
+			kind: records.AgentKindCoordinator, project: "",
 			candidates: []records.Agent{
-				{Key: "coordinator-old", Name: "old-coordinator", Role: "coordinator", Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
-				{Key: "coordinator-newer", Name: "new-coordinator", Role: "coordinator", Project: "other", Status: records.AgentExited, StartedAt: "2026-01-02T00:00:00Z"},
+				{Key: "coordinator-old", Name: "old-coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentStopped, StartedAt: "2026-01-01T00:00:00Z"},
+				{Key: "coordinator-newer", Name: "new-coordinator", Kind: records.AgentKindCoordinator, Project: "other", Status: records.AgentExited, StartedAt: "2026-01-02T00:00:00Z"},
 			},
 			want: "coordinator-newer",
 		},
 		{
 			name:       "no matching record",
-			role:       "worker",
+			profile:    records.ProfileBuilder,
 			project:    "hive",
 			task:       testTaskID,
-			candidates: []records.Agent{{Key: "other-task", Name: "other-task", Role: "worker", Project: "hive", Task: "2-task", Status: records.AgentStopped}},
+			candidates: []records.Agent{{Key: "other-task", Name: "other-task", Profile: records.ProfileBuilder, Project: "hive", Task: "2-task", Status: records.AgentStopped}},
 		},
 	}
 	for _, test := range cases {
@@ -72,7 +74,7 @@ func TestSpawnedRegistrationSelectsNewestMatchingReplacement(t *testing.T) {
 				writeRecord(t, home, candidate)
 			}
 			options := RegisterOptions{
-				Role: test.role, Project: test.project, Task: test.task,
+				Profile: test.profile, Kind: test.kind, Owns: test.owns, Project: test.project, Task: test.task,
 				Name: "new-agent", NameSet: true, PaneID: "w2:p1", Spawned: true,
 			}
 			envelope := Register(home, options)

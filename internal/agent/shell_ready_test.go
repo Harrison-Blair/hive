@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 func shellProcessInfoJSON(paneID string, shellPID, foregroundPID int64) string {
@@ -149,7 +151,7 @@ func TestWorkerSpawnWaitsForShellSecondRead(t *testing.T) {
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if starts := fake.recorded("agent.start"); len(starts) != 1 {
 		t.Fatalf("agent.start requests = %d; want 1", len(starts))

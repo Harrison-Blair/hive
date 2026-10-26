@@ -15,7 +15,7 @@ import (
 
 // ReadOptions holds the values of one inbox read.
 type ReadOptions struct {
-	// Inbox is the value of --inbox, or the old --role value.
+	// Inbox is the value of --inbox.
 	Inbox    string
 	InboxSet bool
 	All      bool
@@ -49,7 +49,7 @@ func Read(home string, options ReadOptions) output.Envelope {
 		key = ownKey
 		if options.InboxSet {
 			key = options.Inbox
-			if err := inboxlib.ValidateAppend(inboxlib.AppendOptions{Role: key}); err != nil {
+			if err := inboxlib.ValidateAppend(inboxlib.AppendOptions{Inbox: key}); err != nil {
 				envelope = failedRead("validate", err.Error())
 				return nil
 			}

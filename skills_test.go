@@ -14,11 +14,11 @@ import (
 
 // skillFiles lists the skill and template files that name hive commands.
 var skillFiles = []string{
-	".agents/skills/hive-coordinator/SKILL.md",
-	".agents/skills/hive-manager/SKILL.md",
-	".agents/skills/hive-worker/SKILL.md",
-	".agents/skills/hive-verifier/SKILL.md",
-	".agents/skills/hive-agent/SKILL.md",
+	"profiles/coordinator.md",
+	"profiles/planner.md",
+	"profiles/builder.md",
+	"profiles/verifier.md",
+	"profiles/general.md",
 	"internal/agent/templates/project-agents.md",
 	"internal/agent/templates/presets.md",
 }
@@ -80,7 +80,7 @@ func TestSkillCommands(t *testing.T) {
 // TestCoordinatorPreference checks that the coordinator writes a preference
 // record to overrides/ and not to memory/.
 func TestCoordinatorPreference(t *testing.T) {
-	const file = ".agents/skills/hive-coordinator/SKILL.md"
+	const file = "profiles/coordinator.md"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatalf("read %s: %v", file, err)
@@ -98,7 +98,7 @@ func TestCoordinatorPreference(t *testing.T) {
 }
 
 func TestCoordinatorStartupUsesBareHiveTabs(t *testing.T) {
-	const skillPath = ".agents/skills/hive-coordinator/SKILL.md"
+	const skillPath = "profiles/coordinator.md"
 	skillData, err := os.ReadFile(skillPath)
 	if err != nil {
 		t.Fatalf("read %s: %v", skillPath, err)
@@ -254,10 +254,10 @@ func splitCommandLine(line string) []string {
 	return fields
 }
 
-// TestWorkerAndVerifierRequireNoStartup checks that each skill tells the agent
+// TestWorkerAndVerifierRequireNoStartup checks that each profile tells the agent
 // to run bare hive only with the no-startup switch or variable.
 func TestWorkerAndVerifierRequireNoStartup(t *testing.T) {
-	for _, file := range []string{".agents/skills/hive-worker/SKILL.md", ".agents/skills/hive-verifier/SKILL.md"} {
+	for _, file := range []string{"profiles/builder.md", "profiles/verifier.md"} {
 		data, err := os.ReadFile(file)
 		if err != nil {
 			t.Fatalf("read %s: %v", file, err)
@@ -270,16 +270,16 @@ func TestWorkerAndVerifierRequireNoStartup(t *testing.T) {
 	}
 }
 
-// TestGeneralAgentSkill checks that the hive-agent skill states the work, the
+// TestGeneralAgentSkill checks that the general profile states the work, the
 // report, and that the agent has no task (decision 23).
 func TestGeneralAgentSkill(t *testing.T) {
-	data, err := os.ReadFile(".agents/skills/hive-agent/SKILL.md")
+	data, err := os.ReadFile("profiles/general.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{"## Work", "## Report", "You have no task.", "hive agent report --file PATH", "hive --no-startup"} {
 		if !strings.Contains(string(data), want) {
-			t.Errorf("hive-agent skill does not contain %q", want)
+			t.Errorf("general profile does not contain %q", want)
 		}
 	}
 }

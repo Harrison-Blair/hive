@@ -12,7 +12,7 @@ func TestDoctorShowsSchemaVersion(t *testing.T) {
 	t.Setenv("PATH", pathWithGitOnly(t))
 	result := Run(context.Background(), home, nil)
 	check := findCheck(t, result, "schema version")
-	if check.Status != StatusOK || check.Detail != "3" {
-		t.Fatalf("schema version = %+v; want ok with 3", check)
+	if check.Status != StatusOK || check.Detail != "4" {
+		t.Fatalf("schema version = %+v; want ok with 4", check)
 	}
 }

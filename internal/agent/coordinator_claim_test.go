@@ -56,7 +56,7 @@ func readCoordinatorClaim(t *testing.T, home string) (records.Claim, bool) {
 
 func coordinatorRecords(t *testing.T, home string) []records.Agent {
 	t.Helper()
-	listed := List(home, ListOptions{Role: "coordinator", All: true})
+	listed := List(home, ListOptions{Profile: records.ProfileCoordinator, All: true})
 	if listed.Outcome != "ok" {
 		t.Fatalf("list coordinators = %#v", listed)
 	}
@@ -213,7 +213,7 @@ func TestCoordinatorStartRefusesStartingClaimWithLiveLauncher(t *testing.T) {
 
 func TestCoordinatorStartRefusesLiveClaim(t *testing.T) {
 	home := testHome(t)
-	writeRecord(t, home, records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, Generation: 1})
+	writeRecord(t, home, records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", Status: records.AgentLive, Generation: 1})
 	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
 	newFakeHerdr(t)
 	before := stateFiles(t, home)
@@ -374,7 +374,7 @@ func testCoordinatorRestartFrom(t *testing.T, status string) {
 	t.Setenv("HERDR_PANE_ID", "")
 	old := startSleep(t)
 	harness := startSleep(t)
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_w1:p1", Status: status, Generation: 1, StartedByHive: true, ProcessPID: old.pid, ProcessName: "claude", ProcessStart: old.start}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_w1:p1", Status: status, Generation: 1, StartedByHive: true, ProcessPID: old.pid, ProcessName: "claude", ProcessStart: old.start}
 	writeRecord(t, home, record)
 	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1, Status: records.ClaimLive})
 	fake := newFakeHerdr(t)
@@ -446,8 +446,8 @@ func TestCoordinatorRestartRefusesRecordThatTheClaimDoesNotName(t *testing.T) {
 	home := testHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("HERDR_PANE_ID", "")
-	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentUnresolved, Generation: 1, StartedByHive: true}
-	current := records.Agent{Key: "coordinator-g2", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 2, StartedByHive: true}
+	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentUnresolved, Generation: 1, StartedByHive: true}
+	current := records.Agent{Key: "coordinator-g2", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 2, StartedByHive: true}
 	writeRecord(t, home, old)
 	writeRecord(t, home, current)
 	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g2", Generation: 2, Status: records.ClaimLive})
@@ -502,7 +502,7 @@ func testCoordinatorRestartOf(t *testing.T, status string, claimed bool) {
 	t.Setenv("HERDR_PANE_ID", "")
 	old := startSleep(t)
 	harness := startSleep(t)
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_w1:p1", Status: status, Generation: 1, StartedByHive: true, ProcessPID: old.pid, ProcessName: "claude", ProcessStart: old.start}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_w1:p1", Status: status, Generation: 1, StartedByHive: true, ProcessPID: old.pid, ProcessName: "claude", ProcessStart: old.start}
 	writeRecord(t, home, record)
 	if claimed {
 		writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1, Status: records.ClaimLive})
@@ -550,8 +550,8 @@ func TestCoordinatorRestartRefusesStaleRecordThatTheClaimDoesNotName(t *testing.
 	home := testHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("HERDR_PANE_ID", "")
-	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentStale, Generation: 1, StartedByHive: true}
-	current := records.Agent{Key: "coordinator-g2", Name: "coordinator", Role: "coordinator", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 2, StartedByHive: true}
+	old := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentStale, Generation: 1, StartedByHive: true}
+	current := records.Agent{Key: "coordinator-g2", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 2, StartedByHive: true}
 	writeRecord(t, home, old)
 	writeRecord(t, home, current)
 	writeClaimRecord(t, home, records.Claim{Key: "coordinator", Agent: "coordinator-g2", Generation: 2, Status: records.ClaimLive})

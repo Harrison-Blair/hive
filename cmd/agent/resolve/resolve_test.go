@@ -75,7 +75,7 @@ func seedResolveCommandRecord(t *testing.T, home, key, paneID string) records.Ag
 		t.Fatalf("store open: %v", err)
 	}
 	record := records.Agent{
-		Key: key, Name: key, Role: "worker", Project: "one", Task: "1-task",
+		Key: key, Name: key, Profile: records.ProfileBuilder, Project: "one", Task: "1-task",
 		Harness: "claude", Status: records.AgentUnresolved, Spawned: true, Generation: 1,
 		PaneID: paneID, WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_a", Cwd: "/tmp/old",
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
@@ -110,7 +110,7 @@ func TestResolveCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("agent list: %v: %s", err, listOut)
 	}
-	wantList := "worker-exited\t1\tworker\tunresolved\tone\t1-task\tw1:p2\nworker-live\t1\tworker\tunresolved\tone\t1-task\tw1:p1\n"
+	wantList := "worker-exited\t1\tbuilder\tunresolved\tone\t1-task\tw1:p2\nworker-live\t1\tbuilder\tunresolved\tone\t1-task\tw1:p1\n"
 	if listOut != wantList {
 		t.Fatalf("agent list = %q, want %q", listOut, wantList)
 	}

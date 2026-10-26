@@ -1,7 +1,6 @@
 {
   "key": "coordinator-g5",
   "name": "coordinator",
-  "role": "coordinator",
   "project": "",
   "task": "",
   "harness": "",
@@ -16,5 +15,7 @@
   "generation": 5,
   "started_at": "2026-10-20T03:57:16.93240108Z",
   "updated_at": "2026-10-20T03:57:32.418672861Z",
-  "spawned": false
+  "spawned": false,
+  "kind": "coordinator",
+  "profile": "coordinator"
 }

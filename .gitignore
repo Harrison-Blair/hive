@@ -26,12 +26,6 @@
 !.github/scripts/check-tag.sh
 !.github/scripts/package.sh
 
-# Skill discovery links for Claude Code
-!.claude/skills/hive-coordinator
-!.claude/skills/hive-manager
-!.claude/skills/hive-worker
-!.claude/skills/hive-verifier
-!.claude/skills/hive-agent
 
 # Test fixtures
 !**/testdata/**

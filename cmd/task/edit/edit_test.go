@@ -49,8 +49,8 @@ func TestNeedsUserEditFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, agent := range []records.Agent{
-		{Key: "manager", Name: "manager", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1},
-		{Key: "worker", Name: "worker", Role: "worker", Project: "one", Status: records.AgentLive, Generation: 1},
+		{Key: "manager", Name: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1},
+		{Key: "worker", Name: "worker", Profile: records.ProfileBuilder, Project: "one", Status: records.AgentLive, Generation: 1},
 	} {
 		if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 			t.Fatal(err)

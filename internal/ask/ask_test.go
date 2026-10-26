@@ -44,8 +44,8 @@ func seedAgent(t *testing.T, home string, record records.Agent) {
 // is that agent.
 func seedPair(t *testing.T, home string) {
 	t.Helper()
-	seedAgent(t, home, records.Agent{Key: "lead-one", Name: "lead-one", Role: "worker", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "idle", Generation: 1})
-	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", Status: records.AgentLive, AgentStatus: "working", Parent: "lead-one", Generation: 1})
+	seedAgent(t, home, records.Agent{Key: "lead-one", Name: "lead-one", Profile: records.ProfileBuilder, PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "idle", Generation: 1})
+	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", Status: records.AgentLive, AgentStatus: "working", Parent: "lead-one", Generation: 1})
 }
 
 func stopAgent(t *testing.T, home, key string) {

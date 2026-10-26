@@ -16,7 +16,7 @@ func seedParent(t *testing.T, home string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	parent := records.Agent{Key: "boss", Name: "boss", Role: "worker", Project: "demo", Task: "1-demo", Status: records.AgentLive, PaneID: "w1:p9", Generation: 1}
+	parent := records.Agent{Key: "boss", Name: "boss", Profile: records.ProfileBuilder, Project: "demo", Task: "1-demo", Status: records.AgentLive, PaneID: "w1:p9", Generation: 1}
 	if err := registry.WriteIn([]string{"agents"}, parent.Key, parent); err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestSpawnGeneralAgentRecordsRoleAndCallerParent(t *testing.T) {
 	fake.replies["pane.list"] = []string{`{"type":"pane_list","panes":[{"pane_id":"w1:p5","terminal_id":"term_x","workspace_id":"w1","tab_id":"w1:t3","focused":false,"agent_status":"unknown","revision":1,"cwd":"` + dir + `"}]}`}
 	fake.replies["pane.close"] = []string{`{"type":"ok"}`}
 	t.Setenv("HERDR_PANE_ID", "w1:p9")
-	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--role", "agent", "--name", "x", "--prompt", "T", "--harness", "pi", "--cwd", dir)
+	status, stdout, stderr := runCLI(t, home, "--json", "agent", "spawn", "--name", "x", "--prompt", "T", "--harness", "pi", "--cwd", dir)
 	if status != 1 {
 		t.Fatalf("status = %d; want 1 for the failed start (stderr %q)", status, stderr)
 	}
@@ -50,8 +50,8 @@ func TestSpawnGeneralAgentRecordsRoleAndCallerParent(t *testing.T) {
 		t.Fatalf("decode spawn response: %v: %q", err, stdout)
 	}
 	agent := response.Result.Agent
-	if agent.Key != "x" || agent.Role != "agent" || agent.Parent != "boss" {
-		t.Fatalf("record key/role/parent = %q/%q/%q; want x/agent/boss (stdout %s)", agent.Key, agent.Role, agent.Parent, stdout)
+	if agent.Key != "x" || agent.Profile != records.ProfileGeneral || agent.Kind != "" || agent.Parent != "boss" {
+		t.Fatalf("record key/profile/kind/parent = %q/%q/%q/%q; want x/general//boss (stdout %s)", agent.Key, agent.Profile, agent.Kind, agent.Parent, stdout)
 	}
 }
 
@@ -73,7 +73,7 @@ func TestSpawnGeneralAgentFlags(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			newCLIFake(t, "tab.create")
-			args := append([]string{"agent", "spawn", "--role", "agent", "--name", "x"}, test.args...)
+			args := append([]string{"agent", "spawn", "--name", "x"}, test.args...)
 			status, _, stderr := runCLI(t, home, args...)
 			if status != 1 || !strings.Contains(stderr, test.want) {
 				t.Fatalf("status %d stderr %q; want 1 and %q", status, stderr, test.want)

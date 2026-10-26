@@ -16,7 +16,7 @@ func liveRecord(key, name string) records.Agent {
 	return records.Agent{
 		Key:     key,
 		Name:    name,
-		Role:    "worker",
+		Profile: records.ProfileBuilder,
 		Project: "hive",
 		Task:    "12-spawn-worker",
 		Harness: "claude",
@@ -295,7 +295,7 @@ func TestSendLogsTheSender(t *testing.T) {
 			home := testHome(t)
 			writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
 			manager := liveRecord("manager-hive-g2", "manager-hive")
-			manager.Role, manager.Task, manager.PaneID = "manager", "", "w9:p3"
+			manager.Profile, manager.Owns, manager.Task, manager.PaneID = records.ProfilePlanner, "hive", "", "w9:p3"
 			writeRecord(t, home, manager)
 			t.Setenv("HERDR_PANE_ID", tc.pane)
 			fake := newFakeHerdr(t)

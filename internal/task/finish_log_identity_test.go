@@ -54,12 +54,12 @@ func seedFinishLogHome(t *testing.T, status string) string {
 		CreatedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
 	seedAgent(t, home, records.Agent{
-		Key: "worker-key", Name: "worker-name", Role: "worker", Project: "one", Task: "1-literal",
+		Key: "worker-key", Name: "worker-name", Profile: records.ProfileBuilder, Project: "one", Task: "1-literal",
 		Status: records.AgentLive, PaneID: "worker-pane", PaneHistory: []string{"worker-history"},
 		Generation: 1, StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
 	seedAgent(t, home, records.Agent{
-		Key: "verifier-key", Name: "verifier-name", Role: "verifier", Project: "one", Task: "1-literal",
+		Key: "verifier-key", Name: "verifier-name", Profile: records.ProfileVerifier, Project: "one", Task: "1-literal",
 		Status: records.AgentLive, PaneID: "verifier-pane", PaneHistory: []string{"verifier-history"},
 		Generation: 1, StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
@@ -208,7 +208,7 @@ func TestDirectFinishLogsResolvedKeyWithoutOutputPointer(t *testing.T) {
 							resource, _ := event["resource"].(string)
 							resources = append(resources, resource)
 							if resource == "counter" || resource == "inbox" {
-								if event["role"] != "project:one" {
+								if event["inbox"] != "project:one" {
 									t.Errorf("effect %s lost the project inbox: %#v", resource, event)
 								}
 							}

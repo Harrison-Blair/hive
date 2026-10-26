@@ -126,7 +126,7 @@ func TestShowInvalidIDErrorStaysOneLine(t *testing.T) {
 func TestWrongActorErrorStaysOneLine(t *testing.T) {
 	home, task := newSeed(t, "assigned")
 	seedAgent(t, home, records.Agent{
-		Key: "worker-key", Name: "bad\nactor", Role: "worker", Project: "one", Task: task.ID,
+		Key: "worker-key", Name: "bad\nactor", Profile: records.ProfileBuilder, Project: "one", Task: task.ID,
 		Status: records.AgentLive, PaneID: "w1:p9", Generation: 1,
 	})
 	before := taskRecordBytes(t, home, task.ID)

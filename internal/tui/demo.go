@@ -81,6 +81,151 @@ type demoSupervisor struct {
 	BinaryOld bool   `json:"binary_old"`
 }
 
+// UnmarshalJSON reads the approved golden-frames fixtures. The boards keep
+// the old agent role and inbox role keys, so the fixture reader maps those
+// keys to the current facts. The reader adds no role field to a hive record.
+func (d *demoData) UnmarshalJSON(data []byte) error {
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	agentsRaw := fields["agents"]
+	inboxRaw := fields["inbox"]
+	delete(fields, "agents")
+	delete(fields, "inbox")
+	rest, err := json.Marshal(fields)
+	if err != nil {
+		return err
+	}
+	type plain demoData
+	var value plain
+	decoder := json.NewDecoder(bytes.NewReader(rest))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&value); err != nil {
+		return err
+	}
+	value.Agents = nil
+	value.Inbox = nil
+	*d = demoData(value)
+	if agentsRaw != nil {
+		var items []json.RawMessage
+		if err := json.Unmarshal(agentsRaw, &items); err != nil {
+			return err
+		}
+		d.Agents = make([]records.Agent, 0, len(items))
+		for _, item := range items {
+			record, err := decodeDemoAgent(item)
+			if err != nil {
+				return err
+			}
+			d.Agents = append(d.Agents, record)
+		}
+	}
+	if inboxRaw != nil {
+		var boxes map[string][]json.RawMessage
+		if err := json.Unmarshal(inboxRaw, &boxes); err != nil {
+			return err
+		}
+		d.Inbox = make(map[string][]records.Inbox, len(boxes))
+		for key, items := range boxes {
+			found := make([]records.Inbox, 0, len(items))
+			for _, item := range items {
+				record, err := decodeDemoInbox(item, key)
+				if err != nil {
+					return err
+				}
+				found = append(found, record)
+			}
+			d.Inbox[key] = found
+		}
+	}
+	return nil
+}
+
+// decodeDemoAgent reads one agent fixture item and sets its facts from the
+// old role key when the item has no facts.
+func decodeDemoAgent(data []byte) (records.Agent, error) {
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return records.Agent{}, err
+	}
+	role := ""
+	if raw, ok := fields["role"]; ok {
+		if err := json.Unmarshal(raw, &role); err != nil {
+			return records.Agent{}, err
+		}
+		delete(fields, "role")
+	}
+	clean, err := json.Marshal(fields)
+	if err != nil {
+		return records.Agent{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(clean))
+	decoder.DisallowUnknownFields()
+	var record records.Agent
+	if err := decoder.Decode(&record); err != nil {
+		return records.Agent{}, err
+	}
+	applyDemoRole(&record, role)
+	return record, nil
+}
+
+// applyDemoRole sets the D2 facts from one old fixture role value.
+func applyDemoRole(record *records.Agent, role string) {
+	if role == "" || record.Kind != "" || record.Profile != "" || record.Owns != "" {
+		return
+	}
+	switch role {
+	case records.AgentKindCoordinator:
+		record.Kind = records.AgentKindCoordinator
+		record.Profile = records.ProfileCoordinator
+	case records.AgentKindSupervisor:
+		record.Kind = records.AgentKindSupervisor
+	case "manager":
+		record.Profile = records.ProfilePlanner
+		record.Owns = record.Project
+	case "worker":
+		record.Profile = records.ProfileBuilder
+	case "verifier":
+		record.Profile = records.ProfileVerifier
+	case "agent":
+		record.Profile = records.ProfileGeneral
+	}
+}
+
+// decodeDemoInbox reads one inbox fixture item. The old role key becomes the
+// inbox key when the item has no inbox key.
+func decodeDemoInbox(data []byte, key string) (records.Inbox, error) {
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return records.Inbox{}, err
+	}
+	if raw, ok := fields["role"]; ok {
+		var role string
+		if err := json.Unmarshal(raw, &role); err != nil {
+			return records.Inbox{}, err
+		}
+		delete(fields, "role")
+		if _, ok := fields["inbox"]; !ok {
+			fields["inbox"], _ = json.Marshal(role)
+		}
+	}
+	if _, ok := fields["inbox"]; !ok {
+		fields["inbox"], _ = json.Marshal(key)
+	}
+	clean, err := json.Marshal(fields)
+	if err != nil {
+		return records.Inbox{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(clean))
+	decoder.DisallowUnknownFields()
+	var record records.Inbox
+	if err := decoder.Decode(&record); err != nil {
+		return records.Inbox{}, err
+	}
+	return record, nil
+}
+
 // demoFriction holds the front matter and the body of one friction entry.
 type demoFriction struct {
 	File     string `json:"file"`

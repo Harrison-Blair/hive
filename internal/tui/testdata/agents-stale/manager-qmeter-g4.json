@@ -1,7 +1,6 @@
 {
   "key": "manager-qmeter-g4",
   "name": "manager-qmeter",
-  "role": "manager",
   "project": "qmeter",
   "task": "",
   "harness": "pi",
@@ -19,5 +18,7 @@
   "generation": 4,
   "started_at": "2026-10-23T01:35:27.084338052Z",
   "updated_at": "2026-10-23T01:48:02.538611911Z",
-  "spawned": true
+  "spawned": true,
+  "profile": "planner",
+  "owns": "qmeter"
 }

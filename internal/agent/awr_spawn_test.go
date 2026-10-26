@@ -40,7 +40,7 @@ func TestSpawnPromptFactsThenSpawnerText(t *testing.T) {
 		fake := newFakeHerdr(t)
 		scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "builder-1")
 		envelope := Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "builder-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 			Prompt: "Do the work.", PromptSet: true,
 		})
@@ -166,7 +166,7 @@ func TestSpawnTaskSetsActingAgentByTaskFacts(t *testing.T) {
 		fake := newFakeHerdr(t)
 		scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "builder-1")
 		envelope := Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "builder-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 		})
 		if envelope.Outcome != "ok" {
@@ -189,7 +189,7 @@ func TestSpawnTaskSetsActingAgentByTaskFacts(t *testing.T) {
 		fake.result("tab.create", tabCreateJSON("w5", "w5:t2", "w5:p2", worktree))
 		scriptWorkerSuccess(fake, sleep, "w5:p2", "w5", "w5:t2", worktree, "builder-1")
 		envelope := Spawn(context.Background(), home, SpawnOptions{
-			Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+			Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 			Name: "builder-1", NameSet: true,
 		})
 		if envelope.Outcome != "ok" {
@@ -260,43 +260,38 @@ func TestSpawnOwnerExclusivity(t *testing.T) {
 	}
 }
 
-// TestSpawnRoleShimRecordsProfileAndLogs proves AC6.
-func TestSpawnRoleShimRecordsProfileAndLogs(t *testing.T) {
+// TestSpawnRecordsProfileFactsAndNoRoleShim proves AC1: a spawn writes the
+// profile facts and no old role shim event.
+func TestSpawnRecordsProfileFactsAndNoRoleShim(t *testing.T) {
 	home := testHome(t)
 	repo, worktree, branch := taskWorktree(t)
 	writeProjectPath(t, home, "demo", repo)
 	writeTaskRecord(t, home, workerTask(home, repo, worktree, branch, "created"))
 	sleep := startSleep(t)
 	fake := newFakeHerdr(t)
-	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t1-worker-1")
+	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t1-builder-1")
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "t1-worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "t1-builder-1", NameSet: true,
 		PaneID: "w5:p1", PaneSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
 	}
-	record := readAgent(t, home, "t1-worker-1")
-	if record.Profile != records.ProfileBuilder || record.MirrorRole() != "worker" || record.Kind != "" || record.Owns != "" {
-		t.Fatalf("record facts = %#v; want profile builder and mirror worker", record)
+	record := readAgent(t, home, "t1-builder-1")
+	if record.Profile != records.ProfileBuilder || record.Kind != "" || record.Owns != "" {
+		t.Fatalf("record facts = %#v; want profile builder and no built-in facts", record)
 	}
 	logText := readLog(t, home)
-	found := false
 	for _, line := range strings.Split(strings.TrimSpace(logText), "\n") {
 		var event struct {
 			Message string `json:"msg"`
-			Role    string `json:"role"`
-			Profile string `json:"profile"`
 		}
 		if json.Unmarshal([]byte(line), &event) != nil {
 			continue
 		}
-		if event.Message == "agent spawn old role flag" && event.Role == "worker" && event.Profile == "builder" {
-			found = true
+		if event.Message == "agent spawn old role flag" {
+			t.Fatalf("log has the removed old role shim event: %s", line)
 		}
-	}
-	if !found {
-		t.Fatalf("log has no agent spawn old role flag event for worker -> builder")
 	}
 }
 
@@ -313,7 +308,7 @@ func TestSpawnRefusesReservedNamesWithoutEffects(t *testing.T) {
 			writeManagerProject(t, home, nil)
 			fake := newFakeHerdr(t)
 			options := SpawnOptions{
-				Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+				Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 				Name: name, NameSet: true, PaneID: "w5:p1", PaneSet: true,
 			}
 			envelope := Spawn(context.Background(), home, options)
@@ -361,7 +356,7 @@ func TestSpawnRefusesReservedNamesWithoutEffects(t *testing.T) {
 func TestSpawnOwnerRefusesAnotherAgent(t *testing.T) {
 	home := testHome(t)
 	writeManagerProject(t, home, nil)
-	writeRecord(t, home, records.Agent{Key: "worker-1", Name: "worker-1", Role: "worker", Project: "demo", Task: "1-demo", PaneID: "w1:p9", Status: records.AgentLive, Spawned: true})
+	writeRecord(t, home, records.Agent{Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "demo", Task: "1-demo", PaneID: "w1:p9", Status: records.AgentLive, Spawned: true})
 	t.Setenv("HERDR_PANE_ID", "w1:p9")
 	newFakeHerdr(t)
 	envelope := Spawn(context.Background(), home, managerSpawnOptions("demo"))
@@ -385,7 +380,7 @@ func TestSpawnPromptFileFollowsFacts(t *testing.T) {
 	fake := newFakeHerdr(t)
 	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "builder-1")
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m",
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m",
 		Name: "builder-1", NameSet: true, PaneID: "w5:p1", PaneSet: true,
 		PromptFile: file, PromptFileSet: true,
 	})

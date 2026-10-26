@@ -30,7 +30,7 @@ func seedInboxAgent(t *testing.T, home string, record records.Agent, claim *reco
 }
 
 func liveInboxAgent(key, name, role, project, pane string) records.Agent {
-	record := records.Agent{Key: key, Name: name, Role: role, Project: project, Status: records.AgentLive, PaneID: pane, Generation: 1}
+	record := records.Agent{Key: key, Name: name, Project: project, Status: records.AgentLive, PaneID: pane, Generation: 1}
 	switch role {
 	case "coordinator":
 		record.Kind = records.AgentKindCoordinator
@@ -49,7 +49,7 @@ func liveInboxAgent(key, name, role, project, pane string) records.Agent {
 func TestReadDefaultsRoleFromManagerCaller(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("manager-one-g1", "manager-one", "manager", "one", "w1:p1"), &records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{PaneID: "w1:p1"})
@@ -65,7 +65,7 @@ func TestReadDefaultsRoleFromManagerCaller(t *testing.T) {
 func TestReadDefaultsWorkerToNameInbox(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "worker-1", Kind: records.InboxMessage, Text: "for worker"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "worker-1", Kind: records.InboxMessage, Text: "for worker"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{PaneID: "w1:p1"})
@@ -88,7 +88,7 @@ func TestReadUnknownCallerAsksForAgentOrPane(t *testing.T) {
 func TestReadExplicitRoleKeepsWorkingForOwner(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("manager-one-g1", "manager-one", "manager", "one", "w1:p1"), &records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "hello"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{Inbox: "manager-one", InboxSet: true, Agent: "manager-one"})
@@ -99,7 +99,7 @@ func TestReadExplicitRoleKeepsWorkingForOwner(t *testing.T) {
 
 func TestReadExplicitRoleRejectsUnknownCallerWithoutConsuming(t *testing.T) {
 	home := t.TempDir()
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "unread"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-hive", Kind: records.InboxMessage, Text: "unread"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{Inbox: "manager-hive", InboxSet: true})
@@ -115,7 +115,7 @@ func TestReadExplicitRoleRejectsUnknownCallerWithoutConsuming(t *testing.T) {
 func TestCoordinatorReadManagerInboxPrintsWithoutConsuming(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("coordinator-g1", "coordinator", "coordinator", "", "w0:p1"), &records.Claim{Key: "coordinator", Agent: "coordinator-g1", Generation: 1})
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "manager message"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-hive", Kind: records.InboxMessage, Text: "manager message"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{Inbox: "manager-hive", InboxSet: true, PaneID: "w0:p1"})
@@ -131,7 +131,7 @@ func TestCoordinatorReadManagerInboxPrintsWithoutConsuming(t *testing.T) {
 func TestVerifierCannotReadManagerInbox(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("verifier-1", "verifier-1", "verifier", "hive", "w2:p1"), nil)
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{Inbox: "manager-hive", InboxSet: true, PaneID: "w2:p1"})
@@ -147,7 +147,7 @@ func TestVerifierCannotReadManagerInbox(t *testing.T) {
 func TestVerifierCannotReadAllManagerInbox(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("verifier-1", "verifier-1", "verifier", "hive", "w2:p1"), nil)
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-hive", Kind: records.InboxMessage, Text: "private"}); envelope.Outcome != "ok" {
 		t.Fatalf("Append() = %#v", envelope)
 	}
 	envelope := Read(home, ReadOptions{Inbox: "manager-hive", InboxSet: true, All: true, PaneID: "w2:p1"})
@@ -163,7 +163,7 @@ func TestVerifierCannotReadAllManagerInbox(t *testing.T) {
 func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 	home := t.TempDir()
 	seedInboxAgent(t, home, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
-	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "default"}, "w1:p1", "")
+	envelope := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "default"}, "w1:p1", "")
 	if envelope.Outcome != "ok" {
 		t.Fatalf("Send() = %#v; want ok", envelope)
 	}
@@ -171,7 +171,7 @@ func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 	if err != nil || len(found) != 1 || found[0].Agent != "worker-1" {
 		t.Fatalf("records = %#v, %v; want the caller as sender", found, err)
 	}
-	explicit := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Agent: "sender-x", Text: "explicit"}, "", "")
+	explicit := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Agent: "sender-x", Text: "explicit"}, "", "")
 	if explicit.Outcome != "ok" {
 		t.Fatalf("Send(explicit) = %#v; want ok", explicit)
 	}
@@ -183,7 +183,7 @@ func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
 
 func TestSendUnknownCallerWithoutAgentFails(t *testing.T) {
 	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "hello"}, "", "")
+	envelope := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "hello"}, "", "")
 	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent" {
 		t.Fatalf("Send() = %#v; want caller unknown", envelope)
 	}
@@ -200,7 +200,7 @@ func TestReadRejectsPathKeyMismatchWithoutConsume(t *testing.T) {
 		t.Run(mismatch.collection, func(t *testing.T) {
 			home := t.TempDir()
 			seedInboxAgent(t, home, liveInboxAgent("manager-one-g1", "manager-one", "manager", "one", "w1:p1"), &records.Claim{Key: "owner-one", Agent: "manager-one-g1", Generation: 1})
-			if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: "manager-one", Kind: records.InboxMessage, Text: "unread"}); envelope.Outcome != "ok" {
+			if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "unread"}); envelope.Outcome != "ok" {
 				t.Fatalf("Append() = %#v", envelope)
 			}
 			path := filepath.Join(home, ".hive", "state", mismatch.collection, mismatch.oldName+".json")
@@ -224,7 +224,7 @@ func TestReadRejectsPathKeyMismatchWithoutConsume(t *testing.T) {
 
 func TestSendInvalidExplicitDoesNotCreateState(t *testing.T) {
 	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Role: "../x", Kind: "message", Agent: "explicit", Text: "body"}, "", "")
+	envelope := Send(home, inboxlib.AppendOptions{Inbox: "../x", Kind: "message", Agent: "explicit", Text: "body"}, "", "")
 	if envelope.Outcome != "failed" || envelope.Phase != "validate" || envelope.Error != "invalid inbox key: ../x" {
 		t.Fatalf("Send() = %#v; want failed validate", envelope)
 	}

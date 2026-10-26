@@ -11,8 +11,8 @@ import (
 func TestResolveOwnerClaimFromFacts(t *testing.T) {
 	home := t.TempDir()
 	owner := records.Agent{
-		Key: "owner-hive-g1", Name: "manager-hive", Role: "manager",
-		Profile: records.ProfilePlanner, Owns: "hive", Project: "hive",
+		Key: "owner-hive-g1", Name: "manager-hive", Profile: records.ProfilePlanner,
+		Owns: "hive", Project: "hive",
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 1,
 	}
 	writeAgent(t, home, owner)
@@ -37,8 +37,8 @@ func TestResolveOwnerClaimFromFacts(t *testing.T) {
 func TestResolveRefusesAFactClaimWithoutTheClaimRecord(t *testing.T) {
 	home := t.TempDir()
 	owner := records.Agent{
-		Key: "owner-hive-g1", Name: "manager-hive", Role: "manager",
-		Profile: records.ProfilePlanner, Owns: "hive", Project: "hive",
+		Key: "owner-hive-g1", Name: "manager-hive", Profile: records.ProfilePlanner,
+		Owns: "hive", Project: "hive",
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 1,
 	}
 	writeAgent(t, home, owner)
@@ -58,7 +58,7 @@ func TestResolveRefusesAFactClaimWithoutTheClaimRecord(t *testing.T) {
 func TestResolveLegacyBuiltinClaim(t *testing.T) {
 	home := t.TempDir()
 	record := records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator",
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator,
 		PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
 	}
 	writeAgent(t, home, record)
@@ -80,7 +80,7 @@ func TestResolveLegacyBuiltinClaim(t *testing.T) {
 func TestResolveRefusesALegacyProjectClaim(t *testing.T) {
 	home := t.TempDir()
 	record := records.Agent{
-		Key: "worker-g1", Name: "worker", Role: "worker",
+		Key: "worker-g1", Name: "worker", Profile: records.ProfileBuilder,
 		PaneID: "w1:p1", Status: records.AgentLive, Generation: 1,
 	}
 	writeAgent(t, home, record)

@@ -272,7 +272,7 @@ func blockGeneralRecord(home string, record records.Agent, message string) (reco
 		for _, agent := range agents {
 			byKey[agent.Key] = agent
 		}
-		appended := inbox.AppendHeld(locked, inbox.AppendOptions{Role: ParentInbox(byKey, current), Kind: records.InboxBlocked, Task: current.Task, Agent: current.Name, Text: "blocked"})
+		appended := inbox.AppendHeld(locked, inbox.AppendOptions{Inbox: ParentInbox(byKey, current), Kind: records.InboxBlocked, Task: current.Task, Agent: current.Name, Text: "blocked"})
 		if appended.Outcome != "ok" {
 			return fmt.Errorf("blocked record: %v", appended.Error)
 		}

@@ -25,7 +25,7 @@ var gfHealthBoards = []string{"GfHealth", "GfHealthGreen", "GfHealthRestart", "G
 func TestGfHealthBoardsMatch(t *testing.T) {
 	for _, board := range gfHealthBoards {
 		t.Run(board, func(t *testing.T) {
-			want := readGfGrid(t, board)
+			want := d13HealthGrid(readGfGrid(t, board))
 			m := newGfDemoModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)
@@ -37,6 +37,86 @@ func TestGfHealthBoardsMatch(t *testing.T) {
 				t.Fatalf("%d cells differ from %s.grid:\n%s\nrendered:\n%s", len(diffs), board, cellgrid.FormatDiffs(shown), m.View().Content)
 			}
 		})
+	}
+}
+
+// d13HealthGrid gives the expected Health grid with the D2/D13 change: the
+// role column becomes the profile column, and each role value becomes the
+// profile label of the record. The board file stays unchanged.
+func d13HealthGrid(grid cellgrid.Grid) cellgrid.Grid {
+	grid = applyHealthProfileColumn(grid, "AGENT", "ROLE", "PROFILE", 12, map[string]string{
+		"manager": "planner",
+		"worker":  "builder",
+		"agent":   "general",
+	})
+	grid = applyHealthProfileColumn(grid, "ID", "ROLE", "PROFILE", 10, map[string]string{
+		"worker": "builder",
+	})
+	return grid
+}
+
+// applyHealthProfileColumn changes one role column in a Health grid. It finds
+// the header by the two labels, then changes each data cell that holds a role
+// name from the map.
+func applyHealthProfileColumn(grid cellgrid.Grid, nameHeader, roleHeader, profileHeader string, width int, profile map[string]string) cellgrid.Grid {
+	headerRow := -1
+	roleStart := -1
+	for row := range grid.Height {
+		text := healthGridRow(grid, row)
+		roleIndex := healthRuneIndex(text, roleHeader)
+		if roleIndex < 0 || !strings.Contains(text, nameHeader) {
+			continue
+		}
+		headerRow = row
+		roleStart = roleIndex
+		setHealthGridCell(&grid, row, roleStart, profileHeader, width)
+		break
+	}
+	if headerRow < 0 {
+		return grid
+	}
+	for row := headerRow + 1; row < grid.Height; row++ {
+		text := healthGridRow(grid, row)
+		if strings.HasPrefix(text, "╰") || !strings.Contains(text, "│") {
+			break
+		}
+		cell := strings.TrimSpace(string([]rune(text)[roleStart:min(roleStart+width, len([]rune(text)))]))
+		label, ok := profile[cell]
+		if !ok {
+			continue
+		}
+		setHealthGridCell(&grid, row, roleStart, label, width)
+	}
+	return grid
+}
+
+func healthRuneIndex(text, sub string) int {
+	index := strings.Index(text, sub)
+	if index < 0 {
+		return -1
+	}
+	return len([]rune(text[:index]))
+}
+
+func healthGridRow(grid cellgrid.Grid, row int) string {
+	var text strings.Builder
+	for col := range grid.Width {
+		text.WriteRune(grid.Cells[row*grid.Width+col].Rune)
+	}
+	return text.String()
+}
+
+func setHealthGridCell(grid *cellgrid.Grid, row, col int, text string, width int) {
+	token := grid.Cells[row*grid.Width+col].Token
+	bold := grid.Cells[row*grid.Width+col].Bold
+	for index := range width {
+		grid.Cells[row*grid.Width+col+index] = cellgrid.Cell{Rune: ' ', Token: token, Bold: bold}
+	}
+	for index, r := range []rune(text) {
+		if index >= width {
+			break
+		}
+		grid.Cells[row*grid.Width+col+index] = cellgrid.Cell{Rune: r, Token: token, Bold: bold}
 	}
 }
 
@@ -203,8 +283,8 @@ func TestGfHealthRestartOtherRowShowsTheNotice(t *testing.T) {
 	m, cmd := raise(t, m, key(tea.KeyRight, ""))
 	drain(cmd)
 	m.health.acceptAgents(agentsData{nodes: []agentNode{
-		{record: records.Agent{Key: "coordinator-g2", Name: "coordinator", Role: "coordinator", Status: records.AgentLive}, current: true},
-		{record: records.Agent{Key: "manager-hive-g2", Name: "manager-hive", Role: "manager", Status: records.AgentLive}, current: true},
+		{record: records.Agent{Key: "coordinator-g2", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive}, current: true},
+		{record: records.Agent{Key: "manager-hive-g2", Name: "manager-hive", Profile: records.ProfilePlanner, Status: records.AgentLive}, current: true},
 	}})
 	m, cmd = raise(t, m, ctrl(']'))
 	drain(cmd)
@@ -289,15 +369,19 @@ func TestGfHealthTableStates(t *testing.T) {
 	m, _ := newFrameModel(t, 120, 40)
 	m.selectScreen(tabHealth, 0)
 	changed := gfDay.Add(-7 * time.Minute).UTC().Format(time.RFC3339Nano)
-	agent := func(key, role, status, agentStatus string) agentNode {
-		return agentNode{record: records.Agent{Key: key, Name: key, Role: role, Status: status, AgentStatus: agentStatus, PaneID: "w1:p1", StatusChangedAt: changed}, current: true}
+	agent := func(key, profile, status, agentStatus string) agentNode {
+		record := records.Agent{Key: key, Name: key, Profile: profile, Status: status, AgentStatus: agentStatus, PaneID: "w1:p1", StatusChangedAt: changed}
+		if profile == records.ProfileCoordinator {
+			record.Kind = records.AgentKindCoordinator
+		}
+		return agentNode{record: record, current: true}
 	}
 	m.health.acceptAgents(agentsData{nodes: []agentNode{
-		agent("w-blocked", "worker", records.AgentLive, "blocked"),
-		agent("w-idle", "worker", records.AgentLive, "idle"),
-		agent("w-plain", "worker", records.AgentLive, ""),
-		agent("w-stale", "worker", records.AgentStale, ""),
-		agent("coordinator", "coordinator", records.AgentStopped, ""),
+		agent("w-blocked", records.ProfileBuilder, records.AgentLive, "blocked"),
+		agent("w-idle", records.ProfileBuilder, records.AgentLive, "idle"),
+		agent("w-plain", records.ProfileBuilder, records.AgentLive, ""),
+		agent("w-stale", records.ProfileBuilder, records.AgentStale, ""),
+		agent("coordinator", records.ProfileCoordinator, records.AgentStopped, ""),
 	}})
 	for _, want := range []string{
 		"▶ ○ coordinator", "stopped        gone",
@@ -324,12 +408,12 @@ func TestGfHealthFitsEachSize(t *testing.T) {
 		"empty": func(f *demoFixture) { f.Data.Checks, f.Data.Agents = nil, nil },
 		"long": func(f *demoFixture) {
 			f.Data.Checks[0].Detail = long + "detail"
-			f.Data.Agents[2].Name, f.Data.Agents[2].Role = long+"name", long+"role"
+			f.Data.Agents[2].Name, f.Data.Agents[2].Profile = long+"name", long+"profile"
 		},
 		"many": func(f *demoFixture) {
 			for index := range 60 {
 				name := fmt.Sprintf("w%02d", index)
-				f.Data.Agents = append(f.Data.Agents, records.Agent{Key: name, Name: name, Role: "worker", Status: records.AgentLive, PaneID: "w9:p1"})
+				f.Data.Agents = append(f.Data.Agents, records.Agent{Key: name, Name: name, Profile: records.ProfileBuilder, Status: records.AgentLive, PaneID: "w9:p1"})
 			}
 			f.UI.Selection = "w59"
 		},

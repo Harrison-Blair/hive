@@ -168,7 +168,7 @@ func newChatCommandHome(t *testing.T) string {
 		t.Fatal(err)
 	}
 	coordinator := records.Agent{
-		Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1",
+		Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1",
 		WorkspaceID: "w1", Status: records.AgentLive, Generation: 1,
 	}
 	registry, err := store.Open(home)

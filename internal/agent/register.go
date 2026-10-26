@@ -33,9 +33,6 @@ var namePattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,31}$`)
 
 // RegisterOptions holds explicit values for one agent registration.
 type RegisterOptions struct {
-	// Role is the wave-A input name of a profile. A new caller passes Profile
-	// and Owns instead. Register writes only the facts.
-	Role    string
 	Profile string
 	// Kind is the built-in kind of a record that hive code starts.
 	Kind string
@@ -130,13 +127,8 @@ func Register(home string, options RegisterOptions) output.Envelope {
 }
 
 // RegisterAndRename registers one agent and best-effort labels its tab. It is
-// the CLI entry, so it refuses each role and name that hive code registers.
+// the CLI entry, so it refuses each name that hive code registers.
 func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
-	if message := hiveOwnedRoleError(options.Role, true); message != "" {
-		envelope := failed("validate", message)
-		logRegistration(home, options, envelope)
-		return envelope
-	}
 	if message := reservedNameError(options.Name, options.NameSet); message != "" {
 		envelope := failed("validate", message)
 		logRegistration(home, options, envelope)
@@ -165,21 +157,6 @@ func RegisterAndRename(home string, options RegisterOptions) output.Envelope {
 	effect := renameAgentTab(context.Background(), home, logger, pane.TabID, result.Agent.Name, "agent register", result.Agent.Key)
 	envelope.Effects = append(envelope.Effects, effect)
 	return envelope
-}
-
-// hiveOwnedRoleError returns the refusal for a role that only hive code
-// registers. Register refuses the manager role too, because only spawn
-// registers a manager.
-func hiveOwnedRoleError(role string, register bool) string {
-	switch role {
-	case "coordinator", "supervisor":
-		return role + ": hive code registers this role; run bare hive, or the restart in Health › Agents"
-	case "manager":
-		if register {
-			return "manager: hive code registers this role; run hive agent spawn --role manager"
-		}
-	}
-	return ""
 }
 
 // reservedNameError returns the refusal for a CLI name that only hive code
@@ -218,45 +195,22 @@ func logTabLabel(home string, logger *slog.Logger, command, agentID, tabID, labe
 	logAgentEvent(home, message, attrs...)
 }
 
-// normalizeRegistration sets the facts of one registration from the wave-A
-// role, or defaults the profile. It returns the refusal of an old role that
-// hive code starts.
+// normalizeRegistration defaults the profile of a registration. The caller
+// passes the facts directly; no role name selects them.
 func normalizeRegistration(options RegisterOptions) (RegisterOptions, string) {
-	if options.Role == "" {
-		if options.Kind == records.AgentKindCoordinator {
-			options.Profile = records.ProfileCoordinator
-		}
-		return options, ""
-	}
-	switch options.Role {
-	case records.AgentKindCoordinator:
-		options.Kind = records.AgentKindCoordinator
+	if options.Kind == records.AgentKindCoordinator && options.Profile == "" {
 		options.Profile = records.ProfileCoordinator
-	case records.AgentKindSupervisor:
-		options.Kind = records.AgentKindSupervisor
-		options.Profile = ""
-	case "manager":
-		options.Profile = records.ProfilePlanner
-		options.Owns = options.Project
-	case "worker":
-		options.Profile = records.ProfileBuilder
-	case "verifier":
-		options.Profile = records.ProfileVerifier
-	case "agent":
+	}
+	if options.Profile == "" && options.Kind == "" {
 		options.Profile = records.ProfileGeneral
-	default:
-		return options, "invalid role: " + displayValue(options.Role)
 	}
 	return options, ""
 }
 
 func validateRegistration(options RegisterOptions) string {
 	options, _ = normalizeRegistration(options)
-	if message := validateLegacyRole(options); message != "" {
-		return message
-	}
 	if options.Profile == "" && options.Kind == "" {
-		return "invalid role: " + displayValue(options.Role)
+		return "invalid registration: no profile and no kind"
 	}
 	if options.Owns != "" && options.Project == "" {
 		return "owner requires --project"
@@ -298,30 +252,6 @@ func validateRegistration(options RegisterOptions) string {
 	}
 	if options.PID < 0 {
 		return fmt.Sprintf("invalid --pid: %d", options.PID)
-	}
-	return ""
-}
-
-// validateLegacyRole keeps the rules of the wave-A role input until the role
-// flag goes away.
-func validateLegacyRole(options RegisterOptions) string {
-	switch options.Role {
-	case records.AgentKindCoordinator, records.AgentKindSupervisor:
-		if options.Project != "" || options.Task != "" {
-			return options.Role + " takes no --project or --task"
-		}
-	case "manager":
-		if options.Project == "" {
-			return "manager requires --project"
-		}
-	case "worker", "verifier":
-		if options.Project == "" || options.Task == "" {
-			return options.Role + " requires --project and --task"
-		}
-	case "agent":
-		if options.Task != "" {
-			return "agent takes no --task"
-		}
 	}
 	return ""
 }
@@ -414,11 +344,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 	if options.QuietAfterSet {
 		quietAfter = options.QuietAfterMin
 	}
-	legacy := options.Role != ""
 	claimKey := claimKeyForFacts(options.Kind, options.Owns)
-	if legacy && options.Role == "manager" {
-		claimKey = "manager-" + options.Project
-	}
 	singleton := claimKey != ""
 
 	worktree := ""
@@ -452,19 +378,6 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		switch {
 		case singleton:
 			name = defaultSingletonName(options.Profile, options.Kind, options.Owns)
-		case legacy && options.Role == "agent":
-			name = "agent"
-		case legacy && (options.Role == "worker" || options.Role == "verifier"):
-			var counter struct {
-				Value uint64 `json:"value"`
-			}
-			err := locked.ReadIn([]string{"counters"}, "agent", &counter)
-			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				return failed("agent", "read agent counter: "+err.Error())
-			}
-			candidate := counter.Value + 1
-			name = fmt.Sprintf("%s-%s-%d", options.Role, options.Project, candidate)
-			generated = true
 		default:
 			var counter struct {
 				Value uint64 `json:"value"`
@@ -491,11 +404,7 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		return failed("store", err.Error())
 	}
 	if taskName {
-		label := options.Profile
-		if legacy && (options.Role == "worker" || options.Role == "verifier") {
-			label = options.Role
-		}
-		name = nextTaskAgentName(options.Task, label, agentRecords, claims)
+		name = nextTaskAgentName(options.Task, options.Profile, agentRecords, claims)
 	}
 	if !namePattern.MatchString(name) {
 		return failed("validate", "invalid agent name: "+displayValue(name))
@@ -681,7 +590,6 @@ func registerLocked(locked *store.LockedStore, writer lockedWriter, options Regi
 		TabCreatedByHive: options.TabCreatedByHive,
 		FirstPrompt:      options.FirstPrompt,
 	}
-	record.SyncRole()
 	action := "created"
 	if replaceOrphan {
 		action = "updated"
@@ -733,7 +641,7 @@ func startupStartedByHive(options RegisterOptions) bool {
 	if options.Kind == "" {
 		return false
 	}
-	return os.Getenv("HIVE_STARTUP_ROLE") == options.Kind && os.Getenv("HERDR_PANE_ID") == options.PaneID
+	return os.Getenv("HIVE_STARTUP_KIND") == options.Kind && os.Getenv("HERDR_PANE_ID") == options.PaneID
 }
 
 // sameRegisteredFacts reports whether one record has the same facts as a

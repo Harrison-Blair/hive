@@ -29,7 +29,7 @@ func TestRestartCoordinatorClosesOwnedPaneStartsConfiguredCoordinatorAndKeepsRec
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p2", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p2", "term_2", "w1", "w1:t2", "working", "coordinator")+`}`)
 
-	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, StartedByHive: true}
+	record := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, StartedByHive: true}
 	writeRestartRecord(t, home, record)
 	result, err := Restart(context.Background(), home, record, nil)
 	if err != nil {
@@ -56,7 +56,7 @@ func TestRestartCoordinatorClosesOwnedPaneStartsConfiguredCoordinatorAndKeepsRec
 	if err := json.Unmarshal([]byte(fake.recorded("tab.create")[0].Params), &create); err != nil {
 		t.Fatal(err)
 	}
-	if create.WorkspaceID != "w1" || create.Cwd != home || create.Label != "coordinator" || create.Env["HIVE_STARTUP_ROLE"] != "coordinator" {
+	if create.WorkspaceID != "w1" || create.Cwd != home || create.Label != "coordinator" || create.Env["HIVE_STARTUP_KIND"] != "coordinator" {
 		t.Fatalf("tab.create = %#v, want the coordinator startup environment", create)
 	}
 	old := readRestartRecord(t, home, record.Key)
@@ -74,7 +74,7 @@ func TestRestartSupervisorKeepsUnownedPaneAndReportsIt(t *testing.T) {
 	fake.result("tab.create", restartTabCreatedJSON("supervisor", "w1:t3", "w1:p3"))
 	fake.result("pane.send_input", `{"type":"ok"}`)
 
-	record := records.Agent{Key: "supervisor-g2", Name: "supervisor", Role: "supervisor", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive}
+	record := records.Agent{Key: "supervisor-g2", Name: "supervisor", Kind: records.AgentKindSupervisor, PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRestartRecord(t, home, record)
 	result, err := Restart(context.Background(), home, record, nil)
 	if err != nil {
@@ -104,7 +104,7 @@ func TestRestartSupervisorClosesOwnedPaneAndRunsSupervise(t *testing.T) {
 	fake.result("pane.close", `{"type":"ok"}`)
 	fake.result("tab.create", restartTabCreatedJSON("supervisor", "w1:t5", "w1:p5"))
 	fake.result("pane.send_input", `{"type":"ok"}`)
-	record := records.Agent{Key: "supervisor-g3", Name: "supervisor", Role: "supervisor", PaneID: "w1:p4", WorkspaceID: "w1", Status: records.AgentLive, StartedByHive: true}
+	record := records.Agent{Key: "supervisor-g3", Name: "supervisor", Kind: records.AgentKindSupervisor, PaneID: "w1:p4", WorkspaceID: "w1", Status: records.AgentLive, StartedByHive: true}
 	writeRestartRecord(t, home, record)
 
 	result, err := Restart(context.Background(), home, record, nil)
@@ -140,7 +140,7 @@ func TestRestartCoordinatorDoesNotCloseUnownedPaneAndWarns(t *testing.T) {
 	fake.result("agent.get", `{"type":"agent_info","agent":`+coordinatorReadinessJSON("w1:p6", "term_6", "w1", "w1:t6", "idle", false, true)+`}`)
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p6", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p6", "term_6", "w1", "w1:t6", "working", "coordinator")+`}`)
-	record := records.Agent{Key: "coordinator-g4", Name: "coordinator", Role: "coordinator", PaneID: "w1:p5", WorkspaceID: "w1", Status: records.AgentLive}
+	record := records.Agent{Key: "coordinator-g4", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p5", WorkspaceID: "w1", Status: records.AgentLive}
 	writeRestartRecord(t, home, record)
 
 	result, err := Restart(context.Background(), home, record, nil)
@@ -173,7 +173,7 @@ func TestRestartStaleCoordinatorStartsWithoutClosingAnUnownedPane(t *testing.T) 
 	fake.result("pane.process_info", `{"type":"pane_process_info","process_info":`+processInfoJSON("w1:p4", processEntry(harness.pid, "claude", "claude"))+`}`)
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p4", "term_4", "w1", "w1:t4", "working", "coordinator")+`}`)
 
-	record := records.Agent{Key: "coordinator-g3", Name: "coordinator", Role: "coordinator", PaneID: "w1:p3", WorkspaceID: "w1", Status: records.AgentStale}
+	record := records.Agent{Key: "coordinator-g3", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:p3", WorkspaceID: "w1", Status: records.AgentStale}
 	writeRestartRecord(t, home, record)
 	if _, err := Restart(context.Background(), home, record, nil); err != nil {
 		t.Fatalf("Restart() for stale coordinator: %v", err)
@@ -192,7 +192,6 @@ func restartTabCreatedJSON(label, tabID, paneID string) string {
 
 func writeRestartRecord(t *testing.T, home string, record records.Agent) {
 	t.Helper()
-	record.ApplyRoleFacts(record.Worktree)
 	registry, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)

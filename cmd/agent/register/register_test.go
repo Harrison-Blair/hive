@@ -200,7 +200,7 @@ func TestRegisterCommandRenamesRoleAndProjectLabels(t *testing.T) {
 			t.Setenv("HERDR_PANE_ID", envPane)
 			t.Setenv("HERDR_WORKSPACE_ID", "w1")
 			t.Setenv("HERDR_TAB_ID", "w1:t1")
-			args := []string{"--json", "agent", "register", "--role", test.role, "--project", "demo", "--task", "1-demo"}
+			args := []string{"--json", "agent", "register", "--name", test.label, "--project", "demo", "--task", "1-demo"}
 			if test.explicit {
 				args = append(args, "--pane", test.paneID)
 			}
@@ -235,7 +235,7 @@ func TestRegisterCommandRenameFailureIsAnEffectAndKeepsSuccess(t *testing.T) {
 	pane := `{"type":"pane_info","pane":{"pane_id":"w2:p9","terminal_id":"term_a","workspace_id":"w2","tab_id":"w2:t9","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}`
 	seedRegisterTask(t, home)
 	fake := newRegisterHerdr(t, pane, "tab disappeared")
-	status, stdout := runRegister(t, home, "--json", "agent", "register", "--role", "worker", "--project", "demo", "--task", "1-demo", "--pane", "w2:p9")
+	status, stdout := runRegister(t, home, "--json", "agent", "register", "--name", "worker-demo-1", "--project", "demo", "--task", "1-demo", "--pane", "w2:p9")
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; stdout = %q", status, stdout)
 	}

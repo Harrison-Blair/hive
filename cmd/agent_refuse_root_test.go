@@ -59,8 +59,8 @@ func seedRefusalState(t *testing.T, home string) {
 	if err := registry.WriteIn([]string{"projects"}, "demo", records.Project{ID: "demo", Path: home}); err != nil {
 		t.Fatal(err)
 	}
-	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", PaneID: "w1:coord", Status: records.AgentLive, Generation: 1, StartedByHive: true}
-	worker := records.Agent{Key: "worker-demo-1", Name: "worker-demo-1", Role: "worker", Project: "demo", Task: "1-demo", PaneID: "w1:general", Status: records.AgentLive, Generation: 1}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, PaneID: "w1:coord", Status: records.AgentLive, Generation: 1, StartedByHive: true}
+	worker := records.Agent{Key: "worker-demo-1", Name: "worker-demo-1", Profile: records.ProfileBuilder, Project: "demo", Task: "1-demo", PaneID: "w1:general", Status: records.AgentLive, Generation: 1}
 	for _, record := range []records.Agent{coordinator, worker} {
 		if err := registry.WriteIn([]string{"agents"}, record.Key, record); err != nil {
 			t.Fatal(err)
@@ -72,19 +72,20 @@ func seedRefusalState(t *testing.T, home string) {
 	}
 }
 
-// TestAgentCLIRefusesHiveOwnedRoles covers decisions 30 and 37: the CLI
-// refuses each role that hive code registers, from each caller pane, and the
-// refusal changes no claim and no record.
-func TestAgentCLIRefusesHiveOwnedRoles(t *testing.T) {
+// TestAgentCLIRefusesReservedNamesAndBuiltInProfile covers D1/D3: the CLI
+// refuses the built-in names and the built-in coordinator profile, from each
+// caller pane, and the refusal changes no claim and no record.
+func TestAgentCLIRefusesReservedNamesAndBuiltInProfile(t *testing.T) {
 	attempts := []struct {
 		name string
 		args []string
+		want string
 	}{
-		{"register coordinator", []string{"agent", "register", "--role", "coordinator"}},
-		{"register supervisor", []string{"agent", "register", "--role", "supervisor"}},
-		{"register manager", []string{"agent", "register", "--role", "manager", "--project", "demo"}},
-		{"spawn coordinator", []string{"agent", "spawn", "--role", "coordinator", "--harness", "claude", "--pane", "w1:empty"}},
-		{"spawn supervisor", []string{"agent", "spawn", "--role", "supervisor", "--harness", "claude", "--pane", "w1:empty"}},
+		{"register coordinator name", []string{"agent", "register", "--name", "coordinator"}, "name is reserved: coordinator"},
+		{"register supervisor name", []string{"agent", "register", "--name", "supervisor"}, "name is reserved: supervisor"},
+		{"spawn coordinator name", []string{"agent", "spawn", "--name", "coordinator", "--harness", "claude", "--pane", "w1:empty"}, "name is reserved: coordinator"},
+		{"spawn supervisor name", []string{"agent", "spawn", "--name", "supervisor", "--harness", "claude", "--pane", "w1:empty"}, "name is reserved: supervisor"},
+		{"spawn coordinator profile", []string{"agent", "spawn", "--profile", "coordinator", "--harness", "claude", "--pane", "w1:empty"}, "profile coordinator is built in"},
 	}
 	callers := []struct {
 		name  string
@@ -112,12 +113,8 @@ func TestAgentCLIRefusesHiveOwnedRoles(t *testing.T) {
 				if status == 0 {
 					t.Fatalf("status = 0, stdout = %q; want a refusal", stdout.String())
 				}
-				message := stderr.String()
-				if !strings.Contains(message, "hive code registers") {
-					t.Fatalf("stderr = %q; want the hive-owned role refusal", message)
-				}
-				if !strings.Contains(attempt.name, "manager") && (!strings.Contains(message, "bare hive") || !strings.Contains(message, "Health › Agents")) {
-					t.Fatalf("stderr = %q; want the advice to run bare hive or the restart in Health › Agents", message)
+				if message := stderr.String(); !strings.Contains(message, attempt.want) {
+					t.Fatalf("stderr = %q; want %q", message, attempt.want)
 				}
 				after := stateSnapshot(t, home)
 				if len(after) != len(before) {

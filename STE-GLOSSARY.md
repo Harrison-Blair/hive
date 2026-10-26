@@ -14,35 +14,33 @@ meanings agree.
 | home | The hive checkout: the directory that holds the personal data, the project registry, and the central state. The tracked file `.hive/README.md` marks it. | |
 | hive session | The one herdr session that hosts the home, the coordinator, and the supervisor. | |
 | project | One registered Git repository with a stable project ID. | repo |
-| project directory | The directory `projects/<project-id>/` in the home: the working directory of the manager of that project. | project context directory |
-| worktree | A linked Git worktree of a project at `projects/<project-id>/worktrees/<task-id>/`, shown by herdr as a workspace: the working directory of one worker. | task checkout, worktree checkout |
-| role | The job that an agent session holds: coordinator, manager, worker, or verifier. | |
+| project directory | The directory `projects/<project-id>/` in the home: the working directory of the planner of that project. | project context directory |
+| worktree | A linked Git worktree of a project at `projects/<project-id>/worktrees/<task-id>/`, shown by herdr as a workspace: the working directory of one builder. | task checkout, worktree checkout |
+| role | The duty of a session under the role gate. The coordinator is the one built-in agent. | |
 | profile | A tracked Markdown file `profiles/NAME.md` in the home. It tells an agent how to do one kind of work. The agent record keeps its name as a free label. | |
 | fact | One field of the agent record that hive uses for a mechanic: `project`, `task`, `worktree`, `owns`, `parent`, or `kind`. | |
 | owner | The one live agent that owns a project. Mail for the project goes to it. | |
 | built-in kind | The `kind` field of a record that hive code starts. Its values are `coordinator` and `supervisor`. | |
-| planner | The first profile that plans and lands the work of one project. It replaces the manager skill. | |
-| builder | The first profile that does one task in a worktree. It replaces the worker skill. | |
-| coordinator | The one role that talks to the user. It runs in the root of the home, in the hive session. | orchestrator |
-| manager | The one role for each project. It owns the approved goals of that project and dispatches tasks. | |
-| worker | An agent that a manager spawns for one task in a worktree. | sub-agent, subagent |
+| planner | The first profile that plans and lands the work of one project. | |
+| builder | The first profile that does one task in a worktree. | |
+| coordinator | The one built-in agent that talks to the user. It runs in the root of the home, in the hive session. | orchestrator |
 | verifier | The independent agent that re-runs the checks of one task and records the result. | reviewer |
 | agent | A coding-agent process in a herdr pane, such as Claude Code or Codex. | bot, assistant |
 | harness | The kind of agent program: Claude Code, Codex, Pi, Cursor agent, or OpenCode. | |
 | task | One unit of tracked work with a brief and a durable record. | work unit, ticket |
-| brief | The Markdown text that gives a task or a role its scope. | |
+| brief | The Markdown text that gives a task or a profile its scope. | |
 | verify | Record a passed independent check of a task by an agent that does not own the task. | |
 | check | Run the gate, or test a behavior yourself. | validate, confirm |
 | grant | A standing user approval for named delivery actions on one project and named branches. | |
 | preset | One entry in the presets document: a purpose in prose and an ordered list of harness and model choices. | |
 | tier | One of strong, decent, or small: the class of model that a kind of task gets. | |
 | memory | One durable fact in a Markdown file at home scope or at project scope. | |
-| handoff | The Markdown summary of one role. It refers to the authoritative records. | |
+| handoff | The Markdown summary of one agent session. It refers to the authoritative records. | |
 | state store | The central records and their lock in `.hive/state/`. | database |
-| claim | The record that gives one agent a singleton role, with a generation number. | lease |
-| inbox | The durable queue of inbox records of one role in the state store. | mailbox |
+| claim | The record that gives one agent a singleton owner or built-in kind, with a generation number. | lease |
+| inbox | The durable queue of inbox records of one inbox key in the state store. | mailbox |
 | inbox record | One durable record in an inbox: completed, verified, blocked, exited, quiet, unresolved, or message. | note |
-| nudge | One line that hive types into the pane of an idle role, which tells it to read its inbox. | poke |
+| nudge | One line that hive types into the pane of an idle agent, which tells it to read its inbox. | poke |
 | supervisor | The one `hive supervise` process of a home. It relays herdr events into inbox records and nudges idle roles. | daemon, watchdog |
 | log event | One JSON line in a file in `.hive/logs/`. | |
 | spawn | Start a new agent. | launch |
@@ -55,4 +53,4 @@ meanings agree.
 | acceptance criterion | One provable statement in a brief that defines done. | |
 | verification item | One step with a command that proves one or more acceptance criteria. | |
 | evidence | A Markdown file in `.hive/spec/<feature>/tasks/<task-id>/evidence/` that records one verification item and its output. | proof |
-| merger | The person or role that merges a task branch into `dev` and updates the tracker. | |
+| merger | The person or agent that merges a task branch into `dev` and updates the tracker. | |

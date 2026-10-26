@@ -1,7 +1,6 @@
 {
   "key": "manager-qmeter-g3",
   "name": "manager-qmeter",
-  "role": "manager",
   "project": "qmeter",
   "task": "",
   "harness": "claude",
@@ -17,5 +16,7 @@
   "generation": 3,
   "started_at": "2026-10-19T20:53:03.949466939Z",
   "updated_at": "2026-10-23T01:35:27.084338052Z",
-  "spawned": true
+  "spawned": true,
+  "profile": "planner",
+  "owns": "qmeter"
 }

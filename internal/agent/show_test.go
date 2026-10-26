@@ -14,8 +14,8 @@ import (
 
 func TestShowPrefersStartingGenerationByName(t *testing.T) {
 	home := testHome(t)
-	writeRecord(t, home, records.Agent{Key: "worker-g1", Name: "worker", Role: "worker", Status: records.AgentLive, Generation: 1})
-	writeRecord(t, home, records.Agent{Key: "worker-g2", Name: "worker", Role: "worker", Status: records.AgentStarting, Generation: 2})
+	writeRecord(t, home, records.Agent{Key: "worker-g1", Name: "worker", Profile: records.ProfileBuilder, Status: records.AgentLive, Generation: 1})
+	writeRecord(t, home, records.Agent{Key: "worker-g2", Name: "worker", Profile: records.ProfileBuilder, Status: records.AgentStarting, Generation: 2})
 
 	envelope := Show(home, "worker")
 	if envelope.Outcome != "ok" {
@@ -34,7 +34,7 @@ func TestShowPrefersStartingGenerationByName(t *testing.T) {
 
 func TestShowAndListExposeLineageFields(t *testing.T) {
 	home := testHome(t)
-	record := records.Agent{Key: "worker-g2", Name: "worker", Role: "worker", Status: records.AgentLive, Generation: 2}
+	record := records.Agent{Key: "worker-g2", Name: "worker", Profile: records.ProfileBuilder, Status: records.AgentLive, Generation: 2}
 	writeRecord(t, home, record)
 	setAgentJSONFields(t, home, record.Key, map[string]string{
 		"parent": "manager-g1", "replaces": "worker-g1", "status_changed_at": "2026-01-02T03:04:05Z",
@@ -91,14 +91,14 @@ func setAgentJSONFields(t *testing.T, home, key string, fields map[string]string
 
 func TestShowResolvesClaimBeforeWorkerRecordKey(t *testing.T) {
 	home := t.TempDir()
-	if envelope := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "w1:p1"}); envelope.Outcome != "ok" {
+	if envelope := Register(home, RegisterOptions{Kind: records.AgentKindCoordinator, Name: "leader", NameSet: true, PaneID: "w1:p1"}); envelope.Outcome != "ok" {
 		t.Fatal(envelope.Error)
 	}
 	st, err := store.Open(home)
 	if err != nil {
 		t.Fatal(err)
 	}
-	worker := records.Agent{Key: "coordinator", Name: "coordinator", Role: "worker", Status: records.AgentLive, Generation: 1, PaneID: "w1:p2"}
+	worker := records.Agent{Key: "coordinator", Name: "coordinator", Profile: records.ProfileBuilder, Status: records.AgentLive, Generation: 1, PaneID: "w1:p2"}
 	if err := st.WriteIn([]string{"agents"}, "coordinator", worker); err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestShowDoesNotResolveUnclaimedSingletonOrphan(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			home := t.TempDir()
 			seam := &seamWriter{writeCollection: "claims", writeErr: errors.New("seam claim failure")}
-			options := RegisterOptions{Role: "coordinator", Name: name, NameSet: true, PaneID: "orphan-pane"}
+			options := RegisterOptions{Kind: records.AgentKindCoordinator, Name: name, NameSet: true, PaneID: "orphan-pane"}
 			envelope := runRegisterLocked(t, home, seam, options)
 			if envelope.Outcome != "partial" || envelope.Phase != "claim" {
 				t.Fatalf("runRegisterLocked() = %#v; want partial claim", envelope)
@@ -174,7 +174,7 @@ func TestListLogsReadFailure(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "bad.json"), []byte("{"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	envelope := List(home, ListOptions{Project: "hive", Role: "worker"})
+	envelope := List(home, ListOptions{Project: "hive", Profile: records.ProfileBuilder})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("List() = %#v; want failed", envelope)
 	}
@@ -184,14 +184,14 @@ func TestListLogsReadFailure(t *testing.T) {
 		t.Fatalf("events = %#v; want an agent list failure event", events)
 	}
 	message, _ := event["error"].(string)
-	if event["project_id"] != "hive" || event["role"] != "worker" || event["phase"] != "store" || message == "" {
+	if event["project_id"] != "hive" || event["profile"] != "builder" || event["phase"] != "store" || message == "" {
 		t.Fatalf("failure event = %#v; want the list filters, phase, and error", event)
 	}
 }
 
 func TestShowResolvesCustomSingletonNameThroughItsClaim(t *testing.T) {
 	home := t.TempDir()
-	if envelope := Register(home, RegisterOptions{Role: "coordinator", Name: "leader", NameSet: true, PaneID: "w1:p1"}); envelope.Outcome != "ok" {
+	if envelope := Register(home, RegisterOptions{Kind: records.AgentKindCoordinator, Name: "leader", NameSet: true, PaneID: "w1:p1"}); envelope.Outcome != "ok" {
 		t.Fatal(envelope.Error)
 	}
 	envelope := Show(home, "leader")

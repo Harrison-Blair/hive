@@ -221,7 +221,7 @@ func TestWorkerSpawnAssignsAndPromptsIdle(t *testing.T) {
 	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "worker-1")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -286,7 +286,7 @@ func TestWorkerSpawnAssignsAndPromptsDone(t *testing.T) {
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -393,7 +393,7 @@ func TestWorkerSpawnRefusals(t *testing.T) {
 				fake.result("pane.get", workerPaneGetJSON("w5:p1", "w5", "w5:t1", worktree, ""))
 			},
 			records: func(t *testing.T, home string) {
-				writeRecord(t, home, records.Agent{Key: "worker-7", Name: "worker-7", Role: "worker", Project: "demo", Task: "1-worker-demo", PaneID: "w5:p1", Status: records.AgentUnresolved})
+				writeRecord(t, home, records.Agent{Key: "worker-7", Name: "worker-7", Profile: records.ProfileBuilder, Project: "demo", Task: "1-worker-demo", PaneID: "w5:p1", Status: records.AgentUnresolved})
 			},
 			want: "pane has an unresolved record: worker-7",
 		},
@@ -411,7 +411,7 @@ func TestWorkerSpawnRefusals(t *testing.T) {
 			if testCase.script != nil {
 				testCase.script(fake, home, repo, worktree)
 			}
-			options := SpawnOptions{Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Project: testCase.project}
+			options := SpawnOptions{Profile: "builder", Task: "1-worker-demo", Harness: "claude", Model: "m", Project: testCase.project}
 			envelope := Spawn(context.Background(), home, options)
 			if envelope.Outcome != "failed" {
 				t.Fatalf("envelope = %#v; want failed", envelope)
@@ -443,7 +443,7 @@ func TestWorkerSpawnBlockedKeepsTask(t *testing.T) {
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("envelope = %#v; want partial", envelope)
@@ -479,7 +479,7 @@ func TestWorkerSpawnTimeoutKeepsTask(t *testing.T) {
 	fake.result("pane.process_info", workerProcessJSON("w5:p1", sleep))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("envelope = %#v; want partial", envelope)
@@ -507,7 +507,7 @@ func TestWorkerSpawnChangedStatusBindsWithoutAssignment(t *testing.T) {
 	})
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want the binding spawn to succeed", envelope)
@@ -543,7 +543,7 @@ func TestWorkerSpawnPromptFailureIsPartial(t *testing.T) {
 	fake.failure("agent.prompt", "agent_prompt_stalled", "the retry did not settle")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("envelope = %#v; want partial", envelope)
@@ -597,7 +597,7 @@ func TestWorkerRespawnBindsWithoutActingAgent(t *testing.T) {
 	task.ActingAgent = "t16-worker-1"
 	writeTaskRecord(t, home, task)
 	writeRecord(t, home, records.Agent{
-		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Key: "t16-worker-1", Name: "t16-worker-1", Profile: records.ProfileBuilder, Project: "demo",
 		Task: task.ID, PaneID: "w4:p1", Status: records.AgentLive,
 	})
 	sleep := startSleep(t)
@@ -607,7 +607,7 @@ func TestWorkerRespawnBindsWithoutActingAgent(t *testing.T) {
 	scriptWorkerSuccess(fake, sleep, "w5:p2", "w5", "w5:t2", worktree, "t16-builder-2")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-builder-2", NameSet: true,
+		Profile: records.ProfileBuilder, Task: task.ID, Harness: "claude", Model: "m", Name: "t16-builder-2", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -633,7 +633,7 @@ func TestWorkerRespawnReopensAndReassigns(t *testing.T) {
 	task.ActingAgent = "t16-worker-1"
 	writeTaskRecord(t, home, task)
 	writeRecord(t, home, records.Agent{
-		Key: "t16-worker-1", Name: "t16-worker-1", Role: "worker", Project: "demo",
+		Key: "t16-worker-1", Name: "t16-worker-1", Profile: records.ProfileBuilder, Project: "demo",
 		Task: task.ID, PaneID: "w5:p1", Status: records.AgentExited,
 	})
 	sleep := startSleep(t)
@@ -643,7 +643,7 @@ func TestWorkerRespawnReopensAndReassigns(t *testing.T) {
 	scriptWorkerSuccess(fake, sleep, "w6:p1", "w6", "w6:t1", worktree, "t16-worker-2")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: task.ID, Harness: "claude", Model: "m", Name: "t16-worker-2", NameSet: true,
+		Profile: records.ProfileBuilder, Task: task.ID, Harness: "claude", Model: "m", Name: "t16-worker-2", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -673,7 +673,7 @@ func TestWorkerSpawnWithoutNamePicksLowestFreeTaskName(t *testing.T) {
 	task.ActingAgent = "t16-builder-1"
 	writeTaskRecord(t, home, task)
 	writeRecord(t, home, records.Agent{
-		Key: "t16-builder-1", Name: "t16-builder-1", Role: "worker", Project: "demo",
+		Key: "t16-builder-1", Name: "t16-builder-1", Profile: records.ProfileBuilder, Project: "demo",
 		Task: task.ID, PaneID: "w4:p1", Status: records.AgentExited,
 	})
 	sleep := startSleep(t)
@@ -681,7 +681,7 @@ func TestWorkerSpawnWithoutNamePicksLowestFreeTaskName(t *testing.T) {
 	scriptWorkerSuccess(fake, sleep, "w5:p1", "w5", "w5:t1", worktree, "t16-builder-2")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: task.ID, Harness: "claude", Model: "m",
+		Profile: records.ProfileBuilder, Task: task.ID, Harness: "claude", Model: "m",
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -724,7 +724,7 @@ func TestVerifierSpawnReopensWorktree(t *testing.T) {
 	})
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
+		Profile: records.ProfileVerifier, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -793,7 +793,7 @@ func TestVerifierSpawnMakesTab(t *testing.T) {
 	fake.result("agent.get", workerAgentInfoJSON("w5:p2", "w5", "w5:t2", "working", "verifier-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
+		Profile: records.ProfileVerifier, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -830,7 +830,7 @@ func TestVerifierSpawnVerifiedBindsWithoutPane(t *testing.T) {
 	scriptTaskBind(fake, sleep, "w5", "w5:t2", "w5:p2", worktree, task.ID, repo, "verifier-1")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "verifier", Task: task.ID, Harness: "claude", Model: "m",
+		Profile: records.ProfileVerifier, Task: task.ID, Harness: "claude", Model: "m",
 		Name: "verifier-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
@@ -854,7 +854,7 @@ func TestVerifierSpawnRefusals(t *testing.T) {
 		task.Worktree = nil
 		writeTaskRecord(t, home, task)
 		fake := newFakeHerdr(t)
-		envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m"})
+		envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m"})
 		if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "task has no worktree") {
 			t.Fatalf("envelope = %#v; want the no-worktree refusal", envelope)
 		}
@@ -877,7 +877,7 @@ func TestVerifierSpawnAlreadyOpenKeepsTopology(t *testing.T) {
 	scriptReadyShell(fake, "w6:p1", "term_w6:p1", "w6", "w6:t1", worktree)
 	fake.failure("agent.start", "agent_pane_busy", "pane is busy")
 
-	envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
+	envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("envelope = %#v; want failed", envelope)
 	}
@@ -901,7 +901,7 @@ func TestVerifierSpawnCleanupAfterNoStart(t *testing.T) {
 	fake.result("workspace.get", workerWorkspaceGetJSON("w6", "1-worker-demo", repo, worktree))
 	fake.result("workspace.close", `{"type":"ok"}`)
 
-	envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
+	envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
 	if envelope.Outcome != "failed" {
 		t.Fatalf("envelope = %#v; want failed", envelope)
 	}
@@ -924,7 +924,7 @@ func TestVerifierSpawnKeepsTopologyAfterLostStart(t *testing.T) {
 	scriptReadyShell(fake, "w6:p1", "term_w6:p1", "w6", "w6:t1", worktree)
 	fake.drop("agent.start")
 
-	envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
+	envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
 	if envelope.Outcome != "partial" {
 		t.Fatalf("envelope = %#v; want partial", envelope)
 	}
@@ -953,7 +953,7 @@ func TestVerifierSpawnTopologyWriteFailureCleansUp(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(tasksDir, 0o755) })
 
-	envelope := Spawn(context.Background(), home, SpawnOptions{Role: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
+	envelope := Spawn(context.Background(), home, SpawnOptions{Profile: "verifier", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "verifier-1", NameSet: true})
 	if envelope.Outcome != "failed" || !strings.Contains(fmt.Sprint(envelope.Error), "store:") {
 		t.Fatalf("envelope = %#v; want a store failure", envelope)
 	}
@@ -991,7 +991,7 @@ func TestWorkerSpawnWaitsForInteractiveAgent(t *testing.T) {
 	fake.result("agent.get", workerAgentInfoJSON("w5:p1", "w5", "w5:t1", "working", "worker-1"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)
@@ -1023,7 +1023,7 @@ func TestWorkerSpawnResendsLostPrompt(t *testing.T) {
 	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w5:p1", "term_w5:p1", "w5", "w5:t1", "working", "worker-1")+`}`)
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("envelope = %#v; want ok", envelope)

@@ -114,7 +114,7 @@ func TestAgentFirstPromptTimesRoundTripAndLegacyJSON(t *testing.T) {
 }
 
 func TestAgentFactsRoundTrip(t *testing.T) {
-	const fixture = `{"key":"manager-hive-g1","name":"manager-hive","role":"manager","profile":"planner","kind":"","worktree":"","owns":"hive","status":"live"}`
+	const fixture = `{"key":"manager-hive-g1","name":"manager-hive","profile":"planner","kind":"","worktree":"","owns":"hive","status":"live"}`
 	var agent Agent
 	if err := json.Unmarshal([]byte(fixture), &agent); err != nil {
 		t.Fatalf("decode facts record: %v", err)
@@ -127,7 +127,7 @@ func TestAgentFactsRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(encoded, &got); err != nil {
 		t.Fatalf("decode encoded facts record: %v", err)
 	}
-	for key, want := range map[string]string{"profile": "planner", "owns": "hive", "role": "manager"} {
+	for key, want := range map[string]string{"profile": "planner", "owns": "hive"} {
 		if got[key] != want {
 			t.Errorf("%s = %#v; want %q", key, got[key], want)
 		}
@@ -136,5 +136,8 @@ func TestAgentFactsRoundTrip(t *testing.T) {
 		if _, ok := got[key]; !ok {
 			t.Errorf("encoded facts record has no %s field: %s", key, encoded)
 		}
+	}
+	if _, ok := got["role"]; ok {
+		t.Errorf("encoded facts record has a role field: %s", encoded)
 	}
 }

@@ -12,7 +12,7 @@ import (
 
 func resolveSeedRecord() records.Agent {
 	return records.Agent{
-		Key: "worker-3", Name: "worker-3", Role: "worker", Project: "one", Task: "1-task",
+		Key: "worker-3", Name: "worker-3", Profile: records.ProfileBuilder, Project: "one", Task: "1-task",
 		Harness: "claude", Status: records.AgentUnresolved, Spawned: true, Generation: 1,
 		PaneID: "w1:p1", WorkspaceID: "w1", TabID: "w1:t1", TerminalID: "term_a", Cwd: "/tmp/old",
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",

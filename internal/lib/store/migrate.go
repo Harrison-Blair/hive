@@ -19,7 +19,7 @@ import (
 )
 
 // CurrentSchemaVersion is the record schema version that this build writes.
-const CurrentSchemaVersion = 3
+const CurrentSchemaVersion = 4
 
 const (
 	schemaName       = "schema.json"
@@ -27,6 +27,8 @@ const (
 	ownerClaimChange = "owner claim"
 	ownerInboxChange = "owner inbox"
 	taskMailChange   = "task mail"
+	agentRoleChange  = "agent role"
+	inboxFieldChange = "inbox field"
 	inboxSourceField = "migrated_from"
 	// ownerInboxPlanName is the work list of the version 3 inbox change. The
 	// step keeps it until it writes schema version 3.
@@ -40,6 +42,7 @@ type schemaFile struct {
 type storedAgent struct {
 	id     string
 	record records.Agent
+	role   string
 }
 
 type agentFactsChange struct {
@@ -199,6 +202,8 @@ func (s *Store) migrationStep(locked *LockedStore, version int, logger *slog.Log
 		return s.agentFactsStep(locked, logger)
 	case 3:
 		return s.ownerStep(locked, logger)
+	case 4:
+		return s.roleStep(locked, logger)
 	default:
 		return 0, s.schemaRelative(), fmt.Errorf("state migrate has no step for version %d", version)
 	}
@@ -247,6 +252,101 @@ func (s *Store) ownerStep(locked *LockedStore, logger *slog.Logger) (int, string
 		return count, failedPath, err
 	}
 	count += tasks
+	return count, "", nil
+}
+
+// roleStep writes the version 4 change: each agent record loses role, and
+// each inbox record field role becomes inbox. The step reads and writes raw
+// objects, so a field that no current record type holds is still removed.
+func (s *Store) roleStep(locked *LockedStore, logger *slog.Logger) (int, string, error) {
+	count, failedPath, err := s.removeAgentRoles(locked, logger)
+	if err != nil {
+		return count, failedPath, err
+	}
+	inboxes, failedPath, err := s.renameInboxFields(locked, logger)
+	count += inboxes
+	if err != nil {
+		return count, failedPath, err
+	}
+	return count, "", nil
+}
+
+// removeAgentRoles deletes role from each agent record that still has it.
+func (s *Store) removeAgentRoles(locked *LockedStore, logger *slog.Logger) (int, string, error) {
+	names, raw, err := namedRecords(locked, []string{"agents"})
+	if err != nil {
+		return 0, s.stateRelative("agents"), err
+	}
+	count := 0
+	for index, name := range names {
+		var object map[string]json.RawMessage
+		if err := json.Unmarshal(raw[index], &object); err != nil {
+			return count, s.stateRelative("agents", name), fmt.Errorf("record invalid: %s", s.stateRelative("agents", name))
+		}
+		if _, ok := object["role"]; !ok {
+			continue
+		}
+		delete(object, "role")
+		encoded, err := marshalRecord(object)
+		if err != nil {
+			return count, s.stateRelative("agents", name), err
+		}
+		id := strings.TrimSuffix(name, ".json")
+		if err := locked.WriteIn([]string{"agents"}, id, json.RawMessage(encoded)); err != nil {
+			return count, s.stateRelative("agents", name), fmt.Errorf("state migrate %s: %w", s.stateRelative("agents", name), err)
+		}
+		logger.Debug("state migrate record", "path", s.stateRelative("agents", name), "change", agentRoleChange)
+		count++
+	}
+	return count, "", nil
+}
+
+// renameInboxFields changes the field role of each inbox record to inbox.
+// When a partial record holds both fields, the inbox value stays.
+func (s *Store) renameInboxFields(locked *LockedStore, logger *slog.Logger) (int, string, error) {
+	root := filepath.Join(s.stateDir(), "inbox")
+	entries, err := os.ReadDir(root)
+	if errors.Is(err, os.ErrNotExist) {
+		return 0, "", nil
+	}
+	if err != nil {
+		return 0, s.stateRelative("inbox"), err
+	}
+	count := 0
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		key := entry.Name()
+		names, raw, err := namedRecords(locked, []string{"inbox", key})
+		if err != nil {
+			return count, s.stateRelative("inbox", key), err
+		}
+		for index, name := range names {
+			var object map[string]json.RawMessage
+			if err := json.Unmarshal(raw[index], &object); err != nil {
+				return count, s.stateRelative("inbox", key, name), fmt.Errorf("record invalid: %s", s.stateRelative("inbox", key, name))
+			}
+			role, ok := object["role"]
+			if !ok {
+				continue
+			}
+			if _, ok := object["inbox"]; !ok {
+				object["inbox"] = role
+			}
+			delete(object, "role")
+			encoded, err := marshalRecord(object)
+			if err != nil {
+				return count, s.stateRelative("inbox", key, name), err
+			}
+			id := strings.TrimSuffix(name, ".json")
+			if err := locked.WriteIn([]string{"inbox", key}, id, json.RawMessage(encoded)); err != nil {
+				return count, s.stateRelative("inbox", key, name), fmt.Errorf("state migrate %s: %w", s.stateRelative("inbox", key, name), err)
+			}
+			logger.Debug("state migrate record", "path", s.stateRelative("inbox", key, name), "change", inboxFieldChange)
+			count++
+		}
+	}
 	return count, "", nil
 }
 
@@ -511,7 +611,7 @@ func (s *Store) copyUnreadInbox(locked *LockedStore, source managerInbox, logger
 		}
 		moved := movedInbox{Inbox: record, MigratedFrom: sourceID}
 		moved.Seq = seq
-		moved.Role = source.target
+		moved.Inbox.Inbox = source.target
 		moved.NudgedAt = ""
 		moved.NudgedGeneration = 0
 		next := strconv.FormatUint(seq, 10)
@@ -730,7 +830,7 @@ func (s *Store) agentFactsChanges(locked *LockedStore) ([]agentFactsChange, erro
 	}
 	needsWorktree := false
 	for _, entry := range agents {
-		if entry.record.Role == "worker" || entry.record.Role == "verifier" {
+		if entry.role == "worker" || entry.role == "verifier" {
 			needsWorktree = true
 			break
 		}
@@ -745,7 +845,7 @@ func (s *Store) agentFactsChanges(locked *LockedStore) ([]agentFactsChange, erro
 	changes := []agentFactsChange{}
 	for _, entry := range agents {
 		updated := entry.record
-		if !updated.ApplyRoleFacts(worktrees[entry.record.Task]) {
+		if !applyLegacyRoleFacts(&updated, entry.role, worktrees[entry.record.Task]) {
 			continue
 		}
 		if !agentFactsDiffer(entry.record, updated) {
@@ -765,6 +865,47 @@ func agentFactsDiffer(before, after records.Agent) bool {
 		before.Profile != after.Profile ||
 		before.Owns != after.Owns ||
 		before.Worktree != after.Worktree
+}
+
+// applyLegacyRoleFacts sets the version 2 facts from the old role value. The
+// role field is not part of the current record; only the migration reads it.
+// It returns false when role is not one of the six D2 values.
+func applyLegacyRoleFacts(record *records.Agent, role, worktree string) bool {
+	switch role {
+	case records.AgentKindCoordinator:
+		record.Kind = records.AgentKindCoordinator
+		record.Profile = records.ProfileCoordinator
+		record.Owns = ""
+		record.Worktree = ""
+	case records.AgentKindSupervisor:
+		record.Kind = records.AgentKindSupervisor
+		record.Profile = ""
+		record.Owns = ""
+		record.Worktree = ""
+	case "manager":
+		record.Kind = ""
+		record.Profile = records.ProfilePlanner
+		record.Owns = record.Project
+		record.Worktree = ""
+	case "worker":
+		record.Kind = ""
+		record.Profile = records.ProfileBuilder
+		record.Owns = ""
+		record.Worktree = worktree
+	case "verifier":
+		record.Kind = ""
+		record.Profile = records.ProfileVerifier
+		record.Owns = ""
+		record.Worktree = worktree
+	case "agent":
+		record.Kind = ""
+		record.Profile = records.ProfileGeneral
+		record.Owns = ""
+		record.Worktree = ""
+	default:
+		return false
+	}
+	return true
 }
 
 func taskWorktrees(locked *LockedStore) (map[string]string, error) {
@@ -817,7 +958,17 @@ func (s *Store) storedAgents(locked *LockedStore) ([]storedAgent, error) {
 		if err := json.Unmarshal(data, &record); err != nil {
 			return nil, fmt.Errorf("record invalid: %s", path)
 		}
-		found = append(found, storedAgent{id: id, record: record})
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(data, &fields); err != nil {
+			return nil, fmt.Errorf("record invalid: %s", path)
+		}
+		role := ""
+		if raw, ok := fields["role"]; ok {
+			if err := json.Unmarshal(raw, &role); err != nil {
+				return nil, fmt.Errorf("record invalid: %s", path)
+			}
+		}
+		found = append(found, storedAgent{id: id, record: record, role: role})
 	}
 	return found, nil
 }

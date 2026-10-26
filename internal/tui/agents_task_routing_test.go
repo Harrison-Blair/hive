@@ -30,11 +30,11 @@ func agentsTaskRoutingData() demoData {
 			{ID: "30-loose", Project: "hive", Title: "Loose task", Feature: "routing", Status: "created"},
 		},
 		Agents: []records.Agent{
-			{Key: "coordinator-g1", Name: "coordinator-g1", Role: "coordinator", PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:20:00Z"},
-			{Key: "manager-hive", Name: "manager-hive", Role: "manager", Project: "hive", PaneID: "w1:p2", Parent: "coordinator-g1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:19:00Z"},
-			{Key: "worker-alpha", Name: "worker-alpha", Role: "worker", Project: "hive", Task: "10-alpha", PaneID: "w1:p3", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:18:00Z"},
-			{Key: "worker-beta", Name: "worker-beta", Role: "worker", Project: "hive", Task: "20-beta", PaneID: "w1:p4", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:17:00Z"},
-			{Key: "worker-loose", Name: "worker-loose", Role: "worker", Project: "hive", Task: "30-loose", PaneID: "w1:p5", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:16:00Z"},
+			{Key: "coordinator-g1", Name: "coordinator-g1", Kind: records.AgentKindCoordinator, PaneID: "w1:p1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:20:00Z"},
+			{Key: "manager-hive", Name: "manager-hive", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p2", Parent: "coordinator-g1", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:19:00Z"},
+			{Key: "worker-alpha", Name: "worker-alpha", Profile: records.ProfileBuilder, Project: "hive", Task: "10-alpha", PaneID: "w1:p3", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:18:00Z"},
+			{Key: "worker-beta", Name: "worker-beta", Profile: records.ProfileBuilder, Project: "hive", Task: "20-beta", PaneID: "w1:p4", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:17:00Z"},
+			{Key: "worker-loose", Name: "worker-loose", Profile: records.ProfileBuilder, Project: "hive", Task: "30-loose", PaneID: "w1:p5", Parent: "manager-hive", Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-23T14:16:00Z"},
 		},
 	}
 }

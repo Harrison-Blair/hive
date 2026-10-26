@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
 func firstPromptWorkerFixture(t *testing.T) (string, *fakeHerdr) {
@@ -62,7 +63,7 @@ func TestWorkerFirstPromptRetriesOneStall(t *testing.T) {
 	fake.result("agent.prompt", workerPromptWaitReply("working"))
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome != "ok" {
 		t.Fatalf("outcome=%s error=%v; want successful spawn after one retry", envelope.Outcome, envelope.Error)
@@ -83,7 +84,7 @@ func TestWorkerFirstPromptFailsAfterTwoStalls(t *testing.T) {
 	fake.failure("agent.prompt", herdr.CodeAgentPromptStalled, "second wait expired")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome == "ok" {
 		t.Fatalf("envelope = %#v; want failed spawn", envelope)
@@ -113,7 +114,7 @@ func TestWorkerFirstPromptBlockedDoesNotRetry(t *testing.T) {
 	fake.failure("agent.prompt", herdr.CodeAgentBlocked, "trust dialog is open")
 
 	envelope := Spawn(context.Background(), home, SpawnOptions{
-		Role: "worker", Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
+		Profile: records.ProfileBuilder, Task: "1-worker-demo", Harness: "claude", Model: "m", Name: "worker-1", NameSet: true,
 	})
 	if envelope.Outcome == "ok" {
 		t.Fatalf("envelope = %#v; want blocked spawn", envelope)

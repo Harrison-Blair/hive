@@ -44,7 +44,7 @@ func seedAgent(t *testing.T, home string, record records.Agent) {
 
 func seedCoordinator(t *testing.T, home string) {
 	t.Helper()
-	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Role: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
+	coordinator := records.Agent{Key: "coordinator-g1", Name: "coordinator", Kind: records.AgentKindCoordinator, Profile: records.ProfileCoordinator, PaneID: "w1:p1", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
 	seedAgent(t, home, coordinator)
 	registry, err := store.Open(home)
 	if err != nil {
@@ -57,7 +57,7 @@ func seedCoordinator(t *testing.T, home string) {
 
 func seedWorker(t *testing.T, home string) {
 	t.Helper()
-	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Role: "worker", PaneID: "w2:p1", WorkspaceID: "w2", Status: records.AgentLive, Generation: 1})
+	seedAgent(t, home, records.Agent{Key: "worker-one", Name: "worker-one", Profile: records.ProfileBuilder, PaneID: "w2:p1", WorkspaceID: "w2", Status: records.AgentLive, Generation: 1})
 }
 
 type promptRequest struct {
@@ -389,10 +389,20 @@ func TestSendRefusesCallerInLiveAgentWorkspace(t *testing.T) {
 		t.Run(role, func(t *testing.T) {
 			home := chatHome(t)
 			seedCoordinator(t, home)
-			seedAgent(t, home, records.Agent{
-				Key: "agent-one", Name: "agent-one", Role: role, Project: "demo", Task: "task-one",
+			agent := records.Agent{
+				Key: "agent-one", Name: "agent-one", Project: "demo", Task: "task-one",
 				WorkspaceID: "w-agent", Status: records.AgentLive, Generation: 1,
-			})
+			}
+			switch role {
+			case "manager":
+				agent.Profile = records.ProfilePlanner
+				agent.Owns = "demo"
+			case "worker":
+				agent.Profile = records.ProfileBuilder
+			case "verifier":
+				agent.Profile = records.ProfileVerifier
+			}
+			seedAgent(t, home, agent)
 			fake := newFakeHerdr(t)
 			fake.setPaneWorkspace("w-agent")
 			envelope := Send(context.Background(), home, SendOptions{PaneID: "w-user:p1", Text: "hello"})
@@ -475,7 +485,7 @@ func TestSendRefusesCoordinatorWorkspaceCallerBelowProjectsByRule2(t *testing.T)
 
 func seedManager(t *testing.T, home string) {
 	t.Helper()
-	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
+	manager := records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Profile: records.ProfilePlanner, Owns: "hive", Project: "hive", PaneID: "w1:p2", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1}
 	seedAgent(t, home, manager)
 	registry, err := store.Open(home)
 	if err != nil {
@@ -566,7 +576,7 @@ func TestValidateCallerRefusesChangedIdentityAfterPaneGet(t *testing.T) {
 		}
 		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
 			record := records.Agent{
-				Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo",
+				Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo",
 				PaneID: "wUser:p1", WorkspaceID: "wUser", Status: records.AgentLive, Generation: 1,
 			}
 			if err := locked.WriteIn([]string{"agents"}, record.Key, record); err != nil {
@@ -605,7 +615,7 @@ func TestValidateCallerRefusesRemovedCoordinatorClaimAfterPaneGet(t *testing.T) 
 				return err
 			}
 			record := records.Agent{
-				Key: "worker-late", Name: "worker-late", Role: "worker", Project: "demo",
+				Key: "worker-late", Name: "worker-late", Profile: records.ProfileBuilder, Project: "demo",
 				PaneID: "w1:p9", WorkspaceID: "w1", Status: records.AgentLive, Generation: 1,
 			}
 			return locked.WriteIn([]string{"agents"}, record.Key, record)
@@ -639,7 +649,7 @@ func TestSendRefusesChangedCallerWorkspaceBeforeAppend(t *testing.T) {
 		}
 		mutationErr = probeStoreWrite(registry, func(locked *store.LockedStore) error {
 			record := records.Agent{
-				Key: "worker-late", Name: "worker-late", Role: "worker", Project: "demo",
+				Key: "worker-late", Name: "worker-late", Profile: records.ProfileBuilder, Project: "demo",
 				PaneID: "wUser:p9", WorkspaceID: "wUser", Status: records.AgentLive, Generation: 1,
 			}
 			return locked.WriteIn([]string{"agents"}, record.Key, record)

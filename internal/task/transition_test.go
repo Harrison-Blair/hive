@@ -55,14 +55,14 @@ func newSeed(t *testing.T, status string) (string, records.Task) {
 	seedTask(t, home, task)
 	for i, name := range []string{"worker-1", "worker-2"} {
 		seedAgent(t, home, records.Agent{
-			Key: name, Name: name, Role: "worker", Project: "one", Task: task.ID,
+			Key: name, Name: name, Profile: records.ProfileBuilder, Project: "one", Task: task.ID,
 			Status: records.AgentLive, PaneID: "w1:p" + string(rune('1'+i)), Generation: 1,
 			StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 		})
 	}
 	for i, name := range []string{"verifier-1", "verifier-2"} {
 		seedAgent(t, home, records.Agent{
-			Key: name, Name: name, Role: "verifier", Project: "one", Task: task.ID,
+			Key: name, Name: name, Profile: records.ProfileVerifier, Project: "one", Task: task.ID,
 			Status: records.AgentLive, PaneID: "w1:p" + string(rune('3'+i)), Generation: 1,
 			StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 		})

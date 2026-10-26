@@ -9,7 +9,7 @@ import (
 )
 
 // TestCoordinatorStartRecordHasFacts proves AC7: a new coordinator record has
-// kind coordinator and the role mirror coordinator.
+// kind coordinator and profile coordinator.
 func TestCoordinatorStartRecordHasFacts(t *testing.T) {
 	home := testHome(t)
 	harness := startSleep(t)
@@ -21,8 +21,8 @@ func TestCoordinatorStartRecordHasFacts(t *testing.T) {
 		t.Fatalf("start coordinator: %v", err)
 	}
 	record := readAgentFields(t, home, "coordinator-g1")
-	if record["kind"] != "coordinator" || record["profile"] != "coordinator" || record["role"] != "coordinator" {
-		t.Fatalf("record = %#v; want kind, profile, and role coordinator", record)
+	if record["kind"] != "coordinator" || record["profile"] != "coordinator" {
+		t.Fatalf("record = %#v; want kind and profile coordinator", record)
 	}
 }
 

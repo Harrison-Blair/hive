@@ -181,7 +181,7 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 	if err := registry.Write("tasks", oldID, oldTask); err != nil {
 		t.Fatal(err)
 	}
-	agent := records.Agent{Key: "manager-agent", Name: "manager-agent", Role: "manager", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1}
+	agent := records.Agent{Key: "manager-agent", Name: "manager-agent", Profile: records.ProfilePlanner, Owns: "one", Project: "one", Status: records.AgentLive, Generation: 1}
 	if err := registry.Write("agents", agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestFeatureTaskCLIFlow(t *testing.T) {
 	if err := registry.Write("tasks", workerTask.ID, workerTask); err != nil {
 		t.Fatal(err)
 	}
-	worker := records.Agent{Key: "worker-agent", Name: "worker-agent", Role: "worker", Project: "one", Status: records.AgentLive}
+	worker := records.Agent{Key: "worker-agent", Name: "worker-agent", Profile: records.ProfileBuilder, Project: "one", Status: records.AgentLive}
 	if err := registry.Write("agents", worker.Key, worker); err != nil {
 		t.Fatal(err)
 	}

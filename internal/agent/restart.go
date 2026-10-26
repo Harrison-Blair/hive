@@ -26,9 +26,9 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 		ctx = context.Background()
 	}
 	if logger != nil {
-		logger.Debug("agent restart start", "command", "tui agent restart", "agent_id", record.Key, "role", record.Role)
+		logger.Debug("agent restart start", "command", "tui agent restart", "agent_id", record.Key, "kind", record.Kind)
 		defer func() {
-			attrs := []any{"command", "tui agent restart", "agent_id", record.Key, "role", record.Role}
+			attrs := []any{"command", "tui agent restart", "agent_id", record.Key, "kind", record.Kind}
 			if err != nil {
 				attrs = append(attrs, "outcome", "failed", "error", err.Error())
 			} else {
@@ -40,10 +40,10 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 			logger.Debug("agent restart result", attrs...)
 		}()
 	}
-	if record.Role != "coordinator" && record.Role != "supervisor" {
+	if record.Kind != records.AgentKindCoordinator && record.Kind != records.AgentKindSupervisor {
 		return RestartResult{}, fmt.Errorf("restart applies only to the coordinator and the supervisor")
 	}
-	if record.Role == "coordinator" {
+	if record.Kind == records.AgentKindCoordinator {
 		return restartCoordinator(ctx, home, record, logger)
 	}
 	if record.Status != records.AgentLive && record.Status != records.AgentStale && record.Status != records.AgentStopped && record.Status != records.AgentExited {
@@ -60,7 +60,7 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 			if record.PaneID != "" {
 				closeErr := herdr.PaneClose(ctx, record.PaneID, herdr.WithLogger(logger))
 				if closeErr != nil && !isHerdrCode(closeErr, herdr.CodePaneNotFound) {
-					return RestartResult{}, fmt.Errorf("close old %s pane: %w", record.Role, closeErr)
+					return RestartResult{}, fmt.Errorf("close old %s pane: %w", record.Kind, closeErr)
 				}
 			}
 			newStatus = records.AgentStopped
@@ -71,19 +71,19 @@ func Restart(ctx context.Context, home string, record records.Agent, logger *slo
 	}
 	if newStatus != record.Status {
 		if err := updateRestartedRecord(home, record, newStatus); err != nil {
-			return RestartResult{}, fmt.Errorf("update old %s record: %w", record.Role, err)
+			return RestartResult{}, fmt.Errorf("update old %s record: %w", record.Kind, err)
 		}
 	}
 
 	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{
 		WorkspaceID: workspaceID,
 		Cwd:         home,
-		Label:       record.Role,
+		Label:       record.Kind,
 		Focus:       false,
-		Env:         StartupTabEnv(home, record.Role),
+		Env:         StartupTabEnv(home, record.Kind),
 	}, herdr.WithLogger(logger))
 	if err != nil {
-		return RestartResult{}, fmt.Errorf("create %s tab: %w", record.Role, err)
+		return RestartResult{}, fmt.Errorf("create %s tab: %w", record.Kind, err)
 	}
 	if created.Tab.WorkspaceID != workspaceID || created.RootPane.WorkspaceID != workspaceID || created.RootPane.TabID != created.Tab.TabID {
 		return RestartResult{}, errors.New("tab create returned a different workspace")
@@ -135,9 +135,9 @@ func restartCoordinator(ctx context.Context, home string, record records.Agent, 
 	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{
 		WorkspaceID: workspaceID,
 		Cwd:         home,
-		Label:       record.Role,
+		Label:       record.Kind,
 		Focus:       false,
-		Env:         StartupTabEnv(home, record.Role),
+		Env:         StartupTabEnv(home, record.Kind),
 	}, herdr.WithLogger(logger))
 	if err == nil && (created.Tab.WorkspaceID != workspaceID || created.RootPane.WorkspaceID != workspaceID || created.RootPane.TabID != created.Tab.TabID) {
 		err = errors.New("tab create returned a different workspace")
@@ -150,7 +150,7 @@ func restartCoordinator(ctx context.Context, home string, record records.Agent, 
 		if releaseErr := release(); releaseErr != nil {
 			err = fmt.Errorf("%w; remove starting claim: %v", err, releaseErr)
 		}
-		return result, fmt.Errorf("create %s tab: %w", record.Role, err)
+		return result, fmt.Errorf("create %s tab: %w", record.Kind, err)
 	}
 	result.Tab = created
 	if err := launch.Start(ctx, created.RootPane.PaneID, settings.Coordinator.Harness, settings.Coordinator.Model); err != nil {
@@ -198,8 +198,8 @@ func closeCoordinatorPane(ctx context.Context, record records.Agent, logger *slo
 }
 
 // StartupTabEnv sets the environment that a bare hive startup tab needs.
-func StartupTabEnv(homePath, role string) map[string]string {
-	env := map[string]string{"HIVE_HOME": homePath, "HIVE_STARTUP_ROLE": role}
+func StartupTabEnv(homePath, kind string) map[string]string {
+	env := map[string]string{"HIVE_HOME": homePath, "HIVE_STARTUP_KIND": kind}
 	for _, key := range []string{"XDG_CONFIG_HOME", "PATH"} {
 		if value := os.Getenv(key); value != "" {
 			env[key] = value
@@ -236,7 +236,7 @@ func updateRestartedRecord(home string, expected records.Agent, status string) e
 		if err := locked.ReadIn([]string{"agents"}, expected.Key, &current); err != nil {
 			return err
 		}
-		if current.Key != expected.Key || current.Role != expected.Role || current.PaneID != expected.PaneID {
+		if current.Key != expected.Key || current.Kind != expected.Kind || current.PaneID != expected.PaneID {
 			return errRecordChanged
 		}
 		if current.Status != expected.Status && current.Status != records.AgentStale && current.Status != records.AgentStopped && current.Status != records.AgentExited {

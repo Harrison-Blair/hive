@@ -25,7 +25,7 @@ func TestShowAgentStatus(t *testing.T) {
 		t.Run(status, func(t *testing.T) {
 			home, task := newSeed(t, "assigned")
 			seedAgent(t, home, records.Agent{
-				Key: "worker-1", Name: "worker-1", Role: "worker", Project: "one", Task: task.ID,
+				Key: "worker-1", Name: "worker-1", Profile: records.ProfileBuilder, Project: "one", Task: task.ID,
 				Status: status, PaneID: "w1:p1", Generation: 1,
 				StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 			})

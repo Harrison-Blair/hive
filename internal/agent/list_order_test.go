@@ -10,7 +10,7 @@ import (
 func TestListAllShowsStartingStatus(t *testing.T) {
 	home := testHome(t)
 	writeRecord(t, home, records.Agent{
-		Key: "agent-starting", Name: "agent-starting", Role: "worker", Project: "one", Task: "1-one",
+		Key: "agent-starting", Name: "agent-starting", Profile: records.ProfileBuilder, Project: "one", Task: "1-one",
 		Status: records.AgentStarting, PaneID: "w1:p1", Generation: 1,
 	})
 
@@ -19,7 +19,7 @@ func TestListAllShowsStartingStatus(t *testing.T) {
 		t.Fatalf("List() = %+v, want ok", envelope)
 	}
 	text := ListText(envelope)
-	if !strings.Contains(text, "agent-starting\t1\tworker\tstarting\tone") {
+	if !strings.Contains(text, "agent-starting\t1\tbuilder\tstarting\tone") {
 		t.Fatalf("ListText() = %q; want starting status", text)
 	}
 }
@@ -27,12 +27,12 @@ func TestListAllShowsStartingStatus(t *testing.T) {
 func TestListOrder(t *testing.T) {
 	home := testHome(t)
 	writeRecord(t, home, records.Agent{
-		Key: "a-live", Name: "a-live", Role: "worker", Project: "one",
+		Key: "a-live", Name: "a-live", Profile: records.ProfileBuilder, Project: "one",
 		Status: records.AgentLive, PaneID: "w1:p1", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})
 	writeRecord(t, home, records.Agent{
-		Key: "b-unresolved", Name: "b-unresolved", Role: "worker", Project: "one",
+		Key: "b-unresolved", Name: "b-unresolved", Profile: records.ProfileBuilder, Project: "one",
 		Status: records.AgentUnresolved, PaneID: "w1:p2", Generation: 1,
 		StartedAt: "2026-01-01T00:00:00Z", UpdatedAt: "2026-01-01T00:00:00Z",
 	})

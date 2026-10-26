@@ -16,9 +16,9 @@ import (
 
 func TestGoalCommandsManageWavesAndEnforceOwner(t *testing.T) {
 	cli := newGoalCLI(t)
-	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo"}, true)
-	cli.seedAgent(t, records.Agent{Key: "worker-demo-g1", Name: "worker-demo", Role: "worker", Project: "demo"}, false)
-	cli.seedAgent(t, records.Agent{Key: "manager-other-g1", Name: "manager-other", Role: "manager", Project: "other"}, true)
+	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo"}, true)
+	cli.seedAgent(t, records.Agent{Key: "worker-demo-g1", Name: "worker-demo", Profile: records.ProfileBuilder, Project: "demo"}, false)
+	cli.seedAgent(t, records.Agent{Key: "manager-other-g1", Name: "manager-other", Profile: records.ProfilePlanner, Owns: "other", Project: "other"}, true)
 	cli.seedTask(t, records.Task{ID: "1-first", Project: "demo", Title: "First task"})
 	cli.seedTask(t, records.Task{ID: "2-foreign", Project: "other", Title: "Foreign task"})
 
@@ -89,7 +89,7 @@ func TestGoalCommandsManageWavesAndEnforceOwner(t *testing.T) {
 
 func TestGoalShowCountsLandedTasksFromDelivery(t *testing.T) {
 	cli := newGoalCLI(t)
-	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo"}, true)
+	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo"}, true)
 	cli.seedTask(t, records.Task{ID: "1-landed", Project: "demo", Title: "Landed", Delivery: &records.Delivery{Commit: "abc123", Pushed: true}})
 	cli.seedTask(t, records.Task{ID: "2-unpushed", Project: "demo", Title: "Unpushed", Delivery: &records.Delivery{Commit: "def456", Pushed: false}})
 	cli.mustRun(t, "goal", "create", "--project", "demo", "--title", "Progress", "--slug", "progress", "--grant", "grant line", "--agent", "manager-demo")
@@ -115,7 +115,7 @@ func TestGoalShowCountsLandedTasksFromDelivery(t *testing.T) {
 
 func TestGoalCreateReportsCounterEffectWhenRecordWriteFails(t *testing.T) {
 	cli := newGoalCLI(t)
-	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo"}, true)
+	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo"}, true)
 	if err := os.Symlink(t.TempDir(), filepath.Join(cli.home, ".hive", "state", "goals")); err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestGoalCreateReportsCounterEffectWhenRecordWriteFails(t *testing.T) {
 
 func TestGoalCreateAcceptsKebabSlugWithoutUnspecifiedLengthLimit(t *testing.T) {
 	cli := newGoalCLI(t)
-	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo"}, true)
+	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo"}, true)
 	slug := strings.Repeat("a", 41)
 	if got := cli.mustRun(t, "goal", "create", "--project", "demo", "--title", "Long slug", "--slug", slug, "--grant", "grant line", "--agent", "manager-demo"); !strings.Contains(got, "g1-"+slug) {
 		t.Fatalf("create output = %q; want generated ID with slug", got)
@@ -143,7 +143,7 @@ func TestGoalCreateAcceptsKebabSlugWithoutUnspecifiedLengthLimit(t *testing.T) {
 
 func TestGoalCommandsResolveManagerFromPane(t *testing.T) {
 	cli := newGoalCLI(t)
-	agent := records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo", PaneID: "w1:p1"}
+	agent := records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo", PaneID: "w1:p1"}
 	cli.seedAgent(t, agent, true)
 	t.Setenv("HERDR_PANE_ID", agent.PaneID)
 	if got := cli.mustRun(t, "goal", "create", "--project", "demo", "--title", "Pane goal", "--slug", "pane-goal", "--grant", "grant line"); !strings.Contains(got, "g1-pane-goal") {
@@ -153,7 +153,7 @@ func TestGoalCommandsResolveManagerFromPane(t *testing.T) {
 
 func TestGoalCreateJSONUsesEnvelope(t *testing.T) {
 	cli := newGoalCLI(t)
-	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Role: "manager", Project: "demo"}, true)
+	cli.seedAgent(t, records.Agent{Key: "manager-demo-g1", Name: "manager-demo", Profile: records.ProfilePlanner, Owns: "demo", Project: "demo"}, true)
 	status, stdout, stderr := cli.run("goal", "create", "--project", "demo", "--title", "JSON goal", "--slug", "json-goal", "--grant", "grant", "--agent", "manager-demo", "--json")
 	if status != 0 || stderr != "" {
 		t.Fatalf("create status = %d, stderr %q; want success", status, stderr)
@@ -200,10 +200,6 @@ func (c *goalCLI) seedAgent(t *testing.T, agent records.Agent, controller bool) 
 	}
 	agent.Status = records.AgentLive
 	agent.Generation = 1
-	if agent.Role == "manager" {
-		agent.Profile = records.ProfilePlanner
-		agent.Owns = agent.Project
-	}
 	if err := registry.WriteIn([]string{"agents"}, agent.Key, agent); err != nil {
 		t.Fatal(err)
 	}

@@ -28,12 +28,12 @@ var healthAreas = []string{"herdr", "home", "agents", "supervisor", "harness"}
 // The columns of the agents table, each with its gap (rule 4).
 const (
 	healthNameWidth    = 17
-	healthRoleWidth    = 12
+	healthProfileWidth = 12
 	healthHarnessWidth = 9
 	healthStateWidth   = 14
 	healthPaneWidth    = 10
 	healthStartedWidth = 10
-	healthHeader       = "AGENT             ROLE         HARNESS   STATE          PANE       STARTED   RESTART"
+	healthHeader       = "AGENT             PROFILE      HARNESS   STATE          PANE       STARTED   RESTART"
 )
 
 // healthTileWidth is the most cells of a tile text.
@@ -187,7 +187,8 @@ func (m *Model) selectHealthAgent(index int) tea.Cmd {
 // (health.md rule 6).
 func (m *Model) requestRestart(node agentNode, ok bool) tea.Cmd {
 	state := &m.agents
-	restartable := node.record.Role == "coordinator" || node.record.Role == "supervisor"
+	kind := agentBuiltin(node.record)
+	restartable := kind == records.AgentKindCoordinator || kind == records.AgentKindSupervisor
 	if m.demo != nil && (!ok || restartable) {
 		return m.demoBlocked("restart")
 	}
@@ -201,23 +202,23 @@ func (m *Model) requestRestart(node agentNode, ok bool) tea.Cmd {
 	}
 	state.restartNotice = ""
 	state.restartTarget = node.record
-	if node.record.Role == "coordinator" && node.record.Status == records.AgentLive {
+	if kind == records.AgentKindCoordinator && node.record.Status == records.AgentLive {
 		state.restartRunning = true
 		state.restartNotice = "checking coordinator pane"
 		return batch(
-			m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "checking pane")),
+			m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("profile", agentLabel(node.record)), slog.String("result", "checking pane")),
 			m.startCoordinatorRestartCheck(node.record),
 		)
 	}
-	if node.record.Status == records.AgentLive && (node.record.Role != "supervisor" || m.health.agents.supervisorLive) {
+	if node.record.Status == records.AgentLive && (kind != records.AgentKindSupervisor || m.health.agents.supervisorLive) {
 		state.restartConfirm = true
-		state.restartNotice = "restart " + node.record.Role + "? y/n"
-		return m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "confirmation required"))
+		state.restartNotice = "restart " + kind + "? y/n"
+		return m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("profile", agentLabel(node.record)), slog.String("result", "confirmation required"))
 	}
 	state.restartRunning = true
 	state.restartNotice = "restarting"
 	return batch(
-		m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("role", node.record.Role), slog.String("result", "started immediately")),
+		m.logAction("agent restart request", slog.String("agent_id", node.record.Key), slog.String("profile", agentLabel(node.record)), slog.String("result", "started immediately")),
 		m.startAgentRestart(node.record),
 	)
 }
@@ -307,15 +308,32 @@ func (s *healthState) agentList() []agentNode {
 			nodes = append(nodes, node)
 		}
 	}
-	slices.SortStableFunc(nodes, func(a, b agentNode) int { return healthRoleRank(a.record.Role) - healthRoleRank(b.record.Role) })
+	slices.SortStableFunc(nodes, func(a, b agentNode) int { return healthAgentRank(a.record) - healthAgentRank(b.record) })
 	return nodes
 }
 
-func healthRoleRank(role string) int {
-	if index := slices.Index([]string{"coordinator", "supervisor", "manager", "worker", "verifier"}, role); index >= 0 {
-		return index
+// healthAgentRank gives the row order: the coordinator, the supervisor, an
+// owner, then the first profiles. It reads only facts.
+func healthAgentRank(record records.Agent) int {
+	switch record.Kind {
+	case records.AgentKindCoordinator:
+		return 0
+	case records.AgentKindSupervisor:
+		return 1
 	}
-	return 5
+	if record.Owns != "" {
+		return 2
+	}
+	switch record.Profile {
+	case records.ProfilePlanner:
+		return 3
+	case records.ProfileBuilder:
+		return 4
+	case records.ProfileVerifier:
+		return 5
+	default:
+		return 6
+	}
 }
 
 // healthArea gives the grid row of a check by its name (rule 1).
@@ -507,10 +525,10 @@ func (m *Model) healthDetails(width int) (string, []string) {
 	}
 	var lines []string
 	if check.Name == "unresolved agents" && !passed {
-		lines = append(lines, dimStyle.Bold(true).Render("ID               ROLE      STATE         PANE"))
+		lines = append(lines, dimStyle.Bold(true).Render("ID               PROFILE   STATE         PANE"))
 		for _, node := range state.agentList() {
 			if record := node.record; record.Status == records.AgentUnresolved {
-				lines = append(lines, body.Render(fitHealthCell(healthAgentName(record), 17)+fitHealthCell(record.Role, 10)+fitHealthCell(record.Status, 14)+healthPane(record)))
+				lines = append(lines, body.Render(fitHealthCell(healthAgentName(record), 17)+fitHealthCell(agentLabel(record), 10)+fitHealthCell(record.Status, 14)+healthPane(record)))
 			}
 		}
 	} else {
@@ -569,12 +587,12 @@ func (m *Model) healthTableRows() []string {
 		}
 		row := marker + lipgloss.NewStyle().Foreground(dotColor).Render(dot) + " " +
 			name.Render(fitHealthCell(healthAgentName(record), healthNameWidth)) + " " +
-			dimStyle.Render(fitHealthCell(record.Role, healthRoleWidth)) + " " +
+			dimStyle.Render(fitHealthCell(agentLabel(record), healthProfileWidth)) + " " +
 			dimStyle.Render(fitHealthCell(record.Harness, healthHarnessWidth)) + " " +
 			fitHealthCell(word, healthStateWidth) + " " +
 			dimStyle.Render(fitHealthCell(healthPane(record), healthPaneWidth)) + " " +
 			dimStyle.Render(started) + strings.Repeat(" ", max(healthStartedWidth-lipgloss.Width(started), 0))
-		if record.Role == "coordinator" || record.Role == "supervisor" {
+		if kind := agentBuiltin(record); kind == records.AgentKindCoordinator || kind == records.AgentKindSupervisor {
 			row += restart.Render("r restart")
 		}
 		rows = append(rows, row)

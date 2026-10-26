@@ -16,7 +16,9 @@ import (
 // under one held store lock. It checks the claim with process.Alive before it
 // registers. A live claim fails the start.
 func StartSupervisor(home string, options RegisterOptions) output.Envelope {
-	options.Role = "supervisor"
+	options.Kind = records.AgentKindSupervisor
+	options.Profile = ""
+	options.Owns = ""
 	options.Project = ""
 	options.Task = ""
 	if message := validateRegistration(options); message != "" {

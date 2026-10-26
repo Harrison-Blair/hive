@@ -7,7 +7,7 @@ import (
 )
 
 func TestManagerInstructionsListGoalCommands(t *testing.T) {
-	for _, path := range []string{"../../.agents/skills/hive-manager/SKILL.md", "templates/project-agents.md"} {
+	for _, path := range []string{"../../profiles/planner.md", "templates/project-agents.md"} {
 		data, err := os.ReadFile(path)
 		if err != nil {
 			t.Fatalf("read %s: %v", path, err)
@@ -19,7 +19,7 @@ func TestManagerInstructionsListGoalCommands(t *testing.T) {
 			}
 		}
 	}
-	data, err := os.ReadFile("../../.agents/skills/hive-manager/SKILL.md")
+	data, err := os.ReadFile("../../profiles/planner.md")
 	if err != nil {
 		t.Fatal(err)
 	}

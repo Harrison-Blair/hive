@@ -30,13 +30,13 @@ func TestAgentsBoardsMatchTheirGrids(t *testing.T) {
 // agentsProject gives one project with a manager and workers named from id.
 func agentsProject(id, harness string, workers int) ([]records.Project, []records.Agent) {
 	agents := []records.Agent{{
-		Key: "manager-" + id, Name: "manager-" + id, Role: "manager", Project: id, Harness: harness,
+		Key: "manager-" + id, Name: "manager-" + id, Profile: records.ProfilePlanner, Owns: id, Project: id, Harness: harness,
 		PaneID: "w1:" + id, Status: records.AgentLive, AgentStatus: "idle", StatusChangedAt: "2026-10-21T14:20:00Z",
 	}}
 	for index := range workers {
 		name := fmt.Sprintf("t%d-%s-worker", index+1, id)
 		agents = append(agents, records.Agent{
-			Key: name, Name: name, Role: "worker", Project: id, Task: name, Harness: harness, Parent: "manager-" + id,
+			Key: name, Name: name, Profile: records.ProfileBuilder, Project: id, Task: name, Harness: harness, Parent: "manager-" + id,
 			PaneID: "w2:" + name, Status: records.AgentLive, AgentStatus: "working", StatusChangedAt: "2026-10-21T14:19:00Z",
 		})
 	}
@@ -372,7 +372,7 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	// Decision 64: one project opens the one-pod view.
 	requireView(t, m, "agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
-	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Role: "worker", Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
+	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Profile: records.ProfileBuilder, Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
 	m, cmd = raise(t, m, key('R', "R"))
 	m = deliverAgentCommands(t, m, cmd)
 	requireView(t, m, "h shows 1 stopped")
@@ -402,8 +402,8 @@ func openAgents(t *testing.T, home string, clock *testClock) *Model {
 // generation is not on the graph. A stopped current agent is on it after h.
 func TestAgentsGraphShowsTheCurrentGenerationOnly(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
-	writeAgentRecord(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "idle", Parent: "manager-current"})
-	writeAgentRecord(t, home, records.Agent{Key: "worker-new", Name: "worker-new", Role: "worker", Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", Replaces: "worker-old"})
+	writeAgentRecord(t, home, records.Agent{Key: "worker-old", Name: "worker-old", Profile: records.ProfileBuilder, Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "idle", Parent: "manager-current"})
+	writeAgentRecord(t, home, records.Agent{Key: "worker-new", Name: "worker-new", Profile: records.ProfileBuilder, Project: "demo", Task: "13-replaced", Status: records.AgentLive, AgentStatus: "working", Parent: "manager-current", Replaces: "worker-old"})
 	m := openAgents(t, home, clock)
 	// The coordinator card of decision 65 takes 5 rows: the pod note needs
 	// a taller pane.
@@ -433,7 +433,7 @@ func TestAgentsDetailsShowAnUnreadNudge(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			m := agentsBoardModel(t)
 			writeRecord(t, m.home, []string{"inbox", tc.inbox}, "1", records.Inbox{
-				Seq: 1, Role: tc.inbox, Kind: records.InboxCompleted, Agent: "worker-alpha",
+				Seq: 1, Inbox: tc.inbox, Kind: records.InboxCompleted, Agent: "worker-alpha",
 				Text: "completed", ReadAt: tc.readAt, NudgedAt: tc.nudgedAt,
 			})
 			m = refreshAgents(t, m)
@@ -457,7 +457,7 @@ func TestAgentsDetailsShowAnUnreadNudge(t *testing.T) {
 // sits in the pod of its project.
 func TestAgentsPodHoldsAgentsWithoutAParentRecord(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
-	writeAgentRecord(t, home, records.Agent{Key: "worker-stenographer-long-key-g7", Name: "long-key-worker", Role: "worker", Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working"})
+	writeAgentRecord(t, home, records.Agent{Key: "worker-stenographer-long-key-g7", Name: "long-key-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "11-build", Harness: "pi", Status: records.AgentLive, AgentStatus: "working"})
 	m := openAgents(t, home, clock)
 	requireView(t, m, "agents · demo", "◐ manager-demo", "● legacy-verifier", "● long-key-worker")
 }
@@ -468,7 +468,7 @@ func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
 	for _, id := range []string{"alpha", "zeta"} {
 		writeRecord(t, home, []string{"projects"}, id, records.Project{ID: id, Path: "/repo/" + id, Base: "dev"})
-		writeAgentRecord(t, home, records.Agent{Key: "manager-" + id, Name: "manager-" + id, Role: "manager", Project: id, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle"})
+		writeAgentRecord(t, home, records.Agent{Key: "manager-" + id, Name: "manager-" + id, Profile: records.ProfilePlanner, Owns: id, Project: id, Harness: "pi", Status: records.AgentLive, AgentStatus: "idle"})
 	}
 	m := openAgents(t, home, clock)
 	view := ansi.Strip(m.View().Content)
@@ -483,7 +483,7 @@ func TestAgentsPodsFollowProjectRecordOrder(t *testing.T) {
 // unknown.
 func TestAgentsCardsShowTheirStateWhenTheSupervisorIsStale(t *testing.T) {
 	home, clock := agentsFixture(t, 0)
-	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Role: "worker", Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
+	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := openAgents(t, home, clock)
 	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m, "claude · idle · 3m", "pi · stale")
@@ -595,7 +595,7 @@ var coordinatorBend = regexp.MustCompile("╭─*╯|╰─*╮")
 // h shows them and h hides them again. An unresolved agent stays visible.
 func TestAgentsHideStoppedAtStart(t *testing.T) {
 	home, clock := agentsGenerationFixture(t)
-	writeAgentRecord(t, home, records.Agent{Key: "lost-worker", Name: "lost-worker", Role: "worker", Project: "demo", Task: "14-lost", Status: records.AgentUnresolved, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:30Z"})
+	writeAgentRecord(t, home, records.Agent{Key: "lost-worker", Name: "lost-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "14-lost", Status: records.AgentUnresolved, Parent: "manager-current", StatusChangedAt: "2026-05-22T11:58:30Z"})
 	m := openAgents(t, home, clock)
 	// The coordinator card of decision 65 takes 5 rows: the pod note needs
 	// a taller pane.

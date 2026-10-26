@@ -11,7 +11,7 @@ import (
 
 func appendDoctorInbox(t *testing.T, home, key, text string) {
 	t.Helper()
-	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Role: key, Kind: records.InboxMessage, Text: text}); envelope.Outcome != "ok" {
+	if envelope := inboxlib.Append(home, inboxlib.AppendOptions{Inbox: key, Kind: records.InboxMessage, Text: text}); envelope.Outcome != "ok" {
 		t.Fatalf("Append(%s) = %#v", key, envelope)
 	}
 }
@@ -41,8 +41,8 @@ func TestDoctorListsUnreadRecordsWithoutLiveOwner(t *testing.T) {
 		t.Fatalf("check = %+v; want ok with 0", check)
 	}
 
-	seedDoctorAgent(t, home, records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Role: "manager", Project: "hive", Status: records.AgentLive})
-	seedDoctorAgent(t, home, records.Agent{Key: "t1-worker-1", Name: "t1-worker-1", Role: "worker", Project: "hive", Status: records.AgentStopped})
+	seedDoctorAgent(t, home, records.Agent{Key: "manager-hive-g1", Name: "manager-hive", Profile: records.ProfilePlanner, Project: "hive", Status: records.AgentLive})
+	seedDoctorAgent(t, home, records.Agent{Key: "t1-worker-1", Name: "t1-worker-1", Profile: records.ProfileBuilder, Project: "hive", Status: records.AgentStopped})
 	appendDoctorInbox(t, home, "manager-hive", "owned")
 	appendDoctorInbox(t, home, "t1-worker-1", "left one")
 	appendDoctorInbox(t, home, "t1-worker-1", "left two")

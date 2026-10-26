@@ -183,7 +183,6 @@ func TestMigrationVersionTwoSetsAgentFacts(t *testing.T) {
 			}
 			record := readAgentMap(t, home, key)
 			for field, want := range map[string]string{
-				"role":     c.role,
 				"profile":  c.wantProfile,
 				"kind":     c.wantKind,
 				"owns":     c.wantOwns,
@@ -192,6 +191,9 @@ func TestMigrationVersionTwoSetsAgentFacts(t *testing.T) {
 				if got, ok := record[field]; !ok || got != want {
 					t.Errorf("%s = %#v, present %t; want %q", field, got, ok, want)
 				}
+			}
+			if role, ok := record["role"]; ok {
+				t.Errorf("role = %#v; want no role field", role)
 			}
 
 			before := stateFingerprints(t, home)
@@ -238,8 +240,8 @@ func TestMigrationWaitsOnceOnAHeldLock(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after release = %v; want the migration", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 }
 
@@ -272,8 +274,8 @@ func TestMigrationFailedStepKeepsVersionOne(t *testing.T) {
 	if _, err := Open(home); err != nil {
 		t.Fatalf("Open() after the repair = %v; want success", err)
 	}
-	if version, ok := readSchemaVersion(t, home); !ok || version != 3 {
-		t.Fatalf("schema version = %d, present %t; want 3", version, ok)
+	if version, ok := readSchemaVersion(t, home); !ok || version != 4 {
+		t.Fatalf("schema version = %d, present %t; want 4", version, ok)
 	}
 	if record := readAgentMap(t, home, "manager-hive-g1"); record["owns"] != "hive" || record["profile"] != "planner" {
 		t.Fatalf("record = %#v; want the completed step", record)
@@ -356,12 +358,12 @@ func TestMigrationOfCopiedHomeShapes(t *testing.T) {
 		t.Fatalf("Open() = %v; want the migration", err)
 	}
 	want := map[string]map[string]string{
-		"coordinator-g1":  {"profile": "coordinator", "kind": "coordinator", "owns": "", "role": "coordinator"},
-		"supervisor-g1":   {"profile": "", "kind": "supervisor", "owns": "", "role": "supervisor"},
-		"manager-demo-g1": {"profile": "planner", "kind": "", "owns": "demo", "role": "manager"},
-		"t1-worker-1":     {"profile": "builder", "kind": "", "owns": "", "role": "worker"},
-		"t1-verifier-1":   {"profile": "verifier", "kind": "", "owns": "", "role": "verifier"},
-		"helper":          {"profile": "general", "kind": "", "owns": "", "role": "agent"},
+		"coordinator-g1":  {"profile": "coordinator", "kind": "coordinator", "owns": ""},
+		"supervisor-g1":   {"profile": "", "kind": "supervisor", "owns": ""},
+		"manager-demo-g1": {"profile": "planner", "kind": "", "owns": "demo"},
+		"t1-worker-1":     {"profile": "builder", "kind": "", "owns": ""},
+		"t1-verifier-1":   {"profile": "verifier", "kind": "", "owns": ""},
+		"helper":          {"profile": "general", "kind": "", "owns": ""},
 	}
 	for key, fields := range want {
 		record := readAgentMap(t, home, key)
