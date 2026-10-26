@@ -103,18 +103,24 @@ func agentBuiltin(record records.Agent) string {
 	}
 }
 
-// agentOwned reports that the record owns a project.
+// agentOwned reports that the record owns a project. A migrated record
+// declares ownership only with owns. A record written before the facts
+// migration keeps its owner in the wave-A manager role.
 func agentOwned(record records.Agent) bool {
-	return record.Owns != "" || record.Role == "manager" || record.Profile == records.ProfilePlanner
+	if record.Owns != "" {
+		return true
+	}
+	return record.Profile == "" && record.Role == "manager"
 }
 
-// agentOwns reports that the record owns project. A record written before
-// the facts migration keeps its owner in the wave-A role.
+// agentOwns reports that the record owns project. A migrated record
+// declares ownership only with owns. A record written before the facts
+// migration keeps its owner in the wave-A manager role.
 func agentOwns(record records.Agent, project string) bool {
 	if record.Owns != "" {
 		return record.Owns == project
 	}
-	return record.Project == project && (record.Role == "manager" || record.Profile == records.ProfilePlanner)
+	return record.Profile == "" && record.Project == project && record.Role == "manager"
 }
 
 type agentGroup struct {
@@ -434,8 +440,12 @@ func agentIdentities(record records.Agent) []string {
 		return []string{"key\x00" + record.Key}
 	}
 	identities := []string{"name\x00" + record.Name}
-	if record.Parent != "" || record.Replaces != "" {
-		identities = append(identities, strings.Join([]string{"lineage", agentProfile(record), record.Project, record.Task}, "\x00"))
+	// A record written before the facts migration has no profile. Its wave-A
+	// role, project, and task give the lineage, so a newer name of that
+	// lineage still replaces the older record. A free profile label never
+	// joins records: distinct custom-profile agents stay distinct.
+	if record.Profile == "" && (record.Parent != "" || record.Replaces != "") {
+		identities = append(identities, strings.Join([]string{"lineage", record.Role, record.Project, record.Task}, "\x00"))
 	}
 	return identities
 }

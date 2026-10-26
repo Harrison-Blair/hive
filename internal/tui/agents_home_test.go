@@ -193,9 +193,10 @@ func TestAgentsChildrenAreInOrderOfCreationTime(t *testing.T) {
 	}
 }
 
-// AC2: when h hides a stopped parent, its live child moves to home. It moves
-// back when h shows the parent.
-func TestAgentsHMovesTheChildOfAHiddenParent(t *testing.T) {
+// AC2 and D11: when h hides a stopped parent, its live child stays in the
+// project pod of its own project. Its selection stays on the child while the
+// parent card hides and shows.
+func TestAgentsHKeepsTheChildOfAHiddenParentInItsProject(t *testing.T) {
 	source := homeSource(generalAgentIn("alpha", "helper-1", "t1-alpha-worker", "2026-10-21T14:00:00Z"))
 	source.agents[2].Status = records.AgentStopped
 	m := agentsModel(t, source)
@@ -203,11 +204,18 @@ func TestAgentsHMovesTheChildOfAHiddenParent(t *testing.T) {
 	if pod, _ := podOf(t, m, "helper-1"); pod != "alpha" {
 		t.Fatalf("helper-1 is in pod %q; want alpha", pod)
 	}
+	m.graph.focus, m.graph.selected = "helper-1", "helper-1"
 	m, _ = raise(t, m, key('h', "h"))
-	if pod, _ := podOf(t, m, "helper-1"); pod != "home" {
-		t.Fatalf("after h helper-1 is in pod %q; want home", pod)
+	if m.graph.focus != "helper-1" || m.graph.selected != "helper-1" {
+		t.Fatalf("selection = %q/%q after h; want helper-1/helper-1", m.graph.focus, m.graph.selected)
 	}
-	requireView(t, m, "─ home ─", "● helper-1", "h shows 1 stopped")
+	if pod, _ := podOf(t, m, "helper-1"); pod != "alpha" {
+		t.Fatalf("after h helper-1 is in pod %q; want alpha", pod)
+	}
+	if got := m.hiddenCards(); got != 1 {
+		t.Fatalf("hidden cards = %d; want 1", got)
+	}
+	requireView(t, m, "h shows 1 stopped")
 	m, _ = raise(t, m, key('h', "h"))
 	if pod, _ := podOf(t, m, "helper-1"); pod != "alpha" {
 		t.Fatalf("after h h helper-1 is in pod %q; want alpha", pod)

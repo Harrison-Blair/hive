@@ -144,19 +144,12 @@ func (m *Model) hiddenCards() int {
 // the home pod last. The coordinator and the supervisor are in no pod
 // (decision 14). An agent is in the pod of its project, and the owner heads
 // the pod (D11). An agent with no project is in home. A child stays under its
-// parent in the same pod; a general agent whose hidden parent is not the
-// owner moves to home (decision 39 of general-agent).
+// parent in the same pod. A hidden or absent parent card does not change the
+// project of its child.
 func (m *Model) allPods() []graphPod {
 	nodes := m.agents.nodeMap()
 	hidden := func(node agentNode) bool { return m.graph.hideStopped && node.hideable() }
-	hiddenByKey := make(map[string]bool)
-	for _, node := range m.agents.data.nodes {
-		if node.current && hidden(node) {
-			hiddenByKey[node.record.Key] = true
-		}
-	}
 	var pods []graphPod
-	var homeExtra []agentNode
 	for _, group := range m.agents.data.groups {
 		if group.id == "home" {
 			continue
@@ -191,10 +184,6 @@ func (m *Model) allPods() []graphPod {
 			}
 			if hidden(node) {
 				pod.hidden++
-				continue
-			}
-			if agentProfile(node.record) == records.ProfileGeneral && hiddenByKey[node.record.Parent] && node.record.Parent != ownerKey {
-				homeExtra = append(homeExtra, node)
 				continue
 			}
 			members = append(members, node)
@@ -234,7 +223,6 @@ func (m *Model) allPods() []graphPod {
 			members = append(members, node)
 		}
 	}
-	members = append(members, homeExtra...)
 	memberSet := make(map[string]bool, len(members))
 	for _, node := range members {
 		memberSet[node.record.Key] = true

@@ -287,16 +287,21 @@ func TestAgentsGeneralChildOfAHiddenManagerStaysInThePod(t *testing.T) {
 	}
 }
 
-// Decision 39 of general-agent stays for a hidden worker parent: its live
-// general child moves to home.
-func TestAgentsGeneralChildOfAHiddenWorkerMovesToHome(t *testing.T) {
+// D11: a hidden worker parent does not move its live project child to home.
+func TestAgentsGeneralChildOfAHiddenWorkerStaysInThePod(t *testing.T) {
 	helper := records.Agent{Key: "b2-helper", Name: "b2-helper", Role: "agent", Project: "beta", Harness: "claude", Status: records.AgentLive, AgentStatus: "idle", Parent: "b2-worker", StartedAt: "2026-10-23T10:06:00Z"}
 	home, clock := hideHome(t, betaManager(records.AgentLive), betaWorker("b2-worker", records.AgentStopped, "done", "2026-10-23T10:05:00Z"), helper)
 	m := openHide(t, home, clock, hideSizes[0])
-	requireView(t, m, "─ home ─", "◐ b2-helper", "manager-beta", "h shows 1 stopped")
-	if pod, _ := podOf(t, m, "b2-helper"); pod != "home" {
-		t.Fatalf("b2-helper is in pod %q; want home", pod)
+	requireView(t, m, "─ beta ─", "◐ b2-helper", "manager-beta", "h shows 1 stopped")
+	rejectView(t, m, "─ home ─")
+	if pod, _ := podOf(t, m, "b2-helper"); pod != "beta" {
+		t.Fatalf("b2-helper is in pod %q; want beta", pod)
 	}
+	m, _ = raise(t, m, key('h', "h"))
+	if pod, _ := podOf(t, m, "b2-helper"); pod != "beta" {
+		t.Fatalf("shown b2-helper is in pod %q; want beta", pod)
+	}
+	requireView(t, m, "─ beta ─", "b2-worker", "b2-helper")
 }
 
 // Ask a5, Q2: with registered projects and each project pod hidden, the
