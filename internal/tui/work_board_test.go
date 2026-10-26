@@ -176,7 +176,7 @@ func TestWorkCardForms(t *testing.T) {
 	requireView(t, m,
 		"● 1-a", "landed · abcdef",
 		"◐ 4-d", "verified · V3 pass",
-		"○ 5-e", "t5-worker-1 · 12m",
+		"○ 5-e", "t5-worke… · 00:12:00",
 		"! 6-f", "needs you · mask ok?",
 		"○ 7-g", "verify fail · V4",
 		"○ 8-h", "waits on 5, 6 ",
@@ -376,7 +376,7 @@ func TestWorkPopups(t *testing.T) {
 	m := newWorkModel(t, workTestData(), demoUIState{Selection: "5-e"}, 120, 40)
 	m = pressWork(t, m, key(tea.KeyEnter, ""))
 	requireView(t, m, "5-e · esc closes", "title      Task 5-e", "status     assigned", "goal       g2-board · wave B",
-		"worker     t5-worker-1 · working · 12m", "verifier   none yet", "branch     task/5-e", "merge      none",
+		"worker     t5-worker-1 · working · 00:12:00", "verifier   none yet", "branch     task/5-e", "merge      none",
 		"depends    2-b · landed", "ACCEPTANCE", "○ AC1      The card shows", "EVIDENCE", "b brief.md    v VERIFIED.md   d deps graph",
 		"b brief · v verified · d deps · ↑↓ pgup/pgdn scroll · esc closes")
 	m = pressWork(t, m, key('b', "b"))

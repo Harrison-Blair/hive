@@ -56,7 +56,7 @@ func TestStatusCommandShowsTheFirstLineWithColors(t *testing.T) {
 	}
 	m, _ = raise(t, m, cmd())
 	row := m.View().Content
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 2m · build red ") || strings.Contains(got, "second line") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:02:00 · build red ") || strings.Contains(got, "second line") {
 		t.Fatalf("status row = %q", got)
 	}
 	if !strings.Contains(row, "\x1b[31mbuild red") {
@@ -92,7 +92,7 @@ func TestStatusCommandShowsTheFirstLineWithColors(t *testing.T) {
 func TestStatusCommandDropsControlSequences(t *testing.T) {
 	m, _ := statusCommandModel(t, "printf 'a\\033[2Jb\\033[1;1Hc\\033[32md\\a\\r'")
 	m, _ = raise(t, m, m.startStatusCommand()())
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 2m · abcd ") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:02:00 · abcd ") {
 		t.Fatalf("status row = %q", got)
 	}
 	if row := m.View().Content; strings.Contains(row, "\x1b[2J") || strings.Contains(row, "\x1b[1;1H") || !strings.Contains(row, "\x1b[32md") {

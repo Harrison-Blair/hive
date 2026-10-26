@@ -18,7 +18,7 @@ var gfLogsBoards = []string{"GfLogs", "GfLogsEmpty", "GfLogsRaw", "GfLogsError"}
 func TestGfLogsBoardsMatch(t *testing.T) {
 	for _, board := range gfLogsBoards {
 		t.Run(board, func(t *testing.T) {
-			want := readGfGrid(t, board)
+			want := durationGrid(t, board, readGfGrid(t, board))
 			m := newGfDemoModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)

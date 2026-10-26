@@ -23,7 +23,6 @@ import (
 type agentNode struct {
 	record   records.Agent
 	status   string
-	age      string
 	stopped  bool
 	current  bool
 	pid      string
@@ -155,7 +154,7 @@ func loadAgents(home string, now time.Time) (agentsData, error) {
 		}
 		source.inbox = append(source.inbox, items...)
 	}
-	return buildAgents(source, now), nil
+	return buildAgents(source), nil
 }
 
 // agentsSource holds the records that the Agents screen derives its data from.
@@ -233,7 +232,7 @@ func inboxAgentNames(agents []records.Agent) []string {
 	return names
 }
 
-func buildAgents(source agentsSource, now time.Time) agentsData {
+func buildAgents(source agentsSource) agentsData {
 	projects, goals, tasks, agents := source.projects, source.goals, source.tasks, source.agents
 	fresh, supervisorClaim := source.supervisorLive, source.supervisorClaim
 	taskByID := make(map[string]records.Task, len(tasks))
@@ -279,12 +278,8 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 		}
 		stopped := record.Status == records.AgentStopped || record.Status == records.AgentExited
 		status := agentStatus(record, fresh)
-		age := activityAge(record.StatusChangedAt, now)
 		pid := ""
 		if agentBuiltin(record) == records.AgentKindSupervisor {
-			if record.StatusChangedAt == "" {
-				age = activityAge(record.StartedAt, now)
-			}
 			if record.ProcessPID > 0 {
 				pid = fmt.Sprint(record.ProcessPID)
 			} else if supervisorClaim.Agent == record.Key && supervisorClaim.PID > 0 {
@@ -298,7 +293,7 @@ func buildAgents(source agentsSource, now time.Time) agentsData {
 			}
 		}
 		node := agentNode{
-			record: record, status: status, age: age, stopped: stopped, current: currentAgents[record.Key],
+			record: record, status: status, stopped: stopped, current: currentAgents[record.Key],
 			pid: pid, result: result, parentName: names[record.Parent],
 		}
 		if task, ok := taskByID[record.Task]; ok {
@@ -506,6 +501,20 @@ func agentStatus(record records.Agent, supervisorLive bool) string {
 	default:
 		return "unknown"
 	}
+}
+
+// agentStatusAge gives the HH:MM:SS age of the state of an agent, or "?" when
+// its status time and fallback time are missing or invalid. The supervisor
+// falls back to its started time, as its row always did.
+func agentStatusAge(node agentNode, now time.Time) string {
+	timestamp := node.record.StatusChangedAt
+	if agentBuiltin(node.record) == records.AgentKindSupervisor && timestamp == "" {
+		timestamp = node.record.StartedAt
+	}
+	if age, ok := statusDuration(timestamp, now); ok {
+		return age
+	}
+	return "?"
 }
 
 func activityAge(timestamp string, now time.Time) string {

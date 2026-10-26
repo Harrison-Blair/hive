@@ -386,15 +386,11 @@ func (m *Model) welcomeLines() []string {
 }
 
 func coordinatorStatusAge(changedAt string, now time.Time) string {
-	changed, err := time.Parse(time.RFC3339Nano, changedAt)
-	if err != nil {
+	age, ok := statusDuration(changedAt, now)
+	if !ok {
 		return ""
 	}
-	minutes := int(now.Sub(changed) / time.Minute)
-	if minutes < 0 {
-		minutes = 0
-	}
-	return fmt.Sprintf("%dm", minutes)
+	return age
 }
 
 // chatCursor puts the real terminal cursor on the cursor cell of the input

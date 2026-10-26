@@ -30,10 +30,10 @@ const (
 	healthNameWidth    = 17
 	healthProfileWidth = 12
 	healthHarnessWidth = 9
-	healthStateWidth   = 14
+	healthStateWidth   = 16
 	healthPaneWidth    = 10
 	healthStartedWidth = 10
-	healthHeader       = "AGENT             PROFILE      HARNESS   STATE          PANE       STARTED   RESTART"
+	healthHeader       = "AGENT             PROFILE      HARNESS   STATE            PANE       STARTED   RESTART"
 )
 
 // healthTileWidth is the most cells of a tile text.
@@ -665,8 +665,8 @@ func healthAgentName(record records.Agent) string {
 
 // healthAgentState gives the state word of an agent, its dot, and the
 // colour of the dot, as tui-v2 decision 55 gives them. A live state has the
-// whole minutes from status_changed_at. The word also shows the state, so
-// colour is not the only signal.
+// HH:MM:SS duration from status_changed_at. The word also shows the state,
+// so colour is not the only signal.
 func healthAgentState(record records.Agent, now time.Time, frame int) (string, string, color.Color) {
 	with := func(word string) string {
 		if age := coordinatorStatusAge(record.StatusChangedAt, now); age != "" {

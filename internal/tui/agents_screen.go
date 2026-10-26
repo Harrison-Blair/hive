@@ -1129,7 +1129,7 @@ func (m *Model) junction(c *cellCanvas, x, y int, node agentNode, light, heavy r
 // drawCard draws the card of one agent with component.Card. Only the
 // focus card has the heavy border.
 func (m *Model) drawCard(c *cellCanvas, node agentNode, x, y int) {
-	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node), State: node.status, Selected: node.record.Key == m.graph.focus, Frame: m.markerFrame}
+	card := component.Card{Name: node.record.Name, Sub: agentCardSub(node, m.now()), State: node.status, Selected: node.record.Key == m.graph.focus, Frame: m.markerFrame}
 	if card.Selected {
 		m.graph.cardRow, m.graph.cardCol = y, x
 	}
@@ -1137,18 +1137,33 @@ func (m *Model) drawCard(c *cellCanvas, node agentNode, x, y int) {
 }
 
 // agentCardSub gives the sub line of a card: the harness, the state, and the
-// age of the state or the result of a stopped agent.
-func agentCardSub(node agentNode) string {
-	parts := []string{node.record.Harness, node.status}
-	switch {
-	case node.stopped && node.result != "":
-		parts = append(parts, node.result)
-	case node.stopped && node.record.AgentStatus != "":
-		parts = append(parts, node.record.AgentStatus)
-	case !node.stopped && node.age != "?":
-		parts = append(parts, node.age)
+// age of the state or the result of a stopped agent. The age stays complete.
+// The harness is left out when the line has no room for it.
+func agentCardSub(node agentNode, now time.Time) string {
+	width := component.CardWidth - 4
+	if node.stopped {
+		parts := []string{node.record.Harness, node.status}
+		switch {
+		case node.result != "":
+			parts = append(parts, node.result)
+		case node.record.AgentStatus != "":
+			parts = append(parts, node.record.AgentStatus)
+		}
+		return strings.Join(slices.DeleteFunc(parts, func(text string) bool { return text == "" }), " · ")
 	}
-	return strings.Join(slices.DeleteFunc(parts, func(text string) bool { return text == "" }), " · ")
+	age := agentStatusAge(node, now)
+	if age == "?" {
+		age = ""
+	}
+	tail := fitStatusAge(node.status, age, width)
+	if node.record.Harness == "" {
+		return tail
+	}
+	full := node.record.Harness + " · " + tail
+	if ansi.StringWidth(full) <= width {
+		return full
+	}
+	return tail
 }
 
 // agentDetailsPopup gives the title, the lines, and the key row of the
@@ -1173,7 +1188,7 @@ func (m *Model) agentDetailsPopup() (string, []string, string) {
 		}
 		return prefix + at.In(m.now().Location()).Format("15:04:05")
 	}
-	age := node.age
+	age := agentStatusAge(node, m.now())
 	if age == "?" {
 		age = ""
 	}

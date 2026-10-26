@@ -142,7 +142,7 @@ func TestGfAgentsCardStates(t *testing.T) {
 			if !ok || node.record.Key != "t6-worker-1" {
 				t.Fatalf("selected agent = %q (%t); want t6-worker-1", node.record.Key, ok)
 			}
-			card := ansi.Strip(component.Card{Name: "probe", State: node.status, Sub: agentCardSub(node)}.View())
+			card := ansi.Strip(component.Card{Name: "probe", State: node.status, Sub: agentCardSub(node, m.now())}.View())
 			if node.status != tc.word {
 				t.Errorf("derived state = %q; want %q", node.status, tc.word)
 			}

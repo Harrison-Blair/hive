@@ -146,7 +146,7 @@ func TestGfAgentsLegendIsLastBodyRowWhenScrolling(t *testing.T) {
 		source.agents = append(source.agents, agents...)
 	}
 	source.supervisorLive = true
-	m.agents.accept(buildAgents(source, m.now()))
+	m.agents.accept(buildAgents(source))
 	m.invalidateView()
 	rows := strings.Split(ansi.Strip(m.View().Content), "\n")
 	if !strings.HasPrefix(rows[37], " ── spawn") {
@@ -187,9 +187,9 @@ func TestGfAgentsStatusRow(t *testing.T) {
 		keys []tea.KeyPressMsg
 		want string
 	}{
-		{"overview", nil, " ● working 2m · agents · ←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task · h stopped"},
-		{"one pod", []tea.KeyPressMsg{key('o', "o")}, " ● working 2m · agents · ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
-		{"details", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, " ● working 2m · details · a attach · p peek · t task · ↑↓ scroll · esc close"},
+		{"overview", nil, " ● working 00:02:00 · agents · ←→ pod · ↑↓ card · enter details · o one pod · a attach · p peek · t task"},
+		{"one pod", []tea.KeyPressMsg{key('o', "o")}, " ● working 00:02:00 · agents · ←↑↓→ move · enter details · a attach · p peek · t task · esc pods · h stopped"},
+		{"details", []tea.KeyPressMsg{key(tea.KeyEnter, "")}, " ● working 00:02:00 · details · a attach · p peek · t task · ↑↓ scroll · esc close"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			_, rows := gfAgentsRows(t, "GfAgents", tc.keys...)
@@ -301,7 +301,7 @@ func TestGfAgentsDetailsPopup(t *testing.T) {
 		"│ project   hive                                           │",
 		"│ task      6-starting-status · assigned                   │",
 		"│ harness   pi · openai-codex/gpt-6.1-sol                  │",
-		"│ state     working · 1m · changed 14:21:02                │",
+		"│ state     working · 00:01:00 · changed 14:21:02          │",
 		"│ parent    manager-hive                                   │",
 		"│ pane      w6A:p1 · tab t6-worker-1                       │",
 		"│ worktree  projects/hive/worktrees/6-starting-status      │",

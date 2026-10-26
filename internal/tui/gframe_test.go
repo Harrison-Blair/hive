@@ -231,16 +231,16 @@ func TestFrameScreenStatusRowIsStateScreenClock(t *testing.T) {
 		t.Fatalf("Chat status row %q; want the default segments", row)
 	}
 	m, _ = raise(t, m, ctrl('l'))
-	want := " ● working 2m · logs · ↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel"
+	want := " ● working 00:02:00 · logs · ↑↓ move · / filter · f follow · ← → day · j raw · r request · ^] panel"
 	row := viewRows(m)[39]
 	if !strings.HasPrefix(row, want) || !strings.HasSuffix(row, "14:22 ") {
 		t.Fatalf("Logs status row\n%q\nwant prefix %q and the clock", row, want)
 	}
 	g := viewGrid(t, m)
-	if cell := g.At(39, len([]rune(" ● working 2m · "))); cell.Token != cellgrid.Accent || !cell.Bold {
+	if cell := g.At(39, len([]rune(" ● working 00:02:00 · "))); cell.Token != cellgrid.Accent || !cell.Bold {
 		t.Errorf("screen name %v bold %v; want accent bold", cell.Token, cell.Bold)
 	}
-	if cell := g.At(39, len([]rune(" ● working 2m · logs · "))); cell.Token != cellgrid.Dim {
+	if cell := g.At(39, len([]rune(" ● working 00:02:00 · logs · "))); cell.Token != cellgrid.Dim {
 		t.Errorf("screen keys %v; want dim", cell.Token)
 	}
 	m, _ = raise(t, m, ctrl('t'))

@@ -146,7 +146,7 @@ func TestDemoRunsTheGfChatBoard(t *testing.T) {
 	if status != 0 {
 		t.Fatalf("status = %d; output %q", status, out.String())
 	}
-	for _, want := range []string{"> Next, the release notes.", "● working", "^g agents"} {
+	for _, want := range []string{"> Next, the release notes.", "● working 00:02:00", "? 0 asks"} {
 		if !strings.Contains(out.String(), want) {
 			t.Fatalf("output lacks %q:\n%s", want, out.String())
 		}

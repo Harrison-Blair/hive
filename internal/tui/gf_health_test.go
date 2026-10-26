@@ -25,7 +25,7 @@ var gfHealthBoards = []string{"GfHealth", "GfHealthGreen", "GfHealthRestart", "G
 func TestGfHealthBoardsMatch(t *testing.T) {
 	for _, board := range gfHealthBoards {
 		t.Run(board, func(t *testing.T) {
-			want := d13HealthGrid(readGfGrid(t, board))
+			want := durationGrid(t, board, d13HealthGrid(readGfGrid(t, board)))
 			m := newGfDemoModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)
@@ -219,7 +219,7 @@ func TestGfHealthTableKeysSelectARow(t *testing.T) {
 	if cell := grid.At(8, 0); cell.Token != cellgrid.Border {
 		t.Fatalf("details corner = %s; want border", cell.Token)
 	}
-	if got, want := healthStatusRow(m), "health · ↑↓ row · g/G top/end · pgup/pgdn page · ^] checks · r restart · a attach · p peek"; !strings.Contains(got, want) {
+	if got, want := healthStatusRow(m), "health · ↑↓ row · g/G top/end · pgup/pgdn page · ^] checks · r restart · a attach"; !strings.Contains(got, want) {
 		// Decision 10 drops the keys on the right, before the clock, when
 		// the row is wider than the pane.
 		t.Fatalf("status row = %q; want %q", got, want)
@@ -384,11 +384,11 @@ func TestGfHealthTableStates(t *testing.T) {
 		agent("coordinator", records.ProfileCoordinator, records.AgentStopped, ""),
 	}})
 	for _, want := range []string{
-		"▶ ○ coordinator", "stopped        gone",
-		"▲ w-blocked", "blocked 7m",
-		"○ w-idle", "idle 7m",
-		"● w-plain", "live 7m",
-		"○ w-stale", "stale          gone",
+		"▶ ○ coordinator", "stopped          gone",
+		"▲ w-blocked", "blocked 00:07:00",
+		"○ w-idle", "idle 00:07:00",
+		"● w-plain", "live 00:07:00",
+		"○ w-stale", "stale            gone",
 		"agents · 5 · 2 live · 1 idle · 1 stopped · 1 stale",
 	} {
 		requireView(t, m, want)

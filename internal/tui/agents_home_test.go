@@ -79,7 +79,7 @@ func TestAgentsHomeColumnHoldsAGeneralAgentWithoutAParentCard(t *testing.T) {
 		t.Fatalf("the last column is %q; want home", last.group.id)
 	}
 	view := ansi.Strip(m.View().Content)
-	requireView(t, m, "agents · 1 project", "─ home ─", "● review-1", "pi · working · 3m")
+	requireView(t, m, "agents · 1 project", "─ home ─", "● review-1", "working · 00:03:00")
 	_, alpha := cardColumn(t, view, "manager-alpha")
 	_, home := cardColumn(t, view, "review-1")
 	if home <= alpha {
@@ -317,7 +317,7 @@ func TestAgentsDetailsOfAGeneralAgent(t *testing.T) {
 // shows the notice and does nothing.
 func TestHealthAgentsRestartRefusesAGeneralAgent(t *testing.T) {
 	m := newTestDemoModel(t, "HealthAgents.fixture.json", demoSize{})
-	m.health.agents = buildAgents(homeSource(generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")), m.now())
+	m.health.agents = buildAgents(homeSource(generalAgent("review-1", "coordinator-g1", "2026-10-21T14:00:00Z")))
 	m.health.agents.supervisorLive = true
 	m.health.selectedAgent = "review-1"
 	// The board opens with the restart prompt of the supervisor. Close it.
