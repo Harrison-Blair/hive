@@ -87,10 +87,17 @@ Git ignores `.hive/spec/`. `hive worktree create` copies the feature folder of t
 - `main.go` calls `cmd.Execute()` and sets the exit status. `go build .` makes a binary named `hive`.
 - `cmd/` holds the root command and thin Cobra wiring. `NewRootCmd()` builds a fresh tree. `ExecuteWithArgs()` lets a test inject arguments and streams.
 - Each subcommand has its own folder, `cmd/<name>/` or `cmd/<parent>/<subcommand>/`, with a `New() *cobra.Command` constructor. The parent registers its children. The constructor calls into `internal/`.
-- `internal/<name>/` mirrors the command tree. Each leaf owns its options, orchestration, result types, text rendering, and tests.
+- Each command leaf `cmd/<path>/` pairs with the package `internal/<path>/` at the same path. A command leaf is a command that runs one operation.
+- The command leaf keeps the Cobra construction, the flags, and the CLI adapter. The tests of the CLI adapter stay beside the command leaf.
+- The paired `internal/<path>/` package keeps the operation behavior and its tests: the options, the orchestration, the result types, and the text rendering.
+- Code that two or more operations use stays in the parent domain package or in an existing package below `internal/lib/`. Do not add a generic command factory.
+- An API that the TUI or another non-CLI caller uses stays in the parent domain package.
 - `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
 - `internal/tui/` holds the Bubble Tea program that bare `hive` runs.
-- `internal/` never imports Cobra or `cmd/`. A child package never imports its parent.
+- `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
+- Some parts keep their current roles. `cmd/common` holds the CLI helpers. The root command starts the TUI. Each package below `internal/lib/` holds shared code.
+- A group command registers its child commands. It imports them only for this registration. `internal/tui` imports `internal/tui/component` as a deliberate exception.
+- `.hive/spec/cmd-internal-mirroring/inventory.md` lists each command leaf, its internal path, and each deliberate exception. For example, `cmd/version` uses `internal/lib/version`.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
 ### Tests and the gate
