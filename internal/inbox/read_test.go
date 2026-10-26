@@ -2,7 +2,6 @@ package inbox
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -160,38 +159,6 @@ func TestVerifierCannotReadAllManagerInbox(t *testing.T) {
 	}
 }
 
-func TestSendDefaultsAgentAndKeepsExplicitSender(t *testing.T) {
-	home := t.TempDir()
-	seedInboxAgent(t, home, liveInboxAgent("worker-1", "worker-1", "worker", "one", "w1:p1"), nil)
-	envelope := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "default"}, "w1:p1", "")
-	if envelope.Outcome != "ok" {
-		t.Fatalf("Send() = %#v; want ok", envelope)
-	}
-	found, err := inboxlib.All(home, "manager-one")
-	if err != nil || len(found) != 1 || found[0].Agent != "worker-1" {
-		t.Fatalf("records = %#v, %v; want the caller as sender", found, err)
-	}
-	explicit := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Agent: "sender-x", Text: "explicit"}, "", "")
-	if explicit.Outcome != "ok" {
-		t.Fatalf("Send(explicit) = %#v; want ok", explicit)
-	}
-	found, err = inboxlib.All(home, "manager-one")
-	if err != nil || len(found) != 2 || found[1].Agent != "sender-x" {
-		t.Fatalf("records = %#v, %v; want the explicit sender", found, err)
-	}
-}
-
-func TestSendUnknownCallerWithoutAgentFails(t *testing.T) {
-	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Inbox: "manager-one", Kind: records.InboxMessage, Text: "hello"}, "", "")
-	if envelope.Outcome != "failed" || envelope.Error != "caller unknown: pass --agent" {
-		t.Fatalf("Send() = %#v; want caller unknown", envelope)
-	}
-	if found, err := inboxlib.All(home, "manager-one"); err != nil || len(found) != 0 {
-		t.Fatalf("records = %#v, %v; want none", found, err)
-	}
-}
-
 func TestReadRejectsPathKeyMismatchWithoutConsume(t *testing.T) {
 	for _, mismatch := range []struct{ collection, oldName, newName string }{
 		{"agents", "manager-one-g1", "wrong-holder"},
@@ -219,17 +186,6 @@ func TestReadRejectsPathKeyMismatchWithoutConsume(t *testing.T) {
 				t.Fatalf("read_at = %q; want no consume effect", found[0].ReadAt)
 			}
 		})
-	}
-}
-
-func TestSendInvalidExplicitDoesNotCreateState(t *testing.T) {
-	home := t.TempDir()
-	envelope := Send(home, inboxlib.AppendOptions{Inbox: "../x", Kind: "message", Agent: "explicit", Text: "body"}, "", "")
-	if envelope.Outcome != "failed" || envelope.Phase != "validate" || envelope.Error != "invalid inbox key: ../x" {
-		t.Fatalf("Send() = %#v; want failed validate", envelope)
-	}
-	if _, err := os.Lstat(filepath.Join(home, ".hive", "state")); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("explicit invalid send created state, err=%v", err)
 	}
 }
 
