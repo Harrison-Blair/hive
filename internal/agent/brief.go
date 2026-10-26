@@ -10,6 +10,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/marker"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 )
 
@@ -75,14 +76,59 @@ func instructionsText(home, profile string) (string, string) {
 	return strings.Join(parts, "\n\n"), ""
 }
 
-// systemPromptArgs returns the start arguments that carry the instructions.
-// It returns nil when the harness takes the instructions in the first prompt.
-func systemPromptArgs(profile harness.Profile, instructions string) []string {
+// instructionFile is one private file that holds the instructions of one
+// start attempt. The harness reads it while it starts (D4).
+type instructionFile struct {
+	home string
+	path string
+}
+
+// prepareInstructions writes the instructions to a new private file in the
+// .hive/tmp/ folder of home and returns the start arguments that name it. It
+// returns no file when the harness takes the instructions in the first
+// prompt. The file is closed when the function returns.
+func prepareInstructions(home string, profile harness.Profile, instructions string) ([]string, *instructionFile, error) {
 	flag := profile.SystemPromptArg()
 	if flag == "" || instructions == "" {
-		return nil
+		return nil, nil, nil
 	}
-	return []string{flag, instructions}
+	absolute, err := filepath.Abs(home)
+	if err != nil {
+		return nil, nil, fmt.Errorf("instruction file: %w", err)
+	}
+	directory := filepath.Join(absolute, ".hive", "tmp")
+	if err := os.MkdirAll(directory, 0o700); err != nil {
+		return nil, nil, fmt.Errorf("instruction file: %w", err)
+	}
+	file, err := os.CreateTemp(directory, "instructions-*.md")
+	if err != nil {
+		return nil, nil, fmt.Errorf("instruction file: %w", err)
+	}
+	owned := &instructionFile{home: absolute, path: file.Name()}
+	_, writeErr := file.WriteString(instructions)
+	closeErr := file.Close()
+	if err := errors.Join(writeErr, closeErr); err != nil {
+		_ = owned.remove()
+		return nil, nil, fmt.Errorf("instruction file: %w", err)
+	}
+	return []string{flag, owned.path}, owned, nil
+}
+
+// remove deletes the file of this attempt only.
+func (f *instructionFile) remove() error {
+	if err := os.Remove(f.path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
+}
+
+// keptEffect names the kept file relative to the home.
+func (f *instructionFile) keptEffect() output.Effect {
+	path := f.path
+	if relative, err := filepath.Rel(f.home, f.path); err == nil {
+		path = filepath.ToSlash(relative)
+	}
+	return output.Effect{Resource: "instructions", Path: path, Action: "kept"}
 }
 
 // taskPromptPaths gives the brief and evidence paths of one task. The evidence

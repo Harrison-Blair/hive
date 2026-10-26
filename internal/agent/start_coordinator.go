@@ -55,6 +55,31 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 	if profile.SystemPromptArg() == "" && instructions != "" {
 		prompt = instructions + "\n\n" + prompt
 	}
+	systemArgs, file, err := prepareInstructions(l.home, profile, instructions)
+	if err != nil {
+		return err
+	}
+	// keepFile is true while the harness can still read the file. Claude Code
+	// reads it before it draws its prompt, so a ready start with a checked
+	// process identity has read it. A refused start cannot read it.
+	keepFile := false
+	if file != nil {
+		defer func() {
+			if !keepFile {
+				if removeErr := file.remove(); removeErr == nil {
+					return
+				} else if logger != nil {
+					logger.Error("instruction file remove", "command", l.command, "path", file.path, "error", removeErr.Error())
+				}
+			}
+			if logger != nil {
+				logger.Debug("instruction file kept", "command", l.command, "path", file.path, "cleanup", "remove the file after the owner settles the coordinator")
+			}
+			if err != nil {
+				err = fmt.Errorf("%w; instruction file kept until the owner settles the coordinator: %s", err, file.path)
+			}
+		}()
+	}
 	if err := l.setPane(paneID); err != nil {
 		return fmt.Errorf("set starting claim pane: %w", err)
 	}
@@ -69,10 +94,12 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 		Name:      "coordinator",
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
-		Args:      profile.Args(model, systemPromptArgs(profile, instructions)),
+		Args:      profile.Args(model, systemArgs),
 		TimeoutMS: uint64(profile.StartTimeout().Milliseconds()),
 	}, options...)
 	if err != nil {
+		var serverError *herdr.Error
+		keepFile = !errors.As(err, &serverError)
 		return fmt.Errorf("start coordinator harness: %w", err)
 	}
 	started = true
@@ -96,6 +123,7 @@ func (l *CoordinatorLaunch) Start(ctx context.Context, paneID, harnessKind, mode
 		StartedByHive: true,
 	}
 	if failure := l.waitForHarness(ctx, profile, paneID, &record); failure != nil {
+		keepFile = true
 		record.Status = records.AgentUnresolved
 		record.LastError = failure.Error()
 		if commitErr := l.commit(record); commitErr != nil {

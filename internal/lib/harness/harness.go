@@ -17,9 +17,10 @@ type Profile interface {
 	ReadyTimeout() time.Duration
 	ProcessNames() []string
 	Trust() Trust
-	// SystemPromptArg returns the flag that carries the profile text and the
-	// guide as a system prompt. It returns the empty string when the harness
-	// takes that text at the start of the first prompt (D4).
+	// SystemPromptArg returns the flag that names a file with the profile text
+	// and the guide. The harness reads the file at its start as a system
+	// prompt. It returns the empty string when the harness takes that text at
+	// the start of the first prompt (D4).
 	SystemPromptArg() string
 }
 

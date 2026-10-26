@@ -19,9 +19,10 @@ func (claudeProfile) StartTimeout() time.Duration { return 120 * time.Second }
 func (claudeProfile) ReadyTimeout() time.Duration { return 120 * time.Second }
 func (claudeProfile) ProcessNames() []string      { return []string{"claude"} }
 
-// SystemPromptArg carries the profile text and the guide as one system prompt
-// (D4).
-func (claudeProfile) SystemPromptArg() string { return "--append-system-prompt" }
+// SystemPromptArg names the file that holds the profile text and the guide.
+// Claude Code reads the file at its start and appends the text to its system
+// prompt (D4). Herdr start arguments cannot carry multiline text.
+func (claudeProfile) SystemPromptArg() string { return "--append-system-prompt-file" }
 
 // Trust gives the trust method of Claude Code 2.1.307. CLAUDE_CODE_SANDBOXED=1
 // makes the workspace trust check pass for this process only. Claude Code
