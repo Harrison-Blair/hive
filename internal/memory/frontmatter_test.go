@@ -85,22 +85,22 @@ func TestParseFrontmatterErrors(t *testing.T) {
 }
 
 func TestParseMemoryNameDiffers(t *testing.T) {
-	_, err := parseMemory([]byte("---\nname: other\ndescription: A fact.\n---\n"), "fact")
-	if err == nil || userErrorText(err) != "frontmatter: name other differs from fact" {
-		t.Fatalf("parseMemory() error = %v; want name difference", err)
+	_, err := ParseMemory([]byte("---\nname: other\ndescription: A fact.\n---\n"), "fact")
+	if err == nil || UserErrorText(err) != "frontmatter: name other differs from fact" {
+		t.Fatalf("ParseMemory() error = %v; want name difference", err)
 	}
 	if err == nil || err.Error() != "frontmatter: name differs" {
-		t.Fatalf("parseMemory() log error = %v; want safe category", err)
+		t.Fatalf("ParseMemory() log error = %v; want safe category", err)
 	}
 }
 
 func TestParseMemoryNameDifferenceStaysOnOneLine(t *testing.T) {
-	_, err := parseMemory([]byte("---\nname: bad\nname2: x\ndescription: A fact.\n---\n"), "fact")
+	_, err := ParseMemory([]byte("---\nname: bad\nname2: x\ndescription: A fact.\n---\n"), "fact")
 	if err == nil {
-		t.Fatal("parseMemory() accepted a missing name")
+		t.Fatal("ParseMemory() accepted a missing name")
 	}
-	_, err = parseMemory([]byte("---\nname: bad\nname: x\ndescription: A fact.\n---\n"), "fact")
+	_, err = ParseMemory([]byte("---\nname: bad\nname: x\ndescription: A fact.\n---\n"), "fact")
 	if err == nil || !strings.Contains(err.Error(), "duplicate name") {
-		t.Fatalf("parseMemory() error = %v; want duplicate name", err)
+		t.Fatalf("ParseMemory() error = %v; want duplicate name", err)
 	}
 }

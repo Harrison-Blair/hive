@@ -11,7 +11,8 @@ import (
 
 const (
 	maxMemoryFileSize = 1 << 20
-	indexName         = "MEMORY.md"
+	// IndexName is the file name of the memory index.
+	IndexName = "MEMORY.md"
 )
 
 // memoryFileError keeps the path and the cause of one invalid memory file.
@@ -27,19 +28,20 @@ func (e *memoryFileError) Unwrap() error { return e.err }
 
 // UserMessage returns the exact text for command output.
 func (e *memoryFileError) UserMessage() string {
-	return "memory file invalid: " + e.path + ": " + userErrorText(e.err)
+	return "memory file invalid: " + e.path + ": " + UserErrorText(e.err)
 }
 
 // LogCategory returns the safe text for one log event.
 func (e *memoryFileError) LogCategory() string {
-	return "memory file invalid: " + e.path + ": " + logErrorText(e.err)
+	return "memory file invalid: " + e.path + ": " + LogErrorText(e.err)
 }
 
 func invalidMemoryFile(path string, err error) error {
 	return &memoryFileError{path: path, err: err}
 }
 
-type indexEntry struct {
+// IndexEntry is one line of the memory index.
+type IndexEntry struct {
 	Name        string
 	Description string
 }
@@ -71,7 +73,8 @@ func readMemoryFile(path string) ([]byte, error) {
 	return data, nil
 }
 
-func scanMemoryFiles(dir string) ([]indexEntry, error) {
+// ScanMemoryFiles reads and checks each memory file in dir, in name order.
+func ScanMemoryFiles(dir string) ([]IndexEntry, error) {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
@@ -79,10 +82,10 @@ func scanMemoryFiles(dir string) ([]indexEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-	found := make([]indexEntry, 0, len(entries))
+	found := make([]IndexEntry, 0, len(entries))
 	for _, entry := range entries {
 		name := entry.Name()
-		if name == indexName || !strings.HasSuffix(name, ".md") {
+		if name == IndexName || !strings.HasSuffix(name, ".md") {
 			continue
 		}
 		path := filepath.Join(dir, name)
@@ -91,11 +94,11 @@ func scanMemoryFiles(dir string) ([]indexEntry, error) {
 			return nil, invalidMemoryFile(path, err)
 		}
 		base := strings.TrimSuffix(name, ".md")
-		values, err := parseMemory(data, base)
+		values, err := ParseMemory(data, base)
 		if err != nil {
 			return nil, invalidMemoryFile(path, err)
 		}
-		found = append(found, indexEntry{Name: base, Description: values["description"]})
+		found = append(found, IndexEntry{Name: base, Description: values["description"]})
 	}
 	sort.Slice(found, func(left, right int) bool {
 		return found[left].Name < found[right].Name
@@ -103,7 +106,8 @@ func scanMemoryFiles(dir string) ([]indexEntry, error) {
 	return found, nil
 }
 
-func buildIndex(entries []indexEntry) []byte {
+// BuildIndex renders the memory index from its entries.
+func BuildIndex(entries []IndexEntry) []byte {
 	var builder strings.Builder
 	for _, entry := range entries {
 		builder.WriteString("- [")
@@ -117,7 +121,8 @@ func buildIndex(entries []indexEntry) []byte {
 	return []byte(builder.String())
 }
 
-func upsertEntry(entries []indexEntry, entry indexEntry) []indexEntry {
+// UpsertEntry replaces the entry with the same name or appends the entry.
+func UpsertEntry(entries []IndexEntry, entry IndexEntry) []IndexEntry {
 	for index := range entries {
 		if entries[index].Name == entry.Name {
 			entries[index] = entry
