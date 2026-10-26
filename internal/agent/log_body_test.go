@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 	"strings"
@@ -74,22 +73,6 @@ func TestArgvLogBodyStaysBounded(t *testing.T) {
 	event := findLogEvent(t, logEvents(t, home), "agent start argv")
 	checkBody(t, event, `["`+long+`"]`)
 	if event["command"] != "agent spawn" {
-		t.Fatalf("command = %#v", event["command"])
-	}
-}
-
-func TestPromptLogBodyStaysBounded(t *testing.T) {
-	home := testHome(t)
-	writeRecord(t, home, liveRecord("worker-hive-1", "worker-hive-1"))
-	fake := newFakeHerdr(t)
-	fake.result("agent.prompt", `{"type":"agent_prompted","agent":`+agentJSON("w1:p1", "term_a", "w1", "w1:t1", "idle", "worker-hive-1")+`}`)
-	long := "a" + strings.Repeat("é", 3000) + "END"
-	if envelope := Send(context.Background(), home, SendOptions{Agent: "worker-hive-1", Text: long}); envelope.Outcome != "ok" {
-		t.Fatalf("envelope = %#v", envelope)
-	}
-	event := findLogEvent(t, logEvents(t, home), "agent prompt")
-	checkBody(t, event, long)
-	if event["command"] != "agent send" {
 		t.Fatalf("command = %#v", event["command"])
 	}
 }

@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -18,9 +17,9 @@ func TestListAllShowsStartingStatus(t *testing.T) {
 	if envelope.Outcome != "ok" {
 		t.Fatalf("List() = %+v, want ok", envelope)
 	}
-	text := ListText(envelope)
-	if !strings.Contains(text, "agent-starting\t1\tbuilder\tstarting\tone") {
-		t.Fatalf("ListText() = %q; want starting status", text)
+	listed, ok := envelope.Result.([]records.Agent)
+	if !ok || len(listed) != 1 || listed[0].Key != "agent-starting" || listed[0].Status != records.AgentStarting {
+		t.Fatalf("List() = %+v; want the starting record", envelope.Result)
 	}
 }
 

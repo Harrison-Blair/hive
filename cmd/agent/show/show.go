@@ -4,6 +4,7 @@ package show
 import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/show"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ func New() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return common.Run(cmd, "agent show", func(home string) (output.Envelope, string, error) {
 				envelope := agentlib.Show(home, args[0])
-				return envelope, agentlib.ShowText(envelope), nil
+				return envelope, operation.Text(envelope), nil
 			})
 		},
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	operation "github.com/Harrison-Blair/hive/internal/agent/register"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -39,7 +40,7 @@ func New() *cobra.Command {
 			pane, workspace, tab = paneFromEnv()
 		}
 		return common.Run(cmd, "agent register", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.RegisterAndRename(home, agentlib.RegisterOptions{
+			envelope := operation.Run(home, agentlib.RegisterOptions{
 				Project:       project,
 				Task:          task,
 				Harness:       harness,
@@ -53,7 +54,7 @@ func New() *cobra.Command {
 				QuietAfterSet: cmd.Flags().Lookup("quiet-after").Changed,
 				PID:           pid,
 			})
-			return envelope, agentlib.RegisterText(envelope), nil
+			return envelope, operation.Text(envelope), nil
 		})
 	}
 	return command

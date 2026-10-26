@@ -100,7 +100,7 @@ func claimCoordinator(ctx context.Context, home string, restart *records.Agent, 
 			}
 			hasClaim = false
 		}
-		agents, listErr := loadAgents(locked)
+		agents, listErr := LoadAgents(locked)
 		if listErr != nil {
 			return listErr
 		}
@@ -190,7 +190,7 @@ func settleDeadLauncher(ctx context.Context, locked *store.LockedStore, claim re
 		}
 		return "", nil
 	}
-	agents, err := loadAgents(locked)
+	agents, err := LoadAgents(locked)
 	if err != nil {
 		return "", err
 	}

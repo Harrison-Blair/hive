@@ -18,7 +18,7 @@ var lookupPattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,199}$`)
 // Show returns one agent record by name, singleton name, or record key.
 func Show(home, name string) output.Envelope {
 	if !lookupPattern.MatchString(name) {
-		return showFailed(home, name, "read", "agent not found: "+displayValue(name))
+		return showFailed(home, name, "read", "agent not found: "+DisplayValue(name))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -57,14 +57,14 @@ func Show(home, name string) output.Envelope {
 		return showFailed(home, name, "store", err.Error())
 	}
 	if !found {
-		return showFailed(home, name, "read", "agent not found: "+displayValue(name))
+		return showFailed(home, name, "read", "agent not found: "+DisplayValue(name))
 	}
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: record}
 }
 
 func showFailed(home, name, phase, message string) output.Envelope {
-	logAgentEvent(home, "agent show failed", "name", displayValue(name), "phase", phase, "error", message)
-	return failed(phase, message)
+	LogAgentEvent(home, "agent show failed", "name", DisplayValue(name), "phase", phase, "error", message)
+	return Failed(phase, message)
 }
 
 func claimMatchesRecord(claim records.Claim, record records.Agent) bool {

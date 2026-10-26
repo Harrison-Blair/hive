@@ -153,7 +153,7 @@ func (l *CoordinatorLaunch) waitForHarness(ctx context.Context, profile harness.
 	waitOptions := []herdr.Option{herdr.WithLogger(logger), herdr.WithDeadline(profile.ReadyTimeout() + 5*time.Second)}
 	ready, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{
 		Target:    paneID,
-		Until:     settledStatuses,
+		Until:     SettledStatuses,
 		TimeoutMS: uint64(profile.ReadyTimeout().Milliseconds()),
 	}, waitOptions...)
 	if err != nil {
