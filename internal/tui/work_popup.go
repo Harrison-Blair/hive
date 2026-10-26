@@ -26,6 +26,10 @@ const workLabelWidth = 11
 // gap.
 const workCommandWidth = 38
 
+// workTaskLineWidth is the cells of one line of the task popup: the popup
+// width less its border and its padding.
+const workTaskLineWidth = workTaskPopupWidth - 4
+
 // workPopupView dims screen, the rows above the status rows, and draws the
 // open popup centered on it (decision 5).
 func (m *Model) workPopupView(screen string, width, height int) string {
@@ -135,6 +139,23 @@ func workField(label, value string) string {
 	return dimStyle.Render(label) + strings.Repeat(" ", workLabelWidth-ansi.StringWidth(label)) + value
 }
 
+// workWorkerLine gives the worker field of the task popup. The state word
+// and its duration stay complete, and a long worker name is elided before
+// them (decision 35).
+func workWorkerLine(name, status, age string) string {
+	suffix := ""
+	for _, part := range []string{status, age} {
+		if part != "" {
+			suffix += " · " + part
+		}
+	}
+	room := workTaskLineWidth - workLabelWidth - ansi.StringWidth(suffix)
+	if ansi.StringWidth(name) > room {
+		name = ansi.Truncate(name, max(room, 0), "…")
+	}
+	return workField("worker", name+suffix)
+}
+
 // workTaskLines gives the lines of the task popup (rule 9): the fields, the
 // acceptance criteria of the brief, and the evidence of VERIFIED.md.
 func (m *Model) workTaskLines() []string {
@@ -152,16 +173,13 @@ func (m *Model) workTaskLines() []string {
 	if item.goal != "" {
 		goal = item.goal + " · wave " + item.wave
 	}
-	worker := "none"
+	worker := workField("worker", "none")
 	if task.ActingAgent != "" {
-		worker = task.ActingAgent
+		status, age := "", ""
 		if agent, ok := s.data.agents[task.ActingAgent]; ok {
-			for _, part := range []string{agent.AgentStatus, coordinatorStatusAge(agent.StatusChangedAt, m.now())} {
-				if part != "" {
-					worker += " · " + part
-				}
-			}
+			status, age = agent.AgentStatus, coordinatorStatusAge(agent.StatusChangedAt, m.now())
 		}
+		worker = workWorkerLine(task.ActingAgent, status, age)
 	}
 	verification := latestTaskVerification(task)
 	verifier := "none yet"
@@ -197,7 +215,7 @@ func (m *Model) workTaskLines() []string {
 		workField("title", task.Title),
 		workField("status", status),
 		workField("goal", goal),
-		workField("worker", worker),
+		worker,
 		workField("verifier", verifier),
 		workField("branch", branch),
 		workField("merge", merge),

@@ -92,7 +92,7 @@ func idleDurationOverride(want cellgrid.Grid) cellgrid.Grid {
 func TestGfChatBoardsMatch(t *testing.T) {
 	for _, board := range gfChatBoards {
 		t.Run(board, func(t *testing.T) {
-			want := readGfGrid(t, board)
+			want := durationGrid(t, board, readGfGrid(t, board))
 			if board == "GfChatMarkdown" {
 				want = idleDurationOverride(want)
 			}

@@ -471,13 +471,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case tickMsg:
-		if m.activeTab() == tabChat {
-			age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
-			if age != m.chatStatusAge {
-				m.chatStatusAge = age
-				m.invalidateView()
-			}
+		age := coordinatorStatusAge(m.header.coordinatorChangedAt, m.now())
+		if age != m.chatStatusAge {
+			m.chatStatusAge = age
+			m.rebuildChat()
 		}
+		// The status durations follow the clock. A tick redraws the view
+		// from the stored records, so an unchanged record keeps its new
+		// value.
+		m.invalidateView()
 		if m.follow && !m.logDatePinned && !sameDay(m.logDate, m.now()) {
 			m.logDate = startOfDay(m.now())
 			m.events = nil

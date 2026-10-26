@@ -38,7 +38,7 @@ func newBoardDemoModel(t *testing.T, board string) *Model {
 func TestGfWorkBoardsMatch(t *testing.T) {
 	for _, board := range gfWorkBoards {
 		t.Run(board, func(t *testing.T) {
-			want := readGfGrid(t, board)
+			want := durationGrid(t, board, readGfGrid(t, board))
 			m := newGfWorkModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)

@@ -356,7 +356,7 @@ func fixtureBackgroundScreens(m *Model, now time.Time) {
 
 	node := agentNode{
 		record: records.Agent{Key: "coordinator", Name: "coordinator", Kind: records.AgentKindCoordinator, Status: records.AgentLive},
-		status: "working", age: "now",
+		status: "working",
 	}
 	m.agents.accept(agentsData{
 		nodes: []agentNode{node}, groups: []agentGroup{{id: "home", title: "home", keys: []string{"coordinator"}}},

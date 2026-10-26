@@ -14,7 +14,7 @@ func TestCoordinatorWorkingMarkerAnimates(t *testing.T) {
 	m.header.coordinator = "working"
 	m.header.coordinatorChangedAt = gfDay.Add(-2 * time.Minute).Format(time.RFC3339)
 	m.invalidateView()
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 2m · ") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:02:00 · ") {
 		t.Fatalf("still status row = %q, want the rest glyph and its age", got)
 	}
 	for frame, glyph := range []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏", "⠋"} {
@@ -22,7 +22,7 @@ func TestCoordinatorWorkingMarkerAnimates(t *testing.T) {
 		if cmd == nil {
 			t.Fatalf("frame %d scheduled no next tick", frame+1)
 		}
-		want := " " + glyph + " working 2m · "
+		want := " " + glyph + " working 00:02:00 · "
 		if got := viewRow(m, 39); !strings.HasPrefix(got, want) {
 			t.Fatalf("status row at frame %d = %q, want prefix %q", frame+1, got, want)
 		}
@@ -36,12 +36,12 @@ func TestCoordinatorWorkingDurationUsesStatusChange(t *testing.T) {
 	m.header.coordinator = "working"
 	m.header.coordinatorChangedAt = gfDay.Add(-2 * time.Minute).Format(time.RFC3339)
 	m.invalidateView()
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 2m · ") {
-		t.Fatalf("status row = %q, want a 2m working duration", got)
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:02:00 · ") {
+		t.Fatalf("status row = %q, want a 00:02:00 working duration", got)
 	}
 	m.now = func() time.Time { return gfDay.Add(3 * time.Minute) }
 	m.invalidateView()
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 5m · ") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:05:00 · ") {
 		t.Fatalf("status row after 3m = %q, want a 5m working duration", got)
 	}
 	m.header.coordinator = "idle"

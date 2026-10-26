@@ -219,8 +219,8 @@ func TestAgentsSupervisorRowUsesLifecycleClaimPIDAndStartAge(t *testing.T) {
 	if supervisor.record.Key == "" {
 		t.Fatal("live supervisor generation 16 is not current")
 	}
-	if supervisor.status != "working" || supervisor.age != "50m" {
-		t.Fatalf("supervisor status/age = %q/%q, want working/50m", supervisor.status, supervisor.age)
+	if supervisor.status != "working" || agentStatusAge(supervisor, m.now()) != "00:50:00" {
+		t.Fatalf("supervisor status/age = %q/%q, want working/00:50:00", supervisor.status, agentStatusAge(supervisor, m.now()))
 	}
 	// Health › Agents shows the pid in the details of the supervisor.
 	if want := fmt.Sprint(os.Getpid()); supervisor.pid != want {

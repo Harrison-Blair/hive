@@ -107,8 +107,8 @@ func TestAgentsOverviewDrawsOneCardForEachName(t *testing.T) {
 	m := openAgents(t, home, clock)
 	m, _ = raise(t, m, key('h', "h"))
 	requireView(t, m,
-		"◐ coordinator", "claude · idle · 9m",
-		"● manager-qmeter", "pi · working · 1h",
+		"◐ coordinator", "idle · 00:09:45",
+		"● manager-qmeter", "working · 01:11:57",
 		"○ manager-stenograp…", "claude · stopped · …",
 	)
 	rejectView(t, m, "unknown")
@@ -126,7 +126,7 @@ func TestAgentsPodViewDrawsTheLiveManager(t *testing.T) {
 	m := openAgents(t, home, clock)
 	m.graph.pod, m.graph.podView = "qmeter", true
 	m.invalidateView()
-	requireView(t, m, "● manager-qmeter", "pi · working · 1h")
+	requireView(t, m, "● manager-qmeter", "working · 01:11:57")
 	rejectView(t, m, "claude · unknown")
 }
 
@@ -167,7 +167,7 @@ func TestAgentsCoordinatorIsTheLiveRecord(t *testing.T) {
 // record.
 func TestHealthAgentsListOneRowForEachName(t *testing.T) {
 	source := agentsSource{agents: allStaleFixtures(t), supervisorLive: true}
-	state := healthState{agents: buildAgents(source, time.Date(2026, 10, 23, 3, 0, 0, 0, time.UTC))}
+	state := healthState{agents: buildAgents(source)}
 	var got []string
 	for _, node := range state.agentList() {
 		got = append(got, node.record.Key+" "+node.status)

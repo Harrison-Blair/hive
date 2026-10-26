@@ -30,11 +30,12 @@ const (
 	healthNameWidth    = 17
 	healthProfileWidth = 12
 	healthHarnessWidth = 9
-	healthStateWidth   = 14
 	healthPaneWidth    = 10
 	healthStartedWidth = 10
-	healthHeader       = "AGENT             PROFILE      HARNESS   STATE          PANE       STARTED   RESTART"
 )
+
+// healthStateMinWidth is the least cells of the STATE column: its header.
+const healthStateMinWidth = len("STATE")
 
 // healthTileWidth is the most cells of a tile text.
 const healthTileWidth = 30
@@ -572,6 +573,7 @@ func healthLabelled(label, text string, line int, body lipgloss.Style) []string 
 func (m *Model) healthTableRows() []string {
 	state := &m.health
 	nodes := state.agentList()
+	stateWidth := m.healthStateColumnWidth()
 	rows := make([]string, 0, len(nodes))
 	for _, node := range nodes {
 		record := node.record
@@ -589,7 +591,7 @@ func (m *Model) healthTableRows() []string {
 			name.Render(fitHealthCell(healthAgentName(record), healthNameWidth)) + " " +
 			dimStyle.Render(fitHealthCell(agentLabel(record), healthProfileWidth)) + " " +
 			dimStyle.Render(fitHealthCell(record.Harness, healthHarnessWidth)) + " " +
-			fitHealthCell(word, healthStateWidth) + " " +
+			fitHealthCell(word, stateWidth) + " " +
 			dimStyle.Render(fitHealthCell(healthPane(record), healthPaneWidth)) + " " +
 			dimStyle.Render(started) + strings.Repeat(" ", max(healthStartedWidth-lipgloss.Width(started), 0))
 		if kind := agentBuiltin(record); kind == records.AgentKindCoordinator || kind == records.AgentKindSupervisor {
@@ -601,6 +603,29 @@ func (m *Model) healthTableRows() []string {
 		rows = append(rows, "    "+dimStyle.Render("no agents"))
 	}
 	return rows
+}
+
+// healthStateColumnWidth gives the STATE column budget: the complete state
+// word of each agent, and at least the header.
+func (m *Model) healthStateColumnWidth() int {
+	width := healthStateMinWidth
+	for _, node := range m.health.agentList() {
+		word, _, _ := healthAgentState(node.record, m.now(), m.markerFrame)
+		width = max(width, ansi.StringWidth(word))
+	}
+	return width
+}
+
+// healthTableHeader gives the header of the agents table for the STATE
+// column budget. The STATE header and each following column start at the
+// same cell as their row fields.
+func healthTableHeader(stateWidth int) string {
+	return fitHealthCell("AGENT", healthNameWidth) + " " +
+		fitHealthCell("PROFILE", healthProfileWidth) + " " +
+		fitHealthCell("HARNESS", healthHarnessWidth) + " " +
+		fitHealthCell("STATE", stateWidth) + " " +
+		fitHealthCell("PANE", healthPaneWidth) + " " +
+		fitHealthCell("STARTED", healthStartedWidth) + "RESTART"
 }
 
 // healthTable draws the agents table box at width×height cells. The rows
@@ -619,7 +644,7 @@ func (m *Model) healthTable(rows []string, width, height int, focused bool) stri
 	} else {
 		*offset = 0
 	}
-	lines := append([]string{"    " + dimStyle.Bold(true).Render(healthHeader)}, rows[*offset:min(*offset+visible, len(rows))]...)
+	lines := append([]string{"    " + dimStyle.Bold(true).Render(healthTableHeader(m.healthStateColumnWidth()))}, rows[*offset:min(*offset+visible, len(rows))]...)
 	mark := component.Thumb(visible, len(rows), visible, *offset)
 	if mark.Size > 0 {
 		mark.Start++
@@ -665,8 +690,8 @@ func healthAgentName(record records.Agent) string {
 
 // healthAgentState gives the state word of an agent, its dot, and the
 // colour of the dot, as tui-v2 decision 55 gives them. A live state has the
-// whole minutes from status_changed_at. The word also shows the state, so
-// colour is not the only signal.
+// HH:MM:SS duration from status_changed_at. The word also shows the state,
+// so colour is not the only signal.
 func healthAgentState(record records.Agent, now time.Time, frame int) (string, string, color.Color) {
 	with := func(word string) string {
 		if age := coordinatorStatusAge(record.StatusChangedAt, now); age != "" {

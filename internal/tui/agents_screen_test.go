@@ -48,7 +48,7 @@ func agentsModel(t *testing.T, source agentsSource) *Model {
 	t.Helper()
 	m := newTestDemoModel(t, "Main.fixture.json", demoSize{})
 	source.supervisorLive = true
-	m.agents.accept(buildAgents(source, m.now()))
+	m.agents.accept(buildAgents(source))
 	m.invalidateView()
 	return m
 }
@@ -370,7 +370,7 @@ func TestAgentsNormalModeLoadsAndRefreshes(t *testing.T) {
 	m, cmd := raise(t, m, ctrl('g'))
 	m = deliverAgentCommands(t, m, cmd)
 	// Decision 64: one project opens the one-pod view.
-	requireView(t, m, "agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "pi · working · 3m")
+	requireView(t, m, "agents · alpha", "g1-alpha · wave A", "◐ manager-alpha", "● t1-alpha-worker", "working · 00:03:00")
 	m, _ = raise(t, m, key(tea.KeyDown, ""))
 	writeAgentRecord(t, home, records.Agent{Key: "t3-alpha-worker", Name: "t3-alpha-worker", Profile: records.ProfileBuilder, Project: "alpha", Task: "t3-alpha-worker", Harness: "pi", Parent: "manager-alpha", Status: records.AgentStopped, AgentStatus: "done"})
 	m, cmd = raise(t, m, key('R', "R"))
@@ -486,10 +486,10 @@ func TestAgentsCardsShowTheirStateWhenTheSupervisorIsStale(t *testing.T) {
 	writeAgentRecord(t, home, records.Agent{Key: "stale-worker", Name: "stale-worker", Profile: records.ProfileBuilder, Project: "demo", Task: "09-stale", Harness: "pi", PaneID: "w1:p9", Status: records.AgentStale, AgentStatus: "working", Parent: "manager-demo"})
 	m := openAgents(t, home, clock)
 	m, _ = raise(t, m, key('h', "h"))
-	requireView(t, m, "claude · idle · 3m", "pi · stale")
+	requireView(t, m, "idle · 00:03:00", "pi · stale")
 	writeRecord(t, home, []string{"claims"}, "supervisor", records.Claim{Key: "supervisor", Agent: "supervisor", Generation: 1, PID: 0})
 	m = refreshAgents(t, m)
-	requireView(t, m, "claude · unknown", "codex · unknown · 5m")
+	requireView(t, m, "unknown · 00:03:00", "unknown · 00:05:00")
 }
 
 // Each key of the graph logs its user action.

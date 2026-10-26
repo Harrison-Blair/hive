@@ -442,7 +442,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 	m.headerLoader = func(context.Context, string) (headerState, error) {
 		return buildHeader(data.Supervisor.Live, data.Supervisor.BinaryOld, data.Projects, data.Agents, data.Tasks, data.Asks), nil
 	}
-	m.agentsLoader = func(_ string, now time.Time) (agentsData, error) {
+	m.agentsLoader = func(_ string, _ time.Time) (agentsData, error) {
 		unread := make(map[string][]records.Inbox, len(data.Inbox))
 		var all []records.Inbox
 		for name, items := range data.Inbox {
@@ -463,7 +463,7 @@ func (m *Model) useDemoLoaders(fixture *demoFixture) {
 			unread:          unread,
 			events:          demoLogEvents(data.Logs),
 			inbox:           all,
-		}, now), nil
+		}), nil
 	}
 	m.tasksLoader = func(string) (tasksData, error) {
 		return buildTasks(data.Tasks, data.Projects, data.Goals, data.Agents, taskFiles{

@@ -236,7 +236,7 @@ func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	m.chatData.entries = []chatlib.Entry{{ID: "pending", At: "2026-10-20T11:59:00Z", From: "user", Text: "hello", Delivery: "pending"}}
 	m.invalidateView()
 	requireMessage(t, m, " › you "+time.Date(2026, 10, 20, 11, 59, 0, 0, time.UTC).Local().Format("15:04")+" · pending ", " hello ")
-	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 2m · ") {
+	if got := viewRow(m, 39); !strings.HasPrefix(got, " ● working 00:02:00 · ") {
 		t.Fatalf("status row = %q", got)
 	}
 	if got := viewRow(m, 36); got != "╭"+strings.Repeat("─", 118)+"╮" {
@@ -245,15 +245,15 @@ func TestChatPendingMessageAndStateLeaveTheComposerBorder(t *testing.T) {
 	requireView(t, m, "│ > type a message · ? help ")
 }
 
-// Task 164 changes decision 11: only the working state shows the whole-minute
-// duration. Idle, blocked, starting, and none have no duration.
+// Task 164 changes decision 11: only the working state shows a duration.
+// Task 183 gives it as HH:MM:SS. Idle, blocked, starting, and none have none.
 func TestChatStateSegmentShowsTheGlyphAndWorkingDuration(t *testing.T) {
 	cases := []struct {
 		name, status, changedAt, want string
 	}{
-		{"working zero", "working", "2026-10-20T12:00:00Z", "● working 0m"},
-		{"working one", "working", "2026-10-20T11:59:00Z", "● working 1m"},
-		{"working fifty-nine", "working", "2026-10-20T11:01:00Z", "● working 59m"},
+		{"working zero", "working", "2026-10-20T12:00:00Z", "● working 00:00:00"},
+		{"working one", "working", "2026-10-20T11:59:00Z", "● working 00:01:00"},
+		{"working fifty-nine", "working", "2026-10-20T11:01:00Z", "● working 00:59:00"},
 		{"idle", "idle", "2026-10-20T11:59:00Z", "○ idle"},
 		{"blocked", "blocked", "2026-10-20T12:00:00Z", "▲ blocked"},
 		{"other", "waiting", "2026-10-20T11:59:00Z", "● starting"},

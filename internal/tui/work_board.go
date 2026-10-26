@@ -649,7 +649,7 @@ func (s *tasksState) cardLine(item taskItem, now time.Time) (string, bool) {
 		return "verify fail", true
 	case task.ActingAgent != "" && hasAgent:
 		if age := coordinatorStatusAge(agent.StatusChangedAt, now); age != "" {
-			return task.ActingAgent + " · " + age, false
+			return fitLabelDuration(task.ActingAgent, age, component.CardWidth-4), false
 		}
 		return task.ActingAgent, false
 	}

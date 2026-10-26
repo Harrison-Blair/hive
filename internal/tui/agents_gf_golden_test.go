@@ -16,7 +16,7 @@ import (
 func TestGfAgentsBoardsMatch(t *testing.T) {
 	for _, board := range gfAgentsBoards {
 		t.Run(board, func(t *testing.T) {
-			want := d11AgentsGrid(t, board, readGfGrid(t, board))
+			want := durationGrid(t, board, d11AgentsGrid(t, board, readGfGrid(t, board)))
 			m := newGfDemoModel(t, board)
 			got := renderGrid(t, m, want.Width, want.Height)
 			diffs, err := cellgrid.Compare(want, got, nil)
