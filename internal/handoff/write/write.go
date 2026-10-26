@@ -1,5 +1,5 @@
-// Package handoff writes the Markdown handoff of one role.
-package handoff
+// Package write writes the Markdown handoff of one role.
+package write
 
 import (
 	"errors"
