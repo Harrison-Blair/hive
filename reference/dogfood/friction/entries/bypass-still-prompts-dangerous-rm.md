@@ -74,3 +74,21 @@ record with no reason, and the manager read each pane with
 `herdr pane read` to find the cause. The manager sent each worker an inbox
 record to rewrite the command with `"${VAR:?}"` and let the dialog deny
 itself. Workers spawned by hive still repeat the pattern. A third hit came the same day: t144-worker-1 on `rm -rf $SP/*` in its scratchpad cleanup.
+
+
+**Occurrence 2026-10-26 (hive task 171):**
+Builder `t171-builder-1` ran with the approved `claude-opus-5-5` and bypass
+arguments. A scratch cleanup command used `rm -rf $S/$r-wt` for owned
+before/after copies below its session scratch root. Claude showed the
+possibly-empty-variable dialog and Hive delivered blocked record 274.
+The manager read the actual owned pane and saved the exact guard. A later
+read showed working, and coordinator record 275 found no pending dialog.
+Neither manager nor coordinator sent a stale approval or Escape key.
+
+The approved recovery was to decline an actual pending unsafe form and
+rewrite the cleanup with checked literal owned paths or quoted guarded
+variables. No permission, trust, model, or harness setting changed. The
+worker continued with the isolated checks. The block/read receipts remain
+under task 171 `evidence/harness-block274/`. Subsequent source verification
+and the separate probe-order correction preserve their own actual results;
+this prompt is not represented as a source defect or a product fix.
