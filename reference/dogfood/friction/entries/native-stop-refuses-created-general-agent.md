@@ -54,3 +54,8 @@ Task 185 evidence contains `manager-ci-observer-stop-refusal.json`,
 `manager-ci-green.json`, and `observer-manual-cleanup/` with all raw identity,
 version, close, and post-close observations. The general agent read only
 GitHub results and wrote no source, PR, runtime, or settings change.
+
+**Occurrence 2026-10-27:** manager-stenographer spawned the codex reviewer
+`hub-redesign-reviewer` (profile general, pane w139:p2) with
+`hive agent spawn`. `hive agent stop --agent hub-redesign-reviewer` refused
+with "hive did not start it: exit it by hand". The record shows status live.

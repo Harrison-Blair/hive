@@ -32,3 +32,11 @@ Replacement tasks use new IDs. Existing dependents can require further
 replacement records. Goal waves retain cancelled originals as history and
 count them in their totals. The manager must check actual completion against
 the accepted replacement graph.
+
+**Occurrence 2026-10-27 (stenographer, goal g3-hub-redesign):** spec review
+added two order edges after the tasks existed: 194 after 191 and 192, and
+198 after 197. Replacement tasks would cascade to nine downstream tasks
+(195, 197 to 203 depend on 194 or 198 by ID). The manager kept the original
+tasks, stated each extra edge in its brief and in spec D17, and holds the
+order when spawning. `hive task list --ready` therefore shows 194 and 198
+ready earlier than the spec allows.
