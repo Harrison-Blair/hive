@@ -89,3 +89,4 @@ For all other files, the coordinator and manager never change a project source f
 | [An inbox report over 4096 bytes is refused](entries/inbox-report-byte-limit.md) | Open | Send a concise report within the limit and link the full evidence. Preserve the refused attempt. |
 | [The verifier profile prescribes the hive Go gate on a non-Go project](entries/verifier-profile-go-gate-on-other-projects.md) | Open | Name the project gate in the spec as the replacement; unset NO_COLOR for colour tests. |
 | [A repair builder spawned while the old builder is live does not become the acting agent](entries/respawn-keeps-blocked-acting-agent.md) | Open | Stop the old builder first, or the new builder self-assigns after the old one stops. |
+| [Claude Code builders stop at a permission prompt for rm on a variable glob](entries/builder-rm-glob-permission-prompt.md) | Open | The prompt times out and denies; no planner action. Profile could require "${S:?}" paths. |
