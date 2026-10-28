@@ -21,7 +21,7 @@ with `checkout_path` `/home/penguin/source/stenographer`, and one idle shell
 pane. The manager workspace `w14N` (`hive:stenographer`, cwd
 `projects/stenographer`) has no worktree metadata, so herdr does not group
 the task worktree `w14Q` under it. The user saw the two workspaces as an
-error. Hive does not close `w14P` when it removes the worktree.
+error. It is not yet checked whether `hive worktree remove` closes `w14P`.
 
 **Reproduction steps:**
 1. Spawn the owner planner of a registered project. Observe the workspace
