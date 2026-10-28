@@ -91,3 +91,4 @@ For all other files, the coordinator and manager never change a project source f
 | [A repair builder spawned while the old builder is live does not become the acting agent](entries/respawn-keeps-blocked-acting-agent.md) | Open | Stop the old builder first, or the new builder self-assigns after the old one stops. |
 | [Claude Code builders stop at a permission prompt for rm on a variable glob](entries/builder-rm-glob-permission-prompt.md) | Open | The prompt times out and denies; no planner action. Profile could require "${S:?}" paths. |
 | [Builder spawn right after worktree create can fail with first tab busy](entries/spawn-after-worktree-create-first-tab-busy.md) | Open | Run the spawn again. |
+| [Worktree create opens a second workspace for the project checkout](entries/worktree-create-opens-repo-workspace.md) | Open | |
