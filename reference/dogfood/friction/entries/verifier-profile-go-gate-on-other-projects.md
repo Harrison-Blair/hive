@@ -28,3 +28,11 @@ replaces the profile Go gate, then respawned a builder to re-complete.
 **Workaround:** name the project gate in the feature spec and state that it
 replaces the profile Go gate; pass `env -u NO_COLOR` where tests assert
 colour.
+
+**Recurrence 2026-10-28:** task `205-changelog-v0170` (project stenographer).
+The verifier harness again exported `NO_COLOR=1`. The full gate gave 6 failed
+colour tests in `tests/cli/hub/`. The same tests fail on base `31d955c` with
+`NO_COLOR=1` and pass with `env -u NO_COLOR`. The brief of task 205 did not
+carry the `env -u NO_COLOR` gate, so the verifier lost time to find the cause.
+Put the `env -u NO_COLOR` gate in each stenographer brief, or unset `NO_COLOR`
+in the agent environment that hive starts.
