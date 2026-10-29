@@ -51,7 +51,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	logger.Debug("command start", "command", "init")
 	result, runErr := homeinitlib.Initialize(cwd)
 	if runErr != nil {
-		logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", runErr.Error())
+		logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", runErr.Error())
 		return fail(cmd, jsonOutput, "command", runErr, 1)
 	}
 	effects := []output.Effect{}
@@ -60,9 +60,9 @@ func run(cmd *cobra.Command, _ []string) error {
 		effects = append(effects, output.Effect{Resource: "config", Path: result.ConfigPath, Action: "created"})
 		text = fmt.Sprintf("Initialized hive home at %s\n", result.Home)
 	}
-	logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", "ok")
+	logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeOK)
 	envelope := output.Envelope{
-		Outcome: "ok",
+		Outcome: output.OutcomeOK,
 		Phase:   "complete",
 		Effects: effects,
 		Error:   nil,
@@ -75,14 +75,7 @@ func run(cmd *cobra.Command, _ []string) error {
 }
 
 func fail(cmd *cobra.Command, jsonOutput bool, phase string, err error, status int) error {
-	envelope := output.Envelope{
-		Outcome: "failed",
-		Phase:   phase,
-		Effects: []output.Effect{},
-		Error:   err.Error(),
-		Result:  nil,
-	}
-	if renderErr := output.Render(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, envelope, ""); renderErr != nil {
+	if renderErr := output.Render(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, output.Failed(phase, err.Error()), ""); renderErr != nil {
 		return &common.StatusError{Status: status}
 	}
 	return &common.StatusError{Status: status}

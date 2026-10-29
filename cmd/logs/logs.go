@@ -14,6 +14,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	loglib "github.com/Harrison-Blair/hive/internal/logs"
 	"github.com/spf13/cobra"
 )
@@ -79,15 +80,15 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 	// failure is the error text of a failed run for the command end event.
 	var failure string
 	defer func() {
-		outcome := "ok"
+		outcome := output.OutcomeOK
 		if runErr != nil {
 			var status *common.StatusError
 			if !errors.As(runErr, &status) || status.Status != 0 {
-				outcome = "failed"
+				outcome = output.OutcomeFailed
 			}
 		}
 		attrs := []any{"command", "logs", "duration_ms", time.Since(started).Milliseconds(), "outcome", outcome}
-		if outcome != "ok" && failure != "" {
+		if outcome != output.OutcomeOK && failure != "" {
 			attrs = append(attrs, "error", failure)
 		}
 		logger.Debug("command end", attrs...)

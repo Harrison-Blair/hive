@@ -241,6 +241,18 @@ func TestSpawnUnknownProject(t *testing.T) {
 	}
 }
 
+func TestSpawnInvalidProjectIDUsesTheProjectRule(t *testing.T) {
+	agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	options := base("one")
+	options.Project = "Repo_One"
+	envelope := spawnRun(t, home, options)
+	const want = "invalid project id: Repo_One: an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "project" || errorText(envelope) != want {
+		t.Fatalf("envelope = %+v; want failed project phase with %q", envelope, want)
+	}
+}
+
 func TestSpawnWorktreeNestsUnderCheckoutWorkspace(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
@@ -312,6 +324,27 @@ func TestSpawnWorktreeCreatesCheckoutWorkspaceWhenNoneIsOpen(t *testing.T) {
 	}
 	if got := fake.Requests("worktree.create"); len(got) != 1 || got[0].Params["workspace_id"] != checkout {
 		t.Fatalf("worktree.create = %+v, want source %s", got, checkout)
+	}
+}
+
+func TestSpawnWorktreeFailureReportsTheCreatedCheckoutWorkspace(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	repo := agenttest.GitRepo(t)
+	agenttest.RegisterProject(t, home, "p1", repo, "main")
+	fake.Fail("worktree.create", "worktree_create_failed", "create boom")
+
+	options := base("wt-agent")
+	options.Project = "p1"
+	options.Worktree = "feat-x"
+	envelope := spawnRun(t, home, options)
+	workspaces := fake.Workspaces()
+	if len(workspaces) != 1 {
+		t.Fatalf("workspaces = %+v; want the one checkout workspace", workspaces)
+	}
+	want := []output.Effect{{Resource: "workspace", Path: workspaces[0].ID, Action: "created"}}
+	if envelope.Outcome != output.OutcomeFailed || envelope.Phase != "worktree" || !slices.Equal(envelope.Effects, want) {
+		t.Fatalf("envelope = %+v; want failed worktree phase with effects %+v", envelope, want)
 	}
 }
 

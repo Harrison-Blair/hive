@@ -16,6 +16,8 @@ import (
 	"sync/atomic"
 	"time"
 	"unicode/utf8"
+
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 )
 
 const maxBodyBytes = 4096
@@ -41,7 +43,7 @@ func SetRequestID(id string) func() {
 }
 
 // outcomeLevels maps the outcome field of an event to its level.
-var outcomeLevels = map[any]string{"ok": "DEBUG", "partial": "WARN", "failed": "ERROR"}
+var outcomeLevels = map[any]string{output.OutcomeOK: "DEBUG", output.OutcomePartial: "WARN", output.OutcomeFailed: "ERROR"}
 
 var errClosed = errors.New("log: writer is closed")
 

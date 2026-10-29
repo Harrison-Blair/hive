@@ -23,7 +23,8 @@ type StatusError struct {
 
 func (e *StatusError) Error() string { return fmt.Sprintf("command exited with status %d", e.Status) }
 
-// UsageError reports an invalid command argument.
+// UsageError reports an invalid command argument. The root command renders it
+// as a usage error.
 type UsageError struct {
 	Message string
 }
@@ -62,15 +63,14 @@ func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.
 	if executeErr != nil {
 		var usage *UsageError
 		if errors.As(executeErr, &usage) {
-			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", usage.Error())
-			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", usage.Error())
-			return &StatusError{Status: 2}
+			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", usage.Error())
+			return usage
 		}
-		envelope = output.Envelope{Outcome: "failed", Phase: "command", Effects: []output.Effect{}, Error: executeErr.Error(), Result: nil}
+		envelope = output.Failed("command", executeErr.Error())
 		text = ""
 	}
 	attrs := []any{"command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", envelope.Outcome}
-	if envelope.Outcome != "ok" && envelope.Error != nil {
+	if envelope.Outcome != output.OutcomeOK && envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
 	logger.Debug("command end", attrs...)
@@ -126,7 +126,7 @@ func LogRejected(command string, rejected error) {
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", command)
-	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", rejected.Error())
+	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", rejected.Error())
 }
 
 // Usage writes one usage line and returns status 2.
@@ -136,8 +136,7 @@ func Usage(cmd *cobra.Command, message string) error {
 }
 
 func renderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message string, status int) error {
-	envelope := output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
-	if err := output.Render(stdout, stderr, jsonOutput, envelope, ""); err != nil {
+	if err := output.Render(stdout, stderr, jsonOutput, output.Failed(phase, message), ""); err != nil {
 		return &StatusError{Status: status}
 	}
 	return &StatusError{Status: status}

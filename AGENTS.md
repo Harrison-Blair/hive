@@ -131,6 +131,8 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 A command prints text for people by default. With `--json` it prints one JSON object with `outcome`, `phase`, `effects`, `error`, and `result`. Known effects are separate from errors. The exit status is 0 only on success. `hive logs --json` prints each log event as one JSON line, because it streams. It is the one exception.
 
+A usage error exits with status 2. A usage error is an invalid invocation: missing or extra arguments, an unknown flag, an unknown command, or an empty `PATH` for `hive project register`. Without `--json`, hive writes one line `hive: MESSAGE` to stderr. With `--json` before any `--`, hive writes one envelope to stdout and nothing to stderr: `{"outcome":"failed","phase":"usage","effects":[],"error":"MESSAGE","result":null}`. The root command renders each usage error. `hive logs` checks its own flag values and writes a bad value as a plain `hive:` line even with `--json`. Build an envelope and its outcome with `internal/lib/output`: `output.Failed` and the `Outcome` constants.
+
 ### Git
 
 - Work on a branch from `main`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.

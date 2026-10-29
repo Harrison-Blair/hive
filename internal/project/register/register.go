@@ -29,48 +29,48 @@ type Options struct {
 // Run validates and records one Git repository.
 func Run(home string, options Options) output.Envelope {
 	if projectlib.HasControl(options.Path) {
-		return projectlib.Failed("validate", fmt.Sprintf("invalid path: %q", options.Path))
+		return output.Failed("validate", fmt.Sprintf("invalid path: %q", options.Path))
 	}
 	if options.Path == "" {
-		return projectlib.Failed("validate", "PATH requires a value")
+		return output.Failed("validate", "PATH requires a value")
 	}
 	base := options.Base
 	if !options.BaseSet {
 		base = "main"
 	}
 	if invalidBase(base) {
-		return projectlib.Failed("validate", fmt.Sprintf("invalid base branch: %q", base))
+		return output.Failed("validate", fmt.Sprintf("invalid base branch: %q", base))
 	}
 	path, err := resolveProjectPath(options.Path, options.WorkingDir)
 	if err != nil || !isGitRepository(path) {
-		return projectlib.Failed("validate", fmt.Sprintf("not a git repository: %s", path))
+		return output.Failed("validate", fmt.Sprintf("not a git repository: %s", path))
 	}
 	id := options.ID
 	if !options.IDSet {
 		id = strings.ToLower(filepath.Base(path))
 	}
 	if !records.ValidID(id) {
-		return projectlib.Failed("validate", projectlib.InvalidIDMessage(id))
+		return output.Failed("validate", projectlib.InvalidIDMessage(id))
 	}
 
 	registry, err := store.Open(home)
 	if err != nil {
-		return projectlib.Failed("store", err.Error())
+		return output.Failed("store", err.Error())
 	}
 	found, err := registry.List("projects")
 	if err != nil {
-		return projectlib.Failed("store", err.Error())
+		return output.Failed("store", err.Error())
 	}
 	for _, raw := range found {
 		var existing records.Project
 		if err := json.Unmarshal(raw, &existing); err != nil {
-			return projectlib.Failed("store", err.Error())
+			return output.Failed("store", err.Error())
 		}
 		if existing.ID == id {
-			return projectlib.Failed("register", "project exists: "+id)
+			return output.Failed("register", "project exists: "+id)
 		}
 		if existing.Path == path {
-			return projectlib.Failed("register", "path registered as "+existing.ID)
+			return output.Failed("register", "path registered as "+existing.ID)
 		}
 	}
 
@@ -81,10 +81,10 @@ func Run(home string, options Options) output.Envelope {
 		RegisteredAt: time.Now().UTC().Format(time.RFC3339Nano),
 	}
 	if err := registry.Write("projects", id, record); err != nil {
-		return projectlib.Failed("store", err.Error())
+		return output.Failed("store", err.Error())
 	}
 	envelope := output.Envelope{
-		Outcome: "ok",
+		Outcome: output.OutcomeOK,
 		Phase:   "complete",
 		Effects: []output.Effect{{Resource: "record", Path: filepath.ToSlash(filepath.Join(".hive", "state", "projects", id+".json")), Action: "created"}},
 		Error:   nil,
@@ -101,7 +101,7 @@ func Run(home string, options Options) output.Envelope {
 			action = "exists"
 		}
 		if err := os.MkdirAll(fullPath, 0o755); err != nil {
-			envelope.Outcome = "partial"
+			envelope.Outcome = output.OutcomePartial
 			envelope.Phase = "dirs"
 			envelope.Error = fmt.Sprintf("create directory %s: %v", filepath.ToSlash(dir), err)
 			return envelope

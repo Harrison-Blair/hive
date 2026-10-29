@@ -12,6 +12,7 @@ import (
 )
 
 // placement is the pane of a new agent and the facts that the record keeps.
+// A failed placement keeps the effects that happened before the failure.
 // rootPane is true when the agent takes the root pane of a new workspace, so
 // its tab still needs the agent name as its label.
 type placement struct {
@@ -62,7 +63,7 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 		Path:        path,
 	}, herdr.WithLogger(logger))
 	if err != nil {
-		return placement{}, "worktree", fmt.Errorf("worktree create %s: %w", path, err)
+		return placement{effects: effects}, "worktree", fmt.Errorf("worktree create %s: %w", path, err)
 	}
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "created"})
 	return placement{pane: created.RootPane, cwd: path, worktree: path, rootPane: true, effects: effects}, "", nil
@@ -95,7 +96,7 @@ func checkoutWorkspace(ctx context.Context, project records.Project, logger *slo
 func openTab(ctx context.Context, workspace, cwd, label string, env map[string]string, logger *slog.Logger, effects []output.Effect) (placement, string, error) {
 	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{WorkspaceID: workspace, Cwd: cwd, Label: label, Env: env}, herdr.WithLogger(logger))
 	if err != nil {
-		return placement{}, "tab", fmt.Errorf("tab create in %s: %w", workspace, err)
+		return placement{effects: effects}, "tab", fmt.Errorf("tab create in %s: %w", workspace, err)
 	}
 	effects = append(effects, output.Effect{Resource: "tab", Path: created.Tab.TabID, Action: "created"})
 	return placement{pane: created.RootPane, cwd: cwd, effects: effects}, "", nil

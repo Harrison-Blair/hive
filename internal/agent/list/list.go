@@ -33,8 +33,8 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	records, err := agent.List(home)
 	if err != nil {
-		logger.Debug("agent list", "command", "agent list", "outcome", "failed", "error", err.Error())
-		return agent.Failed("records", err.Error())
+		logger.Debug("agent list", "command", "agent list", "outcome", output.OutcomeFailed, "error", err.Error())
+		return output.Failed("records", err.Error())
 	}
 	entries := make([]Entry, 0, len(records))
 	for _, record := range records {
@@ -45,13 +45,13 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 			status, session = pane.AgentStatus, agent.SessionID(pane.AgentSession)
 		case !agent.IsCode(err, herdr.CodePaneNotFound):
 			message := fmt.Sprintf("agent %s: pane %s: %s", record.Name, record.Pane, err)
-			logger.Debug("agent list", "command", "agent list", "outcome", "failed", "error", message)
-			return agent.Failed("herdr", message)
+			logger.Debug("agent list", "command", "agent list", "outcome", output.OutcomeFailed, "error", message)
+			return output.Failed("herdr", message)
 		}
 		entries = append(entries, Entry{Record: record, Status: status, HarnessSessionID: session})
 	}
-	logger.Debug("agent list", "command", "agent list", "outcome", "ok", "count", len(entries))
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: entries}
+	logger.Debug("agent list", "command", "agent list", "outcome", output.OutcomeOK, "count", len(entries))
+	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: entries}
 }
 
 // Text renders the entries as a table.

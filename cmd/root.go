@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Harrison-Blair/hive/cmd/agent"
@@ -16,6 +17,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/version"
 	"github.com/Harrison-Blair/hive/internal/coordinator"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
 
@@ -70,18 +72,33 @@ func executeWithStreams(args []string, in io.Reader, out, errOut io.Writer) int 
 		if errors.As(err, &statusErr) {
 			return statusErr.Status
 		}
+		// A UsageError comes from a command that ran and logged it. Any other
+		// error means that Cobra rejected the arguments or flags before the
+		// command ran. Bare hive and hive version keep their own logging.
 		var usage *common.UsageError
-		if errors.As(err, &usage) {
-			_, _ = fmt.Fprintf(errOut, "hive: %s\n", usage.Error())
-			return 2
-		}
-		// Cobra rejected the arguments or flags before the command ran. Bare
-		// hive and hive version keep their own logging.
-		if found != nil && found != root && found.Name() != "version" {
+		if !errors.As(err, &usage) && found != nil && found != root && found.Name() != "version" {
 			common.LogRejected(strings.TrimPrefix(found.CommandPath(), root.Name()+" "), err)
 		}
-		_, _ = fmt.Fprintf(errOut, "hive: %s\n", err)
+		_ = output.Render(out, errOut, jsonRequested(args), output.Failed("usage", err.Error()), "")
 		return 2
 	}
 	return 0
+}
+
+// jsonRequested reports whether args set --json before a "--". Cobra can
+// reject the arguments before it parses the flags, so the flag value is not
+// available then.
+func jsonRequested(args []string) bool {
+	requested := false
+	for _, arg := range args {
+		if arg == "--" {
+			break
+		}
+		if arg == "--json" {
+			requested = true
+		} else if value, ok := strings.CutPrefix(arg, "--json="); ok {
+			requested, _ = strconv.ParseBool(value)
+		}
+	}
+	return requested
 }

@@ -3,8 +3,6 @@ package project
 import (
 	"fmt"
 	"unicode"
-
-	"github.com/Harrison-Blair/hive/internal/lib/output"
 )
 
 const invalidIDRule = "an ID matches ^[a-z0-9]+(-[a-z0-9]+)*$ and has at most 18 characters"
@@ -25,9 +23,4 @@ func HasControl(value string) bool {
 		}
 	}
 	return false
-}
-
-// Failed returns the failed envelope of one project operation.
-func Failed(phase, message string) output.Envelope {
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
 }
