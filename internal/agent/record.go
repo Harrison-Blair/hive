@@ -1,5 +1,3 @@
-// Package agent keeps one JSON record for each agent at
-// <home>/.hive/agents/<name>.json.
 package agent
 
 import (
