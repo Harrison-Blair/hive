@@ -250,8 +250,11 @@ func TestPickerRule4FailureShowsErrorAndTypedEntry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			m := enterAndDiscover(t, NewPicker(Choice{}, false, discover))
 			line := lineWith(t, view(m), "!")
-			if !strings.Contains(line, "! model list unavailable:") || !strings.Contains(line, "type a model name: ▏") {
+			if !strings.Contains(line, "! model list unavailable:") {
 				t.Fatalf("failure line = %q", line)
+			}
+			if !strings.Contains(view(m), "│ type a model name: ▏") {
+				t.Fatalf("view = %q; want the typed-entry field", view(m))
 			}
 			if name == "error" && !strings.Contains(line, "opencode models: not found") {
 				t.Fatalf("failure line = %q; want the error", line)
@@ -265,6 +268,17 @@ func TestPickerRule4FailureShowsErrorAndTypedEntry(t *testing.T) {
 				t.Fatalf("Result = %+v %v", choice, ok)
 			}
 		})
+	}
+}
+
+func TestPickerFailureFitsAnEightyColumnPane(t *testing.T) {
+	long := errors.New(`opencode models: exec: "opencode": executable file not found in $PATH`)
+	m := enterAndDiscover(t, NewPicker(Choice{}, false, fakeDiscover(nil, long)))
+	m = typeText(t, m, "claude-opus-5-5")
+	for line := range strings.SplitSeq(strings.TrimRight(view(m), "\n"), "\n") {
+		if n := len([]rune(line)); n > 80 {
+			t.Fatalf("line %q has width %d; want at most 80", line, n)
+		}
 	}
 }
 

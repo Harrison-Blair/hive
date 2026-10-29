@@ -17,7 +17,7 @@ var Harnesses = []string{"claude", "codex", "pi"}
 const (
 	otherRow     = "Other…"
 	lastMark     = "✓ last"
-	maxErrorLen  = 60
+	maxErrorLen  = 48
 	defaultRows  = 15
 	spinnerDelay = 100 * time.Millisecond
 )
@@ -225,7 +225,7 @@ func (p Picker) View() tea.View {
 	case stepModels:
 		lines = p.modelLines(harness)
 	case stepFailure:
-		lines = append(lines, "! model list unavailable: "+clip(p.failure, maxErrorLen)+" · type a model name: "+p.typed+"▏", "", "enter start · esc back")
+		lines = append(lines, "! model list unavailable: "+clip(p.failure, maxErrorLen), "type a model name: "+p.typed+"▏", "", "enter start · esc back")
 	case stepOther:
 		lines = append(lines, "model: "+p.typed+"▏", "", "enter start · esc back")
 	}
