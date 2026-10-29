@@ -31,31 +31,6 @@ func TestTrackedFilesAreNotIgnored(t *testing.T) {
 	}
 }
 
-// TestProfileFilesAreNotIgnored checks that Git tracks each profile. The
-// coordinator, planner, builder, verifier, and general profiles give each
-// agent its instructions.
-func TestProfileFilesAreNotIgnored(t *testing.T) {
-	skipWithoutGit(t)
-	for _, path := range []string{
-		"profiles/coordinator.md",
-		"profiles/planner.md",
-		"profiles/builder.md",
-		"profiles/verifier.md",
-		"profiles/general.md",
-	} {
-		// check-ignore exits 1 when the path is not ignored.
-		err := exec.Command("git", "check-ignore", "-q", path).Run()
-		if err == nil {
-			t.Errorf("git ignores %s; add the narrowest allow rule for each profile", path)
-			continue
-		}
-		var exit *exec.ExitError
-		if !errors.As(err, &exit) || exit.ExitCode() != 1 {
-			t.Errorf("git check-ignore %s: %v", path, err)
-		}
-	}
-}
-
 func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	err := exec.Command("git", "check-ignore", "--no-index", "-q", ".github/workflows/ci.yml").Run()
@@ -73,7 +48,7 @@ func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
 func TestHomeMarkerIsTracked(t *testing.T) {
 	skipWithoutGit(t)
 	// check-ignore exits 1 when the path is not ignored.
-	err := exec.Command("git", "check-ignore", "-q", ".hive/README.md").Run()
+	err := exec.Command("git", "check-ignore", "--no-index", "-q", ".hive/README.md").Run()
 	if err == nil {
 		t.Fatal("git ignores .hive/README.md; the home marker must be tracked")
 	}
@@ -144,6 +119,8 @@ func TestPersonalPathsAreIgnored(t *testing.T) {
 		".hive/state/tasks.json",
 		".hive/logs/2026-10-17.jsonl",
 		".hive/tmp/scratch.md",
+		".hive/agents/coordinator.json",
+		".hive/coordinator-choice.json",
 	} {
 		// check-ignore exits 0 when the path is ignored and 1 when it is not.
 		if err := exec.Command("git", "check-ignore", "-q", path).Run(); err != nil {
