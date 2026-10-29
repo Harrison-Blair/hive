@@ -41,13 +41,15 @@ type Pane struct {
 	ID          string
 	WorkspaceID string
 	TabID       string
-	Cwd         string
-	Status      string
-	Name        string
-	Kind        string
-	Args        []string
-	Env         map[string]string
-	Prompts     []string
+	// TabLabel is the explicit label of the tab of the pane, or empty.
+	TabLabel string
+	Cwd      string
+	Status   string
+	Name     string
+	Kind     string
+	Args     []string
+	Env      map[string]string
+	Prompts  []string
 	// Session is the native session ID that herdr reports as agent_session.
 	Session string
 	// ready is true when herdr reports interactive_ready for the agent.
@@ -172,6 +174,17 @@ func (h *Herdr) Pane(paneID string) (Pane, bool) {
 		return Pane{}, false
 	}
 	return *pane, true
+}
+
+// Methods returns the method of each request in the order of arrival.
+func (h *Herdr) Methods() []string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	out := make([]string, 0, len(h.requests))
+	for _, request := range h.requests {
+		out = append(out, request.Method)
+	}
+	return out
 }
 
 // Requests returns each request of one method.
@@ -347,7 +360,16 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			}
 		}
 		pane := h.addPane(ws, text("cwd"), env)
+		pane.TabLabel = text("label")
 		return map[string]any{"type": "tab_created", "tab": tabInfo(pane), "root_pane": paneInfo(pane)}, nil
+	case "tab.rename":
+		for _, pane := range h.panes {
+			if pane.TabID == text("tab_id") {
+				pane.TabLabel = text("label")
+				return map[string]any{"type": "tab_info", "tab": tabInfo(pane)}, nil
+			}
+		}
+		return nil, &serverError{"tab_not_found", "tab " + text("tab_id") + " not found"}
 	case "worktree.create":
 		source := h.workspace(text("workspace_id"))
 		if source == nil {
@@ -481,7 +503,11 @@ func (h *Herdr) workspaceInfo(ws *Workspace) map[string]any {
 }
 
 func tabInfo(pane *Pane) map[string]any {
-	return map[string]any{"tab_id": pane.TabID, "workspace_id": pane.WorkspaceID, "number": 1, "label": "1", "focused": false, "pane_count": 1, "agent_status": "unknown"}
+	label := pane.TabLabel
+	if label == "" {
+		label = "1"
+	}
+	return map[string]any{"tab_id": pane.TabID, "workspace_id": pane.WorkspaceID, "number": 1, "label": label, "focused": false, "pane_count": 1, "agent_status": "unknown"}
 }
 
 func paneInfo(pane *Pane) map[string]any {

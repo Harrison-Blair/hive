@@ -516,3 +516,171 @@ func TestSpawnLogsNoHarnessSessionIDWhenHerdrReportsNone(t *testing.T) {
 		t.Fatalf("harness_session_id = %v, want absent", got)
 	}
 }
+
+// tabLabel returns the tab label of the pane of agent name.
+func tabLabel(t *testing.T, fake *agenttest.Herdr, home, name string) string {
+	t.Helper()
+	record, err := agent.Load(home, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pane, ok := fake.Pane(record.Pane)
+	if !ok {
+		t.Fatalf("pane %s of agent %s not found", record.Pane, name)
+	}
+	return pane.TabLabel
+}
+
+func hasEffect(envelope output.Envelope, want output.Effect) bool {
+	return slices.Contains(envelope.Effects, want)
+}
+
+func TestSpawnLabelsTheAgentTabWithTheAgentName(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		setup       func(t *testing.T, fake *agenttest.Herdr, home string, options *Options)
+		wantRenamed bool
+	}{
+		{"caller tab", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			_, callerPane := fake.AddWorkspace("mine", "", false)
+			options.CallerPane = callerPane.ID
+		}, false},
+		{"project tab", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			repo := agenttest.GitRepo(t)
+			agenttest.RegisterProject(t, home, "p1", repo, "main")
+			fake.AddWorkspace("any", repo, false)
+			options.Project = "p1"
+		}, false},
+		{"project root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
+			options.Project = "p1"
+		}, true},
+		{"worktree root pane", func(t *testing.T, fake *agenttest.Herdr, home string, options *Options) {
+			repo := agenttest.GitRepo(t)
+			agenttest.RegisterProject(t, home, "p1", repo, "main")
+			fake.AddWorkspace("any", repo, false)
+			options.Project = "p1"
+			options.Worktree = "feat-x"
+		}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := agenttest.NewHerdr(t)
+			home := agenttest.Home(t)
+			options := base("kid")
+			tc.setup(t, fake, home, &options)
+			envelope := spawnRun(t, home, options)
+			if envelope.Outcome != "ok" {
+				t.Fatalf("envelope = %+v", envelope)
+			}
+			if got := tabLabel(t, fake, home, "kid"); got != "kid" {
+				t.Fatalf("tab label = %q, want kid", got)
+			}
+			record, _ := agent.Load(home, "kid")
+			pane, _ := fake.Pane(record.Pane)
+			renamed := output.Effect{Resource: "tab", Path: pane.TabID, Action: "renamed"}
+			if hasEffect(envelope, renamed) != tc.wantRenamed {
+				t.Fatalf("effects = %+v, want renamed effect %v", envelope.Effects, tc.wantRenamed)
+			}
+			if tc.wantRenamed {
+				methods := fake.Methods()
+				rename, start := slices.Index(methods, "tab.rename"), slices.Index(methods, "agent.start")
+				if rename < 0 || start < 0 || rename > start {
+					t.Fatalf("requests = %q, want tab.rename before agent.start", methods)
+				}
+			}
+			for _, ws := range fake.Workspaces() {
+				if ws.Label == "kid" {
+					t.Fatalf("workspace %s has label kid, want workspace labels unchanged", ws.ID)
+				}
+			}
+		})
+	}
+}
+
+func TestSpawnTabRenameFailureIsPartialAndStillPrompts(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
+	fake.Fail("tab.rename", "internal_error", "rename boom")
+	options := base("kid")
+	options.Project = "p1"
+
+	envelope := spawnRun(t, home, options)
+	if envelope.Outcome != "partial" || envelope.Phase != "label" || !strings.Contains(errorText(envelope), "rename boom") {
+		t.Fatalf("envelope = %+v, want partial in phase label with the rename error", envelope)
+	}
+	record, err := agent.Load(home, "kid")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pane, _ := fake.Pane(record.Pane)
+	if !slices.Equal(pane.Prompts, []string{"do the work"}) {
+		t.Fatalf("prompts = %q, want the prompt sent", pane.Prompts)
+	}
+	for _, effect := range envelope.Effects {
+		if effect.Action == "renamed" {
+			t.Fatalf("effects = %+v, want no renamed effect", envelope.Effects)
+		}
+	}
+	if envelope.Result != record {
+		t.Fatalf("result = %+v, want the record", envelope.Result)
+	}
+}
+
+func TestSpawnTabRenameFailureJoinsALaterFailure(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		setup     func(fake *agenttest.Herdr)
+		wantPhase string
+		wantLater string
+	}{
+		{"start", func(fake *agenttest.Herdr) { fake.Fail("agent.start", "unsupported_agent_kind", "start boom") }, "start", "start boom"},
+		{"blocked", func(fake *agenttest.Herdr) { fake.StartStatus = "blocked" }, "wait", "blocked"},
+		{"prompt", func(fake *agenttest.Herdr) { fake.Fail("agent.prompt", "internal_error", "prompt boom") }, "prompt", "prompt boom"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := agenttest.NewHerdr(t)
+			home := agenttest.Home(t)
+			agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
+			fake.Fail("tab.rename", "internal_error", "rename boom")
+			tc.setup(fake)
+			options := base("kid")
+			options.Project = "p1"
+
+			envelope := spawnRun(t, home, options)
+			message := errorText(envelope)
+			if envelope.Outcome == "ok" || envelope.Phase != tc.wantPhase {
+				t.Fatalf("envelope = %+v, want phase %s", envelope, tc.wantPhase)
+			}
+			later, rename := strings.Index(message, tc.wantLater), strings.Index(message, "(also: tab label: ")
+			if later < 0 || rename < later || !strings.Contains(message[rename:], "rename boom") {
+				t.Fatalf("error = %q, want %q and then the rename error", message, tc.wantLater)
+			}
+		})
+	}
+}
+
+func TestSpawnRecordFailureKeepsTheTabRenameError(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	agenttest.RegisterProject(t, home, "p1", agenttest.GitRepo(t), "main")
+	fake.Fail("tab.rename", "internal_error", "rename boom")
+	// A read-only agents directory lets the name check pass and the record
+	// write fail.
+	agents := filepath.Join(home, ".hive", "agents")
+	if err := os.Mkdir(agents, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(agents, 0o755) })
+	options := base("kid")
+	options.Project = "p1"
+
+	envelope := spawnRun(t, home, options)
+	message := errorText(envelope)
+	if envelope.Outcome != "partial" || envelope.Phase != "record" {
+		t.Fatalf("envelope = %+v, want partial in phase record", envelope)
+	}
+	if !strings.HasPrefix(message, "write record: ") || !strings.Contains(message, "(also: tab label: ") || !strings.Contains(message, "rename boom") {
+		t.Fatalf("error = %q, want the record error and then the rename error", message)
+	}
+}

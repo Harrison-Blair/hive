@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/agent/agenttest"
 )
 
 type execCall struct {
@@ -18,11 +20,15 @@ type execCall struct {
 	args        []string
 }
 
+// launchOptions runs Run in the root pane of a fake herdr workspace, so no
+// test reaches the herdr of the user.
 func launchOptions(t *testing.T, home string, pick func(Choice, bool) (Choice, bool, error), calls *[]execCall) Options {
 	t.Helper()
+	fake := agenttest.NewHerdr(t)
+	_, pane := fake.AddWorkspace("home", home, false)
 	return Options{
 		Home: home,
-		Pane: "w1-3",
+		Pane: pane.ID,
 		Pick: pick,
 		Exec: func(dir, binary string, args []string) error {
 			*calls = append(*calls, execCall{dir, binary, args})
@@ -55,7 +61,7 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			want := agent.Record{Name: "coordinator", Pane: "w1-3", Harness: tc.choice.Harness, Model: tc.choice.Model, Cwd: home, StartedAt: time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)}
+			want := agent.Record{Name: "coordinator", Pane: opts.Pane, Harness: tc.choice.Harness, Model: tc.choice.Model, Cwd: home, StartedAt: time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)}
 			if record != want {
 				t.Fatalf("record = %+v; want %+v", record, want)
 			}
@@ -132,5 +138,77 @@ func TestRunRejectsUnknownHarness(t *testing.T) {
 	}
 	if _, err := agent.Load(home, "coordinator"); !errors.Is(err, agent.ErrNotFound) {
 		t.Fatalf("Load = %v; want no record", err)
+	}
+}
+
+func TestRunLabelsItsTabCoordinatorBeforeExec(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	// This fake replaces the fake of launchOptions as HERDR_SOCKET_PATH.
+	fake := agenttest.NewHerdr(t)
+	_, pane := fake.AddWorkspace("my workspace", home, false)
+	opts.Pane = pane.ID
+	opts.Exec = func(dir, binary string, args []string) error {
+		got, _ := fake.Pane(pane.ID)
+		if got.TabLabel != "coordinator" {
+			t.Errorf("tab label at exec = %q, want coordinator", got.TabLabel)
+		}
+		calls = append(calls, execCall{dir, binary, args})
+		return nil
+	}
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 {
+		t.Fatalf("exec calls = %+v; want one", calls)
+	}
+	if ws := fake.Workspaces(); len(ws) != 1 || ws[0].Label != "my workspace" {
+		t.Fatalf("workspaces = %+v; want the label unchanged", ws)
+	}
+}
+
+func TestRunExecsWhenTheTabLabelFails(t *testing.T) {
+	for _, method := range []string{"pane.get", "tab.rename"} {
+		t.Run(method, func(t *testing.T) {
+			home := t.TempDir()
+			var calls []execCall
+			var logs strings.Builder
+			opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+			fake := agenttest.NewHerdr(t)
+			_, pane := fake.AddWorkspace("w", home, false)
+			fake.Fail(method, "internal_error", "boom")
+			opts.Pane = pane.ID
+			opts.Logger = slog.New(slog.NewJSONHandler(&logs, nil))
+			if err := Run(opts); err != nil {
+				t.Fatal(err)
+			}
+			if len(calls) != 1 {
+				t.Fatalf("exec calls = %+v; want one", calls)
+			}
+			if got, _ := fake.Pane(pane.ID); got.TabLabel != "" {
+				t.Fatalf("tab label = %q; want none", got.TabLabel)
+			}
+			if !strings.Contains(logs.String(), `"level":"WARN"`) || !strings.Contains(logs.String(), "boom") {
+				t.Fatalf("logs = %s; want a WARN event with the error", logs.String())
+			}
+		})
+	}
+}
+
+func TestRunWithoutPaneDoesNotLabelATab(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	fake := agenttest.NewHerdr(t)
+	opts.Pane = ""
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 {
+		t.Fatalf("exec calls = %+v; want one", calls)
+	}
+	if got := len(fake.Requests("pane.get")) + len(fake.Requests("tab.rename")); got != 0 {
+		t.Fatalf("herdr calls = %d; want none", got)
 	}
 }
