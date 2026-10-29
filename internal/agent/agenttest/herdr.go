@@ -176,6 +176,17 @@ func (h *Herdr) Pane(paneID string) (Pane, bool) {
 	return *pane, true
 }
 
+// Methods returns the method of each request in the order of arrival.
+func (h *Herdr) Methods() []string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	out := make([]string, 0, len(h.requests))
+	for _, request := range h.requests {
+		out = append(out, request.Method)
+	}
+	return out
+}
+
 // Requests returns each request of one method.
 func (h *Herdr) Requests(method string) []Request {
 	h.mu.Lock()

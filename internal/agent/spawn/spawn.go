@@ -110,6 +110,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	effects := place.effects
 	paneID := place.pane.PaneID
 	// A failed rename does not stop the spawn. It makes the outcome partial.
+	// A later failure keeps its phase and carries the rename error too.
 	var labelErr string
 	if place.rootPane {
 		if err := herdr.TabRename(ctx, place.pane.TabID, options.Name, herdr.WithLogger(logger)); err != nil {
@@ -117,6 +118,12 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		} else {
 			effects = append(effects, output.Effect{Resource: "tab", Path: place.pane.TabID, Action: "renamed"})
 		}
+	}
+	withLabel := func(message string) string {
+		if labelErr == "" {
+			return message
+		}
+		return message + " (also: tab label: " + labelErr + ")"
 	}
 
 	argv, err := start(ctx, herdr.AgentStartParams{
@@ -127,7 +134,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
 	}, logger, session)
 	if err != nil {
-		envelope := agent.Failed("start", fmt.Sprintf("agent start in pane %s: %s", paneID, err))
+		envelope := agent.Failed("start", withLabel(fmt.Sprintf("agent start in pane %s: %s", paneID, err)))
 		envelope.Effects = effects
 		if closeErr := herdr.PaneClose(ctx, paneID, herdr.WithLogger(logger)); closeErr == nil {
 			envelope.Effects = append(envelope.Effects, output.Effect{Resource: "pane", Path: paneID, Action: "closed"})
@@ -148,12 +155,12 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		StartedAt: time.Now().UTC(),
 	}
 	if err := agent.Save(home, record); err != nil {
-		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write record: " + err.Error(), Result: record}
+		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: withLabel("write record: " + err.Error()), Result: record}
 	}
 	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "written"})
 
 	partial := func(phase, message string) output.Envelope {
-		return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: message, Result: record}
+		return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: withLabel(message), Result: record}
 	}
 	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger, session)
 	if err != nil {
@@ -175,7 +182,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
 	}
 	if labelErr != "" {
-		return partial("label", labelErr)
+		return output.Envelope{Outcome: "partial", Phase: "label", Effects: effects, Error: labelErr, Result: record}
 	}
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
 }
