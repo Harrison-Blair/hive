@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/Harrison-Blair/hive/cmd/agent"
 	"github.com/Harrison-Blair/hive/cmd/common"
@@ -64,7 +65,7 @@ func executeWithStreams(args []string, in io.Reader, out, errOut io.Writer) int 
 	root.SetIn(in)
 	root.SetOut(out)
 	root.SetErr(errOut)
-	if err := root.Execute(); err != nil {
+	if found, err := root.ExecuteC(); err != nil {
 		var statusErr *common.StatusError
 		if errors.As(err, &statusErr) {
 			return statusErr.Status
@@ -73,6 +74,11 @@ func executeWithStreams(args []string, in io.Reader, out, errOut io.Writer) int 
 		if errors.As(err, &usage) {
 			_, _ = fmt.Fprintf(errOut, "hive: %s\n", usage.Error())
 			return 2
+		}
+		// Cobra rejected the arguments or flags before the command ran. Bare
+		// hive and hive version keep their own logging.
+		if found != nil && found != root && found.Name() != "version" {
+			common.LogRejected(strings.TrimPrefix(found.CommandPath(), root.Name()+" "), err)
 		}
 		_, _ = fmt.Fprintf(errOut, "hive: %s\n", err)
 		return 2

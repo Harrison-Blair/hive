@@ -102,6 +102,33 @@ func Logger(home, target string) (*slog.Logger, error) {
 	return logger, nil
 }
 
+// LogRejected logs command start and a failed command end for a command that
+// Cobra rejected before it ran, for example for a wrong argument count or an
+// unknown flag. It logs nothing when the home does not resolve.
+func LogRejected(command string, rejected error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	resolvedHome, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
+	if err != nil {
+		return
+	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
+	logger, err := Logger(resolvedHome, "")
+	if err != nil {
+		return
+	}
+	started := time.Now()
+	logger.Debug("command start", "command", command)
+	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", rejected.Error())
+}
+
 // Usage writes one usage line and returns status 2.
 func Usage(cmd *cobra.Command, message string) error {
 	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", message)
