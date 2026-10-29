@@ -1,12 +1,5 @@
 package records
 
-import "regexp"
-
-var taskIDPattern = regexp.MustCompile(`^[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$`)
-
-// maxTaskIDLength is 20 counter digits, one hyphen, and a 40-character slug.
-const maxTaskIDLength = 61
-
 // Task is one durable task record.
 type Task struct {
 	ID        string `json:"id"`
@@ -71,9 +64,4 @@ type Delivery struct {
 	PRURL    string `json:"pr_url,omitempty"`
 	Evidence string `json:"evidence,omitempty"`
 	At       string `json:"at"`
-}
-
-// ValidTaskID reports whether id has the task form <n>-<slug>.
-func ValidTaskID(id string) bool {
-	return len(id) <= maxTaskIDLength && taskIDPattern.MatchString(id)
 }

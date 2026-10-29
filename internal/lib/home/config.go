@@ -41,23 +41,6 @@ type Settings struct {
 	TUI         TUIConfig
 }
 
-// ReadTUISettings reads the TUI tables of the global configuration. It gives
-// the defaults when the config file does not exist.
-func ReadTUISettings() (TUIConfig, error) {
-	path, err := ConfigPath()
-	if err != nil {
-		return TUIConfig{}, fmt.Errorf("home config path: %w", err)
-	}
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return DefaultTUI(), nil
-	}
-	settings, err := ReadSettings()
-	if err != nil {
-		return TUIConfig{}, err
-	}
-	return settings.TUI, nil
-}
-
 // statusSegments are the segment names of golden-frames decision 9.
 var statusSegments = []string{"state", "supervisor", "asks", "needs_you", "project", "screen", "chords", "hints", "clock", "command"}
 

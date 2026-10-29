@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 )
 
@@ -24,13 +23,6 @@ var componentPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
 
 type Store struct {
 	home string
-}
-
-// StoredRecord is one JSON record that WalkRecords returns.
-type StoredRecord struct {
-	Collection []string
-	Name       string
-	Data       json.RawMessage
 }
 
 // Open creates the state directory if it does not exist. It rejects a static
@@ -253,125 +245,6 @@ func (s *Store) listInUnlocked(collection []string, include func(filename string
 		found = append(found, json.RawMessage(data))
 	}
 	return found, nil
-}
-
-// WalkRecords walks each record below the state root under the store lock.
-func (s *Store) WalkRecords(ctx context.Context, fn func(StoredRecord) error) error {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	return s.WithLock(ctx, func(locked *LockedStore) error {
-		return locked.walkRecords(ctx, fn)
-	})
-}
-
-func (l *LockedStore) walkRecords(ctx context.Context, fn func(StoredRecord) error) error {
-	if err := l.available(); err != nil {
-		return err
-	}
-	root := l.store.stateDir()
-	if err := l.store.checkRoot(); err != nil {
-		return err
-	}
-	nodes, err := collectWalkNodes(root, nil, true)
-	if err != nil {
-		return err
-	}
-	sort.SliceStable(nodes, func(i, j int) bool {
-		return nodes[i].rel < nodes[j].rel
-	})
-	for _, node := range nodes {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if node.link {
-			if strings.HasSuffix(node.name, ".json") {
-				return fmt.Errorf("record invalid: %s", node.path)
-			}
-			return fmt.Errorf("store path invalid: %s", node.path)
-		}
-		if node.special {
-			if strings.HasSuffix(node.name, ".json") {
-				return fmt.Errorf("record invalid: %s", node.path)
-			}
-			return fmt.Errorf("store path invalid: %s", node.path)
-		}
-		if node.dir || !strings.HasSuffix(node.name, ".json") {
-			continue
-		}
-		data, err := readRecordFile(node.path)
-		if err != nil {
-			return err
-		}
-		record := StoredRecord{
-			Collection: append([]string(nil), node.collection...),
-			Name:       node.name,
-			Data:       data,
-		}
-		if err := fn(record); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-type walkNode struct {
-	path       string
-	rel        string
-	name       string
-	collection []string
-	dir        bool
-	link       bool
-	special    bool
-}
-
-func collectWalkNodes(dir string, collection []string, root bool) ([]walkNode, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	nodes := []walkNode{}
-	for _, entry := range entries {
-		name := entry.Name()
-		path := filepath.Join(dir, name)
-		info, err := os.Lstat(path)
-		if err != nil {
-			return nil, err
-		}
-		relParts := append(append([]string(nil), collection...), name)
-		node := walkNode{
-			path:       path,
-			rel:        strings.Join(relParts, "/"),
-			name:       name,
-			collection: append([]string(nil), collection...),
-		}
-		switch {
-		case info.Mode()&os.ModeSymlink != 0:
-			node.link = true
-			nodes = append(nodes, node)
-		case info.IsDir():
-			node.dir = true
-			nodes = append(nodes, node)
-			children, err := collectWalkNodes(path, relParts, false)
-			if err != nil {
-				return nil, err
-			}
-			nodes = append(nodes, children...)
-		case info.Mode().IsRegular() && root && name == "lock":
-			continue
-		case info.Mode().IsRegular() && root && name == schemaName:
-			// schema.json keeps the store version. It is not a record.
-			continue
-		case info.Mode().IsRegular() && strings.HasPrefix(name, ".") && strings.Contains(name, ".tmp-"):
-			continue
-		case info.Mode().IsRegular():
-			nodes = append(nodes, node)
-		default:
-			node.special = true
-			nodes = append(nodes, node)
-		}
-	}
-	return nodes, nil
 }
 
 func (s *Store) writeData(kind, id string, data []byte) error {

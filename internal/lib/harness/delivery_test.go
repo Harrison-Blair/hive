@@ -9,11 +9,9 @@ import "testing"
 // harness takes them at the start of the first prompt (D4).
 func TestSystemPromptDelivery(t *testing.T) {
 	cases := map[string]string{
-		"claude":   "--append-system-prompt-file",
-		"pi":       "",
-		"codex":    "",
-		"opencode": "",
-		"cursor":   "",
+		"claude": "--append-system-prompt-file",
+		"pi":     "",
+		"codex":  "",
 	}
 	for kind, want := range cases {
 		t.Run(kind, func(t *testing.T) {
