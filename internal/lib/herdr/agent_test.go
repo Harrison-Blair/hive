@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestAgentStartRequestAndReply(t *testing.T) {
@@ -46,45 +45,6 @@ func TestAgentStartTypedError(t *testing.T) {
 	}
 	if herdrError.Code != "invalid_agent_name" {
 		t.Fatalf("code = %q", herdrError.Code)
-	}
-}
-
-func TestAgentWaitRequestAndReply(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("agent.wait", `{"type":"agent_info","agent":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":2,"name":"coordinator-g1","agent":"claude","agent_session":{"source":"herdr:claude","agent":"claude","kind":"id","value":"s1"}}}`)
-	info, err := AgentWait(context.Background(), AgentWaitParams{Target: "w1:p1", Until: []string{"idle", "blocked", "done"}, TimeoutMS: 120000}, WithDeadline(125*time.Second))
-	if err != nil {
-		t.Fatalf("AgentWait error = %v", err)
-	}
-	if info.AgentStatus != "idle" {
-		t.Fatalf("AgentStatus = %q", info.AgentStatus)
-	}
-	if info.AgentSession == nil || info.AgentSession.Value != "s1" {
-		t.Fatalf("AgentSession = %#v", info.AgentSession)
-	}
-	requests := server.recorded("agent.wait")
-	if got, want := requests[0].Params, `{"target":"w1:p1","until":["idle","blocked","done"],"timeout_ms":120000}`; got != want {
-		t.Fatalf("params = %s; want %s", got, want)
-	}
-}
-
-func TestAgentWaitRejectsMalformedAgentInfo(t *testing.T) {
-	cases := []string{
-		`{"type":"agent_info","agent":null}`,
-		`{"type":"agent_info"}`,
-		`{"type":"agent_info","agent":{"pane_id":"","terminal_id":"","agent_status":""}}`,
-		`{"type":"wait_matched","event":{}}`,
-		`null`,
-	}
-	for _, reply := range cases {
-		t.Run(reply, func(t *testing.T) {
-			server := newFakeServer(t)
-			server.scriptResult("agent.wait", reply)
-			_, err := AgentWait(context.Background(), AgentWaitParams{Target: "w1:p1"})
-			if err == nil {
-				t.Fatalf("AgentWait error = nil; want an error")
-			}
-		})
 	}
 }
 
@@ -142,26 +102,9 @@ func TestAgentGetPreservesReadinessFields(t *testing.T) {
 	}
 }
 
-func TestAgentFocusRequestAndReply(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("agent.focus", `{"type":"agent_info","agent":{"pane_id":"w1:pA","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":true,"revision":7}}`)
-	info, err := AgentFocus(context.Background(), "w1:pA")
-	if err != nil {
-		t.Fatalf("AgentFocus error = %v", err)
-	}
-	if info.PaneID != "w1:pA" || !info.Focused {
-		t.Fatalf("focused agent = %+v", info)
-	}
-	requests := server.recorded("agent.focus")
-	if len(requests) != 1 || requests[0].Params != `{"target":"w1:pA"}` {
-		t.Fatalf("agent.focus requests = %+v; want target w1:pA", requests)
-	}
-}
-
-func TestAgentGetAndList(t *testing.T) {
+func TestAgentGet(t *testing.T) {
 	server := newFakeServer(t)
 	server.scriptResult("agent.get", `{"type":"agent_info","agent":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":5,"name":"n"}}`)
-	server.scriptResult("agent.list", `{"type":"agent_list","agents":[{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"idle","focused":false,"revision":5}]}`)
 	info, err := AgentGet(context.Background(), "w1:p1")
 	if err != nil {
 		t.Fatalf("AgentGet error = %v", err)
@@ -169,25 +112,11 @@ func TestAgentGetAndList(t *testing.T) {
 	if info.Name != "n" {
 		t.Fatalf("Name = %q", info.Name)
 	}
-	agents, err := AgentList(context.Background())
-	if err != nil {
-		t.Fatalf("AgentList error = %v", err)
-	}
-	if len(agents) != 1 || agents[0].PaneID != "w1:p1" {
-		t.Fatalf("agents = %#v", agents)
-	}
 	getRequests := server.recorded("agent.get")
 	if len(getRequests) != 1 {
 		t.Fatalf("agent.get requests = %d; want 1", len(getRequests))
 	}
 	if got, want := getRequests[0].Params, `{"target":"w1:p1"}`; got != want {
 		t.Fatalf("agent.get params = %s; want %s", got, want)
-	}
-	listRequests := server.recorded("agent.list")
-	if len(listRequests) != 1 {
-		t.Fatalf("agent.list requests = %d; want 1", len(listRequests))
-	}
-	if got, want := listRequests[0].Params, `{}`; got != want {
-		t.Fatalf("agent.list params = %s; want %s", got, want)
 	}
 }

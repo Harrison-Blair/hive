@@ -11,17 +11,9 @@ func (e *Error) Error() string {
 	return e.Code + ": " + e.Message
 }
 
-// The error codes that hive handles.
+// The error codes that hive checks. reference/herdr/errors.md lists every
+// code that the server can send.
 const (
-	CodeInvalidRequest     = "invalid_request"
-	CodeUnknownMethod      = "unknown_method"
-	CodeWorkspaceNotFound  = "workspace_not_found"
-	CodeTabNotFound        = "tab_not_found"
-	CodePaneNotFound       = "pane_not_found"
-	CodeAgentNotFound      = "agent_not_found"
-	CodeAgentBlocked       = "agent_blocked"
-	CodeAgentNotReady      = "agent_not_ready"
-	CodeAgentPromptStalled = "agent_prompt_stalled"
-	CodeTimeout            = "timeout"
-	CodeServerNotRunning   = "server_not_running"
+	CodePaneNotFound = "pane_not_found"
+	CodeAgentBlocked = "agent_blocked"
 )

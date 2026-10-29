@@ -7,10 +7,6 @@ import (
 	"fmt"
 )
 
-// CodeAgentNotRunning reports that the agent process left the pane while a
-// wait was active. errors.go keeps the other shared codes.
-const CodeAgentNotRunning = "agent_not_running"
-
 // AgentSessionInfo is the native session reference of one agent.
 type AgentSessionInfo struct {
 	Source string `json:"source"`
@@ -38,13 +34,6 @@ type AgentStarted struct {
 // AgentTarget names one agent by name or pane ID.
 type AgentTarget struct {
 	Target string `json:"target"`
-}
-
-// AgentWaitParams is one agent.wait request.
-type AgentWaitParams struct {
-	Target    string   `json:"target"`
-	Until     []string `json:"until"`
-	TimeoutMS uint64   `json:"timeout_ms"`
 }
 
 // AgentPromptWaitOptions is the optional wait object of agent.prompt.
@@ -105,25 +94,6 @@ func AgentStart(ctx context.Context, params AgentStartParams, opts ...Option) (A
 	return AgentStarted{Type: *result.Type, Agent: agent, Argv: argv}, nil
 }
 
-// AgentWait waits for one settled agent status.
-func AgentWait(ctx context.Context, params AgentWaitParams, opts ...Option) (AgentInfo, error) {
-	var result struct {
-		Type  *string         `json:"type"`
-		Agent json.RawMessage `json:"agent"`
-	}
-	if err := Call(ctx, "agent.wait", params, &result, opts...); err != nil {
-		return AgentInfo{}, err
-	}
-	if result.Type == nil || *result.Type != "agent_info" {
-		return AgentInfo{}, fmt.Errorf("bad reply: result type %q, want agent_info", stringValue(result.Type))
-	}
-	agent, err := decodeAgentInfo(result.Agent)
-	if err != nil {
-		return AgentInfo{}, fmt.Errorf("bad reply: %s", err)
-	}
-	return agent, nil
-}
-
 // AgentPrompt sends one prompt to one agent.
 func AgentPrompt(ctx context.Context, params AgentPromptParams, opts ...Option) (AgentInfo, error) {
 	var result struct {
@@ -135,25 +105,6 @@ func AgentPrompt(ctx context.Context, params AgentPromptParams, opts ...Option) 
 	}
 	if result.Type == nil || *result.Type != "agent_prompted" {
 		return AgentInfo{}, fmt.Errorf("bad reply: result type %q, want agent_prompted", stringValue(result.Type))
-	}
-	agent, err := decodeAgentInfo(result.Agent)
-	if err != nil {
-		return AgentInfo{}, fmt.Errorf("bad reply: %s", err)
-	}
-	return agent, nil
-}
-
-// AgentFocus focuses one agent and marks its pane as seen.
-func AgentFocus(ctx context.Context, target string, opts ...Option) (AgentInfo, error) {
-	var result struct {
-		Type  *string         `json:"type"`
-		Agent json.RawMessage `json:"agent"`
-	}
-	if err := Call(ctx, "agent.focus", AgentTarget{Target: target}, &result, opts...); err != nil {
-		return AgentInfo{}, err
-	}
-	if result.Type == nil || *result.Type != "agent_info" {
-		return AgentInfo{}, fmt.Errorf("bad reply: result type %q, want agent_info", stringValue(result.Type))
 	}
 	agent, err := decodeAgentInfo(result.Agent)
 	if err != nil {
@@ -179,36 +130,6 @@ func AgentGet(ctx context.Context, target string, opts ...Option) (AgentInfo, er
 		return AgentInfo{}, fmt.Errorf("bad reply: %s", err)
 	}
 	return agent, nil
-}
-
-// AgentList lists each live agent.
-func AgentList(ctx context.Context, opts ...Option) ([]AgentInfo, error) {
-	var result struct {
-		Type   *string         `json:"type"`
-		Agents json.RawMessage `json:"agents"`
-	}
-	if err := Call(ctx, "agent.list", struct{}{}, &result, opts...); err != nil {
-		return nil, err
-	}
-	if result.Type == nil || *result.Type != "agent_list" {
-		return nil, fmt.Errorf("bad reply: result type %q, want agent_list", stringValue(result.Type))
-	}
-	if isAbsentOrNull(result.Agents) {
-		return nil, fmt.Errorf("bad reply: agent_list agents is missing")
-	}
-	var items []json.RawMessage
-	if err := json.Unmarshal(result.Agents, &items); err != nil {
-		return nil, fmt.Errorf("bad reply: agent_list agents: %s", err)
-	}
-	agents := make([]AgentInfo, 0, len(items))
-	for index, item := range items {
-		agent, err := decodeAgentInfo(item)
-		if err != nil {
-			return nil, fmt.Errorf("bad reply: agents[%d]: %s", index, err)
-		}
-		agents = append(agents, agent)
-	}
-	return agents, nil
 }
 
 func decodeAgentInfo(raw json.RawMessage) (AgentInfo, error) {

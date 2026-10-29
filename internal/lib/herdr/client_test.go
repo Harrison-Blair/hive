@@ -158,7 +158,7 @@ func TestCallErrorEnvelope(t *testing.T) {
 	if !errors.As(err, &herdrErr) {
 		t.Fatalf("Call() error = %v, want *herdr.Error", err)
 	}
-	if herdrErr.Code != CodeWorkspaceNotFound || herdrErr.Message != "workspace w9 not found" {
+	if herdrErr.Code != "workspace_not_found" || herdrErr.Message != "workspace w9 not found" {
 		t.Fatalf("error = %+v, want workspace_not_found", herdrErr)
 	}
 	if sentinel != "before" {
