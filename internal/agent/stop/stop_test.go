@@ -2,10 +2,12 @@ package stop
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -217,5 +219,33 @@ func TestStopRemoveWorktreeWithoutWorktreeClosesPane(t *testing.T) {
 	}
 	if text := Text(envelope); !strings.Contains(text, "no worktree for kid\n") {
 		t.Fatalf("text = %q, want the line no worktree for kid", text)
+	}
+}
+
+func TestStopRemoveWorktreeWithoutWorktreeHasNoWorktreeEffect(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	pane := fake.AddPane("w1", "")
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
+		t.Fatal(err)
+	}
+	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
+	data, err := json.Marshal(envelope)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got struct {
+		Effects []output.Effect `json:"effects"`
+	}
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatal(err)
+	}
+	want := []output.Effect{
+		{Resource: "pane", Path: pane.ID, Action: "closed"},
+		{Resource: "record", Path: ".hive/agents/kid.json", Action: "removed"},
+	}
+	if !slices.Equal(got.Effects, want) {
+		t.Fatalf("effects = %+v, want %+v", got.Effects, want)
 	}
 }

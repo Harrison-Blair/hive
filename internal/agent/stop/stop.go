@@ -22,6 +22,14 @@ type Options struct {
 	Logger         *slog.Logger
 }
 
+// Result is the record of the stopped agent.
+type Result struct {
+	agent.Record
+	// NoWorktree is true when RemoveWorktree found no worktree to remove. Only
+	// the text output shows it.
+	NoWorktree bool `json:"-"`
+}
+
 // Run closes the pane of the agent, or its worktree workspace, and removes
 // its record. It keeps the checkout and the branch unless RemoveWorktree
 // removes a clean checkout. The branch stays always.
@@ -55,6 +63,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		}
 	}
 
+	result := Result{Record: record, NoWorktree: options.RemoveWorktree && record.Worktree == ""}
 	effects := []output.Effect{}
 	pane, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
 	session := agent.SessionID(pane.AgentSession)
@@ -75,23 +84,20 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		effects = append(effects, output.Effect{Resource: "pane", Path: record.Pane, Action: "closed"})
 	}
 
-	switch {
-	case options.RemoveWorktree && record.Worktree == "":
-		effects = append(effects, output.Effect{Resource: "worktree", Path: "", Action: "none"})
-	case options.RemoveWorktree:
+	if options.RemoveWorktree && record.Worktree != "" {
 		out, err := exec.CommandContext(ctx, "git", "-C", record.Worktree, "worktree", "remove", record.Worktree).CombinedOutput()
 		if err != nil {
 			message := fmt.Sprintf("git worktree remove %s: %s: %s", record.Worktree, err, strings.TrimSpace(string(out)))
-			return output.Envelope{Outcome: "partial", Phase: "worktree", Effects: effects, Error: message, Result: record}, session
+			return output.Envelope{Outcome: "partial", Phase: "worktree", Effects: effects, Error: message, Result: result}, session
 		}
 		logger.Debug("worktree removed", "command", "agent stop", "target", record.Name, "path", record.Worktree)
 		effects = append(effects, output.Effect{Resource: "worktree", Path: record.Worktree, Action: "removed"})
 	}
 	if err := agent.Remove(home, record.Name); err != nil {
-		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "remove record: " + err.Error(), Result: record}, session
+		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "remove record: " + err.Error(), Result: result}, session
 	}
 	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "removed"})
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}, session
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}, session
 }
 
 // checkClean returns a message when the checkout at path has changes or
@@ -111,12 +117,10 @@ func checkClean(ctx context.Context, path string) string {
 func Text(envelope output.Envelope) string {
 	var lines []string
 	for _, effect := range envelope.Effects {
-		if effect.Action == "none" {
-			record, _ := envelope.Result.(agent.Record)
-			lines = append(lines, fmt.Sprintf("no %s for %s", effect.Resource, record.Name))
-			continue
-		}
 		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
+	}
+	if result, ok := envelope.Result.(Result); ok && result.NoWorktree {
+		lines = append(lines, "no worktree for "+result.Name)
 	}
 	if len(lines) == 0 {
 		return ""
