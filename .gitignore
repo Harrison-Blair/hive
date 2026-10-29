@@ -33,5 +33,6 @@
 /overrides/
 /plans/
 /handoff.md
+/_archive/
 .hive/*
 !.hive/README.md

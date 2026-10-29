@@ -121,6 +121,8 @@ func TestPersonalPathsAreIgnored(t *testing.T) {
 		".hive/tmp/scratch.md",
 		".hive/agents/coordinator.json",
 		".hive/coordinator-choice.json",
+		"_archive/x/a.go",
+		"_archive/x/b.md",
 	} {
 		// check-ignore exits 0 when the path is ignored and 1 when it is not.
 		if err := exec.Command("git", "check-ignore", "-q", path).Run(); err != nil {
