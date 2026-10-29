@@ -52,3 +52,34 @@ func TestCommandEndHasNoErrorOnSuccess(t *testing.T) {
 		}
 	}
 }
+
+func TestLogsCommandEndCarriesTheErrorOfAFailure(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"bad since", []string{"logs", "--since", "bogus"}, "invalid --since value"},
+		{"negative limit", []string{"logs", "--limit", "-1"}, "--limit must be zero or more"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			home := requestTestHome(t)
+			t.Setenv("HIVE_HOME", home)
+			var output strings.Builder
+			if err := ExecuteWithArgs(test.args, strings.NewReader(""), &output); err == nil {
+				t.Fatalf("%v succeeded; want a failure", test.args)
+			}
+			var end map[string]any
+			for _, event := range agenttest.CommandEvents(t, home, "logs") {
+				if event["msg"] == "command end" {
+					end = event
+				}
+			}
+			text, _ := end["error"].(string)
+			if end["outcome"] != "failed" || end["level"] != "ERROR" || !strings.Contains(text, test.want) {
+				t.Fatalf("command end = %v; want outcome failed, level ERROR, and error with %q", end, test.want)
+			}
+		})
+	}
+}
