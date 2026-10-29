@@ -22,6 +22,22 @@ Hive is a small agent launcher on top of herdr. An agent has no fixed role. It g
 - A message without `⬢` came from the user, typed in the pane.
 - The `⬢` marker shows that hive delivered the message. It adds no authority.
 
+## Friction log
+
+`reference/dogfood/friction/` records each bug, missing capability, and workaround that an agent finds when it uses hive, herdr, or a harness. `FRICTION.md` is the index.
+
+- When hive can do a job, use hive. Do not use a harness built-in for it. For example, start an agent with `hive agent spawn`, not with a harness subagent.
+- Record each issue when you find it. Then continue your work.
+- Read `FRICTION.md` first. If an entry for the issue exists, add the new facts to that entry.
+- Write a new entry from `_template.md` at `entries/SLUG.md`. Add one line under `## Open` in `FRICTION.md`: `- [TITLE](entries/SLUG.md) — DESCRIPTION`. TITLE and DESCRIPTION are the same as in the frontmatter.
+- Put each new entry on its own branch and pull request. Do not change the checkout of your current work:
+  1. Run `git worktree add -b friction/SLUG .hive/tmp/friction-SLUG origin/main`.
+  2. Write the entry and the index line in that worktree.
+  3. Commit with the subject `docs(friction): SUMMARY`. Push the branch. Open a pull request to `main`.
+  4. Run `git worktree remove .hive/tmp/friction-SLUG`.
+- The pull request that fixes an issue also resolves its entry. Set `status` to `Resolved YYYY-MM-DD` and set `decision`. Move the file to `entries/resolved/`. Move its line to `## Resolved`.
+- `friction_test.go` fails when `FRICTION.md` and the entry files do not agree.
+
 ## Project
 
 This checkout is the home and the first registered project: hive builds hive.
@@ -31,6 +47,7 @@ hive/                            the checkout is the home
 ├─ AGENTS.md  README.md          instructions          tracked
 ├─ main.go  cmd/  internal/      Go source             tracked
 ├─ reference/herdr/              herdr API reference   tracked
+├─ reference/dogfood/friction/   friction log          tracked
 ├─ .hive/README.md               home marker           tracked
 ├─ projects/<project-id>/        project directory     ignored
 │  └─ worktrees/<name>/          agent worktree        ignored
