@@ -1,6 +1,3 @@
-// Package agenttest gives the agent command tests a fake herdr server at the
-// socket boundary. The fake keeps workspaces, tabs, panes, and agents in
-// memory. Its worktree.create runs git worktree add, as herdr does.
 package agenttest
 
 import (
@@ -332,12 +329,6 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		return pane, nil
 	}
 	switch method {
-	case "workspace.list":
-		list := []any{}
-		for _, ws := range h.workspaces {
-			list = append(list, h.workspaceInfo(ws))
-		}
-		return map[string]any{"type": "workspace_list", "workspaces": list}, nil
 	case "workspace.create":
 		ws, pane := h.addWorkspace(text("label"), text("cwd"), false)
 		ws.NoMetadata = true
@@ -411,11 +402,6 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		h.closePane(text("pane_id"))
 		return map[string]any{"type": "ok"}, nil
-	case "pane.wait_for_output":
-		if _, failed := paneOf(); failed != nil {
-			return nil, failed
-		}
-		return map[string]any{"type": "output_matched"}, nil
 	case "agent.start":
 		pane, failed := paneOf()
 		if failed != nil {
@@ -437,12 +423,6 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		argv := append([]string{pane.Kind}, pane.Args...)
 		return map[string]any{"type": "agent_started", "agent": withSession(agentInfo(pane), pane.Kind, h.LaunchSession), "argv": argv}, nil
-	case "agent.wait":
-		pane := h.pane(text("target"))
-		if pane == nil {
-			return nil, &serverError{"agent_not_found", "agent not found"}
-		}
-		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
 	case "agent.get":
 		pane := h.pane(text("target"))
 		if pane == nil || pane.Kind == "" {
