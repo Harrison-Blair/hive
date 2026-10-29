@@ -23,8 +23,6 @@ func TestRegisterInvalidIDReportsRuleAndStatus(t *testing.T) {
 	}{
 		{"register text", []string{"project", "register", repo, "--id", "Repo_One"}, false},
 		{"register json", []string{"--json", "project", "register", repo, "--id", "Repo_One"}, true},
-		{"show text", []string{"project", "show", "Repo_One"}, false},
-		{"show json", []string{"--json", "project", "show", "Repo_One"}, true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer

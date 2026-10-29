@@ -4,7 +4,6 @@ package project
 import (
 	"github.com/Harrison-Blair/hive/cmd/project/list"
 	"github.com/Harrison-Blair/hive/cmd/project/register"
-	"github.com/Harrison-Blair/hive/cmd/project/show"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +14,6 @@ func New() *cobra.Command {
 		Short: "manage registered projects",
 		Args:  cobra.NoArgs,
 	}
-	command.AddCommand(register.New(), list.New(), show.New())
+	command.AddCommand(register.New(), list.New())
 	return command
 }

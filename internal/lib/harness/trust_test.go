@@ -17,8 +17,6 @@ func TestEachProfileGivesItsTrustResult(t *testing.T) {
 	}{
 		{kind: "claude", version: "2.1.307", env: []string{"CLAUDE_CODE_SANDBOXED=1"}},
 		{kind: "codex", version: "0.160.1", noMethod: true},
-		{kind: "cursor", version: "2026.10.19-6bbf2c4", noMethod: true},
-		{kind: "opencode", version: "1.18.32"},
 		{kind: "pi", version: "1.3.0", args: []string{"--approve"}},
 	}
 	if got, want := len(cases), len(KnownKinds()); got != want {

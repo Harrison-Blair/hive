@@ -2,18 +2,15 @@
 package common
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"time"
 
-	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	"github.com/Harrison-Blair/hive/internal/lib/store"
 	"github.com/spf13/cobra"
 )
 
@@ -88,29 +85,4 @@ func renderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message str
 		return &StatusError{Status: status}
 	}
 	return &StatusError{Status: status}
-}
-
-// CheckCaller refuses an --agent that names the caller when it is not the
-// agent of the herdr pane (decision 24). It returns nil outside herdr and
-// without --agent.
-func CheckCaller(homePath, agentFlag string) *output.Envelope {
-	herdrPane := os.Getenv("HERDR_PANE_ID")
-	if herdrPane == "" || agentFlag == "" {
-		return nil
-	}
-	registry, err := store.Open(homePath)
-	if err != nil {
-		return &output.Envelope{Outcome: "failed", Phase: "store", Effects: []output.Effect{}, Error: err.Error(), Result: nil}
-	}
-	var callerErr error
-	if err := registry.WithLock(context.Background(), func(locked *store.LockedStore) error {
-		_, callerErr = agent.Caller(locked, agent.CallerOptions{Agent: agentFlag, HerdrPane: herdrPane})
-		return nil
-	}); err != nil {
-		return &output.Envelope{Outcome: "failed", Phase: "store", Effects: []output.Effect{}, Error: err.Error(), Result: nil}
-	}
-	if callerErr != nil {
-		return &output.Envelope{Outcome: "failed", Phase: "identity", Effects: []output.Effect{}, Error: callerErr.Error(), Result: nil}
-	}
-	return nil
 }

@@ -125,31 +125,6 @@ func TestParseConfigTUIRefusesBadValues(t *testing.T) {
 
 // The TUI reads its tables when the config file exists, and uses the
 // defaults when it does not.
-func TestReadTUISettings(t *testing.T) {
-	path := configFixture(t, "")
-	tui, err := ReadTUISettings()
-	if err != nil {
-		t.Fatalf("no config file: %v", err)
-	}
-	if tui.Keys["agents"] != "ctrl+g" || len(tui.StatusLines) != 1 || tui.StatusLinesExplicit {
-		t.Fatalf("no config file gave %+v; want the defaults", tui)
-	}
-	writeConfig(t, path, tuiHome+"[tui.keys]\nagents = \"ctrl+a\"\n")
-	if tui, err = ReadTUISettings(); err != nil || tui.Keys["agents"] != "ctrl+a" || tui.StatusLinesExplicit {
-		t.Fatalf("config file gave %+v, %v; want agents ctrl+a", tui, err)
-	}
-	writeConfig(t, path, tuiHome+"[tui.status]\nlines = [[\"state\", \"clock\"]]\n")
-	if tui, err = ReadTUISettings(); err != nil || !tui.StatusLinesExplicit {
-		t.Fatalf("lines config gave %+v, %v; want explicit lines", tui, err)
-	}
-	writeConfig(t, path, tuiHome+"[tui.keys]\nagents = \"tab\"\n")
-	if _, err = ReadTUISettings(); err == nil || !strings.Contains(err.Error(), path) {
-		t.Fatalf("bad config gave %v; want an error that names %s", err, path)
-	}
-}
-
-// Decision 18: a rebound key is a Bubble Tea key name, also a named key
-// such as up or f5. Task 137 repair F2.
 func TestParseConfigTUIAcceptsNamedKeys(t *testing.T) {
 	for _, key := range []string{"alt+up", "ctrl+pgdown", "f5", "shift+enter", "ctrl+space", "alt+home", "meta+x", "super+left"} {
 		t.Run(key, func(t *testing.T) {

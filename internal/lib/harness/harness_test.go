@@ -109,3 +109,14 @@ func contains(values []string, want string) bool {
 	}
 	return false
 }
+
+func TestKnownKindsAreClaudeCodexPi(t *testing.T) {
+	if got := strings.Join(KnownKinds(), " "); got != "claude codex pi" {
+		t.Fatalf("KnownKinds() = %q; want claude codex pi", got)
+	}
+	for _, kind := range []string{"cursor", "opencode"} {
+		if _, err := Lookup(kind); err == nil {
+			t.Fatalf("Lookup(%s) error = nil; want an unknown harness error", kind)
+		}
+	}
+}

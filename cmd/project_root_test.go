@@ -66,18 +66,6 @@ func TestRootMissingHomeJSONEnvelope(t *testing.T) {
 	}
 }
 
-func TestRootMissingProjectShowArgumentIsUsageError(t *testing.T) {
-	testHome(t)
-	var stdout, stderr bytes.Buffer
-	status := executeWithStreams([]string{"project", "show"}, strings.NewReader(""), &stdout, &stderr)
-	if status != 2 {
-		t.Fatalf("status = %d; want 2 (stdout %q, stderr %q)", status, stdout.String(), stderr.String())
-	}
-	if stdout.Len() != 0 || strings.Count(stderr.String(), "\n") != 1 || !strings.HasPrefix(stderr.String(), "hive: ") {
-		t.Fatalf("stdout = %q, stderr = %q; want one usage line on stderr", stdout.String(), stderr.String())
-	}
-}
-
 func TestRegisterEmptyPathIsUsageError(t *testing.T) {
 	testHome(t)
 	var stdout, stderr bytes.Buffer

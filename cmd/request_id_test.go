@@ -16,12 +16,12 @@ func TestCommandRequestIDAndLogsRequestFilter(t *testing.T) {
 	home := requestTestHome(t)
 	t.Setenv("HIVE_HOME", home)
 	var output strings.Builder
-	if err := ExecuteWithArgs([]string{"task", "list", "--project", "demo"}, strings.NewReader(""), &output); err != nil {
-		t.Fatalf("task list: %v\n%s", err, output.String())
+	if err := ExecuteWithArgs([]string{"project", "list"}, strings.NewReader(""), &output); err != nil {
+		t.Fatalf("project list: %v\n%s", err, output.String())
 	}
 
 	events := requestTestEvents(t, home)
-	requestID := commandRequestID(t, events, "task list", []string{"command start", "command end"})
+	requestID := commandRequestID(t, events, "project list", []string{"command start", "command end"})
 	output.Reset()
 	if err := ExecuteWithArgs([]string{"logs", "--json", "--request", requestID}, strings.NewReader(""), &output); err != nil {
 		t.Fatalf("logs --request: %v\n%s", err, output.String())
@@ -41,47 +41,16 @@ func TestCommandRequestIDAndLogsRequestFilter(t *testing.T) {
 	}
 }
 
-func TestCommandRequestIDReachesOperationLogs(t *testing.T) {
-	home := requestTestHome(t)
-	t.Setenv("HIVE_HOME", home)
-	var output strings.Builder
-	err := ExecuteWithArgs([]string{"task", "create", "--project", "demo", "--title", "sample", "--slug", "sample"}, strings.NewReader(""), &output)
-	if err == nil {
-		t.Fatal("task create for an unknown project succeeded")
-	}
-	events := requestTestEvents(t, home)
-	requestID := commandRequestID(t, events, "task create", []string{"command start", "task error", "command end"})
-	for _, event := range events {
-		if event["command"] == "task create" && event["request_id"] != requestID {
-			t.Fatalf("task create event has request_id %v; want %q", event["request_id"], requestID)
-		}
-	}
-}
-
 func TestCommandRequestIDReachesCommandOwnedLoggers(t *testing.T) {
-	t.Run("memory", func(t *testing.T) {
-		home := requestTestHome(t)
-		t.Setenv("HIVE_HOME", home)
-		if err := os.MkdirAll(filepath.Join(home, "memory"), 0o755); err != nil {
-			t.Fatal(err)
-		}
-		input := strings.NewReader("---\nname: fact\ndescription: A fact.\n---\nBody.\n")
-		var output strings.Builder
-		if err := ExecuteWithArgs([]string{"memory", "write", "--scope", "home", "fact"}, input, &output); err != nil {
-			t.Fatalf("memory write: %v\n%s", err, output.String())
-		}
-		commandRequestID(t, requestTestEvents(t, home), "memory write", []string{"command start", "effect", "effect", "command end"})
-	})
-
-	t.Run("handoff", func(t *testing.T) {
-		home := requestTestHome(t)
-		t.Setenv("HIVE_HOME", home)
-		var output strings.Builder
-		if err := ExecuteWithArgs([]string{"handoff", "write", "--scope", "home"}, strings.NewReader("synthetic handoff content\n"), &output); err != nil {
-			t.Fatalf("handoff write: %v\n%s", err, output.String())
-		}
-		commandRequestID(t, requestTestEvents(t, home), "handoff write", []string{"command start", "effect", "command end"})
-	})
+	initConfigPath(t)
+	home := requestTestHome(t)
+	t.Chdir(home)
+	t.Setenv("HIVE_HOME", "")
+	var output strings.Builder
+	if err := ExecuteWithArgs([]string{"init"}, strings.NewReader(""), &output); err != nil {
+		t.Fatalf("init: %v\n%s", err, output.String())
+	}
+	commandRequestID(t, requestTestEvents(t, home), "init", []string{"command start", "command end"})
 }
 
 func requestTestHome(t *testing.T) string {
