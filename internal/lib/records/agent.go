@@ -10,11 +10,31 @@ const (
 	AgentUnresolved = "unresolved"
 )
 
+// Agent kinds. A spawned agent has no kind.
+const (
+	AgentKindCoordinator = "coordinator"
+	AgentKindSupervisor  = "supervisor"
+)
+
+// Profile labels of D1. The supervisor has no profile.
+const (
+	ProfileCoordinator = "coordinator"
+	ProfilePlanner     = "planner"
+	ProfileBuilder     = "builder"
+	ProfileVerifier    = "verifier"
+	ProfileGeneral     = "general"
+)
+
 // Agent is one registered coding-agent session in a herdr pane.
 type Agent struct {
-	Key             string   `json:"key"`
-	Name            string   `json:"name"`
-	Role            string   `json:"role"`
+	Key     string `json:"key"`
+	Name    string `json:"name"`
+	Kind    string `json:"kind"`
+	Profile string `json:"profile"`
+	// Worktree is the absolute worktree path of the task, or empty.
+	Worktree string `json:"worktree"`
+	// Owns is the project ID that the agent owns, or empty.
+	Owns            string   `json:"owns"`
 	Project         string   `json:"project"`
 	Task            string   `json:"task"`
 	Harness         string   `json:"harness"`

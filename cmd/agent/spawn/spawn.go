@@ -2,8 +2,11 @@
 package spawn
 
 import (
+	"os"
+
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	agentspawn "github.com/Harrison-Blair/hive/internal/agent/spawn"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -12,66 +15,41 @@ import (
 func New() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "spawn",
-		Short: "spawn an agent in a pane",
+		Short: "start an agent in a new herdr pane",
 		Args:  cobra.NoArgs,
 	}
-	command.Flags().String("role", "", "agent role")
-	command.Flags().String("agent", "", "caller agent name or key")
-	command.Flags().String("harness", "", "harness kind")
-	command.Flags().String("pane", "", "destination herdr pane ID: hive starts the agent in this pane, and agent stop closes it; herdr then closes its tab or workspace when it holds no other pane")
-	command.Flags().String("adopt", "", "adopt an existing workspace")
-	command.Flags().String("model", "", "model name")
-	command.Flags().String("project", "", "project ID")
-	command.Flags().String("task", "", "task ID")
-	command.Flags().String("name", "", "agent name")
-	command.Flags().Int("quiet-after", 10, "quiet minutes")
-	command.Flags().StringArray("arg", nil, "native agent argument")
-	command.Flags().String("prompt", "", "spawner text of a general agent (role agent)")
-	command.Flags().String("prompt-file", "", "file with the spawner text of a general agent (role agent)")
-	command.Flags().String("cwd", "", "working directory of a general agent in a new tab")
-	command.Flags().Bool("allow-trust-dialog", false, "start a general agent that can show a trust dialog; keep its first prompt for the supervisor")
+	flags := command.Flags()
+	flags.String("name", "", "agent name (required)")
+	flags.String("harness", "", "harness: claude, codex, or pi (required)")
+	flags.String("model", "", "model name (required)")
+	flags.String("prompt", "", "first prompt text")
+	flags.String("prompt-file", "", "file with the first prompt text")
+	flags.String("project", "", "project ID: start in the checkout workspace of the project")
+	flags.String("worktree", "", "worktree and branch name: start in a new worktree of --project")
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
-		role, _ := cmd.Flags().GetString("role")
-		agent, _ := cmd.Flags().GetString("agent")
-		harness, _ := cmd.Flags().GetString("harness")
-		pane, _ := cmd.Flags().GetString("pane")
-		adopt, _ := cmd.Flags().GetString("adopt")
-		model, _ := cmd.Flags().GetString("model")
-		project, _ := cmd.Flags().GetString("project")
-		task, _ := cmd.Flags().GetString("task")
-		name, _ := cmd.Flags().GetString("name")
-		quiet, _ := cmd.Flags().GetInt("quiet-after")
-		extra, _ := cmd.Flags().GetStringArray("arg")
-		prompt, _ := cmd.Flags().GetString("prompt")
-		promptFile, _ := cmd.Flags().GetString("prompt-file")
-		cwd, _ := cmd.Flags().GetString("cwd")
-		allowTrust, _ := cmd.Flags().GetBool("allow-trust-dialog")
 		return common.Run(cmd, "agent spawn", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.SpawnFromCLI(cmd.Context(), home, agentlib.SpawnOptions{
-				Role:          role,
-				Agent:         agent,
-				Project:       project,
-				Task:          task,
-				Harness:       harness,
-				Model:         model,
-				Name:          name,
-				NameSet:       cmd.Flags().Lookup("name").Changed,
-				PaneID:        pane,
-				PaneSet:       cmd.Flags().Lookup("pane").Changed,
-				Adopt:         adopt,
-				QuietAfterMin: quiet,
-				QuietAfterSet: cmd.Flags().Lookup("quiet-after").Changed,
-				ExtraArgs:     extra,
-
-				Prompt:           prompt,
-				PromptSet:        cmd.Flags().Lookup("prompt").Changed,
-				PromptFile:       promptFile,
-				PromptFileSet:    cmd.Flags().Lookup("prompt-file").Changed,
-				Cwd:              cwd,
-				CwdSet:           cmd.Flags().Lookup("cwd").Changed,
-				AllowTrustDialog: allowTrust,
+			logger, err := hivelog.Open(home, "cli")
+			if err != nil {
+				return output.Envelope{}, "", err
+			}
+			cwd, err := os.Getwd()
+			if err != nil {
+				return output.Envelope{}, "", err
+			}
+			value := func(name string) string { text, _ := cmd.Flags().GetString(name); return text }
+			envelope := agentspawn.Run(cmd.Context(), home, agentspawn.Options{
+				Name:       value("name"),
+				Harness:    value("harness"),
+				Model:      value("model"),
+				Prompt:     value("prompt"),
+				PromptFile: value("prompt-file"),
+				Project:    value("project"),
+				Worktree:   value("worktree"),
+				CallerPane: os.Getenv("HERDR_PANE_ID"),
+				Cwd:        cwd,
+				Logger:     logger,
 			})
-			return envelope, agentlib.SpawnText(envelope), nil
+			return envelope, agentspawn.Text(envelope), nil
 		})
 	}
 	return command

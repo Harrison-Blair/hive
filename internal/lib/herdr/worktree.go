@@ -39,12 +39,13 @@ func WorktreeList(ctx context.Context, params WorktreeListParams, opts ...Option
 }
 
 type WorktreeCreateParams struct {
-	Cwd    string `json:"cwd"`
-	Branch string `json:"branch"`
-	Base   string `json:"base"`
-	Path   string `json:"path"`
-	Label  string `json:"label"`
-	Focus  bool   `json:"focus"`
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	Cwd         string `json:"cwd,omitempty"`
+	Branch      string `json:"branch"`
+	Base        string `json:"base"`
+	Path        string `json:"path"`
+	Label       string `json:"label,omitempty"`
+	Focus       bool   `json:"focus"`
 }
 
 // WorktreeCreateResult is one worktree.create reply.

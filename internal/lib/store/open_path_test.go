@@ -1,7 +1,6 @@
 package store
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -116,9 +115,6 @@ func TestOperationsRecheckLinkedHiveAncestor(t *testing.T) {
 		{"ListIn", func() error {
 			_, err := store.ListIn([]string{"tasks"}, nil)
 			return err
-		}},
-		{"WalkRecords", func() error {
-			return store.WalkRecords(context.Background(), func(StoredRecord) error { return nil })
 		}},
 	}
 	for _, check := range checks {

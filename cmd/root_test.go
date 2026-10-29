@@ -1,15 +1,10 @@
 package cmd
 
 import (
-	"bufio"
 	"bytes"
-	"encoding/json"
-	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 )
 
@@ -67,162 +62,81 @@ func newRootTestHome(t *testing.T) string {
 	return home
 }
 
-func TestBareHiveRunsTUIUntilQuit(t *testing.T) {
-	newRootTestHome(t)
-	var out bytes.Buffer
-	status := executeWithStreams(nil, strings.NewReader("\x03\x03"), &out, &out)
+func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
+	home := newRootTestHome(t)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader("\x03"), &stdout, &stderr)
 	if status != 0 {
-		t.Fatalf("status = %d; want 0", status)
+		t.Fatalf("status = %d; want 0; stderr %q", status, stderr.String())
 	}
-	// A Bubble Tea program hides the cursor on start.
-	if !strings.Contains(out.String(), "\x1b[?25l") {
-		t.Fatalf("output %q shows no TUI ran", out.String())
+	logs, err := filepath.Glob(filepath.Join(home, ".hive", "logs", "*.jsonl"))
+	if err != nil || len(logs) != 1 {
+		t.Fatalf("log files = %v, %v; want one", logs, err)
 	}
-	if !strings.Contains(out.String(), " hive") {
-		t.Fatalf("output %q does not show the TUI header", out.String())
-	}
-	if strings.Contains(out.String(), `"outcome"`) {
-		t.Fatalf("successful TUI wrote an envelope: %q", out.String())
-	}
-}
-
-func TestBareHiveWithoutHerdrShowsStartupNotice(t *testing.T) {
-	newRootTestHome(t)
-	t.Setenv("HERDR_ENV", "")
-	t.Setenv("HERDR_PANE_ID", "")
-	var out bytes.Buffer
-	status := executeWithStreams(nil, strings.NewReader("\x03\x03"), &out, &out)
-	if status != 0 {
-		t.Fatalf("status = %d; want 0", status)
-	}
-	if !strings.Contains(out.String(), "not in herdr: no coordinator or supervisor started") {
-		t.Fatalf("output %q lacks the no-herdr startup notice", out.String())
-	}
-}
-
-func TestBareJSONRefusesBeforeTUI(t *testing.T) {
-	newRootTestHome(t)
-	var out bytes.Buffer
-	status := executeWithStreams([]string{"--json"}, strings.NewReader(""), &out, &out)
-	if status != 1 {
-		t.Fatalf("status = %d; want 1", status)
-	}
-	got := out.String()
-	if strings.Contains(got, "\x1b[?25l") {
-		t.Fatalf("JSON refusal started the TUI: %q", got)
-	}
-	for _, want := range []string{`"outcome":"failed"`, `"phase":"validate"`, `"error":"TUI requires text output"`} {
-		if !strings.Contains(got, want) {
-			t.Fatalf("output %q does not contain %s", got, want)
-		}
-	}
-	if strings.Count(got, "\n") != 1 {
-		t.Fatalf("output %q is not one envelope line", got)
-	}
-}
-
-func TestBareHiveNoStartupMakesNoTabCalls(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		args []string
-		env  string
-	}{
-		{name: "flag", args: []string{"--no-startup"}},
-		{name: "variable", env: "1"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			newRootTestHome(t)
-			methods := newRootFakeHerdr(t)
-			t.Setenv("HERDR_ENV", "1")
-			t.Setenv("HERDR_PANE_ID", "w1:p1")
-			t.Setenv("HIVE_NO_STARTUP", tc.env)
-			var out bytes.Buffer
-			status := executeWithStreams(tc.args, strings.NewReader("\x03\x03"), &out, &out)
-			if status != 0 {
-				t.Fatalf("status = %d; want 0; output %q", status, out.String())
-			}
-			if !strings.Contains(out.String(), " hive") {
-				t.Fatalf("output %q does not show the TUI header", out.String())
-			}
-			for _, method := range methods() {
-				if method == "tab.create" || method == "tab.rename" || method == "pane.send_input" {
-					t.Fatalf("herdr methods = %v; want no tab or input call", methods())
-				}
-			}
-		})
-	}
-}
-
-func TestBareHiveOtherNoStartupValueRunsStartup(t *testing.T) {
-	newRootTestHome(t)
-	methods := newRootFakeHerdr(t)
-	t.Setenv("HERDR_ENV", "1")
-	t.Setenv("HERDR_PANE_ID", "w1:p1")
-	t.Setenv("HIVE_NO_STARTUP", "true")
-	var out bytes.Buffer
-	_ = executeWithStreams(nil, strings.NewReader("\x03\x03"), &out, &out)
-	renamed := false
-	for _, method := range methods() {
-		if method == "tab.rename" {
-			renamed = true
-		}
-	}
-	if !renamed {
-		t.Fatalf("herdr methods = %v; want startup to rename the tab", methods())
-	}
-}
-
-// newRootFakeHerdr serves the herdr socket and returns the methods it got.
-// It answers ping, pane.get, and tab.rename, and refuses each other method.
-func newRootFakeHerdr(t *testing.T) func() []string {
-	t.Helper()
-	path := filepath.Join(t.TempDir(), "herdr.sock")
-	listener, err := net.Listen("unix", path)
+	events, err := os.ReadFile(logs[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = listener.Close() })
-	t.Setenv("HERDR_SOCKET_PATH", path)
-	var mu sync.Mutex
-	methods := []string{}
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				return
-			}
-			go func() {
-				defer func() { _ = conn.Close() }()
-				line, err := bufio.NewReader(conn).ReadBytes('\n')
-				if err != nil {
-					return
-				}
-				var request struct {
-					ID     string `json:"id"`
-					Method string `json:"method"`
-				}
-				if err := json.Unmarshal(line, &request); err != nil {
-					return
-				}
-				mu.Lock()
-				methods = append(methods, request.Method)
-				mu.Unlock()
-				switch request.Method {
-				case "ping":
-					_, _ = fmt.Fprintf(conn, `{"id":%q,"result":{"type":"pong","version":"0.9.5","protocol":22}}`+"\n", request.ID)
-				case "pane.get":
-					_, _ = fmt.Fprintf(conn, `{"id":%q,"result":{"type":"pane_info","pane":{"pane_id":"w1:p1","terminal_id":"term_1","workspace_id":"w1","tab_id":"w1:t1","focused":true,"agent_status":"unknown","revision":1,"cwd":"/tmp"}}}`+"\n", request.ID)
-				case "tab.rename":
-					_, _ = fmt.Fprintf(conn, `{"id":%q,"result":{"type":"tab_info","tab":{"tab_id":"w1:t1","workspace_id":"w1","number":1,"label":"hive","focused":true,"pane_count":1,"agent_status":"unknown"}}}`+"\n", request.ID)
-				default:
-					_, _ = fmt.Fprintf(conn, `{"id":%q,"error":{"code":"refused","message":"fake herdr refuses %s"}}`+"\n", request.ID, request.Method)
-				}
-			}()
+	if !strings.Contains(string(events), `"msg":"picker quit"`) {
+		t.Fatalf("log = %s; want a picker quit event", events)
+	}
+	if strings.Contains(stdout.String(), "Available Commands:") {
+		t.Fatalf("stdout = %q; want no help text", stdout.String())
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "agents", "coordinator.json")); !os.IsNotExist(err) {
+		t.Fatalf("coordinator record stat = %v; want none", err)
+	}
+}
+
+func TestRootListsOnlyKeptCommands(t *testing.T) {
+	want := []string{"agent", "completion", "help", "init", "logs", "project", "version"}
+	var stdout, stderr bytes.Buffer
+	if status := executeWithStreams([]string{"--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
+		t.Fatalf("status = %d; stderr %q", status, stderr.String())
+	}
+	if got := helpCommands(stdout.String()); strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Fatalf("commands = %v; want %v", got, want)
+	}
+	stdout.Reset()
+	if status := executeWithStreams([]string{"project", "--help"}, strings.NewReader(""), &stdout, &stderr); status != 0 {
+		t.Fatalf("status = %d; stderr %q", status, stderr.String())
+	}
+	if got := helpCommands(stdout.String()); strings.Join(got, " ") != "help list register" && strings.Join(got, " ") != "list register" {
+		t.Fatalf("project commands = %v; want list register", got)
+	}
+}
+
+// helpCommands returns the command names of the Available Commands section.
+func helpCommands(help string) []string {
+	var names []string
+	in := false
+	for _, line := range strings.Split(help, "\n") {
+		switch {
+		case strings.HasPrefix(line, "Available Commands:"):
+			in = true
+		case in && strings.HasPrefix(line, "  "):
+			names = append(names, strings.Fields(line)[0])
+		case in:
+			return names
 		}
-	}()
-	return func() []string {
-		mu.Lock()
-		defer mu.Unlock()
-		return append([]string(nil), methods...)
+	}
+	return names
+}
+
+func TestBareHiveOutsideHomeFailsWithNoPicker(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", "")
+	outside := t.TempDir()
+	t.Chdir(outside)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader(""), &stdout, &stderr)
+	if status == 0 {
+		t.Fatalf("status = 0; want non-zero; stdout %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "not a hive home") {
+		t.Fatalf("stderr = %q; want a not a hive home error", stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q; want no picker output", stdout.String())
 	}
 }

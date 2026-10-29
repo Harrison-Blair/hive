@@ -13,17 +13,17 @@ import (
 func List(home string) output.Envelope {
 	registry, err := store.Open(home)
 	if err != nil {
-		return failed("store", err.Error())
+		return Failed("store", err.Error())
 	}
 	rawRecords, err := registry.List("projects")
 	if err != nil {
-		return failed("store", err.Error())
+		return Failed("store", err.Error())
 	}
 	projects := make([]records.Project, 0, len(rawRecords))
 	for _, raw := range rawRecords {
 		var record records.Project
 		if err := json.Unmarshal(raw, &record); err != nil {
-			return failed("store", fmt.Sprintf("record invalid: projects: %v", err))
+			return Failed("store", fmt.Sprintf("record invalid: projects: %v", err))
 		}
 		projects = append(projects, record)
 	}

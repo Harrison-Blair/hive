@@ -1,9 +1,0 @@
-Main-live vs Main: strict 67, space attributes 67, live differences 0
-CompactAgents-live vs CompactAgents: strict 59, space attributes 59, live differences 0
-Help-live vs Help: strict 1384, space attributes 1384, live differences 0
-TooSmall-live vs TooSmall: strict 120, space attributes 120, live differences 0
-Compact-live vs Compact: strict 37, space attributes 37, live differences 0
-Compact-key-1 vs Compact: strict 37, space attributes 37, live differences 0
-Compact-blocked-keys vs Compact: strict 37, space attributes 37, live differences 0
-Compact-reopened vs Compact: strict 37, space attributes 37, live differences 0
-Help-key-2 vs Help: strict 1384, space attributes 1384, live differences 0

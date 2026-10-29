@@ -6,7 +6,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
-	projectlib "github.com/Harrison-Blair/hive/internal/project"
+	projectregister "github.com/Harrison-Blair/hive/internal/project/register"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ func New() *cobra.Command {
 			}
 			id, _ := cmd.Flags().GetString("id")
 			base, _ := cmd.Flags().GetString("base")
-			envelope := projectlib.Register(home, projectlib.RegisterOptions{
+			envelope := projectregister.Run(home, projectregister.Options{
 				Path:       args[0],
 				ID:         id,
 				IDSet:      cmd.Flags().Lookup("id").Changed,
@@ -38,7 +38,7 @@ func New() *cobra.Command {
 				BaseSet:    cmd.Flags().Lookup("base").Changed,
 				WorkingDir: workingDir,
 			})
-			return envelope, projectlib.RegisterText(envelope), nil
+			return envelope, projectregister.Text(envelope), nil
 		})
 	}
 	return command

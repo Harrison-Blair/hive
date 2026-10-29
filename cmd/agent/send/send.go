@@ -2,8 +2,11 @@
 package send
 
 import (
+	"os"
+
 	"github.com/Harrison-Blair/hive/cmd/common"
-	agentlib "github.com/Harrison-Blair/hive/internal/agent"
+	agentsend "github.com/Harrison-Blair/hive/internal/agent/send"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -11,29 +14,26 @@ import (
 // New creates the agent send command.
 func New() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "send TEXT",
+		Use:   "send NAME TEXT",
 		Short: "send a prompt to an agent",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 	}
-	command.Flags().String("agent", "", "agent name")
-	command.Flags().Bool("wait", false, "wait for a settled status")
-	command.Flags().Int("timeout", 600, "wait timeout in seconds")
+	command.Flags().Bool("wait", false, "wait until the agent is idle or done again")
 	command.RunE = func(cmd *cobra.Command, args []string) error {
-		name, _ := cmd.Flags().GetString("agent")
-		if name == "" {
-			return common.Usage(cmd, "agent send requires --agent")
-		}
-		wait, _ := cmd.Flags().GetBool("wait")
-		timeout, _ := cmd.Flags().GetInt("timeout")
 		return common.Run(cmd, "agent send", func(home string) (output.Envelope, string, error) {
-			envelope := agentlib.Send(cmd.Context(), home, agentlib.SendOptions{
-				Agent:      name,
-				Text:       args[0],
+			logger, err := hivelog.Open(home, "cli")
+			if err != nil {
+				return output.Envelope{}, "", err
+			}
+			wait, _ := cmd.Flags().GetBool("wait")
+			envelope := agentsend.Run(cmd.Context(), home, agentsend.Options{
+				Name:       args[0],
+				Text:       args[1],
 				Wait:       wait,
-				Timeout:    timeout,
-				TimeoutSet: cmd.Flags().Lookup("timeout").Changed,
+				CallerPane: os.Getenv("HERDR_PANE_ID"),
+				Logger:     logger,
 			})
-			return envelope, agentlib.SendText(envelope), nil
+			return envelope, agentsend.Text(envelope), nil
 		})
 	}
 	return command

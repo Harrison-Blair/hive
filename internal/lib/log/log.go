@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -39,12 +40,15 @@ func SetRequestID(id string) func() {
 	return func() { activeRequestID.Store(previous) }
 }
 
+var errClosed = errors.New("log: writer is closed")
+
 type outputState struct {
-	mu    sync.Mutex
-	home  string
-	file  *os.File
-	date  string
-	clock func() time.Time
+	mu     sync.Mutex
+	home   string
+	file   *os.File
+	date   string
+	closed bool
+	clock  func() time.Time
 }
 
 // Writer is a slog handler that rotates files when the local date changes.
@@ -90,6 +94,9 @@ func (w *Writer) Enabled(context.Context, slog.Level) bool { return true }
 func (w *Writer) Handle(_ context.Context, record slog.Record) error {
 	w.state.mu.Lock()
 	defer w.state.mu.Unlock()
+	if w.state.closed {
+		return errClosed
+	}
 
 	now := w.state.clock().Local()
 	date := now.Format("2006-01-02")
@@ -157,6 +164,7 @@ func (w *Writer) WithGroup(name string) slog.Handler {
 func (w *Writer) Close() error {
 	w.state.mu.Lock()
 	defer w.state.mu.Unlock()
+	w.state.closed = true
 	if w.state.file == nil {
 		return nil
 	}

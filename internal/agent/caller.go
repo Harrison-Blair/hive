@@ -2,43 +2,43 @@ package agent
 
 import (
 	"errors"
-	"fmt"
+	"log/slog"
 
-	identitylib "github.com/Harrison-Blair/hive/internal/lib/identity"
-	"github.com/Harrison-Blair/hive/internal/lib/records"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
+	"github.com/Harrison-Blair/hive/internal/lib/output"
 )
 
-// CallerOptions holds the identity inputs of one hive command.
-type CallerOptions struct {
-	// Agent is the value of --agent.
-	Agent string
-	// Pane is the value of --pane when --pane names the caller.
-	Pane string
-	// HerdrPane is HERDR_PANE_ID. An empty value means the command runs
-	// outside herdr.
-	HerdrPane string
+// CallerName returns the name of the record whose pane is pane, or the empty
+// string when pane is empty or no record matches.
+func CallerName(home, pane string) (string, error) {
+	if pane == "" {
+		return "", nil
+	}
+	record, err := FindByPane(home, pane)
+	if errors.Is(err, ErrNotFound) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return record.Name, nil
 }
 
-// Caller returns the caller of one hive command (decision 24). In a herdr
-// pane, the agent of that pane is the caller: an --agent or a --pane that names
-// another agent or pane fails. Outside herdr, --agent and --pane resolve the
-// caller as before.
-func Caller(locked identitylib.Reader, options CallerOptions) (records.Agent, error) {
-	if options.HerdrPane == "" {
-		return identitylib.ResolveHeld(locked, options.Agent, options.Pane)
+// IsCode reports whether err is a herdr server error with code.
+func IsCode(err error, code string) bool {
+	var serverError *herdr.Error
+	return errors.As(err, &serverError) && serverError.Code == code
+}
+
+// Failed returns a failed envelope with no effects.
+func Failed(phase, message string) output.Envelope {
+	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
+}
+
+// Logger returns logger, or a logger that drops each event when logger is nil.
+func Logger(logger *slog.Logger) *slog.Logger {
+	if logger == nil {
+		return slog.New(slog.DiscardHandler)
 	}
-	if options.Pane != "" && options.Pane != options.HerdrPane {
-		return records.Agent{}, fmt.Errorf("--pane %s is not the caller pane %s", options.Pane, options.HerdrPane)
-	}
-	caller, err := identitylib.ResolveHeld(locked, "", options.HerdrPane)
-	if err != nil {
-		if options.Agent != "" && errors.Is(err, identitylib.ErrCallerUnknown) {
-			return records.Agent{}, fmt.Errorf("--agent %s is not the caller: pane %s has no live agent", options.Agent, options.HerdrPane)
-		}
-		return records.Agent{}, err
-	}
-	if options.Agent != "" && options.Agent != caller.Name && options.Agent != caller.Key {
-		return records.Agent{}, fmt.Errorf("--agent %s is not the caller %s", options.Agent, caller.Name)
-	}
-	return caller, nil
+	return logger
 }

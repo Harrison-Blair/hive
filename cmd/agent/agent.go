@@ -3,11 +3,7 @@ package agent
 
 import (
 	"github.com/Harrison-Blair/hive/cmd/agent/list"
-	"github.com/Harrison-Blair/hive/cmd/agent/register"
-	"github.com/Harrison-Blair/hive/cmd/agent/report"
-	"github.com/Harrison-Blair/hive/cmd/agent/resolve"
 	"github.com/Harrison-Blair/hive/cmd/agent/send"
-	"github.com/Harrison-Blair/hive/cmd/agent/show"
 	"github.com/Harrison-Blair/hive/cmd/agent/spawn"
 	"github.com/Harrison-Blair/hive/cmd/agent/stop"
 	"github.com/spf13/cobra"
@@ -17,9 +13,9 @@ import (
 func New() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "agent",
-		Short: "manage agent sessions",
+		Short: "manage agents in herdr panes",
 		Args:  cobra.NoArgs,
 	}
-	command.AddCommand(register.New(), list.New(), show.New(), spawn.New(), send.New(), stop.New(), resolve.New(), report.New())
+	command.AddCommand(spawn.New(), stop.New(), send.New(), list.New())
 	return command
 }

@@ -1,6 +1,0 @@
-Main.grid: strict differences 67, space-cell token or bold only 67, differences under the live rule 0
-CompactAgents.grid: strict differences 59, space-cell token or bold only 59, differences under the live rule 0
-Help.grid: strict differences 927, space-cell token or bold only 927, differences under the live rule 0
-TooSmall.grid: strict differences 120, space-cell token or bold only 120, differences under the live rule 0
-Compact.grid: strict differences 37, space-cell token or bold only 37, differences under the live rule 0
-Compact.grid: strict differences 37, space-cell token or bold only 37, differences under the live rule 0

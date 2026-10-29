@@ -112,3 +112,32 @@ func TestAgentFirstPromptTimesRoundTripAndLegacyJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestAgentFactsRoundTrip(t *testing.T) {
+	const fixture = `{"key":"manager-hive-g1","name":"manager-hive","profile":"planner","kind":"","worktree":"","owns":"hive","status":"live"}`
+	var agent Agent
+	if err := json.Unmarshal([]byte(fixture), &agent); err != nil {
+		t.Fatalf("decode facts record: %v", err)
+	}
+	encoded, err := json.Marshal(agent)
+	if err != nil {
+		t.Fatalf("encode facts record: %v", err)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(encoded, &got); err != nil {
+		t.Fatalf("decode encoded facts record: %v", err)
+	}
+	for key, want := range map[string]string{"profile": "planner", "owns": "hive"} {
+		if got[key] != want {
+			t.Errorf("%s = %#v; want %q", key, got[key], want)
+		}
+	}
+	for _, key := range []string{"kind", "worktree"} {
+		if _, ok := got[key]; !ok {
+			t.Errorf("encoded facts record has no %s field: %s", key, encoded)
+		}
+	}
+	if _, ok := got["role"]; ok {
+		t.Errorf("encoded facts record has a role field: %s", encoded)
+	}
+}
