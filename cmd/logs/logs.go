@@ -45,7 +45,7 @@ func New() *cobra.Command {
 	flags.StringVar(&opts.level, "level", "", "minimum level")
 	flags.StringVar(&opts.component, "component", "", "component")
 	flags.StringVar(&opts.task, "task", "", "task ID")
-	flags.StringVar(&opts.agent, "agent", "", "agent ID")
+	flags.StringVar(&opts.agent, "agent", "", "agent name: matches agent_id or target")
 	flags.StringVar(&opts.request, "request", "", "request ID")
 	flags.IntVar(&opts.limit, "limit", 200, "maximum matches to print")
 	flags.BoolVar(&opts.follow, "follow", false, "print new events as they arrive")
@@ -72,7 +72,7 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
-	logger, err := hivelog.Open(resolvedHome, "cli")
+	logger, err := common.Logger(resolvedHome, "")
 	if err != nil {
 		return fail(cmd, jsonOutput, err, 1)
 	}

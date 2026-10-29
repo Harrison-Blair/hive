@@ -59,3 +59,40 @@ func TestSendCLINeedsNameAndText(t *testing.T) {
 		t.Fatalf("status 0 for a send without TEXT")
 	}
 }
+
+func TestSendCLILogsCallerAndTargetOnEachEvent(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	t.Setenv("HIVE_HOME", home)
+	_, boss := fake.AddWorkspace("mine", "", false)
+	kid := fake.AddPane("w1", "")
+	fake.StartAgent(kid.ID, "kid", "pi", "idle")
+	for _, record := range []agent.Record{{Name: "boss", Pane: boss.ID}, {Name: "kid", Pane: kid.ID}} {
+		if err := agent.Save(home, record); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("HERDR_PANE_ID", boss.ID)
+	if status, out := execute(t, "send", "kid", "hi"); status != 0 {
+		t.Fatalf("status %d, output %q", status, out)
+	}
+	agenttest.CheckAgentFields(t, agenttest.CommandEvents(t, home, "agent send"), "boss", "kid",
+		"command start", "herdr request", "herdr reply", "agent send", "command end")
+}
+
+func TestSendCLILogsUserWhenThePaneHasNoRecord(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	t.Setenv("HIVE_HOME", home)
+	fake.AddWorkspace("mine", "", false)
+	kid := fake.AddPane("w1", "")
+	fake.StartAgent(kid.ID, "kid", "pi", "idle")
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: kid.ID}); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HERDR_PANE_ID", "")
+	if status, out := execute(t, "send", "kid", "hi"); status != 0 {
+		t.Fatalf("status %d, output %q", status, out)
+	}
+	agenttest.CheckAgentFields(t, agenttest.CommandEvents(t, home, "agent send"), "user", "kid", "command start", "command end")
+}

@@ -37,6 +37,15 @@ func TestFilterMatchFields(t *testing.T) {
 	}
 }
 
+func TestFilterAgentMatchesCallerOrTarget(t *testing.T) {
+	event := Event{Fields: map[string]any{"agent_id": "boss", "target": "kid"}}
+	for agent, want := range map[string]bool{"boss": true, "kid": true, "other": false} {
+		if got := (Filter{AgentID: agent}).Match(event); got != want {
+			t.Errorf("Match(agent %q) = %v; want %v", agent, got, want)
+		}
+	}
+}
+
 func TestFilterLevelKeepsNamedAndAbove(t *testing.T) {
 	levels := []string{"DEBUG", "INFO", "WARN", "ERROR"}
 	cases := []struct {

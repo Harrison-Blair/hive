@@ -2,9 +2,10 @@
 package list
 
 import (
+	"log/slog"
+
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentlist "github.com/Harrison-Blair/hive/internal/agent/list"
-	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -17,11 +18,7 @@ func New() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	command.RunE = func(cmd *cobra.Command, _ []string) error {
-		return common.Run(cmd, "agent list", func(home string) (output.Envelope, string, error) {
-			logger, err := hivelog.Open(home, "cli")
-			if err != nil {
-				return output.Envelope{}, "", err
-			}
+		return common.Run(cmd, "agent list", "", func(home string, logger *slog.Logger) (output.Envelope, string, error) {
 			envelope := agentlist.Run(cmd.Context(), home, agentlist.Options{Logger: logger})
 			return envelope, agentlist.Text(envelope), nil
 		})

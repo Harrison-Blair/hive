@@ -45,7 +45,7 @@ type Options struct {
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	envelope := run(ctx, home, options, logger)
-	attrs := []any{"command", "agent spawn", "agent_id", options.Name, "project_id", options.Project, "outcome", envelope.Outcome, "phase", envelope.Phase}
+	attrs := []any{"command", "agent spawn", "target", options.Name, "project_id", options.Project, "outcome", envelope.Outcome, "phase", envelope.Phase}
 	if envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
@@ -119,7 +119,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		}
 		return envelope
 	}
-	logger.Debug("agent started", "command", "agent spawn", "agent_id", options.Name, "pane_id", paneID, "argv", argv)
+	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", argv)
 	effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "started"})
 
 	record := agent.Record{
@@ -155,7 +155,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		if err != nil {
 			return partial("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, paneID, err))
 		}
-		logger.Debug("agent prompted", "command", "agent spawn", "agent_id", record.Name, "pane_id", paneID, hivelog.Body(prompt))
+		logger.Debug("agent prompted", "command", "agent spawn", "target", record.Name, "pane_id", paneID, hivelog.Body(prompt))
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
 	}
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
@@ -217,7 +217,7 @@ func checkName(ctx context.Context, home, name string, logger *slog.Logger) erro
 	}
 	_, err = herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
 	if agent.IsCode(err, herdr.CodePaneNotFound) {
-		logger.Debug("agent record replaced", "command", "agent spawn", "agent_id", name, "pane_id", record.Pane)
+		logger.Debug("agent record replaced", "command", "agent spawn", "target", name, "pane_id", record.Pane)
 		return nil
 	}
 	if err != nil {

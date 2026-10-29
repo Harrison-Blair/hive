@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/home"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
@@ -28,8 +30,9 @@ type UsageError struct {
 
 func (e *UsageError) Error() string { return e.Message }
 
-// Run resolves the home, logs the command, and renders its result.
-func Run(cmd *cobra.Command, command string, execute func(string) (output.Envelope, string, error)) error {
+// Run resolves the home, logs the command, and renders its result. Target is
+// the agent that the command acts on, or empty. Execute gets the command logger.
+func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.Logger) (output.Envelope, string, error)) error {
 	root := cmd.Root()
 	jsonOutput, err := root.PersistentFlags().GetBool("json")
 	if err != nil {
@@ -49,13 +52,13 @@ func Run(cmd *cobra.Command, command string, execute func(string) (output.Envelo
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
-	logger, err := hivelog.Open(resolvedHome, "cli")
+	logger, err := Logger(resolvedHome, target)
 	if err != nil {
 		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", command)
-	envelope, text, executeErr := execute(resolvedHome)
+	envelope, text, executeErr := execute(resolvedHome, logger)
 	if executeErr != nil {
 		var usage *UsageError
 		if errors.As(executeErr, &usage) {
@@ -71,6 +74,28 @@ func Run(cmd *cobra.Command, command string, execute func(string) (output.Envelo
 		return &StatusError{Status: 1}
 	}
 	return &StatusError{Status: output.Status(envelope.Outcome)}
+}
+
+// Logger opens the command logger of the home. Each event carries agent_id,
+// the caller, and target when target is not empty. The caller is the record
+// name of HERDR_PANE_ID, or "user" when that pane has no record.
+func Logger(home, target string) (*slog.Logger, error) {
+	logger, err := hivelog.Open(home, "cli")
+	if err != nil {
+		return nil, err
+	}
+	caller, err := agent.CallerName(home, os.Getenv("HERDR_PANE_ID"))
+	if err != nil {
+		logger.Debug("caller lookup failed", "error", err.Error())
+	}
+	if caller == "" {
+		caller = "user"
+	}
+	logger = logger.With("agent_id", caller)
+	if target != "" {
+		logger = logger.With("target", target)
+	}
+	return logger, nil
 }
 
 // Usage writes one usage line and returns status 2.

@@ -43,7 +43,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
-	logger, err := hivelog.Open(markedHome, "cli")
+	logger, err := common.Logger(markedHome, "")
 	if err != nil {
 		return fail(cmd, jsonOutput, "log", err, 1)
 	}

@@ -7,6 +7,7 @@ import (
 	projectlib "github.com/Harrison-Blair/hive/internal/project"
 	projectlist "github.com/Harrison-Blair/hive/internal/project/list"
 	"github.com/spf13/cobra"
+	"log/slog"
 )
 
 // New creates the project list command.
@@ -16,7 +17,7 @@ func New() *cobra.Command {
 		Short: "list registered projects",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return common.Run(cmd, "project list", func(home string) (output.Envelope, string, error) {
+			return common.Run(cmd, "project list", "", func(home string, _ *slog.Logger) (output.Envelope, string, error) {
 				envelope := projectlib.List(home)
 				return envelope, projectlist.Text(envelope), nil
 			})

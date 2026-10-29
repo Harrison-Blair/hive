@@ -14,7 +14,8 @@ type Filter struct {
 	RequestID string
 }
 
-// Match reports whether the event has each named field. A level matches the
+// Match reports whether the event has each named field. An agent matches
+// agent_id or target. A level matches the
 // named level and each level above it. A malformed event has no fields, so it
 // matches only an empty filter.
 func (f Filter) Match(e Event) bool {
@@ -27,7 +28,7 @@ func (f Filter) Match(e Event) bool {
 	if f.TaskID != "" && fieldString(e.Fields, "task_id") != f.TaskID {
 		return false
 	}
-	if f.AgentID != "" && fieldString(e.Fields, "agent_id") != f.AgentID {
+	if f.AgentID != "" && fieldString(e.Fields, "agent_id") != f.AgentID && fieldString(e.Fields, "target") != f.AgentID {
 		return false
 	}
 	if f.RequestID != "" && fieldString(e.Fields, "request_id") != f.RequestID {
