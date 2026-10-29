@@ -38,7 +38,7 @@ func Open(home string) (*Store, error) {
 	if err := os.MkdirAll(store.stateDir(), 0o755); err != nil {
 		return nil, err
 	}
-	if err := store.migrate(); err != nil {
+	if err := store.checkSchema(); err != nil {
 		return nil, err
 	}
 	return store, nil
