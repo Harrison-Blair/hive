@@ -30,7 +30,10 @@ type Workspace struct {
 	Label    string
 	Checkout string
 	Linked   bool
-	tabs     int
+	// NoMetadata hides the worktree metadata, as herdr 0.9.5 does for a
+	// workspace that workspace.create made.
+	NoMetadata bool
+	tabs       int
 }
 
 // Pane is one fake pane. Each fake tab holds one pane.
@@ -45,6 +48,10 @@ type Pane struct {
 	Args        []string
 	Env         map[string]string
 	Prompts     []string
+	// ready is true when herdr reports interactive_ready for the agent.
+	ready bool
+	// pending counts the agent.get calls that still see the launch.
+	pending int
 }
 
 type failure struct{ code, message string }
@@ -110,6 +117,7 @@ func (h *Herdr) StartAgent(paneID, name, kind, status string) {
 	defer h.mu.Unlock()
 	pane := h.pane(paneID)
 	pane.Name, pane.Kind, pane.Status = name, kind, status
+	pane.ready = status != "blocked"
 }
 
 // ClosePane removes one pane, as a user who closes it by hand.
@@ -301,6 +309,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		return map[string]any{"type": "workspace_list", "workspaces": list}, nil
 	case "workspace.create":
 		ws, pane := h.addWorkspace(text("label"), text("cwd"), false)
+		ws.NoMetadata = true
 		return map[string]any{"type": "workspace_created", "workspace": h.workspaceInfo(ws), "tab": tabInfo(pane), "root_pane": paneInfo(pane)}, nil
 	case "workspace.close":
 		if h.workspace(text("workspace_id")) == nil {
@@ -338,6 +347,18 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			"type": "worktree_created", "workspace": h.workspaceInfo(ws), "tab": tabInfo(pane), "root_pane": paneInfo(pane),
 			"worktree": map[string]any{"path": text("path"), "label": ws.Label, "branch": text("branch"), "is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": true, "open_workspace_id": ws.ID},
 		}, nil
+	case "worktree.list":
+		cwd := text("cwd")
+		entry := map[string]any{"path": cwd, "label": filepath.Base(cwd), "branch": "main", "is_bare": false, "is_detached": false, "is_prunable": false, "is_linked_worktree": false}
+		source := map[string]any{"repo_key": cwd + "/.git", "repo_name": filepath.Base(cwd), "repo_root": cwd, "source_checkout_path": cwd}
+		for _, ws := range h.workspaces {
+			if ws.Checkout == cwd && !ws.Linked {
+				entry["open_workspace_id"] = ws.ID
+				source["source_workspace_id"] = ws.ID
+				break
+			}
+		}
+		return map[string]any{"type": "worktree_list", "source": source, "worktrees": []any{entry}}, nil
 	case "pane.get":
 		pane, failed := paneOf()
 		if failed != nil {
@@ -364,6 +385,9 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			return nil, &serverError{"agent_pane_busy", "agent target pane " + pane.ID + " is not an available shell"}
 		}
 		pane.Name, pane.Kind = text("name"), text("kind")
+		// As herdr 0.9.5 does, the launch keeps the shell status until the
+		// agent settles, and agent.get sees the launch for a short time.
+		pane.Status, pane.ready, pane.pending = "idle", false, 1
 		pane.Args = nil
 		if raw, ok := params["args"].([]any); ok {
 			for _, arg := range raw {
@@ -378,8 +402,17 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		if pane == nil {
 			return nil, &serverError{"agent_not_found", "agent not found"}
 		}
-		if pane.Status == "unknown" {
+		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
+	case "agent.get":
+		pane := h.pane(text("target"))
+		if pane == nil || pane.Kind == "" {
+			return nil, &serverError{"agent_not_found", "agent " + text("target") + " not found"}
+		}
+		if !pane.ready && pane.pending > 0 {
+			pane.pending--
+		} else if !pane.ready && pane.Status != "blocked" {
 			pane.Status = h.StartStatus
+			pane.ready = h.StartStatus != "blocked"
 		}
 		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
 	case "agent.prompt":
@@ -389,6 +422,9 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		if pane.Status == "blocked" {
 			return nil, &serverError{"agent_blocked", "agent " + text("target") + " is blocked and requires interactive input"}
+		}
+		if !pane.ready {
+			return nil, &serverError{"agent_not_ready", "agent " + text("target") + " is not an active named agent"}
 		}
 		pane.Prompts = append(pane.Prompts, text("text"))
 		if _, ok := params["wait"]; ok {
@@ -413,7 +449,7 @@ func (h *Herdr) workspaceInfo(ws *Workspace) map[string]any {
 		"workspace_id": ws.ID, "number": 1, "label": ws.Label, "focused": false, "pane_count": count,
 		"tab_count": ws.tabs, "active_tab_id": ws.ID + ":t1", "agent_status": "unknown",
 	}
-	if ws.Checkout != "" {
+	if ws.Checkout != "" && !ws.NoMetadata {
 		info["worktree"] = map[string]any{
 			"repo_key": ws.Checkout + "/.git", "repo_name": filepath.Base(ws.Checkout), "repo_root": ws.Checkout,
 			"checkout_path": ws.Checkout, "is_linked_worktree": ws.Linked,
@@ -440,6 +476,9 @@ func paneInfo(pane *Pane) map[string]any {
 func agentInfo(pane *Pane) map[string]any {
 	info := paneInfo(pane)
 	info["name"] = pane.Name
+	if pane.ready {
+		info["interactive_ready"] = true
+	}
 	return info
 }
 

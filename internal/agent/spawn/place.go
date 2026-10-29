@@ -66,17 +66,19 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 }
 
 // checkoutWorkspace returns the ID of the workspace that herdr has open on the
-// registered checkout of project. When none is open, it makes one with the
-// herdr default label and returns its root pane too.
+// registered checkout of project. herdr worktree.list gives it as the
+// open_workspace_id of the checkout entry that is not a linked worktree. The
+// workspace.list metadata is absent for a workspace that workspace.create
+// made (herdr 0.9.5), so it is not used. When none is open, checkoutWorkspace
+// makes one with the herdr default label and returns its root pane too.
 func checkoutWorkspace(ctx context.Context, project records.Project, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
-	workspaces, err := herdr.WorkspaceList(ctx, herdr.WithLogger(logger))
+	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: project.Path}, herdr.WithLogger(logger))
 	if err != nil {
-		return "", nil, nil, fmt.Errorf("workspace list: %w", err)
+		return "", nil, nil, fmt.Errorf("worktree list %s: %w", project.Path, err)
 	}
-	for _, workspace := range workspaces {
-		tree := workspace.Worktree
-		if tree != nil && !tree.IsLinkedWorktree && samePath(tree.CheckoutPath, project.Path) {
-			return workspace.WorkspaceID, nil, nil, nil
+	for _, tree := range listed.Worktrees {
+		if !tree.IsLinkedWorktree && tree.OpenWorkspaceID != "" && samePath(tree.Path, project.Path) {
+			return tree.OpenWorkspaceID, nil, nil, nil
 		}
 	}
 	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path}, herdr.WithLogger(logger))

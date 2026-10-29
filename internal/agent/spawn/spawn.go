@@ -22,6 +22,7 @@ const (
 	// busyTimeout bounds the wait for the shell of a new pane.
 	busyTimeout = 10 * time.Second
 	busyPause   = 200 * time.Millisecond
+	readyPause  = 250 * time.Millisecond
 )
 
 // Options holds the values of one spawn.
@@ -139,12 +140,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	partial := func(phase, message string) output.Envelope {
 		return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: message, Result: record}
 	}
-	ready := profile.ReadyTimeout()
-	info, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{
-		Target:    paneID,
-		Until:     []string{"idle", "blocked", "done"},
-		TimeoutMS: uint64(ready / time.Millisecond),
-	}, herdr.WithDeadline(ready+5*time.Second), herdr.WithLogger(logger))
+	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger)
 	if err != nil {
 		return partial("wait", fmt.Sprintf("agent %s in pane %s is not ready: %s; the prompt was not sent", record.Name, paneID, err))
 	}
@@ -246,6 +242,30 @@ func loadProject(home, id string) (records.Project, error) {
 		return records.Project{}, err
 	}
 	return project, nil
+}
+
+// waitReady polls agent.get until herdr reports the agent interactive_ready
+// or blocked. agent.wait does not serve: right after agent.start it can match
+// the idle status of the shell before the agent runs (herdr 0.9.5).
+func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger *slog.Logger) (herdr.AgentInfo, error) {
+	deadline := time.Now().Add(timeout)
+	for {
+		info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+		if err == nil && (info.Interactive || info.AgentStatus == "blocked") {
+			return info, nil
+		}
+		if time.Now().After(deadline) {
+			if err != nil {
+				return herdr.AgentInfo{}, err
+			}
+			return herdr.AgentInfo{}, fmt.Errorf("no interactive agent after %s (status %s)", timeout, info.AgentStatus)
+		}
+		select {
+		case <-ctx.Done():
+			return herdr.AgentInfo{}, ctx.Err()
+		case <-time.After(readyPause):
+		}
+	}
 }
 
 // start sends agent.start. A new pane can hold no shell prompt yet, so start
