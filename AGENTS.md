@@ -130,7 +130,7 @@ A command prints text for people by default. With `--json` it prints one JSON ob
 
 ### Git
 
-- Work on `dev` or on a branch from `dev`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
+- Work on a branch from `main`. Changes reach `main` only through a pull request that the owner approves. Never commit to `main`.
 - Write a commit subject as `type(scope): summary`, for example `feat(agent): add the stop command`.
 - Never add an agent as a co-author.
 - An agent commits and pushes its own branch. It does not wait for a request from the user.
