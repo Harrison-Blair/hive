@@ -68,8 +68,23 @@ hive/                            the checkout is the home
 - `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
 - Some parts keep their current roles. `cmd/common` holds the CLI helpers. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
 - A group command registers its child commands. It imports them only for this registration.
-- `.hive/spec/cmd-internal-mirroring/inventory.md` lists each command leaf, its internal path, and each deliberate exception. For example, `cmd/version` uses `internal/lib/version`.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
+
+### Request flow
+
+This map shows the path of `hive agent spawn` through the packages. The other agent commands use the same shape.
+
+```text
+cmd/agent/spawn                flags and the CLI adapter
+└▶ internal/agent/spawn        checks the options, places the pane, starts the harness, sends the prompt
+   ├▶ internal/lib/harness     the profile of claude, codex, or pi
+   ├▶ internal/lib/herdr       the herdr socket client, protocol 22
+   ├▶ internal/agent           the agent records in .hive/agents/ and the caller lookup
+   └▶ internal/lib/store       locked, atomic JSON files below the home
+      └▶ internal/lib/records  the record types
+
+bare hive ─▶ internal/coordinator: picker ─▶ coordinator record ─▶ harness replaces the process
+```
 
 ### Tests and the gate
 
@@ -88,6 +103,12 @@ env -u TERM TZ=UTC go test -race ./...
 ```
 
 The first command must print nothing. The second command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `projects/`.
+
+- To run one test, use the environment of the gate:
+
+```sh
+env -u TERM TZ=UTC go test -race -run 'TestName' ./internal/agent/spawn/
+```
 
 - A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME="$PWD"`. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
 
