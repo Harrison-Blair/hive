@@ -22,7 +22,6 @@ type options struct {
 	since     string
 	level     string
 	component string
-	task      string
 	agent     string
 	request   string
 	limit     int
@@ -44,7 +43,6 @@ func New() *cobra.Command {
 	flags.StringVar(&opts.since, "since", "", "duration or RFC 3339 cutoff")
 	flags.StringVar(&opts.level, "level", "", "minimum level")
 	flags.StringVar(&opts.component, "component", "", "component")
-	flags.StringVar(&opts.task, "task", "", "task ID")
 	flags.StringVar(&opts.agent, "agent", "", "agent name: matches agent_id or target")
 	flags.StringVar(&opts.request, "request", "", "request ID")
 	flags.IntVar(&opts.limit, "limit", 200, "maximum matches to print")
@@ -98,7 +96,6 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 	filter := loglib.Filter{
 		Level:     opts.level,
 		Component: opts.component,
-		TaskID:    opts.task,
 		AgentID:   opts.agent,
 		RequestID: opts.request,
 	}

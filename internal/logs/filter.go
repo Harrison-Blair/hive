@@ -9,7 +9,6 @@ import (
 type Filter struct {
 	Level     string
 	Component string
-	TaskID    string
 	AgentID   string
 	RequestID string
 }
@@ -23,9 +22,6 @@ func (f Filter) Match(e Event) bool {
 		return f.empty()
 	}
 	if f.Component != "" && fieldString(e.Fields, "component") != f.Component {
-		return false
-	}
-	if f.TaskID != "" && fieldString(e.Fields, "task_id") != f.TaskID {
 		return false
 	}
 	if f.AgentID != "" && fieldString(e.Fields, "agent_id") != f.AgentID && fieldString(e.Fields, "target") != f.AgentID {
@@ -48,7 +44,7 @@ func (f Filter) Match(e Event) bool {
 }
 
 func (f Filter) empty() bool {
-	return f.Level == "" && f.Component == "" && f.TaskID == "" && f.AgentID == "" && f.RequestID == ""
+	return f.Level == "" && f.Component == "" && f.AgentID == "" && f.RequestID == ""
 }
 
 func fieldString(fields map[string]any, key string) string {
