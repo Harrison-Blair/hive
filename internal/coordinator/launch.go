@@ -1,6 +1,7 @@
 package coordinator
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
+	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
@@ -55,8 +57,9 @@ func Main(home string, in io.Reader, out io.Writer) error {
 	})
 }
 
-// Run shows the picker, saves the choice and the coordinator record, and then
-// replaces this process with the harness. A quit returns nil and writes
+// Run shows the picker, saves the choice and the coordinator record, labels
+// the tab of the pane coordinator, and then replaces this process with the
+// harness. A quit returns nil and writes
 // nothing.
 func Run(opts Options) error {
 	logger := opts.Logger.With("command", "hive", "agent_id", Name)
@@ -95,6 +98,9 @@ func Run(opts Options) error {
 		return err
 	}
 	logger.Info("coordinator record saved", "pane", record.Pane, "harness", record.Harness, "model", record.Model)
+	if opts.Pane != "" {
+		labelTab(opts.Pane, logger)
+	}
 	binary := profile.ProcessNames()[0]
 	args := profile.Args(choice.Model, nil)
 	logger.Info("exec harness", "binary", binary, "args", args, "cwd", opts.Home)
@@ -103,6 +109,22 @@ func Run(opts Options) error {
 		return fmt.Errorf("start %s: %w", binary, err)
 	}
 	return nil
+}
+
+// labelTab renames the tab of pane to the coordinator name. A failure only
+// logs a warning, because the harness can run without the label.
+func labelTab(pane string, logger *slog.Logger) {
+	ctx := context.Background()
+	info, err := herdr.PaneGet(ctx, pane, herdr.WithLogger(logger))
+	if err != nil {
+		logger.Warn("coordinator tab label failed", "pane", pane, "error", err.Error())
+		return
+	}
+	if err := herdr.TabRename(ctx, info.TabID, Name, herdr.WithLogger(logger)); err != nil {
+		logger.Warn("coordinator tab label failed", "pane", pane, "tab", info.TabID, "error", err.Error())
+		return
+	}
+	logger.Info("coordinator tab labeled", "pane", pane, "tab", info.TabID)
 }
 
 // ExecHarness changes to dir and replaces this process with binary. It

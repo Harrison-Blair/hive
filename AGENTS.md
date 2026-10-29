@@ -48,9 +48,10 @@ hive/                            the checkout is the home
 - The checkout workspace of a project is a normal herdr workspace open on the registered repository checkout. Hive finds it with `worktree.list` (`open_workspace_id`), in any position and with any label. If none is open, hive creates one with the checkout as `cwd` and the herdr default label, and the first agent takes its root pane. Hive never renames a workspace and never makes a second checkout workspace. Hive uses no `hive:` labels.
 - `spawn` without `--project` opens a new tab in the workspace of the caller. With `--project P` it opens a new tab in the checkout workspace of P.
 - `spawn --project P --worktree NAME` calls `worktree.create` from the checkout workspace with path `projects/P/worktrees/NAME`, branch `NAME`, and the base branch of P. The new workspace nests under the checkout workspace. The agent starts in its root pane.
+- Spawn labels the tab of the agent with the agent name. A new tab gets the name through the `tab.create` label. A root pane of a new workspace or worktree gets it through `tab.rename` before the harness starts. When `tab.rename` fails, spawn still starts the harness and sends the prompt, and the outcome is `partial`.
 - Spawn waits for the harness to be ready, then sends the prompt. A Claude trust dialog in a new workspace or worktree root pane makes spawn report `blocked` with the pane ID. Spawn then sends no prompt.
 - Hive closes what it made. `agent stop` closes the pane of the agent, or the worktree workspace. It keeps the checkout and the branch. `--remove-worktree` also removes a clean checkout and refuses a dirty one. Hive acts only on agents that have a hive record.
-- Bare `hive` changes no workspace.
+- Bare `hive` renames only its own tab, to `coordinator`. It changes no workspace.
 
 ## Development
 

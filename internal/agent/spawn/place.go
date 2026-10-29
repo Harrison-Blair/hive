@@ -12,15 +12,18 @@ import (
 )
 
 // placement is the pane of a new agent and the facts that the record keeps.
+// rootPane is true when the agent takes the root pane of a new workspace, so
+// its tab still needs the agent name as its label.
 type placement struct {
 	pane     herdr.PaneInfo
 	cwd      string
 	worktree string
+	rootPane bool
 	effects  []output.Effect
 }
 
-// placeInCaller opens a tab in the workspace of the caller pane.
-func placeInCaller(ctx context.Context, callerPane, cwd string, env map[string]string, logger *slog.Logger) (placement, string, error) {
+// placeInCaller opens a tab with label in the workspace of the caller pane.
+func placeInCaller(ctx context.Context, callerPane, cwd, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
 	if callerPane == "" {
 		return placement{}, "caller", fmt.Errorf("HERDR_PANE_ID is not set: run hive agent spawn in a herdr pane, or pass --project")
 	}
@@ -28,20 +31,20 @@ func placeInCaller(ctx context.Context, callerPane, cwd string, env map[string]s
 	if err != nil {
 		return placement{}, "caller", fmt.Errorf("caller pane %s: %w", callerPane, err)
 	}
-	return openTab(ctx, caller.WorkspaceID, cwd, env, logger, nil)
+	return openTab(ctx, caller.WorkspaceID, cwd, label, env, logger, nil)
 }
 
-// placeInProject opens a tab in the checkout workspace of project, or takes
-// the root pane of the checkout workspace that it makes.
-func placeInProject(ctx context.Context, project records.Project, env map[string]string, logger *slog.Logger) (placement, string, error) {
+// placeInProject opens a tab with label in the checkout workspace of project,
+// or takes the root pane of the checkout workspace that it makes.
+func placeInProject(ctx context.Context, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
 	workspace, created, effects, err := checkoutWorkspace(ctx, project, logger)
 	if err != nil {
 		return placement{}, "workspace", err
 	}
 	if created != nil {
-		return placement{pane: *created, cwd: project.Path, effects: effects}, "", nil
+		return placement{pane: *created, cwd: project.Path, rootPane: true, effects: effects}, "", nil
 	}
-	return openTab(ctx, workspace, project.Path, env, logger, effects)
+	return openTab(ctx, workspace, project.Path, label, env, logger, effects)
 }
 
 // placeInWorktree makes a worktree of project from its checkout workspace and
@@ -62,7 +65,7 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 		return placement{}, "worktree", fmt.Errorf("worktree create %s: %w", path, err)
 	}
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "created"})
-	return placement{pane: created.RootPane, cwd: path, worktree: path, effects: effects}, "", nil
+	return placement{pane: created.RootPane, cwd: path, worktree: path, rootPane: true, effects: effects}, "", nil
 }
 
 // checkoutWorkspace returns the ID of the workspace that herdr has open on the
@@ -89,8 +92,8 @@ func checkoutWorkspace(ctx context.Context, project records.Project, logger *slo
 	return created.Workspace.WorkspaceID, &created.RootPane, effects, nil
 }
 
-func openTab(ctx context.Context, workspace, cwd string, env map[string]string, logger *slog.Logger, effects []output.Effect) (placement, string, error) {
-	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{WorkspaceID: workspace, Cwd: cwd, Env: env}, herdr.WithLogger(logger))
+func openTab(ctx context.Context, workspace, cwd, label string, env map[string]string, logger *slog.Logger, effects []output.Effect) (placement, string, error) {
+	created, err := herdr.TabCreate(ctx, herdr.TabCreateParams{WorkspaceID: workspace, Cwd: cwd, Label: label, Env: env}, herdr.WithLogger(logger))
 	if err != nil {
 		return placement{}, "tab", fmt.Errorf("tab create in %s: %w", workspace, err)
 	}

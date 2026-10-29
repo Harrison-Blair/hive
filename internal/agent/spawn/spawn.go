@@ -89,7 +89,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	var place placement
 	var phase string
 	if options.Project == "" {
-		place, phase, err = placeInCaller(ctx, options.CallerPane, options.Cwd, env, logger)
+		place, phase, err = placeInCaller(ctx, options.CallerPane, options.Cwd, options.Name, env, logger)
 	} else {
 		var project records.Project
 		project, err = loadProject(home, options.Project)
@@ -97,7 +97,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 			return agent.Failed("project", err.Error())
 		}
 		if options.Worktree == "" {
-			place, phase, err = placeInProject(ctx, project, env, logger)
+			place, phase, err = placeInProject(ctx, project, options.Name, env, logger)
 		} else {
 			place, phase, err = placeInWorktree(ctx, home, project, options.Worktree, logger)
 		}
@@ -109,6 +109,15 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	}
 	effects := place.effects
 	paneID := place.pane.PaneID
+	// A failed rename does not stop the spawn. It makes the outcome partial.
+	var labelErr string
+	if place.rootPane {
+		if err := herdr.TabRename(ctx, place.pane.TabID, options.Name, herdr.WithLogger(logger)); err != nil {
+			labelErr = fmt.Sprintf("tab rename %s to %s: %s", place.pane.TabID, options.Name, err)
+		} else {
+			effects = append(effects, output.Effect{Resource: "tab", Path: place.pane.TabID, Action: "renamed"})
+		}
+	}
 
 	argv, err := start(ctx, herdr.AgentStartParams{
 		Name:      options.Name,
@@ -164,6 +173,9 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		keepSession(session, prompted.AgentSession)
 		logger.Debug("agent prompted", "command", "agent spawn", "target", record.Name, "pane_id", paneID, hivelog.Body(prompt))
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
+	}
+	if labelErr != "" {
+		return partial("label", labelErr)
 	}
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
 }
