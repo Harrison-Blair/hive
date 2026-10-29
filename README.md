@@ -1,20 +1,21 @@
 # Hive
 
-Hive is a Go CLI and TUI that coordinates coding agents in
-[herdr](https://herdr.dev) from one home. You talk to one coordinator. A
-manager owns each project. Workers do one task each in their own checkout. An
-independent agent verifies each task before it lands.
+Hive is a small Go CLI that starts coding agents in
+[herdr](https://herdr.dev) panes and lets them talk to each other. It keeps a
+record of each agent, opens project workspaces and Git worktrees, and sends
+prompts between agents.
 
-The home is a checkout of this repository. It holds the instructions, the
-skills, and the specs that the agents read, so a hive binary needs a home of
-the same version. Hive builds hive: this checkout is the home and the first
-registered project.
+The home is a checkout of this repository. Hive builds hive: this checkout is
+the home and the first registered project.
 
 ## Requirements
 
 - Linux on amd64 or arm64.
 - [herdr](https://herdr.dev) 0.9.5 (protocol 22).
 - Git.
+- At least one harness: `claude`, `codex`, or `pi`. The picker lists models
+  with `pi --list-models` (pi and codex) and `opencode models` (claude). When
+  that fails, type the model name.
 - Go 1.27.2 or newer, only to build hive from source with `go install`.
 
 ## Install
@@ -65,8 +66,7 @@ the home must use the same version.
    hive version
    ```
 
-Then run `hive` in a herdr pane to start the TUI, the coordinator, and the
-supervisor.
+Then run `hive` in a herdr pane in the home to start the coordinator.
 
 ## Update
 
@@ -92,15 +92,31 @@ your home, for example `~/hive`.
    go install github.com/Harrison-Blair/hive@vX.Y.Z
    ```
 
-4. Restart the supervisor and the coordinator from **Health › Agents** in the
-   TUI. Select each agent and press `r`. They keep running the old binary until
-   you restart them.
+4. Restart each running agent. A running agent keeps the old binary until it
+   stops.
+
+## Usage
+
+Run each command in a herdr pane. Each command takes `--json` for one JSON
+result object.
+
+| Command | Behavior |
+| --- | --- |
+| `hive` | In the home: pick a harness (claude, codex, or pi) and a model, then run it in this pane as the `coordinator`. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
+| `hive agent spawn --name N --harness H --model M [--prompt T \| --prompt-file F]` | Start an agent in a new tab of the caller's workspace, and send it the prompt. |
+| `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
+| `hive agent spawn ... --project P --worktree NAME` | Create the worktree `projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
+| `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N. With `--wait`, wait until the agent is idle or done. |
+| `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout. |
+| `hive agent list` | List the agent records with their herdr status. |
+| `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
+| `hive project list` | List the registered projects. |
+| `hive init` | Write the home path to `~/.config/hive/config.toml`. |
+| `hive logs` | Read the daily log files in `.hive/logs/`. |
+| `hive version` | Print the hive version. |
 
 ## Links
 
-- [Hive v1 specification](.hive/spec/hive-v1/README.md): the goals, features,
-  architecture, risks, and task plan.
 - [AGENTS.md](AGENTS.md): the instructions for agents that work in this
   repository.
-- [reference/](reference/): the herdr API reference, design patterns, and the
-  dogfood friction log.
+- [reference/herdr/](reference/herdr/): the herdr API reference.
