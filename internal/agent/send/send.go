@@ -40,7 +40,7 @@ type Result struct {
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	envelope := run(ctx, home, options, logger)
-	attrs := []any{"command", "agent send", "agent_id", options.Name, "outcome", envelope.Outcome}
+	attrs := []any{"command", "agent send", "target", options.Name, "outcome", envelope.Outcome}
 	if envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
@@ -86,7 +86,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if err != nil {
 		return agent.Failed("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, record.Pane, err))
 	}
-	logger.Debug("agent prompted", "command", "agent send", "agent_id", record.Name, "pane_id", record.Pane, hivelog.Body(params.Text))
+	logger.Debug("agent prompted", "command", "agent send", "target", record.Name, "pane_id", record.Pane, hivelog.Body(params.Text))
 	result := Result{Name: record.Name, Pane: record.Pane, Sender: sender, Status: info.AgentStatus}
 	effects := []output.Effect{{Resource: "agent", Path: record.Pane, Action: "prompted"}}
 	if options.Wait && info.AgentStatus == "blocked" {

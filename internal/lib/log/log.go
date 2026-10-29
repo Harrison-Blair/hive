@@ -40,6 +40,9 @@ func SetRequestID(id string) func() {
 	return func() { activeRequestID.Store(previous) }
 }
 
+// outcomeLevels maps the outcome field of an event to its level.
+var outcomeLevels = map[any]string{"ok": "DEBUG", "partial": "WARN", "failed": "ERROR"}
+
 var errClosed = errors.New("log: writer is closed")
 
 type outputState struct {
@@ -133,6 +136,9 @@ func (w *Writer) Handle(_ context.Context, record slog.Record) error {
 		addAttr(event, w.groups, attr, &truncated)
 		return true
 	})
+	if level, ok := outcomeLevels[event["outcome"]]; ok {
+		event["level"] = level
+	}
 	if request := activeRequestID.Load(); request != nil && *request != "" {
 		event["request_id"] = *request
 	}

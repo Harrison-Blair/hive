@@ -121,3 +121,13 @@ func TestLogsJSONPrintsRawEventLines(t *testing.T) {
 		t.Fatalf("logs start event = %+v; want a request ID and command start", start)
 	}
 }
+
+func TestLogsHasNoTaskFlag(t *testing.T) {
+	home := testHome(t)
+	t.Setenv("HIVE_HOME", home)
+	var output strings.Builder
+	err := ExecuteWithArgs([]string{"logs", "--task", "x"}, strings.NewReader(""), &output)
+	if err == nil || !strings.Contains(err.Error()+output.String(), "unknown flag: --task") {
+		t.Fatalf("logs --task: err %v, output %q; want unknown flag", err, output.String())
+	}
+}

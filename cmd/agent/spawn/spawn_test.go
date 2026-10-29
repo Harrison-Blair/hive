@@ -73,3 +73,19 @@ func TestSpawnCLIUsesHerdrPaneAsCaller(t *testing.T) {
 		t.Fatalf("stdout = %q", stdout)
 	}
 }
+
+func TestSpawnCLILogsCallerAndTargetOnEachEvent(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	t.Setenv("HIVE_HOME", home)
+	_, pane := fake.AddWorkspace("mine", "", false)
+	if err := agent.Save(home, agent.Record{Name: "boss", Pane: pane.ID}); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HERDR_PANE_ID", pane.ID)
+	if status, _, stderr := execute(t, "spawn", "--name", "kid", "--harness", "pi", "--model", "m", "--prompt", "go"); status != 0 {
+		t.Fatalf("status %d, stderr %q", status, stderr)
+	}
+	agenttest.CheckAgentFields(t, agenttest.CommandEvents(t, home, "agent spawn"), "boss", "kid",
+		"command start", "herdr request", "herdr reply", "agent started", "agent prompted", "agent spawn", "command end")
+}

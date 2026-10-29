@@ -2,11 +2,11 @@
 package send
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
 	agentsend "github.com/Harrison-Blair/hive/internal/agent/send"
-	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/spf13/cobra"
 )
@@ -20,11 +20,7 @@ func New() *cobra.Command {
 	}
 	command.Flags().Bool("wait", false, "wait until the agent is idle or done again")
 	command.RunE = func(cmd *cobra.Command, args []string) error {
-		return common.Run(cmd, "agent send", func(home string) (output.Envelope, string, error) {
-			logger, err := hivelog.Open(home, "cli")
-			if err != nil {
-				return output.Envelope{}, "", err
-			}
+		return common.Run(cmd, "agent send", args[0], func(home string, logger *slog.Logger) (output.Envelope, string, error) {
 			wait, _ := cmd.Flags().GetBool("wait")
 			envelope := agentsend.Run(cmd.Context(), home, agentsend.Options{
 				Name:       args[0],

@@ -2,6 +2,7 @@
 package register
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
@@ -20,7 +21,7 @@ func New() *cobra.Command {
 	command.Flags().String("id", "", "project ID")
 	command.Flags().String("base", "", "base branch")
 	command.RunE = func(cmd *cobra.Command, args []string) error {
-		return common.Run(cmd, "project register", func(home string) (output.Envelope, string, error) {
+		return common.Run(cmd, "project register", "", func(home string, _ *slog.Logger) (output.Envelope, string, error) {
 			if args[0] == "" {
 				return output.Envelope{}, "", &common.UsageError{Message: "PATH requires a value"}
 			}

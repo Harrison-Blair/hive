@@ -120,7 +120,9 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 - Each hive process writes log events with `log/slog` as JSON lines to `.hive/logs/YYYY-MM-DD.jsonl` in the home. Level debug is always on.
 - Log each herdr request and reply, each state change, each external process, each user action in the picker, and each error.
-- Each event carries the fields that apply: `component`, `command`, `request_id`, `project_id`, `agent_id`, `duration_ms`, and `error`.
+- Each event carries the fields that apply: `component`, `command`, `request_id`, `project_id`, `agent_id`, `target`, `duration_ms`, and `error`.
+- `agent_id` is the caller: the hive record name of `HERDR_PANE_ID`, or `user` when that pane has no record. Bare `hive` logs `agent_id=coordinator`. `target` is the agent that the command acts on. A command with no agent argument has no `target`. Each command sets both fields on its logger before its first event, so each `herdr request`, `herdr reply`, `command start`, and `command end` carries them. `hive logs --agent NAME` prints an event when `agent_id` or `target` is NAME.
+- An event with an `outcome` field uses DEBUG for `ok`, WARN for `partial`, and ERROR for `failed`. An event without an `outcome` keeps the level that the code gives it, for example the INFO, WARN, and ERROR events of the picker. When the outcome is not `ok`, `command end` carries `error`.
 - Cap a body at 4 KiB and set `truncated` to true. Never log a secret.
 - Never delete a log file in code.
 

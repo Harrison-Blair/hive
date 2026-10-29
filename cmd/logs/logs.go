@@ -22,7 +22,6 @@ type options struct {
 	since     string
 	level     string
 	component string
-	task      string
 	agent     string
 	request   string
 	limit     int
@@ -44,8 +43,7 @@ func New() *cobra.Command {
 	flags.StringVar(&opts.since, "since", "", "duration or RFC 3339 cutoff")
 	flags.StringVar(&opts.level, "level", "", "minimum level")
 	flags.StringVar(&opts.component, "component", "", "component")
-	flags.StringVar(&opts.task, "task", "", "task ID")
-	flags.StringVar(&opts.agent, "agent", "", "agent ID")
+	flags.StringVar(&opts.agent, "agent", "", "agent name: matches agent_id or target")
 	flags.StringVar(&opts.request, "request", "", "request ID")
 	flags.IntVar(&opts.limit, "limit", 200, "maximum matches to print")
 	flags.BoolVar(&opts.follow, "follow", false, "print new events as they arrive")
@@ -72,12 +70,14 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
-	logger, err := hivelog.Open(resolvedHome, "cli")
+	logger, err := common.Logger(resolvedHome, "")
 	if err != nil {
 		return fail(cmd, jsonOutput, err, 1)
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", "logs")
+	// failure is the error text of a failed run for the command end event.
+	var failure string
 	defer func() {
 		outcome := "ok"
 		if runErr != nil {
@@ -86,19 +86,24 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 				outcome = "failed"
 			}
 		}
-		logger.Debug("command end", "command", "logs", "duration_ms", time.Since(started).Milliseconds(), "outcome", outcome)
+		attrs := []any{"command", "logs", "duration_ms", time.Since(started).Milliseconds(), "outcome", outcome}
+		if outcome != "ok" && failure != "" {
+			attrs = append(attrs, "error", failure)
+		}
+		logger.Debug("command end", attrs...)
 	}()
 	if opts.limit < 0 {
-		return common.Usage(cmd, "--limit must be zero or more")
+		failure = "--limit must be zero or more"
+		return common.Usage(cmd, failure)
 	}
 	cutoff, err := parseSince(opts.since, time.Now())
 	if err != nil {
-		return common.Usage(cmd, err.Error())
+		failure = err.Error()
+		return common.Usage(cmd, failure)
 	}
 	filter := loglib.Filter{
 		Level:     opts.level,
 		Component: opts.component,
-		TaskID:    opts.task,
 		AgentID:   opts.agent,
 		RequestID: opts.request,
 	}
@@ -111,6 +116,7 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 		if ctx.Err() != nil {
 			return nil
 		}
+		failure = err.Error()
 		return fail(cmd, jsonOutput, err, 1)
 	}
 	printer := &printer{
@@ -120,6 +126,7 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 		filter: filter,
 	}
 	if err := printer.first(events, opts.limit); err != nil {
+		failure = err.Error()
 		return &common.StatusError{Status: 1}
 	}
 	if !opts.follow {
@@ -129,6 +136,7 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 	eventCh, errCh := reader.Follow(ctx, offset)
 	for event := range eventCh {
 		if err := printer.one(event); err != nil {
+			failure = err.Error()
 			stop()
 			return &common.StatusError{Status: 1}
 		}
@@ -137,6 +145,7 @@ func run(cmd *cobra.Command, opts *options) (runErr error) {
 		if ctx.Err() != nil {
 			return nil
 		}
+		failure = err.Error()
 		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive logs: %v\n", err)
 		return &common.StatusError{Status: 1}
 	}

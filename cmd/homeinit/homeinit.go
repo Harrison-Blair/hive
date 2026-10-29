@@ -43,7 +43,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
-	logger, err := hivelog.Open(markedHome, "cli")
+	logger, err := common.Logger(markedHome, "")
 	if err != nil {
 		return fail(cmd, jsonOutput, "log", err, 1)
 	}
@@ -51,7 +51,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	logger.Debug("command start", "command", "init")
 	result, runErr := homeinitlib.Initialize(cwd)
 	if runErr != nil {
-		logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed")
+		logger.Debug("command end", "command", "init", "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", runErr.Error())
 		return fail(cmd, jsonOutput, "command", runErr, 1)
 	}
 	effects := []output.Effect{}

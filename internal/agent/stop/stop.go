@@ -28,7 +28,7 @@ type Options struct {
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
 	envelope := run(ctx, home, options, logger)
-	attrs := []any{"command", "agent stop", "agent_id", options.Name, "outcome", envelope.Outcome}
+	attrs := []any{"command", "agent stop", "target", options.Name, "outcome", envelope.Outcome}
 	if envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
@@ -78,7 +78,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 			message := fmt.Sprintf("git worktree remove %s: %s: %s", record.Worktree, err, strings.TrimSpace(string(out)))
 			return output.Envelope{Outcome: "partial", Phase: "worktree", Effects: effects, Error: message, Result: record}
 		}
-		logger.Debug("worktree removed", "command", "agent stop", "agent_id", record.Name, "path", record.Worktree)
+		logger.Debug("worktree removed", "command", "agent stop", "target", record.Name, "path", record.Worktree)
 		effects = append(effects, output.Effect{Resource: "worktree", Path: record.Worktree, Action: "removed"})
 	}
 	if err := agent.Remove(home, record.Name); err != nil {
