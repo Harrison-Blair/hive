@@ -419,6 +419,43 @@ func TestSpawnLogsHarnessSessionID(t *testing.T) {
 	}
 }
 
+func TestSpawnLogsHarnessSessionIDThatComesBeforeTheReadyReply(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.LaunchSession = "early-7"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "early-7" {
+		t.Fatalf("harness_session_id = %v, want early-7", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDWhenThePromptFails(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.LaunchSession = "early-8"
+	fake.Fail("agent.prompt", "internal_error", "boom")
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "partial" || envelope.Phase != "prompt" {
+		t.Fatalf("envelope = %+v, want partial in phase prompt", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "early-8" {
+		t.Fatalf("harness_session_id = %v, want early-8", got)
+	}
+}
+
 func TestSpawnLogsNoHarnessSessionIDWhenHerdrReportsNone(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)

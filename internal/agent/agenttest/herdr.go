@@ -78,6 +78,9 @@ type Herdr struct {
 	WaitStatus string
 	// StartSession is the session ID that an agent gets when it is ready.
 	StartSession string
+	// LaunchSession is the session ID that herdr reports from agent.start
+	// until the agent is ready. The ready agent reports StartSession.
+	LaunchSession string
 }
 
 // NewHerdr starts a fake herdr server and sets HERDR_SOCKET_PATH.
@@ -401,6 +404,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		// As herdr 0.9.5 does, the launch keeps the shell status until the
 		// agent settles, and agent.get sees the launch for a short time.
 		pane.Status, pane.ready, pane.pending = "idle", false, 1
+		pane.Session = h.LaunchSession
 		pane.Args = nil
 		if raw, ok := params["args"].([]any); ok {
 			for _, arg := range raw {
