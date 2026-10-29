@@ -112,3 +112,21 @@ func helpCommands(help string) []string {
 	}
 	return names
 }
+
+func TestBareHiveOutsideHomeFailsWithNoPicker(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", "")
+	outside := t.TempDir()
+	t.Chdir(outside)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader(""), &stdout, &stderr)
+	if status == 0 {
+		t.Fatalf("status = 0; want non-zero; stdout %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "not a hive home") {
+		t.Fatalf("stderr = %q; want a not a hive home error", stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q; want no picker output", stdout.String())
+	}
+}

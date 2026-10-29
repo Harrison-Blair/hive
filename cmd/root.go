@@ -12,6 +12,7 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/logs"
 	"github.com/Harrison-Blair/hive/cmd/project"
 	"github.com/Harrison-Blair/hive/cmd/version"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,14 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			if _, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd); err != nil {
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", err)
+				return &common.StatusError{Status: 1}
+			}
 			return cmd.Help()
 		},
 	}
