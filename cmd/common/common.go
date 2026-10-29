@@ -41,21 +41,21 @@ func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
 	resolvedHome, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
 	requestID, err := hivelog.NewRequestID()
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
 	logger, err := Logger(resolvedHome, target)
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", command)
@@ -129,13 +129,44 @@ func LogRejected(command string, rejected error) {
 	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", rejected.Error())
 }
 
-// Usage writes one usage line and returns status 2.
-func Usage(cmd *cobra.Command, message string) error {
-	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", message)
-	return &StatusError{Status: 2}
+// Stream runs a command that renders its own output. Resolve returns the home.
+// When resolve or the logger setup fails, Stream passes the phase and the error
+// to fail and returns its result. Otherwise it logs command start, runs body,
+// and logs command end with the same fields as Run. A nil body error is ok. A
+// UsageError is returned for the root command to render. Any other body error
+// is a failure that body has already rendered, and Stream returns status 1.
+func Stream(cmd *cobra.Command, command string, resolve func() (string, error), fail func(phase string, err error) error, body func(home string, logger *slog.Logger) error) error {
+	resolvedHome, err := resolve()
+	if err != nil {
+		return fail("home", err)
+	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return fail("log", err)
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
+	logger, err := Logger(resolvedHome, "")
+	if err != nil {
+		return fail("log", err)
+	}
+	started := time.Now()
+	logger.Debug("command start", "command", command)
+	bodyErr := body(resolvedHome, logger)
+	if bodyErr == nil {
+		logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeOK)
+		return nil
+	}
+	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", bodyErr.Error())
+	var usage *UsageError
+	if errors.As(bodyErr, &usage) {
+		return usage
+	}
+	return &StatusError{Status: 1}
 }
 
-func renderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message string, status int) error {
+// RenderFailure renders a failed envelope and returns the status.
+func RenderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message string, status int) error {
 	if err := output.Render(stdout, stderr, jsonOutput, output.Failed(phase, message), ""); err != nil {
 		return &StatusError{Status: status}
 	}

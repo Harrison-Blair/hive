@@ -30,7 +30,7 @@ func New() *cobra.Command {
 			}
 			if jsonOutput {
 				return output.Render(cmd.OutOrStdout(), cmd.ErrOrStderr(), true, output.Envelope{
-					Outcome: "ok",
+					Outcome: output.OutcomeOK,
 					Phase:   "complete",
 					Effects: []output.Effect{},
 					Error:   nil,

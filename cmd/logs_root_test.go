@@ -83,6 +83,9 @@ func TestLogsJSONReadErrorsUsePlainDiagnostics(t *testing.T) {
 			if strings.Count(got, "\n") != 1 {
 				t.Fatalf("stderr = %q; want one plain diagnostic line", got)
 			}
+			if !strings.HasPrefix(got, "hive: ") {
+				t.Fatalf("stderr = %q; want the hive: prefix", got)
+			}
 			if strings.Contains(got, "\"outcome\"") || strings.Contains(got, "panic") || strings.Contains(got, "goroutine") {
 				t.Fatalf("stderr = %q; want one plain diagnostic", got)
 			}
@@ -129,5 +132,36 @@ func TestLogsHasNoTaskFlag(t *testing.T) {
 	err := ExecuteWithArgs([]string{"logs", "--task", "x"}, strings.NewReader(""), &output)
 	if err == nil || !strings.Contains(err.Error()+output.String(), "unknown flag: --task") {
 		t.Fatalf("logs --task: err %v, output %q; want unknown flag", err, output.String())
+	}
+}
+
+func TestLogsBadFlagValuesAreUsageErrors(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"bad since", []string{"logs", "--since", "bogus"}, `invalid --since value \"bogus\": use a duration or an RFC 3339 time`},
+		{"negative limit", []string{"logs", "--limit", "-1"}, "--limit must be zero or more"},
+	}
+	for _, test := range cases {
+		t.Run(test.name+" json", func(t *testing.T) {
+			testHome(t)
+			var stdout, stderr bytes.Buffer
+			status := executeWithStreams(append([]string{"--json"}, test.args...), strings.NewReader(""), &stdout, &stderr)
+			want := `{"outcome":"failed","phase":"usage","effects":[],"error":"` + test.want + `","result":null}` + "\n"
+			if status != 2 || stdout.String() != want || stderr.Len() != 0 {
+				t.Fatalf("status = %d, stdout = %q, stderr = %q; want 2, %q and no stderr", status, stdout.String(), stderr.String(), want)
+			}
+		})
+		t.Run(test.name+" text", func(t *testing.T) {
+			testHome(t)
+			var stdout, stderr bytes.Buffer
+			status := executeWithStreams(test.args, strings.NewReader(""), &stdout, &stderr)
+			want := "hive: " + strings.ReplaceAll(test.want, `\"`, `"`) + "\n"
+			if status != 2 || stdout.Len() != 0 || stderr.String() != want {
+				t.Fatalf("status = %d, stdout = %q, stderr = %q; want 2 and %q", status, stdout.String(), stderr.String(), want)
+			}
+		})
 	}
 }
