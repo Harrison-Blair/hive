@@ -45,8 +45,8 @@ type modelsMsg struct {
 // spinnerMsg advances the loading spinner.
 type spinnerMsg struct{}
 
-// Picker is the Bubble Tea model of the harness and model picker. It follows
-// .hive/spec/teardown/picker-design.md.
+// Picker is the Bubble Tea model of the harness and model picker. The package
+// doc describes its steps.
 type Picker struct {
 	last     Choice
 	hasLast  bool

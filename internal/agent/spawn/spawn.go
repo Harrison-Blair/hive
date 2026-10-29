@@ -16,6 +16,7 @@ import (
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	projectlib "github.com/Harrison-Blair/hive/internal/project"
 )
 
 const (
@@ -62,14 +63,14 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 func run(ctx context.Context, home string, options Options, logger *slog.Logger, session *string) output.Envelope {
 	profile, prompt, message := validate(options)
 	if message != "" {
-		return agent.Failed("validate", message)
+		return output.Failed("validate", message)
 	}
 	if err := checkName(ctx, home, options.Name, logger); err != nil {
-		return agent.Failed("name", err.Error())
+		return output.Failed("name", err.Error())
 	}
 	parent, err := agent.CallerName(home, options.CallerPane)
 	if err != nil {
-		return agent.Failed("caller", err.Error())
+		return output.Failed("caller", err.Error())
 	}
 
 	trust := profile.Trust()
@@ -94,7 +95,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		var project records.Project
 		project, err = loadProject(home, options.Project)
 		if err != nil {
-			return agent.Failed("project", err.Error())
+			return output.Failed("project", err.Error())
 		}
 		if options.Worktree == "" {
 			place, phase, err = placeInProject(ctx, project, options.Name, env, logger)
@@ -103,7 +104,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		}
 	}
 	if err != nil {
-		envelope := agent.Failed(phase, err.Error())
+		envelope := output.Failed(phase, err.Error())
 		envelope.Effects = append(envelope.Effects, place.effects...)
 		return envelope
 	}
@@ -134,7 +135,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
 	}, logger, session)
 	if err != nil {
-		envelope := agent.Failed("start", withLabel(fmt.Sprintf("agent start in pane %s: %s", paneID, err)))
+		envelope := output.Failed("start", withLabel(fmt.Sprintf("agent start in pane %s: %s", paneID, err)))
 		envelope.Effects = effects
 		if closeErr := herdr.PaneClose(ctx, paneID, herdr.WithLogger(logger)); closeErr == nil {
 			envelope.Effects = append(envelope.Effects, output.Effect{Resource: "pane", Path: paneID, Action: "closed"})
@@ -155,12 +156,12 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		StartedAt: time.Now().UTC(),
 	}
 	if err := agent.Save(home, record); err != nil {
-		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: withLabel("write record: " + err.Error()), Result: record}
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "record", Effects: effects, Error: withLabel("write record: " + err.Error()), Result: record}
 	}
 	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "written"})
 
 	partial := func(phase, message string) output.Envelope {
-		return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: withLabel(message), Result: record}
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: phase, Effects: effects, Error: withLabel(message), Result: record}
 	}
 	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger, session)
 	if err != nil {
@@ -182,9 +183,9 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
 	}
 	if labelErr != "" {
-		return output.Envelope{Outcome: "partial", Phase: "label", Effects: effects, Error: labelErr, Result: record}
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "label", Effects: effects, Error: labelErr, Result: record}
 	}
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
+	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: record}
 }
 
 func blockedMessage(name, paneID string) string {
@@ -254,7 +255,7 @@ func checkName(ctx context.Context, home, name string, logger *slog.Logger) erro
 
 func loadProject(home, id string) (records.Project, error) {
 	if !records.ValidID(id) {
-		return records.Project{}, fmt.Errorf("invalid project ID: %q", id)
+		return records.Project{}, errors.New(projectlib.InvalidIDMessage(id))
 	}
 	registry, err := store.Open(home)
 	if err != nil {
@@ -329,7 +330,7 @@ func Text(envelope output.Envelope) string {
 	for _, effect := range envelope.Effects {
 		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
 	}
-	if record, ok := envelope.Result.(agent.Record); ok && envelope.Outcome == "ok" {
+	if record, ok := envelope.Result.(agent.Record); ok && envelope.Outcome == output.OutcomeOK {
 		lines = append(lines, fmt.Sprintf("agent %s runs in pane %s", record.Name, record.Pane))
 	}
 	if len(lines) == 0 {

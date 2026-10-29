@@ -23,7 +23,8 @@ type StatusError struct {
 
 func (e *StatusError) Error() string { return fmt.Sprintf("command exited with status %d", e.Status) }
 
-// UsageError reports an invalid command argument.
+// UsageError reports an invalid command argument. The root command renders it
+// as a usage error.
 type UsageError struct {
 	Message string
 }
@@ -40,21 +41,21 @@ func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
 	resolvedHome, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "home", err.Error(), 1)
 	}
 	requestID, err := hivelog.NewRequestID()
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
 	}
 	restoreRequestID := hivelog.SetRequestID(requestID)
 	defer restoreRequestID()
 	logger, err := Logger(resolvedHome, target)
 	if err != nil {
-		return renderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
+		return RenderFailure(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, "log", err.Error(), 1)
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", command)
@@ -62,15 +63,14 @@ func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.
 	if executeErr != nil {
 		var usage *UsageError
 		if errors.As(executeErr, &usage) {
-			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", usage.Error())
-			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", usage.Error())
-			return &StatusError{Status: 2}
+			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", usage.Error())
+			return usage
 		}
-		envelope = output.Envelope{Outcome: "failed", Phase: "command", Effects: []output.Effect{}, Error: executeErr.Error(), Result: nil}
+		envelope = output.Failed("command", executeErr.Error())
 		text = ""
 	}
 	attrs := []any{"command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", envelope.Outcome}
-	if envelope.Outcome != "ok" && envelope.Error != nil {
+	if envelope.Outcome != output.OutcomeOK && envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
 	logger.Debug("command end", attrs...)
@@ -126,18 +126,48 @@ func LogRejected(command string, rejected error) {
 	}
 	started := time.Now()
 	logger.Debug("command start", "command", command)
-	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", rejected.Error())
+	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", rejected.Error())
 }
 
-// Usage writes one usage line and returns status 2.
-func Usage(cmd *cobra.Command, message string) error {
-	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", message)
-	return &StatusError{Status: 2}
+// Stream runs a command that renders its own output. Resolve returns the home.
+// When resolve or the logger setup fails, Stream passes the phase and the error
+// to fail and returns its result. Otherwise it logs command start, runs body,
+// and logs command end with the same fields as Run. A nil body error is ok. A
+// UsageError is returned for the root command to render. Any other body error
+// is a failure that body has already rendered, and Stream returns status 1.
+func Stream(cmd *cobra.Command, command string, resolve func() (string, error), fail func(phase string, err error) error, body func(home string, logger *slog.Logger) error) error {
+	resolvedHome, err := resolve()
+	if err != nil {
+		return fail("home", err)
+	}
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return fail("log", err)
+	}
+	restoreRequestID := hivelog.SetRequestID(requestID)
+	defer restoreRequestID()
+	logger, err := Logger(resolvedHome, "")
+	if err != nil {
+		return fail("log", err)
+	}
+	started := time.Now()
+	logger.Debug("command start", "command", command)
+	bodyErr := body(resolvedHome, logger)
+	if bodyErr == nil {
+		logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeOK)
+		return nil
+	}
+	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", output.OutcomeFailed, "error", bodyErr.Error())
+	var usage *UsageError
+	if errors.As(bodyErr, &usage) {
+		return usage
+	}
+	return &StatusError{Status: 1}
 }
 
-func renderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message string, status int) error {
-	envelope := output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
-	if err := output.Render(stdout, stderr, jsonOutput, envelope, ""); err != nil {
+// RenderFailure renders a failed envelope and returns the status.
+func RenderFailure(stdout, stderr io.Writer, jsonOutput bool, phase, message string, status int) error {
+	if err := output.Render(stdout, stderr, jsonOutput, output.Failed(phase, message), ""); err != nil {
 		return &StatusError{Status: status}
 	}
 	return &StatusError{Status: status}

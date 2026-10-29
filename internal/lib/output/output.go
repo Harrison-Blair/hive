@@ -7,6 +7,13 @@ import (
 	"io"
 )
 
+// The outcomes of a command.
+const (
+	OutcomeOK      = "ok"
+	OutcomePartial = "partial"
+	OutcomeFailed  = "failed"
+)
+
 // Effect describes one resource that a command created or found.
 type Effect struct {
 	Resource string `json:"resource"`
@@ -23,9 +30,18 @@ type Envelope struct {
 	Result  any      `json:"result"`
 }
 
-// Render writes one JSON object or the command's text and error lines.
+// Failed returns a failed envelope with no effects and no result.
+func Failed(phase, message string) Envelope {
+	return Envelope{Outcome: OutcomeFailed, Phase: phase, Effects: []Effect{}, Error: message, Result: nil}
+}
+
+// Render writes one JSON object or the command's text and error lines. JSON
+// prints nil effects as an empty array.
 func Render(stdout, stderr io.Writer, jsonOutput bool, envelope Envelope, text string) error {
 	if jsonOutput {
+		if envelope.Effects == nil {
+			envelope.Effects = []Effect{}
+		}
 		data, err := json.Marshal(envelope)
 		if err != nil {
 			return err
@@ -47,7 +63,7 @@ func Render(stdout, stderr io.Writer, jsonOutput bool, envelope Envelope, text s
 
 // Status returns the process status for an outcome.
 func Status(outcome string) int {
-	if outcome == "ok" {
+	if outcome == OutcomeOK {
 		return 0
 	}
 	return 1

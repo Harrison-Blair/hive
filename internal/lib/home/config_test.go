@@ -8,30 +8,25 @@ import (
 	"testing"
 )
 
-func TestReadSettingsLoadsCoordinatorAndDefaults(t *testing.T) {
+func TestReadConfigSkipsCoordinatorAndTUITables(t *testing.T) {
 	configPath := configFixture(t, "")
 	configHome := makeHome(t, t.TempDir(), "configured-home")
-	writeConfig(t, configPath, "# hive config\nhome = "+strconv.Quote(configHome)+"\n\n[coordinator]\n# launch profile\nharness = \"codex\"\nmodel = \"small-model\"\n")
+	writeConfig(t, configPath, "# hive config\nhome = "+strconv.Quote(configHome)+"\n\n"+
+		"[coordinator]\n# launch profile\nharness = \"codex\"\nmodel = \"\"\nextra = 1\n\n"+
+		"[tui.status]\nlines = [[\"state\"], [\"nope\"]]\n\n"+
+		"[tui.keys]\nagents = \"tab\"\nunknown_action = \"x\"\n\n"+
+		"[tui.other]\nanything = true\n")
 
-	settings, err := ReadSettings()
+	got, err := ReadConfig()
 	if err != nil {
-		t.Fatalf("ReadSettings(): %v", err)
+		t.Fatalf("ReadConfig(): %v", err)
 	}
-	if settings.Home != configHome || settings.Coordinator.Harness != "codex" || settings.Coordinator.Model != "small-model" {
-		t.Fatalf("ReadSettings() = %#v; want home %q, coordinator codex/small-model", settings, configHome)
-	}
-
-	writeConfig(t, configPath, "home = "+strconv.Quote(configHome)+"\n")
-	settings, err = ReadSettings()
-	if err != nil {
-		t.Fatalf("ReadSettings() defaults: %v", err)
-	}
-	if settings.Coordinator.Harness != "claude" || settings.Coordinator.Model != "claude-opus-5-5" {
-		t.Fatalf("coordinator defaults = %#v; want claude/claude-opus-5-5", settings.Coordinator)
+	if got != configHome {
+		t.Fatalf("ReadConfig() = %q; want %q", got, configHome)
 	}
 }
 
-func TestReadSettingsRejectsUnknownKeyAndTableWithPath(t *testing.T) {
+func TestReadConfigRejectsUnknownKeyAndTableWithPath(t *testing.T) {
 	configPath := configFixture(t, "")
 	configHome := makeHome(t, t.TempDir(), "configured-home")
 	for _, test := range []struct {
@@ -41,12 +36,14 @@ func TestReadSettingsRejectsUnknownKeyAndTableWithPath(t *testing.T) {
 	}{
 		{name: "key", content: "home = " + strconv.Quote(configHome) + "\ncoordinator_extra = \"x\"\n", unknown: "coordinator_extra"},
 		{name: "table", content: "home = " + strconv.Quote(configHome) + "\n[other]\n", unknown: "other"},
+		{name: "tui table", content: "home = " + strconv.Quote(configHome) + "\n[tui]\n", unknown: "tui"},
+		{name: "key after a skipped table", content: "home = " + strconv.Quote(configHome) + "\n[coordinator]\nharness = \"codex\"\n[other]\nkey = \"x\"\n", unknown: "other"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			writeConfig(t, configPath, test.content)
-			_, err := ReadSettings()
+			_, err := ReadConfig()
 			if err == nil || !strings.Contains(err.Error(), configPath) || !strings.Contains(err.Error(), test.unknown) {
-				t.Fatalf("ReadSettings() error = %v; want config path %q and key/table %q", err, configPath, test.unknown)
+				t.Fatalf("ReadConfig() error = %v; want config path %q and key/table %q", err, configPath, test.unknown)
 			}
 		})
 	}

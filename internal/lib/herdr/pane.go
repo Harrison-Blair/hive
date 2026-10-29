@@ -4,31 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 )
 
 // PaneTarget names one pane.
 type PaneTarget struct {
 	PaneID string `json:"pane_id"`
-}
-
-// PaneProcessInfoProcess is one process in the foreground group of a pane.
-type PaneProcessInfoProcess struct {
-	PID     uint32   `json:"pid"`
-	Name    string   `json:"name"`
-	Argv0   *string  `json:"argv0"`
-	Argv    []string `json:"argv"`
-	Cmdline string   `json:"cmdline"`
-	Cwd     string   `json:"cwd"`
-}
-
-// PaneProcessInfo is the process data of one pane.
-type PaneProcessInfo struct {
-	PaneID                   string                   `json:"pane_id"`
-	ShellPID                 *uint32                  `json:"shell_pid"`
-	TTY                      *string                  `json:"tty"`
-	ForegroundProcessGroupID *uint32                  `json:"foreground_process_group_id"`
-	ForegroundProcesses      []PaneProcessInfoProcess `json:"foreground_processes"`
 }
 
 type paneInfoWire struct {
@@ -70,58 +50,6 @@ func PaneGet(ctx context.Context, paneID string, opts ...Option) (PaneInfo, erro
 	return pane, nil
 }
 
-// PaneList lists each pane in one workspace.
-func PaneList(ctx context.Context, workspaceID string, opts ...Option) ([]PaneInfo, error) {
-	var result struct {
-		Type  *string         `json:"type"`
-		Panes json.RawMessage `json:"panes"`
-	}
-	params := struct {
-		WorkspaceID string `json:"workspace_id,omitempty"`
-	}{WorkspaceID: workspaceID}
-	if err := Call(ctx, "pane.list", params, &result, opts...); err != nil {
-		return nil, err
-	}
-	if result.Type == nil || *result.Type != "pane_list" {
-		return nil, fmt.Errorf("bad reply: result type %q, want pane_list", stringValue(result.Type))
-	}
-	if isAbsentOrNull(result.Panes) {
-		return nil, fmt.Errorf("bad reply: pane_list panes is missing")
-	}
-	var items []json.RawMessage
-	if err := json.Unmarshal(result.Panes, &items); err != nil {
-		return nil, fmt.Errorf("bad reply: pane_list panes: %s", err)
-	}
-	panes := make([]PaneInfo, 0, len(items))
-	for index, item := range items {
-		pane, err := decodePaneInfo(item)
-		if err != nil {
-			return nil, fmt.Errorf("bad reply: panes[%d]: %s", index, err)
-		}
-		panes = append(panes, pane)
-	}
-	return panes, nil
-}
-
-// PaneSendInput sends command text and Enter to one pane in one request.
-func PaneSendInput(ctx context.Context, paneID, text string, opts ...Option) error {
-	var result struct {
-		Type *string `json:"type"`
-	}
-	params := struct {
-		PaneID string   `json:"pane_id"`
-		Text   string   `json:"text"`
-		Keys   []string `json:"keys"`
-	}{PaneID: paneID, Text: text, Keys: []string{"enter"}}
-	if err := Call(ctx, "pane.send_input", params, &result, opts...); err != nil {
-		return err
-	}
-	if result.Type == nil || *result.Type != "ok" {
-		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
-	}
-	return nil
-}
-
 // PaneClose closes one pane.
 func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 	var result struct {
@@ -134,56 +62,6 @@ func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
 	}
 	return nil
-}
-
-// PaneWaitForShellPrompt waits until the last line of a pane looks like an interactive shell prompt.
-func PaneWaitForShellPrompt(ctx context.Context, paneID string, timeout time.Duration, opts ...Option) error {
-	var result struct {
-		Type *string `json:"type"`
-	}
-	params := struct {
-		PaneID string `json:"pane_id"`
-		Source string `json:"source"`
-		Match  struct {
-			Type  string `json:"type"`
-			Value string `json:"value"`
-		} `json:"match"`
-		Lines     uint32 `json:"lines"`
-		TimeoutMS uint64 `json:"timeout_ms"`
-	}{
-		PaneID:    paneID,
-		Source:    "recent_unwrapped",
-		Lines:     1,
-		TimeoutMS: uint64(timeout.Milliseconds()),
-	}
-	params.Match.Type = "regex"
-	params.Match.Value = `(?m)^[^\n]*[#$%>❯] ?$`
-	if err := Call(ctx, "pane.wait_for_output", params, &result, opts...); err != nil {
-		return err
-	}
-	if result.Type == nil || *result.Type != "output_matched" {
-		return fmt.Errorf("bad reply: result type %q, want output_matched", stringValue(result.Type))
-	}
-	return nil
-}
-
-// PaneProcessInfoGet reads the process data of one pane.
-func PaneProcessInfoGet(ctx context.Context, paneID string, opts ...Option) (PaneProcessInfo, error) {
-	var result struct {
-		Type        *string         `json:"type"`
-		ProcessInfo json.RawMessage `json:"process_info"`
-	}
-	if err := Call(ctx, "pane.process_info", PaneTarget{PaneID: paneID}, &result, opts...); err != nil {
-		return PaneProcessInfo{}, err
-	}
-	if result.Type == nil || *result.Type != "pane_process_info" {
-		return PaneProcessInfo{}, fmt.Errorf("bad reply: result type %q, want pane_process_info", stringValue(result.Type))
-	}
-	info, err := decodeProcessInfo(result.ProcessInfo)
-	if err != nil {
-		return PaneProcessInfo{}, fmt.Errorf("bad reply: %s", err)
-	}
-	return info, nil
 }
 
 func decodePaneInfo(raw json.RawMessage) (PaneInfo, error) {
@@ -253,92 +131,4 @@ func decodePaneInfo(raw json.RawMessage) (PaneInfo, error) {
 	}
 	info.RestoreError = wire.RestoreError
 	return info, nil
-}
-
-func decodeProcessInfo(raw json.RawMessage) (PaneProcessInfo, error) {
-	if isAbsentOrNull(raw) {
-		return PaneProcessInfo{}, fmt.Errorf("process_info is missing")
-	}
-	var wire struct {
-		PaneID                   *string         `json:"pane_id"`
-		ShellPID                 *uint32         `json:"shell_pid"`
-		TTY                      *string         `json:"tty"`
-		ForegroundProcessGroupID *uint32         `json:"foreground_process_group_id"`
-		ForegroundProcesses      json.RawMessage `json:"foreground_processes"`
-	}
-	if err := json.Unmarshal(raw, &wire); err != nil {
-		return PaneProcessInfo{}, fmt.Errorf("process_info: %s", err)
-	}
-	if wire.PaneID == nil || *wire.PaneID == "" {
-		return PaneProcessInfo{}, fmt.Errorf("process_info pane_id is missing or empty")
-	}
-	info := PaneProcessInfo{
-		PaneID:                   *wire.PaneID,
-		ShellPID:                 wire.ShellPID,
-		TTY:                      wire.TTY,
-		ForegroundProcessGroupID: wire.ForegroundProcessGroupID,
-	}
-	if isAbsentOrNull(wire.ForegroundProcesses) {
-		if len(wire.ForegroundProcesses) > 0 {
-			return PaneProcessInfo{}, fmt.Errorf("process_info foreground_processes is null")
-		}
-		return info, nil
-	}
-	var items []json.RawMessage
-	if err := json.Unmarshal(wire.ForegroundProcesses, &items); err != nil {
-		return PaneProcessInfo{}, fmt.Errorf("process_info foreground_processes: %s", err)
-	}
-	info.ForegroundProcesses = make([]PaneProcessInfoProcess, 0, len(items))
-	for index, item := range items {
-		entry, err := decodeProcessEntry(item)
-		if err != nil {
-			return PaneProcessInfo{}, fmt.Errorf("foreground_processes[%d]: %s", index, err)
-		}
-		info.ForegroundProcesses = append(info.ForegroundProcesses, entry)
-	}
-	return info, nil
-}
-
-func decodeProcessEntry(raw json.RawMessage) (PaneProcessInfoProcess, error) {
-	if isAbsentOrNull(raw) {
-		return PaneProcessInfoProcess{}, fmt.Errorf("entry is missing")
-	}
-	var wire struct {
-		PID     *uint32         `json:"pid"`
-		Name    *string         `json:"name"`
-		Argv0   *string         `json:"argv0"`
-		Argv    json.RawMessage `json:"argv"`
-		Cmdline *string         `json:"cmdline"`
-		Cwd     *string         `json:"cwd"`
-	}
-	if err := json.Unmarshal(raw, &wire); err != nil {
-		return PaneProcessInfoProcess{}, err
-	}
-	if wire.PID == nil {
-		return PaneProcessInfoProcess{}, fmt.Errorf("pid is missing")
-	}
-	if wire.Name == nil {
-		return PaneProcessInfoProcess{}, fmt.Errorf("name is missing")
-	}
-	entry := PaneProcessInfoProcess{PID: *wire.PID, Name: *wire.Name, Argv0: wire.Argv0}
-	if wire.Cmdline != nil {
-		entry.Cmdline = *wire.Cmdline
-	}
-	if wire.Cwd != nil {
-		entry.Cwd = *wire.Cwd
-	}
-	if len(wire.Argv) > 0 && !isAbsentOrNull(wire.Argv) {
-		var items []*string
-		if err := json.Unmarshal(wire.Argv, &items); err != nil {
-			return PaneProcessInfoProcess{}, fmt.Errorf("argv: %s", err)
-		}
-		entry.Argv = make([]string, 0, len(items))
-		for index, item := range items {
-			if item == nil {
-				return PaneProcessInfoProcess{}, fmt.Errorf("argv[%d] is null", index)
-			}
-			entry.Argv = append(entry.Argv, *item)
-		}
-	}
-	return entry, nil
 }

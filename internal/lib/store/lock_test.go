@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"syscall"
 	"testing"
@@ -344,9 +345,6 @@ func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 func TestWithLockRejectsDirectoryLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	lockPath := filepath.Join(store.home, ".hive", "state", "lock")
-	if err := os.Remove(lockPath); err != nil {
-		t.Fatal(err)
-	}
 	if err := os.Mkdir(lockPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -361,4 +359,118 @@ func TestWithLockRejectsDirectoryLock(t *testing.T) {
 	if err == nil || err.Error() != "store path invalid: "+lockPath {
 		t.Fatalf("WithLock() error = %v; want store path invalid for %s", err, lockPath)
 	}
+}
+
+func TestWithLockWaiterIsNotStarved(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	stop := make(chan struct{})
+	holding := make(chan struct{})
+	hogDone := make(chan error, 1)
+	go func() {
+		var once sync.Once
+		for {
+			select {
+			case <-stop:
+				hogDone <- nil
+				return
+			default:
+			}
+			err := store.WithLock(context.Background(), func(*LockedStore) error {
+				once.Do(func() { close(holding) })
+				time.Sleep(23 * time.Millisecond)
+				return nil
+			})
+			if err != nil {
+				hogDone <- err
+				return
+			}
+		}
+	}()
+	<-holding
+
+	// Each wait allows about four holds. A waiter that polls for the lock
+	// misses the short gaps between holds and runs out of time.
+	var err error
+	var elapsed time.Duration
+	for range 5 {
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		start := time.Now()
+		err = store.WithLock(ctx, func(*LockedStore) error { return nil })
+		elapsed = time.Since(start)
+		cancel()
+		if err != nil {
+			break
+		}
+	}
+	close(stop)
+	if hogErr := <-hogDone; hogErr != nil {
+		t.Fatalf("holder WithLock() error = %v", hogErr)
+	}
+	if err != nil {
+		t.Fatalf("waiter WithLock() error = %v after %v; want the lock at a release while another caller asks again at once", err, elapsed)
+	}
+}
+
+func TestWithLockAbandonedWaitReleases(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	baseFDs := openFDCount(t)
+	baseGoroutines := runtime.NumGoroutine()
+	release := holdStateLock(t, store.home)
+	defer release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	ran := false
+	err := store.WithLock(ctx, func(*LockedStore) error {
+		ran = true
+		return nil
+	})
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("WithLock() error = %v; want context.DeadlineExceeded", err)
+	}
+	release()
+
+	path := filepath.Join(store.home, ".hive", "state", "lock")
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		free := lockIsFree(t, path)
+		fds := openFDCount(t)
+		goroutines := runtime.NumGoroutine()
+		if free && fds == baseFDs && goroutines == baseGoroutines {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("after the abandoned wait: lock free = %v, descriptors = %d (want %d), goroutines = %d (want %d)",
+				free, fds, baseFDs, goroutines, baseGoroutines)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if ran {
+		t.Fatal("callback ran after the wait was abandoned")
+	}
+}
+
+// openFDCount counts the open descriptors of the test process.
+func openFDCount(t *testing.T) int {
+	t.Helper()
+	entries, err := os.ReadDir("/proc/self/fd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return len(entries)
+}
+
+// lockIsFree reports whether a new descriptor can take the lock at path now.
+func lockIsFree(t *testing.T, path string) bool {
+	t.Helper()
+	file, err := os.OpenFile(path, os.O_RDWR, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = file.Close() }()
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		return false
+	}
+	_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	return true
 }

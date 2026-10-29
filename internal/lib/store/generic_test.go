@@ -382,9 +382,6 @@ func TestReadInPathTypes(t *testing.T) {
 			t.Fatal(err)
 		}
 		lockPath := filepath.Join(store.home, ".hive", "state", "lock")
-		if err := os.Remove(lockPath); err != nil {
-			t.Fatal(err)
-		}
 		if err := os.Symlink(target, lockPath); err != nil {
 			t.Fatal(err)
 		}

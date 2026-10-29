@@ -3,9 +3,7 @@ package herdr
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
-	"time"
 )
 
 func TestPaneGetRequestAndReply(t *testing.T) {
@@ -30,21 +28,6 @@ func TestPaneGetRequestAndReply(t *testing.T) {
 	}
 }
 
-func TestPaneWaitForShellPrompt(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("pane.wait_for_output", `{"type":"output_matched","pane_id":"w1:p2","revision":0,"matched_line":"user@host:~/project$","read":{"pane_id":"w1:p2","workspace_id":"w1","tab_id":"w1:t2","source":"recent_unwrapped","format":"text","text":"user@host:~/project$","revision":0,"truncated":false}}`)
-	if err := PaneWaitForShellPrompt(context.Background(), "w1:p2", 10*time.Second); err != nil {
-		t.Fatalf("PaneWaitForShellPrompt(): %v", err)
-	}
-	requests := server.recorded("pane.wait_for_output")
-	if len(requests) != 1 {
-		t.Fatalf("pane.wait_for_output requests = %d; want one", len(requests))
-	}
-	if got, want := requests[0].Params, `{"pane_id":"w1:p2","source":"recent_unwrapped","match":{"type":"regex","value":"(?m)^[^\\n]*[#$%\u003e❯] ?$"},"lines":1,"timeout_ms":10000}`; got != want {
-		t.Fatalf("params = %s; want %s", got, want)
-	}
-}
-
 func TestPaneGetRejectsWrongTypeAndMissingPane(t *testing.T) {
 	cases := []string{
 		`{"type":"pane_info","pane":null}`,
@@ -57,21 +40,6 @@ func TestPaneGetRejectsWrongTypeAndMissingPane(t *testing.T) {
 		if _, err := PaneGet(context.Background(), "w1:p1"); err == nil {
 			t.Fatalf("PaneGet(%s) error = nil; want an error", reply)
 		}
-	}
-}
-
-func TestPaneSendInputSendsCommandAndEnterTogether(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("pane.send_input", `{"type":"ok"}`)
-	if err := PaneSendInput(context.Background(), "w1:p2", "hive supervise"); err != nil {
-		t.Fatalf("PaneSendInput(): %v", err)
-	}
-	requests := server.recorded("pane.send_input")
-	if len(requests) != 1 {
-		t.Fatalf("pane.send_input requests = %d; want 1", len(requests))
-	}
-	if got, want := requests[0].Params, `{"pane_id":"w1:p2","text":"hive supervise","keys":["enter"]}`; got != want {
-		t.Fatalf("params = %s; want %s", got, want)
 	}
 }
 
@@ -97,43 +65,5 @@ func TestPaneClose(t *testing.T) {
 	var herdrError *Error
 	if !errors.As(err, &herdrError) || herdrError.Code != "pane_not_found" {
 		t.Fatalf("PaneClose error = %v; want pane_not_found", err)
-	}
-}
-
-func TestPaneProcessInfoShape(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","shell_pid":null,"foreground_process_group_id":null,"foreground_processes":[{"pid":42,"name":"claude","argv":["claude"],"cmdline":"claude","cwd":"/tmp/x"}]}}`)
-	info, err := PaneProcessInfoGet(context.Background(), "w1:p1")
-	if err != nil {
-		t.Fatalf("PaneProcessInfoGet error = %v", err)
-	}
-	if info.PaneID != "w1:p1" {
-		t.Fatalf("PaneID = %q", info.PaneID)
-	}
-	if info.ShellPID != nil || info.ForegroundProcessGroupID != nil {
-		t.Fatalf("nullable fields = %#v; want nil", info)
-	}
-	if len(info.ForegroundProcesses) != 1 || info.ForegroundProcesses[0].PID != 42 || info.ForegroundProcesses[0].Name != "claude" {
-		t.Fatalf("processes = %#v", info.ForegroundProcesses)
-	}
-	if !reflect.DeepEqual(info.ForegroundProcesses[0].Argv, []string{"claude"}) {
-		t.Fatalf("argv = %#v", info.ForegroundProcesses[0].Argv)
-	}
-	requests := server.recorded("pane.process_info")
-	if len(requests) != 1 {
-		t.Fatalf("pane.process_info requests = %d; want 1", len(requests))
-	}
-	if got, want := requests[0].Params, `{"pane_id":"w1:p1"}`; got != want {
-		t.Fatalf("params = %s; want %s", got, want)
-	}
-}
-
-func TestPaneProcessInfoRejectsWrongType(t *testing.T) {
-	for _, reply := range []string{`{"type":"pane_info","process_info":{}}`, `{"type":"pane_process_info","process_info":null}`, `{"type":"pane_process_info","process_info":{"pane_id":""}}`} {
-		server := newFakeServer(t)
-		server.scriptResult("pane.process_info", reply)
-		if _, err := PaneProcessInfoGet(context.Background(), "w1:p1"); err == nil {
-			t.Fatalf("PaneProcessInfoGet(%s) error = nil; want an error", reply)
-		}
 	}
 }

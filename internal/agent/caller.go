@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
-	"github.com/Harrison-Blair/hive/internal/lib/output"
 )
 
 // CallerName returns the name of the record whose pane is pane, or the empty
@@ -28,11 +27,6 @@ func CallerName(home, pane string) (string, error) {
 func IsCode(err error, code string) bool {
 	var serverError *herdr.Error
 	return errors.As(err, &serverError) && serverError.Code == code
-}
-
-// Failed returns a failed envelope with no effects.
-func Failed(phase, message string) output.Envelope {
-	return output.Envelope{Outcome: "failed", Phase: phase, Effects: []output.Effect{}, Error: message, Result: nil}
 }
 
 // Logger returns logger, or a logger that drops each event when logger is nil.

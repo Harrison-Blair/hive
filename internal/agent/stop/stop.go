@@ -52,14 +52,14 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 func run(ctx context.Context, home string, options Options, logger *slog.Logger) (output.Envelope, string) {
 	record, err := agent.Load(home, options.Name)
 	if errors.Is(err, agent.ErrNotFound) {
-		return agent.Failed("agent", "unknown agent: "+options.Name), ""
+		return output.Failed("agent", "unknown agent: "+options.Name), ""
 	}
 	if err != nil {
-		return agent.Failed("agent", err.Error()), ""
+		return output.Failed("agent", err.Error()), ""
 	}
 	if options.RemoveWorktree && record.Worktree != "" {
 		if message := checkClean(ctx, record.Worktree); message != "" {
-			return agent.Failed("worktree", message), ""
+			return output.Failed("worktree", message), ""
 		}
 	}
 
@@ -71,15 +71,15 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	case agent.IsCode(err, herdr.CodePaneNotFound):
 		effects = append(effects, output.Effect{Resource: "pane", Path: record.Pane, Action: "gone"})
 	case err != nil:
-		return agent.Failed("pane", fmt.Sprintf("agent %s: %s", record.Name, err)), session
+		return output.Failed("pane", fmt.Sprintf("agent %s: %s", record.Name, err)), session
 	case record.Worktree != "":
 		if err := herdr.WorkspaceClose(ctx, pane.WorkspaceID, false, herdr.WithLogger(logger)); err != nil {
-			return agent.Failed("close", fmt.Sprintf("close workspace %s: %s", pane.WorkspaceID, err)), session
+			return output.Failed("close", fmt.Sprintf("close workspace %s: %s", pane.WorkspaceID, err)), session
 		}
 		effects = append(effects, output.Effect{Resource: "workspace", Path: pane.WorkspaceID, Action: "closed"})
 	default:
 		if err := herdr.PaneClose(ctx, record.Pane, herdr.WithLogger(logger)); err != nil {
-			return agent.Failed("close", fmt.Sprintf("close pane %s: %s", record.Pane, err)), session
+			return output.Failed("close", fmt.Sprintf("close pane %s: %s", record.Pane, err)), session
 		}
 		effects = append(effects, output.Effect{Resource: "pane", Path: record.Pane, Action: "closed"})
 	}
@@ -88,16 +88,16 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		out, err := exec.CommandContext(ctx, "git", "-C", record.Worktree, "worktree", "remove", record.Worktree).CombinedOutput()
 		if err != nil {
 			message := fmt.Sprintf("git worktree remove %s: %s: %s", record.Worktree, err, strings.TrimSpace(string(out)))
-			return output.Envelope{Outcome: "partial", Phase: "worktree", Effects: effects, Error: message, Result: result}, session
+			return output.Envelope{Outcome: output.OutcomePartial, Phase: "worktree", Effects: effects, Error: message, Result: result}, session
 		}
 		logger.Debug("worktree removed", "command", "agent stop", "target", record.Name, "path", record.Worktree)
 		effects = append(effects, output.Effect{Resource: "worktree", Path: record.Worktree, Action: "removed"})
 	}
 	if err := agent.Remove(home, record.Name); err != nil {
-		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "remove record: " + err.Error(), Result: result}, session
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "record", Effects: effects, Error: "remove record: " + err.Error(), Result: result}, session
 	}
 	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "removed"})
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}, session
+	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}, session
 }
 
 // checkClean returns a message when the checkout at path has changes or

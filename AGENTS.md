@@ -67,7 +67,7 @@ hive/                            the checkout is the home
 - An API that a non-CLI caller uses stays in the parent domain package.
 - `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
 - `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
-- Some parts keep their current roles. `cmd/common` holds the CLI helpers. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
+- Some parts keep their current roles. `cmd/common` holds the CLI helpers. A command leaf runs through `common.Run`, or through `common.Stream` when it resolves its own home or renders its own output, as `hive logs` and `hive init` do. Both log `command start` and `command end`. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
 - A group command registers its child commands. It imports them only for this registration.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
@@ -129,7 +129,9 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 ### Command output
 
-A command prints text for people by default. With `--json` it prints one JSON object with `outcome`, `phase`, `effects`, `error`, and `result`. Known effects are separate from errors. The exit status is 0 only on success. `hive logs --json` prints each log event as one JSON line, because it streams. It is the one exception.
+A command prints text for people by default. With `--json` it prints one JSON object with `outcome`, `phase`, `effects`, `error`, and `result`. Known effects are separate from errors. The exit status is 0 only on success. `hive logs --json` prints each log event as one JSON line, because it streams. It is the one exception. Each diagnostic of `hive logs` on stderr is one `hive: MESSAGE` line, also with `--json`.
+
+A usage error exits with status 2. A usage error is an invalid invocation: missing or extra arguments, an unknown flag, an unknown command, an empty `PATH` for `hive project register`, or a bad `--limit` or `--since` value for `hive logs`. Without `--json`, hive writes one line `hive: MESSAGE` to stderr. With `--json` before any `--`, hive writes one envelope to stdout and nothing to stderr: `{"outcome":"failed","phase":"usage","effects":[],"error":"MESSAGE","result":null}`. The root command renders each usage error. Build an envelope and its outcome with `internal/lib/output`: `output.Failed` and the `Outcome` constants.
 
 ### Git
 

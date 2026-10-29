@@ -29,46 +29,6 @@ func TestWorkspaceCreateRequestAndReply(t *testing.T) {
 	}
 }
 
-func TestPaneListRequestAndReply(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("pane.list", `{"type":"pane_list","panes":[{"pane_id":"w6:p1","terminal_id":"term_a","workspace_id":"w6","tab_id":"w6:t1","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp/demo"},{"pane_id":"w6:p2","terminal_id":"term_b","workspace_id":"w6","tab_id":"w6:t2","focused":false,"agent_status":"unknown","revision":1,"cwd":"/tmp/demo"}]}`)
-	panes, err := PaneList(context.Background(), "w6")
-	if err != nil {
-		t.Fatalf("PaneList error = %v", err)
-	}
-	if len(panes) != 2 || panes[0].PaneID != "w6:p1" || panes[1].TabID != "w6:t2" {
-		t.Fatalf("panes = %#v", panes)
-	}
-	requests := server.recorded("pane.list")
-	if len(requests) != 1 || requests[0].Params != `{"workspace_id":"w6"}` {
-		t.Fatalf("pane.list requests = %#v", requests)
-	}
-	server.scriptResult("pane.list", `{"type":"pane_list","panes":null}`)
-	if _, err := PaneList(context.Background(), "w6"); err == nil {
-		t.Fatalf("PaneList null panes error = nil")
-	}
-}
-
-func TestTabListRequestAndReply(t *testing.T) {
-	server := newFakeServer(t)
-	server.scriptResult("tab.list", `{"type":"tab_list","tabs":[{"tab_id":"w6:t2","workspace_id":"w6","number":2,"label":"2","focused":false,"pane_count":1,"agent_status":"unknown"},{"tab_id":"w6:t1","workspace_id":"w6","number":1,"label":"1","focused":false,"pane_count":1,"agent_status":"unknown"}]}`)
-	tabs, err := TabList(context.Background(), "w6")
-	if err != nil {
-		t.Fatalf("TabList error = %v", err)
-	}
-	if len(tabs) != 2 || tabs[0].TabID != "w6:t2" || tabs[0].Number != 2 {
-		t.Fatalf("tabs = %#v", tabs)
-	}
-	requests := server.recorded("tab.list")
-	if len(requests) != 1 || requests[0].Params != `{"workspace_id":"w6"}` {
-		t.Fatalf("tab.list requests = %#v", requests)
-	}
-	server.scriptResult("tab.list", `{"type":"tab_list","tabs":[{"tab_id":"","workspace_id":"w6","number":1,"label":"1","focused":false,"pane_count":1,"agent_status":"unknown"}]}`)
-	if _, err := TabList(context.Background(), "w6"); err == nil {
-		t.Fatalf("TabList empty tab_id error = nil")
-	}
-}
-
 func TestPaneGetRestoreError(t *testing.T) {
 	server := newFakeServer(t)
 	server.scriptResult("pane.get", `{"type":"pane_info","pane":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","focused":false,"agent_status":"unknown","revision":0}}`)

@@ -35,18 +35,6 @@ func TestFix01AgentWireValidation(t *testing.T) {
 			call:   func() error { _, err := AgentGet(context.Background(), "w1:p1"); return err },
 		},
 		{
-			name:   "list missing agents",
-			method: "agent.list",
-			reply:  `{"type":"agent_list"}`,
-			call:   func() error { _, err := AgentList(context.Background()); return err },
-		},
-		{
-			name:   "list null agents",
-			method: "agent.list",
-			reply:  `{"type":"agent_list","agents":null}`,
-			call:   func() error { _, err := AgentList(context.Background()); return err },
-		},
-		{
 			name:   "start null argv item",
 			method: "agent.start",
 			reply:  `{"type":"agent_started","agent":` + validAgentInfo + `,"argv":[null]}`,
@@ -69,33 +57,6 @@ func TestFix01AgentWireValidation(t *testing.T) {
 			method: "pane.get",
 			reply:  `{"type":"pane_info","pane":{"pane_id":"w1:p1","terminal_id":"term_a","workspace_id":"w1","tab_id":"w1:t1","agent_status":"unknown","revision":1}}`,
 			call:   func() error { _, err := PaneGet(context.Background(), "w1:p1"); return err },
-		},
-		{
-			name:   "process entry missing pid",
-			method: "pane.process_info",
-			reply:  `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","foreground_processes":[{"name":"bash"}]}}`,
-			call: func() error {
-				_, err := PaneProcessInfoGet(context.Background(), "w1:p1")
-				return err
-			},
-		},
-		{
-			name:   "process entry null pid",
-			method: "pane.process_info",
-			reply:  `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","foreground_processes":[{"pid":null,"name":"bash"}]}}`,
-			call: func() error {
-				_, err := PaneProcessInfoGet(context.Background(), "w1:p1")
-				return err
-			},
-		},
-		{
-			name:   "process entry null name",
-			method: "pane.process_info",
-			reply:  `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","foreground_processes":[{"pid":1,"name":null}]}}`,
-			call: func() error {
-				_, err := PaneProcessInfoGet(context.Background(), "w1:p1")
-				return err
-			},
 		},
 	}
 	for _, test := range cases {
@@ -123,14 +84,6 @@ func TestFix01AgentWireAcceptsValidReplies(t *testing.T) {
 	if info.PaneID != "w1:p1" || info.Revision != 0 || info.Focused {
 		t.Fatalf("info = %#v; want a valid zero revision and false focus", info)
 	}
-	server.scriptResult("agent.list", `{"type":"agent_list","agents":[]}`)
-	agents, err := AgentList(context.Background())
-	if err != nil {
-		t.Fatalf("AgentList error = %v", err)
-	}
-	if len(agents) != 0 {
-		t.Fatalf("agents = %#v; want the valid empty list", agents)
-	}
 	server.scriptResult("agent.start", `{"type":"agent_started","agent":`+validAgentInfo+`,"argv":[],"extra":1}`)
 	started, err := AgentStart(context.Background(), AgentStartParams{Name: "n", Kind: "claude", PaneID: "w1:p1"})
 	if err != nil {
@@ -138,9 +91,5 @@ func TestFix01AgentWireAcceptsValidReplies(t *testing.T) {
 	}
 	if len(started.Argv) != 0 {
 		t.Fatalf("argv = %#v; want the valid empty array", started.Argv)
-	}
-	server.scriptResult("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","shell_pid":null,"foreground_processes":[],"tty":null}}`)
-	if _, err := PaneProcessInfoGet(context.Background(), "w1:p1"); err != nil {
-		t.Fatalf("PaneProcessInfoGet error = %v", err)
 	}
 }

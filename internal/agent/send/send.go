@@ -50,27 +50,27 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 
 func run(ctx context.Context, home string, options Options, logger *slog.Logger) output.Envelope {
 	if strings.TrimSpace(options.Text) == "" {
-		return agent.Failed("validate", "TEXT is empty")
+		return output.Failed("validate", "TEXT is empty")
 	}
 	record, err := agent.Load(home, options.Name)
 	if errors.Is(err, agent.ErrNotFound) {
-		return agent.Failed("agent", "unknown agent: "+options.Name)
+		return output.Failed("agent", "unknown agent: "+options.Name)
 	}
 	if err != nil {
-		return agent.Failed("agent", err.Error())
+		return output.Failed("agent", err.Error())
 	}
 	sender, err := agent.CallerName(home, options.CallerPane)
 	if err != nil {
-		return agent.Failed("caller", err.Error())
+		return output.Failed("caller", err.Error())
 	}
 	if sender == "" {
 		sender = "user"
 	}
 	if _, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger)); err != nil {
 		if agent.IsCode(err, herdr.CodePaneNotFound) {
-			return agent.Failed("agent", fmt.Sprintf("agent %s is gone: herdr has no pane %s", record.Name, record.Pane))
+			return output.Failed("agent", fmt.Sprintf("agent %s is gone: herdr has no pane %s", record.Name, record.Pane))
 		}
-		return agent.Failed("agent", fmt.Sprintf("agent %s: %s", record.Name, err))
+		return output.Failed("agent", fmt.Sprintf("agent %s: %s", record.Name, err))
 	}
 
 	params := herdr.AgentPromptParams{Target: record.Pane, Text: "⬢ " + sender + ": " + options.Text}
@@ -81,24 +81,24 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	}
 	info, err := herdr.AgentPrompt(ctx, params, opts...)
 	if agent.IsCode(err, herdr.CodeAgentBlocked) {
-		return agent.Failed("prompt", fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane; the prompt was not sent", record.Name, record.Pane))
+		return output.Failed("prompt", fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane; the prompt was not sent", record.Name, record.Pane))
 	}
 	if err != nil {
-		return agent.Failed("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, record.Pane, err))
+		return output.Failed("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, record.Pane, err))
 	}
 	logger.Debug("agent prompted", "command", "agent send", "target", record.Name, "pane_id", record.Pane, hivelog.Body(params.Text))
 	result := Result{Name: record.Name, Pane: record.Pane, Sender: sender, Status: info.AgentStatus}
 	effects := []output.Effect{{Resource: "agent", Path: record.Pane, Action: "prompted"}}
 	if options.Wait && info.AgentStatus == "blocked" {
-		return output.Envelope{Outcome: "partial", Phase: "wait", Effects: effects, Error: fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane", record.Name, record.Pane), Result: result}
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("agent %s is blocked by a dialog in pane %s: answer it in the pane", record.Name, record.Pane), Result: result}
 	}
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: result}
+	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}
 }
 
 // Text renders the result of one send.
 func Text(envelope output.Envelope) string {
 	result, ok := envelope.Result.(Result)
-	if !ok || envelope.Outcome != "ok" {
+	if !ok || envelope.Outcome != output.OutcomeOK {
 		return ""
 	}
 	return fmt.Sprintf("sent to %s (%s): %s\n", result.Name, result.Pane, result.Status)
