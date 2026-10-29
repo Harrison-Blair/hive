@@ -17,10 +17,7 @@ var (
 	ErrLockReleased = errors.New("store lock released")
 )
 
-const (
-	defaultLockWait = 2 * time.Second
-	lockRetry       = 10 * time.Millisecond
-)
+const defaultLockWait = 2 * time.Second
 
 // LockedStore is a store handle that uses the lock of one WithLock callback.
 type LockedStore struct {
@@ -63,6 +60,11 @@ func (s *Store) withLock(ctx context.Context, fn func(*LockedStore) error) error
 	return fn(locked)
 }
 
+// acquireLock waits for the lock in the kernel, so the lock goes to a waiter
+// when the holder releases it. The wait ends after two seconds, at the context
+// deadline, or when the context ends. An abandoned wait closes the file: the
+// kernel closes the descriptor and drops the lock when the blocked flock
+// returns, and the goroutine then ends.
 func acquireLock(ctx context.Context, path string) (*os.File, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -71,43 +73,50 @@ func acquireLock(ctx context.Context, path string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	waitUntil := time.Now().Add(defaultLockWait)
-	_, hasDeadline := ctx.Deadline()
-	if hasDeadline {
-		waitUntil, _ = ctx.Deadline()
+	conn, err := file.SyscallConn()
+	if err != nil {
+		_ = file.Close()
+		return nil, err
 	}
-	for {
-		err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	wait := defaultLockWait
+	deadline, hasDeadline := ctx.Deadline()
+	if hasDeadline {
+		wait = time.Until(deadline)
+	}
+	locked := make(chan error, 1)
+	go func() {
+		var lockErr error
+		// Control holds a reference to the descriptor, so a Close during
+		// the wait does not free the descriptor number before flock returns.
+		err := conn.Control(func(fd uintptr) {
+			lockErr = syscall.Flock(int(fd), syscall.LOCK_EX)
+		})
 		if err == nil {
-			return file, nil
+			err = lockErr
 		}
-		if !errors.Is(err, syscall.EWOULDBLOCK) && !errors.Is(err, syscall.EAGAIN) {
+		locked <- err
+	}()
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case err := <-locked:
+		if err != nil {
 			_ = file.Close()
 			return nil, err
 		}
+		return file, nil
+	case <-ctx.Done():
+		_ = file.Close()
+		return nil, ctx.Err()
+	case <-timer.C:
+		_ = file.Close()
 		if err := ctx.Err(); err != nil {
-			_ = file.Close()
 			return nil, err
 		}
-		remaining := time.Until(waitUntil)
-		if remaining <= 0 {
-			_ = file.Close()
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-			if hasDeadline {
-				return nil, context.DeadlineExceeded
-			}
-			return nil, ErrLockTimeout
+		if hasDeadline {
+			return nil, context.DeadlineExceeded
 		}
-		timer := time.NewTimer(min(remaining, lockRetry))
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			_ = file.Close()
-			return nil, ctx.Err()
-		case <-timer.C:
-		}
+		return nil, ErrLockTimeout
 	}
 }
 
