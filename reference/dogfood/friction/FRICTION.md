@@ -93,3 +93,4 @@ For all other files, the coordinator and manager never change a project source f
 | [Builder spawn right after worktree create can fail with first tab busy](entries/spawn-after-worktree-create-first-tab-busy.md) | Open | Run the spawn again. |
 | [Worktree create opens a second workspace for the project checkout](entries/worktree-create-opens-repo-workspace.md) | Open | |
 | [Agent stop with a repeated --agent flag stops the caller](entries/agent-stop-repeated-agent-flag-stops-caller.md) | Open | |
+| [Supervisor stopped, its record stayed live, and no nudge came](entries/supervisor-down-record-live.md) | Open | Start `hive supervise` in a new tab. |
