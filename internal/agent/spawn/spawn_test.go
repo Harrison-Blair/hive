@@ -463,6 +463,24 @@ func TestSpawnLogsHarnessSessionIDFromAgentGetBeforeReady(t *testing.T) {
 	}
 }
 
+func TestSpawnLogsHarnessSessionIDFromPromptReply(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.PromptSession = "prompt-9"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "prompt-9" {
+		t.Fatalf("harness_session_id = %v, want prompt-9", got)
+	}
+}
+
 func TestSpawnLogsHarnessSessionIDWhenThePromptFails(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	fake.LaunchSession = "early-8"

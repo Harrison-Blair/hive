@@ -83,6 +83,8 @@ type Herdr struct {
 	// PendingSession is the session ID that only the agent.get replies before
 	// the agent is ready give.
 	PendingSession string
+	// PromptSession is the session ID that only the agent.prompt reply gives.
+	PromptSession string
 }
 
 // NewHerdr starts a fake herdr server and sets HERDR_SOCKET_PATH.
@@ -454,7 +456,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		} else {
 			pane.Status = "working"
 		}
-		return map[string]any{"type": "agent_prompted", "agent": agentInfo(pane)}, nil
+		return map[string]any{"type": "agent_prompted", "agent": withSession(agentInfo(pane), pane.Kind, h.PromptSession)}, nil
 	}
 	h.t.Errorf("fake herdr: unexpected method %q", method)
 	return nil, &serverError{"unknown_method", method}
