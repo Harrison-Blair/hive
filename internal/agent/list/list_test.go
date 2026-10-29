@@ -2,6 +2,7 @@ package list
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -48,6 +49,35 @@ func TestListReconcilesRecordsWithHerdr(t *testing.T) {
 		if !strings.Contains(text, want) {
 			t.Fatalf("text = %q, want %q", text, want)
 		}
+	}
+}
+
+func TestListJSONHasHarnessSessionID(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	withSession := fake.AddPane("w1", "")
+	fake.StartAgent(withSession.ID, "a", "claude", "idle")
+	fake.SetSession(withSession.ID, "6f1c-claude")
+	without := fake.AddPane("w1", "")
+	fake.StartAgent(without.ID, "b", "pi", "idle")
+	for _, record := range []agent.Record{{Name: "a", Pane: withSession.ID}, {Name: "b", Pane: without.ID}} {
+		if err := agent.Save(home, record); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	envelope := listRun(t, home)
+	data, err := json.Marshal(envelope.Result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []map[string]any
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 || got[0]["harness_session_id"] != "6f1c-claude" || got[1]["harness_session_id"] != "" {
+		t.Fatalf("entries = %s", data)
 	}
 }
 

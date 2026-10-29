@@ -23,6 +23,9 @@ type Entry struct {
 	agent.Record
 	// Status is the herdr agent status, or gone when herdr has no such pane.
 	Status string `json:"status"`
+	// HarnessSessionID is the native session ID of the harness that herdr
+	// reports, or empty when herdr reports none.
+	HarnessSessionID string `json:"harness_session_id"`
 }
 
 // Run returns an Entry for each record, sorted by name.
@@ -35,17 +38,17 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 	}
 	entries := make([]Entry, 0, len(records))
 	for _, record := range records {
-		status := "gone"
+		status, session := "gone", ""
 		pane, err := herdr.PaneGet(ctx, record.Pane, herdr.WithLogger(logger))
 		switch {
 		case err == nil:
-			status = pane.AgentStatus
+			status, session = pane.AgentStatus, agent.SessionID(pane.AgentSession)
 		case !agent.IsCode(err, herdr.CodePaneNotFound):
 			message := fmt.Sprintf("agent %s: pane %s: %s", record.Name, record.Pane, err)
 			logger.Debug("agent list", "command", "agent list", "outcome", "failed", "error", message)
 			return agent.Failed("herdr", message)
 		}
-		entries = append(entries, Entry{Record: record, Status: status})
+		entries = append(entries, Entry{Record: record, Status: status, HarnessSessionID: session})
 	}
 	logger.Debug("agent list", "command", "agent list", "outcome", "ok", "count", len(entries))
 	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: entries}
