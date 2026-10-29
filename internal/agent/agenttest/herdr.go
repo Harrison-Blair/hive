@@ -5,10 +5,8 @@ package agenttest
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net"
 	"os"
 	"os/exec"
@@ -531,38 +529,6 @@ func GitRepo(t testing.TB) string {
 		}
 	}
 	return dir
-}
-
-// Log keeps the JSON log events of one test.
-type Log struct {
-	t   testing.TB
-	out bytes.Buffer
-	// Logger writes to the log.
-	Logger *slog.Logger
-}
-
-// NewLog makes a Log that keeps each event at level debug.
-func NewLog(t testing.TB) *Log {
-	l := &Log{t: t}
-	l.Logger = slog.New(slog.NewJSONHandler(&l.out, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	return l
-}
-
-// Event returns the last event with message msg, and fails the test when
-// none exists.
-func (l *Log) Event(msg string) map[string]any {
-	l.t.Helper()
-	var found map[string]any
-	for _, line := range bytes.Split(l.out.Bytes(), []byte("\n")) {
-		var event map[string]any
-		if json.Unmarshal(line, &event) == nil && event["msg"] == msg {
-			found = event
-		}
-	}
-	if found == nil {
-		l.t.Fatalf("no log event %q in:\n%s", msg, l.out.String())
-	}
-	return found
 }
 
 // Home makes a hive home with the marker and returns its path.
