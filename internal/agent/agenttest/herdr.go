@@ -78,9 +78,11 @@ type Herdr struct {
 	WaitStatus string
 	// StartSession is the session ID that an agent gets when it is ready.
 	StartSession string
-	// LaunchSession is the session ID that herdr reports from agent.start
-	// until the agent is ready. The ready agent reports StartSession.
+	// LaunchSession is the session ID that only the agent.start reply gives.
 	LaunchSession string
+	// PendingSession is the session ID that only the agent.get replies before
+	// the agent is ready give.
+	PendingSession string
 }
 
 // NewHerdr starts a fake herdr server and sets HERDR_SOCKET_PATH.
@@ -404,7 +406,6 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		// As herdr 0.9.5 does, the launch keeps the shell status until the
 		// agent settles, and agent.get sees the launch for a short time.
 		pane.Status, pane.ready, pane.pending = "idle", false, 1
-		pane.Session = h.LaunchSession
 		pane.Args = nil
 		if raw, ok := params["args"].([]any); ok {
 			for _, arg := range raw {
@@ -413,7 +414,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			}
 		}
 		argv := append([]string{pane.Kind}, pane.Args...)
-		return map[string]any{"type": "agent_started", "agent": agentInfo(pane), "argv": argv}, nil
+		return map[string]any{"type": "agent_started", "agent": withSession(agentInfo(pane), pane.Kind, h.LaunchSession), "argv": argv}, nil
 	case "agent.wait":
 		pane := h.pane(text("target"))
 		if pane == nil {
@@ -427,6 +428,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		if !pane.ready && pane.pending > 0 {
 			pane.pending--
+			return map[string]any{"type": "agent_info", "agent": withSession(agentInfo(pane), pane.Kind, h.PendingSession)}, nil
 		} else if !pane.ready && pane.Status != "blocked" {
 			pane.Status = h.StartStatus
 			pane.ready = h.StartStatus != "blocked"
@@ -490,8 +492,14 @@ func paneInfo(pane *Pane) map[string]any {
 	if pane.Kind != "" {
 		info["agent"] = pane.Kind
 	}
-	if pane.Session != "" {
-		info["agent_session"] = map[string]any{"source": "herdr:" + pane.Kind, "agent": pane.Kind, "kind": "id", "value": pane.Session}
+	return withSession(info, pane.Kind, pane.Session)
+}
+
+// withSession adds an agent_session with ID session to info, when session is
+// not empty.
+func withSession(info map[string]any, kind, session string) map[string]any {
+	if session != "" {
+		info["agent_session"] = map[string]any{"source": "herdr:" + kind, "agent": kind, "kind": "id", "value": session}
 	}
 	return info
 }

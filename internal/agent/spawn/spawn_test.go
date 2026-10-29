@@ -419,9 +419,35 @@ func TestSpawnLogsHarnessSessionID(t *testing.T) {
 	}
 }
 
-func TestSpawnLogsHarnessSessionIDThatComesBeforeTheReadyReply(t *testing.T) {
+func TestSpawnLogsHarnessSessionIDFromStartWhenSpawnEndsAfterStart(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
-	fake.LaunchSession = "early-7"
+	fake.LaunchSession = "start-6"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	agents := filepath.Join(home, ".hive", "agents")
+	if err := os.MkdirAll(agents, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(agents, 0o755) })
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "partial" || envelope.Phase != "record" {
+		t.Fatalf("envelope = %+v, want partial in phase record", envelope)
+	}
+	if got := fake.Requests("agent.get"); len(got) != 0 {
+		t.Fatalf("agent.get calls = %d, want 0", len(got))
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "start-6" {
+		t.Fatalf("harness_session_id = %v, want start-6", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDFromAgentGetBeforeReady(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.PendingSession = "early-7"
 	home := agenttest.Home(t)
 	_, callerPane := fake.AddWorkspace("mine", "", false)
 	log := agenttest.NewLog(t)
