@@ -104,6 +104,14 @@ func (h *Herdr) SetStatus(paneID, status string) {
 	h.pane(paneID).Status = status
 }
 
+// StartAgent puts a named agent of kind with status in one pane.
+func (h *Herdr) StartAgent(paneID, name, kind, status string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	pane := h.pane(paneID)
+	pane.Name, pane.Kind, pane.Status = name, kind, status
+}
+
 // ClosePane removes one pane, as a user who closes it by hand.
 func (h *Herdr) ClosePane(paneID string) {
 	h.mu.Lock()
