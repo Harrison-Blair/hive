@@ -62,14 +62,18 @@ func Run(cmd *cobra.Command, command, target string, execute func(string, *slog.
 	if executeErr != nil {
 		var usage *UsageError
 		if errors.As(executeErr, &usage) {
-			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed")
+			logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", "failed", "error", usage.Error())
 			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", usage.Error())
 			return &StatusError{Status: 2}
 		}
 		envelope = output.Envelope{Outcome: "failed", Phase: "command", Effects: []output.Effect{}, Error: executeErr.Error(), Result: nil}
 		text = ""
 	}
-	logger.Debug("command end", "command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", envelope.Outcome)
+	attrs := []any{"command", command, "duration_ms", time.Since(started).Milliseconds(), "outcome", envelope.Outcome}
+	if envelope.Outcome != "ok" && envelope.Error != nil {
+		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
+	}
+	logger.Debug("command end", attrs...)
 	if err := output.Render(cmd.OutOrStdout(), cmd.ErrOrStderr(), jsonOutput, envelope, text); err != nil {
 		return &StatusError{Status: 1}
 	}
