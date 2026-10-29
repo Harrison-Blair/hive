@@ -44,8 +44,12 @@ type Options struct {
 // Run starts one agent and writes its record. The result is the record.
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
-	envelope := run(ctx, home, options, logger)
+	var session string
+	envelope := run(ctx, home, options, logger, &session)
 	attrs := []any{"command", "agent spawn", "target", options.Name, "project_id", options.Project, "outcome", envelope.Outcome, "phase", envelope.Phase}
+	if session != "" {
+		attrs = append(attrs, "harness_session_id", session)
+	}
 	if envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
@@ -53,7 +57,9 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 	return envelope
 }
 
-func run(ctx context.Context, home string, options Options, logger *slog.Logger) output.Envelope {
+// run starts the agent. It keeps in session the last harness session ID that
+// a herdr reply gives.
+func run(ctx context.Context, home string, options Options, logger *slog.Logger, session *string) output.Envelope {
 	profile, prompt, message := validate(options)
 	if message != "" {
 		return agent.Failed("validate", message)
@@ -110,7 +116,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		PaneID:    paneID,
 		Args:      profile.Args(options.Model, extra),
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
-	}, logger)
+	}, logger, session)
 	if err != nil {
 		envelope := agent.Failed("start", fmt.Sprintf("agent start in pane %s: %s", paneID, err))
 		envelope.Effects = effects
@@ -140,7 +146,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	partial := func(phase, message string) output.Envelope {
 		return output.Envelope{Outcome: "partial", Phase: phase, Effects: effects, Error: message, Result: record}
 	}
-	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger)
+	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger, session)
 	if err != nil {
 		return partial("wait", fmt.Sprintf("agent %s in pane %s is not ready: %s; the prompt was not sent", record.Name, paneID, err))
 	}
@@ -148,13 +154,14 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		return partial("wait", blockedMessage(record.Name, paneID))
 	}
 	if prompt != "" {
-		_, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: paneID, Text: prompt}, herdr.WithLogger(logger))
+		prompted, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: paneID, Text: prompt}, herdr.WithLogger(logger))
 		if agent.IsCode(err, herdr.CodeAgentBlocked) {
 			return partial("prompt", blockedMessage(record.Name, paneID))
 		}
 		if err != nil {
 			return partial("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, paneID, err))
 		}
+		keepSession(session, prompted.AgentSession)
 		logger.Debug("agent prompted", "command", "agent spawn", "target", record.Name, "pane_id", paneID, hivelog.Body(prompt))
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
 	}
@@ -247,10 +254,11 @@ func loadProject(home, id string) (records.Project, error) {
 // waitReady polls agent.get until herdr reports the agent interactive_ready
 // or blocked. agent.wait does not serve: right after agent.start it can match
 // the idle status of the shell before the agent runs (herdr 0.9.5).
-func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger *slog.Logger) (herdr.AgentInfo, error) {
+func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger *slog.Logger, session *string) (herdr.AgentInfo, error) {
 	deadline := time.Now().Add(timeout)
 	for {
 		info, err := herdr.AgentGet(ctx, paneID, herdr.WithLogger(logger))
+		keepSession(session, info.AgentSession)
 		if err == nil && (info.Interactive || info.AgentStatus == "blocked") {
 			return info, nil
 		}
@@ -270,11 +278,12 @@ func waitReady(ctx context.Context, paneID string, timeout time.Duration, logger
 
 // start sends agent.start. A new pane can hold no shell prompt yet, so start
 // tries again while herdr reports the pane busy.
-func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logger) ([]string, error) {
+func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logger, session *string) ([]string, error) {
 	deadline := time.Now().Add(busyTimeout)
 	for {
 		started, err := herdr.AgentStart(ctx, params, herdr.WithLogger(logger))
 		if err == nil {
+			keepSession(session, started.Agent.AgentSession)
 			return started.Argv, nil
 		}
 		if !agent.IsCode(err, "agent_pane_busy") || time.Now().After(deadline) {
@@ -285,6 +294,13 @@ func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logg
 			return nil, ctx.Err()
 		case <-time.After(busyPause):
 		}
+	}
+}
+
+// keepSession sets session to the ID of reported when herdr reports one.
+func keepSession(session *string, reported *herdr.AgentSessionInfo) {
+	if id := agent.SessionID(reported); id != "" {
+		*session = id
 	}
 }
 

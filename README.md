@@ -107,7 +107,7 @@ result object.
 | `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
 | `hive agent spawn ... --project P --worktree NAME` | Create the worktree `projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
 | `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N. With `--wait`, wait until the agent is idle or done. |
-| `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout. |
+| `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout and refuses a dirty one. On an agent without a worktree, it closes the pane, removes the record, and prints `no worktree for N`. |
 | `hive agent list` | List the agent records with their herdr status. |
 | `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
 | `hive project list` | List the registered projects. |

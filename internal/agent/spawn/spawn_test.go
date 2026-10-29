@@ -400,3 +400,119 @@ func TestSpawnTriesAgainWhilePaneIsBusy(t *testing.T) {
 		t.Fatalf("agent.start calls = %d, want 2", got)
 	}
 }
+
+func TestSpawnLogsHarnessSessionID(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.StartSession = "sess-42"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "sess-42" {
+		t.Fatalf("harness_session_id = %v, want sess-42", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDFromStartWhenSpawnEndsAfterStart(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.LaunchSession = "start-6"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	agents := filepath.Join(home, ".hive", "agents")
+	if err := os.MkdirAll(agents, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(agents, 0o755) })
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "partial" || envelope.Phase != "record" {
+		t.Fatalf("envelope = %+v, want partial in phase record", envelope)
+	}
+	if got := fake.Requests("agent.get"); len(got) != 0 {
+		t.Fatalf("agent.get calls = %d, want 0", len(got))
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "start-6" {
+		t.Fatalf("harness_session_id = %v, want start-6", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDFromAgentGetBeforeReady(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.PendingSession = "early-7"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "early-7" {
+		t.Fatalf("harness_session_id = %v, want early-7", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDFromPromptReply(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.PromptSession = "prompt-9"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "prompt-9" {
+		t.Fatalf("harness_session_id = %v, want prompt-9", got)
+	}
+}
+
+func TestSpawnLogsHarnessSessionIDWhenThePromptFails(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.LaunchSession = "early-8"
+	fake.Fail("agent.prompt", "internal_error", "boom")
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "partial" || envelope.Phase != "prompt" {
+		t.Fatalf("envelope = %+v, want partial in phase prompt", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "early-8" {
+		t.Fatalf("harness_session_id = %v, want early-8", got)
+	}
+}
+
+func TestSpawnLogsNoHarnessSessionIDWhenHerdrReportsNone(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got, ok := log.Event("agent spawn")["harness_session_id"]; ok {
+		t.Fatalf("harness_session_id = %v, want absent", got)
+	}
+}

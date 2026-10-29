@@ -42,3 +42,12 @@ func Logger(logger *slog.Logger) *slog.Logger {
 	}
 	return logger
 }
+
+// SessionID returns the native session ID of the harness, or the empty string
+// when herdr reports no agent session.
+func SessionID(session *herdr.AgentSessionInfo) string {
+	if session == nil {
+		return ""
+	}
+	return session.Value
+}

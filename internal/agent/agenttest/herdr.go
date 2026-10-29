@@ -48,6 +48,8 @@ type Pane struct {
 	Args        []string
 	Env         map[string]string
 	Prompts     []string
+	// Session is the native session ID that herdr reports as agent_session.
+	Session string
 	// ready is true when herdr reports interactive_ready for the agent.
 	ready bool
 	// pending counts the agent.get calls that still see the launch.
@@ -72,6 +74,15 @@ type Herdr struct {
 	StartStatus string
 	// WaitStatus is the status that a prompt with a wait gives.
 	WaitStatus string
+	// StartSession is the session ID that an agent gets when it is ready.
+	StartSession string
+	// LaunchSession is the session ID that only the agent.start reply gives.
+	LaunchSession string
+	// PendingSession is the session ID that only the agent.get replies before
+	// the agent is ready give.
+	PendingSession string
+	// PromptSession is the session ID that only the agent.prompt reply gives.
+	PromptSession string
 }
 
 // NewHerdr starts a fake herdr server and sets HERDR_SOCKET_PATH.
@@ -118,6 +129,13 @@ func (h *Herdr) StartAgent(paneID, name, kind, status string) {
 	pane := h.pane(paneID)
 	pane.Name, pane.Kind, pane.Status = name, kind, status
 	pane.ready = status != "blocked"
+}
+
+// SetSession sets the agent session ID of one pane.
+func (h *Herdr) SetSession(paneID, session string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.pane(paneID).Session = session
 }
 
 // ClosePane removes one pane, as a user who closes it by hand.
@@ -396,7 +414,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 			}
 		}
 		argv := append([]string{pane.Kind}, pane.Args...)
-		return map[string]any{"type": "agent_started", "agent": agentInfo(pane), "argv": argv}, nil
+		return map[string]any{"type": "agent_started", "agent": withSession(agentInfo(pane), pane.Kind, h.LaunchSession), "argv": argv}, nil
 	case "agent.wait":
 		pane := h.pane(text("target"))
 		if pane == nil {
@@ -410,9 +428,13 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		if !pane.ready && pane.pending > 0 {
 			pane.pending--
+			return map[string]any{"type": "agent_info", "agent": withSession(agentInfo(pane), pane.Kind, h.PendingSession)}, nil
 		} else if !pane.ready && pane.Status != "blocked" {
 			pane.Status = h.StartStatus
 			pane.ready = h.StartStatus != "blocked"
+			if pane.ready {
+				pane.Session = h.StartSession
+			}
 		}
 		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
 	case "agent.prompt":
@@ -432,7 +454,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		} else {
 			pane.Status = "working"
 		}
-		return map[string]any{"type": "agent_prompted", "agent": agentInfo(pane)}, nil
+		return map[string]any{"type": "agent_prompted", "agent": withSession(agentInfo(pane), pane.Kind, h.PromptSession)}, nil
 	}
 	h.t.Errorf("fake herdr: unexpected method %q", method)
 	return nil, &serverError{"unknown_method", method}
@@ -469,6 +491,15 @@ func paneInfo(pane *Pane) map[string]any {
 	}
 	if pane.Kind != "" {
 		info["agent"] = pane.Kind
+	}
+	return withSession(info, pane.Kind, pane.Session)
+}
+
+// withSession adds an agent_session with ID session to info, when session is
+// not empty.
+func withSession(info map[string]any, kind, session string) map[string]any {
+	if session != "" {
+		info["agent_session"] = map[string]any{"source": "herdr:" + kind, "agent": kind, "kind": "id", "value": session}
 	}
 	return info
 }

@@ -2,10 +2,12 @@ package stop
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -85,6 +87,25 @@ func TestStopClosesPaneAndRemovesRecord(t *testing.T) {
 	}
 	if _, err := agent.Load(home, "kid"); !errors.Is(err, agent.ErrNotFound) {
 		t.Fatalf("record err = %v, want not found", err)
+	}
+}
+
+func TestStopLogsHarnessSessionID(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	pane := fake.AddPane("w1", "")
+	fake.StartAgent(pane.ID, "kid", "codex", "idle")
+	fake.SetSession(pane.ID, "019a-codex")
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
+		t.Fatal(err)
+	}
+	log := agenttest.NewLog(t)
+	if envelope := stopRun(t, home, Options{Name: "kid", Logger: log.Logger}); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent stop")["harness_session_id"]; got != "019a-codex" {
+		t.Fatalf("harness_session_id = %v, want 019a-codex", got)
 	}
 }
 
@@ -178,7 +199,7 @@ func TestStopRemoveWorktreeRemovesCleanCheckoutAndKeepsBranch(t *testing.T) {
 	}
 }
 
-func TestStopRemoveWorktreeNeedsWorktreeAgent(t *testing.T) {
+func TestStopRemoveWorktreeWithoutWorktreeClosesPane(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	fake.AddWorkspace("mine", "", false)
@@ -187,10 +208,44 @@ func TestStopRemoveWorktreeNeedsWorktreeAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
-	if envelope.Outcome != "failed" || !strings.Contains(errorText(envelope), "no worktree") {
+	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %+v", envelope)
 	}
-	if _, ok := fake.Pane(pane.ID); !ok {
-		t.Fatalf("pane closed")
+	if _, ok := fake.Pane(pane.ID); ok {
+		t.Fatalf("pane %s still open", pane.ID)
+	}
+	if _, err := agent.Load(home, "kid"); !errors.Is(err, agent.ErrNotFound) {
+		t.Fatalf("record err = %v, want not found", err)
+	}
+	if text := Text(envelope); !strings.Contains(text, "no worktree for kid\n") {
+		t.Fatalf("text = %q, want the line no worktree for kid", text)
+	}
+}
+
+func TestStopRemoveWorktreeWithoutWorktreeHasNoWorktreeEffect(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	pane := fake.AddPane("w1", "")
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
+		t.Fatal(err)
+	}
+	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
+	data, err := json.Marshal(envelope)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got struct {
+		Effects []output.Effect `json:"effects"`
+	}
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatal(err)
+	}
+	want := []output.Effect{
+		{Resource: "pane", Path: pane.ID, Action: "closed"},
+		{Resource: "record", Path: ".hive/agents/kid.json", Action: "removed"},
+	}
+	if !slices.Equal(got.Effects, want) {
+		t.Fatalf("effects = %+v, want %+v", got.Effects, want)
 	}
 }

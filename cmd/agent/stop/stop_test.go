@@ -3,6 +3,7 @@ package stop
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/cmd/common"
@@ -28,11 +29,14 @@ func TestStopCLIPassesRemoveWorktree(t *testing.T) {
 	root.SetErr(&out)
 	root.SetArgs([]string{"stop", "kid", "--remove-worktree"})
 	var status *common.StatusError
-	if err := root.Execute(); !errors.As(err, &status) || status.Status != 1 {
-		t.Fatalf("err %v, output %q; want status 1", err, out.String())
+	if err := root.Execute(); !errors.As(err, &status) || status.Status != 0 {
+		t.Fatalf("err %v, output %q; want status 0", err, out.String())
 	}
-	if _, ok := fake.Pane(pane.ID); !ok {
-		t.Fatalf("pane closed although --remove-worktree failed")
+	if !strings.Contains(out.String(), "no worktree for kid") {
+		t.Fatalf("output %q, want the line no worktree for kid", out.String())
+	}
+	if _, ok := fake.Pane(pane.ID); ok {
+		t.Fatalf("pane %s still open", pane.ID)
 	}
 }
 
