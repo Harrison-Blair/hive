@@ -88,6 +88,25 @@ func TestStopClosesPaneAndRemovesRecord(t *testing.T) {
 	}
 }
 
+func TestStopLogsHarnessSessionID(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	fake.AddWorkspace("mine", "", false)
+	pane := fake.AddPane("w1", "")
+	fake.StartAgent(pane.ID, "kid", "codex", "idle")
+	fake.SetSession(pane.ID, "019a-codex")
+	if err := agent.Save(home, agent.Record{Name: "kid", Pane: pane.ID}); err != nil {
+		t.Fatal(err)
+	}
+	log := agenttest.NewLog(t)
+	if envelope := stopRun(t, home, Options{Name: "kid", Logger: log.Logger}); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent stop")["harness_session_id"]; got != "019a-codex" {
+		t.Fatalf("harness_session_id = %v, want 019a-codex", got)
+	}
+}
+
 func TestStopGonePaneRemovesRecord(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)

@@ -400,3 +400,38 @@ func TestSpawnTriesAgainWhilePaneIsBusy(t *testing.T) {
 		t.Fatalf("agent.start calls = %d, want 2", got)
 	}
 }
+
+func TestSpawnLogsHarnessSessionID(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	fake.StartSession = "sess-42"
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := log.Event("agent spawn")["harness_session_id"]; got != "sess-42" {
+		t.Fatalf("harness_session_id = %v, want sess-42", got)
+	}
+}
+
+func TestSpawnLogsNoHarnessSessionIDWhenHerdrReportsNone(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.CallerPane = callerPane.ID
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got, ok := log.Event("agent spawn")["harness_session_id"]; ok {
+		t.Fatalf("harness_session_id = %v, want absent", got)
+	}
+}

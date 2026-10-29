@@ -5,8 +5,10 @@ package agenttest
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
 	"os/exec"
@@ -48,6 +50,8 @@ type Pane struct {
 	Args        []string
 	Env         map[string]string
 	Prompts     []string
+	// Session is the native session ID that herdr reports as agent_session.
+	Session string
 	// ready is true when herdr reports interactive_ready for the agent.
 	ready bool
 	// pending counts the agent.get calls that still see the launch.
@@ -72,6 +76,8 @@ type Herdr struct {
 	StartStatus string
 	// WaitStatus is the status that a prompt with a wait gives.
 	WaitStatus string
+	// StartSession is the session ID that an agent gets when it is ready.
+	StartSession string
 }
 
 // NewHerdr starts a fake herdr server and sets HERDR_SOCKET_PATH.
@@ -118,6 +124,13 @@ func (h *Herdr) StartAgent(paneID, name, kind, status string) {
 	pane := h.pane(paneID)
 	pane.Name, pane.Kind, pane.Status = name, kind, status
 	pane.ready = status != "blocked"
+}
+
+// SetSession sets the agent session ID of one pane.
+func (h *Herdr) SetSession(paneID, session string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.pane(paneID).Session = session
 }
 
 // ClosePane removes one pane, as a user who closes it by hand.
@@ -413,6 +426,9 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		} else if !pane.ready && pane.Status != "blocked" {
 			pane.Status = h.StartStatus
 			pane.ready = h.StartStatus != "blocked"
+			if pane.ready {
+				pane.Session = h.StartSession
+			}
 		}
 		return map[string]any{"type": "agent_info", "agent": agentInfo(pane)}, nil
 	case "agent.prompt":
@@ -470,6 +486,9 @@ func paneInfo(pane *Pane) map[string]any {
 	if pane.Kind != "" {
 		info["agent"] = pane.Kind
 	}
+	if pane.Session != "" {
+		info["agent_session"] = map[string]any{"source": "herdr:" + pane.Kind, "agent": pane.Kind, "kind": "id", "value": pane.Session}
+	}
 	return info
 }
 
@@ -498,6 +517,38 @@ func GitRepo(t testing.TB) string {
 		}
 	}
 	return dir
+}
+
+// Log keeps the JSON log events of one test.
+type Log struct {
+	t   testing.TB
+	out bytes.Buffer
+	// Logger writes to the log.
+	Logger *slog.Logger
+}
+
+// NewLog makes a Log that keeps each event at level debug.
+func NewLog(t testing.TB) *Log {
+	l := &Log{t: t}
+	l.Logger = slog.New(slog.NewJSONHandler(&l.out, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	return l
+}
+
+// Event returns the last event with message msg, and fails the test when
+// none exists.
+func (l *Log) Event(msg string) map[string]any {
+	l.t.Helper()
+	var found map[string]any
+	for _, line := range bytes.Split(l.out.Bytes(), []byte("\n")) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) == nil && event["msg"] == msg {
+			found = event
+		}
+	}
+	if found == nil {
+		l.t.Fatalf("no log event %q in:\n%s", msg, l.out.String())
+	}
+	return found
 }
 
 // Home makes a hive home with the marker and returns its path.

@@ -44,8 +44,11 @@ type Options struct {
 // Run starts one agent and writes its record. The result is the record.
 func Run(ctx context.Context, home string, options Options) output.Envelope {
 	logger := agent.Logger(options.Logger)
-	envelope := run(ctx, home, options, logger)
+	envelope, session := run(ctx, home, options, logger)
 	attrs := []any{"command", "agent spawn", "target", options.Name, "project_id", options.Project, "outcome", envelope.Outcome, "phase", envelope.Phase}
+	if session != "" {
+		attrs = append(attrs, "harness_session_id", session)
+	}
 	if envelope.Error != nil {
 		attrs = append(attrs, "error", fmt.Sprint(envelope.Error))
 	}
@@ -53,17 +56,19 @@ func Run(ctx context.Context, home string, options Options) output.Envelope {
 	return envelope
 }
 
-func run(ctx context.Context, home string, options Options, logger *slog.Logger) output.Envelope {
+// run returns the envelope and the harness session ID that herdr reports at
+// the end, or an empty ID.
+func run(ctx context.Context, home string, options Options, logger *slog.Logger) (output.Envelope, string) {
 	profile, prompt, message := validate(options)
 	if message != "" {
-		return agent.Failed("validate", message)
+		return agent.Failed("validate", message), ""
 	}
 	if err := checkName(ctx, home, options.Name, logger); err != nil {
-		return agent.Failed("name", err.Error())
+		return agent.Failed("name", err.Error()), ""
 	}
 	parent, err := agent.CallerName(home, options.CallerPane)
 	if err != nil {
-		return agent.Failed("caller", err.Error())
+		return agent.Failed("caller", err.Error()), ""
 	}
 
 	trust := profile.Trust()
@@ -88,7 +93,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		var project records.Project
 		project, err = loadProject(home, options.Project)
 		if err != nil {
-			return agent.Failed("project", err.Error())
+			return agent.Failed("project", err.Error()), ""
 		}
 		if options.Worktree == "" {
 			place, phase, err = placeInProject(ctx, project, env, logger)
@@ -99,7 +104,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if err != nil {
 		envelope := agent.Failed(phase, err.Error())
 		envelope.Effects = append(envelope.Effects, place.effects...)
-		return envelope
+		return envelope, ""
 	}
 	effects := place.effects
 	paneID := place.pane.PaneID
@@ -117,7 +122,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		if closeErr := herdr.PaneClose(ctx, paneID, herdr.WithLogger(logger)); closeErr == nil {
 			envelope.Effects = append(envelope.Effects, output.Effect{Resource: "pane", Path: paneID, Action: "closed"})
 		}
-		return envelope
+		return envelope, ""
 	}
 	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", argv)
 	effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "started"})
@@ -133,7 +138,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		StartedAt: time.Now().UTC(),
 	}
 	if err := agent.Save(home, record); err != nil {
-		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write record: " + err.Error(), Result: record}
+		return output.Envelope{Outcome: "partial", Phase: "record", Effects: effects, Error: "write record: " + err.Error(), Result: record}, ""
 	}
 	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "written"})
 
@@ -142,23 +147,27 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	}
 	info, err := waitReady(ctx, paneID, profile.ReadyTimeout(), logger)
 	if err != nil {
-		return partial("wait", fmt.Sprintf("agent %s in pane %s is not ready: %s; the prompt was not sent", record.Name, paneID, err))
+		return partial("wait", fmt.Sprintf("agent %s in pane %s is not ready: %s; the prompt was not sent", record.Name, paneID, err)), ""
 	}
+	session := agent.SessionID(info.AgentSession)
 	if info.AgentStatus == "blocked" {
-		return partial("wait", blockedMessage(record.Name, paneID))
+		return partial("wait", blockedMessage(record.Name, paneID)), session
 	}
 	if prompt != "" {
-		_, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: paneID, Text: prompt}, herdr.WithLogger(logger))
+		prompted, err := herdr.AgentPrompt(ctx, herdr.AgentPromptParams{Target: paneID, Text: prompt}, herdr.WithLogger(logger))
 		if agent.IsCode(err, herdr.CodeAgentBlocked) {
-			return partial("prompt", blockedMessage(record.Name, paneID))
+			return partial("prompt", blockedMessage(record.Name, paneID)), session
 		}
 		if err != nil {
-			return partial("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, paneID, err))
+			return partial("prompt", fmt.Sprintf("prompt to agent %s in pane %s: %s", record.Name, paneID, err)), session
+		}
+		if id := agent.SessionID(prompted.AgentSession); id != "" {
+			session = id
 		}
 		logger.Debug("agent prompted", "command", "agent spawn", "target", record.Name, "pane_id", paneID, hivelog.Body(prompt))
 		effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "prompted"})
 	}
-	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}
+	return output.Envelope{Outcome: "ok", Phase: "complete", Effects: effects, Error: nil, Result: record}, session
 }
 
 func blockedMessage(name, paneID string) string {
