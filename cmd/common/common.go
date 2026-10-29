@@ -88,16 +88,16 @@ func Logger(home, target string) (*slog.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-	caller, err := agent.CallerName(home, os.Getenv("HERDR_PANE_ID"))
-	if err != nil {
-		logger.Debug("caller lookup failed", "error", err.Error())
-	}
+	caller, lookupErr := agent.CallerName(home, os.Getenv("HERDR_PANE_ID"))
 	if caller == "" {
 		caller = "user"
 	}
 	logger = logger.With("agent_id", caller)
 	if target != "" {
 		logger = logger.With("target", target)
+	}
+	if lookupErr != nil {
+		logger.Debug("caller lookup failed", "error", lookupErr.Error())
 	}
 	return logger, nil
 }
