@@ -48,7 +48,7 @@ func Main(home string, in io.Reader, out io.Writer) error {
 	return Run(Options{
 		Home:   home,
 		Pane:   os.Getenv("HERDR_PANE_ID"),
-		Pick:   NewPick(in, out, ExecRunner),
+		Pick:   NewPick(in, out, ExecRunner, logger.With("command", "hive", "agent_id", Name)),
 		Exec:   ExecHarness,
 		Now:    time.Now,
 		Logger: logger,

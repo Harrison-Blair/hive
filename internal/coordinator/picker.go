@@ -3,6 +3,7 @@ package coordinator
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -304,11 +305,23 @@ func spinnerTick() tea.Cmd {
 	return tea.Tick(spinnerDelay, func(time.Time) tea.Msg { return spinnerMsg{} })
 }
 
+// logFailures wraps discover. It logs each discovery error in full with the
+// harness name, because the picker shows the error clipped.
+func logFailures(discover func(string) ([]string, error), logger *slog.Logger) func(string) ([]string, error) {
+	return func(harness string) ([]string, error) {
+		models, err := discover(harness)
+		if err != nil {
+			logger.Error("model discovery failed", "harness", harness, "error", err.Error())
+		}
+		return models, err
+	}
+}
+
 // NewPick returns the Pick function of Options. It runs the picker on in and
-// out with discovery through run.
-func NewPick(in io.Reader, out io.Writer, run Runner) func(Choice, bool) (Choice, bool, error) {
+// out with discovery through run, and logs each discovery error to logger.
+func NewPick(in io.Reader, out io.Writer, run Runner, logger *slog.Logger) func(Choice, bool) (Choice, bool, error) {
 	return func(last Choice, hasLast bool) (Choice, bool, error) {
-		discover := func(harness string) ([]string, error) { return Discover(harness, run) }
+		discover := logFailures(func(harness string) ([]string, error) { return Discover(harness, run) }, logger)
 		final, err := tea.NewProgram(NewPicker(last, hasLast, discover), tea.WithInput(in), tea.WithOutput(out)).Run()
 		if err != nil {
 			return Choice{}, false, err

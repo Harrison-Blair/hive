@@ -1,7 +1,10 @@
 package coordinator
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -372,5 +375,22 @@ func TestPickerBoxLinesHaveOneWidth(t *testing.T) {
 		if len([]rune(line)) != width {
 			t.Fatalf("line %q has width %d; want %d", line, len([]rune(line)), width)
 		}
+	}
+}
+
+func TestPickerLogsTheFullDiscoveryErrorAndShowsItClipped(t *testing.T) {
+	long := errors.New(`opencode models: exec: "opencode": executable file not found in $PATH`)
+	var out bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&out, nil))
+	m := enterAndDiscover(t, NewPicker(Choice{}, false, logFailures(fakeDiscover(nil, long), logger)))
+	if !strings.Contains(view(m), clip(long.Error(), maxErrorLen)) || strings.Contains(view(m), long.Error()) {
+		t.Fatalf("view does not show the clipped error:\n%s", view(m))
+	}
+	var event map[string]any
+	if err := json.Unmarshal(out.Bytes(), &event); err != nil {
+		t.Fatalf("log is not one JSON event: %v\n%s", err, out.String())
+	}
+	if event["error"] != long.Error() || event["harness"] != "claude" || event["level"] != "ERROR" {
+		t.Fatalf("log event = %v; want the full error and harness claude at ERROR", event)
 	}
 }
