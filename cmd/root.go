@@ -13,10 +13,13 @@ import (
 	"github.com/Harrison-Blair/hive/cmd/logs"
 	"github.com/Harrison-Blair/hive/cmd/project"
 	"github.com/Harrison-Blair/hive/cmd/version"
+	"github.com/Harrison-Blair/hive/internal/coordinator"
+	"github.com/Harrison-Blair/hive/internal/lib/home"
 	"github.com/spf13/cobra"
 )
 
-// NewRootCmd builds a fresh hive command tree. Bare hive prints the help text.
+// NewRootCmd builds a fresh hive command tree. Bare hive runs the coordinator
+// picker in the home.
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "hive",
@@ -25,7 +28,16 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return cmd.Help()
+			cwd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			resolved, err := home.Resolve(os.Getenv("HIVE_HOME"), cwd)
+			if err != nil {
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", err)
+				return &common.StatusError{Status: 1}
+			}
+			return coordinator.Main(resolved, cmd.InOrStdin(), cmd.OutOrStdout())
 		},
 	}
 	root.PersistentFlags().Bool("json", false, "write JSON output")

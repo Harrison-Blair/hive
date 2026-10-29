@@ -62,19 +62,29 @@ func newRootTestHome(t *testing.T) string {
 	return home
 }
 
-func TestBareHivePrintsHelp(t *testing.T) {
-	newRootTestHome(t)
+func TestBareHiveInHomeCtrlCQuitsWithNoRecord(t *testing.T) {
+	home := newRootTestHome(t)
 	var stdout, stderr bytes.Buffer
-	status := executeWithStreams(nil, strings.NewReader(""), &stdout, &stderr)
+	status := executeWithStreams(nil, strings.NewReader("\x03"), &stdout, &stderr)
 	if status != 0 {
 		t.Fatalf("status = %d; want 0; stderr %q", status, stderr.String())
 	}
-	got := stdout.String()
-	if !strings.Contains(got, "Usage:") || !strings.Contains(got, "Available Commands:") {
-		t.Fatalf("output %q is not the help text", got)
+	logs, err := filepath.Glob(filepath.Join(home, ".hive", "logs", "*.jsonl"))
+	if err != nil || len(logs) != 1 {
+		t.Fatalf("log files = %v, %v; want one", logs, err)
 	}
-	if strings.Contains(got, "\x1b[") {
-		t.Fatalf("output %q has terminal escapes; want no TUI", got)
+	events, err := os.ReadFile(logs[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(events), `"msg":"picker quit"`) {
+		t.Fatalf("log = %s; want a picker quit event", events)
+	}
+	if strings.Contains(stdout.String(), "Available Commands:") {
+		t.Fatalf("stdout = %q; want no help text", stdout.String())
+	}
+	if _, err := os.Stat(filepath.Join(home, ".hive", "agents", "coordinator.json")); !os.IsNotExist(err) {
+		t.Fatalf("coordinator record stat = %v; want none", err)
 	}
 }
 
@@ -111,4 +121,22 @@ func helpCommands(help string) []string {
 		}
 	}
 	return names
+}
+
+func TestBareHiveOutsideHomeFailsWithNoPicker(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("HIVE_HOME", "")
+	outside := t.TempDir()
+	t.Chdir(outside)
+	var stdout, stderr bytes.Buffer
+	status := executeWithStreams(nil, strings.NewReader(""), &stdout, &stderr)
+	if status == 0 {
+		t.Fatalf("status = 0; want non-zero; stdout %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "not a hive home") {
+		t.Fatalf("stderr = %q; want a not a hive home error", stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q; want no picker output", stdout.String())
+	}
 }
