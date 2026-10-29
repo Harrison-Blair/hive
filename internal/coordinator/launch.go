@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/agent"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
+	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
 )
 
 // Name is the agent name of the coordinator record.
@@ -29,6 +31,28 @@ type Options struct {
 	Exec   func(dir, binary string, args []string) error
 	Now    func() time.Time
 	Logger *slog.Logger
+}
+
+// Main runs bare hive in home with the picker on in and out, the pane of
+// HERDR_PANE_ID, and the real exec.
+func Main(home string, in io.Reader, out io.Writer) error {
+	requestID, err := hivelog.NewRequestID()
+	if err != nil {
+		return err
+	}
+	defer hivelog.SetRequestID(requestID)()
+	logger, err := hivelog.Open(home, "cli")
+	if err != nil {
+		return err
+	}
+	return Run(Options{
+		Home:   home,
+		Pane:   os.Getenv("HERDR_PANE_ID"),
+		Pick:   NewPick(in, out, ExecRunner),
+		Exec:   ExecHarness,
+		Now:    time.Now,
+		Logger: logger,
+	})
 }
 
 // Run shows the picker, saves the choice and the coordinator record, and then
