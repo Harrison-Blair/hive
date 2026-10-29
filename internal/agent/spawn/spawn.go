@@ -81,10 +81,9 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 
 	var place placement
 	var phase string
-	switch {
-	case options.Project == "":
+	if options.Project == "" {
 		place, phase, err = placeInCaller(ctx, options.CallerPane, options.Cwd, env, logger)
-	default:
+	} else {
 		var project records.Project
 		project, err = loadProject(home, options.Project)
 		if err != nil {
@@ -267,4 +266,19 @@ func start(ctx context.Context, params herdr.AgentStartParams, logger *slog.Logg
 		case <-time.After(busyPause):
 		}
 	}
+}
+
+// Text renders the effects of one spawn.
+func Text(envelope output.Envelope) string {
+	var lines []string
+	for _, effect := range envelope.Effects {
+		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
+	}
+	if record, ok := envelope.Result.(agent.Record); ok && envelope.Outcome == "ok" {
+		lines = append(lines, fmt.Sprintf("agent %s runs in pane %s", record.Name, record.Pane))
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return strings.Join(lines, "\n") + "\n"
 }
