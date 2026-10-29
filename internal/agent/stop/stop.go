@@ -49,10 +49,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if err != nil {
 		return agent.Failed("agent", err.Error()), ""
 	}
-	if options.RemoveWorktree {
-		if record.Worktree == "" {
-			return agent.Failed("validate", "agent "+record.Name+" has no worktree"), ""
-		}
+	if options.RemoveWorktree && record.Worktree != "" {
 		if message := checkClean(ctx, record.Worktree); message != "" {
 			return agent.Failed("worktree", message), ""
 		}
@@ -78,7 +75,10 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 		effects = append(effects, output.Effect{Resource: "pane", Path: record.Pane, Action: "closed"})
 	}
 
-	if options.RemoveWorktree {
+	switch {
+	case options.RemoveWorktree && record.Worktree == "":
+		effects = append(effects, output.Effect{Resource: "worktree", Path: "", Action: "none"})
+	case options.RemoveWorktree:
 		out, err := exec.CommandContext(ctx, "git", "-C", record.Worktree, "worktree", "remove", record.Worktree).CombinedOutput()
 		if err != nil {
 			message := fmt.Sprintf("git worktree remove %s: %s: %s", record.Worktree, err, strings.TrimSpace(string(out)))
@@ -111,6 +111,11 @@ func checkClean(ctx context.Context, path string) string {
 func Text(envelope output.Envelope) string {
 	var lines []string
 	for _, effect := range envelope.Effects {
+		if effect.Action == "none" {
+			record, _ := envelope.Result.(agent.Record)
+			lines = append(lines, fmt.Sprintf("no %s for %s", effect.Resource, record.Name))
+			continue
+		}
 		lines = append(lines, fmt.Sprintf("%s %s %s", effect.Action, effect.Resource, effect.Path))
 	}
 	if len(lines) == 0 {

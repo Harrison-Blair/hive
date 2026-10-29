@@ -197,7 +197,7 @@ func TestStopRemoveWorktreeRemovesCleanCheckoutAndKeepsBranch(t *testing.T) {
 	}
 }
 
-func TestStopRemoveWorktreeNeedsWorktreeAgent(t *testing.T) {
+func TestStopRemoveWorktreeWithoutWorktreeClosesPane(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	home := agenttest.Home(t)
 	fake.AddWorkspace("mine", "", false)
@@ -206,10 +206,16 @@ func TestStopRemoveWorktreeNeedsWorktreeAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 	envelope := stopRun(t, home, Options{Name: "kid", RemoveWorktree: true})
-	if envelope.Outcome != "failed" || !strings.Contains(errorText(envelope), "no worktree") {
+	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("envelope = %+v", envelope)
 	}
-	if _, ok := fake.Pane(pane.ID); !ok {
-		t.Fatalf("pane closed")
+	if _, ok := fake.Pane(pane.ID); ok {
+		t.Fatalf("pane %s still open", pane.ID)
+	}
+	if _, err := agent.Load(home, "kid"); !errors.Is(err, agent.ErrNotFound) {
+		t.Fatalf("record err = %v, want not found", err)
+	}
+	if text := Text(envelope); !strings.Contains(text, "no worktree for kid\n") {
+		t.Fatalf("text = %q, want the line no worktree for kid", text)
 	}
 }
