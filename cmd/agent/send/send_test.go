@@ -132,3 +132,40 @@ func TestSendCLILogsTheTargetOnAFailedCallerLookup(t *testing.T) {
 	execute(t, "send", "kid", "hi")
 	agenttest.CheckAgentFields(t, agenttest.CommandEvents(t, home, "agent send"), "user", "kid", "caller lookup failed", "command start", "command end")
 }
+
+// TestSendCLILogsTheLevelOfTheOutcome checks the level of the agent send
+// event in the log file: WARN for partial and ERROR for failed.
+func TestSendCLILogsTheLevelOfTheOutcome(t *testing.T) {
+	cases := []struct {
+		name, outcome, level string
+		args                 []string
+	}{
+		{"partial", "partial", "WARN", []string{"send", "--wait", "kid", "hi"}},
+		{"failed", "failed", "ERROR", []string{"send", "ghost", "hi"}},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			fake := agenttest.NewHerdr(t)
+			home := agenttest.Home(t)
+			t.Setenv("HIVE_HOME", home)
+			t.Setenv("HERDR_PANE_ID", "")
+			fake.AddWorkspace("mine", "", false)
+			kid := fake.AddPane("w1", "")
+			claudeAgent(t, fake, kid.ID)
+			fake.NoTurn = true
+			if err := agent.Save(home, agent.Record{Name: "kid", Pane: kid.ID, Harness: "claude"}); err != nil {
+				t.Fatal(err)
+			}
+			execute(t, test.args...)
+			for _, event := range agenttest.CommandEvents(t, home, "agent send") {
+				if event["msg"] == "agent send" {
+					if event["outcome"] != test.outcome || event["level"] != test.level {
+						t.Fatalf("agent send event = %v; want outcome %s at level %s", event, test.outcome, test.level)
+					}
+					return
+				}
+			}
+			t.Fatal("no agent send event")
+		})
+	}
+}
