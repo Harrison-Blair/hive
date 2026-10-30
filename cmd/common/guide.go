@@ -1,6 +1,8 @@
 package common
 
 import (
+	"strings"
+
 	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -16,8 +18,7 @@ func Guide(root *cobra.Command) string {
 			return
 		}
 		commands = append(commands, guide.Command{
-			Path:  command.CommandPath(),
-			Use:   command.UseLine(),
+			Use:   strings.TrimSuffix(command.UseLine(), " [flags]"),
 			Short: command.Short,
 			Flags: guideFlags(command.LocalNonPersistentFlags()),
 		})

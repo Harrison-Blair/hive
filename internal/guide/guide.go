@@ -14,9 +14,8 @@ var notes string
 
 // Command is one command of the guide.
 type Command struct {
-	// Path is the full command name, for example "hive agent spawn".
-	Path string
-	// Use is the usage line.
+	// Use is the usage line with no flags part, for example
+	// "hive agent send NAME TEXT".
 	Use   string
 	Short string
 	Flags []Flag
@@ -39,14 +38,16 @@ type Result struct {
 // Notes returns the usage notes.
 func Notes() string { return notes }
 
-// Render returns the guide as Markdown: the global flags, each command, and
-// then the usage notes.
+// Render returns the guide as dense Markdown: the global flags, one line for
+// each command with one indented line for each of its flags, and then the
+// usage notes. The guide goes on one start command line, which herdr types
+// into a shell, so each byte counts.
 func Render(commands []Command, global []Flag) string {
 	var b strings.Builder
-	b.WriteString("# hive guide\n\n## Commands\n\nEach command also takes `-h, --help`.\n\nGlobal flags:\n\n")
+	b.WriteString("# hive guide\n## Commands\nEach command takes -h/--help. Global flags:\n")
 	writeFlags(&b, global)
 	for _, command := range commands {
-		fmt.Fprintf(&b, "### %s\n\n`%s`\n\n%s\n\n", command.Path, command.Use, command.Short)
+		fmt.Fprintf(&b, "%s: %s\n", command.Use, command.Short)
 		writeFlags(&b, command.Flags)
 	}
 	b.WriteString(notes)
@@ -54,21 +55,17 @@ func Render(commands []Command, global []Flag) string {
 }
 
 func writeFlags(b *strings.Builder, flags []Flag) {
-	if len(flags) == 0 {
-		return
-	}
 	for _, flag := range flags {
 		name := "--" + flag.Name
 		if flag.Shorthand != "" {
-			name = "-" + flag.Shorthand + ", " + name
+			name = "-" + flag.Shorthand + "/" + name
 		}
 		kind := flag.Type
 		if flag.Default != "" && flag.Default != "false" {
-			kind += ", default " + flag.Default
+			kind += "=" + flag.Default
 		}
-		fmt.Fprintf(b, "- `%s` (%s): %s\n", name, kind, flag.Usage)
+		fmt.Fprintf(b, "  %s %s: %s\n", name, kind, flag.Usage)
 	}
-	b.WriteString("\n")
 }
 
 // OneLine replaces each newline with the two characters \n. Herdr rejects a
@@ -82,8 +79,14 @@ func TOMLString(text string) string {
 	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`).Replace(text) + `"`
 }
 
+// Placeholder returns the text "<guide N bytes>" that a log event shows in
+// place of the guide argument value.
+func Placeholder(value string) string {
+	return fmt.Sprintf("<guide %d bytes>", len(value))
+}
+
 // Redact returns a copy of argv with the last value of guideArgs replaced by
-// "<guide N bytes>", so that a log line does not carry the guide.
+// its Placeholder, so that a log line does not carry the guide.
 func Redact(argv, guideArgs []string) []string {
 	redacted := append([]string(nil), argv...)
 	if len(guideArgs) == 0 {
@@ -92,7 +95,7 @@ func Redact(argv, guideArgs []string) []string {
 	value := guideArgs[len(guideArgs)-1]
 	for i, arg := range redacted {
 		if arg == value {
-			redacted[i] = fmt.Sprintf("<guide %d bytes>", len(value))
+			redacted[i] = Placeholder(value)
 		}
 	}
 	return redacted
