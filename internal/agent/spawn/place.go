@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
+	"strings"
 
+	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
@@ -37,8 +39,8 @@ func placeInCaller(ctx context.Context, callerPane, cwd, label string, env map[s
 
 // placeInProject opens a tab with label in the checkout workspace of project,
 // or takes the root pane of the checkout workspace that it makes.
-func placeInProject(ctx context.Context, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
-	workspace, created, effects, err := checkoutWorkspace(ctx, project, logger)
+func placeInProject(ctx context.Context, home string, project records.Project, label string, env map[string]string, logger *slog.Logger) (placement, string, error) {
+	workspace, created, effects, err := checkoutWorkspace(ctx, home, project, logger)
 	if err != nil {
 		return placement{}, "workspace", err
 	}
@@ -51,11 +53,15 @@ func placeInProject(ctx context.Context, project records.Project, label string, 
 // placeInWorktree makes a worktree of project from its checkout workspace and
 // takes the root pane of the new worktree workspace.
 func placeInWorktree(ctx context.Context, home string, project records.Project, name string, logger *slog.Logger) (placement, string, error) {
-	workspace, _, effects, err := checkoutWorkspace(ctx, project, logger)
+	path := filepath.Join(home, "projects", project.ID, "worktrees", name)
+	export := exportHome(home)
+	if err := harness.CheckStartLine(export, nil); err != nil {
+		return placement{}, "validate", fmt.Errorf("home path too long for the worktree shell: %w", err)
+	}
+	workspace, _, effects, err := checkoutWorkspace(ctx, home, project, logger)
 	if err != nil {
 		return placement{}, "workspace", err
 	}
-	path := filepath.Join(home, "projects", project.ID, "worktrees", name)
 	created, err := herdr.WorktreeCreate(ctx, herdr.WorktreeCreateParams{
 		WorkspaceID: workspace,
 		Branch:      name,
@@ -66,7 +72,18 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 		return placement{effects: effects}, "worktree", fmt.Errorf("worktree create %s: %w", path, err)
 	}
 	effects = append(effects, output.Effect{Resource: "worktree", Path: path, Action: "created"})
+	// worktree.create takes no env, so the shell of the root pane exports
+	// the home before agent.start types the start line.
+	if err := herdr.PaneRun(ctx, created.RootPane.PaneID, export, herdr.WithLogger(logger)); err != nil {
+		return placement{effects: effects}, "env", fmt.Errorf("export HIVE_HOME in pane %s: %w", created.RootPane.PaneID, err)
+	}
 	return placement{pane: created.RootPane, cwd: path, worktree: path, rootPane: true, effects: effects}, "", nil
+}
+
+// exportHome returns the shell line that exports home as HIVE_HOME, with the
+// value in single quotes.
+func exportHome(home string) string {
+	return "export HIVE_HOME='" + strings.ReplaceAll(home, "'", `'\''`) + "'"
 }
 
 // checkoutWorkspace returns the ID of the workspace that herdr has open on the
@@ -75,7 +92,7 @@ func placeInWorktree(ctx context.Context, home string, project records.Project, 
 // workspace.list metadata is absent for a workspace that workspace.create
 // made (herdr 0.9.5), so it is not used. When none is open, checkoutWorkspace
 // makes one with the herdr default label and returns its root pane too.
-func checkoutWorkspace(ctx context.Context, project records.Project, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
+func checkoutWorkspace(ctx context.Context, home string, project records.Project, logger *slog.Logger) (string, *herdr.PaneInfo, []output.Effect, error) {
 	listed, err := herdr.WorktreeList(ctx, herdr.WorktreeListParams{Cwd: project.Path}, herdr.WithLogger(logger))
 	if err != nil {
 		return "", nil, nil, fmt.Errorf("worktree list %s: %w", project.Path, err)
@@ -85,7 +102,7 @@ func checkoutWorkspace(ctx context.Context, project records.Project, logger *slo
 			return tree.OpenWorkspaceID, nil, nil, nil
 		}
 	}
-	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path}, herdr.WithLogger(logger))
+	created, err := herdr.WorkspaceCreate(ctx, herdr.WorkspaceCreateParams{Cwd: project.Path, Env: map[string]string{"HIVE_HOME": home}}, herdr.WithLogger(logger))
 	if err != nil {
 		return "", nil, nil, fmt.Errorf("workspace create %s: %w", project.Path, err)
 	}

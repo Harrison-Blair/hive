@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 
@@ -32,9 +33,9 @@ type Options struct {
 	// Pick shows the picker with the last choice. ok is false when the user
 	// quits.
 	Pick func(last Choice, hasLast bool) (choice Choice, ok bool, err error)
-	// Exec replaces this process with the harness. ExecHarness is the
-	// production value.
-	Exec func(dir, binary string, args []string) error
+	// Exec replaces this process with the harness, in dir and with the
+	// environment env. ExecHarness is the production value.
+	Exec func(dir, binary string, args, env []string) error
 	// Guide is the hive guide. The harness gets it in its system prompt.
 	Guide  string
 	Now    func() time.Time
@@ -114,7 +115,7 @@ func Run(opts Options) error {
 	guideArgs := profile.GuideArgs(opts.Guide)
 	args := profile.Args(choice.Model, guideArgs)
 	logger.Info("exec harness", "binary", binary, "args", guide.Redact(args, guideArgs), "cwd", opts.Dir)
-	if err := opts.Exec(opts.Dir, binary, args); err != nil {
+	if err := opts.Exec(opts.Dir, binary, args, homeEnv(os.Environ(), opts.Home)); err != nil {
 		logger.Error("exec harness failed", "binary", binary, "error", err.Error())
 		return fmt.Errorf("start %s: %w", binary, err)
 	}
@@ -137,9 +138,21 @@ func labelTab(pane string, logger *slog.Logger) {
 	logger.Info("coordinator tab labeled", "pane", pane, "tab", info.TabID)
 }
 
-// ExecHarness changes to dir and replaces this process with binary. It
-// returns only on an error.
-func ExecHarness(dir, binary string, args []string) error {
+// homeEnv returns environ with HIVE_HOME set to home, so the hive commands of
+// the harness use the same home when it runs outside the home.
+func homeEnv(environ []string, home string) []string {
+	env := make([]string, 0, len(environ)+1)
+	for _, pair := range environ {
+		if !strings.HasPrefix(pair, "HIVE_HOME=") {
+			env = append(env, pair)
+		}
+	}
+	return append(env, "HIVE_HOME="+home)
+}
+
+// ExecHarness changes to dir and replaces this process with binary and env.
+// It returns only on an error.
+func ExecHarness(dir, binary string, args, env []string) error {
 	path, err := exec.LookPath(binary)
 	if err != nil {
 		return err
@@ -147,5 +160,5 @@ func ExecHarness(dir, binary string, args []string) error {
 	if err := os.Chdir(dir); err != nil {
 		return err
 	}
-	return syscall.Exec(path, append([]string{binary}, args...), os.Environ())
+	return syscall.Exec(path, append([]string{binary}, args...), env)
 }

@@ -17,7 +17,7 @@ import (
 
 type execCall struct {
 	dir, binary string
-	args        []string
+	args, env   []string
 }
 
 // launchOptions runs Run in the root pane of a fake herdr workspace, so no
@@ -31,8 +31,8 @@ func launchOptions(t *testing.T, home, dir string, pick func(Choice, bool) (Choi
 		Dir:  dir,
 		Pane: pane.ID,
 		Pick: pick,
-		Exec: func(dir, binary string, args []string) error {
-			*calls = append(*calls, execCall{dir, binary, args})
+		Exec: func(dir, binary string, args, env []string) error {
+			*calls = append(*calls, execCall{dir, binary, args, env})
 			return nil
 		},
 		Now:    func() time.Time { return time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC) },
@@ -125,7 +125,7 @@ func TestRunReturnsPickerAndExecErrors(t *testing.T) {
 		t.Fatalf("Run = %v; want picker: tty gone", err)
 	}
 	opts = launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
-	opts.Exec = func(string, string, []string) error { return errors.New("no such file") }
+	opts.Exec = func(string, string, []string, []string) error { return errors.New("no such file") }
 	if err := Run(opts); err == nil {
 		t.Fatal("Run = nil; want the exec error")
 	}
@@ -151,12 +151,12 @@ func TestRunLabelsItsTabCoordinatorBeforeExec(t *testing.T) {
 	fake := agenttest.NewHerdr(t)
 	_, pane := fake.AddWorkspace("my workspace", home, false)
 	opts.Pane = pane.ID
-	opts.Exec = func(dir, binary string, args []string) error {
+	opts.Exec = func(dir, binary string, args, env []string) error {
 		got, _ := fake.Pane(pane.ID)
 		if got.TabLabel != "coordinator" {
 			t.Errorf("tab label at exec = %q, want coordinator", got.TabLabel)
 		}
-		calls = append(calls, execCall{dir, binary, args})
+		calls = append(calls, execCall{dir, binary, args, env})
 		return nil
 	}
 	if err := Run(opts); err != nil {
@@ -231,5 +231,30 @@ func TestRunExecsTheHarnessWithTheGuide(t *testing.T) {
 	}
 	if !strings.Contains(logs.String(), `"<guide 40 bytes>"`) || strings.Contains(logs.String(), "say ") {
 		t.Fatalf("logs = %s; want the guide placeholder and no guide text", logs.String())
+	}
+}
+
+func TestRunGivesTheHarnessTheHome(t *testing.T) {
+	t.Setenv("HIVE_HOME", "relative-home")
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 {
+		t.Fatalf("exec calls = %+v; want one", calls)
+	}
+	var homes []string
+	for _, pair := range calls[0].env {
+		if value, ok := strings.CutPrefix(pair, "HIVE_HOME="); ok {
+			homes = append(homes, value)
+		}
+	}
+	if !slices.Equal(homes, []string{home}) {
+		t.Fatalf("HIVE_HOME values in the harness environment = %q; want only %q", homes, home)
+	}
+	if !slices.ContainsFunc(calls[0].env, func(pair string) bool { return strings.HasPrefix(pair, "PATH=") }) {
+		t.Fatalf("harness environment = %q; want the process environment kept", calls[0].env)
 	}
 }
