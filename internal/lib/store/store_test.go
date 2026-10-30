@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,14 +18,35 @@ func TestWriteInProcessesWaitForTheLock(t *testing.T) {
 	release := holdStateLock(t, home)
 	defer release()
 	const processes, iterations = 4, 20
+	ready := t.TempDir()
 	done := make(chan error, 1)
-	go func() { done <- runStoreHelpers(home, "write", processes, iterations) }()
+	go func() {
+		done <- runStoreHelpers(home, "write", processes, iterations, "HIVE_STORE_READY="+ready)
+	}()
 
-	// The helpers start and ask for the lock well within this hold, which is
-	// shorter than the two second lock wait.
-	time.Sleep(time.Second)
+	// Each helper writes a ready file right before its first WriteIn. Hold the
+	// lock until each helper is ready, however slowly the helpers start.
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		entries, err := os.ReadDir(ready)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(entries) == processes {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("%d of %d helpers ready after 30s", len(entries), processes)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if entries, err := os.ReadDir(filepath.Join(home, "tasks")); err == nil && len(entries) > 0 {
 		t.Fatalf("helpers wrote %d entries while another holder had the lock", len(entries))
+	}
+	// A helper whose first WriteIn returns before this marker exists wrote
+	// while the lock was held, and fails.
+	if err := os.WriteFile(filepath.Join(home, "released"), nil, 0o644); err != nil {
+		t.Fatal(err)
 	}
 	release()
 	if err := <-done; err != nil {
@@ -68,15 +90,31 @@ func TestStoreProcessHelper(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if mode != "write" {
+		t.Fatalf("unknown helper mode %q", mode)
+	}
 	id := fmt.Sprintf("p%d", os.Getpid())
-	for i := range iterations {
-		switch mode {
-		case "write":
-			if err := store.WriteIn([]string{"tasks"}, id, map[string]int{"count": i + 1}); err != nil {
-				t.Fatal(err)
-			}
-		default:
-			t.Fatalf("unknown helper mode %q", mode)
+	if err := os.WriteFile(filepath.Join(os.Getenv("HIVE_STORE_READY"), id), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// The parent holds the lock until each helper is ready, which can take
+	// longer than one lock wait on a loaded host, so the first write retries
+	// a lock timeout.
+	for attempt := 1; ; attempt++ {
+		err := store.WriteIn([]string{"tasks"}, id, map[string]int{"count": 1})
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, errLockTimeout) || attempt == 20 {
+			t.Fatal(err)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(home, "released")); err != nil {
+		t.Fatalf("first WriteIn returned while the parent held the lock: %v", err)
+	}
+	for i := 1; i < iterations; i++ {
+		if err := store.WriteIn([]string{"tasks"}, id, map[string]int{"count": i + 1}); err != nil {
+			t.Fatal(err)
 		}
 	}
 }
@@ -141,7 +179,7 @@ func TestAtomicWriteReadersSeeCompleteRecord(t *testing.T) {
 	}
 }
 
-func runStoreHelpers(home, mode string, processes, iterations int) error {
+func runStoreHelpers(home, mode string, processes, iterations int, env ...string) error {
 	var wg sync.WaitGroup
 	errCh := make(chan error, processes)
 	for range processes {
@@ -154,6 +192,7 @@ func runStoreHelpers(home, mode string, processes, iterations int) error {
 				"HIVE_STORE_HOME="+home,
 				fmt.Sprintf("HIVE_STORE_ITERATIONS=%d", iterations),
 			)
+			command.Env = append(command.Env, env...)
 			if output, err := command.CombinedOutput(); err != nil {
 				errCh <- fmt.Errorf("helper failed: %w: %s", err, output)
 			}

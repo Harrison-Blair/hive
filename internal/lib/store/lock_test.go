@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -79,17 +80,18 @@ func TestWriteInWaitsForLockRelease(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	release := holdStateLock(t, store.home)
 	defer release()
+	var released atomic.Bool
 	go func() {
 		time.Sleep(300 * time.Millisecond)
+		released.Store(true)
 		release()
 	}()
 
-	start := time.Now()
 	if err := store.WriteIn([]string{"tasks"}, "one", map[string]int{"value": 1}); err != nil {
 		t.Fatalf("WriteIn() error = %v; want no error", err)
 	}
-	if elapsed := time.Since(start); elapsed < 250*time.Millisecond {
-		t.Fatalf("WriteIn() wrote after %v; want after the holder released the lock", elapsed)
+	if !released.Load() {
+		t.Fatal("WriteIn() returned while another holder had the lock")
 	}
 }
 
