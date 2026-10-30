@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -30,14 +31,17 @@ type Options struct {
 	Pick func(last Choice, hasLast bool) (choice Choice, ok bool, err error)
 	// Exec replaces this process with the harness. ExecHarness is the
 	// production value.
-	Exec   func(dir, binary string, args []string) error
+	Exec func(dir, binary string, args []string) error
+	// Guide is the hive guide. The harness gets it in its system prompt.
+	Guide  string
 	Now    func() time.Time
 	Logger *slog.Logger
 }
 
 // Main runs bare hive in home with the picker on in and out, the pane of
-// HERDR_PANE_ID, and the real exec.
-func Main(home string, in io.Reader, out io.Writer) error {
+// HERDR_PANE_ID, and the real exec. The harness gets guideText in its system
+// prompt.
+func Main(home, guideText string, in io.Reader, out io.Writer) error {
 	requestID, err := hivelog.NewRequestID()
 	if err != nil {
 		return err
@@ -52,6 +56,7 @@ func Main(home string, in io.Reader, out io.Writer) error {
 		Pane:   os.Getenv("HERDR_PANE_ID"),
 		Pick:   NewPick(in, out, ExecRunner, logger.With("command", "hive", "agent_id", Name)),
 		Exec:   ExecHarness,
+		Guide:  guideText,
 		Now:    time.Now,
 		Logger: logger,
 	})
@@ -102,8 +107,9 @@ func Run(opts Options) error {
 		labelTab(opts.Pane, logger)
 	}
 	binary := profile.ProcessNames()[0]
-	args := profile.Args(choice.Model, nil)
-	logger.Info("exec harness", "binary", binary, "args", args, "cwd", opts.Home)
+	guideArgs := profile.GuideArgs(opts.Guide)
+	args := profile.Args(choice.Model, guideArgs)
+	logger.Info("exec harness", "binary", binary, "args", guide.Redact(args, guideArgs), "cwd", opts.Home)
 	if err := opts.Exec(opts.Home, binary, args); err != nil {
 		logger.Error("exec harness failed", "binary", binary, "error", err.Error())
 		return fmt.Errorf("start %s: %w", binary, err)

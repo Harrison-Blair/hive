@@ -212,3 +212,22 @@ func TestRunWithoutPaneDoesNotLabelATab(t *testing.T) {
 		t.Fatalf("herdr calls = %d; want none", got)
 	}
 }
+
+func TestRunExecsTheHarnessWithTheGuide(t *testing.T) {
+	home := t.TempDir()
+	var calls []execCall
+	var logs strings.Builder
+	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"codex", "gpt-x"}, true, nil }, &calls)
+	opts.Guide = "say \"hi\"\nnow"
+	opts.Logger = slog.New(slog.NewJSONHandler(&logs, nil))
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-x", "-c", `developer_instructions="say \"hi\"\nnow"`}
+	if len(calls) != 1 || !slices.Equal(calls[0].args, want) {
+		t.Fatalf("exec calls = %+v; want args %q", calls, want)
+	}
+	if !strings.Contains(logs.String(), `"<guide 40 bytes>"`) || strings.Contains(logs.String(), "say ") {
+		t.Fatalf("logs = %s; want the guide placeholder and no guide text", logs.String())
+	}
+}

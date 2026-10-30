@@ -717,3 +717,38 @@ func TestSpawnRecordFailureKeepsTheTabRenameError(t *testing.T) {
 		t.Fatalf("error = %q, want the record error and then the rename error", message)
 	}
 }
+
+func TestSpawnStartsTheHarnessWithTheGuide(t *testing.T) {
+	fake := agenttest.NewHerdr(t)
+	home := agenttest.Home(t)
+	_, callerPane := fake.AddWorkspace("mine", "", false)
+	log := agenttest.NewLog(t)
+	options := base("kid")
+	options.Harness = "claude"
+	options.Model = "m"
+	options.CallerPane = callerPane.ID
+	options.Guide = "line one\nline two"
+	options.Logger = log.Logger
+
+	if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	record, _ := agent.Load(home, "kid")
+	pane, _ := fake.Pane(record.Pane)
+	want := []string{"--dangerously-skip-permissions", "--model", "m", "--append-system-prompt", `line one\nline two`}
+	if !slices.Equal(pane.Args, want) {
+		t.Fatalf("agent.start args = %q; want %q", pane.Args, want)
+	}
+	if !slices.Equal(pane.Prompts, []string{"do the work"}) {
+		t.Fatalf("prompts = %q; want the brief unchanged", pane.Prompts)
+	}
+	argv, _ := log.Event("agent started")["argv"].([]any)
+	if len(argv) == 0 || argv[len(argv)-1] != "<guide 18 bytes>" {
+		t.Fatalf("agent started argv = %q; want the guide placeholder last", argv)
+	}
+	for _, arg := range argv {
+		if strings.Contains(arg.(string), "line one") {
+			t.Fatalf("agent started argv = %q; want no guide text", argv)
+		}
+	}
+}

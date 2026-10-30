@@ -43,6 +43,7 @@ func New() *cobra.Command {
 				Worktree:   value("worktree"),
 				CallerPane: os.Getenv("HERDR_PANE_ID"),
 				Cwd:        cwd,
+				Guide:      common.Guide(cmd.Root()),
 				Logger:     logger,
 			})
 			return envelope, agentspawn.Text(envelope), nil

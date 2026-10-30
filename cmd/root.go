@@ -11,6 +11,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/cmd/agent"
 	"github.com/Harrison-Blair/hive/cmd/common"
+	"github.com/Harrison-Blair/hive/cmd/guide"
 	"github.com/Harrison-Blair/hive/cmd/homeinit"
 	"github.com/Harrison-Blair/hive/cmd/logs"
 	"github.com/Harrison-Blair/hive/cmd/project"
@@ -26,7 +27,7 @@ import (
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "hive",
-		Short:         "hive",
+		Short:         "pick a harness and a model, then run the coordinator in this pane",
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -40,11 +41,11 @@ func NewRootCmd() *cobra.Command {
 				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hive: %s\n", err)
 				return &common.StatusError{Status: 1}
 			}
-			return coordinator.Main(resolved, cmd.InOrStdin(), cmd.OutOrStdout())
+			return coordinator.Main(resolved, common.Guide(cmd.Root()), cmd.InOrStdin(), cmd.OutOrStdout())
 		},
 	}
 	root.PersistentFlags().Bool("json", false, "write JSON output")
-	root.AddCommand(version.New(), project.New(), logs.New(), homeinit.New(), agent.New())
+	root.AddCommand(version.New(), project.New(), logs.New(), homeinit.New(), agent.New(), guide.New())
 	return root
 }
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/agent"
+	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/harness"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 	hivelog "github.com/Harrison-Blair/hive/internal/lib/log"
@@ -38,7 +39,9 @@ type Options struct {
 	// CallerPane is the HERDR_PANE_ID of the caller.
 	CallerPane string
 	// Cwd is the directory of a new tab when Project is empty.
-	Cwd    string
+	Cwd string
+	// Guide is the hive guide. The harness gets it in its system prompt.
+	Guide  string
 	Logger *slog.Logger
 }
 
@@ -127,11 +130,12 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		return message + " (also: tab label: " + labelErr + ")"
 	}
 
+	guideArgs := profile.GuideArgs(options.Guide)
 	argv, err := start(ctx, herdr.AgentStartParams{
 		Name:      options.Name,
 		Kind:      profile.Kind(),
 		PaneID:    paneID,
-		Args:      profile.Args(options.Model, extra),
+		Args:      profile.Args(options.Model, append(extra, guideArgs...)),
 		TimeoutMS: uint64(profile.StartTimeout() / time.Millisecond),
 	}, logger, session)
 	if err != nil {
@@ -142,7 +146,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 		}
 		return envelope
 	}
-	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", argv)
+	logger.Debug("agent started", "command", "agent spawn", "target", options.Name, "pane_id", paneID, "argv", guide.Redact(argv, guideArgs))
 	effects = append(effects, output.Effect{Resource: "agent", Path: paneID, Action: "started"})
 
 	record := agent.Record{
