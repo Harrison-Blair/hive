@@ -13,7 +13,7 @@ import (
 )
 
 // schemaVersion is the only home schema version that this build reads.
-const schemaVersion = 4
+const schemaVersion = 5
 
 const schemaName = "schema.json"
 

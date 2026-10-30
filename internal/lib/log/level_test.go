@@ -27,7 +27,7 @@ func TestOutcomeSetsTheLevel(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", clock.Local().Format("2006-01-02")+".jsonl"))
+	data, err := os.ReadFile(filepath.Join(home, "logs", clock.Local().Format("2006-01-02")+".jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}

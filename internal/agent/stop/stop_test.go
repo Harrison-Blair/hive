@@ -243,7 +243,7 @@ func TestStopRemoveWorktreeWithoutWorktreeHasNoWorktreeEffect(t *testing.T) {
 	}
 	want := []output.Effect{
 		{Resource: "pane", Path: pane.ID, Action: "closed"},
-		{Resource: "record", Path: ".hive/agents/kid.json", Action: "removed"},
+		{Resource: "record", Path: "agents/kid.json", Action: "removed"},
 	}
 	if !slices.Equal(got.Effects, want) {
 		t.Fatalf("effects = %+v, want %+v", got.Effects, want)

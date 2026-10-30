@@ -11,7 +11,7 @@ import (
 
 func TestReadInPathTypesLinux(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -25,16 +25,9 @@ type Store struct {
 	home string
 }
 
-// Open creates the state directory if it does not exist. It rejects a static
-// symbolic link or a wrong type at the .hive ancestor or the state root.
+// Open creates the home if it does not exist and checks its schema.
 func Open(home string) (*Store, error) {
 	store := &Store{home: home}
-	if err := store.checkHive(); err != nil {
-		return nil, err
-	}
-	if err := store.checkRoot(); err != nil {
-		return nil, err
-	}
 	if err := os.MkdirAll(store.stateDir(), 0o755); err != nil {
 		return nil, err
 	}
@@ -44,8 +37,9 @@ func Open(home string) (*Store, error) {
 	return store, nil
 }
 
+// stateDir is the root of the records, the lock, and the schema: the home.
 func (s *Store) stateDir() string {
-	return filepath.Join(s.home, ".hive", "state")
+	return s.home
 }
 
 func (s *Store) lockPath() string {
@@ -247,6 +241,49 @@ func (s *Store) listInUnlocked(collection []string, include func(filename string
 	return found, nil
 }
 
+// ListEach reads the record id in each immediate subdirectory of collection,
+// in name order, without a lock. It skips a subdirectory without the record.
+func (s *Store) ListEach(collection []string, id string) ([]json.RawMessage, error) {
+	dir, err := s.collectionPath(collection)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.checkList(dir, collection); err != nil {
+		return nil, err
+	}
+	entries, err := os.ReadDir(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return []json.RawMessage{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	found := []json.RawMessage{}
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.Type().IsRegular() || validateComponent("collection", name) != nil {
+			continue
+		}
+		sub := append(append([]string{}, collection...), name)
+		path, err := s.recordPathIn(sub, id)
+		if err != nil {
+			return nil, err
+		}
+		if err := s.checkRead(path, sub); err != nil {
+			return nil, err
+		}
+		data, err := readRecordFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		found = append(found, json.RawMessage(data))
+	}
+	return found, nil
+}
+
 func (s *Store) writeData(kind, id string, data []byte) error {
 	path, err := s.recordPath(kind, id)
 	if err != nil {
@@ -343,12 +380,6 @@ func (s *Store) collectionPath(collection []string) (string, error) {
 }
 
 func (s *Store) checkRead(path string, collection []string) error {
-	if err := s.checkHive(); err != nil {
-		return err
-	}
-	if err := s.checkRoot(); err != nil {
-		return err
-	}
 	if err := s.checkLock(); err != nil {
 		return err
 	}
@@ -359,46 +390,10 @@ func (s *Store) checkRead(path string, collection []string) error {
 }
 
 func (s *Store) checkList(dir string, collection []string) error {
-	if err := s.checkHive(); err != nil {
-		return err
-	}
-	if err := s.checkRoot(); err != nil {
-		return err
-	}
 	if err := s.checkLock(); err != nil {
 		return err
 	}
 	return checkDirs(s.stateDir(), collection)
-}
-
-func (s *Store) checkHive() error {
-	path := filepath.Join(s.home, ".hive")
-	info, err := os.Lstat(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
-		return fmt.Errorf("store path invalid: %s", path)
-	}
-	return nil
-}
-
-func (s *Store) checkRoot() error {
-	root := s.stateDir()
-	info, err := os.Lstat(root)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
-		return fmt.Errorf("store path invalid: %s", root)
-	}
-	return nil
 }
 
 func (s *Store) checkLock() error {

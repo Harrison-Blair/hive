@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New creates the guide command. It prints the guide also outside a home;
-// only in a home does it log the command.
+// New creates the guide command. It logs the command only when the home
+// directory exists, so it never creates a home just to print the guide.
 func New() *cobra.Command {
 	return &cobra.Command{
 		Use:   "guide",
@@ -23,8 +23,12 @@ func New() *cobra.Command {
 			text := common.Guide(cmd.Root())
 			envelope := output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Result: guide.Result{Text: text}}
 			cwd, err := os.Getwd()
+			resolved := ""
 			if err == nil {
-				_, err = home.Resolve(os.Getenv("HIVE_HOME"), cwd)
+				resolved, err = home.Resolve(os.Getenv("HIVE_HOME"), cwd)
+			}
+			if err == nil {
+				_, err = os.Stat(resolved)
 			}
 			if err != nil {
 				jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")

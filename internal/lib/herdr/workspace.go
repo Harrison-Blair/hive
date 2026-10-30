@@ -23,9 +23,10 @@ type WorkspaceCloseParams struct {
 
 // WorkspaceCreateParams is one workspace.create request.
 type WorkspaceCreateParams struct {
-	Cwd   string `json:"cwd,omitempty"`
-	Label string `json:"label,omitempty"`
-	Focus bool   `json:"focus"`
+	Cwd   string            `json:"cwd,omitempty"`
+	Label string            `json:"label,omitempty"`
+	Focus bool              `json:"focus"`
+	Env   map[string]string `json:"env,omitempty"`
 }
 
 // WorkspaceCreated is the new workspace, its root tab, and its root pane.

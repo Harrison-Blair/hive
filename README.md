@@ -5,8 +5,21 @@ Hive is a small Go CLI that starts coding agents in
 record of each agent, opens project workspaces and Git worktrees, and sends
 prompts between agents.
 
-The home is a checkout of this repository. Hive builds hive: this checkout is
-the home and the first registered project.
+Hive keeps its state in the home: `$HIVE_HOME` when that variable is set and
+not empty, otherwise `~/.hive`. Hive creates the home when it first needs it.
+Hive works from any directory and needs no setup step.
+
+```text
+<home>/
+├─ projects/<id>/project.json        project record
+├─ projects/<id>/worktrees/<name>/   agent worktree of spawn --worktree
+├─ agents/<name>.json                agent records
+├─ logs/YYYY-MM-DD.jsonl             log events
+├─ coordinator-choice.json           last picker choice
+├─ tmp/                              scratch files
+├─ lock                              store lock
+└─ schema.json                       home schema version
+```
 
 ## Requirements
 
@@ -20,16 +33,9 @@ the home and the first registered project.
 
 ## Install
 
-Replace `vX.Y.Z` with the release version, for example `v0.1.0`. The binary and
-the home must use the same version.
+Replace `vX.Y.Z` with the release version, for example `v0.1.0`.
 
-1. Clone the repository at the tag. The clone is your home.
-
-   ```sh
-   git clone --branch vX.Y.Z https://github.com/Harrison-Blair/hive.git ~/hive
-   ```
-
-2. Get the binary of the same tag. Use the release archive, or build it with
+1. Get the binary. Use the release archive, or build it with
    `go install`.
 
    From the release archive (use `arm64` in place of `amd64` on arm64):
@@ -48,7 +54,7 @@ the home must use the same version.
    go install github.com/Harrison-Blair/hive@vX.Y.Z
    ```
 
-3. Put the binary on your `PATH`. For the archive:
+2. Put the binary on your `PATH`. For the archive:
 
    ```sh
    install -m 0755 hive ~/.local/bin/hive
@@ -57,42 +63,24 @@ the home must use the same version.
    `go install` writes the binary to `$(go env GOPATH)/bin`. Add that directory
    to your `PATH` if it is not there.
 
-4. Run `hive init` in the clone. It writes the home path to
-   `~/.config/hive/config.toml`.
+3. Check the binary.
 
    ```sh
-   cd ~/hive
-   hive init
    hive version
    ```
 
-Then run `hive` in a herdr pane in the home to start the coordinator.
+Then run `hive` in a herdr pane to start the coordinator in that directory.
 
 ## Update
 
-Move the home and the binary to the same new tag. In these steps, `HOME_DIR` is
-your home, for example `~/hive`.
-
-1. Fetch the tags.
-
-   ```sh
-   git -C HOME_DIR fetch --tags
-   ```
-
-2. Check out the new tag.
-
-   ```sh
-   git -C HOME_DIR checkout vX.Y.Z
-   ```
-
-3. Replace the binary with the binary of the same tag. Use the archive steps of
-   [Install](#install), step 2 and step 3, or run:
+1. Replace the binary with the binary of the new tag. Use the archive steps of
+   [Install](#install), step 1 and step 2, or run:
 
    ```sh
    go install github.com/Harrison-Blair/hive@vX.Y.Z
    ```
 
-4. Restart each running agent. A running agent keeps the old binary until it
+2. Restart each running agent. A running agent keeps the old binary until it
    stops.
 
 ## Usage
@@ -102,17 +90,16 @@ result object.
 
 | Command | Behavior |
 | --- | --- |
-| `hive` | In the home: pick a harness (claude, codex, or pi) and a model, then run it in this pane as the `coordinator`. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
+| `hive` | Pick a harness (claude, codex, or pi) and a model, then run it in this pane and in the current directory as the `coordinator`. The last choice is preselected. Type to filter, or pick `Other…` to type a model. |
 | `hive agent spawn --name N --harness H --model M [--prompt T \| --prompt-file F]` | Start an agent in a new tab of the caller's workspace, and send it the prompt. |
 | `hive agent spawn ... --project P` | Start the agent in a new tab of the checkout workspace of project P. Hive uses the open workspace on the checkout, or creates one. |
-| `hive agent spawn ... --project P --worktree NAME` | Create the worktree `projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
+| `hive agent spawn ... --project P --worktree NAME` | Create the worktree `<home>/projects/P/worktrees/NAME` on branch `NAME` from the base branch of P, and start the agent in its workspace. |
 | `hive agent send N TEXT [--wait]` | Send `⬢ SENDER: TEXT` to agent N. With `--wait`, wait until the agent is idle or done. |
 | `hive agent stop N [--remove-worktree]` | Close the pane or the worktree workspace of agent N. The checkout and the branch stay. `--remove-worktree` removes a clean checkout and refuses a dirty one. On an agent without a worktree, it closes the pane, removes the record, and prints `no worktree for N`. |
 | `hive agent list` | List the agent records with their herdr status. |
 | `hive project register PATH [--id ID] [--base BRANCH]` | Register a Git repository as a project. |
 | `hive project list` | List the registered projects. |
-| `hive init` | Write the home path to `~/.config/hive/config.toml`. |
-| `hive logs` | Read the daily log files in `.hive/logs/`. |
+| `hive logs` | Read the daily log files in `<home>/logs/`. |
 | `hive guide` | Print the hive guide: each command with its flags, and the usage notes. Each agent that hive starts gets this text in its system prompt. |
 | `hive version` | Print the hive version. |
 

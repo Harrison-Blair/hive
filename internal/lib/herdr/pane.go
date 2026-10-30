@@ -64,6 +64,26 @@ func PaneClose(ctx context.Context, paneID string, opts ...Option) error {
 	return nil
 }
 
+// PaneRun types command into the shell of a pane and presses Enter. Success
+// means that herdr accepted the input, not that the command ran.
+func PaneRun(ctx context.Context, paneID, command string, opts ...Option) error {
+	params := struct {
+		PaneID string   `json:"pane_id"`
+		Text   string   `json:"text"`
+		Keys   []string `json:"keys"`
+	}{paneID, command, []string{"enter"}}
+	var result struct {
+		Type *string `json:"type"`
+	}
+	if err := Call(ctx, "pane.send_input", params, &result, opts...); err != nil {
+		return err
+	}
+	if result.Type == nil || *result.Type != "ok" {
+		return fmt.Errorf("bad reply: result type %q, want ok", stringValue(result.Type))
+	}
+	return nil
+}
+
 func decodePaneInfo(raw json.RawMessage) (PaneInfo, error) {
 	if isAbsentOrNull(raw) {
 		return PaneInfo{}, fmt.Errorf("pane is missing")

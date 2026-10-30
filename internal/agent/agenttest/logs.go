@@ -15,7 +15,7 @@ import (
 // the "command start" event of command.
 func CommandEvents(t testing.TB, home, command string) []map[string]any {
 	t.Helper()
-	file, err := os.Open(filepath.Join(home, ".hive", "logs", time.Now().Local().Format("2006-01-02")+".jsonl"))
+	file, err := os.Open(filepath.Join(home, "logs", time.Now().Local().Format("2006-01-02")+".jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}

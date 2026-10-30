@@ -18,7 +18,7 @@ func TestConcurrentCounterProcesses(t *testing.T) {
 	if err := runStoreHelpers(home, "counter", processes, iterations); err != nil {
 		t.Fatal(err)
 	}
-	data, err := readRecordFile(filepath.Join(home, ".hive", "state", "counters", "shared.json"))
+	data, err := readRecordFile(filepath.Join(home, "counters", "shared.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +171,7 @@ func TestAtomicWriteReadersSeeCompleteRecord(t *testing.T) {
 		t.Fatalf("reader saw invalid record: %v", err)
 	default:
 	}
-	entries, err := os.ReadDir(filepath.Join(home, ".hive", "state", "tasks"))
+	entries, err := os.ReadDir(filepath.Join(home, "tasks"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +232,7 @@ func TestReadRejectsOversizedInvalidAndNonRegularRecords(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(home, ".hive", "state", "projects")
+	dir := filepath.Join(home, "projects")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -289,7 +289,7 @@ func TestReadAcceptsRecordOfExactlyOneMiB(t *testing.T) {
 	if len(data) != sizeAtLimit {
 		t.Fatalf("fixture size = %d; want %d", len(data), sizeAtLimit)
 	}
-	path := filepath.Join(home, ".hive", "state", "projects", "exact.json")
+	path := filepath.Join(home, "projects", "exact.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -310,7 +310,7 @@ func TestListKeepsLongStoreSegments(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	notes := filepath.Join(store.home, ".hive", "state", "tasks", "notes.txt")
+	notes := filepath.Join(store.home, "tasks", "notes.txt")
 	if err := os.WriteFile(notes, []byte("not a record"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -340,7 +340,7 @@ func TestListSkipsInvalidStoreSegments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(home, ".hive", "state", "projects")
+	dir := filepath.Join(home, "projects")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -381,7 +381,7 @@ func TestReadListReturnsNoRecordsAfterInvalidFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(home, ".hive", "state", "projects")
+	dir := filepath.Join(home, "projects")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

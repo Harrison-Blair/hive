@@ -17,21 +17,22 @@ import (
 
 type execCall struct {
 	dir, binary string
-	args        []string
+	args, env   []string
 }
 
 // launchOptions runs Run in the root pane of a fake herdr workspace, so no
 // test reaches the herdr of the user.
-func launchOptions(t *testing.T, home string, pick func(Choice, bool) (Choice, bool, error), calls *[]execCall) Options {
+func launchOptions(t *testing.T, home, dir string, pick func(Choice, bool) (Choice, bool, error), calls *[]execCall) Options {
 	t.Helper()
 	fake := agenttest.NewHerdr(t)
 	_, pane := fake.AddWorkspace("home", home, false)
 	return Options{
 		Home: home,
+		Dir:  dir,
 		Pane: pane.ID,
 		Pick: pick,
-		Exec: func(dir, binary string, args []string) error {
-			*calls = append(*calls, execCall{dir, binary, args})
+		Exec: func(dir, binary string, args, env []string) error {
+			*calls = append(*calls, execCall{dir, binary, args, env})
 			return nil
 		},
 		Now:    func() time.Time { return time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC) },
@@ -52,8 +53,9 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.choice.Harness, func(t *testing.T) {
 			home := t.TempDir()
+			dir := t.TempDir()
 			var calls []execCall
-			opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return tc.choice, true, nil }, &calls)
+			opts := launchOptions(t, home, dir, func(Choice, bool) (Choice, bool, error) { return tc.choice, true, nil }, &calls)
 			if err := Run(opts); err != nil {
 				t.Fatal(err)
 			}
@@ -61,12 +63,12 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			want := agent.Record{Name: "coordinator", Pane: opts.Pane, Harness: tc.choice.Harness, Model: tc.choice.Model, Cwd: home, StartedAt: time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)}
+			want := agent.Record{Name: "coordinator", Pane: opts.Pane, Harness: tc.choice.Harness, Model: tc.choice.Model, Cwd: dir, StartedAt: time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)}
 			if record != want {
 				t.Fatalf("record = %+v; want %+v", record, want)
 			}
-			if len(calls) != 1 || calls[0].dir != home || calls[0].binary != tc.wantBinary || !slices.Equal(calls[0].args, tc.wantArgs) {
-				t.Fatalf("exec calls = %+v; want one %s %v in %s", calls, tc.wantBinary, tc.wantArgs, home)
+			if len(calls) != 1 || calls[0].dir != dir || calls[0].binary != tc.wantBinary || !slices.Equal(calls[0].args, tc.wantArgs) {
+				t.Fatalf("exec calls = %+v; want one %s %v in %s", calls, tc.wantBinary, tc.wantArgs, dir)
 			}
 			saved, ok, err := LoadChoice(home)
 			if err != nil || !ok || saved != tc.choice {
@@ -85,7 +87,7 @@ func TestRunPassesLastChoiceToPicker(t *testing.T) {
 	var got Choice
 	var gotOK bool
 	var calls []execCall
-	opts := launchOptions(t, home, func(c Choice, ok bool) (Choice, bool, error) {
+	opts := launchOptions(t, home, t.TempDir(), func(c Choice, ok bool) (Choice, bool, error) {
 		got, gotOK = c, ok
 		return Choice{}, false, nil
 	}, &calls)
@@ -100,7 +102,7 @@ func TestRunPassesLastChoiceToPicker(t *testing.T) {
 func TestRunQuitWritesNothingAndDoesNotExec(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{}, false, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{}, false, nil }, &calls)
 	if err := Run(opts); err != nil {
 		t.Fatalf("Run = %v; want nil on quit", err)
 	}
@@ -110,7 +112,7 @@ func TestRunQuitWritesNothingAndDoesNotExec(t *testing.T) {
 	if _, err := agent.Load(home, "coordinator"); !errors.Is(err, agent.ErrNotFound) {
 		t.Fatalf("Load = %v; want ErrNotFound", err)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "coordinator-choice.json")); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(home, "coordinator-choice.json")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("choice file stat = %v; want not exist", err)
 	}
 }
@@ -118,12 +120,12 @@ func TestRunQuitWritesNothingAndDoesNotExec(t *testing.T) {
 func TestRunReturnsPickerAndExecErrors(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{}, false, errors.New("tty gone") }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{}, false, errors.New("tty gone") }, &calls)
 	if err := Run(opts); err == nil || err.Error() != "picker: tty gone" {
 		t.Fatalf("Run = %v; want picker: tty gone", err)
 	}
-	opts = launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
-	opts.Exec = func(string, string, []string) error { return errors.New("no such file") }
+	opts = launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts.Exec = func(string, string, []string, []string) error { return errors.New("no such file") }
 	if err := Run(opts); err == nil {
 		t.Fatal("Run = nil; want the exec error")
 	}
@@ -132,7 +134,7 @@ func TestRunReturnsPickerAndExecErrors(t *testing.T) {
 func TestRunRejectsUnknownHarness(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"vim", "x"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"vim", "x"}, true, nil }, &calls)
 	if err := Run(opts); err == nil || len(calls) != 0 {
 		t.Fatalf("Run = %v, calls %v; want error and no exec", err, calls)
 	}
@@ -144,17 +146,17 @@ func TestRunRejectsUnknownHarness(t *testing.T) {
 func TestRunLabelsItsTabCoordinatorBeforeExec(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
 	// This fake replaces the fake of launchOptions as HERDR_SOCKET_PATH.
 	fake := agenttest.NewHerdr(t)
 	_, pane := fake.AddWorkspace("my workspace", home, false)
 	opts.Pane = pane.ID
-	opts.Exec = func(dir, binary string, args []string) error {
+	opts.Exec = func(dir, binary string, args, env []string) error {
 		got, _ := fake.Pane(pane.ID)
 		if got.TabLabel != "coordinator" {
 			t.Errorf("tab label at exec = %q, want coordinator", got.TabLabel)
 		}
-		calls = append(calls, execCall{dir, binary, args})
+		calls = append(calls, execCall{dir, binary, args, env})
 		return nil
 	}
 	if err := Run(opts); err != nil {
@@ -174,7 +176,7 @@ func TestRunExecsWhenTheTabLabelFails(t *testing.T) {
 			home := t.TempDir()
 			var calls []execCall
 			var logs strings.Builder
-			opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+			opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
 			fake := agenttest.NewHerdr(t)
 			_, pane := fake.AddWorkspace("w", home, false)
 			fake.Fail(method, "internal_error", "boom")
@@ -199,7 +201,7 @@ func TestRunExecsWhenTheTabLabelFails(t *testing.T) {
 func TestRunWithoutPaneDoesNotLabelATab(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
 	fake := agenttest.NewHerdr(t)
 	opts.Pane = ""
 	if err := Run(opts); err != nil {
@@ -217,7 +219,7 @@ func TestRunExecsTheHarnessWithTheGuide(t *testing.T) {
 	home := t.TempDir()
 	var calls []execCall
 	var logs strings.Builder
-	opts := launchOptions(t, home, func(Choice, bool) (Choice, bool, error) { return Choice{"codex", "gpt-x"}, true, nil }, &calls)
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"codex", "gpt-x"}, true, nil }, &calls)
 	opts.Guide = "say \"hi\"\nnow"
 	opts.Logger = slog.New(slog.NewJSONHandler(&logs, nil))
 	if err := Run(opts); err != nil {
@@ -229,5 +231,30 @@ func TestRunExecsTheHarnessWithTheGuide(t *testing.T) {
 	}
 	if !strings.Contains(logs.String(), `"<guide 40 bytes>"`) || strings.Contains(logs.String(), "say ") {
 		t.Fatalf("logs = %s; want the guide placeholder and no guide text", logs.String())
+	}
+}
+
+func TestRunGivesTheHarnessTheHome(t *testing.T) {
+	t.Setenv("HIVE_HOME", "relative-home")
+	home := t.TempDir()
+	var calls []execCall
+	opts := launchOptions(t, home, t.TempDir(), func(Choice, bool) (Choice, bool, error) { return Choice{"pi", "a/b"}, true, nil }, &calls)
+	if err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 {
+		t.Fatalf("exec calls = %+v; want one", calls)
+	}
+	var homes []string
+	for _, pair := range calls[0].env {
+		if value, ok := strings.CutPrefix(pair, "HIVE_HOME="); ok {
+			homes = append(homes, value)
+		}
+	}
+	if !slices.Equal(homes, []string{home}) {
+		t.Fatalf("HIVE_HOME values in the harness environment = %q; want only %q", homes, home)
+	}
+	if !slices.ContainsFunc(calls[0].env, func(pair string) bool { return strings.HasPrefix(pair, "PATH=") }) {
+		t.Fatalf("harness environment = %q; want the process environment kept", calls[0].env)
 	}
 }

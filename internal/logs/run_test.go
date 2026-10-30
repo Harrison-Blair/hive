@@ -14,7 +14,7 @@ import (
 func runHome(t *testing.T) string {
 	t.Helper()
 	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive", "logs"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, "logs"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	return home

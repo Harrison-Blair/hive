@@ -45,7 +45,7 @@ func ValidateName(name string) error {
 }
 
 func dir(home string) string {
-	return filepath.Join(home, ".hive", "agents")
+	return filepath.Join(home, "agents")
 }
 
 func path(home, name string) (string, error) {

@@ -51,7 +51,7 @@ func TestLegacyLongTaskIDAndColonCounter(t *testing.T) {
 			t.Fatalf("Next() = %d; want %d", got, want)
 		}
 	}
-	path := filepath.Join(store.home, ".hive", "state", "counters", "inbox:coordinator.json")
+	path := filepath.Join(store.home, "counters", "inbox:coordinator.json")
 	if _, err := readRecordFile(path); err != nil {
 		t.Fatalf("colon counter record missing: %v", err)
 	}

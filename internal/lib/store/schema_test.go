@@ -9,7 +9,7 @@ import (
 
 func readSchemaFile(t *testing.T, home string) map[string]any {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join(home, ".hive", "state", "schema.json"))
+	data, err := os.ReadFile(filepath.Join(home, "schema.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,29 +22,25 @@ func readSchemaFile(t *testing.T, home string) map[string]any {
 
 func writeSchemaFile(t *testing.T, home, body string) {
 	t.Helper()
-	dir := filepath.Join(home, ".hive", "state")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "schema.json"), []byte(body), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(home, "schema.json"), []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestOpenWritesSchemaVersionFourInAFreshHome(t *testing.T) {
+func TestOpenWritesSchemaVersionFiveInAFreshHome(t *testing.T) {
 	home := t.TempDir()
 	openStore(t, home)
-	if got := readSchemaFile(t, home); len(got) != 1 || got["version"] != float64(4) {
-		t.Fatalf("schema.json = %v; want {\"version\":4}", got)
+	if got := readSchemaFile(t, home); len(got) != 1 || got["version"] != float64(5) {
+		t.Fatalf("schema.json = %v; want {\"version\":5}", got)
 	}
 }
 
-func TestOpenAcceptsSchemaVersionFour(t *testing.T) {
+func TestOpenAcceptsSchemaVersionFive(t *testing.T) {
 	home := t.TempDir()
-	writeSchemaFile(t, home, `{"version":4}`)
+	writeSchemaFile(t, home, `{"version":5}`)
 	openStore(t, home)
-	if got := readSchemaFile(t, home); got["version"] != float64(4) {
-		t.Fatalf("schema.json = %v; want version 4", got)
+	if got := readSchemaFile(t, home); got["version"] != float64(5) {
+		t.Fatalf("schema.json = %v; want version 5", got)
 	}
 }
 
@@ -53,8 +49,8 @@ func TestOpenRefusesOtherSchemaVersions(t *testing.T) {
 		body string
 		want string
 	}{
-		{`{"version":3}`, "home schema 3 is not supported; this hive needs 4"},
-		{`{"version":5}`, "home schema 5 is not supported; this hive needs 4"},
+		{`{"version":4}`, "home schema 4 is not supported; this hive needs 5"},
+		{`{"version":6}`, "home schema 6 is not supported; this hive needs 5"},
 	} {
 		t.Run(tc.body, func(t *testing.T) {
 			home := t.TempDir()
@@ -63,7 +59,7 @@ func TestOpenRefusesOtherSchemaVersions(t *testing.T) {
 			if err == nil || err.Error() != tc.want {
 				t.Fatalf("Open() error = %v; want %q", err, tc.want)
 			}
-			if got := readSchemaFile(t, home); got["version"] == float64(4) {
+			if got := readSchemaFile(t, home); got["version"] == float64(5) {
 				t.Fatalf("schema.json = %v; want it unchanged", got)
 			}
 		})

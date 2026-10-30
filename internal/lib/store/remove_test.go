@@ -9,9 +9,6 @@ import (
 
 func TestRemoveInDeletesOneRecordAndKeepsOthers(t *testing.T) {
 	home := t.TempDir()
-	if err := os.MkdirAll(home+"/.hive", 0o755); err != nil {
-		t.Fatal(err)
-	}
 	registry := openStore(t, home)
 	for _, id := range []string{"coordinator", "supervisor"} {
 		if err := registry.WriteIn([]string{"claims"}, id, map[string]string{"key": id}); err != nil {
@@ -35,9 +32,6 @@ func TestRemoveInDeletesOneRecordAndKeepsOthers(t *testing.T) {
 
 func TestRemoveInMissingRecordIsNotExist(t *testing.T) {
 	home := t.TempDir()
-	if err := os.MkdirAll(home+"/.hive", 0o755); err != nil {
-		t.Fatal(err)
-	}
 	registry := openStore(t, home)
 	err := registry.WithLock(context.Background(), func(locked *LockedStore) error {
 		return locked.RemoveIn([]string{"claims"}, "coordinator")
@@ -49,9 +43,6 @@ func TestRemoveInMissingRecordIsNotExist(t *testing.T) {
 
 func TestRemoveInAfterCallbackFails(t *testing.T) {
 	home := t.TempDir()
-	if err := os.MkdirAll(home+"/.hive", 0o755); err != nil {
-		t.Fatal(err)
-	}
 	registry := openStore(t, home)
 	var held *LockedStore
 	if err := registry.WithLock(context.Background(), func(locked *LockedStore) error {

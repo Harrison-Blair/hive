@@ -11,7 +11,7 @@
 // quits from any step.
 //
 // discover.go lists the models of each harness from pi and opencode.
-// choice.go reads and writes the last choice at .hive/coordinator-choice.json.
+// choice.go reads and writes the last choice at <home>/coordinator-choice.json.
 // picker.go is the Bubble Tea picker.
 // launch.go saves the coordinator record, labels its tab, and starts the harness
 // in this pane.

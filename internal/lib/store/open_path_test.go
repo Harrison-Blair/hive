@@ -6,130 +6,47 @@ import (
 	"testing"
 )
 
-func TestOpenRejectsLinkedHiveAncestor(t *testing.T) {
-	home := t.TempDir()
-	target := t.TempDir()
-	hivePath := filepath.Join(home, ".hive")
-	if err := os.Symlink(target, hivePath); err != nil {
-		t.Fatal(err)
+func TestOpenCreatesTheHome(t *testing.T) {
+	home := filepath.Join(t.TempDir(), "new", "home")
+	openStore(t, home)
+	for _, name := range []string{"schema.json"} {
+		if info, err := os.Stat(filepath.Join(home, name)); err != nil || !info.Mode().IsRegular() {
+			t.Fatalf("%s: stat = %v, %v; want a file at the top of the home", name, info, err)
+		}
 	}
-	store, err := Open(home)
-	if err == nil || err.Error() != "store path invalid: "+hivePath {
-		t.Fatalf("Open() = %v, %v; want store path invalid for %s", store, err, hivePath)
+	if _, err := os.Stat(filepath.Join(home, ".hive")); !os.IsNotExist(err) {
+		t.Fatalf(".hive: stat error = %v; want no .hive level in the home", err)
 	}
-	entries, readErr := os.ReadDir(target)
-	if readErr != nil {
-		t.Fatal(readErr)
-	}
-	if len(entries) != 0 {
-		t.Fatalf("Open() created external state: %v", entries)
+	if _, err := os.Stat(filepath.Join(home, "state")); !os.IsNotExist(err) {
+		t.Fatalf("state: stat error = %v; want no state directory in the home", err)
 	}
 }
 
-func TestOpenRejectsWrongTypeHiveAncestor(t *testing.T) {
-	home := t.TempDir()
-	hivePath := filepath.Join(home, ".hive")
-	if err := os.WriteFile(hivePath, []byte("not a directory"), 0o644); err != nil {
+func TestOpenAcceptsLinkedHome(t *testing.T) {
+	target := t.TempDir()
+	home := filepath.Join(t.TempDir(), "alias")
+	if err := os.Symlink(target, home); err != nil {
 		t.Fatal(err)
 	}
-	store, err := Open(home)
-	if err == nil || err.Error() != "store path invalid: "+hivePath {
-		t.Fatalf("Open() = %v, %v; want store path invalid for %s", store, err, hivePath)
+	openStore(t, home)
+	if _, err := os.Stat(filepath.Join(target, "schema.json")); err != nil {
+		t.Fatalf("schema in the link target: %v", err)
 	}
-	data, readErr := os.ReadFile(hivePath)
-	if readErr != nil {
-		t.Fatal(readErr)
+}
+
+func TestOpenRejectsWrongTypeHome(t *testing.T) {
+	home := filepath.Join(t.TempDir(), "home")
+	if err := os.WriteFile(home, []byte("not a directory"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if store, err := Open(home); err == nil {
+		t.Fatalf("Open() = %v, nil; want an error for a regular file home", store)
+	}
+	data, err := os.ReadFile(home)
+	if err != nil {
+		t.Fatal(err)
 	}
 	if string(data) != "not a directory" {
-		t.Fatalf("Open() changed the wrong-type ancestor to %q", data)
-	}
-}
-
-func TestOpenRejectsLinkedStateRoot(t *testing.T) {
-	home := t.TempDir()
-	target := t.TempDir()
-	if err := os.Mkdir(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	statePath := filepath.Join(home, ".hive", "state")
-	if err := os.Symlink(target, statePath); err != nil {
-		t.Fatal(err)
-	}
-	store, err := Open(home)
-	if err == nil || err.Error() != "store path invalid: "+statePath {
-		t.Fatalf("Open() = %v, %v; want store path invalid for %s", store, err, statePath)
-	}
-	entries, readErr := os.ReadDir(target)
-	if readErr != nil {
-		t.Fatal(readErr)
-	}
-	if len(entries) != 0 {
-		t.Fatalf("Open() created external state: %v", entries)
-	}
-}
-
-func TestOpenRejectsWrongTypeStateRoot(t *testing.T) {
-	home := t.TempDir()
-	if err := os.Mkdir(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	statePath := filepath.Join(home, ".hive", "state")
-	if err := os.WriteFile(statePath, []byte("not a directory"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	store, err := Open(home)
-	if err == nil || err.Error() != "store path invalid: "+statePath {
-		t.Fatalf("Open() = %v, %v; want store path invalid for %s", store, err, statePath)
-	}
-	data, readErr := os.ReadFile(statePath)
-	if readErr != nil {
-		t.Fatal(readErr)
-	}
-	if string(data) != "not a directory" {
-		t.Fatalf("Open() changed the wrong-type state root to %q", data)
-	}
-}
-
-func TestOperationsRecheckLinkedHiveAncestor(t *testing.T) {
-	home := t.TempDir()
-	store := openStore(t, home)
-	if err := os.RemoveAll(filepath.Join(home, ".hive")); err != nil {
-		t.Fatal(err)
-	}
-	target := t.TempDir()
-	hivePath := filepath.Join(home, ".hive")
-	if err := os.Symlink(target, hivePath); err != nil {
-		t.Fatal(err)
-	}
-	want := "store path invalid: " + hivePath
-	checks := []struct {
-		name string
-		run  func() error
-	}{
-		{"ReadIn", func() error {
-			return store.ReadIn([]string{"tasks"}, "one", &map[string]any{})
-		}},
-		{"WriteIn", func() error {
-			return store.WriteIn([]string{"tasks"}, "one", map[string]string{"id": "one"})
-		}},
-		{"ListIn", func() error {
-			_, err := store.ListIn([]string{"tasks"}, nil)
-			return err
-		}},
-	}
-	for _, check := range checks {
-		t.Run(check.name, func(t *testing.T) {
-			err := check.run()
-			if err == nil || err.Error() != want {
-				t.Fatalf("%s() error = %v; want %q", check.name, err, want)
-			}
-		})
-	}
-	entries, readErr := os.ReadDir(target)
-	if readErr != nil {
-		t.Fatal(readErr)
-	}
-	if len(entries) != 0 {
-		t.Fatalf("operations created external state: %v", entries)
+		t.Fatalf("Open() changed the wrong-type home to %q", data)
 	}
 }

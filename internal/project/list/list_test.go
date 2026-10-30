@@ -1,20 +1,22 @@
 package list
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
-	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 func TestListSortsProjectsByID(t *testing.T) {
 	home := t.TempDir()
-	registry, err := store.Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
 	for _, id := range []string{"zeta", "alpha"} {
-		if err := registry.Write("projects", id, records.Project{ID: id, Path: "/repo/" + id, Base: "main", RegisteredAt: "now"}); err != nil {
+		dir := filepath.Join(home, "projects", id)
+		if err := os.MkdirAll(filepath.Join(dir, "worktrees"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		record := `{"id":"` + id + `","path":"/repo/` + id + `","base":"main","registered_at":"now"}`
+		if err := os.WriteFile(filepath.Join(dir, "project.json"), []byte(record), 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}

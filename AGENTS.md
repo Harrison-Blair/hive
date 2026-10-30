@@ -8,7 +8,7 @@
 
 Hive is a small agent launcher on top of herdr. An agent has no fixed role. It gets its work from its spawn prompt.
 
-- Bare `hive` in the home shows a harness and model picker. Enter saves the `coordinator` record and runs the chosen harness in that pane. That session is the coordinator. The user talks to it.
+- Bare `hive` shows a harness and model picker. Enter saves the `coordinator` record and runs the chosen harness in that pane, in the working directory of `hive`. That session is the coordinator. The user talks to it.
 - Any agent can start another agent with `hive agent spawn`. The `--prompt` or `--prompt-file` text is the whole brief of the new agent. Hive sends it unchanged and adds no role text.
 - Each agent that hive starts, the coordinator too, gets the hive guide in its system prompt: each command with its flags, and the usage notes of `internal/guide/usage.md`. `hive guide` prints the same text. Hive reads and writes no file for the guide. Herdr rejects a start argument with a newline, so the guide goes as one line: claude and pi get `--append-system-prompt` with each newline as the two characters `\n`; codex gets `-c developer_instructions="…"` with the guide as one TOML basic string. Herdr types the start command line into the pane shell, and a shell in canonical mode can cut a line at 4095 bytes. So the full start line, each argument in single quotes, must be at most 4000 bytes (`harness.MaxStartLine`). `guide_budget_test.go` fails when the guide with a long model goes above that. Spawn checks the real line before it calls herdr, and fails in phase `validate` when the line is too long, for example with a long `--model`. Keep the guide dense.
 - A session with no spawn prompt and no coordinator record for its pane has no role. It tells the user so and takes no work from its working directory.
@@ -41,31 +41,44 @@ Hive is a small agent launcher on top of herdr. An agent has no fixed role. It g
 
 ## Project
 
-This checkout is the home and the first registered project: hive builds hive.
+This checkout is the first registered project: hive builds hive. It is not the home.
 
 ```text
-hive/                            the checkout is the home
+hive/                            the repository
 ├─ AGENTS.md  README.md          instructions          tracked
 ├─ main.go  cmd/  internal/      Go source             tracked
 ├─ reference/herdr/              herdr API reference   tracked
 ├─ reference/dogfood/friction/   friction log          tracked
-├─ .hive/README.md               home marker           tracked
-├─ projects/<project-id>/        project directory     ignored
-│  └─ worktrees/<name>/          agent worktree        ignored
 ├─ memory/  overrides/  plans/   personal              ignored
-├─ handoff.md                    personal              ignored
-└─ .hive/agents/  logs/  tmp/    runtime               ignored
+├─ handoff.md  _archive/         personal              ignored
+├─ projects/                     old home, until the state move  ignored
+└─ .hive/tmp/                    scratch               ignored
+```
+
+The home is `$HIVE_HOME` when that variable is set and not empty, otherwise `~/.hive`. Hive creates it when it first needs it. It has no marker and no config file.
+
+```text
+<home>/
+├─ projects/<id>/project.json        project record
+├─ projects/<id>/worktrees/<name>/   agent worktree of spawn --worktree
+├─ agents/<name>.json                agent records
+├─ logs/YYYY-MM-DD.jsonl             log events
+├─ coordinator-choice.json           last picker choice
+├─ tmp/                              scratch files
+├─ lock                              store lock
+└─ schema.json                       store schema version 5
 ```
 
 - `.gitignore` is an allowlist. It ignores everything with `*` and then allows named patterns. Add a `!` rule only for a file that the project needs. Use the narrowest pattern. Never remove the leading `*`.
-- Git ignores everything in `.hive/` except `.hive/README.md`, which marks the home. `.hive/agents/` holds one JSON record per agent. `.hive/coordinator-choice.json` holds the last picker choice. `gitignore_test.go` fails when Git tracks an ignored path, ignores the marker, or ignores a tracked file.
-- Put scratch files in `.hive/tmp/`.
+- Git ignores `.hive/` in the checkout. `gitignore_test.go` fails when Git tracks an ignored path or ignores a tracked file.
+- Put scratch files of development in `.hive/tmp/` of the checkout.
 
 ## herdr layout
 
 - The checkout workspace of a project is a normal herdr workspace open on the registered repository checkout. Hive finds it with `worktree.list` (`open_workspace_id`), in any position and with any label. If none is open, hive creates one with the checkout as `cwd` and the herdr default label, and the first agent takes its root pane. Hive never renames a workspace and never makes a second checkout workspace. Hive uses no `hive:` labels.
 - `spawn` without `--project` opens a new tab in the workspace of the caller. With `--project P` it opens a new tab in the checkout workspace of P.
-- `spawn --project P --worktree NAME` calls `worktree.create` from the checkout workspace with path `projects/P/worktrees/NAME`, branch `NAME`, and the base branch of P. The new workspace nests under the checkout workspace. The agent starts in its root pane.
+- `spawn --project P --worktree NAME` calls `worktree.create` from the checkout workspace with path `<home>/projects/P/worktrees/NAME`, branch `NAME`, and the base branch of P. The new workspace nests under the checkout workspace. The agent starts in its root pane.
+- Each agent that spawn starts gets `HIVE_HOME` set to the resolved home of the caller, so its own hive commands use the same home. A new tab gets it through the `tab.create` `env`, and the root pane of a new checkout workspace through the `workspace.create` `env`. `worktree.create` and `agent.start` take no `env`, so in a worktree root pane spawn types `export HIVE_HOME='…'` with `pane.send_input` before `agent.start`. Bare `hive` execs the harness with `HIVE_HOME` set to the home.
 - Spawn labels the tab of the agent with the agent name. A new tab gets the name through the `tab.create` label. A root pane of a new workspace or worktree gets it through `tab.rename` before the harness starts. When `tab.rename` fails, spawn still starts the harness and sends the prompt, and the outcome is `partial`.
 - Spawn waits for the harness to be ready, then sends the prompt. A Claude trust dialog in a new workspace or worktree root pane makes spawn report `blocked` with the pane ID. Spawn then sends no prompt.
 - Hive closes what it made. `agent stop` closes the pane of the agent, or the worktree workspace. It keeps the checkout and the branch. `--remove-worktree` also removes a clean checkout and refuses a dirty one. Hive acts only on agents that have a hive record.
@@ -85,8 +98,8 @@ hive/                            the checkout is the home
 - An API that a non-CLI caller uses stays in the parent domain package.
 - `internal/lib/<capability>/` holds focused code that several packages share. Do not make one flat grab-bag package. Do not extract a utility before two callers exist.
 - `internal/` never imports Cobra or `cmd/`. Below `internal/`, a parent package never imports its child packages. A child package can import its parent domain package.
-- Some parts keep their current roles. `cmd/common` holds the CLI helpers. A command leaf runs through `common.Run`, or through `common.Stream` when it resolves its own home or renders its own output, as `hive logs` and `hive init` do. Both log `command start` and `command end`. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
-- `common.Guide(root)` renders the hive guide from the live Cobra tree. `internal/guide` holds the usage notes, the Markdown rendering, and the one-line escapes. `hive guide`, `hive agent spawn`, and bare `hive` use `common.Guide(cmd.Root())`. The profile of each harness turns the guide into start arguments with `GuideArgs`. The `agent started` and `exec harness` events, and the herdr request and reply of `agent.start` (through `herdr.WithRedact`), show the guide argument as `<guide N bytes>`. `hive guide` also runs outside a home: it then prints the guide and logs nothing.
+- Some parts keep their current roles. `cmd/common` holds the CLI helpers. A command leaf runs through `common.Run`, or through `common.Stream` when it resolves its own home or renders its own output, as `hive logs` does. Both log `command start` and `command end`. The root command runs bare `hive` through `internal/coordinator`. Each package below `internal/lib/` holds shared code.
+- `common.Guide(root)` renders the hive guide from the live Cobra tree. `internal/guide` holds the usage notes, the Markdown rendering, and the one-line escapes. `hive guide`, `hive agent spawn`, and bare `hive` use `common.Guide(cmd.Root())`. The profile of each harness turns the guide into start arguments with `GuideArgs`. The `agent started` and `exec harness` events, and the herdr request and reply of `agent.start` (through `herdr.WithRedact`), show the guide argument as `<guide N bytes>`. `hive guide` logs only when the home directory exists. It never creates the home: without it, `hive guide` prints the guide and logs nothing.
 - A group command registers its child commands. It imports them only for this registration.
 - Use direct functions and explicit dependencies. Do not build the command tree in `init` functions or with shared globals. Keep packages flat until a distinct responsibility needs a narrow API. A package with several non-test files has a `doc.go` with a summary and a one-line map of each file.
 
@@ -100,11 +113,11 @@ cmd/agent/spawn                flags and the CLI adapter; renders the guide with
    ├▶ internal/lib/harness     the profile of claude, codex, or pi, and its guide arguments
    │  └▶ internal/guide        the usage notes and the one-line escapes
    ├▶ internal/lib/herdr       the herdr socket client, protocol 22
-   ├▶ internal/agent           the agent records in .hive/agents/ and the caller lookup
+   ├▶ internal/agent           the agent records in <home>/agents/ and the caller lookup
    └▶ internal/lib/store       locked, atomic JSON files below the home
       └▶ internal/lib/records  the record types
 
-bare hive ─▶ internal/coordinator: picker ─▶ coordinator record ─▶ harness replaces the process
+bare hive ─▶ internal/coordinator: picker ─▶ coordinator record ─▶ harness replaces the process in the working directory
 ```
 
 ### Tests and the gate
@@ -123,7 +136,7 @@ golangci-lint run ./...
 env -u TERM TZ=UTC go test -race ./...
 ```
 
-The first command must print nothing. The second command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `projects/`.
+The first command must print nothing. The second command must print nothing. The gate acts on tracked and new files only. It must not read a checkout below `projects/` or `.hive/`.
 
 - To run one test, use the environment of the gate:
 
@@ -131,7 +144,7 @@ The first command must print nothing. The second command must print nothing. The
 env -u TERM TZ=UTC go test -race -run 'TestName' ./internal/agent/spawn/
 ```
 
-- A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME="$PWD"`. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
+- A live check in herdr uses a binary built with `go build -o .hive/tmp/hive .` and `HIVE_HOME` set to a new scratch directory, for example below `.hive/tmp/`. Never point a live check at `~/.hive`. A test that can fall back to `~/.hive` sets `HOME` to a temporary directory. Give each pane, tab, workspace, and worktree a unique name, and close each one that the check made.
 
 ### Dependencies
 
@@ -139,7 +152,7 @@ Use the standard library first. The picker can use Bubble Tea, Bubbles, and Lip 
 
 ### Logging
 
-- Each hive process writes log events with `log/slog` as JSON lines to `.hive/logs/YYYY-MM-DD.jsonl` in the home. Level debug is always on.
+- Each hive process writes log events with `log/slog` as JSON lines to `<home>/logs/YYYY-MM-DD.jsonl`. Level debug is always on.
 - Log each herdr request and reply, each state change, each external process, each user action in the picker, and each error.
 - Each event carries the fields that apply: `component`, `command`, `request_id`, `project_id`, `agent_id`, `target`, `duration_ms`, and `error`.
 - `agent_id` is the caller: the hive record name of `HERDR_PANE_ID`, or `user` when that pane has no record. Bare `hive` logs `agent_id=coordinator`. `target` is the agent that the command acts on. A command with no agent argument has no `target`. Each command sets both fields on its logger before its first event, so each `herdr request`, `herdr reply`, `command start`, and `command end` carries them. `hive logs --agent NAME` prints an event when `agent_id` or `target` is NAME.

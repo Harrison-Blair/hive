@@ -72,7 +72,7 @@ func emitBodyEvent(t *testing.T, mode bodyMode) (map[string]any, []byte) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := os.ReadFile(filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl"))
+	raw, err := os.ReadFile(filepath.Join(home, "logs", "2026-01-02.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,7 +2,6 @@
 package register
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -57,15 +56,11 @@ func Run(home string, options Options) output.Envelope {
 	if err != nil {
 		return output.Failed("store", err.Error())
 	}
-	found, err := registry.List("projects")
+	found, err := projectlib.List(registry)
 	if err != nil {
 		return output.Failed("store", err.Error())
 	}
-	for _, raw := range found {
-		var existing records.Project
-		if err := json.Unmarshal(raw, &existing); err != nil {
-			return output.Failed("store", err.Error())
-		}
+	for _, existing := range found {
 		if existing.ID == id {
 			return output.Failed("register", "project exists: "+id)
 		}
@@ -80,20 +75,18 @@ func Run(home string, options Options) output.Envelope {
 		Base:         base,
 		RegisteredAt: time.Now().UTC().Format(time.RFC3339Nano),
 	}
-	if err := registry.Write("projects", id, record); err != nil {
+	if err := projectlib.Write(registry, record); err != nil {
 		return output.Failed("store", err.Error())
 	}
 	envelope := output.Envelope{
 		Outcome: output.OutcomeOK,
 		Phase:   "complete",
-		Effects: []output.Effect{{Resource: "record", Path: filepath.ToSlash(filepath.Join(".hive", "state", "projects", id+".json")), Action: "created"}},
+		Effects: []output.Effect{{Resource: "record", Path: filepath.ToSlash(projectlib.RecordPath(id)), Action: "created"}},
 		Error:   nil,
 		Result:  record,
 	}
 	for _, dir := range []string{
-		filepath.Join("projects", id),
 		filepath.Join("projects", id, "worktrees"),
-		filepath.Join("projects", id, "overrides"),
 	} {
 		fullPath := filepath.Join(home, dir)
 		action := "created"

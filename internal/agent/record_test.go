@@ -24,7 +24,7 @@ func sample(name, pane string) Record {
 }
 
 func agentsDir(home string) string {
-	return filepath.Join(home, ".hive", "agents")
+	return filepath.Join(home, "agents")
 }
 
 func TestSaveLoadRoundTripsAllFields(t *testing.T) {
@@ -209,7 +209,7 @@ func TestSaveRejectsBadNamesAndWritesNothing(t *testing.T) {
 		if err := Save(home, sample(name, "p1")); err == nil {
 			t.Errorf("Save(%q) error = nil, want error", name)
 		}
-		if _, err := os.Stat(filepath.Join(home, ".hive")); !errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(filepath.Join(home, "agents")); !errors.Is(err, os.ErrNotExist) {
 			t.Errorf("Save(%q) wrote to the home: stat error = %v", name, err)
 		}
 	}

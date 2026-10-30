@@ -3,6 +3,8 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -18,7 +20,7 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	text := stdout.String()
 	for _, command := range []string{
 		"hive", "hive agent", "hive agent list", "hive agent send NAME TEXT", "hive agent spawn", "hive agent stop NAME",
-		"hive guide", "hive init", "hive logs", "hive project", "hive project list", "hive project register PATH", "hive version",
+		"hive guide", "hive logs", "hive project", "hive project list", "hive project register PATH", "hive version",
 	} {
 		if !strings.Contains(text, "\n"+command+": ") {
 			t.Errorf("guide has no command %q", command)
@@ -65,18 +67,35 @@ func TestRootGuideNamesEachCommandAndFlag(t *testing.T) {
 	}
 }
 
-func TestRootGuideWorksWithoutAHome(t *testing.T) {
-	t.Chdir(t.TempDir())
-	t.Setenv("HIVE_HOME", "")
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	for _, args := range [][]string{{"guide"}, {"--json", "guide"}} {
-		var stdout, stderr bytes.Buffer
-		if status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr); status != 0 || stderr.Len() != 0 {
-			t.Fatalf("%v: status = %d, stderr = %q; want 0 and empty stderr", args, status, stderr.String())
-		}
-		if !strings.Contains(stdout.String(), "hive agent spawn: start an agent") {
-			t.Fatalf("%v: stdout = %q; want the guide", args, stdout.String())
-		}
+func TestRootGuideDoesNotCreateAMissingHome(t *testing.T) {
+	userHome := t.TempDir()
+	missing := filepath.Join(t.TempDir(), "missing")
+	for _, test := range []struct {
+		name, home, hiveHome, created string
+	}{
+		{name: "default home", home: userHome, created: filepath.Join(userHome, ".hive")},
+		{name: "HIVE_HOME", home: userHome, hiveHome: missing, created: missing},
+		{name: "no user home"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Chdir(t.TempDir())
+			t.Setenv("HOME", test.home)
+			t.Setenv("HIVE_HOME", test.hiveHome)
+			for _, args := range [][]string{{"guide"}, {"--json", "guide"}} {
+				var stdout, stderr bytes.Buffer
+				if status := executeWithStreams(args, strings.NewReader(""), &stdout, &stderr); status != 0 || stderr.Len() != 0 {
+					t.Fatalf("%v: status = %d, stderr = %q; want 0 and empty stderr", args, status, stderr.String())
+				}
+				if !strings.Contains(stdout.String(), "hive agent spawn: start an agent") {
+					t.Fatalf("%v: stdout = %q; want the guide", args, stdout.String())
+				}
+			}
+			if test.created != "" {
+				if _, err := os.Stat(test.created); !os.IsNotExist(err) {
+					t.Fatalf("stat %s: %v; want the home not created", test.created, err)
+				}
+			}
+		})
 	}
 	var stdout bytes.Buffer
 	_ = executeWithStreams([]string{"--json", "guide"}, strings.NewReader(""), &stdout, &stdout)

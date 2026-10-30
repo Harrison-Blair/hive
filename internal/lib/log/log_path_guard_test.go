@@ -37,38 +37,10 @@ func guardDirEntries(t *testing.T, dir string) []string {
 	return names
 }
 
-func TestStaticLogPathRejectsLinkedHiveDirectory(t *testing.T) {
-	home := t.TempDir()
-	external := t.TempDir()
-	if err := os.Symlink(external, filepath.Join(home, ".hive")); err != nil {
-		t.Fatal(err)
-	}
-	writer, err := NewWriter(home, "cli", guardClock(2026, time.January, 2))
-	if err == nil {
-		if writer != nil {
-			if handleErr := guardHandle(writer, guardClock(2026, time.January, 2), "must not write"); handleErr != nil {
-				t.Logf("old writer write error: %v", handleErr)
-			}
-			_ = writer.Close()
-		}
-		t.Fatalf("NewWriter accepted a linked .hive directory; external entries = %v", guardDirEntries(t, external))
-	}
-	if !strings.Contains(err.Error(), "not a native directory") {
-		t.Fatalf("error = %q; want a native directory rejection", err)
-	}
-	if entries := guardDirEntries(t, external); len(entries) != 0 {
-		t.Fatalf("rejected linked .hive changed external target: %v", entries)
-	}
-}
-
 func TestStaticLogPathRejectsLinkedLogsDirectory(t *testing.T) {
 	home := t.TempDir()
-	hiveDir := filepath.Join(home, ".hive")
-	if err := os.MkdirAll(hiveDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
 	external := t.TempDir()
-	if err := os.Symlink(external, filepath.Join(hiveDir, "logs")); err != nil {
+	if err := os.Symlink(external, filepath.Join(home, "logs")); err != nil {
 		t.Fatal(err)
 	}
 	writer, err := NewWriter(home, "cli", guardClock(2026, time.January, 2))
@@ -79,7 +51,7 @@ func TestStaticLogPathRejectsLinkedLogsDirectory(t *testing.T) {
 			}
 			_ = writer.Close()
 		}
-		t.Fatalf("NewWriter accepted a linked .hive/logs directory; external entries = %v", guardDirEntries(t, external))
+		t.Fatalf("NewWriter accepted a linked logs directory; external entries = %v", guardDirEntries(t, external))
 	}
 	if !strings.Contains(err.Error(), "not a native directory") {
 		t.Fatalf("error = %q; want a native directory rejection", err)
@@ -146,7 +118,7 @@ func TestStaticLogPathRejectsNonRegularDailyPaths(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			home := t.TempDir()
-			logs := filepath.Join(home, ".hive", "logs")
+			logs := filepath.Join(home, "logs")
 			if err := os.MkdirAll(logs, 0o755); err != nil {
 				t.Fatal(err)
 			}
@@ -189,7 +161,7 @@ func TestStaticLogPathRejectsNonRegularDailyPaths(t *testing.T) {
 
 func TestStaticLogPathRejectsDailySocket(t *testing.T) {
 	home := t.TempDir()
-	logs := filepath.Join(home, ".hive", "logs")
+	logs := filepath.Join(home, "logs")
 	if err := os.MkdirAll(logs, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -213,7 +185,7 @@ func TestStaticLogPathRejectsDailySocket(t *testing.T) {
 
 func TestStaticLogPathRejectsDailyFIFOWithoutBlocking(t *testing.T) {
 	home := t.TempDir()
-	logs := filepath.Join(home, ".hive", "logs")
+	logs := filepath.Join(home, "logs")
 	if err := os.MkdirAll(logs, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -246,7 +218,7 @@ func TestStaticLogPathRejectsRotationToFIFOWithoutBlocking(t *testing.T) {
 	if err := guardHandle(writer, clock, "day one"); err != nil {
 		t.Fatal(err)
 	}
-	logs := filepath.Join(home, ".hive", "logs")
+	logs := filepath.Join(home, "logs")
 	fifo := filepath.Join(logs, "2026-01-03.jsonl")
 	if err := syscall.Mkfifo(fifo, 0o600); err != nil {
 		t.Fatal(err)
@@ -308,7 +280,7 @@ func TestStaticLogPathRejectsRotationToDailyLinkAndRetries(t *testing.T) {
 	if err := guardHandle(writer, clock, "day one"); err != nil {
 		t.Fatal(err)
 	}
-	dayOnePath := filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl")
+	dayOnePath := filepath.Join(home, "logs", "2026-01-02.jsonl")
 	dayOneBefore, err := os.ReadFile(dayOnePath)
 	if err != nil {
 		t.Fatal(err)
@@ -318,7 +290,7 @@ func TestStaticLogPathRejectsRotationToDailyLinkAndRetries(t *testing.T) {
 	if err := os.WriteFile(external, sentinel, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	link := filepath.Join(home, ".hive", "logs", "2026-01-03.jsonl")
+	link := filepath.Join(home, "logs", "2026-01-03.jsonl")
 	if err := os.Symlink(external, link); err != nil {
 		t.Fatal(err)
 	}
@@ -348,7 +320,7 @@ func TestStaticLogPathRejectsRotationToDailyLinkAndRetries(t *testing.T) {
 	if err := guardHandle(writer, clock, "after removal"); err != nil {
 		t.Fatalf("retry after link removal: %v", err)
 	}
-	dayTwoData, err := os.ReadFile(filepath.Join(home, ".hive", "logs", "2026-01-03.jsonl"))
+	dayTwoData, err := os.ReadFile(filepath.Join(home, "logs", "2026-01-03.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -374,8 +346,8 @@ func TestStaticLogPathRejectsLinkedLogsDirectoryOnRotation(t *testing.T) {
 	if err := guardHandle(writer, clock, "day one"); err != nil {
 		t.Fatal(err)
 	}
-	logs := filepath.Join(home, ".hive", "logs")
-	realLogs := filepath.Join(home, ".hive", "logs-real")
+	logs := filepath.Join(home, "logs")
+	realLogs := filepath.Join(home, "logs-real")
 	if err := os.Rename(logs, realLogs); err != nil {
 		t.Fatal(err)
 	}
@@ -424,7 +396,7 @@ func TestStaticLogPathAllowsValidCreationAppendAndWholeHomeAlias(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(realHome, ".hive", "logs", "2026-01-02.jsonl")
+	path := filepath.Join(realHome, "logs", "2026-01-02.jsonl")
 	first, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -436,7 +408,7 @@ func TestStaticLogPathAllowsValidCreationAppendAndWholeHomeAlias(t *testing.T) {
 	if err != nil || info.Mode().Perm() != 0o644 {
 		t.Fatalf("daily file mode = %v, %v; want 0644", info, err)
 	}
-	logsInfo, err := os.Stat(filepath.Join(realHome, ".hive", "logs"))
+	logsInfo, err := os.Stat(filepath.Join(realHome, "logs"))
 	if err != nil || logsInfo.Mode().Perm() != 0o755 {
 		t.Fatalf("logs directory mode = %v, %v; want 0755", logsInfo, err)
 	}

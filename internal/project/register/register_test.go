@@ -1,6 +1,7 @@
 package register
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,24 +19,31 @@ func TestRegisterCreatesRecordAndProjectDirectories(t *testing.T) {
 	if envelope.Outcome != "ok" || envelope.Error != nil {
 		t.Fatalf("Register() = %#v; want success", envelope)
 	}
-	if len(envelope.Effects) != 4 {
-		t.Fatalf("effects = %#v; want record and three directories", envelope.Effects)
+	if len(envelope.Effects) != 2 {
+		t.Fatalf("effects = %#v; want the record and the worktrees directory", envelope.Effects)
 	}
 	if got := envelope.Result.(records.Project).ID; got != "repo-one" {
 		t.Errorf("default ID = %q; want lowercase basename repo-one", got)
 	}
-	if envelope.Effects[0] != (output.Effect{Resource: "record", Path: ".hive/state/projects/repo-one.json", Action: "created"}) {
+	if envelope.Effects[0] != (output.Effect{Resource: "record", Path: "projects/repo-one/project.json", Action: "created"}) {
 		t.Errorf("record effect = %#v", envelope.Effects[0])
 	}
-	for _, path := range []string{
-		filepath.Join(home, "projects", "repo-one"),
-		filepath.Join(home, "projects", "repo-one", "worktrees"),
-		filepath.Join(home, "projects", "repo-one", "overrides"),
-	} {
-		info, err := os.Stat(path)
-		if err != nil || !info.IsDir() {
-			t.Errorf("project directory %q: stat = %v, %v", path, info, err)
-		}
+	if envelope.Effects[1] != (output.Effect{Resource: "directory", Path: "projects/repo-one/worktrees", Action: "created"}) {
+		t.Errorf("directory effect = %#v", envelope.Effects[1])
+	}
+	data, err := os.ReadFile(filepath.Join(home, "projects", "repo-one", "project.json"))
+	if err != nil {
+		t.Fatalf("read project record: %v", err)
+	}
+	var record map[string]any
+	if err := json.Unmarshal(data, &record); err != nil || record["id"] != "repo-one" || record["path"] != repo || record["base"] != "main" || record["registered_at"] == "" {
+		t.Errorf("project.json = %s, %v; want id, path, base, and registered_at", data, err)
+	}
+	if info, err := os.Stat(filepath.Join(home, "projects", "repo-one", "worktrees")); err != nil || !info.IsDir() {
+		t.Errorf("worktrees directory: stat = %v, %v", info, err)
+	}
+	if _, err := os.Stat(filepath.Join(home, "projects", "repo-one", "overrides")); !os.IsNotExist(err) {
+		t.Errorf("overrides directory: stat error = %v; want none", err)
 	}
 }
 
@@ -71,7 +79,7 @@ func TestRegisterRejectsInvalidIDs(t *testing.T) {
 			if envelope.Outcome != "failed" || envelope.Error != want {
 				t.Fatalf("Register() = %#v; want %q", envelope, want)
 			}
-			if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
+			if _, err := os.Stat(filepath.Join(home, "schema.json")); !os.IsNotExist(err) {
 				t.Fatalf("invalid ID created state: stat error = %v", err)
 			}
 		})
@@ -88,7 +96,7 @@ func TestRegisterRejectsInvalidBaseBranches(t *testing.T) {
 			if envelope.Error != want {
 				t.Fatalf("error = %v; want %q", envelope.Error, want)
 			}
-			if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
+			if _, err := os.Stat(filepath.Join(home, "schema.json")); !os.IsNotExist(err) {
 				t.Fatalf("invalid base created state: stat error = %v", err)
 			}
 		})
@@ -102,7 +110,7 @@ func TestRegisterRejectsPathControlCharacterBeforePathAccess(t *testing.T) {
 	if envelope.Error != "invalid path: "+quote(path) {
 		t.Fatalf("error = %v; want quoted invalid path", envelope.Error)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "state")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, "schema.json")); !os.IsNotExist(err) {
 		t.Fatalf("control-character path caused file access: stat error = %v", err)
 	}
 }
@@ -183,14 +191,14 @@ func TestRegisterRejectsDuplicateIDAndPath(t *testing.T) {
 func TestRegisterReportsPartialDirectoryFailure(t *testing.T) {
 	home := t.TempDir()
 	repo := makeRepo(t, filepath.Join(t.TempDir(), "repo-two"), true)
-	if err := os.Mkdir(filepath.Join(home, "projects"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, "projects", "repo-two"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(home, "projects", "repo-two"), []byte("file"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(home, "projects", "repo-two", "worktrees"), []byte("file"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
-	if envelope.Outcome != "partial" || envelope.Phase != "dirs" || len(envelope.Effects) != 1 || !strings.Contains(envelope.Error.(string), "projects/repo-two") {
+	if envelope.Outcome != "partial" || envelope.Phase != "dirs" || len(envelope.Effects) != 1 || !strings.Contains(envelope.Error.(string), "projects/repo-two/worktrees") {
 		t.Fatalf("Register() = %#v; want partial dirs outcome", envelope)
 	}
 }
@@ -202,7 +210,7 @@ func TestRegisterExistingDirectoriesRemainAndReportExists(t *testing.T) {
 		t.Fatal(err)
 	}
 	envelope := Run(home, Options{Path: repo, WorkingDir: t.TempDir()})
-	if envelope.Outcome != "ok" || envelope.Effects[2].Action != "exists" {
+	if envelope.Outcome != "ok" || envelope.Effects[1].Action != "exists" {
 		t.Fatalf("Register() = %#v; want existing worktrees directory", envelope)
 	}
 }

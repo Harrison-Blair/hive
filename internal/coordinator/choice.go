@@ -15,7 +15,7 @@ type Choice struct {
 }
 
 func choicePath(home string) string {
-	return filepath.Join(home, ".hive", "coordinator-choice.json")
+	return filepath.Join(home, "coordinator-choice.json")
 }
 
 // LoadChoice reads the last choice. ok is false when no choice is saved.

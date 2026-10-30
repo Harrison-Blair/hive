@@ -4,15 +4,17 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net"
-	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"testing"
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/project"
 )
 
 // Request is one request that the fake received.
@@ -46,6 +48,8 @@ type Pane struct {
 	Kind     string
 	Args     []string
 	Env      map[string]string
+	// StartEnv is a copy of Env when agent.start ran in the pane.
+	StartEnv map[string]string
 	Prompts  []string
 	// Session is the native session ID that herdr reports as agent_session.
 	Session string
@@ -197,6 +201,20 @@ func (h *Herdr) Requests(method string) []Request {
 	return out
 }
 
+// exportLine matches a shell line that exports one variable with a single
+// quoted value.
+var exportLine = regexp.MustCompile(`^export ([A-Za-z_][A-Za-z0-9_]*)='([^']*)'$`)
+
+func envParam(params map[string]any) map[string]string {
+	env := map[string]string{}
+	if raw, ok := params["env"].(map[string]any); ok {
+		for key, value := range raw {
+			env[key], _ = value.(string)
+		}
+	}
+	return env
+}
+
 func (h *Herdr) addWorkspace(label, checkout string, linked bool) (*Workspace, *Pane) {
 	h.nextWS++
 	ws := &Workspace{ID: fmt.Sprintf("w%d", h.nextWS), Label: label, Checkout: checkout, Linked: linked}
@@ -332,6 +350,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 	case "workspace.create":
 		ws, pane := h.addWorkspace(text("label"), text("cwd"), false)
 		ws.NoMetadata = true
+		pane.Env = envParam(params)
 		return map[string]any{"type": "workspace_created", "workspace": h.workspaceInfo(ws), "tab": tabInfo(pane), "root_pane": paneInfo(pane)}, nil
 	case "workspace.close":
 		if h.workspace(text("workspace_id")) == nil {
@@ -344,13 +363,7 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		if ws == nil {
 			return nil, &serverError{"workspace_not_found", "workspace not found"}
 		}
-		env := map[string]string{}
-		if raw, ok := params["env"].(map[string]any); ok {
-			for key, value := range raw {
-				env[key], _ = value.(string)
-			}
-		}
-		pane := h.addPane(ws, text("cwd"), env)
+		pane := h.addPane(ws, text("cwd"), envParam(params))
 		pane.TabLabel = text("label")
 		return map[string]any{"type": "tab_created", "tab": tabInfo(pane), "root_pane": paneInfo(pane)}, nil
 	case "tab.rename":
@@ -402,11 +415,26 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		h.closePane(text("pane_id"))
 		return map[string]any{"type": "ok"}, nil
+	case "pane.send_input":
+		pane, failed := paneOf()
+		if failed != nil {
+			return nil, failed
+		}
+		// The shell of the pane runs a submitted export line.
+		keys, _ := params["keys"].([]any)
+		if match := exportLine.FindStringSubmatch(text("text")); match != nil && len(keys) == 1 && keys[0] == "enter" {
+			if pane.Env == nil {
+				pane.Env = map[string]string{}
+			}
+			pane.Env[match[1]] = match[2]
+		}
+		return map[string]any{"type": "ok"}, nil
 	case "agent.start":
 		pane, failed := paneOf()
 		if failed != nil {
 			return nil, &serverError{"agent_pane_not_found", failed.message}
 		}
+		pane.StartEnv = maps.Clone(pane.Env)
 		if pane.Kind != "" {
 			return nil, &serverError{"agent_pane_busy", "agent target pane " + pane.ID + " is not an available shell"}
 		}
@@ -537,17 +565,11 @@ func GitRepo(t testing.TB) string {
 	return dir
 }
 
-// Home makes a hive home with the marker and returns its path.
+// Home returns the canonical path of a new empty hive home.
 func Home(t testing.TB) string {
 	t.Helper()
 	home, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return home
@@ -560,7 +582,7 @@ func RegisterProject(t testing.TB, home, id, path, base string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.Write("projects", id, records.Project{ID: id, Path: path, Base: base}); err != nil {
+	if err := project.Write(registry, records.Project{ID: id, Path: path, Base: base}); err != nil {
 		t.Fatal(err)
 	}
 }
