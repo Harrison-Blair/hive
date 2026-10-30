@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
+	"github.com/Harrison-Blair/hive/internal/lib/store"
 )
 
 // piProfile is the native profile of Pi.
@@ -74,7 +75,9 @@ func (piProfile) InboxArgs(home string) ([]string, error) {
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return nil, err
 		}
-		if err := os.WriteFile(path, inboxExtension, 0o644); err != nil {
+		// Parallel spawns can write at once: a rename never shows a partial
+		// file to a starting pi.
+		if err := store.AtomicWrite(path, inboxExtension); err != nil {
 			return nil, err
 		}
 	}

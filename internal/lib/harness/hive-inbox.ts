@@ -23,6 +23,7 @@ export default function (pi: ExtensionAPI) {
 		fs.rmSync(socket, { force: true });
 		server = net.createServer((conn) => {
 			let data = "";
+			conn.setEncoding("utf8"); // keeps a character split across chunks
 			conn.on("data", (chunk) => (data += chunk));
 			conn.on("end", () => data.split("\n").filter(Boolean).forEach(deliver));
 		});

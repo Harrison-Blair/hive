@@ -1,10 +1,12 @@
 package harness
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -86,5 +88,61 @@ func TestPiDeliverFailsWithoutSocket(t *testing.T) {
 	err := profile.Deliver(deliverCtx(t), pane.ID, "hi", nil)
 	if err == nil || !strings.Contains(err.Error(), "no message socket") || !strings.Contains(err.Error(), "restart") {
 		t.Fatalf("Deliver error = %v; want no message socket and restart", err)
+	}
+}
+
+// TestPiInboxArgsNeverShowsAPartialExtension runs several InboxArgs over an
+// old extension at once, as parallel spawns after an upgrade do, and checks
+// that a reader sees only the old or the whole new file.
+func TestPiInboxArgsNeverShowsAPartialExtension(t *testing.T) {
+	home := t.TempDir()
+	path := filepath.Join(home, "extensions", "hive-inbox.ts")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	old := []byte("// an old hive-inbox\n")
+	profile, _ := Lookup("pi")
+	done := make(chan struct{})
+	bad := make(chan string, 1)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+			}
+			got, err := os.ReadFile(path)
+			if err == nil && string(got) != string(old) && string(got) != string(inboxExtension) {
+				select {
+				case bad <- fmt.Sprintf("%d of %d bytes", len(got), len(inboxExtension)):
+				default:
+				}
+			}
+		}
+	}()
+	for range 200 {
+		// The reset renames a whole file into place, so the reader never sees
+		// a partial old file.
+		if err := os.WriteFile(path+".old", old, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Rename(path+".old", path); err != nil {
+			t.Fatal(err)
+		}
+		var wg sync.WaitGroup
+		for range 4 {
+			wg.Go(func() {
+				if _, err := profile.InboxArgs(home); err != nil {
+					t.Error(err)
+				}
+			})
+		}
+		wg.Wait()
+	}
+	close(done)
+	select {
+	case got := <-bad:
+		t.Fatalf("a reader saw a partial extension: %s", got)
+	default:
 	}
 }
