@@ -11,10 +11,16 @@ export default function (pi: ExtensionAPI) {
 	const socket = path.join(dir, `${process.pid}.sock`);
 	let ctx: ExtensionContext | undefined;
 	let server: net.Server | undefined;
+	// A socket callback never throws: an error there would end pi.
 	const deliver = (line: string) => {
-		const text = JSON.parse(line).text;
-		if (ctx?.isIdle()) pi.sendUserMessage(text);
-		else pi.sendUserMessage(text, { deliverAs: "followUp" });
+		try {
+			const text = JSON.parse(line).text;
+			if (typeof text !== "string") return;
+			if (ctx?.isIdle()) pi.sendUserMessage(text);
+			else pi.sendUserMessage(text, { deliverAs: "followUp" });
+		} catch {
+			// Skip a line that is not a hive message.
+		}
 	};
 	pi.on("session_start", (_event, context) => {
 		ctx = context;
@@ -25,7 +31,9 @@ export default function (pi: ExtensionAPI) {
 			let data = "";
 			conn.setEncoding("utf8"); // keeps a character split across chunks
 			conn.on("data", (chunk) => (data += chunk));
-			conn.on("end", () => data.split("\n").filter(Boolean).forEach(deliver));
+			conn.on("error", () => {});
+			// Only a newline ends a record: drop a record cut before its newline.
+			conn.on("end", () => data.split("\n").slice(0, -1).filter(Boolean).forEach(deliver));
 		});
 		server.listen(socket);
 	});
