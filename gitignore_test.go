@@ -43,21 +43,6 @@ func TestGitHubWorkflowIsNotIgnored(t *testing.T) {
 	}
 }
 
-// TestHomeMarkerIsTracked checks that Git does not ignore the home marker,
-// which every clone needs so that hive never creates a home.
-func TestHomeMarkerIsTracked(t *testing.T) {
-	skipWithoutGit(t)
-	// check-ignore exits 1 when the path is not ignored.
-	err := exec.Command("git", "check-ignore", "--no-index", "-q", ".hive/README.md").Run()
-	if err == nil {
-		t.Fatal("git ignores .hive/README.md; the home marker must be tracked")
-	}
-	var exit *exec.ExitError
-	if !errors.As(err, &exit) || exit.ExitCode() != 1 {
-		t.Fatalf("git check-ignore: %v", err)
-	}
-}
-
 // TestFeatureSpecPathsAreIgnored checks AC1 of spec-local-state: the spec
 // tree is local state in the home. Git ignores each path type below
 // .hive/spec/, also a Markdown file that the !*.md rule allows elsewhere.
@@ -104,8 +89,8 @@ func firstLines(text string, n int) string {
 	return strings.Join(lines, "\n")
 }
 
-// TestPersonalPathsAreIgnored checks that Git ignores each personal and runtime
-// path of the home, so a push of this public repository never carries them.
+// TestPersonalPathsAreIgnored checks that Git ignores each personal, scratch,
+// and runtime path, so a push of this public repository never carries them.
 func TestPersonalPathsAreIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	for _, path := range []string{
@@ -121,6 +106,7 @@ func TestPersonalPathsAreIgnored(t *testing.T) {
 		".hive/tmp/scratch.md",
 		".hive/agents/coordinator.json",
 		".hive/coordinator-choice.json",
+		".hive/README.md",
 		"_archive/x/a.go",
 		"_archive/x/b.md",
 	} {

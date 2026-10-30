@@ -27,12 +27,16 @@
 # Test fixtures
 !**/testdata/**
 
-# Personal and runtime data of the home (the checkout is the home). Never tracked.
-/projects/
+# Personal files of the user at the repository root. Never tracked.
 /memory/
 /overrides/
 /plans/
 /handoff.md
 /_archive/
-.hive/*
-!.hive/README.md
+
+# Project worktrees of the old home in this checkout, until the state moves to
+# the hive home.
+/projects/
+
+# Development scratch files and the runtime data of the old home.
+/.hive/
