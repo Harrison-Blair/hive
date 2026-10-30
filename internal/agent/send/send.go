@@ -94,33 +94,45 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if !options.Wait {
 		return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}
 	}
-	status, err := waitTurn(ctx, record.Pane, pane.AgentStatus, logger)
-	if err != nil {
-		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("wait for agent %s in pane %s: %s", record.Name, record.Pane, err), Result: result}
+	partial := func(message string) output.Envelope {
+		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: message, Result: result}
 	}
-	result.Status = status
-	if status == "blocked" {
-		return output.Envelope{Outcome: output.OutcomePartial, Phase: "wait", Effects: effects, Error: fmt.Sprintf("agent %s is blocked by a dialog in pane %s: the message waits until the dialog closes; answer it in the pane", record.Name, record.Pane), Result: result}
+	where := fmt.Sprintf("agent %s in pane %s", record.Name, record.Pane)
+	if pane.AgentStatus != "working" && pane.AgentStatus != "blocked" {
+		started, err := waitStart(ctx, record.Pane, logger)
+		if err != nil {
+			return partial(fmt.Sprintf("wait for %s: %s", where, err))
+		}
+		if !started {
+			return partial(fmt.Sprintf("%s did not start a turn within %s: hive cannot tell whether it took the message", where, startTimeout))
+		}
+	}
+	info, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: record.Pane, Until: []string{"idle", "done", "blocked"}, TimeoutMS: uint64(waitTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(waitTimeout+10*time.Second))
+	if err != nil {
+		return partial(fmt.Sprintf("wait for %s: %s", where, err))
+	}
+	result.Status = info.AgentStatus
+	if info.AgentStatus == "blocked" {
+		return partial(fmt.Sprintf("agent %s is blocked by a dialog in pane %s: the message waits until the dialog closes; answer it in the pane", record.Name, record.Pane))
+	}
+	if pane.AgentStatus == "working" {
+		// The harness queued the message behind the running turn. That turn
+		// can end before a later turn handles the message.
+		return partial(fmt.Sprintf("%s was busy when the message arrived: its turn ended with status %s, but hive cannot tell whether that turn handled the message", where, info.AgentStatus))
 	}
 	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}
 }
 
-// waitTurn waits for the turn of the message to end and returns the status.
-// The harness starts the turn some time after the delivery, and agent.wait
-// matches a status that the agent already has. So when the agent was idle or
-// done, waitTurn first waits up to startTimeout for the status working.
-func waitTurn(ctx context.Context, paneID, before string, logger *slog.Logger) (string, error) {
-	if before != "working" && before != "blocked" {
-		_, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: paneID, Until: []string{"working"}, TimeoutMS: uint64(startTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(startTimeout+10*time.Second))
-		if err != nil && !agent.IsCode(err, "timeout") {
-			return "", err
-		}
+// waitStart waits up to startTimeout for the agent in pane to start the turn
+// of the message. agent.wait matches a status that the agent already has, so
+// without this wait the old idle or done status could count as the end of the
+// turn. It returns false when no turn started.
+func waitStart(ctx context.Context, paneID string, logger *slog.Logger) (bool, error) {
+	_, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: paneID, Until: []string{"working"}, TimeoutMS: uint64(startTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(startTimeout+10*time.Second))
+	if agent.IsCode(err, "timeout") {
+		return false, nil
 	}
-	info, err := herdr.AgentWait(ctx, herdr.AgentWaitParams{Target: paneID, Until: []string{"idle", "done", "blocked"}, TimeoutMS: uint64(waitTimeout / time.Millisecond)}, herdr.WithLogger(logger), herdr.WithDeadline(waitTimeout+10*time.Second))
-	if err != nil {
-		return "", err
-	}
-	return info.AgentStatus, nil
+	return err == nil, err
 }
 
 // Text renders the result of one send.

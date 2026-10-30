@@ -87,6 +87,9 @@ type Herdr struct {
 	// PendingSession is the session ID that only the agent.get replies before
 	// the agent is ready give.
 	PendingSession string
+	// NoTurn makes an agent.wait for working time out: the agent starts no
+	// turn.
+	NoTurn bool
 	// PromptSession is the session ID that only the agent.prompt reply gives.
 	PromptSession string
 }
@@ -504,6 +507,9 @@ func (h *Herdr) dispatch(method string, params map[string]any) (any, *serverErro
 		}
 		until, _ := params["until"].([]any)
 		if len(until) == 1 && until[0] == "working" {
+			if h.NoTurn {
+				return nil, &serverError{"timeout", "timed out waiting for agent status"}
+			}
 			// A delivered message starts a turn.
 			if pane.Status != "blocked" {
 				pane.Status = "working"

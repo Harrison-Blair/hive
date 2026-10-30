@@ -203,3 +203,36 @@ func TestSendWaitEndsBlocked(t *testing.T) {
 		t.Fatalf("envelope = %+v", envelope)
 	}
 }
+
+// An idle agent that starts no turn may not have taken the message, so the
+// old idle status must not count as the end of its turn.
+func TestSendWaitWithoutATurnIsPartial(t *testing.T) {
+	fake, home, bossPane, _, _ := setup(t)
+	fake.NoTurn = true
+	envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", Wait: true, CallerPane: bossPane})
+	if envelope.Outcome != "partial" || envelope.Phase != "wait" || !strings.Contains(errorText(envelope), "did not start a turn") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+}
+
+// A busy agent queues the message. The end of its current turn can come
+// before a second turn handles the message, so hive cannot report ok.
+func TestSendWaitOnABusyAgentIsPartial(t *testing.T) {
+	fake, home, bossPane, kidPane, lines := setup(t)
+	fake.SetStatus(kidPane, "working")
+	fake.WaitStatus = "idle"
+	envelope := sendRun(t, home, Options{Name: "kid", Text: "hi", Wait: true, CallerPane: bossPane})
+	if envelope.Outcome != "partial" || envelope.Phase != "wait" || !strings.Contains(errorText(envelope), "cannot tell") {
+		t.Fatalf("envelope = %+v", envelope)
+	}
+	if got := received(t, lines); len(got) != 1 {
+		t.Fatalf("messages = %q; want the message delivered", got)
+	}
+	waits := fake.Requests("agent.wait")
+	if len(waits) != 1 || !slices.Equal(untilOf(t, waits[0]), []string{"blocked", "done", "idle"}) {
+		t.Fatalf("agent.wait calls = %+v; want one wait for the end of the turn", waits)
+	}
+	if result := envelope.Result.(Result); result.Status != "idle" {
+		t.Fatalf("result = %+v, want status idle", result)
+	}
+}
