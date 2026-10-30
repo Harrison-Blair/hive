@@ -94,9 +94,6 @@ func firstLines(text string, n int) string {
 func TestPersonalPathsAreIgnored(t *testing.T) {
 	skipWithoutGit(t)
 	for _, path := range []string{
-		"projects/p1/handoff.md",
-		"projects/p1/memory/fact.md",
-		"projects/p1/worktrees/t1/main.go",
 		"memory/fact.md",
 		"overrides/preferences.md",
 		"plans/plan.md",

@@ -34,9 +34,5 @@
 /handoff.md
 /_archive/
 
-# Project worktrees of the old home in this checkout, until the state moves to
-# the hive home.
-/projects/
-
 # Development scratch files and the runtime data of the old home.
 /.hive/
