@@ -20,7 +20,7 @@ func (p testProfile) StartTimeout() time.Duration                { return p.star
 func (p testProfile) ReadyTimeout() time.Duration                { return p.ready }
 func (p testProfile) ProcessNames() []string                     { return p.names }
 func (p testProfile) Trust() Trust                               { return Trust{} }
-func (p testProfile) SystemPromptArg() string                    { return "" }
+func (p testProfile) GuideArgs(string) []string                  { return nil }
 
 func TestCheckBounds(t *testing.T) {
 	cases := []struct {

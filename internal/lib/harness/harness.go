@@ -17,11 +17,10 @@ type Profile interface {
 	ReadyTimeout() time.Duration
 	ProcessNames() []string
 	Trust() Trust
-	// SystemPromptArg returns the flag that names a file with the profile text
-	// and the guide. The harness reads the file at its start as a system
-	// prompt. It returns the empty string when the harness takes that text at
-	// the start of the first prompt (D4).
-	SystemPromptArg() string
+	// GuideArgs returns the start arguments that add guide to the system
+	// prompt of the harness. Each value is one line, because herdr rejects a
+	// start argument with a newline. It returns nil for an empty guide.
+	GuideArgs(guide string) []string
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the
