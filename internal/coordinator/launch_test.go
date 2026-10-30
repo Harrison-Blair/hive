@@ -46,7 +46,7 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 		wantBinary string
 		wantArgs   []string
 	}{
-		{Choice{"pi", "openai-codex/gpt-6-sol"}, "pi", []string{"--model", "openai-codex/gpt-6-sol"}},
+		{Choice{"pi", "openai-codex/gpt-6-sol"}, "pi", []string{"--model", "openai-codex/gpt-6-sol", "-e", "<home>/extensions/hive-inbox.ts"}},
 		{Choice{"claude", "claude-opus-5-5"}, "claude", []string{"--dangerously-skip-permissions", "--settings", `{"crossSessionInbound":"accept"}`, "--model", "claude-opus-5-5"}},
 		{Choice{"codex", "gpt-6-sol"}, "codex", []string{"--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-6-sol"}},
 	}
@@ -67,8 +67,12 @@ func TestRunWritesRecordAndExecsHarness(t *testing.T) {
 			if record != want {
 				t.Fatalf("record = %+v; want %+v", record, want)
 			}
-			if len(calls) != 1 || calls[0].dir != dir || calls[0].binary != tc.wantBinary || !slices.Equal(calls[0].args, tc.wantArgs) {
-				t.Fatalf("exec calls = %+v; want one %s %v in %s", calls, tc.wantBinary, tc.wantArgs, dir)
+			wantArgs := slices.Clone(tc.wantArgs)
+			for i, arg := range wantArgs {
+				wantArgs[i] = strings.ReplaceAll(arg, "<home>", home)
+			}
+			if len(calls) != 1 || calls[0].dir != dir || calls[0].binary != tc.wantBinary || !slices.Equal(calls[0].args, wantArgs) {
+				t.Fatalf("exec calls = %+v; want one %s %v in %s", calls, tc.wantBinary, wantArgs, dir)
 			}
 			saved, ok, err := LoadChoice(home)
 			if err != nil || !ok || saved != tc.choice {

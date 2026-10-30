@@ -23,6 +23,7 @@ func (p testProfile) ReadyTimeout() time.Duration                { return p.read
 func (p testProfile) ProcessNames() []string                     { return p.names }
 func (p testProfile) Trust() Trust                               { return Trust{} }
 func (p testProfile) GuideArgs(string) []string                  { return nil }
+func (p testProfile) InboxArgs(string) ([]string, error)         { return nil, nil }
 func (p testProfile) Deliver(context.Context, string, string, *slog.Logger) error {
 	return nil
 }

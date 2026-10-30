@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Harrison-Blair/hive/internal/guide"
@@ -56,7 +59,9 @@ func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, logger 
 	if !hasArgPair(process.Argv, "--settings", claudeInbound) {
 		return fmt.Errorf("claude process %d was started without --settings %s: restart the agent", process.PID, claudeInbound)
 	}
-	path, err := claudeSocket(process.PID)
+	// Claude Code 2.1.314 binds $XDG_RUNTIME_DIR/cc-socks/<pid>.sock, and
+	// falls back to /tmp/cc-socks-<uid> when it cannot use that directory.
+	path, err := socketPath("cc-socks", process.PID, filepath.Join(os.TempDir(), "cc-socks-"+strconv.Itoa(os.Getuid())))
 	if err != nil {
 		return fmt.Errorf("%w: restart the agent", err)
 	}
@@ -76,3 +81,6 @@ func (p claudeProfile) Deliver(ctx context.Context, paneID, text string, logger 
 	}
 	return nil
 }
+
+// InboxArgs returns nil: the native message path of Claude Code needs no file.
+func (claudeProfile) InboxArgs(string) ([]string, error) { return nil, nil }

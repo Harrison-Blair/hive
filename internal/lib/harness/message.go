@@ -93,16 +93,15 @@ func hasArgPair(argv []string, name, value string) bool {
 	return false
 }
 
-// claudeSocket returns the inbox socket of the Claude Code process pid. Claude
-// Code 2.1.314 binds $XDG_RUNTIME_DIR/cc-socks/<pid>.sock, and falls back to
-// /tmp/cc-socks-<uid>/<pid>.sock when it cannot use that directory.
-func claudeSocket(pid int) (string, error) {
+// socketPath returns the socket <pid>.sock of the process pid in
+// $XDG_RUNTIME_DIR/sub, or else in the directory fallback.
+func socketPath(sub string, pid int, fallback string) (string, error) {
 	name := strconv.Itoa(pid) + ".sock"
 	var paths []string
 	if dir := os.Getenv("XDG_RUNTIME_DIR"); dir != "" {
-		paths = append(paths, filepath.Join(dir, "cc-socks", name))
+		paths = append(paths, filepath.Join(dir, sub, name))
 	}
-	paths = append(paths, filepath.Join(os.TempDir(), "cc-socks-"+strconv.Itoa(os.Getuid()), name))
+	paths = append(paths, filepath.Join(fallback, name))
 	for _, path := range paths {
 		if info, err := os.Stat(path); err == nil && info.Mode().Type() == fs.ModeSocket {
 			return path, nil

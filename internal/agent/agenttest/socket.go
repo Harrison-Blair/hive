@@ -14,12 +14,25 @@ import (
 // the lines that arrive, one line for each connection.
 func ListenClaude(t testing.TB, pid int) <-chan string {
 	t.Helper()
+	return listen(t, "cc-socks", pid)
+}
+
+// ListenPi sets XDG_RUNTIME_DIR to a new directory and listens on the socket
+// of the hive-inbox extension of the Pi process pid in it. It returns the
+// channel of the lines that arrive, one line for each connection.
+func ListenPi(t testing.TB, pid int) <-chan string {
+	t.Helper()
+	return listen(t, "hive-pi", pid)
+}
+
+func listen(t testing.TB, sub string, pid int) <-chan string {
+	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("XDG_RUNTIME_DIR", dir)
-	if err := os.MkdirAll(filepath.Join(dir, "cc-socks"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(dir, sub), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	listener, err := net.Listen("unix", filepath.Join(dir, "cc-socks", strconv.Itoa(pid)+".sock"))
+	listener, err := net.Listen("unix", filepath.Join(dir, sub, strconv.Itoa(pid)+".sock"))
 	if err != nil {
 		t.Fatal(err)
 	}

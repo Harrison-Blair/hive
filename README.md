@@ -16,6 +16,7 @@ Hive works from any directory and needs no setup step.
 ├─ agents/<name>.json                agent records
 ├─ logs/YYYY-MM-DD.jsonl             log events
 ├─ coordinator-choice.json           last picker choice
+├─ extensions/hive-inbox.ts          pi extension of hive agent send
 ├─ tmp/                              scratch files
 ├─ lock                              store lock
 └─ schema.json                       home schema version

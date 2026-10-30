@@ -138,3 +138,6 @@ func codexThread(ctx context.Context, paneID string, logger *slog.Logger) (strin
 		}
 	}
 }
+
+// InboxArgs returns nil: the native message path of Codex needs no file.
+func (codexProfile) InboxArgs(string) ([]string, error) { return nil, nil }

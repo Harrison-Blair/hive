@@ -758,13 +758,19 @@ func TestSpawnStartsTheHarnessWithTheGuide(t *testing.T) {
 
 // TestSpawnLimitsTheStartLine uses pi with no guide. Its start line is
 // pi '--model' 'MODEL' '--approve', which is 27 bytes plus the model.
+// inboxBytes is the length of the inbox arguments of Pi on the start line:
+// " '-e' '<home>/extensions/hive-inbox.ts'".
+func inboxBytes(home string) int {
+	return len(" '-e' ''") + len(filepath.Join(home, "extensions", "hive-inbox.ts"))
+}
+
 func TestSpawnLimitsTheStartLine(t *testing.T) {
 	t.Run("over the limit", func(t *testing.T) {
 		fake := agenttest.NewHerdr(t)
 		home := agenttest.Home(t)
 		_, callerPane := fake.AddWorkspace("mine", "", false)
 		options := base("kid")
-		options.Model = strings.Repeat("m", 3974)
+		options.Model = strings.Repeat("m", 3974-inboxBytes(home))
 		options.CallerPane = callerPane.ID
 		envelope := spawnRun(t, home, options)
 		want := "the start command is 4001 bytes, more than the limit of 4000 bytes: use a shorter --model"
@@ -783,7 +789,7 @@ func TestSpawnLimitsTheStartLine(t *testing.T) {
 		home := agenttest.Home(t)
 		_, callerPane := fake.AddWorkspace("mine", "", false)
 		options := base("kid")
-		options.Model = strings.Repeat("m", 3973)
+		options.Model = strings.Repeat("m", 3973-inboxBytes(home))
 		options.CallerPane = callerPane.ID
 		if envelope := spawnRun(t, home, options); envelope.Outcome != "ok" {
 			t.Fatalf("envelope = %+v; want ok", envelope)

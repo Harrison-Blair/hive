@@ -112,8 +112,13 @@ func Run(opts Options) error {
 		labelTab(opts.Pane, logger)
 	}
 	binary := profile.ProcessNames()[0]
+	inbox, err := profile.InboxArgs(opts.Home)
+	if err != nil {
+		logger.Error("inbox failed", "harness", choice.Harness, "error", err.Error())
+		return fmt.Errorf("message path of %s: %w", choice.Harness, err)
+	}
 	guideArgs := profile.GuideArgs(opts.Guide)
-	args := profile.Args(choice.Model, guideArgs)
+	args := profile.Args(choice.Model, append(inbox, guideArgs...))
 	logger.Info("exec harness", "binary", binary, "args", guide.Redact(args, guideArgs), "cwd", opts.Dir)
 	if err := opts.Exec(opts.Dir, binary, args, homeEnv(os.Environ(), opts.Home)); err != nil {
 		logger.Error("exec harness failed", "binary", binary, "error", err.Error())

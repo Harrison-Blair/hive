@@ -28,6 +28,10 @@ type Profile interface {
 	// cause and the fix when the native path is not available. It logs each
 	// herdr call and external process to logger.
 	Deliver(ctx context.Context, paneID, text string, logger *slog.Logger) error
+	// InboxArgs writes the files that the native message path needs below
+	// home and returns its start arguments. It returns nil when the harness
+	// needs none.
+	InboxArgs(home string) ([]string, error)
 }
 
 // Trust is the trust dialog result of one harness (decision 13 of the
