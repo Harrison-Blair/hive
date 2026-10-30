@@ -121,53 +121,6 @@ func (l *LockedStore) available() error {
 	return nil
 }
 
-// Read reads one legacy record with the held lock.
-func (l *LockedStore) Read(kind, id string, target any) error {
-	if err := l.available(); err != nil {
-		return err
-	}
-	return l.store.readUnlocked(kind, id, target)
-}
-
-// Write writes one legacy record with the held lock.
-func (l *LockedStore) Write(kind, id string, value any) error {
-	if err := l.available(); err != nil {
-		return err
-	}
-	data, err := marshalRecord(value)
-	if err != nil {
-		return err
-	}
-	return l.store.writeData(kind, id, data)
-}
-
-// Update runs one legacy read-change-write operation with the held lock.
-func (l *LockedStore) Update(kind, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	if err := l.available(); err != nil {
-		return err
-	}
-	return l.store.updateUnlocked(kind, id, fn)
-}
-
-// List reads legacy records with the held lock.
-func (l *LockedStore) List(kind string) ([]json.RawMessage, error) {
-	if err := l.available(); err != nil {
-		return nil, err
-	}
-	if err := validateSegment("kind", kind); err != nil {
-		return nil, err
-	}
-	return l.store.listUnlocked(kind)
-}
-
-// Next increments a named counter with the held lock.
-func (l *LockedStore) Next(name string) (uint64, error) {
-	if err := l.available(); err != nil {
-		return 0, err
-	}
-	return l.store.nextUnlocked(name)
-}
-
 // ReadIn reads one nested record with the held lock.
 func (l *LockedStore) ReadIn(collection []string, id string, target any) error {
 	if err := l.available(); err != nil {

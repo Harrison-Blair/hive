@@ -158,7 +158,7 @@ func TestWithLockLongDeadlineWaits(t *testing.T) {
 
 func TestWithLockFailureChangesNoRecord(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	if err := store.Write("tasks", "sentinel", map[string]int{"value": 1}); err != nil {
+	if err := store.WriteIn([]string{"tasks"}, "sentinel", map[string]int{"value": 1}); err != nil {
 		t.Fatal(err)
 	}
 	release := holdStateLock(t, store.home)
@@ -167,13 +167,13 @@ func TestWithLockFailureChangesNoRecord(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	err := store.WithLock(ctx, func(locked *LockedStore) error {
-		return locked.Write("tasks", "sentinel", map[string]int{"value": 2})
+		return locked.WriteIn([]string{"tasks"}, "sentinel", map[string]int{"value": 2})
 	})
 	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("WithLock() error = %v; want context.DeadlineExceeded", err)
 	}
 	var record map[string]int
-	if err := store.Read("tasks", "sentinel", &record); err != nil {
+	if err := store.ReadIn([]string{"tasks"}, "sentinel", &record); err != nil {
 		t.Fatal(err)
 	}
 	if record["value"] != 1 {
@@ -241,12 +241,12 @@ func TestWithLockHandleAfterRelease(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if err := handle.Read("tasks", "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
-		t.Fatalf("released handle Read() error = %v; want ErrLockReleased", err)
+	if err := handle.ReadIn([]string{"tasks"}, "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
+		t.Fatalf("released handle ReadIn() error = %v; want ErrLockReleased", err)
 	}
 	var nilHandle *LockedStore
-	if err := nilHandle.Read("tasks", "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
-		t.Fatalf("nil handle Read() error = %v; want ErrLockReleased", err)
+	if err := nilHandle.ReadIn([]string{"tasks"}, "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
+		t.Fatalf("nil handle ReadIn() error = %v; want ErrLockReleased", err)
 	}
 }
 
@@ -261,7 +261,7 @@ func TestWithLockNestedFails(t *testing.T) {
 			nestedRan = true
 			return nil
 		})
-		return locked.Write("tasks", "outer", map[string]int{"value": 1})
+		return locked.WriteIn([]string{"tasks"}, "outer", map[string]int{"value": 1})
 	})
 	if err != nil {
 		t.Fatalf("outer WithLock() error = %v", err)
@@ -273,7 +273,7 @@ func TestWithLockNestedFails(t *testing.T) {
 		t.Fatalf("nested WithLock() error = %v; want a bounded failure", nestedErr)
 	}
 	var record map[string]int
-	if err := store.Read("tasks", "outer", &record); err != nil {
+	if err := store.ReadIn([]string{"tasks"}, "outer", &record); err != nil {
 		t.Fatal(err)
 	}
 	if record["value"] != 1 {
@@ -281,7 +281,7 @@ func TestWithLockNestedFails(t *testing.T) {
 	}
 }
 
-func TestWithLockLegacyMutationTimeout(t *testing.T) {
+func TestWithLockMutationTimeout(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	release := holdStateLock(t, store.home)
 	defer release()
@@ -290,17 +290,13 @@ func TestWithLockLegacyMutationTimeout(t *testing.T) {
 		name string
 		run  func() error
 	}{
-		{"Write", func() error {
-			return store.Write("tasks", "one", map[string]int{"value": 1})
+		{"WriteIn", func() error {
+			return store.WriteIn([]string{"tasks"}, "one", map[string]int{"value": 1})
 		}},
-		{"Update", func() error {
-			return store.Update("tasks", "one", func(json.RawMessage) (json.RawMessage, error) {
+		{"UpdateIn", func() error {
+			return store.UpdateIn([]string{"tasks"}, "one", func(json.RawMessage) (json.RawMessage, error) {
 				return json.RawMessage(`{"value":1}`), nil
 			})
-		}},
-		{"Next", func() error {
-			_, err := store.Next("counter")
-			return err
 		}},
 	}
 	for _, check := range checks {
@@ -320,19 +316,12 @@ func TestWithLockLegacyMutationTimeout(t *testing.T) {
 
 func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	if err := store.Write("tasks", "visible", map[string]int{"value": 7}); err != nil {
+	if err := store.WriteIn([]string{"tasks"}, "visible", map[string]int{"value": 7}); err != nil {
 		t.Fatal(err)
 	}
 	release := holdStateLock(t, store.home)
 	defer release()
 
-	var record map[string]int
-	if err := store.Read("tasks", "visible", &record); err != nil {
-		t.Fatalf("Read() error = %v; want no lock wait", err)
-	}
-	if record["value"] != 7 {
-		t.Fatalf("Read() value = %d; want 7", record["value"])
-	}
 	var generic map[string]int
 	if err := store.ReadIn([]string{"tasks"}, "visible", &generic); err != nil {
 		t.Fatalf("ReadIn() error = %v; want no lock wait", err)

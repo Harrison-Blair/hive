@@ -37,7 +37,7 @@ func TestAtomicWriteCreatesDotPrefixedTemporaryFile(t *testing.T) {
 	if err := syscall.SetNonblock(fd, true); err != nil {
 		t.Fatal(err)
 	}
-	if err := store.Write("tasks", "atomic", map[string]int{"value": 1}); err != nil {
+	if err := store.WriteIn([]string{"tasks"}, "atomic", map[string]int{"value": 1}); err != nil {
 		t.Fatal(err)
 	}
 	events, err := readInotifyEvents(fd)
