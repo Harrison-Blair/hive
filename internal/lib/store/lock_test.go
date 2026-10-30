@@ -27,7 +27,7 @@ func openStore(t *testing.T, home string) *Store {
 // function releases it. The function is safe to call more than one time.
 func holdStateLock(t *testing.T, home string) func() {
 	t.Helper()
-	path := filepath.Join(home, ".hive", "state", "lock")
+	path := filepath.Join(home, "lock")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -344,7 +344,7 @@ func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 
 func TestWithLockRejectsDirectoryLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	lockPath := filepath.Join(store.home, ".hive", "state", "lock")
+	lockPath := filepath.Join(store.home, "lock")
 	if err := os.Mkdir(lockPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -430,7 +430,7 @@ func TestWithLockAbandonedWaitReleases(t *testing.T) {
 	}
 	release()
 
-	path := filepath.Join(store.home, ".hive", "state", "lock")
+	path := filepath.Join(store.home, "lock")
 	deadline := time.Now().Add(2 * time.Second)
 	for {
 		free := lockIsFree(t, path)

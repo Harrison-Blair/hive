@@ -14,7 +14,7 @@ import (
 func newTestReader(t *testing.T, now time.Time) (*Reader, string) {
 	t.Helper()
 	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive", "logs"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, "logs"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	reader := NewReader(home)
@@ -36,7 +36,7 @@ func eventLine(t *testing.T, when time.Time, fields map[string]any) string {
 }
 
 func dailyPath(home string, day time.Time) string {
-	return filepath.Join(home, ".hive", "logs", day.Format("2006-01-02")+".jsonl")
+	return filepath.Join(home, "logs", day.Format("2006-01-02")+".jsonl")
 }
 
 func writeDaily(t *testing.T, home string, day time.Time, lines ...string) {

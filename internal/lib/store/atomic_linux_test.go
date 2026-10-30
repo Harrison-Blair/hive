@@ -22,7 +22,7 @@ func TestAtomicWriteCreatesDotPrefixedTemporaryFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(home, ".hive", "state", "tasks")
+	dir := filepath.Join(home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -2,13 +2,13 @@
 package list
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/Harrison-Blair/hive/internal/lib/output"
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	projectlib "github.com/Harrison-Blair/hive/internal/project"
 )
 
 // List returns project records in ID order.
@@ -17,17 +17,9 @@ func List(home string) output.Envelope {
 	if err != nil {
 		return output.Failed("store", err.Error())
 	}
-	rawRecords, err := registry.List("projects")
+	projects, err := projectlib.List(registry)
 	if err != nil {
 		return output.Failed("store", err.Error())
-	}
-	projects := make([]records.Project, 0, len(rawRecords))
-	for _, raw := range rawRecords {
-		var record records.Project
-		if err := json.Unmarshal(raw, &record); err != nil {
-			return output.Failed("store", fmt.Sprintf("record invalid: projects: %v", err))
-		}
-		projects = append(projects, record)
 	}
 	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: []output.Effect{}, Error: nil, Result: projects}
 }

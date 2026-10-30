@@ -79,7 +79,7 @@ func NewWriter(home, component string, clock func() time.Time) (*Writer, error) 
 	if err := checkStaticLogPath(home, date); err != nil {
 		return nil, err
 	}
-	logsDir := filepath.Join(home, ".hive", "logs")
+	logsDir := filepath.Join(home, "logs")
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (w *Writer) Handle(_ context.Context, record slog.Record) error {
 		if err := checkStaticLogPath(w.state.home, date); err != nil {
 			return err
 		}
-		path := filepath.Join(w.state.home, ".hive", "logs", date+".jsonl")
+		path := filepath.Join(w.state.home, "logs", date+".jsonl")
 		file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
@@ -183,11 +183,7 @@ func (w *Writer) Close() error {
 }
 
 func checkStaticLogPath(home, date string) error {
-	hiveDir := filepath.Join(home, ".hive")
-	if err := checkNativeDirectory(hiveDir); err != nil {
-		return err
-	}
-	logsDir := filepath.Join(hiveDir, "logs")
+	logsDir := filepath.Join(home, "logs")
 	if err := checkNativeDirectory(logsDir); err != nil {
 		return err
 	}

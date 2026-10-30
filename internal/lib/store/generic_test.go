@@ -27,7 +27,7 @@ func TestStoreNamesAcceptValidComponents(t *testing.T) {
 func TestListInKeepsLongStoreSegment(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	id := strings.Repeat("k", 201)
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestWriteInNestedInbox(t *testing.T) {
 	if err := store.WriteIn([]string{"inbox", "coordinator"}, "1", map[string]string{"body": "hello"}); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(store.home, ".hive", "state", "inbox", "coordinator", "1.json")
+	path := filepath.Join(store.home, "inbox", "coordinator", "1.json")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("nested record was not written: %v", err)
@@ -138,7 +138,7 @@ func TestListInIncludeSelectsOne(t *testing.T) {
 
 func TestListInSkipsInvalidStoreSegments(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestListInSkipsInvalidStoreSegments(t *testing.T) {
 
 func TestReadInRecordInvalid(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -230,7 +230,7 @@ func recordOfSize(t *testing.T, size int) []byte {
 
 func TestReadInSizeBoundary(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +263,7 @@ func TestReadInSizeBoundary(t *testing.T) {
 
 func TestListInBadSelectedFileReturnsNoRecords(t *testing.T) {
 	store := openStore(t, t.TempDir())
-	dir := filepath.Join(store.home, ".hive", "state", "tasks")
+	dir := filepath.Join(store.home, "tasks")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -284,26 +284,10 @@ func TestListInBadSelectedFileReturnsNoRecords(t *testing.T) {
 }
 
 func TestReadInPathTypes(t *testing.T) {
-	t.Run("state root symlink", func(t *testing.T) {
-		home := t.TempDir()
-		store := openStore(t, home)
-		target := t.TempDir()
-		state := filepath.Join(home, ".hive", "state")
-		if err := os.RemoveAll(state); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.Symlink(target, state); err != nil {
-			t.Fatal(err)
-		}
-		if err := store.ReadIn([]string{"tasks"}, "one", &map[string]any{}); err == nil || !strings.Contains(err.Error(), "store path invalid") {
-			t.Fatalf("ReadIn() error = %v; want store path invalid", err)
-		}
-	})
-
 	t.Run("collection ancestor symlink", func(t *testing.T) {
 		store := openStore(t, t.TempDir())
 		target := t.TempDir()
-		link := filepath.Join(store.home, ".hive", "state", "inbox")
+		link := filepath.Join(store.home, "inbox")
 		if err := os.Symlink(target, link); err != nil {
 			t.Fatal(err)
 		}
@@ -318,7 +302,7 @@ func TestReadInPathTypes(t *testing.T) {
 
 	t.Run("record leaf symlink", func(t *testing.T) {
 		store := openStore(t, t.TempDir())
-		dir := filepath.Join(store.home, ".hive", "state", "tasks")
+		dir := filepath.Join(store.home, "tasks")
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -345,7 +329,7 @@ func TestReadInPathTypes(t *testing.T) {
 
 	t.Run("dangling record leaf symlink", func(t *testing.T) {
 		store := openStore(t, t.TempDir())
-		dir := filepath.Join(store.home, ".hive", "state", "tasks")
+		dir := filepath.Join(store.home, "tasks")
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -365,7 +349,7 @@ func TestReadInPathTypes(t *testing.T) {
 
 	t.Run("record leaf directory", func(t *testing.T) {
 		store := openStore(t, t.TempDir())
-		dir := filepath.Join(store.home, ".hive", "state", "tasks", "directory.json")
+		dir := filepath.Join(store.home, "tasks", "directory.json")
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -381,7 +365,7 @@ func TestReadInPathTypes(t *testing.T) {
 		if err := os.WriteFile(target, []byte("keep"), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		lockPath := filepath.Join(store.home, ".hive", "state", "lock")
+		lockPath := filepath.Join(store.home, "lock")
 		if err := os.Symlink(target, lockPath); err != nil {
 			t.Fatal(err)
 		}

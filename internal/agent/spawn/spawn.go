@@ -170,7 +170,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger,
 	if err := agent.Save(home, record); err != nil {
 		return output.Envelope{Outcome: output.OutcomePartial, Phase: "record", Effects: effects, Error: withLabel("write record: " + err.Error()), Result: record}
 	}
-	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "written"})
+	effects = append(effects, output.Effect{Resource: "record", Path: "agents/" + record.Name + ".json", Action: "written"})
 
 	partial := func(phase, message string) output.Envelope {
 		return output.Envelope{Outcome: output.OutcomePartial, Phase: phase, Effects: effects, Error: withLabel(message), Result: record}
@@ -274,7 +274,7 @@ func loadProject(home, id string) (records.Project, error) {
 		return records.Project{}, err
 	}
 	var project records.Project
-	if err := registry.Read("projects", id, &project); err != nil {
+	if err := projectlib.Read(registry, id, &project); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return records.Project{}, fmt.Errorf("project not registered: %s", id)
 		}

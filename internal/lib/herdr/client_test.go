@@ -499,14 +499,14 @@ func TestCallLogsRequestAndReply(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	entries, err := os.ReadDir(filepath.Join(home, "logs"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(entries) != 1 {
 		t.Fatalf("log files = %d, want one", len(entries))
 	}
-	data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", entries[0].Name()))
+	data, err := os.ReadFile(filepath.Join(home, "logs", entries[0].Name()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -891,13 +891,13 @@ func TestReplyNullFieldPresence(t *testing.T) {
 
 func readLogEvents(t *testing.T, home string) []map[string]any {
 	t.Helper()
-	entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs"))
+	entries, err := os.ReadDir(filepath.Join(home, "logs"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	var events []map[string]any
 	for _, entry := range entries {
-		data, err := os.ReadFile(filepath.Join(home, ".hive", "logs", entry.Name()))
+		data, err := os.ReadFile(filepath.Join(home, "logs", entry.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}

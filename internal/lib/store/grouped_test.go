@@ -127,7 +127,7 @@ func TestGroupedCounterProcesses(t *testing.T) {
 	if err := runStoreHelpers(home, "grouped-counter", processes, iterations); err != nil {
 		t.Fatal(err)
 	}
-	data, err := readRecordFile(filepath.Join(home, ".hive", "state", "counters", "shared.json"))
+	data, err := readRecordFile(filepath.Join(home, "counters", "shared.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -44,7 +44,7 @@ func writeLimitRecordValue(t *testing.T, size int) map[string]string {
 }
 
 func writeLimitPath(store *Store, kind, id string) string {
-	return filepath.Join(store.home, ".hive", "state", kind, id+".json")
+	return filepath.Join(store.home, kind, id+".json")
 }
 
 func TestWriteLimitAcceptsEncodedBoundary(t *testing.T) {

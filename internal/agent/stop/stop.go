@@ -96,7 +96,7 @@ func run(ctx context.Context, home string, options Options, logger *slog.Logger)
 	if err := agent.Remove(home, record.Name); err != nil {
 		return output.Envelope{Outcome: output.OutcomePartial, Phase: "record", Effects: effects, Error: "remove record: " + err.Error(), Result: result}, session
 	}
-	effects = append(effects, output.Effect{Resource: "record", Path: ".hive/agents/" + record.Name + ".json", Action: "removed"})
+	effects = append(effects, output.Effect{Resource: "record", Path: "agents/" + record.Name + ".json", Action: "removed"})
 	return output.Envelope{Outcome: output.OutcomeOK, Phase: "complete", Effects: effects, Error: nil, Result: result}, session
 }
 

@@ -213,7 +213,7 @@ func readBoundedLine(reader *bufio.Reader) ([]byte, int, bool, bool, error) {
 }
 
 func (r *Reader) pathFor(day time.Time) string {
-	return filepath.Join(r.home, ".hive", "logs", day.Format("2006-01-02")+".jsonl")
+	return filepath.Join(r.home, "logs", day.Format("2006-01-02")+".jsonl")
 }
 
 func startOfDay(day time.Time) time.Time {

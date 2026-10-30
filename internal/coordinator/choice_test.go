@@ -15,7 +15,7 @@ func TestChoiceRoundTripUnderHiveDir(t *testing.T) {
 	if err := SaveChoice(home, want); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".hive", "coordinator-choice.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(home, "coordinator-choice.json")); err != nil {
 		t.Fatalf("choice file: %v", err)
 	}
 	got, ok, err := LoadChoice(home)
@@ -26,10 +26,10 @@ func TestChoiceRoundTripUnderHiveDir(t *testing.T) {
 
 func TestLoadChoiceBadFileIsAnError(t *testing.T) {
 	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
+	if err := os.MkdirAll(home, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "coordinator-choice.json"), []byte("{"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(home, "coordinator-choice.json"), []byte("{"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := LoadChoice(home); err == nil {

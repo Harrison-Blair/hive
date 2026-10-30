@@ -457,7 +457,7 @@ func TestSpawnLogsHarnessSessionIDFromStartWhenSpawnEndsAfterStart(t *testing.T)
 	fake.LaunchSession = "start-6"
 	home := agenttest.Home(t)
 	_, callerPane := fake.AddWorkspace("mine", "", false)
-	agents := filepath.Join(home, ".hive", "agents")
+	agents := filepath.Join(home, "agents")
 	if err := os.MkdirAll(agents, 0o555); err != nil {
 		t.Fatal(err)
 	}
@@ -700,7 +700,7 @@ func TestSpawnRecordFailureKeepsTheTabRenameError(t *testing.T) {
 	fake.Fail("tab.rename", "internal_error", "rename boom")
 	// A read-only agents directory lets the name check pass and the record
 	// write fail.
-	agents := filepath.Join(home, ".hive", "agents")
+	agents := filepath.Join(home, "agents")
 	if err := os.Mkdir(agents, 0o555); err != nil {
 		t.Fatal(err)
 	}

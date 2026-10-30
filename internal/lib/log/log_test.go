@@ -24,7 +24,7 @@ func TestBodyCapsAt4096BytesAndMarksTruncated(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	event := readOneEvent(t, filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl"))
+	event := readOneEvent(t, filepath.Join(home, "logs", "2026-01-02.jsonl"))
 	body, ok := event["body"].(string)
 	if !ok || len(body) != 4096 || event["truncated"] != true {
 		t.Fatalf("body length = %d, truncated = %v; want 4096 and true", len(body), event["truncated"])
@@ -36,7 +36,7 @@ func TestBodyCapsAt4096BytesAndMarksTruncated(t *testing.T) {
 	if event["level"] != "DEBUG" || event["msg"] != "body event" || event["component"] != "cli" {
 		t.Errorf("event fields = %#v", event)
 	}
-	info, err := os.Stat(filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl"))
+	info, err := os.Stat(filepath.Join(home, "logs", "2026-01-02.jsonl"))
 	if err != nil || info.Mode().Perm() != 0o644 {
 		t.Errorf("log file mode = %v, %v; want 0644", info, err)
 	}
@@ -52,7 +52,7 @@ func TestBodyAtLimitDoesNotMarkTruncated(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	event := readOneEvent(t, filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl"))
+	event := readOneEvent(t, filepath.Join(home, "logs", "2026-01-02.jsonl"))
 	if len(event["body"].(string)) != 4096 {
 		t.Fatalf("body length = %d; want 4096", len(event["body"].(string)))
 	}
@@ -83,7 +83,7 @@ func TestConcurrentLogEventsAreWholeJSONLines(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	file, err := os.Open(filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl"))
+	file, err := os.Open(filepath.Join(home, "logs", "2026-01-02.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestConcurrentLogEventsAreWholeJSONLines(t *testing.T) {
 
 func TestOpenAppendsToDailyFile(t *testing.T) {
 	home := t.TempDir()
-	logs := filepath.Join(home, ".hive", "logs")
+	logs := filepath.Join(home, "logs")
 	if err := os.MkdirAll(logs, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -156,7 +156,7 @@ func TestWriterRotatesAtLocalMidnight(t *testing.T) {
 		"2026-01-02": "before midnight",
 		"2026-01-03": "after midnight",
 	} {
-		event := readOneEvent(t, filepath.Join(home, ".hive", "logs", date+".jsonl"))
+		event := readOneEvent(t, filepath.Join(home, "logs", date+".jsonl"))
 		if event["msg"] != message {
 			t.Errorf("%s event message = %v; want %q", date, event["msg"], message)
 		}
@@ -188,7 +188,7 @@ func TestLogFileNamesIncludeTheLocalDate(t *testing.T) {
 		t.Fatal(err)
 	}
 	localDate := current.Local().Format("2006-01-02")
-	if _, err := os.Stat(filepath.Join(home, ".hive", "logs", localDate+".jsonl")); err != nil {
+	if _, err := os.Stat(filepath.Join(home, "logs", localDate+".jsonl")); err != nil {
 		t.Fatalf("no log for local date %s: %v", localDate, err)
 	}
 }

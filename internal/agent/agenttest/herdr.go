@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"sync"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/Harrison-Blair/hive/internal/lib/records"
 	"github.com/Harrison-Blair/hive/internal/lib/store"
+	"github.com/Harrison-Blair/hive/internal/project"
 )
 
 // Request is one request that the fake received.
@@ -537,17 +537,11 @@ func GitRepo(t testing.TB) string {
 	return dir
 }
 
-// Home makes a hive home with the marker and returns its path.
+// Home returns the canonical path of a new empty hive home.
 func Home(t testing.TB) string {
 	t.Helper()
 	home, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.MkdirAll(filepath.Join(home, ".hive"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(home, ".hive", "README.md"), []byte("home\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return home
@@ -560,7 +554,7 @@ func RegisterProject(t testing.TB, home, id, path, base string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.Write("projects", id, records.Project{ID: id, Path: path, Base: base}); err != nil {
+	if err := project.Write(registry, records.Project{ID: id, Path: path, Base: base}); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -24,7 +24,7 @@ func TestClosedWriterRejectsALateEvent(t *testing.T) {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(home, ".hive", "logs", "2026-01-02.jsonl")
+	path := filepath.Join(home, "logs", "2026-01-02.jsonl")
 	before, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -41,7 +41,7 @@ func TestClosedWriterRejectsALateEvent(t *testing.T) {
 	if string(after) != string(before) || strings.Contains(string(after), "after close") {
 		t.Fatalf("a late event changed the log file:\n%s", after)
 	}
-	if entries, err := os.ReadDir(filepath.Join(home, ".hive", "logs")); err != nil || len(entries) != 1 {
+	if entries, err := os.ReadDir(filepath.Join(home, "logs")); err != nil || len(entries) != 1 {
 		t.Fatalf("log files = %v, %v; want the one before close", entries, err)
 	}
 }
