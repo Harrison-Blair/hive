@@ -2,7 +2,6 @@ package store
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -48,10 +47,6 @@ func (s *Store) lockPath() string {
 
 // ReadIn reads one record below a nested collection without taking the lock.
 func (s *Store) ReadIn(collection []string, id string, target any) error {
-	return s.readInUnlocked(collection, id, target)
-}
-
-func (s *Store) readInUnlocked(collection []string, id string, target any) error {
 	path, err := s.recordPathIn(collection, id)
 	if err != nil {
 		return err
@@ -75,58 +70,9 @@ func (s *Store) WriteIn(collection []string, id string, value any) error {
 	if err != nil {
 		return err
 	}
-	return s.withLock(context.Background(), func(locked *LockedStore) error {
-		return locked.store.writeInData(collection, id, data)
+	return s.withLock(defaultLockWait, func() error {
+		return s.writeInData(collection, id, data)
 	})
-}
-
-// UpdateIn runs one read-change-write operation below a nested collection.
-func (s *Store) UpdateIn(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	return s.withLock(context.Background(), func(locked *LockedStore) error {
-		return locked.UpdateIn(collection, id, fn)
-	})
-}
-
-// ListIn reads the immediate directory of one nested collection without a lock.
-func (s *Store) ListIn(collection []string, include func(filename string) bool) ([]json.RawMessage, error) {
-	return s.listInUnlocked(collection, include)
-}
-
-func (s *Store) listInUnlocked(collection []string, include func(filename string) bool) ([]json.RawMessage, error) {
-	dir, err := s.collectionPath(collection)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.checkList(dir, collection); err != nil {
-		return nil, err
-	}
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return []json.RawMessage{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	found := []json.RawMessage{}
-	for _, entry := range entries {
-		name := entry.Name()
-		if !strings.HasSuffix(name, ".json") {
-			continue
-		}
-		id := strings.TrimSuffix(name, ".json")
-		if err := validateSegment("id", id); err != nil {
-			continue
-		}
-		if include != nil && !include(name) {
-			continue
-		}
-		data, err := readRecordFile(filepath.Join(dir, name))
-		if err != nil {
-			return nil, err
-		}
-		found = append(found, json.RawMessage(data))
-	}
-	return found, nil
 }
 
 // ListEach reads the record id in each immediate subdirectory of collection,
@@ -191,35 +137,6 @@ func (s *Store) writePath(path string, collection []string, data []byte) error {
 		return err
 	}
 	return writeRecordFile(path, data)
-}
-
-func (s *Store) updateInUnlocked(collection []string, id string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	path, err := s.recordPathIn(collection, id)
-	if err != nil {
-		return err
-	}
-	return s.updatePath(path, collection, fn)
-}
-
-func (s *Store) updatePath(path string, collection []string, fn func(json.RawMessage) (json.RawMessage, error)) error {
-	if err := s.checkRead(path, collection); err != nil {
-		return err
-	}
-	current, err := readRecordFile(path)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-	if errors.Is(err, os.ErrNotExist) {
-		current = nil
-	}
-	next, err := fn(current)
-	if err != nil {
-		return err
-	}
-	if !validObject(next) {
-		return fmt.Errorf("record invalid: %s", path)
-	}
-	return s.writePath(path, collection, next)
 }
 
 func (s *Store) recordPathIn(collection []string, id string) (string, error) {
@@ -371,15 +288,6 @@ func validateCollection(collection []string) error {
 
 func validateComponent(kind, value string) error {
 	if value == "" || len(value) > maxComponentSize || !componentPattern.MatchString(value) {
-		return fmt.Errorf("invalid store %s: %q", kind, value)
-	}
-	return nil
-}
-
-// validateSegment is the file name rule of ListIn: it skips only a name with a
-// slash or "..", so a record with a long or legacy ID stays listed.
-func validateSegment(kind, value string) error {
-	if value == "" || strings.Contains(value, "/") || strings.Contains(value, "..") {
 		return fmt.Errorf("invalid store %s: %q", kind, value)
 	}
 	return nil

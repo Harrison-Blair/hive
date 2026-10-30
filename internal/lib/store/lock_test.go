@@ -1,8 +1,6 @@
 package store
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -48,115 +46,7 @@ func holdStateLock(t *testing.T, home string) func() {
 	}
 }
 
-func TestWithLockDefaultTimeout(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	release := holdStateLock(t, store.home)
-	defer release()
-
-	ran := false
-	start := time.Now()
-	err := store.WithLock(context.Background(), func(*LockedStore) error {
-		ran = true
-		return nil
-	})
-	elapsed := time.Since(start)
-	if ran {
-		t.Fatal("callback ran while another holder had the lock")
-	}
-	if !errors.Is(err, ErrLockTimeout) {
-		t.Fatalf("WithLock() error = %v; want ErrLockTimeout", err)
-	}
-	if elapsed < 1800*time.Millisecond {
-		t.Fatalf("WithLock() returned after %v; want about two seconds", elapsed)
-	}
-	if elapsed > 6*time.Second {
-		t.Fatalf("WithLock() returned after %v; want a bounded wait", elapsed)
-	}
-}
-
-func TestWithLockContextDeadline(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	release := holdStateLock(t, store.home)
-	defer release()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-	ran := false
-	start := time.Now()
-	err := store.WithLock(ctx, func(*LockedStore) error {
-		ran = true
-		return nil
-	})
-	elapsed := time.Since(start)
-	if ran {
-		t.Fatal("callback ran while another holder had the lock")
-	}
-	if !errors.Is(err, context.DeadlineExceeded) {
-		t.Fatalf("WithLock() error = %v; want context.DeadlineExceeded", err)
-	}
-	if elapsed < 80*time.Millisecond || elapsed > 2*time.Second {
-		t.Fatalf("WithLock() returned after %v; want about 100ms", elapsed)
-	}
-}
-
-func TestWithLockCanceledContext(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	release := holdStateLock(t, store.home)
-	defer release()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	ran := false
-	err := store.WithLock(ctx, func(*LockedStore) error {
-		ran = true
-		return nil
-	})
-	if ran {
-		t.Fatal("callback ran with a canceled context")
-	}
-	if !errors.Is(err, context.Canceled) {
-		t.Fatalf("WithLock() error = %v; want context.Canceled", err)
-	}
-}
-
-func TestWithLockLongDeadlineWaits(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	release := holdStateLock(t, store.home)
-	released := make(chan struct{})
-	go func() {
-		time.Sleep(2200 * time.Millisecond)
-		release()
-		close(released)
-	}()
-	defer func() {
-		select {
-		case <-released:
-		default:
-			release()
-		}
-	}()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	ran := false
-	start := time.Now()
-	err := store.WithLock(ctx, func(*LockedStore) error {
-		ran = true
-		return nil
-	})
-	elapsed := time.Since(start)
-	if err != nil {
-		t.Fatalf("WithLock() error = %v; want no error", err)
-	}
-	if !ran {
-		t.Fatal("callback did not run after the lock became free")
-	}
-	if elapsed < 2*time.Second {
-		t.Fatalf("WithLock() acquired after %v; want after two seconds", elapsed)
-	}
-}
-
-func TestWithLockFailureChangesNoRecord(t *testing.T) {
+func TestWriteInLockTimeout(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	if err := store.WriteIn([]string{"tasks"}, "sentinel", map[string]int{"value": 1}); err != nil {
 		t.Fatal(err)
@@ -164,13 +54,17 @@ func TestWithLockFailureChangesNoRecord(t *testing.T) {
 	release := holdStateLock(t, store.home)
 	defer release()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-	err := store.WithLock(ctx, func(locked *LockedStore) error {
-		return locked.WriteIn([]string{"tasks"}, "sentinel", map[string]int{"value": 2})
-	})
-	if !errors.Is(err, context.DeadlineExceeded) {
-		t.Fatalf("WithLock() error = %v; want context.DeadlineExceeded", err)
+	start := time.Now()
+	err := store.WriteIn([]string{"tasks"}, "sentinel", map[string]int{"value": 2})
+	elapsed := time.Since(start)
+	if err == nil || err.Error() != "store lock timeout" {
+		t.Fatalf("WriteIn() error = %v; want store lock timeout", err)
+	}
+	if elapsed < 1800*time.Millisecond {
+		t.Fatalf("WriteIn() returned after %v; want about two seconds", elapsed)
+	}
+	if elapsed > 6*time.Second {
+		t.Fatalf("WriteIn() returned after %v; want a bounded wait", elapsed)
 	}
 	var record map[string]int
 	if err := store.ReadIn([]string{"tasks"}, "sentinel", &record); err != nil {
@@ -181,24 +75,40 @@ func TestWithLockFailureChangesNoRecord(t *testing.T) {
 	}
 }
 
+func TestWriteInWaitsForLockRelease(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	release := holdStateLock(t, store.home)
+	defer release()
+	go func() {
+		time.Sleep(300 * time.Millisecond)
+		release()
+	}()
+
+	start := time.Now()
+	if err := store.WriteIn([]string{"tasks"}, "one", map[string]int{"value": 1}); err != nil {
+		t.Fatalf("WriteIn() error = %v; want no error", err)
+	}
+	if elapsed := time.Since(start); elapsed < 250*time.Millisecond {
+		t.Fatalf("WriteIn() wrote after %v; want after the holder released the lock", elapsed)
+	}
+}
+
 func TestWithLockCallbackErrorReleases(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	sentinel := errors.New("callback failed")
-	err := store.WithLock(context.Background(), func(*LockedStore) error {
+	err := store.withLock(defaultLockWait, func() error {
 		return sentinel
 	})
 	if !errors.Is(err, sentinel) {
-		t.Fatalf("WithLock() error = %v; want the callback error", err)
+		t.Fatalf("withLock() error = %v; want the callback error", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
-	defer cancel()
 	ran := false
-	if err := store.WithLock(ctx, func(*LockedStore) error {
+	if err := store.withLock(500*time.Millisecond, func() error {
 		ran = true
 		return nil
 	}); err != nil {
-		t.Fatalf("second WithLock() error = %v; want no error", err)
+		t.Fatalf("second withLock() error = %v; want no error", err)
 	}
 	if !ran {
 		t.Fatal("second callback did not run after the first error")
@@ -210,111 +120,27 @@ func TestWithLockPanicReleases(t *testing.T) {
 	func() {
 		defer func() {
 			if recovered := recover(); recovered == nil {
-				t.Error("WithLock() did not propagate the callback panic")
+				t.Error("withLock() did not propagate the callback panic")
 			}
 		}()
-		_ = store.WithLock(context.Background(), func(*LockedStore) error {
+		_ = store.withLock(defaultLockWait, func() error {
 			panic("callback panic")
 		})
 	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
-	defer cancel()
 	ran := false
-	if err := store.WithLock(ctx, func(*LockedStore) error {
+	if err := store.withLock(500*time.Millisecond, func() error {
 		ran = true
 		return nil
 	}); err != nil {
-		t.Fatalf("WithLock() after panic error = %v; want no error", err)
+		t.Fatalf("withLock() after panic error = %v; want no error", err)
 	}
 	if !ran {
 		t.Fatal("callback did not run after the panic")
 	}
 }
 
-func TestWithLockHandleAfterRelease(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	var handle *LockedStore
-	if err := store.WithLock(context.Background(), func(locked *LockedStore) error {
-		handle = locked
-		return nil
-	}); err != nil {
-		t.Fatal(err)
-	}
-	if err := handle.ReadIn([]string{"tasks"}, "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
-		t.Fatalf("released handle ReadIn() error = %v; want ErrLockReleased", err)
-	}
-	var nilHandle *LockedStore
-	if err := nilHandle.ReadIn([]string{"tasks"}, "one", &map[string]any{}); !errors.Is(err, ErrLockReleased) {
-		t.Fatalf("nil handle ReadIn() error = %v; want ErrLockReleased", err)
-	}
-}
-
-func TestWithLockNestedFails(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	var nestedErr error
-	nestedRan := false
-	err := store.WithLock(context.Background(), func(locked *LockedStore) error {
-		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-		defer cancel()
-		nestedErr = store.WithLock(ctx, func(*LockedStore) error {
-			nestedRan = true
-			return nil
-		})
-		return locked.WriteIn([]string{"tasks"}, "outer", map[string]int{"value": 1})
-	})
-	if err != nil {
-		t.Fatalf("outer WithLock() error = %v", err)
-	}
-	if nestedRan {
-		t.Fatal("nested callback ran while the outer callback held the lock")
-	}
-	if !errors.Is(nestedErr, context.DeadlineExceeded) && !errors.Is(nestedErr, ErrLockTimeout) {
-		t.Fatalf("nested WithLock() error = %v; want a bounded failure", nestedErr)
-	}
-	var record map[string]int
-	if err := store.ReadIn([]string{"tasks"}, "outer", &record); err != nil {
-		t.Fatal(err)
-	}
-	if record["value"] != 1 {
-		t.Fatalf("outer record value = %d; want 1", record["value"])
-	}
-}
-
-func TestWithLockMutationTimeout(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	release := holdStateLock(t, store.home)
-	defer release()
-
-	checks := []struct {
-		name string
-		run  func() error
-	}{
-		{"WriteIn", func() error {
-			return store.WriteIn([]string{"tasks"}, "one", map[string]int{"value": 1})
-		}},
-		{"UpdateIn", func() error {
-			return store.UpdateIn([]string{"tasks"}, "one", func(json.RawMessage) (json.RawMessage, error) {
-				return json.RawMessage(`{"value":1}`), nil
-			})
-		}},
-	}
-	for _, check := range checks {
-		t.Run(check.name, func(t *testing.T) {
-			start := time.Now()
-			err := check.run()
-			elapsed := time.Since(start)
-			if !errors.Is(err, ErrLockTimeout) {
-				t.Fatalf("%s() error = %v; want ErrLockTimeout", check.name, err)
-			}
-			if elapsed < 1800*time.Millisecond {
-				t.Fatalf("%s() returned after %v; want about two seconds", check.name, elapsed)
-			}
-		})
-	}
-}
-
-func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
+func TestReadInDoesNotTakeTheLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	if err := store.WriteIn([]string{"tasks"}, "visible", map[string]int{"value": 7}); err != nil {
 		t.Fatal(err)
@@ -331,22 +157,18 @@ func TestWithLockReadsDoNotTakeTheLock(t *testing.T) {
 	}
 }
 
-func TestWithLockRejectsDirectoryLock(t *testing.T) {
+func TestWriteInRejectsDirectoryLock(t *testing.T) {
 	store := openStore(t, t.TempDir())
 	lockPath := filepath.Join(store.home, "lock")
 	if err := os.Mkdir(lockPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	ran := false
-	err := store.WithLock(context.Background(), func(*LockedStore) error {
-		ran = true
-		return nil
-	})
-	if ran {
-		t.Fatal("callback ran with a directory at the lock path")
-	}
+	err := store.WriteIn([]string{"tasks"}, "one", map[string]int{"value": 1})
 	if err == nil || err.Error() != "store path invalid: "+lockPath {
-		t.Fatalf("WithLock() error = %v; want store path invalid for %s", err, lockPath)
+		t.Fatalf("WriteIn() error = %v; want store path invalid for %s", err, lockPath)
+	}
+	if _, statErr := os.Lstat(filepath.Join(store.home, "tasks", "one.json")); !os.IsNotExist(statErr) {
+		t.Fatalf("WriteIn() made a record with a directory at the lock path: %v", statErr)
 	}
 }
 
@@ -364,7 +186,7 @@ func TestWithLockWaiterIsNotStarved(t *testing.T) {
 				return
 			default:
 			}
-			err := store.WithLock(context.Background(), func(*LockedStore) error {
+			err := store.withLock(defaultLockWait, func() error {
 				once.Do(func() { close(holding) })
 				time.Sleep(23 * time.Millisecond)
 				return nil
@@ -382,21 +204,19 @@ func TestWithLockWaiterIsNotStarved(t *testing.T) {
 	var err error
 	var elapsed time.Duration
 	for range 5 {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		start := time.Now()
-		err = store.WithLock(ctx, func(*LockedStore) error { return nil })
+		err = store.withLock(100*time.Millisecond, func() error { return nil })
 		elapsed = time.Since(start)
-		cancel()
 		if err != nil {
 			break
 		}
 	}
 	close(stop)
 	if hogErr := <-hogDone; hogErr != nil {
-		t.Fatalf("holder WithLock() error = %v", hogErr)
+		t.Fatalf("holder withLock() error = %v", hogErr)
 	}
 	if err != nil {
-		t.Fatalf("waiter WithLock() error = %v after %v; want the lock at a release while another caller asks again at once", err, elapsed)
+		t.Fatalf("waiter withLock() error = %v after %v; want the lock at a release while another caller asks again at once", err, elapsed)
 	}
 }
 
@@ -407,15 +227,13 @@ func TestWithLockAbandonedWaitReleases(t *testing.T) {
 	release := holdStateLock(t, store.home)
 	defer release()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-	defer cancel()
 	ran := false
-	err := store.WithLock(ctx, func(*LockedStore) error {
+	err := store.withLock(50*time.Millisecond, func() error {
 		ran = true
 		return nil
 	})
-	if !errors.Is(err, context.DeadlineExceeded) {
-		t.Fatalf("WithLock() error = %v; want context.DeadlineExceeded", err)
+	if !errors.Is(err, errLockTimeout) {
+		t.Fatalf("withLock() error = %v; want errLockTimeout", err)
 	}
 	release()
 

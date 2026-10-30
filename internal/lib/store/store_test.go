@@ -1,7 +1,6 @@
 package store
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,51 +8,47 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
+	"time"
 )
 
-func TestConcurrentUpdateProcesses(t *testing.T) {
+func TestWriteInProcessesWaitForTheLock(t *testing.T) {
 	home := t.TempDir()
-	store, err := Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := store.WriteIn([]string{"tasks"}, "shared", map[string]int{"count": 0}); err != nil {
-		t.Fatal(err)
-	}
-	const processes, iterations = 4, 50
-	if err := runStoreHelpers(home, "update", processes, iterations); err != nil {
-		t.Fatal(err)
-	}
-	var record struct {
-		Count int `json:"count"`
-	}
-	if err := store.ReadIn([]string{"tasks"}, "shared", &record); err != nil {
-		t.Fatal(err)
-	}
-	if record.Count != processes*iterations {
-		t.Fatalf("updated count = %d; want %d", record.Count, processes*iterations)
-	}
-}
+	openStore(t, home)
+	release := holdStateLock(t, home)
+	defer release()
+	const processes, iterations = 4, 20
+	done := make(chan error, 1)
+	go func() { done <- runStoreHelpers(home, "write", processes, iterations) }()
 
-func TestUpdateInMissingRecordStartsEmpty(t *testing.T) {
-	store := openStore(t, t.TempDir())
-	var seen json.RawMessage
-	err := store.UpdateIn([]string{"tasks"}, "fresh", func(raw json.RawMessage) (json.RawMessage, error) {
-		seen = raw
-		return json.RawMessage(`{"value":1}`), nil
-	})
+	// The helpers start and ask for the lock well within this hold, which is
+	// shorter than the two second lock wait.
+	time.Sleep(time.Second)
+	if entries, err := os.ReadDir(filepath.Join(home, "tasks")); err == nil && len(entries) > 0 {
+		t.Fatalf("helpers wrote %d entries while another holder had the lock", len(entries))
+	}
+	release()
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(filepath.Join(home, "tasks"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if seen != nil {
-		t.Fatalf("UpdateIn() callback got %q; want nil for a missing record", seen)
+	if len(entries) != processes {
+		t.Fatalf("tasks has %d entries; want one record per helper: %v", len(entries), entries)
 	}
-	var record map[string]int
-	if err := store.ReadIn([]string{"tasks"}, "fresh", &record); err != nil {
-		t.Fatal(err)
-	}
-	if record["value"] != 1 {
-		t.Fatalf("record value = %d; want 1", record["value"])
+	for _, entry := range entries {
+		data, err := os.ReadFile(filepath.Join(home, "tasks", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var record map[string]int
+		if err := json.Unmarshal(data, &record); err != nil {
+			t.Fatal(err)
+		}
+		if record["count"] != iterations {
+			t.Fatalf("%s count = %d; want %d", entry.Name(), record["count"], iterations)
+		}
 	}
 }
 
@@ -73,30 +68,11 @@ func TestStoreProcessHelper(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for range iterations {
+	id := fmt.Sprintf("p%d", os.Getpid())
+	for i := range iterations {
 		switch mode {
-		case "update":
-			err := store.UpdateIn([]string{"tasks"}, "shared", func(raw json.RawMessage) (json.RawMessage, error) {
-				var record map[string]int
-				if err := json.Unmarshal(raw, &record); err != nil {
-					return nil, err
-				}
-				record["count"]++
-				return json.Marshal(record)
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		case "grouped-update":
-			err := store.WithLock(context.Background(), func(locked *LockedStore) error {
-				var record map[string]int
-				if err := locked.ReadIn([]string{"tasks"}, "shared", &record); err != nil {
-					return err
-				}
-				record["count"]++
-				return locked.WriteIn([]string{"tasks"}, "shared", record)
-			})
-			if err != nil {
+		case "write":
+			if err := store.WriteIn([]string{"tasks"}, id, map[string]int{"count": i + 1}); err != nil {
 				t.Fatal(err)
 			}
 		default:
@@ -162,52 +138,6 @@ func TestAtomicWriteReadersSeeCompleteRecord(t *testing.T) {
 	}
 	if len(entries) != 1 || entries[0].Name() != "atomic.json" {
 		t.Fatalf("record directory contains temporary files: %v", entries)
-	}
-}
-
-func TestUpdateCallbackRunsUnderLock(t *testing.T) {
-	home := t.TempDir()
-	store, err := Open(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := store.WriteIn([]string{"tasks"}, "locked", map[string]int{"count": 0}); err != nil {
-		t.Fatal(err)
-	}
-	const workers, updates = 8, 40
-	var wg sync.WaitGroup
-	errCh := make(chan error, workers)
-	for range workers {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for range updates {
-				err := store.UpdateIn([]string{"tasks"}, "locked", func(raw json.RawMessage) (json.RawMessage, error) {
-					var record map[string]int
-					if err := json.Unmarshal(raw, &record); err != nil {
-						return nil, err
-					}
-					record["count"]++
-					return json.Marshal(record)
-				})
-				if err != nil {
-					errCh <- err
-					return
-				}
-			}
-		}()
-	}
-	wg.Wait()
-	close(errCh)
-	for err := range errCh {
-		t.Fatal(err)
-	}
-	var record map[string]int
-	if err := store.ReadIn([]string{"tasks"}, "locked", &record); err != nil {
-		t.Fatal(err)
-	}
-	if record["count"] != workers*updates {
-		t.Fatalf("updated count = %d; want %d", record["count"], workers*updates)
 	}
 }
 
