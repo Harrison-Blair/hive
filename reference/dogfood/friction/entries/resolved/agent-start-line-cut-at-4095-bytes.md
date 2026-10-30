@@ -1,9 +1,9 @@
 ---
 title: "herdr agent.start can cut a long command line at 4095 bytes"
 description: "A start command line above 4095 bytes can reach the new pane shell cut short, so the harness never starts"
-status: "Open"
+status: "Resolved 2026-10-29"
 opened: 2026-10-29
-decision: ""
+decision: "Hive refuses a spawn whose start command line is above 4000 bytes (5e4489ab), so the line never reaches the 4095-byte limit."
 ---
 
 **Issue:** herdr `agent.start` types the whole harness command line into the
