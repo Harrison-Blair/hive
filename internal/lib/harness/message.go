@@ -2,6 +2,7 @@ package harness
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -10,8 +11,10 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/Harrison-Blair/hive/internal/guide"
 	"github.com/Harrison-Blair/hive/internal/lib/herdr"
 )
 
@@ -27,6 +30,7 @@ const claudeInbound = `{"crossSessionInbound":"accept"}`
 // pane. It prefers the group leader, because the harness can start child
 // processes with the same name.
 func harnessProcess(ctx context.Context, profile Profile, paneID string, opts ...herdr.Option) (herdr.Process, error) {
+	opts = append(opts, herdr.WithReplyRedact(func(reply []byte) map[string]string { return guideValues(profile, reply) }))
 	info, err := herdr.PaneProcessInfo(ctx, paneID, opts...)
 	if err != nil {
 		return herdr.Process{}, fmt.Errorf("process info of pane %s: %w", paneID, err)
@@ -46,6 +50,36 @@ func harnessProcess(ctx context.Context, profile Profile, paneID string, opts ..
 		}
 	}
 	return found[0], nil
+}
+
+// guideValues returns each guide argument of profile in the argv of the
+// processes of a pane.process_info reply, with its placeholder, so that the
+// reply log event does not carry the guide.
+func guideValues(profile Profile, reply []byte) map[string]string {
+	const mark = "GUIDE"
+	probe := profile.GuideArgs(mark)
+	if len(probe) != 2 {
+		return nil
+	}
+	flag := probe[0]
+	prefix, _, _ := strings.Cut(probe[1], mark)
+	var parsed struct {
+		Result struct {
+			ProcessInfo herdr.ProcessInfo `json:"process_info"`
+		} `json:"result"`
+	}
+	if json.Unmarshal(reply, &parsed) != nil {
+		return nil
+	}
+	values := map[string]string{}
+	for _, process := range parsed.Result.ProcessInfo.ForegroundProcesses {
+		for index := 0; index+1 < len(process.Argv); index++ {
+			if value := process.Argv[index+1]; process.Argv[index] == flag && strings.HasPrefix(value, prefix) {
+				values[value] = guide.Placeholder(value)
+			}
+		}
+	}
+	return values
 }
 
 // hasArgPair reports whether argv holds name followed by value.

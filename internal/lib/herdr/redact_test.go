@@ -34,3 +34,30 @@ func TestWithRedactHidesTheValueInTheRequestAndReplyLog(t *testing.T) {
 		t.Fatalf("params = %s; want the value sent unchanged", got)
 	}
 }
+
+func TestWithReplyRedactHidesTheValuesThatTheReplyGives(t *testing.T) {
+	server := newFakeServer(t)
+	server.scriptResult("pane.process_info", `{"type":"pane_process_info","process_info":{"pane_id":"w1:p1","foreground_process_group_id":7,"foreground_processes":[{"argv":["claude","--append-system-prompt","the <guide>"],"cmdline":"claude --append-system-prompt the <guide>","name":"claude","pid":7}]}}`)
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	find := func(reply []byte) map[string]string {
+		if bytes.Contains(reply, []byte("the <guide>")) {
+			return map[string]string{"the <guide>": "<guide 11 bytes>"}
+		}
+		return nil
+	}
+	info, err := PaneProcessInfo(context.Background(), "w1:p1", WithLogger(logger), WithReplyRedact(find))
+	if err != nil {
+		t.Fatalf("PaneProcessInfo error = %v", err)
+	}
+	if got := info.ForegroundProcesses[0].Argv[2]; got != "the <guide>" {
+		t.Fatalf("argv = %q; want the value unchanged in the result", got)
+	}
+	text := logs.String()
+	if strings.Contains(text, "the <guide>") || strings.Contains(text, `the <guide`) {
+		t.Fatalf("logs = %s; want no guide", text)
+	}
+	if strings.Count(text, "<guide 11 bytes>") != 2 {
+		t.Fatalf("logs = %s; want the placeholder in argv and cmdline", text)
+	}
+}
