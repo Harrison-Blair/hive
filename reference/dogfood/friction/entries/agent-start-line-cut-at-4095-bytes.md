@@ -35,3 +35,17 @@ start` runs (6.4 KB and 4.7 KB lines, new tabs, started at once or 3 s after
 3. When the outcome is `partial` with `agent_not_found`, run `herdr pane read
    PANE` on the pane of the result: the line ends at byte 4095 and the shell
    shows `>`.
+
+**Mitigation:** PR #61 keeps the full start line of each harness below a
+4000-byte budget. `cmd/guide_budget_test.go` fails when the line of claude,
+pi, or codex with the guide and a long model name reaches 4000 bytes. On
+2026-10-29, with the dense guide (about 3.56 KB per line), 3 of 3 new claude
+spawns and 1 of 1 codex spawn started.
+
+**Next steps:**
+1. Follow-up in hive: before `agent.start`, wait until the shell of the new
+   pane is at its interactive prompt with its line editor on. Then a line above
+   4095 bytes is safe, and the budget is only a guard.
+2. Report the cut to herdr upstream: `agent.start` can type a line longer than
+   the tty canonical-mode limit before the shell is ready, and herdr reports no
+   error.
