@@ -23,6 +23,7 @@ The entries from before the teardown are at the tag `pre-teardown`, below
 - [A harness can export NO_COLOR=1 and fail the colour tests of a project](entries/no-color-fails-colour-tests.md) — Hive neither sets nor clears NO_COLOR, so the test run of a spawned agent can fail on colour assertions
 - [TestWithLockWaiterIsNotStarved fails at times in the full gate run](entries/lock-waiter-test-flakes.md) — The 100 ms waiter deadline can expire while the whole test suite runs in parallel
 - [herdr agent.start can cut a long command line at 4095 bytes](entries/agent-start-line-cut-at-4095-bytes.md) — A start command line above 4095 bytes can reach the new pane shell cut short, so the harness never starts
+- [A report sent to a pane with an open dialog is lost](entries/send-blocked-by-dialog.md) — hive agent send refuses a target that a dialog blocks, and a worker that ends its turn never sends the report again
 
 ## Resolved
 
